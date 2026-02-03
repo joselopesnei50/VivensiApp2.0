@@ -15,14 +15,6 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
-        // O Laravel tenta logar magicamente, mas precisamos explicar que 
-        // a senha digitada ('password') deve ser comparada com a coluna 'password_hash' do banco.
-        // Felizmente, o model User já está configurado para dizer qual é a senha correta.
-        
-        // No entanto, por padrão o Auth::attempt espera que a chave do array seja 
-        // o nome da coluna no banco, A MENOS que renomeemos.
-        // Como nossa coluna é 'password_hash', passamos assim:
-        
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $request->session()->regenerate();
 
