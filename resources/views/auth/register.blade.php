@@ -19,6 +19,17 @@
         .btn-primary { width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); }
         .plan-summary { background: #F0F9FF; border: 1px solid #BAE6FD; padding: 15px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Role Selector Styles */
+        .role-selector { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+        .role-option { flex: 1; min-width: 140px; padding: 18px 12px; border: 2px solid #E2E8F0; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s; background: #FAFAFA; }
+        .role-option:hover { border-color: #2563EB; background: #F0F9FF; transform: translateY(-2px); }
+        .role-option.selected { border-color: #2563EB; background: #EFF6FF; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .role-option i { font-size: 1.8rem; color: #64748B; margin-bottom: 8px; display: block; }
+        .role-option.selected i { color: #2563EB; }
+        .role-option .role-title { font-weight: 600; color: #1e293b; margin-bottom: 4px; font-size: 0.9rem; }
+        .role-option .role-desc { font-size: 0.75rem; color: #64748B; line-height: 1.3; }
+        .error-message { background: #FEF2F2; color: #DC2626; padding: 10px 12px; border-radius: 8px; border: 1px solid #FECACA; margin-top: 8px; font-size: 0.85rem; display: none; }
     </style>
 </head>
 <body>
@@ -61,6 +72,29 @@
         <input type="hidden" name="plan_id" value="{{ $plan ? $plan->id : '' }}">
 
         <div class="form-group">
+            <label>Tipo de Conta <span style="color: #DC2626;">*</span></label>
+            <div class="role-selector">
+                <div class="role-option" data-role="project_manager">
+                    <i class="fas fa-briefcase"></i>
+                    <div class="role-title">Gestor de Projetos</div>
+                    <div class="role-desc">Gerenciar projetos e equipes</div>
+                </div>
+                <div class="role-option" data-role="ngo_admin">
+                    <i class="fas fa-hands-helping"></i>
+                    <div class="role-title">Terceiro Setor / ONG</div>
+                    <div class="role-desc">Organização sem fins lucrativos</div>
+                </div>
+                <div class="role-option" data-role="client">
+                    <i class="fas fa-user"></i>
+                    <div class="role-title">Cliente Pessoal</div>
+                    <div class="role-desc">Uso individual</div>
+                </div>
+            </div>
+            <input type="hidden" name="account_type" id="account_type" value="" required>
+            <div class="error-message" id="role-error">Por favor, selecione um tipo de conta.</div>
+        </div>
+
+        <div class="form-group">
             <label>Nome da Organização / Empresa</label>
             <input type="text" name="organization_name" class="form-control" placeholder="Ex: Minha ONG ou Minha Empresa" required value="{{ old('organization_name') }}">
         </div>
@@ -95,6 +129,37 @@
         Já tem uma conta? <a href="{{ route('login') }}" style="color: var(--primary-color); font-weight: 600; text-decoration: none;">Acessar Login</a>
     </div>
 </div>
+
+<script>
+// Role Selection Handler
+document.querySelectorAll('.role-option').forEach(option => {
+    option.addEventListener('click', function() {
+        // Remove selected from all
+        document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+        
+        // Add selected to clicked
+        this.classList.add('selected');
+        
+        // Set hidden input value
+        document.getElementById('account_type').value = this.dataset.role;
+        
+        // Hide error message
+        document.getElementById('role-error').style.display = 'none';
+    });
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const accountType = document.getElementById('account_type').value;
+    
+    if (!accountType) {
+        e.preventDefault();
+        document.getElementById('role-error').style.display = 'block';
+        document.querySelector('.role-selector').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+});
+</script>
 
 </body>
 </html>

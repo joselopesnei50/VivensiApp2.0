@@ -31,27 +31,36 @@ class RegisterController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'plan_id' => 'nullable|exists:subscription_plans,id',
+            'account_type' => 'required|in:project_manager,ngo_admin,client',
         ]);
 
         try {
             DB::beginTransaction();
 
             // 1. Create Tenant
+            // Determinar tenant type baseado no account_type escolhido
+            $tenantType = match($request->account_type) {
+                'ngo_admin' => 'ngo',
+                'project_manager' => 'business',
+                'client' => 'common',
+                default => 'common'
+            };
+
             $tenant = Tenant::create([
                 'name' => $request->organization_name,
-                'type' => $this->getTenantTypeByPlan($request->plan_id),
+                'type' => $tenantType,
                 'plan_id' => $request->plan_id,
                 'subscription_status' => 'trialing',
                 'trial_ends_at' => now()->addDays(7),
             ]);
 
-            // 2. Create User (Manager)
+            // 2. Create User with selected role
             $user = User::create([
                 'tenant_id' => $tenant->id,
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role' => 'manager',
+                'role' => $request->account_type,
                 'status' => 'active',
             ]);
 
