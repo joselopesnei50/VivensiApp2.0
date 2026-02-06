@@ -3,9 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Services\AiFinancialAdvisor;
+use App\Models\Campaign;
+use App\Models\NgoDonor;
+use App\Models\NgoGrant;
+use App\Models\Project;
+use App\Models\Task;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\Volunteer;
 
 class DashboardController extends Controller
 {
@@ -96,33 +103,31 @@ class DashboardController extends Controller
 
     private function managerDashboard($tenantId)
     {
-        $activeProjects = DB::table('projects')
-                            ->where('tenant_id', $tenantId)
-                            ->where('status', 'active')
-                            ->count();
+        $activeProjects = Project::where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->count();
 
         // Feed de Impacto do Gestor: Atividades recentes em projetos
-        $impactFeed = DB::table('tasks')
-                        ->where('tenant_id', $tenantId)
-                        ->where('status', 'completed')
-                        ->orderBy('updated_at', 'desc')
-                        ->limit(4)
-                        ->get()
-                        ->map(function($task) {
-                            return [
-                                'icon' => 'fa-check-double',
-                                'color' => '#10b981',
-                                'title' => 'Marco atingido: ' . $task->title,
-                                'time' => \Carbon\Carbon::parse($task->updated_at)->diffForHumans()
-                            ];
-                        });
+        $impactFeed = Task::where('tenant_id', $tenantId)
+            ->where('status', 'completed')
+            ->orderBy('updated_at', 'desc')
+            ->limit(4)
+            ->get()
+            ->map(function ($task) {
+                return [
+                    'icon' => 'fa-check-double',
+                    'color' => '#10b981',
+                    'title' => 'Marco atingido: ' . $task->title,
+                    'time' => \Carbon\Carbon::parse($task->updated_at)->diffForHumans()
+                ];
+            });
         
         return view('dashboards.manager', [
             'activeProjects' => $activeProjects,
             'impactFeed' => $impactFeed,
             'stats' => [
-                'team_size' => DB::table('users')->where('tenant_id', $tenantId)->count(),
-                'pending_tasks' => DB::table('tasks')->where('tenant_id', $tenantId)->where('status', '!=', 'completed')->count()
+                'team_size' => User::where('tenant_id', $tenantId)->count(),
+                'pending_tasks' => Task::where('tenant_id', $tenantId)->where('status', '!=', 'completed')->count()
             ]
         ]);
     }
@@ -135,12 +140,11 @@ class DashboardController extends Controller
         $impactFeed = collect();
         
         // Editais próximos do vencimento
-        $upcomingGrants = DB::table('ngo_grants')
-                            ->where('tenant_id', $tenantId)
-                            ->where('deadline', '>=', now())
-                            ->orderBy('deadline', 'asc')
-                            ->limit(2)
-                            ->get();
+        $upcomingGrants = NgoGrant::where('tenant_id', $tenantId)
+            ->where('deadline', '>=', now())
+            ->orderBy('deadline', 'asc')
+            ->limit(2)
+            ->get();
 
         foreach($upcomingGrants as $grant) {
             $impactFeed->push([
@@ -152,30 +156,28 @@ class DashboardController extends Controller
         }
 
         // Doações recentes
-        $recentDonations = DB::table('transactions')
-                            ->where('tenant_id', $tenantId)
-                            ->where('type', 'income')
-                            ->whereNotNull('ngo_donor_id')
-                            ->orderBy('date', 'desc')
-                            ->limit(2)
-                            ->get();
+        $recentDonations = Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')
+            ->orderBy('date', 'desc')
+            ->limit(2)
+            ->get();
 
         foreach($recentDonations as $donation) {
             $impactFeed->push([
                 'icon' => 'fa-heart',
                 'color' => '#ef4444',
-                'title' => 'Nova Doação Recebida: R$ ' . number_format($donation->amount, 0),
+                'title' => 'Nova Doação Recebida: R$ ' . number_format((float) $donation->amount, 0),
                 'time' => \Carbon\Carbon::parse($donation->date)->diffForHumans()
             ]);
         }
 
         $stats = [
             'runway' => number_format($advisor->getSurvivalMetrics()['months_left'], 1),
-            'monthly_income' => DB::table('transactions')->where('tenant_id', $tenantId)->where('type', 'income')->whereMonth('date', now()->month)->sum('amount'),
-            'volunteers_count' => DB::table('volunteers')->where('tenant_id', $tenantId)->count(),
-            'total_donors' => DB::table('ngo_donors')->where('tenant_id', $tenantId)->count(),
-            'active_campaigns' => DB::table('campaigns')->where('tenant_id', $tenantId)->where('status', 'active')->get(),
-            'recent_grants' => DB::table('ngo_grants')->where('tenant_id', $tenantId)->orderBy('created_at', 'desc')->limit(3)->get(),
+            'monthly_income' => Transaction::where('tenant_id', $tenantId)->where('type', 'income')->whereMonth('date', now()->month)->sum('amount'),
+            'volunteers_count' => Volunteer::where('tenant_id', $tenantId)->count(),
+            'total_donors' => NgoDonor::where('tenant_id', $tenantId)->count(),
+            'active_campaigns' => Campaign::where('tenant_id', $tenantId)->where('status', 'active')->get(),
+            'recent_grants' => NgoGrant::where('tenant_id', $tenantId)->orderBy('created_at', 'desc')->limit(3)->get(),
             'ai_insight' => collect($advisor->getInsights())->first()['message'] ?? 'Adicione mais transações para gerar insights precisos.',
             'impactFeed' => $impactFeed
         ];
@@ -186,31 +188,28 @@ class DashboardController extends Controller
     private function commonDashboard($tenantId)
     {
         // Totais de todo o período
-        $totalIncome = (float) DB::table('transactions')
-                        ->where('tenant_id', $tenantId)
-                        ->where('type', 'income')
-                        ->sum('amount');
+        $totalIncome = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')
+            ->sum('amount');
 
-        $totalExpense = (float) DB::table('transactions')
-                         ->where('tenant_id', $tenantId)
-                         ->where('type', 'expense')
-                         ->sum('amount');
+        $totalExpense = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'expense')
+            ->sum('amount');
 
         $balance = $totalIncome - $totalExpense;
 
-        $recentTransactions = DB::table('transactions')
-                                ->where('tenant_id', $tenantId)
-                                ->orderBy('date', 'desc')
-                                ->limit(5)
-                                ->get() ?? collect();
+        $recentTransactions = Transaction::where('tenant_id', $tenantId)
+            ->orderBy('date', 'desc')
+            ->limit(5)
+            ->get();
 
         $userId = Auth::id();
-        $pendingTasks = DB::table('tasks')
-                          ->where('assigned_to', $userId)
-                          ->where('status', '!=', 'completed')
-                          ->orderBy('due_date', 'asc')
-                          ->limit(5)
-                          ->get() ?? collect();
+        $pendingTasks = Task::where('tenant_id', $tenantId)
+            ->where('assigned_to', $userId)
+            ->where('status', '!=', 'completed')
+            ->orderBy('due_date', 'asc')
+            ->limit(5)
+            ->get();
 
         // Feed de Impacto Pessoa Comum: Insights e Pagamentos
         $impactFeed = collect();
@@ -249,15 +248,13 @@ class DashboardController extends Controller
 
             $chartLabels[] = ucfirst($date->translatedFormat('M/Y'));
 
-            $chartIncome[] = (float) DB::table('transactions')
-                ->where('tenant_id', $tenantId)
+            $chartIncome[] = (float) Transaction::where('tenant_id', $tenantId)
                 ->where('type', 'income')
                 ->whereMonth('date', $monthNum)
                 ->whereYear('date', $year)
                 ->sum('amount');
 
-            $chartExpense[] = (float) DB::table('transactions')
-                ->where('tenant_id', $tenantId)
+            $chartExpense[] = (float) Transaction::where('tenant_id', $tenantId)
                 ->where('type', 'expense')
                 ->whereMonth('date', $monthNum)
                 ->whereYear('date', $year)

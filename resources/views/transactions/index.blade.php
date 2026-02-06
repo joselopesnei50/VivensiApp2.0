@@ -129,7 +129,7 @@
                             <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2">
                                 <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" style="font-size: 0.85rem;"><i class="fas fa-eye me-2 text-muted"></i> Visualizar</a></li>
                                 @if($t->type == 'income')
-                                    <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" onclick="shareReceipt('{{ $t->description }}', '{{ route('public.receipt', $t->id) }}')" style="font-size: 0.85rem;"><i class="fab fa-whatsapp me-2 text-success"></i> Zap Recibo</a></li>
+                                    <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" onclick="shareReceipt('{{ $t->description }}', '{{ route('public.receipt', $t->public_receipt_token) }}')" style="font-size: 0.85rem;"><i class="fab fa-whatsapp me-2 text-success"></i> Zap Recibo</a></li>
                                 @endif
                                 <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" style="font-size: 0.85rem;"><i class="fas fa-paperclip me-2 text-muted"></i> Comprovante</a></li>
                                 <li><hr class="dropdown-divider opacity-50"></li>

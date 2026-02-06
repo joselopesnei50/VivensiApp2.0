@@ -52,7 +52,7 @@ class AdminTeamController extends Controller
             'tenant_id' => 1, // Vivensi Platform Tenant
             'name' => $request->name,
             'email' => $request->email,
-            'password_hash' => Hash::make($request->password),
+            'password' => Hash::make($request->password),
             'role' => $request->role,
             'department' => $request->department,
             'is_platform_team' => true, // Marcação crucial para isolamento

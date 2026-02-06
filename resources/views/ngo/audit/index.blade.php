@@ -1,11 +1,62 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="header-page" style="margin-bottom: 30px;">
+<div class="header-page" style="margin-bottom: 18px; display:flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;">
     <div>
         <h2 style="margin: 0; color: #2c3e50;">Central de Auditoria</h2>
-        <p style="color: #64748b; margin: 5px 0 0 0;">Rastreabilidade completa de todas as ações sensíveis do sistema.</p>
+        <p style="color: #64748b; margin: 5px 0 0 0;">Rastreabilidade completa de ações sensíveis do sistema.</p>
     </div>
+    <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+        <a class="btn-premium" href="{{ url('/ngo/audit/export?'.http_build_query(request()->query())) }}" style="background:#4f46e5;">
+            <i class="fas fa-file-csv"></i> Exportar CSV
+        </a>
+        <button type="button" onclick="window.print()" class="btn-premium" style="background:#475569;">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+    </div>
+</div>
+
+<div class="vivensi-card" style="margin-bottom: 14px;">
+    <form method="GET" action="{{ url('/ngo/audit') }}" style="display:flex; gap: 10px; flex-wrap: wrap; align-items:end;">
+        <div style="flex: 1; min-width: 220px;">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Busca</label>
+            <input type="text" name="q" value="{{ request('q') }}" class="form-control-vivensi" placeholder="Tipo, evento, IP, URL...">
+        </div>
+        <div style="min-width: 160px;">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Evento</label>
+            <select name="event" class="form-control-vivensi">
+                <option value="">Todos</option>
+                @foreach(($events ?? []) as $ev)
+                    <option value="{{ $ev }}" {{ request('event') === $ev ? 'selected' : '' }}>{{ strtoupper($ev) }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div style="min-width: 200px;">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Usuário</label>
+            <select name="user_id" class="form-control-vivensi">
+                <option value="">Todos</option>
+                @foreach(($users ?? []) as $u)
+                    <option value="{{ $u->id }}" {{ (string)request('user_id') === (string)$u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div style="min-width: 150px;">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">De</label>
+            <input type="date" name="from" value="{{ request('from') }}" class="form-control-vivensi">
+        </div>
+        <div style="min-width: 150px;">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Até</label>
+            <input type="date" name="to" value="{{ request('to') }}" class="form-control-vivensi">
+        </div>
+        <div style="display:flex; gap: 10px;">
+            <button type="submit" class="btn-premium" style="justify-content:center;">
+                <i class="fas fa-filter"></i> Filtrar
+            </button>
+            <a href="{{ url('/ngo/audit') }}" class="btn-premium" style="background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0;">
+                Limpar
+            </a>
+        </div>
+    </form>
 </div>
 
 <div class="vivensi-card" style="padding: 0; overflow: hidden;">
@@ -55,12 +106,19 @@
                     {{ $log->ip_address }}
                 </td>
                 <td style="padding: 15px; text-align: center;">
-                    <button onclick="viewDetails({{ $log->id }})" style="background: none; border: none; color: #4f46e5; cursor: pointer;">
+                    <a href="{{ url('/ngo/audit/'.$log->id) }}" title="Ver detalhes" style="background: none; border: none; color: #4f46e5; cursor: pointer; text-decoration:none;">
                         <i class="fas fa-search-plus"></i>
-                    </button>
+                    </a>
                 </td>
             </tr>
             @endforeach
+            @if($logs->isEmpty())
+                <tr>
+                    <td colspan="6" style="padding: 40px; text-align:center; color:#94a3b8;">
+                        Nenhum registro encontrado com os filtros atuais.
+                    </td>
+                </tr>
+            @endif
         </tbody>
     </table>
     <div style="padding: 20px;">
@@ -68,19 +126,11 @@
     </div>
 </div>
 
-<!-- Modal Detalhes (Placeholder) -->
-<div id="logModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
-    <div class="vivensi-card" style="width: 90%; max-width: 600px;">
-        <h3>Detalhes da Alteração</h3>
-        <pre id="logContent" style="background: #1e293b; color: #f8fafc; padding: 15px; border-radius: 8px; font-size: 0.8rem; overflow-x: auto;"></pre>
-        <button onclick="document.getElementById('logModal').style.display='none'" class="btn-premium" style="width: 100%; margin-top: 15px; justify-content: center;">Fechar</button>
-    </div>
-</div>
-
-<script>
-    function viewDetails(id) {
-        // Obter logs (idealmente via API, mas aqui simplificado)
-        alert('Aqui exibiríamos o JSON das alterações antigas vs novas para auditoria detalhada.');
-    }
-</script>
+<style>
+@media print {
+    .btn-premium, form, #sidebar, .header-main { display: none !important; }
+    .main-content { margin: 0 !important; width: 100% !important; border: none; }
+    .vivensi-card { box-shadow: none; border: none; }
+}
+</style>
 @endsection

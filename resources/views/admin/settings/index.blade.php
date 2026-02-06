@@ -13,6 +13,22 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="alert alert-success border-0 rounded-3 shadow-sm">
+            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger border-0 rounded-3 shadow-sm">
+            <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-warning border-0 rounded-3 shadow-sm">
+            <i class="fas fa-triangle-exclamation me-2"></i> {{ $errors->first() }}
+        </div>
+    @endif
+
     <!-- Main Content -->
     <form action="{{ url('/admin/settings') }}" method="POST">
         @csrf
@@ -35,19 +51,27 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-4">
-                            <label class="form-label fw-600 text-dark">DeepSeek API Key <span class="badge bg-light text-dark border ms-2">Chatbot</span></label>
+                            <label class="form-label fw-600 text-dark">DeepSeek API Key <span class="badge bg-light text-dark border ms-2">Chatbot</span>
+                                @if(!empty($deepseek_configured))
+                                    <span class="badge bg-success ms-2">Configurada</span>
+                                @endif
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
-                                <input type="password" name="deepseek_api_key" value="{{ $deepseek_key }}" class="form-control border-start-0 ps-0 form-control-lg" placeholder="sk-..." autocomplete="off">
+                                <input type="password" name="deepseek_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="Cole aqui para definir / atualizar" autocomplete="off">
                             </div>
                             <div class="form-text">Motor principal para o assistente virtual Bruce AI.</div>
                         </div>
 
                         <div class="mb-0">
-                            <label class="form-label fw-600 text-dark">Google Gemini API Key <span class="badge bg-light text-dark border ms-2">Visão Computacional</span></label>
+                            <label class="form-label fw-600 text-dark">Google Gemini API Key <span class="badge bg-light text-dark border ms-2">Visão Computacional</span>
+                                @if(!empty($gemini_configured))
+                                    <span class="badge bg-success ms-2">Configurada</span>
+                                @endif
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fab fa-google text-muted"></i></span>
-                                <input type="password" name="gemini_api_key" value="{{ $gemini_key }}" class="form-control border-start-0 ps-0 form-control-lg" placeholder="AIza..." autocomplete="off">
+                                <input type="password" name="gemini_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="Cole aqui para definir / atualizar" autocomplete="off">
                             </div>
                             <div class="form-text">Utilizado para leitura de PDFs e análise de imagens.</div>
                         </div>
@@ -92,7 +116,7 @@
                             <label class="form-label fw-600 text-dark">API Key</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
-                                <input type="password" name="asaas_api_key" value="{{ $asaas_key }}" class="form-control border-start-0 ps-0 form-control-lg" placeholder="$aact..." autocomplete="off">
+                                <input type="password" name="asaas_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($asaas_configured) ? 'Configurada (cole para atualizar)' : 'Cole aqui para definir' }}" autocomplete="off">
                             </div>
                         </div>
 
@@ -125,7 +149,7 @@
                             <label class="form-label fw-600 text-dark">Brevo API Key (v3)</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
-                                <input type="password" name="brevo_api_key" value="{{ $brevo_key }}" class="form-control border-start-0 ps-0 form-control-lg" placeholder="xkeysib-..." autocomplete="off">
+                                <input type="password" name="brevo_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($brevo_configured) ? 'Configurada (cole para atualizar)' : 'Cole aqui para definir' }}" autocomplete="off">
                             </div>
                         </div>
 

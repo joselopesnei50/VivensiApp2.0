@@ -3,6 +3,9 @@
 @section('content')
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 
 <style>
     /* ISOLATION WRAPPER */
@@ -156,8 +159,12 @@
         overflow: hidden;
         text-overflow: ellipsis;
         transition: transform 0.1s;
+        border: none;
+        width: 100%;
+        text-align: left;
     }
     .m3-event-chip:hover { transform: scale(1.02); }
+    .m3-event-done { opacity: 0.55; }
     
     .m3-event-high { background: #FFDAD6; color: #410002; border-left: 3px solid #BA1A1A; }
     .m3-event-med { background: #EADDFF; color: #21005D; border-left: 3px solid #6750A4; }
@@ -177,8 +184,8 @@
         </div>
         
         <div style="display: flex; gap: 12px; align-items: center;">
-            <a href="{{ url('/manager/schedule') }}" class="m3-btn-today">Hoje</a>
-            <a href="{{ url('/tasks/create') }}" class="m3-btn-today" style="background: #6750A4; color: white;">
+            <a href="{{ $basePath . '/manager/schedule' }}" class="m3-btn-today">Hoje</a>
+            <a href="{{ $basePath . '/tasks/create' }}" class="m3-btn-today" style="background: #6750A4; color: white;">
                 <span class="material-symbols-rounded" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">add</span> Novo Evento
             </a>
         </div>
@@ -231,10 +238,25 @@
                                 'medium' => 'm3-event-med',
                                 default => 'm3-event-low'
                             };
+                            $taskPayload = [
+                                'id' => (int) $task->id,
+                                'title' => (string) $task->title,
+                                'description' => (string) ($task->description ?? ''),
+                                'status' => (string) ($task->status ?? ''),
+                                'priority' => (string) ($task->priority ?? ''),
+                                'due_date' => optional($task->due_date)->format('d/m/Y'),
+                                'assignee' => optional($task->assignee)->name,
+                                'project' => optional($task->project)->name,
+                                'creator' => optional($task->creator)->name,
+                            ];
                         @endphp
-                        <a href="{{ url('/projects/tasks/'.$task->id) }}" class="m3-event-chip {{ $prioClass }}">
-                            {{ $task->title }}
-                        </a>
+                        <button
+                            type="button"
+                            class="m3-event-chip {{ $prioClass }} {{ in_array($task->status, ['done','completed'], true) ? 'm3-event-done' : '' }}"
+                            data-task='@json($taskPayload)'
+                            onclick="openTaskModal(this)"
+                            title="Ver detalhes"
+                        >{{ $task->title }}</button>
                     @endforeach
                 </div>
             @endfor
@@ -253,4 +275,112 @@
         </div>
     </div>
 </div>
+
+<!-- Task Details Modal (outside isolation wrapper) -->
+<div id="taskModalOverlay" style="display:none; position:fixed; inset:0; background: rgba(15,23,42,.55); z-index: 2000;">
+    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding: 20px;">
+        <div style="width: min(720px, 96vw); background:#fff; border-radius: 20px; box-shadow: 0 30px 70px rgba(0,0,0,.25); overflow:hidden; border:1px solid #e2e8f0;">
+            <div style="padding: 18px 20px; background: #0f172a; color:#fff; display:flex; justify-content: space-between; align-items:center; gap: 12px;">
+                <div style="font-weight: 900; letter-spacing: -.3px;" id="tmTitle">Evento</div>
+                <button type="button" onclick="closeTaskModal()" style="border:none; background: rgba(255,255,255,.12); color:#fff; width: 36px; height: 36px; border-radius: 10px; font-weight: 900; cursor:pointer;">×</button>
+            </div>
+            <div style="padding: 18px 20px;">
+                <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                    <span id="tmStatus" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0;">Status</span>
+                    <span id="tmPriority" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background:#eef2ff; color:#4f46e5; border:1px solid #e0e7ff;">Prioridade</span>
+                    <span id="tmDue" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background:#ecfeff; color:#0891b2; border:1px solid #cffafe;">Prazo</span>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                    <div style="padding: 12px 14px; background:#f8fafc; border:1px solid #f1f5f9; border-radius: 14px;">
+                        <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:900;">Responsável</div>
+                        <div id="tmAssignee" style="font-weight:900; color:#0f172a;">-</div>
+                    </div>
+                    <div style="padding: 12px 14px; background:#f8fafc; border:1px solid #f1f5f9; border-radius: 14px;">
+                        <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:900;">Projeto</div>
+                        <div id="tmProject" style="font-weight:900; color:#0f172a;">-</div>
+                    </div>
+                </div>
+
+                <div style="padding: 14px; background:#fff; border:1px solid #e2e8f0; border-radius: 14px;">
+                    <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:900; margin-bottom: 6px;">Descrição</div>
+                    <div id="tmDesc" style="color:#334155; font-weight: 600; line-height: 1.5;">-</div>
+                </div>
+            </div>
+            <div style="padding: 14px 20px; background:#f8fafc; border-top:1px solid #f1f5f9; display:flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+                <button type="button" id="tmStartBtn" onclick="tmUpdate('doing')" style="border:none; background:#eef2ff; color:#4f46e5; padding: 10px 14px; border-radius: 12px; font-weight: 900; cursor:pointer;">Iniciar</button>
+                <button type="button" id="tmDoneBtn" onclick="tmUpdate('done')" style="border:none; background:#dcfce7; color:#166534; padding: 10px 14px; border-radius: 12px; font-weight: 900; cursor:pointer;">Concluir</button>
+                <a id="tmOpenLink" href="{{ $basePath . '/tasks' }}" style="text-decoration:none; background:#0f172a; color:#fff; padding: 10px 14px; border-radius: 12px; font-weight: 900;">Abrir em Tarefas</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let __tmCurrent = null;
+
+    function escapeHtml(s) {
+        return String(s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function openTaskModal(btn) {
+        try {
+            __tmCurrent = JSON.parse(btn.dataset.task || '{}');
+        } catch (e) {
+            __tmCurrent = null;
+        }
+
+        if (!__tmCurrent || !__tmCurrent.id) return;
+
+        document.getElementById('tmTitle').innerText = __tmCurrent.title || 'Evento';
+        document.getElementById('tmStatus').innerText = (__tmCurrent.status || '—').toString().toUpperCase();
+        document.getElementById('tmPriority').innerText = (__tmCurrent.priority || '—').toString().toUpperCase();
+        document.getElementById('tmDue').innerText = __tmCurrent.due_date ? ('Prazo: ' + __tmCurrent.due_date) : 'Sem prazo';
+        document.getElementById('tmAssignee').innerText = __tmCurrent.assignee || '—';
+        document.getElementById('tmProject').innerText = __tmCurrent.project || '—';
+        document.getElementById('tmDesc').innerHTML = escapeHtml(__tmCurrent.description || '—').replace(/\n/g, '<br>');
+
+        const status = (__tmCurrent.status || '').toLowerCase();
+        document.getElementById('tmStartBtn').style.display = (status === 'done' || status === 'completed') ? 'none' : '';
+        document.getElementById('tmDoneBtn').style.display = (status === 'done' || status === 'completed') ? 'none' : '';
+
+        document.getElementById('taskModalOverlay').style.display = 'block';
+    }
+
+    function closeTaskModal() {
+        document.getElementById('taskModalOverlay').style.display = 'none';
+        __tmCurrent = null;
+    }
+
+    async function tmUpdate(status) {
+        if (!__tmCurrent || !__tmCurrent.id) return;
+        try {
+            const res = await fetch('{{ $basePath }}/api/tasks/update-status', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: __tmCurrent.id, status })
+            });
+            if (!res.ok) {
+                const txt = await res.text();
+                alert('Não foi possível atualizar (' + res.status + ').\n\n' + txt);
+                return;
+            }
+            window.location.reload();
+        } catch (e) {
+            alert('Falha de conexão ao atualizar.');
+        }
+    }
+
+    // close when clicking outside
+    document.addEventListener('click', function(ev) {
+        const overlay = document.getElementById('taskModalOverlay');
+        if (!overlay || overlay.style.display !== 'block') return;
+        if (ev.target === overlay) closeTaskModal();
+    });
+</script>
 @endsection

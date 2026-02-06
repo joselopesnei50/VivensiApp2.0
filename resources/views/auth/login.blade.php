@@ -228,6 +228,12 @@
                 </div>
             @endif
 
+            @if(session('success'))
+                <div style="background: #ecfdf5; color: #166534; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 20px; font-size: 0.9rem;">
+                    <i class="fas fa-check-circle"></i> {{ session('success') }}
+                </div>
+            @endif
+
             <form action="{{ url('/login') }}" method="POST">
                 @csrf
                 
@@ -246,6 +252,12 @@
                         <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
                         <i class="far fa-eye" id="togglePasswordIcon" onclick="togglePasswordVisibility()" style="left: auto; right: 15px; cursor: pointer;" title="Mostrar Senha"></i>
                     </div>
+                </div>
+
+                <div style="display:flex; justify-content: flex-end; margin-top: -8px; margin-bottom: 18px;">
+                    <a href="{{ route('password.request') }}" style="color:#64748B; font-size:0.9rem; text-decoration:none; font-weight:600;">
+                        Esqueci minha senha
+                    </a>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="loginBtn">

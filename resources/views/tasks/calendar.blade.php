@@ -3,6 +3,9 @@
 @section('content')
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 
 <style>
     /* ISOLATION WRAPPER */
@@ -177,8 +180,8 @@
         </div>
         
         <div style="display: flex; gap: 12px; align-items: center;">
-            <a href="{{ url('/tasks/calendar') }}" class="m3-btn-today">Hoje</a>
-            <a href="{{ url('/tasks/create') }}" class="m3-btn-today" style="background: #6750A4; color: white;">
+            <a href="{{ $basePath . '/tasks/calendar' }}" class="m3-btn-today">Hoje</a>
+            <a href="{{ $basePath . '/tasks/create' }}" class="m3-btn-today" style="background: #6750A4; color: white;">
                 <span class="material-symbols-rounded" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">add</span> Novo Evento
             </a>
         </div>

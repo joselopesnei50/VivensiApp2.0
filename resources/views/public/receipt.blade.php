@@ -198,8 +198,22 @@
             </p>
 
             <div class="receipt-footer">
-                <div style="font-weight: 800; color: #94a3b8; margin-bottom: 5px;">CERTIFICADO DE AUTENTICIDADE</div>
-                <div class="auth-code">{{ strtoupper(md5($transaction->id . $transaction->created_at)) }}</div>
+                <div style="font-weight: 800; color: #94a3b8; margin-bottom: 5px;">CÓDIGO DE VALIDAÇÃO</div>
+                <div class="auth-code">{{ $transaction->receipt_auth_code }}</div>
+                <div style="margin-top: 12px; font-weight: 800; font-size: 0.75rem;">
+                    <a href="{{ url('/validar-recibo') . '?query=' . urlencode($transaction->receipt_auth_code) }}" style="color: var(--primary-color); text-decoration: none;">
+                        Validar este recibo
+                    </a>
+                </div>
+                @if($transaction->public_receipt_expires_at)
+                    <div style="margin-top: 14px; font-weight: 900; color: #64748b; letter-spacing: 1px; font-size: 0.65rem; text-transform: uppercase;">
+                        Link válido até {{ $transaction->public_receipt_expires_at->format('d/m/Y') }}
+                    </div>
+                @else
+                    <div style="margin-top: 14px; font-weight: 900; color: #64748b; letter-spacing: 1px; font-size: 0.65rem; text-transform: uppercase;">
+                        Link sem expiração
+                    </div>
+                @endif
                 <p style="margin-top: 20px; font-weight: 700; color: var(--primary-color);">Tecnologia Vivensi 2.0</p>
             </div>
         </div>

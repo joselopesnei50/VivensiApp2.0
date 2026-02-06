@@ -6,9 +6,74 @@
         <h2 style="margin: 0; color: #2c3e50;">Patrimônio e Ativos</h2>
         <p style="color: #64748b; margin: 5px 0 0 0;">Inventário de bens duráveis e localização.</p>
     </div>
-    <button onclick="document.getElementById('assetModal').style.display='flex'" class="btn-premium">
-        <i class="fas fa-plus"></i> Novo Item
-    </button>
+    <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+        <a class="btn-premium" href="{{ url('/ngo/assets/export?'.http_build_query(request()->query())) }}" style="background:#4f46e5;">
+            <i class="fas fa-file-csv"></i> Exportar CSV
+        </a>
+        <a class="btn-premium" href="{{ url('/ngo/assets/term?'.http_build_query(request()->query())) }}" style="background:#0ea5e9;">
+            <i class="fas fa-file-signature"></i> Termo de Inventário
+        </a>
+        <a class="btn-premium" href="{{ url('/ngo/assets/term/pdf?'.http_build_query(request()->query())) }}" style="background:#0284c7;">
+            <i class="fas fa-file-pdf"></i> PDF Inventário
+        </a>
+        <button type="button" onclick="window.print()" class="btn-premium" style="background:#475569;">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        <button onclick="document.getElementById('assetModal').style.display='flex'" class="btn-premium">
+            <i class="fas fa-plus"></i> Novo Item
+        </button>
+    </div>
+</div>
+
+@php
+    $totalValue = (float) ($stats['total_value'] ?? 0);
+    $activeCount = (int) ($stats['active_count'] ?? 0);
+    $maintCount = (int) ($stats['maintenance_count'] ?? 0);
+    $disposedCount = (int) (($stats['disposed_count'] ?? 0) + ($stats['lost_count'] ?? 0));
+@endphp
+
+<div class="grid-2" style="margin-bottom: 18px;">
+    <div class="vivensi-card" style="border-left: 5px solid #4f46e5;">
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Valor Total do Patrimônio</p>
+        <h3 style="margin: 10px 0; font-size: 1.9rem;">R$ {{ number_format($totalValue, 2, ',', '.') }}</h3>
+        <p style="font-size: 0.9rem; color: #475569; margin:0;">Base: todos os itens cadastrados</p>
+    </div>
+    <div class="vivensi-card" style="border-left: 5px solid #16a34a;">
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Status (itens)</p>
+        <h3 style="margin: 10px 0; font-size: 1.9rem;">{{ number_format($activeCount) }} <span style="color:#64748b; font-size: 1rem; font-weight:800;">ativos</span></h3>
+        <p style="font-size: 0.9rem; margin:0;">
+            <span style="color:#ca8a04; font-weight:900;">{{ number_format($maintCount) }} em manutenção</span>
+            <span style="color:#94a3b8;"> · </span>
+            <span style="color:#dc2626; font-weight:900;">{{ number_format($disposedCount) }} baixados</span>
+        </p>
+    </div>
+</div>
+
+<div class="vivensi-card" style="margin-bottom: 14px;">
+    <form method="GET" action="{{ url('/ngo/assets') }}" style="display:flex; gap: 10px; flex-wrap: wrap; align-items:end;">
+        <div style="flex: 1; min-width: 220px;">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Busca</label>
+            <input type="text" name="q" value="{{ request('q') }}" class="form-control-vivensi" placeholder="Nome, código, local, responsável...">
+        </div>
+        <div style="min-width: 180px;">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Status</label>
+            <select name="status" class="form-control-vivensi">
+                <option value="">Todos</option>
+                <option value="active" {{ request('status')==='active'?'selected':'' }}>Ativo</option>
+                <option value="maintenance" {{ request('status')==='maintenance'?'selected':'' }}>Manutenção</option>
+                <option value="disposed" {{ request('status')==='disposed'?'selected':'' }}>Baixado/Doado</option>
+                <option value="lost" {{ request('status')==='lost'?'selected':'' }}>Extraviado/Roubado</option>
+            </select>
+        </div>
+        <div style="display:flex; gap: 10px;">
+            <button type="submit" class="btn-premium" style="justify-content:center;">
+                <i class="fas fa-filter"></i> Filtrar
+            </button>
+            <a href="{{ url('/ngo/assets') }}" class="btn-premium" style="background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0;">
+                Limpar
+            </a>
+        </div>
+    </form>
 </div>
 
 <div class="vivensi-card" style="padding: 0; overflow: hidden;">
@@ -57,6 +122,13 @@
                 </td>
             </tr>
             @endforeach
+            @if($assets->isEmpty())
+                <tr>
+                    <td colspan="6" style="padding: 40px; text-align: center; color: #94a3b8;">
+                        Nenhum item encontrado com os filtros atuais.
+                    </td>
+                </tr>
+            @endif
         </tbody>
     </table>
     <div style="padding: 20px;">
@@ -103,4 +175,12 @@
         </form>
     </div>
 </div>
+
+<style>
+@media print {
+    .btn-premium, form, #sidebar, .header-main { display: none !important; }
+    .main-content { margin: 0 !important; width: 100% !important; border: none; }
+    .vivensi-card { box-shadow: none; border: none; }
+}
+</style>
 @endsection

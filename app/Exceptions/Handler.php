@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Http\Request;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -36,6 +38,23 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        $this->renderable(function (ThrottleRequestsException $e, Request $request) {
+            // Keep API behavior intact.
+            if ($request->expectsJson()) {
+                return null;
+            }
+
+            // Friendly UX for auth/password throttling.
+            $routeName = optional($request->route())->getName();
+            if (in_array($routeName, ['password.email', 'password.update'], true)) {
+                return back()
+                    ->withErrors(['email' => 'Muitas tentativas. Aguarde 1 minuto e tente novamente.'])
+                    ->withInput($request->only('email'));
+            }
+
+            return null;
         });
     }
 }

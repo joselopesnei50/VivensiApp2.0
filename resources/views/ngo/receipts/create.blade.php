@@ -11,14 +11,19 @@
         @csrf
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Nome do Doador / Empresa</label>
-            <input type="text" name="description" list="donorList" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Digite ou selecione o doador..." autocomplete="off">
-            <datalist id="donorList">
+            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Doador (opcional)</label>
+            <select name="ngo_donor_id" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" onchange="fillDonorName(this)">
+                <option value="">— Selecionar doador cadastrado —</option>
                 @foreach($donors as $donor)
-                    <option value="{{ $donor->name }}">
+                    <option value="{{ $donor->id }}">{{ $donor->name }}</option>
                 @endforeach
-            </datalist>
-            <small style="color: #94a3b8; font-size: 0.8rem; margin-top: 5px; display: block;">* Selecione da lista ou digite um novo.</small>
+            </select>
+            <small style="color: #94a3b8; font-size: 0.8rem; margin-top: 5px; display: block;">Se você selecionar um doador, o recibo vincula automaticamente e o nome é preenchido.</small>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Nome do Doador / Empresa</label>
+            <input type="text" name="description" id="donor_name" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Digite o nome do doador...">
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
@@ -37,4 +42,15 @@
         </div>
     </form>
 </div>
+
+<script>
+    function fillDonorName(selectEl) {
+        const input = document.getElementById('donor_name');
+        if (!input) return;
+        const name = selectEl.options[selectEl.selectedIndex]?.text || '';
+        if (selectEl.value) {
+            input.value = name;
+        }
+    }
+</script>
 @endsection

@@ -108,7 +108,7 @@ class RecoverySeeder extends Seeder
                 'name' => 'Gestor ONG',
                 'email' => 'ong@fin.com',
                 'password' => Hash::make('password'),
-                'role' => 'manager',
+                'role' => 'ngo',
                 'status' => 'active',
                 'department' => 'Diretoria',
                 'created_at' => now(),
@@ -153,7 +153,7 @@ class RecoverySeeder extends Seeder
                 'name' => 'João Silva',
                 'email' => 'pessoa@fin.com',
                 'password' => Hash::make('password'),
-                'role' => 'manager', // In their own tenant, they are the manager
+                'role' => 'common',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),

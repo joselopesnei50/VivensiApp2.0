@@ -1,10 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+    $publicBase = request()->getSchemeAndHttpHost() . $basePath;
+@endphp
 <div class="header-page" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
     <div>
         <h2 style="margin: 0; color: #2c3e50;">Páginas de Captura (Landing Pages)</h2>
-        <p style="color: #64748b; margin: 5px 0 0 0;">Crie páginas profissionais para doações e campanhas.</p>
+        <p style="color: #64748b; margin: 5px 0 0 0;">
+            {{ ($context ?? 'ngo') === 'manager'
+                ? 'Crie páginas profissionais para seus projetos e campanhas.'
+                : 'Crie páginas profissionais para doações e campanhas.'
+            }}
+        </p>
     </div>
     @if(count($pages) < 5)
         <button onclick="document.getElementById('newPageModal').style.display='flex'" class="btn-premium">
@@ -24,20 +33,52 @@
             <div style="height: 120px; background: #e2e8f0; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
                 <i class="fas fa-desktop fa-3x"></i>
             </div>
-            <h4 style="margin: 0 0 5px 0;">{{ $page->title }}</h4>
+            @php $isPublished = (($page->status ?? 'draft') === 'published'); @endphp
+            <div style="display:flex; align-items:center; justify-content: space-between; gap: 10px;">
+                <h4 style="margin: 0 0 5px 0;">{{ $page->title }}</h4>
+                @if($isPublished)
+                    <span style="font-size: 0.7rem; background: rgba(16,185,129,.12); padding: 4px 10px; border-radius: 999px; color: #059669; font-weight: 900; letter-spacing:.06em; text-transform: uppercase;">Publicado</span>
+                @else
+                    <span style="font-size: 0.7rem; background: rgba(100,116,139,.12); padding: 4px 10px; border-radius: 999px; color: #475569; font-weight: 900; letter-spacing:.06em; text-transform: uppercase;">Rascunho</span>
+                @endif
+            </div>
             <span style="font-size: 0.8rem; color: #64748b;">vvs.io/{{ $page->slug }}</span>
         </div>
         
         <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <a href="{{ url('/ngo/landing-pages/builder/' . $page->id) }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center;">
+            <a href="{{ $basePath . '/ngo/landing-pages/builder/' . $page->id }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center;">
                 <i class="fas fa-edit"></i> Editar
             </a>
-            <a href="{{ url('/ngo/landing-pages/' . $page->id . '/leads') }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center; background: #f8fafc; color: #4f46e5; border: 1px solid #e2e8f0;">
+            <a href="{{ $basePath . '/ngo/landing-pages/' . $page->id . '/leads' }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center; background: #f8fafc; color: #4f46e5; border: 1px solid #e2e8f0;">
                 <i class="fas fa-users"></i> Leads
             </a>
-            <a href="{{ url('/lp/' . $page->slug) }}" target="_blank" class="btn-premium" style="background: #f1f5f9; color: #475569; padding: 10px; border-radius: 8px;">
+            <a href="{{ $publicBase . '/lp/' . $page->slug }}" target="_blank" rel="noopener noreferrer" class="btn-premium" style="background: #f1f5f9; color: #475569; padding: 10px; border-radius: 8px;">
                 <i class="fas fa-external-link-alt"></i>
             </a>
+        </div>
+
+        <div style="margin-top: 10px; display:flex; gap: 10px; flex-wrap: wrap;">
+            <form action="{{ $basePath . '/ngo/landing-pages/' . $page->id . ($isPublished ? '/unpublish' : '/publish') }}" method="POST" style="flex:1;" onsubmit="return confirm('{{ $isPublished ? 'Despublicar esta Landing Page?' : 'Publicar esta Landing Page?' }}')">
+                @csrf
+                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: {{ $isPublished ? '#f1f5f9' : '#10b981' }}; color: {{ $isPublished ? '#0f172a' : '#ffffff' }}; border: {{ $isPublished ? '1px solid #e2e8f0' : 'none' }};">
+                    <i class="fas {{ $isPublished ? 'fa-eye-slash' : 'fa-bullhorn' }}"></i> {{ $isPublished ? 'Despublicar' : 'Publicar' }}
+                </button>
+            </form>
+
+            <form action="{{ $basePath . '/ngo/landing-pages/' . $page->id . '/duplicate' }}" method="POST" style="flex:1;" onsubmit="return confirm('Duplicar esta Landing Page (com os mesmos blocos)?')">
+                @csrf
+                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff; color: #4f46e5; border: 1px solid #e2e8f0;">
+                    <i class="fas fa-clone"></i> Duplicar
+                </button>
+            </form>
+
+            <form action="{{ $basePath . '/ngo/landing-pages/' . $page->id }}" method="POST" style="flex:1;" onsubmit="return confirm('Excluir esta Landing Page? Isso remove também os blocos e leads capturados.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff; color: #ef4444; border: 1px solid rgba(239,68,68,.25);">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </form>
         </div>
     </div>
     @endforeach
@@ -63,11 +104,16 @@
 <!-- Modal -->
 <div id="newPageModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
     <div class="vivensi-card" style="width: 90%; max-width: 400px;">
-        <h3>Nova Campanha</h3>
-        <form action="{{ url('/ngo/landing-pages') }}" method="POST">
+        <h3>{{ ($context ?? 'ngo') === 'manager' ? 'Nova Landing Page' : 'Nova Campanha' }}</h3>
+        <form action="{{ $basePath . '/ngo/landing-pages' }}" method="POST">
             @csrf
             <div class="form-group">
-                <label>Título da Página (Ex: Campanha de Natal)</label>
+                <label>
+                    {{ ($context ?? 'ngo') === 'manager'
+                        ? 'Título da Página (Ex: Projeto Alpha - Captação)'
+                        : 'Título da Página (Ex: Campanha de Natal)'
+                    }}
+                </label>
                 <input type="text" name="title" class="form-control-vivensi" required placeholder="Digite o nome...">
             </div>
             <div style="margin-top: 20px; display: flex; gap: 10px;">

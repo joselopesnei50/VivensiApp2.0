@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class AiFinancialAdvisor
@@ -98,20 +99,29 @@ class AiFinancialAdvisor
             ];
         }
 
-        // Insight 3: Opportunity - Real logic based on category
-        $mktExpense = Transaction::where('tenant_id', $this->tenantId)
-                                 ->where('category_id', function($q) {
-                                     $q->select('id')->from('financial_categories')->where('name', 'LIKE', '%Marketing%')->limit(1);
-                                 })
-                                 ->sum('amount');
-        
-        if ($mktExpense > 0 && $metrics['months_left'] > 6) {
-             $insights[] = [
-                'type' => 'info',
-                'icon' => 'fa-rocket',
-                'title' => 'Potencial de Escala',
-                'message' => 'Com 6+ meses de runway, você tem margem para aumentar seu investimento em Marketing e acelerar o crescimento.'
-            ];
+        // Insight 3: Opportunity - based on category (fail-safe if migrations not ready)
+        try {
+            if (Schema::hasTable('financial_categories') && Schema::hasColumn('transactions', 'category_id')) {
+                $mktExpense = Transaction::where('tenant_id', $this->tenantId)
+                    ->where('category_id', function ($q) {
+                        $q->select('id')
+                            ->from('financial_categories')
+                            ->where('name', 'LIKE', '%Marketing%')
+                            ->limit(1);
+                    })
+                    ->sum('amount');
+
+                if ($mktExpense > 0 && ($metrics['months_left'] ?? 0) > 6) {
+                    $insights[] = [
+                        'type' => 'info',
+                        'icon' => 'fa-rocket',
+                        'title' => 'Potencial de Escala',
+                        'message' => 'Com 6+ meses de runway, você tem margem para aumentar seu investimento em Marketing e acelerar o crescimento.'
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignore category-based insight if DB schema isn't ready.
         }
 
         return $insights;

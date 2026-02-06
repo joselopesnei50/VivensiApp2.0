@@ -14,16 +14,36 @@ class AdminSettingsController extends Controller
             return redirect('/dashboard')->with('error', 'Acesso não autorizado.');
         }
 
-        $deepseek_key = SystemSetting::getValue('deepseek_api_key');
-        $gemini_key = SystemSetting::getValue('gemini_api_key');
-        $brevo_key = SystemSetting::getValue('brevo_api_key');
-        $asaas_key = SystemSetting::getValue('asaas_api_key');
+        // Never expose secret keys back to the browser (even in password inputs).
+        $deepseek_configured = (bool) SystemSetting::getValue('deepseek_api_key');
+        $gemini_configured = (bool) SystemSetting::getValue('gemini_api_key');
+        $brevo_configured = (bool) SystemSetting::getValue('brevo_api_key');
+        $asaas_configured = (bool) SystemSetting::getValue('asaas_api_key');
+
+        $deepseek_key = null;
+        $gemini_key = null;
+        $brevo_key = null;
+        $asaas_key = null;
+
         $asaas_env = SystemSetting::getValue('asaas_environment', 'sandbox');
         $email_from = SystemSetting::getValue('email_from');
         $email_from_name = SystemSetting::getValue('email_from_name');
         $home_video_url = SystemSetting::getValue('home_video_url');
 
-        return view('admin.settings.index', compact('deepseek_key', 'gemini_key', 'brevo_key', 'asaas_key', 'asaas_env', 'email_from', 'email_from_name', 'home_video_url'));
+        return view('admin.settings.index', compact(
+            'deepseek_key',
+            'gemini_key',
+            'brevo_key',
+            'asaas_key',
+            'deepseek_configured',
+            'gemini_configured',
+            'brevo_configured',
+            'asaas_configured',
+            'asaas_env',
+            'email_from',
+            'email_from_name',
+            'home_video_url'
+        ));
 
     }
 
@@ -33,14 +53,41 @@ class AdminSettingsController extends Controller
             abort(403);
         }
 
-        SystemSetting::setValue('deepseek_api_key', $request->deepseek_api_key, 'api');
-        SystemSetting::setValue('gemini_api_key', $request->gemini_api_key, 'api');
-        SystemSetting::setValue('brevo_api_key', $request->brevo_api_key, 'api');
-        SystemSetting::setValue('asaas_api_key', $request->asaas_api_key, 'api');
-        SystemSetting::setValue('asaas_environment', $request->asaas_environment, 'api');
-        SystemSetting::setValue('email_from', $request->email_from, 'email');
-        SystemSetting::setValue('email_from_name', $request->email_from_name, 'email');
-        SystemSetting::setValue('home_video_url', $request->home_video_url, 'marketing');
+        $validated = $request->validate([
+            'deepseek_api_key' => 'nullable|string|max:5000',
+            'gemini_api_key' => 'nullable|string|max:5000',
+            'brevo_api_key' => 'nullable|string|max:5000',
+            'asaas_api_key' => 'nullable|string|max:5000',
+            'asaas_environment' => 'required|in:sandbox,production',
+            'email_from' => 'nullable|email|max:255',
+            'email_from_name' => 'nullable|string|max:255',
+            'home_video_url' => 'nullable|url|max:2048',
+        ]);
+
+        // Only overwrite secret keys if user provided a non-empty value.
+        foreach ([
+            'deepseek_api_key' => 'api',
+            'gemini_api_key' => 'api',
+            'brevo_api_key' => 'api',
+            'asaas_api_key' => 'api',
+        ] as $key => $group) {
+            $val = trim((string) ($validated[$key] ?? ''));
+            if ($val !== '') {
+                SystemSetting::setValue($key, $val, $group);
+            }
+        }
+
+        SystemSetting::setValue('asaas_environment', $validated['asaas_environment'], 'api');
+
+        if (!empty($validated['email_from'])) {
+            SystemSetting::setValue('email_from', $validated['email_from'], 'email');
+        }
+        if (!empty($validated['email_from_name'])) {
+            SystemSetting::setValue('email_from_name', $validated['email_from_name'], 'email');
+        }
+        if (!empty($validated['home_video_url'])) {
+            SystemSetting::setValue('home_video_url', $validated['home_video_url'], 'marketing');
+        }
 
 
         return redirect()->back()->with('success', 'Configurações de API atualizadas com sucesso!');

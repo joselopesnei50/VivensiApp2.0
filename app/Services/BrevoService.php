@@ -9,13 +9,23 @@ use Illuminate\Support\Facades\Log;
 
 class BrevoService
 {
-    protected $apiKey;
-    protected $senderEmail;
-    protected $senderName;
-    protected $baseUrl = 'https://api.brevo.com/v3/smtp/email';
+    protected ?string $apiKey = null;
+    protected ?string $senderEmail = null;
+    protected ?string $senderName = null;
+    protected string $baseUrl = 'https://api.brevo.com/v3/smtp/email';
 
     public function __construct()
     {
+        // Intentionally do not hit the database here.
+        // Artisan commands (e.g., route:list) may instantiate controllers/services without DB connectivity.
+    }
+
+    protected function resolveConfig(): void
+    {
+        if ($this->apiKey !== null && $this->senderEmail !== null && $this->senderName !== null) {
+            return;
+        }
+
         $this->apiKey = SystemSetting::getValue('brevo_api_key');
         $this->senderEmail = SystemSetting::getValue('email_from', 'noreply@vivensi.com.br');
         $this->senderName = SystemSetting::getValue('email_from_name', 'Vivensi 2.0');
@@ -86,6 +96,8 @@ class BrevoService
      */
     public function sendEmail($toEmail, $toName, $subject, $htmlContent, $tenantId = null)
     {
+        $this->resolveConfig();
+
         if (!$this->apiKey) {
             Log::warning('Tentativa de envio de e-mail sem API Key do Brevo configurada.');
             return false;

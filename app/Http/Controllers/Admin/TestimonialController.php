@@ -21,14 +21,14 @@ class TestimonialController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'role' => 'nullable|string|max:255',
             'content' => 'required|string',
             'photo' => 'nullable|url',
         ]);
 
-        Testimonial::create($request->all());
+        Testimonial::create($validated);
 
         return redirect()->route('admin.testimonials.index')->with('success', 'Depoimento criado com sucesso!');
     }
@@ -40,14 +40,14 @@ class TestimonialController extends Controller
 
     public function update(Request $request, Testimonial $testimonial)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'role' => 'nullable|string|max:255',
             'content' => 'required|string',
             'photo' => 'nullable|url',
         ]);
 
-        $testimonial->update($request->all());
+        $testimonial->update($validated);
 
         return redirect()->route('admin.testimonials.index')->with('success', 'Depoimento atualizado com sucesso!');
     }

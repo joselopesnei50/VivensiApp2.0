@@ -3,7 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/whatsapp/webhook', [App\Http\Controllers\WhatsappController::class, 'webhook']);
+Route::post('/whatsapp/webhook', [App\Http\Controllers\WhatsappController::class, 'webhook'])
+    ->middleware('throttle:300,1');
 
 /*
 |--------------------------------------------------------------------------

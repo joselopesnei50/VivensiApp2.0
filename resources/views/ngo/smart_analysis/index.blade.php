@@ -3,6 +3,9 @@
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 
 <style>
     .ai-hero-card {
@@ -230,9 +233,12 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const basePath = @json($basePath);
+    const deepEndpoint = (basePath || '') + '/smart-analysis/deep';
+
     // ApexCharts Configuration
     const options = {
-        series: [{ name: 'Patrimônio Projetado', data: {!! json_encode($prediction['values']) !!} }],
+        series: [{ name: 'Patrimônio Projetado', data: {!! json_encode($prediction['values'] ?? []) !!} }],
         chart: { 
             type: 'area', 
             height: 400, 
@@ -258,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
         stroke: { curve: 'smooth', width: 4, lineCap: 'round' },
         markers: { size: 0, hover: { size: 6, strokeWidth: 3 } },
         xaxis: { 
-            categories: {!! json_encode($prediction['labels']) !!}, 
+            categories: {!! json_encode($prediction['labels'] ?? []) !!}, 
             axisBorder: { show: false }, 
             axisTicks: { show: false },
             labels: { style: { colors: '#94a3b8', fontSize: '11px', fontWeight: 700 } }
@@ -298,11 +304,17 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-sync fa-spin me-2"></i> Bruce pensando...';
 
-        fetch('{{ url("smart-analysis/deep") }}', {
+        fetch(deepEndpoint, {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
         })
-        .then(response => response.json())
+        .then(async (response) => {
+            if (!response.ok) {
+                const txt = await response.text();
+                throw new Error('HTTP ' + response.status + ': ' + txt);
+            }
+            return response.json();
+        })
         .then(data => {
             loading.classList.add('d-none');
             content.classList.remove('d-none');
@@ -311,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.disabled = false;
         })
         .catch(err => {
-            textBody.innerHTML = '<div class="alert alert-danger border-0 rounded-4">Falha na rede neural. Por favor, tente reconectar em alguns segundos.</div>';
+            textBody.innerHTML = '<div class="alert alert-danger border-0 rounded-4">Falha ao gerar a análise. Tente novamente. Se persistir, verifique sessão/CSRF e permissões.<br><small class="text-muted">' + String(err).replace(/</g,'&lt;') + '</small></div>';
             loading.classList.add('d-none');
             content.classList.remove('d-none');
             btn.disabled = false;

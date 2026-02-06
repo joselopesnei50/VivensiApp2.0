@@ -38,6 +38,16 @@
         </div>
 
         <div class="form-group">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-control-vivensi">
+                <option value="active">Ativo</option>
+                <option value="inactive">Inativo</option>
+                <option value="graduated">Graduado</option>
+            </select>
+            <small style="color:#94a3b8;">Dica: “Graduado” significa que saiu da vulnerabilidade (concluiu o acompanhamento).</small>
+        </div>
+
+        <div class="form-group">
             <label class="form-label">Endereço Completo</label>
             <input type="text" name="address" class="form-control-vivensi">
         </div>

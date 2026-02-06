@@ -4,7 +4,7 @@
 <style>
     .grant-stats-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
         margin-bottom: 32px;
     }
@@ -113,6 +113,64 @@
     </div>
 @endif
 
+<div class="vivensi-card" style="padding: 18px 20px; margin-bottom: 16px;">
+    <form method="GET" action="{{ url('/ngo/grants') }}" style="display:flex; gap: 12px; flex-wrap: wrap; align-items: end;">
+        <div style="flex: 1; min-width: 220px;">
+            <label class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Buscar</label>
+            <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Título, concedente, nº processo..." style="border-radius: 14px;">
+        </div>
+        <div style="min-width: 200px;">
+            <label class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Status</label>
+            <select name="status" class="form-select" style="border-radius: 14px;">
+                <option value="">Todos</option>
+                <option value="open" {{ request('status') === 'open' ? 'selected' : '' }}>Ativo</option>
+                <option value="reporting" {{ request('status') === 'reporting' ? 'selected' : '' }}>Prestação de Contas</option>
+                <option value="closed" {{ request('status') === 'closed' ? 'selected' : '' }}>Encerrado</option>
+            </select>
+        </div>
+        <div style="display:flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary" style="border-radius: 14px; background:#4f46e5; border:none; font-weight:800;">
+                Filtrar
+            </button>
+            <a class="btn btn-danger" style="border-radius: 14px; font-weight:800;"
+               href="{{ url('/ngo/grants') . '?' . http_build_query(array_filter(array_merge(request()->except('page'), ['attention' => 'expired_pending']), fn($v) => $v !== null && $v !== '')) }}">
+                <i class="fas fa-triangle-exclamation me-1"></i> Vencidos ({{ (int) ($stats['expired_pending'] ?? 0) }})
+            </a>
+            <a href="{{ url('/ngo/grants') }}" class="btn btn-outline-secondary" style="border-radius: 14px; font-weight:800;">
+                Limpar
+            </a>
+        </div>
+        <details style="margin-top: 12px; width: 100%;">
+            <summary style="cursor:pointer; font-weight:800; color:#475569;">
+                Filtros avançados
+            </summary>
+            <div style="margin-top: 12px; display:flex; gap: 12px; flex-wrap: wrap; align-items:end;">
+                <div style="min-width: 220px;">
+                    <label class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Prazo</label>
+                    <select name="deadline" class="form-select" style="border-radius: 14px;">
+                        <option value="">Todos</option>
+                        <option value="soon" {{ request('deadline') === 'soon' ? 'selected' : '' }}>Próximos 30 dias</option>
+                        <option value="expired" {{ request('deadline') === 'expired' ? 'selected' : '' }}>Vencidos</option>
+                        <option value="none" {{ request('deadline') === 'none' ? 'selected' : '' }}>Sem deadline</option>
+                    </select>
+                </div>
+                <div style="min-width: 180px;">
+                    <label class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Documentos</label>
+                    <select name="has_docs" class="form-select" style="border-radius: 14px;">
+                        <option value="">Todos</option>
+                        <option value="1" {{ request('has_docs') === '1' ? 'selected' : '' }}>Com documentos</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 14px; background:#4f46e5; border:none; font-weight:800;">
+                        Aplicar avançados
+                    </button>
+                </div>
+            </div>
+        </details>
+    </form>
+</div>
+
 <div class="grant-table-container">
     <table class="grant-table">
         <thead>
@@ -145,8 +203,13 @@
                 <td class="text-center">
                     <div class="fw-bold text-dark small">{{ $grant->deadline ? $grant->deadline->format('d/m/Y') : '-' }}</div>
                     @php $days = $grant->deadline ? now()->diffInDays($grant->deadline, false) : 0; @endphp
-                    <div class="timeline-pill {{ $days < 30 ? 'text-danger bg-danger-subtle' : '' }}">
-                        <i class="far fa-clock"></i> {{ intval($days) }} dias
+                    <div class="timeline-pill {{ $days < 0 ? 'text-danger bg-danger-subtle' : ($days < 30 ? 'text-danger bg-danger-subtle' : '') }}">
+                        <i class="far fa-clock"></i>
+                        @if($grant->deadline && $days < 0)
+                            Vencido há {{ abs((int) $days) }} dias
+                        @else
+                            {{ (int) $days }} dias
+                        @endif
                     </div>
                 </td>
                 <td class="text-center">
@@ -157,10 +220,20 @@
                             'closed' => ['label' => 'Encerrado', 'class' => 'text-muted bg-light'],
                         ];
                         $curr = $statuses[$grant->status] ?? $statuses['open'];
+                        $isExpired = $grant->deadline && $grant->deadline->isPast() && ($grant->status ?? 'open') !== 'closed';
                     @endphp
-                    <span class="badge {{ $curr['class'] }} px-3 py-2 rounded-pill fw-bold" style="font-size: 0.7rem;">
-                        {{ $curr['label'] }}
-                    </span>
+                    @if($isExpired)
+                        <span class="badge badge-grant-expired px-3 py-2 rounded-pill fw-bold" style="font-size: 0.7rem;">
+                            Vencido
+                        </span>
+                    @else
+                        <span class="badge {{ $curr['class'] }} px-3 py-2 rounded-pill fw-bold" style="font-size: 0.7rem;">
+                            {{ $curr['label'] }}
+                        </span>
+                    @endif
+                    <div class="text-muted small" style="margin-top: 6px;">
+                        <i class="fas fa-paperclip me-1"></i> {{ (int) ($grant->documents_count ?? 0) }} docs
+                    </div>
                 </td>
                 <td class="text-end">
                     <div class="dropdown">
@@ -168,11 +241,35 @@
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3">
-                            <li><a class="dropdown-item py-2" href="#"><i class="fas fa-eye me-2 text-muted"></i> Ver Detalhes</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="fas fa-file-invoice me-2 text-muted"></i> Prestar Contas</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="fas fa-paperclip me-2 text-muted"></i> Anexar Documentos</a></li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ route('ngo.grants.show', $grant->id) }}">
+                                    <i class="fas fa-eye me-2 text-muted"></i> Ver Detalhes
+                                </a>
+                            </li>
+                            <li>
+                                <form action="{{ route('ngo.grants.status', $grant->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="reporting">
+                                    <button type="submit" class="dropdown-item py-2">
+                                        <i class="fas fa-file-invoice me-2 text-muted"></i> Prestar Contas
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ route('ngo.grants.show', $grant->id) }}#documents">
+                                    <i class="fas fa-paperclip me-2 text-muted"></i> Anexar Documentos
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2 text-danger" href="#"><i class="fas fa-trash-alt me-2"></i> Excluir</a></li>
+                            <li>
+                                <form action="{{ route('ngo.grants.destroy', $grant->id) }}" method="POST" onsubmit="return confirm('Excluir este convênio/edital? Esta ação não pode ser desfeita.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="dropdown-item py-2 text-danger" style="background: none; border: none; width: 100%; text-align: left;">
+                                        <i class="fas fa-trash-alt me-2"></i> Excluir
+                                    </button>
+                                </form>
+                            </li>
                         </ul>
                     </div>
                 </td>
@@ -187,5 +284,9 @@
             @endforelse
         </tbody>
     </table>
+</div>
+
+<div style="margin-top: 14px;">
+    {{ $grants->links() }}
 </div>
 @endsection

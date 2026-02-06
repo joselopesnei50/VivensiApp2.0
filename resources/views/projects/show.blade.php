@@ -1,6 +1,29 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+    $isManager = in_array(auth()->user()->role, ['manager', 'super_admin'], true);
+@endphp
+
+@if($isManager && session('invite_link'))
+    <div class="alert alert-warning d-flex align-items-start justify-content-between gap-3" style="border-radius: 18px; border: 1px solid #fde68a; background: #fffbeb; padding: 16px 18px; margin-bottom: 18px;">
+        <div style="flex: 1;">
+            <div style="font-weight: 900; color:#92400e; margin-bottom: 6px;">Link para definir senha do novo membro</div>
+            <div style="color:#92400e; font-weight: 700; font-size: .9rem; margin-bottom: 10px;">
+                Enviamos por e-mail para <span style="font-weight:900;">{{ session('invite_email') }}</span>. Se não chegar (ex.: ambiente local), copie e envie este link:
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                <input id="inviteLinkInput" type="text" readonly value="{{ session('invite_link') }}" class="form-control" style="flex: 1; min-width: min(520px, 90vw); border-radius: 14px; border: 1px solid #fde68a; background: #fff;">
+                <button type="button" class="btn btn-dark" style="border-radius: 14px; font-weight: 900;" onclick="(async () => { const v = document.getElementById('inviteLinkInput')?.value; if (!v) return; try { await navigator.clipboard.writeText(v); } catch (e) { document.getElementById('inviteLinkInput')?.select(); } })();">
+                    Copiar link
+                </button>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
 <style>
     .project-hero-premium {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -75,7 +98,13 @@
     <div style="position: relative; z-index: 10;">
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
              <span style="background: #6366f1; color: white; padding: 6px 18px; border-radius: 50px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px;">
-                <i class="fas fa-rocket me-2"></i> {{ $project->status == 'active' ? 'Em Missão' : ($project->status == 'planning' ? 'Em Design' : 'Em Pausa') }}
+                <i class="fas fa-rocket me-2"></i>
+                {{ $project->status == 'active'
+                    ? 'Em Missão'
+                    : ($project->status == 'paused'
+                        ? 'Em Pausa'
+                        : ($project->status == 'completed' ? 'Concluído' : 'Cancelado'))
+                }}
             </span>
             <span style="color: rgba(255,255,255,0.4); font-weight: 700; font-size: 0.8rem;">REGISTRO #{{ str_pad($project->id, 5, '0', STR_PAD_LEFT) }}</span>
         </div>
@@ -88,10 +117,12 @@
                 </p>
             </div>
             <div style="display: flex; gap: 15px;">
-                <a href="{{ url('/projects/'.$project->id.'/edit') }}" class="btn-premium" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; text-decoration: none;">
-                    <i class="fas fa-cog me-2"></i> Ajustes
-                </a>
-                <a href="{{ url('/projects/'.$project->id.'/kanban') }}" class="btn-premium btn-premium-shine" style="border: none; padding: 16px 32px; font-weight: 800;">
+                @if($isManager)
+                    <a href="{{ $basePath . '/projects/'.$project->id.'/edit' }}" class="btn-premium" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; text-decoration: none;">
+                        <i class="fas fa-cog me-2"></i> Ajustes
+                    </a>
+                @endif
+                <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-premium btn-premium-shine" style="border: none; padding: 16px 32px; font-weight: 800;">
                     <i class="fas fa-layer-group me-2"></i> Kanban Board
                 </a>
             </div>
@@ -147,9 +178,11 @@
                     <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">Dossiê Financeiro</h4>
                     <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Últimas movimentações vinculadas a este registro.</p>
                 </div>
-                <a href="{{ url('/transactions/create?project_id='.$project->id) }}" class="btn-premium btn-premium-shine" style="border: none; padding: 12px 25px; font-weight: 800; font-size: 0.85rem;">
-                    <i class="fas fa-plus me-2"></i> Lançar Movimentação
-                </a>
+                @if($isManager)
+                    <a href="{{ $basePath . '/transactions/create?project_id='.$project->id }}" class="btn-premium btn-premium-shine" style="border: none; padding: 12px 25px; font-weight: 800; font-size: 0.85rem;">
+                        <i class="fas fa-plus me-2"></i> Lançar Movimentação
+                    </a>
+                @endif
             </div>
 
             <div class="table-responsive">
@@ -199,9 +232,11 @@
             <div class="project-table-card" style="padding: 30px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                     <h5 style="margin: 0; font-weight: 900; color: #1e293b;">Stakeholders</h5>
-                    <button class="btn btn-light rounded-circle" style="width: 36px; height: 36px; padding: 0;" data-bs-toggle="modal" data-bs-target="#addMemberModal">
-                        <i class="fas fa-user-plus text-primary"></i>
-                    </button>
+                    @if($isManager)
+                        <button class="btn btn-light rounded-circle" style="width: 36px; height: 36px; padding: 0;" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                            <i class="fas fa-user-plus text-primary"></i>
+                        </button>
+                    @endif
                 </div>
 
                 <div class="stakeholder-card" style="border-left: 4px solid #1e293b;">
@@ -219,10 +254,12 @@
                         <div style="font-weight: 800; color: #1e293b; font-size: 0.9rem;">{{ $member->user->name }}</div>
                         <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">{{ strtoupper($member->access_level) }}</div>
                     </div>
-                    <form action="{{ url('/projects/'.$project->id.'/members/'.$member->id) }}" method="POST">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-link btn-sm text-danger p-0"><i class="fas fa-times-circle"></i></button>
-                    </form>
+                    @if($isManager)
+                        <form action="{{ $basePath . '/projects/'.$project->id.'/members/'.$member->id }}" method="POST">
+                            @csrf @method('DELETE')
+                            <button class="btn btn-link btn-sm text-danger p-0"><i class="fas fa-times-circle"></i></button>
+                        </form>
+                    @endif
                 </div>
                 @endforeach
             </div>
@@ -231,16 +268,24 @@
             <div class="project-table-card" style="padding: 30px;">
                 <h5 style="margin: 0 0 25px 0; font-weight: 900; color: #1e293b;">Toolkit Estratégico</h5>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <a href="{{ url('/manager/schedule') }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <a href="{{ $basePath . '/manager/schedule' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
                         <span><i class="fas fa-calendar-alt me-2 text-primary"></i> Agenda da Missão</span>
                         <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
-                    <a href="{{ url('/ngo/transparencia') }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
-                        <span><i class="fas fa-cloud-upload-alt me-2 text-indigo"></i> Repositório de Documentos</span>
+                    <a href="{{ $basePath . '/manager/approvals' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-check-double me-2 text-success"></i> Central de Aprovações</span>
                         <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
-                    <a href="{{ url('/ngo/reports/dre') }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
-                        <span><i class="fas fa-file-invoice-dollar me-2 text-emerald"></i> Relatórios Financeiros (DRE)</span>
+                    <a href="{{ $basePath . '/manager/reconciliation' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-sync-alt me-2 text-info"></i> Conciliação Bancária</span>
+                        <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
+                    </a>
+                    <a href="{{ $basePath . '/manager/contracts' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-file-signature me-2 text-indigo"></i> Contratos Digitais</span>
+                        <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
+                    </a>
+                    <a href="{{ $basePath . '/smart-analysis' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                        <span><i class="fas fa-brain me-2 text-primary"></i> Smart Analysis</span>
                         <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
                     <button class="btn-premium mt-3" style="background: #fff1f2; color: #e11d48; border: 1px solid #fee2e2; border-radius: 12px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">
@@ -254,6 +299,7 @@
 </div>
 
 <!-- Team Modal Refined -->
+@if($isManager)
 <div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
@@ -273,7 +319,7 @@
                 </div>
                 <div class="tab-content">
                     <div class="tab-pane fade show active p-5" id="selectMember">
-                        <form action="{{ url('/projects/'.$project->id.'/members') }}" method="POST">
+                        <form action="{{ $basePath . '/projects/'.$project->id.'/members' }}" method="POST">
                             @csrf
                             <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Selecionar Colaborador</label>
                             <select name="user_id" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 mb-4 fw-700" style="font-size: 1rem; color: #1e293b;" required>
@@ -311,11 +357,67 @@
                             <button type="submit" class="btn-premium btn-premium-shine w-100 mt-5 border-0 py-4 fs-5 fw-900">Efetivar Vinculação</button>
                         </form>
                     </div>
+
+                    <div class="tab-pane fade p-5" id="newMember">
+                        <form action="{{ $basePath . '/projects/'.$project->id.'/members/credential' }}" method="POST">
+                            @csrf
+
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Nome</label>
+                                    <input name="name" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="Ex: Maria Silva" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Email (login)</label>
+                                    <input name="email" type="email" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="ex: maria@empresa.com" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Telefone (opcional)</label>
+                                    <input name="phone" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="(11) 99999-9999">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Perfil</label>
+                                    <div class="p-4 bg-light rounded-4 border-0 fw-800" style="color:#1e293b;">
+                                        Colaborador (Employee)
+                                        <div class="small opacity-50 fw-bold mt-1">A senha será definida via link de redefinição enviado por email.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <label class="fw-800 text-uppercase mt-5 mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Protocolo de Acesso</label>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="p-4 border rounded-4 text-center cursor-pointer" onclick="document.getElementById('nrV').click()">
+                                        <input type="radio" name="access_level" id="nrV" value="viewer" class="d-none">
+                                        <div class="fw-900 mb-1">Viewer</div>
+                                        <div class="small opacity-50 fw-bold">Auditagem</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-4 border rounded-4 text-center cursor-pointer border-primary" onclick="document.getElementById('nrE').click()">
+                                        <input type="radio" name="access_level" id="nrE" value="editor" class="d-none" checked>
+                                        <div class="fw-900 mb-1 text-primary">Editor</div>
+                                        <div class="small opacity-50 fw-bold">Operacional</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-4 border rounded-4 text-center cursor-pointer" onclick="document.getElementById('nrA').click()">
+                                        <input type="radio" name="access_level" id="nrA" value="admin" class="d-none">
+                                        <div class="fw-900 mb-1">Admin</div>
+                                        <div class="small opacity-50 fw-bold">Total</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-premium btn-premium-shine w-100 mt-5 border-0 py-4 fs-5 fw-900">Criar Credencial e Vincular</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@endif
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

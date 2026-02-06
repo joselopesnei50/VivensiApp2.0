@@ -264,6 +264,43 @@
                         <input type="email" name="sic_email" class="input-premium" value="{{ $portal->sic_email }}" placeholder="ouvidoria@exemplo.org">
                     </div>
 
+                    <div class="form-section">
+                        <label class="form-label-premium">Telefone do SIC (opcional)</label>
+                        <input type="text" name="sic_phone" class="input-premium" value="{{ $portal->sic_phone }}" placeholder="(00) 0000-0000">
+                    </div>
+
+                    <div class="form-section" style="margin-top: 18px;">
+                        <div style="display:flex; align-items:center; gap: 10px; margin-bottom: 10px;">
+                            <i class="fas fa-user-shield" style="color:#0f172a;"></i>
+                            <div style="font-weight: 900; color: var(--text-main);">LGPD (Encarregado / DPO)</div>
+                        </div>
+                        <label class="form-label-premium">Nome do Encarregado</label>
+                        <input type="text" name="dpo_name" class="input-premium" value="{{ $portal->settings['dpo_name'] ?? '' }}" placeholder="Nome do responsável pela LGPD">
+                    </div>
+                    <div class="form-section">
+                        <label class="form-label-premium">Email do Encarregado</label>
+                        <input type="email" name="dpo_email" class="input-premium" value="{{ $portal->settings['dpo_email'] ?? '' }}" placeholder="dpo@exemplo.org">
+                    </div>
+                    <div class="form-section">
+                        <label class="form-label-premium">Telefone do Encarregado (opcional)</label>
+                        <input type="text" name="dpo_phone" class="input-premium" value="{{ $portal->settings['dpo_phone'] ?? '' }}" placeholder="(00) 0000-0000">
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label-premium">Política de Privacidade do Portal (público)</label>
+                        <textarea name="privacy_policy" class="input-premium textarea-premium" placeholder="Explique quais dados são publicados aqui (agregados), quais não são publicados, e como solicitar informações via SIC.">{{ $portal->settings['privacy_policy'] ?? '' }}</textarea>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label-premium">Nota de base legal (opcional)</label>
+                        <textarea name="legal_basis_note" class="input-premium textarea-premium" style="min-height: 90px;" placeholder="Ex.: Este portal publica dados agregados por interesse público/transparência, preservando dados pessoais conforme LGPD.">{{ $portal->settings['legal_basis_note'] ?? '' }}</textarea>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label-premium">Nota de retenção (opcional)</label>
+                        <textarea name="data_retention_note" class="input-premium textarea-premium" style="min-height: 90px;" placeholder="Ex.: Logs públicos são agregados; dados operacionais seguem política interna de retenção.">{{ $portal->settings['data_retention_note'] ?? '' }}</textarea>
+                    </div>
+
                     <div class="switch-container">
                         <div class="form-check form-switch p-0 m-0">
                             <input class="form-check-input" type="checkbox" name="is_published" value="1" id="pubSwitch" style="width: 50px; height: 25px; cursor: pointer;" {{ $portal->is_published ? 'checked' : '' }}>

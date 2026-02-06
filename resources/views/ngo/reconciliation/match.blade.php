@@ -1,12 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 <div class="header-page" style="margin-bottom: 30px;">
     <h2 style="margin: 0; color: #2c3e50;">Revisão da Importação</h2>
     <p style="color: #64748b; margin: 5px 0 0 0;">Verifique as transações antes de confirmar.</p>
 </div>
 
-<form action="{{ url('/ngo/reconciliation/store') }}" method="POST">
+<form action="{{ $basePath . '/ngo/reconciliation/store' }}" method="POST">
     @csrf
     <div class="vivensi-card" style="padding: 0; overflow: hidden;">
         <table style="width: 100%; border-collapse: collapse;">
@@ -71,7 +74,7 @@
         </table>
         
         <div style="padding: 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: right;">
-            <a href="{{ url('/ngo/reconciliation') }}" style="margin-right: 20px; color: #64748b; text-decoration: none;">Cancelar</a>
+            <a href="{{ $basePath . '/ngo/reconciliation' }}" style="margin-right: 20px; color: #64748b; text-decoration: none;">Cancelar</a>
             <button type="submit" class="btn-premium">
                 <i class="fas fa-check me-2"></i> Importar Selecionados
             </button>

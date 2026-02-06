@@ -9,7 +9,7 @@
 </div>
 
 <div class="vivensi-card" style="padding: 40px; line-height: 1.8; color: #334155; max-width: 900px; margin: 0 auto;">
-    {!! nl2br($page->content) !!}
+    {!! nl2br(e($page->content)) !!}
 </div>
 
 <div style="text-align: center; margin-top: 40px; margin-bottom: 60px;">

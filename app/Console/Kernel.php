@@ -16,6 +16,11 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('trials:remind')->dailyAt('09:00');
+
+        $days = (int) config('whatsapp.retention_days', 365);
+        if ($days > 0) {
+            $schedule->command("whatsapp:cleanup --days={$days}")->dailyAt('03:30');
+        }
     }
 
     /**

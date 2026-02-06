@@ -14,6 +14,15 @@
                 @endfor
             </select>
         </form>
+        <a href="{{ url('/ngo/budget/pdf?year='.$year) }}" class="btn-premium" style="background:#0ea5e9;">
+            <i class="fas fa-file-pdf"></i> Baixar PDF
+        </a>
+        <a href="{{ url('/ngo/budget/export?year='.$year) }}" class="btn-premium" style="background:#4f46e5;">
+            <i class="fas fa-file-csv"></i> Exportar CSV
+        </a>
+        <button type="button" onclick="window.print()" class="btn-premium" style="background:#475569;">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
         <button onclick="toggleModal()" class="btn-premium">
             <i class="fas fa-edit"></i> Ajustar Metas
         </button>
@@ -30,6 +39,35 @@
         <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 700;">Teto de Gastos (Ano)</p>
         <h3 style="margin: 10px 0; font-size: 1.8rem;">R$ {{ number_format($targets->where('type', 'expense')->sum('amount'), 2, ',', '.') }}</h3>
         <p style="font-size: 0.85rem; color: #ef4444;">Gasto: R$ {{ number_format($realized->where('type', 'expense')->sum('total'), 2, ',', '.') }}</p>
+    </div>
+</div>
+
+@php
+    $plannedIncome = (float) $targets->where('type', 'income')->sum('amount');
+    $plannedExpense = (float) $targets->where('type', 'expense')->sum('amount');
+    $realIncome = (float) $realized->where('type', 'income')->sum('total');
+    $realExpense = (float) $realized->where('type', 'expense')->sum('total');
+    $plannedResult = $plannedIncome - $plannedExpense;
+    $realResult = $realIncome - $realExpense;
+    $variance = $realResult - $plannedResult;
+@endphp
+
+<div class="grid-2" style="margin-bottom: 30px;">
+    <div class="vivensi-card" style="border-left: 5px solid {{ $plannedResult >= 0 ? '#16a34a' : '#ef4444' }};">
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Resultado Planejado (Ano)</p>
+        <h3 style="margin: 10px 0; font-size: 1.8rem; color: {{ $plannedResult >= 0 ? '#16a34a' : '#ef4444' }};">
+            R$ {{ number_format($plannedResult, 2, ',', '.') }}
+        </h3>
+        <p style="font-size: 0.9rem; color: #64748b; margin:0;">Receitas previstas - teto de gastos.</p>
+    </div>
+    <div class="vivensi-card" style="border-left: 5px solid {{ $realResult >= 0 ? '#16a34a' : '#ef4444' }};">
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Resultado Realizado (Ano)</p>
+        <h3 style="margin: 10px 0; font-size: 1.8rem; color: {{ $realResult >= 0 ? '#16a34a' : '#ef4444' }};">
+            R$ {{ number_format($realResult, 2, ',', '.') }}
+        </h3>
+        <p style="font-size: 0.9rem; margin:0; color: {{ $variance >= 0 ? '#16a34a' : '#ef4444' }}; font-weight: 800;">
+            Variação vs planejado: R$ {{ number_format($variance, 2, ',', '.') }}
+        </p>
     </div>
 </div>
 

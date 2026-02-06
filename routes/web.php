@@ -27,11 +27,31 @@ Route::get('/lang/{locale}', function ($locale) {
 
 
 Route::get('/login', function () {
-    return view('auth.login');
+    return response()
+        ->view('auth.login')
+        // Prevent cached login page with stale CSRF token (common cause of 419 on re-login).
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
 })->name('login');
 
 Route::post('/login', [App\Http\Controllers\LoginController::class, 'authenticate']);
 Route::post('/logout', [App\Http\Controllers\LoginController::class, 'logout'])->name('logout');
+
+// Password reset (guest)
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])
+        ->name('password.request');
+    Route::post('/forgot-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->middleware('throttle:5,1')
+        ->name('password.email');
+
+    Route::get('/reset-password/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])
+        ->name('password.reset');
+    Route::post('/reset-password', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])
+        ->middleware('throttle:10,1')
+        ->name('password.update');
+});
 
 // Register Routes
 Route::get('/register', [App\Http\Controllers\RegisterController::class, 'showRegistrationForm'])->name('register');
@@ -59,6 +79,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/projects/{id}/edit', [App\Http\Controllers\ProjectController::class, 'edit']);
     Route::put('/projects/{id}', [App\Http\Controllers\ProjectController::class, 'update']);
     Route::post('/projects/{id}/members', [App\Http\Controllers\ProjectController::class, 'addMember']);
+    Route::post('/projects/{id}/members/credential', [App\Http\Controllers\ProjectController::class, 'addMemberCredential']);
     Route::delete('/projects/{id}/members/{memberId}', [App\Http\Controllers\ProjectController::class, 'removeMember']);
     
     // Kanban Routes
@@ -69,6 +90,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/tasks/create', [App\Http\Controllers\TaskController::class, 'create']);
     Route::post('/tasks', [App\Http\Controllers\TaskController::class, 'store']);
     Route::post('/api/tasks/update-status', [App\Http\Controllers\TaskController::class, 'updateStatus']); // Usando web auth for simplicity
+    Route::post('/api/tasks/update', [App\Http\Controllers\TaskController::class, 'updateTask']); // Update task fields (safe)
+    Route::post('/api/tasks/create', [App\Http\Controllers\TaskController::class, 'createApi']); // Create task (safe JSON)
     
     // Chat API
     Route::post('/api/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage']);
@@ -78,6 +101,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/', [App\Http\Controllers\TransactionController::class, 'index']);
         Route::get('/create', [App\Http\Controllers\TransactionController::class, 'create']);
         Route::post('/', [App\Http\Controllers\TransactionController::class, 'store']);
+        Route::post('/{id}/approve', [App\Http\Controllers\TransactionController::class, 'approve'])->name('transactions.approve');
+        Route::post('/{id}/reject', [App\Http\Controllers\TransactionController::class, 'reject'])->name('transactions.reject');
         Route::get('/export', [App\Http\Controllers\TransactionController::class, 'export']);
         Route::delete('/{id}', [App\Http\Controllers\TransactionController::class, 'destroy']);
     });
@@ -88,7 +113,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/manager/team/store-quick', [App\Http\Controllers\ManagerController::class, 'storeQuick']);
     Route::get('/manager/approvals', [App\Http\Controllers\ManagerController::class, 'approvals'])->name('manager.approvals');
     Route::get('/manager/contracts', [App\Http\Controllers\ManagerController::class, 'contracts'])->name('manager.contracts');
-    Route::get('/manager/landing-pages', [App\Http\Controllers\ManagerController::class, 'landingPages'])->name('manager.landing_pages');
+    // Manager uses the same Landing Pages flow as NGO (single source of truth)
+    Route::get('/manager/landing-pages', [App\Http\Controllers\LandingPageController::class, 'index'])->name('manager.landing_pages');
     Route::get('/manager/reconciliation', [App\Http\Controllers\ManagerController::class, 'reconciliation'])->name('manager.reconciliation');
     Route::get('/manager/schedule', [App\Http\Controllers\ManagerController::class, 'schedule'])->name('manager.schedule');
 
@@ -108,6 +134,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
         // Budget
         Route::get('/budget', [App\Http\Controllers\BudgetController::class, 'index']);
+        Route::get('/budget/export', [App\Http\Controllers\BudgetController::class, 'exportCsv']);
+        Route::get('/budget/pdf', [App\Http\Controllers\BudgetController::class, 'pdf']);
         Route::post('/budget', [App\Http\Controllers\BudgetController::class, 'store']);
 
         // Team
@@ -122,11 +150,19 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/receipts', [App\Http\Controllers\ReceiptController::class, 'index']);
         Route::get('/receipts/create', [App\Http\Controllers\ReceiptController::class, 'create']);
         Route::post('/receipts', [App\Http\Controllers\ReceiptController::class, 'store']);
+        Route::post('/receipts/{id}/regenerate-link', [App\Http\Controllers\ReceiptController::class, 'regenerateLink'])
+            ->name('ngo.receipts.regenerate_link');
+        Route::post('/receipts/{id}/revoke-link', [App\Http\Controllers\ReceiptController::class, 'revokeLink'])
+            ->name('ngo.receipts.revoke_link');
 
         // Contracts
         Route::get('/contracts', [App\Http\Controllers\ContractController::class, 'index']);
         Route::get('/contracts/create', [App\Http\Controllers\ContractController::class, 'create']);
         Route::post('/contracts', [App\Http\Controllers\ContractController::class, 'store']);
+        Route::post('/contracts/{id}/regenerate-link', [App\Http\Controllers\ContractController::class, 'regenerateLink'])
+            ->name('ngo.contracts.regenerate_link');
+        Route::post('/contracts/{id}/revoke-link', [App\Http\Controllers\ContractController::class, 'revokeLink'])
+            ->name('ngo.contracts.revoke_link');
 
         // Grants (Editais)
         Route::get('/grants', [App\Http\Controllers\NgoGrantController::class, 'index']);
@@ -134,24 +170,61 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/grants/create-ai', [App\Http\Controllers\NgoGrantController::class, 'createFromAi']);
         Route::post('/grants/analyze', [App\Http\Controllers\NgoGrantController::class, 'analyze']);
         Route::post('/grants', [App\Http\Controllers\NgoGrantController::class, 'store']);
+        Route::get('/grants/{id}', [App\Http\Controllers\NgoGrantController::class, 'show'])->name('ngo.grants.show');
+        Route::delete('/grants/{id}', [App\Http\Controllers\NgoGrantController::class, 'destroy'])->name('ngo.grants.destroy');
+        Route::post('/grants/{id}/status', [App\Http\Controllers\NgoGrantController::class, 'updateStatus'])->name('ngo.grants.status');
+        Route::post('/grants/{id}/documents', [App\Http\Controllers\NgoGrantController::class, 'uploadDocument'])->name('ngo.grants.documents.upload');
+        Route::get('/grants/{id}/documents/{docId}/download', [App\Http\Controllers\NgoGrantController::class, 'downloadDocument'])->name('ngo.grants.documents.download');
+        Route::delete('/grants/{id}/documents/{docId}', [App\Http\Controllers\NgoGrantController::class, 'deleteDocument'])->name('ngo.grants.documents.delete');
 
         // Transparency
         Route::get('/transparency', [App\Http\Controllers\TransparencyController::class, 'index']);
         
         // HR & Volunteers
         Route::get('/hr', [App\Http\Controllers\HumanResourcesController::class, 'index']);
+        Route::get('/hr/employees/export', [App\Http\Controllers\HumanResourcesController::class, 'exportEmployeesCsv']);
+        Route::get('/hr/volunteers/export', [App\Http\Controllers\HumanResourcesController::class, 'exportVolunteersCsv']);
+        Route::get('/hr/payroll/pdf', [App\Http\Controllers\HumanResourcesController::class, 'payrollPdf']);
+        Route::post('/hr/volunteers/{id}/certificate', [App\Http\Controllers\HumanResourcesController::class, 'issueVolunteerCertificate']);
+        Route::get('/hr/certificates', [App\Http\Controllers\HumanResourcesController::class, 'certificatesIndex']);
+        Route::get('/hr/certificates/export', [App\Http\Controllers\HumanResourcesController::class, 'exportCertificatesCsv']);
+        Route::get('/hr/certificates/{id}/download', [App\Http\Controllers\HumanResourcesController::class, 'downloadVolunteerCertificate']);
         Route::post('/hr/employees', [App\Http\Controllers\HumanResourcesController::class, 'storeEmployee']);
         Route::post('/hr/volunteers', [App\Http\Controllers\HumanResourcesController::class, 'storeVolunteer']);
 
         // Beneficiaries
         Route::get('/beneficiaries', [App\Http\Controllers\BeneficiaryController::class, 'index']);
+        Route::get('/beneficiaries/insights', [App\Http\Controllers\BeneficiaryController::class, 'insights']);
+        Route::get('/beneficiaries/attendances/export', [App\Http\Controllers\BeneficiaryController::class, 'exportAllAttendancesCsv']);
+        Route::get('/beneficiaries/reports/annual', [App\Http\Controllers\BeneficiaryController::class, 'annualReport']);
+        Route::get('/beneficiaries/reports/annual/pdf', [App\Http\Controllers\BeneficiaryController::class, 'annualReportPdf']);
+        Route::get('/beneficiaries/reports/annual/pdf-appendix', [App\Http\Controllers\BeneficiaryController::class, 'annualReportPdfAppendix']);
+        Route::get('/beneficiaries/reports/annual/export', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportCsv']);
+        Route::get('/beneficiaries/reports/annual/export-grouped', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportGroupedCsv']);
+        Route::get('/beneficiaries/reports/annual/export-grouped-simple', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportGroupedSimpleCsv']);
+        Route::get('/beneficiaries/reports/annual/export-pivot-type', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotTypeCsv']);
+        Route::get('/beneficiaries/reports/annual/export-pivot-user', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotUserCsv']);
         Route::get('/beneficiaries/create', [App\Http\Controllers\BeneficiaryController::class, 'create']);
+        Route::get('/beneficiaries/export', [App\Http\Controllers\BeneficiaryController::class, 'exportCsv']);
+        Route::get('/beneficiaries/print', [App\Http\Controllers\BeneficiaryController::class, 'print']);
         Route::post('/beneficiaries', [App\Http\Controllers\BeneficiaryController::class, 'store']);
         Route::get('/beneficiaries/{id}', [App\Http\Controllers\BeneficiaryController::class, 'show']);
+        Route::delete('/beneficiaries/{id}', [App\Http\Controllers\BeneficiaryController::class, 'destroy']);
+        Route::put('/beneficiaries/{id}', [App\Http\Controllers\BeneficiaryController::class, 'update']);
         Route::post('/beneficiaries/{id}/attendance', [App\Http\Controllers\BeneficiaryController::class, 'storeAttendance']);
+        Route::put('/beneficiaries/{id}/attendance/{attendanceId}', [App\Http\Controllers\BeneficiaryController::class, 'updateAttendance']);
+        Route::delete('/beneficiaries/{id}/attendance/{attendanceId}', [App\Http\Controllers\BeneficiaryController::class, 'destroyAttendance']);
+        Route::get('/beneficiaries/{id}/attendance/export', [App\Http\Controllers\BeneficiaryController::class, 'exportAttendanceCsv']);
+        Route::get('/beneficiaries/{id}/attendance/print', [App\Http\Controllers\BeneficiaryController::class, 'printAttendance']);
+        Route::get('/beneficiaries/{id}/pdf', [App\Http\Controllers\BeneficiaryController::class, 'pdf']);
+        Route::post('/beneficiaries/{id}/family-members', [App\Http\Controllers\BeneficiaryController::class, 'storeFamilyMember']);
+        Route::delete('/beneficiaries/{id}/family-members/{memberId}', [App\Http\Controllers\BeneficiaryController::class, 'destroyFamilyMember']);
 
         // Assets
         Route::get('/assets', [App\Http\Controllers\AssetController::class, 'index']);
+        Route::get('/assets/term', [App\Http\Controllers\AssetController::class, 'term']);
+        Route::get('/assets/term/pdf', [App\Http\Controllers\AssetController::class, 'termPdf']);
+        Route::get('/assets/export', [App\Http\Controllers\AssetController::class, 'exportCsv']);
         Route::post('/assets', [App\Http\Controllers\AssetController::class, 'store']);
         Route::delete('/assets/{id}', [App\Http\Controllers\AssetController::class, 'destroy']);
 
@@ -162,14 +235,22 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
         // Reports
         Route::get('/reports/dre', [App\Http\Controllers\ReportController::class, 'dre']);
+        Route::get('/reports/dre/export', [App\Http\Controllers\ReportController::class, 'exportDreCsv']);
+        Route::get('/reports/dre/pdf', [App\Http\Controllers\ReportController::class, 'drePdf']);
 
         // Audit Trail
         Route::get('/audit', [App\Http\Controllers\AuditController::class, 'index']);
+        Route::get('/audit/export', [App\Http\Controllers\AuditController::class, 'exportCsv']);
         Route::get('/audit/{id}', [App\Http\Controllers\AuditController::class, 'show']);
     });
 
     // Notifications API
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'page'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsReadWeb'])->name('notifications.read');
+    Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsReadWeb'])->name('notifications.read_all');
+
     Route::get('/api/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
+    Route::get('/api/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount']);
     Route::post('/api/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead']);
     Route::post('/api/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
 
@@ -181,7 +262,14 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::put('/ngo/landing-pages/section/{id}', [App\Http\Controllers\LandingPageController::class, 'updateSection']);
     Route::delete('/ngo/landing-pages/section/{id}', [App\Http\Controllers\LandingPageController::class, 'deleteSection']);
     Route::post('/ngo/landing-pages/{id}/publish', [App\Http\Controllers\LandingPageController::class, 'publish']);
+    Route::post('/ngo/landing-pages/{id}/unpublish', [App\Http\Controllers\LandingPageController::class, 'unpublish']);
+    Route::post('/ngo/landing-pages/{id}/duplicate', [App\Http\Controllers\LandingPageController::class, 'duplicate']);
+    Route::post('/ngo/landing-pages/{id}/settings', [App\Http\Controllers\LandingPageController::class, 'updateSettings']);
+    Route::post('/ngo/landing-pages/{id}/upload-og-image', [App\Http\Controllers\LandingPageController::class, 'uploadOgImage']);
+    Route::post('/ngo/landing-pages/{id}/upload-favicon', [App\Http\Controllers\LandingPageController::class, 'uploadFavicon']);
+    Route::delete('/ngo/landing-pages/{id}', [App\Http\Controllers\LandingPageController::class, 'destroy']);
     Route::get('/ngo/landing-pages/{id}/leads', [App\Http\Controllers\LandingPageLeadController::class, 'index']);
+    Route::get('/ngo/landing-pages/{id}/leads/export', [App\Http\Controllers\LandingPageLeadController::class, 'exportCsv']);
 
     // WhatsApp & AI Chatbot
     Route::get('/whatsapp/settings', [App\Http\Controllers\WhatsappController::class, 'settings'])->name('whatsapp.settings');
@@ -189,6 +277,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/chat', [App\Http\Controllers\WhatsappController::class, 'chatIndex'])->name('whatsapp.chat');
     Route::get('/whatsapp/chat/{id}/messages', [App\Http\Controllers\WhatsappController::class, 'getChatMessages']);
     Route::post('/whatsapp/chat/send', [App\Http\Controllers\WhatsappController::class, 'sendMessage']);
+    Route::post('/whatsapp/chat/start', [App\Http\Controllers\WhatsappController::class, 'startChat'])->name('whatsapp.chat.start');
+    Route::post('/whatsapp/chat/{id}/compliance', [App\Http\Controllers\WhatsappController::class, 'updateCompliance']);
     // New Routes
     Route::post('/whatsapp/notes', [App\Http\Controllers\WhatsappController::class, 'addNote']);
     Route::get('/whatsapp/canned', [App\Http\Controllers\WhatsappController::class, 'getCannedResponses']);
@@ -211,10 +301,22 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 // --- PUBLIC ROUTES (No Auth Required) ---
 
 // Public Landing Page
+Route::get('/robots.txt', [App\Http\Controllers\LandingPageController::class, 'robots']);
+Route::get('/lp-sitemap.xml', [App\Http\Controllers\LandingPageController::class, 'sitemap']);
 Route::get('/lp/{slug}', [App\Http\Controllers\LandingPageController::class, 'renderPage']);
-Route::post('/lp/{slug}/lead', [App\Http\Controllers\LandingPageController::class, 'submitLead']);
+Route::post('/lp/{slug}/lead', [App\Http\Controllers\LandingPageController::class, 'submitLead'])
+    ->middleware('throttle:20,1');
 
 // Public Transparency Portal
+Route::get('/transparencia/{slug}/docs/{id}', [App\Http\Controllers\TransparencyController::class, 'downloadDocument'])
+    ->middleware('throttle:120,1')
+    ->name('transparency.doc');
+Route::get('/transparencia/{slug}/dados.csv', [App\Http\Controllers\TransparencyController::class, 'openDataCsv'])
+    ->middleware('throttle:60,1')
+    ->name('transparency.opendata');
+Route::get('/transparencia/{slug}/relatorio.pdf', [App\Http\Controllers\TransparencyController::class, 'publicReportPdf'])
+    ->middleware('throttle:30,1')
+    ->name('transparency.report_pdf');
 Route::get('/transparencia/{slug}', [App\Http\Controllers\TransparencyController::class, 'renderPortal'])->name('transparency.portal');
 
 Route::middleware(['auth', 'subscription'])->group(function () {
@@ -317,6 +419,11 @@ Route::get('/blog/{slug}', [App\Http\Controllers\PublicController::class, 'blogS
 
 // Public Routes (No Auth)
 Route::get('/t/{tenant_id}', [App\Http\Controllers\TransparencyController::class, 'publicView']);
-Route::get('/r/{id}', [App\Http\Controllers\ReceiptController::class, 'show'])->name('public.receipt');
+Route::get('/r/{token}', [App\Http\Controllers\ReceiptController::class, 'show'])->name('public.receipt');
+Route::get('/validar-recibo', [App\Http\Controllers\ReceiptController::class, 'validateForm'])->name('public.receipt.validate');
+Route::post('/validar-recibo', [App\Http\Controllers\ReceiptController::class, 'validateSubmit'])->middleware('throttle:30,1');
+Route::get('/validar-certificado/{id}', [App\Http\Controllers\HumanResourcesController::class, 'publicValidateVolunteerCertificate'])
+    ->middleware('throttle:60,1')
+    ->name('public.volunteer_certificate.validate');
 Route::get('/sign/{token}', [App\Http\Controllers\ContractController::class, 'showPublic'])->name('public.contract');
 Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign']);

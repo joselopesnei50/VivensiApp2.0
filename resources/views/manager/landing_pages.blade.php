@@ -24,7 +24,15 @@
             <div style="height: 120px; background: #e2e8f0; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
                 <i class="fas fa-desktop fa-3x"></i>
             </div>
-            <h4 style="margin: 0 0 5px 0;">{{ $page->title }}</h4>
+            @php $isPublished = (($page->status ?? 'draft') === 'published'); @endphp
+            <div style="display:flex; align-items:center; justify-content: space-between; gap: 10px;">
+                <h4 style="margin: 0 0 5px 0;">{{ $page->title }}</h4>
+                @if($isPublished)
+                    <span style="font-size: 0.7rem; background: rgba(16,185,129,.12); padding: 4px 10px; border-radius: 999px; color: #059669; font-weight: 900; letter-spacing:.06em; text-transform: uppercase;">Publicado</span>
+                @else
+                    <span style="font-size: 0.7rem; background: rgba(100,116,139,.12); padding: 4px 10px; border-radius: 999px; color: #475569; font-weight: 900; letter-spacing:.06em; text-transform: uppercase;">Rascunho</span>
+                @endif
+            </div>
             <span style="font-size: 0.8rem; color: #64748b;">vvs.io/{{ $page->slug }}</span>
         </div>
         
@@ -38,6 +46,30 @@
             <a href="{{ url('/lp/' . $page->slug) }}" target="_blank" class="btn-premium" style="background: #f1f5f9; color: #475569; padding: 10px; border-radius: 8px;">
                 <i class="fas fa-external-link-alt"></i>
             </a>
+        </div>
+
+        <div style="margin-top: 10px; display:flex; gap: 10px; flex-wrap: wrap;">
+            <form action="{{ url('/ngo/landing-pages/' . $page->id . ($isPublished ? '/unpublish' : '/publish')) }}" method="POST" style="flex:1;" onsubmit="return confirm('{{ $isPublished ? 'Despublicar esta Landing Page?' : 'Publicar esta Landing Page?' }}')">
+                @csrf
+                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: {{ $isPublished ? '#f1f5f9' : '#10b981' }}; color: {{ $isPublished ? '#0f172a' : '#ffffff' }}; border: {{ $isPublished ? '1px solid #e2e8f0' : 'none' }};">
+                    <i class="fas {{ $isPublished ? 'fa-eye-slash' : 'fa-bullhorn' }}"></i> {{ $isPublished ? 'Despublicar' : 'Publicar' }}
+                </button>
+            </form>
+
+            <form action="{{ url('/ngo/landing-pages/' . $page->id . '/duplicate') }}" method="POST" style="flex:1;" onsubmit="return confirm('Duplicar esta Landing Page (com os mesmos blocos)?')">
+                @csrf
+                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff; color: #4f46e5; border: 1px solid #e2e8f0;">
+                    <i class="fas fa-clone"></i> Duplicar
+                </button>
+            </form>
+
+            <form action="{{ url('/ngo/landing-pages/' . $page->id) }}" method="POST" style="flex:1;" onsubmit="return confirm('Excluir esta Landing Page? Isso remove também os blocos e leads capturados.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff; color: #ef4444; border: 1px solid rgba(239,68,68,.25);">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </form>
         </div>
     </div>
     @endforeach

@@ -2,6 +2,9 @@
 
 @section('content')
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 
 <style>
     :root {
@@ -121,8 +124,9 @@
                         <span class="fw-800 text-danger" style="font-size: 1.1rem;">R$ {{ number_format($t->amount, 2, ',', '.') }}</span>
                     </td>
                     <td class="text-center">
-                        @if($t->receipt_path)
-                            <a href="{{ Storage::url($t->receipt_path) }}" target="_blank" class="receipt-preview mx-auto">
+                        @php $receiptPath = $t->receipt_path ?: $t->attachment_path; @endphp
+                        @if($receiptPath)
+                            <a href="{{ Storage::url($receiptPath) }}" target="_blank" class="receipt-preview mx-auto">
                                 <i class="fas fa-file-invoice-dollar"></i>
                             </a>
                         @else
@@ -131,11 +135,11 @@
                     </td>
                     <td class="text-end">
                         <div class="d-flex justify-content-end gap-2">
-                            <form action="{{ url('/transactions/'.$t->id.'/approve') }}" method="POST">
+                            <form action="{{ $basePath . '/transactions/'.$t->id.'/approve' }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn-approve">Aprovar Lanc.</button>
                             </form>
-                            <form action="{{ url('/transactions/'.$t->id.'/reject') }}" method="POST">
+                            <form action="{{ $basePath . '/transactions/'.$t->id.'/reject' }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn-reject">Recusar</button>
                             </form>

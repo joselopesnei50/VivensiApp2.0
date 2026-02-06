@@ -98,7 +98,9 @@
                 <li><a href="{{ url('/ngo/budget') }}"><i class="fas fa-chart-pie"></i> Orçamento Anual</a></li>
                 <li><a href="{{ url('/ngo/team') }}"><i class="fas fa-users"></i> Equipe da ONG</a></li>
                 <li><a href="{{ url('/ngo/hr') }}"><i class="fas fa-id-badge"></i> RH & Voluntários</a></li>
-                <li><a href="{{ url('/ngo/beneficiaries') }}"><i class="fas fa-hand-holding-heart"></i> Beneficiários</a></li>
+                <li><a href="{{ url('/ngo/beneficiaries') }}" class="{{ request()->is('ngo/beneficiaries*') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> Beneficiários</a></li>
+                <li style="margin-left: 10px;"><a href="{{ url('/ngo/beneficiaries/insights') }}" class="{{ request()->is('ngo/beneficiaries/insights*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Indicadores Sociais</a></li>
+                <li style="margin-left: 10px;"><a href="{{ url('/ngo/beneficiaries/reports/annual') }}" class="{{ request()->is('ngo/beneficiaries/reports/annual*') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Relatório Anual</a></li>
                 <li><a href="{{ url('/ngo/assets') }}"><i class="fas fa-boxes"></i> Patrimônio</a></li>
                 <li><a href="{{ url('/ngo/reconciliation') }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
                 <li><a href="{{ url('/ngo/reports/dre') }}"><i class="fas fa-file-invoice-dollar"></i> Relatórios (DRE)</a></li>
@@ -195,7 +197,7 @@
                             <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 0.9rem;">Carregando...</div>
                         </div>
                         <div style="padding: 10px; text-align: center; background: #f8fafc; border-top: 1px solid #f1f5f9;">
-                            <a href="#" style="font-size: 0.8rem; color: #64748b; text-decoration: none; font-weight: 600;">Ver todas</a>
+                            <a href="{{ route('notifications.index') }}" style="font-size: 0.8rem; color: #64748b; text-decoration: none; font-weight: 600;">Ver todas</a>
                         </div>
                     </div>
                 </div>
@@ -253,9 +255,97 @@
         padding: 8px;
         border-radius: 50%;
     }
+
+    /* Toast notifications (lightweight, no dependencies) */
+    .vivensi-toast-wrap {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+    .vivensi-toast {
+        pointer-events: auto;
+        width: 340px;
+        max-width: calc(100vw - 36px);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+        overflow: hidden;
+        transform: translateY(10px);
+        opacity: 0;
+        transition: all .18s ease;
+    }
+    .vivensi-toast.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    .vivensi-toast__bar {
+        height: 4px;
+        background: linear-gradient(90deg, #4f46e5, #22c55e);
+    }
+    .vivensi-toast__body {
+        padding: 12px 14px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    .vivensi-toast__icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: #f0f4ff;
+        color: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+    }
+    .vivensi-toast__title {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 0.9rem;
+        margin: 0 0 2px 0;
+    }
+    .vivensi-toast__msg {
+        color: #64748b;
+        font-size: 0.85rem;
+        line-height: 1.35;
+        margin: 0;
+    }
+    .vivensi-toast__actions {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .vivensi-toast__btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #334155;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .vivensi-toast__btn.primary {
+        border-color: #c7d2fe;
+        background: #eef2ff;
+        color: #3730a3;
+        font-weight: 700;
+    }
 </style>
 
 <script>
+    const __vivensiIsAuth = {{ auth()->check() ? 'true' : 'false' }};
+    let __vivensiLastUnread = null;
+    let __vivensiToastCooldownUntil = 0;
+
     // Safety check on load to prevent stuck overlays
     document.addEventListener('DOMContentLoaded', function() {
         const overlay = document.getElementById('sidebarOverlay');
@@ -320,18 +410,25 @@
     }
 
     async function fetchNotifications() {
+        if (!__vivensiIsAuth) return;
         const list = document.getElementById('notif-list');
         try {
             const response = await fetch('{{ url("/api/notifications") }}');
             const data = await response.json();
 
             list.innerHTML = '';
-            if (data.length === 0) {
+            const notifications = Array.isArray(data) ? data : (data.notifications || []);
+            const unreadCount = Array.isArray(data) ? null : (data.unread_count ?? null);
+            if (typeof unreadCount === 'number') {
+                renderBadge(unreadCount);
+            }
+
+            if (notifications.length === 0) {
                 list.innerHTML = '<div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 0.9rem;">Nenhuma notificação nova.</div>';
                 return;
             }
 
-            data.forEach(n => {
+            notifications.forEach(n => {
                 const item = document.createElement('div');
                 item.style.padding = '12px 15px';
                 item.style.borderBottom = '1px solid #f1f5f9';
@@ -354,30 +451,139 @@
     }
 
     async function markAsRead(id, link) {
+        if (!__vivensiIsAuth) return;
         await fetch(`{{ url("/api/notifications") }}/${id}/read`, {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         });
-        if (link) window.location.href = link;
-        else fetchNotifications();
-        updateBadge();
+        await updateBadge();
+        if (link) {
+            window.location.href = link;
+        } else {
+            fetchNotifications();
+        }
     }
 
     async function markAllRead() {
+        if (!__vivensiIsAuth) return;
         await fetch(`{{ url("/api/notifications/read-all") }}`, {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         });
         fetchNotifications();
-        updateBadge();
+        await updateBadge();
     }
 
-    function updateBadge() {
-        // Opcional: atualizar o número via AJAX ou apenas remover o estilo
+    function renderBadge(count) {
         const badge = document.getElementById('notif-badge');
-        // Para simplificar, vamos apenas ocultar se marcar todas
-        badge.style.display = 'none';
+        if (!badge) return;
+        const n = Math.max(0, parseInt(count || 0, 10));
+        badge.textContent = n > 99 ? '99+' : String(n);
+        badge.style.display = n > 0 ? 'flex' : 'none';
     }
+
+    async function updateBadge() {
+        if (!__vivensiIsAuth) return;
+        try {
+            const res = await fetch('{{ url("/api/notifications/unread-count") }}');
+            const data = await res.json();
+            const nextUnread = (data.unread_count ?? 0);
+            const prevUnread = (__vivensiLastUnread === null) ? nextUnread : __vivensiLastUnread;
+            __vivensiLastUnread = nextUnread;
+
+            renderBadge(nextUnread);
+
+            // If unread count increased, show a toast with the latest notification.
+            if (nextUnread > prevUnread) {
+                const now = Date.now();
+                if (now >= __vivensiToastCooldownUntil && !document.hidden) {
+                    __vivensiToastCooldownUntil = now + 8000; // avoid spam
+                    showLatestNotificationToast();
+                }
+            }
+        } catch (e) {
+            // Silent: badge refresh shouldn't break the UI
+        }
+    }
+
+    async function showLatestNotificationToast() {
+        try {
+            const res = await fetch('{{ url("/api/notifications") }}?limit=1');
+            const data = await res.json();
+            const notifications = Array.isArray(data) ? data : (data.notifications || []);
+            const n = notifications[0];
+            if (!n) return;
+
+            showToast({
+                title: n.title || 'Nova notificação',
+                message: n.message || '',
+                link: n.link || null
+            });
+        } catch (e) {
+            // Silent
+        }
+    }
+
+    function showToast({ title, message, link }) {
+        let wrap = document.getElementById('vivensi-toast-wrap');
+        if (!wrap) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'vivensi-toast';
+        toast.innerHTML = `
+            <div class="vivensi-toast__bar"></div>
+            <div class="vivensi-toast__body">
+                <div class="vivensi-toast__icon"><i class="fas fa-bell"></i></div>
+                <div style="flex:1; min-width:0;">
+                    <div class="vivensi-toast__title"></div>
+                    <p class="vivensi-toast__msg"></p>
+                    <div class="vivensi-toast__actions">
+                        ${link ? `<a class="vivensi-toast__btn primary" href="${link}">Abrir</a>` : ``}
+                        <a class="vivensi-toast__btn" href="{{ route('notifications.index') }}">Ver todas</a>
+                        <button type="button" class="vivensi-toast__btn" data-close="1">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        toast.querySelector('.vivensi-toast__title').textContent = String(title || '');
+        toast.querySelector('.vivensi-toast__msg').textContent = String(message || '');
+
+        toast.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-close]');
+            if (btn) {
+                e.preventDefault();
+                removeToast(toast);
+            }
+        });
+
+        wrap.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+
+        // Auto-remove.
+        setTimeout(() => removeToast(toast), 7000);
+    }
+
+    function removeToast(toast) {
+        if (!toast) return;
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 200);
+    }
+
+    // Light polling to show new notifications without refresh.
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!__vivensiIsAuth) return;
+        updateBadge();
+        setInterval(() => {
+            if (document.hidden) return;
+            updateBadge();
+            const dropdown = document.getElementById('notif-dropdown');
+            if (dropdown && dropdown.style.display === 'block') {
+                fetchNotifications();
+            }
+        }, 30000);
+    });
 
     // Fechar dropdown ao clicar fora
     window.addEventListener('click', function(e) {
@@ -392,6 +598,8 @@
     @auth
         @include('partials.chat_widget')
     @endauth
+
+    <div id="vivensi-toast-wrap" class="vivensi-toast-wrap" aria-live="polite" aria-atomic="true"></div>
     
     <!-- Bootstrap 5 JS Bundle (Required for Modals, Dropdowns, Tooltips) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

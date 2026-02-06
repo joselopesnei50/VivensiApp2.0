@@ -11,10 +11,44 @@
     </button>
 </div>
 
+@php
+    $st = $stats ?? [];
+@endphp
+
+<div class="grid-2" style="margin-bottom: 18px;">
+    <div class="vivensi-card" style="border-left: 5px solid #4f46e5;">
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Usuários (total)</p>
+        <h3 style="margin: 10px 0; font-size: 1.9rem;">{{ number_format((int)($st['total'] ?? count($users))) }}</h3>
+        <p style="font-size: 0.9rem; color:#475569; margin:0;">
+            Ativos: <strong>{{ number_format((int)($st['active'] ?? 0)) }}</strong>
+        </p>
+    </div>
+    <div class="vivensi-card" style="border-left: 5px solid #16a34a;">
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Perfis</p>
+        <h3 style="margin: 10px 0; font-size: 1.2rem;">
+            <span style="color:#16a34a; font-weight: 900;">{{ number_format((int)($st['ngo'] ?? 0)) }}</span> Admin
+            <span style="color:#94a3b8;"> · </span>
+            <span style="color:#4f46e5; font-weight: 900;">{{ number_format((int)($st['manager'] ?? 0)) }}</span> Gestor
+            <span style="color:#94a3b8;"> · </span>
+            <span style="color:#64748b; font-weight: 900;">{{ number_format((int)($st['employee'] ?? 0)) }}</span> Colab
+        </h3>
+        <p style="font-size: 0.9rem; color:#64748b; margin:0;">Busca rápida disponível abaixo.</p>
+    </div>
+</div>
+
+<div class="vivensi-card" style="margin-bottom: 14px;">
+    <div style="display:flex; gap: 10px; flex-wrap: wrap; align-items:center; justify-content: space-between;">
+        <div style="color:#64748b; font-weight:800;">
+            Dica: busque por nome, e-mail ou perfil.
+        </div>
+        <input id="teamSearch" type="text" placeholder="Buscar membro..." class="form-control-vivensi" style="max-width: 320px;">
+    </div>
+</div>
+
 <!-- Team List -->
 <div class="grid-3">
     @foreach($users as $user)
-    <div class="vivensi-card" style="text-align: center; position: relative;">
+    <div class="vivensi-card team-card" data-q="{{ strtolower(($user->name ?? '').' '.($user->email ?? '').' '.($user->role ?? '').' '.($user->status ?? '')) }}" style="text-align: center; position: relative;">
         @if($user->id != auth()->id())
         <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover este usuário?');" style="position: absolute; top: 15px; right: 15px;">
             @csrf
@@ -29,7 +63,7 @@
         <h3 style="font-size: 1.2rem; margin-bottom: 5px;">{{ $user->name }}</h3>
         <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">{{ $user->email }}</p>
         
-        <div style="display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; 
+        <div style="display: inline-block; padding: 5px 15px; border-radius: 999px; font-size: 0.8rem; font-weight: 800; 
             @if($user->role == 'ngo') background: #dcfce7; color: #16a34a; 
             @elseif($user->role == 'manager') background: #e0e7ff; color: #4f46e5;
             @else background: #f1f5f9; color: #64748b; @endif">
@@ -37,6 +71,13 @@
             @elseif($user->role == 'manager') Gestor de Projetos
             @else Colaborador
             @endif
+        </div>
+
+        <div style="margin-top: 10px; font-size: .8rem; color:#94a3b8; font-weight:800;">
+            Status:
+            <span style="color: {{ ($user->status ?? 'active') === 'active' ? '#16a34a' : '#ef4444' }};">
+                {{ strtoupper($user->status ?? 'active') }}
+            </span>
         </div>
     </div>
     @endforeach
@@ -83,5 +124,17 @@
         const modal = document.getElementById('teamModal');
         modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
     }
+
+    (function() {
+        const s = document.getElementById('teamSearch');
+        if (!s) return;
+        s.addEventListener('input', function() {
+            const q = (s.value || '').toLowerCase().trim();
+            document.querySelectorAll('.team-card').forEach(function(card) {
+                const hay = (card.getAttribute('data-q') || '');
+                card.style.display = (!q || hay.includes(q)) ? '' : 'none';
+            });
+        });
+    })();
 </script>
 @endsection

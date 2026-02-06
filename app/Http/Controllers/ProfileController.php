@@ -32,7 +32,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'current_password' => ['required', function ($attribute, $value, $fail) {
-                if (!Hash::check($value, auth()->user()->password_hash)) {
+                if (!Hash::check($value, auth()->user()->password)) {
                     $fail('A senha atual está incorreta.');
                 }
             }],
@@ -40,7 +40,7 @@ class ProfileController extends Controller
         ]);
 
         auth()->user()->update([
-            'password_hash' => Hash::make($request->password),
+            'password' => Hash::make($request->password),
         ]);
 
         return back()->with('success', 'Senha alterada com sucesso!');

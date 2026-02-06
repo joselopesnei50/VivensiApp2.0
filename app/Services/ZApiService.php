@@ -22,6 +22,15 @@ class ZApiService
 
     public function sendMessage($to, $message)
     {
+        // Local/dev sandbox: allow testing without a real Z-API instance.
+        if (config('whatsapp.sandbox_enabled', false) && app()->environment('local')) {
+            return [
+                'messageId' => 'SANDBOX_' . uniqid(),
+                'status' => 'PENDING',
+                'message' => 'Message sent (Sandbox)'
+            ];
+        }
+
         if (!$this->instanceId || !$this->token) return ['error' => 'Configuração Z-API ausente'];
 
         // Sandbox/Test Mode
@@ -44,6 +53,9 @@ class ZApiService
     }
     public function getStatus()
     {
+        if (config('whatsapp.sandbox_enabled', false) && app()->environment('local')) {
+            return ['connected' => true, 'mode' => 'sandbox'];
+        }
         if (!$this->instanceId || !$this->token) return ['connected' => false, 'error' => 'Configuração Z-API ausente'];
 
         // Real Mode: Call API directly
@@ -60,6 +72,9 @@ class ZApiService
 
     public function getQrCode()
     {
+        if (config('whatsapp.sandbox_enabled', false) && app()->environment('local')) {
+            return ['error' => 'Sandbox mode (sem QR Code).'];
+        }
         if (!$this->instanceId || !$this->token) return ['error' => 'Configuração Z-API ausente'];
 
         // Real Mode: Call API directly

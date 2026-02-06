@@ -7,23 +7,35 @@ use Illuminate\Support\Facades\Http;
 
 class DeepSeekService
 {
-    protected $apiKey;
-    protected $baseUrl = 'https://api.deepseek.com/chat/completions';
+    protected ?string $apiKey = null;
+    protected string $baseUrl = 'https://api.deepseek.com/chat/completions';
 
     public function __construct()
     {
-        $this->apiKey = trim(SystemSetting::getValue('deepseek_api_key'));
+        // Intentionally do not hit the database here.
+        // Some Artisan commands may instantiate controllers/services without DB connectivity.
+    }
+
+    protected function resolveApiKey(): string
+    {
+        if ($this->apiKey) {
+            return $this->apiKey;
+        }
+
+        $this->apiKey = trim((string) SystemSetting::getValue('deepseek_api_key'));
+        return $this->apiKey;
     }
 
     public function chat($messages)
     {
-        if (!$this->apiKey) {
+        $apiKey = $this->resolveApiKey();
+        if (!$apiKey) {
             return ['error' => 'Chave da API DeepSeek não configurada no Painel Admin.'];
         }
 
         try {
-            $response = Http::withoutVerifying()->timeout(60)->retry(2)->withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+            $response = Http::timeout(60)->retry(2)->withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
             ])->post($this->baseUrl, [
                 'model' => 'deepseek-chat',

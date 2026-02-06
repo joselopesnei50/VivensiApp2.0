@@ -29,7 +29,7 @@
 
     <!-- Article Content -->
     <div class="article-content" style="max-width: 800px; margin: 0 auto; padding: 0 5%; font-size: 1.25rem; line-height: 1.8; color: #334155;">
-        {!! nl2br($post->content) !!}
+        {!! nl2br(e($post->content)) !!}
     </div>
 
     <!-- Back to Blog -->

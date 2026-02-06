@@ -2,6 +2,9 @@
 
 @section('content')
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 
 <style>
     :root {
@@ -97,7 +100,7 @@
 </style>
 
 <div class="container-fluid py-4 px-5">
-    <a href="{{ url('/manager/team') }}" class="btn btn-link text-muted mb-3 text-decoration-none">
+    <a href="{{ $basePath . '/manager/team' }}" class="btn btn-link text-muted mb-3 text-decoration-none">
         <i class="fas fa-arrow-left me-2"></i> Voltar para Equipe
     </a>
 
@@ -133,7 +136,7 @@
             <div class="card-glass">
                 <div class="section-title"><i class="fas fa-layer-group"></i> Projetos em que atua</div>
                 @forelse($projects as $p)
-                <a href="{{ url('/projects/'.$p->project->id) }}" class="project-pill text-decoration-none text-dark">
+                <a href="{{ $basePath . '/projects/'.$p->project->id }}" class="project-pill text-decoration-none text-dark">
                     <div class="bg-light rounded-circle p-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
                         <i class="fas fa-folder text-primary"></i>
                     </div>
@@ -205,11 +208,12 @@
                 <h5 class="modal-title fw-bold">Enviar Lembrete ao Colaborador</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ url('/tasks') }}" method="POST">
+            <form action="{{ $basePath . '/tasks' }}" method="POST">
                 @csrf
                 <input type="hidden" name="assigned_to" value="{{ $employee->id }}">
                 <input type="hidden" name="priority" value="medium">
                 <input type="hidden" name="status" value="todo">
+                <input type="hidden" name="redirect_to_schedule" value="1">
                 
                 <div class="modal-body p-4">
                     <div class="mb-3">

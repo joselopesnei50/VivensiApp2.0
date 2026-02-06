@@ -24,7 +24,7 @@ class NgoSeeder extends Seeder
             'tenant_id' => $tenantId,
             'name' => 'Diretor da ONG',
             'email' => 'ong@fin.com',
-            'password_hash' => Hash::make('password'),
+            'password' => Hash::make('password'),
             'role' => 'ngo',
             'status' => 'active',
             'created_at' => now(),

@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 <div class="header-page" style="margin-bottom: 40px; position: relative;">
     <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); position: absolute; top: -30px; left: -30px; right: -30px; bottom: 0; z-index: -1;"></div>
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -12,7 +15,7 @@
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Agendar Nova Tarefa</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Organize o tempo e as responsabilidades da sua equipe.</p>
         </div>
-        <a href="{{ url('/tasks') }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
+        <a href="{{ $basePath . '/tasks' }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
             <i class="fas fa-calendar-alt me-2 text-primary"></i> Ver Agenda Full
         </a>
     </div>
@@ -31,7 +34,7 @@
         </div>
     @endif
 
-    <form action="{{ url('/tasks') }}" method="POST">
+    <form action="{{ $basePath . '/tasks' }}" method="POST">
         @csrf
         <input type="hidden" name="redirect_to_schedule" value="1">
 
@@ -129,13 +132,13 @@
             </div>
         </div>
 
-        <input type="hidden" name="status" value="pending">
+        <input type="hidden" name="status" value="todo">
 
         <div style="display: flex; gap: 20px; align-items: center; padding-top: 25px; border-top: 1px solid #f1f5f9;">
             <button type="submit" class="btn-premium btn-premium-shine" style="flex: 2; border: none; padding: 20px; font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; background: #1e293b;">
                  Agendar Agora <i class="fas fa-clock"></i>
             </button>
-            <a href="{{ url('/tasks') }}" style="flex: 1; text-align: center; color: #94a3b8; font-weight: 800; font-size: 0.9rem; text-decoration: none; text-transform: uppercase;">Cancelar</a>
+            <a href="{{ $basePath . '/tasks' }}" style="flex: 1; text-align: center; color: #94a3b8; font-weight: 800; font-size: 0.9rem; text-decoration: none; text-transform: uppercase;">Cancelar</a>
         </div>
     </form>
 </div>

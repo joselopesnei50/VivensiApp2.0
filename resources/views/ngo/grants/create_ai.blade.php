@@ -66,6 +66,17 @@
         <p class="text-muted mx-auto" style="max-width: 500px;">Economize horas. Deixe o Bruce ler o edital (PDF) e estruturar os dados para você.</p>
     </div>
 
+    @if(session('error'))
+        <div class="alert alert-danger border-0 rounded-4" style="max-width: 700px; margin: 0 auto 20px auto;">
+            <strong>Erro:</strong> {{ session('error') }}
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-warning border-0 rounded-4" style="max-width: 700px; margin: 0 auto 20px auto;">
+            <strong>Atenção:</strong> {{ $errors->first() }}
+        </div>
+    @endif
+
     <div class="ai-import-card">
         <div class="loading-overlay" id="loadingOverlay">
             <div class="mb-4">

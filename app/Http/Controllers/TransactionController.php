@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class TransactionController extends Controller
 {
@@ -71,7 +72,8 @@ class TransactionController extends Controller
             'date' => 'required|date',
             'type' => 'required|in:income,expense',
             'category_id' => 'nullable|integer',
-            'project_id' => 'nullable|integer'
+            'project_id' => 'nullable|integer',
+            'attachment' => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png,zip'
         ]);
 
         if ($validator->fails()) {
@@ -82,11 +84,23 @@ class TransactionController extends Controller
 
         $transaction = new Transaction($validated);
         $transaction->tenant_id = auth()->user()->tenant_id;
-        $transaction->status = 'paid'; // Default para MVP
+        // Despesas lançadas por colaborador devem passar por aprovação do gestor
+        $user = auth()->user();
+        $isExpense = (($validated['type'] ?? null) === 'expense');
+        $needsApproval = $isExpense && !in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
+
+        $transaction->status = $needsApproval ? 'pending' : 'paid';
+        if (Schema::hasColumn('transactions', 'approval_status')) {
+            $transaction->approval_status = $needsApproval ? 'pending' : 'approved';
+        }
 
         if ($request->hasFile('attachment')) {
             $path = $request->file('attachment')->store('attachments', 'public');
             $transaction->attachment_path = $path;
+            // compat: algumas telas usam receipt_path para mostrar o anexo
+            if ($isExpense && empty($transaction->receipt_path)) {
+                $transaction->receipt_path = $path;
+            }
         }
 
         $transaction->save(); 
@@ -140,5 +154,37 @@ class TransactionController extends Controller
         $transaction->delete();
 
         return redirect('/transactions')->with('success', 'Lançamento excluído com sucesso!');
+    }
+
+    public function approve($id)
+    {
+        $transaction = Transaction::where('id', $id)
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->firstOrFail();
+
+        $updates = ['status' => 'paid'];
+        if (Schema::hasColumn('transactions', 'approval_status')) {
+            $updates['approval_status'] = 'approved';
+        }
+
+        $transaction->update($updates);
+
+        return back()->with('success', 'Lançamento aprovado!');
+    }
+
+    public function reject($id)
+    {
+        $transaction = Transaction::where('id', $id)
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->firstOrFail();
+
+        $updates = ['status' => 'canceled'];
+        if (Schema::hasColumn('transactions', 'approval_status')) {
+            $updates['approval_status'] = 'rejected';
+        }
+
+        $transaction->update($updates);
+
+        return back()->with('success', 'Lançamento recusado.');
     }
 }

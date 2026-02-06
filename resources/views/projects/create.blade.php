@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 <div class="header-page" style="margin-bottom: 40px; position: relative;">
     <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%); position: absolute; top: -30px; left: -30px; right: -30px; bottom: 0; z-index: -1;"></div>
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -12,7 +15,7 @@
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Iniciar Novo Projeto</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Transforme sua visão em execução organizada.</p>
         </div>
-        <a href="{{ url('/projects') }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
+        <a href="{{ $basePath . '/projects' }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
             <i class="fas fa-arrow-left me-2"></i> Voltar à Lista
         </a>
     </div>
@@ -32,7 +35,7 @@
         </div>
     @endif
 
-    <form action="{{ url('/projects') }}" method="POST">
+    <form action="{{ $basePath . '/projects' }}" method="POST">
         @csrf
 
         <div style="margin-bottom: 35px;">
@@ -86,9 +89,10 @@
                         <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Status da Missão</label>
                         <select name="status" class="form-control-vivensi" 
                                 style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 700; color: #1e293b; appearance: none; cursor: pointer;">
-                            <option value="active">🚀 Em Execução</option>
-                            <option value="planning" selected>📋 Planejamento</option>
-                            <option value="on_hold">⏸️ Pausado</option>
+                            <option value="active" selected>🚀 Em Execução</option>
+                            <option value="paused">⏸️ Pausado</option>
+                            <option value="completed">✅ Concluído</option>
+                            <option value="canceled">⛔ Cancelado</option>
                         </select>
                     </div>
                 </div>
@@ -125,7 +129,7 @@
             <button type="submit" class="btn-premium btn-premium-shine" style="flex: 2; border: none; padding: 18px; font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px;">
                  Lançar Projeto Ativo <i class="fas fa-paper-plane"></i>
             </button>
-            <a href="{{ url('/projects') }}" style="flex: 1; text-align: center; color: #94a3b8; font-weight: 800; font-size: 0.9rem; text-decoration: none; text-transform: uppercase;">Descartar</a>
+            <a href="{{ $basePath . '/projects' }}" style="flex: 1; text-align: center; color: #94a3b8; font-weight: 800; font-size: 0.9rem; text-decoration: none; text-transform: uppercase;">Descartar</a>
         </div>
     </form>
 </div>

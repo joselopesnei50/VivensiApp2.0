@@ -1,3 +1,7 @@
+@extends('layouts.app')
+
+@section('content')
+@include('partials.onboarding')
 <div class="header-page" style="margin-bottom: 40px; position: relative;">
     <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); position: absolute; top: -30px; left: -30px; right: -30px; bottom: 0; z-index: -1;"></div>
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">

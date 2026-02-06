@@ -12,9 +12,20 @@ class TeamController extends Controller
     public function index()
     {
         $tenant_id = auth()->user()->tenant_id;
-        $users = User::where('tenant_id', $tenant_id)->get();
+        $users = User::where('tenant_id', $tenant_id)
+            ->orderBy('role')
+            ->orderBy('name')
+            ->get();
 
-        return view('ngo.team.index', compact('users'));
+        $stats = [
+            'total' => $users->count(),
+            'ngo' => $users->where('role', 'ngo')->count(),
+            'manager' => $users->where('role', 'manager')->count(),
+            'employee' => $users->where('role', 'employee')->count(),
+            'active' => $users->where('status', 'active')->count(),
+        ];
+
+        return view('ngo.team.index', compact('users', 'stats'));
     }
 
     public function store(Request $request)
@@ -34,12 +45,7 @@ class TeamController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->role = $request->role;
-        // Note: The table schema showed password_hash, but standard Laravel uses 'password'.
-        // I should check User model to see what attribute is mapped. 
-        // Based on previous `desc users`, the column is `password_hash`.
-        // However, standard Laravel auth usually expects `password`.
-        // Let's verify User model first. For now I'll assume standard Hash facade, but assigning to the correct column.
-        $user->password_hash = Hash::make($request->password); 
+        $user->password = Hash::make($request->password);
         $user->status = 'active';
         $user->save();
 

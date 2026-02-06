@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 <div class="header-page" style="margin-bottom: 40px; position: relative;">
     <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); position: absolute; top: -30px; left: -30px; right: -30px; bottom: 0; z-index: -1;"></div>
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -13,10 +16,10 @@
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Controle suas pendências e compromissos com precisão.</p>
         </div>
         <div style="display: flex; gap: 15px;">
-             <a href="{{ url('/tasks/calendar') }}" class="btn-premium" style="background: white; color: #64748b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
+             <a href="{{ $basePath . '/tasks/calendar' }}" class="btn-premium" style="background: white; color: #64748b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
                 <i class="fas fa-calendar-days me-2"></i> Ver Calendário
             </a>
-            <a href="{{ url('/tasks/create') }}" class="btn-premium btn-premium-shine" style="border: none; padding: 14px 28px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+            <a href="{{ $basePath . '/tasks/create' }}" class="btn-premium btn-premium-shine" style="border: none; padding: 14px 28px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
                 <i class="fas fa-plus-circle"></i> Novo Lembrete
             </a>
         </div>
@@ -70,15 +73,26 @@
                     </td>
                     <td style="padding: 20px 25px;">
                         <span style="padding: 6px 14px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b;">
-                            {{ ucfirst($task->status) }}
+                            @php
+                                $statusLabels = [
+                                    'todo' => 'A Fazer',
+                                    'doing' => 'Em Andamento',
+                                    'done' => 'Concluída',
+                                    'pending' => 'Pendente',
+                                    'in_progress' => 'Em Progresso',
+                                    'completed' => 'Concluída',
+                                    'blocked' => 'Bloqueada',
+                                ];
+                            @endphp
+                            {{ $statusLabels[$task->status] ?? ucfirst($task->status) }}
                         </span>
                     </td>
                     <td style="padding: 20px 25px; text-align: center;">
                         <div style="display: flex; justify-content: center; gap: 8px;">
-                            <button class="btn btn-light btn-sm rounded-circle shadow-sm" style="width: 36px; height: 36px; border: 1px solid #f1f5f9;">
-                                <i class="fas fa-edit" style="color: #6366f1; font-size: 0.85rem;"></i>
+                            <button type="button" onclick="updateTaskStatus({{ (int) $task->id }}, 'doing')" class="btn btn-light btn-sm rounded-circle shadow-sm" title="Iniciar" style="width: 36px; height: 36px; border: 1px solid #f1f5f9;">
+                                <i class="fas fa-play" style="color: #6366f1; font-size: 0.85rem;"></i>
                             </button>
-                            <button class="btn btn-light btn-sm rounded-circle shadow-sm" style="width: 36px; height: 36px; border: 1px solid #f1f5f9;">
+                            <button type="button" onclick="updateTaskStatus({{ (int) $task->id }}, 'done')" class="btn btn-light btn-sm rounded-circle shadow-sm" title="Concluir" style="width: 36px; height: 36px; border: 1px solid #f1f5f9;">
                                 <i class="fas fa-check" style="color: #10b981; font-size: 0.85rem;"></i>
                             </button>
                         </div>
@@ -92,7 +106,7 @@
                         </div>
                         <h4 style="color: #1e293b; font-weight: 900; font-size: 1.4rem; margin-bottom: 8px;">Silêncio na Agenda</h4>
                         <p style="color: #94a3b8; font-size: 0.95rem; font-weight: 500; margin-bottom: 25px;">Tudo sobre controle. Não há pendências no radar no momento.</p>
-                        <a href="{{ url('/tasks/create') }}" class="btn-premium" style="display: inline-block; text-decoration: none; padding: 12px 30px; font-weight: 800;">AGENDAR TAREFA</a>
+                        <a href="{{ $basePath . '/tasks/create' }}" class="btn-premium" style="display: inline-block; text-decoration: none; padding: 12px 30px; font-weight: 800;">AGENDAR TAREFA</a>
                     </td>
                 </tr>
                 @endforelse
@@ -106,5 +120,30 @@
     </div>
     @endif
 </div>
+
+<script>
+    async function updateTaskStatus(id, status) {
+        try {
+            const res = await fetch('{{ $basePath }}/api/tasks/update-status', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, status })
+            });
+
+            if (!res.ok) {
+                const txt = await res.text();
+                alert('Não foi possível atualizar a tarefa (' + res.status + ').\n\n' + txt);
+                return;
+            }
+
+            window.location.reload();
+        } catch (e) {
+            alert('Falha de conexão ao atualizar a tarefa.');
+        }
+    }
+</script>
 @endsection
 

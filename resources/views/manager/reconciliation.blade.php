@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 <div class="header-page" style="margin-bottom: 30px;">
     <div>
         <h2 style="margin: 0; color: #2c3e50;">Conciliação Bancária</h2>
@@ -9,7 +12,7 @@
 </div>
 
 <div class="vivensi-card" style="max-width: 600px; padding: 40px; text-align: center;">
-    <form action="{{ url('/ngo/reconciliation/upload') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ $basePath . '/ngo/reconciliation/upload' }}" method="POST" enctype="multipart/form-data">
         @csrf
         
         <div style="margin-bottom: 30px;">

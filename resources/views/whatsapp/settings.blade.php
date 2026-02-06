@@ -52,18 +52,71 @@
 
                 <div class="form-group mb-4">
                     <label class="fw-700 mb-2 small">Instance Token</label>
-                    <input type="password" name="token" value="{{ $config->token }}" class="form-control-vivensi" placeholder="Token Secreto" required>
+                    <input type="password" name="token" value="" class="form-control-vivensi" placeholder="Deixe em branco para manter o token atual">
+                    <div class="small text-muted mt-1">Por segurança, o token não é exibido. Se não quiser trocar, deixe em branco.</div>
                 </div>
 
                 <div class="form-group mb-4">
                     <label class="fw-700 mb-2 small">Client Token (Z-API)</label>
                     <input type="text" name="client_token" value="{{ $config->client_token }}" class="form-control-vivensi" placeholder="Para segurança do Webhook">
+                    <div class="small text-muted mt-1">Configure este valor no painel da Z-API para autenticar o webhook.</div>
                 </div>
 
                 <div class="alert alert-warning" style="font-size: 0.8rem; border-radius: 12px; border: none; background: #fffbeb; color: #92400e;">
                     <i class="fas fa-link me-1"></i> <b>URL de Webhook:</b><br>
                     <code style="background: rgba(0,0,0,0.05); padding: 2px 5px; border-radius: 4px; display: block; margin-top: 5px;">{{ url('/api/whatsapp/webhook') }}</code>
                     Copie este link e cole no painel da Z-API em "Configurações de Webhook".
+                </div>
+            </div>
+
+            <!-- Anti-ban & Compliance Controls -->
+            <div class="vivensi-card" style="padding: 25px; margin-bottom: 30px; border-top: 4px solid #f59e0b;">
+                <h4 style="margin: 0 0 14px 0; font-size: 1.1rem; color: #334155; font-weight: 700;">
+                    <i class="fas fa-shield-halved me-2" style="color: #f59e0b;"></i> Segurança, LGPD e Anti‑Ban
+                </h4>
+                <div class="small text-muted mb-3">
+                    Regras para reduzir risco de bloqueio e garantir consentimento (opt‑in) e STOP.
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="outbound_enabled" value="1" id="outboundEnabled" {{ ($config->outbound_enabled ?? true) ? 'checked' : '' }}>
+                    <label class="form-check-label fw-700" for="outboundEnabled">Permitir envios (outbound)</label>
+                    <div class="small text-muted">Desative para impedir qualquer envio pelo sistema (manual e IA).</div>
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" name="require_opt_in" value="1" id="requireOptIn" {{ ($config->require_opt_in ?? true) ? 'checked' : '' }}>
+                    <label class="form-check-label fw-700" for="requireOptIn">Exigir opt‑in para enviar</label>
+                    <div class="small text-muted">O opt‑in é registrado automaticamente quando o cliente manda a primeira mensagem. Para contatos “iniciados”, exija consentimento explícito.</div>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="enforce_24h_window" value="1" id="enforce24h" {{ ($config->enforce_24h_window ?? true) ? 'checked' : '' }}>
+                    <label class="form-check-label fw-700" for="enforce24h">Aplicar janela de 24h</label>
+                    <div class="small text-muted">Fora da janela, o sistema bloqueia envios “livres” para reduzir risco. Ideal para atendimento.</div>
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" name="allow_templates_outside_window" value="1" id="allowTemplatesOutside" {{ ($config->allow_templates_outside_window ?? true) ? 'checked' : '' }}>
+                    <label class="form-check-label fw-700" for="allowTemplatesOutside">Permitir templates fora da janela</label>
+                    <div class="small text-muted">Mensagens “aprovadas” (ex.: respostas rápidas) podem ser enviadas mesmo fora da janela.</div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="fw-700 mb-2 small">Limite de envios por minuto</label>
+                        <input type="number" min="1" max="120" name="max_outbound_per_minute" value="{{ (int) ($config->max_outbound_per_minute ?? 12) }}" class="form-control-vivensi">
+                        <div class="small text-muted mt-1">Aplicado por tenant e por contato.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-700 mb-2 small">Cadência mínima (segundos)</label>
+                        <input type="number" min="0" max="60" name="min_outbound_delay_seconds" value="{{ (int) ($config->min_outbound_delay_seconds ?? 2) }}" class="form-control-vivensi">
+                        <div class="small text-muted mt-1">Evita rajadas e comportamento “robótico”.</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-4" style="font-size: 0.8rem; border-radius: 12px; border: none; background: #eff6ff; color: #1d4ed8;">
+                    <b>STOP:</b> se o cliente enviar “stop / sair / cancelar / parar”, o sistema registra opt‑out e bloqueia novos envios.
                 </div>
             </div>
 

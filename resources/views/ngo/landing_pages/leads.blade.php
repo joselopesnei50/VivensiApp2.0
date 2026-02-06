@@ -1,14 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+@endphp
 <div class="header-page" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
     <div>
         <h2 style="margin: 0; color: #2c3e50;">Leads Capturados: {{ $page->title }}</h2>
         <p style="color: #64748b; margin: 5px 0 0 0;">Contatos interessados através desta Landing Page.</p>
     </div>
-    <a href="{{ url('/ngo/landing-pages') }}" class="btn-premium" style="background: #64748b;">
-        <i class="fas fa-arrow-left"></i> Voltar
-    </a>
+    <div style="display:flex; gap: 10px; flex-wrap: wrap; align-items:center;">
+        <a href="{{ $basePath . '/ngo/landing-pages/' . $page->id . '/leads/export' }}" class="btn-premium" style="background: #4f46e5;">
+            <i class="fas fa-file-csv"></i> Exportar CSV
+        </a>
+        <a href="{{ $basePath . '/ngo/landing-pages' }}" class="btn-premium" style="background: #64748b;">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
 </div>
 
 <div class="vivensi-card" style="padding: 0; overflow: hidden;">

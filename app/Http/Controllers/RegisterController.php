@@ -50,7 +50,7 @@ class RegisterController extends Controller
                 'tenant_id' => $tenant->id,
                 'name' => $request->name,
                 'email' => $request->email,
-                'password_hash' => Hash::make($request->password),
+                'password' => Hash::make($request->password),
                 'role' => 'manager',
                 'status' => 'active',
             ]);

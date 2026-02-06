@@ -15,5 +15,6 @@ class VerifyCsrfToken extends Middleware
         '/api/whatsapp/webhook',
         '/api/webhooks/asaas',
         '/lp/*/lead',
+        '/validar-recibo',
     ];
 }

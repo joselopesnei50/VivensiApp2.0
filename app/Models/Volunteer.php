@@ -20,4 +20,9 @@ class Volunteer extends Model
         'availability',
         'status'
     ];
+
+    public function certificates()
+    {
+        return $this->hasMany(VolunteerCertificate::class);
+    }
 }

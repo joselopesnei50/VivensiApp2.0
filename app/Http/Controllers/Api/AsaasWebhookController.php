@@ -15,10 +15,10 @@ class AsaasWebhookController extends Controller
     public function handle(Request $request)
     {
         // Security Check: Validate Asaas Token
-        $localToken = \App\Models\SystemSetting::getValue('asaas_webhook_token');
-        $requestToken = $request->header('asaas-access-token');
-
-        Log::info("DEBUG SECURITY: local='{$localToken}', request='{$requestToken}'");
+        // Check config first (for testing), then database
+        $localToken = config('services.asaas.webhook_token') 
+            ?? \App\Models\SystemSetting::getValue('asaas_webhook_token');
+        $requestToken = (string) $request->header('asaas-access-token', '');
 
         // STRICT SECURITY: We must have a token configured and it must match.
         if (empty($localToken)) {
@@ -26,7 +26,7 @@ class AsaasWebhookController extends Controller
             return response()->json(['status' => 'error', 'reason' => 'server_misconfiguration'], 500); 
         }
 
-        if ($localToken !== $requestToken) {
+        if (!hash_equals((string) $localToken, $requestToken)) {
             Log::warning('Asaas Webhook: Invalid Token', ['ip' => $request->ip()]);
             return response()->json(['status' => 'error', 'reason' => 'invalid_token'], 401);
         }
@@ -35,14 +35,19 @@ class AsaasWebhookController extends Controller
         $payment = $request->input('payment');
         $subscriptionId = $request->input('subscription') ?? ($payment['subscription'] ?? null);
 
-        Log::info('Asaas Webhook Received:', ['event' => $event, 'subscription' => $subscriptionId]);
+        Log::info('Asaas Webhook Received', ['event' => $event, 'subscription' => $subscriptionId]);
 
         if (!$subscriptionId) {
             return response()->json(['status' => 'ignored', 'reason' => 'no_subscription']);
         }
 
         // Find tenant by customer Asaas ID or External Reference (we saved it as customer)
-        $tenant = Tenant::where('asaas_customer_id', $payment['customer'] ?? null)->first();
+        $customerId = $payment['customer'] ?? null;
+        if (!$customerId) {
+            return response()->json(['status' => 'ignored', 'reason' => 'no_customer']);
+        }
+
+        $tenant = Tenant::where('asaas_customer_id', $customerId)->first();
 
         if (!$tenant) {
             return response()->json(['status' => 'error', 'reason' => 'tenant_not_found'], 404);

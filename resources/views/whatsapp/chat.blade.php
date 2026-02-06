@@ -189,6 +189,12 @@
         .last-message { font-size: 0.85rem; color: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%; }
         .badge-unread { background: var(--danger-color); color: white; font-size: 0.7rem; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
 
+        .compliance-badges { display:flex; gap:8px; flex-wrap: wrap; margin-top: 4px; }
+        .c-badge { font-size: .72rem; font-weight: 800; padding: 4px 10px; border-radius: 999px; border:1px solid transparent; }
+        .c-ok { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+        .c-warn { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+        .c-bad { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
         /* --- Center Chat Area --- */
         .chat-main {
             flex: 1;
@@ -432,6 +438,9 @@
     </style>
 </head>
 <body>
+@php
+    $isManager = in_array(auth()->user()->role, ['manager', 'super_admin'], true);
+@endphp
 
     <div class="crm-layout">
         <!-- 1. LEFT SIDEBAR -->
@@ -506,6 +515,7 @@
                     <div class="header-info">
                         <h4 id="header-name">{{ $chats[0]->contact_name }}</h4>
                         <span id="header-status"><i class="fas fa-circle text-success" style="font-size: 8px;"></i> Online agora</span>
+                        <div class="compliance-badges" id="waComplianceBadges"></div>
                     </div>
                 </div>
                 <div class="chat-actions">
@@ -533,11 +543,17 @@
                         <button class="tool-btn" title="Anexar"><i class="fas fa-paperclip"></i></button>
                         <div style="width: 1px; height: 15px; background: #ccc; margin: 5px;"></div>
                         <button class="tool-btn text-warning" title="Respostas Rápidas" onclick="openCannedModal()"><i class="fas fa-bolt"></i></button>
+                        <button class="tool-btn text-success" id="tplToggleBtn" title="Enviar como Template (aprovado)" onclick="toggleTemplateMode()"><i class="fas fa-shield-halved"></i></button>
                         <button class="tool-btn text-primary" title="Melhorar com IA"><i class="fas fa-magic"></i></button>
                     </div>
                     <textarea class="message-input" id="msgInput" rows="1" placeholder="Escreva uma mensagem..."></textarea>
                     <div class="input-footer">
-                        <span style="font-size: 0.75rem; color: #94a3b8;">Enter para enviar, Shift+Enter para pular linha</span>
+                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                            <span style="font-size: 0.75rem; color: #94a3b8;">Enter para enviar, Shift+Enter para pular linha</span>
+                            <span id="templateModeBadge" style="display:none; font-size: .72rem; font-weight: 900; padding: 3px 10px; border-radius: 999px; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;">
+                                TEMPLATE
+                            </span>
+                        </div>
                         <div style="display: flex; gap: 10px;">
                              <button class="tool-btn"><i class="fas fa-microphone"></i></button>
                              <button class="send-btn" onclick="sendMessage()">Enviar <i class="fas fa-paper-plane"></i></button>
@@ -553,6 +569,23 @@
                 <div class="hero-avatar" id="crm-avatar">{{ substr($chats[0]->contact_name, 0, 1) }}</div>
                 <h3 style="margin: 0; font-size: 1.2rem; margin-bottom: 5px;" id="crm-name">{{ $chats[0]->contact_name }}</h3>
                 <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 10px;" id="crm-phone">{{ $chats[0]->contact_phone }}</span>
+                    <div class="compliance-badges" id="crmComplianceBadges" style="justify-content:center;"></div>
+                    @if($isManager)
+                        <div id="crmComplianceActions" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top: 10px;">
+                            <button type="button" class="btn btn-sm btn-outline-success" style="border-radius: 999px; font-weight: 800;" onclick="complianceAction('opt_in')">
+                                <i class="fas fa-check me-1"></i> Opt-in
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" style="border-radius: 999px; font-weight: 800;" onclick="complianceAction('opt_out')">
+                                <i class="fas fa-ban me-1"></i> Opt-out
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-dark" style="border-radius: 999px; font-weight: 800;" onclick="complianceAction('block')">
+                                <i class="fas fa-lock me-1"></i> Bloquear
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" style="border-radius: 999px; font-weight: 800;" onclick="complianceAction('unblock')">
+                                <i class="fas fa-unlock me-1"></i> Desbloquear
+                            </button>
+                        </div>
+                    @endif
                 <div style="display: flex; justify-content: center; gap: 5px;">
                     <span class="tag-badge hot">Quente 🔥</span>
                     <span class="tag-badge">Novo Lead</span>
@@ -614,7 +647,7 @@
                 <i class="fab fa-whatsapp fa-4x text-success mb-3"></i>
                 <h2>Bem-vindo ao OmniChannel</h2>
                 <p>Nenhuma conversa ativa no momento.<br>Aguarde novas mensagens ou inicie um atendimento ativo.</p>
-                <button class="send-btn" style="margin: 20px auto;">Nova Transmissão</button>
+                <button class="send-btn" style="margin: 20px auto;" onclick="startNewChat()">Nova Transmissão</button>
             </div>
         </div>
         @endif
@@ -665,9 +698,21 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function escapeHtml(input) {
+            const s = String(input ?? '');
+            return s.replace(/[&<>"'`]/g, (c) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+                '`': '&#96;'
+            }[c]));
+        }
         let currentChatId = {{ count($chats) > 0 ? $chats[0]->id : 'null' }};
         const csrfToken = '{{ csrf_token() }}';
         let cannedResponses = [];
+        let nextSendIsTemplate = false;
 
         $(document).ready(function() {
             if(currentChatId) {
@@ -710,6 +755,7 @@
             
             $.get('{{ url("/whatsapp/chat") }}/' + id + '/messages', function(data) {
                 updateUI(data.chat);
+                $('#window-warning').hide();
                 renderMessages(data.messages);
                 renderNotes(data.notes);
                 
@@ -725,6 +771,28 @@
             $('#header-name, #crm-name').text(chat.contact_name);
             $('#crm-avatar, #header-avatar').text(chat.contact_name.charAt(0));
             $('#crm-phone').text(chat.contact_phone || '--');
+            renderCompliance(chat);
+        }
+
+        function renderCompliance(chat) {
+            const badges = [];
+            if (chat.blocked_at) {
+                badges.push('<span class="c-badge c-bad"><i class="fas fa-lock me-1"></i> BLOQUEADO</span>');
+            } else if (chat.opt_out_at) {
+                badges.push('<span class="c-badge c-bad"><i class="fas fa-ban me-1"></i> OPT‑OUT</span>');
+            } else if (chat.opt_in_at) {
+                badges.push('<span class="c-badge c-ok"><i class="fas fa-check me-1"></i> OPT‑IN</span>');
+            } else {
+                badges.push('<span class="c-badge c-warn"><i class="fas fa-triangle-exclamation me-1"></i> SEM OPT‑IN</span>');
+            }
+
+            if (chat.last_outbound_at) {
+                const d = new Date(chat.last_outbound_at);
+                badges.push('<span class="c-badge c-warn"><i class="fas fa-clock me-1"></i> Último envio ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + '</span>');
+            }
+
+            $('#waComplianceBadges').html(badges.join(''));
+            $('#crmComplianceBadges').html(badges.join(''));
         }
 
         function renderMessages(messages) {
@@ -734,7 +802,7 @@
                 html += `
                     <div class="message-row ${isOut ? 'message-out' : 'message-in'}">
                         <div class="bubble ${isOut ? 'out' : 'in'}">
-                            ${msg.content}
+                            ${escapeHtml(msg.content)}
                             <div class="meta">
                                 ${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                 ${isOut ? '<i class="fas fa-check-double text-light"></i>' : ''}
@@ -760,8 +828,8 @@
                     html += `
                         <div class="timeline-item">
                             <div class="timeline-content" style="background: ${bg}; border: 1px solid #e2e8f0;">
-                                ${icon} ${note.content}
-                                <span class="timeline-date">${new Date(note.created_at).toLocaleDateString()} • ${note.user ? note.user.name : 'Sistema'}</span>
+                                ${icon} ${escapeHtml(note.content)}
+                                <span class="timeline-date">${new Date(note.created_at).toLocaleDateString()} • ${escapeHtml(note.user ? note.user.name : 'Sistema')}</span>
                             </div>
                         </div>
                     `;
@@ -771,18 +839,20 @@
         }
 
         function renderCannedList() {
-            let html = '';
+            const $list = $('#cannedList');
+            $list.empty();
             cannedResponses.forEach(c => {
-                html += `
-                    <button class="list-group-item list-group-item-action" onclick="useCanned('${c.content.replace(/'/g, "\\'")}')">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1 fw-bold">${c.title}</h6>
-                        </div>
-                        <p class="mb-1 small text-muted text-truncate">${c.content}</p>
-                    </button>
-                `;
+                const $btn = $('<button type="button" class="list-group-item list-group-item-action"></button>');
+                $btn.on('click', () => useCanned(String(c.content ?? '')));
+
+                const $header = $('<div class="d-flex w-100 justify-content-between"></div>');
+                const $title = $('<h6 class="mb-1 fw-bold"></h6>').text(String(c.title ?? ''));
+                $header.append($title);
+
+                const $p = $('<p class="mb-1 small text-muted text-truncate"></p>').text(String(c.content ?? ''));
+                $btn.append($header).append($p);
+                $list.append($btn);
             });
-            $('#cannedList').html(html);
         }
 
         // --- Actions ---
@@ -799,10 +869,11 @@
             $('#msgInput').val('');
             
             // Optimistic
+            const optimisticId = 'opt_' + Date.now();
             $('#chat-messages-area').append(`
                 <div class="message-row message-out">
-                    <div class="bubble out">
-                        ${txt}
+                    <div class="bubble out" data-optimistic="${optimisticId}">
+                        ${escapeHtml(txt)}
                         <div class="meta">Agora <i class="far fa-clock"></i></div>
                     </div>
                 </div>
@@ -812,8 +883,28 @@
             $.post('{{ url("/whatsapp/chat/send") }}', {
                 _token: csrfToken,
                 chat_id: currentChatId,
-                message: txt
+                message: txt,
+                is_template: nextSendIsTemplate ? 1 : 0
+            }).fail(function(xhr) {
+                const code = (xhr && xhr.responseJSON && xhr.responseJSON.code) ? xhr.responseJSON.code : null;
+                const msg = (xhr && xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : 'Envio bloqueado.';
+                const b = document.querySelector('[data-optimistic="' + optimisticId + '"]');
+                if (b) {
+                    b.style.opacity = '0.85';
+                    b.style.background = '#991b1b';
+                    const meta = b.querySelector('.meta');
+                    if (meta) meta.innerHTML = 'Falhou <i class="fas fa-triangle-exclamation"></i>';
+                }
+                if (code === 'OUTSIDE_24H_WINDOW') {
+                    $('#window-warning').css('display', 'flex');
+                }
+                alert(msg);
+                setTimeout(() => loadChatData(currentChatId), 800);
             });
+
+            // reset template mode after attempting to send
+            nextSendIsTemplate = false;
+            $('#templateModeBadge').hide();
         }
 
         $('#msgInput').on('keypress', function(e) {
@@ -822,6 +913,29 @@
                 sendMessage();
             }
         });
+
+        function complianceAction(action) {
+            if (!currentChatId) return;
+
+            let reason = '';
+            if (action === 'block' || action === 'opt_out') {
+                reason = prompt('Motivo (opcional):') || '';
+            }
+
+            $.post('{{ url("/whatsapp/chat") }}/' + currentChatId + '/compliance', {
+                _token: csrfToken,
+                action: action,
+                reason: reason
+            }, function(resp) {
+                if (resp && resp.chat) {
+                    renderCompliance(resp.chat);
+                }
+                setTimeout(() => loadChatData(currentChatId), 250);
+            }).fail(function(xhr) {
+                const msg = (xhr && xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Não foi possível atualizar compliance.';
+                alert(msg);
+            });
+        }
 
         // Notes Logic
         function openNoteModal() {
@@ -870,6 +984,14 @@
             $('#msgInput').val(text);
             $('#cannedModal').modal('hide');
             $('#msgInput').focus();
+            nextSendIsTemplate = true;
+            $('#templateModeBadge').show();
+        }
+
+        function toggleTemplateMode() {
+            nextSendIsTemplate = !nextSendIsTemplate;
+            if (nextSendIsTemplate) $('#templateModeBadge').show();
+            else $('#templateModeBadge').hide();
         }
 
         // --- Simulation ---
@@ -899,6 +1021,28 @@
                 setTimeout(() => loadChatData(currentChatId), 5000);
             }).fail(function() {
                  alert("Erro ao simular. Verifique o console.");
+            });
+        }
+
+        function startNewChat() {
+            const phone = prompt("Digite o WhatsApp do contato (somente números, ex: 558199999999):");
+            if (!phone) return;
+            const name = prompt("Nome do contato (opcional):") || '';
+            const message = prompt("Primeira mensagem (opcional). Se deixar vazio, só cria a conversa:") || '';
+            const consent = confirm("Você tem opt-in/consentimento para enviar mensagem a este contato?\n\nOK = Sim (tenho consentimento)\nCancelar = Não (apenas criar conversa)");
+
+            $.post('{{ route("whatsapp.chat.start") }}', {
+                _token: csrfToken,
+                phone: phone,
+                name: name,
+                message: message,
+                consent: consent ? 1 : 0
+            }, function(resp) {
+                // Reload to refresh chat list and open chat
+                window.location.href = '{{ url("/whatsapp/chat") }}';
+            }).fail(function(xhr) {
+                const msg = (xhr && xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : "Não foi possível criar a conversa. Verifique o telefone e configurações.";
+                alert(msg);
             });
         }
     </script>
