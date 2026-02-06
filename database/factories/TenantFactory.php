@@ -20,9 +20,9 @@ class TenantFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->company,
-            'document' => $this->faker->unique()->numerify('##############'), // CPF/CNPJ
-            'type' => $this->faker->randomElement(['ngo', 'manager', 'common']),
+            'name' => fake()->company(),
+            'document' => fake()->unique()->numerify('##############'), // CPF/CNPJ
+            'type' => fake()->randomElement(['ngo', 'manager', 'common']),
             'subscription_status' => 'active',
             'trial_ends_at' => now()->addDays(7),
         ];

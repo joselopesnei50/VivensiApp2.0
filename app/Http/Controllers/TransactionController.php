@@ -145,6 +145,44 @@ class TransactionController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    public function show($id)
+    {
+        $transaction = Transaction::where('id', $id)
+                                   ->where('tenant_id', auth()->user()->tenant_id)
+                                   ->firstOrFail();
+        
+        return response()->json($transaction);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $transaction = Transaction::where('id', $id)
+                                   ->where('tenant_id', auth()->user()->tenant_id)
+                                   ->firstOrFail();
+        
+        // Sanitização de Moeda Brasileira (R$ 1.000,00 -> 1000.00)
+        $data = $request->all();
+        if (isset($data['amount'])) {
+             $data['amount'] = str_replace('.', '', $data['amount']);
+             $data['amount'] = str_replace(',', '.', $data['amount']);
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($data, [
+            'description' => 'nullable|string|max:255',
+            'amount' => 'nullable|numeric',
+            'date' => 'nullable|date',
+            'type' => 'nullable|in:income,expense',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $transaction->update($validator->validated());
+
+        return back()->with('success', 'Lançamento atualizado com sucesso!');
+    }
+
     public function destroy($id)
     {
         $transaction = Transaction::where('id', $id)

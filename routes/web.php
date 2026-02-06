@@ -101,6 +101,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/', [App\Http\Controllers\TransactionController::class, 'index']);
         Route::get('/create', [App\Http\Controllers\TransactionController::class, 'create']);
         Route::post('/', [App\Http\Controllers\TransactionController::class, 'store']);
+        Route::get('/{id}', [App\Http\Controllers\TransactionController::class, 'show']); // Added for tests
+        Route::put('/{id}', [App\Http\Controllers\TransactionController::class, 'update']); // Added for tests
         Route::post('/{id}/approve', [App\Http\Controllers\TransactionController::class, 'approve'])->name('transactions.approve');
         Route::post('/{id}/reject', [App\Http\Controllers\TransactionController::class, 'reject'])->name('transactions.reject');
         Route::get('/export', [App\Http\Controllers\TransactionController::class, 'export']);
