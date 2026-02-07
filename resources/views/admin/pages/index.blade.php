@@ -24,7 +24,7 @@
                     <div style="font-weight: 700; color: #1e293b;">{{ $page->title }}</div>
                 </td>
                 <td style="padding: 20px 25px; color: #64748b;">
-                    /p/{{ $page->slug }}
+                    {{ $page->slug }}
                 </td>
                 <td style="padding: 20px 25px; text-align: right;">
                     <a href="{{ route('admin.pages.edit', $page->id) }}" class="btn btn-sm btn-light" style="border: 1px solid #e2e8f0;"><i class="fas fa-edit me-2"></i> Editar Conteúdo</a>
