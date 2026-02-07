@@ -23,11 +23,13 @@ class PageController extends Controller
     {
         $request->validate([
             'title' => 'required|max:255',
+            'slug' => 'required|max:255|unique:pages,slug,' . $page->id,
             'content' => 'required'
         ]);
 
         $page->update([
             'title' => $request->title,
+            'slug' => $request->slug,
             'content' => $request->content
         ]);
 

@@ -19,6 +19,12 @@
         </div>
 
         <div class="mb-4">
+            <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Slug (URL da página)</label>
+            <input type="text" name="slug" value="{{ $page->slug }}" class="form-control" required>
+            <small class="text-muted">Ex: termos (que vira /pagina/termos)</small>
+        </div>
+
+        <div class="mb-4">
             <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Conteúdo da Página</label>
             <textarea name="content" class="form-control" style="height: 600px;" required>{{ $page->content }}</textarea>
             <small class="text-muted">Você pode usar quebras de linha normais.</small>
