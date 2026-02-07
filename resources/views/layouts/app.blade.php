@@ -141,6 +141,17 @@
             <div class="mobile-menu-btn" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </div>
+            
+            <!-- Mobile Logout Button -->
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="mobile-logout-btn" style="display: none; margin-left: 15px; color: #ef4444; font-size: 1.2rem;">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+
+            <style>
+                @media (max-width: 768px) {
+                    .mobile-logout-btn { display: block !important; }
+                }
+            </style>
 
             <div>
                 <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; font-weight: 700; display: block; margin-bottom: 5px;">Ambiente de Gestão</span>

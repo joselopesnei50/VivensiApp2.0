@@ -18,6 +18,9 @@ Route::get('/solucoes/terceiro-setor', [App\Http\Controllers\PublicController::c
 Route::get('/solucoes/gestor-projetos', [App\Http\Controllers\PublicController::class, 'solutionsManager'])->name('solutions.manager');
 Route::get('/solucoes/pessoa-comum', [App\Http\Controllers\PublicController::class, 'solutionsCommon'])->name('solutions.common');
 
+// Public Pages (Terms, Privacy, About)
+Route::get('/pagina/{slug}', [App\Http\Controllers\PageController::class, 'show'])->name('public.page');
+
 Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['pt_BR', 'es', 'en'])) {
         session()->put('locale', $locale);
@@ -415,7 +418,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     });
 });
 
-Route::get('/p/{slug}', [App\Http\Controllers\PublicController::class, 'showPage'])->name('public.page');
+
 Route::get('/blog', [App\Http\Controllers\PublicController::class, 'blogIndex'])->name('public.blog.index');
 Route::get('/blog/{slug}', [App\Http\Controllers\PublicController::class, 'blogShow'])->name('public.blog.show');
 

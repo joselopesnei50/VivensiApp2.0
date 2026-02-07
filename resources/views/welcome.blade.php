@@ -324,18 +324,114 @@
         <a href="{{ url('/') }}" class="logo">
             <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Logo" style="height: 40px;">
         </a>
-        <div class="nav-links">
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+            <!-- Mobile Header inside Menu -->
+            <div class="mobile-menu-header">
+                <span style="font-weight: 800; font-size: 1.2rem; color: var(--secondary);">Menu</span>
+                <button onclick="toggleMobileMenu()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
             <a href="{{ route('solutions.ngo') }}">ONGs</a>
             <a href="{{ route('solutions.manager') }}">Gestores</a>
             <a href="{{ route('solutions.common') }}">Pessoal</a>
             <a href="#pricing">Preços</a>
+            
+            <!-- Mobile Only Actions -->
+            <div class="mobile-actions">
+                <a href="{{ route('login') }}" class="btn-outline" style="text-align: center;">Entrar</a>
+                <a href="#pricing" class="btn-cta" style="text-align: center;">Começar Agora</a>
+            </div>
         </div>
 
-        <div style="display: flex; gap: 15px;">
+        <div class="desktop-actions" style="display: flex; gap: 15px;">
             <a href="{{ route('login') }}" class="btn-outline">Entrar</a>
             <a href="#pricing" class="btn-cta">Começar Agora</a>
         </div>
     </nav>
+
+    <!-- Overlay for Mobile Menu -->
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMobileMenu()"></div>
+
+    <style>
+        .mobile-menu-btn { display: none; background: none; border: none; font-size: 1.5rem; color: var(--secondary); cursor: pointer; }
+        .mobile-menu-header { display: none; }
+        .mobile-actions { display: none; }
+        .menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; backdrop-filter: blur(2px); opacity: 0; transition: opacity 0.3s; }
+        .menu-overlay.active { display: block; opacity: 1; }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: block; }
+            .desktop-actions { display: none !important; }
+            
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 80%;
+                max-width: 300px;
+                height: 100vh;
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+                transition: right 0.3s ease;
+                z-index: 1001;
+                display: flex !important;
+                gap: 20px;
+            }
+
+            .nav-links.active { right: 0; }
+
+            .mobile-menu-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                border-bottom: 1px solid #f1f5f9;
+                padding-bottom: 15px;
+            }
+
+            .nav-links a {
+                font-size: 1.1rem;
+                padding: 10px 0;
+                border-bottom: 1px solid #f8fafc;
+                display: block;
+            }
+
+            .mobile-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                margin-top: 20px;
+            }
+        }
+    </style>
+
+    <script>
+        function toggleMobileMenu() {
+            const nav = document.getElementById('navLinks');
+            const overlay = document.getElementById('menuOverlay');
+            nav.classList.toggle('active');
+            
+            if (nav.classList.contains('active')) {
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                document.body.style.overflow = 'hidden';
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+                document.body.style.overflow = 'auto';
+            }
+        }
+    </script>
 
     <!-- Hero -->
     <section class="hero" style="padding-top: 80px;">

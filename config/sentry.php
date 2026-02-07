@@ -133,18 +133,6 @@ return [
     ],
 
     // Add tenant context to all Sentry events
-    'before_send' => function (\Sentry\Event $event): ?\Sentry\Event {
-        if (auth()->check()) {
-            $event->setUser([
-                'id' => auth()->id(),
-                'tenant_id' => auth()->user()->tenant_id,
-                'email' => auth()->user()->email,
-            ]);
-
-            $event->setTag('tenant_id', (string) auth()->user()->tenant_id);
-        }
-
-        return $event;
-    },
+    // 'before_send' => null, // Removed to avoid closure issues
 
 ];
