@@ -222,6 +222,21 @@
         </div>
     </div>
 
+    <!-- Flash Messages -->
+    <div style="padding: 20px 30px 0 30px;">
+        @if(session('success'))
+            <div class="alert alert-success" style="background-color: #dcfce7; border: 1px solid #86efac; color: #166534; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger" style="background-color: #fee2e2; border: 1px solid #f87171; color: #b91c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+                <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+            </div>
+        @endif
+    </div>
+
     <!-- Main Content Injection -->
     @yield('content')
 
