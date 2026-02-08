@@ -494,7 +494,7 @@
     <!-- Ecossistema & Vídeo Section -->
     <section id="ecosistema" class="ecosistema-section" style="padding: 100px 5%; background: white;">
         <div class="container" style="max-width: 1200px; margin: 0 auto;">
-            <div class="row align-items-center" style="display: flex; flex-wrap: wrap; gap: 60px;">
+            <div class="row align-items-center" style="display: flex; flex-wrap: wrap; gap: 60px; justify-content: center;">
                 <!-- Texto Column -->
                 <div class="col-text" style="flex: 1; min-width: 350px;">
                     <span class="section-badge" style="background: rgba(79, 70, 229, 0.1); color: var(--primary); padding: 8px 20px; border-radius: 50px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Conheça a Revolução</span>

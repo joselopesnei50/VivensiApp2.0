@@ -50,7 +50,7 @@
                     </span>
                 </td>
                 <td style="padding: 15px 25px; text-align: right;">
-                    <a href="#" class="btn-outline" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;">Detalhes</a>
+                    <a href="{{ route('admin.tenants.show', $tenant->id) }}" class="btn-outline" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;">Detalhes</a>
                 </td>
             </tr>
             @endforeach

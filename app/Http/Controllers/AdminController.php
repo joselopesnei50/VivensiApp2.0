@@ -156,6 +156,19 @@ class AdminController extends Controller
         return view('admin.tenants.index', compact('tenants'));
     }
 
+    public function showTenant($id)
+    {
+        if (auth()->user()->role !== 'super_admin') {
+            abort(403);
+        }
+
+        $tenant = Tenant::findOrFail($id);
+        $user = User::where('tenant_id', $tenant->id)->first(); // Main user
+        $plan = DB::table('subscription_plans')->where('id', $tenant->plan_id)->first();
+
+        return view('admin.tenants.show', compact('tenant', 'user', 'plan'));
+    }
+
     public function emailLogs()
     {
         if (auth()->user()->role !== 'super_admin') {
