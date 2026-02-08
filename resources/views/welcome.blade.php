@@ -309,6 +309,11 @@
             .nav-links { display: none; }
             .price-card.featured { transform: scale(1); }
             .footer-grid { grid-template-columns: 1fr; }
+            
+            /* FIX: Video Container Responsiveness */
+            .col-video { min-width: 100% !important; }
+            .col-text { min-width: 100% !important; }
+            .ecosistema-section .row { gap: 40px !important; }
         }
     </style>
 </head>

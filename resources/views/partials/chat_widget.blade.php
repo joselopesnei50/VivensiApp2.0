@@ -1,5 +1,24 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<div id="vivensi-floating-dock" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; font-family: 'Inter', sans-serif; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 15px;">
+<div id="vivensi-floating-dock" class="vivensi-dock">
+    <style>
+        .vivensi-dock {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: flex-end;
+            gap: 15px;
+        }
+        @media (max-width: 768px) {
+            .vivensi-dock {
+                bottom: 20px !important;
+                right: 15px !important;
+            }
+        }
+    </style>
     
     <!-- Main Toggle Button -->
     <button onclick="toggleDock()" id="main-fab" style="width: 56px; height: 56px; border-radius: 50%; background: #1e293b; color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: transform 0.2s ease;">
