@@ -74,6 +74,7 @@
                 <li><a href="{{ route('admin.blog.index') }}"><i class="fas fa-blog"></i> Blog CMS</a></li>
                 <li><a href="{{ route('admin.testimonials.index') }}"><i class="fas fa-quote-left"></i> Depoimentos</a></li>
                 <li><a href="{{ route('admin.pages.index') }}"><i class="fas fa-file-alt"></i> Páginas (CMS)</a></li>
+                <li><a href="{{ route('admin.academy.index') }}"><i class="fas fa-graduation-cap"></i> Vivensi Academy</a></li>
                 <li><a href="{{ route('admin.health') }}"><i class="fas fa-server"></i> Saúde do Servidor</a></li>
 
                 <li><a href="{{ url('/admin/settings') }}"><i class="fas fa-cogs"></i> Configurações Globais</a></li>
