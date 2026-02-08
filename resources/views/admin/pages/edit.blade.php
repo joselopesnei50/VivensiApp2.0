@@ -46,4 +46,31 @@
         </div>
     </form>
 </div>
+
+<!-- Summernote Lite (Avoid Bootstrap Conflict) -->
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-pt-BR.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('textarea[name="content"]').summernote({
+            placeholder: 'Escreva o conteúdo da página aqui...',
+            tabsize: 2,
+            height: 400,
+            lang: 'pt-BR', // default: 'en-US'
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ]
+        });
+    });
+</script>
 @endsection
+
