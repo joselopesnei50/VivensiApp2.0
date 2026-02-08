@@ -354,6 +354,16 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/tenants', [App\Http\Controllers\AdminController::class, 'tenants']);
         Route::get('/tenants/{id}', [App\Http\Controllers\AdminController::class, 'showTenant'])->name('admin.tenants.show');
         Route::resource('academy', App\Http\Controllers\Admin\AcademyController::class, ['as' => 'admin']);
+        
+        // Academy Modules & Lessons
+        Route::get('academy/{course}/modules', [App\Http\Controllers\Admin\AcademyModuleController::class, 'index'])->name('admin.academy.modules.index');
+        Route::post('academy/{course}/modules', [App\Http\Controllers\Admin\AcademyModuleController::class, 'storeModule'])->name('admin.academy.modules.store');
+        Route::put('academy/modules/{id}', [App\Http\Controllers\Admin\AcademyModuleController::class, 'updateModule'])->name('admin.academy.modules.update');
+        Route::delete('academy/modules/{id}', [App\Http\Controllers\Admin\AcademyModuleController::class, 'destroyModule'])->name('admin.academy.modules.destroy');
+        
+        Route::post('academy/modules/{module}/lessons', [App\Http\Controllers\Admin\AcademyModuleController::class, 'storeLesson'])->name('admin.academy.lessons.store');
+        Route::delete('academy/lessons/{id}', [App\Http\Controllers\Admin\AcademyModuleController::class, 'destroyLesson'])->name('admin.academy.lessons.destroy');
+
         Route::get('/team', [App\Http\Controllers\Admin\AdminTeamController::class, 'index'])->name('admin.team.index');
         Route::get('/team/{id}', [App\Http\Controllers\Admin\AdminTeamController::class, 'profile'])->name('admin.team.profile');
         Route::post('/team', [App\Http\Controllers\Admin\AdminTeamController::class, 'store'])->name('admin.team.store');

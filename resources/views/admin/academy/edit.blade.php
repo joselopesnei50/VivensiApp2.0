@@ -61,10 +61,10 @@
             <h3 style="margin-bottom: 10px; color: #1e293b;">Conteúdo do Curso</h3>
             <p style="color: #64748b; margin-bottom: 20px;">Gerencie os módulos e as aulas deste curso.</p>
             
-            <a href="#" class="btn btn-primary" style="width: 100%; border-radius: 8px; padding: 12px; font-weight: 700;">
+            <a href="{{ route('admin.academy.modules.index', $course->id) }}" class="btn btn-primary" style="width: 100%; border-radius: 8px; padding: 12px; font-weight: 700;">
                 <i class="fas fa-edit me-2"></i> Gerenciar Módulos
             </a>
-            <small class="text-muted d-block mt-2">Em breve</small>
+            <small class="text-muted d-block mt-2">Adicionar Aulas e Vídeos</small>
         </div>
     </div>
 </div>
