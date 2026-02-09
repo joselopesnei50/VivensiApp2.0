@@ -1,10 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.academy')
 
 @section('content')
-<div style="background-color: #0f172a; min-height: 100vh; padding-bottom: 50px; margin: -1.5rem;">
+<div style="background-color: #0f172a; min-height: 100vh; padding-bottom: 50px; margin: -1.5rem; margin-top: 0; padding-top: 80px;">
     
     <!-- Top Bar -->
-    <div style="background: #1e293b; border-bottom: 1px solid #334155; padding: 15px 25px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="background: #1e293b; border-bottom: 1px solid #334155; padding: 15px 25px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10;">
         <div style="display: flex; align-items: center; gap: 15px;">
             <a href="{{ route('academy.index') }}" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">
                 <i class="fas fa-arrow-left me-2"></i> Voltar
@@ -12,12 +12,25 @@
             <div style="height: 20px; width: 1px; background: #334155;"></div>
             <h1 style="color: #fff; font-size: 1.1rem; font-weight: 700; margin: 0;">{{ $course->title }}</h1>
         </div>
-        <div>
-            <!-- Progress Circle or Percentage could go here -->
+        <div style="display: flex; align-items: center; gap: 15px;">
+            @if($certificate)
+                <!-- Certificate Download Button -->
+                <a href="{{ url('/academy/certificate/' . $certificate->code) }}" class="btn-premium" style="padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);">
+                    <i class="fas fa-certificate"></i>
+                    Baixar Certificado
+                </a>
+            @endif
+            
+            <!-- Progress Badge -->
+            <div style="background: rgba(99, 102, 241, 0.2); padding: 8px 16px; border-radius: 20px; border: 1px solid #6366f1;">
+                <span style="color: #818cf8; font-weight: 700; font-size: 0.9rem;">
+                    <i class="fas fa-chart-line"></i> {{ $progress }}%
+                </span>
+            </div>
         </div>
     </div>
 
-    <div class="container-fluid" style="padding: 25px;">
+    <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 25px; padding-top: 60px;">
         <div class="row">
             
             <!-- Player Area (Left) -->

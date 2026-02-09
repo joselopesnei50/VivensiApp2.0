@@ -92,7 +92,7 @@
                             <!-- Adicionar Aula -->
                             <div style="background: #f8fafc; padding: 15px; border-radius: 8px;">
                                 <h6 style="font-weight: 700; margin-bottom: 15px;">Adicionar Aula</h6>
-                                <form action="{{ route('admin.academy.lessons.store', $module->id) }}" method="POST">
+                                <form action="{{ route('admin.academy.lessons.store', $module->id) }}" method="POST" enctype="multipart/form-data" id="lessonForm{{ $module->id }}">
                                     @csrf
                                     <div class="row">
                                         <div class="col-md-8 mb-2">
@@ -102,14 +102,23 @@
                                             <input type="number" name="order" class="form-control form-control-sm" placeholder="Ord." value="{{ $module->lessons->count() + 1 }}">
                                         </div>
                                         <div class="col-md-2 mb-2">
-                                            <select name="type" class="form-select form-select-sm">
+                                            <select name="type" class="form-select form-select-sm lesson-type-selector" data-module="{{ $module->id }}">
                                                 <option value="video">Vídeo</option>
                                                 <option value="ebook">E-book</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-8 mb-2">
+                                        
+                                        <!-- Video Fields -->
+                                        <div class="col-md-8 mb-2 video-fields-{{ $module->id }}">
                                             <input type="url" name="video_url" class="form-control form-control-sm" placeholder="URL do Vídeo (YouTube/Vimeo)">
                                         </div>
+                                        
+                                        <!-- Ebook Fields -->
+                                        <div class="col-md-8 mb-2 ebook-fields-{{ $module->id }}" style="display: none;">
+                                            <input type="file" name="document" class="form-control form-control-sm" accept=".pdf">
+                                            <small class="text-muted">Arquivo PDF (máx. 10MB)</small>
+                                        </div>
+                                        
                                         <div class="col-md-2 mb-2">
                                             <input type="number" name="duration_minutes" class="form-control form-control-sm" placeholder="Min.">
                                         </div>
@@ -119,6 +128,27 @@
                                     </div>
                                 </form>
                             </div>
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const selector = document.querySelector('.lesson-type-selector[data-module="{{ $module->id }}"]');
+                                    if (selector) {
+                                        selector.addEventListener('change', function() {
+                                            const moduleId = this.dataset.module;
+                                            const videoFields = document.querySelector('.video-fields-' + moduleId);
+                                            const ebookFields = document.querySelector('.ebook-fields-' + moduleId);
+                                            
+                                            if (this.value === 'ebook') {
+                                                videoFields.style.display = 'none';
+                                                ebookFields.style.display = 'block';
+                                            } else {
+                                                videoFields.style.display = 'block';
+                                                ebookFields.style.display = 'none';
+                                            }
+                                        });
+                                    }
+                                });
+                            </script>
 
                         </div>
                     </div>

@@ -90,7 +90,26 @@ class AcademyController extends Controller
             $currentLesson = $firstLesson;
         }
 
-        return view('academy.show', compact('course', 'currentLesson'));
+        // Check if user has certificate for this course
+        $certificate = \App\Models\Certificate::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->first();
+
+        // Calculate progress
+        $totalLessons = $course->modules->sum(function ($module) {
+            return $module->lessons->count();
+        });
+        $completedLessons = 0;
+        foreach ($course->modules as $module) {
+            foreach ($module->lessons as $lesson) {
+                if ($lesson->is_completed) {
+                    $completedLessons++;
+                }
+            }
+        }
+        $progress = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0;
+
+        return view('academy.show', compact('course', 'currentLesson', 'certificate', 'progress'));
     }
 
     /**

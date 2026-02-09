@@ -55,13 +55,24 @@ class AcademyModuleController extends Controller
             'duration_minutes' => 'integer',
             'type' => 'required|in:video,ebook',
             'order' => 'integer',
+            'document' => 'nullable|file|mimes:pdf|max:10240', // Max 10MB
         ]);
+
+        $documentUrl = null;
+
+        // Handle PDF upload for ebooks
+        if ($request->hasFile('document') && $request->type === 'ebook') {
+            $file = $request->file('document');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('academy/documents', $filename, 'public');
+            $documentUrl = Storage::url($path);
+        }
 
         Lesson::create([
             'module_id' => $moduleId,
             'title' => $request->title,
             'video_url' => $request->video_url,
-            'document_url' => $request->document_url, // Handle upload later if needed
+            'document_url' => $documentUrl,
             'duration_minutes' => $request->duration_minutes ?? 0,
             'type' => $request->type,
             'order' => $request->order ?? 0,

@@ -686,6 +686,115 @@
         .testimonial-card:hover { transform: translateY(-10px); background: white !important; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.1); border-color: var(--primary); }
     </style>
 
+    <!-- Academy Hero Section -->
+    <section id="academy" style="padding: 100px 5%; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); position: relative; overflow: hidden;">
+        <!-- Decorative Elements -->
+        <div style="position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: rgba(99, 102, 241, 0.2); border-radius: 50%; filter: blur(100px);"></div>
+        <div style="position: absolute; bottom: -150px; left: -150px; width: 500px; height: 500px; background: rgba(139, 92, 246, 0.2); border-radius: 50%; filter: blur(120px);"></div>
+        
+        <div style="max-width: 1200px; margin: 0 auto; position: relative; z-index: 2;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+                <!-- Left: Text Content -->
+                <div>
+                    <div style="display: inline-block; background: rgba(251, 191, 36, 0.2); backdrop-filter: blur(10px); padding: 8px 20px; border-radius: 30px; margin-bottom: 25px; border: 1px solid rgba(251, 191, 36, 0.3);">
+                        <span style="color: #fbbf24; font-weight: 700; font-size: 0.85rem; letter-spacing: 1px;">✨ NOVO: VIVENSI ACADEMY</span>
+                    </div>
+                    
+                    <h2 style="color: #fff; font-weight: 900; font-size: 3rem; letter-spacing: -2px; margin-bottom: 25px; line-height: 1.1;">
+                        Aprenda a Dominar sua
+                        <span style="background: linear-gradient(90deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Gestão</span>
+                    </h2>
+                    
+                    <p style="color: #e0e7ff; font-size: 1.2rem; line-height: 1.7; margin-bottom: 35px; max-width: 500px;">
+                        Cursos exclusivos, certificados reconhecidos e conteúdo prático para transformar sua organização.
+                    </p>
+                    
+                    <!-- Features List -->
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 40px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-graduation-cap" style="color: #818cf8; font-size: 1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div style="color: #fff; font-weight: 700;">Cursos Práticos</div>
+                                <div style="color: #cbd5e1; font-size: 0.9rem;">Aprenda fazendo, não apenas assistindo</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; background: rgba(251, 191, 36, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-crown" style="color: #fbbf24; font-size: 1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div style="color: #fff; font-weight: 700;">Conteúdos Exclusivos para Assinantes</div>
+                                <div style="color: #cbd5e1; font-size: 0.9rem;">Acesso VIP a materiais premium e ebooks</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-certificate" style="color: #818cf8; font-size: 1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div style="color: #fff; font-weight: 700;">Certificados Oficiais</div>
+                                <div style="color: #cbd5e1; font-size: 0.9rem;">Reconhecidos e validados digitalmente</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-infinity" style="color: #818cf8; font-size: 1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div style="color: #fff; font-weight: 700;">Acesso Ilimitado</div>
+                                <div style="color: #cbd5e1; font-size: 0.9rem;">Estude no seu ritmo, quando quiser</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <a href="{{ route('register') }}" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1e293b; padding: 16px 35px; border-radius: 12px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4); transition: transform 0.2s;">
+                            <i class="fas fa-rocket"></i> Começar Agora
+                        </a>
+                        <a href="#pricing" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); color: white; padding: 16px 35px; border-radius: 12px; text-decoration: none; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.2s;">
+                            <i class="fas fa-tag"></i> Ver Planos
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Right: Course Preview Cards -->
+                <div style="position: relative;">
+                    <!-- Main Card -->
+                    <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 24px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); margin-bottom: 20px;">
+                        <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 180px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-play-circle" style="color: white; font-size: 4rem; opacity: 0.9;"></i>
+                        </div>
+                        <h3 style="color: #fff; font-weight: 700; font-size: 1.3rem; margin-bottom: 10px;">Gestão de Projetos Sociais</h3>
+                        <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 20px;">Domine as ferramentas essenciais para gerenciar projetos de impacto social.</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; gap: 15px; color: #94a3b8; font-size: 0.85rem;">
+                                <span><i class="far fa-clock"></i> 12 aulas</span>
+                                <span><i class="fas fa-signal"></i> Iniciante</span>
+                            </div>
+                            <div style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.8rem;">
+                                <i class="fas fa-star"></i> POPULAR
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div style="color: #fbbf24; font-size: 2rem; font-weight: 900; margin-bottom: 5px;">500+</div>
+                            <div style="color: #cbd5e1; font-size: 0.9rem;">Alunos Ativos</div>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div style="color: #818cf8; font-size: 2rem; font-weight: 900; margin-bottom: 5px;">15+</div>
+                            <div style="color: #cbd5e1; font-size: 0.9rem;">Cursos Disponíveis</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Pricing -->
     <section id="pricing" class="pricing">
         <div class="section-header" style="text-align: center;">
