@@ -58,7 +58,10 @@
     <nav class="sidebar-menu">
         <ul>
             <li><a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}"><i class="fas fa-home"></i> Visão Geral</a></li>
+            
             @if (in_array(auth()->user()->role, ['super_admin', 'manager', 'ngo']))
+                {{-- Vivensi Academy - Disponível para super_admin, manager e ngo --}}
+                <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Vivensi Academy</a></li>
                 <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Atendimento AI</a></li>
                 <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Configurar Robô</a></li>
             @endif
