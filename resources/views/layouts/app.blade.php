@@ -9,6 +9,10 @@
     <meta name="description" content="Vivensi App - A plataforma de gestão definitiva para ONGs, empresas e gestores. Controle financeiro, projetos e transparência com auxílio de IA.">
     <meta name="keywords" content="gestão financeira, ongs, projetos, saas, vivensi, transparência pública, lgpd financeiro">
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
