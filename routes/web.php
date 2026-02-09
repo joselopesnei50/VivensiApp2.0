@@ -63,6 +63,14 @@ Route::post('/register', [App\Http\Controllers\RegisterController::class, 'regis
 // Public Campaign Route
 Route::get('/c/{slug}', [App\Http\Controllers\CampaignController::class, 'show']);
 
+// Vivensi Academy (LMS)
+Route::group(['prefix' => 'academy', 'as' => 'academy.', 'middleware' => ['auth']], function () {
+    Route::get('/', [App\Http\Controllers\AcademyController::class, 'index'])->name('index');
+    Route::get('/{slug}', [App\Http\Controllers\AcademyController::class, 'show'])->name('show');
+    Route::post('/lessons/{id}/complete', [App\Http\Controllers\AcademyController::class, 'markLessonAsViewed'])->name('lesson.complete');
+    Route::get('/certificate/{code}', [App\Http\Controllers\AcademyController::class, 'downloadCertificate'])->name('certificate.download');
+});
+
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'subscription'])->name('dashboard');
 Route::post('/onboarding/complete/{step_id}', [App\Http\Controllers\DashboardController::class, 'completeOnboardingStep'])->middleware('auth')->name('onboarding.complete');
 
