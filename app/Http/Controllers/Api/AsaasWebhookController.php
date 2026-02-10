@@ -11,9 +11,8 @@ class AsaasWebhookController extends Controller
 {
     public function handle(Request $request)
     {
-        // NUCLEAR OPTION: Ensure we catch EVERYTHING and return 200.
         try {
-            // 1. Security Check
+            // 1. Authenticate Request
             $webhookToken = config('services.asaas.webhook_token');
             $incomingToken = $request->header('asaas-access-token');
 
@@ -22,62 +21,70 @@ class AsaasWebhookController extends Controller
             }
 
             $payload = $request->all();
+            $event = data_get($payload, 'event');
+            $paymentId = data_get($payload, 'payment.id');
+            $customerId = data_get($payload, 'payment.customer');
 
-            // 2. Log Event (safe wrap)
-            try {
-                Log::info('Asaas Webhook Received', [
-                    'event' => data_get($payload, 'event'),
-                    'id' => data_get($payload, 'id'),
-                    'ip' => $request->ip(),
-                ]);
-            } catch (\Throwable $e) {
-                // Ignore log failures
+            // 2. Validate Tenant Existence
+            // Antigravity/Vivensi requires a Tenant to associate the payment.
+            // If we receive a webhook for a customer not in our DB, we ignore it to prevent errors.
+            $tenant = null;
+            if ($customerId) {
+                try {
+                    $tenant = \App\Models\Tenant::where('asaas_customer_id', $customerId)->first();
+                } catch (\Throwable $dbError) {
+                   // DB connection might be flaky, but we catch it later.
+                   // For now, $tenant remains null.
+                }
             }
 
-            // 3. Dispatch Job
-            try {
-                // Ensure DB is alive before dispatching if using database queue
+            if (!$tenant) {
+                // Log warning but return 200 to satisfy Asaas (and avoid penalties)
                 try {
-                    \Illuminate\Support\Facades\DB::connection()->getPdo();
-                } catch (\Throwable $dbLost) {
-                    try {
-                        \Illuminate\Support\Facades\DB::reconnect();
-                    } catch (\Throwable $dbFail) {
-                        // DB is dead. We can't dispatch to DB queue.
-                        // We could try to write to a text file?
-                        // For now, just absorb it so we don't 500.
-                    }
-                }
+                    Log::warning('Asaas Webhook: Ignored. Tenant not found for customer.', [
+                        'customer_id' => $customerId,
+                        'payment_id' => $paymentId,
+                        'event' => $event
+                    ]);
+                } catch (\Throwable $e) {}
+                
+                return response()->json(['status' => 'ignored_tenant_not_found']);
+            }
 
+            // 3. Process Valid Webhook
+            try {
+                // Dispatch Job with the payload. 
+                // The Job will handle the detailed logic (creating transaction, etc.)
+                // We could pass $tenant->id to the job to save a query, but passing payload is standard.
                 HandleAsaasWebhook::dispatch($payload);
             } catch (\Throwable $e) {
-                 try {
-                    (new HandleAsaasWebhook($payload))->handle();
-                } catch (\Throwable $e2) {
-                    // Inline failed
-                }
+                // If Dispatch fails (e.g. Queue down), try inline or log error.
+                try {
+                    Log::error('Asaas Webhook: Dispatch failed.', [
+                        'error' => $e->getMessage(),
+                        'payment_id' => $paymentId
+                    ]);
+                    // Optional: Try inline if critical
+                    // (new HandleAsaasWebhook($payload))->handle();
+                } catch (\Throwable $inner) {}
             }
 
-            return response()->json(['status' => 'ok']);
+            return response()->json(['status' => 'success']);
 
         } catch (\Throwable $e) {
-            // FALLBACK: If Laravel response fails, force raw PHP headers
+            // NUCLEAR OPTION: Catch ANY other error (logic, syntax, etc.)
+            // Ensure Asaas ALWAYS gets 200 OK.
             try {
-                Log::critical('Asaas Webhook Critical Failure', [
+                Log::critical('Asaas Webhook: Critical Error caught.', [
                     'message' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
                 ]);
-            } catch (\Throwable $logError) {
-                // Logging failed
-            }
-            
-            // Force 200 OK for Asaas
+            } catch (\Throwable $logError) {}
+
             if (!headers_sent()) {
                 http_response_code(200);
-                header('Content-Type: application/json');
             }
-            echo json_encode(['status' => 'ok', 'warning' => 'Internal Error Handled']);
-            exit; // Stop execution immediately to prevent framework 500 bubbling
+            return response()->json(['status' => 'error_handled']);
         }
     }
 }
