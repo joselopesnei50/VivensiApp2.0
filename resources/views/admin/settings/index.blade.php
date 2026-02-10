@@ -123,7 +123,7 @@
                         <div class="alert alert-light border border-info border-opacity-25 d-flex align-items-center mb-0 p-3 rounded-3" role="alert">
                             <i class="fas fa-info-circle text-info me-3 fs-4"></i>
                             <div class="small text-muted">
-                                Configure o Webhook no Asaas para: <strong>{{ url('/api/webhook/asaas') }}</strong>
+                                Configure o Webhook no Asaas para: <strong>{{ url('/api/webhooks/asaas') }}</strong>
                             </div>
                         </div>
                     </div>
