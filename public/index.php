@@ -5,6 +5,36 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// --- ASAAS INTERCEPTOR START ---
+// Force 200 OK for Asaas Webhooks to prevent penalties, then process in background.
+if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/api/webhooks/asaas') !== false) {
+    // 1. Send Success Response Immediately
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'received_early_ack']);
+    
+    // 2. Close Connection (if PHP-FPM)
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        // Fallback for Apache/Other
+        ob_start();
+        echo json_encode(['status' => 'received_early_ack']);
+        $size = ob_get_length();
+        header("Content-Length: $size");
+        header('Connection: close');
+        ob_end_flush();
+        ob_flush();
+        flush();
+    }
+    
+    // 3. Simple Log to confirm we hit this code
+    try {
+        file_put_contents(__DIR__.'/../storage/logs/asaas_interceptor.log', date('Y-m-d H:i:s') . " - Intercepted request.\n", FILE_APPEND);
+    } catch (Exception $e) {}
+}
+// --- ASAAS INTERCEPTOR END ---
+
 /*
 |--------------------------------------------------------------------------
 | Check If The Application Is Under Maintenance
