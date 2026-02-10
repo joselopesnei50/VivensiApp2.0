@@ -3,83 +3,30 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AsaasWebhookController extends Controller
 {
-    /**
-     * Handle Webhook from Asaas
-     */
     public function handle(Request $request)
     {
-        // Security Check: Validate Asaas Token
-        // Check config first (for testing), then database
-        $localToken = config('services.asaas.webhook_token') 
-            ?? \App\Models\SystemSetting::getValue('asaas_webhook_token');
-        $requestToken = (string) $request->header('asaas-access-token', '');
+        // 1. Security Check
+        $webhookToken = config('services.asaas.webhook_token'); // We need to add this to config/services.php
+        $incomingToken = $request->header('asaas-access-token');
 
-        // STRICT SECURITY: We must have a token configured and it must match.
-        if (empty($localToken)) {
-            Log::error('Asaas Webhook: Security Token not configured in SystemSettings.');
-            return response()->json(['status' => 'error', 'reason' => 'server_misconfiguration'], 500); 
+        if (!$webhookToken || $incomingToken !== $webhookToken) {
+            Log::warning('Asaas Webhook: Invalid Token Attempt', [
+                'ip' => $request->ip(),
+                'incoming_token' => $incomingToken ? '***' : 'null'
+            ]);
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        if (!hash_equals((string) $localToken, $requestToken)) {
-            Log::warning('Asaas Webhook: Invalid Token', ['ip' => $request->ip()]);
-            return response()->json(['status' => 'error', 'reason' => 'invalid_token'], 401);
-        }
+        // 2. Log Event (for debugging)
+        Log::info('Asaas Webhook Received', $request->all());
 
-        $event = $request->input('event');
-        $payment = $request->input('payment');
-        $subscriptionId = $request->input('subscription') ?? ($payment['subscription'] ?? null);
-
-        Log::info('Asaas Webhook Received', ['event' => $event, 'subscription' => $subscriptionId]);
-
-        if (!$subscriptionId) {
-            return response()->json(['status' => 'ignored', 'reason' => 'no_subscription']);
-        }
-
-        // Find tenant by customer Asaas ID or External Reference (we saved it as customer)
-        $customerId = $payment['customer'] ?? null;
-        if (!$customerId) {
-            return response()->json(['status' => 'ignored', 'reason' => 'no_customer']);
-        }
-
-        $tenant = Tenant::where('asaas_customer_id', $customerId)->first();
-
-        if (!$tenant) {
-            return response()->json(['status' => 'error', 'reason' => 'tenant_not_found'], 404);
-        }
-
-        switch ($event) {
-            case 'PAYMENT_CONFIRMED':
-            case 'PAYMENT_RECEIVED':
-                $tenant->subscription_status = 'active';
-                $tenant->save();
-                
-                // Enviar e-mail de confirmação para o gestor
-                $manager = $tenant->users()->where('role', 'manager')->first();
-                if ($manager) {
-                    $brevo = app(\App\Services\BrevoService::class);
-                    $brevo->sendPaymentConfirmedEmail($manager);
-                }
-
-                Log::info("Tenant {$tenant->id} activated and email sent.");
-                break;
-
-
-            case 'PAYMENT_OVERDUE':
-                $tenant->subscription_status = 'past_due';
-                $tenant->save();
-                break;
-
-            case 'SUBSCRIPTION_DELETED':
-                $tenant->subscription_status = 'canceled';
-                $tenant->save();
-                break;
-        }
+        // 3. Dispatch Job
+        \App\Jobs\HandleAsaasWebhook::dispatch($request->all());
 
         return response()->json(['status' => 'success']);
     }
