@@ -39,9 +39,9 @@ class AsaasWebhookController extends Controller
         } catch (\Throwable $e) {
             // Common production cause: QUEUE_CONNECTION=database without `jobs` table migrated.
             Log::error('Asaas Webhook: Failed to enqueue job; processing inline as fallback.', [
-                'event' => $payload['event'] ?? null,
-                'id' => $payload['id'] ?? null,
-                'payment_id' => $payload['payment']['id'] ?? null,
+                'event' => data_get($payload, 'event'),
+                'id' => data_get($payload, 'id'),
+                'payment_id' => data_get($payload, 'payment.id'),
                 'exception' => get_class($e),
                 'message' => $e->getMessage(),
             ]);
@@ -50,9 +50,9 @@ class AsaasWebhookController extends Controller
                 (new HandleAsaasWebhook($payload))->handle();
             } catch (\Throwable $e2) {
                 Log::critical('Asaas Webhook: Inline processing failed.', [
-                    'event' => $payload['event'] ?? null,
-                    'id' => $payload['id'] ?? null,
-                    'payment_id' => $payload['payment']['id'] ?? null,
+                    'event' => data_get($payload, 'event'),
+                    'id' => data_get($payload, 'id'),
+                    'payment_id' => data_get($payload, 'payment.id'),
                     'exception' => get_class($e2),
                     'message' => $e2->getMessage(),
                 ]);

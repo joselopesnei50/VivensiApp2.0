@@ -68,13 +68,14 @@ class HandleAsaasWebhook implements ShouldQueue
         }
 
         // Check if transaction already exists (avoid duplicates)
-        $transaction = \App\Models\Transaction::where('external_id', $paymentData['id'])->first();
+        $externalId = $paymentData['id'] ?? null;
+        $transaction = $externalId ? \App\Models\Transaction::where('external_id', $externalId)->first() : null;
 
         if (!$transaction) {
             $transaction = \App\Models\Transaction::create([
                 'tenant_id' => $tenant->id,
-                'external_id' => $paymentData['id'],
-                'amount' => $paymentData['value'],
+                'external_id' => $externalId,
+                'amount' => $paymentData['value'] ?? 0,
                 'date' => $paymentData['paymentDate'] ?? $paymentData['dueDate'] ?? now(),
                 'status' => 'paid',
                 'type' => 'income',
