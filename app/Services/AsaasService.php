@@ -75,13 +75,15 @@ class AsaasService
     /**
      * Create a Subscription
      */
-    public function createSubscription($customerId, $plan, $paymentMethod = 'UNDEFINED')
+    public function createSubscription($customerId, $plan, $paymentMethod = 'UNDEFINED', $nextDueDate = null)
     {
+        $dueDate = $nextDueDate ? $nextDueDate->format('Y-m-d') : now()->addDays(3)->format('Y-m-d');
+
         $response = Http::withHeaders($this->headers())->post($this->resolveBaseUrl() . '/subscriptions', [
             'customer' => $customerId,
             'billingType' => $paymentMethod, // PIX, BOLETO, CREDIT_CARD, UNDEFINED
             'value' => $plan->price,
-            'nextDueDate' => now()->addDays(3)->format('Y-m-d'),
+            'nextDueDate' => $dueDate,
             'cycle' => ($plan->interval === 'monthly') ? 'MONTHLY' : 'YEARLY',
             'description' => 'Assinatura Vivensi - ' . $plan->name,
             'externalReference' => 'PLAN_' . $plan->id,
@@ -100,6 +102,34 @@ class AsaasService
     public function getSubscriptionPayments($subscriptionId)
     {
         $response = Http::withHeaders($this->headers())->get($this->resolveBaseUrl() . "/subscriptions/{$subscriptionId}/payments");
+        
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get Pix QR Code for a payment
+     */
+    public function getPixQrCode($paymentId)
+    {
+        $response = Http::withHeaders($this->headers())->get($this->resolveBaseUrl() . "/payments/{$paymentId}/pixQrCode");
+        
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get Boleto identification code (Linha digitável)
+     */
+    public function getBoletoCode($paymentId)
+    {
+        $response = Http::withHeaders($this->headers())->get($this->resolveBaseUrl() . "/payments/{$paymentId}/identificationField");
         
         if ($response->successful()) {
             return $response->json();

@@ -66,10 +66,18 @@ class CheckoutController extends Controller
             }
 
             // 2. Create Subscription
+            $nextDueDate = now()->addDays(3);
+            
+            // If still in trial, set due date to trial end
+            if ($tenant->trial_ends_at && $tenant->trial_ends_at->isFuture()) {
+                $nextDueDate = $tenant->trial_ends_at->copy()->addDay(); // Charge the day after trial ends
+            }
+
             $subscription = $this->asaas->createSubscription(
                 $tenant->asaas_customer_id, 
                 $plan, 
-                $request->payment_method ?? 'UNDEFINED'
+                $request->payment_method ?? 'UNDEFINED',
+                $nextDueDate
             );
 
             // 3. Update Tenant local info
@@ -93,7 +101,53 @@ class CheckoutController extends Controller
      */
     public function success(Request $request)
     {
-        // Here we could fetch the specific payment info from Asaas to show Pix QR Code
-        return view('checkout.success');
+        $subscriptionId = $request->get('id');
+        $paymentData = null;
+
+        if ($subscriptionId) {
+            $payments = $this->asaas->getSubscriptionPayments($subscriptionId);
+            
+            // Get the first pending payment
+            if ($payments && isset($payments['data']) && count($payments['data']) > 0) {
+                // Usually the first one is the current one pending
+                foreach($payments['data'] as $payment) {
+                    if ($payment['status'] === 'PENDING') {
+                        $paymentData = $payment;
+                        break;
+                    }
+                }
+                
+                // If we found a pending payment and it is PIX, let's try to get the QR Code payload/image if not present
+                // Note: The /payments endpoint usually returns basic info. 
+                // Sometimes we need a specific endpoint for Pix QR Code / identificationField (boleto)
+                
+                // If it is BOLETO or PIX, let's ensure we have the necessary data
+                if ($paymentData) {
+                    // Fetch specific payment details which usually contains the pixQRCode or numCode (boleto)
+                    // Extending service on the fly here or assuming data is there?
+                    // Let's assume standard list returns basic info. 
+                    // To be safe, let's try to fetch payment specific identification if needed.
+                    
+                    // Actually, for Asaas v3, the payment object usually has 'invoiceUrl', 'bankSlipUrl' (boleto), etc.
+                    // For Pix, sometimes we need to call /payments/{id}/pixQrCode
+                    
+                    if ($paymentData['billingType'] === 'PIX') {
+                        $pixInfo = $this->asaas->getPixQrCode($paymentData['id']);
+                        if ($pixInfo) {
+                            $paymentData['pix'] = $pixInfo;
+                        }
+                    }
+                    
+                    if ($paymentData['billingType'] === 'BOLETO') {
+                        $boletoInfo = $this->asaas->getBoletoCode($paymentData['id']);
+                         if ($boletoInfo) {
+                            $paymentData['boleto'] = $boletoInfo;
+                        }
+                    }
+                }
+            }
+        }
+
+        return view('checkout.success', compact('paymentData'));
     }
 }

@@ -178,7 +178,20 @@ class TransactionController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $transaction->update($validator->validated());
+        $validated = $validator->validated();
+        
+        // Security Logic: If amount changed and user is NOT manager, reset to pending
+        if (isset($validated['amount']) && $validated['amount'] != $transaction->amount) {
+             $user = auth()->user();
+             if (!in_array($user->role, ['manager', 'ngo', 'super_admin'], true)) {
+                 $transaction->status = 'pending';
+                 if (Schema::hasColumn('transactions', 'approval_status')) {
+                     $transaction->approval_status = 'pending';
+                 }
+             }
+        }
+
+        $transaction->update($validated);
 
         return back()->with('success', 'Lançamento atualizado com sucesso!');
     }
@@ -196,6 +209,11 @@ class TransactionController extends Controller
 
     public function approve($id)
     {
+        // Security Check: Only Managers/Admins can approve
+        if (!in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin'], true)) {
+            abort(403, 'Apenas gestores podem aprovar transações.');
+        }
+
         $transaction = Transaction::where('id', $id)
             ->where('tenant_id', auth()->user()->tenant_id)
             ->firstOrFail();
@@ -212,6 +230,11 @@ class TransactionController extends Controller
 
     public function reject($id)
     {
+        // Security Check: Only Managers/Admins can reject
+        if (!in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin'], true)) {
+            abort(403, 'Apenas gestores podem rejeitar transações.');
+        }
+
         $transaction = Transaction::where('id', $id)
             ->where('tenant_id', auth()->user()->tenant_id)
             ->firstOrFail();

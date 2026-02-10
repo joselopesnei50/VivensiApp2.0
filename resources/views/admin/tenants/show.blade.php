@@ -100,13 +100,31 @@
             @endif
         </div>
 
-        <!-- Danger Zone -->
-        <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #fecaca;">
-            <h4 style="color: #dc2626; margin-top: 0;">Zona de Perigo</h4>
-            <p style="font-size: 0.85rem; color: #64748b;">Ações críticas para este tenant.</p>
-            <button class="btn btn-danger" style="width: 100%; background: #fee2e2; color: #dc2626; border: none; padding: 10px; border-radius: 6px; font-weight: 700;" disabled title="Em breve">
-                <i class="fas fa-trash me-2"></i> Excluir Organização
-            </button>
+        <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
+            <h4 style="color: #1e293b; margin-top: 0;">Ações Administrativas</h4>
+            <p style="font-size: 0.85rem; color: #64748b;">Gerencie o acesso desta organização.</p>
+            
+            @if($tenant->subscription_status === 'suspended')
+                <form action="{{ route('admin.tenants.activate', $tenant->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja reativar o acesso desta organização?');">
+                    @csrf
+                    <button type="submit" class="btn btn-success" style="width: 100%; background: #22c55e; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                        <i class="fas fa-unlock me-2"></i> Reativar Acesso
+                    </button>
+                </form>
+            @else
+                <form action="{{ route('admin.tenants.suspend', $tenant->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja SUSPENDER o acesso desta organização? Os usuários não conseguirão mais logar.');">
+                    @csrf
+                    <button type="submit" class="btn btn-warning" style="width: 100%; background: #f59e0b; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                        <i class="fas fa-ban me-2"></i> Suspender Acesso
+                    </button>
+                </form>
+            @endif
+
+            <div style="margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+                <button class="btn btn-danger" style="width: 100%; background: #fee2e2; color: #dc2626; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem;" disabled title="Funcionalidade desabilitada por segurança">
+                    <i class="fas fa-trash me-2"></i> Excluir Organização (Desabilitado)
+                </button>
+            </div>
         </div>
     </div>
 </div>

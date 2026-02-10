@@ -183,4 +183,27 @@ class AdminController extends Controller
 
         return view('admin.email_logs', compact('logs'));
     }
+    public function suspendTenant($id)
+    {
+        if (auth()->user()->role !== 'super_admin') {
+            abort(403);
+        }
+
+        $tenant = Tenant::findOrFail($id);
+        $tenant->update(['subscription_status' => 'suspended']);
+
+        return back()->with('success', 'Organização suspensa com sucesso. O acesso foi bloqueado.');
+    }
+
+    public function activateTenant($id)
+    {
+        if (auth()->user()->role !== 'super_admin') {
+            abort(403);
+        }
+
+        $tenant = Tenant::findOrFail($id);
+        $tenant->update(['subscription_status' => 'active']);
+
+        return back()->with('success', 'Organização reativada com sucesso. O acesso foi liberado.');
+    }
 }

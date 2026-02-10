@@ -361,6 +361,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/health', [App\Http\Controllers\AdminController::class, 'serverHealth'])->name('admin.health');
         Route::get('/tenants', [App\Http\Controllers\AdminController::class, 'tenants']);
         Route::get('/tenants/{id}', [App\Http\Controllers\AdminController::class, 'showTenant'])->name('admin.tenants.show');
+        Route::post('/tenants/{id}/suspend', [App\Http\Controllers\AdminController::class, 'suspendTenant'])->name('admin.tenants.suspend');
+        Route::post('/tenants/{id}/activate', [App\Http\Controllers\AdminController::class, 'activateTenant'])->name('admin.tenants.activate');
         Route::resource('academy', App\Http\Controllers\Admin\AcademyController::class, ['as' => 'admin']);
         
         // Academy Modules & Lessons

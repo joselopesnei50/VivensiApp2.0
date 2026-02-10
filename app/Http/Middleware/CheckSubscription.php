@@ -37,7 +37,17 @@ class CheckSubscription
         }
 
 
-        // 5. Active or Trialing logic
+        // 5. Check if suspended
+        if ($tenant->subscription_status === 'suspended') {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return redirect()->route('login')
+                ->with('error', 'Sua organização foi suspensa temporariamente. Entre em contato com o suporte para regularizar o acesso.');
+        }
+
+        // 6. Active or Trialing logic
         if ($tenant->subscription_status === 'active') {
             return $next($request);
         }
