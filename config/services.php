@@ -36,4 +36,10 @@ return [
         'environment' => env('ASAAS_ENVIRONMENT', 'sandbox'),
     ],
 
+    'pagseguro' => [
+        'email' => env('PAGSEGURO_EMAIL'),
+        'token' => env('PAGSEGURO_TOKEN'),
+        'environment' => env('PAGSEGURO_ENV', 'sandbox'), // sandbox or production
+    ],
+
 ];
