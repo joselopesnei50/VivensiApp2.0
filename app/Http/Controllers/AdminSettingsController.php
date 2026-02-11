@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class AdminSettingsController extends Controller
 {
+    // Updated for PagSeguro Integration
     public function index()
     {
         // Permission check (Simple for now, can be middleware)
