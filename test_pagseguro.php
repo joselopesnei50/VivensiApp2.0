@@ -36,6 +36,13 @@ try {
     } else {
         echo "\n[ERRO] Falha ao criar pagamento. Verifique os logs.\n";
     }
+} catch (\Exception $e) {
+    echo "\n[ERRO] Falha ao criar pagamento.\n";
+    echo "Mensagem: " . $e->getMessage() . "\n";
+    if (method_exists($e, 'getResponse') && $e->getResponse()) {
+        echo "Resposta do PagSeguro: " . $e->getResponse()->getBody()->getContents() . "\n";
+    }
+    exit(1);
 } catch (\Throwable $e) {
     echo "\n[EXCEPTION] " . $e->getMessage() . "\n";
     echo $e->getTraceAsString();
