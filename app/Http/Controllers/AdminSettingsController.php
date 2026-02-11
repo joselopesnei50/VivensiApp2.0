@@ -18,14 +18,15 @@ class AdminSettingsController extends Controller
         $deepseek_configured = (bool) SystemSetting::getValue('deepseek_api_key');
         $gemini_configured = (bool) SystemSetting::getValue('gemini_api_key');
         $brevo_configured = (bool) SystemSetting::getValue('brevo_api_key');
-        $asaas_configured = (bool) SystemSetting::getValue('asaas_api_key');
+        $pagseguro_configured = (bool) SystemSetting::getValue('pagseguro_token');
 
         $deepseek_key = null;
         $gemini_key = null;
         $brevo_key = null;
-        $asaas_key = null;
+        $pagseguro_key = null;
 
-        $asaas_env = SystemSetting::getValue('asaas_environment', 'sandbox');
+        $pagseguro_email = SystemSetting::getValue('pagseguro_email');
+        $pagseguro_env = SystemSetting::getValue('pagseguro_environment', 'sandbox');
         $email_from = SystemSetting::getValue('email_from');
         $email_from_name = SystemSetting::getValue('email_from_name');
         $home_video_url = SystemSetting::getValue('home_video_url');
@@ -34,12 +35,13 @@ class AdminSettingsController extends Controller
             'deepseek_key',
             'gemini_key',
             'brevo_key',
-            'asaas_key',
+            'pagseguro_key',
             'deepseek_configured',
             'gemini_configured',
             'brevo_configured',
-            'asaas_configured',
-            'asaas_env',
+            'pagseguro_configured',
+            'pagseguro_email',
+            'pagseguro_env',
             'email_from',
             'email_from_name',
             'home_video_url'
