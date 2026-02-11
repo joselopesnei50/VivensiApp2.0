@@ -34,7 +34,20 @@ try {
         echo "Payment Link: " . $result['paymentLink'] . "\n";
         echo "Code: " . $result['code'] . "\n";
     } else {
-        echo "\n[ERRO] Falha ao criar pagamento. Verifique os logs.\n";
+        echo "\n[ERRO] Falha ao criar pagamento. Detalhes do Log:\n";
+        echo "---------------------------------------------------\n";
+        $logFile = storage_path('logs/laravel.log');
+        if (file_exists($logFile)) {
+            // Read last 20 lines
+            $lines = file($logFile);
+            $lastLines = array_slice($lines, -20);
+            foreach ($lastLines as $line) {
+                echo $line;
+            }
+        } else {
+            echo "Arquivo de log não encontrado em $logFile";
+        }
+        echo "\n---------------------------------------------------\n";
     }
 } catch (\Exception $e) {
     echo "\n[ERRO] Falha ao criar pagamento.\n";
