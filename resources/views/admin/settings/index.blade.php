@@ -79,7 +79,7 @@
                 </div>
             </div>
 
-            <!-- 2. Payment Gateway (Asaas) -->
+            <!-- 2. Payment Gateway (PagSeguro) -->
             <div class="col-12 col-xl-6">
                 <div class="card border-0 shadow-sm h-100 overflow-hidden">
                     <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
@@ -89,7 +89,7 @@
                             </div>
                             <div>
                                 <h5 class="fw-bold mb-1">Pagamentos & Assinaturas</h5>
-                                <p class="text-muted small mb-0">Integração com Asaas (v3).</p>
+                                <p class="text-muted small mb-0">Integração com PagSeguro.</p>
                             </div>
                         </div>
                     </div>
@@ -98,13 +98,13 @@
                             <label class="form-label fw-600 text-dark">Ambiente</label>
                             <div class="d-flex gap-3">
                                 <div class="form-check card-radio">
-                                    <input class="form-check-input" type="radio" name="asaas_environment" id="envSandbox" value="sandbox" {{ $asaas_env == 'sandbox' ? 'checked' : '' }}>
+                                    <input class="form-check-input" type="radio" name="pagseguro_environment" id="envSandbox" value="sandbox" {{ $pagseguro_env == 'sandbox' ? 'checked' : '' }}>
                                     <label class="form-check-label" for="envSandbox">
                                         <i class="fas fa-flask me-1 text-warning"></i> Sandbox (Testes)
                                     </label>
                                 </div>
                                 <div class="form-check card-radio">
-                                    <input class="form-check-input" type="radio" name="asaas_environment" id="envProd" value="production" {{ $asaas_env == 'production' ? 'checked' : '' }}>
+                                    <input class="form-check-input" type="radio" name="pagseguro_environment" id="envProd" value="production" {{ $pagseguro_env == 'production' ? 'checked' : '' }}>
                                     <label class="form-check-label" for="envProd">
                                         <i class="fas fa-rocket me-1 text-success"></i> Produção
                                     </label>
@@ -113,17 +113,25 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-600 text-dark">API Key</label>
+                            <label class="form-label fw-600 text-dark">E-mail da Conta</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope text-muted"></i></span>
+                                <input type="email" name="pagseguro_email" value="{{ $pagseguro_email }}" class="form-control border-start-0 ps-0 form-control-lg" placeholder="email@loja.com.br" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark">Token de Produção / Sandbox</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
-                                <input type="password" name="asaas_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($asaas_configured) ? 'Configurada (cole para atualizar)' : 'Cole aqui para definir' }}" autocomplete="off">
+                                <input type="password" name="pagseguro_token" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($pagseguro_configured) ? 'Configurado (cole para atualizar)' : 'Cole o Token aqui' }}" autocomplete="off">
                             </div>
                         </div>
 
                         <div class="alert alert-light border border-info border-opacity-25 d-flex align-items-center mb-0 p-3 rounded-3" role="alert">
                             <i class="fas fa-info-circle text-info me-3 fs-4"></i>
                             <div class="small text-muted">
-                                Configure o Webhook no Asaas para: <strong>{{ url('/api/webhooks/asaas') }}</strong>
+                                Configure o Webhook no PagSeguro para: <strong>{{ url('/api/webhooks/pagseguro') }}</strong>
                             </div>
                         </div>
                     </div>

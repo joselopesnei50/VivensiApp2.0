@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -13,9 +14,13 @@ class PagSeguroService
 
     public function __construct()
     {
-        $this->email = config('services.pagseguro.email');
-        $this->token = config('services.pagseguro.token');
-        $this->baseUrl = config('services.pagseguro.environment') === 'sandbox' 
+        // Try to get from System Settings (Database) first, then fallback to Config (.env)
+        $this->email = SystemSetting::getValue('pagseguro_email') ?? config('services.pagseguro.email');
+        $this->token = SystemSetting::getValue('pagseguro_token') ?? config('services.pagseguro.token');
+        
+        $env = SystemSetting::getValue('pagseguro_environment') ?? config('services.pagseguro.environment');
+        
+        $this->baseUrl = $env === 'sandbox' 
             ? 'https://ws.sandbox.pagseguro.uol.com.br' 
             : 'https://ws.pagseguro.uol.com.br';
     }

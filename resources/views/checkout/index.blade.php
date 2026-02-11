@@ -65,26 +65,9 @@
                             </div>
 
                             <div class="col-md-12 mb-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase mb-3">Método de Preferência</label>
-                                <div class="row g-3">
-                                    <div class="col-4">
-                                        <input type="radio" class="btn-check" name="payment_method" id="payPix" value="PIX" checked>
-                                        <label class="btn btn-outline-light text-dark w-100 py-3 rounded-4 border" for="payPix">
-                                            <i class="fas fa-qrcode d-block mb-2 fs-4 text-primary"></i> Pix
-                                        </label>
-                                    </div>
-                                    <div class="col-4">
-                                        <input type="radio" class="btn-check" name="payment_method" id="payBoleto" value="BOLETO">
-                                        <label class="btn btn-outline-light text-dark w-100 py-3 rounded-4 border" for="payBoleto">
-                                            <i class="fas fa-barcode d-block mb-2 fs-4 text-secondary"></i> Boleto
-                                        </label>
-                                    </div>
-                                    <div class="col-4">
-                                        <input type="radio" class="btn-check" name="payment_method" id="payCard" value="CREDIT_CARD">
-                                        <label class="btn btn-outline-light text-dark w-100 py-3 rounded-4 border" for="payCard">
-                                            <i class="fas fa-credit-card d-block mb-2 fs-4 text-success"></i> Cartão
-                                        </label>
-                                    </div>
+                                <div class="alert alert-info border-0 rounded-4">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Você será redirecionado para o ambiente seguro do <strong>PagSeguro</strong> para escolher a forma de pagamento (Pix, Cartão ou Boleto).
                                 </div>
                             </div>
                         </div>

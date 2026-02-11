@@ -11,12 +11,12 @@ use Exception;
 
 class CheckoutController extends Controller
 {
-    protected $asaas;
+    protected $pagSeguro;
     protected $brevo;
 
-    public function __construct(AsaasService $asaas, BrevoService $brevo)
+    public function __construct(PagSeguroService $pagSeguro, BrevoService $brevo)
     {
-        $this->asaas = $asaas;
+        $this->pagSeguro = $pagSeguro;
         $this->brevo = $brevo;
     }
 
@@ -39,7 +39,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Process checkout - Create customer and subscription in Asaas
+     * Process checkout - Create payment in PagSeguro
      */
     public function process(Request $request)
     {
@@ -48,106 +48,50 @@ class CheckoutController extends Controller
             $tenant = Tenant::findOrFail($user->tenant_id);
             $plan = SubscriptionPlan::findOrFail($request->plan_id);
 
-            // 1. Create/Update Customer in Asaas if not exists
-            if (!$tenant->asaas_customer_id) {
-                // Preencher documento se estiver vazio no tenant mas veio no request
-                if ($request->filled('document')) {
-                    $tenant->document = $request->document;
-                    $tenant->save();
-                }
-
-                if (!$tenant->document) {
-                    return back()->with('error', 'CPF ou CNPJ é obrigatório para o faturamento.');
-                }
-
-                $customer = $this->asaas->createCustomer($tenant);
-                $tenant->asaas_customer_id = $customer['id'];
+            // 1. Update Tenant Document if provided
+            if ($request->filled('document')) {
+                $tenant->document = $request->document;
                 $tenant->save();
             }
 
-            // 2. Create Subscription
-            $nextDueDate = now()->addDays(3);
-            
-            // If still in trial, set due date to trial end
-            if ($tenant->trial_ends_at && $tenant->trial_ends_at->isFuture()) {
-                $nextDueDate = $tenant->trial_ends_at->copy()->addDay(); // Charge the day after trial ends
+            if (!$tenant->document) {
+                return back()->with('error', 'CPF ou CNPJ é obrigatório para o faturamento.');
             }
 
-            $subscription = $this->asaas->createSubscription(
-                $tenant->asaas_customer_id, 
-                $plan, 
-                $request->payment_method ?? 'UNDEFINED',
-                $nextDueDate
-            );
+            // 2. Prepare Data for PagSeguro
+            // Generate a unique reference: VIVENSI_TENANT_PLAN_TIMESTAMP
+            $reference = sprintf("VIVENSI_%s_%s_%s", $tenant->id, $plan->id, time());
 
-            // 3. Update Tenant local info
-            $tenant->plan_id = $plan->id;
-            $tenant->subscription_status = 'pending'; // confirmed via webhook
-            $tenant->save();
+            $paymentData = [
+                'reference' => $reference,
+                'amount' => $plan->price,
+                'description' => 'Assinatura ' . $plan->name,
+                'sender' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'cpf' => $this->cleanCpf($tenant->document), // Ensure only numbers
+                ]
+            ];
 
-            // 4. Send Welcome Email via Brevo
-            $this->brevo->sendWelcomeEmail($user, $plan->name);
+            // 3. Call PagSeguro
+            $result = $this->pagSeguro->createPayment($paymentData);
 
-            // Redirect to success page or the billing invoice URL
-            return redirect()->route('checkout.success', ['id' => $subscription['id']]);
+            if ($result && isset($result['paymentLink'])) {
+                return redirect()->away($result['paymentLink']);
+            }
+
+            return back()->with('error', 'Não foi possível gerar o link de pagamento. Tente novamente.');
 
         } catch (Exception $e) {
-            return back()->with('error', 'Erro ao processar checkout: ' . $e->getMessage());
+            return back()->with('error', 'Erro ao processar pagamento: ' . $e->getMessage());
         }
     }
 
     /**
-     * Success page - Show payment info (Pix/Boleto)
+     * Helper to clean CPF/CNPJ
      */
-    public function success(Request $request)
+    private function cleanCpf($value)
     {
-        $subscriptionId = $request->get('id');
-        $paymentData = null;
-
-        if ($subscriptionId) {
-            $payments = $this->asaas->getSubscriptionPayments($subscriptionId);
-            
-            // Get the first pending payment
-            if ($payments && isset($payments['data']) && count($payments['data']) > 0) {
-                // Usually the first one is the current one pending
-                foreach($payments['data'] as $payment) {
-                    if ($payment['status'] === 'PENDING') {
-                        $paymentData = $payment;
-                        break;
-                    }
-                }
-                
-                // If we found a pending payment and it is PIX, let's try to get the QR Code payload/image if not present
-                // Note: The /payments endpoint usually returns basic info. 
-                // Sometimes we need a specific endpoint for Pix QR Code / identificationField (boleto)
-                
-                // If it is BOLETO or PIX, let's ensure we have the necessary data
-                if ($paymentData) {
-                    // Fetch specific payment details which usually contains the pixQRCode or numCode (boleto)
-                    // Extending service on the fly here or assuming data is there?
-                    // Let's assume standard list returns basic info. 
-                    // To be safe, let's try to fetch payment specific identification if needed.
-                    
-                    // Actually, for Asaas v3, the payment object usually has 'invoiceUrl', 'bankSlipUrl' (boleto), etc.
-                    // For Pix, sometimes we need to call /payments/{id}/pixQrCode
-                    
-                    if ($paymentData['billingType'] === 'PIX') {
-                        $pixInfo = $this->asaas->getPixQrCode($paymentData['id']);
-                        if ($pixInfo) {
-                            $paymentData['pix'] = $pixInfo;
-                        }
-                    }
-                    
-                    if ($paymentData['billingType'] === 'BOLETO') {
-                        $boletoInfo = $this->asaas->getBoletoCode($paymentData['id']);
-                         if ($boletoInfo) {
-                            $paymentData['boleto'] = $boletoInfo;
-                        }
-                    }
-                }
-            }
-        }
-
-        return view('checkout.success', compact('paymentData'));
+        return preg_replace('/[^0-9]/', '', $value);
     }
 }
