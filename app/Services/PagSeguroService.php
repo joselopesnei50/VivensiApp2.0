@@ -81,6 +81,9 @@ class PagSeguroService
         $item->addChild('quantity', '1');
         $item->addChild('weight', '0');
 
+        // Redirect URL (Where the user goes after payment)
+        $xml->addChild('redirectURL', 'https://vivensi.app.br/dashboard');
+
         // Reference (Our Transaction ID or External ID)
         $xml->addChild('reference', $data['reference']);
 

@@ -59,8 +59,9 @@ class AdminSettingsController extends Controller
             'deepseek_api_key' => 'nullable|string|max:5000',
             'gemini_api_key' => 'nullable|string|max:5000',
             'brevo_api_key' => 'nullable|string|max:5000',
-            'asaas_api_key' => 'nullable|string|max:5000',
-            'asaas_environment' => 'required|in:sandbox,production',
+            'pagseguro_email' => 'nullable|email|max:255',
+            'pagseguro_token' => 'nullable|string|max:5000',
+            'pagseguro_environment' => 'required|in:sandbox,production',
             'email_from' => 'nullable|email|max:255',
             'email_from_name' => 'nullable|string|max:255',
             'home_video_url' => 'nullable|url|max:2048',
@@ -71,7 +72,7 @@ class AdminSettingsController extends Controller
             'deepseek_api_key' => 'api',
             'gemini_api_key' => 'api',
             'brevo_api_key' => 'api',
-            'asaas_api_key' => 'api',
+            'pagseguro_token' => 'api',
         ] as $key => $group) {
             $val = trim((string) ($validated[$key] ?? ''));
             if ($val !== '') {
@@ -79,7 +80,11 @@ class AdminSettingsController extends Controller
             }
         }
 
-        SystemSetting::setValue('asaas_environment', $validated['asaas_environment'], 'api');
+        SystemSetting::setValue('pagseguro_environment', $validated['pagseguro_environment'], 'api');
+        
+        if (!empty($validated['pagseguro_email'])) {
+            SystemSetting::setValue('pagseguro_email', $validated['pagseguro_email'], 'api');
+        }
 
         if (!empty($validated['email_from'])) {
             SystemSetting::setValue('email_from', $validated['email_from'], 'email');
