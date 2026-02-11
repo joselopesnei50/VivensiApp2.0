@@ -107,12 +107,18 @@ class PagSeguroService
         $shipping = $xml->addChild('shipping');
         $shipping->addChild('type', '3');
 
+        // Sanitize and Prepare XML
+        $xmlString = $xml->asXML();
+        $xmlString = trim($xmlString); // Remove potential whitespace/BOM
+
+        // Log the payload for debugging
+        Log::info('PagSeguro Payload', ['xml' => $xmlString]);
+
         try {
             $response = Http::withHeaders([
-                'Content-Type' => 'application/xml; charset=ISO-8859-1'
-            ])->post("{$this->baseUrl}/v2/checkout?email={$this->email}&token={$this->token}", 
-                $xml->asXML()
-            );
+                'Content-Type' => 'application/xml; charset=UTF-8'
+            ])->withBody($xmlString, 'application/xml')
+              ->post("{$this->baseUrl}/v2/checkout?email={$this->email}&token={$this->token}");
 
             if ($response->successful()) {
                 $resXml = simplexml_load_string($response->body());
