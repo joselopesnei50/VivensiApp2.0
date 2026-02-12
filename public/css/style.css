@@ -110,6 +110,9 @@ ul {
     width: var(--sidebar-width);
     background-color: var(--bg-sidebar);
     height: 100vh;
+    /* Fallback */
+    height: 100dvh;
+    /* Mobile browsers friendly */
     position: fixed;
     border-right: 1px solid var(--border-color);
     z-index: 1000;
@@ -191,6 +194,13 @@ ul {
     gap: 12px;
     font-size: 0.9rem;
     background: var(--bg-surface);
+}
+
+@media (max-width: 768px) {
+    .user-view {
+        padding-bottom: 80px;
+        /* Space for mobile browser bottom bars */
+    }
 }
 
 .user-avatar {
