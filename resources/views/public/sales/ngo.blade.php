@@ -147,7 +147,10 @@
         
         <div class="vivensi-card" style="max-width: 500px; margin: 0 auto; padding: 60px; background: white; border-radius: 30px; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1); border: 2px solid #4f46e5;">
             <div style="text-transform: uppercase; font-weight: 800; color: #4f46e5; letter-spacing: 2px; margin-bottom: 10px;">Plano Terceiro Setor</div>
-            <div style="font-size: 4rem; font-weight: 900; color: #0f172a; margin-bottom: 10px;">R$ 147<span style="font-size: 1.2rem; color: #64748b; font-weight: 400;">/mês</span></div>
+            @php
+                $plan = \App\Models\SubscriptionPlan::where('target_audience', 'ngo')->first();
+            @endphp
+            <div style="font-size: 4rem; font-weight: 900; color: #0f172a; margin-bottom: 10px;">R$ {{ $plan ? number_format($plan->price, 2, ',', '.') : '147,00' }}<span style="font-size: 1.2rem; color: #64748b; font-weight: 400;">/mês</span></div>
             <p>Acesso completo a todas as ferramentas de transparência e captação.</p>
             <hr style="opacity: 0.1; margin: 30px 0;">
             <ul style="text-align: left; list-style: none; padding: 0; margin-bottom: 40px;">

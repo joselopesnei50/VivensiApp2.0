@@ -141,7 +141,10 @@
         
         <div style="max-width: 500px; margin: 0 auto; padding: 60px; background: white; border-radius: 30px; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1); border: 2px solid #16a34a;">
             <div style="text-transform: uppercase; font-weight: 800; color: #166534; letter-spacing: 2px; margin-bottom: 10px;">Plano Gestor Business</div>
-            <div style="font-size: 4rem; font-weight: 900; color: #0f172a; margin-bottom: 10px;">R$ 297<span style="font-size: 1.2rem; color: #64748b; font-weight: 400;">/mês</span></div>
+            @php
+                $plan = \App\Models\SubscriptionPlan::where('target_audience', 'manager')->first();
+            @endphp
+            <div style="font-size: 4rem; font-weight: 900; color: #0f172a; margin-bottom: 10px;">R$ {{ $plan ? number_format($plan->price, 2, ',', '.') : '297,00' }}<span style="font-size: 1.2rem; color: #64748b; font-weight: 400;">/mês</span></div>
             <p>Controle operacional e financeiro para negócios que buscam escala.</p>
             <hr style="opacity: 0.1; margin: 30px 0;">
             <ul style="text-align: left; list-style: none; padding: 0; margin-bottom: 40px;">

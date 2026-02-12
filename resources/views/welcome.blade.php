@@ -829,7 +829,7 @@
                     @endphp
 
                     <h3>{{ $plan->name }}</h3>
-                    <div class="price">R$ {{ number_format($plan->price, 0, ',', '.') }}<span class="period">/{{ $plan->interval == 'monthly' ? 'mês' : 'ano' }}</span></div>
+                    <div class="price">R$ {{ number_format($plan->price, 2, ',', '.') }}<span class="period">/{{ $plan->interval == 'monthly' ? 'mês' : 'ano' }}</span></div>
                     <p style="color: var(--text-light);">{{ $audienceLabel }}</p>
                     
                     <a href="{{ route('register', ['plan_id' => $plan->id]) }}" class="{{ $plan->target_audience == 'ngo' ? 'btn-cta' : 'btn-outline' }}" style="display: block; margin-top: 20px;">
