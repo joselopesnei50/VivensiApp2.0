@@ -2,10 +2,15 @@
 
 @section('content')
 <div class="header-page" style="margin-bottom: 30px;">
-    <div>
-        <h6 style="color: #6366f1; font-weight: 700; text-transform: uppercase; margin: 0 0 5px 0;">SaaS Management</h6>
-        <h2 style="margin: 0; color: #111827;">Organizações (Tenants)</h2>
-        <p style="color: #6b7280; margin: 5px 0 0 0;">Gestão completa da base de clientes.</p>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h6 style="color: #6366f1; font-weight: 700; text-transform: uppercase; margin: 0 0 5px 0;">SaaS Management</h6>
+            <h2 style="margin: 0; color: #111827;">Organizações (Tenants)</h2>
+            <p style="color: #6b7280; margin: 5px 0 0 0;">Gestão completa da base de clientes.</p>
+        </div>
+        <a href="{{ route('admin.tenants.create') }}" class="btn-premium" style="text-decoration: none;">
+            <i class="fas fa-plus me-2"></i> Novo Cliente
+        </a>
     </div>
 </div>
 

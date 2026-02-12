@@ -359,7 +359,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.dashboard');
         Route::get('/health', [App\Http\Controllers\AdminController::class, 'serverHealth'])->name('admin.health');
-        Route::get('/tenants', [App\Http\Controllers\AdminController::class, 'tenants']);
+        Route::get('/tenants', [App\Http\Controllers\AdminController::class, 'tenants'])->name('admin.tenants.index');
+        Route::get('/tenants/create', [App\Http\Controllers\AdminController::class, 'createTenant'])->name('admin.tenants.create');
+        Route::post('/tenants', [App\Http\Controllers\AdminController::class, 'storeTenant'])->name('admin.tenants.store');
         Route::get('/tenants/{id}', [App\Http\Controllers\AdminController::class, 'showTenant'])->name('admin.tenants.show');
         Route::post('/tenants/{id}/suspend', [App\Http\Controllers\AdminController::class, 'suspendTenant'])->name('admin.tenants.suspend');
         Route::post('/tenants/{id}/activate', [App\Http\Controllers\AdminController::class, 'activateTenant'])->name('admin.tenants.activate');

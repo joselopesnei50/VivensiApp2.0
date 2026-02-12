@@ -10,6 +10,8 @@ use App\Models\LandingPageMetric;
 use App\Models\LandingPage;
 use App\Models\LandingPageSection;
 use App\Models\Transaction;
+use App\Models\SubscriptionPlan;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -205,5 +207,91 @@ class AdminController extends Controller
         $tenant->update(['subscription_status' => 'active']);
 
         return back()->with('success', 'Organização reativada com sucesso. O acesso foi liberado.');
+    }
+
+    public function createTenant()
+    {
+        if (auth()->user()->role !== 'super_admin') {
+            abort(403);
+        }
+
+        $plans = SubscriptionPlan::all();
+        return view('admin.tenants.create', compact('plans'));
+    }
+
+    public function storeTenant(Request $request)
+    {
+        if (auth()->user()->role !== 'super_admin') {
+            abort(403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'tenant_name' => 'required|string|max:255',
+            'plan_id' => 'required|exists:subscription_plans,id',
+            'account_type' => 'required|in:ngo_admin,project_manager,client',
+            'billing_mode' => 'required|in:courtesy,manual_pay,trial',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $plan = SubscriptionPlan::find($request->plan_id);
+
+            // 1. Determine Tenant Type and Status
+            $tenantType = match($request->account_type) {
+                'ngo_admin' => 'ngo',
+                'project_manager' => 'business',
+                'client' => 'common',
+                default => 'common'
+            };
+
+            $status = match($request->billing_mode) {
+                'courtesy' => 'active',
+                'manual_pay' => 'pending',
+                'trial' => 'trialing',
+                default => 'trialing'
+            };
+
+            $trialEndsAt = $request->billing_mode === 'trial' ? now()->addDays(7) : null;
+
+            // 2. Create Tenant
+            $tenant = Tenant::create([
+                'name' => $request->tenant_name,
+                'email' => $request->email,
+                'type' => $tenantType,
+                'plan_id' => $plan->id,
+                'subscription_status' => $status,
+                'trial_ends_at' => $trialEndsAt,
+                'billing_method' => 'manual', // Indica que foi criado pelo admin
+            ]);
+
+            // 3. Create User
+            $user = User::create([
+                'tenant_id' => $tenant->id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->account_type,
+                'status' => 'active',
+            ]);
+
+            DB::commit();
+
+            $message = "Cliente criado com sucesso!";
+            if ($request->billing_mode === 'manual_pay') {
+                $checkoutUrl = route('checkout.index', ['plan_id' => $plan->id]);
+                // Em um cenário real, poderíamos disparar um e-mail aqui.
+                $message .= " Modo de pagamento manual selecionado. O link de checkout é: " . $checkoutUrl;
+            }
+
+            return redirect()->route('admin.tenants.index')->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erro ao criar cliente: ' . $e->getMessage())->withInput();
+        }
     }
 }
