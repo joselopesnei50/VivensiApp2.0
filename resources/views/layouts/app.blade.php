@@ -383,22 +383,23 @@
     let __vivensiToastCooldownUntil = 0;
 
     // Safety check on load to prevent stuck overlays
+    // Safety check on load to prevent stuck overlays
     document.addEventListener('DOMContentLoaded', function() {
         const overlay = document.getElementById('sidebarOverlay');
         if(overlay) {
-            // Ensure overlay is hidden on load unless explicitly triggered
+            // Forcefully hide overlay
             overlay.classList.remove('show');
             overlay.style.display = 'none';
         }
         
-        // Remove any stuck bootstrap modal backdrops from previous sessions/history
+        // Remove any stuck bootstrap modal backdrops
         const backdrops = document.querySelectorAll('.modal-backdrop');
-        if(backdrops.length > 0) {
-            backdrops.forEach(b => b.remove());
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = 'auto';
-            document.body.style.pointerEvents = 'auto';
-        }
+        backdrops.forEach(b => b.remove());
+
+        // Restore body state
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = 'auto';
+        document.body.style.pointerEvents = 'auto'; // Critical for "freeze" issue
     });
 
     function toggleSidebar() {
