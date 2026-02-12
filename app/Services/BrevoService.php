@@ -233,5 +233,41 @@ class BrevoService
         $html = $this->wrapContent("Seu teste está expirando", $content, "Ativar Meu Plano Agora", url('/dashboard'));
         return $this->sendEmail($user->email, $user->name, $subject, $html, $user->tenant_id);
     }
+
+    /**
+     * Send Manual Welcome Email (Created by Super Admin)
+     */
+    public function sendManualWelcomeEmail($user, $password, $planName, $billingMode)
+    {
+        $subject = "🚀 Sua conta Vivensi foi criada com sucesso!";
+        
+        $billingText = match($billingMode) {
+            'courtesy' => "Como um parceiro especial, sua conta é uma <strong>Cortesia</strong> e já está totalmente liberada para uso.",
+            'manual_pay' => "Sua conta foi criada no modo de <strong>Pagamento Manual</strong>. Para liberar seu acesso completo, basta realizar o pagamento através do botão abaixo.",
+            'trial' => "Sua conta foi criada no modo <strong>Trial</strong> e você tem 7 dias para testar todas as nossas funcionalidades gratuitamente.",
+            default => ""
+        };
+
+        $buttonText = $billingMode === 'manual_pay' ? "Realizar Pagamento Agora" : "Acessar Meu Painel";
+        $buttonUrl = $billingMode === 'manual_pay' ? route('checkout.index', ['plan_id' => $user->tenant->plan_id]) : url('/dashboard');
+
+        $content = "
+            <p>Olá, <strong>{$user->name}</strong>!</p>
+            <p>Sua conta na <strong>Vivensi 2.0</strong> foi configurada e está pronta para uso.</p>
+            <p>{$billingText}</p>
+            
+            <div style='background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 25px 0;'>
+                <p style='margin: 0 0 10px 0; color: #64748b; font-size: 14px; text-transform: uppercase; font-weight: 700;'>Dados de Acesso:</p>
+                <p style='margin: 5px 0;'><strong>E-mail:</strong> {$user->email}</p>
+                <p style='margin: 5px 0;'><strong>Senha:</strong> {$password}</p>
+                <p style='margin: 5px 0;'><strong>Plano:</strong> {$planName}</p>
+            </div>
+            
+            <p style='color: #ef4444; font-size: 14px;'><em>* Recomendamos alterar sua senha após o primeiro acesso.</em></p>
+        ";
+
+        $html = $this->wrapContent("Bem-vindo à Vivensi", $content, $buttonText, $buttonUrl);
+        return $this->sendEmail($user->email, $user->name, $subject, $html, $user->tenant_id);
+    }
 }
 

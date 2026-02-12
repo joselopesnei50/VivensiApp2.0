@@ -11,11 +11,19 @@ use App\Models\LandingPage;
 use App\Models\LandingPageSection;
 use App\Models\Transaction;
 use App\Models\SubscriptionPlan;
+use App\Services\BrevoService;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class AdminController extends Controller
 {
+    protected $brevo;
+
+    public function __construct(BrevoService $brevo)
+    {
+        $this->brevo = $brevo;
+    }
+
     public function index()
     {
         if (auth()->user()->role !== 'super_admin') {
@@ -279,6 +287,19 @@ class AdminController extends Controller
             ]);
 
             DB::commit();
+
+            // 4. Send Welcome Email via Brevo
+            try {
+                $this->brevo->sendManualWelcomeEmail(
+                    $user, 
+                    $request->password, 
+                    $plan->name, 
+                    $request->billing_mode
+                );
+            } catch (\Exception $e) {
+                Log::error('Erro ao enviar e-mail de boas-vindas manual: ' . $e->getMessage());
+                // Não falhamos a criação se apenas o e-mail falhar.
+            }
 
             $message = "Cliente criado com sucesso!";
             if ($request->billing_mode === 'manual_pay') {
