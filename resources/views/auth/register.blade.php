@@ -71,28 +71,50 @@
         @csrf
         <input type="hidden" name="plan_id" value="{{ $plan ? $plan->id : '' }}">
 
-        <div class="form-group">
+        <div class="form-group" @if($plan) style="display: none;" @endif>
             <label>Tipo de Conta <span style="color: #DC2626;">*</span></label>
             <div class="role-selector">
-                <div class="role-option" data-role="project_manager">
+                <div class="role-option" data-role="project_manager" id="role-project_manager">
                     <i class="fas fa-briefcase"></i>
                     <div class="role-title">Gestor de Projetos</div>
                     <div class="role-desc">Gerenciar projetos e equipes</div>
                 </div>
-                <div class="role-option" data-role="ngo_admin">
+                <div class="role-option" data-role="ngo_admin" id="role-ngo_admin">
                     <i class="fas fa-hands-helping"></i>
                     <div class="role-title">Terceiro Setor / ONG</div>
                     <div class="role-desc">Organização sem fins lucrativos</div>
                 </div>
-                <div class="role-option" data-role="client">
+                <div class="role-option" data-role="client" id="role-client">
                     <i class="fas fa-user"></i>
                     <div class="role-title">Cliente Pessoal</div>
                     <div class="role-desc">Uso individual</div>
                 </div>
             </div>
-            <input type="hidden" name="account_type" id="account_type" value="" required>
+            @php
+                $defaultRole = '';
+                if($plan) {
+                    $defaultRole = match($plan->target_audience) {
+                        'ngo' => 'ngo_admin',
+                        'manager' => 'project_manager',
+                        'common' => 'client',
+                        default => ''
+                    };
+                }
+            @endphp
+            <input type="hidden" name="account_type" id="account_type" value="{{ $defaultRole }}" required>
             <div class="error-message" id="role-error">Por favor, selecione um tipo de conta.</div>
         </div>
+        
+        @if($plan)
+            <div class="form-group">
+                <label>Tipo de Conta Selecionado</label>
+                <div style="background: #F0F9FF; border: 1px solid #BAE6FD; padding: 12px; border-radius: 12px; color: #0C4A6E; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                    @if($plan->target_audience == 'ngo') <i class="fas fa-hands-helping"></i> Terceiro Setor / ONG
+                    @elseif($plan->target_audience == 'manager') <i class="fas fa-briefcase"></i> Gestor de Projetos
+                    @else <i class="fas fa-user"></i> Cliente Pessoal @endif
+                </div>
+            </div>
+        @endif
 
         <div class="form-group">
             <label>Nome da Organização / Empresa</label>
