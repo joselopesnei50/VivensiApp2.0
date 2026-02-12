@@ -75,6 +75,19 @@
                             </div>
                             <div class="form-text">Utilizado para leitura de PDFs e análise de imagens.</div>
                         </div>
+
+                        <div class="mb-0 mt-4">
+                            <label class="form-label fw-600 text-dark">Unsplash Access Key <span class="badge bg-light text-dark border ms-2">Imagens Marketing</span>
+                                @if(!empty($unsplash_configured))
+                                    <span class="badge bg-success ms-2">Configurada</span>
+                                @endif
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-camera text-muted"></i></span>
+                                <input type="password" name="unsplash_access_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="Cole aqui para definir / atualizar" autocomplete="off">
+                            </div>
+                            <div class="form-text">Necessário para buscar imagens automáticas na estratégia de marketing.</div>
+                        </div>
                     </div>
                 </div>
             </div>

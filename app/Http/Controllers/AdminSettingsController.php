@@ -20,6 +20,7 @@ class AdminSettingsController extends Controller
         $gemini_configured = (bool) SystemSetting::getValue('gemini_api_key');
         $brevo_configured = (bool) SystemSetting::getValue('brevo_api_key');
         $pagseguro_configured = (bool) SystemSetting::getValue('pagseguro_token');
+        $unsplash_configured = (bool) SystemSetting::getValue('unsplash_access_key');
 
         $deepseek_key = null;
         $gemini_key = null;
@@ -41,6 +42,7 @@ class AdminSettingsController extends Controller
             'gemini_configured',
             'brevo_configured',
             'pagseguro_configured',
+            'unsplash_configured',
             'pagseguro_email',
             'pagseguro_env',
             'email_from',
@@ -59,6 +61,7 @@ class AdminSettingsController extends Controller
         $validated = $request->validate([
             'deepseek_api_key' => 'nullable|string|max:5000',
             'gemini_api_key' => 'nullable|string|max:5000',
+            'unsplash_access_key' => 'nullable|string|max:5000',
             'brevo_api_key' => 'nullable|string|max:5000',
             'pagseguro_email' => 'nullable|email|max:255',
             'pagseguro_token' => 'nullable|string|max:5000',
@@ -72,6 +75,7 @@ class AdminSettingsController extends Controller
         foreach ([
             'deepseek_api_key' => 'api',
             'gemini_api_key' => 'api',
+            'unsplash_access_key' => 'api',
             'brevo_api_key' => 'api',
             'pagseguro_token' => 'api',
         ] as $key => $group) {
