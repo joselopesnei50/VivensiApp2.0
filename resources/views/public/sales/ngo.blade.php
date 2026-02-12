@@ -103,7 +103,7 @@
             <p>O Vivensi foi desenhado para ONGs que buscam o próximo nível de governança. Entregamos o que há de mais moderno no mercado SAAS global para o Terceiro Setor brasileiro.</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px;">
             <div class="feature-box">
                 <div style="width: 60px; height: 60px; background: #f0fdf4; color: #16a34a; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 25px;">
                     <i class="fas fa-shield-alt"></i>

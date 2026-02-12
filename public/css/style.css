@@ -148,6 +148,19 @@ ul {
     width: 5px;
 }
 
+/* Notification Dropdown Mobile Fix */
+@media (max-width: 768px) {
+    #notif-dropdown {
+        position: fixed !important;
+        top: 60px !important;
+        left: 20px !important;
+        right: 20px !important;
+        width: auto !important;
+        max-width: none !important;
+        box-shadow: 0 0 100px rgba(0, 0, 0, 0.5) !important;
+    }
+}
+
 .sidebar-menu::-webkit-scrollbar-track {
     background: transparent;
 }
@@ -198,8 +211,18 @@ ul {
 
 @media (max-width: 768px) {
     .user-view {
-        padding-bottom: 80px;
-        /* Space for mobile browser bottom bars */
+        padding-bottom: 120px;
+        /* Increased space for mobile bars and safe area */
+    }
+
+    #notif-dropdown {
+        position: fixed !important;
+        top: 60px !important;
+        left: 20px !important;
+        right: 20px !important;
+        width: auto !important;
+        max-width: none !important;
+        box-shadow: 0 0 100px rgba(0, 0, 0, 0.5) !important;
     }
 }
 

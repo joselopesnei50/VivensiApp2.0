@@ -94,7 +94,7 @@
 
     <!-- Features -->
     <section id="features" style="padding: 100px 5%; background: white;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto;">
             <div class="feature-box" style="text-align: center;">
                 <i class="fas fa-file-invoice-dollar" style="font-size: 2.5rem; color: #3b82f6; margin-bottom: 25px;"></i>
                 <h4 style="font-weight: 800; margin-bottom: 15px;">Conciliação OFX</h4>

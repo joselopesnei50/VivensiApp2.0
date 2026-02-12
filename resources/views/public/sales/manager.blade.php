@@ -24,6 +24,10 @@
         border: 1px solid #e2e8f0;
     }
     .gantt-bar { height: 12px; border-radius: 6px; margin-bottom: 12px; }
+
+    @media (max-width: 992px) {
+        .hero-manager { grid-template-columns: 1fr; text-align: center; padding-top: 120px; }
+    }
 </style>
 @endsection
 
@@ -109,7 +113,7 @@
             <p style="color: #94a3b8;">Tecnologia robusta para empresas que escalam rápido. Diminua a carga operacional e foque no crescimento estratégico.</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px;">
             <div style="background: rgba(255,255,255,0.03); padding: 40px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);">
                 <i class="fas fa-microchip" style="font-size: 2.5rem; color: #16a34a; margin-bottom: 25px;"></i>
                 <h4 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 15px;">Workflow Inteligente</h4>

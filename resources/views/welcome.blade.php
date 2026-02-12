@@ -696,8 +696,14 @@
         <div style="position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: rgba(99, 102, 241, 0.2); border-radius: 50%; filter: blur(100px);"></div>
         <div style="position: absolute; bottom: -150px; left: -150px; width: 500px; height: 500px; background: rgba(139, 92, 246, 0.2); border-radius: 50%; filter: blur(120px);"></div>
         
+        <style>
+            .academy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+            @media (max-width: 768px) {
+                .academy-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+            }
+        </style>
         <div style="max-width: 1200px; margin: 0 auto; position: relative; z-index: 2;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+            <div class="academy-grid">
                 <!-- Left: Text Content -->
                 <div>
                     <div style="display: inline-block; background: rgba(251, 191, 36, 0.2); backdrop-filter: blur(10px); padding: 8px 20px; border-radius: 30px; margin-bottom: 25px; border: 1px solid rgba(251, 191, 36, 0.3);">
