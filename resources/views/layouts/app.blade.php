@@ -95,6 +95,7 @@
                 <li><a href="{{ url('/manager/contracts') }}" class="{{ request()->is('manager/contracts*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Contratos Digitais</a></li>
                 <li><a href="{{ url('/manager/reconciliation') }}" class="{{ request()->is('manager/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
                 <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Marketing (LPs)</a></li>
+                <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing/strategy*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Marketing Intelligence</a></li>
                 <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; margin-right: 5px;"> Smart Analysis AI</a></li>
             @elseif (auth()->user()->role == 'ngo' || (auth()->user()->tenant && auth()->user()->tenant->type == 'ngo'))
                 <!-- Menu ONG -->
@@ -114,6 +115,7 @@
                 <li><a href="{{ url('/ngo/reports/dre') }}"><i class="fas fa-file-invoice-dollar"></i> Relatórios (DRE)</a></li>
                 <li><a href="{{ url('/ngo/audit') }}"><i class="fas fa-eye"></i> Central de Auditoria</a></li>
                 <li><a href="{{ url('/smart-analysis') }}"><img src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; margin-right: 5px;"> Smart Analysis</a></li>
+                <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing/strategy*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Marketing Intelligence</a></li>
                 <li><a href="{{ url('/ngo/transparencia') }}" class="{{ request()->is('ngo/transparencia*') ? 'active' : '' }}"><i class="fas fa-landmark"></i> Portal Transparência</a></li>
             @else
                 <!-- Menu Comum -->
