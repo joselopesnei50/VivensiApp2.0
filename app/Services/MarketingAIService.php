@@ -47,8 +47,8 @@ class MarketingAIService
         ";
 
         try {
-            // Chamada ao Gemini (assumindo que o método sendMessage retorna a string da resposta)
-            $response = $this->gemini->sendMessage($prompt);
+            // Chamada ao Gemini
+            $response = $this->gemini->generateText($prompt);
             
             // Limpeza básica para garantir que é JSON puro (remover blocos de código markdown se houver)
             $jsonString = $this->cleanJson($response);
