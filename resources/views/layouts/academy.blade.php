@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Vivensi') }} - @yield('title', 'Academy')</title>
+    <title>Vivensi Academy - @yield('title', 'Plataforma de Ensino')</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,15 +55,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #fff;
             text-decoration: none;
         }
         
-        .academy-logo i {
-            color: #6366f1;
-            font-size: 1.5rem;
+        .academy-logo img {
+            height: 40px;
+            filter: brightness(0) invert(1); /* Make logo white for dark theme */
         }
         
         .academy-nav-links {
@@ -123,8 +120,7 @@
     <!-- Top Navigation -->
     <nav class="academy-navbar">
         <a href="{{ route('academy.index') }}" class="academy-logo">
-            <i class="fas fa-graduation-cap"></i>
-            <span>Vivensi Academy</span>
+            <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Academy">
         </a>
         
         <div class="academy-nav-links">
