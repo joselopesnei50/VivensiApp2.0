@@ -70,6 +70,83 @@ class LandingPageController extends Controller
         return redirect()->route('landing-pages.builder', $page->id);
     }
 
+    public function createMagic(Request $request)
+    {
+        $request->validate([
+            'strategy_json' => 'required|json',
+        ]);
+
+        $strategy = json_decode($request->strategy_json, true);
+        
+        // Create Page
+        $title = $strategy['hero_headline'] ?? 'Nova Campanha IA';
+        $page = LandingPage::create([
+            'tenant_id' => auth()->user()->tenant_id,
+            'title' => Str::limit($title, 255, ''),
+            'slug' => $this->generateUniqueSlug($title),
+            'status' => 'draft',
+            'settings' => [
+                'theme_color' => '#10b981', // Green for success/money
+                'seo_title' => $title,
+                'seo_description' => $strategy['hero_subheadline'] ?? '',
+            ]
+        ]);
+
+        // 1. HERO BLOCK
+        $heroContent = $this->getDefaultContent('hero');
+        $heroContent['title'] = $strategy['hero_headline'] ?? $heroContent['title'];
+        $heroContent['subtitle'] = $strategy['hero_subheadline'] ?? $heroContent['subtitle'];
+        $heroContent['button_text'] = $strategy['cta_button'] ?? $heroContent['button_text'];
+        
+        $page->sections()->create([
+            'type' => 'hero',
+            'content' => $heroContent,
+            'sort_order' => 1
+        ]);
+
+        // 2. BENEFITS (Features)
+        if (!empty($strategy['benefits_list'])) {
+            $featuresContent = $this->getDefaultContent('features');
+            $featuresContent['title'] = $strategy['benefits_title'] ?? 'Por que apoiar?';
+            $items = [];
+            foreach ($strategy['benefits_list'] as $benefit) {
+                $items[] = ['title' => 'Benefício', 'desc' => $benefit];
+            }
+            $featuresContent['items'] = $items;
+
+            $page->sections()->create([
+                'type' => 'features',
+                'content' => $featuresContent,
+                'sort_order' => 2
+            ]);
+        }
+
+        // 3. ABOUT
+        $aboutContent = $this->getDefaultContent('about');
+        $aboutContent['title'] = $strategy['about_title'] ?? $aboutContent['title'];
+        $aboutContent['text'] = $strategy['about_text'] ?? $aboutContent['text'];
+        
+        $page->sections()->create([
+            'type' => 'about',
+            'content' => $aboutContent,
+            'sort_order' => 3
+        ]);
+
+        // 4. CTA FINAL
+        $ctaContent = $this->getDefaultContent('cta_banner');
+        $ctaContent['title'] = 'Faça a diferença agora';
+        $ctaContent['subtitle'] = $strategy['hero_subheadline'] ?? '';
+        $ctaContent['button_text'] = $strategy['cta_button'] ?? 'Apoiar';
+        
+        $page->sections()->create([
+            'type' => 'cta_banner',
+            'content' => $ctaContent,
+            'sort_order' => 4
+        ]);
+
+        return redirect()->route('landing-pages.builder', $page->id)->with('success', 'Página criada com IA! 🚀');
+    }
+
     public function builder($id)
     {
         $page = LandingPage::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);

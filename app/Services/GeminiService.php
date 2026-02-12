@@ -82,4 +82,17 @@ class GeminiService
             return ['error' => 'Erro de conexão: ' . $e->getMessage()];
         }
     }
+
+    public function generateText($prompt)
+    {
+        $result = $this->callGemini([
+            ['text' => $prompt]
+        ]);
+
+        if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
+            return $result['candidates'][0]['content']['parts'][0]['text'];
+        }
+
+        return null;
+    }
 }

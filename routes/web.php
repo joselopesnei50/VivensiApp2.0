@@ -299,6 +299,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/test/receive', [App\Http\Controllers\WhatsappController::class, 'simulateWebhook']);
     Route::get('/whatsapp/status', [App\Http\Controllers\WhatsappController::class, 'getStatus']);
 
+    // Marketing Intelligence (AI)
+    Route::get('/marketing/strategy', [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');
+    Route::post('/marketing/strategy', [App\Http\Controllers\MarketingStrategyController::class, 'generate'])->name('marketing.generate');
+    Route::post('/marketing/magic-page', [App\Http\Controllers\LandingPageController::class, 'createMagic'])->name('ngo.landing-pages.create_magic');
+
+
 
     // Portal da Transparência (Módulo NGO)
     Route::get('/ngo/transparencia', [App\Http\Controllers\TransparencyController::class, 'index'])->name('transparency.index');
