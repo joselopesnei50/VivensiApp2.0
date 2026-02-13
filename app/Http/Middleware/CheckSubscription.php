@@ -73,8 +73,8 @@ class CheckSubscription
                 ->with('warning', 'Sua conta não possui um plano ativo. Por favor, confirme sua assinatura.');
         }
 
-        if ($tenant->subscription_status === 'trialing' && $tenant->trial_ends_at && $tenant->trial_ends_at->isPast()) {
-            return redirect()->route('checkout.index', ['plan_id' => $tenant->plan_id])
+        if ($tenant->subscription_status === 'trialing' && optional($tenant->trial_ends_at)->isPast()) {
+            return redirect()->route('checkout.index', ['plan_id' => $tenant->plan_id ?? 1])
                 ->with('error', 'Seu período de teste de 7 dias chegou ao fim. Realize o pagamento para desbloquear seu acesso completo.');
         }
 

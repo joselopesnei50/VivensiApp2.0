@@ -462,3 +462,9 @@ Route::get('/validar-certificado/{id}', [App\Http\Controllers\HumanResourcesCont
     ->name('public.volunteer_certificate.validate');
 Route::get('/sign/{token}', [App\Http\Controllers\ContractController::class, 'showPublic'])->name('public.contract');
 Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign']);
+
+// Rota para o Checkout (Pagamentos)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/checkout/{plan_id}', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
+});

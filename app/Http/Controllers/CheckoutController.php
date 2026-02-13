@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use App\Services\AsaasService;
+use App\Services\PagSeguroService;
 use App\Services\BrevoService;
 use Illuminate\Http\Request;
 use Exception;
