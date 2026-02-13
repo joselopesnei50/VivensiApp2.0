@@ -63,7 +63,7 @@ class AcademyModuleController extends Controller
         $request->validate([
             'title' => 'required|max:255',
             'video_url' => 'nullable|url',
-            'duration_minutes' => 'integer',
+            'duration_minutes' => 'nullable|integer',
             'type' => 'required|in:video,ebook',
             'order' => 'integer',
             'document' => 'nullable|file|mimes:pdf|max:51200', // Max 50MB
