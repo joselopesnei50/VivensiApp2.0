@@ -245,6 +245,8 @@ class WhatsappController extends Controller
      */
     public function settings()
     {
+        abort_unless(auth()->check(), 401, 'Unauthorized');
+        
         $config = WhatsappConfig::firstOrCreate(['tenant_id' => auth()->user()->tenant_id]);
 
         // Ensure client_token exists (webhook security)
