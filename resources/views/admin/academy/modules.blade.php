@@ -74,7 +74,12 @@
                                                 <strong>{{ $lesson->order }} - {{ $lesson->title }}</strong>
                                                 <div class="text-muted small" style="margin-left: 22px;">
                                                     {{ $lesson->duration_minutes }} min | 
-                                                    @if($lesson->video_url) <a href="{{ $lesson->video_url }}" target="_blank">Link Vídeo</a> @endif
+                                                    @if($lesson->video_url) 
+                                                        <a href="{{ $lesson->video_url }}" target="_blank" class="text-decoration-none"><i class="fas fa-video me-1"></i> Vídeo</a> 
+                                                    @endif
+                                                    @if($lesson->document_url) 
+                                                        <a href="{{ $lesson->document_url }}" target="_blank" class="text-decoration-none ms-2"><i class="fas fa-file-pdf me-1"></i> Documento</a> 
+                                                    @endif
                                                 </div>
                                             </div>
                                             <form action="{{ route('admin.academy.lessons.destroy', $lesson->id) }}" method="POST" onsubmit="return confirm('Remover aula?');">
