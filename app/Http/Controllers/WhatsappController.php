@@ -71,7 +71,10 @@ class WhatsappController extends Controller
     }
 
     /**
-     * Webhook receptor da Z-API
+     * Webhook receptor da Z-API (Async)
+     * 
+     * CRITICAL: Returns HTTP 200 immediately and dispatches payload to queue.
+     * This prevents Z-API from retrying due to timeout (>30s processing).
      */
     public function webhook(Request $request)
     {
@@ -80,9 +83,11 @@ class WhatsappController extends Controller
         // Z-API envia o ClientToken no Header para segurança
         $clientToken = $request->header('Client-Token');
         $config = null;
+        
         if (!empty($clientToken)) {
             $config = WhatsappConfig::where('client_token_hash', hash('sha256', (string) $clientToken))->first();
         }
+        
         // Backward-compat fallback (older rows without hash)
         if (!$config && !empty($clientToken)) {
             $config = WhatsappConfig::where('client_token', $clientToken)->first();
@@ -92,21 +97,12 @@ class WhatsappController extends Controller
             return response()->json(['error' => 'Unauthorized instance'], 401);
         }
 
-        // Processar apenas mensagens recebidas
-        if (isset($data['type']) && $data['type'] == 'ReceivedMessage') {
-            try {
-                $this->handleReceivedMessage($config, $data);
-            } catch (\Throwable $e) {
-                // Never 500 on webhook; Z-API may retry indefinitely.
-                Log::warning('WhatsApp webhook processing error', [
-                    'tenant_id' => $config->tenant_id,
-                    'error' => $e->getMessage(),
-                ]);
-                return response()->json(['status' => 'ignored'], 200);
-            }
-        }
+        // IMMEDIATELY dispatch to queue and return 200 OK
+        // This ensures Z-API receives response in <100ms (prevents duplicate deliveries)
+        \App\Jobs\ProcessWhatsappWebhook::dispatch((int) $config->id, $data)
+            ->onQueue('whatsapp');
 
-        return response()->json(['status' => 'ok']);
+        return response()->json(['status' => 'queued'], 200);
     }
 
     private function handleReceivedMessage($config, $data)

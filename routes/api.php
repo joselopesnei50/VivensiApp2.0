@@ -3,7 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// WhatsApp Z-API Webhooks (both routes point to same controller)
 Route::post('/whatsapp/webhook', [App\Http\Controllers\WhatsappController::class, 'webhook'])
+    ->middleware('throttle:300,1');
+Route::post('/webhooks/zapi', [App\Http\Controllers\WhatsappController::class, 'webhook'])
     ->middleware('throttle:300,1');
 
 /*
