@@ -55,7 +55,7 @@ class AcademyModuleController extends Controller
             'duration_minutes' => 'integer',
             'type' => 'required|in:video,ebook',
             'order' => 'integer',
-            'document' => 'nullable|file|mimes:pdf|max:10240', // Max 10MB
+            'document' => 'nullable|file|mimes:pdf|max:51200', // Max 50MB
         ]);
 
         $documentUrl = null;
