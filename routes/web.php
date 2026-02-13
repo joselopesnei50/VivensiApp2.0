@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/debug-test', function() { return 'Alive: ' . now(); });
+
 
 Route::get('/', [App\Http\Controllers\PublicController::class, 'welcome']);
 Route::get('/solucoes/terceiro-setor', [App\Http\Controllers\PublicController::class, 'solutionsNgo'])->name('solutions.ngo');
