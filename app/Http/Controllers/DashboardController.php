@@ -183,7 +183,7 @@ class DashboardController extends Controller
                 'total_donors' => NgoDonor::where('tenant_id', $tenantId)->count(),
                 'active_campaigns' => Campaign::where('tenant_id', $tenantId)->where('status', 'active')->get(),
                 'recent_grants' => NgoGrant::where('tenant_id', $tenantId)->orderBy('created_at', 'desc')->limit(3)->get(),
-                'ai_insight' => optional(collect($advisor->getInsights())->first())['message'] ?? 'Adicione mais transações para gerar insights precisos.',
+                'ai_insight' => data_get($advisor->getInsights(), '0.message', 'Adicione mais transações para gerar insights precisos.'),
             ];
         });
 
