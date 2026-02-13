@@ -35,6 +35,16 @@
 
     <!-- Lista de Módulos (Accordion) -->
     <div class="col-md-8">
+        @if($errors->any())
+            <div class="alert alert-danger" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         @if(session('success'))
             <div class="alert alert-success" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;">
                 {{ session('success') }}
@@ -121,7 +131,7 @@
                                         <!-- Ebook Fields -->
                                         <div class="col-md-8 mb-2 ebook-fields-{{ $module->id }}" style="display: none;">
                                             <input type="file" name="document" class="form-control form-control-sm" accept=".pdf">
-                                            <small class="text-muted">Arquivo PDF (máx. 10MB)</small>
+                                            <small class="text-muted">Arquivo PDF (máx. 50MB)</small>
                                         </div>
                                         
                                         <div class="col-md-2 mb-2">

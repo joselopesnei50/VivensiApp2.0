@@ -49,6 +49,17 @@ class AcademyModuleController extends Controller
 
     public function storeLesson(Request $request, $moduleId)
     {
+        \Illuminate\Support\Facades\Log::info('Store Lesson Request:', $request->all());
+        if ($request->hasFile('document')) {
+            \Illuminate\Support\Facades\Log::info('Document File:', [
+                'name' => $request->file('document')->getClientOriginalName(),
+                'size' => $request->file('document')->getSize(),
+                'mime' => $request->file('document')->getMimeType(),
+            ]);
+        } else {
+             \Illuminate\Support\Facades\Log::info('No Document File found.');
+        }
+
         $request->validate([
             'title' => 'required|max:255',
             'video_url' => 'nullable|url',
