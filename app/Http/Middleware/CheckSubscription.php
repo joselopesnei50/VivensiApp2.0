@@ -52,7 +52,7 @@ class CheckSubscription
             return $next($request);
         }
 
-        if ($tenant->subscription_status === 'trialing' && $tenant->trial_ends_at && $tenant->trial_ends_at->isFuture()) {
+        if ($tenant->subscription_status === 'trialing' && optional($tenant->trial_ends_at)->isFuture()) {
             return $next($request);
         }
 

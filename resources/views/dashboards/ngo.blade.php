@@ -87,9 +87,9 @@
             </div>
             
             <div style="position: relative; z-index: 1; padding: 20px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);">
-                <p class="mb-0" style="color: #f1f5f9; font-size: 1rem; line-height: 1.6; font-weight: 500;">
-                    "{{ $stats['ai_insight'] }}"
-                </p>
+                    <p class="mb-0" style="font-size: 0.95rem; color: #4b5563;">
+                        {{ $stats['ai_insight'] ?? 'Nenhum insight disponível no momento.' }}
+                    </p>
             </div>
         </div>
 
