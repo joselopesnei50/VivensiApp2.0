@@ -247,8 +247,15 @@ class WhatsappController extends Controller
     {
         abort_unless(auth()->check(), 401, 'Unauthorized');
         
+        $tenantId = auth()->user()->tenant_id;
+        
+        // Super Admin users don't have tenant_id, redirect them
+        if (empty($tenantId)) {
+            return redirect()->route('dashboard')->with('error', 'Configurações de WhatsApp são específicas por organização. Acesse como gestor de uma organização.');
+        }
+        
         $config = WhatsappConfig::firstOrCreate(
-            ['tenant_id' => auth()->user()->tenant_id],
+            ['tenant_id' => $tenantId],
             [
                 'instance_id' => '',
                 'token' => '',
