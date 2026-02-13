@@ -21,6 +21,7 @@ class AdminSettingsController extends Controller
         $brevo_configured = (bool) SystemSetting::getValue('brevo_api_key');
         $pagseguro_configured = (bool) SystemSetting::getValue('pagseguro_token');
         $unsplash_configured = (bool) SystemSetting::getValue('unsplash_access_key');
+        $zapi_configured = (bool) SystemSetting::getValue('zapi_instance_id') && (bool) SystemSetting::getValue('zapi_token');
 
         $deepseek_key = null;
         $gemini_key = null;
@@ -32,6 +33,9 @@ class AdminSettingsController extends Controller
         $email_from = SystemSetting::getValue('email_from');
         $email_from_name = SystemSetting::getValue('email_from_name');
         $home_video_url = SystemSetting::getValue('home_video_url');
+        $zapi_instance = SystemSetting::getValue('zapi_instance_id');
+        $zapi_token = null; // Never expose
+        $zapi_client_token = null; // Never expose
 
         return view('admin.settings.index', compact(
             'deepseek_key',
@@ -43,11 +47,15 @@ class AdminSettingsController extends Controller
             'brevo_configured',
             'pagseguro_configured',
             'unsplash_configured',
+            'zapi_configured',
             'pagseguro_email',
             'pagseguro_env',
             'email_from',
             'email_from_name',
-            'home_video_url'
+            'home_video_url',
+            'zapi_instance',
+            'zapi_token',
+            'zapi_client_token'
         ));
 
     }
@@ -69,6 +77,9 @@ class AdminSettingsController extends Controller
             'email_from' => 'nullable|email|max:255',
             'email_from_name' => 'nullable|string|max:255',
             'home_video_url' => 'nullable|url|max:2048',
+            'zapi_instance_id' => 'nullable|string|max:255',
+            'zapi_token' => 'nullable|string|max:5000',
+            'zapi_client_token' => 'nullable|string|max:5000',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -78,6 +89,8 @@ class AdminSettingsController extends Controller
             'unsplash_access_key' => 'api',
             'brevo_api_key' => 'api',
             'pagseguro_token' => 'api',
+            'zapi_token' => 'whatsapp',
+            'zapi_client_token' => 'whatsapp',
         ] as $key => $group) {
             $val = trim((string) ($validated[$key] ?? ''));
             if ($val !== '') {
@@ -99,6 +112,9 @@ class AdminSettingsController extends Controller
         }
         if (!empty($validated['home_video_url'])) {
             SystemSetting::setValue('home_video_url', $validated['home_video_url'], 'marketing');
+        }
+        if (!empty($validated['zapi_instance_id'])) {
+            SystemSetting::setValue('zapi_instance_id', $validated['zapi_instance_id'], 'whatsapp');
         }
 
 

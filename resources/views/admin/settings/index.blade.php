@@ -134,7 +134,11 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-600 text-dark">Token de Produção / Sandbox</label>
+                            <label class="form-label fw-600 text-dark">Token de Produção / Sandbox
+                                @if(!empty($pagseguro_configured))
+                                    <span class="badge bg-success ms-2">Configurado</span>
+                                @endif
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
                                 <input type="password" name="pagseguro_token" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($pagseguro_configured) ? 'Configurado (cole para atualizar)' : 'Cole o Token aqui' }}" autocomplete="off">
@@ -167,7 +171,11 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-4">
-                            <label class="form-label fw-600 text-dark">Brevo API Key (v3)</label>
+                            <label class="form-label fw-600 text-dark">Brevo API Key (v3)
+                                @if(!empty($brevo_configured))
+                                    <span class="badge bg-success ms-2">Configurada</span>
+                                @endif
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
                                 <input type="password" name="brevo_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($brevo_configured) ? 'Configurada (cole para atualizar)' : 'Cole aqui para definir' }}" autocomplete="off">
@@ -221,6 +229,60 @@
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" disabled checked>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. WhatsApp Messaging (Z-API) -->
+            <div class="col-12 col-xl-6">
+                <div class="card border-0 shadow-sm h-100 overflow-hidden">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-success-50 text-success rounded-3 p-3 me-3">
+                                <i class="fab fa-whatsapp fa-lg text-success"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Mensageria WhatsApp</h5>
+                                <p class="text-muted small mb-0">Integração com Z-API.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark">Instance ID <span class="badge bg-light text-dark border ms-2">Visível</span>
+                                @if(!empty($zapi_configured))
+                                    <span class="badge bg-success ms-2">Configurada</span>
+                                @endif
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-hashtag text-muted"></i></span>
+                                <input type="text" name="zapi_instance_id" value="{{ $zapi_instance }}" class="form-control border-start-0 ps-0 form-control-lg" placeholder="Ex: 3C12345678901234567890AB" autocomplete="off">
+                            </div>
+                            <div class="form-text">ID da instância do WhatsApp no painel Z-API.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark">Token</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
+                                <input type="password" name="zapi_token" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($zapi_configured) ? 'Configurado (cole para atualizar)' : 'Cole o Token aqui' }}" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-600 text-dark">Client Token</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-shield-alt text-muted"></i></span>
+                                <input type="password" name="zapi_client_token" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($zapi_configured) ? 'Configurado (cole para atualizar)' : 'Cole o Client Token aqui' }}" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-light border border-success border-opacity-25 d-flex align-items-center mb-0 p-3 rounded-3" role="alert">
+                            <i class="fab fa-whatsapp text-success me-3 fs-4"></i>
+                            <div class="small text-muted">
+                                Configure o Webhook no Z-API para: <strong>{{ url('/api/webhooks/zapi') }}</strong>
                             </div>
                         </div>
                     </div>
