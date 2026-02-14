@@ -1078,5 +1078,8 @@
         }
     </style>
 
+    {{-- Cookie Consent Banner (LGPD) --}}
+    @include('partials.cookie-banner')
+
 </body>
 </html>
