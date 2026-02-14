@@ -7,7 +7,7 @@
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-body p-5">
                     <h1 class="mb-4 text-center fw-bold text-primary">Política de Privacidade</h1>
-                    <p class="text-muted text-center mb-5">Última atualização: {{ date('d/m/Y') }}</p>
+                    <p class="text-muted text-center mb-5">Última atualização: {{ config('legal.last_update') }}</p>
 
                     <div class="legal-content">
                         <h4>1. Coleta de Informações</h4>
@@ -29,7 +29,7 @@
                         <p>Nossa plataforma está em conformidade com a Lei Geral de Proteção de Dados (LGPD) do Brasil, garantindo transparência e controle sobre seus dados.</p>
                         
                         <h4>7. Contato</h4>
-                        <p>Para questões sobre privacidade, contate nosso Encarregado de Proteção de Dados (DPO) através do suporte.</p>
+                        <p>Para questões sobre privacidade, contate nosso Encarregado de Proteção de Dados (DPO) através do e-mail <strong>{{ config('legal.email_dpo') }}</strong>.</p>
                     </div>
                     
                     <div class="text-center mt-5">

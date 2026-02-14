@@ -31,7 +31,9 @@ class User extends Authenticatable
         'last_login_at',
         'phone',
         'onboarding_steps',
-        'onboarding_completed_at'
+        'onboarding_completed_at',
+        'terms_accepted_at',
+        'terms_ip'
     ];
 
     public function supervisor()
@@ -54,6 +56,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'last_login_at' => 'datetime',
         'onboarding_completed_at' => 'datetime',
+        'terms_accepted_at' => 'datetime',
         'onboarding_steps' => 'array'
     ];
 

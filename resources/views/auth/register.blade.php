@@ -142,6 +142,22 @@
             </div>
         </div>
 
+        <div class="form-group" style="margin-top: 10px; margin-bottom: 20px;">
+            <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; font-weight: normal;">
+                <input type="checkbox" name="terms" required style="width: 18px; height: 18px; margin-top: 3px; cursor: pointer; accent-color: var(--primary-color);">
+                <span style="font-size: 0.9rem; color: #64748B; line-height: 1.5;">
+                    Declaro que li e concordo com os 
+                    <a href="{{ route('legal.terms') }}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Termos de Uso</a> 
+                    e a 
+                    <a href="{{ route('legal.privacy') }}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Política de Privacidade</a> 
+                    do Vivensi.
+                </span>
+            </label>
+            @error('terms')
+                <div style="color: #DC2626; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
+            @enderror
+        </div>
+
         <button type="submit" class="btn-primary">
             Criar Minha Conta <i class="fas fa-rocket" style="margin-left: 8px;"></i>
         </button>

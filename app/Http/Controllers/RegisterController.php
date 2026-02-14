@@ -32,6 +32,7 @@ class RegisterController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'plan_id' => 'nullable|exists:subscription_plans,id',
             'account_type' => 'required|in:project_manager,ngo_admin,client',
+            'terms' => 'required|accepted',
         ]);
 
         try {
@@ -62,6 +63,8 @@ class RegisterController extends Controller
                 'password' => Hash::make($request->password),
                 'role' => $request->account_type,
                 'status' => 'active',
+                'terms_accepted_at' => now(),
+                'terms_ip' => $request->ip(),
             ]);
 
             DB::commit();
