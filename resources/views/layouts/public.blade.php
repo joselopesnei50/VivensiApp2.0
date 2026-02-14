@@ -250,5 +250,9 @@
         <span class="whatsapp-text">Fale Conosco</span>
     </a>
 
+    <!-- Cookie Consent Banner (LGPD) -->
+    @include('partials.cookie-banner')
+
 </body>
 </html>
+

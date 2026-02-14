@@ -642,7 +642,12 @@
 
     <div id="vivensi-toast-wrap" class="vivensi-toast-wrap" aria-live="polite" aria-atomic="true"></div>
     
+    
     <!-- Bootstrap 5 JS Bundle (Required for Modals, Dropdowns, Tooltips) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Cookie Consent Banner (LGPD) -->
+    @include('partials.cookie-banner')
 </body>
 </html>
+

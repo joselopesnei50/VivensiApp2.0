@@ -23,6 +23,11 @@ Route::get('/solucoes/pessoa-comum', [App\Http\Controllers\PublicController::cla
 // Public Pages (Terms, Privacy, About)
 Route::get('/pagina/{slug}', [App\Http\Controllers\PageController::class, 'show'])->name('public.page');
 
+// Cookie Consent (LGPD)
+Route::post('/cookie/accept', [App\Http\Controllers\CookieConsentController::class, 'accept'])->name('cookie.accept');
+Route::post('/cookie/revoke', [App\Http\Controllers\CookieConsentController::class, 'revoke'])->name('cookie.revoke');
+
+
 Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['pt_BR', 'es', 'en'])) {
         session()->put('locale', $locale);
