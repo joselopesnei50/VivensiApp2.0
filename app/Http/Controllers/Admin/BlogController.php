@@ -25,17 +25,20 @@ class BlogController extends Controller
         $request->validate([
             'title' => 'required|max:255',
             'content' => 'required',
-            'image_url' => 'nullable|url'
+            'image' => 'nullable|image|max:2048' // Validação de imagem real
         ]);
 
-        Post::create([
-            'title' => $request->title,
-            'slug' => Str::slug($request->title),
-            'content' => $request->content,
-            'image' => $request->image_url,
-            'is_published' => $request->has('is_published'),
-            'published_at' => $request->has('is_published') ? now() : null,
-        ]);
+        $data = $request->except('image');
+        $data['slug'] = Str::slug($request->title);
+        $data['published_at'] = $request->has('is_published') ? now() : null;
+
+        // Upload de Imagem
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('blog', 'public');
+            $data['image'] = '/storage/' . $path; // Salva o caminho acessível
+        }
+
+        Post::create($data);
 
         return redirect()->route('admin.blog.index')->with('success', 'Post criado com sucesso!');
     }
