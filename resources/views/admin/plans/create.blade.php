@@ -38,6 +38,19 @@
                     </div>
 
                     <div class="col-md-6">
+                        <label class="form-label fw-bold">Valor Anual (R$)</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-0 bg-light">R$</span>
+                            <input type="number" step="0.01" name="price_yearly" class="form-control-vivensi" placeholder="0,00">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                         <label class="form-label fw-bold">ID do Plano Anual (PagSeguro)</label>
+                         <input type="text" name="pagseguro_plan_id_yearly" class="form-control-vivensi" placeholder="Ex: PLAN_12345">
+                    </div>
+
+                    <div class="col-md-6">
                         <label class="form-label fw-bold">Intervalo de Cobrança</label>
                         <select name="interval" class="form-select border-0 bg-light rounded-3 py-3" required>
                             <option value="monthly">Mensal</option>

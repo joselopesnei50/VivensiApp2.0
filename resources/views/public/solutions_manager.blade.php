@@ -77,13 +77,29 @@
         <div style="text-align: center;">
             <h2>Planos para Gestores de Projetos</h2>
             <p>Escolha a escala ideal para os projetos da sua empresa.</p>
+
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px;">
+                <span style="font-weight: 600; color: #64748b;" id="label-monthly">Mensal</span>
+                <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                    <input type="checkbox" id="billing-toggle" onchange="toggleBilling()">
+                    <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                    <span class="slider-icon" style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                </label>
+                <span style="font-weight: 600; color: #1e293b;" id="label-yearly">Anual <span style="font-size: 0.75rem; color: #0ea5e9; background: #e0f2fe; padding: 2px 8px; border-radius: 12px; margin-left: 5px;">-10% OFF</span></span>
+            </div>
         </div>
         
         <div class="pricing-grid">
             @forelse($plans as $plan)
                 <div class="price-card">
                     <h3 style="margin: 0;">{{ $plan->name }}</h3>
-                    <div style="font-size: 2.5rem; font-weight: 800; margin: 20px 0;">R$ {{ number_format($plan->price, 0, ',', '.') }}<span style="font-size: 1rem; color: #64748b; font-weight: 400;">/mês</span></div>
+                    <div class="price-display" 
+                         data-price-monthly="{{ $plan->price }}" 
+                         data-price-yearly="{{ $plan->price_yearly ?? ($plan->price * 12 * 0.9) }}" 
+                         style="font-size: 2.5rem; font-weight: 800; margin: 20px 0;">
+                         R$ <span class="amount">{{ number_format($plan->price, 0, ',', '.') }}</span>
+                         <span class="period" style="font-size: 1rem; color: #64748b; font-weight: 400;">/mês</span>
+                    </div>
                     <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 30px;">
                         @if($plan->features)
                             @foreach($plan->features as $feature)
@@ -91,7 +107,7 @@
                             @endforeach
                         @endif
                     </ul>
-                    <a href="{{ route('register', ['plan_id' => $plan->id]) }}" class="btn-cta w-100" style="background: var(--secondary);">Contratar Plano</a>
+                    <a href="{{ route('register', ['plan_id' => $plan->id, 'billing_cycle' => 'monthly']) }}" class="btn-cta w-100 btn-subscribe" style="background: var(--secondary);" data-plan-id="{{ $plan->id }}">Contratar Plano</a>
                 </div>
             @empty
                 <div style="text-align: center; width: 100%;">
@@ -99,7 +115,46 @@
                 </div>
             @endforelse
         </div>
+        </div>
     </section>
+
+    <style>
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch input:checked + .slider { background-color: var(--primary); }
+        .switch input:focus + .slider { box-shadow: 0 0 1px var(--primary); }
+        .switch input:checked + .slider .slider-icon { transform: translateX(26px); }
+    </style>
+
+    <script>
+        function toggleBilling() {
+            const isYearly = document.getElementById('billing-toggle').checked;
+            const prices = document.querySelectorAll('.price-display');
+            const buttons = document.querySelectorAll('.btn-subscribe');
+
+            prices.forEach(price => {
+                const amountSpan = price.querySelector('.amount');
+                const periodSpan = price.querySelector('.period');
+                const monthly = parseFloat(price.dataset.priceMonthly);
+                const yearly = parseFloat(price.dataset.priceYearly);
+
+                if (isYearly) {
+                    // Show yearly price
+                    amountSpan.textContent = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0 }).format(yearly);
+                    periodSpan.textContent = '/ano';
+                } else {
+                    // Show monthly price
+                    amountSpan.textContent = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0 }).format(monthly);
+                    periodSpan.textContent = '/mês';
+                }
+            });
+
+            buttons.forEach(btn => {
+                const planId = btn.dataset.planId;
+                const cycle = isYearly ? 'yearly' : 'monthly';
+                btn.href = `/register?plan_id=${planId}&billing_cycle=${cycle}`;
+            });
+        }
+    </script>
 
     <footer style="padding: 60px 5%; background: var(--secondary); color: white; text-align: center;">
         <p>&copy; 2026 Vivensi. Performance e Resultado.</p>

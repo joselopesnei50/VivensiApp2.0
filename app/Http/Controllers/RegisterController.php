@@ -47,12 +47,32 @@ class RegisterController extends Controller
                 default => 'common'
             };
 
+            // Calculate trial and set price based on billing_cycle
+            $trialDays = 7;
+            $billingCycle = $request->query('billing_cycle', 'monthly');
+            $subscriptionPrice = 0;
+            $pagseguroPlanId = null;
+
+            if ($request->plan_id) {
+                $plan = SubscriptionPlan::find($request->plan_id);
+                if ($plan) {
+                    if ($billingCycle === 'yearly') {
+                        $subscriptionPrice = $plan->price_yearly ?? ($plan->price * 12 * 0.9);
+                        $pagseguroPlanId = $plan->pagseguro_plan_id_yearly;
+                    } else {
+                        $subscriptionPrice = $plan->price;
+                        // $pagseguroPlanId = $plan->pagseguro_plan_id; // Assume existing column if implemented
+                    }
+                }
+            }
+
             $tenant = Tenant::create([
                 'name' => $request->organization_name,
                 'type' => $tenantType,
                 'plan_id' => $request->plan_id,
                 'subscription_status' => 'trialing',
-                'trial_ends_at' => now()->addDays(7),
+                'trial_ends_at' => now()->addDays($trialDays),
+                'billing_cycle' => $billingCycle, // Ensure this column exists or store in meta
             ]);
 
             // 2. Create User with selected role

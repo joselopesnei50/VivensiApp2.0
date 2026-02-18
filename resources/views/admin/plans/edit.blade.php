@@ -39,6 +39,19 @@
                     </div>
 
                     <div class="col-md-6">
+                        <label class="form-label fw-bold">Valor Anual (R$)</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-0 bg-light">R$</span>
+                            <input type="number" step="0.01" name="price_yearly" class="form-control-vivensi" value="{{ old('price_yearly', $plan->price_yearly) }}" placeholder="0,00">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                         <label class="form-label fw-bold">ID do Plano Anual (PagSeguro)</label>
+                         <input type="text" name="pagseguro_plan_id_yearly" class="form-control-vivensi" value="{{ old('pagseguro_plan_id_yearly', $plan->pagseguro_plan_id_yearly) }}" placeholder="Ex: PLAN_12345">
+                    </div>
+
+                    <div class="col-md-6">
                         <label class="form-label fw-bold">Intervalo de Cobrança</label>
                         <select name="interval" class="form-select border-0 bg-light rounded-3 py-3" required>
                             <option value="monthly" {{ old('interval', $plan->interval) == 'monthly' ? 'selected' : '' }}>Mensal</option>

@@ -17,6 +17,7 @@ class Tenant extends Model
         'plan_id',
         'subscription_status',
         'trial_ends_at',
+        'billing_cycle', // monthly, yearly
     ];
 
     protected $casts = [
