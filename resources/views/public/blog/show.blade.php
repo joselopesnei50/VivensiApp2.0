@@ -28,8 +28,8 @@
     </div>
 
     <!-- Article Content -->
-    <div class="article-content" style="max-width: 800px; margin: 0 auto; padding: 0 5%; font-size: 1.25rem; line-height: 1.8; color: #334155;">
-        {!! nl2br(e($post->content)) !!}
+    <div class="article-content" style="max-width: 800px; margin: 0 auto; padding: 0 5%;">
+        {!! $post->content !!}
     </div>
 
     <!-- Back to Blog -->
@@ -47,15 +47,77 @@
 </article>
 
 <style>
-    .article-content h2, .article-content h3 { color: var(--secondary); margin-top: 40px; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .article-content {
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: #334155;
+        font-family: 'Inter', sans-serif;
+    }
+    
     .article-content p { margin-bottom: 25px; }
+    
+    .article-content h2 { 
+        color: var(--secondary); 
+        margin-top: 50px; 
+        margin-bottom: 20px; 
+        font-weight: 800; 
+        font-size: 2rem;
+        letter-spacing: -1px;
+    }
+    
+    .article-content h3 { 
+        color: var(--secondary); 
+        margin-top: 40px; 
+        margin-bottom: 15px; 
+        font-weight: 700; 
+        font-size: 1.5rem;
+    }
+
+    .article-content ul, .article-content ol {
+        margin-bottom: 30px;
+        padding-left: 20px;
+    }
+
+    .article-content li {
+        margin-bottom: 10px;
+        padding-left: 5px;
+    }
+
+    .article-content a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        transition: color 0.2s;
+    }
+
+    .article-content a:hover {
+        color: var(--secondary);
+    }
+
     .article-content blockquote {
         border-left: 5px solid var(--primary);
-        padding-left: 30px;
+        padding: 20px 30px;
         margin: 40px 0;
+        background: #f8fafc;
+        border-radius: 0 15px 15px 0;
         font-style: italic;
         color: var(--secondary);
         font-weight: 500;
+        font-size: 1.2rem;
+    }
+
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 15px;
+        margin: 30px 0;
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+    }
+
+    .article-content strong {
+        color: #1e293b;
+        font-weight: 700;
     }
 </style>
 @endsection
