@@ -43,13 +43,16 @@ class BlogController extends Controller
         return redirect()->route('admin.blog.index')->with('success', 'Post criado com sucesso!');
     }
 
-    public function edit(Post $post)
+    public function edit($id)
     {
+        $post = Post::findOrFail($id);
         return view('admin.blog.edit', compact('post'));
     }
 
-    public function update(Request $request, Post $post)
+    public function update(Request $request, $id)
     {
+        $post = Post::findOrFail($id);
+
         $request->validate([
             'title' => 'required|max:255',
             'content' => 'required',
@@ -64,8 +67,8 @@ class BlogController extends Controller
         // Upload de Nova Imagem
         if ($request->hasFile('image')) {
             // (Opcional) Deletar imagem antiga se existir
-            // if ($post->image && Storage::exists(str_replace('/storage/', 'public/', $post->image))) {
-            //    Storage::delete(str_replace('/storage/', 'public/', $post->image));
+            // if ($post->image && \Illuminate\Support\Facades\Storage::exists(str_replace('/storage/', 'public/', $post->image))) {
+            //    \Illuminate\Support\Facades\Storage::delete(str_replace('/storage/', 'public/', $post->image));
             // }
 
             $path = $request->file('image')->store('blog', 'public');
