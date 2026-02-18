@@ -107,22 +107,23 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>
-        tinymce.init({
-            selector: 'textarea.content-area',
-            height: 500,
-            menubar: false,
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-            language: 'pt_BR',
-            skin: 'oxide',
-            content_css: 'default',
-            branding: false,
-            promotion: false
-        });
-    </script>
-@endsection
+</form>
+
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    tinymce.init({
+        selector: 'textarea.content-area',
+        height: 500,
+        menubar: false,
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+        language: 'pt_BR',
+        skin: 'oxide',
+        content_css: 'default',
+        branding: false,
+        promotion: false
+    });
+</script>
 
 <style>
     /* Premium Form Styles */
