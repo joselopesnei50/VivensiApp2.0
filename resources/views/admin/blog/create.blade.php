@@ -57,13 +57,25 @@
                     <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
                         <textarea name="content" class="form-control-premium content-area" placeholder="Escreva seu artigo aqui..." required>{{ old('content') }}</textarea>
                     </div>
-                    <p class="helper-text"><i class="fab fa-markdown"></i> Markdown é suportado.</p>
-                </div>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: 'textarea.content-area',
+            height: 500,
+            menubar: false,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            language: 'pt_BR',
+            skin: 'oxide',
+            content_css: 'default',
+            branding: false,
+            promotion: false
+        });
+    </script>
+@endsection
 
-            </div>
-        </div>
-
-        <!-- Sidebar (Right) -->
+<style>
+    /* ... existing styles ... */
         <div class="col-lg-4">
             <!-- Publish Settings -->
             <div class="vivensi-card mb-4" style="padding: 30px; border-radius: 20px; border: 1px solid #e2e8f0; background: white;">
@@ -95,7 +107,22 @@
             </div>
         </div>
     </div>
-</form>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: 'textarea.content-area',
+            height: 500,
+            menubar: false,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            language: 'pt_BR',
+            skin: 'oxide',
+            content_css: 'default',
+            branding: false,
+            promotion: false
+        });
+    </script>
+@endsection
 
 <style>
     /* Premium Form Styles */
