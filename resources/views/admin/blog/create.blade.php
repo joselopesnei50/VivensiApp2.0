@@ -57,7 +57,8 @@
                     <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
                         <textarea name="content" class="form-control-premium content-area" placeholder="Escreva seu artigo aqui..." required>{{ old('content') }}</textarea>
                     </div>
-                    </div>
+                    <p class="helper-text"><i class="fab fa-markdown"></i> Markdown é suportado.</p>
+                </div>
 
 <style>
     /* ... existing styles ... */
@@ -94,21 +95,7 @@
     </div>
 </form>
 
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-<script>
-    tinymce.init({
-        selector: 'textarea.content-area',
-        height: 500,
-        menubar: false,
-        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-        language: 'pt_BR',
-        skin: 'oxide',
-        content_css: 'default',
-        branding: false,
-        promotion: false
-    });
-</script>
+
 
 <style>
     /* Premium Form Styles */
