@@ -1235,7 +1235,7 @@
         </div>
 
         <div class="blog-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
-            @foreach($posts as $post)
+            @forelse($posts as $post)
             <div class="blog-card" style="background: white; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; transition: all 0.3s ease;">
                 <div style="height: 200px; background: #e2e8f0; position: relative; overflow: hidden;">
                     <img src="{{ $post->image ?: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643' }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
@@ -1251,7 +1251,13 @@
                     </a>
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 20px; border: 1px dashed #cbd5e1;">
+                <i class="far fa-newspaper" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
+                <h3 style="color: #64748b; font-size: 1.2rem;">Nenhum artigo publicado ainda.</h3>
+                <p style="color: #94a3b8;">Em breve novidades por aqui!</p>
+            </div>
+            @endforelse
         </div>
         
         <div style="text-align: center; margin-top: 50px;">
