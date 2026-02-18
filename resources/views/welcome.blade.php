@@ -1226,6 +1226,7 @@
     </script>
 
     <!-- Blog Section -->
+    <!-- Updated via Agent -->
     <section id="blog" class="blog" style="padding: 100px 5%; background: #f8fafc;">
         <div class="section-header" style="text-align: center;">
             <span class="section-badge">Blog & Insights</span>
