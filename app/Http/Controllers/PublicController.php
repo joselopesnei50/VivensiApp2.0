@@ -43,4 +43,22 @@ class PublicController extends Controller
         $page = \App\Models\Page::where('slug', $slug)->firstOrFail();
         return view('public.page', compact('page'));
     }
+
+    public function solutionsNgo()
+    {
+        $plans = \App\Models\SubscriptionPlan::where('is_active', true)->get();
+        return view('public.solutions_ngo', compact('plans'));
+    }
+
+    public function solutionsManager()
+    {
+        $plans = \App\Models\SubscriptionPlan::where('is_active', true)->get();
+        return view('public.solutions_manager', compact('plans'));
+    }
+
+    public function solutionsCommon()
+    {
+        $plans = \App\Models\SubscriptionPlan::where('is_active', true)->get();
+        return view('public.solutions_common', compact('plans'));
+    }
 }
