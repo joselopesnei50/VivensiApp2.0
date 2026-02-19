@@ -46,19 +46,25 @@ class PublicController extends Controller
 
     public function solutionsNgo()
     {
-        $plans = \App\Models\SubscriptionPlan::where('is_active', true)->get();
+        $plans = \App\Models\SubscriptionPlan::where('is_active', true)
+                    ->where('target_audience', 'ngo')
+                    ->get();
         return view('public.solutions_ngo', compact('plans'));
     }
 
     public function solutionsManager()
     {
-        $plans = \App\Models\SubscriptionPlan::where('is_active', true)->get();
+        $plans = \App\Models\SubscriptionPlan::where('is_active', true)
+                    ->where('target_audience', 'manager')
+                    ->get();
         return view('public.solutions_manager', compact('plans'));
     }
 
     public function solutionsCommon()
     {
-        $plans = \App\Models\SubscriptionPlan::where('is_active', true)->get();
+        $plans = \App\Models\SubscriptionPlan::where('is_active', true)
+                    ->where('target_audience', 'common')
+                    ->get();
         return view('public.solutions_common', compact('plans'));
     }
 }

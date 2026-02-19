@@ -1120,7 +1120,6 @@
                     @if($plan->target_audience == 'ngo')
                         <div style="background: var(--primary); color: white; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">MAIS POPULAR</div>
                     @endif
-                    
                     @php
                         $audienceLabel = match($plan->target_audience) {
                             'ngo' => 'Terceiro Setor',
@@ -1131,7 +1130,9 @@
                     @endphp
 
                     <h3>{{ $plan->name }}</h3>
-                    <div class="price">R$ {{ number_format($plan->price, 2, ',', '.') }}<span class="period">/{{ $plan->interval == 'monthly' ? 'mês' : 'ano' }}</span></div>
+                    <div class="price">
+                         R$ <span class="amount">{{ number_format($plan->price, 2, ',', '.') }}</span>
+                         <span class="period" style="font-size: 1rem; color: #64748b; font-weight: 400;">/mês</span></div>
                     <p style="color: var(--text-light);">{{ $audienceLabel }}</p>
                     
                     <a href="{{ route('register', ['plan_id' => $plan->id]) }}" class="{{ $plan->target_audience == 'ngo' ? 'btn-cta' : 'btn-outline' }}" style="display: block; margin-top: 20px;">

@@ -86,7 +86,7 @@
                          data-price-monthly="{{ $plan->price }}" 
                          data-price-yearly="{{ $plan->price_yearly ?? ($plan->price * 12 * 0.9) }}" 
                          style="font-size: 2.5rem; font-weight: 800; margin: 20px 0;">
-                         R$ <span class="amount">{{ number_format($plan->price, 0, ',', '.') }}</span>
+                         R$ <span class="amount">{{ number_format($plan->price, 2, ',', '.') }}</span>
                          <span class="period" style="font-size: 1rem; color: #64748b; font-weight: 400;">/mês</span>
                     </div>
                     <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 30px;">
@@ -129,11 +129,11 @@
 
                 if (isYearly) {
                     // Show yearly price
-                    amountSpan.textContent = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0 }).format(yearly);
+                    amountSpan.textContent = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(yearly);
                     periodSpan.textContent = '/ano';
                 } else {
                     // Show monthly price
-                    amountSpan.textContent = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0 }).format(monthly);
+                    amountSpan.textContent = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(monthly);
                     periodSpan.textContent = '/mês';
                 }
             });
