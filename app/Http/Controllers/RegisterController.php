@@ -75,13 +75,17 @@ class RegisterController extends Controller
                 'billing_cycle' => $billingCycle, // Ensure this column exists or store in meta
             ]);
 
-            // 2. Create User with selected role
+            // 2. Create User with selected role (Normalized)
             $user = User::create([
                 'tenant_id' => $tenant->id,
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role' => $request->account_type,
+                'role' => match($request->account_type) {
+                    'ngo_admin' => 'ngo',
+                    'project_manager' => 'manager',
+                    default => $request->account_type
+                },
                 'status' => 'active',
                 'terms_accepted_at' => now(),
                 'terms_ip' => $request->ip(),

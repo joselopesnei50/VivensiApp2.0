@@ -276,13 +276,17 @@ class AdminController extends Controller
                 'billing_method' => 'manual', // Indica que foi criado pelo admin
             ]);
 
-            // 3. Create User
+            // 3. Create User (Normalized Role)
             $user = User::create([
                 'tenant_id' => $tenant->id,
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role' => $request->account_type,
+                'role' => match($request->account_type) {
+                    'ngo_admin' => 'ngo',
+                    'project_manager' => 'manager',
+                    default => $request->account_type
+                },
                 'status' => 'active',
             ]);
 

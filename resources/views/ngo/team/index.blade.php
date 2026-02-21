@@ -49,13 +49,16 @@
 <div class="grid-3">
     @foreach($users as $user)
     <div class="vivensi-card team-card" data-q="{{ strtolower(($user->name ?? '').' '.($user->email ?? '').' '.($user->role ?? '').' '.($user->status ?? '')) }}" style="text-align: center; position: relative;">
-        @if($user->id != auth()->id())
-        <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover este usuário?');" style="position: absolute; top: 15px; right: 15px;">
-            @csrf
-            @method('DELETE')
-            <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem;"><i class="fas fa-trash-alt"></i></button>
-        </form>
-        @endif
+        <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 8px;">
+            <button onclick="editUser({{ json_encode($user) }})" style="background: none; border: none; color: #4f46e5; cursor: pointer; font-size: 1rem;"><i class="fas fa-edit"></i></button>
+            @if($user->id != auth()->id())
+            <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover este usuário?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem;"><i class="fas fa-trash-alt"></i></button>
+            </form>
+            @endif
+        </div>
 
         <div style="width: 80px; height: 80px; background: #e0e7ff; color: #4f46e5; border-radius: 50%; font-size: 2rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
             {{ strtoupper(substr($user->name, 0, 1)) }}
@@ -119,10 +122,64 @@
     </div>
 </div>
 
+<!-- Modal Edit User -->
+<div id="editTeamModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+    <div class="vivensi-card" style="width: 90%; max-width: 500px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;">Editar Usuário</h3>
+            <button onclick="toggleEditModal()" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        
+        <form id="editUserForm" action="" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="form-group">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" name="name" id="edit_name" class="form-control-vivensi" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email (Não editável)</label>
+                <input type="email" id="edit_email" class="form-control-vivensi" readonly style="background: #f1f5f9;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Função / Permissão</label>
+                <select name="role" id="edit_role" class="form-control-vivensi">
+                    <option value="ngo">Administrador (Acesso Total)</option>
+                    <option value="manager">Gestor de Projetos</option>
+                    <option value="employee">Colaborador (Restrito)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status</label>
+                <select name="status" id="edit_status" class="form-control-vivensi">
+                    <option value="active">Ativo</option>
+                    <option value="suspended">Suspenso</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-premium" style="width: 100%; justify-content: center;">Salvar Alterações</button>
+        </form>
+    </div>
+</div>
+
 <script>
     function toggleModal() {
         const modal = document.getElementById('teamModal');
         modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function toggleEditModal() {
+        const modal = document.getElementById('editTeamModal');
+        modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function editUser(user) {
+        document.getElementById('editUserForm').action = "{{ url('/ngo/team') }}/" + user.id;
+        document.getElementById('edit_name').value = user.name;
+        document.getElementById('edit_email').value = user.email;
+        document.getElementById('edit_role').value = user.role;
+        document.getElementById('edit_status').value = user.status || 'active';
+        toggleEditModal();
     }
 
     (function() {

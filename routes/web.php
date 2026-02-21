@@ -165,6 +165,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // Team
         Route::get('/team', [App\Http\Controllers\TeamController::class, 'index']);
         Route::post('/team', [App\Http\Controllers\TeamController::class, 'store']);
+        Route::put('/team/{id}', [App\Http\Controllers\TeamController::class, 'update']);
         Route::delete('/team/{id}', [App\Http\Controllers\TeamController::class, 'destroy']);
 
         // Smart Analysis

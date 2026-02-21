@@ -30,9 +30,6 @@ class TeamController extends Controller
 
     public function store(Request $request)
     {
-        // Permission check: Only 'ngo' or 'manager' role can add members (adjust as needed)
-        // For MVP, assuming current user has permission if they can access this route.
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -50,6 +47,25 @@ class TeamController extends Controller
         $user->save();
 
         return redirect()->back()->with('success', 'Membro adicionado com sucesso!');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::where('id', $id)->where('tenant_id', auth()->user()->tenant_id)->firstOrFail();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'role' => 'required|in:ngo,manager,employee',
+            'status' => 'required|in:active,suspended',
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'role' => $request->role,
+            'status' => $request->status,
+        ]);
+
+        return redirect()->back()->with('success', 'Dados do membro atualizados!');
     }
 
     public function destroy($id)
