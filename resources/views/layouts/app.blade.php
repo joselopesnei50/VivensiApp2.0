@@ -69,11 +69,7 @@
                 <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Configurar Robô</a></li>
             @endif
             
-            @if (in_array(auth()->user()->role, ['super_admin', 'manager', 'ngo']))
-                {{-- Vivensi Academy - Disponível para super_admin, manager e ngo --}}
-                <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Vivensi Academy</a></li>
-            @endif
-            
+            {{-- Academy Access removed from global and moved to specific roles below --}}            
             @if (auth()->user()->role == 'super_admin')
                 <!-- Menu Super Admin -->
                 <li><a href="{{ url('/admin') }}"><i class="fas fa-credit-card"></i> Visão Geral (SaaS)</a></li>
@@ -89,6 +85,7 @@
                 <li><a href="{{ route('admin.health') }}"><i class="fas fa-server"></i> Saúde do Servidor</a></li>
 
                 <li><a href="{{ url('/admin/settings') }}"><i class="fas fa-cogs"></i> Configurações Globais</a></li>
+                <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Ver como Aluno (Academy)</a></li>
                 <li><a href="{{ url('/admin/support') }}"><i class="fas fa-headset"></i> Gestão de Tickets</a></li>
             @elseif (auth()->user()->role == 'manager')
                 <!-- Menu Gestor -->
@@ -101,6 +98,7 @@
                 <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Marketing (LPs)</a></li>
                 <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing/strategy*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Marketing Intelligence</a></li>
                 <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; margin-right: 5px;"> Smart Analysis AI</a></li>
+                <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Vivensi Academy</a></li>
             @elseif (auth()->user()->role == 'ngo' || (auth()->user()->tenant && auth()->user()->tenant->type == 'ngo'))
                 <!-- Menu ONG -->
                 <li><a href="{{ url('/ngo/donors') }}"><i class="fas fa-hand-holding-heart"></i> Doadores</a></li>
@@ -121,6 +119,7 @@
                 <li><a href="{{ url('/smart-analysis') }}"><img src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; margin-right: 5px;"> Smart Analysis</a></li>
                 <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing/strategy*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Marketing Intelligence</a></li>
                 <li><a href="{{ url('/ngo/transparencia') }}" class="{{ request()->is('ngo/transparencia*') ? 'active' : '' }}"><i class="fas fa-landmark"></i> Portal Transparência</a></li>
+                <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Vivensi Academy</a></li>
             @else
                 <!-- Menu Comum -->
                 <li><a href="{{ url('/personal/reconciliation') }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
