@@ -16,6 +16,29 @@ class BudgetController extends Controller
         $year = $request->get('year', date('Y'));
         $tenant_id = auth()->user()->tenant_id;
 
+        // JIT Seeding: If tenant has no categories, create defaults
+        $count = FinancialCategory::where('tenant_id', $tenant_id)->count();
+        if ($count === 0) {
+            $defaults = [
+                ['name' => 'Doações', 'type' => 'income'],
+                ['name' => 'Vendas/Serviços', 'type' => 'income'],
+                ['name' => 'Marketing', 'type' => 'expense'],
+                ['name' => 'Salários/RH', 'type' => 'expense'],
+                ['name' => 'Infraestrutura', 'type' => 'expense'],
+                ['name' => 'Aluguel e Condomínio', 'type' => 'expense'],
+                ['name' => 'Água e Energia', 'type' => 'expense'],
+                ['name' => 'Telefonia e Internet', 'type' => 'expense'],
+                ['name' => 'Impostos e Taxas', 'type' => 'expense'],
+            ];
+            foreach ($defaults as $cat) {
+                FinancialCategory::create([
+                    'tenant_id' => $tenant_id,
+                    'name' => $cat['name'],
+                    'type' => $cat['type']
+                ]);
+            }
+        }
+
         // Metas (Planejado)
         $targets = BudgetTarget::where('tenant_id', $tenant_id)
                                 ->where('year', $year)
