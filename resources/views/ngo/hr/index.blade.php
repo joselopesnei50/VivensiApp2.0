@@ -210,8 +210,8 @@
 </div>
 
 <!-- Modal Employee -->
-<div id="employeeModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; pointer-events: auto;">
-    <div class="vivensi-card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; pointer-events: auto;">
+<div id="employeeModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center; pointer-events: auto !important;">
+    <div class="vivensi-card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; pointer-events: auto !important; position: relative; z-index: 100000;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3>Novo Funcionário</h3>
             <button onclick="closeModal('employeeModal')" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
@@ -252,8 +252,8 @@
 </div>
 
 <!-- Modal Volunteer -->
-<div id="volunteerModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; pointer-events: auto;">
-    <div class="vivensi-card" style="width: 90%; max-width: 500px; pointer-events: auto;">
+<div id="volunteerModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center; pointer-events: auto !important;">
+    <div class="vivensi-card" style="width: 90%; max-width: 500px; pointer-events: auto !important; position: relative; z-index: 100000;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3>Novo Voluntário</h3>
             <button onclick="closeModal('volunteerModal')" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
@@ -279,8 +279,8 @@
 </div>
 
 <!-- Modal Certificate -->
-<div id="certificateModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; pointer-events: auto;">
-    <div class="vivensi-card" style="width: 90%; max-width: 520px; pointer-events: auto;">
+<div id="certificateModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center; pointer-events: auto !important;">
+    <div class="vivensi-card" style="width: 90%; max-width: 520px; pointer-events: auto !important; position: relative; z-index: 100000;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <div>
                 <h3 style="margin:0;">Emitir Certificado</h3>
@@ -319,9 +319,21 @@
     function openModal(id) { 
         const m = document.getElementById(id);
         if (m) {
-            m.style.setProperty('display', 'flex', 'important');
+            // Unfreeze Everything
+            document.body.style.pointerEvents = 'auto';
             document.body.style.overflow = 'hidden';
-            document.body.style.pointerEvents = 'auto'; // Force interaction
+            
+            const main = document.querySelector('.main-content');
+            if(main) main.style.pointerEvents = 'auto';
+
+            m.style.setProperty('display', 'flex', 'important');
+            m.style.setProperty('pointer-events', 'auto', 'important');
+            
+            // Focus first input for immediate interaction
+            setTimeout(() => {
+                const firstInput = m.querySelector('input, select, textarea');
+                if(firstInput) firstInput.focus();
+            }, 100);
         }
     }
     function closeModal(id) { 
