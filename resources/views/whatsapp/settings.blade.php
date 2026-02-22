@@ -32,10 +32,6 @@
                     </div>
                 </div>
             </div>
-
-            <button type="submit" class="btn-premium" style="width: 100%; padding: 15px;">
-                <i class="fas fa-save me-2"></i> Salvar e Treinar Cérebro da IA
-            </button>
         </div>
 
         <div class="col-md-5">
@@ -207,7 +203,7 @@
 
     // Auto-check on load if configured
     document.addEventListener('DOMContentLoaded', () => {
-        const hasConfig = {{ ($contextModel->evolution_instance_name) ? 'true' : 'false' }};
+        const hasConfig = {{ !empty($contextModel->evolution_instance_name) ? 'true' : 'false' }};
         if(hasConfig) {
             checkConnection();
         }
