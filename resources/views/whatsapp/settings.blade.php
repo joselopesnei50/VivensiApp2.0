@@ -9,10 +9,10 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-7">
-        <form action="{{ url('/whatsapp/settings') }}" method="POST">
-            @csrf
+<form action="{{ url('/whatsapp/settings') }}" method="POST">
+    @csrf
+    <div class="row">
+        <div class="col-md-7">
             
             <!-- AI Training Section -->
             <div class="vivensi-card" style="padding: 25px; margin-bottom: 30px; border-top: 4px solid #a855f7;">
@@ -144,8 +144,8 @@
                 <i class="fas fa-save me-2"></i> Salvar Configurações e Instância
             </button>
         </div>
-    </form>
-</div>
+    </div>
+</form>
 
 <style>
 .form-control-vivensi {
