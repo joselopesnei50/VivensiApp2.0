@@ -139,6 +139,10 @@
                     <li class="mb-2">O robô responde em segundos, liberando sua equipe humana.</li>
                 </ul>
             </div>
+            
+            <button type="submit" class="btn-premium" style="width: 100%; padding: 15px; margin-top: 20px;">
+                <i class="fas fa-save me-2"></i> Salvar Configurações e Instância
+            </button>
         </div>
     </form>
 </div>
