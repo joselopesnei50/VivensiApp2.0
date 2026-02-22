@@ -48,6 +48,7 @@ class EvolutionApiService
             'instanceName' => $name,
             'token' => $token,
             'qrcode' => true,
+            'integration' => 'WHATSAPP-BAILEYS',
         ]);
 
         if ($response->successful()) {
