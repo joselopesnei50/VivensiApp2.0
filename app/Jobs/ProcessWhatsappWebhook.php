@@ -6,7 +6,6 @@ use App\Models\WhatsappChat;
 use App\Models\WhatsappConfig;
 use App\Models\WhatsappMessage;
 use App\Models\WhatsappAuditLog;
-use App\Services\ZApiService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -52,16 +51,15 @@ class ProcessWhatsappWebhook implements ShouldQueue
             return;
         }
 
-        $eventType = (string) ($this->payload['type'] ?? '');
+        $eventType = (string) ($this->payload['event'] ?? '');
 
         // Route to appropriate handler based on event type
         match($eventType) {
-            'ReceivedMessage' => $this->handleReceivedMessage($config),
-            'MessageDelivered', 'MessageSent' => $this->handleDelivered($config),
-            'MessageRead' => $this->handleRead($config),
-            'Disconnected', 'DisconnectedMobile' => $this->handleDisconnected($config),
-            default => Log::info('WhatsApp webhook: unknown event type', [
-                'type' => $eventType,
+            'messages.upsert' => $this->handleReceivedMessage($config),
+            'messages.update' => $this->handleMessageUpdate($config), // Handles read/delivered
+            'connection.update' => $this->handleConnectionUpdate($config),
+            default => Log::info('Evolution webhook: unknown event type', [
+                'event' => $eventType,
                 'tenant_id' => $config->tenant_id,
             ]),
         };
@@ -73,25 +71,32 @@ class ProcessWhatsappWebhook implements ShouldQueue
     private function handleReceivedMessage(WhatsappConfig $config): void
     {
         $tenantId = $config->tenant_id;
-        $waId = (string) ($this->payload['phone'] ?? '');
-        $content = (string) ($this->payload['text']['message'] ?? '');
-        $messageId = (string) ($this->payload['messageId'] ?? '');
+        $messageData = $this->payload['data'] ?? [];
+        
+        // Ignore if sent from me
+        if (($messageData['key']['fromMe'] ?? false) === true) {
+            return;
+        }
+
+        $waId = (string) ($messageData['key']['remoteJid'] ?? '');
+        $waId = explode('@', $waId)[0]; // Remove @s.whatsapp.net postfix
+        $messageId = (string) ($messageData['key']['id'] ?? '');
+        
+        $messageObj = $messageData['message'] ?? [];
+        $content = '';
+        if (isset($messageObj['conversation'])) {
+            $content = $messageObj['conversation'];
+        } elseif (isset($messageObj['extendedTextMessage']['text'])) {
+            $content = $messageObj['extendedTextMessage']['text'];
+        }
 
         // Basic validation
-        if ($waId === '' || $messageId === '') {
-            Log::warning('WhatsApp webhook: missing required fields', [
-                'tenant_id' => $tenantId,
-                'payload' => $this->payload,
-            ]);
+        if ($waId === '' || $messageId === '' || $content === '') {
             return;
         }
 
         // Idempotency: ignore duplicate webhook deliveries
         if (WhatsappMessage::where('message_id', $messageId)->exists()) {
-            Log::info('WhatsApp webhook: duplicate message ignored', [
-                'message_id' => $messageId,
-                'tenant_id' => $tenantId,
-            ]);
             return;
         }
 
@@ -99,7 +104,7 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $chat = WhatsappChat::firstOrCreate(
             ['tenant_id' => $tenantId, 'wa_id' => $waId],
             [
-                'contact_name' => $this->payload['senderName'] ?? 'Cliente WhatsApp',
+                'contact_name' => $messageData['pushName'] ?? 'Cliente WhatsApp',
                 'contact_phone' => $waId,
                 'status' => 'open',
                 'opt_in_at' => now(), // Inbound message implies opt-in
@@ -169,70 +174,51 @@ class ProcessWhatsappWebhook implements ShouldQueue
     }
 
     /**
-     * Handle message delivered confirmation
+     * Handle message read/delivered confirmation
      */
-    private function handleDelivered(WhatsappConfig $config): void
+    private function handleMessageUpdate(WhatsappConfig $config): void
     {
-        $messageId = (string) ($this->payload['messageId'] ?? '');
-        
-        if ($messageId === '') {
-            return;
-        }
-
-        $message = WhatsappMessage::where('message_id', $messageId)->first();
-        
-        if ($message) {
-            $message->update(['status' => 'delivered']);
+        $updates = $this->payload['data'] ?? [];
+        foreach ($updates as $update) {
+            $messageId = (string) ($update['key']['id'] ?? '');
+            $status = $update['update']['status'] ?? null; // 3 = delivered, 4 = read
             
-            Log::info('WhatsApp message delivered', [
-                'message_id' => $messageId,
-                'tenant_id' => $config->tenant_id,
-            ]);
+            if ($messageId === '' || $status === null) {
+                continue;
+            }
+
+            $message = WhatsappMessage::where('message_id', $messageId)->first();
+            
+            if ($message) {
+                if ($status == 3 || $status === 'DELIVERY_ACK') {
+                    $message->update(['status' => 'delivered']);
+                } elseif ($status == 4 || $status === 'READ') {
+                    $message->update(['status' => 'read']);
+                }
+            }
         }
     }
 
     /**
-     * Handle message read confirmation
+     * Handle instance disconnection or state updates
      */
-    private function handleRead(WhatsappConfig $config): void
+    private function handleConnectionUpdate(WhatsappConfig $config): void
     {
-        $messageId = (string) ($this->payload['messageId'] ?? '');
+        $state = $this->payload['data']['state'] ?? '';
         
-        if ($messageId === '') {
-            return;
-        }
-
-        $message = WhatsappMessage::where('message_id', $messageId)->first();
-        
-        if ($message) {
-            $message->update(['status' => 'read']);
-            
-            Log::info('WhatsApp message read', [
-                'message_id' => $messageId,
+        if ($state === 'close') {
+            Log::critical('WhatsApp instance disconnected', [
                 'tenant_id' => $config->tenant_id,
+                'instance_name' => $this->payload['instance'] ?? 'unknown',
+                'payload' => $this->payload,
+            ]);
+
+            WhatsappAuditLog::create([
+                'tenant_id' => $config->tenant_id,
+                'actor_type' => 'webhook',
+                'event' => 'instance_disconnected',
+                'details' => $this->payload,
             ]);
         }
-    }
-
-    /**
-     * Handle instance disconnection (critical event)
-     */
-    private function handleDisconnected(WhatsappConfig $config): void
-    {
-        Log::critical('WhatsApp instance disconnected', [
-            'tenant_id' => $config->tenant_id,
-            'instance_id' => $config->instance_id,
-            'payload' => $this->payload,
-        ]);
-
-        WhatsappAuditLog::create([
-            'tenant_id' => $config->tenant_id,
-            'actor_type' => 'webhook',
-            'event' => 'instance_disconnected',
-            'details' => $this->payload,
-        ]);
-
-        // TODO: Send alert to admins (email/Slack/SMS)
-        // Example: Mail::to($config->tenant->admin_email)->send(new WhatsAppDisconnectedAlert($config));
     }
 }

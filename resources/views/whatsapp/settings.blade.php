@@ -5,7 +5,7 @@
     <div>
         <h6 style="color: #6366f1; font-weight: 700; text-transform: uppercase; margin: 0 0 5px 0; letter-spacing: 1px;">Omnichannel & Chatbot</h6>
         <h2 style="margin: 0; color: #111827; font-weight: 800; font-size: 2rem;">Treinamento da IA & WhatsApp</h2>
-        <p style="color: #6b7280; margin: 5px 0 0 0;">Configure seu robô de atendimento e sua instância Z-API.</p>
+        <p style="color: #6b7280; margin: 5px 0 0 0;">Configure seu robô de atendimento e sua instância Evolution API.</p>
     </div>
 </div>
 
@@ -39,33 +39,26 @@
         </div>
 
         <div class="col-md-5">
-            <!-- Z-API Config Section -->
+            <!-- Evolution API Config Section -->
             <div class="vivensi-card" style="padding: 25px; margin-bottom: 30px; border-top: 4px solid #25d366;">
                 <h4 style="margin: 0 0 20px 0; font-size: 1.1rem; color: #334155; font-weight: 700;">
-                    <i class="fab fa-whatsapp me-2" style="color: #25d366;"></i> Conexão Z-API
+                    <i class="fab fa-whatsapp me-2" style="color: #25d366;"></i> Conexão Evolution API
                 </h4>
                 
                 <div class="form-group mb-4">
-                    <label class="fw-700 mb-2 small">ID da Instância</label>
-                    <input type="text" name="instance_id" value="{{ $config->instance_id }}" class="form-control-vivensi" placeholder="Ex: 3B..." required>
+                    <label class="fw-700 mb-2 small">Nome Único da Instância</label>
+                    <input type="text" name="evolution_instance_name" value="{{ $contextModel->evolution_instance_name ?? '' }}" class="form-control-vivensi" placeholder="Ex: OngAcessoBrasil" required>
+                    <div class="small text-muted mt-1">Nós criaremos esta nova instância automaticamente no servidor ao Salvar.</div>
                 </div>
 
-                <div class="form-group mb-4">
-                    <label class="fw-700 mb-2 small">Instance Token</label>
-                    <input type="password" name="token" value="" class="form-control-vivensi" placeholder="Deixe em branco para manter o token atual">
-                    <div class="small text-muted mt-1">Por segurança, o token não é exibido. Se não quiser trocar, deixe em branco.</div>
-                </div>
-
-                <div class="form-group mb-4">
-                    <label class="fw-700 mb-2 small">Client Token (Z-API)</label>
+                <div class="form-group mb-4" style="display: none;">
+                    <label class="fw-700 mb-2 small">Client Token Webhook (Segurança)</label>
                     <input type="text" name="client_token" value="{{ $config->client_token }}" class="form-control-vivensi" placeholder="Para segurança do Webhook">
-                    <div class="small text-muted mt-1">Configure este valor no painel da Z-API para autenticar o webhook.</div>
                 </div>
 
                 <div class="alert alert-warning" style="font-size: 0.8rem; border-radius: 12px; border: none; background: #fffbeb; color: #92400e;">
-                    <i class="fas fa-link me-1"></i> <b>URL de Webhook:</b><br>
+                    <i class="fas fa-link me-1"></i> <b>URL de Webhook (Configurada Automaticamente):</b><br>
                     <code style="background: rgba(0,0,0,0.05); padding: 2px 5px; border-radius: 4px; display: block; margin-top: 5px;">{{ url('/api/whatsapp/webhook') }}</code>
-                    Copie este link e cole no painel da Z-API em "Configurações de Webhook".
                 </div>
             </div>
 
@@ -144,7 +137,7 @@
             <div class="vivensi-card" style="padding: 25px; background: #111827; color: white;">
                 <h5 style="color: white; font-weight: 700; display: flex; align-items: center;"><img src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 1px solid #a855f7;"> Como funciona?</h5>
                 <ul style="padding-left: 20px; font-size: 0.85rem; opacity: 0.8; margin-top: 15px;">
-                    <li class="mb-2">A mensagem chega da Z-API via Webhook.</li>
+                    <li class="mb-2">A mensagem chega da Evolution API via Webhook.</li>
                     <li class="mb-2">O Vivensi identifica se o cliente já existe.</li>
                     <li class="mb-2">A IA processa a mensagem usando seu <b>Treinamento</b>.</li>
                     <li class="mb-2">O robô responde em segundos, liberando sua equipe humana.</li>
@@ -214,7 +207,7 @@
 
     // Auto-check on load if configured
     document.addEventListener('DOMContentLoaded', () => {
-        const hasConfig = {{ ($config->instance_id && $config->token) ? 'true' : 'false' }};
+        const hasConfig = {{ ($contextModel->evolution_instance_name) ? 'true' : 'false' }};
         if(hasConfig) {
             checkConnection();
         }

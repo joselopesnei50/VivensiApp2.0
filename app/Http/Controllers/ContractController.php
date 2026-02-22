@@ -6,7 +6,8 @@ use App\Models\Contract;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\BrevoService;
-use App\Services\ZApiService;
+use App\Services\EvolutionApiService;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -123,8 +124,9 @@ class ContractController extends Controller
                         . "Link: {$publicLink}\n\n"
                         . "Vivensi";
 
-                    $zapi = new ZApiService($contract->tenant_id);
-                    $zapi->sendMessage($to, $msg);
+                    $tenantModel = Tenant::find($contract->tenant_id);
+                    $evo = new EvolutionApiService($tenantModel);
+                    $evo->sendMessage($to, $msg, null, 0);
                 }
             } catch (\Throwable $e) {
                 Log::warning('Contract signed WhatsApp notification failed: ' . $e->getMessage());

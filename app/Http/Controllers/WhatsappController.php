@@ -10,7 +10,7 @@ use App\Models\WhatsappMessage;
 use App\Models\CannedResponse;
 use App\Models\WhatsappNote;
 use App\Models\WhatsappAuditLog;
-use App\Services\ZApiService;
+use App\Services\EvolutionApiService;
 use App\Services\WhatsappOutboundPolicy;
 use App\Services\GeminiService;
 use App\Services\DeepSeekService;
@@ -221,15 +221,15 @@ class WhatsappController extends Controller
         // Salvar insight da IA como nota interna, se for relevante (opcional)
         // WhatsappNote::create(['chat_id' => $chat->id, 'content' => "IA Sugeriu: $replyText", 'type' => 'ai_insight']);
 
-        // Enviar via Z-API (Em ambiente de teste real, isso requer instância ativa)
+        // Enviar via Evolution API
         try {
-            $zapi = new ZApiService($config->tenant_id);
-            $res = $zapi->sendMessage($chat->wa_id, $replyText);
+            $evo = new EvolutionApiService($tenant);
+            $res = $evo->sendMessage($chat->wa_id, $replyText, null, 2);
             
-            if (isset($res['messageId'])) {
+            if (isset($res['key']['id']) || isset($res['messageId'])) {
                 WhatsappMessage::create([
                     'chat_id' => $chat->id,
-                    'message_id' => $res['messageId'],
+                    'message_id' => $res['key']['id'] ?? $res['messageId'],
                     'content' => $replyText,
                     'direction' => 'outbound',
                     'type' => 'text'
@@ -247,12 +247,13 @@ class WhatsappController extends Controller
     {
         abort_unless(auth()->check(), 401, 'Unauthorized');
         
-        $tenantId = auth()->user()->tenant_id;
+        $contextModel = $this->getContextModel();
         
-        // Super Admin users don't have tenant_id, redirect them
-        if (empty($tenantId)) {
-            return redirect()->route('dashboard')->with('error', 'Configurações de WhatsApp são específicas por organização. Acesse como gestor de uma organização.');
+        if (!$contextModel) {
+            return redirect()->route('dashboard')->with('error', 'Acesso negado às configurações de WhatsApp.');
         }
+
+        $tenantId = auth()->user()->tenant_id;
         
         $config = WhatsappConfig::firstOrCreate(
             ['tenant_id' => $tenantId],
@@ -277,17 +278,18 @@ class WhatsappController extends Controller
             ]);
         }
 
-        return view('whatsapp.settings', compact('config'));
+        return view('whatsapp.settings', compact('config', 'contextModel'));
     }
 
     public function saveSettings(Request $request)
     {
+        $contextModel = $this->getContextModel();
         $config = WhatsappConfig::where('tenant_id', auth()->user()->tenant_id)->first();
+        
         $validated = $request->validate([
             'ai_training' => 'nullable|string|max:10000',
             'ai_enabled' => 'nullable|boolean',
-            'instance_id' => 'required|string|max:255',
-            'token' => 'nullable|string|max:255',
+            'evolution_instance_name' => 'required|string|max:255',
             'client_token' => 'nullable|string|max:255',
             'outbound_enabled' => 'nullable|boolean',
             'require_opt_in' => 'nullable|boolean',
@@ -303,18 +305,29 @@ class WhatsappController extends Controller
         $validated['enforce_24h_window'] = $request->boolean('enforce_24h_window');
         $validated['allow_templates_outside_window'] = $request->boolean('allow_templates_outside_window');
 
-        // Keep existing secret values if left blank
-        if (empty($validated['token'])) {
-            unset($validated['token']);
-        }
-
         if (!empty($validated['client_token'])) {
             $validated['client_token_hash'] = hash('sha256', (string) $validated['client_token']);
         } else {
-            // keep existing token/hash if omitted
             unset($validated['client_token']);
         }
 
+        // Handle Evolution API Instance Creation/Update
+        $instanceName = Str::slug($validated['evolution_instance_name']);
+        
+        if ($contextModel->evolution_instance_name !== $instanceName) {
+            $evo = new EvolutionApiService();
+            $result = $evo->createInstance($instanceName);
+            
+            if (isset($result['generated_token'])) {
+                $contextModel->evolution_instance_name = $instanceName;
+                $contextModel->evolution_instance_token = $result['generated_token'];
+                $contextModel->save();
+            } else {
+                return back()->with('error', 'Erro ao criar instância na Evolution API. Tente outro nome.');
+            }
+        }
+
+        unset($validated['evolution_instance_name']);
         $config->update($validated);
 
         return back()->with('success', 'Configurações de WhatsApp/IA atualizadas!');
@@ -386,9 +399,10 @@ class WhatsappController extends Controller
             return response()->json(['error' => $reason ?: 'Envio não permitido.', 'code' => $code], 422);
         }
         
-        // Z-API Send
-        $zapi = new ZApiService($tenantId);
-        $res = $zapi->sendMessage($chat->wa_id, $content);
+        // Evolution API Send
+        $tenant = Tenant::find($tenantId);
+        $evo = new EvolutionApiService($tenant);
+        $res = $evo->sendMessage($chat->wa_id, $content, null, 0);
         $policy->recordSend($config, $chat);
 
         WhatsappAuditLog::create([
@@ -408,7 +422,7 @@ class WhatsappController extends Controller
         // Save locally
         $msg = WhatsappMessage::create([
             'chat_id' => $chat->id,
-            'message_id' => $res['messageId'] ?? 'MANUAL_' . uniqid(),
+            'message_id' => $res['key']['id'] ?? ($res['messageId'] ?? 'MANUAL_' . uniqid()),
             'content' => $content,
             'direction' => 'outbound',
             'type' => 'text'
@@ -499,8 +513,9 @@ class WhatsappController extends Controller
                 ], 422);
             }
 
-            $zapi = new ZApiService($tenantId);
-            $res = $zapi->sendMessage($chat->wa_id, $content);
+            $tenantModel = Tenant::find($tenantId);
+            $evo = new EvolutionApiService($tenantModel);
+            $res = $evo->sendMessage($chat->wa_id, $content, null, 0);
             $policy->recordSend($config, $chat);
 
             WhatsappAuditLog::create([
@@ -519,7 +534,7 @@ class WhatsappController extends Controller
 
             WhatsappMessage::create([
                 'chat_id' => $chat->id,
-                'message_id' => $res['messageId'] ?? 'START_' . uniqid(),
+                'message_id' => $res['key']['id'] ?? ($res['messageId'] ?? 'START_' . uniqid()),
                 'content' => $content,
                 'direction' => 'outbound',
                 'type' => 'text',
@@ -601,33 +616,46 @@ class WhatsappController extends Controller
 
         return response()->json(['status' => 'ok']);
     }
+    private function getContextModel()
+    {
+        $user = auth()->user();
+        if ($user->role === 'manager') {
+            return $user;
+        }
+        if ($user->tenant_id) {
+            return Tenant::find($user->tenant_id);
+        }
+        return null;
+    }
+
     // --- Connection Status & QR Code ---
     public function getStatus()
     {
-        $tenantId = auth()->user()->tenant_id;
-        $config = WhatsappConfig::where('tenant_id', $tenantId)->first();
+        $contextModel = $this->getContextModel();
 
-        if (!$config || !$config->instance_id || !$config->token) {
+        if (!$contextModel || !$contextModel->evolution_instance_name) {
             return response()->json([
                 'status' => 'not_configured', 
-                'message' => 'Configure sua instância Z-API primeiro.'
+                'message' => 'Configure sua instância Evolution API primeiro.'
             ]);
         }
 
-        $zapi = new ZApiService($tenantId);
-        $status = $zapi->getStatus(); // { connected: true/false, ... }
+        $evo = new EvolutionApiService($contextModel);
+        $state = $evo->getConnectionState();
+
+        $connected = isset($state['instance']['state']) && $state['instance']['state'] === 'open';
 
         $response = [
             'status' => 'configured',
-            'connected' => $status['connected'] ?? false,
-            'details' => $status
+            'connected' => $connected,
+            'details' => $state
         ];
 
         // If not connected, try to fetch QR Code
-        if (!($status['connected'] ?? false)) {
-            $qr = $zapi->getQrCode();
-            if (isset($qr['image'])) {
-                $response['qr_code'] = $qr['image']; // base64
+        if (!$connected && isset($state['instance']['state']) && $state['instance']['state'] !== 'connecting') {
+            $qr = $evo->getConnectStatus();
+            if (isset($qr['base64'])) {
+                $response['qr_code'] = $qr['base64'];
             }
         }
 

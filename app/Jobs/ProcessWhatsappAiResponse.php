@@ -9,7 +9,7 @@ use App\Models\WhatsappAuditLog;
 use App\Models\WhatsappMessage;
 use App\Services\DeepSeekService;
 use App\Services\GeminiService;
-use App\Services\ZApiService;
+use App\Services\EvolutionApiService;
 use App\Services\WhatsappOutboundPolicy;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -121,10 +121,11 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                 return;
             }
 
-            $zapi = new ZApiService($config->tenant_id);
-            $res = $zapi->sendMessage($chat->wa_id, $replyText);
+            $tenantModel = Tenant::find($config->tenant_id);
+            $evo = new EvolutionApiService($tenantModel);
+            $res = $evo->sendMessage($chat->wa_id, $replyText, null, 2);
 
-            $messageId = (string) ($res['messageId'] ?? '');
+            $messageId = (string) ($res['key']['id'] ?? ($res['messageId'] ?? ''));
             if ($messageId === '') {
                 $messageId = 'AI_' . uniqid();
             }
