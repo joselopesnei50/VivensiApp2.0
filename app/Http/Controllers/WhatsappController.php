@@ -652,11 +652,20 @@ class WhatsappController extends Controller
             'details' => $state
         ];
 
-        // If not connected, try to fetch QR Code
-        if (!$connected && isset($state['instance']['state']) && $state['instance']['state'] !== 'connecting') {
-            $qr = $evo->getConnectStatus();
-            if (isset($qr['base64'])) {
-                $response['qr_code'] = $qr['base64'];
+        // If not connected, always try to fetch QR Code
+        if (!$connected) {
+            try {
+                $qr = $evo->getConnectStatus();
+                // Evolution API v2 may return QR in different fields
+                $qrCode = $qr['base64'] ?? $qr['code'] ?? ($qr['qrcode']['base64'] ?? null);
+                if ($qrCode) {
+                    if (!str_starts_with($qrCode, 'data:image')) {
+                        $qrCode = 'data:image/png;base64,' . $qrCode;
+                    }
+                    $response['qr_code'] = $qrCode;
+                }
+            } catch (\Exception $e) {
+                Log::warning('getStatus: could not fetch QR code', ['error' => $e->getMessage()]);
             }
         }
 
