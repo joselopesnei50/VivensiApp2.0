@@ -156,7 +156,9 @@
 </style>
 
 <script>
-    async function checkConnection() {
+    let statusPollInterval = null;
+
+    async function checkConnection(poll = false) {
         const btn = document.getElementById('btnCheck');
         const statusText = document.getElementById('statusText');
         const statusIcon = document.getElementById('statusIcon');
@@ -166,50 +168,80 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Verificando...';
         statusText.innerText = 'Verificando conexão...';
-        statusIcon.style.background = '#cbd5e1'; 
+        statusIcon.style.background = '#cbd5e1';
 
-        try {
-            const response = await fetch('{{ url("/whatsapp/status") }}');
-            const data = await response.json();
+        // Clear any previous polling
+        if (statusPollInterval) { clearInterval(statusPollInterval); statusPollInterval = null; }
 
-            // Reset UI
-            statusText.style.color = '#64748b';
-            qrContainer.style.display = 'none';
+        let attempts = 0;
+        const maxAttempts = poll ? 15 : 1;
 
-            if (data.status === 'not_configured') {
-                statusText.innerText = 'Não configurado (Insira ID e Token)';
-                statusIcon.style.background = '#f59e0b'; // Orange
-            } else if (data.connected === true) {
-                statusText.innerText = 'Conectado (Online)';
-                statusText.style.color = '#166534';
-                statusIcon.style.background = '#22c55e'; // Green
-            } else {
-                statusText.innerText = 'Desconectado';
-                statusText.style.color = '#991b1b';
-                statusIcon.style.background = '#ef4444'; // Red
-                
-                if (data.qr_code) {
-                    statusText.innerText = 'Desconectado. Escaneie o QR Code abaixo:';
+        async function doCheck() {
+            attempts++;
+            try {
+                const response = await fetch('{{ url("/whatsapp/status") }}');
+                const data = await response.json();
+
+                statusText.style.color = '#64748b';
+                qrContainer.style.display = 'none';
+
+                if (data.status === 'not_configured') {
+                    statusText.innerText = 'Não configurado (Salve o Nome da Instância primeiro).';
+                    statusIcon.style.background = '#f59e0b';
+                    clearInterval(statusPollInterval); statusPollInterval = null;
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
+                } else if (data.connected === true) {
+                    statusText.innerText = 'Conectado ✅ Online!';
+                    statusText.style.color = '#166534';
+                    statusIcon.style.background = '#22c55e';
+                    clearInterval(statusPollInterval); statusPollInterval = null;
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
+                } else if (data.qr_code) {
+                    // QR Code ready — show it!
+                    statusText.innerText = 'Escaneie o QR Code abaixo com seu WhatsApp:';
+                    statusText.style.color = '#92400e';
+                    statusIcon.style.background = '#f59e0b';
                     qrImage.src = data.qr_code;
                     qrContainer.style.display = 'block';
+                    clearInterval(statusPollInterval); statusPollInterval = null;
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
+                } else {
+                    // No QR yet — keep polling if allowed
+                    statusText.innerText = 'Aguardando QR Code... (' + attempts + '/' + maxAttempts + ')';
+                    statusIcon.style.background = '#f59e0b';
+                    if (attempts >= maxAttempts) {
+                        statusText.innerText = 'Desconectado. Clique em Atualizar Status para tentar novamente.';
+                        statusText.style.color = '#991b1b';
+                        statusIcon.style.background = '#ef4444';
+                        clearInterval(statusPollInterval); statusPollInterval = null;
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
+                    }
                 }
+            } catch (e) {
+                console.error(e);
+                statusText.innerText = 'Erro ao verificar status.';
+                statusIcon.style.background = '#ef4444';
+                clearInterval(statusPollInterval); statusPollInterval = null;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
             }
+        }
 
-        } catch (e) {
-            console.error(e);
-            statusText.innerText = 'Erro ao verificar status (Verifique Console)';
-            statusIcon.style.background = '#ef4444'; 
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
+        await doCheck();
+        if (poll && attempts < maxAttempts) {
+            statusPollInterval = setInterval(doCheck, 2000);
         }
     }
 
-    // Auto-check on load if configured
+    // Auto-check with polling on load if configured
     document.addEventListener('DOMContentLoaded', () => {
         const hasConfig = {{ !empty($contextModel->evolution_instance_name) ? 'true' : 'false' }};
-        if(hasConfig) {
-            checkConnection();
+        if (hasConfig) {
+            checkConnection(true); // poll mode
         }
     });
 </script>
