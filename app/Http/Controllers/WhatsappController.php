@@ -17,6 +17,7 @@ use App\Services\DeepSeekService;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class WhatsappController extends Controller
 {
