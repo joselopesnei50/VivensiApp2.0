@@ -30,8 +30,11 @@ class EvolutionApiService
         $this->contextModel = $contextModel;
 
         if ($contextModel) {
-            $this->instanceName = $contextModel->evolution_instance_name;
-            $this->apiKey = $contextModel->evolution_instance_token;
+            $this->instanceName = $contextModel->evolution_instance_name ?? '';
+            // Usa o token da instância se disponível, senão usa a globalApiKey como fallback
+            $this->apiKey = !empty($contextModel->evolution_instance_token)
+                ? $contextModel->evolution_instance_token
+                : $this->globalApiKey;
         }
     }
 

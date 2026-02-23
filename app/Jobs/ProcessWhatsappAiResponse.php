@@ -122,8 +122,52 @@ class ProcessWhatsappAiResponse implements ShouldQueue
             }
 
             $tenantModel = Tenant::find($config->tenant_id);
-            $evo = new EvolutionApiService($tenantModel);
+
+            // Garante que o instanceName está correto mesmo quando o tenant não tem evolution_instance_name
+            // O webhook armazena o instance_name na ProcessWhatsappWebhook, aqui buscamos da API
+            $instanceName = $tenantModel->evolution_instance_name ?? '';
+            $instanceToken = $tenantModel->evolution_instance_token ?? '';
+
+            if (empty($instanceName)) {
+                // Fallback: busca a instância pelo tenant via API
+                $globalKey = config('whatsapp.evolution_global_key', env('EVOLUTION_GLOBAL_KEY', ''));
+                $baseUrl   = config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL', ''));
+                try {
+                    $instances = \Illuminate\Support\Facades\Http::timeout(5)
+                        ->withHeaders(['apikey' => $globalKey])
+                        ->get("{$baseUrl}/instance/fetchInstances")
+                        ->json();
+                    // Pega a primeira instância conectada
+                    foreach ((array) $instances as $inst) {
+                        if (($inst['connectionStatus'] ?? '') === 'open') {
+                            $instanceName = $inst['name'] ?? '';
+                            $instanceToken = $globalKey; // usa global key
+                            break;
+                        }
+                    }
+                } catch (\Throwable $ignored) {}
+            }
+
+            // Cria um objeto sintético com os dados corretos da instância
+            $syntheticModel = (object) [
+                'evolution_instance_name'  => $instanceName,
+                'evolution_instance_token' => $instanceToken,
+            ];
+
+            $evo = new EvolutionApiService($syntheticModel);
+
+            Log::info('WhatsApp AI: enviando resposta', [
+                'instance'  => $instanceName,
+                'to'        => $chat->wa_id,
+                'reply_len' => mb_strlen($replyText),
+            ]);
+
             $res = $evo->sendMessage($chat->wa_id, $replyText, null, 2);
+
+            if (isset($res['error'])) {
+                Log::error('WhatsApp AI sendMessage failed', ['error' => $res, 'instance' => $instanceName, 'to' => $chat->wa_id]);
+            }
+
 
             $messageId = (string) ($res['key']['id'] ?? ($res['messageId'] ?? ''));
             if ($messageId === '') {
