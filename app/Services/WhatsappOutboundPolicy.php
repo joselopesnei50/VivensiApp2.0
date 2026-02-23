@@ -17,9 +17,10 @@ class WhatsappOutboundPolicy
      * - Throttle per-tenant and per-recipient
      * - Enforce minimum delay between outbound messages per chat
      */
-    public function canSend(WhatsappConfig $config, WhatsappChat $chat, bool $isTemplate = false, ?string &$reason = null, ?string &$code = null): bool
+    public function canSend(WhatsappConfig $config, WhatsappChat $chat, bool $isTemplate = false, ?string &$reason = null, ?string &$code = null, bool $isAi = false): bool
     {
-        if (!$config->outbound_enabled) {
+        // Se for resposta da IA, permitimos mesmo se o envio global de campanhas estiver desativado
+        if (!$config->outbound_enabled && !$isAi) {
             $reason = 'Envio de mensagens está desativado nas configurações.';
             $code = 'OUTBOUND_DISABLED';
             return false;

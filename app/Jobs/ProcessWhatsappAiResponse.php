@@ -99,7 +99,7 @@ class ProcessWhatsappAiResponse implements ShouldQueue
             $policy = app(WhatsappOutboundPolicy::class);
             $reason = null;
             $code = null;
-            if (!$policy->canSend($config, $chat, false, $reason, $code)) {
+            if (!$policy->canSend($config, $chat, false, $reason, $code, true)) {
                 Log::info('WhatsApp AI outbound blocked by policy', [
                     'tenant_id' => $config->tenant_id,
                     'chat_id' => $chat->id,
