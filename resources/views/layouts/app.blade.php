@@ -107,6 +107,11 @@
                 <li><a href="{{ url('/ngo/grants') }}"><i class="fas fa-file-signature"></i> Editais & Convênios</a></li>
                 <li><a href="{{ url('/ngo/landing-pages') }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
                 <li><a href="{{ url('/ngo/budget') }}"><i class="fas fa-chart-pie"></i> Orçamento Anual</a></li>
+                
+                <!-- Transações Dinâmicas (Saídas e Entradas Gerais) -->
+                <li><a href="{{ url('/transactions') }}" class="{{ request()->is('transactions') ? 'active' : '' }}"><i class="fas fa-exchange-alt"></i> Fluxo de Caixa</a></li>
+                <li><a href="{{ url('/transactions/create') }}" class="{{ request()->is('transactions/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color: #10b981;"></i> Nova Transação</a></li>
+                
                 <li><a href="{{ url('/ngo/team') }}"><i class="fas fa-users"></i> Equipe da ONG</a></li>
                 <li><a href="{{ url('/ngo/hr') }}"><i class="fas fa-id-badge"></i> RH & Voluntários</a></li>
                 <li><a href="{{ url('/ngo/beneficiaries') }}" class="{{ request()->is('ngo/beneficiaries*') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> Beneficiários</a></li>
