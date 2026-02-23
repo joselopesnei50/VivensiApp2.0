@@ -101,25 +101,39 @@ class EvolutionApiService
         // Garante somente dígitos (DDI+DDD+número, ex: 5511999999999)
         $number = preg_replace('/\D/', '', $phoneNumber);
 
-        // Adiciona DDI 55 (Brasil) automaticamente se o número não começar com 55
+        // Adiciona DDI 55 (Brasil) automaticamente se o número tiver 10 ou 11 dígitos
         if (strlen($number) <= 11 && !str_starts_with($number, '55')) {
             $number = '55' . $number;
         }
 
         try {
-            // Endpoint correto da Evolution API v2 para Pairing Code
+            // Verifica estado atual da instância
+            $stateRes = Http::timeout(10)->withHeaders([
+                'apikey' => $this->globalApiKey,
+            ])->get("{$this->baseUrl}/instance/connectionState/{$this->instanceName}");
+
+            $state = $stateRes->json()['instance']['state'] ?? 'close';
+
+            // Se a instância estiver fechada, inicia o processo de conexão
+            if ($state === 'close') {
+                Http::timeout(10)->withHeaders([
+                    'apikey' => $this->apiKey,
+                ])->get("{$this->baseUrl}/instance/connect/{$this->instanceName}");
+                sleep(1);
+            }
+
+            // Solicita o pairing code via GET com o número como query param
             $response = Http::timeout(30)->withHeaders([
                 'apikey' => $this->apiKey,
-                'Content-Type' => 'application/json',
-            ])->post("{$this->baseUrl}/instance/pairingCode/{$this->instanceName}", [
+            ])->get("{$this->baseUrl}/instance/connect/{$this->instanceName}", [
                 'number' => $number,
             ]);
 
             Log::info('Evolution API pairingCode response', [
                 'instance' => $this->instanceName,
-                'number' => $number,
-                'status' => $response->status(),
-                'body' => $response->body(),
+                'number'   => $number,
+                'status'   => $response->status(),
+                'body'     => $response->body(),
             ]);
 
             return $response->json() ?? [];
@@ -128,6 +142,7 @@ class EvolutionApiService
             return ['error' => $e->getMessage()];
         }
     }
+
 
     /**
      * Obtém status de conexão da instância (open, connecting, close).
