@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 5. Donut Source
     new ApexCharts(document.querySelector("#sourceChart"), {
-        series: {!! json_encode($leadSourceData->pluck('count')) !!},
+        series: {!! json_encode(array_map('intval', $leadSourceData->pluck('count')->toArray())) !!},
         chart: { type: 'donut', height: 320, fontFamily: 'Outfit, sans-serif' },
         labels: {!! json_encode($leadSourceData->pluck('page_key')) !!},
         colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899'],
