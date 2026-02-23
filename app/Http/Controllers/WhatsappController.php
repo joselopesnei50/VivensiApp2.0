@@ -663,6 +663,35 @@ class WhatsappController extends Controller
         return response()->json($response);
     }
 
+    /**
+     * Retorna o QR Code da instância como base64 para exibição na UI.
+     */
+    public function getQrCode()
+    {
+        $contextModel = $this->getContextModel();
+
+        if (!$contextModel || !$contextModel->evolution_instance_name) {
+            return response()->json(['error' => 'Instância não configurada.'], 400);
+        }
+
+        try {
+            $evo = new EvolutionApiService($contextModel);
+            $result = $evo->getConnectionQr();
+
+            if (!empty($result['base64'])) {
+                return response()->json(['qr_base64' => $result['base64']]);
+            }
+
+            if (!empty($result['instance']['state']) && $result['instance']['state'] === 'open') {
+                return response()->json(['connected' => true]);
+            }
+
+            return response()->json(['error' => 'QR Code não disponível. A instância pode já estar conectada ou em estado inválido.', 'details' => $result], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function generatePairingCode(Request $request)
     {
         $contextModel = $this->getContextModel();

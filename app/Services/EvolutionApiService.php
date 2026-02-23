@@ -143,6 +143,26 @@ class EvolutionApiService
         }
     }
 
+    /**
+     * Obtém o QR Code da instância em base64 (para instâncias em modo QR Code).
+     */
+    public function getConnectionQr(): array
+    {
+        if (!$this->instanceName) {
+            return ['error' => 'Instance not configured.'];
+        }
+
+        try {
+            $response = Http::timeout(15)->withHeaders([
+                'apikey' => $this->apiKey ?: $this->globalApiKey,
+            ])->get("{$this->baseUrl}/instance/connect/{$this->instanceName}");
+
+            return $response->json() ?? [];
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
+
 
     /**
      * Obtém status de conexão da instância (open, connecting, close).

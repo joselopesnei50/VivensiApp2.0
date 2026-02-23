@@ -120,14 +120,45 @@
                     <span id="statusText" style="font-weight: 600; color: #64748b; font-size: 0.9rem;">Aguardando verificação...</span>
                 </div>
 
-                <!-- Pairing Code Section -->
+                <!-- Pairing Code & QR Code Section -->
                 <div id="pairingCodeSection" style="display: none; background: white; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <h5 style="font-size: 1rem; color: #334155; margin-bottom: 15px; font-weight: 700;">Conectar WhatsApp (Aparelho Adicional)</h5>
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Para evitar bloqueios de IP, utilizamos o método de <b>Vincular com número de telefone</b> em vez do QR Code.</p>
                     
+                    <!-- Method 1: QR Code (Primary) -->
+                    <h5 style="font-size: 1rem; color: #334155; margin-bottom: 10px; font-weight: 700;">
+                        <i class="fas fa-qrcode me-2" style="color:#25d366;"></i> Conectar via QR Code
+                    </h5>
+                    <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">
+                        Abra o WhatsApp → <b>Aparelhos Conectados</b> → <b>Vincular um Aparelho</b> → escaneie o QR abaixo.
+                    </p>
+                    
+                    <button type="button" id="btnShowQr" onclick="requestQrCode()" class="btn btn-success w-100 fw-bold mb-3" style="padding: 10px; border-radius: 8px;">
+                        <i class="fas fa-qrcode me-2"></i> Mostrar QR Code para Escanear
+                    </button>
+
+                    <div id="qrCodeDisplay" style="display: none; text-align: center; margin-bottom: 15px; padding: 15px; border: 2px dashed #25d366; border-radius: 12px; background: #f0fdf4;">
+                        <p style="font-size: 0.8rem; color: #166534; margin-bottom: 10px; font-weight: 700;">
+                            <i class="fas fa-camera me-1"></i> Escaneie com o WhatsApp:
+                        </p>
+                        <img id="qrCodeImage" src="" alt="QR Code" style="max-width: 220px; height: auto; border-radius: 8px; border: 1px solid #d1fae5;">
+                        <p style="font-size: 0.72rem; color: #64748b; margin-top: 10px; margin-bottom: 0;" id="qrExpireText">
+                            <i class="fas fa-clock me-1"></i> QR Code expira em breve. Escaneie agora!
+                        </p>
+                    </div>
+
+                    <hr style="border-color: #e2e8f0; margin: 15px 0;">
+
+                    <!-- Method 2: Pairing Code (Secondary) -->
+                    <h5 style="font-size: 0.95rem; color: #334155; margin-bottom: 10px; font-weight: 700;">
+                        <i class="fas fa-keyboard me-2" style="color:#3b82f6;"></i> Conectar com Número de Telefone
+                    </h5>
+                    <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">
+                        Alternativa ao QR: requer instância criada sem QR pelo sistema Vivensi.
+                    </p>
+
                     <div class="form-group mb-3">
-                        <label class="fw-700 mb-2 small">Número do WhatsApp (com DDD)</label>
-                        <input type="text" id="pairingPhoneInput" class="form-control-vivensi" placeholder="Ex: 11999999999" value="{{ $contextModel->contact_phone ?? '' }}">
+                        <label class="fw-700 mb-2 small">Número do WhatsApp (com DDI 55 + DDD)</label>
+                        <input type="text" id="pairingPhoneInput" class="form-control-vivensi" placeholder="Ex: 5511999999999" value="{{ $contextModel->contact_phone ?? '' }}">
+                        <div class="small text-muted mt-1">Formato: 55 + DDD + número (ex: 5561988776655)</div>
                     </div>
                     
                     <button type="button" id="btnRequestPairingCode" onclick="requestPairingCode()" class="btn btn-dark w-100 fw-bold" style="padding: 10px; border-radius: 8px;">
@@ -140,6 +171,7 @@
                          <p style="font-size: 0.75rem; color: #64748b; margin-top: 15px; margin-bottom: 0;">Abra o WhatsApp > Aparelhos Conectados > Vincular um Aparelho > Conectar com número de telefone</p>
                     </div>
                 </div>
+
 
                 <div id="qrCodeContainer" style="display: none; text-align: center; margin-bottom: 20px; padding: 20px; background: white; border: 1px dashed #cbd5e1; border-radius: 12px;">
                     <img id="qrImage" src="" style="max-width: 200px; height: auto; margin-bottom: 10px;">
@@ -256,7 +288,63 @@
         }
     }
 
+    async function requestQrCode() {
+        const btn = document.getElementById('btnShowQr');
+        const display = document.getElementById('qrCodeDisplay');
+        const img = document.getElementById('qrCodeImage');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+
+        try {
+            const response = await fetch('{{ url("/whatsapp/qr-code") }}');
+            const data = await response.json();
+
+            if (data.connected) {
+                alert('✅ WhatsApp já está conectado!');
+                checkConnection(false);
+                return;
+            }
+
+            if (data.qr_base64) {
+                // The API returns the base64 with the full data URI prefix
+                const src = data.qr_base64.startsWith('data:') ? data.qr_base64 : 'data:image/png;base64,' + data.qr_base64;
+                img.src = src;
+                display.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar QR Code';
+
+                // Auto-refresh QR every 25s (they expire quickly)
+                if (window._qrInterval) clearInterval(window._qrInterval);
+                window._qrInterval = setInterval(async () => {
+                    const r2 = await fetch('{{ url("/whatsapp/qr-code") }}');
+                    const d2 = await r2.json();
+                    if (d2.qr_base64) {
+                        const s2 = d2.qr_base64.startsWith('data:') ? d2.qr_base64 : 'data:image/png;base64,' + d2.qr_base64;
+                        img.src = s2;
+                    } else if (d2.connected) {
+                        clearInterval(window._qrInterval);
+                        display.style.display = 'none';
+                        checkConnection(false);
+                    }
+                }, 25000);
+
+                // Poll for connection after scanning
+                checkConnection(true);
+            } else {
+                alert(data.error || 'Não foi possível carregar o QR Code.');
+            }
+        } catch (e) {
+            alert('Erro ao carregar QR Code: ' + e.message);
+        } finally {
+            btn.disabled = false;
+            if (!document.getElementById('qrCodeDisplay').style.display.includes('block')) {
+                btn.innerHTML = '<i class="fas fa-qrcode me-2"></i> Mostrar QR Code para Escanear';
+            }
+        }
+    }
+
     async function requestPairingCode() {
+
         const btn = document.getElementById('btnRequestPairingCode');
         const phone = document.getElementById('pairingPhoneInput').value;
         const display = document.getElementById('pairingCodeDisplay');
