@@ -1,0 +1,31 @@
+# NGINX SECURITY HARDENING SNIPPET FOR VIVENSI
+# Add these inside your server { ... } block in /etc/nginx/sites-available/vivensi
+
+# 1. Hide Nginx Version
+server_tokens off;
+
+# 2. Security Headers
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+# 3. Block access to hidden files/dotfiles (e.g. .env, .git)
+location ~ /\.(?!well-known).* {
+    deny all;
+    access_log off;
+    log_not_found off;
+}
+
+# 4. Block access to sensitive directories (Storage / Vendor)
+location ~ ^/(storage/logs|vendor|storage/framework)/.*$ {
+    deny all;
+    return 404;
+}
+
+# 5. Prevent execution of PHP files in storage/app/public uploads
+location ~ ^/storage/app/public/.*\.(php|php5|py|sh|pl)$ {
+    deny all;
+    return 403;
+}
