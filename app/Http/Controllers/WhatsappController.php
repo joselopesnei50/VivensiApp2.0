@@ -72,34 +72,50 @@ class WhatsappController extends Controller
     }
 
     /**
-     * Webhook receptor da Z-API (Async)
+     * Webhook receptor da Evolution API (Async)
      * 
      * CRITICAL: Returns HTTP 200 immediately and dispatches payload to queue.
-     * This prevents Z-API from retrying due to timeout (>30s processing).
+     * This prevents Evolution API from retrying due to timeout.
      */
     public function webhook(Request $request)
     {
         $data = $request->all();
         
-        // Z-API envia o ClientToken no Header, Evolution API v2 envia na Query String
+        // Evolution API v2 envia o token na Query String ou no Header Client-Token
         $clientToken = $request->header('Client-Token') ?? $request->query('token');
         $config = null;
         
         if (!empty($clientToken)) {
             $config = WhatsappConfig::where('client_token_hash', hash('sha256', (string) $clientToken))->first();
+            // Fallback para rows sem hash
+            if (!$config) {
+                $config = WhatsappConfig::where('client_token', $clientToken)->first();
+            }
         }
-        
-        // Backward-compat fallback (older rows sem hash)
-        if (!$config && !empty($clientToken)) {
-            $config = WhatsappConfig::where('client_token', $clientToken)->first();
+
+        // Fallback: busca pela instance_name no payload (quando tenant não tem client_token configurado)
+        if (!$config) {
+            $instanceName = $data['instance'] ?? null;
+            if ($instanceName) {
+                // Busca o tenant que tem essa instância e pega a config associada
+                $tenant = \App\Models\Tenant::where('evolution_instance_name', $instanceName)->first()
+                       ?? \App\Models\User::where('evolution_instance_name', $instanceName)->first();
+                if ($tenant) {
+                    $config = WhatsappConfig::where('tenant_id', $tenant->tenant_id ?? $tenant->id)->first();
+                }
+            }
         }
 
         if (!$config) {
-            return response()->json(['error' => 'Unauthorized instance'], 401);
+            Log::warning('WhatsApp webhook: unauthorized or config not found', [
+                'instance' => $data['instance'] ?? null,
+                'token_present' => !empty($clientToken),
+            ]);
+            // Retorna 200 mesmo assim para evitar retries infinitos da Evolution API
+            return response()->json(['status' => 'ignored'], 200);
         }
 
         // IMMEDIATELY dispatch to queue and return 200 OK
-        // This ensures Z-API receives response in <100ms (prevents duplicate deliveries)
         \App\Jobs\ProcessWhatsappWebhook::dispatch((int) $config->id, $data)
             ->onQueue('whatsapp');
 
@@ -339,8 +355,21 @@ class WhatsappController extends Controller
         unset($validated['evolution_instance_name']);
         $config->update($validated);
 
-        return back()->with('success', 'Configurações de WhatsApp/IA atualizadas!');
+        // Sempre (re)configura o webhook na Evolution API para garantir recebimento de mensagens
+        try {
+            $evoForWebhook = new EvolutionApiService();
+            $tokenForWebhook = $config->client_token ?? null;
+            $evoForWebhook->setWebhook(
+                $contextModel->evolution_instance_name,
+                $tokenForWebhook
+            );
+        } catch (\Exception $e) {
+            Log::warning('Webhook config failed after settings save', ['error' => $e->getMessage()]);
+        }
+
+        return back()->with('success', 'Configurações de WhatsApp/IA atualizadas! Webhook configurado automaticamente.');
     }
+
 
     /**
      * Interface de Chat (Mini CRM)
