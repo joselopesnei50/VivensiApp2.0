@@ -713,6 +713,7 @@
         const csrfToken = '{{ csrf_token() }}';
         let cannedResponses = [];
         let nextSendIsTemplate = false;
+        let lastMessageId = null; // Track last seen message for incremental polling
 
         $(document).ready(function() {
             if(currentChatId) {
@@ -720,12 +721,18 @@
                 loadChatData(currentChatId);
             }
 
+            // Auto-polling every 5 seconds for new messages
+            setInterval(function() {
+                if (!currentChatId) return;
+                pollNewMessages(currentChatId);
+            }, 5000);
+
             // Filtering Logic
             $('.filter-tab').click(function() {
                 $('.filter-tab').removeClass('active');
                 $(this).addClass('active');
                 
-                const filter = $(this).data('filter'); // 'all', 'unread', 'waiting'
+                const filter = $(this).data('filter');
                 
                 $('.contact-item').each(function() {
                     const isUnread = $(this).data('unread') == true;
@@ -752,19 +759,57 @@
         function loadChatData(id) {
             // Show Loading
             $('#chat-messages-area').html('<div style="display:flex; justify-content:center; align-items:center; height:100%; color:#999;"><div class="spinner-border text-primary" role="status"></div></div>');
+            lastMessageId = null; // reset on full reload
             
             $.get('{{ url("/whatsapp/chat") }}/' + id + '/messages', function(data) {
                 updateUI(data.chat);
                 $('#window-warning').hide();
                 renderMessages(data.messages);
                 renderNotes(data.notes);
-                
+                // Track last message id
+                if (data.messages && data.messages.length > 0) {
+                    lastMessageId = data.messages[data.messages.length - 1].id;
+                }
                 // Store canned responses globally or update list
                 if(data.canned_responses) {
                     cannedResponses = data.canned_responses;
                     renderCannedList();
                 }
             });
+        }
+
+        // Silent poll — appends only NEW messages without full reload
+        function pollNewMessages(id) {
+            const url = '{{ url("/whatsapp/chat") }}/' + id + '/messages' + (lastMessageId ? '?after=' + lastMessageId : '');
+            $.get(url, function(data) {
+                if (!data.messages) return;
+                const msgs = data.messages;
+                // If this is an incremental response (after=), only append new ones
+                if (lastMessageId && msgs.length > 0) {
+                    let html = '';
+                    const isAtBottom = isScrolledToBottom();
+                    msgs.forEach(msg => {
+                        let isOut = msg.direction === 'outbound';
+                        html += `<div class="message-row ${isOut ? 'message-out' : 'message-in'}">
+                            <div class="bubble ${isOut ? 'out' : 'in'}">
+                                ${escapeHtml(msg.content)}
+                                <div class="meta">${new Date(msg.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${isOut ? ' <i class="fas fa-check-double text-light"></i>' : ''}</div>
+                            </div></div>`;
+                    });
+                    $('#chat-messages-area').append(html);
+                    lastMessageId = msgs[msgs.length - 1].id;
+                    if (isAtBottom) scrollToBottom();
+                } else if (!lastMessageId) {
+                    // First poll after load, just update last id
+                    if (msgs.length > 0) lastMessageId = msgs[msgs.length - 1].id;
+                }
+            });
+        }
+
+        function isScrolledToBottom() {
+            const el = document.getElementById('chat-messages-area');
+            if (!el) return true;
+            return el.scrollHeight - el.scrollTop - el.clientHeight < 60;
         }
 
         function updateUI(chat) {

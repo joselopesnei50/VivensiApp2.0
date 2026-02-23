@@ -382,14 +382,19 @@ class WhatsappController extends Controller
         return view('whatsapp.chat', compact('chats'));
     }
 
-    public function getChatMessages($chatId)
+    public function getChatMessages(Request $request, $chatId)
     {
         $tenantId = auth()->user()->tenant_id;
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
         
-        $messages = WhatsappMessage::where('chat_id', $chat->id)
-                                   ->orderBy('created_at', 'asc')
-                                   ->get();
+        $query = WhatsappMessage::where('chat_id', $chat->id)->orderBy('created_at', 'asc');
+
+        // Incremental polling: only return messages after given ID
+        if ($request->filled('after') && is_numeric($request->query('after'))) {
+            $query->where('id', '>', (int) $request->query('after'));
+        }
+
+        $messages = $query->get();
 
         $notes = WhatsappNote::where('chat_id', $chat->id)
                              ->with('user')
@@ -415,7 +420,7 @@ class WhatsappController extends Controller
         
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
 
-        $config = WhatsappConfig::where('tenant_id', $tenantId)->firstOrFail();
+        $config = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
         $policy = app(WhatsappOutboundPolicy::class);
         $reason = null;
         $code = null;
