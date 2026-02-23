@@ -33,4 +33,9 @@ class Tenant extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function whatsappBlacklists()
+    {
+        return $this->hasMany(WhatsappBlacklist::class);
+    }
 }

@@ -35,9 +35,6 @@ class EvolutionApiService
         }
     }
 
-    /**
-     * Cria uma nova instância na Evolution API.
-     */
     public function createInstance(string $name): array
     {
         $token = Str::random(32); // Usado para autenticar Webhooks e a própria Instância
@@ -47,11 +44,12 @@ class EvolutionApiService
         ])->post("{$this->baseUrl}/instance/create", [
             'instanceName' => $name,
             'token' => $token,
-            'qrcode' => true,
+            'qrcode' => false,
             'integration' => 'WHATSAPP-BAILEYS',
         ]);
 
         if ($response->successful()) {
+            $this->setWebhook($name);
             return array_merge($response->json(), ['generated_token' => $token]);
         }
 
@@ -63,19 +61,46 @@ class EvolutionApiService
         return ['error' => 'Failed to create instance', 'details' => $response->body()];
     }
 
-    /**
-     * Obtém o QR Code ou status de pareamento da instância atual.
-     */
-    public function getConnectStatus(): array
+    public function setWebhook(string $instanceName)
     {
-        if (!$this->instanceName) {
+        $webhookUrl = config('app.url') . '/api/whatsapp/webhook';
+
+        try {
+            Http::timeout(15)->withHeaders([
+                'apikey' => $this->globalApiKey
+            ])->post("{$this->baseUrl}/webhook/set/{$instanceName}", [
+                'webhook' => [
+                    'url' => $webhookUrl,
+                    'byEvents' => false,
+                    'base64' => false,
+                    'events' => [
+                        'MESSAGES_UPSERT',
+                        'MESSAGES_UPDATE',
+                        'SEND_MESSAGE',
+                        'CONNECTION_UPDATE'
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Evolution API: Error setting webhook', ['msg' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Solicita o Pairing Code para conectar a instância ao número de telefone.
+     */
+    public function getPairingCode(string $phoneNumber): array
+    {
+        if (!$this->instanceName || !$this->apiKey) {
             return ['error' => 'Instance not configured.'];
         }
 
         try {
-            $response = Http::timeout(10)->withHeaders([
-                'apikey' => $this->globalApiKey
-            ])->get("{$this->baseUrl}/instance/connect/{$this->instanceName}");
+            $response = Http::timeout(15)->withHeaders([
+                'apikey' => $this->apiKey
+            ])->get("{$this->baseUrl}/instance/connect/{$this->instanceName}", [
+                'number' => preg_replace('/\D/', '', $phoneNumber) // garante apenas os números
+            ]);
 
             return $response->json();
         } catch (\Exception $e) {

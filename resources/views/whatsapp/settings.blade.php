@@ -109,7 +109,7 @@
                 </div>
             </div>
 
-            <!-- Connection Status & QR Code Scanner -->
+            <!-- Connection Status & Pairing Code Scanner -->
             <div class="vivensi-card" style="padding: 25px; margin-bottom: 30px; border-top: 4px solid #3b82f6;">
                 <h4 style="margin: 0 0 20px 0; font-size: 1.1rem; color: #334155; font-weight: 700;">
                     <i class="fas fa-wifi me-2" style="color: #3b82f6;"></i> Status da Conexão
@@ -118,6 +118,27 @@
                 <div id="connectionStatus" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 15px; background: #f1f5f9; border-radius: 12px;">
                     <div id="statusIcon" style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1;"></div>
                     <span id="statusText" style="font-weight: 600; color: #64748b; font-size: 0.9rem;">Aguardando verificação...</span>
+                </div>
+
+                <!-- Pairing Code Section -->
+                <div id="pairingCodeSection" style="display: none; background: white; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h5 style="font-size: 1rem; color: #334155; margin-bottom: 15px; font-weight: 700;">Conectar WhatsApp (Aparelho Adicional)</h5>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Para evitar bloqueios de IP, utilizamos o método de <b>Vincular com número de telefone</b> em vez do QR Code.</p>
+                    
+                    <div class="form-group mb-3">
+                        <label class="fw-700 mb-2 small">Número do WhatsApp (com DDD)</label>
+                        <input type="text" id="pairingPhoneInput" class="form-control-vivensi" placeholder="Ex: 11999999999" value="{{ $contextModel->contact_phone ?? '' }}">
+                    </div>
+                    
+                    <button type="button" id="btnRequestPairingCode" onclick="requestPairingCode()" class="btn btn-dark w-100 fw-bold" style="padding: 10px; border-radius: 8px;">
+                        Gerar Código de Pareamento
+                    </button>
+
+                    <div id="pairingCodeDisplay" style="display: none; margin-top: 20px; text-align: center; border-radius: 8px; background: #f8fafc; padding: 20px; border: 2px dashed #3b82f6;">
+                         <p style="font-size: 0.85rem; color: #3b82f6; margin-bottom: 10px; font-weight: bold;">Digite este código no seu WhatsApp:</p>
+                         <div id="thePairingCode" style="font-size: 2rem; letter-spacing: 5px; font-weight: 800; color: #1e293b; user-select: all;">---- ----</div>
+                         <p style="font-size: 0.75rem; color: #64748b; margin-top: 15px; margin-bottom: 0;">Abra o WhatsApp > Aparelhos Conectados > Vincular um Aparelho > Conectar com número de telefone</p>
+                    </div>
                 </div>
 
                 <div id="qrCodeContainer" style="display: none; text-align: center; margin-bottom: 20px; padding: 20px; background: white; border: 1px dashed #cbd5e1; border-radius: 12px;">
@@ -163,6 +184,8 @@
         const statusText = document.getElementById('statusText');
         const statusIcon = document.getElementById('statusIcon');
         const qrContainer = document.getElementById('qrCodeContainer');
+        const pairingSection = document.getElementById('pairingCodeSection');
+        const pairingDisplay = document.getElementById('pairingCodeDisplay');
         const qrImage = document.getElementById('qrImage');
 
         btn.disabled = true;
@@ -174,7 +197,7 @@
         if (statusPollInterval) { clearInterval(statusPollInterval); statusPollInterval = null; }
 
         let attempts = 0;
-        const maxAttempts = poll ? 15 : 1;
+        const maxAttempts = poll ? 5 : 1; // Reduces polling attempts for Pairing Code as it doesn't need constant refreshing like QR
 
         async function doCheck() {
             attempts++;
@@ -184,6 +207,7 @@
 
                 statusText.style.color = '#64748b';
                 qrContainer.style.display = 'none';
+                pairingSection.style.display = 'none'; // Assume connected initially
 
                 if (data.status === 'not_configured') {
                     statusText.innerText = 'Não configurado (Salve o Nome da Instância primeiro).';
@@ -198,24 +222,19 @@
                     clearInterval(statusPollInterval); statusPollInterval = null;
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
-                } else if (data.qr_code) {
-                    // QR Code ready — show it!
-                    statusText.innerText = 'Escaneie o QR Code abaixo com seu WhatsApp:';
-                    statusText.style.color = '#92400e';
-                    statusIcon.style.background = '#f59e0b';
-                    qrImage.src = data.qr_code;
-                    qrContainer.style.display = 'block';
-                    clearInterval(statusPollInterval); statusPollInterval = null;
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
                 } else {
-                    // No QR yet — keep polling if allowed
-                    statusText.innerText = 'Aguardando QR Code... (' + attempts + '/' + maxAttempts + ')';
+                    // Not connected, show pairing UI
+                    statusText.innerText = 'Aguardando Pareamento...';
                     statusIcon.style.background = '#f59e0b';
+                    pairingSection.style.display = 'block';
+                    
+                    if (data.qr_code) {
+                         // Fallback for QR code just in case
+                         qrImage.src = data.qr_code;
+                         qrContainer.style.display = 'none'; // Ensure QR is hidden, preference for Pairing
+                    }
+                    
                     if (attempts >= maxAttempts) {
-                        statusText.innerText = 'Desconectado. Clique em Atualizar Status para tentar novamente.';
-                        statusText.style.color = '#991b1b';
-                        statusIcon.style.background = '#ef4444';
                         clearInterval(statusPollInterval); statusPollInterval = null;
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Atualizar Status';
@@ -233,7 +252,55 @@
 
         await doCheck();
         if (poll && attempts < maxAttempts) {
-            statusPollInterval = setInterval(doCheck, 2000);
+            statusPollInterval = setInterval(doCheck, 5000); // Poll less frequently for Pairing
+        }
+    }
+
+    async function requestPairingCode() {
+        const btn = document.getElementById('btnRequestPairingCode');
+        const phone = document.getElementById('pairingPhoneInput').value;
+        const display = document.getElementById('pairingCodeDisplay');
+        const codeElement = document.getElementById('thePairingCode');
+        
+        if (!phone || phone.length < 10) {
+            alert("Por favor, informe um número de WhatsApp válido com DDD.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+        display.style.display = 'none';
+
+        try {
+            const response = await fetch('{{ url("/whatsapp/pairing-code") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ phone: phone })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.pairing_code) {
+                // Format code: ABCD-WXYZ
+                const code = data.pairing_code;
+                const formattedCode = code.match(/.{1,4}/g).join('-');
+                codeElement.innerText = formattedCode;
+                display.style.display = 'block';
+                
+                // Start polling to detect successful connection
+                checkConnection(true);
+            } else {
+                alert(data.error || "Erro ao gerar código de pareamento.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Erro de comunicação com o servidor.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Gerar Código de Pareamento';
         }
     }
 
@@ -241,7 +308,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const hasConfig = {{ !empty($contextModel->evolution_instance_name) ? 'true' : 'false' }};
         if (hasConfig) {
-            checkConnection(true); // poll mode
+            checkConnection(false); // Don't poll initially until they request code or check status
         }
     });
 </script>

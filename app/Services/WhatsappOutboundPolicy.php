@@ -37,6 +37,17 @@ class WhatsappOutboundPolicy
             return false;
         }
 
+        // Global SaaS Blacklist check
+        $isBlacklisted = \App\Models\WhatsappBlacklist::where('tenant_id', $config->tenant_id)
+            ->where('phone', $chat->wa_id)
+            ->exists();
+
+        if ($isBlacklisted) {
+            $reason = 'Número bloqueado globalmente (Blacklist).';
+            $code = 'CONTACT_BLACKLISTED';
+            return false;
+        }
+
         if ($config->require_opt_in && !$chat->opt_in_at) {
             $reason = 'Sem opt-in/consentimento registrado para este contato.';
             $code = 'OPTIN_REQUIRED';

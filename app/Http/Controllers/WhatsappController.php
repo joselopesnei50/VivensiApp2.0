@@ -160,6 +160,13 @@ class WhatsappController extends Controller
                 $chat->blocked_reason = 'STOP keyword';
                 $chat->status = 'closed';
                 $chat->save();
+
+                // Add to Global SaaS Blacklist
+                \App\Models\WhatsappBlacklist::firstOrCreate(
+                    ['tenant_id' => $tenantId, 'phone' => $waId],
+                    ['reason' => "Opt-out via keyword: $kw"]
+                );
+
                 WhatsappAuditLog::create([
                     'tenant_id' => $tenantId,
                     'chat_id' => $chat->id,
@@ -629,7 +636,7 @@ class WhatsappController extends Controller
         return null;
     }
 
-    // --- Connection Status & QR Code ---
+    // --- Connection Status & Pairing Code ---
     public function getStatus()
     {
         $contextModel = $this->getContextModel();
@@ -652,23 +659,30 @@ class WhatsappController extends Controller
             'details' => $state
         ];
 
-        // If not connected, always try to fetch QR Code
-        if (!$connected) {
-            try {
-                $qr = $evo->getConnectStatus();
-                // Evolution API v2 may return QR in different fields
-                $qrCode = $qr['base64'] ?? $qr['code'] ?? ($qr['qrcode']['base64'] ?? null);
-                if ($qrCode) {
-                    if (!str_starts_with($qrCode, 'data:image')) {
-                        $qrCode = 'data:image/png;base64,' . $qrCode;
-                    }
-                    $response['qr_code'] = $qrCode;
-                }
-            } catch (\Exception $e) {
-                Log::warning('getStatus: could not fetch QR code', ['error' => $e->getMessage()]);
-            }
+        return response()->json($response);
+    }
+
+    public function generatePairingCode(Request $request)
+    {
+        $contextModel = $this->getContextModel();
+
+        if (!$contextModel || !$contextModel->evolution_instance_name) {
+            return response()->json(['error' => 'Instância não configurada.'], 400);
         }
 
-        return response()->json($response);
+        $validated = $request->validate([
+            'phone' => ['required', 'string']
+        ]);
+
+        $evo = new EvolutionApiService($contextModel);
+        $result = $evo->getPairingCode($validated['phone']);
+
+        if (isset($result['code'])) {
+            return response()->json(['pairing_code' => $result['code']]);
+        }
+        
+        Log::error('Evolution API Pairing Code Error', ['response' => $result]);
+
+        return response()->json(['error' => 'Não foi possível gerar o código de pareamento. Verifique se o formato do número está correto (DDI+DDD+Numero) e tente novamente.', 'details' => $result], 500);
     }
 }

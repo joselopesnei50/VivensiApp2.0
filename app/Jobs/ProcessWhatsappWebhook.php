@@ -139,6 +139,11 @@ class ProcessWhatsappWebhook implements ShouldQueue
                 $chat->status = 'closed';
                 $chat->save();
                 
+                \App\Models\WhatsappBlacklist::firstOrCreate(
+                    ['tenant_id' => $tenantId, 'phone' => $waId],
+                    ['reason' => "Opt-out via keyword: $kw"]
+                );
+                
                 WhatsappAuditLog::create([
                     'tenant_id' => $tenantId,
                     'chat_id' => $chat->id,

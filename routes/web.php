@@ -310,6 +310,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/canned', [App\Http\Controllers\WhatsappController::class, 'saveCannedResponse']);
     Route::post('/whatsapp/test/receive', [App\Http\Controllers\WhatsappController::class, 'simulateWebhook']);
     Route::get('/whatsapp/status', [App\Http\Controllers\WhatsappController::class, 'getStatus']);
+    Route::post('/whatsapp/pairing-code', [App\Http\Controllers\WhatsappController::class, 'generatePairingCode']);
 
     // Marketing Intelligence (AI)
     Route::get('/marketing/strategy', [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');

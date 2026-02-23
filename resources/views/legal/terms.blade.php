@@ -30,6 +30,9 @@
                         
                         <h4>7. Contato</h4>
                         <p>Para dúvidas sobre estes termos, entre em contato através de nosso suporte em <strong>{{ config('legal.email_support') }}</strong>.</p>
+                        
+                        <h4>8. Política Anti-Spam e Uso do WhatsApp</h4>
+                        <p>O envio de mensagens em massa não solicitadas (Spam) é estritamente proibido. O usuário atesta que possui opt-in (consentimento prévio explícito) de todos os contatos importados e comunicados via plataforma. A <strong>{{ config('legal.company_name', 'Vivensi') }}</strong> aplica mecanismos ativos de segurança e monitoramento de qualidade. Em caso de excesso de denúncias, envios fora de conformidade ou bloqueios pela provedora (Meta/WhatsApp), reservamo-nos o direito de bloquear o envio de mensagens ou cancelar a sua conta imediatamente, sem direito a reembolso.</p>
                     </div>
                     
                     <div class="text-center mt-5">
