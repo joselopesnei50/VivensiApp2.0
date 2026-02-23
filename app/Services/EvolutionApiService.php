@@ -35,7 +35,7 @@ class EvolutionApiService
         }
     }
 
-    public function createInstance(string $name): array
+    public function createInstance(string $name, string $clientToken = null): array
     {
         $token = Str::random(32); // Usado para autenticar Webhooks e a própria Instância
 
@@ -49,7 +49,7 @@ class EvolutionApiService
         ]);
 
         if ($response->successful()) {
-            $this->setWebhook($name);
+            $this->setWebhook($name, $clientToken);
             return array_merge($response->json(), ['generated_token' => $token]);
         }
 
@@ -61,9 +61,12 @@ class EvolutionApiService
         return ['error' => 'Failed to create instance', 'details' => $response->body()];
     }
 
-    public function setWebhook(string $instanceName)
+    public function setWebhook(string $instanceName, string $clientToken = null)
     {
         $webhookUrl = config('app.url') . '/api/whatsapp/webhook';
+        if ($clientToken) {
+            $webhookUrl .= '?token=' . urlencode($clientToken);
+        }
 
         try {
             Http::timeout(15)->withHeaders([

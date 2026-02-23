@@ -81,15 +81,15 @@ class WhatsappController extends Controller
     {
         $data = $request->all();
         
-        // Z-API envia o ClientToken no Header para segurança
-        $clientToken = $request->header('Client-Token');
+        // Z-API envia o ClientToken no Header, Evolution API v2 envia na Query String
+        $clientToken = $request->header('Client-Token') ?? $request->query('token');
         $config = null;
         
         if (!empty($clientToken)) {
             $config = WhatsappConfig::where('client_token_hash', hash('sha256', (string) $clientToken))->first();
         }
         
-        // Backward-compat fallback (older rows without hash)
+        // Backward-compat fallback (older rows sem hash)
         if (!$config && !empty($clientToken)) {
             $config = WhatsappConfig::where('client_token', $clientToken)->first();
         }
@@ -324,7 +324,8 @@ class WhatsappController extends Controller
         
         if ($contextModel->evolution_instance_name !== $instanceName) {
             $evo = new EvolutionApiService();
-            $result = $evo->createInstance($instanceName);
+            $clientToken = $validated['client_token'] ?? $config->client_token;
+            $result = $evo->createInstance($instanceName, $clientToken);
             
             if (isset($result['generated_token'])) {
                 $contextModel->evolution_instance_name = $instanceName;
