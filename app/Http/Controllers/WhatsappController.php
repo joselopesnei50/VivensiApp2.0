@@ -678,7 +678,9 @@ class WhatsappController extends Controller
         $evo = new EvolutionApiService($contextModel);
         $result = $evo->getPairingCode($validated['phone']);
 
-        if (isset($result['code'])) {
+        if (isset($result['pairingCode'])) {
+            return response()->json(['pairing_code' => $result['pairingCode']]);
+        } elseif (isset($result['code'])) {
             return response()->json(['pairing_code' => $result['code']]);
         }
         
