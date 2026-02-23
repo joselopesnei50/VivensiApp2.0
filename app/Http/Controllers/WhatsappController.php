@@ -678,14 +678,19 @@ class WhatsappController extends Controller
         $evo = new EvolutionApiService($contextModel);
         $result = $evo->getPairingCode($validated['phone']);
 
-        if (isset($result['pairingCode'])) {
+        // pairingCode só existe quando a instância foi criada sem QR (qrcode: false)
+        if (!empty($result['pairingCode'])) {
             return response()->json(['pairing_code' => $result['pairingCode']]);
-        } elseif (isset($result['code'])) {
-            return response()->json(['pairing_code' => $result['code']]);
         }
-        
-        Log::error('Evolution API Pairing Code Error', ['response' => $result]);
 
+        // Instância está em modo QR Code — não suporta pairing code
+        if (isset($result['code']) || isset($result['base64'])) {
+            return response()->json([
+                'error' => 'Esta instância foi criada em modo QR Code e não suporta código de pareamento. Exclua a instância no painel Evolution API e recrie-a pelo sistema Vivensi nas Configurações de WhatsApp.',
+            ], 422);
+        }
+
+        Log::error('Evolution API Pairing Code Error', ['response' => $result]);
         return response()->json(['error' => 'Não foi possível gerar o código de pareamento. Verifique se o formato do número está correto (DDI+DDD+Numero) e tente novamente.', 'details' => $result], 500);
     }
 }
