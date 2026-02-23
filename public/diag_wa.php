@@ -69,7 +69,7 @@ if (!empty($_GET['to']) && !empty($_GET['instance'])) {
     
     echo "Testing sendText to: $to via instance: $instance\n";
     
-    $payload = json_encode(['number' => $to, 'textMessage' => ['text' => $msg]]);
+    $payload = json_encode(['number' => $to, 'text' => $msg]);
     $ch2 = curl_init("{$baseUrl}/message/sendText/{$instance}");
     curl_setopt_array($ch2, [
         CURLOPT_RETURNTRANSFER => true,

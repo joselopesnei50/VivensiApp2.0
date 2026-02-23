@@ -230,9 +230,7 @@ class EvolutionApiService
 
         $payload = [
             'number' => $to,
-            'textMessage' => [
-                'text' => $renderedMessage
-            ]
+            'text' => $renderedMessage
         ];
 
         // Se tiver delay > 0, usar o recurso nativo da Evolution para simular digitação "composing"
