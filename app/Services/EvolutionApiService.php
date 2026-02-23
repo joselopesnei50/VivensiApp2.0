@@ -98,15 +98,33 @@ class EvolutionApiService
             return ['error' => 'Instance not configured.'];
         }
 
+        // Garante somente dígitos (DDI+DDD+número, ex: 5511999999999)
+        $number = preg_replace('/\D/', '', $phoneNumber);
+
+        // Adiciona DDI 55 (Brasil) automaticamente se o número não começar com 55
+        if (strlen($number) <= 11 && !str_starts_with($number, '55')) {
+            $number = '55' . $number;
+        }
+
         try {
-            $response = Http::timeout(15)->withHeaders([
-                'apikey' => $this->apiKey
-            ])->get("{$this->baseUrl}/instance/connect/{$this->instanceName}", [
-                'number' => preg_replace('/\D/', '', $phoneNumber) // garante apenas os números
+            // Endpoint correto da Evolution API v2 para Pairing Code
+            $response = Http::timeout(30)->withHeaders([
+                'apikey' => $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->post("{$this->baseUrl}/instance/pairingCode/{$this->instanceName}", [
+                'number' => $number,
             ]);
 
-            return $response->json();
+            Log::info('Evolution API pairingCode response', [
+                'instance' => $this->instanceName,
+                'number' => $number,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return $response->json() ?? [];
         } catch (\Exception $e) {
+            Log::error('Evolution API pairingCode exception', ['error' => $e->getMessage()]);
             return ['error' => $e->getMessage()];
         }
     }
