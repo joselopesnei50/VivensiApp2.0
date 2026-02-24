@@ -101,9 +101,23 @@ try {
     echo "Error fetching chats: " . $e->getMessage() . "\n";
 }
 
-// 6. Check last log errors
-echo "\n=== Last WhatsApp errors in Laravel log ===\n";
+// 6. Check last log errors and payloads
+echo "\n=== Webhook Payload Discovery ===\n";
 $logFile = base_path('storage/logs/laravel.log');
+if (file_exists($logFile)) {
+    $lines = file($logFile);
+    $found = false;
+    foreach (array_reverse($lines) as $line) {
+        if (strpos($line, 'Evolution Webhook Payload') !== false) {
+            echo "Latest Payload Found:\n" . $line . "\n";
+            $found = true;
+            break;
+        }
+    }
+    if (!$found) echo "No 'Evolution Webhook Payload' found in log.\n";
+}
+
+echo "\n=== Last WhatsApp errors in Laravel log ===\n";
 if (file_exists($logFile)) {
     $lines = file($logFile);
     $waLines = array_filter($lines, fn($l) => stripos($l, 'whatsapp') !== false || stripos($l, 'evolution') !== false);
