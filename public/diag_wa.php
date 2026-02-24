@@ -86,7 +86,22 @@ if (!empty($_GET['to']) && !empty($_GET['instance'])) {
     echo "Response: " . $sendResult . "\n";
 }
 
-// 5. Check last log errors
+// 5. Recent Database Activity
+echo "\n=== Recent database chats (Last 5) ===\n";
+try {
+    $recentChats = \App\Models\WhatsappChat::orderBy('updated_at', 'desc')->take(5)->get();
+    foreach ($recentChats as $rc) {
+        $lastMsg = \App\Models\WhatsappMessage::where('chat_id', $rc->id)->orderBy('id', 'desc')->first();
+        echo "CHAT ID:{$rc->id} | WA_ID:{$rc->wa_id} | Name:{$rc->contact_name} | Updated:{$rc->updated_at}\n";
+        if ($lastMsg) {
+            echo "  - Last Msg: [{$lastMsg->direction}] {$lastMsg->status} | " . mb_substr($lastMsg->content, 0, 40) . "...\n";
+        }
+    }
+} catch (\Throwable $e) {
+    echo "Error fetching chats: " . $e->getMessage() . "\n";
+}
+
+// 6. Check last log errors
 echo "\n=== Last WhatsApp errors in Laravel log ===\n";
 $logFile = base_path('storage/logs/laravel.log');
 if (file_exists($logFile)) {
