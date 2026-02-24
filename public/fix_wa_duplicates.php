@@ -6,6 +6,8 @@ $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 use App\Models\WhatsappChat;
 use App\Models\WhatsappMessage;
 use App\Models\WhatsappAuditLog;
+use App\Models\WhatsappConfig;
+use App\Services\EvolutionApiService;
 
 echo "=== WhatsApp Identity Cleanup Script ===\n";
 
