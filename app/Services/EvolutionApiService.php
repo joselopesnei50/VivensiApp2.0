@@ -255,9 +255,19 @@ class EvolutionApiService
             }, throw: false)
             ->timeout(15)
             ->withHeaders([
-                'apikey' => $this->apiKey // Recomenda-se autenticar ações da instância com o token da própria
+                'apikey' => $this->apiKey 
             ])
             ->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
+
+            if ($response->failed() && $response->status() === 400 && str_contains($to, '@lid')) {
+                // If LID sending fails, try to resolve to standard JID and retry once
+                $resolved = $this->fetchProfile($to);
+                if (!empty($resolved['jid']) && $resolved['jid'] !== $to) {
+                    $payload['number'] = $resolved['jid'];
+                    $response = Http::timeout(15)->withHeaders(['apikey' => $this->apiKey])
+                        ->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
+                }
+            }
 
             if ($response->failed()) {
                 Log::error('Evolution API send failed', [
@@ -295,5 +305,43 @@ class EvolutionApiService
             $options = explode('|', $match[1]);
             return $options[array_rand($options)];
         }, $text);
+    }
+
+    /**
+     * Resolve um ID (@lid ou número) para um JID padrão via API.
+     */
+    public function fetchProfile(string $id): array
+    {
+        if (!$this->instanceName || !$this->apiKey) return [];
+
+        try {
+            // No Evolution V2, usamos o checkNumbers para validar e obter o JID real
+            $response = Http::timeout(10)->withHeaders([
+                'apikey' => $this->apiKey
+            ])->post("{$this->baseUrl}/chat/checkNumbers/{$this->instanceName}", [
+                'numbers' => [$id]
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data[0] ?? []; // Retorna o primeiro resultado (jid, exists, etc)
+            }
+        } catch (\Exception $e) {
+            Log::error('Evolution API fetchProfile error', ['err' => $e->getMessage()]);
+        }
+        return [];
+    }
+
+    /**
+     * Obtém o JID da própria instância (bot).
+     */
+    public function getBotJid(): ?string
+    {
+        try {
+            $res = $this->getConnectionState();
+            return $res['instance']['ownerJid'] ?? $res['instance']['owner'] ?? null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }

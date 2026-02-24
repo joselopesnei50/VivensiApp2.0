@@ -78,15 +78,24 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
 
         $remoteJid = (string) ($messageData['key']['remoteJid'] ?? '');
-        $sender = (string) ($this->payload['sender'] ?? '');
         $messageId = (string) ($messageData['key']['id'] ?? '');
 
-        // Standardize wa_id: 
-        // Se a mensagem NÃO é minha (inbound), o 'sender' é o contato real e deve ser preferido (especialmente se remoteJid for @lid).
-        // Se a mensagem É minha (outbound sync), o 'sender' sou EU (o bot), então devemos usar o 'remoteJid' (o destinatário).
+        // 0. Bot Identification & Loop Prevention
+        $evo = new EvolutionApiService($config->tenant); // Usando tenant para carregar config da instância
+        $botJid = $evo->getBotJid();
+
+        // Se a mensagem é do próprio bot (ou para o próprio bot em chat privado), ignoramos para evitar loops.
+        if ($remoteJid === $botJid) {
+            return;
+        }
+
+        // Standardize wa_id: Se for @lid, tentamos resolver para o JID real (@s.whatsapp.net)
         $waId = $remoteJid;
-        if (!$isFromMe && !str_contains($remoteJid, '@g.us') && !empty($sender)) {
-            $waId = $sender;
+        if (str_contains($remoteJid, '@lid')) {
+            $resolved = $evo->fetchProfile($remoteJid);
+            if (!empty($resolved['jid'])) {
+                $waId = $resolved['jid'];
+            }
         }
 
         $phonePrefix = explode('@', $waId)[0]; 
