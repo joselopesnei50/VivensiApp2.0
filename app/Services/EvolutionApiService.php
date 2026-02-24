@@ -228,6 +228,12 @@ class EvolutionApiService
         // Processa o Spintax transformando {A|B} em apenas um dos itens
         $renderedMessage = $this->applySpintax($message);
 
+        // Garante que o destinatário tenha o sufixo de domínio do WhatsApp
+        // Evolution v2 prefere JIDs completos (ex: 551199999999@s.whatsapp.net)
+        if (!str_contains($to, '@')) {
+            $to = $to . '@s.whatsapp.net';
+        }
+
         $payload = [
             'number' => $to,
             'text' => $renderedMessage

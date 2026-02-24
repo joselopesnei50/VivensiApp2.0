@@ -73,13 +73,10 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $tenantId = $config->tenant_id;
         $messageData = $this->payload['data'] ?? [];
         
-        // Ignore if sent from me
-        if (($messageData['key']['fromMe'] ?? false) === true) {
-            return;
-        }
+        $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
 
         $waId = (string) ($messageData['key']['remoteJid'] ?? '');
-        $waId = explode('@', $waId)[0]; // Remove @s.whatsapp.net postfix
+        $phonePrefix = explode('@', $waId)[0]; // Just for human readability field
         $messageId = (string) ($messageData['key']['id'] ?? '');
         
         $messageObj = $messageData['message'] ?? [];
@@ -105,7 +102,7 @@ class ProcessWhatsappWebhook implements ShouldQueue
             ['tenant_id' => $tenantId, 'wa_id' => $waId],
             [
                 'contact_name' => $messageData['pushName'] ?? 'Cliente WhatsApp',
-                'contact_phone' => $waId,
+                'contact_phone' => $phonePrefix,
                 'status' => 'open',
                 'opt_in_at' => now(), // Inbound message implies opt-in
             ]
@@ -167,12 +164,12 @@ class ProcessWhatsappWebhook implements ShouldQueue
             'chat_id' => $chat->id,
             'message_id' => $messageId,
             'content' => $content,
-            'direction' => 'inbound',
-            'status' => 'delivered', // Inbound messages are always delivered
+            'direction' => $isFromMe ? 'outbound' : 'inbound',
+            'status' => 'delivered', 
         ]);
 
-        // 3. Trigger AI auto-reply if enabled
-        if ($config->ai_enabled && (!$chat->assigned_to || $chat->status == 'open') && !$chat->opt_out_at && !$chat->blocked_at) {
+        // 3. Trigger AI auto-reply if enabled (ONLY for inbound messages)
+        if (!$isFromMe && $config->ai_enabled && (!$chat->assigned_to || $chat->status == 'open') && !$chat->opt_out_at && !$chat->blocked_at) {
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
                 ->onQueue('whatsapp');
         }
