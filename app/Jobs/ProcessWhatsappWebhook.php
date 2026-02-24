@@ -51,6 +51,8 @@ class ProcessWhatsappWebhook implements ShouldQueue
             return;
         }
 
+        Log::info('Evolution Webhook Payload', ['payload' => $this->payload]);
+
         $eventType = (string) ($this->payload['event'] ?? '');
 
         // Route to appropriate handler based on event type
@@ -76,7 +78,7 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
 
         $waId = (string) ($messageData['key']['remoteJid'] ?? '');
-        $phonePrefix = explode('@', $waId)[0]; // Just for human readability field
+        $phonePrefix = explode('@', $waId)[0]; 
         $messageId = (string) ($messageData['key']['id'] ?? '');
         
         $messageObj = $messageData['message'] ?? [];
@@ -97,69 +99,26 @@ class ProcessWhatsappWebhook implements ShouldQueue
             return;
         }
 
-        // 1. Find or create chat
+        // 1. Find or create chat (Standardize on full JID)
         $chat = WhatsappChat::firstOrCreate(
             ['tenant_id' => $tenantId, 'wa_id' => $waId],
             [
                 'contact_name' => $messageData['pushName'] ?? 'Cliente WhatsApp',
                 'contact_phone' => $phonePrefix,
                 'status' => 'open',
-                'opt_in_at' => now(), // Inbound message implies opt-in
+                'opt_in_at' => now(), 
             ]
         );
 
-        $chat->update(['last_message_at' => now(), 'last_inbound_at' => now()]);
-
-        WhatsappAuditLog::create([
-            'tenant_id' => $tenantId,
-            'chat_id' => $chat->id,
-            'actor_type' => 'webhook',
-            'event' => 'webhook_inbound',
-            'details' => [
-                'message_id' => $messageId,
-                'content_len' => mb_strlen($content),
-            ],
-        ]);
-
-        // STOP keyword compliance (opt-out detection)
-        $normalized = mb_strtolower(trim($content));
-        $stopKeywords = [
-            'stop', 'parar', 'pare', 'sair', 'cancelar', 'cancele', 
-            'descadastrar', 'remover', 'não quero', 'nao quero'
-        ];
-        
-        foreach ($stopKeywords as $kw) {
-            if ($kw !== '' && str_contains($normalized, $kw)) {
-                $chat->opt_out_at = now();
-                $chat->blocked_at = now();
-                $chat->blocked_reason = 'STOP keyword';
-                $chat->status = 'closed';
-                $chat->save();
-                
-                \App\Models\WhatsappBlacklist::firstOrCreate(
-                    ['tenant_id' => $tenantId, 'phone' => $waId],
-                    ['reason' => "Opt-out via keyword: $kw"]
-                );
-                
-                WhatsappAuditLog::create([
-                    'tenant_id' => $tenantId,
-                    'chat_id' => $chat->id,
-                    'actor_type' => 'webhook',
-                    'event' => 'compliance_action',
-                    'details' => ['action' => 'opt_out', 'reason' => 'STOP keyword', 'keyword' => $kw],
-                ]);
-                
-                return; // Don't process further
-            }
+        $chatUpdates = ['last_message_at' => now()];
+        if ($isFromMe) {
+            $chatUpdates['last_outbound_at'] = now();
+        } else {
+            $chatUpdates['last_inbound_at'] = now();
         }
+        $chat->update($chatUpdates);
 
-        // Ensure opt-in is set (for older chats)
-        if (!$chat->opt_in_at) {
-            $chat->opt_in_at = now();
-            $chat->save();
-        }
-
-        // 2. Save message to database
+        // Save message to database
         WhatsappMessage::create([
             'chat_id' => $chat->id,
             'message_id' => $messageId,
@@ -168,7 +127,7 @@ class ProcessWhatsappWebhook implements ShouldQueue
             'status' => 'delivered', 
         ]);
 
-        // 3. Trigger AI auto-reply if enabled (ONLY for inbound messages)
+        // 2. Trigger AI auto-reply (ONLY for real inbound messages)
         if (!$isFromMe && $config->ai_enabled && (!$chat->assigned_to || $chat->status == 'open') && !$chat->opt_out_at && !$chat->blocked_at) {
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
                 ->onQueue('whatsapp');
