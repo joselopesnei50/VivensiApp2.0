@@ -109,12 +109,15 @@ class ProcessWhatsappWebhook implements ShouldQueue
         }
 
         // 1. Smart Resolver: find existing chat by any identifier to avoid duplication
+        // We look for chats that match the reachable JID, the remote LID, or the phone number.
         $chat = WhatsappChat::where('tenant_id', $tenantId)
-            ->where(function($q) use ($waId, $phonePrefix) {
+            ->where(function($q) use ($waId, $remoteJid, $phonePrefix) {
                 $q->where('wa_id', $waId)
+                  ->orWhere('wa_id', $remoteJid)
                   ->orWhere('wa_id', $phonePrefix)
                   ->orWhere('contact_phone', $phonePrefix);
             })
+            ->orderByRaw("CASE WHEN wa_id LIKE '%@s.whatsapp.net' THEN 0 ELSE 1 END")
             ->first();
 
         if (!$chat) {
@@ -127,17 +130,18 @@ class ProcessWhatsappWebhook implements ShouldQueue
                 'opt_in_at' => now(), 
             ]);
         } else {
-            // Standardize wa_id to reachable JID if the event provides a full one
+            // Standardize: if we just got a better ID (JID vs LID), update the record
             if (str_contains($waId, '@s.whatsapp.net') && $chat->wa_id !== $waId) {
-                $chat->update(['wa_id' => $waId]);
+                $chat->update(['wa_id' => $waId, 'contact_phone' => $phonePrefix]);
             }
             
-            // Cleanup: merge other duplicate chats for this number to clean up the sidebar
+            // Merge: look for other chats that are actually this same person and merge them
             $duplicates = WhatsappChat::where('tenant_id', $tenantId)
                 ->where('id', '!=', $chat->id)
-                ->where(function($q) use ($waId, $phonePrefix) {
-                    $q->where('contact_phone', $phonePrefix)
-                      ->orWhere('wa_id', $phonePrefix);
+                ->where(function($q) use ($waId, $remoteJid, $phonePrefix) {
+                    $q->where('wa_id', $waId)
+                      ->orWhere('wa_id', $remoteJid)
+                      ->orWhere('contact_phone', $phonePrefix);
                 })
                 ->get();
             
