@@ -80,36 +80,9 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $remoteJid = (string) ($messageData['key']['remoteJid'] ?? '');
         $messageId = (string) ($messageData['key']['id'] ?? '');
 
-        // 0. Bot Identification & Loop Prevention
-        $evo = new EvolutionApiService($config->tenant); // Usando tenant para carregar config da instância
-        $botJid = $evo->getBotJid();
-
-        // Se a mensagem é do próprio bot (ou para o próprio bot em chat privado), ignoramos para evitar loops.
-        if ($remoteJid === $botJid) {
-            return;
-        }
-
-        // Standardize wa_id: Se for @lid, tentamos resolver para o JID real (@s.whatsapp.net)
-        $waId = $remoteJid;
-        if (str_contains($remoteJid, '@lid')) {
-            $resolved = $evo->fetchProfile($remoteJid);
-            if (!empty($resolved['jid'])) {
-                $waId = $resolved['jid'];
-            }
-        }
-
-        $phonePrefix = explode('@', $waId)[0]; 
-        
-        $messageObj = $messageData['message'] ?? [];
-        $content = '';
-        if (isset($messageObj['conversation'])) {
-            $content = $messageObj['conversation'];
-        } elseif (isset($messageObj['extendedTextMessage']['text'])) {
-            $content = $messageObj['extendedTextMessage']['text'];
-        }
-
-        // Basic validation
-        if ($waId === '' || $messageId === '' || $content === '') {
+        // 1. Loop Prevention & Basic Validation
+        // NO external API calls here. Webhook must be fast.
+        if ($remoteJid === '' || $messageId === '') {
             return;
         }
 
@@ -118,69 +91,56 @@ class ProcessWhatsappWebhook implements ShouldQueue
             return;
         }
 
-        // 1. Smart Resolver: find existing chat by LID, JID, or Number to avoid duplication
+        $phonePrefix = explode('@', $remoteJid)[0]; 
+        $messageObj = $messageData['message'] ?? [];
+        $content = '';
+        if (isset($messageObj['conversation'])) {
+            $content = $messageObj['conversation'];
+        } elseif (isset($messageObj['extendedTextMessage']['text'])) {
+            $content = $messageObj['extendedTextMessage']['text'];
+        }
+
+        // 2. Find or Create Chat
+        // We look for existing chat by JID or Number Prefix
         $chat = WhatsappChat::where('tenant_id', $tenantId)
-            ->where(function($q) use ($waId, $remoteJid, $phonePrefix) {
-                $q->where('wa_id', $waId)
-                  ->orWhere('wa_id', $remoteJid)
-                  ->orWhere('contact_phone', $phonePrefix);
+            ->where(function($q) use ($remoteJid, $phonePrefix) {
+                $q->where('wa_id', $remoteJid)
+                  ->orWhere('contact_phone', $phonePrefix)
+                  ->orWhere('wa_id', $phonePrefix);
             })
-            ->orderByRaw("CASE WHEN wa_id LIKE '%@s.whatsapp.net' THEN 0 ELSE 1 END")
             ->first();
 
         if (!$chat) {
             $chat = WhatsappChat::create([
                 'tenant_id' => $tenantId,
-                'wa_id' => $waId,
-                'contact_name' => $messageData['pushName'] ?? 'Cliente WhatsApp',
+                'wa_id' => $remoteJid,
+                'contact_name' => $messageData['pushName'] ?? 'Contato WhatsApp',
                 'contact_phone' => $phonePrefix,
                 'status' => 'open',
                 'opt_in_at' => now(), 
             ]);
+        }
+
+        // 3. Update Chat States
+        $chatUpdates = ['last_message_at' => now()];
+        if ($isFromMe) {
+            $chatUpdates['last_outbound_at'] = now();
         } else {
-            // Standardize: if we just got a reachable JID, update the existing record
-            if (str_contains($waId, '@s.whatsapp.net') && $chat->wa_id !== $waId) {
-                $chat->update(['wa_id' => $waId, 'contact_phone' => $phonePrefix]);
-            }
-            
-            // Merge: cleanup duplicates to unify the sidebar
-            $duplicates = WhatsappChat::where('tenant_id', $tenantId)
-                ->where('id', '!=', $chat->id)
-                ->where(function($q) use ($waId, $remoteJid, $phonePrefix) {
-                    $q->where('wa_id', $waId)
-                      ->orWhere('wa_id', $remoteJid)
-                      ->orWhere('contact_phone', $phonePrefix);
-                })
-                ->get();
-            
-            foreach ($duplicates as $dupe) {
-                WhatsappMessage::where('chat_id', $dupe->id)->update(['chat_id' => $chat->id]);
-                WhatsappAuditLog::where('chat_id', $dupe->id)->update(['chat_id' => $chat->id]);
-                $dupe->delete();
-            }
+            $chatUpdates['last_inbound_at'] = now();
         }
+        $chat->update($chatUpdates);
 
-        // Standardize JID suffix for delivery
-        if (!str_contains($chat->wa_id, '@')) {
-            $chat->update(['wa_id' => $chat->wa_id . '@s.whatsapp.net']);
-        }
-
-        // Ensure opt-in is set (for older chats)
-        if (!$chat->opt_in_at) {
-            $chat->opt_in_at = now();
-            $chat->save();
-        }
-
-        // Save message to database
+        // 4. Save Message (CRITICAL - DO THIS BEFORE AI)
         WhatsappMessage::create([
             'chat_id' => $chat->id,
             'message_id' => $messageId,
-            'content' => $content,
+            'content' => $content ?: '[Mensagem de mídia]',
             'direction' => $isFromMe ? 'outbound' : 'inbound',
             'status' => 'delivered', 
         ]);
 
-        // 3. Trigger AI auto-reply (ONLY for real inbound messages, NOT from sync)
+        // 5. Trigger AI auto-reply (ONLY for real inbound)
+        // LID resolution happens INSIDE ProcessWhatsappAiResponse
         if (!$isFromMe && $config->ai_enabled && (!$chat->assigned_to || $chat->status == 'open') && !$chat->opt_out_at && !$chat->blocked_at) {
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
                 ->onQueue('whatsapp');

@@ -71,23 +71,40 @@ if ($targetChat) {
 
 echo "\nDone. Running general cleanup for other duplicates...\n";
 
-// 2. Identify the bot's own JID to delete "self-response" chats
-$botJid = '5516997618695@s.whatsapp.net'; // Hardcoded for this specific instance based on user input
-echo "Bot JID identified as: {$botJid}\n";
+/**
+ * 2. Automatic Bot Identity Cleanup
+ * Deleta chats criados acidentalmente para o próprio número da instância (SaaS safe).
+ */
+$configs = WhatsappConfig::with('tenant')->get();
+foreach ($configs as $config) {
+    $evo = new EvolutionApiService($config->tenant);
+    $botJid = $evo->getBotJid();
+    
+    if ($botJid) {
+        $botNumber = explode('@', $botJid)[0];
+        echo "Cleaning up self-chats for Tenant: {$config->tenant_id} | Bot: {$botJid}\n";
+        
+        $botChats = WhatsappChat::where('tenant_id', $config->tenant_id)
+            ->where(function($q) use ($botJid, $botNumber) {
+                $q->where('wa_id', $botJid)
+                  ->orWhere('wa_id', $botNumber)
+                  ->orWhere('contact_phone', $botNumber);
+            })
+            ->get();
 
-$botChats = WhatsappChat::where('wa_id', $botJid)
-    ->orWhere('wa_id', '5516997618695')
-    ->orWhere('contact_phone', '5516997618695')
-    ->get();
-
-foreach ($botChats as $bc) {
-    echo "Deleting bot self-chat ID:{$bc->id} | WA:{$bc->wa_id}\n";
-    WhatsappMessage::where('chat_id', $bc->id)->delete();
-    WhatsappAuditLog::where('chat_id', $bc->id)->delete();
-    $bc->delete();
+        foreach ($botChats as $bc) {
+            echo "Deleting self-chat ID:{$bc->id}\n";
+            WhatsappMessage::where('chat_id', $bc->id)->delete();
+            WhatsappAuditLog::where('chat_id', $bc->id)->delete();
+            $bc->delete();
+        }
+    }
 }
 
-// General cleanup for other duplicates
+/**
+ * 3. General Duplicate Merge
+ * Une conversas duplicadas (LID/JID) para cada tenant.
+ */
 $allChats = WhatsappChat::all();
 $seenPhones = [];
 
@@ -96,7 +113,7 @@ foreach ($allChats as $chat) {
     if (empty($phone)) {
         $phone = explode('@', $chat->wa_id)[0];
     }
-    if (empty($phone) || strlen($phone) < 8) continue;
+    if (empty($phone) || strlen($phone) < 8 || !is_numeric($phone)) continue;
     
     $tenantKey = $chat->tenant_id . '_' . $phone;
     
@@ -105,7 +122,7 @@ foreach ($allChats as $chat) {
         $original = WhatsappChat::find($originalId);
         
         if ($original) {
-            echo "Merging Duplicate found for phone {$phone} (ID:{$chat->id} -> ID:{$original->id})\n";
+            echo "Merging Duplicate for Tenant {$chat->tenant_id} | Phone {$phone} (ID:{$chat->id} -> ID:{$original->id})\n";
             WhatsappMessage::where('chat_id', $chat->id)->update(['chat_id' => $original->id]);
             WhatsappAuditLog::where('chat_id', $chat->id)->update(['chat_id' => $original->id]);
             $chat->delete();
@@ -115,4 +132,4 @@ foreach ($allChats as $chat) {
     }
 }
 
-echo "Cleanup finished.\n";
+echo "\nCleanup finished. All systems restored.\n";
