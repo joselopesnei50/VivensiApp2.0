@@ -79,16 +79,17 @@ class ProcessWhatsappWebhook implements ShouldQueue
 
         $remoteJid = (string) ($messageData['key']['remoteJid'] ?? '');
         $sender = (string) ($this->payload['sender'] ?? '');
+        $messageId = (string) ($messageData['key']['id'] ?? '');
 
-        // Standardize wa_id: prefer sender (standard JID) for individual chats if remoteJid is LID
-        // This ensures the AI uses a reachable JID for outbound replies.
+        // Standardize wa_id: 
+        // Se a mensagem NÃO é minha (inbound), o 'sender' é o contato real e deve ser preferido (especialmente se remoteJid for @lid).
+        // Se a mensagem É minha (outbound sync), o 'sender' sou EU (o bot), então devemos usar o 'remoteJid' (o destinatário).
         $waId = $remoteJid;
-        if (!str_contains($remoteJid, '@g.us') && !empty($sender)) {
+        if (!$isFromMe && !str_contains($remoteJid, '@g.us') && !empty($sender)) {
             $waId = $sender;
         }
 
         $phonePrefix = explode('@', $waId)[0]; 
-        $messageId = (string) ($messageData['key']['id'] ?? '');
         
         $messageObj = $messageData['message'] ?? [];
         $content = '';
@@ -108,13 +109,11 @@ class ProcessWhatsappWebhook implements ShouldQueue
             return;
         }
 
-        // 1. Smart Resolver: find existing chat by any identifier to avoid duplication
-        // We look for chats that match the reachable JID, the remote LID, or the phone number.
+        // 1. Smart Resolver: find existing chat by LID, JID, or Number to avoid duplication
         $chat = WhatsappChat::where('tenant_id', $tenantId)
             ->where(function($q) use ($waId, $remoteJid, $phonePrefix) {
                 $q->where('wa_id', $waId)
                   ->orWhere('wa_id', $remoteJid)
-                  ->orWhere('wa_id', $phonePrefix)
                   ->orWhere('contact_phone', $phonePrefix);
             })
             ->orderByRaw("CASE WHEN wa_id LIKE '%@s.whatsapp.net' THEN 0 ELSE 1 END")
@@ -130,12 +129,12 @@ class ProcessWhatsappWebhook implements ShouldQueue
                 'opt_in_at' => now(), 
             ]);
         } else {
-            // Standardize: if we just got a better ID (JID vs LID), update the record
+            // Standardize: if we just got a reachable JID, update the existing record
             if (str_contains($waId, '@s.whatsapp.net') && $chat->wa_id !== $waId) {
                 $chat->update(['wa_id' => $waId, 'contact_phone' => $phonePrefix]);
             }
             
-            // Merge: look for other chats that are actually this same person and merge them
+            // Merge: cleanup duplicates to unify the sidebar
             $duplicates = WhatsappChat::where('tenant_id', $tenantId)
                 ->where('id', '!=', $chat->id)
                 ->where(function($q) use ($waId, $remoteJid, $phonePrefix) {
