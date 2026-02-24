@@ -228,14 +228,12 @@ class EvolutionApiService
         // Processa o Spintax transformando {A|B} em apenas um dos itens
         $renderedMessage = $this->applySpintax($message);
 
-        // Garante que o destinatário tenha o sufixo de domínio do WhatsApp
-        // Evolution v2 prefere JIDs completos (ex: 551199999999@s.whatsapp.net)
-        if (!str_contains($to, '@')) {
-            $to = $to . '@s.whatsapp.net';
-        }
+        // REGRA DE OURO: Para entrega garantida na Evolution v2, 
+        // usamos apenas os dígitos numéricos (sem @lid, sem @s.whatsapp.net).
+        $numericTo = $this->normalizeToNumeric($to);
 
         $payload = [
-            'number' => $to,
+            'number' => $numericTo,
             'text' => $renderedMessage
         ];
 
@@ -248,6 +246,13 @@ class EvolutionApiService
         }
 
         try {
+            // Log detalhado do envio para diagnóstico (conforme solicitado pelo usuário)
+            Log::info('Evolution API Outbound Payload', [
+                'instance' => $this->instanceName,
+                'url'      => "{$this->baseUrl}/message/sendText/{$this->instanceName}",
+                'payload'  => $payload,
+            ]);
+
             $response = Http::retry(3, 200, function ($exception, $request) {
                 if (!$exception instanceof \Illuminate\Http\Client\RequestException) return false;
                 $status = $exception->response->status();
@@ -259,21 +264,11 @@ class EvolutionApiService
             ])
             ->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
 
-            if ($response->failed() && $response->status() === 400 && str_contains($to, '@lid')) {
-                // If LID sending fails, try to resolve to standard JID and retry once
-                $resolved = $this->fetchProfile($to);
-                if (!empty($resolved['jid']) && $resolved['jid'] !== $to) {
-                    $payload['number'] = $resolved['jid'];
-                    $response = Http::timeout(15)->withHeaders(['apikey' => $this->apiKey])
-                        ->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
-                }
-            }
-
             if ($response->failed()) {
                 Log::error('Evolution API send failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
-                    'to' => $to,
+                    'to' => $numericTo,
                 ]);
 
                 return [
@@ -305,6 +300,22 @@ class EvolutionApiService
             $options = explode('|', $match[1]);
             return $options[array_rand($options)];
         }, $text);
+    }
+
+    /**
+     * Normaliza um JID ou LID para apenas os dígitos numéricos.
+     */
+    public function normalizeToNumeric(string $id): string
+    {
+        // 1. Se contém @, extrai a parte antes do @
+        if (str_contains($id, '@')) {
+            $id = explode('@', $id)[0];
+        }
+        
+        // 2. Remove qualquer caractere que não seja número
+        $numeric = preg_replace('/[^0-9]/', '', $id);
+
+        return $numeric;
     }
 
     /**

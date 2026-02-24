@@ -156,32 +156,16 @@ class ProcessWhatsappAiResponse implements ShouldQueue
 
             $evo = new EvolutionApiService($syntheticModel);
 
-            $toJid = $chat->wa_id;
-            // Force standard JID if an LID is detected by querying the API
-            if (str_contains($toJid, '@lid')) {
-                $resolved = $evo->fetchProfile($toJid);
-                if (!empty($resolved['jid'])) {
-                    $toJid = $resolved['jid'];
-                    // Update chat model so we don't have to resolve again
-                    $chat->update(['wa_id' => $toJid]);
-                } else {
-                    // Fallback to number prefix if API fails, but it's risky
-                    $numberPart = explode('@', $toJid)[0];
-                    $toJid = $numberPart . '@s.whatsapp.net';
-                }
-            }
-
-            if (!str_contains($toJid, '@')) {
-                $toJid .= '@s.whatsapp.net';
-            }
-
-            Log::info('WhatsApp AI: enviando resposta', [
-                'instance'  => $instanceName,
-                'to'        => $toJid,
-                'reply_len' => mb_strlen($replyText),
+            $toId = $chat->wa_id;
+            
+            // Log do que vamos tentar enviar (o Service cuidará da normalização numérica)
+            Log::info('WhatsApp AI: preparando disparo', [
+                'instance' => $instanceName,
+                'chat_id'  => $chat->id,
+                'target'   => $toId,
             ]);
 
-            $res = $evo->sendMessage($toJid, $replyText, null, 2);
+            $res = $evo->sendMessage($toId, $replyText, null, 2);
 
             if (isset($res['error'])) {
                 Log::error('WhatsApp AI sendMessage failed', ['error' => $res, 'instance' => $instanceName, 'to' => $chat->wa_id]);
