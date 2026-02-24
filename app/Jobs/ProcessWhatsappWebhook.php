@@ -77,7 +77,16 @@ class ProcessWhatsappWebhook implements ShouldQueue
         
         $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
 
-        $waId = (string) ($messageData['key']['remoteJid'] ?? '');
+        $remoteJid = (string) ($messageData['key']['remoteJid'] ?? '');
+        $sender = (string) ($this->payload['sender'] ?? '');
+
+        // Standardize wa_id: prefer sender (standard JID) for individual chats if remoteJid is LID
+        // This ensures the AI uses a reachable JID for outbound replies.
+        $waId = $remoteJid;
+        if (!str_contains($remoteJid, '@g.us') && !empty($sender)) {
+            $waId = $sender;
+        }
+
         $phonePrefix = explode('@', $waId)[0]; 
         $messageId = (string) ($messageData['key']['id'] ?? '');
         
