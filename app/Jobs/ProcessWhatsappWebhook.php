@@ -108,24 +108,56 @@ class ProcessWhatsappWebhook implements ShouldQueue
             return;
         }
 
-        // 1. Find or create chat (Standardize on full JID)
-        $chat = WhatsappChat::firstOrCreate(
-            ['tenant_id' => $tenantId, 'wa_id' => $waId],
-            [
+        // 1. Smart Resolver: find existing chat by any identifier to avoid duplication
+        $chat = WhatsappChat::where('tenant_id', $tenantId)
+            ->where(function($q) use ($waId, $phonePrefix) {
+                $q->where('wa_id', $waId)
+                  ->orWhere('wa_id', $phonePrefix)
+                  ->orWhere('contact_phone', $phonePrefix);
+            })
+            ->first();
+
+        if (!$chat) {
+            $chat = WhatsappChat::create([
+                'tenant_id' => $tenantId,
+                'wa_id' => $waId,
                 'contact_name' => $messageData['pushName'] ?? 'Cliente WhatsApp',
                 'contact_phone' => $phonePrefix,
                 'status' => 'open',
                 'opt_in_at' => now(), 
-            ]
-        );
-
-        $chatUpdates = ['last_message_at' => now()];
-        if ($isFromMe) {
-            $chatUpdates['last_outbound_at'] = now();
+            ]);
         } else {
-            $chatUpdates['last_inbound_at'] = now();
+            // Standardize wa_id to reachable JID if the event provides a full one
+            if (str_contains($waId, '@s.whatsapp.net') && $chat->wa_id !== $waId) {
+                $chat->update(['wa_id' => $waId]);
+            }
+            
+            // Cleanup: merge other duplicate chats for this number to clean up the sidebar
+            $duplicates = WhatsappChat::where('tenant_id', $tenantId)
+                ->where('id', '!=', $chat->id)
+                ->where(function($q) use ($waId, $phonePrefix) {
+                    $q->where('contact_phone', $phonePrefix)
+                      ->orWhere('wa_id', $phonePrefix);
+                })
+                ->get();
+            
+            foreach ($duplicates as $dupe) {
+                WhatsappMessage::where('chat_id', $dupe->id)->update(['chat_id' => $chat->id]);
+                WhatsappAuditLog::where('chat_id', $dupe->id)->update(['chat_id' => $chat->id]);
+                $dupe->delete();
+            }
         }
-        $chat->update($chatUpdates);
+
+        // Standardize JID suffix for delivery
+        if (!str_contains($chat->wa_id, '@')) {
+            $chat->update(['wa_id' => $chat->wa_id . '@s.whatsapp.net']);
+        }
+
+        // Ensure opt-in is set (for older chats)
+        if (!$chat->opt_in_at) {
+            $chat->opt_in_at = now();
+            $chat->save();
+        }
 
         // Save message to database
         WhatsappMessage::create([
@@ -136,7 +168,7 @@ class ProcessWhatsappWebhook implements ShouldQueue
             'status' => 'delivered', 
         ]);
 
-        // 2. Trigger AI auto-reply (ONLY for real inbound messages)
+        // 3. Trigger AI auto-reply (ONLY for real inbound messages, NOT from sync)
         if (!$isFromMe && $config->ai_enabled && (!$chat->assigned_to || $chat->status == 'open') && !$chat->opt_out_at && !$chat->blocked_at) {
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
                 ->onQueue('whatsapp');

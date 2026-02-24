@@ -156,13 +156,20 @@ class ProcessWhatsappAiResponse implements ShouldQueue
 
             $evo = new EvolutionApiService($syntheticModel);
 
+            $toJid = $chat->wa_id;
+            // Force standard JID if an LID is detected for an individual chat
+            if (str_contains($toJid, '@lid')) {
+                $numberPart = explode('@', $toJid)[0];
+                $toJid = $numberPart . '@s.whatsapp.net';
+            }
+
             Log::info('WhatsApp AI: enviando resposta', [
                 'instance'  => $instanceName,
-                'to'        => $chat->wa_id,
+                'to'        => $toJid,
                 'reply_len' => mb_strlen($replyText),
             ]);
 
-            $res = $evo->sendMessage($chat->wa_id, $replyText, null, 2);
+            $res = $evo->sendMessage($toJid, $replyText, null, 2);
 
             if (isset($res['error'])) {
                 Log::error('WhatsApp AI sendMessage failed', ['error' => $res, 'instance' => $instanceName, 'to' => $chat->wa_id]);
