@@ -303,19 +303,19 @@ class EvolutionApiService
     }
 
     /**
-     * Normaliza um JID ou LID para apenas os dígitos numéricos.
+     * Normaliza um JID ou LID. 
+     * Se já for um JID completo (contém @), retorna como está.
+     * Caso contrário, remove não-numéricos.
      */
     public function normalizeToNumeric(string $id): string
     {
-        // 1. Se contém @, extrai a parte antes do @
+        // Se já tem @ (ex: @lid, @s.whatsapp.net, @g.us), não mexemos
         if (str_contains($id, '@')) {
-            $id = explode('@', $id)[0];
+            return $id;
         }
         
-        // 2. Remove qualquer caractere que não seja número
-        $numeric = preg_replace('/[^0-9]/', '', $id);
-
-        return $numeric;
+        // Caso contrário, remove qualquer caractere que não seja número
+        return preg_replace('/[^0-9]/', '', $id);
     }
 
     /**
