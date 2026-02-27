@@ -1,4 +1,4 @@
-@extends('admin.layouts.app')
+@extends('layouts.app')
 
 @section('title', 'WhatsApp - Disparo em Massa')
 
@@ -9,7 +9,7 @@
             <h4 class="mb-0">Disparo em Massa (Broadcast)</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('whatsapp.chat') }}">WhatsApp</a></li>
                     <li class="breadcrumb-item active">Disparo</li>
                 </ol>

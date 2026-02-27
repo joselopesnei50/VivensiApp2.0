@@ -18,14 +18,20 @@ class WhatsappBroadcastController extends Controller
      */
     public function index()
     {
-        $tenantId = auth()->user()->tenant_id;
-        
+        $user = auth()->user();
+        $tenantId = $user->tenant_id;
+
+        if (!$tenantId) {
+            return redirect()->route('whatsapp.settings')
+                ->with('error', 'Configure a instância WhatsApp primeiro.');
+        }
+
         // Count contacts (chats)
         $contactsCount = WhatsappChat::where('tenant_id', $tenantId)->count();
-        
-        // Config info
-        $config = WhatsappConfig::firstOrCreate(['tenant_id' => $tenantId]);
-        
+
+        // Config info (never inserting with firstOrCreate here to avoid constraint errors)
+        $config = WhatsappConfig::where('tenant_id', $tenantId)->first();
+
         return view('admin.whatsapp.broadcast.index', compact('contactsCount', 'config'));
     }
 
