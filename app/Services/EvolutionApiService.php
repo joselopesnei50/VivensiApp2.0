@@ -234,23 +234,22 @@ class EvolutionApiService
 
         $payload = [
             'number' => $numericTo,
-            'text' => $renderedMessage
+            'text' => $renderedMessage,
+            'options' => [
+                'delay' => $delaySeconds > 0 ? $delaySeconds * 1000 : 0,
+                'presence' => 'composing',
+                'linkPreview' => false,
+                'checkContact' => false, // MUITO IMPORTANTE: Evita que a API tente validar se o número existe (o que causa erro no @lid)
+            ]
         ];
 
-        // Se tiver delay > 0, usar o recurso nativo da Evolution para simular digitação "composing"
-        if ($delaySeconds > 0) {
-            $payload['options'] = [
-                'delay' => $delaySeconds * 1000,
-                'presence' => 'composing'
-            ];
-        }
-
         try {
-            // Log detalhado do envio para diagnóstico (conforme solicitado pelo usuário)
-            Log::info('Evolution API Outbound Payload', [
+            // Log detalhado do envio para diagnóstico
+            Log::info('Evolution API Outbound Request', [
                 'instance' => $this->instanceName,
+                'target'   => $numericTo,
                 'url'      => "{$this->baseUrl}/message/sendText/{$this->instanceName}",
-                'payload'  => $payload,
+                'options'  => $payload['options']
             ]);
 
             $response = Http::retry(3, 200, function ($exception, $request) {
