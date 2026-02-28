@@ -56,7 +56,7 @@ class WhatsappOutboundPolicy
         }
 
         // 24h window: allow only replies within 24h of last inbound, unless template is allowed.
-        if (($config->enforce_24h_window ?? true)) {
+        if (($config->enforce_24h_window ?? true) && !$isAi) {
             $lastInbound = $chat->last_inbound_at;
             $windowOpen = $lastInbound ? $lastInbound->gt(now()->subHours(24)) : false;
 

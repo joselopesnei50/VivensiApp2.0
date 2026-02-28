@@ -56,7 +56,7 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $eventType = (string) ($this->payload['event'] ?? '');
 
         // Route to appropriate handler based on event type
-        match($eventType) {
+        match(strtolower($eventType)) {
             'messages.upsert' => $this->handleReceivedMessage($config),
             'messages.update' => $this->handleMessageUpdate($config), // Handles read/delivered
             'connection.update' => $this->handleConnectionUpdate($config),
