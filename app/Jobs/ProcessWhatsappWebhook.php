@@ -77,17 +77,18 @@ class ProcessWhatsappWebhook implements ShouldQueue
         
         $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
 
-        $remoteJid = (string) ($messageData['key']['remoteJid'] ?? '');
-        $sender    = (string) ($this->payload['sender'] ?? $messageData['sender'] ?? '');
-        $messageId = (string) ($messageData['key']['id'] ?? '');
+        $remoteJid  = (string) ($messageData['key']['remoteJid'] ?? '');
+        $participant = (string) ($messageData['key']['participant'] ?? $messageData['participant'] ?? '');
+        $messageId   = (string) ($messageData['key']['id'] ?? '');
 
-        // Melhorar resolução de JID para contas @lid (Linked ID)
-        // Se remoteJid é @lid (rejeitado por muitos endpoints de envio), mas temos um sender @s.whatsapp.net,
-        // usamos o sender como o wa_id para garantir que a resposta da IA seja entregue.
+        // Correção Crucial para contas @lid (Linked ID)
+        // O campo 'sender' no topo do payload da Evolution v2 é o JID da própria instância (o bot).
+        // Para responder com sucesso a um usuário @lid sem erro 400, precisamos do seu JID real (@s.whatsapp.net).
+        // Esse ID geralmente vem no campo 'participant' dentro do 'data'.
         $effectiveJid = $remoteJid;
-        if (str_contains($remoteJid, '@lid') && str_contains($sender, '@s.whatsapp.net')) {
-            $effectiveJid = $sender;
-            Log::info("WhatsApp account LID transition", ['from' => $remoteJid, 'to' => $sender]);
+        if (str_contains($remoteJid, '@lid') && str_contains($participant, '@s.whatsapp.net')) {
+            $effectiveJid = $participant;
+            Log::info("WhatsApp @lid JID resolved to participant", ['from' => $remoteJid, 'resolved_to' => $effectiveJid]);
         }
 
         // 1. Loop Prevention & Basic Validation
