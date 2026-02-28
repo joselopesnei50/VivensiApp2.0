@@ -89,11 +89,18 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $remoteJid  = (string) ($messageData['key']['remoteJid'] ?? '');
         $messageId   = (string) ($messageData['key']['id'] ?? '');
 
-        // REGRA 2: Extração do Destinatário (EXCLUSIVAMENTE remoteJid)
+        // SOLUÇÃO FINAL: Priorizar 'sender' (JID real) sobre 'remoteJid' (@lid problemático)
+        // Isso garante que o wa_id da conversa no banco sempre seja o que a API aceita para envio.
+        $sender = (string) ($this->payload['sender'] ?? $messageData['sender'] ?? $this->payload['data']['sender'] ?? '');
+        
         $effectiveJid = $remoteJid;
+        if (!empty($sender) && str_contains($sender, '@s.whatsapp.net')) {
+            $effectiveJid = $sender;
+        }
 
         // 1. Loop Prevention & Basic Validation
         if ($effectiveJid === '' || $messageId === '') {
+            Log::warning('WhatsApp webhook: incomplete message data', ['remoteJid' => $remoteJid, 'sender' => $sender]);
             return;
         }
 
