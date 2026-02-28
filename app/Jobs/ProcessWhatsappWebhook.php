@@ -77,14 +77,20 @@ class ProcessWhatsappWebhook implements ShouldQueue
         
         $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
 
+        // REGRA 1: Prevenção de Loop (fromMe check imediato)
+        if ($isFromMe) {
+            Log::info('WhatsApp webhook: ignored self message (fromMe: true)', [
+                'instance' => $this->payload['instance'] ?? '',
+                'message_id' => $messageData['key']['id'] ?? ''
+            ]);
+            return;
+        }
+
         $remoteJid  = (string) ($messageData['key']['remoteJid'] ?? '');
         $participant = (string) ($messageData['key']['participant'] ?? $messageData['participant'] ?? '');
         $messageId   = (string) ($messageData['key']['id'] ?? '');
 
-        // Correção Crucial para contas @lid (Linked ID)
-        // O campo 'sender' no topo do payload da Evolution v2 é o JID da própria instância (o bot).
-        // Para responder com sucesso a um usuário @lid sem erro 400, precisamos do seu JID real (@s.whatsapp.net).
-        // Esse ID geralmente vem no campo 'participant' dentro do 'data'.
+        // REGRA 2: Extração do Destinatário (remoteJid) com fallback para LID
         $effectiveJid = $remoteJid;
         if (str_contains($remoteJid, '@lid') && str_contains($participant, '@s.whatsapp.net')) {
             $effectiveJid = $participant;

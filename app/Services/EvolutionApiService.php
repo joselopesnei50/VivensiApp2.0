@@ -230,16 +230,19 @@ class EvolutionApiService
 
         // REGRA DE OURO: Para entrega garantida na Evolution v2, 
         // usamos o JID completo (@s.whatsapp.net ou @lid).
-        $targetJid = $this->formatJid($to);
+        // REGRA 3: Sanitização Numérica Estrita (Apenas números, sem @s.whatsapp.net ou @lid)
+        $cleanNumber = preg_replace('/[^0-9]/', '', $to);
 
         $payload = [
-            'number' => $targetJid,
-            'text' => $renderedMessage,
+            'number' => $cleanNumber,
             'options' => [
-                'delay' => $delaySeconds > 0 ? $delaySeconds * 1000 : 0,
+                'delay' => $delaySeconds > 0 ? $delaySeconds * 1000 : 1500, // Sugestão do usuário: 1.5s
                 'presence' => 'composing',
                 'linkPreview' => false,
-                'checkContact' => false, // MUITO IMPORTANTE: Evita que a API tente validar se o número existe (o que causa erro no @lid)
+                'checkContact' => false,
+            ],
+            'textMessage' => [
+                'text' => $renderedMessage
             ]
         ];
 
@@ -247,7 +250,7 @@ class EvolutionApiService
             // Log detalhado do envio para diagnóstico
             Log::info('Evolution API Outbound Request', [
                 'instance' => $this->instanceName,
-                'target'   => $targetJid,
+                'target'   => $cleanNumber,
                 'url'      => "{$this->baseUrl}/message/sendText/{$this->instanceName}",
                 'payload'  => $payload
             ]);
@@ -267,7 +270,7 @@ class EvolutionApiService
                 Log::error('Evolution API send failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
-                    'to' => $targetJid,
+                    'to' => $cleanNumber,
                     'instance' => $this->instanceName
                 ]);
 
@@ -311,12 +314,9 @@ class EvolutionApiService
      */
     public function formatJid(string $id): string
     {
-        if (str_contains($id, '@')) {
-            return trim($id);
-        }
-        
-        $numeric = preg_replace('/[^0-9]/', '', $id);
-        return $numeric . '@s.whatsapp.net';
+        // Conforme a Regra 3 do usuário, para envio na Evolution v2, 
+        // o campo 'number' deve conter apenas os dígitos puros.
+        return preg_replace('/[^0-9]/', '', $id);
     }
 
     /**
