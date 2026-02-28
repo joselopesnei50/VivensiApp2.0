@@ -78,11 +78,20 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
 
         $remoteJid = (string) ($messageData['key']['remoteJid'] ?? '');
+        $sender    = (string) ($this->payload['sender'] ?? $messageData['sender'] ?? '');
         $messageId = (string) ($messageData['key']['id'] ?? '');
 
+        // Melhorar resolução de JID para contas @lid (Linked ID)
+        // Se remoteJid é @lid (rejeitado por muitos endpoints de envio), mas temos um sender @s.whatsapp.net,
+        // usamos o sender como o wa_id para garantir que a resposta da IA seja entregue.
+        $effectiveJid = $remoteJid;
+        if (str_contains($remoteJid, '@lid') && str_contains($sender, '@s.whatsapp.net')) {
+            $effectiveJid = $sender;
+            Log::info("WhatsApp account LID transition", ['from' => $remoteJid, 'to' => $sender]);
+        }
+
         // 1. Loop Prevention & Basic Validation
-        // NO external API calls here. Webhook must be fast.
-        if ($remoteJid === '' || $messageId === '') {
+        if ($effectiveJid === '' || $messageId === '') {
             return;
         }
 
@@ -100,20 +109,28 @@ class ProcessWhatsappWebhook implements ShouldQueue
             $content = $messageObj['extendedTextMessage']['text'];
         }
 
-        // 2. Find or Create Chat
-        // We look for existing chat by JID or Number Prefix
+        // 2. Localizar ou criar conversa
+        // Buscamos pelo JID efetivo, pelo remoto original ou pelo prefixo numérico
         $chat = WhatsappChat::where('tenant_id', $tenantId)
-            ->where(function($q) use ($remoteJid, $phonePrefix) {
-                $q->where('wa_id', $remoteJid)
+            ->where(function($q) use ($effectiveJid, $remoteJid, $phonePrefix) {
+                $q->where('wa_id', $effectiveJid)
+                  ->orWhere('wa_id', $remoteJid)
                   ->orWhere('contact_phone', $phonePrefix)
                   ->orWhere('wa_id', $phonePrefix);
             })
             ->first();
 
-        if (!$chat) {
+        if ($chat) {
+            // Se o chat existia com @lid, mas agora temos o JID real (sender),
+            // atualizamos o wa_id para garantir que futuros envios usem o ID correto.
+            if ($chat->wa_id !== $effectiveJid) {
+                Log::info("Updating chat wa_id from LID to standard JID", ['chat_id' => $chat->id, 'old' => $chat->wa_id, 'new' => $effectiveJid]);
+                $chat->update(['wa_id' => $effectiveJid]);
+            }
+        } else {
             $chat = WhatsappChat::create([
                 'tenant_id' => $tenantId,
-                'wa_id' => $remoteJid,
+                'wa_id' => $effectiveJid,
                 'contact_name' => $messageData['pushName'] ?? 'Contato WhatsApp',
                 'contact_phone' => $phonePrefix,
                 'status' => 'open',
