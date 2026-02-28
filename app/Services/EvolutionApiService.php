@@ -262,7 +262,7 @@ class EvolutionApiService
             ->withHeaders([
                 'apikey' => $this->apiKey 
             ])
-            ->post("{$this->baseUrl}/message/send/text/{$this->instanceName}", $payload);
+            ->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
 
             if ($response->failed()) {
                 // REGRA 3: Forçar a Exposição do Erro
