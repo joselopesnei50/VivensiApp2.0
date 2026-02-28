@@ -247,7 +247,7 @@ class EvolutionApiService
             // Log detalhado do envio para diagnóstico
             Log::info('Evolution API Outbound Request', [
                 'instance' => $this->instanceName,
-                'target'   => $numericTo,
+                'target'   => $targetJid,
                 'url'      => "{$this->baseUrl}/message/sendText/{$this->instanceName}",
                 'payload'  => $payload
             ]);
@@ -267,7 +267,7 @@ class EvolutionApiService
                 Log::error('Evolution API send failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
-                    'to' => $numericTo,
+                    'to' => $targetJid,
                     'instance' => $this->instanceName
                 ]);
 
