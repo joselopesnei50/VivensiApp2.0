@@ -87,15 +87,10 @@ class ProcessWhatsappWebhook implements ShouldQueue
         }
 
         $remoteJid  = (string) ($messageData['key']['remoteJid'] ?? '');
-        $participant = (string) ($messageData['key']['participant'] ?? $messageData['participant'] ?? '');
         $messageId   = (string) ($messageData['key']['id'] ?? '');
 
-        // REGRA 2: Extração do Destinatário (remoteJid) com fallback para LID
+        // REGRA 2: Extração do Destinatário (EXCLUSIVAMENTE remoteJid)
         $effectiveJid = $remoteJid;
-        if (str_contains($remoteJid, '@lid') && str_contains($participant, '@s.whatsapp.net')) {
-            $effectiveJid = $participant;
-            Log::info("WhatsApp @lid JID resolved to participant", ['from' => $remoteJid, 'resolved_to' => $effectiveJid]);
-        }
 
         // 1. Loop Prevention & Basic Validation
         if ($effectiveJid === '' || $messageId === '') {

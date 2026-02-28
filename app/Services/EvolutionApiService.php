@@ -230,16 +230,16 @@ class EvolutionApiService
 
         // REGRA DE OURO: Para entrega garantida na Evolution v2, 
         // usamos o JID completo (@s.whatsapp.net ou @lid).
-        // REGRA 3: Sanitização Numérica Estrita (Apenas números, sem @s.whatsapp.net ou @lid)
+        // REGRA 3: Sanitização Numérica Estrita (Apenas números)
+        // O campo number na requisição de saída deve conter apenas os dígitos puros.
         $cleanNumber = preg_replace('/[^0-9]/', '', $to);
 
         $payload = [
             'number' => $cleanNumber,
             'options' => [
-                'delay' => $delaySeconds > 0 ? $delaySeconds * 1000 : 1500, // Sugestão do usuário: 1.5s
+                'delay' => $delaySeconds > 0 ? $delaySeconds * 1000 : 1500,
                 'presence' => 'composing',
                 'linkPreview' => false,
-                'checkContact' => false,
             ],
             'textMessage' => [
                 'text' => $renderedMessage
@@ -264,7 +264,7 @@ class EvolutionApiService
             ->withHeaders([
                 'apikey' => $this->apiKey 
             ])
-            ->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
+            ->post("{$this->baseUrl}/message/send/text/{$this->instanceName}", $payload);
 
             if ($response->failed()) {
                 Log::error('Evolution API send failed', [
