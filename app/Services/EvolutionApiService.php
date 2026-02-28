@@ -228,11 +228,9 @@ class EvolutionApiService
         // Processa o Spintax transformando {A|B} em apenas um dos itens
         $renderedMessage = $this->applySpintax($message);
 
-        // REGRA DE OURO: Para entrega garantida na Evolution v2, 
-        // usamos o JID completo (@s.whatsapp.net ou @lid).
-        // REGRA 3: Sanitização Numérica Estrita (Apenas números)
-        // O campo number na requisição de saída deve conter apenas os dígitos puros.
-        $cleanNumber = preg_replace('/[^0-9]/', '', $to);
+        // REGRA 2: Fidelidade do Número (9º Dígito)
+        // Pegamos a string numérica exatamente como o WhatsApp enviou.
+        $cleanNumber = explode('@', $to)[0];
 
         $payload = [
             'number' => $cleanNumber,
@@ -267,10 +265,11 @@ class EvolutionApiService
             ->post("{$this->baseUrl}/message/send/text/{$this->instanceName}", $payload);
 
             if ($response->failed()) {
-                Log::error('Evolution API send failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'to' => $cleanNumber,
+                // REGRA 3: Forçar a Exposição do Erro
+                Log::error('EVOLUTION API REJEITOU O ENVIO', [
+                    'status_code'   => $response->status(),
+                    'response_body' => $response->json() ?? $response->body(),
+                    'payload_enviado' => $payload,
                     'instance' => $this->instanceName
                 ]);
 
@@ -281,7 +280,8 @@ class EvolutionApiService
                 ];
             }
 
-            Log::debug('Evolution API response success', ['body' => $response->json()]);
+            // Log de sucesso conforme o padrão solicitado
+            Log::info('EVOLUTION API ACEITOU O ENVIO', ['response' => $response->json()]);
             return $response->json();
 
         } catch (\Exception $e) {
