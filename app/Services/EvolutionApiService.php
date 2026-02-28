@@ -229,11 +229,11 @@ class EvolutionApiService
         $renderedMessage = $this->applySpintax($message);
 
         // REGRA DE OURO: Para entrega garantida na Evolution v2, 
-        // usamos apenas os dígitos numéricos (sem @lid, sem @s.whatsapp.net).
-        $numericTo = $this->normalizeToNumeric($to);
+        // usamos o JID completo (@s.whatsapp.net ou @lid).
+        $targetJid = $this->formatJid($to);
 
         $payload = [
-            'number' => $numericTo,
+            'number' => $targetJid,
             'text' => $renderedMessage,
             'options' => [
                 'delay' => $delaySeconds > 0 ? $delaySeconds * 1000 : 0,
@@ -249,7 +249,7 @@ class EvolutionApiService
                 'instance' => $this->instanceName,
                 'target'   => $numericTo,
                 'url'      => "{$this->baseUrl}/message/sendText/{$this->instanceName}",
-                'options'  => $payload['options']
+                'payload'  => $payload
             ]);
 
             $response = Http::retry(3, 200, function ($exception, $request) {
@@ -268,6 +268,7 @@ class EvolutionApiService
                     'status' => $response->status(),
                     'body' => $response->body(),
                     'to' => $numericTo,
+                    'instance' => $this->instanceName
                 ]);
 
                 return [
@@ -277,11 +278,13 @@ class EvolutionApiService
                 ];
             }
 
+            Log::debug('Evolution API response success', ['body' => $response->json()]);
             return $response->json();
 
         } catch (\Exception $e) {
             Log::error('Evolution API exception', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return ['error' => 'Exception: ' . $e->getMessage()];
@@ -302,19 +305,18 @@ class EvolutionApiService
     }
 
     /**
-     * Normaliza um JID ou LID. 
-     * Se já for um JID completo (contém @), retorna como está.
-     * Caso contrário, remove não-numéricos.
+     * Garante que o ID seja um JID válido.
+     * Se não tiver @, adiciona @s.whatsapp.net. 
+     * Se tiver, remove espaços/caracteres inválidos mantendo o sufixo.
      */
-    public function normalizeToNumeric(string $id): string
+    public function formatJid(string $id): string
     {
-        // Se já tem @ (ex: @lid, @s.whatsapp.net, @g.us), não mexemos
         if (str_contains($id, '@')) {
-            return $id;
+            return trim($id);
         }
         
-        // Caso contrário, remove qualquer caractere que não seja número
-        return preg_replace('/[^0-9]/', '', $id);
+        $numeric = preg_replace('/[^0-9]/', '', $id);
+        return $numeric . '@s.whatsapp.net';
     }
 
     /**
