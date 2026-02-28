@@ -311,6 +311,12 @@ class EvolutionApiService
      */
     public function formatJid(string $id): string
     {
+        // Se for @lid, a Evolution V2 às vezes rejeita o JID completo no campo 'number',
+        // exigindo apenas a parte numérica. 
+        if (str_contains($id, '@lid')) {
+            return preg_replace('/[^0-9]/', '', $id);
+        }
+
         if (str_contains($id, '@')) {
             return trim($id);
         }
