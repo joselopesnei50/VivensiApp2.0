@@ -89,21 +89,15 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $remoteJid  = (string) ($messageData['key']['remoteJid'] ?? '');
         $messageId   = (string) ($messageData['key']['id'] ?? '');
 
-        // REGRA DE ARQUITETO SÊNIOR: Priorizar 'sender' para evitar o buraco negro do @lid.
-        // O campo 'sender' costuma conter o JID real (@s.whatsapp.net), mesmo quando 'remoteJid' é @lid.
-        $senderFromPayload = (string) ($this->payload['sender'] ?? $messageData['sender'] ?? '');
-        
+        // REGRA DE OURO: O remoteJid É O CHAT. Mesmo que seja @lid (identidade oculta),
+        // é para lá que a resposta deve ir. NUNCA use o 'sender' como alvo de resposta
+        // em mensagens privadas, pois o sender pode ser o próprio BOT (loop).
         $effectiveJid = $remoteJid;
-        
-        // Se o sender for um JID real do WhatsApp, use-o como destinatário da resposta.
-        if (str_contains($senderFromPayload, '@s.whatsapp.net')) {
-            $effectiveJid = $senderFromPayload;
-            Log::info('WhatsApp Webhook: Priorizando sender real sobre remoteJid', ['original' => $remoteJid, 'real' => $senderFromPayload]);
-        }
+        $sender = (string) ($this->payload['sender'] ?? $messageData['sender'] ?? '');
 
         // 1. Loop Prevention & Basic Validation
         if ($effectiveJid === '' || $messageId === '') {
-            Log::warning('WhatsApp webhook: incomplete message data', ['remoteJid' => $remoteJid, 'sender' => $senderFromPayload]);
+            Log::warning('WhatsApp webhook: incomplete message data', ['remoteJid' => $remoteJid, 'sender' => $sender]);
             return;
         }
 
