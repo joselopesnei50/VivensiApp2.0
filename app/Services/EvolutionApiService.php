@@ -232,16 +232,13 @@ class EvolutionApiService
         // Pegamos a string numérica exatamente como o WhatsApp enviou.
         $cleanNumber = explode('@', $to)[0];
 
+        // SOLUÇÃO DEFINITIVA (Baseada no Código-Fonte da Evolution API):
+        // O código da sua Evolution espera um payload PLANO para sendText.
         $payload = [
             'number' => $cleanNumber,
-            'options' => [
-                'delay' => $delaySeconds > 0 ? $delaySeconds * 1000 : 1500,
-                'presence' => 'composing',
-                'linkPreview' => false,
-            ],
-            'textMessage' => [
-                'text' => $renderedMessage
-            ]
+            'text'   => $renderedMessage,
+            'delay'  => $delaySeconds > 0 ? $delaySeconds * 1000 : 1500,
+            'linkPreview' => false,
         ];
 
         try {
