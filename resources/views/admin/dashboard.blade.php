@@ -60,15 +60,6 @@
         </div>
     </div>
 
-    <div class="col">
-        <a href="{{ url('/whatsapp/chat') }}" style="text-decoration: none;">
-            <div class="vivensi-card" style="padding: 30px; border-left: 5px solid #25d366; border-radius: 24px; background: #f0fdf4; border-top: none; border-right: none; border-bottom: none; transition: all 0.3s;">
-                <span style="font-size: 0.65rem; color: #166534; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;">WhatsApp AI</span>
-                <div style="font-size: 1.5rem; font-weight: 900; color: #1e293b; margin: 10px 0; letter-spacing: -0.5px;">Atendimento</div>
-                <div style="font-size: 0.7rem; color: #15803d; font-weight: 900; text-transform: uppercase;">Central CRM <i class="fas fa-arrow-right ms-1"></i></div>
-            </div>
-        </a>
-    </div>
 </div>
 
 <div class="row g-4 mb-5">
@@ -134,9 +125,9 @@
                                 </span>
                             </td>
                             <td style="padding: 20px 30px; text-align: center;">
-                                <a href="https://wa.me/{{ $user->phone ?? '5581999999999' }}?text=Olá {{ explode(' ', $user->name)[0] }}! Analisamos seu uso no Vivensi e notamos que você está inativo. Como podemos otimizar sua experiência?" target="_blank" 
-                                   class="btn btn-sm" style="background: #25d366; color: white; border-radius: 12px; font-weight: 800; padding: 10px 18px; font-size: 0.75rem;">
-                                    <i class="fab fa-whatsapp me-2"></i> RECUPERAR
+                                <a href="mailto:{{ $user->email }}" 
+                                   class="btn btn-sm" style="background: #6366f1; color: white; border-radius: 12px; font-weight: 800; padding: 10px 18px; font-size: 0.75rem;">
+                                    <i class="fas fa-envelope me-2"></i> NOTIFICAR
                                 </a>
                             </td>
                         </tr>

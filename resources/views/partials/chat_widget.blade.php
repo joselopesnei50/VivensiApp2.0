@@ -45,13 +45,6 @@
             </a>
         </div>
 
-        <!-- Support/WhatsApp -->
-        <div class="dock-item" style="display: flex; align-items: center; gap: 10px;">
-            <span class="dock-label" style="background: #1e293b; color: white; padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; opacity: 0; transition: opacity 0.2s;">Suporte</span>
-            <button style="width: 50px; height: 50px; border-radius: 50%; background: #22c55e; color: white; border: none; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3); cursor: pointer;">
-                <i class="fab fa-whatsapp"></i>
-            </button>
-        </div>
 
     </div>
 

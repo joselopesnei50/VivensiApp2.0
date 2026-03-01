@@ -63,12 +63,6 @@
         <ul>
             <li><a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}"><i class="fas fa-home"></i> Visão Geral</a></li>
             
-            @if (in_array(auth()->user()->role, ['manager', 'ngo']))
-                {{-- WhatsApp AI - Disponível apenas para manager e ngo (requer tenant_id) --}}
-                <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Atendimento AI</a></li>
-                <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->routeIs('whatsapp.broadcast.*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
-                <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Configurar Robô</a></li>
-            @endif
             
             {{-- Academy Access removed from global and moved to specific roles below --}}            
             @if (auth()->user()->role == 'super_admin')
