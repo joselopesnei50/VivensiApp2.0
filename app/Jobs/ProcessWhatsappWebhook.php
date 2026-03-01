@@ -76,35 +76,31 @@ class ProcessWhatsappWebhook implements ShouldQueue
         $messageData = $this->payload['data'] ?? [];
         
         $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
-
-        // REGRA 1: Prevenção de Loop (Bot não responde a si mesmo)
-        if ($isFromMe) {
-            Log::info('WhatsApp webhook: ignored self message (fromMe: true)', [
-                'instance' => $this->payload['instance'] ?? '',
-                'message_id' => $messageData['key']['id'] ?? ''
-            ]);
-            return;
-        }
-
-        // BLOQUEIO EXTRA: Se o sender for igual ao remoteJid em um chat privado, 
-        // e não tivermos o flag fromMe, pode ser o bot falando com ele mesmo (secondary device).
         $sender = (string) ($this->payload['sender'] ?? $messageData['sender'] ?? '');
         $remoteJid = (string) ($messageData['key']['remoteJid'] ?? '');
-        if ($sender !== '' && $sender === $remoteJid) {
-            Log::info('WhatsApp webhook: ignored potential self-message (sender == remoteJid)', ['sender' => $sender]);
+
+        // 1. BLOQUEIO DE IDENTIDADE (Bot Protegido contra si mesmo)
+        // Se a mensagem é fromMe, o 'sender' é o PRÓPRIO NÚMERO DO BOT.
+        // Vamos guardar esse número para NUNCA mais responder a ele.
+        if ($isFromMe && $sender !== '') {
+            if ($config->instance_id !== $sender) {
+                $config->update(['instance_id' => $sender]); 
+                Log::info('WhatsApp: Identificado ID oficial do Bot', ['bot_jid' => $sender]);
+            }
+            return; // Bot ignorando a si mesmo
+        }
+
+        // Se o remetente da mensagem for o ID conhecido do bot, ABORTA IMEDIATAMENTE.
+        if ($sender !== '' && $sender === $config->instance_id) {
+            Log::warning('WhatsApp: Loop detectado e bloqueado (sender é o Bot)', ['sender' => $sender]);
             return;
         }
 
-        $remoteJid  = (string) ($messageData['key']['remoteJid'] ?? '');
+        // 2. REGRA DE OURO DA JID: O remoteJid É O CHAT. 
+        // Para a Evolution API entregar mensagens @lid, precisamos enviar o JID COMPLETO.
+        $effectiveJid = $remoteJid;
         $messageId   = (string) ($messageData['key']['id'] ?? '');
 
-        // REGRA DE OURO: O remoteJid É O CHAT. Mesmo que seja @lid (identidade oculta),
-        // é para lá que a resposta deve ir. NUNCA use o 'sender' como alvo de resposta
-        // em mensagens privadas, pois o sender pode ser o próprio BOT (loop).
-        $effectiveJid = $remoteJid;
-        $sender = (string) ($this->payload['sender'] ?? $messageData['sender'] ?? '');
-
-        // 1. Loop Prevention & Basic Validation
         if ($effectiveJid === '' || $messageId === '') {
             Log::warning('WhatsApp webhook: incomplete message data', ['remoteJid' => $remoteJid, 'sender' => $sender]);
             return;

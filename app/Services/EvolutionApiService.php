@@ -225,17 +225,18 @@ class EvolutionApiService
             return ['error' => 'Evolution API Configuration Missing'];
         }
 
+        // REGRA DEFINITIVA: NÃO limpe o JID. 
+        // A Evolution API (createJid.ts) precisa do sufixo (@s.whatsapp.net ou @lid)
+        // para encontrar o contato correto. Limpar o número causa erro 404 ou mensagem fantasma.
+        $number = (string) $to;
+
         // Processa o Spintax transformando {A|B} em apenas um dos itens
         $renderedMessage = $this->applySpintax($message);
-
-        // REGRA 2: Fidelidade do Número (9º Dígito)
-        // Pegamos a string numérica exatamente como o WhatsApp enviou.
-        $cleanNumber = explode('@', $to)[0];
 
         // SOLUÇÃO DEFINITIVA (Baseada no Código-Fonte da Evolution API):
         // O código da sua Evolution espera um payload PLANO para sendText.
         $payload = [
-            'number' => $cleanNumber,
+            'number' => $number,
             'text'   => $renderedMessage,
             'delay'  => $delaySeconds > 0 ? $delaySeconds * 1000 : 1500,
             'linkPreview' => false,
