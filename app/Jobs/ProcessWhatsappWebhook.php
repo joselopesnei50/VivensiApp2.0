@@ -77,12 +77,21 @@ class ProcessWhatsappWebhook implements ShouldQueue
         
         $isFromMe = ($messageData['key']['fromMe'] ?? false) === true;
 
-        // REGRA 1: Prevenção de Loop (fromMe check imediato)
+        // REGRA 1: Prevenção de Loop (Bot não responde a si mesmo)
         if ($isFromMe) {
             Log::info('WhatsApp webhook: ignored self message (fromMe: true)', [
                 'instance' => $this->payload['instance'] ?? '',
                 'message_id' => $messageData['key']['id'] ?? ''
             ]);
+            return;
+        }
+
+        // BLOQUEIO EXTRA: Se o sender for igual ao remoteJid em um chat privado, 
+        // e não tivermos o flag fromMe, pode ser o bot falando com ele mesmo (secondary device).
+        $sender = (string) ($this->payload['sender'] ?? $messageData['sender'] ?? '');
+        $remoteJid = (string) ($messageData['key']['remoteJid'] ?? '');
+        if ($sender !== '' && $sender === $remoteJid) {
+            Log::info('WhatsApp webhook: ignored potential self-message (sender == remoteJid)', ['sender' => $sender]);
             return;
         }
 
