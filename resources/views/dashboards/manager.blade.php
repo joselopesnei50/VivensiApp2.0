@@ -97,7 +97,7 @@
         
         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 50px;">
             <div>
-                <h1 style="font-size: 4rem; font-weight: 950; margin: 0; letter-spacing: -3px; line-height: 0.9;">Centro de Comando</h1>
+                <h1 style="font-size: 4rem; font-weight: 950; margin: 0; letter-spacing: -3px; line-height: 0.9; color: white;">Centro de Comando</h1>
                 <p style="margin: 20px 0 0 0; color: rgba(255,255,255,0.5); font-size: 1.2rem; font-weight: 500; max-width: 600px;">
                     Visão estratégica consolidada do seu portfólio de impacto e execução de alta performance.
                 </p>
