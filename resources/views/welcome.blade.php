@@ -257,7 +257,7 @@
         .footer-brand { color: white; font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; display: block; }
 
         @media (max-width: 768px) {
-            .hero { grid-template-columns: 1fr; text-align: center; padding-top: 120px; }
+            .hero { grid-template-columns: 1fr; text-align: center; padding-top: 100px; }
             .hero-content p { margin: 0 auto 40px; }
             .nav-links { display: none; }
             .price-card.featured { transform: scale(1); }
@@ -429,12 +429,7 @@
                 </div>
 
                 <div class="hero-trust">
-                    <div class="avatars">
-                        <img src="https://i.pravatar.cc/100?img=12" alt="Hub 1">
-                        <img src="https://i.pravatar.cc/100?img=11" alt="Hub 2">
-                        <img src="https://i.pravatar.cc/100?img=32" alt="Hub 3">
-                    </div>
-                    <span style="color: #64748B;">Líder em <strong>Gestão de Terceiro Setor</strong></span>
+                    <span style="color: #64748B;"><i class="fas fa-award" style="color: #F59E0B; margin-right: 8px;"></i> Líder em <strong>Gestão de Terceiro Setor</strong></span>
                 </div>
             </div>
 
@@ -523,7 +518,7 @@
         /* High-End Hero v2.0 - Tech + Impact Professional Aesthetic */
         .hero-m3 {
             position: relative;
-            padding: 140px 5% 160px;
+            padding: 80px 5% 120px;
             overflow: hidden;
             background: #0F172A; /* Deep Slate for High Contrast/Tech feel */
             color: white;
@@ -1313,7 +1308,7 @@
     </footer>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/5516988392853?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Vivensi%20SaaS." class="whatsapp-float" target="_blank">
+    <a href="https://wa.me/5516997618695?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Vivensi%20SaaS." class="whatsapp-float" target="_blank">
         <i class="fab fa-whatsapp my-float"></i>
         <span class="whatsapp-text">Fale Conosco</span>
     </a>
