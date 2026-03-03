@@ -56,7 +56,7 @@
 <aside class="sidebar">
     <div class="sidebar-header" style="justify-content: center;">
         <a href="{{ url('/dashboard') }}" class="logo">
-            <img src="{{ asset('img/logovivensi.png') }}" alt="VIVENSI" style="max-width: 180px; height: auto;">
+            <x-application-logo style="max-width: 180px; height: auto;" />
         </a>
     </div>
     <nav class="sidebar-menu">

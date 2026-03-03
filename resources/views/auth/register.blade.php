@@ -36,7 +36,7 @@
 
 <div class="register-card">
     <div class="brand-logo">
-        <img src="{{ asset('img/logovivensi.png') }}" alt="VIVENSI">
+        <x-application-logo style="max-height: 50px; width: auto;" />
     </div>
     <h2 style="text-align: center; color: #1e293b; margin-bottom: 10px;">Comece sua Jornada</h2>
     <p style="text-align: center; color: #64748B; margin-bottom: 30px;">Crie sua organização e comece a gerir com inteligência.</p>

@@ -154,7 +154,7 @@
     <!-- Navbar -->
     <nav class="navbar">
         <a href="{{ url('/') }}" class="logo">
-            <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Logo" style="height: 40px;">
+            <x-application-logo style="height: 40px; width: auto;" />
         </a>
         <div class="nav-links">
             <a href="{{ route('solutions.ngo') }}" style="color: var(--primary);">ONGs</a>
@@ -270,7 +270,7 @@
         <div class="footer-grid">
             <div>
                 <a href="{{ url('/') }}" class="logo" style="margin-bottom: 20px;">
-                    <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Logo" style="height: 35px; filter: brightness(0) invert(1);">
+                    <x-application-logo style="height: 35px; width: auto; filter: brightness(0) invert(1);" />
                 </a>
                 <p>Tecnologia para quem transforma o mundo.</p>
             </div>

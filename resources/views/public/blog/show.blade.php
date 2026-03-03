@@ -14,7 +14,7 @@
                 {{ $post->title }}
             </h1>
             <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Author" style="height: 30px; opacity: 0.8;">
+                <x-application-logo style="height: 30px; width: auto; opacity: 0.8;" />
                 <span style="color: var(--text-light); font-weight: 600;">Equipe Vivensi</span>
             </div>
         </div>

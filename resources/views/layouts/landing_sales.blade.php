@@ -162,7 +162,7 @@
 
     <nav class="navbar">
         <a href="{{ url('/') }}" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
-            <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Logo" style="height: 35px;">
+            <x-application-logo style="height: 35px; width: auto;" />
         </a>
         <div style="display: flex; gap: 20px; align-items: center;">
             <div style="display: flex; gap: 10px; margin-right: 15px; font-size: 0.9rem;">
@@ -179,7 +179,7 @@
 
     <footer>
         <div style="margin-bottom: 30px;">
-            <img src="{{ asset('img/logovivensi.png') }}" style="height: 35px; filter: brightness(0) invert(1);">
+            <x-application-logo style="height: 35px; width: auto; filter: brightness(0) invert(1);" />
         </div>
         <p style="color: #94a3b8; font-size: 0.9rem;">&copy; {{ date('Y') }} Vivensi App. Todos os direitos reservados. Orgulhosamente Brasileiro 🇧🇷</p>
     </footer>

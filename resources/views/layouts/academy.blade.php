@@ -120,7 +120,7 @@
     <!-- Top Navigation -->
     <nav class="academy-navbar">
         <a href="{{ route('academy.index') }}" class="academy-logo">
-            <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Academy">
+            <x-application-logo style="height: 40px; width: auto; filter: brightness(0) invert(1);" />
         </a>
         
         <div class="academy-nav-links">

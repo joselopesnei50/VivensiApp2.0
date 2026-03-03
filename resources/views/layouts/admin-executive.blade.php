@@ -29,7 +29,7 @@
 <!-- Sidebar -->
 <aside class="executive-sidebar" id="executiveSidebar">
     <div class="sidebar-header">
-        <img src="{{ asset('img/logovivensi.png') }}" alt="VIVENSI" class="sidebar-logo">
+        <x-application-logo class="sidebar-logo" style="width: auto;" />
         <span class="sidebar-title">VIVENSI</span>
     </div>
     

@@ -280,7 +280,7 @@
     <!-- Navbar -->
     <nav class="navbar">
         <a href="{{ url('/') }}" class="logo">
-            <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Logo" style="height: 40px;">
+            <x-application-logo style="height: 40px; width: auto;" />
         </a>
 
         <!-- Mobile Menu Button -->
@@ -391,115 +391,142 @@
         }
     </script>
 
-    <!-- Hero Material 3 -->
+    <!-- Hero Section (Premium High-End Refactor) -->
     <section class="hero-m3" id="hero">
         <div class="hero-m3-bg">
             <div class="blob blob-1"></div>
             <div class="blob blob-2"></div>
-            <div class="blob blob-3"></div>
-            <div class="blob blob-accent"></div>
         </div>
 
         <div class="hero-m3-grid">
             <!-- Content Layer -->
             <div class="hero-m3-content">
-                <div class="m3-badge fade-up" style="animation-delay: 0.1s">
-                    <i class="fas fa-sparkles"></i> 
-                    <span>Gestão Inteligente v2.0</span>
+                <div class="m3-badge">
+                    <i class="fas fa-microchip"></i> 
+                    <span>Vivensi Intelligence v2.0</span>
                 </div>
                 
-                <h1 class="hero-display fade-up" style="animation-delay: 0.2s">
-                    Transforme sua <br>
-                    <span class="gradient-text">visão de mundo</span> <br>
-                    em realidade.
+                <h1 class="hero-display">
+                    <span class="line line-1">Escalando o</span> 
+                    <span class="line line-2 gradient-text">Impacto Social</span> 
+                    <span class="line line-3">com tecnologia.</span>
                 </h1>
                 
-                <p class="hero-body fade-up" style="animation-delay: 0.3s">
-                    A plataforma definitiva que une ONGs, Gestores e Finanças Pessoais. 
-                    Simples, transparente e impulsionada por IA.
+                <p class="hero-body">
+                    A plataforma definitiva que integra ONGs, Gestores e comunidades através de IA. 
+                    Transforme dados em mudança real com máxima transparência.
                 </p>
 
-                <div class="hero-actions fade-up" style="animation-delay: 0.4s">
+                <div class="hero-actions">
                     <a href="{{ route('register') }}" class="btn-m3-primary">
                         Começar Agora
                         <i class="fas fa-arrow-right"></i>
                     </a>
-                    <a href="#demo" class="btn-m3-tonal">
-                        <i class="fas fa-play"></i>
-                        Ver Demo (1 min)
+                    <a href="#pricing" class="btn-m3-tonal">
+                        Ver Planos
+                        <i class="fas fa-external-link-alt" style="font-size: 0.8rem; opacity: 0.6;"></i>
                     </a>
                 </div>
 
-                <div class="hero-trust fade-up" style="animation-delay: 0.5s">
+                <div class="hero-trust">
                     <div class="avatars">
-                        <img src="https://i.pravatar.cc/100?img=1" alt="">
-                        <img src="https://i.pravatar.cc/100?img=5" alt="">
-                        <img src="https://i.pravatar.cc/100?img=8" alt="">
+                        <img src="https://i.pravatar.cc/100?img=12" alt="Hub 1">
+                        <img src="https://i.pravatar.cc/100?img=11" alt="Hub 2">
+                        <img src="https://i.pravatar.cc/100?img=32" alt="Hub 3">
                     </div>
-                    <span>Junte-se a <strong>500+ inovadores</strong></span>
+                    <span style="color: #64748B;">Líder em <strong>Gestão de Terceiro Setor</strong></span>
                 </div>
             </div>
 
-            <!-- Visual Layer (Parallax) -->
-            <div class="hero-m3-visual" id="parallaxScene">
-                <!-- Base Card -->
-                <div class="visual-card main-card" data-speed="20">
-                    <div class="card-header">
-                        <div class="card-dot red"></div>
-                        <div class="card-dot yellow"></div>
-                        <div class="card-dot green"></div>
-                    </div>
-                    <div class="card-body-mock">
-                        <div class="mock-row shimer" style="width: 70%"></div>
-                        <div class="mock-row shimer" style="width: 90%; height: 120px; margin-top: 20px"></div>
-                        <div class="mock-row" style="display: flex; gap: 10px; margin-top: 20px">
-                            <div class="shimer" style="flex: 1; height: 80px"></div>
-                            <div class="shimer" style="flex: 1; height: 80px"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Floating Badge 1 -->
-                    <div class="float-badge success" data-speed="40" style="top: -20px; right: -20px;">
-                        <div class="icon-box"><i class="fas fa-arrow-up"></i></div>
-                        <div>
-                            <div class="label">Receita</div>
-                            <div class="value">+24%</div>
-                        </div>
-                    </div>
+            <!-- Professional Tech Scene -->
+            <div class="hero-m3-scene">
+                <svg class="svg-professional" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gradBuilding" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.2" />
+                            <stop offset="100%" stop-color="#6366F1" stop-opacity="0.05" />
+                        </linearGradient>
+                        <linearGradient id="gradAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#818CF8" stop-opacity="0.3" />
+                            <stop offset="100%" stop-color="#C084FC" stop-opacity="0.1" />
+                        </linearGradient>
+                    </defs>
 
-                    <!-- Floating Badge 2 -->
-                    <div class="float-badge info" data-speed="60" style="bottom: 40px; left: -40px;">
-                        <div class="user-pill">
-                            <img src="https://i.pravatar.cc/100?img=12" alt="">
-                            <span>Novo Doador</span>
-                        </div>
-                    </div>
+                    <!-- Background Blueprint Layer (Digital Skeleton) -->
+                    <g class="layer-back">
+                        <path class="blueprint-path" d="M100 500 H700" />
+                        <path class="blueprint-path" d="M200 500 V200 H350 V500" />
+                        <path class="blueprint-path" d="M400 500 V100 H550 V500" />
+                        <path class="blueprint-path" d="M350 300 H400" />
+                        <circle cx="200" cy="500" r="3" fill="#4F46E5" fill-opacity="0.5" />
+                        <circle cx="700" cy="500" r="3" fill="#4F46E5" fill-opacity="0.5" />
+                    </g>
 
-                    <!-- Floating Icons (New Premium Touch) -->
-                    <div class="float-icon icon-1" data-speed="-30" style="top: -60px; left: 20px;">
-                        <i class="fas fa-robot" style="color: #6366f1;"></i>
-                    </div>
-                    <div class="float-icon icon-2" data-speed="45" style="top: 100px; right: -50px;">
-                        <i class="fab fa-whatsapp" style="color: #22c55e;"></i>
-                    </div>
-                    <div class="float-icon icon-3" data-speed="-20" style="bottom: -30px; right: 40px;">
-                        <i class="fas fa-comment-dots" style="color: #ec4899;"></i>
-                    </div>
-                </div>
+                    <!-- Mid Layer (The Hubs/Buildings) -->
+                    <g class="layer-mid">
+                        <!-- Institutional Building 1 -->
+                        <g class="building-surface" style="animation-delay: 2s">
+                            <rect x="180" y="240" width="160" height="260" rx="4" fill="url(#gradBuilding)" stroke="rgba(255,255,255,0.1)"/>
+                            <rect x="200" y="270" width="30" height="30" rx="2" fill="white" fill-opacity="0.05"/>
+                            <rect x="245" y="270" width="30" height="30" rx="2" fill="white" fill-opacity="0.05"/>
+                            <rect x="290" y="270" width="30" height="30" rx="2" fill="white" fill-opacity="0.05"/>
+                        </g>
+                        
+                        <!-- Tech Tower (IA Center) -->
+                        <g class="building-surface" style="animation-delay: 2.3s">
+                            <rect x="380" y="140" width="140" height="360" rx="4" fill="rgba(79, 70, 229, 0.1)" stroke="rgba(129, 140, 248, 0.4)"/>
+                            <path d="M380 140 L520 140 L450 100 Z" fill="#818CF8" fill-opacity="0.2"/>
+                            <rect x="440" y="160" width="20" height="300" rx="2" fill="#818CF8" fill-opacity="0.1"/>
+                        </g>
 
-                <!-- Abstract Decor -->
-                <div class="abstract-shape shape-1" data-speed="-15"></div>
+                        <!-- Impact House -->
+                        <g class="building-surface" style="animation-delay: 2.6s">
+                            <rect x="560" y="380" width="120" height="120" rx="6" fill="url(#gradAccent)" stroke="rgba(192, 132, 252, 0.2)"/>
+                            <path d="M550 380 L690 380 L620 340 Z" fill="#C084FC" fill-opacity="0.2"/>
+                        </g>
+                    </g>
+
+                    <!-- Interaction Layer (Data Streams & IA Nodes) -->
+                    <g class="layer-front">
+                        <!-- Data Streams -->
+                        <path class="data-stream" d="M260 400 C400 400 450 200 450 150" fill="none" />
+                        <path class="data-stream" d="M450 450 C450 450 620 450 620 400" fill="none" />
+                        
+                        <!-- IA Nodes (Pulsing Intelligene) -->
+                        <circle class="node-pulse" cx="260" cy="400" r="6" style="animation-delay: 0s" />
+                        <circle class="node-pulse" cx="450" cy="150" r="8" style="animation-delay: 1s" />
+                        <circle class="node-pulse" cx="620" cy="400" r="6" style="animation-delay: 2s" />
+                        <circle class="node-pulse" cx="450" cy="450" r="4" style="animation-delay: 0.5s" />
+
+                        <!-- Community Silhouettes (Connected Impact) -->
+                        <g class="building-surface" style="animation-delay: 3s">
+                            <circle cx="260" cy="430" r="15" fill="white" fill-opacity="0.1" /> <!-- Person Represented by data -->
+                            <circle cx="620" cy="430" r="15" fill="white" fill-opacity="0.1" />
+                        </g>
+                    </g>
+
+                    <!-- Ambient Particles -->
+                    <g opacity="0.4">
+                        <circle cx="200" cy="100" r="2" fill="#818CF8">
+                            <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx="600" cy="200" r="2" fill="#C084FC">
+                            <animate attributeName="opacity" values="0;1;0" dur="5s" repeatCount="indefinite" />
+                        </circle>
+                    </g>
+                </svg>
             </div>
         </div>
     </section>
 
     <style>
-        /* Hero M3 Styles */
+        /* High-End Hero v2.0 - Tech + Impact Professional Aesthetic */
         .hero-m3 {
             position: relative;
-            padding: 80px 5% 100px; /* Reduced top padding significantly */
+            padding: 140px 5% 160px;
             overflow: hidden;
-            background: #F8FAFC;
+            background: #0F172A; /* Deep Slate for High Contrast/Tech feel */
+            color: white;
         }
 
         .hero-m3-bg {
@@ -509,270 +536,241 @@
             width: 100%;
             height: 100%;
             z-index: 0;
-            opacity: 0.6;
+            opacity: 0.4;
             pointer-events: none;
+            background: radial-gradient(circle at 70% 30%, rgba(79, 70, 229, 0.15) 0%, transparent 60%);
         }
 
         .blob {
             position: absolute;
-            filter: blur(80px);
-            opacity: 0.8;
+            filter: blur(120px);
+            opacity: 0.3;
             border-radius: 50%;
-            animation: floatBlob 10s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            animation: floatBlob 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .blob-1 { top: -10%; right: -5%; width: 600px; height: 600px; background: #C7D2FE; animation-duration: 25s; opacity: 0.4; }
-        .blob-2 { bottom: -10%; left: -10%; width: 500px; height: 500px; background: #E9D5FF; animation-duration: 30s; opacity: 0.4; }
-        .blob-3 { top: 40%; right: 30%; width: 300px; height: 300px; background: #BAE6FD; animation-duration: 20s; opacity: 0.4; }
-        .blob-accent { top: 10%; left: 15%; width: 500px; height: 500px; background: radial-gradient(circle, var(--primary) 0%, transparent 70%); opacity: 0.15; animation-duration: 18s; z-index: 1; }
+        .blob-1 { top: -20%; right: -10%; width: 800px; height: 800px; background: #6366F1; }
+        .blob-2 { bottom: -20%; left: -10%; width: 600px; height: 600px; background: #8B5CF6; animation-delay: -5s; }
 
         @keyframes floatBlob {
             0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, -50px) scale(1.1); }
+            100% { transform: translate(60px, -80px) scale(1.15); }
         }
 
         .hero-m3-grid {
             position: relative;
-            z-index: 1;
+            z-index: 2;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1.15fr 0.85fr;
             gap: 80px;
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
             align-items: center;
         }
 
-        /* Typography */
+        /* Premium Typography */
         .m3-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
-            background: white;
-            border: 1px solid #E2E8F0;
+            gap: 10px;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             border-radius: 100px;
-            color: var(--primary);
+            color: #818CF8;
             font-weight: 700;
-            font-size: 0.85rem;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: simpleFade 0.6s ease-out forwards 0.2s;
         }
 
         .hero-display {
-            font-size: 4rem;
-            line-height: 1.1;
+            font-size: 4.5rem;
+            line-height: 1.0;
             font-weight: 800;
-            color: var(--text-main);
-            letter-spacing: -0.03em;
-            margin: 0 0 24px 0;
+            color: white;
+            letter-spacing: -0.05em;
+            margin: 0 0 32px 0;
+        }
+
+        .hero-display .line {
+            display: block;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: heroReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .line-1 { animation-delay: 0.3s !important; }
+        .line-2 { animation-delay: 0.5s !important; }
+        .line-3 { animation-delay: 0.7s !important; }
+
+        @keyframes heroReveal {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes simpleFade {
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .gradient-text {
-            background: linear-gradient(135deg, var(--primary) 0%, #818CF8 100%);
+            background: linear-gradient(135deg, #818CF8 0%, #C084FC 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .hero-body {
-            font-size: 1.25rem;
-            color: var(--text-light);
+            font-size: 1.4rem;
+            color: #94A3B8;
             line-height: 1.6;
             margin-bottom: 48px;
-            max-width: 520px;
+            max-width: 580px;
+            opacity: 0;
+            animation: simpleFade 0.8s ease-out forwards 1.0s;
         }
 
-        /* Actions */
+        /* Actions - Slide Up Premium */
         .hero-actions {
             display: flex;
-            gap: 16px;
-            margin-bottom: 48px;
+            gap: 20px;
+            margin-bottom: 64px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: simpleFade 0.6s ease-out forwards 1.3s;
         }
 
         .btn-m3-primary {
-            background: var(--primary);
+            background: #4F46E5;
             color: white;
-            padding: 16px 32px;
-            border-radius: 100px;
-            font-weight: 600;
+            padding: 20px 40px;
+            border-radius: 14px; /* More modern industrial radius */
+            font-weight: 800;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            transition: all 0.3s var(--m3-ease-out);
-            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+            gap: 12px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.5);
         }
 
         .btn-m3-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 35px -5px rgba(79, 70, 229, 0.5);
-            background: var(--primary-dark);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px -5px rgba(79, 70, 229, 0.6);
+            background: #4338CA;
         }
 
         .btn-m3-tonal {
-            background: white;
-            color: var(--text-main);
-            padding: 16px 32px;
-            border-radius: 100px;
-            font-weight: 600;
+            background: transparent;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 14px;
+            font-weight: 800;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-            border: 1px solid transparent;
+            gap: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
         }
 
         .btn-m3-tonal:hover {
-            background: #F8FAFC;
-            border-color: #CBD5E1;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #818CF8;
+            color: #818CF8;
         }
 
-        /* Trust */
-        .hero-trust {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .avatars { display: flex; }
-        .avatars img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid white;
-            margin-left: -12px;
-        }
-        .avatars img:first-child { margin-left: 0; }
-
-        .hero-trust span {
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
-
-        /* Visual & Parallax */
-        .hero-m3-visual {
+        /* Scene Layout & Technical Layers */
+        .hero-m3-scene {
             position: relative;
             height: 600px;
             display: flex;
             align-items: center;
             justify-content: center;
-            perspective: 1000px;
+            perspective: 2000px;
         }
 
-        .visual-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid white;
-            border-radius: 28px;
-            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255,255,255, 0.5) inset;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.1s cubic-bezier(0,0,0,1); /* Smooth lerp controlled by JS */
+        /* SVG Narrative Layers */
+        .svg-professional {
+            width: 120%;
+            height: auto;
+            overflow: visible;
         }
 
-        .main-card {
-            width: 100%;
-            max-width: 500px;
-            padding: 24px;
-            z-index: 10;
+        /* Phase 1: Blueprint Strokes */
+        .blueprint-path {
+            stroke: #4F46E5;
+            stroke-width: 1;
+            fill: none;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawBlueprint 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards 1.5s;
+            opacity: 0.6;
         }
 
-        .card-header { display: flex; gap: 8px; margin-bottom: 24px; }
-        .card-dot { width: 12px; height: 12px; border-radius: 50%; opacity: 0.5; }
-        .red { background: #EF4444; } .yellow { background: #F59E0B; } .green { background: #10B981; }
-
-        .shimer {
-            background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-            border-radius: 12px;
-        }
-        
-        .mock-row { height: 16px; margin-bottom: 12px; border-radius: 8px; }
-
-        @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-
-        .float-badge {
-            position: absolute;
-            background: white;
-            padding: 12px;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            min-width: 160px;
-            animation: float 6s ease-in-out infinite;
+        @keyframes drawBlueprint {
+            to { stroke-dashoffset: 0; }
         }
 
-        .float-badge.success .icon-box { background: #DCFCE7; color: #16A34A; }
-        .float-badge.info .icon-box { background: #E0E7FF; color: #4F46E5; }
-        
-        .float-icon {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            z-index: 12;
-            animation: float 5s ease-in-out infinite alternate;
-        }
-
-        .icon-1 { animation-delay: 0s; }
-        .icon-2 { animation-delay: 1.5s; font-size: 1.8rem; }
-        .icon-3 { animation-delay: 3s; }
-        
-        .icon-box {
-            width: 40px; height: 40px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        .label { font-size: 0.75rem; color: var(--text-light); font-weight: 600; }
-        .value { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-        
-        .user-pill { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text-main); }
-        .user-pill img { width: 32px; height: 32px; border-radius: 50%; }
-
-        .abstract-shape {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border: 2px solid rgba(79, 70, 229, 0.1);
-            border-radius: 50%;
-            top: -50px;
-            right: -50px;
-            z-index: 0;
-        }
-
-        /* Animations */
-        .fade-up {
+        /* Phase 2: Building Surfaces with Depth */
+        .building-surface {
             opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.8s var(--m3-ease-out) forwards;
+            transform: translateY(20px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: surfaceReveal 1.2s forwards;
         }
 
-        @keyframes fadeInUp {
+        @keyframes surfaceReveal {
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Logic Nodes (IA) */
+        .node-pulse {
+            fill: #818CF8;
+            filter: drop-shadow(0 0 5px #818CF8);
+            animation: pulseGlow 3s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(1); opacity: 0.7; filter: drop-shadow(0 0 2px #818CF8); }
+            100% { transform: scale(1.5); opacity: 1; filter: drop-shadow(0 0 12px #6366F1); }
+        }
+
+        /* Connection Lines */
+        .data-stream {
+            stroke: #6366F1;
+            stroke-width: 0.5;
+            stroke-dasharray: 4 4;
+            animation: streamMove 30s linear infinite;
+        }
+
+        @keyframes streamMove {
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Layered Depth Classes */
+        .layer-back { transform: translateZ(-100px); opacity: 0.4; }
+        .layer-mid { transform: translateZ(0); }
+        .layer-front { transform: translateZ(100px); }
+
         @media (max-width: 1024px) {
-            .hero-display { font-size: 3rem; }
-            .hero-m3-visual { height: 400px; }
+            .hero-display { font-size: 3.5rem; }
+            .hero-m3-scene { height: 450px; }
         }
 
         @media (max-width: 768px) {
             .hero-m3-grid { grid-template-columns: 1fr; text-align: center; gap: 40px; }
-            .hero-display { font-size: 2.5rem; }
-            .hero-body { margin: 0 auto 30px; }
-            .hero-actions { justify-content: center; flexDirection: column; }
-            .hero-trust { justify-content: center; }
-            .hero-m3-visual { display: none; } /* Hide complex visual on mobile for performance */
-            .hero-m3 { padding-top: 120px; }
+            .hero-display { font-size: 3rem; }
+            .hero-body { margin: 0 auto 32px; font-size: 1.2rem; }
+            .hero-actions { justify-content: center; flex-direction: column; }
+            .hero-m3-scene { height: 350px; margin-top: 40px; }
+            .hero-m3 { padding-top: 160px; padding-bottom: 80px; }
+            
+            /* Reduced animations for mobile LCP */
+            .blueprint-path { animation-duration: 1.5s; }
+            .hero-m3-scene { perspective: none; }
         }
     </style>
 
@@ -1276,7 +1274,7 @@
         <div class="footer-grid">
             <div>
                 <a href="{{ url('/') }}" class="footer-brand">
-                    <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi Logo" style="height: 35px; filter: brightness(0) invert(1);">
+                    <x-application-logo style="height: 35px; width: auto; filter: brightness(0) invert(1);" />
                 </a>
                 <p>Transformando a gestão financeira e operacional com tecnologia e propósito.</p>
                 <div style="display: flex; gap: 15px; margin-top: 20px;">

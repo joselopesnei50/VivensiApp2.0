@@ -218,7 +218,7 @@
 
         <div class="login-card">
             <div class="brand-logo" style="justify-content: center;">
-                <img src="{{ asset('img/logovivensi.png') }}" alt="VIVENSI" style="max-height: 60px;">
+                <x-application-logo style="max-height: 60px; width: auto;" />
             </div>
             <p style="color: #64748B; margin-bottom: 30px;">Bem-vindo de volta! Acesse sua conta.</p>
 

@@ -33,7 +33,7 @@
 <div class="wrap">
     <div class="card">
         <div class="logo">
-            <img src="{{ asset('img/logovivensi.png') }}" alt="VIVENSI" style="max-height: 60px;">
+            <x-application-logo style="max-height: 60px; width: auto;" />
         </div>
 
         <div class="title">Redefinir senha</div>
