@@ -103,7 +103,7 @@
                 </p>
             </div>
             <div style="display: flex; gap: 15px;">
-                <a href="{{ url('/projects/reports') }}" class="btn-action-pro" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                <a href="{{ url('/smart-analysis') }}" class="btn-action-pro" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
                     <i class="fas fa-chart-line" style="color: #94a3b8;"></i> Relatórios
                 </a>
                 <a href="{{ url('/projects/create') }}" class="btn-action-pro" style="background: white; color: #0f172a; box-shadow: 0 10px 30px rgba(255,255,255,0.1);">
