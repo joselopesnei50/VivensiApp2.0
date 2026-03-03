@@ -24,43 +24,51 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 32px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px;">
     <!-- Runway -->
-    <div class="stat-card-premium stat-card-dark" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 24px; height: 180px; padding: 30px; position: relative; overflow: hidden; border: none;">
-        <div style="position: absolute; top: -10px; right: -10px; font-size: 6rem; color: rgba(255,255,255,0.03); transform: rotate(-10deg);"><i class="fas fa-hourglass-half"></i></div>
-        <div class="label" style="color: rgba(255,255,255,0.5); font-weight: 800; letter-spacing: 1px; margin-bottom: 15px;">RUNWAY ESTIMADA</div>
-        <div>
-            <div class="value" style="color: white; font-size: 3rem; font-weight: 900; letter-spacing: -1px;">{{ (int)$stats['runway'] }} <small style="font-size: 1rem; opacity: 0.7; font-weight: 600;">meses</small></div>
-            <div class="progress-slim" style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 20px;">
+    <div class="stat-card-premium stat-card-dark" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 24px; min-height: 200px; padding: 25px; position: relative; overflow: hidden; border: none; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="position: absolute; top: -10px; right: -10px; font-size: 6rem; color: rgba(255,255,255,0.03); transform: rotate(-10deg); z-index: 0;"><i class="fas fa-hourglass-half"></i></div>
+        <div style="position: relative; z-index: 1;">
+            <div class="label" style="color: rgba(255,255,255,0.5); font-weight: 800; letter-spacing: 1px; margin-bottom: 10px; font-size: 0.75rem;">RUNWAY ESTIMADA</div>
+            <div class="value" style="color: white; font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; line-height: 1;">{{ (int)$stats['runway'] }} <small style="font-size: 0.9rem; opacity: 0.7; font-weight: 600;">meses</small></div>
+        </div>
+        <div style="position: relative; z-index: 1;">
+            <div class="progress-slim" style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 15px;">
                 <div class="progress-bar-fill" style="width: {{ min((float)$stats['runway'] * 10, 100) }}%; background: {{ (float)$stats['runway'] < 3 ? '#ef4444' : '#10b981' }}; box-shadow: 0 0 15px {{ (float)$stats['runway'] < 3 ? 'rgba(239, 68, 68, 0.4)' : 'rgba(16, 185, 129, 0.4)' }};"></div>
             </div>
-            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 10px; font-weight: 700; text-transform: uppercase;">Autonomia de Caixa Atual</div>
+            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 8px; font-weight: 700; text-transform: uppercase;">Autonomia de Caixa Atual</div>
         </div>
     </div>
 
     <!-- Monthly Income -->
-    <div class="stat-card-premium" style="background: white; border-radius: 24px; height: 180px; padding: 30px; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px rgba(0,0,0,0.02);">
-        <div class="label" style="font-weight: 800; letter-spacing: 1px; color: #94a3b8; margin-bottom: 15px;">ARRECADAÇÃO (MÊS)</div>
-        <div class="value" style="font-size: 2.2rem; font-weight: 900; color: #1e293b;">R$ {{ number_format($stats['monthly_income'], 0, ',', '.') }}</div>
-        <div style="margin-top: 20px; color: #10b981; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+    <div class="stat-card-premium" style="background: white; border-radius: 24px; min-height: 200px; padding: 25px; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="label" style="font-weight: 800; letter-spacing: 1px; color: #94a3b8; margin-bottom: 15px; font-size: 0.75rem;">ARRECADAÇÃO (MÊS)</div>
+            <div class="value" style="font-size: 2rem; font-weight: 900; color: #1e293b; line-height: 1;">R$ {{ number_format($stats['monthly_income'], 0, ',', '.') }}</div>
+        </div>
+        <div style="margin-top: 15px; color: #10b981; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 5px;">
             <i class="fas fa-trending-up"></i> +{{ number_format(15, 0) }}% vs mês anterior
         </div>
     </div>
 
     <!-- Volunteers -->
-    <div class="stat-card-premium" style="background: white; border-radius: 24px; height: 180px; padding: 30px; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px rgba(0,0,0,0.02);">
-        <div class="label" style="font-weight: 800; letter-spacing: 1px; color: #94a3b8; margin-bottom: 15px;">TIME VOLUNTÁRIO</div>
-        <div class="value" style="font-size: 2.2rem; font-weight: 900; color: #1e293b;">{{ $stats['volunteers_count'] }}</div>
-        <div style="margin-top: 20px; color: #64748b; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+    <div class="stat-card-premium" style="background: white; border-radius: 24px; min-height: 200px; padding: 25px; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="label" style="font-weight: 800; letter-spacing: 1px; color: #94a3b8; margin-bottom: 15px; font-size: 0.75rem;">TIME VOLUNTÁRIO</div>
+            <div class="value" style="font-size: 2.2rem; font-weight: 900; color: #1e293b; line-height: 1;">{{ $stats['volunteers_count'] }}</div>
+        </div>
+        <div style="margin-top: 15px; color: #64748b; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 5px;">
             <i class="fas fa-users"></i> Membros Ativos
         </div>
     </div>
 
     <!-- Donors -->
-    <div class="stat-card-premium" style="background: white; border-radius: 24px; height: 180px; padding: 30px; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px rgba(0,0,0,0.02);">
-        <div class="label" style="font-weight: 800; letter-spacing: 1px; color: #94a3b8; margin-bottom: 15px;">BASE DE DOADORES</div>
-        <div class="value" style="font-size: 2.2rem; font-weight: 900; color: #1e293b;">{{ $stats['total_donors'] }}</div>
-        <div style="margin-top: 20px; color: var(--ngo-primary); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+    <div class="stat-card-premium" style="background: white; border-radius: 24px; min-height: 200px; padding: 25px; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="label" style="font-weight: 800; letter-spacing: 1px; color: #94a3b8; margin-bottom: 15px; font-size: 0.75rem;">BASE DE DOADORES</div>
+            <div class="value" style="font-size: 2.2rem; font-weight: 900; color: #1e293b; line-height: 1;">{{ $stats['total_donors'] }}</div>
+        </div>
+        <div style="margin-top: 15px; color: var(--ngo-primary); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 5px;">
             <i class="fas fa-heart"></i> Doações Recorrentes
         </div>
     </div>
