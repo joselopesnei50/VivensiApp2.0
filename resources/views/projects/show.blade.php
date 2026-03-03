@@ -26,36 +26,55 @@
 
 <style>
     .project-hero-premium {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        background: #0f172a;
         border-radius: 32px;
-        padding: 60px;
+        padding: 50px;
         color: white;
         position: relative;
         overflow: hidden;
-        margin-bottom: 40px;
-        box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+        margin-bottom: 32px;
+        border: 1px solid rgba(255,255,255,0.05);
+        box-shadow: 0 40px 100px rgba(0,0,0,0.2);
     }
-    .project-hero-premium::after {
+    .project-hero-premium::before {
         content: "";
         position: absolute;
-        top: -10%; right: -10%;
-        width: 400px; height: 400px;
-        background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
         z-index: 1;
     }
     .stat-pill-premium {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 24px;
         border-radius: 24px;
-        height: 100%;
-        transition: all 0.3s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 140px;
     }
     .stat-pill-premium:hover {
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.06);
         transform: translateY(-5px);
-        border-color: rgba(99, 102, 241, 0.3);
+        border-color: rgba(99, 102, 241, 0.4);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .btn-action-pro {
+        padding: 12px 24px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    .btn-action-pro:hover {
+        transform: scale(1.02);
     }
     .project-table-card {
         background: white;
@@ -109,59 +128,71 @@
             <span style="color: rgba(255,255,255,0.4); font-weight: 700; font-size: 0.8rem;">REGISTRO #{{ str_pad($project->id, 5, '0', STR_PAD_LEFT) }}</span>
         </div>
         
-        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-            <div>
-                <h1 style="font-size: 4rem; font-weight: 900; margin: 0; letter-spacing: -2.5px; line-height: 0.9;">{{ $project->name }}</h1>
-                <p style="margin: 20px 0 0 0; color: rgba(255,255,255,0.6); font-size: 1.25rem; font-weight: 500; max-width: 600px;">
-                    {{ $project->description ?: 'Visão estratégica e impacto operacional para transformar realidades através da execução de alta performance.' }}
-                </p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px;">
+            <div style="flex: 1;">
+                <h1 style="font-size: 3.5rem; font-weight: 950; margin: 0; letter-spacing: -3px; line-height: 1; color: white;">{{ $project->name }}</h1>
+                <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
+                    <span style="font-size: 1rem; color: rgba(255,255,255,0.4); font-weight: 600;">{{ $project->description ?: 'Gestão de alta performance Vivensi' }}</span>
+                </div>
             </div>
-            <div style="display: flex; gap: 15px;">
+            <div style="display: flex; gap: 12px;">
                 @if($isManager)
-                    <a href="{{ $basePath . '/projects/'.$project->id.'/edit' }}" class="btn-premium" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; text-decoration: none;">
-                        <i class="fas fa-cog me-2"></i> Ajustes
+                    <a href="{{ $basePath . '/projects/'.$project->id.'/edit' }}" class="btn-action-pro" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                        <i class="fas fa-cog" style="color: #94a3b8;"></i> Ajustes
                     </a>
                 @endif
-                <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-premium btn-premium-shine" style="border: none; padding: 16px 32px; font-weight: 800;">
-                    <i class="fas fa-layer-group me-2"></i> Kanban Board
+                <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                    <i class="fas fa-tasks" style="color: #6366f1;"></i> Quadros Kanban
                 </a>
             </div>
         </div>
 
-        <div class="row g-4 mt-5">
+        <div class="row g-3">
             <div class="col-md-3">
                 <div class="stat-pill-premium">
-                    <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Budget Destinado</span>
-                    <div style="font-size: 1.8rem; font-weight: 900;">R$ {{ number_format($project->budget, 2, ',', '.') }}</div>
-                    <div style="margin-top: 15px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px;">
-                        <div style="width: 100%; height: 100%; background: #10b981; border-radius: 2px;"></div>
+                    <div>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">Budget Destinado</span>
+                        <div style="font-size: 1.8rem; font-weight: 950; letter-spacing: -1px;">R$ {{ number_format($project->budget, 0, ',', '.') }}</div>
+                    </div>
+                    <div>
+                        <div style="margin-top: 20px; height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px;">
+                            <div style="width: 100%; height: 100%; background: #10b981; border-radius: 2px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-pill-premium">
-                    <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Aporte Realizado</span>
-                    <div style="font-size: 1.8rem; font-weight: 900; color: #f43f5e;">R$ {{ number_format($totalSpent, 2, ',', '.') }}</div>
-                    <div style="margin-top: 15px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px;">
-                        <div style="width: {{ min($percentUsed, 100) }}%; height: 100%; background: #f43f5e; border-radius: 2px;"></div>
+                    <div>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">Aporte Realizado</span>
+                        <div style="font-size: 1.8rem; font-weight: 950; color: #f43f5e; letter-spacing: -1px;">R$ {{ number_format($totalSpent, 0, ',', '.') }}</div>
+                    </div>
+                    <div>
+                        <div style="margin-top: 20px; height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px;">
+                            <div style="width: {{ min($percentUsed, 100) }}%; height: 100%; background: #f43f5e; border-radius: 2px; box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-pill-premium">
-                    <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Saldo em Tesouraria</span>
-                    <div style="font-size: 1.8rem; font-weight: 900; color: #6366f1;">R$ {{ number_format($project->budget - $totalSpent, 2, ',', '.') }}</div>
-                    <div style="margin-top: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8;">
-                         {{ number_format(100 - $percentUsed, 1) }}% de margem disponível
+                    <div>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">Saldo em Caixa</span>
+                        <div style="font-size: 1.8rem; font-weight: 950; color: #6366f1; letter-spacing: -1px;">R$ {{ number_format($project->budget - $totalSpent, 0, ',', '.') }}</div>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4);">
+                         {{ number_format(100 - $percentUsed, 1) }}% disponível
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-pill-premium">
-                    <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Taxa de Eficiência</span>
-                    <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{{ number_format(100 - min($percentUsed, 100), 0) }}%</div>
-                    <div style="margin-top: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8;">
-                        Performance de Execução
+                    <div>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">Performance</span>
+                        <div style="font-size: 1.8rem; font-weight: 950; color: #10b981; letter-spacing: -1px;">{{ number_format(100 - min($percentUsed, 100), 0) }}%</div>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4);">
+                        Taxa de Eficiência
                     </div>
                 </div>
             </div>

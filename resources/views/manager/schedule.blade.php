@@ -5,6 +5,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
+    \Carbon\Carbon::setLocale('pt_BR');
 @endphp
 
 <style>
@@ -179,7 +180,7 @@
     <div class="m3-cal-header">
         <div class="m3-cal-title">
             <a href="?date={{ $date->copy()->subMonth()->format('Y-m-d') }}" class="m3-btn-icon"><span class="material-symbols-rounded">chevron_left</span></a>
-            <span>{{ $date->isoFormat('MMMM YYYY') }}</span>
+            <span style="text-transform: capitalize;">{{ $date->translatedFormat('F Y') }}</span>
             <a href="?date={{ $date->copy()->addMonth()->format('Y-m-d') }}" class="m3-btn-icon"><span class="material-symbols-rounded">chevron_right</span></a>
         </div>
         
