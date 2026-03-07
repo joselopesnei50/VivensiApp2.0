@@ -19,6 +19,7 @@ class Project extends Model
         'start_date',
         'end_date',
         'status',
+        'ngo_grant_id',
     ];
 
     protected $casts = [
@@ -32,6 +33,11 @@ class Project extends Model
     
     // Relacionamento com Logs (Opicional por enquanto, mas bom ter)
     // Relacionamento com Transações (Opicional)
+
+    public function ngo_grant()
+    {
+        return $this->belongsTo(NgoGrant::class, 'ngo_grant_id');
+    }
 
     public function members()
     {

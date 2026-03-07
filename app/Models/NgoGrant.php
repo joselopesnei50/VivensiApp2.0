@@ -35,4 +35,9 @@ class NgoGrant extends Model
     {
         return $this->hasMany(NgoGrantDocument::class, 'ngo_grant_id');
     }
+
+    public function project()
+    {
+        return $this->hasOne(Project::class, 'ngo_grant_id');
+    }
 }

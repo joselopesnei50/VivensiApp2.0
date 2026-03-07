@@ -7,6 +7,7 @@ use App\Models\NgoGrantDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\AuditLog;
+use App\Models\Project;
 
 class NgoGrantController extends Controller
 {
@@ -330,6 +331,18 @@ class NgoGrantController extends Controller
         $grant->notes = $validated['notes'] ?? null;
         $grant->save();
 
+        // Create associated Project
+        Project::create([
+            'tenant_id' => $grant->tenant_id,
+            'name' => $grant->title,
+            'description' => $grant->notes,
+            'budget' => $grant->value,
+            'start_date' => $grant->start_date,
+            'end_date' => $grant->deadline,
+            'status' => 'active',
+            'ngo_grant_id' => $grant->id,
+        ]);
+
         return redirect('/ngo/grants')->with('success', 'Edital/Convênio registrado com sucesso!');
     }
 
@@ -343,6 +356,12 @@ class NgoGrantController extends Controller
             Storage::disk('public')->deleteDirectory("ngo_grants/{$tenantId}/{$grant->id}");
         } catch (\Throwable $e) {
             // Keep flow stable.
+        }
+
+        // Associated project will be deleted by DB cascade if foreign key is set correctly,
+        // but we can also do it explicitly if we want to trigger Eloquent events.
+        if ($grant->project) {
+            $grant->project->delete();
         }
 
         $grant->delete();
