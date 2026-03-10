@@ -150,10 +150,26 @@ class NgoGrantController extends Controller
 
     public function show($id)
     {
-        $grant = NgoGrant::with(['documents' => function ($q) {
-            $q->orderBy('created_at', 'desc');
-        }])->findOrFail($id);
-        return view('ngo.grants.show', compact('grant'));
+        $grant = NgoGrant::with([
+            'documents' => fn($q) => $q->orderBy('created_at', 'desc'),
+            'project.transactions' => fn($q) => $q->orderBy('date', 'desc'),
+            'project.tasks',
+        ])->findOrFail($id);
+
+        $project      = $grant->project;
+        $transactions = $project?->transactions ?? collect();
+        $tasks        = $project?->tasks ?? collect();
+
+        $totalIncome  = $transactions->where('type', 'income')->sum('amount');
+        $totalExpense = $transactions->where('type', 'expense')->sum('amount');
+        $balance      = $totalIncome - $totalExpense;
+        $budget       = (float) ($project?->budget ?? 0);
+        $usedPercent  = $budget > 0 ? min(100, round(($totalExpense / $budget) * 100)) : 0;
+
+        return view('ngo.grants.show', compact(
+            'grant', 'project', 'transactions', 'tasks',
+            'totalIncome', 'totalExpense', 'balance', 'budget', 'usedPercent'
+        ));
     }
 
     public function updateStatus(Request $request, $id)

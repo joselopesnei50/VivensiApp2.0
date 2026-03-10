@@ -214,6 +214,7 @@
     });
 </script>
 
+
 <div class="row g-4">
     <!-- Últimas Transações -->
     <div class="col-md-7">

@@ -103,36 +103,87 @@ class DashboardController extends Controller
 
     private function managerDashboard($tenantId)
     {
-        // Cache manager stats for 5 minutes
-        $activeProjects = \Cache::remember("manager_stats_{$tenantId}", 300, function() use ($tenantId) {
-            return Project::where('tenant_id', $tenantId)
-                ->where('status', 'active')
-                ->count();
-        });
-
-        // Feed de Impacto do Gestor: Atividades recentes em projetos
-        $impactFeed = Task::where('tenant_id', $tenantId)
-            ->where('status', 'completed')
-            ->orderBy('updated_at', 'desc')
-            ->limit(4)
+        // ── Projetos com progresso real (tarefas concluídas / total) ──
+        $projects = Project::where('tenant_id', $tenantId)
+            ->withCount([
+                'tasks as total_tasks',
+                'tasks as done_tasks' => fn($q) => $q->whereIn('status', ['done', 'completed']),
+            ])
+            ->orderBy('created_at', 'desc')
+            ->limit(6)
             ->get()
-            ->map(function ($task) {
-                return [
-                    'icon' => 'fa-check-double',
-                    'color' => '#10b981',
-                    'title' => 'Marco atingido: ' . $task->title,
-                    'time' => \Carbon\Carbon::parse($task->updated_at)->diffForHumans()
-                ];
+            ->map(function ($p) {
+                $p->progress = $p->total_tasks > 0
+                    ? (int) round(($p->done_tasks / $p->total_tasks) * 100)
+                    : 0;
+                return $p;
             });
-        
-        return view('dashboards.manager', [
-            'activeProjects' => $activeProjects,
-            'impactFeed' => $impactFeed,
-            'stats' => [
-                'team_size' => User::where('tenant_id', $tenantId)->count(),
-                'pending_tasks' => Task::where('tenant_id', $tenantId)->where('status', '!=', 'completed')->count()
-            ]
-        ]);
+
+        $activeProjects = $projects->where('status', 'active')->count()
+            ?: Project::where('tenant_id', $tenantId)->where('status', 'active')->count();
+
+        // ── Tarefas urgentes: vencidas ou com prazo em 3 dias ──
+        $urgentTasks = Task::where('tenant_id', $tenantId)
+            ->whereNotIn('status', ['done', 'completed'])
+            ->where(function ($q) {
+                $q->whereNotNull('due_date')
+                  ->where('due_date', '<=', now()->addDays(3)->toDateString());
+            })
+            ->orderBy('due_date', 'asc')
+            ->limit(5)
+            ->get();
+
+        // ── Resumo financeiro do mês atual ──
+        $monthlyIncome  = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')
+            ->whereMonth('date', now()->month)
+            ->whereYear('date', now()->year)
+            ->sum('amount');
+
+        $monthlyExpense = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'expense')
+            ->whereMonth('date', now()->month)
+            ->whereYear('date', now()->year)
+            ->sum('amount');
+
+        // ── Aprovações de despesas pendentes ──
+        $pendingApprovals = Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'expense')
+            ->where(function ($q) {
+                $q->where('status', 'pending')
+                  ->orWhere('approval_status', 'pending');
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // ── Feed de Impacto: tarefas concluídas recentemente ──
+        $impactFeed = Task::where('tenant_id', $tenantId)
+            ->whereIn('status', ['done', 'completed'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(fn($task) => [
+                'icon'  => 'fa-check-double',
+                'color' => '#10b981',
+                'title' => 'Marco atingido: ' . $task->title,
+                'time'  => \Carbon\Carbon::parse($task->updated_at)->diffForHumans(),
+            ]);
+
+        // ── Status breakdown ──
+        $stats = [
+            'team_size'         => User::where('tenant_id', $tenantId)->count(),
+            'pending_tasks'     => Task::where('tenant_id', $tenantId)->whereNotIn('status', ['done', 'completed'])->count(),
+            'monthly_income'    => $monthlyIncome,
+            'monthly_expense'   => $monthlyExpense,
+            'monthly_balance'   => $monthlyIncome - $monthlyExpense,
+            'pending_approvals' => $pendingApprovals->count(),
+        ];
+
+        return view('dashboards.manager', compact(
+            'activeProjects', 'impactFeed', 'stats',
+            'projects', 'urgentTasks', 'pendingApprovals'
+        ));
     }
 
     private function ngoDashboard($tenantId)
@@ -226,7 +277,9 @@ class DashboardController extends Controller
 
     private function commonDashboard($tenantId)
     {
-        // Totais de todo o período
+        $userId = Auth::id();
+
+        // Totais financeiros do período inteiro
         $totalIncome = (float) Transaction::where('tenant_id', $tenantId)
             ->where('type', 'income')
             ->sum('amount');
@@ -237,30 +290,38 @@ class DashboardController extends Controller
 
         $balance = $totalIncome - $totalExpense;
 
+        // Transações recentes
         $recentTransactions = Transaction::where('tenant_id', $tenantId)
             ->orderBy('date', 'desc')
             ->limit(5)
             ->get();
 
-        $userId = Auth::id();
+        // Tarefas pessoais pendentes do usuário
         $pendingTasks = Task::where('tenant_id', $tenantId)
             ->where('assigned_to', $userId)
-            ->where('status', '!=', 'completed')
+            ->whereNotIn('status', ['done', 'completed'])
             ->orderBy('due_date', 'asc')
             ->limit(5)
             ->get();
 
-        // Feed de Impacto Pessoa Comum: Insights e Pagamentos
+        // Feed de Impacto: alertas financeiros pessoais
         $impactFeed = collect();
-        
-        // Alerta de custo fixo / tarefa financeira
-        foreach($pendingTasks as $task) {
-            if (str_contains(strtolower($task->title), 'pagar') || str_contains(strtolower($task->title), 'conta')) {
+
+        // Lembrete de pagamentos pendentes nas tarefas
+        foreach ($pendingTasks->take(3) as $task) {
+            if ($task->due_date && \Carbon\Carbon::parse($task->due_date)->isPast()) {
                 $impactFeed->push([
-                    'icon' => 'fa-receipt',
+                    'icon'  => 'fa-triangle-exclamation',
+                    'color' => '#ef4444',
+                    'title' => 'Tarefa vencida: ' . $task->title,
+                    'time'  => 'Deveria estar concluída ' . \Carbon\Carbon::parse($task->due_date)->diffForHumans(),
+                ]);
+            } elseif (str_contains(strtolower($task->title), 'pagar') || str_contains(strtolower($task->title), 'conta')) {
+                $impactFeed->push([
+                    'icon'  => 'fa-receipt',
                     'color' => '#6366f1',
                     'title' => 'Lembrete de Pagamento: ' . $task->title,
-                    'time' => 'Para ' . \Carbon\Carbon::parse($task->due_date)->format('d/m')
+                    'time'  => $task->due_date ? 'Para ' . \Carbon\Carbon::parse($task->due_date)->format('d/m') : 'Pendente',
                 ]);
             }
         }
@@ -268,22 +329,22 @@ class DashboardController extends Controller
         // Marco de saldo positivo
         if ($balance > 1000) {
             $impactFeed->push([
-                'icon' => 'fa-trophy',
+                'icon'  => 'fa-trophy',
                 'color' => '#10b981',
                 'title' => 'Meta de Reserva: Saldo acima de R$ 1.000',
-                'time' => 'Hoje'
+                'time'  => 'Hoje',
             ]);
         }
 
-        // 6 Meses de Histórico para o Gráfico
-        $chartLabels = [];
-        $chartIncome = [];
+        // 6 Meses de histórico para o gráfico
+        $chartLabels  = [];
+        $chartIncome  = [];
         $chartExpense = [];
-        
+
         for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
+            $date     = now()->subMonths($i);
             $monthNum = $date->month;
-            $year = $date->year;
+            $year     = $date->year;
 
             $chartLabels[] = ucfirst($date->translatedFormat('M/Y'));
 
@@ -300,6 +361,11 @@ class DashboardController extends Controller
                 ->sum('amount');
         }
 
-        return view('dashboards.common', compact('totalIncome', 'totalExpense', 'balance', 'recentTransactions', 'pendingTasks', 'chartLabels', 'chartIncome', 'chartExpense', 'impactFeed'));
+        return view('dashboards.common', compact(
+            'totalIncome', 'totalExpense', 'balance',
+            'recentTransactions', 'pendingTasks',
+            'chartLabels', 'chartIncome', 'chartExpense',
+            'impactFeed'
+        ));
     }
 }
