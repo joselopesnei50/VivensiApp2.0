@@ -336,6 +336,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::delete('/ngo/transparencia/partnerships/{id}', [App\Http\Controllers\TransparencyController::class, 'deletePartnership']);
 
 }); // End of Auth/Subscription Group
+// --- TESTES DE INTEGRAÇÃO (PRODUÇÃO) ---
+Route::prefix('test-api')->group(function () {
+    Route::get('/pagseguro', [App\Http\Controllers\IntegrationTestController::class, 'testPagSeguro']);
+    Route::get('/gemini', [App\Http\Controllers\IntegrationTestController::class, 'testGemini']);
+    Route::get('/deepseek', [App\Http\Controllers\IntegrationTestController::class, 'testDeepSeek']);
+});
+
 // --- PUBLIC ROUTES (No Auth Required) ---
 
 // Public Landing Page
