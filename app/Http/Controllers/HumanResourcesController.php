@@ -632,4 +632,36 @@ class HumanResourcesController extends Controller
             'isValid' => $isValid,
         ]);
     }
+
+    public function logHours(Request $request, $id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $volunteer = Volunteer::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $request->validate([
+            'hours' => 'required|integer|min:1',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $hours = (int) $request->hours;
+        $points = $hours * 10;
+
+        $volunteer->hours_logged += $hours;
+        $volunteer->points += $points;
+
+        // Gamification Levels
+        if ($volunteer->points >= 1000) {
+            $volunteer->level_badge = 'diamante';
+        } elseif ($volunteer->points >= 500) {
+            $volunteer->level_badge = 'ouro';
+        } elseif ($volunteer->points >= 100) {
+            $volunteer->level_badge = 'prata';
+        } else {
+            $volunteer->level_badge = 'bronze';
+        }
+        
+        $volunteer->save();
+
+        return redirect()->back()->with('success', "{$hours} horas registradas! O voluntário {$volunteer->name} ganhou {$points} pontos.");
+    }
 }

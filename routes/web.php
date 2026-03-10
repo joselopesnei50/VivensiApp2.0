@@ -71,6 +71,10 @@ Route::middleware('guest')->group(function () {
 Route::get('/register', [App\Http\Controllers\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\RegisterController::class, 'register']);
 
+// Donor Portal
+Route::get('/portal-doador/{token}', [App\Http\Controllers\DonorPortalController::class, 'show'])->name('donor.portal');
+Route::get('/portal-doador/{token}/ir-pdf', [App\Http\Controllers\DonorPortalController::class, 'downloadIrPdf'])->name('donor.portal.pdf');
+
 // Public Campaign Route
 Route::get('/c/{slug}', [App\Http\Controllers\CampaignController::class, 'show']);
 
@@ -189,6 +193,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/contracts/{id}/revoke-link', [App\Http\Controllers\ContractController::class, 'revokeLink'])
             ->name('ngo.contracts.revoke_link');
 
+        // CRM Sponsorships
+        Route::get('/sponsorships', [App\Http\Controllers\SponsorshipDealController::class, 'index']);
+        Route::post('/sponsorships', [App\Http\Controllers\SponsorshipDealController::class, 'store']);
+        Route::patch('/sponsorships/{id}/stage', [App\Http\Controllers\SponsorshipDealController::class, 'updateStage']);
+        Route::delete('/sponsorships/{id}', [App\Http\Controllers\SponsorshipDealController::class, 'destroy']);
+
         // Grants (Editais)
         Route::get('/grants', [App\Http\Controllers\NgoGrantController::class, 'index']);
         Route::get('/grants/create', [App\Http\Controllers\NgoGrantController::class, 'create']);
@@ -216,6 +226,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/hr/certificates/{id}/download', [App\Http\Controllers\HumanResourcesController::class, 'downloadVolunteerCertificate']);
         Route::post('/hr/employees', [App\Http\Controllers\HumanResourcesController::class, 'storeEmployee']);
         Route::post('/hr/volunteers', [App\Http\Controllers\HumanResourcesController::class, 'storeVolunteer']);
+        Route::post('/hr/volunteers/{id}/log-hours', [App\Http\Controllers\HumanResourcesController::class, 'logHours']);
 
         // Beneficiaries
         Route::get('/beneficiaries', [App\Http\Controllers\BeneficiaryController::class, 'index']);
@@ -244,6 +255,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/beneficiaries/{id}/pdf', [App\Http\Controllers\BeneficiaryController::class, 'pdf']);
         Route::post('/beneficiaries/{id}/family-members', [App\Http\Controllers\BeneficiaryController::class, 'storeFamilyMember']);
         Route::delete('/beneficiaries/{id}/family-members/{memberId}', [App\Http\Controllers\BeneficiaryController::class, 'destroyFamilyMember']);
+
+        // Inventory (Almoxarifado)
+        Route::get('/inventory', [App\Http\Controllers\InventoryController::class, 'index'])->name('ngo.inventory.index');
+        Route::post('/inventory', [App\Http\Controllers\InventoryController::class, 'store'])->name('ngo.inventory.store');
+        Route::put('/inventory/{id}', [App\Http\Controllers\InventoryController::class, 'update'])->name('ngo.inventory.update');
+        Route::delete('/inventory/{id}', [App\Http\Controllers\InventoryController::class, 'destroy'])->name('ngo.inventory.destroy');
+        Route::post('/inventory/{id}/movement', [App\Http\Controllers\InventoryController::class, 'movement'])->name('ngo.inventory.movement');
 
         // Assets
         Route::get('/assets', [App\Http\Controllers\AssetController::class, 'index']);

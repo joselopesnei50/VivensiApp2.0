@@ -4,28 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 use App\Traits\BelongsToTenant;
 
-class Volunteer extends Model
+class InventoryItem extends Model
 {
     use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'tenant_id',
         'name',
-        'email',
-        'phone',
-        'skills',
-        'hours_logged',
-        'points',
-        'level_badge',
-        'availability',
-        'status'
+        'description',
+        'sku',
+        'unit',
+        'quantity',
+        'minimum_stock',
+        'value_per_unit',
     ];
 
-    public function certificates()
+    public function movements()
     {
-        return $this->hasMany(VolunteerCertificate::class);
+        return $this->hasMany(InventoryMovement::class);
     }
 }

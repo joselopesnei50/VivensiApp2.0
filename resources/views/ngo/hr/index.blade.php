@@ -135,17 +135,35 @@
         @endphp
         <div class="vivensi-card hr-volunteer-card" data-q="{{ strtolower(($volunteer->name ?? '').' '.($volunteer->email ?? '').' '.($volunteer->skills ?? '')) }}" style="position: relative;">
             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                <div style="width: 50px; height: 50px; background: #e0e7ff; color: #4338ca; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem;">
+                <div style="width: 50px; height: 50px; background: #e0e7ff; color: #4338ca; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; position: relative;">
                     {{ $volunteer->name[0] }}
+                    @if($volunteer->level_badge === 'bronze')
+                        <div style="position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; background: #cd7f32; border-radius: 50%; border: 2px solid white;" title="Nível Bronze"></div>
+                    @elseif($volunteer->level_badge === 'prata')
+                        <div style="position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; background: #c0c0c0; border-radius: 50%; border: 2px solid white;" title="Nível Prata"></div>
+                    @elseif($volunteer->level_badge === 'ouro')
+                        <div style="position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; background: #ffd700; border-radius: 50%; border: 2px solid white;" title="Nível Ouro"></div>
+                    @elseif($volunteer->level_badge === 'diamante')
+                        <div style="position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; background: #b9f2ff; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px #0ea5e9;" title="Nível Diamante"></div>
+                    @endif
                 </div>
                 <div>
-                    <h4 style="margin: 0; font-size: 1rem;">{{ $volunteer->name }}</h4>
+                    <h4 style="margin: 0; font-size: 1rem;">
+                        {{ $volunteer->name }}
+                        @if($volunteer->level_badge !== 'bronze')
+                            <span style="font-size: 0.65rem; background: #fef08a; color: #854d0e; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px;">{{ $volunteer->level_badge }}</span>
+                        @endif
+                    </h4>
                     <span style="font-size: 0.8rem; color: #64748b;">{{ $volunteer->email }}</span>
                 </div>
             </div>
             <div style="font-size: 0.85rem; color: #475569; margin-bottom: 15px;">
                 <strong>Habilidades:</strong> {{ $volunteer->skills ?? 'Não informado' }}<br>
-                <strong>Disponibilidade:</strong> {{ ucfirst($volunteer->availability) ?? 'Variável' }}
+                <strong>Disponibilidade:</strong> {{ ucfirst($volunteer->availability) ?? 'Variável' }}<br>
+                <div style="margin-top: 8px; display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 8px;">
+                    <div><i class="fas fa-clock" style="color: #64748b;"></i> <strong>{{ number_format($volunteer->hours_logged ?? 0, 0, '', '.') }}h</strong> doadas</div>
+                    <div><i class="fas fa-star" style="color: #f59e0b;"></i> <strong>{{ number_format($volunteer->points ?? 0, 0, '', '.') }}</strong> pontos</div>
+                </div>
             </div>
 
             <div style="font-size: 0.85rem; color: #334155; margin-bottom: 12px;">
@@ -193,12 +211,15 @@
                 @endif
             </div>
 
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #dcfce7; color: #166534; padding: 5px 10px;" onclick="alert('Em breve: abrir WhatsApp com mensagem padrão.');">
                     <i class="fab fa-whatsapp"></i> Contatar
                 </button>
                 <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #f1f5f9; color: #64748b; padding: 5px 10px;" onclick='openCertificateModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
                     <i class="fas fa-certificate"></i> Certificado
+                </button>
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fffbeb; color: #b45309; padding: 5px 10px; border: 1px solid #fde68a;" onclick='openLogHoursModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
+                    <i class="fas fa-plus"></i> Horas
                 </button>
             </div>
         </div>
@@ -315,6 +336,40 @@
     </div>
 </div>
 
+<!-- Modal Log Hours -->
+<div id="logHoursModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000; overflow-y: auto; pointer-events: auto !important; -webkit-overflow-scrolling: touch;">
+    <div class="vivensi-card" style="width: 95%; max-width: 450px; margin: 40px auto; pointer-events: auto !important; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h3 style="margin:0;">Lançar Horas</h3>
+                <div style="color:#64748b; font-size:.9rem; margin-top:4px;">
+                    Voluntário: <strong id="logHoursVolunteerName">—</strong>
+                </div>
+            </div>
+            <button onclick="closeModal('logHoursModal')" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form id="logHoursForm" method="POST" action="#">
+            @csrf
+            
+            <div style="background: #fffbeb; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; color: #92400e;">
+                <strong>Regra Financeira:</strong> A cada 1 hora trabalhada o voluntário recebe automaticamente 10 Pontos, que o fará subir de nível.
+            </div>
+
+            <div class="grid-2" style="gap: 15px;">
+                <div class="form-group">
+                    <label>Horas doadas</label>
+                    <input type="number" name="hours" class="form-control-vivensi" min="1" required placeholder="Ex: 5">
+                </div>
+                <div class="form-group">
+                    <label>Descrição Opcional</label>
+                    <input type="text" name="description" class="form-control-vivensi" placeholder="Ex: Sopa solidária...">
+                </div>
+            </div>
+            <button type="submit" class="btn-premium" style="width: 100%; justify-content: center; background: #f59e0b; color: white;">Registrar Horas e Pontos</button>
+        </form>
+    </div>
+</div>
+
 <script>
     function openModal(id) { 
         const m = document.getElementById(id);
@@ -367,6 +422,14 @@
         if (label) label.textContent = volunteerName || '—';
         if (form) form.action = "{{ url('/ngo/hr/volunteers') }}/" + volunteerId + "/certificate";
         openModal('certificateModal');
+    }
+
+    function openLogHoursModal(volunteerId, volunteerName) {
+        const form = document.getElementById('logHoursForm');
+        const label = document.getElementById('logHoursVolunteerName');
+        if (label) label.textContent = volunteerName || '—';
+        if (form) form.action = "{{ url('/ngo/hr/volunteers') }}/" + volunteerId + "/log-hours";
+        openModal('logHoursModal');
     }
     
     function showTab(tabName) {

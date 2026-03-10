@@ -7,25 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Traits\BelongsToTenant;
 
-class Volunteer extends Model
+class SponsorshipDeal extends Model
 {
     use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'tenant_id',
-        'name',
+        'company_name',
+        'contact_person',
         'email',
         'phone',
-        'skills',
-        'hours_logged',
-        'points',
-        'level_badge',
-        'availability',
-        'status'
+        'expected_value',
+        'stage',
+        'contact_date',
+        'notes'
     ];
 
-    public function certificates()
-    {
-        return $this->hasMany(VolunteerCertificate::class);
-    }
+    protected $casts = [
+        'contact_date' => 'date',
+        'expected_value' => 'decimal:2'
+    ];
 }

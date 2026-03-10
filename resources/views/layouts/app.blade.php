@@ -100,6 +100,7 @@
                 <li><a href="{{ url('/ngo/receipts') }}"><i class="fas fa-receipt"></i> Recibos</a></li>
                 <li><a href="{{ url('/ngo/contracts') }}"><i class="fas fa-file-contract"></i> Contratos Digitais</a></li>
                 <li><a href="{{ url('/ngo/grants') }}"><i class="fas fa-file-signature"></i> Editais & Convênios</a></li>
+                <li><a href="{{ url('/ngo/sponsorships') }}" class="{{ request()->is('ngo/sponsorships*') ? 'active' : '' }}"><i class="fas fa-handshake"></i> CRM Patrocínios</a></li>
                 <li><a href="{{ url('/ngo/landing-pages') }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
                 <li><a href="{{ url('/ngo/budget') }}"><i class="fas fa-chart-pie"></i> Orçamento Anual</a></li>
                 
@@ -112,6 +113,7 @@
                 <li><a href="{{ url('/ngo/beneficiaries') }}" class="{{ request()->is('ngo/beneficiaries*') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> Beneficiários</a></li>
                 <li style="margin-left: 10px;"><a href="{{ url('/ngo/beneficiaries/insights') }}" class="{{ request()->is('ngo/beneficiaries/insights*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Indicadores Sociais</a></li>
                 <li style="margin-left: 10px;"><a href="{{ url('/ngo/beneficiaries/reports/annual') }}" class="{{ request()->is('ngo/beneficiaries/reports/annual*') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Relatório Anual</a></li>
+                <li><a href="{{ url('/ngo/inventory') }}" class="{{ request()->is('ngo/inventory*') ? 'active' : '' }}"><i class="fas fa-box-open"></i> Almoxarifado e Estoque</a></li>
                 <li><a href="{{ url('/ngo/assets') }}"><i class="fas fa-boxes"></i> Patrimônio</a></li>
                 <li><a href="{{ url('/ngo/reconciliation') }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
                 <li><a href="{{ url('/ngo/reports/dre') }}"><i class="fas fa-file-invoice-dollar"></i> Relatórios (DRE)</a></li>
