@@ -14,7 +14,8 @@ class IntegrationTestController extends Controller
     public function __construct(Request $request)
     {
         // Simple security: only allow requests with ?token=vivensi_test
-        if ($request->query('token') !== 'vivensi_test') {
+        // Skip token check when running via CLI (artisan commands)
+        if (!app()->runningInConsole() && $request->query('token') !== 'vivensi_test') {
             abort(403, 'Unauthorized access to integration tests.');
         }
     }
