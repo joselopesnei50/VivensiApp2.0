@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use App\Models\SystemSetting;
 
 class IntegrationTestController extends Controller
 {
@@ -24,9 +24,13 @@ class IntegrationTestController extends Controller
      */
     public function testPagSeguro()
     {
-        $token = env('PAGSEGURO_TOKEN');
-        $env = env('PAGSEGURO_ENV', 'sandbox');
+        $token = SystemSetting::getValue('pagseguro_token', env('PAGSEGURO_TOKEN'));
+        $env = SystemSetting::getValue('pagseguro_environment', env('PAGSEGURO_ENV', 'sandbox'));
         $baseUrl = $env === 'production' ? 'https://api.pagseguro.com' : 'https://sandbox.api.pagseguro.com';
+
+        if (!$token) {
+            return response()->json(['error' => 'PAGSEGURO_TOKEN não configurado no painel Admin.'], 500);
+        }
 
         try {
             // Simple GET request to list orders to verify auth
@@ -62,9 +66,9 @@ class IntegrationTestController extends Controller
      */
     public function testGemini()
     {
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = SystemSetting::getValue('gemini_api_key', env('GEMINI_API_KEY'));
         if (!$apiKey) {
-            return response()->json(['error' => 'GEMINI_API_KEY não configurada no .env ou aws_env.txt'], 500);
+            return response()->json(['error' => 'Chave GEMINI_API_KEY não configurada no painel Super Admin.'], 500);
         }
 
         try {
@@ -108,9 +112,9 @@ class IntegrationTestController extends Controller
      */
     public function testDeepSeek()
     {
-        $apiKey = env('DEEPSEEK_API_KEY');
+        $apiKey = SystemSetting::getValue('deepseek_api_key', env('DEEPSEEK_API_KEY'));
         if (!$apiKey) {
-            return response()->json(['error' => 'DEEPSEEK_API_KEY não configurada no .env ou aws_env.txt'], 500);
+            return response()->json(['error' => 'Chave DEEPSEEK_API_KEY não configurada no painel Super Admin.'], 500);
         }
 
         try {
