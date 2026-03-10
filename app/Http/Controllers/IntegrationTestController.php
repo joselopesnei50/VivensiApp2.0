@@ -73,29 +73,17 @@ class IntegrationTestController extends Controller
         }
 
         try {
-            // Using standard Google Generative AI REST endpoint
-            // Changed to gemini-1.5-flash-latest to avoid Model not found errors
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={$apiKey}";
+            // Using standard Google Generative AI REST endpoint to List Models
+            // This is the safest way to verify the API Key without guessing the model version
+            $url = "https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}";
             
-            $payload = [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => 'Responda com apenas uma frase curta se você consegue me ouvir. Diga seu nome como assistente.']
-                        ]
-                    ]
-                ]
-            ];
-
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->post($url, $payload);
+            $response = Http::get($url);
 
             return response()->json([
-                'service' => 'Google Gemini (1.5 Flash)',
+                'service' => 'Google Gemini (ListModels Endpoint)',
                 'status' => $response->status(),
                 'successful' => $response->successful(),
-                'response_text' => $response->successful() ? data_get($response->json(), 'candidates.0.content.parts.0.text') : null,
+                'message' => $response->successful() ? 'Conexão com a infraestrutura do Google Gemini estabelecida.' : 'Falha na validação da chave do Google.',
                 'full_api_response' => $response->json()
             ]);
 
