@@ -37,16 +37,17 @@ class IntegrationTestController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$token}",
                 'Accept' => 'application/json',
-            ])->get("{$baseUrl}/orders", [
-                'reference_id' => 'VIVENSI_TEST_CONNECTION'
-            ]);
+            ])->get("{$baseUrl}/orders");
+
+            // PagSeguro might return 400 for structural validations, but 401 means auth failed.
+            $isAuthSuccess = !in_array($response->status(), [401, 403]);
 
             return response()->json([
                 'service' => 'PagSeguro',
                 'environment' => $env,
                 'status' => $response->status(),
-                'successful' => $response->successful(),
-                'message' => $response->successful() ? 'Conexão com PagSeguro estabelecida com sucesso!' : 'Falha na autenticação ou erro na API.',
+                'successful' => $isAuthSuccess,
+                'message' => $isAuthSuccess ? 'Token Válido! Conexão com PagSeguro estabelecida com sucesso.' : 'Falha na autenticação.',
                 'api_response' => $response->json(),
                 'masked_token' => substr($token, 0, 8) . '...' . substr($token, -4)
             ]);
@@ -73,7 +74,8 @@ class IntegrationTestController extends Controller
 
         try {
             // Using standard Google Generative AI REST endpoint
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
+            // Changed to gemini-1.5-flash-latest to avoid Model not found errors
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={$apiKey}";
             
             $payload = [
                 'contents' => [
