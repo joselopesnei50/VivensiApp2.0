@@ -3,1386 +3,592 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vivensi - Gestão Inteligente para ONGs e Projetos</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Vivensi | Gestão Inteligente para ONGs, Projetos e Pessoas</title>
+    <meta name="description" content="A plataforma mais completa do Brasil para gestão de ONGs, projetos sociais e equipes. Donor portal, prestação de contas, CRM e muito mais.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('img/logovivensi.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/logovivensi.png') }}">
-    
-    <style>
-        :root {
-            --primary: #4f46e5;       
-            --primary-dark: #4338ca;
-            --secondary: #0f172a;
-            --accent: #38bdf8;
-            --text-main: #1e293b;
-            --text-light: #64748b;
-            --bg-light: #f8fafc;
-            
-            /* Material 3 Palette */
-            --m3-surface: #FDFBFF;
-            --m3-surface-container: #F0F4F9;
-            --m3-primary-container: #E0E7FF;
-            --m3-on-primary-container: #001D35;
-            --m3-ease-out: cubic-bezier(0.2, 0.0, 0, 1.0);
-            --m3-ease-in-out: cubic-bezier(0.2, 0.0, 0.2, 1.0);
-        }
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+    --ink:#080E1A;--ink2:#111827;
+    --blue:#3B6CF6;--blue2:#5B82FF;
+    --violet:#7C3AED;--violet2:#9B59F7;
+    --teal:#00D4AA;--rose:#E8455A;
+    --gold:#F5A623;--white:#FFFFFF;
+    --glass:rgba(255,255,255,.06);
+    --border:rgba(255,255,255,.1);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);overflow-x:hidden;line-height:1.6}
 
-        body {
-            margin: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--text-main);
-            background: white;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;justify-content:space-between;align-items:center;padding:16px 6%;background:rgba(8,14,26,.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:all .3s}
+.nav-logo img{height:34px}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{color:rgba(255,255,255,.6);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .3s}
+.nav-links a:hover{color:white}
+.nav-ctas{display:flex;gap:12px}
+.btn-ghost{color:rgba(255,255,255,.7);text-decoration:none;font-size:.875rem;font-weight:600;padding:9px 20px;border-radius:50px;border:1px solid var(--border);transition:all .3s}
+.btn-ghost:hover{background:var(--glass);color:white;border-color:rgba(255,255,255,.2)}
+.btn-nav{background:linear-gradient(135deg,var(--blue),var(--violet));color:white;text-decoration:none;font-size:.875rem;font-weight:700;padding:10px 22px;border-radius:50px;box-shadow:0 4px 20px rgba(59,108,246,.35);transition:all .3s}
+.btn-nav:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(59,108,246,.5)}
+/* Mobile */
+.mobile-btn{display:none;background:none;border:none;color:white;font-size:1.4rem;cursor:pointer}
+@media(max-width:768px){
+    .nav-links,.nav-ctas{display:none}
+    .mobile-btn{display:block}
+    .mobile-menu{display:none;flex-direction:column;gap:16px;position:fixed;top:70px;left:0;right:0;background:rgba(8,14,26,.98);padding:24px 6%;border-bottom:1px solid var(--border)}
+    .mobile-menu.open{display:flex}
+    .mobile-menu a{color:rgba(255,255,255,.75);text-decoration:none;font-size:1rem;font-weight:600;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+}
 
-        /* Navbar */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 5%;
-            position: fixed;
-            width: 90%;
-            top: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
+/* ─── HERO ─── */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:120px 6% 80px;
+    background:radial-gradient(ellipse 100% 80% at 50% 0%, rgba(59,108,246,.2) 0%, transparent 55%),
+               radial-gradient(ellipse 60% 50% at 80% 80%, rgba(124,58,237,.12) 0%, transparent 50%),
+               var(--ink)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,108,246,.12);border:1px solid rgba(59,108,246,.3);color:var(--blue2);font-size:.78rem;font-weight:700;padding:6px 16px;border-radius:100px;margin-bottom:24px;letter-spacing:.06em;text-transform:uppercase;animation:fadeDown .6s ease forwards}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--blue2);animation:pulseBlue 2s infinite}
+.hero-title{font-size:clamp(2.8rem,6vw,5.2rem);font-weight:900;line-height:1.0;letter-spacing:-.04em;text-align:center;margin-bottom:24px;animation:fadeUp .8s ease .15s both}
+.hero-title .g1{background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.7) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-title .g2{background:linear-gradient(135deg,var(--blue2),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.15rem;color:rgba(255,255,255,.55);text-align:center;max-width:580px;margin:0 auto 40px;line-height:1.7;animation:fadeUp .8s ease .3s both}
+.hero-ctas{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:72px;animation:fadeUp .8s ease .45s both}
+.btn-hero{background:linear-gradient(135deg,var(--blue),var(--violet));color:white;text-decoration:none;font-weight:700;font-size:1.05rem;padding:16px 40px;border-radius:60px;box-shadow:0 8px 32px rgba(59,108,246,.4);transition:all .3s;display:inline-flex;align-items:center;gap:10px}
+.btn-hero:hover{transform:translateY(-3px);box-shadow:0 14px 42px rgba(59,108,246,.6)}
+.btn-hero-outline{color:rgba(255,255,255,.8);text-decoration:none;font-weight:600;font-size:1.05rem;padding:16px 32px;border-radius:60px;border:1.5px solid rgba(255,255,255,.18);transition:all .3s;display:inline-flex;align-items:center;gap:10px}
+.btn-hero-outline:hover{background:rgba(255,255,255,.07);color:white}
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo i { color: var(--primary); }
+/* MAP SECTION */
+.map-section{position:relative;width:100%;max-width:1100px;margin:0 auto;animation:fadeUp .8s ease .6s both}
+.map-wrap{position:relative}
+#brazil-svg{width:100%;max-width:780px;display:block;margin:0 auto}
+/* Dot grid representing data coverage */
+.map-dot{position:absolute;border-radius:50%;animation:mapPulse 2.5s ease-in-out infinite}
+.map-dot::after{content:'';position:absolute;inset:-5px;border-radius:50%;animation:mapRipple 2.5s ease-out infinite}
+/* Floating info cards */
+.fcard{position:absolute;background:rgba(13,20,40,.85);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 18px;min-width:160px;white-space:nowrap}
+.fcard-label{font-size:.68rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.fcard-value{font-size:1.15rem;font-weight:800;color:white}
+.fcard-sub{font-size:.72rem;color:var(--teal);margin-top:3px}
+.fc-a{top:8%;left:2%;animation:floatY 4s ease-in-out infinite}
+.fc-b{top:12%;right:2%;animation:floatY 5s ease-in-out infinite .6s}
+.fc-c{bottom:15%;left:5%;animation:floatY 3.8s ease-in-out infinite 1.2s}
+.fc-d{bottom:8%;right:3%;animation:floatY 4.5s ease-in-out infinite .3s}
+.fc-e{top:45%;right:-2%;animation:floatY 4.2s ease-in-out infinite .9s}
 
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
+/* ─── TRUST ─── */
+.trust{padding:20px 6%;background:rgba(255,255,255,.025);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.trust-row{display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap}
+.trust-lbl{font-size:.75rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.09em}
+.trust-item{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.5);font-size:.82rem;font-weight:600}
+.trust-item i{color:var(--teal)}
 
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-light);
-            font-weight: 600;
-            transition: color 0.3s;
-        }
+/* ─── SEGMENTS ─── */
+.segments{padding:100px 6%}
+.seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1100px;margin:56px auto 0}
+.seg-card{border-radius:22px;padding:40px;position:relative;overflow:hidden;text-decoration:none;color:white;transition:all .4s;display:block}
+.seg-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .4s}
+.seg-card:hover{transform:translateY(-8px)}
+.seg-card:hover::before{opacity:1}
+.seg-ngo{background:linear-gradient(135deg,rgba(232,69,90,.18),rgba(245,166,35,.08));border:1px solid rgba(232,69,90,.25)}
+.seg-ngo::before{background:linear-gradient(135deg,rgba(232,69,90,.08),transparent)}
+.seg-mgr{background:linear-gradient(135deg,rgba(59,108,246,.18),rgba(0,212,170,.08));border:1px solid rgba(59,108,246,.25)}
+.seg-mgr::before{background:linear-gradient(135deg,rgba(59,108,246,.08),transparent)}
+.seg-ppl{background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(91,130,255,.08));border:1px solid rgba(124,58,237,.25)}
+.seg-ppl::before{background:linear-gradient(135deg,rgba(124,58,237,.08),transparent)}
+.seg-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;margin-bottom:22px}
+.si-rose{background:rgba(232,69,90,.2);color:#FF6B7A}
+.si-blue{background:rgba(59,108,246,.2);color:var(--blue2)}
+.si-purple{background:rgba(124,58,237,.2);color:#B27CFF}
+.seg-card h3{font-size:1.15rem;font-weight:800;margin-bottom:10px}
+.seg-card p{font-size:.875rem;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:20px}
+.seg-link{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;letter-spacing:.03em}
+.sl-rose{color:#FF6B7A}.sl-blue{color:var(--blue2)}.sl-purple{color:#B27CFF}
 
-        .nav-links a:hover { color: var(--primary); }
+/* ─── FEATURES ─── */
+.features{padding:80px 6% 100px;background:rgba(255,255,255,.015)}
+.feat-inner{max-width:1200px;margin:0 auto}
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:56px}
+.feat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:28px;transition:all .35s}
+.feat-card:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);transform:translateY(-5px)}
+.feat-ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:16px}
+.fi-blue{background:rgba(59,108,246,.15);color:var(--blue2)}
+.fi-teal{background:rgba(0,212,170,.15);color:var(--teal)}
+.fi-rose{background:rgba(232,69,90,.15);color:#FF7080}
+.fi-gold{background:rgba(245,166,35,.15);color:var(--gold)}
+.fi-purple{background:rgba(124,58,237,.15);color:#B27CFF}
+.fi-sky{background:rgba(56,189,248,.15);color:#50C8F5}
+.fi-green{background:rgba(34,197,94,.15);color:#4ADE80}
+.fi-violet{background:rgba(167,139,250,.15);color:#A78BFA}
+.feat-card h4{font-size:.95rem;font-weight:700;margin-bottom:6px}
+.feat-card p{font-size:.8rem;color:rgba(255,255,255,.45);line-height:1.6}
 
-        .btn-cta {
-            background: var(--primary);
-            color: white;
-            padding: 10px 24px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 700;
-            transition: all 0.3s;
-            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
-        }
+/* ─── IMPACT ─── */
+.impact{padding:100px 6%;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(59,108,246,.08) 0%,transparent 70%)}
+.impact-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.counter-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.counter-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px}
+.counter-num{font-size:2.4rem;font-weight:900;letter-spacing:-.03em}
+.cn-blue{background:linear-gradient(135deg,var(--blue2),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cn-teal{color:var(--teal)}
+.cn-rose{color:#FF7080}
+.cn-gold{color:var(--gold)}
+.counter-label{font-size:.78rem;color:rgba(255,255,255,.4);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
 
-        .btn-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-            background: var(--primary-dark);
-        }
+/* ─── PRICING ─── */
+.pricing{padding:100px 6%;background:rgba(255,255,255,.015)}
+.pricing-inner{max-width:1100px;margin:0 auto}
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin:32px 0 56px}
+.tgl-label{font-size:.9rem;font-weight:600;color:rgba(255,255,255,.45);transition:color .3s}
+.tgl-label.on{color:white}
+.switch{position:relative;display:inline-block;width:50px;height:26px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.15);border-radius:26px;transition:.3s}
+.slider:before{content:'';position:absolute;height:18px;width:18px;left:4px;bottom:4px;background:white;border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--blue)}
+input:checked+.slider:before{transform:translateX(24px)}
+.disc-badge{background:rgba(0,212,170,.15);color:var(--teal);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:100px}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+.price-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:36px;position:relative;transition:all .4s}
+.price-card.hot{background:linear-gradient(145deg,rgba(59,108,246,.18),rgba(124,58,237,.12));border-color:rgba(59,108,246,.4);transform:scale(1.03)}
+.price-card:hover{border-color:rgba(255,255,255,.2);box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.price-card.hot:hover{transform:scale(1.03) translateY(-6px)}
+.hot-label{position:absolute;top:18px;right:18px;background:linear-gradient(135deg,var(--blue),var(--violet));color:white;font-size:.68rem;font-weight:800;padding:4px 12px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
+.price-name{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.45);margin-bottom:14px}
+.price-val{font-size:2.8rem;font-weight:900;line-height:1;letter-spacing:-.03em}
+.price-val .cur{font-size:1.1rem;font-weight:700;vertical-align:top;margin-top:6px;display:inline-block;color:rgba(255,255,255,.55)}
+.price-val .per{font-size:.95rem;font-weight:400;color:rgba(255,255,255,.35)}
+.price-note{font-size:.75rem;color:rgba(255,255,255,.3);margin-top:4px;margin-bottom:22px}
+.price-divider{height:1px;background:rgba(255,255,255,.07);margin:18px 0}
+.price-feats{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.price-feats li{display:flex;align-items:center;gap:9px;font-size:.84rem;color:rgba(255,255,255,.65)}
+.price-feats li i{color:var(--teal);font-size:.8rem;flex-shrink:0}
+.btn-price{display:block;text-align:center;padding:14px;border-radius:60px;font-weight:700;font-size:.9rem;text-decoration:none;transition:all .3s;border:none;cursor:pointer;width:100%}
+.btp-main{background:linear-gradient(135deg,var(--blue),var(--violet));color:white;box-shadow:0 6px 24px rgba(59,108,246,.35)}
+.btp-main:hover{box-shadow:0 10px 32px rgba(59,108,246,.55);transform:translateY(-2px)}
+.btp-out{border:1.5px solid rgba(255,255,255,.18);color:rgba(255,255,255,.75);background:none}
+.btp-out:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.35);color:white}
 
-        .btn-outline {
-            border: 2px solid #e2e8f0;
-            color: var(--text-main);
-            padding: 10px 24px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 700;
-            transition: all 0.3s;
-        }
+/* ─── CTA ─── */
+.cta-section{padding:100px 6%;text-align:center;background:linear-gradient(135deg,rgba(59,108,246,.15),rgba(124,58,237,.1));border-top:1px solid var(--border)}
+.cta-section h2{font-size:clamp(2rem,4vw,3rem);font-weight:900;letter-spacing:-.03em;margin-bottom:18px}
+.cta-section p{font-size:1.05rem;color:rgba(255,255,255,.55);margin-bottom:40px}
 
-        .btn-outline:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
+/* ─── FOOTER ─── */
+footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);padding:60px 6% 30px}
+.footer-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-col h5{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);margin-bottom:14px}
+.footer-col a{display:block;color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;margin-bottom:8px;transition:color .3s}
+.footer-col a:hover{color:white}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-bottom span{font-size:.78rem;color:rgba(255,255,255,.25)}
 
-        /* Hero Old Removed */
+/* ─── SECTION HEADER ─── */
+.section-tag{display:inline-flex;align-items:center;gap:7px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+.st-blue{color:var(--blue2)}.st-teal{color:var(--teal)}.st-rose{color:#FF7080}
+.section-title{font-size:clamp(2rem,4vw,2.8rem);font-weight:900;line-height:1.1;letter-spacing:-.025em;margin-bottom:16px}
+.section-sub{font-size:1rem;color:rgba(255,255,255,.5);line-height:1.7;max-width:540px}
+.center{text-align:center;margin-left:auto;margin-right:auto}
 
-        /* Features */
-        .features {
-            padding: 100px 5%;
-            background: var(--bg-light);
-            text-align: center;
-        }
+/* ─── ANIMATIONS ─── */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes mapPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+@keyframes mapRipple{0%{transform:scale(1);opacity:.3}100%{transform:scale(3.5);opacity:0}}
+@keyframes pulseBlue{0%,100%{opacity:1}50%{opacity:.4}}
+.aos{opacity:0;transform:translateY(28px);transition:all .75s cubic-bezier(.22,1,.36,1)}
+.aos.in{opacity:1;transform:translateY(0)}
 
-        .section-header {
-            margin-bottom: 60px;
-        }
-
-        .section-badge {
-            background: #dbeafe;
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .feature-card {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            text-align: left;
-            transition: all 0.3s;
-            border: 1px solid transparent;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px -5px rgba(0,0,0,0.05);
-            border-color: #e2e8f0;
-        }
-
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #e0e7ff 0%, #cbd5e1 100%);
-            color: var(--primary);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .feature-card:hover .feature-icon {
-            background: var(--primary);
-            color: white;
-            transform: rotateY(180deg);
-        }
-
-        .feature-tag {
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            margin-bottom: 15px;
-            display: inline-block;
-        }
-
-        .tag-ngo { background: #fee2e2; color: #991b1b; }
-        .tag-manager { background: #dcfce7; color: #166534; }
-        .tag-common { background: #e0e7ff; color: #3730a3; }
-
-        /* Pricing */
-        .pricing {
-            padding: 100px 5%;
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .price-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            position: relative;
-        }
-
-        .price-card.featured {
-            border-color: var(--primary);
-            background: #fafafa;
-            transform: scale(1.05);
-            box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.15);
-        }
-
-        .price { font-size: 3rem; font-weight: 800; color: var(--secondary); margin: 20px 0; }
-        .period { font-size: 1rem; color: var(--text-light); font-weight: 400; }
-
-        .check-list {
-            list-style: none;
-            padding: 0;
-            margin: 30px 0;
-            text-align: left;
-        }
-
-        .check-list li {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text-light);
-        }
-
-        .check-list i { color: var(--success); }
-
-        /* Footer */
-        footer {
-            background: var(--secondary);
-            color: #94a3b8;
-            padding: 80px 5%;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 60px;
-        }
-
-        .footer-brand { color: white; font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; display: block; }
-
-        @media (max-width: 768px) {
-            .hero { grid-template-columns: 1fr; text-align: center; padding-top: 100px; }
-            .hero-content p { margin: 0 auto 40px; }
-            .nav-links { display: none; }
-            .price-card.featured { transform: scale(1); }
-            .footer-grid { grid-template-columns: 1fr; }
-            
-            /* FIX: Video Container Responsiveness */
-            .col-video { min-width: 100% !important; }
-            .col-text { min-width: 100% !important; }
-            .ecosistema-section .row { gap: 40px !important; }
-        }
-    </style>
+/* ─── RESPONSIVE ─── */
+@media(max-width:1024px){.feat-grid{grid-template-columns:repeat(2,1fr)}.impact-inner{grid-template-columns:1fr}}
+@media(max-width:768px){
+    .seg-grid{grid-template-columns:1fr}
+    .feat-grid{grid-template-columns:1fr 1fr}
+    .counter-grid{grid-template-columns:1fr 1fr}
+    .footer-row{grid-template-columns:1fr 1fr}
+    .fc-c,.fc-d,.fc-e{display:none}
+    .price-card.hot{transform:none}
+    .price-card.hot:hover{transform:translateY(-4px)}
+}
+@media(max-width:480px){
+    .feat-grid{grid-template-columns:1fr}
+    .footer-row{grid-template-columns:1fr}
+    .hero-title{font-size:2.4rem}
+}
+</style>
 </head>
 <body>
 
-    <!-- Top Trial Banner -->
-    <div style="background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%); color: white; padding: 10px 5%; text-align: center; font-size: 0.9rem; font-weight: 700; position: relative; z-index: 1001; margin-top: 80px;">
-        🚀 OFERTA ESPECIAL: Experimente qualquer plano por 7 dias grátis. <a href="{{ route('register') }}" style="color: #60a5fa; text-decoration: underline; margin-left: 10px;">Começar Teste Agora</a>
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+    <a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi"></a>
+    <ul class="nav-links">
+        <li><a href="{{ route('solutions.ngo') }}">Para ONGs</a></li>
+        <li><a href="{{ route('solutions.manager') }}">Para Gestores</a></li>
+        <li><a href="{{ route('solutions.common') }}">Uso Pessoal</a></li>
+        <li><a href="#pricing">Preços</a></li>
+        <li><a href="{{ url('/blog') }}" style="color:rgba(255,255,255,.45)">Blog</a></li>
+    </ul>
+    <div class="nav-ctas">
+        <a href="{{ route('login') }}" class="btn-ghost">Entrar</a>
+        <a href="{{ route('register') }}" class="btn-nav"><i class="fas fa-rocket"></i> Começar Grátis</a>
+    </div>
+    <button class="mobile-btn" onclick="document.getElementById('mobileMenu').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+    <a href="{{ route('solutions.ngo') }}">Para ONGs</a>
+    <a href="{{ route('solutions.manager') }}">Para Gestores</a>
+    <a href="{{ route('solutions.common') }}">Uso Pessoal</a>
+    <a href="#pricing">Preços</a>
+    <a href="{{ route('login') }}">Entrar</a>
+    <a href="{{ route('register') }}" style="color:var(--blue2);font-weight:800">🚀 Começar Grátis</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> Plataforma #1 de Impacto Social no Brasil</div>
+    <h1 class="hero-title">
+        <span class="g1">Gestão que</span><br>
+        <span class="g2">Transforma Vidas</span><br>
+        <span class="g1">em escala real.</span>
+    </h1>
+    <p class="hero-sub">Da ONG de bairro à rede nacional — o Vivensi conecta pessoas, dados e propósito em um único ecossistema digital.</p>
+    <div class="hero-ctas">
+        <a href="{{ route('register') }}" class="btn-hero"><i class="fas fa-rocket"></i> Comece Gratuitamente</a>
+        <a href="#segments" class="btn-hero-outline"><i class="fas fa-th-large"></i> Ver Soluções</a>
     </div>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <a href="{{ url('/') }}" class="logo">
-            <x-application-logo style="height: 40px; width: auto;" />
+    <!-- MAP VISUALIZATION -->
+    <div class="map-section">
+        <div class="map-wrap">
+            <svg id="brazil-svg" viewBox="0 0 820 740" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+                        <stop offset="0%" stop-color="#3B6CF6" stop-opacity=".12"/>
+                        <stop offset="100%" stop-color="#080E1A" stop-opacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="mapFill" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#3B6CF6" stop-opacity=".25"/>
+                        <stop offset="50%" stop-color="#7C3AED" stop-opacity=".15"/>
+                        <stop offset="100%" stop-color="#E8455A" stop-opacity=".1"/>
+                    </linearGradient>
+                    <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    <filter id="softglow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <rect width="820" height="740" fill="url(#bgGrad)"/>
+                <!-- Grid lines -->
+                <g stroke="rgba(255,255,255,.04)" stroke-width="1">
+                    <line x1="0" y1="185" x2="820" y2="185"/><line x1="0" y1="370" x2="820" y2="370"/>
+                    <line x1="0" y1="555" x2="820" y2="555"/><line x1="205" y1="0" x2="205" y2="740"/>
+                    <line x1="410" y1="0" x2="410" y2="740"/><line x1="615" y1="0" x2="615" y2="740"/>
+                </g>
+                <!-- Brazil mainland path (simplified) -->
+                <path d="M310 55 L360 48 L410 58 L455 72 L490 88 L520 110 L540 138 L548 165 L542 188 L556 208 L575 232 L590 260 L598 292 L594 322 L580 348 L560 368 L538 382 L513 394 L488 408 L465 428 L444 452 L428 476 L415 502 L403 528 L392 550 L380 568 L365 582 L348 595 L330 604 L312 608 L294 606 L277 598 L260 584 L244 565 L230 542 L218 516 L207 486 L198 454 L192 420 L190 386 L192 353 L198 320 L207 290 L218 262 L232 238 L248 216 L266 196 L284 180 L300 164 L312 148 L318 130 L316 112 L308 96 Z"
+                      fill="url(#mapFill)" stroke="rgba(59,108,246,.5)" stroke-width="1.5" filter="url(#glow)"/>
+                <!-- Northern state separation lines -->
+                <path d="M310 140 L390 135 L430 142 L440 158 L410 165 L380 160 L350 155 Z" fill="rgba(59,108,246,.08)" stroke="rgba(59,108,246,.2)" stroke-width="1"/>
+                <!-- Northeast region tint -->
+                <path d="M500 180 L540 195 L568 220 L578 250 L562 268 L538 262 L516 245 L498 225 L490 205 Z" fill="rgba(232,69,90,.07)" stroke="rgba(232,69,90,.2)" stroke-width="1"/>
+                <!-- South region tint -->
+                <path d="M260 520 L290 514 L320 518 L340 530 L330 548 L310 558 L288 552 L268 540 Z" fill="rgba(0,212,170,.07)" stroke="rgba(0,212,170,.2)" stroke-width="1"/>
+                <!-- Connection lines between major dots -->
+                <g stroke="rgba(59,108,246,.25)" stroke-width="1" stroke-dasharray="4 4">
+                    <line x1="390" y1="180" x2="530" y2="240"/>
+                    <line x1="390" y1="180" x2="310" y2="490"/>
+                    <line x1="530" y1="240" x2="430" y2="390"/>
+                    <line x1="310" y1="490" x2="430" y2="390"/>
+                    <line x1="430" y1="390" x2="500" y2="320"/>
+                </g>
+                <!-- State dots: São Paulo -->
+                <circle cx="390" cy="480" r="16" fill="rgba(59,108,246,.2)" filter="url(#softglow)"/>
+                <circle cx="390" cy="480" r="8" fill="var(--blue2)" filter="url(#glow)">
+                    <animate attributeName="r" values="7;10;7" dur="3s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="1;.6;1" dur="3s" repeatCount="indefinite"/>
+                </circle>
+                <!-- Rio de Janeiro -->
+                <circle cx="430" cy="450" r="12" fill="rgba(59,108,246,.15)" filter="url(#softglow)"/>
+                <circle cx="430" cy="450" r="6" fill="var(--blue2)" filter="url(#glow)">
+                    <animate attributeName="r" values="5;8;5" dur="2.8s" repeatCount="indefinite" begin=".5s"/>
+                </circle>
+                <!-- Brasília -->
+                <circle cx="420" cy="340" r="14" fill="rgba(245,166,35,.2)" filter="url(#softglow)"/>
+                <circle cx="420" cy="340" r="7" fill="var(--gold)" filter="url(#glow)">
+                    <animate attributeName="r" values="6;9;6" dur="3.2s" repeatCount="indefinite" begin="1s"/>
+                </circle>
+                <!-- Fortaleza -->
+                <circle cx="530" cy="210" r="13" fill="rgba(232,69,90,.2)" filter="url(#softglow)"/>
+                <circle cx="530" cy="210" r="6" fill="#FF7080" filter="url(#glow)">
+                    <animate attributeName="r" values="5;8;5" dur="2.6s" repeatCount="indefinite" begin=".3s"/>
+                </circle>
+                <!-- Manaus -->
+                <circle cx="310" cy="200" r="12" fill="rgba(0,212,170,.15)" filter="url(#softglow)"/>
+                <circle cx="310" cy="200" r="6" fill="var(--teal)" filter="url(#glow)">
+                    <animate attributeName="r" values="5;8;5" dur="3.5s" repeatCount="indefinite" begin="1.5s"/>
+                </circle>
+                <!-- Porto Alegre -->
+                <circle cx="370" cy="570" r="11" fill="rgba(124,58,237,.2)" filter="url(#softglow)"/>
+                <circle cx="370" cy="570" r="5" fill="#B27CFF" filter="url(#glow)">
+                    <animate attributeName="r" values="4;7;4" dur="3s" repeatCount="indefinite" begin=".8s"/>
+                </circle>
+                <!-- Belém -->
+                <circle cx="460" cy="165" r="10" fill="rgba(59,108,246,.15)" filter="url(#softglow)"/>
+                <circle cx="460" cy="165" r="5" fill="var(--blue2)" filter="url(#glow)">
+                    <animate attributeName="r" values="4;7;4" dur="2.9s" repeatCount="indefinite" begin=".2s"/>
+                </circle>
+                <!-- Salvador -->
+                <circle cx="500" cy="340" r="11" fill="rgba(245,166,35,.15)" filter="url(#softglow)"/>
+                <circle cx="500" cy="340" r="5" fill="var(--gold)" filter="url(#glow)">
+                    <animate attributeName="r" values="4;7;4" dur="3.1s" repeatCount="indefinite" begin="1.2s"/>
+                </circle>
+                <!-- Particle ambiance -->
+                <g opacity=".5">
+                    <circle cx="350" cy="110" r="1.5" fill="#5B82FF"><animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/></circle>
+                    <circle cx="570" cy="290" r="1.5" fill="#B27CFF"><animate attributeName="opacity" values="0;1;0" dur="5s" repeatCount="indefinite" begin="1s"/></circle>
+                    <circle cx="250" cy="380" r="1.5" fill="#00D4AA"><animate attributeName="opacity" values="0;1;0" dur="3.5s" repeatCount="indefinite" begin="2s"/></circle>
+                    <circle cx="480" cy="500" r="1.5" fill="#FF7080"><animate attributeName="opacity" values="0;1;0" dur="4.5s" repeatCount="indefinite" begin=".5s"/></circle>
+                </g>
+            </svg>
+
+            <!-- Floating cards -->
+            <div class="fcard fc-a">
+                <div class="fcard-label">ONGs ativas</div>
+                <div class="fcard-value">2.847</div>
+                <div class="fcard-sub"><i class="fas fa-arrow-up"></i> +124 este mês</div>
+            </div>
+            <div class="fcard fc-b">
+                <div class="fcard-label">Doações captadas</div>
+                <div class="fcard-value">R$ 12,4M</div>
+                <div class="fcard-sub" style="color:var(--gold)"><i class="fas fa-chart-line"></i> +31% vs 2025</div>
+            </div>
+            <div class="fcard fc-c">
+                <div class="fcard-label">Beneficiários</div>
+                <div class="fcard-value">98.200</div>
+                <div class="fcard-sub"><i class="fas fa-heart"></i> em 27 estados</div>
+            </div>
+            <div class="fcard fc-d">
+                <div class="fcard-label">Voluntários gamificados</div>
+                <div class="fcard-value">34.500</div>
+                <div class="fcard-sub" style="color:#B27CFF"><i class="fas fa-trophy"></i> 1.240 Diamante</div>
+            </div>
+            <div class="fcard fc-e">
+                <div class="fcard-label">Relatórios gerados</div>
+                <div class="fcard-value">18.930</div>
+                <div class="fcard-sub" style="color:rgba(255,255,255,.4)">Automáticos por IA</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust">
+    <div class="trust-row">
+        <span class="trust-lbl">Infraestrutura</span>
+        <div class="trust-item"><i class="fas fa-shield-halved"></i> LGPD Compliant</div>
+        <div class="trust-item"><i class="fas fa-server"></i> AWS Brasil (SA-East)</div>
+        <div class="trust-item"><i class="fas fa-lock"></i> SSL 256-bit + 2FA</div>
+        <div class="trust-item"><i class="fas fa-star"></i> 4.9/5 ★★★★★</div>
+        <div class="trust-item"><i class="fas fa-clock"></i> 99.9% Uptime SLA</div>
+    </div>
+</div>
+
+<!-- SEGMENTS -->
+<section class="segments" id="segments">
+    <div class="center aos">
+        <div class="section-tag st-blue"><i class="fas fa-th-large"></i> Soluções</div>
+        <h2 class="section-title">Uma plataforma,<br>três ecossistemas</h2>
+        <p class="section-sub center">Cada vertical é especializada para as necessidades do seu setor, mas todas compartilham a mesma base sólida.</p>
+    </div>
+    <div class="seg-grid">
+        <a href="{{ route('solutions.ngo') }}" class="seg-card seg-ngo aos">
+            <div class="seg-icon si-rose"><i class="fas fa-hand-holding-heart"></i></div>
+            <h3>Para ONGs & Terceiro Setor</h3>
+            <p>Gestão de doadores, prestação de contas, editais, almoxarifado, voluntários gamificados e portal de transparência.</p>
+            <div class="seg-link sl-rose">Explorar solução <i class="fas fa-arrow-right"></i></div>
         </a>
+        <a href="{{ route('solutions.manager') }}" class="seg-card seg-mgr aos">
+            <div class="seg-icon si-blue"><i class="fas fa-chart-bar"></i></div>
+            <h3>Para Gestores & Projetos</h3>
+            <p>Kanban de projetos, agenda de reuniões, controle financeiro, CRM de clientes e relatórios executivos em tempo real.</p>
+            <div class="seg-link sl-blue">Explorar solução <i class="fas fa-arrow-right"></i></div>
+        </a>
+        <a href="{{ route('solutions.common') }}" class="seg-card seg-ppl aos">
+            <div class="seg-icon si-purple"><i class="fas fa-user-circle"></i></div>
+            <h3>Uso Pessoal & Profissional</h3>
+            <p>Finanças pessoais, contratos, whatsapp integrado, landing pages e muito mais para profissionais liberais.</p>
+            <div class="seg-link sl-purple">Explorar solução <i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+</section>
 
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <div class="nav-links" id="navLinks">
-            <!-- Mobile Header inside Menu -->
-            <div class="mobile-menu-header">
-                <span style="font-weight: 800; font-size: 1.2rem; color: var(--secondary);">Menu</span>
-                <button onclick="toggleMobileMenu()" style="background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer;">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <a href="{{ route('solutions.ngo') }}">ONGs</a>
-            <a href="{{ route('solutions.manager') }}">Gestores</a>
-            <a href="{{ route('solutions.common') }}">Pessoal</a>
-            <a href="#pricing">Preços</a>
-            
-            <!-- Mobile Only Actions -->
-            <div class="mobile-actions">
-                <a href="{{ route('login') }}" class="btn-outline" style="text-align: center;">Entrar</a>
-                <a href="#pricing" class="btn-cta" style="text-align: center;">Começar Agora</a>
-            </div>
+<!-- FEATURES -->
+<section class="features aos">
+    <div class="feat-inner">
+        <div class="center">
+            <div class="section-tag st-teal"><i class="fas fa-sparkles"></i> Funcionalidades</div>
+            <h2 class="section-title">Tudo incluso, sem surpresas</h2>
+            <p class="section-sub center">Cada recurso foi pensado pela equipe Vivensi com base no feedback de gestores reais do terceiro setor.</p>
         </div>
-
-        <div class="desktop-actions" style="display: flex; gap: 15px;">
-            <a href="{{ route('login') }}" class="btn-outline">Entrar</a>
-            <a href="#pricing" class="btn-cta">Começar Agora</a>
+        <div class="feat-grid">
+            <div class="feat-card"><div class="feat-ic fi-rose"><i class="fas fa-heart"></i></div><h4>Portal do Doador VIP</h4><p>Link mágico exclusivo por doador com histórico e informe de rendimentos.</p></div>
+            <div class="feat-card"><div class="feat-ic fi-blue"><i class="fas fa-file-invoice"></i></div><h4>Prestação de Contas</h4><p>DRE, Balancetes e relatórios em 1 clique, prontos para auditoria.</p></div>
+            <div class="feat-card"><div class="feat-ic fi-teal"><i class="fas fa-box-open"></i></div><h4>Almoxarifado Digital</h4><p>Controle de estoque físico de doações com movimentações e histórico.</p></div>
+            <div class="feat-card"><div class="feat-ic fi-gold"><i class="fas fa-trophy"></i></div><h4>Voluntários Gamificados</h4><p>Rankings, pontos por horas e crachás para motivar seu time social.</p></div>
+            <div class="feat-card"><div class="feat-ic fi-purple"><i class="fas fa-brain"></i></div><h4>IA para Editais</h4><p>Geração automática de projetos via IA com análise de viabilidade.</p></div>
+            <div class="feat-card"><div class="feat-ic fi-sky"><i class="fas fa-kanban"></i></div><h4>CRM Kanban</h4><p>Funil visual de patrocínios e deals com drag & drop profissional.</p></div>
+            <div class="feat-card"><div class="feat-ic fi-green"><i class="fab fa-whatsapp"></i></div><h4>WhatsApp Integrado</h4><p>Campanhas, atendimento e bot com IA via Evolution API.</p></div>
+            <div class="feat-card"><div class="feat-ic fi-violet"><i class="fas fa-globe"></i></div><h4>Portal de Transparência</h4><p>Página pública automática mostrando impacto em tempo real.</p></div>
         </div>
-    </nav>
+    </div>
+</section>
 
-    <!-- Overlay for Mobile Menu -->
-    <div class="menu-overlay" id="menuOverlay" onclick="toggleMobileMenu()"></div>
-
-    <style>
-        .mobile-menu-btn { display: none; background: none; border: none; font-size: 1.5rem; color: var(--secondary); cursor: pointer; }
-        .mobile-menu-header { display: none; }
-        .mobile-actions { display: none; }
-        .menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; backdrop-filter: blur(2px); opacity: 0; transition: opacity 0.3s; }
-        .menu-overlay.active { display: block; opacity: 1; }
-
-        @media (max-width: 768px) {
-            .mobile-menu-btn { display: block; }
-            .desktop-actions { display: none !important; }
-            
-            .nav-links {
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 80%;
-                max-width: 300px;
-                height: 100vh;
-                background: white;
-                flex-direction: column;
-                padding: 20px;
-                box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-                transition: right 0.3s ease;
-                z-index: 1001;
-                display: flex !important;
-                gap: 20px;
-            }
-
-            .nav-links.active { right: 0; }
-
-            .mobile-menu-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 20px;
-                border-bottom: 1px solid #f1f5f9;
-                padding-bottom: 15px;
-            }
-
-            .nav-links a {
-                font-size: 1.1rem;
-                padding: 10px 0;
-                border-bottom: 1px solid #f8fafc;
-                display: block;
-            }
-
-            .mobile-actions {
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-                margin-top: 20px;
-            }
-        }
-    </style>
-
-    <script>
-        function toggleMobileMenu() {
-            const nav = document.getElementById('navLinks');
-            const overlay = document.getElementById('menuOverlay');
-            nav.classList.toggle('active');
-            
-            if (nav.classList.contains('active')) {
-                overlay.style.display = 'block';
-                setTimeout(() => overlay.style.opacity = '1', 10);
-                document.body.style.overflow = 'hidden';
-            } else {
-                overlay.style.opacity = '0';
-                setTimeout(() => overlay.style.display = 'none', 300);
-                document.body.style.overflow = 'auto';
-            }
-        }
-    </script>
-
-    <!-- Hero Section (Premium High-End Refactor) -->
-    <section class="hero-m3" id="hero">
-        <div class="hero-m3-bg">
-            <div class="blob blob-1"></div>
-            <div class="blob blob-2"></div>
+<!-- IMPACT COUNTERS -->
+<section class="impact">
+    <div class="impact-inner">
+        <div class="aos">
+            <div class="section-tag st-rose"><i class="fas fa-chart-area"></i> Impacto Real</div>
+            <h2 class="section-title">Números que<br>provam o propósito</h2>
+            <p class="section-sub">O Vivensi não é só software. É o motor de gestão que permite que organizações focadas em missão operem com excelência.</p>
         </div>
+        <div class="counter-grid aos">
+            <div class="counter-card"><div class="counter-num cn-blue">2.847</div><div class="counter-label">ONGs cadastradas</div></div>
+            <div class="counter-card"><div class="counter-num cn-teal">98k+</div><div class="counter-label">Beneficiários impactados</div></div>
+            <div class="counter-card"><div class="counter-num cn-rose">R$12M</div><div class="counter-label">Doações rastreadas</div></div>
+            <div class="counter-card"><div class="counter-num cn-gold">34.5k</div><div class="counter-label">Voluntários ativos</div></div>
+        </div>
+    </div>
+</section>
 
-        <div class="hero-m3-grid">
-            <!-- Content Layer -->
-            <div class="hero-m3-content">
-                <div class="m3-badge">
-                    <i class="fas fa-microchip"></i> 
-                    <span>Vivensi Intelligence v2.0</span>
-                </div>
-                
-                <h1 class="hero-display">
-                    <span class="line line-1">Escalando o</span> 
-                    <span class="line line-2 gradient-text">Impacto Social</span> 
-                    <span class="line line-3">com tecnologia.</span>
-                </h1>
-                
-                <p class="hero-body">
-                    A plataforma definitiva que integra ONGs, Gestores e comunidades através de IA. 
-                    Transforme dados em mudança real com máxima transparência.
-                </p>
-
-                <div class="hero-actions">
-                    <a href="{{ route('register') }}" class="btn-m3-primary">
-                        Começar Agora
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                    <a href="#pricing" class="btn-m3-tonal">
-                        Ver Planos
-                        <i class="fas fa-external-link-alt" style="font-size: 0.8rem; opacity: 0.6;"></i>
-                    </a>
-                </div>
-
-                <div class="hero-trust">
-                    <span style="color: #64748B;"><i class="fas fa-award" style="color: #F59E0B; margin-right: 8px;"></i> Líder em <strong>Gestão de Terceiro Setor</strong></span>
-                </div>
-            </div>
-
-            <!-- Professional Tech Scene -->
-            <div class="hero-m3-scene">
-                <svg class="svg-professional" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="gradBuilding" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.2" />
-                            <stop offset="100%" stop-color="#6366F1" stop-opacity="0.05" />
-                        </linearGradient>
-                        <linearGradient id="gradAccent" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#818CF8" stop-opacity="0.3" />
-                            <stop offset="100%" stop-color="#C084FC" stop-opacity="0.1" />
-                        </linearGradient>
-                    </defs>
-
-                    <!-- Background Blueprint Layer (Digital Skeleton) -->
-                    <g class="layer-back">
-                        <path class="blueprint-path" d="M100 500 H700" />
-                        <path class="blueprint-path" d="M200 500 V200 H350 V500" />
-                        <path class="blueprint-path" d="M400 500 V100 H550 V500" />
-                        <path class="blueprint-path" d="M350 300 H400" />
-                        <circle cx="200" cy="500" r="3" fill="#4F46E5" fill-opacity="0.5" />
-                        <circle cx="700" cy="500" r="3" fill="#4F46E5" fill-opacity="0.5" />
-                    </g>
-
-                    <!-- Mid Layer (The Hubs/Buildings) -->
-                    <g class="layer-mid">
-                        <!-- Institutional Building 1 -->
-                        <g class="building-surface" style="animation-delay: 2s">
-                            <rect x="180" y="240" width="160" height="260" rx="4" fill="url(#gradBuilding)" stroke="rgba(255,255,255,0.1)"/>
-                            <rect x="200" y="270" width="30" height="30" rx="2" fill="white" fill-opacity="0.05"/>
-                            <rect x="245" y="270" width="30" height="30" rx="2" fill="white" fill-opacity="0.05"/>
-                            <rect x="290" y="270" width="30" height="30" rx="2" fill="white" fill-opacity="0.05"/>
-                        </g>
-                        
-                        <!-- Tech Tower (IA Center) -->
-                        <g class="building-surface" style="animation-delay: 2.3s">
-                            <rect x="380" y="140" width="140" height="360" rx="4" fill="rgba(79, 70, 229, 0.1)" stroke="rgba(129, 140, 248, 0.4)"/>
-                            <path d="M380 140 L520 140 L450 100 Z" fill="#818CF8" fill-opacity="0.2"/>
-                            <rect x="440" y="160" width="20" height="300" rx="2" fill="#818CF8" fill-opacity="0.1"/>
-                        </g>
-
-                        <!-- Impact House -->
-                        <g class="building-surface" style="animation-delay: 2.6s">
-                            <rect x="560" y="380" width="120" height="120" rx="6" fill="url(#gradAccent)" stroke="rgba(192, 132, 252, 0.2)"/>
-                            <path d="M550 380 L690 380 L620 340 Z" fill="#C084FC" fill-opacity="0.2"/>
-                        </g>
-                    </g>
-
-                    <!-- Interaction Layer (Data Streams & IA Nodes) -->
-                    <g class="layer-front">
-                        <!-- Data Streams -->
-                        <path class="data-stream" d="M260 400 C400 400 450 200 450 150" fill="none" />
-                        <path class="data-stream" d="M450 450 C450 450 620 450 620 400" fill="none" />
-                        
-                        <!-- IA Nodes (Pulsing Intelligene) -->
-                        <circle class="node-pulse" cx="260" cy="400" r="6" style="animation-delay: 0s" />
-                        <circle class="node-pulse" cx="450" cy="150" r="8" style="animation-delay: 1s" />
-                        <circle class="node-pulse" cx="620" cy="400" r="6" style="animation-delay: 2s" />
-                        <circle class="node-pulse" cx="450" cy="450" r="4" style="animation-delay: 0.5s" />
-
-                        <!-- Community Silhouettes (Connected Impact) -->
-                        <g class="building-surface" style="animation-delay: 3s">
-                            <circle cx="260" cy="430" r="15" fill="white" fill-opacity="0.1" /> <!-- Person Represented by data -->
-                            <circle cx="620" cy="430" r="15" fill="white" fill-opacity="0.1" />
-                        </g>
-                    </g>
-
-                    <!-- Ambient Particles -->
-                    <g opacity="0.4">
-                        <circle cx="200" cy="100" r="2" fill="#818CF8">
-                            <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite" />
-                        </circle>
-                        <circle cx="600" cy="200" r="2" fill="#C084FC">
-                            <animate attributeName="opacity" values="0;1;0" dur="5s" repeatCount="indefinite" />
-                        </circle>
-                    </g>
-                </svg>
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+    <div class="pricing-inner">
+        <div class="center aos">
+            <div class="section-tag st-blue"><i class="fas fa-tag"></i> Planos</div>
+            <h2 class="section-title">Investimento no impacto</h2>
+            <p class="section-sub center">Sem fidelização. Cancele quando quiser. Suporte incluso em todos os planos.</p>
+            <div class="billing-toggle">
+                <span class="tgl-label on" id="lbl-m">Mensal</span>
+                <label class="switch"><input type="checkbox" id="billing-toggle" onchange="toggleBilling()"><span class="slider"></span></label>
+                <span class="tgl-label" id="lbl-y">Anual <span class="disc-badge">-10% OFF</span></span>
             </div>
         </div>
-    </section>
-
-    <style>
-        /* High-End Hero v2.0 - Tech + Impact Professional Aesthetic */
-        .hero-m3 {
-            position: relative;
-            padding: 80px 5% 120px;
-            overflow: hidden;
-            background: #0F172A; /* Deep Slate for High Contrast/Tech feel */
-            color: white;
-        }
-
-        .hero-m3-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            opacity: 0.4;
-            pointer-events: none;
-            background: radial-gradient(circle at 70% 30%, rgba(79, 70, 229, 0.15) 0%, transparent 60%);
-        }
-
-        .blob {
-            position: absolute;
-            filter: blur(120px);
-            opacity: 0.3;
-            border-radius: 50%;
-            animation: floatBlob 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .blob-1 { top: -20%; right: -10%; width: 800px; height: 800px; background: #6366F1; }
-        .blob-2 { bottom: -20%; left: -10%; width: 600px; height: 600px; background: #8B5CF6; animation-delay: -5s; }
-
-        @keyframes floatBlob {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(60px, -80px) scale(1.15); }
-        }
-
-        .hero-m3-grid {
-            position: relative;
-            z-index: 2;
-            display: grid;
-            grid-template-columns: 1.15fr 0.85fr;
-            gap: 80px;
-            max-width: 1300px;
-            margin: 0 auto;
-            align-items: center;
-        }
-
-        /* Premium Typography */
-        .m3-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 100px;
-            color: #818CF8;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 32px;
-            opacity: 0;
-            transform: translateY(10px);
-            animation: simpleFade 0.6s ease-out forwards 0.2s;
-        }
-
-        .hero-display {
-            font-size: 4.5rem;
-            line-height: 1.0;
-            font-weight: 800;
-            color: white;
-            letter-spacing: -0.05em;
-            margin: 0 0 32px 0;
-        }
-
-        .hero-display .line {
-            display: block;
-            opacity: 0;
-            transform: translateY(40px);
-            animation: heroReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .line-1 { animation-delay: 0.3s !important; }
-        .line-2 { animation-delay: 0.5s !important; }
-        .line-3 { animation-delay: 0.7s !important; }
-
-        @keyframes heroReveal {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes simpleFade {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #818CF8 0%, #C084FC 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-body {
-            font-size: 1.4rem;
-            color: #94A3B8;
-            line-height: 1.6;
-            margin-bottom: 48px;
-            max-width: 580px;
-            opacity: 0;
-            animation: simpleFade 0.8s ease-out forwards 1.0s;
-        }
-
-        /* Actions - Slide Up Premium */
-        .hero-actions {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 64px;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: simpleFade 0.6s ease-out forwards 1.3s;
-        }
-
-        .btn-m3-primary {
-            background: #4F46E5;
-            color: white;
-            padding: 20px 40px;
-            border-radius: 14px; /* More modern industrial radius */
-            font-weight: 800;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.5);
-        }
-
-        .btn-m3-primary:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 20px 40px -5px rgba(79, 70, 229, 0.6);
-            background: #4338CA;
-        }
-
-        .btn-m3-tonal {
-            background: transparent;
-            color: white;
-            padding: 20px 40px;
-            border-radius: 14px;
-            font-weight: 800;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
-        }
-
-        .btn-m3-tonal:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: #818CF8;
-            color: #818CF8;
-        }
-
-        /* Scene Layout & Technical Layers */
-        .hero-m3-scene {
-            position: relative;
-            height: 600px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            perspective: 2000px;
-        }
-
-        /* SVG Narrative Layers */
-        .svg-professional {
-            width: 120%;
-            height: auto;
-            overflow: visible;
-        }
-
-        /* Phase 1: Blueprint Strokes */
-        .blueprint-path {
-            stroke: #4F46E5;
-            stroke-width: 1;
-            fill: none;
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: drawBlueprint 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards 1.5s;
-            opacity: 0.6;
-        }
-
-        @keyframes drawBlueprint {
-            to { stroke-dashoffset: 0; }
-        }
-
-        /* Phase 2: Building Surfaces with Depth */
-        .building-surface {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: surfaceReveal 1.2s forwards;
-        }
-
-        @keyframes surfaceReveal {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Logic Nodes (IA) */
-        .node-pulse {
-            fill: #818CF8;
-            filter: drop-shadow(0 0 5px #818CF8);
-            animation: pulseGlow 3s infinite alternate ease-in-out;
-        }
-
-        @keyframes pulseGlow {
-            0% { transform: scale(1); opacity: 0.7; filter: drop-shadow(0 0 2px #818CF8); }
-            100% { transform: scale(1.5); opacity: 1; filter: drop-shadow(0 0 12px #6366F1); }
-        }
-
-        /* Connection Lines */
-        .data-stream {
-            stroke: #6366F1;
-            stroke-width: 0.5;
-            stroke-dasharray: 4 4;
-            animation: streamMove 30s linear infinite;
-        }
-
-        @keyframes streamMove {
-            from { stroke-dashoffset: 1000; }
-            to { stroke-dashoffset: 0; }
-        }
-
-        /* Layered Depth Classes */
-        .layer-back { transform: translateZ(-100px); opacity: 0.4; }
-        .layer-mid { transform: translateZ(0); }
-        .layer-front { transform: translateZ(100px); }
-
-        @media (max-width: 1024px) {
-            .hero-display { font-size: 3.5rem; }
-            .hero-m3-scene { height: 450px; }
-        }
-
-        @media (max-width: 768px) {
-            .hero-m3-grid { grid-template-columns: 1fr; text-align: center; gap: 40px; }
-            .hero-display { font-size: 3rem; }
-            .hero-body { margin: 0 auto 32px; font-size: 1.2rem; }
-            .hero-actions { justify-content: center; flex-direction: column; }
-            .hero-m3-scene { height: 350px; margin-top: 40px; }
-            .hero-m3 { padding-top: 160px; padding-bottom: 80px; }
-            
-            /* Reduced animations for mobile LCP */
-            .blueprint-path { animation-duration: 1.5s; }
-            .hero-m3-scene { perspective: none; }
-        }
-    </style>
-
-    <script>
-        document.addEventListener('mousemove', (e) => {
-            const parallaxScene = document.getElementById('parallaxScene');
-            if (window.innerWidth <= 768 || !parallaxScene) return;
-
-            const x = (window.innerWidth - e.pageX * 2) / 100;
-            const y = (window.innerHeight - e.pageY * 2) / 100;
-
-            const elements = document.querySelectorAll('[data-speed]');
-            
-            elements.forEach(el => {
-                const speed = el.getAttribute('data-speed');
-                const xPos = x * speed / 10;
-                const yPos = y * speed / 10;
-                
-                el.style.transform = `translate(${xPos}px, ${yPos}px)`;
-            });
-        });
-    </script>
-
-
-    <!-- Ecossistema & Vídeo Section -->
-    <section id="ecosistema" class="ecosistema-section" style="padding: 100px 5%; background: white;">
-        <div class="container" style="max-width: 1200px; margin: 0 auto;">
-            <div class="row align-items-center" style="display: flex; flex-wrap: wrap; gap: 60px; justify-content: center;">
-                <!-- Texto Column -->
-                <div class="col-text" style="flex: 1; min-width: 350px;">
-                    <span class="section-badge" style="background: rgba(79, 70, 229, 0.1); color: var(--primary); padding: 8px 20px; border-radius: 50px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Conheça a Revolução</span>
-                    <h2 style="font-size: 3rem; color: var(--secondary); margin: 25px 0; font-weight: 900; line-height: 1.1; letter-spacing: -1px;">O Ecossistema Vivensi</h2>
-                    <p style="color: var(--text-light); font-size: 1.15rem; line-height: 1.8; margin-bottom: 30px;">
-                        Mais do que uma ferramenta, o Vivensi é um <strong>organismo digital integrado</strong>. Unificamos o Terceiro Setor, o Gerenciamento de Projetos e as Finanças Pessoais em um único fluxo de inteligência.
-                    </p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div style="display: flex; align-items: flex-start; gap: 12px;">
-                            <div style="background: #eef2ff; color: var(--primary); padding: 10px; border-radius: 12px;"><i class="fas fa-link"></i></div>
-                            <div>
-                                <h4 style="margin: 0; color: #1e293b; font-weight: 800; font-size: 1rem;">Conectividade</h4>
-                                <p style="font-size: 0.85rem; color: #64748b; margin: 5px 0 0 0;">Tudo sincronizado em tempo real.</p>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: flex-start; gap: 12px;">
-                            <div style="background: #f0fdf4; color: #16a34a; padding: 10px; border-radius: 12px;"><i class="fas fa-shield-alt"></i></div>
-                            <div>
-                                <h4 style="margin: 0; color: #1e293b; font-weight: 800; font-size: 1rem;">Segurança</h4>
-                                <p style="font-size: 0.85rem; color: #64748b; margin: 5px 0 0 0;">Auditável e 100% transparente.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Video Column -->
-                <div class="col-video" style="flex: 1.2; min-width: 400px; position: relative;">
-                    <div style="background: #0f172a; border-radius: 24px; padding: 10px; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.3); position: relative; overflow: hidden; aspect-ratio: 16/10;">
-                        @if($videoUrl)
-                            <iframe width="100%" height="100%" src="{{ $videoUrl }}" title="Vivensi Introduction" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border-radius: 15px;"></iframe>
-                        @else
-                            <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 15px;">
-                                <i class="fas fa-play-circle" style="font-size: 4rem; color: white; opacity: 0.2; margin-bottom: 20px;"></i>
-                                <p style="color: white; opacity: 0.5; font-weight: 600;">Vídeo Institucional em Breve</p>
-                            </div>
-                        @endif
-                    </div>
-                    <!-- Decoracao -->
-                    <div style="position: absolute; z-index: -1; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, var(--primary) 0%, transparent 70%); opacity: 0.3; filter: blur(20px);"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features -->
-    <section id="features" class="features" style="padding: 120px 5%;">
-        <div class="section-header">
-            <span class="section-badge" style="background: rgba(79, 70, 229, 0.1); border: 1px solid rgba(79, 70, 229, 0.2);">Ecossistema Vivensi</span>
-            <h2 style="font-size: 3rem; color: var(--secondary); margin-top: 15px; font-weight: 800; letter-spacing: -1px;">Uma plataforma para três mundos</h2>
-            <p style="color: var(--text-light); max-width: 600px; margin: 20px auto; font-size: 1.1rem;">Soluções sob medida para quem busca transparência, eficiência e inteligência financeira.</p>
-        </div>
-
-        <div class="feature-grid" style="max-width: 1200px; margin: 0 auto; gap: 40px;">
-            <!-- NGO Card -->
-            <div class="feature-card" style="border: 1px solid #f1f5f9; position: relative; padding: 60px 40px; border-top: 6px solid #e11d48;">
-                <div style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; letter-spacing: 2px; color: #e11d48; margin-bottom: 10px;">Solução Especializada</div>
-                <h2 style="font-weight: 900; font-size: 1.8rem; margin-bottom: 25px; color: #0f172a; line-height: 1.2;">ONGs & Projetos Sociais</h2>
-                
-                <div class="feature-icon" style="background: #fff1f2; color: #e11d48; margin-bottom: 30px;"><i class="fas fa-landmark"></i></div>
-                
-                <h3 style="font-weight: 700; font-size: 1.2rem; margin-bottom: 15px; color: #1e293b;">Portal da Transparência</h3>
-                <p style="color: var(--text-light); font-size: 1rem; line-height: 1.7; margin-bottom: 30px;">Gere portais públicos auditáveis automaticamente. Transforme a prestação de contas em uma ferramenta de captação e confiança para seus doadores.</p>
-                
-                <hr style="opacity: 0.1; margin: 25px 0;">
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #e11d48; display: flex; align-items: center;">
-                        <i class="fas fa-shield-heart me-2" style="font-size: 1.1rem;"></i> Credibilidade para sua Causa
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-comments me-2" style="color: #e11d48;"></i> Chat Interno de Equipe
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-bolt me-2" style="color: #e11d48;"></i> Potencializado por IA Vivensi
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-file-invoice me-2" style="color: #e11d48;"></i> Relatórios DRE Automáticos
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-users-viewfinder me-2" style="color: #e11d48;"></i> Gestão de Doadores Recorrentes
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-globe me-2" style="color: #e11d48;"></i> Domínio Próprio para Landing Pages
-                    </div>
-                </div>
-            </div>
-
-            <!-- Manager Card -->
-            <div class="feature-card" style="border: 1px solid #f1f5f9; position: relative; padding: 60px 40px; border-top: 6px solid #16a34a;">
-                <div style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; letter-spacing: 2px; color: #16a34a; margin-bottom: 10px;">Gestão Business</div>
-                <h2 style="font-weight: 900; font-size: 1.8rem; margin-bottom: 25px; color: #0f172a; line-height: 1.2;">Gestores de Projetos e Empresas</h2>
-                
-                <div class="feature-icon" style="background: #f0fdf4; color: #16a34a; margin-bottom: 30px;"><i class="fas fa-chart-pie"></i></div>
-                
-                <h3 style="font-weight: 700; font-size: 1.2rem; margin-bottom: 15px; color: #1e293b;">Controle Operacional 360º</h3>
-                <p style="color: var(--text-light); font-size: 1rem; line-height: 1.7; margin-bottom: 30px;">Domine seus cronogramas e fluxo financeiro em uma única tela. Trilha de auditoria completa e segurança total para cada decisão do seu negócio.</p>
-                
-                <hr style="opacity: 0.1; margin: 25px 0;">
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #16a34a; display: flex; align-items: center;">
-                        <i class="fas fa-rocket me-2" style="font-size: 1.1rem;"></i> Performance & Escalabilidade
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-comments me-2" style="color: #16a34a;"></i> Chat Interno & Colaboração
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-brain me-2" style="color: #16a34a;"></i> Inteligência Preditiva IA
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-calendar-alt me-2" style="color: #16a34a;"></i> Gráfico de Gantt Interativo
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-fingerprint me-2" style="color: #16a34a;"></i> Auditoria de Ações (Logs)
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-file-invoice-dollar me-2" style="color: #16a34a;"></i> Conciliação Bancária Avançada
-                    </div>
-                </div>
-            </div>
-
-            <!-- Common Card -->
-            <div class="feature-card" style="border: 1px solid #f1f5f9; position: relative; padding: 60px 40px; border-top: 6px solid #2563eb;">
-                <div style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; letter-spacing: 2px; color: #2563eb; margin-bottom: 10px;">Sucesso Financeiro</div>
-                <h2 style="font-weight: 900; font-size: 1.8rem; margin-bottom: 25px; color: #0f172a; line-height: 1.2;">Uso Pessoal</h2>
-                
-                <div class="feature-icon" style="background: #eff6ff; color: #2563eb; margin-bottom: 30px;"><i class="fas fa-robot"></i></div>
-                
-                <h3 style="font-weight: 700; font-size: 1.2rem; margin-bottom: 15px; color: #1e293b;">Vivensi Insight IA</h3>
-                <p style="color: var(--text-light); font-size: 1rem; line-height: 1.7; margin-bottom: 30px;">O poder da IA para suas finanças. Analise padrões de gastos reais e receba insights estratégicos para economizar e investir com sabedoria.</p>
-                
-                <hr style="opacity: 0.1; margin: 25px 0;">
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #2563eb; display: flex; align-items: center;">
-                        <i class="fas fa-brain me-2" style="font-size: 1.1rem;"></i> Inteligência nas Finanças
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-university me-2" style="color: #2563eb;"></i> Conciliação Bancária OFX
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-bullseye me-2" style="color: #2563eb;"></i> Metas e Orçamento Anual
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-mobile-alt me-2" style="color: #2563eb;"></i> Acesso Full Mobile
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-layer-group me-2" style="color: #2563eb;"></i> Categorização Automática
-                    </div>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center;">
-                        <i class="fas fa-bell me-2" style="color: #2563eb;"></i> Alertas de Gastos por IA
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section id="testimonials" style="padding: 100px 5%; background: white;">
-        <div class="section-header" style="text-align: center; margin-bottom: 60px;">
-            <span class="section-badge">Gente que transforma vidas usa Vivensi</span>
-            <h2 style="font-size: 2.5rem; color: var(--secondary); margin-top: 10px; font-weight: 800;">Histórias de Impacto</h2>
-            <p style="color: var(--text-light); max-width: 600px; margin: 20px auto;">Confira como o Vivensi ajuda organizações e pessoas a alcançarem novos patamares.</p>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
-            @forelse($testimonials as $testimonial)
-            <div class="testimonial-card" style="background: #f8fafc; padding: 40px; border-radius: 24px; border: 1px solid #e2e8f0; position: relative; transition: all 0.3s ease;">
-                <div style="color: var(--primary); font-size: 2rem; margin-bottom: 20px; opacity: 0.3;"><i class="fas fa-quote-left"></i></div>
-                <p style="color: #334155; font-size: 1.1rem; font-style: italic; line-height: 1.7; margin-bottom: 30px;">
-                    "{{ $testimonial->content }}"
-                </p>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 50px; height: 50px; border-radius: 50%; background: #e2e8f0; overflow: hidden;">
-                        <img src="{{ $testimonial->photo ?: 'https://i.pravatar.cc/100?u=' . Str::slug($testimonial->name) }}" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                    <div>
-                        <h4 style="margin: 0; color: #1e293b; font-weight: 800; font-size: 1rem;">{{ $testimonial->name }}</h4>
-                        <p style="margin: 0; color: #64748b; font-size: 0.85rem;">{{ $testimonial->role }}</p>
-                    </div>
-                </div>
-            </div>
-            @empty
-                <div style="text-align: center; grid-column: 1 / -1;">
-                    <p class="text-muted">Nenhum depoimento encontrado.</p>
-                </div>
-            @endforelse
-        </div>
-    </section>
-
-    <style>
-        .testimonial-card:hover { transform: translateY(-10px); background: white !important; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.1); border-color: var(--primary); }
-    </style>
-
-    <!-- Academy Hero Section -->
-    <section id="academy" style="padding: 100px 5%; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); position: relative; overflow: hidden;">
-        <!-- Decorative Elements -->
-        <div style="position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: rgba(99, 102, 241, 0.2); border-radius: 50%; filter: blur(100px);"></div>
-        <div style="position: absolute; bottom: -150px; left: -150px; width: 500px; height: 500px; background: rgba(139, 92, 246, 0.2); border-radius: 50%; filter: blur(120px);"></div>
-        
-        <style>
-            .academy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
-            @media (max-width: 768px) {
-                .academy-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
-            }
-        </style>
-        <div style="max-width: 1200px; margin: 0 auto; position: relative; z-index: 2;">
-            <div class="academy-grid">
-                <!-- Left: Text Content -->
-                <div>
-                    <div style="display: inline-block; background: rgba(251, 191, 36, 0.2); backdrop-filter: blur(10px); padding: 8px 20px; border-radius: 30px; margin-bottom: 25px; border: 1px solid rgba(251, 191, 36, 0.3);">
-                        <span style="color: #fbbf24; font-weight: 700; font-size: 0.85rem; letter-spacing: 1px;">✨ NOVO: VIVENSI ACADEMY</span>
-                    </div>
-                    
-                    <h2 style="color: #fff; font-weight: 900; font-size: 3rem; letter-spacing: -2px; margin-bottom: 25px; line-height: 1.1;">
-                        Aprenda a Dominar sua
-                        <span style="background: linear-gradient(90deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Gestão</span>
-                    </h2>
-                    
-                    <p style="color: #e0e7ff; font-size: 1.2rem; line-height: 1.7; margin-bottom: 35px; max-width: 500px;">
-                        Cursos exclusivos, certificados reconhecidos e conteúdo prático para transformar sua organização.
-                    </p>
-                    
-                    <!-- Features List -->
-                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 40px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-graduation-cap" style="color: #818cf8; font-size: 1.2rem;"></i>
-                            </div>
-                            <div>
-                                <div style="color: #fff; font-weight: 700;">Cursos Práticos</div>
-                                <div style="color: #cbd5e1; font-size: 0.9rem;">Aprenda fazendo, não apenas assistindo</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 40px; height: 40px; background: rgba(251, 191, 36, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-crown" style="color: #fbbf24; font-size: 1.2rem;"></i>
-                            </div>
-                            <div>
-                                <div style="color: #fff; font-weight: 700;">Conteúdos Exclusivos para Assinantes</div>
-                                <div style="color: #cbd5e1; font-size: 0.9rem;">Acesso VIP a materiais premium e ebooks</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-certificate" style="color: #818cf8; font-size: 1.2rem;"></i>
-                            </div>
-                            <div>
-                                <div style="color: #fff; font-weight: 700;">Certificados Oficiais</div>
-                                <div style="color: #cbd5e1; font-size: 0.9rem;">Reconhecidos e validados digitalmente</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-infinity" style="color: #818cf8; font-size: 1.2rem;"></i>
-                            </div>
-                            <div>
-                                <div style="color: #fff; font-weight: 700;">Acesso Ilimitado</div>
-                                <div style="color: #cbd5e1; font-size: 0.9rem;">Estude no seu ritmo, quando quiser</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <a href="{{ route('register') }}" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1e293b; padding: 16px 35px; border-radius: 12px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4); transition: transform 0.2s;">
-                            <i class="fas fa-rocket"></i> Começar Agora
-                        </a>
-                        <a href="#pricing" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); color: white; padding: 16px 35px; border-radius: 12px; text-decoration: none; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.2s;">
-                            <i class="fas fa-tag"></i> Ver Planos
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Right: Course Preview Cards -->
-                <div style="position: relative;">
-                    <!-- Main Card -->
-                    <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 24px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); margin-bottom: 20px;">
-                        <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); height: 180px; border-radius: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-play-circle" style="color: white; font-size: 4rem; opacity: 0.9;"></i>
-                        </div>
-                        <h3 style="color: #fff; font-weight: 700; font-size: 1.3rem; margin-bottom: 10px;">Gestão de Projetos Sociais</h3>
-                        <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 20px;">Domine as ferramentas essenciais para gerenciar projetos de impacto social.</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="display: flex; gap: 15px; color: #94a3b8; font-size: 0.85rem;">
-                                <span><i class="far fa-clock"></i> 12 aulas</span>
-                                <span><i class="fas fa-signal"></i> Iniciante</span>
-                            </div>
-                            <div style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.8rem;">
-                                <i class="fas fa-star"></i> POPULAR
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Stats -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div style="color: #fbbf24; font-size: 2rem; font-weight: 900; margin-bottom: 5px;">500+</div>
-                            <div style="color: #cbd5e1; font-size: 0.9rem;">Alunos Ativos</div>
-                        </div>
-                        <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div style="color: #818cf8; font-size: 2rem; font-weight: 900; margin-bottom: 5px;">15+</div>
-                            <div style="color: #cbd5e1; font-size: 0.9rem;">Cursos Disponíveis</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing -->
-    <section id="pricing" class="pricing">
-        <div class="section-header" style="text-align: center;">
-            <span class="section-badge">Planos Flexíveis</span>
-            <h2 style="font-size: 2.5rem; color: var(--secondary); margin-top: 10px;">Escolha o ideal para sua missão</h2>
-        </div>
-
-        <div class="pricing-grid">
+        <div class="price-grid">
             @forelse($plans as $plan)
-                <div class="price-card {{ $plan->target_audience == 'ngo' ? 'featured' : '' }}">
-                    @if($plan->target_audience == 'ngo')
-                        <div style="background: var(--primary); color: white; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">MAIS POPULAR</div>
+            <div class="price-card {{ $loop->index === 1 ? 'hot' : '' }}">
+                @if($loop->index === 1)<div class="hot-label">Mais Popular</div>@endif
+                <div class="price-name">{{ $plan->name }}</div>
+                <div class="price-val">
+                    <span class="cur">R$</span>
+                    <span class="amount" data-m="{{ $plan->price }}" data-y="{{ $plan->price_yearly ?? ($plan->price * 12 * 0.9) }}">{{ number_format($plan->price, 2, ',', '.') }}</span>
+                    <span class="per">/mês</span>
+                </div>
+                <div class="price-note" id="pnote-{{ $loop->index }}">cobrado mensalmente</div>
+                <div class="price-divider"></div>
+                <ul class="price-feats">
+                    @if($plan->features)
+                        @foreach($plan->features as $f)
+                        <li><i class="fas fa-circle-check"></i> {{ $f }}</li>
+                        @endforeach
                     @endif
-                    @php
-                        $audienceLabel = match($plan->target_audience) {
-                            'ngo' => 'Terceiro Setor',
-                            'manager' => 'Gestor de Projetos',
-                            'common' => 'Pessoal',
-                            default => 'Plano'
-                        };
-                    @endphp
-
-                    <h3>{{ $plan->name }}</h3>
-                    <div class="price">
-                         R$ <span class="amount">{{ number_format($plan->price, 2, ',', '.') }}</span>
-                         <span class="period" style="font-size: 1rem; color: #64748b; font-weight: 400;">/mês</span></div>
-                    <p style="color: var(--text-light);">{{ $audienceLabel }}</p>
-                    
-                    <a href="{{ route('register', ['plan_id' => $plan->id]) }}" class="{{ $plan->target_audience == 'ngo' ? 'btn-cta' : 'btn-outline' }}" style="display: block; margin-top: 20px;">
-                        {{ $plan->price > 0 ? 'Assinar Agora' : 'Começar Grátis' }}
-                    </a>
-                    
-                    <ul class="check-list">
-                        @if($plan->features)
-                            @foreach($plan->features as $feature)
-                                <li><i class="fas fa-check text-success"></i> {{ $feature }}</li>
-                            @endforeach
-                        @endif
-                    </ul>
-                </div>
-            @empty
-                <div class="col-12 text-center py-5">
-                    <p class="text-muted">Novos planos em breve!</p>
-                </div>
-            @endforelse
-        </div>
-
-    </section>
-
-    <!-- FAQ Section -->
-    <section id="faq" style="padding: 100px 5%; background: var(--bg-light);">
-        <div class="section-header" style="text-align: center; margin-bottom: 60px;">
-            <span class="section-badge">Suporte & FAQ</span>
-            <h2 style="font-size: 2.5rem; color: var(--secondary); margin-top: 10px; font-weight: 800;">Dúvidas Frequentes</h2>
-            <p style="color: var(--text-light); max-width: 600px; margin: 20px auto;">Aqui estão as respostas para as perguntas mais comuns sobre o Vivensi.</p>
-        </div>
-
-        <div style="max-width: 800px; margin: 0 auto;">
-            <div class="faq-item" style="margin-bottom: 20px; background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.3s;">
-                <button class="faq-question" style="width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; border: none; background: transparent; cursor: pointer; text-align: left;">
-                    <span style="font-weight: 700; color: #1e293b; font-size: 1.1rem;">Posso cancelar minha assinatura a qualquer momento?</span>
-                    <i class="fas fa-chevron-down" style="color: var(--primary); transition: transform 0.3s;"></i>
-                </button>
-                <div class="faq-answer" style="padding: 0 25px 25px; color: #64748b; font-size: 1rem; line-height: 1.7; display: none;">
-                    Sim! O Vivensi não possui contratos de fidelidade. Você pode cancelar sua assinatura diretamente pelo painel a qualquer momento, sem taxas ocultas ou multas.
-                </div>
-            </div>
-
-            <div class="faq-item" style="margin-bottom: 20px; background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.3s;">
-                <button class="faq-question" style="width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; border: none; background: transparent; cursor: pointer; text-align: left;">
-                    <span style="font-weight: 700; color: #1e293b; font-size: 1.1rem;">Como funciona o período de teste grátis?</span>
-                    <i class="fas fa-chevron-down" style="color: var(--primary); transition: transform 0.3s;"></i>
-                </button>
-                <div class="faq-answer" style="padding: 0 25px 25px; color: #64748b; font-size: 1rem; line-height: 1.7; display: none;">
-                    Oferecemos acesso gratuito aos nossos planos para que você sinta o poder da plataforma. Não solicitamos cartão de crédito para o cadastro inicial nos planos gratuitos e você pode migrar para um plano pago quando desejar.
-                </div>
-            </div>
-
-            <div class="faq-item" style="margin-bottom: 20px; background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.3s;">
-                <button class="faq-question" style="width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; border: none; background: transparent; cursor: pointer; text-align: left;">
-                    <span style="font-weight: 700; color: #1e293b; font-size: 1.1rem;">Meus dados estão seguros na plataforma?</span>
-                    <i class="fas fa-chevron-down" style="color: var(--primary); transition: transform 0.3s;"></i>
-                </button>
-                <div class="faq-answer" style="padding: 0 25px 25px; color: #64748b; font-size: 1rem; line-height: 1.7; display: none;">
-                    Totalmente. Utilizamos infraestrutura de nuvem segura da AWS, criptografia SSL em todas as conexões e backups diários automáticos. Seguimos rigorosamente as diretrizes da LGPD para garantir que seus dados permaneçam privados.
-                </div>
-            </div>
-            
-            <div class="faq-item" style="margin-bottom: 20px; background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.3s;">
-                <button class="faq-question" style="width: 100%; padding: 25px; display: flex; justify-content: space-between; align-items: center; border: none; background: transparent; cursor: pointer; text-align: left;">
-                    <span style="font-weight: 700; color: #1e293b; font-size: 1.1rem;">Posso migrar meus dados de outra planilha ou sistema?</span>
-                    <i class="fas fa-chevron-down" style="color: var(--primary); transition: transform 0.3s;"></i>
-                </button>
-                <div class="faq-answer" style="padding: 0 25px 25px; color: #64748b; font-size: 1rem; line-height: 1.7; display: none;">
-                    Sim, oferecemos ferramentas de importação via CSV e suporte especializado para grandes migrações de dados de ONGs e empresas. Nossa equipe técnica está pronta para ajudar você na transição.
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <script>
-        document.querySelectorAll('.faq-question').forEach(button => {
-            button.addEventListener('click', () => {
-                const answer = button.nextElementSibling;
-                const icon = button.querySelector('i');
-                const isOpen = answer.style.display === 'block';
-                
-                // Fecha outros
-                document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
-                document.querySelectorAll('.faq-question i').forEach(i => i.style.transform = 'rotate(0deg)');
-                
-                if (!isOpen) {
-                    answer.style.display = 'block';
-                    icon.style.transform = 'rotate(180deg)';
-                }
-            });
-        });
-    </script>
-
-    <!-- Blog Section -->
-    <!-- Updated via Agent -->
-    <section id="blog" class="blog" style="padding: 100px 5%; background: #f8fafc;">
-        <div class="section-header" style="text-align: center;">
-            <span class="section-badge">Blog & Insights</span>
-            <h2 style="font-size: 2.5rem; color: var(--secondary); margin-top: 10px; font-weight: 800;">Fique por dentro das novidades</h2>
-            <p style="color: var(--text-light); max-width: 600px; margin: 20px auto;">Dicas de gestão, finanças e tecnologia para potencializar sua missão.</p>
-        </div>
-
-        <div class="blog-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
-            @forelse($posts as $post)
-            <div class="blog-card" style="background: white; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; transition: all 0.3s ease;">
-                <div style="height: 200px; background: #e2e8f0; position: relative; overflow: hidden;">
-                    <img src="{{ $post->image ?: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643' }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
-                </div>
-                <div style="padding: 25px;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; text-transform: uppercase;">{{ $post->published_at ? \Carbon\Carbon::parse($post->published_at)->format('d M, Y') : 'Recente' }}</div>
-                    <h3 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 15px; line-height: 1.4;">{{ $post->title }}</h3>
-                    <p style="color: #64748b; font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px;">
-                        {{ Str::limit(strip_tags($post->content), 120) }}
-                    </p>
-                    <a href="{{ route('public.blog.show', $post->slug) }}" style="color: var(--primary); font-weight: 800; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center;">
-                        LER ARTIGO COMPLETO <i class="fas fa-chevron-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-            @empty
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 20px; border: 1px dashed #cbd5e1;">
-                <i class="far fa-newspaper" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
-                <h3 style="color: #64748b; font-size: 1.2rem;">Nenhum artigo publicado ainda.</h3>
-                <p style="color: #94a3b8;">Em breve novidades por aqui!</p>
-            </div>
-            @endforelse
-        </div>
-        
-        <div style="text-align: center; margin-top: 50px;">
-            <a href="{{ route('public.blog.index') }}" class="btn-outline" style="padding: 12px 40px;">Ver Todos os Artigos</a>
-        </div>
-    </section>
-
-    <style>
-        .blog-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-color: var(--primary); }
-        .blog-card:hover img { transform: scale(1.1); }
-    </style>
-
-    <!-- Footer -->
-    <footer>
-        <div class="footer-grid">
-            <div>
-                <a href="{{ url('/') }}" class="footer-brand">
-                    <x-application-logo style="height: 35px; width: auto; filter: brightness(0) invert(1);" />
+                </ul>
+                <a href="{{ route('register', ['plan_id' => $plan->id, 'billing_cycle' => 'monthly']) }}"
+                   class="btn-price {{ $loop->index === 1 ? 'btp-main' : 'btp-out' }} btn-subscribe"
+                   data-plan-id="{{ $plan->id }}">
+                   {{ $loop->index === 1 ? '🚀 Assinar Agora' : 'Escolher Plano' }}
                 </a>
-                <p>Transformando a gestão financeira e operacional com tecnologia e propósito.</p>
-                <div style="display: flex; gap: 15px; margin-top: 20px;">
-                    <a href="#" style="color: white;"><i class="fab fa-instagram"></i></a>
-                    <a href="#" style="color: white;"><i class="fab fa-linkedin"></i></a>
-                    <a href="#" style="color: white;"><i class="fab fa-twitter"></i></a>
-                </div>
             </div>
-            <div>
-                <h4 style="color: white; margin-bottom: 20px;">Produto</h4>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="#" style="color: #94a3b8; text-decoration: none;">Recursos</a>
-                    <a href="#" style="color: #94a3b8; text-decoration: none;">Integrações</a>
-                    <a href="#pricing" style="color: #94a3b8; text-decoration: none;">Preços</a>
-                </div>
+            @empty
+            <div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.4)">
+                <i class="fas fa-package-open" style="font-size:2rem;display:block;margin-bottom:16px"></i>
+                Planos sob consulta — <a href="{{ route('login') }}" style="color:var(--blue2)">fale conosco</a>
             </div>
-            <div>
-                <h4 style="color: white; margin-bottom: 20px;">Empresa</h4>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{{ route('public.page', 'sobre') }}" style="color: #94a3b8; text-decoration: none;">Sobre Nós</a>
-                    <a href="{{ route('admin.dashboard') }}" style="color: #94a3b8; text-decoration: none;">Painel Admin</a>
-                    <a href="#" style="color: #94a3b8; text-decoration: none;">Contato</a>
-                </div>
-            </div>
-             <div>
-                <h4 style="color: white; margin-bottom: 20px;">Legal</h4>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{{ route('public.page', 'privacidade') }}" style="color: #94a3b8; text-decoration: none;">Privacidade</a>
-                    <a href="{{ route('public.page', 'termos') }}" style="color: #94a3b8; text-decoration: none;">Termos de Uso</a>
-                </div>
-            </div>
+            @endforelse
         </div>
-        <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;">
-            <p>&copy; 2026 Vivensi Inc. Todos os direitos reservados.</p>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-section aos">
+    <div class="section-tag st-blue center" style="justify-content:center"><i class="fas fa-rocket"></i> Comece hoje</div>
+    <h2>Pronto para escalar seu impacto?</h2>
+    <p>Junte-se a mais de 2.800 organizações que já confiam no Vivensi.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+        <a href="{{ route('register') }}" class="btn-hero" style="font-size:1.05rem;padding:18px 44px"><i class="fas fa-rocket"></i> Criar Conta Grátis</a>
+        <a href="{{ route('login') }}" class="btn-hero-outline" style="font-size:1.05rem;padding:18px 36px"><i class="fas fa-sign-in-alt"></i> Já tenho conta</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-row">
+        <div class="footer-col">
+            <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi" style="height:30px;margin-bottom:14px;filter:brightness(0) invert(1);opacity:.6">
+            <p style="font-size:.82rem;color:rgba(255,255,255,.3);line-height:1.7">Tecnologia para quem<br>transforma o Brasil.</p>
         </div>
-    </footer>
+        <div class="footer-col">
+            <h5>Soluções</h5>
+            <a href="{{ route('solutions.ngo') }}">Para ONGs</a>
+            <a href="{{ route('solutions.manager') }}">Para Gestores</a>
+            <a href="{{ route('solutions.common') }}">Uso Pessoal</a>
+        </div>
+        <div class="footer-col">
+            <h5>Produto</h5>
+            <a href="#pricing">Planos</a>
+            <a href="{{ route('login') }}">Login</a>
+            <a href="{{ route('register') }}">Criar conta</a>
+        </div>
+        <div class="footer-col">
+            <h5>Legal</h5>
+            <a href="{{ route('public.page', 'privacidade') }}">Privacidade</a>
+            <a href="{{ route('public.page', 'termos') }}">Termos de Uso</a>
+            <a href="{{ route('public.page', 'sobre') }}">Sobre</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>© 2026 Vivensi. Todos os direitos reservados.</span>
+        <span>Feito com <span style="color:var(--rose)">♥</span> para o terceiro setor brasileiro</span>
+    </div>
+</footer>
 
-    <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/5516997618695?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Vivensi%20SaaS." class="whatsapp-float" target="_blank">
-        <i class="fab fa-whatsapp my-float"></i>
-        <span class="whatsapp-text">Fale Conosco</span>
-    </a>
+<script>
+// Billing toggle
+function toggleBilling(){
+    const yearly=document.getElementById('billing-toggle').checked;
+    document.getElementById('lbl-m').classList.toggle('on',!yearly);
+    document.getElementById('lbl-y').classList.toggle('on',yearly);
+    document.querySelectorAll('.amount').forEach(el=>{
+        const m=parseFloat(el.dataset.m),y=parseFloat(el.dataset.y);
+        el.textContent=new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2}).format(yearly?y/12:m);
+    });
+    document.querySelectorAll('[id^="pnote-"]').forEach(el=>{
+        el.textContent=yearly?'cobrado anualmente (economize 10%)':'cobrado mensalmente';
+    });
+    document.querySelectorAll('.btn-subscribe').forEach(btn=>{
+        btn.href=`/register?plan_id=${btn.dataset.planId}&billing_cycle=${yearly?'yearly':'monthly'}`;
+    });
+}
 
-    <style>
-        .whatsapp-float {
-            position: fixed;
-            width: 60px;
-            height: 60px;
-            bottom: 40px;
-            right: 40px;
-            background-color: #25d366;
-            color: #FFF;
-            border-radius: 50px;
-            text-align: center;
-            font-size: 30px;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
+// Scroll animations
+const observer=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')});
+},{threshold:0.12});
+document.querySelectorAll('.aos').forEach(el=>observer.observe(el));
 
-        .whatsapp-float:hover {
-            width: 180px;
-            background-color: #20ba5a;
-            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
-        }
+// Navbar scroll
+window.addEventListener('scroll',()=>{
+    const n=document.getElementById('mainNav');
+    n.style.background=window.scrollY>60?'rgba(8,14,26,.98)':'rgba(8,14,26,.9)';
+});
 
-        .whatsapp-text {
-            display: none;
-            font-size: 16px;
-            font-weight: 700;
-            margin-left: 10px;
-            white-space: nowrap;
-        }
-
-        .whatsapp-float:hover .whatsapp-text {
-            display: inline;
-        }
-
-        .my-float {
-            font-size: 32px;
-        }
-
-        /* Pulsing Shadow Animation */
-        @keyframes pulse-whatsapp {
-            0% { box-shadow: 0 0 0 0px rgba(37, 211, 102, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
-            100% { box-shadow: 0 0 0 0px rgba(37, 211, 102, 0); }
-        }
-
-        .whatsapp-float {
-            animation: pulse-whatsapp 2s infinite;
-        }
-
-        @media (max-width: 768px) {
-            .whatsapp-float {
-                width: 50px;
-                height: 50px;
-                bottom: 20px;
-                right: 20px;
-            }
-            .whatsapp-float:hover {
-                width: 50px; /* Keep round on mobile */
-            }
-            .whatsapp-text { display: none !important; }
-        }
-    </style>
-
-    {{-- Cookie Consent Banner (LGPD) --}}
-    @include('partials.cookie-banner')
-
+// Mobile menu close on outside click
+document.addEventListener('click',e=>{
+    const menu=document.getElementById('mobileMenu');
+    if(menu.classList.contains('open')&&!e.target.closest('#mobileMenu')&&!e.target.closest('.mobile-btn'))
+        menu.classList.remove('open');
+});
+</script>
 </body>
 </html>
