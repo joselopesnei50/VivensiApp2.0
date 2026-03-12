@@ -64,9 +64,9 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .map-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--primary-light);box-shadow:0 0 12px var(--primary);animation:mapPulse 2.5s infinite}
 .map-dot::before{content:'';position:absolute;inset:-6px;border-radius:50%;background:var(--primary-light);opacity:.2;animation:mapRipple 2.5s infinite}
 .map-dot.teal{background:var(--teal);box-shadow:0 0 12px var(--teal);}.map-dot.teal::before{background:var(--teal)}
-.d1{top:22%;left:38%;animation-delay:0s}.d2{top:30%;left:52%;animation-delay:.4s}.d3{top:42%;left:44%;animation-delay:.8s}
-.d4{top:55%;left:36%;animation-delay:1.2s}.d5{top:50%;left:60%;animation-delay:1.6s}.d6{top:68%;left:42%;animation-delay:.6s}
-.d7{top:34%;left:28%;animation-delay:1s}.d8{top:18%;left:55%;animation-delay:.2s}.d9{top:62%;left:55%;animation-delay:1.4s}
+.d1{top:25%;left:35%;animation-delay:0s}.d2{top:30%;left:65%;animation-delay:.4s}.d3{top:45%;left:48%;animation-delay:.8s}
+.d4{top:65%;left:55%;animation-delay:1.2s}.d5{top:50%;left:70%;animation-delay:1.6s}.d6{top:80%;left:45%;animation-delay:.6s}
+.d7{top:40%;left:30%;animation-delay:1s}.d8{top:20%;left:50%;animation-delay:.2s}.d9{top:70%;left:65%;animation-delay:1.4s}
 
 .floating-card{position:absolute;background:rgba(16,24,48,.85);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:16px;padding:14px 18px;min-width:170px}
 .fc-1{top:10%;right:-10%;animation:floatY 4s ease-in-out infinite}
@@ -258,7 +258,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
                         </linearGradient>
                         <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                     </defs>
-                    <path d="M180 30 L220 25 L260 40 L290 55 L310 80 L320 110 L325 140 L320 165 L310 180 L330 200 L345 225 L350 255 L345 285 L330 310 L310 330 L285 345 L260 355 L235 370 L215 390 L200 410 L185 430 L175 420 L165 400 L150 380 L135 360 L120 340 L105 315 L95 285 L90 260 L95 235 L105 215 L90 195 L75 170 L70 145 L75 120 L85 100 L100 80 L120 62 L145 45 Z"
+                    <path d="M144,38c5.4-3.7,13.2-5.7,19.9-4.4s14.4,5.7,21.4,6.7c7,1,11.6-1.7,18.3,2.4s11.9,12.8,15.5,19.2s8,15.5,13.4,21.6s12.4,13.2,12.4,25.3s-2.3,20.3-5.2,29.4s-2.3,17.9,4.1,28.4s13.4,20.3,17.8,30.4s6.4,24,6.4,35.5s-2.3,22.6-6.2,32.8s-8.5,19.2-14.7,26.7s-10.3,12.8-17,19.2s-11.1,14.8-13.7,25s-5.2,21.6-10.3,31.1s-10.3,16.2-17.3,24.6s-12.4,13.5-18,21.6s-10.1,16.9-14.9,25.7s-8.8,14.5-14.4,14.5s-11.1-6.4-17.3-15.5s-11.3-19.6-16.5-30.7s-9.3-24-11.9-36.1s-3.9-24-4.9-36.5s-1.3-24.3,0.5-35.8s4.1-22,8.5-31.7s6.4-20.9,6.4-33.4s-3.1-24-8-34.1s-9.3-20.9-13.1-32.4s-5.7-23-5.7-33.8s2.6-19.6,7.7-29.7s10.8-18.2,17.8-25.7s11.6-13.2,17.8-14.9s11.6,3.7,11.6,10.5s-2.8,15.2-5.9,23.3s-5.2,17.2-5.2,26s3.9,16.9,10.3,26c13.1,17.2,13.1,17.2,18.8,11.5c6.4-10.5,6.4-16.5,6.4-27s-3.1-20.3-7.5-27.4s-8.8-10.5-8.8-18.6S138.6,41.7,144,38z"
                           fill="url(#mapGrad)" stroke="rgba(59,130,246,0.6)" stroke-width="1.5" filter="url(#glow)"/>
                 </svg>
 
