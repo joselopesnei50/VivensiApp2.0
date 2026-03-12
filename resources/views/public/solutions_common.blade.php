@@ -518,5 +518,6 @@ window.addEventListener('load',()=>{
     },600);
 });
 </script>
+@include('partials.whatsapp-button')
 </body>
 </html>

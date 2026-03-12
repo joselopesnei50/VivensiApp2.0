@@ -596,5 +596,6 @@ window.addEventListener('scroll',()=>{
         window.scrollY>50?'rgba(11,17,32,0.97)':'rgba(11,17,32,0.85)';
 });
 </script>
+@include('partials.whatsapp-button')
 </body>
 </html>
