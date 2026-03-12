@@ -7,7 +7,7 @@
     <meta name="description" content="A plataforma mais completa para ONGs brasileiras. Gestão de doadores, prestação de contas, voluntários, editais e muito mais.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="{{ asset('img/logovivensi.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -223,7 +223,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
 
 <!-- NAV -->
 <nav class="nav">
-    <a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi"></a>
+    <a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('img/novalogo.png') }}" alt="Vivensi"></a>
     <ul class="nav-links">
         <li><a href="{{ route('solutions.ngo') }}" class="active">Terceiro Setor</a></li>
         <li><a href="{{ route('solutions.manager') }}">Gestores</a></li>
@@ -522,7 +522,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
 <footer>
     <div class="footer-grid">
         <div class="footer-col">
-            <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi" style="height:32px;margin-bottom:16px;filter:brightness(0) invert(1);opacity:.7">
+            <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:32px;margin-bottom:16px;filter:brightness(0) invert(1);opacity:.7">
             <p style="font-size:.875rem;color:rgba(255,255,255,.35);line-height:1.7">Tecnologia para quem<br>transforma o mundo.</p>
         </div>
         <div class="footer-col">
