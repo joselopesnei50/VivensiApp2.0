@@ -549,7 +549,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
             <div class="feat-card"><div class="feat-ic fi-gold"><i class="fas fa-trophy"></i></div><h4>Voluntários Gamificados</h4><p>Rankings, pontos por horas e crachás para motivar seu time social.</p></div>
             <div class="feat-card"><div class="feat-ic fi-purple"><i class="fas fa-brain"></i></div><h4>IA para Editais</h4><p>Geração automática de projetos via IA com análise de viabilidade.</p></div>
             <div class="feat-card"><div class="feat-ic fi-sky"><i class="fas fa-kanban"></i></div><h4>CRM Kanban</h4><p>Funil visual de patrocínios e deals com drag & drop profissional.</p></div>
-            <div class="feat-card"><div class="feat-ic fi-green"><i class="fab fa-whatsapp"></i></div><h4>WhatsApp Integrado</h4><p>Campanhas, atendimento e bot com IA via Evolution API.</p></div>
+            <div class="feat-card"><div class="feat-ic fi-green"><i class="fas fa-headset"></i></div><h4>Suporte Especializado</h4><p>Atendimento humano dedicado para tirar dúvidas e ajudar na sua gestão.</p></div>
             <div class="feat-card"><div class="feat-ic fi-violet"><i class="fas fa-globe"></i></div><h4>Portal de Transparência</h4><p>Página pública automática mostrando impacto em tempo real.</p></div>
         </div>
     </div>

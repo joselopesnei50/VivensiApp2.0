@@ -219,6 +219,15 @@
                             </div>
                             <div class="form-text">Vídeo exibido no painel de boas-vindas dos usuários.</div>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-600 text-dark">WhatsApp de Suporte</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fab fa-whatsapp text-success"></i></span>
+                                <input type="text" name="support_whatsapp" value="{{ $support_whatsapp }}" class="form-control border-start-0 ps-0 form-control-lg" placeholder="16997618695">
+                            </div>
+                            <div class="form-text">Número para o botão do WhatsApp na página pública.</div>
+                        </div>
                         
                         <div class="mt-4 p-3 bg-light rounded-3 border border-dashed">
                             <div class="d-flex align-items-center justify-content-between">

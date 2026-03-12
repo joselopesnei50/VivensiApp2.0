@@ -247,7 +247,7 @@
     </footer>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/5516988392853?text=Olá! Gostaria de saber mais sobre o Vivensi SaaS." class="whatsapp-float" target="_blank">
+    <a href="https://wa.me/55{{ \App\Models\SystemSetting::getValue('support_whatsapp', '16997618695') }}?text=Olá! Gostaria de saber mais sobre o Vivensi SaaS." class="whatsapp-float" target="_blank">
         <i class="fab fa-whatsapp"></i>
         <span class="whatsapp-text">Fale Conosco</span>
     </a>

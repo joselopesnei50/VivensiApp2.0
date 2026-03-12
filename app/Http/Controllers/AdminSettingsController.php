@@ -33,6 +33,7 @@ class AdminSettingsController extends Controller
         $email_from = SystemSetting::getValue('email_from');
         $email_from_name = SystemSetting::getValue('email_from_name');
         $home_video_url = SystemSetting::getValue('home_video_url');
+        $support_whatsapp = SystemSetting::getValue('support_whatsapp', '16997618695');
         $zapi_instance = SystemSetting::getValue('zapi_instance_id');
         $zapi_token = null; // Never expose
         $zapi_client_token = null; // Never expose
@@ -53,6 +54,7 @@ class AdminSettingsController extends Controller
             'email_from',
             'email_from_name',
             'home_video_url',
+            'support_whatsapp',
             'zapi_instance',
             'zapi_token',
             'zapi_client_token'
@@ -77,6 +79,7 @@ class AdminSettingsController extends Controller
             'email_from' => 'nullable|email|max:255',
             'email_from_name' => 'nullable|string|max:255',
             'home_video_url' => 'nullable|url|max:2048',
+            'support_whatsapp' => 'nullable|string|max:20',
             'zapi_instance_id' => 'nullable|string|max:255',
             'zapi_token' => 'nullable|string|max:5000',
             'zapi_client_token' => 'nullable|string|max:5000',
@@ -112,6 +115,11 @@ class AdminSettingsController extends Controller
         }
         if (!empty($validated['home_video_url'])) {
             SystemSetting::setValue('home_video_url', $validated['home_video_url'], 'marketing');
+        }
+        if (!empty($validated['support_whatsapp'])) {
+            // Remove non-digits
+            $cleanPhone = preg_replace('/\D/', '', $validated['support_whatsapp']);
+            SystemSetting::setValue('support_whatsapp', $cleanPhone, 'marketing');
         }
         if (!empty($validated['zapi_instance_id'])) {
             SystemSetting::setValue('zapi_instance_id', $validated['zapi_instance_id'], 'whatsapp');
