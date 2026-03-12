@@ -848,5 +848,6 @@ document.addEventListener('click',e=>{
         menu.classList.remove('open');
 });
 </script>
-
+@include('partials.whatsapp-button')
+</body>
 </html>
