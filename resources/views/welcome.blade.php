@@ -848,5 +848,5 @@ document.addEventListener('click',e=>{
         menu.classList.remove('open');
 });
 </script>
-</body>
+
 </html>
