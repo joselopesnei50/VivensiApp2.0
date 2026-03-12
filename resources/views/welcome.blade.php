@@ -7,8 +7,8 @@
     <meta name="description" content="A plataforma mais completa do Brasil para gestão de ONGs, projetos sociais e equipes. Donor portal, prestação de contas, CRM e muito mais.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="{{ asset('img/logovivensi.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('img/logovivensi.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/novalogo.png') }}">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -203,8 +203,91 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 .aos{opacity:0;transform:translateY(28px);transition:all .75s cubic-bezier(.22,1,.36,1)}
 .aos.in{opacity:1;transform:translateY(0)}
 
+/* ─── VIDEO PLAYER ─── */
+.video-player-wrap{display:flex;align-items:center;gap:16px;justify-content:center;margin-bottom:60px}
+.video-play-btn{position:relative;width:62px;height:62px;border:none;background:none;cursor:pointer;flex-shrink:0}
+.play-ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(91,130,255,.5);animation:videoRing 2.2s ease-out infinite}
+.play-ring-2{animation-delay:.9s}
+.play-icon-circle{position:absolute;inset:6px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--violet));display:flex;align-items:center;justify-content:center;color:white;box-shadow:0 6px 24px rgba(59,108,246,.5);transition:transform .2s}
+.video-play-btn:hover .play-icon-circle{transform:scale(1.08)}
+.video-hint{color:rgba(255,255,255,.55);font-size:.9rem;line-height:1.4}
+.video-hint strong{color:white}
+@keyframes videoRing{0%{transform:scale(1);opacity:.7}80%{transform:scale(2);opacity:0}100%{opacity:0}}
+/* Modal */
+.video-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);align-items:center;justify-content:center}
+.video-modal.open{display:flex}
+.video-modal-inner{position:relative;width:90%;max-width:900px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.8)}
+.video-modal-close{position:absolute;top:-40px;right:0;background:none;border:none;color:rgba(255,255,255,.7);font-size:1.6rem;cursor:pointer;z-index:2;transition:color .2s}
+.video-modal-close:hover{color:white}
+
+/* ─── ACADEMY UNIVERSE ─── */
+.academy-universe{position:relative;padding:120px 0;overflow:hidden;background:linear-gradient(165deg,#06040F 0%,#0D0824 40%,#0A1628 100%);border-top:1px solid rgba(124,58,237,.2);border-bottom:1px solid rgba(59,108,246,.15)}
+/* Cosmos bg */
+.au-cosmos{position:absolute;inset:0;pointer-events:none}
+.au-star{position:absolute;width:3px;height:3px;border-radius:50%;background:white;animation:auStar 3s ease-in-out infinite alternate}
+.au-star-lg{width:5px;height:5px;opacity:.5}
+@keyframes auStar{0%{opacity:.1;transform:scale(1)}100%{opacity:.8;transform:scale(1.5)}}
+.au-orbit{position:absolute;border-radius:50%;border:1px solid rgba(124,58,237,.12)}
+.au-orbit-1{width:600px;height:600px;top:50%;left:60%;transform:translate(-50%,-50%);animation:auOrbitSpin 30s linear infinite}
+.au-orbit-2{width:900px;height:900px;top:50%;left:60%;transform:translate(-50%,-50%);animation:auOrbitSpin 50s linear infinite reverse}
+@keyframes auOrbitSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.au-nebula{position:absolute;top:20%;left:40%;width:700px;height:700px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(124,58,237,.15) 0%,rgba(59,108,246,.08) 40%,transparent 70%);filter:blur(60px);animation:auNebulaPulse 6s ease-in-out infinite alternate}
+@keyframes auNebulaPulse{0%{opacity:.6;transform:scale(1)}100%{opacity:1;transform:scale(1.1)}}
+/* Layout */
+.au-container{position:relative;max-width:1200px;margin:0 auto;padding:0 6%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+/* Left */
+.au-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(59,108,246,.15));border:1px solid rgba(124,58,237,.4);color:#C4B5FD;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:7px 16px;border-radius:100px;margin-bottom:24px}
+.au-badge-dot{width:7px;height:7px;border-radius:50%;background:#A78BFA;animation:auBadgePulse 1.8s ease-in-out infinite}
+@keyframes auBadgePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(167,139,250,.6)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(167,139,250,0)}}
+.au-title{font-size:clamp(3rem,6vw,5rem);font-weight:900;line-height:.95;letter-spacing:-.04em;margin-bottom:20px}
+.au-title-white{color:white}
+.au-title-grad{background:linear-gradient(135deg,#A78BFA,#5B82FF,#F5A623);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.au-sub{font-size:1.05rem;color:rgba(255,255,255,.55);line-height:1.75;max-width:440px;margin-bottom:32px}
+.au-benefits{list-style:none;display:flex;flex-direction:column;gap:13px;margin-bottom:40px}
+.au-benefits li{display:flex;align-items:center;gap:12px;font-size:.92rem;color:rgba(255,255,255,.75)}
+.au-check{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,rgba(124,58,237,.4),rgba(59,108,246,.3));border:1px solid rgba(124,58,237,.5);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.6rem;color:#A78BFA}
+.au-ctas{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.au-btn-primary{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#7C3AED,#3B6CF6);color:white;text-decoration:none;font-weight:700;font-size:1rem;padding:15px 35px;border-radius:60px;box-shadow:0 8px 32px rgba(124,58,237,.45);transition:all .3s;white-space:nowrap}
+.au-btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(124,58,237,.65);color:white}
+.au-vagas{display:flex;flex-direction:column;gap:5px}
+.au-vagas-dots{display:flex;gap:5px}
+.au-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15)}
+.au-dot.active{background:linear-gradient(135deg,#7C3AED,#3B6CF6)}
+.au-vagas span{font-size:.75rem;color:rgba(255,255,255,.4)}
+/* Right card */
+.au-card-wrap{position:relative}
+.au-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:450px;height:450px;border-radius:50%;background:radial-gradient(ellipse,rgba(124,58,237,.3) 0%,rgba(59,108,246,.1) 50%,transparent 70%);filter:blur(40px);pointer-events:none}
+.au-card{position:relative;background:rgba(15,10,35,.85);backdrop-filter:blur(30px);border:1px solid rgba(124,58,237,.35);border-radius:24px;padding:30px;z-index:1;box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05) inset;animation:auCardFloat 5s ease-in-out infinite}
+@keyframes auCardFloat{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-8px) rotate(.3deg)}75%{transform:translateY(4px) rotate(-.2deg)}}
+.au-card-header{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+.au-card-logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7C3AED,#3B6CF6);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:white;flex-shrink:0}
+.au-card-title{font-size:.95rem;font-weight:800;color:white}
+.au-card-sub{font-size:.72rem;color:rgba(255,255,255,.4);margin-top:2px}
+.au-card-badge{margin-left:auto;background:linear-gradient(135deg,#7C3AED,#5B82FF);color:white;font-size:.65rem;font-weight:800;padding:4px 10px;border-radius:100px;letter-spacing:.06em}
+.au-progress-section{margin-bottom:20px}
+.au-progress-row{display:flex;justify-content:space-between;font-size:.75rem;color:rgba(255,255,255,.55);margin-bottom:5px;margin-top:14px}
+.au-pct{color:rgba(255,255,255,.8);font-weight:700}
+.au-bar{height:6px;border-radius:100px;background:rgba(255,255,255,.08);overflow:hidden}
+.au-bar-fill{height:100%;border-radius:100px;transition:width 1s ease}
+.au-modules{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.au-module{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;font-size:.8rem;color:rgba(255,255,255,.65)}
+.au-module.active{background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.3);color:white}
+.au-mod-icon{flex-shrink:0;font-size:1rem;color:#A78BFA}
+.au-mod-tag{margin-left:auto;background:rgba(0,212,170,.15);color:var(--teal);font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap}
+.au-card-footer{display:flex;align-items:center;gap:12px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07)}
+.au-avatar-row{display:flex}
+.au-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#3B6CF6);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:white;margin-left:-8px;border:2px solid rgba(15,10,35,.8);first-child:margin-left:0}
+.au-avatar-row .au-avatar:first-child{margin-left:0}
+.au-avatar-more{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(15,10,35,.8);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:rgba(255,255,255,.5);margin-left:-8px}
+.au-footer-label{font-size:.73rem;color:rgba(255,255,255,.35)}
+/* Floating badges */
+.au-float-badge{position:absolute;display:flex;align-items:center;gap:8px;background:rgba(10,8,28,.9);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(16px);border-radius:12px;padding:10px 16px;font-size:.78rem;color:rgba(255,255,255,.8);font-weight:600;white-space:nowrap;z-index:2}
+.au-fb-1{top:-20px;right:-20px;animation:auFbFloat 4s ease-in-out infinite}
+.au-fb-2{bottom:-16px;left:-20px;animation:auFbFloat 4.5s ease-in-out infinite .8s}
+@keyframes auFbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
 /* ─── RESPONSIVE ─── */
-@media(max-width:1024px){.feat-grid{grid-template-columns:repeat(2,1fr)}.impact-inner{grid-template-columns:1fr}}
+@media(max-width:1024px){.feat-grid{grid-template-columns:repeat(2,1fr)}.impact-inner{grid-template-columns:1fr}.au-container{grid-template-columns:1fr;gap:60px}}
 @media(max-width:768px){
     .seg-grid{grid-template-columns:1fr}
     .feat-grid{grid-template-columns:1fr 1fr}
@@ -213,11 +296,17 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
     .fc-c,.fc-d,.fc-e{display:none}
     .price-card.hot{transform:none}
     .price-card.hot:hover{transform:translateY(-4px)}
+    .au-fb-1,.au-fb-2{display:none}
+    .au-orbit-1,.au-orbit-2{display:none}
+    .au-card-wrap{max-width:420px;margin:0 auto}
+    .au-title{font-size:3rem}
 }
 @media(max-width:480px){
     .feat-grid{grid-template-columns:1fr}
     .footer-row{grid-template-columns:1fr}
     .hero-title{font-size:2.4rem}
+    .au-title{font-size:2.5rem}
+    .au-ctas{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
@@ -225,7 +314,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 
 <!-- NAV -->
 <nav class="nav" id="mainNav">
-    <a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi"></a>
+    <a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:40px;width:auto;"></a>
     <ul class="nav-links">
         <li><a href="{{ route('solutions.ngo') }}">Para ONGs</a></li>
         <li><a href="{{ route('solutions.manager') }}">Para Gestores</a></li>
@@ -261,6 +350,27 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
         <a href="{{ route('register') }}" class="btn-hero"><i class="fas fa-rocket"></i> Comece Gratuitamente</a>
         <a href="#segments" class="btn-hero-outline"><i class="fas fa-th-large"></i> Ver Soluções</a>
     </div>
+
+    @if($videoUrl)
+    <!-- VIDEO PLAYER -->
+    <div class="video-player-wrap" style="animation:fadeUp .8s ease .55s both">
+        <button class="video-play-btn" onclick="openVideoModal()" aria-label="Assistir demonstração">
+            <span class="play-ring"></span>
+            <span class="play-ring play-ring-2"></span>
+            <span class="play-icon-circle">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M8 5v14l11-7z"/></svg>
+            </span>
+        </button>
+        <span class="video-hint">Veja como funciona em <strong>2 minutos</strong></span>
+    </div>
+    <!-- VIDEO MODAL -->
+    <div class="video-modal" id="videoModal" onclick="closeVideoModal(event)">
+        <div class="video-modal-inner">
+            <button class="video-modal-close" onclick="closeVideoModal()">&times;</button>
+            <iframe id="videoIframe" src="" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border-radius:16px;"></iframe>
+        </div>
+    </div>
+    @endif
 
     <!-- MAP VISUALIZATION -->
     <div class="map-section">
@@ -445,6 +555,131 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
     </div>
 </section>
 
+<!-- ─── VIVENSI ACADEMY ─── -->
+<section class="academy-universe" id="academy">
+    <!-- Cosmic particles background (CSS-only) -->
+    <div class="au-cosmos" aria-hidden="true">
+        <span class="au-star" style="top:8%;left:12%;animation-delay:0s"></span>
+        <span class="au-star" style="top:15%;left:72%;animation-delay:.8s"></span>
+        <span class="au-star" style="top:35%;left:5%;animation-delay:1.4s"></span>
+        <span class="au-star" style="top:60%;left:88%;animation-delay:.3s"></span>
+        <span class="au-star" style="top:78%;left:22%;animation-delay:1.1s"></span>
+        <span class="au-star" style="top:22%;left:45%;animation-delay:2s"></span>
+        <span class="au-star au-star-lg" style="top:50%;left:50%;animation-delay:.6s"></span>
+        <span class="au-star au-star-lg" style="top:80%;left:65%;animation-delay:1.8s"></span>
+        <div class="au-orbit au-orbit-1"></div>
+        <div class="au-orbit au-orbit-2"></div>
+        <div class="au-nebula"></div>
+    </div>
+
+    <div class="au-container">
+        <!-- LEFT COLUMN -->
+        <div class="au-left aos">
+            <div class="au-badge">
+                <span class="au-badge-dot"></span>
+                <i class="fas fa-graduation-cap"></i>
+                Exclusivo para Gestores &amp; ONGs
+            </div>
+            <h2 class="au-title">
+                <span class="au-title-white">Vivensi</span><br>
+                <span class="au-title-grad">Academy</span>
+            </h2>
+            <p class="au-sub">Trilhas de aprendizado criadas para transformar gestores do terceiro setor em líderes de impacto. Conteúdo prático, especializado e incluído no seu plano.</p>
+
+            <ul class="au-benefits">
+                <li><span class="au-check"><i class="fas fa-check"></i></span> Captação de Recursos &amp; Editais</li>
+                <li><span class="au-check"><i class="fas fa-check"></i></span> Gestão por Impacto e OKRs Sociais</li>
+                <li><span class="au-check"><i class="fas fa-check"></i></span> Prestação de Contas para Auditores</li>
+                <li><span class="au-check"><i class="fas fa-check"></i></span> Liderança de Equipes Voluntárias</li>
+                <li><span class="au-check"><i class="fas fa-check"></i></span> Marketing Digital para o Terceiro Setor</li>
+            </ul>
+
+            <div class="au-ctas">
+                <a href="{{ route('register') }}" class="au-btn-primary">
+                    <i class="fas fa-rocket"></i> Quero Ter Acesso
+                </a>
+                <div class="au-vagas">
+                    <div class="au-vagas-dots">
+                        <span class="au-dot active"></span><span class="au-dot active"></span><span class="au-dot active"></span><span class="au-dot"></span><span class="au-dot"></span>
+                    </div>
+                    <span>Apenas 3 vagas restantes neste ciclo</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN - Floating 3D card -->
+        <div class="au-right aos">
+            <div class="au-card-wrap">
+                <!-- Glow halo -->
+                <div class="au-glow"></div>
+                <!-- Card -->
+                <div class="au-card">
+                    <div class="au-card-header">
+                        <div class="au-card-logo">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div>
+                            <div class="au-card-title">Vivensi Academy</div>
+                            <div class="au-card-sub">Trilha de Gestão de Impacto</div>
+                        </div>
+                        <div class="au-card-badge">PRO</div>
+                    </div>
+                    <div class="au-progress-section">
+                        <div class="au-progress-row">
+                            <span>Captação de Recursos</span>
+                            <span class="au-pct">87%</span>
+                        </div>
+                        <div class="au-bar"><div class="au-bar-fill" style="width:87%;background:linear-gradient(90deg,#7C3AED,#5B82FF)"></div></div>
+                        <div class="au-progress-row">
+                            <span>Gestão por Impacto</span>
+                            <span class="au-pct">62%</span>
+                        </div>
+                        <div class="au-bar"><div class="au-bar-fill" style="width:62%;background:linear-gradient(90deg,#F5A623,#FF7080)"></div></div>
+                        <div class="au-progress-row">
+                            <span>Editais &amp; Projetos</span>
+                            <span class="au-pct">45%</span>
+                        </div>
+                        <div class="au-bar"><div class="au-bar-fill" style="width:45%;background:linear-gradient(90deg,#00D4AA,#3B6CF6)"></div></div>
+                    </div>
+                    <div class="au-modules">
+                        <div class="au-module active">
+                            <span class="au-mod-icon"><i class="fas fa-play-circle"></i></span>
+                            <span>Aula 4 — Captação via Lei de Incentivo</span>
+                            <span class="au-mod-tag">Ao vivo</span>
+                        </div>
+                        <div class="au-module">
+                            <span class="au-mod-icon" style="color:rgba(255,255,255,.3)"><i class="fas fa-lock"></i></span>
+                            <span style="color:rgba(255,255,255,.4)">Aula 5 — Formulando Editais Vencedores</span>
+                        </div>
+                        <div class="au-module">
+                            <span class="au-mod-icon" style="color:rgba(255,255,255,.3)"><i class="fas fa-lock"></i></span>
+                            <span style="color:rgba(255,255,255,.4)">Aula 6 — Prestação de Contas MROSC</span>
+                        </div>
+                    </div>
+                    <div class="au-card-footer">
+                        <div class="au-avatar-row">
+                            <div class="au-avatar">MR</div>
+                            <div class="au-avatar" style="background:linear-gradient(135deg,#E8455A,#F5A623)">CS</div>
+                            <div class="au-avatar" style="background:linear-gradient(135deg,#00D4AA,#3B6CF6)">JA</div>
+                            <div class="au-avatar-more">+124</div>
+                        </div>
+                        <span class="au-footer-label">alunos nessa trilha</span>
+                    </div>
+                </div>
+                <!-- Floating decorative badges -->
+                <div class="au-float-badge au-fb-1">
+                    <i class="fas fa-certificate" style="color:#F5A623"></i>
+                    Certificado Incluso
+                </div>
+                <div class="au-float-badge au-fb-2">
+                    <i class="fas fa-bolt" style="color:#00D4AA"></i>
+                    Acesso Vitalício
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- IMPACT COUNTERS -->
 <section class="impact">
     <div class="impact-inner">
@@ -525,7 +760,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 <footer>
     <div class="footer-row">
         <div class="footer-col">
-            <img src="{{ asset('img/logovivensi.png') }}" alt="Vivensi" style="height:30px;margin-bottom:14px;filter:brightness(0) invert(1);opacity:.6">
+            <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:40px;margin-bottom:14px;filter:brightness(0) invert(1);opacity:.75">
             <p style="font-size:.82rem;color:rgba(255,255,255,.3);line-height:1.7">Tecnologia para quem<br>transforma o Brasil.</p>
         </div>
         <div class="footer-col">
@@ -554,6 +789,29 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 </footer>
 
 <script>
+// Video Modal
+const _videoUrl = @json($videoUrl ?? null);
+function openVideoModal() {
+    if (!_videoUrl) return;
+    const modal = document.getElementById('videoModal');
+    let src = _videoUrl;
+    // Convert watch?v= to embed format
+    src = src.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/');
+    // Add autoplay
+    src += (src.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
+    document.getElementById('videoIframe').src = src;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeVideoModal(e) {
+    if (e && e.target !== e.currentTarget && !e.target.classList.contains('video-modal-close')) return;
+    const modal = document.getElementById('videoModal');
+    modal.classList.remove('open');
+    document.getElementById('videoIframe').src = '';
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideoModal(); });
+
 // Billing toggle
 function toggleBilling(){
     const yearly=document.getElementById('billing-toggle').checked;
