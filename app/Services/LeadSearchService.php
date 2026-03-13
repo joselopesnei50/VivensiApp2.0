@@ -29,8 +29,8 @@ class LeadSearchService {
         $results = $response->json();
         $prospectsCreated = 0;
 
-        if (isset($results['maps'])) {
-            foreach ($results['maps'] as $item) {
+        if (isset($results['places'])) {
+            foreach ($results['places'] as $item) {
                 Prospect::updateOrCreate(
                     [
                         'company_name' => $item['title'],
