@@ -35,36 +35,41 @@
             width: 100%;
         }
 
-        /* Premium Hero Section from Welcome Page */
+        /* Premium Hero Section with Map Visibility */
         .login-hero {
-            flex: 1.25;
+            flex: 1;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 80px;
+            align-items: center;
+            padding: 80px 40px;
             background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(59,108,246,.2) 0%, transparent 55%),
                        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(124,58,237,.12) 0%, transparent 50%),
                        var(--ink);
             overflow: hidden;
+            border-right: 1px solid var(--border);
             display: none; /* Mobile */
         }
         
-        /* Decorative Background Elements */
-        .hero-glow {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(59,108,246,0.1) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
         .hero-content {
             position: relative;
-            z-index: 2;
-            max-width: 580px;
+            z-index: 5;
+            text-align: center;
+            max-width: 500px;
         }
+
+        /* Brazil Map Styling from Welcome Page */
+        .map-wrapper {
+            position: absolute;
+            top: 55%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140%;
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 1;
+        }
+        #brazil-svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 0 40px rgba(59, 108, 246, 0.2)); }
 
         .hero-badge {
             display: inline-flex;
@@ -73,7 +78,7 @@
             background: rgba(59,108,246,.12);
             border: 1px solid rgba(59,108,246,.3);
             color: var(--blue2);
-            font-size: .78rem;
+            font-size: .75rem;
             font-weight: 700;
             padding: 6px 16px;
             border-radius: 100px;
@@ -84,109 +89,114 @@
         .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue2); animation: pulseBlue 2s infinite; }
 
         .hero-title {
-            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-size: clamp(2rem, 3.5vw, 3rem);
             font-weight: 900;
             line-height: 1.1;
             letter-spacing: -.03em;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         .hero-title .g1 { background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero-title .g2 { background: linear-gradient(135deg, var(--blue2), var(--violet2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .hero-text {
-            font-size: 1.1rem;
-            color: rgba(255,255,255,.6);
-            margin-bottom: 40px;
-            max-width: 480px;
+            font-size: 1.05rem;
+            color: rgba(255,255,255,.5);
+            max-width: 440px;
+            margin: 0 auto;
         }
 
-        .hero-features {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .feat-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.95rem;
-            color: rgba(255,255,255,.8);
-        }
-        .feat-item i { color: var(--teal); font-size: 1.1rem; }
-
-        /* Login Form Section */
+        /* Login Form Side (Centered more) */
         .login-form-side {
-            flex: 1;
+            flex: 1.1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 40px;
-            background: var(--ink2); /* Ligeiramente mais claro que o fundo principal */
+            padding: 60px 40px;
+            background: var(--ink2);
             position: relative;
-            border-left: 1px solid var(--border);
         }
 
-        /* Logo and Heading */
+        /* Lang Switcher - Centralized above form */
+        .lang-switcher {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 32px;
+            background: rgba(255,255,255,0.03);
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+        }
+        .lang-link {
+            text-decoration: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .lang-link.active { color: white; }
+        .lang-link:hover { color: rgba(255,255,255,0.6); }
+        .lang-link img { width: 18px; height: 18px; object-fit: cover; border-radius: 50%; border: 1px solid var(--border); }
+
         .brand-section {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
         }
         .brand-logo img {
-            height: 50px;
-            margin-bottom: 20px;
+            height: 46px;
+            margin-bottom: 16px;
         }
         .login-heading h2 {
-            font-size: 1.75rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: white;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
-        .login-heading p {
-            color: rgba(255,255,255,0.45);
-            font-size: 0.95rem;
-        }
+        .login-heading p { color: rgba(255,255,255,0.4); font-size: 0.9rem; }
 
         /* Login Card */
         .login-card {
             width: 100%;
             max-width: 400px;
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             padding: 40px;
-            border-radius: 24px;
+            border-radius: 28px;
             border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            animation: fadeUp 0.8s ease;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            animation: fadeUp 0.8s ease backwards;
         }
 
         .form-group { margin-bottom: 24px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: rgba(255,255,255,0.6);
-            font-size: 0.85rem;
-            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
         }
         
         .input-group { position: relative; }
         .input-group i {
             position: absolute;
-            left: 16px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(255,255,255,0.3);
-            transition: color 0.3s;
+            color: rgba(255,255,255,0.2);
+            transition: all 0.3s;
         }
         
         .form-control {
             width: 100%;
-            padding: 14px 16px 14px 48px;
+            padding: 16px 16px 16px 52px;
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--border);
-            border-radius: 14px;
+            border-radius: 16px;
             color: white;
             font-size: 1rem;
             font-family: inherit;
@@ -208,18 +218,19 @@
             border: none;
             border-radius: 60px;
             font-size: 1rem;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 8px 24px rgba(59, 108, 246, 0.35);
+            box-shadow: 0 10px 30px rgba(59, 108, 246, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            margin-top: 8px;
         }
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(59, 108, 246, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(59, 108, 246, 0.6);
             filter: brightness(1.1);
         }
 
@@ -227,83 +238,86 @@
             margin-top: 32px;
             text-align: center;
             font-size: 0.9rem;
-            color: rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.35);
         }
         .form-footer a {
             color: var(--blue2);
             text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s;
+            font-weight: 700;
+            transition: all 0.3s;
         }
-        .form-footer a:hover { color: white; }
+        .form-footer a:hover { color: white; text-shadow: 0 0 10px rgba(91,130,255,0.5); }
 
         .forgot-link {
             display: inline-block;
             margin-top: 12px;
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.4);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .forgot-link:hover { color: rgba(255,255,255,0.8); }
-
-        /* Lang Switcher */
-        .lang-switcher {
-            position: absolute;
-            top: 40px; right: 40px;
-            display: flex;
-            gap: 16px;
-        }
-        .lang-link {
-            text-decoration: none;
-            color: rgba(255,255,255,0.3);
             font-size: 0.8rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            color: rgba(255,255,255,0.3);
+            text-decoration: none;
+            font-weight: 600;
             transition: color 0.3s;
         }
-        .lang-link.active { color: white; }
-        .lang-link img { width: 20px; border-radius: 2px; }
+        .forgot-link:hover { color: rgba(255,255,255,0.7); }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulseBlue { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
 
         @media(min-width: 900px) { .login-hero { display: flex; } }
+        @media(max-width: 1024px) {
+            .login-hero { padding: 40px; }
+            .hero-title { font-size: 2.4rem; }
+        }
         @media(max-width: 768px) {
-            .login-card { padding: 30px; }
-            .lang-switcher { top: 20px; right: 20px; }
+            .login-card { padding: 30px; border-radius: 20px; }
+            .login-form-side { padding: 40px 20px; }
         }
     </style>
 </head>
 <body>
 
 <div class="login-wrapper">
-    <!-- Left Hero Image (Premium) -->
+    <!-- Left Hero Banner with Brazil Map -->
     <div class="login-hero">
-        <div class="hero-glow"></div>
+        <!-- SVG Map Container -->
+        <div class="map-wrapper">
+            <svg id="brazil-svg" viewBox="0 0 820 740" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+                        <stop offset="0%" stop-color="#3B6CF6" stop-opacity=".15"/>
+                        <stop offset="100%" stop-color="#080E1A" stop-opacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="mapFill" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#3B6CF6" stop-opacity=".3"/>
+                        <stop offset="50%" stop-color="#7C3AED" stop-opacity=".2"/>
+                        <stop offset="100%" stop-color="#E8455A" stop-opacity=".1"/>
+                    </linearGradient>
+                    <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <path d="M295.5,56.5c10.5-5.5,25.5-8.5,38.5-6.5s28,8.5,41.5,10c13.5,1.5,22.5-2.5,35.5,3.5s23,19,30,28.5s15.5,23,26,32s24,19.5,24,37.5s-4.5,30-10,43.5s-4.5,26.5,8,42s26,30,34.5,45s12.5,35.5,12.5,52.5s-4.5,33.5-12,48.5s-16.5,28.5-28.5,39.5s-20,19-33,28.5s-21.5,22-26.5,37s-10,32-20,46s-20,24-33.5,36.5s-24,20-35,32s-19.5,25-29,38s-17,21.5-28,21.5s-21.5-9.5-33.5-23s-22-29-32-45.5s-18-35.5-23-53.5s-7.5-35.5-9.5-54s-2.5-36,1-53s8-32.5,16.5-47s12.5-31,12.5-49.5s-6-35.5-15.5-50.5s-18-31-25.5-48s-11-34-11-50s5-29,15-44s21-27,34.5-38s22.5-19.5,34.5-22s22.5,5.5,22.5,15.5s-5.5,22.5-11.5,34.5s-10,25.5-10,38.5s7.5,25,20,38.5s25.5,25.5,36.5,17s12.5-24.5,12.5-40s-6-30-14.5-40.5s-17-15.5-17-27.5S285,62,295.5,56.5z"
+                      fill="url(#mapFill)" stroke="rgba(59,108,246,.4)" stroke-width="1.2" filter="url(#glow)"/>
+                <!-- Pulse points -->
+                <circle cx="390" cy="480" r="5" fill="var(--blue2)"><animate attributeName="opacity" values="1;.2;1" dur="2s" repeatCount="indefinite"/></circle>
+                <circle cx="530" cy="210" r="4" fill="#FF7080"><animate attributeName="opacity" values="1;.2;1" dur="2.5s" repeatCount="indefinite" begin="0.5s"/></circle>
+                <circle cx="310" cy="200" r="4" fill="var(--teal)"><animate attributeName="opacity" values="1;.2;1" dur="3s" repeatCount="indefinite" begin="1s"/></circle>
+            </svg>
+        </div>
+
         <div class="hero-content">
-            <div class="hero-badge"><span class="hero-badge-dot"></span> Área Restrita Vivensi</div>
+            <div class="hero-badge"><span class="hero-badge-dot"></span> Ecossistema Vivensi</div>
             <h1 class="hero-title">
                 <span class="g1">Gestão que</span><br>
                 <span class="g2">Transforma Vidas</span><br>
                 <span class="g1">em escala real.</span>
             </h1>
             <p class="hero-text">
-                Bem-vindo de volta ao seu centro de comando social. Acesse sua conta para gerenciar projetos, doações e impacto em tempo real.
+                Acesse o centro de comando da sua missão social. Gerencie projetos, acompanhe doações e impulsione seu impacto em todo o Brasil.
             </p>
-            <div class="hero-features">
-                <div class="feat-item"><i class="fas fa-shield-check"></i> <span>Acesso seguro com criptografia de ponta</span></div>
-                <div class="feat-item"><i class="fas fa-chart-network"></i> <span>Dados integrados em um único ecossistema</span></div>
-                <div class="feat-item"><i class="fas fa-sparkles"></i> <span>Interface otimizada para produtividade</span></div>
-            </div>
         </div>
     </div>
 
-    <!-- Right Login Form -->
+    <!-- Right Login Section -->
     <div class="login-form-side">
-        <!-- Lang Switcher -->
+        <!-- Centralized Lang Switcher -->
         <div class="lang-switcher">
             <a href="#" class="lang-link active" title="Português">
                 <img src="https://flagcdn.com/w40/br.png" alt="Brasil"> PT
@@ -319,7 +333,7 @@
             </a>
             <div class="login-heading">
                 <h2>Seja bem-vindo</h2>
-                <p>Identifique-se para continuar</p>
+                <p>Identifique-se para continuar na plataforma</p>
             </div>
         </div>
 
@@ -340,39 +354,39 @@
                 @csrf
                 
                 <div class="form-group">
-                    <label>E-mail</label>
+                    <label>E-mail Corporativo</label>
                     <div class="input-group">
                         <i class="far fa-envelope"></i>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="voce@empresa.com" required>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="usuario@vivensi.com" required>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>Senha</label>
+                    <label>Senha de Acesso</label>
                     <div class="input-group">
                         <i class="fas fa-lock"></i>
                         <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
-                        <i class="far fa-eye" id="togglePasswordIcon" onclick="togglePasswordVisibility()" style="left: auto; right: 16px; cursor: pointer; color: rgba(255,255,255,0.2);" title="Mostrar Senha"></i>
+                        <i class="far fa-eye" id="togglePasswordIcon" onclick="togglePasswordVisibility()" style="left: auto; right: 18px; cursor: pointer; color: rgba(255,255,255,0.2);" title="Mostrar Senha"></i>
                     </div>
                     <div style="text-align: right;">
                         <a href="{{ route('password.request') }}" class="forgot-link">
-                            Esqueceu a senha?
+                            Esqueceu sua senha?
                         </a>
                     </div>
                 </div>
 
                 <button type="submit" class="btn-primary" id="loginBtn">
-                    Entrar na Plataforma <i class="fas fa-arrow-right"></i>
+                    Acessar Plataforma <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
 
             <div class="form-footer">
-                Não possui uma conta? <a href="{{ route('register') }}">Criar conta grátis</a>
+                Não possui conta? <a href="{{ route('register') }}">Criar agora</a>
             </div>
         </div>
         
-        <div style="margin-top: 40px; color: rgba(255,255,255,0.15); font-size: 0.75rem; text-align: center; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600;">
-            &copy; 2026 <strong>Vivensi</strong> &bull; Gestão de Impacto Social
+        <div style="margin-top: 40px; color: rgba(255,255,255,0.1); font-size: 0.7rem; text-align: center; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700;">
+            Vivensi &copy; 2026 &bull; Tecnologia de Impacto
         </div>
     </div>
 </div>
