@@ -121,7 +121,7 @@
                 <li><a href="{{ url('/smart-analysis') }}"><img src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; margin-right: 5px;"> Smart Analysis</a></li>
                 <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing/strategy*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Marketing Intelligence</a></li>
                 <li><a href="{{ url('/ngo/transparencia') }}" class="{{ request()->is('ngo/transparencia*') ? 'active' : '' }}"><i class="fas fa-landmark"></i> Portal Transparência</a></li>
-                <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Vivensi Academy</a></li>
+                <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
             @else
                 <!-- Menu Comum -->
                 <li><a href="{{ url('/personal/reconciliation') }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>

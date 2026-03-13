@@ -88,6 +88,19 @@
                             </div>
                             <div class="form-text">Necessário para buscar imagens automáticas na estratégia de marketing.</div>
                         </div>
+
+                        <div class="mb-0 mt-4">
+                            <label class="form-label fw-600 text-dark">Serper.dev API Key <span class="badge bg-light text-dark border ms-2">Lead Search</span>
+                                @if(!empty($serper_configured))
+                                    <span class="badge bg-success ms-2">Configurada</span>
+                                @endif
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-search-location text-muted"></i></span>
+                                <input type="password" name="serper_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="Cole aqui para definir / atualizar" autocomplete="off">
+                            </div>
+                            <div class="form-text">Usada para extrair endereços e contatos do Google Maps para prospecção.</div>
+                        </div>
                     </div>
                 </div>
             </div>

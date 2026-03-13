@@ -86,6 +86,14 @@ Route::group(['prefix' => 'academy', 'as' => 'academy.', 'middleware' => ['auth'
     Route::get('/certificate/{code}', [App\Http\Controllers\AcademyController::class, 'downloadCertificate'])->name('certificate.download');
 });
 
+// Prospecting Routes (Authenticated)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/prospecting', [App\Http\Controllers\ProspectingController::class, 'index'])->name('prospecting.index');
+    Route::post('/prospecting/search', [App\Http\Controllers\ProspectingController::class, 'search'])->name('prospecting.search');
+    Route::post('/prospecting/{id}/analyze', [App\Http\Controllers\ProspectingController::class, 'analyze'])->name('prospecting.analyze');
+    Route::delete('/prospecting/{id}', [App\Http\Controllers\ProspectingController::class, 'destroy'])->name('prospecting.destroy');
+});
+
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'subscription'])->name('dashboard');
 Route::post('/onboarding/complete/{step_id}', [App\Http\Controllers\DashboardController::class, 'completeOnboardingStep'])->middleware('auth')->name('onboarding.complete');
 

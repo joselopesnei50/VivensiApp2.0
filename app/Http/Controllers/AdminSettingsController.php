@@ -22,6 +22,7 @@ class AdminSettingsController extends Controller
         $pagseguro_configured = (bool) SystemSetting::getValue('pagseguro_token');
         $unsplash_configured = (bool) SystemSetting::getValue('unsplash_access_key');
         $zapi_configured = (bool) SystemSetting::getValue('zapi_instance_id') && (bool) SystemSetting::getValue('zapi_token');
+        $serper_configured = (bool) SystemSetting::getValue('serper_api_key');
 
         $deepseek_key = null;
         $gemini_key = null;
@@ -49,6 +50,7 @@ class AdminSettingsController extends Controller
             'pagseguro_configured',
             'unsplash_configured',
             'zapi_configured',
+            'serper_configured',
             'pagseguro_email',
             'pagseguro_env',
             'email_from',
@@ -83,6 +85,7 @@ class AdminSettingsController extends Controller
             'zapi_instance_id' => 'nullable|string|max:255',
             'zapi_token' => 'nullable|string|max:5000',
             'zapi_client_token' => 'nullable|string|max:5000',
+            'serper_api_key' => 'nullable|string|max:5000',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -94,6 +97,7 @@ class AdminSettingsController extends Controller
             'pagseguro_token' => 'api',
             'zapi_token' => 'whatsapp',
             'zapi_client_token' => 'whatsapp',
+            'serper_api_key' => 'api',
         ] as $key => $group) {
             $val = trim((string) ($validated[$key] ?? ''));
             if ($val !== '') {

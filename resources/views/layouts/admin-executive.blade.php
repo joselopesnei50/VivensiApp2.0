@@ -59,6 +59,11 @@
             <span>Blog</span>
         </a>
         
+        <a href="{{ route('prospecting.index') }}" class="nav-item {{ request()->is('prospecting*') ? 'active' : '' }}">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            <span>Prospecção Global</span>
+        </a>
+        
         <a href="{{ route('admin.team.index') }}" class="nav-item {{ request()->is('admin/team*') ? 'active' : '' }}">
             <i class="fas fa-users-cog"></i>
             <span>Time</span>
