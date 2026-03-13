@@ -10,8 +10,8 @@
     <meta name="description" content="Vivensi Executive Dashboard - SaaS Management Platform">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('img/logovivensi.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('img/logovivensi.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">

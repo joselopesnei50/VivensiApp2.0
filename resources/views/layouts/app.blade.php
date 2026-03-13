@@ -10,8 +10,8 @@
     <meta name="keywords" content="gestão financeira, ongs, projetos, saas, vivensi, transparência pública, lgpd financeiro">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('img/logovivensi.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('img/logovivensi.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
