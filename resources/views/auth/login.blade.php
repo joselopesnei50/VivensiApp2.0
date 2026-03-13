@@ -4,15 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vivensi - Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
     <style>
         :root {
-            --primary-color: #2563EB;
-            --primary-hover: #1D4ED8;
+            --ink: #080E1A; --ink2: #111827;
+            --blue: #3B6CF6; --blue2: #5B82FF;
+            --violet: #7C3AED; --violet2: #9B59F7;
+            --teal: #00D4AA; --rose: #E8455A;
+            --gold: #F5A623; --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, .06);
+            --border: rgba(255, 255, 255, .1);
+            --primary-color: var(--blue);
+            --primary-hover: var(--blue2);
         }
-        body { margin: 0; font-family: 'Outfit', sans-serif; background: #fff; }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--ink); 
+            color: var(--white);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
         
         .login-wrapper {
             display: flex;
@@ -20,54 +35,84 @@
             width: 100%;
         }
 
-        /* Modern Hero Section */
+        /* Premium Hero Section from Welcome Page */
         .login-hero {
-            flex: 1.2;
-            background: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop') no-repeat center center;
-            background-size: cover;
+            flex: 1.25;
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            padding: 60px;
-            color: white;
+            justify-content: center;
+            padding: 80px;
+            background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(59,108,246,.2) 0%, transparent 55%),
+                       radial-gradient(ellipse 60% 50% at 80% 80%, rgba(124,58,237,.12) 0%, transparent 50%),
+                       var(--ink);
+            overflow: hidden;
             display: none; /* Mobile */
         }
         
-        .login-hero::before {
-            content: '';
+        /* Decorative Background Elements */
+        .hero-glow {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(37, 99, 235, 0.3) 100%);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(59,108,246,0.1) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .hero-content {
             position: relative;
             z-index: 2;
-            max-width: 500px;
+            max-width: 580px;
         }
 
-        .hero-title {
-            font-size: 2.5rem;
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(59,108,246,.12);
+            border: 1px solid rgba(59,108,246,.3);
+            color: var(--blue2);
+            font-size: .78rem;
             font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.2;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 24px;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+        .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue2); animation: pulseBlue 2s infinite; }
+
+        .hero-title {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -.03em;
+            margin-bottom: 24px;
+        }
+        .hero-title .g1 { background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-title .g2 { background: linear-gradient(135deg, var(--blue2), var(--violet2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .hero-text {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,.6);
+            margin-bottom: 40px;
+            max-width: 480px;
         }
 
         .hero-features {
             display: flex;
-            gap: 15px;
-            margin-top: 20px;
+            flex-direction: column;
+            gap: 16px;
         }
-        .hero-badge {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            border: 1px solid rgba(255,255,255,0.3);
+        .feat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: rgba(255,255,255,.8);
         }
+        .feat-item i { color: var(--teal); font-size: 1.1rem; }
 
         /* Login Form Section */
         .login-form-side {
@@ -77,129 +122,181 @@
             justify-content: center;
             align-items: center;
             padding: 40px;
-            background: #FAFAFA;
+            background: var(--ink2); /* Ligeiramente mais claro que o fundo principal */
             position: relative;
+            border-left: 1px solid var(--border);
         }
 
-        .lang-switcher {
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            justify-content: center;
+        /* Logo and Heading */
+        .brand-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .brand-logo img {
+            height: 50px;
             margin-bottom: 20px;
         }
-        .lang-link {
-            text-decoration: none;
-            color: #64748B;
-            font-weight: 600;
-            margin-left: 10px;
-            opacity: 0.7;
-            transition: 0.2s;
+        .login-heading h2 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
         }
-        .lang-link:hover, .lang-link.active {
-            opacity: 1;
-            color: var(--primary-color);
+        .login-heading p {
+            color: rgba(255,255,255,0.45);
+            font-size: 0.95rem;
         }
 
+        /* Login Card */
         .login-card {
             width: 100%;
-            max-width: 420px;
-            background: white;
-            padding: 50px;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            padding: 40px;
             border-radius: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
-            border: 1px solid rgba(0,0,0,0.03);
-            animation: slideUp 0.6s ease-out;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            animation: fadeUp 0.8s ease;
         }
 
-        .brand-logo {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .brand-logo i { color: var(--primary-color); }
-
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 24px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #64748B;
-            font-size: 0.9rem;
-            font-weight: 500;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         
         .input-group { position: relative; }
         .input-group i {
             position: absolute;
-            left: 15px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94A3B8;
+            color: rgba(255,255,255,0.3);
+            transition: color 0.3s;
         }
         
         .form-control {
             width: 100%;
-            padding: 14px 14px 14px 45px;
-            border: 1px solid #E2E8F0;
-            border-radius: 12px;
+            padding: 14px 16px 14px 48px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: white;
             font-size: 1rem;
+            font-family: inherit;
             transition: all 0.3s;
-            background: #F8FAFC;
         }
         .form-control:focus {
-            background: white;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            background: rgba(255,255,255,0.08);
+            border-color: var(--blue2);
+            box-shadow: 0 0 0 4px rgba(59, 108, 246, 0.15);
             outline: none;
         }
+        .form-control:focus + i { color: var(--blue2); }
 
         .btn-primary {
             width: 100%;
-            padding: 14px;
-            background: var(--primary-color);
+            padding: 16px;
+            background: linear-gradient(135deg, var(--blue), var(--violet));
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 60px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(59, 108, 246, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         .btn-primary:hover {
-            background: var(--primary-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 12px 32px rgba(59, 108, 246, 0.5);
+            filter: brightness(1.1);
         }
 
-        @media(min-width: 900px) {
-            .login-hero { display: flex; }
+        .form-footer {
+            margin-top: 32px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
         }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .form-footer a {
+            color: var(--blue2);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .form-footer a:hover { color: white; }
+
+        .forgot-link {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-link:hover { color: rgba(255,255,255,0.8); }
+
+        /* Lang Switcher */
+        .lang-switcher {
+            position: absolute;
+            top: 40px; right: 40px;
+            display: flex;
+            gap: 16px;
+        }
+        .lang-link {
+            text-decoration: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s;
+        }
+        .lang-link.active { color: white; }
+        .lang-link img { width: 20px; border-radius: 2px; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseBlue { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+
+        @media(min-width: 900px) { .login-hero { display: flex; } }
+        @media(max-width: 768px) {
+            .login-card { padding: 30px; }
+            .lang-switcher { top: 20px; right: 20px; }
         }
     </style>
 </head>
 <body>
 
 <div class="login-wrapper">
-    <!-- Left Hero Image -->
+    <!-- Left Hero Image (Premium) -->
     <div class="login-hero">
+        <div class="hero-glow"></div>
         <div class="hero-content">
-            <div class="hero-title">Domine as Finanças da sua Organização.</div>
-            <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px;">
-                Gestão completa para Empresas, Terceiro Setor e Profissionais.
-                Automatize processos, visualize dados em tempo real e tome decisões inteligentes.
+            <div class="hero-badge"><span class="hero-badge-dot"></span> Área Restrita Vivensi</div>
+            <h1 class="hero-title">
+                <span class="g1">Gestão que</span><br>
+                <span class="g2">Transforma Vidas</span><br>
+                <span class="g1">em escala real.</span>
+            </h1>
+            <p class="hero-text">
+                Bem-vindo de volta ao seu centro de comando social. Acesse sua conta para gerenciar projetos, doações e impacto em tempo real.
             </p>
             <div class="hero-features">
-                <span class="hero-badge"><i class="fas fa-check-circle"></i> Dashboard IA</span>
-                <span class="hero-badge"><i class="fas fa-shield-alt"></i> Seguro</span>
-                <span class="hero-badge"><i class="fas fa-bolt"></i> Ambiente Único</span>
+                <div class="feat-item"><i class="fas fa-shield-check"></i> <span>Acesso seguro com criptografia de ponta</span></div>
+                <div class="feat-item"><i class="fas fa-chart-network"></i> <span>Dados integrados em um único ecossistema</span></div>
+                <div class="feat-item"><i class="fas fa-sparkles"></i> <span>Interface otimizada para produtividade</span></div>
             </div>
         </div>
     </div>
@@ -209,27 +306,32 @@
         <!-- Lang Switcher -->
         <div class="lang-switcher">
             <a href="#" class="lang-link active" title="Português">
-                <img src="https://flagcdn.com/w40/br.png" alt="Brasil" style="width: 24px; vertical-align: middle; margin-right: 5px; border-radius: 2px;"> PT
+                <img src="https://flagcdn.com/w40/br.png" alt="Brasil"> PT
             </a>
             <a href="#" class="lang-link" title="Español">
-                <img src="https://flagcdn.com/w40/es.png" alt="España" style="width: 24px; vertical-align: middle; margin-right: 5px; border-radius: 2px;"> ES
+                <img src="https://flagcdn.com/w40/es.png" alt="España"> ES
             </a>
         </div>
 
-        <div class="login-card">
-            <div class="brand-logo" style="justify-content: center;">
-                <x-application-logo style="max-height: 60px; width: auto;" />
+        <div class="brand-section">
+            <a href="{{ url('/') }}" class="brand-logo">
+                <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi">
+            </a>
+            <div class="login-heading">
+                <h2>Seja bem-vindo</h2>
+                <p>Identifique-se para continuar</p>
             </div>
-            <p style="color: #64748B; margin-bottom: 30px;">Bem-vindo de volta! Acesse sua conta.</p>
+        </div>
 
+        <div class="login-card">
             @if(session('error'))
-                <div style="background: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 8px; border: 1px solid #FECACA; margin-bottom: 20px; font-size: 0.9rem;">
+                <div style="background: rgba(232, 69, 90, 0.1); color: #FF7080; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(232, 69, 90, 0.2); margin-bottom: 24px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
                 </div>
             @endif
 
             @if(session('success'))
-                <div style="background: #ecfdf5; color: #166534; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 20px; font-size: 0.9rem;">
+                <div style="background: rgba(0, 212, 170, 0.1); color: var(--teal); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(0, 212, 170, 0.2); margin-bottom: 24px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-check-circle"></i> {{ session('success') }}
                 </div>
             @endif
@@ -250,28 +352,27 @@
                     <div class="input-group">
                         <i class="fas fa-lock"></i>
                         <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
-                        <i class="far fa-eye" id="togglePasswordIcon" onclick="togglePasswordVisibility()" style="left: auto; right: 15px; cursor: pointer;" title="Mostrar Senha"></i>
+                        <i class="far fa-eye" id="togglePasswordIcon" onclick="togglePasswordVisibility()" style="left: auto; right: 16px; cursor: pointer; color: rgba(255,255,255,0.2);" title="Mostrar Senha"></i>
+                    </div>
+                    <div style="text-align: right;">
+                        <a href="{{ route('password.request') }}" class="forgot-link">
+                            Esqueceu a senha?
+                        </a>
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content: flex-end; margin-top: -8px; margin-bottom: 18px;">
-                    <a href="{{ route('password.request') }}" style="color:#64748B; font-size:0.9rem; text-decoration:none; font-weight:600;">
-                        Esqueci minha senha
-                    </a>
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="loginBtn">
-                    <span class="btn-text">Entrar <i class="fas fa-arrow-right" style="margin-left: 8px;"></i></span>
+                <button type="submit" class="btn-primary" id="loginBtn">
+                    Entrar na Plataforma <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
 
-            <div style="text-align: center; margin-top: 30px; font-size: 0.9rem; color: #64748B;">
-                Ainda não tem conta? <a href="{{ route('register') }}" style="color: var(--primary-color); font-weight: 600; text-decoration: none;">Criar conta</a>
+            <div class="form-footer">
+                Não possui uma conta? <a href="{{ route('register') }}">Criar conta grátis</a>
             </div>
         </div>
         
-        <div style="margin-top: 30px; color: #94A3B8; font-size: 0.85rem; text-align: center;">
-            &copy; 2026 <strong>Vivensi app</strong>. Todos os direitos reservados.
+        <div style="margin-top: 40px; color: rgba(255,255,255,0.15); font-size: 0.75rem; text-align: center; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600;">
+            &copy; 2026 <strong>Vivensi</strong> &bull; Gestão de Impacto Social
         </div>
     </div>
 </div>
