@@ -14,7 +14,12 @@ class ProspectingController extends Controller
     public function index()
     {
         $tenantId = Auth::user()->tenant_id;
-        $prospects = Prospect::where('tenant_id', $tenantId)
+        $prospects = Prospect::query()
+            ->when($tenantId, function($q) use ($tenantId) {
+                return $q->where('tenant_id', $tenantId);
+            }, function($q) {
+                return $q->whereNull('tenant_id');
+            })
             ->orderBy('lead_score', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -35,7 +40,12 @@ class ProspectingController extends Controller
             $count = $searchService->search($request->term, $request->location, $tenantId);
             
             // Dispatch analysis jobs for new raw prospects
-            $newProspects = Prospect::where('tenant_id', $tenantId)
+            $newProspects = Prospect::query()
+                ->when($tenantId, function($q) use ($tenantId) {
+                    return $q->where('tenant_id', $tenantId);
+                }, function($q) {
+                    return $q->whereNull('tenant_id');
+                })
                 ->where('status', 'raw')
                 ->get();
 
@@ -51,8 +61,13 @@ class ProspectingController extends Controller
 
     public function analyze($id)
     {
+        $tenantId = Auth::user()->tenant_id;
         $prospect = Prospect::where('id', $id)
-            ->where('tenant_id', Auth::user()->tenant_id)
+            ->when($tenantId, function($q) use ($tenantId) {
+                return $q->where('tenant_id', $tenantId);
+            }, function($q) {
+                return $q->whereNull('tenant_id');
+            })
             ->firstOrFail();
 
         ProcessProspect::dispatch($prospect);
@@ -62,8 +77,13 @@ class ProspectingController extends Controller
 
     public function destroy($id)
     {
+        $tenantId = Auth::user()->tenant_id;
         $prospect = Prospect::where('id', $id)
-            ->where('tenant_id', Auth::user()->tenant_id)
+            ->when($tenantId, function($q) use ($tenantId) {
+                return $q->where('tenant_id', $tenantId);
+            }, function($q) {
+                return $q->whereNull('tenant_id');
+            })
             ->firstOrFail();
 
         $prospect->delete();
