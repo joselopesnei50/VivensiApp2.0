@@ -29,11 +29,11 @@ class GeminiAnalysisService {
             \"pitch\": \"texto para whatsapp\"
         }";
 
-        // Lista de tentativas (Fallback) - Adicionado prefixo 'models/' conforme orientação
+        // Lista de tentativas verificada diretamente via API ListModels
         $attempts = [
-            ['ver' => 'v1beta', 'model' => 'models/gemini-1.5-flash'], 
-            ['ver' => 'v1beta', 'model' => 'models/gemini-1.5-pro'],
-            ['ver' => 'v1', 'model' => 'models/gemini-pro'],
+            ['ver' => 'v1beta', 'model' => 'models/gemini-flash-latest'], 
+            ['ver' => 'v1beta', 'model' => 'models/gemini-2.0-flash'],
+            ['ver' => 'v1beta', 'model' => 'models/gemini-pro-latest'],
         ];
 
         $response = null;
