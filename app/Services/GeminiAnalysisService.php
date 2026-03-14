@@ -24,36 +24,53 @@ class GeminiAnalysisService {
         
         Retorne estritamente um JSON no formato:
         {
-            \"score\": 0-100 (probabilidade de conversão),
-            \"pain\": \"uma frase sobre o problema detectado\",
-            \"pitch\": \"texto curto para abordagem no whatsapp iniciando com 'Olá, notei que a [Empresa]...'\"
+            \"score\": 0-100,
+            \"pain\": \"problema detectado\",
+            \"pitch\": \"texto para whatsapp\"
         }";
 
-        $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" . $apiKey, [
-            'contents' => [
-                ['parts' => [['text' => $prompt]]]
-            ],
-            'generationConfig' => [
-                'response_mime_type' => 'application/json'
-            ]
-        ]);
+        // Lista de tentativas (Fallback) para garantir que funcione em qualquer conta/região
+        $attempts = [
+            ['ver' => 'v1beta', 'model' => 'gemini-1.5-flash'],
+            ['ver' => 'v1', 'model' => 'gemini-pro'],
+            ['ver' => 'v1beta', 'model' => 'gemini-1.5-pro'],
+        ];
 
-        if ($response->failed()) {
-            Log::error('Erro na API Gemini (v1beta): ' . $response->body());
-            throw new \Exception('Erro no Gemini [V-LATEST]: ' . $response->body());
+        $response = null;
+        $lastError = '';
+
+        foreach ($attempts as $attempt) {
+            $url = "https://generativelanguage.googleapis.com/{$attempt['ver']}/models/{$attempt['model']}:generateContent?key=" . $apiKey;
+            
+            try {
+                $response = Http::post($url, [
+                    'contents' => [['parts' => [['text' => $prompt]]]]
+                ]);
+
+                if ($response->successful()) {
+                    break; // Sucesso!
+                }
+                $lastError = $response->body();
+            } catch (\Exception $e) {
+                $lastError = $e->getMessage();
+            }
+        }
+
+        if (!$response || !$response->successful()) {
+            Log::error('Falha Total Gemini Fallback: ' . $lastError);
+            throw new \Exception('Bruce AI está offline. Verifique sua chave API no Super Admin. Detalhe: ' . $lastError);
         }
 
         $body = $response->json();
         
         if (!isset($body['candidates'][0]['content']['parts'][0]['text'])) {
-            throw new \Exception('Resposta inválida do Gemini: ' . json_encode($body));
+            throw new \Exception('Resposta Bruce AI inválida.');
         }
 
         $resText = $body['candidates'][0]['content']['parts'][0]['text'];
         $res = json_decode($resText, true);
         
         if (!$res) {
-            // Em caso de erro no JSON retornado, tentar limpar possíveis markdown blocks
             $cleanJson = preg_replace('/^```json\s*|\s*```$/i', '', trim($resText));
             $res = json_decode($cleanJson, true);
         }
