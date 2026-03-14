@@ -63,18 +63,22 @@ class ProspectingController extends Controller
 
     public function analyze($id)
     {
-        $tenantId = Auth::user()->tenant_id;
-        $prospect = Prospect::where('id', $id)
-            ->when($tenantId, function($q) use ($tenantId) {
-                return $q->where('tenant_id', $tenantId);
-            }, function($q) {
-                return $q->whereNull('tenant_id');
-            })
-            ->firstOrFail();
+        try {
+            $tenantId = Auth::user()->tenant_id;
+            $prospect = Prospect::where('id', $id)
+                ->when($tenantId, function($q) use ($tenantId) {
+                    return $q->where('tenant_id', $tenantId);
+                }, function($q) {
+                    return $q->whereNull('tenant_id');
+                })
+                ->firstOrFail();
 
-        ProcessProspect::dispatch($prospect);
+            ProcessProspect::dispatch($prospect);
 
-        return back()->with('success', 'Análise da Bruce AI reiniciada para este lead.');
+            return back()->with('success', 'Análise da Bruce AI reiniciada para este lead.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erro ao processar análise AI: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)
