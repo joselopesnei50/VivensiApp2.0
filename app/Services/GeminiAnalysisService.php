@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use App\Models\SystemSetting;
 
 class GeminiAnalysisService {
@@ -28,13 +29,17 @@ class GeminiAnalysisService {
             \"pitch\": \"texto curto para abordagem no whatsapp iniciando com 'Olá, notei que a [Empresa]...'\"
         }";
 
-        $response = Http::post("https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" . $apiKey, [
+        $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" . $apiKey, [
             'contents' => [
                 ['parts' => [['text' => $prompt]]]
+            ],
+            'generationConfig' => [
+                'response_mime_type' => 'application/json'
             ]
         ]);
 
         if ($response->failed()) {
+            Log::error('Erro na API Gemini (v1beta): ' . $response->body());
             throw new \Exception('Erro no Gemini: ' . $response->body());
         }
 
