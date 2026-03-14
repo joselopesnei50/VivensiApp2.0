@@ -40,7 +40,7 @@ class GeminiAnalysisService {
 
         if ($response->failed()) {
             Log::error('Erro na API Gemini (v1beta): ' . $response->body());
-            throw new \Exception('Erro no Gemini: ' . $response->body());
+            throw new \Exception('Erro no Gemini [V-LATEST]: ' . $response->body());
         }
 
         $body = $response->json();
