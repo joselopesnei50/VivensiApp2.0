@@ -79,7 +79,12 @@
                                         {{ substr($prospect->company_name, 0, 1) }}
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark mb-1">{{ $prospect->company_name }}</div>
+                                        <div class="fw-bold text-dark mb-1">
+                                            {{ $prospect->company_name }}
+                                            @if($prospect->lead_score >= 80 && $prospect->status === 'analyzed')
+                                                <span class="badge bg-danger ms-1 hot-lead-badge"><i class="fas fa-fire me-1"></i> HOT</span>
+                                            @endif
+                                        </div>
                                         <div class="text-muted small"><i class="fas fa-map-marker-alt me-1"></i> {{ $prospect->address }}</div>
                                         @if($prospect->phone)
                                             <div class="text-primary small mt-1"><i class="fab fa-whatsapp me-1"></i> {{ $prospect->phone }}</div>
@@ -120,6 +125,12 @@
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
                                         <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#detailModal{{ $prospect->id }}"><i class="fas fa-eye me-2 text-primary"></i> Ver Detalhes / Pitch</a></li>
+                                        <li>
+                                            <form action="{{ route('prospecting.convert', $prospect->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item py-2 text-success fw-bold"><i class="fas fa-chart-line me-2"></i> Enviar para Funil</button>
+                                            </form>
+                                        </li>
                                         <li>
                                             <form action="{{ route('prospecting.analyze', $prospect->id) }}" method="POST">
                                                 @csrf
@@ -188,9 +199,17 @@
                                                             $waText = urlencode($prospect->personalized_pitch);
                                                             $waPhone = preg_replace('/\D/', '', $prospect->phone);
                                                         @endphp
-                                                        <a href="https://wa.me/55{{ $waPhone }}?text={{ $waText }}" target="_blank" class="btn btn-success w-100 mt-3 rounded-3 fw-bold py-2">
-                                                            <i class="fab fa-whatsapp me-2"></i> Abrir WhatsApp para Conversão
-                                                        </a>
+                                                        <div class="d-flex gap-2 mt-3">
+                                                            <a href="https://wa.me/55{{ $waPhone }}?text={{ $waText }}" target="_blank" class="btn btn-success flex-grow-1 rounded-3 fw-bold py-2">
+                                                                <i class="fab fa-whatsapp me-2"></i> WhatsApp
+                                                            </a>
+                                                            <form action="{{ route('prospecting.convert', $prospect->id) }}" method="POST" class="flex-grow-1">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2">
+                                                                    <i class="fas fa-chart-line me-2"></i> Enviar p/ Funil
+                                                                </button>
+                                                            </form>
+                                                        </div>
                                                     @endif
                                                 </div>
                                             </div>
@@ -257,6 +276,15 @@
     .bg-indigo-50 { background-color: #eef2ff; }
     .line-height-lg { line-height: 1.7; }
     .italic { font-style: italic; }
+    .hot-lead-badge {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+        animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+        from { box-shadow: 0 0 5px #ff4d4d; }
+        to { box-shadow: 0 0 15px #ff4d4d; }
+    }
 </style>
 
 <script>

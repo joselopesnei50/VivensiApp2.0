@@ -91,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/prospecting', [App\Http\Controllers\ProspectingController::class, 'index'])->name('prospecting.index');
     Route::post('/prospecting/search', [App\Http\Controllers\ProspectingController::class, 'search'])->name('prospecting.search');
     Route::post('/prospecting/{id}/analyze', [App\Http\Controllers\ProspectingController::class, 'analyze'])->name('prospecting.analyze');
+    Route::post('/prospecting/{id}/convert', [App\Http\Controllers\ProspectingController::class, 'convertToDeal'])->name('prospecting.convert');
     Route::delete('/prospecting/{id}', [App\Http\Controllers\ProspectingController::class, 'destroy'])->name('prospecting.destroy');
 });
 

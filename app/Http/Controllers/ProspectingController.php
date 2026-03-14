@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Prospect;
+use App\Models\SponsorshipDeal;
 use App\Services\LeadSearchService;
 use App\Services\GeminiAnalysisService;
 use App\Jobs\ProcessProspect;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProspectingController extends Controller
 {
@@ -89,5 +91,36 @@ class ProspectingController extends Controller
         $prospect->delete();
 
         return back()->with('success', 'Lead removido da lista.');
+    }
+
+    public function convertToDeal($id)
+    {
+        $tenantId = Auth::user()->tenant_id;
+        $prospect = Prospect::where('id', $id)
+            ->when($tenantId, function($q) use ($tenantId) {
+                return $q->where('tenant_id', $tenantId);
+            }, function($q) {
+                return $q->whereNull('tenant_id');
+            })
+            ->firstOrFail();
+
+        return DB::transaction(function() use ($prospect, $tenantId) {
+            // Create the deal in CRM
+            SponsorshipDeal::create([
+                'tenant_id' => $tenantId,
+                'company_name' => $prospect->company_name,
+                'contact_person' => 'Lead de Prospecção',
+                'phone' => $prospect->phone,
+                'email' => $prospect->website, // Usando website como fallback se necessário
+                'expected_value' => 0,
+                'stage' => 'prospecting',
+                'notes' => "Lead convertido da Prospecção Automática. \n\nAnálise Bruce AI: " . $prospect->ai_analysis,
+            ]);
+
+            // Mark prospect as contacted (converted)
+            $prospect->update(['status' => 'contacted']);
+
+            return back()->with('success', 'Lead enviado para o Funil de Patrocínios com sucesso!');
+        });
     }
 }
