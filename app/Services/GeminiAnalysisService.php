@@ -29,21 +29,24 @@ class GeminiAnalysisService {
             \"pitch\": \"texto para whatsapp\"
         }";
 
-        // Lista de tentativas (Fallback) para garantir que funcione em qualquer conta/região
+        // Lista de tentativas (Fallback) - Adicionado prefixo 'models/' conforme orientação
         $attempts = [
-            ['ver' => 'v1beta', 'model' => 'gemini-1.5-flash'],
-            ['ver' => 'v1', 'model' => 'gemini-pro'],
-            ['ver' => 'v1beta', 'model' => 'gemini-1.5-pro'],
+            ['ver' => 'v1beta', 'model' => 'models/gemini-1.5-flash'], 
+            ['ver' => 'v1beta', 'model' => 'models/gemini-1.5-pro'],
+            ['ver' => 'v1', 'model' => 'models/gemini-pro'],
         ];
 
         $response = null;
         $lastError = '';
 
         foreach ($attempts as $attempt) {
-            $url = "https://generativelanguage.googleapis.com/{$attempt['ver']}/models/{$attempt['model']}:generateContent?key=" . $apiKey;
+            // A URL agora usa o modelo com o prefixo correto
+            $url = "https://generativelanguage.googleapis.com/{$attempt['ver']}/{$attempt['model']}:generateContent?key=" . $apiKey;
             
             try {
-                $response = Http::post($url, [
+                $response = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->post($url, [
                     'contents' => [['parts' => [['text' => $prompt]]]]
                 ]);
 
