@@ -184,33 +184,35 @@
                                                 </div>
                                                 <div>
                                                     <h6 class="fw-bold text-dark"><i class="fab fa-whatsapp text-success me-2"></i> Pitch Personalizado de Abordagem</h6>
-                                                    <div class="p-3 border rounded-3 bg-white position-relative">
+                                                    <div class="p-3 border rounded-3 bg-white position-relative mb-3">
                                                         <p id="pitchText{{ $prospect->id }}" class="mb-0 small line-height-lg">
-                                                            {{ $prospect->personalized_pitch ?? 'O Bruce AI está gerando o seu pitch...' }}
+                                                            {{ $prospect->personalized_pitch ?? 'O Bruce AI está analisando este lead e gerando o seu pitch personalizado...' }}
                                                         </p>
                                                         @if($prospect->personalized_pitch)
                                                             <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2" onclick="copyPitch({{ $prospect->id }})">
-                                                                <i class="fas fa-copy"></i>
+                                                                  <i class="fas fa-copy"></i>
                                                             </button>
                                                         @endif
                                                     </div>
-                                                    @if($prospect->phone && $prospect->personalized_pitch)
-                                                        @php
-                                                            $waText = urlencode($prospect->personalized_pitch);
-                                                            $waPhone = preg_replace('/\D/', '', $prospect->phone);
-                                                        @endphp
-                                                        <div class="d-flex gap-2 mt-3">
+
+                                                    <div class="d-flex gap-2">
+                                                        @if($prospect->phone && $prospect->personalized_pitch)
+                                                            @php
+                                                                $waText = urlencode($prospect->personalized_pitch);
+                                                                $waPhone = preg_replace('/\D/', '', $prospect->phone);
+                                                            @endphp
                                                             <a href="https://wa.me/55{{ $waPhone }}?text={{ $waText }}" target="_blank" class="btn btn-success flex-grow-1 rounded-3 fw-bold py-2">
                                                                 <i class="fab fa-whatsapp me-2"></i> WhatsApp
                                                             </a>
-                                                            <form action="{{ route('prospecting.convert', $prospect->id) }}" method="POST" class="flex-grow-1">
-                                                                @csrf
-                                                                <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2">
-                                                                    <i class="fas fa-chart-line me-2"></i> Enviar p/ Funil
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    @endif
+                                                        @endif
+                                                        
+                                                        <form action="{{ route('prospecting.convert', $prospect->id) }}" method="POST" class="flex-grow-1">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2 @if(!$prospect->company_name) disabled @endif">
+                                                                <i class="fas fa-chart-line me-2"></i> Enviar p/ Funil
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
