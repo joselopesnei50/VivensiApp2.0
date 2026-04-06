@@ -14,9 +14,15 @@ return new class extends Migration
     public function up()
     {
         Schema::table('whatsapp_messages', function (Blueprint $table) {
-            $table->string('status')->default('sent')->after('type'); // sent, delivered, read, failed
-            $table->string('media_path')->nullable()->after('status');
-            $table->string('media_caption')->nullable()->after('media_path');
+            if (!Schema::hasColumn('whatsapp_messages', 'status')) {
+                $table->string('status')->default('sent')->after('type'); // sent, delivered, read, failed
+            }
+            if (!Schema::hasColumn('whatsapp_messages', 'media_path')) {
+                $table->string('media_path')->nullable()->after('status');
+            }
+            if (!Schema::hasColumn('whatsapp_messages', 'media_caption')) {
+                $table->string('media_caption')->nullable()->after('media_path');
+            }
         });
     }
 
