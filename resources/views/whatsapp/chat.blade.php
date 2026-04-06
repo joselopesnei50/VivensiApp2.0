@@ -1193,7 +1193,7 @@
             const bodyComp = tpl.components.find(c => c.type === 'BODY');
             const text = bodyComp?.text || '';
             
-            // Encontrar variáveis {{n}}
+            // Localizar variaveis numericas
             const matches = text.match(/@{{[0-9]+}}/g) || [];
             const varCount = matches.length;
 
