@@ -476,20 +476,21 @@
                      data-waiting="{{ $isWaiting ? 'true' : 'false' }}">
                     
                     <div class="avatar" style="background: {{ ['#4F46E5', '#10B981', '#F59E0B', '#EF4444'][$chat->id % 4] }};">
-                        {{ substr($chat->contact_name, 0, 1) }}
+                        {{ substr($chat->contact_name ?? '?', 0, 1) }}
                         @if($loop->index < 3) <div class="online-dot"></div> @endif
                     </div>
                     <div class="contact-info">
                         <div class="contact-top">
-                            <span class="contact-name">{{ $chat->contact_name }}</span>
-                            <span class="contact-time text-muted">{{ \Carbon\Carbon::parse($chat->last_message_at)->format('H:i') }}</span>
+                            <span class="contact-name">{{ $chat->contact_name ?? 'Sem Nome' }}</span>
+                            <span class="contact-time text-muted">{{ $chat->last_message_at ? \Carbon\Carbon::parse($chat->last_message_at)->format('H:i') : '' }}</span>
                         </div>
                         <div class="contact-bottom">
                             <span class="last-message">
-                                @if($chat->messages()->latest()->first()?->direction == 'outbound')
+                                @php $lastMsg = $chat->messages()->latest()->first(); @endphp
+                                @if($lastMsg && $lastMsg->direction == 'outbound')
                                     <i class="fas fa-check-double" style="color: var(--primary-color);"></i>
                                 @endif
-                                {{ $chat->messages()->latest()->first()->content ?? 'Iniciar conversa' }}
+                                {{ $lastMsg?->content ?? 'Iniciar conversa' }}
                             </span>
                             @if($isUnread) <span class="badge-unread">1</span> @endif
                         </div>
