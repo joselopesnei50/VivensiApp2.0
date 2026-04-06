@@ -1234,7 +1234,8 @@
             
             // Preview do texto (opcional)
             vars.forEach((v, i) => {
-                text = text.replace(`{{${i+1}}}`, v || `[${i+1}]`);
+                const varTag = "@{{"+(i+1)+"}}";
+                text = text.replace(varTag, v || "["+(i+1)+"]");
             });
 
             // Set inputs
