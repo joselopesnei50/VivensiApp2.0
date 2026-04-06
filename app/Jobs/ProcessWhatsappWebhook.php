@@ -151,17 +151,22 @@ class ProcessWhatsappWebhook implements ShouldQueue
 
     protected function handleStatusUpdate($config, $value)
     {
-        $statusData = $value['statuses'][0] ?? null;
-        if (!$statusData) return;
+        $statuses = $value['statuses'] ?? [];
+        foreach ($statuses as $statusData) {
+            $messageId = $statusData['id'] ?? '';
+            $status = $statusData['status'] ?? ''; // sent, delivered, read, failed
+            $timestamp = $statusData['timestamp'] ?? null;
 
-        $messageId = $statusData['id'] ?? '';
-        $status = $statusData['status'] ?? ''; // delivered, read, failed
-
-        if ($messageId) {
-            $msg = WhatsappMessage::where('message_id', $messageId)->first();
-            if ($msg) {
-                $msg->update(['status' => $status]);
-                Log::info("Meta WA Status Sync: {$messageId} -> {$status}");
+            if ($messageId) {
+                // Sincroniza o status no banco
+                $msg = WhatsappMessage::where('message_id', $messageId)->first();
+                if ($msg) {
+                    // Se a mensagem já estiver 'read', não voltamos para 'delivered'
+                    if ($msg->status === 'read' && $status === 'delivered') continue;
+                    
+                    $msg->update(['status' => $status]);
+                    Log::info("Meta WA Status Sync: {$messageId} -> {$status}");
+                }
             }
         }
     }
