@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
+
+        // Configuração Dinâmica de Broadcasting (Pusher/Soketi)
+        if (class_exists(\App\Models\SystemSetting::class)) {
+            $pusher_app_id = \App\Models\SystemSetting::getValue('pusher_app_id');
+            if ($pusher_app_id) {
+                config([
+                    'broadcasting.connections.pusher.app_id' => $pusher_app_id,
+                    'broadcasting.connections.pusher.key'    => \App\Models\SystemSetting::getValue('pusher_app_key'),
+                    'broadcasting.connections.pusher.secret' => \App\Models\SystemSetting::getValue('pusher_app_secret'),
+                    'broadcasting.connections.pusher.options.host'   => \App\Models\SystemSetting::getValue('pusher_host', '127.0.0.1'),
+                    'broadcasting.connections.pusher.options.port'   => \App\Models\SystemSetting::getValue('pusher_port', '6001'),
+                    'broadcasting.connections.pusher.options.scheme' => \App\Models\SystemSetting::getValue('pusher_scheme', 'http'),
+                    'broadcasting.connections.pusher.options.useTLS' => \App\Models\SystemSetting::getValue('pusher_scheme', 'http') === 'https',
+                ]);
+            }
+        }
+
+        // Registrar Observers para Geocodificação Automática
+        \App\Models\Beneficiary::observe(\App\Observers\BeneficiaryObserver::class);
+        \App\Models\Project::observe(\App\Observers\ProjectObserver::class);
+    }
+}

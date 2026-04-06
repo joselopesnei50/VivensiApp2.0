@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+use App\Traits\BelongsToTenant;
+
+class Volunteer extends Model
+{
+    use HasFactory, BelongsToTenant;
+
+    protected $fillable = [
+        'tenant_id',
+        'name',
+        'email',
+        'phone',
+        'skills',
+        'hours_logged',
+        'points',
+        'level_badge',
+        'availability',
+        'status'
+    ];
+
+    public function certificates()
+    {
+        return $this->hasMany(VolunteerCertificate::class);
+    }
+}

@@ -1,0 +1,139 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Models\Tenant;
+use App\Models\SubscriptionPlan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMail;
+
+class RegisterController extends Controller
+{
+    public function showRegistrationForm(Request $request)
+    {
+        $plan_id = $request->query('plan_id');
+        $plan = null;
+        if ($plan_id) {
+            $plan = SubscriptionPlan::find($plan_id);
+        }
+        
+        return view('auth.register', compact('plan'));
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'organization_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'plan_id' => 'nullable|exists:subscription_plans,id',
+            'account_type' => 'required|in:project_manager,ngo_admin,client',
+            'terms' => 'required|accepted',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // 1. Create Tenant
+            // Determinar tenant type baseado no account_type escolhido
+            $tenantType = match($request->account_type) {
+                'ngo_admin' => 'ngo',
+                'project_manager' => 'business',
+                'client' => 'common',
+                default => 'common'
+            };
+
+            // Calculate trial and set price based on billing_cycle
+            $trialDays = 7;
+            $billingCycle = $request->query('billing_cycle', 'monthly');
+            $subscriptionPrice = 0;
+            $pagseguroPlanId = null;
+
+            if ($request->plan_id) {
+                $plan = SubscriptionPlan::find($request->plan_id);
+                if ($plan) {
+                    if ($billingCycle === 'yearly') {
+                        $subscriptionPrice = $plan->price_yearly ?? ($plan->price * 12 * 0.9);
+                        $pagseguroPlanId = $plan->pagseguro_plan_id_yearly;
+                    } else {
+                        $subscriptionPrice = $plan->price;
+                        // $pagseguroPlanId = $plan->pagseguro_plan_id; // Assume existing column if implemented
+                    }
+                }
+            }
+
+            $tenant = Tenant::create([
+                'name' => $request->organization_name,
+                'type' => $tenantType,
+                'plan_id' => $request->plan_id,
+                'subscription_status' => 'trialing',
+                'trial_ends_at' => now()->addDays($trialDays),
+                'billing_cycle' => $billingCycle, // Ensure this column exists or store in meta
+            ]);
+
+            // 2. Create User with selected role (Normalized)
+            $user = User::create([
+                'tenant_id' => $tenant->id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => match($request->account_type) {
+                    'ngo_admin' => 'ngo',
+                    'project_manager' => 'manager',
+                    default => $request->account_type
+                },
+                'status' => 'active',
+                'terms_accepted_at' => now(),
+                'terms_ip' => $request->ip(),
+            ]);
+
+            DB::commit();
+
+            // Track conversion if user came from a specific landing page
+            if (session()->has('lp_source')) {
+                \App\Models\LandingPageMetric::track(session('lp_source'), 'registration');
+            }
+
+            Auth::login($user);
+
+            // 📧 Send Welcome Email (Premium Mailable)
+            try {
+                $plan = SubscriptionPlan::find($request->plan_id);
+                $planName = $plan ? $plan->name : 'Plano Básico';
+                Mail::to($user->email)->send(new WelcomeMail($user, $planName));
+            } catch (\Exception $e) {
+                \Log::error('Erro ao enviar e-mail de boas-vindas: ' . $e->getMessage());
+            }
+
+            if ($request->plan_id) {
+                return redirect('/dashboard')->with('success', 'Sua conta foi criada! Você tem 7 dias de teste grátis.');
+            }
+
+            return redirect('/dashboard');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Erro ao criar conta: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    protected function getTenantTypeByPlan($plan_id)
+    {
+        if (!$plan_id) return 'common';
+        
+        $plan = SubscriptionPlan::find($plan_id);
+        if (!$plan) return 'common';
+
+        return match($plan->target_audience) {
+            'ngo' => 'ngo',
+            'manager' => 'business',
+            default => 'common'
+        };
+    }
+}

@@ -1,0 +1,6 @@
+
+// Checkout Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/checkout/{plan_id}', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
+});

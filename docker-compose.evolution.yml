@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # ── Evolution API v2 ─────────────────────────────────────────────────────
+  evolution_api:
+    image: atendai/evolution-api:v2.2.3
+    container_name: vivensi_evolution
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      # Servidor
+      SERVER_TYPE: http
+      SERVER_PORT: 8080
+      SERVER_URL: ${EVOLUTION_API_URL}        # Ex: https://evo.vivensi.com.br
+
+      # Autenticação Global
+      AUTHENTICATION_TYPE: apikey
+      AUTHENTICATION_API_KEY: ${EVOLUTION_GLOBAL_KEY}   # Chave global secreta
+
+      # Banco de dados (Prisma + PostgreSQL para persistir sessões)
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution:${DB_PASSWORD}@evolution_db:5432/evolution_db
+      DATABASE_CONNECTION_CLIENT_NAME: evolution_client
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      DATABASE_SAVE_DATA_CONTACTS: "true"
+      DATABASE_SAVE_DATA_CHATS: "true"
+
+      # Redis (cache e filas internas da Evolution)
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://evolution_redis:6379/3
+      CACHE_REDIS_PREFIX_KEY: evolution_cache
+
+      # Webhook padrão (pode ser sobrescrito por instância)
+      WEBHOOK_GLOBAL_ENABLED: "false"   # Cada instância tem seu próprio webhook
+      WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS: "false"
+
+      # Anti-Ban
+      CONFIG_SESSION_PHONE_CLIENT: "Vivensi"
+      CONFIG_SESSION_PHONE_NAME: "Chrome"
+
+      # Logs
+      LOG_LEVEL: "error"
+      LOG_COLOR: "false"
+      LOG_BAILEYS: "error"
+
+      # QR Code
+      QRCODE_LIMIT: 30
+      QRCODE_COLOR: "#198754"
+
+      # Desabilitar TypeBot/Chatwoot internos (usaremos o nosso)
+      TYPEBOT_ENABLED: "false"
+      CHATWOOT_ENABLED: "false"
+
+    volumes:
+      - evolution_instances:/evolution/instances
+    depends_on:
+      - evolution_db
+      - evolution_redis
+    networks:
+      - evolution_net
+
+  # ── PostgreSQL (persistência das sessões WhatsApp) ───────────────────────
+  evolution_db:
+    image: postgres:15-alpine
+    container_name: vivensi_evo_db
+    restart: always
+    environment:
+      POSTGRES_DB: evolution_db
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - evolution_db_data:/var/lib/postgresql/data
+    networks:
+      - evolution_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (cache interno da Evolution API) ───────────────────────────────
+  evolution_redis:
+    image: redis:7-alpine
+    container_name: vivensi_evo_redis
+    restart: always
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - evolution_redis_data:/data
+    networks:
+      - evolution_net
+
+  # ── Nginx (proxy reverso + SSL via Certbot) ──────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: vivensi_evo_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - evolution_api
+    networks:
+      - evolution_net
+
+volumes:
+  evolution_instances:
+  evolution_db_data:
+  evolution_redis_data:
+
+networks:
+  evolution_net:
+    driver: bridge
