@@ -1194,7 +1194,7 @@
             const text = bodyComp?.text || '';
             
             // Encontrar variáveis {{n}}
-            const matches = text.match(/{{[0-9]+}}/g) || [];
+            const matches = text.match(/@{{[0-9]+}}/g) || [];
             const varCount = matches.length;
 
             const varContainer = $('#variableInputsContainer');
@@ -1205,8 +1205,8 @@
                 for (let i = 1; i <= varCount; i++) {
                     varContainer.append(`
                         <div class="col-md-6">
-                            <label class="small fw-bold text-muted mb-1">Variável {{${i}}}</label>
-                            <input type="text" class="form-control form-control-sm tpl-var-input" data-index="${i}" placeholder="Valor para {{${i}}}">
+                            <label class="small fw-bold text-muted mb-1">Variável @{{${i}}}</label>
+                            <input type="text" class="form-control form-control-sm tpl-var-input" data-index="${i}" placeholder="Valor para @{{${i}}}">
                         </div>
                     `);
                 }
