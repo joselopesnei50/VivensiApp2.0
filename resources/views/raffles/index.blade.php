@@ -133,11 +133,13 @@
                         <h5 class="mb-0 fw-800 text-primary">R$ {{ number_format($raffle->ticket_price, 2, ',', '.') }}</h5>
                     </div>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('raffles.show', $raffle) }}" class="btn btn-outline-primary btn-sm rounded-pill p-2 shadow-none" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                        <a href="{{ route('raffles.show', $raffle) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-none d-flex align-items-center gap-2">
                             <i class="bi bi-eye"></i>
+                            <span class="fw-bold">Ver Detalhes</span>
                         </a>
-                        <a href="{{ route('public.raffle.show', $raffle->slug) }}" target="_blank" class="btn btn-primary btn-sm rounded-pill p-2" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-link-45deg fs-5"></i>
+                        <a href="{{ route('public.raffle.show', $raffle->slug) }}" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-link-45deg"></i>
+                            <span class="fw-bold">Link Público</span>
                         </a>
                     </div>
                 </div>

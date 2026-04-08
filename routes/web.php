@@ -366,6 +366,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/', [App\Http\Controllers\RaffleController::class, 'store'])->name('store');
         Route::get('/{raffle}', [App\Http\Controllers\RaffleController::class, 'show'])->name('show');
         Route::post('/ticket/{ticket}/confirm', [App\Http\Controllers\RaffleController::class, 'confirmPayment'])->name('confirm-payment');
+        Route::post('/ticket/{ticket}/release', [App\Http\Controllers\RaffleController::class, 'releaseTicket'])->name('release-ticket');
         Route::post('/{raffle}/draw', [App\Http\Controllers\RaffleController::class, 'draw'])->name('draw');
     });
 

@@ -202,12 +202,21 @@
                                 @endif
                                 
                                 @if($ticket->status == 'pending')
-                                <form action="{{ route('raffles.confirm-payment', $ticket->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm border-0" onclick="return confirm('Confirmar recebimento deste pagamento?')">
-                                        <i class="bi bi-check-lg me-1"></i> CONFIRMAR
-                                    </button>
-                                </form>
+                                <div class="d-flex gap-2">
+                                    <form action="{{ route('raffles.confirm-payment', $ticket->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm border-0" onclick="return confirm('Confirmar recebimento deste pagamento?')">
+                                            <i class="bi bi-check-lg me-1"></i> CONFIRMAR
+                                        </button>
+                                    </form>
+
+                                    <form action="{{ route('raffles.release-ticket', $ticket->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-none" onclick="return confirm('Deseja liberar este número? A reserva será cancelada e o comprador será notificado por e-mail.')">
+                                            <i class="bi bi-x-lg me-1"></i> LIBERAR
+                                        </button>
+                                    </form>
+                                </div>
                                 @endif
                             </td>
                         </tr>

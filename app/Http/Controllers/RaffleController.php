@@ -120,6 +120,43 @@ class RaffleController extends Controller
         return back()->with('success', "Pagamento do bilhete #{$ticket->number} confirmado!");
     }
 
+    public function releaseTicket(RaffleTicket $ticket)
+    {
+        $this->authorizeTenant($ticket->raffle);
+
+        if ($ticket->status !== 'pending') {
+            return back()->with('error', 'Apenas bilhetes pendentes podem ser liberados.');
+        }
+
+        // Store info for email before clearing
+        $buyerEmail = $ticket->buyer_email;
+        $raffle = $ticket->raffle;
+
+        DB::transaction(function () use ($ticket, $buyerEmail, $raffle) {
+            
+            // Send email notification BEFORE clearing ticket data
+            if ($buyerEmail) {
+                try {
+                    Mail::to($buyerEmail)->send(new \App\Mail\RaffleTicketReleased($raffle, $ticket));
+                } catch (\Exception $e) {
+                    \Log::error("Failed to send raffle release email: " . $e->getMessage());
+                }
+            }
+
+            // Clear ticket data
+            $ticket->update([
+                'status' => 'available',
+                'buyer_name' => null,
+                'buyer_email' => null,
+                'buyer_phone' => null,
+                'reserved_at' => null,
+                'payment_receipt_path' => null,
+            ]);
+        });
+
+        return back()->with('success', "O bilhete #{$ticket->number} foi liberado e está disponível novamente.");
+    }
+
     public function draw(Raffle $raffle)
     {
         $this->authorizeTenant($raffle);
