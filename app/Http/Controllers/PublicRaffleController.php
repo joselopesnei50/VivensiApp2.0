@@ -192,9 +192,16 @@ class PublicRaffleController extends Controller
             return 'Chave PIX não configurada pela organização.';
         }
 
-        // Sanitize fields per BACEN spec (ASCII, max 25 chars for name, 15 for city)
-        $merchantName = strtoupper(preg_replace('/[^A-Za-z0-9 ]/', '', $tenant->name ?? 'EMPRESA'));
+        // ── Sanitization per BACEN/EMV Spec ──────────────────────────────────
+        
+        // Clean key: remove spaces. Emails must remain intact, others numeric-only or specific formats.
+        $pixKey = trim($pixKey);
+        
+        // Normalize Merchant Name: MUST BE ASCII ONLY
+        $merchantName = Str::ascii($tenant->name ?? 'EMPRESA');
+        $merchantName = strtoupper(preg_replace('/[^A-Za-z0-9 ]/', '', $merchantName));
         $merchantName = substr(trim($merchantName), 0, 25) ?: 'EMPRESA';
+        
         $merchantCity = 'SAO PAULO';
         $amountStr    = number_format($amount, 2, '.', '');
 
