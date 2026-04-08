@@ -204,6 +204,30 @@
             </div>
 
             <div class="p-4 p-md-5">
+                @if(session('success'))
+                    <div class="alert alert-success border-0 shadow-sm mb-4 rounded-4 p-3 d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+                        <div>{{ session('success') }}</div>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger border-0 shadow-sm mb-4 rounded-4 p-3 d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                        <div>{{ session('error') }}</div>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="alert alert-danger border-0 shadow-sm mb-4 rounded-4 p-3">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="row g-5">
                     <div class="col-lg-7">
                         <h5 class="fw-800 mb-4">Selecione seus números</h5>

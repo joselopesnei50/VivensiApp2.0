@@ -31,6 +31,7 @@ class PublicRaffleController extends Controller
 
     public function reserve(Request $request, $slug)
     {
+        \Illuminate\Support\Facades\Log::info("Iniciando reserva para rifa: $slug", $request->all());
         $raffle = Raffle::where('slug', $slug)->firstOrFail();
         $tenant = $raffle->tenant;
 
@@ -59,6 +60,7 @@ class PublicRaffleController extends Controller
                 ->get();
 
             if ($availableTickets->count() !== count($selectedNumbers)) {
+                DB::rollBack();
                 return back()->with('error', 'Alguns dos números selecionados não estão mais disponíveis. Por favor, tente outros.');
             }
 
@@ -73,6 +75,7 @@ class PublicRaffleController extends Controller
             }
 
             DB::commit();
+            \Illuminate\Support\Facades\Log::info("Números reservados com sucesso para: " . $request->buyer_email);
 
             // ── Multi-Tenant Payment Integration ─────────────────────────────
             $tenant = $raffle->tenant;
@@ -81,7 +84,7 @@ class PublicRaffleController extends Controller
             
             $pixPayload = '';
             $qrCodeImage = null;
-            $paymentMethod = 'static'; // default
+            $paymentMethod = 'static';
 
             // Check if Tenant has OpenPix configured (Automatic)
             if (!empty($tenant->openpix_app_id)) {
@@ -103,28 +106,32 @@ class PublicRaffleController extends Controller
                     $result = $openpix->charges()->create($chargeData);
                     $pixPayload = $result['charge']['brCode'] ?? '';
                     $qrCodeImage = $result['charge']['qrCodeImage'] ?? null;
-                    $paymentMethod = 'dynamic';
+                    $paymentMethod = $pixPayload ? 'dynamic' : 'static';
                 } catch (\Exception $e) {
-                    \Log::error("OpenPix Tenant Charge Error: " . $e->getMessage());
+                    \Log::error("OpenPix Error (Tenant: {$tenant->id}): " . $e->getMessage());
                 }
             }
 
-            // Fallback: Static PIX (each Tenant has their own key)
+            // Fallback: Static PIX
             if (empty($pixPayload)) {
                 $pixPayload = $this->generatePixPayload($raffle, $totalAmount);
                 $paymentMethod = 'static';
             }
 
-            // Update tickets with correlationID
-            RaffleTicket::whereIn('id', $availableTickets->pluck('id'))->update([
-                'transaction_id' => $correlationID
-            ]);
+            // Update tickets with correlationID (Done outside main transaction for safety)
+            try {
+                RaffleTicket::whereIn('id', $availableTickets->pluck('id'))->update([
+                    'transaction_id' => $correlationID
+                ]);
+            } catch (\Exception $e) {
+                \Log::error("Failed to update transaction_id: " . $e->getMessage());
+            }
 
-            // Send Email
+            // Send Email (Fails Silently to not break Checkout)
             try {
                 Mail::to($request->buyer_email)->send(new RaffleTicketReserved($raffle, $availableTickets, $pixPayload, $totalAmount));
             } catch (\Exception $e) {
-                \Log::error("Email Error: " . $e->getMessage());
+                \Log::error("Email Error on Reservation: " . $e->getMessage());
             }
 
             return view('public.raffles.checkout', [
@@ -139,8 +146,9 @@ class PublicRaffleController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Ocorreu um erro ao reservar seus números. Tente novamente.');
+            if (DB::transactionLevel() > 0) DB::rollBack();
+            \Illuminate\Support\Facades\Log::error("Erro crítico na reserva da rifa ($slug): " . $e->getMessage());
+            return back()->with('error', 'Desculpe, ocorreu um erro ao processar sua reserva: ' . $e->getMessage());
         }
     }
 
