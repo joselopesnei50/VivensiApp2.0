@@ -7,6 +7,7 @@ use App\Models\RaffleTicket;
 use App\Models\Transaction;
 use App\Models\FinancialCategory;
 use App\Mail\RaffleTicketPaid;
+use App\Mail\RaffleTicketReleased;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -137,7 +138,7 @@ class RaffleController extends Controller
             // Send email notification BEFORE clearing ticket data
             if ($buyerEmail) {
                 try {
-                    Mail::to($buyerEmail)->send(new \App\Mail\RaffleTicketReleased($raffle, $ticket));
+                    Mail::to($buyerEmail)->send(new RaffleTicketReleased($raffle, $ticket));
                 } catch (\Exception $e) {
                     \Log::error("Failed to send raffle release email: " . $e->getMessage());
                 }
