@@ -31,7 +31,9 @@ class PublicRaffleController extends Controller
 
     public function reserve(Request $request, $slug)
     {
-        \Illuminate\Support\Facades\Log::info("Iniciando reserva para rifa: $slug", $request->all());
+        try {
+            \Illuminate\Support\Facades\Log::info("Iniciando reserva para rifa: $slug", $request->all());
+        } catch (\Exception $e) {}
         $raffle = Raffle::where('slug', $slug)->firstOrFail();
         $tenant = $raffle->tenant;
 
@@ -75,7 +77,9 @@ class PublicRaffleController extends Controller
             }
 
             DB::commit();
-            \Illuminate\Support\Facades\Log::info("Números reservados com sucesso para: " . $request->buyer_email);
+            try {
+                \Illuminate\Support\Facades\Log::info("Números reservados com sucesso para: " . $request->buyer_email);
+            } catch (\Exception $e) {}
 
             // ── Multi-Tenant Payment Integration ─────────────────────────────
             $tenant = $raffle->tenant;
@@ -214,7 +218,7 @@ class PublicRaffleController extends Controller
         $pixKeyField = $tlv('01', $pixKey);
         $mai         = $tlv('26', $tlv('00', $gui) . $pixKeyField);
 
-        // Additional Data Field (ID 62) — txid = '***' for static PIX
+        // Additional Data Field (ID 62) — txid = '***' for static PIX (required by some banks)
         $additionalData = $tlv('62', $tlv('05', '***'));
 
         // Assemble payload without CRC

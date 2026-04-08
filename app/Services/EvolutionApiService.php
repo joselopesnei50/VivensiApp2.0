@@ -97,17 +97,21 @@ class EvolutionApiService
             return ['error' => 'Falha na criação da instância', 'details' => $response->body()];
 
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('Evolution API: ConnectionException', [
-                'msg' => $e->getMessage(),
-                'url' => "{$this->baseUrl}/instance/create"
-            ]);
+            try {
+                Log::error('Evolution API: ConnectionException', [
+                    'msg' => $e->getMessage(),
+                    'url' => "{$this->baseUrl}/instance/create"
+                ]);
+            } catch (\Exception $logEx) {}
             return ['error' => 'Falha de conexão com o servidor Evolution (Timeout/Rede)', 'details' => $e->getMessage()];
 
         } catch (\Exception $e) {
-            Log::error('Evolution API: Exception', [
-                'msg' => $e->getMessage(),
-                'class' => get_class($e)
-            ]);
+            try {
+                Log::error('Evolution API: Exception', [
+                    'msg' => $e->getMessage(),
+                    'class' => get_class($e)
+                ]);
+            } catch (\Exception $logEx) {}
             return ['error' => 'Erro inesperado na conexão com API', 'details' => $e->getMessage()];
         }
     }
@@ -161,7 +165,9 @@ class EvolutionApiService
  
             return ['error' => 'Instância inicializando... tente novamente em instantes.'];
         } catch (\Exception $e) {
-            Log::error('Evolution API: Exception in fetchConnectionCode', ['msg' => $e->getMessage()]);
+            try {
+                Log::error('Evolution API: Exception in fetchConnectionCode', ['msg' => $e->getMessage()]);
+            } catch (\Exception $logEx) {}
             return ['error' => 'Falha de comunicação: ' . $e->getMessage()];
         }
     }
