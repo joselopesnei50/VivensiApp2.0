@@ -243,7 +243,20 @@
         copyText.select();
         copyText.setSelectionRange(0, 99999);
         navigator.clipboard.writeText(copyText.value);
-        alert("Link copiado com sucesso!");
+        
+        if (typeof Toastify === 'function') {
+            Toastify({
+                text: "Link copiado com sucesso!",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                style: {
+                    background: "linear-gradient(to right, #00b09b, #96c93d)",
+                }
+            }).showToast();
+        } else {
+            alert("Link copiado com sucesso!");
+        }
     }
 </script>
 
@@ -256,55 +269,5 @@
     .fw-900 { font-weight: 900; }
     .fw-700 { font-weight: 700; }
     .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
-</style>
-div>
-</div>
-
-<script>
-    function copyLink() {
-        const copyText = document.getElementById("publicLink");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999);
-        navigator.clipboard.writeText(copyText.value);
-        
-        Toastify({
-            text: "Link copiado com sucesso!",
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-            style: {
-                background: "linear-gradient(to right, #00b09b, #96c93d)",
-            }
-        }).showToast();
-    }
-</script>
-
-<style>
-    .glass-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    }
-
-    .bg-white-5 { background: rgba(255, 255, 255, 0.05); }
-    .border-white-10 { border-color: rgba(255, 255, 255, 0.1) !important; }
-    .border-white-5 { border-color: rgba(255, 255, 255, 0.05) !important; }
-    .text-muted-light { color: rgba(255,255,255,0.6); }
-    .ls-1 { letter-spacing: 1px; }
-
-    .glass-input {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 8px !important;
-    }
-
-    .bg-success-soft { background: rgba(25, 135, 84, 0.2); }
-    .bg-warning-soft { background: rgba(255, 193, 7, 0.2); }
-
-    .table-hover tbody tr:hover {
-        background: rgba(255, 255, 255, 0.02);
-    }
 </style>
 @endsection
