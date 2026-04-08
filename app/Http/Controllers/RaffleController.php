@@ -183,6 +183,32 @@ class RaffleController extends Controller
         return back()->with('success', "Sorteio realizado! O vencedor é o bilhete #{$winnerTicket->number} ({$winnerTicket->buyer_name}).");
     }
 
+    public function destroy(Raffle $raffle)
+    {
+        $this->authorizeTenant($raffle);
+
+        // Safety check: Prevent deletion if there are paid tickets
+        $paidTicketsCount = $raffle->tickets()->where('status', 'paid')->count();
+        if ($paidTicketsCount > 0) {
+            return back()->with('error', "Esta rifa possui {$paidTicketsCount} bilhete(s) pago(s) e não pode ser excluída por segurança financeira.");
+        }
+
+        DB::transaction(function () use ($raffle) {
+            // 1. Delete all associated tickets
+            $raffle->tickets()->delete();
+
+            // 2. Delete the image file if it exists
+            if ($raffle->image_path && Storage::disk('public')->exists($raffle->image_path)) {
+                Storage::disk('public')->delete($raffle->image_path);
+            }
+
+            // 3. Delete the raffle itself
+            $raffle->delete();
+        });
+
+        return redirect()->route('raffles.index')->with('success', 'Rifa excluída permanentemente com sucesso!');
+    }
+
     private function authorizeTenant(Raffle $raffle)
     {
         if ($raffle->tenant_id !== auth()->user()->tenant_id) {

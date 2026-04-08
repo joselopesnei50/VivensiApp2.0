@@ -3,8 +3,9 @@
 @section('content')
 <div class="header-page mb-4">
     <div class="d-flex align-items-center gap-3">
-        <a href="{{ route('raffles.index') }}" class="btn btn-outline-secondary rounded-circle p-2 border-1 shadow-sm">
-            <i class="bi bi-arrow-left fs-5"></i>
+        <a href="{{ route('raffles.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 border-1 shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i>
+            <span class="fw-bold">VOLTAR PARA LISTA</span>
         </a>
         <div>
             <h6 class="text-primary fw-700 text-uppercase mb-1 ls-1" style="font-size: 0.75rem;">Gestão de Campanha</h6>
