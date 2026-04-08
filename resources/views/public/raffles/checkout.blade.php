@@ -135,10 +135,16 @@
         </div>
 
         <div class="checkout-card">
-            <h4 class="fw-800 mb-4">Pagamento PIX</h4>
+            <h4 class="fw-800 mb-4">{{ $paymentMethod === 'dynamic' ? 'Pagamento Automático' : 'Pagamento Manual' }}</h4>
             
-            @if(isset($qrCodeImage))
+            @if($qrCodeImage)
                 <img src="{{ $qrCodeImage }}" class="qr-code-img mb-4" alt="QR Code PIX">
+            @else
+                <!-- Fallback: QR Code placeholder or just instructions for static -->
+                <div class="mb-4 p-4 bg-light rounded-3">
+                    <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
+                    <p class="small text-muted mb-0">Escaneie ou copie o código abaixo para pagar.</p>
+                </div>
             @endif
 
             <h3 class="fw-800 text-primary mb-4">Total: R$ {{ number_format($totalAmount, 2, ',', '.') }}</h3>
@@ -146,7 +152,7 @@
             <div class="mb-5 text-start">
                 <div class="d-flex align-items-center mb-3">
                     <span class="step-badge">1</span>
-                    <span class="fw-bold">Copie o código PIX ou escaneie o QR Code</span>
+                    <span class="fw-bold">Copie o código PIX abaixo</span>
                 </div>
                 
                 <div class="pix-code-box">
@@ -155,6 +161,27 @@
                 </div>
             </div>
 
+            @if($paymentMethod === 'static' && !empty($whatsappSupport))
+            <div class="mb-5 text-start">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="step-badge">2</span>
+                    <span class="fw-bold">Envie o comprovante pelo WhatsApp</span>
+                </div>
+                
+                @php
+                    $numbersStr = $tickets->map(fn($t) => '#'.str_pad($t->number, 2, '0', STR_PAD_LEFT))->implode(', ');
+                    $waMessage = urlencode("Olá! Acabei de pagar a rifa: {$raffle->title}\nBilhetes: {$numbersStr}\nTotal: R$ " . number_format($totalAmount, 2, ',', '.') . "\nSegue o comprovante em anexo.");
+                    $waLink = "https://wa.me/" . preg_replace('/\D/', '', $whatsappSupport) . "?text=" . $waMessage;
+                @endphp
+
+                <a href="{{ $waLink }}" target="_blank" class="btn btn-success w-100 py-3 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center">
+                    <i class="fab fa-whatsapp me-2 fs-4"></i> ENVIAR COMPROVANTE AGORA
+                </a>
+                <div class="form-text mt-2 text-center text-muted">
+                    Clique acima para falar com <strong>{{ $tenant->name }}</strong>
+                </div>
+            </div>
+            @else
             <div class="mb-5 text-start">
                 <div class="d-flex align-items-center mb-3">
                     <span class="step-badge">2</span>
@@ -163,10 +190,10 @@
                 
                 <div class="info-alert">
                     <i class="bi bi-info-circle-fill me-2 text-primary"></i>
-                    Assim que o pagamento for confirmado, você receberá um e-mail de confirmação. 
-                    Sua reserva é válida por <strong>30 minutos</strong>.
+                    Nosso sistema identificará o pagamento automaticamente. Assim que confirmado, você receberá um e-mail.
                 </div>
             </div>
+            @endif
 
             <a href="{{ route('public.raffle.show', $raffle->slug) }}" class="btn btn-primary-gradient w-100 shadow-lg">
                 VOLTAR PARA A RIFA
@@ -174,10 +201,21 @@
             
             <p class="mt-4 text-muted small">
                 Problemas com o pagamento? <br>
-                <a href="https://wa.me/{{ preg_replace('/\D/', '', App\Models\SystemSetting::getValue('support_whatsapp', '')) }}" class="text-primary text-decoration-none fw-bold">Fale com nosso suporte</a>
+                <a href="https://wa.me/{{ preg_replace('/\D/', '', $whatsappSupport) }}" class="text-primary text-decoration-none fw-bold">Suporte {{ $tenant->name }}</a>
             </p>
         </div>
     </div>
+
+    <script>
+    function copyPix() {
+        var copyText = document.getElementById("pixPayload").innerText;
+        navigator.clipboard.writeText(copyText).then(() => {
+            alert("Código PIX copiado!");
+        });
+    }
+    </script>
+</body>
+</html>
 
     <script>
         function copyPix() {

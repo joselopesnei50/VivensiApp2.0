@@ -27,6 +27,8 @@ class Tenant extends Model
         'report_email',
         'pix_key',
         'pix_key_type',
+        'openpix_app_id',
+        'whatsapp_support',
     ];
 
     protected $casts = [
