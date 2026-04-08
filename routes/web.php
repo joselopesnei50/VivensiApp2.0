@@ -368,7 +368,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/ticket/{ticket}/confirm', [App\Http\Controllers\RaffleController::class, 'confirmPayment'])->name('confirm-payment');
         Route::post('/ticket/{ticket}/release', [App\Http\Controllers\RaffleController::class, 'releaseTicket'])->name('release-ticket');
         Route::post('/{raffle}/draw', [App\Http\Controllers\RaffleController::class, 'draw'])->name('draw');
-        Route::delete('/{raffle}', [App\Http\Controllers\RaffleController::class, 'destroy'])->name('destroy');
+        Route::delete('/{raffle}/delete', [App\Http\Controllers\RaffleController::class, 'destroy'])->name('destroy');
     });
 
 
