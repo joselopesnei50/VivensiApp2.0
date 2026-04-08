@@ -156,6 +156,27 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-5">
+                            <label style="font-size: 0.8rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">WhatsApp de Suporte (Comprovantes)</label>
+                            <input type="text" name="whatsapp_support" value="{{ old('whatsapp_support', $tenant->whatsapp_support) }}"
+                                   placeholder="Ex: 5511999999999"
+                                   style="width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-size: 0.95rem; outline: none; transition: border 0.2s;"
+                                   onfocus="this.style.borderColor='#10b981'"
+                                   onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                            <p style="font-size: 0.75rem; color: rgba(255,255,255,0.35); margin: 8px 0 0;">Número para onde os compradores enviarão comprovantes.</p>
+                        </div>
+                        <div class="col-md-7">
+                            <label style="font-size: 0.8rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">OpenPix App ID (Opcional - Automático)</label>
+                            <input type="password" name="openpix_app_id" value="{{ old('openpix_app_id', $tenant->openpix_app_id) }}"
+                                   placeholder="Seu App ID da OpenPix"
+                                   style="width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-size: 0.95rem; outline: none; transition: border 0.2s;"
+                                   onfocus="this.style.borderColor='#10b981'"
+                                   onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                            <p style="font-size: 0.75rem; color: rgba(255,255,255,0.35); margin: 8px 0 0;">Somente se possuir CNPJ e conta na OpenPix.</p>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Botões de Ação --}}

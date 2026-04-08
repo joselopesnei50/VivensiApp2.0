@@ -34,6 +34,8 @@ class TenantBrandingController extends Controller
             'report_email'          => 'nullable|email|max:100',
             'pix_key'               => 'nullable|string|max:100',
             'pix_key_type'          => 'nullable|string|in:cpf_cnpj,email,phone,random',
+            'whatsapp_support'      => 'nullable|string|max:20',
+            'openpix_app_id'        => 'nullable|string|max:150',
         ]);
 
         $data = [
@@ -43,6 +45,8 @@ class TenantBrandingController extends Controller
             'report_email'          => $request->input('report_email'),
             'pix_key'               => $request->input('pix_key'),
             'pix_key_type'          => $request->input('pix_key_type'),
+            'whatsapp_support'      => $request->input('whatsapp_support'),
+            'openpix_app_id'        => $request->input('openpix_app_id'),
         ];
 
         // Upload da logo
