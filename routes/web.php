@@ -540,6 +540,7 @@ Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 's
 Route::get('/rifa/{slug}', [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');
 Route::post('/rifa/{slug}/reserve', [App\Http\Controllers\PublicRaffleController::class, 'reserve'])->name('public.raffle.reserve');
 Route::post('/rifa/ticket/{ticket}/comprovante', [App\Http\Controllers\PublicRaffleController::class, 'uploadReceipt'])->name('public.raffle.receipt');
+Route::post('/openpix/webhook', [App\Http\Controllers\OpenPixWebhookController::class, 'receive'])->name('openpix.webhook');
 
 
 

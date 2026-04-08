@@ -21,11 +21,20 @@
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-body: #0f172a;
-                --text-main: #f1f5f9;
-                --card-bg: #1e293b;
-                --border-color: #334155;
+                --bg-body: #f8fafc; /* Force light background for form usability as requested */
+                --text-main: #1e293b;
+                --card-bg: #ffffff;
+                --border-color: #e2e8f0;
             }
+            .ticket:not(.selected) { background: #ffffff !important; color: #1e293b !important; }
+        }
+
+        /* If user really wants dark, we keep it subtle but readable */
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --text-main: #f1f5f9;
+            --card-bg: #1e293b;
+            --border-color: #334155;
         }
 
         body {

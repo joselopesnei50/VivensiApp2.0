@@ -16,5 +16,6 @@ class VerifyCsrfToken extends Middleware
         '/api/webhooks/asaas',
         '/lp/*/lead',
         '/validar-recibo',
+        '/openpix/webhook',
     ];
 }

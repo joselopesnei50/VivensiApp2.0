@@ -118,7 +118,7 @@
                 </div>
             </div>
 
-            <!-- 2. Payment Gateway (PagSeguro) -->
+            <!-- 2. Payment Gateway (PagSeguro & OpenPix) -->
             <div class="col-12 col-xl-6">
                 <div class="card border-0 shadow-sm h-100 overflow-hidden">
                     <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
@@ -128,18 +128,18 @@
                             </div>
                             <div>
                                 <h5 class="fw-bold mb-1">Pagamentos & Assinaturas</h5>
-                                <p class="text-muted small mb-0">Integração com PagSeguro.</p>
+                                <p class="text-muted small mb-0">Configurações de Gateways.</p>
                             </div>
                         </div>
                     </div>
                     <div class="card-body p-4">
                          <div class="mb-4">
-                            <label class="form-label fw-600 text-dark">Ambiente</label>
+                            <label class="form-label fw-600 text-dark">PagSeguro Ambiente</label>
                             <div class="d-flex gap-3">
                                 <div class="form-check card-radio">
                                     <input class="form-check-input" type="radio" name="pagseguro_environment" id="envSandbox" value="sandbox" {{ $pagseguro_env == 'sandbox' ? 'checked' : '' }}>
                                     <label class="form-check-label" for="envSandbox">
-                                        <i class="fas fa-flask me-1 text-warning"></i> Sandbox (Testes)
+                                        <i class="fas fa-flask me-1 text-warning"></i> Sandbox
                                     </label>
                                 </div>
                                 <div class="form-check card-radio">
@@ -151,30 +151,37 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-600 text-dark">E-mail da Conta</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope text-muted"></i></span>
-                                <input type="email" name="pagseguro_email" value="{{ $pagseguro_email }}" class="form-control border-start-0 ps-0 form-control-lg" placeholder="email@loja.com.br" autocomplete="off">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-600 text-dark">PagSeguro E-mail</label>
+                                <input type="email" name="pagseguro_email" value="{{ $pagseguro_email }}" class="form-control" placeholder="email@loja.com.br">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-600 text-dark">PagSeguro Token
+                                    @if(!empty($pagseguro_configured)) <span class="badge bg-success small">OK</span> @endif
+                                </label>
+                                <input type="password" name="pagseguro_token" class="form-control" placeholder="Token">
                             </div>
                         </div>
 
+                        <hr class="my-4">
+
                         <div class="mb-4">
-                            <label class="form-label fw-600 text-dark">Token de Produção / Sandbox
-                                @if(!empty($pagseguro_configured))
+                            <label class="form-label fw-600 text-dark">OpenPix App ID
+                                @if(!empty($openpix_configured))
                                     <span class="badge bg-success ms-2">Configurado</span>
                                 @endif
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
-                                <input type="password" name="pagseguro_token" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="{{ !empty($pagseguro_configured) ? 'Configurado (cole para atualizar)' : 'Cole o Token aqui' }}" autocomplete="off">
+                                <input type="password" name="openpix_app_id" value="" class="form-control border-start-0 ps-0" placeholder="Insira o App ID aqui">
                             </div>
                         </div>
 
-                        <div class="alert alert-light border border-info border-opacity-25 d-flex align-items-center mb-0 p-3 rounded-3" role="alert">
+                        <div class="alert alert-light border border-info border-opacity-25 d-flex align-items-center mb-0 p-3 rounded-3">
                             <i class="fas fa-info-circle text-info me-3 fs-4"></i>
                             <div class="small text-muted">
-                                Configure o Webhook no PagSeguro para: <strong>{{ url('/api/webhooks/pagseguro') }}</strong>
+                                Webhook OpenPix: <strong>{{ url('/openpix/webhook') }}</strong>
                             </div>
                         </div>
                     </div>

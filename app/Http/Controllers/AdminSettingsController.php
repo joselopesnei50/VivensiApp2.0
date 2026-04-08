@@ -25,6 +25,7 @@ class AdminSettingsController extends Controller
         $serper_configured = (bool) SystemSetting::getValue('serper_api_key');
         $google_maps_configured = (bool) SystemSetting::getValue('google_maps_api_key');
         $pusher_configured = (bool) SystemSetting::getValue('pusher_app_id') && (bool) SystemSetting::getValue('pusher_app_key');
+        $openpix_configured = (bool) SystemSetting::getValue('openpix_app_id');
 
         $deepseek_key = null;
         $gemini_key = null;
@@ -48,6 +49,8 @@ class AdminSettingsController extends Controller
         $pusher_host = SystemSetting::getValue('pusher_host', '127.0.0.1');
         $pusher_port = SystemSetting::getValue('pusher_port', '6001');
         $pusher_scheme = SystemSetting::getValue('pusher_scheme', 'http');
+
+        $openpix_app_id = SystemSetting::getValue('openpix_app_id');
 
         return view('admin.settings.index', compact(
             'deepseek_key',
@@ -77,7 +80,9 @@ class AdminSettingsController extends Controller
             'pusher_secret',
             'pusher_host',
             'pusher_port',
-            'pusher_scheme'
+            'pusher_scheme',
+            'openpix_app_id',
+            'openpix_configured'
         ));
 
     }
@@ -112,6 +117,7 @@ class AdminSettingsController extends Controller
             'pusher_host' => 'nullable|string|max:255',
             'pusher_port' => 'nullable|string|max:10',
             'pusher_scheme' => 'nullable|in:http,https',
+            'openpix_app_id' => 'nullable|string|max:5000',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -126,6 +132,7 @@ class AdminSettingsController extends Controller
             'serper_api_key' => 'api',
             'google_maps_api_key' => 'api',
             'pusher_app_secret' => 'broadcasting',
+            'openpix_app_id' => 'api',
         ] as $key => $group) {
             $val = trim((string) ($validated[$key] ?? ''));
             if ($val !== '') {

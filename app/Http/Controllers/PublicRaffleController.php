@@ -8,6 +8,9 @@ use App\Models\RaffleVisit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use OpenPix\PhpSdk\Client as OpenPixClient;
+use App\Mail\RaffleTicketReserved;
+use Illuminate\Support\Facades\Mail;
 
 class PublicRaffleController extends Controller
 {
@@ -65,14 +68,55 @@ class PublicRaffleController extends Controller
 
             DB::commit();
 
-            // Generate PIX Payload (Static for now based on Tenant's key)
-            $pixPayload = $this->generatePixPayload($raffle, count($selectedNumbers) * $raffle->ticket_price);
+            // ── OpenPix Integration ───────────────────────────────────────────
+            $openpix = app(OpenPixClient::class);
+            $totalAmount = count($selectedNumbers) * $raffle->ticket_price;
+            $correlationID = 'raffle_' . $raffle->id . '_' . Str::random(10);
+
+            $customer = [
+                "name"  => $request->buyer_name,
+                "email" => $request->buyer_email,
+                "phone" => $request->buyer_phone,
+            ];
+
+            $chargeData = [
+                "correlationID" => $correlationID,
+                "value"         => (int) ($totalAmount * 100), // Convert to cents
+                "customer"      => $customer,
+                "comment"       => "Compra de bilhete para a rifa: " . $raffle->title,
+            ];
+
+            $pixPayload = 'Erro ao gerar PIX. Entre em contato com o suporte.';
+            $qrCodeImage = null;
+
+            try {
+                $result = $openpix->charges()->create($chargeData);
+                $pixPayload = $result['charge']['brCode'] ?? $this->generatePixPayload($raffle, $totalAmount);
+                $qrCodeImage = $result['charge']['qrCodeImage'] ?? null;
+            } catch (\Exception $e) {
+                \Log::error("OpenPix Charge Creation Error: " . $e->getMessage());
+                // Fallback to static PIX if API fails to not block the user
+                $pixPayload = $this->generatePixPayload($raffle, $totalAmount);
+            }
+
+            // Update tickets with correlationID for tracking
+            RaffleTicket::whereIn('id', $availableTickets->pluck('id'))->update([
+                'transaction_id' => $correlationID
+            ]);
+
+            // Send Reservation Email
+            try {
+                Mail::to($request->buyer_email)->send(new RaffleTicketReserved($raffle, $availableTickets, $pixPayload, $totalAmount));
+            } catch (\Exception $e) {
+                \Log::error("Error sending RaffleTicketReserved email: " . $e->getMessage());
+            }
 
             return view('public.raffles.checkout', [
                 'raffle' => $raffle,
                 'tickets' => $availableTickets,
                 'pixPayload' => $pixPayload,
-                'totalAmount' => count($selectedNumbers) * $raffle->ticket_price,
+                'qrCodeImage' => $qrCodeImage,
+                'totalAmount' => $totalAmount,
             ]);
 
         } catch (\Exception $e) {

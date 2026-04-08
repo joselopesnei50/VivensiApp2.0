@@ -13,7 +13,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(\OpenPix\PhpSdk\Client::class, function ($app) {
+            $appId = \App\Models\SystemSetting::getValue('openpix_app_id');
+            return \OpenPix\PhpSdk\Client::create($appId ?? '');
+        });
     }
 
     /**

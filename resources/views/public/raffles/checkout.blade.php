@@ -13,41 +13,58 @@
             --primary: #4361ee;
             --secondary: #3f37c9;
             --accent: #4cc9f0;
-            --dark: #121212;
-            --glass: rgba(255, 255, 255, 0.05);
+            --bg-body: #f1f5f9;
+            --text-main: #1e293b;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
         }
 
         body {
-            background-color: var(--dark);
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
 
         .checkout-container {
             max-width: 600px;
-            margin: 60px auto;
+            margin: 40px auto;
+            width: 100%;
+            padding: 0 20px;
         }
 
-        .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+        .checkout-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
             padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
             text-align: center;
         }
 
+        .qr-code-img {
+            max-width: 200px;
+            margin: 0 auto 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
         .pix-code-box {
-            background: rgba(255,255,255,0.03);
-            border: 1px dashed rgba(255,255,255,0.2);
+            background: #f8fafc;
+            border: 1px dashed var(--border-color);
             border-radius: 15px;
             padding: 20px;
             word-break: break-all;
             font-family: monospace;
             font-size: 14px;
-            color: var(--accent);
+            color: var(--primary);
             margin: 20px 0;
             position: relative;
+            text-align: left;
         }
 
         .btn-copy {
@@ -65,99 +82,100 @@
         }
 
         .step-badge {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             background: var(--primary);
             color: white;
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .form-control-glass {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: white;
-            padding: 12px;
+            font-weight: 800;
+            margin-right: 12px;
         }
 
         .btn-primary-gradient {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             border: none;
-            border-radius: 12px;
-            padding: 15px;
-            font-weight: bold;
-            transition: all 0.3s;
+            border-radius: 15px;
+            padding: 18px;
+            font-weight: 800;
+            transition: all 0.3s ease;
+            color: white;
         }
 
         .btn-primary-gradient:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(67, 97, 238, 0.4);
+            color: white;
+        }
+
+        .info-alert {
+            background: rgba(67, 97, 238, 0.05);
+            border: 1px solid rgba(67, 97, 238, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #64748b;
         }
     </style>
 </head>
 <body>
 
-    <div class="container checkout-container text-white">
-        <div class="text-center mb-5 text-white">
-            <h2 class="fw-bold mb-2 text-white">Quase lá! 🚀</h2>
-            <p class="text-muted-light">Sua reserva para {{ $tickets->count() }} {{ $tickets->count() > 1 ? 'números' : 'número' }} foi realizada.</p>
-            <div class="d-flex justify-content-center gap-2 flex-wrap text-white">
+    <div class="checkout-container">
+        <div class="text-center mb-4">
+            <h2 class="fw-800 mb-2">Quase lá! 🚀</h2>
+            <p class="text-muted">Sua reserva para {{ $tickets->count() }} {{ $tickets->count() > 1 ? 'números' : 'número' }} foi realizada.</p>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
                 @foreach($tickets as $ticket)
                     <span class="badge bg-primary rounded-pill px-3 py-2">#{{ str_pad($ticket->number, 2, '0', STR_PAD_LEFT) }}</span>
                 @endforeach
             </div>
         </div>
 
-        <div class="glass-card text-white">
-            <h4 class="fw-bold mb-4 text-white">Pagamento PIX</h4>
-            <h3 class="fw-bold text-accent mb-4 text-white">Total: R$ {{ number_format($totalAmount, 2, ',', '.') }}</h3>
+        <div class="checkout-card">
+            <h4 class="fw-800 mb-4">Pagamento PIX</h4>
             
-            <div class="mb-4 text-start text-white">
-                <div class="d-flex align-items-center mb-3 text-white">
-                    <span class="step-badge text-white">1</span>
-                    <span class="text-white">Copie o código PIX abaixo</span>
+            @if(isset($qrCodeImage))
+                <img src="{{ $qrCodeImage }}" class="qr-code-img mb-4" alt="QR Code PIX">
+            @endif
+
+            <h3 class="fw-800 text-primary mb-4">Total: R$ {{ number_format($totalAmount, 2, ',', '.') }}</h3>
+            
+            <div class="mb-5 text-start">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="step-badge">1</span>
+                    <span class="fw-bold">Copie o código PIX ou escaneie o QR Code</span>
                 </div>
                 
-                <div class="pix-code-box text-white">
-                    <button class="btn-copy text-white" onclick="copyPix()">COPIAR CÓDIGO</button>
-                    <span id="pixPayload">{{ $pixPayload }}</span>
+                <div class="pix-code-box">
+                    <button class="btn-copy" onclick="copyPix()">COPIAR CÓDIGO</button>
+                    <span id="pixPayload" style="font-size: 11px; opacity: 0.8;">{{ $pixPayload }}</span>
                 </div>
             </div>
 
-            <div class="mb-5 text-start text-white">
-                <div class="d-flex align-items-center mb-3 text-white">
-                    <span class="step-badge text-white">2</span>
-                    <span class="text-white">Anexe o comprovante de pagamento</span>
+            <div class="mb-5 text-start">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="step-badge">2</span>
+                    <span class="fw-bold">Aguarde a confirmação</span>
                 </div>
                 
-                <form action="{{ route('public.raffle.receipt', $tickets->first()->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="mb-4 text-white">
-                        <input type="file" name="receipt" class="form-control form-control-glass text-white" required accept="image/*,.pdf">
-                        <small class="text-muted-light d-block mt-2 text-white">Formatos aceitos: JPG, PNG ou PDF (Máx 2MB)</small>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary-gradient w-100 fs-5 shadow-lg text-white">
-                        ENVIAR COMPROVANTE
-                    </button>
-                </form>
+                <div class="info-alert">
+                    <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                    Assim que o pagamento for confirmado, você receberá um e-mail de confirmação. 
+                    Sua reserva é válida por <strong>30 minutos</strong>.
+                </div>
             </div>
-            
-            <div class="alert alert-info border-0 text-start small mb-0 text-white" style="background: rgba(76, 201, 240, 0.1); color: var(--accent); border-radius: 15px;">
-                <i class="bi bi-info-circle-fill me-2 text-white"></i>
-                <strong>Importante:</strong> Sua reserva é válida por 30 minutos. Após o envio do comprovante, nossa equipe validará o pagamento e você receberá a confirmação por e-mail.
-            </div>
-        </div>
 
-        <div class="mt-4 text-center">
-            <a href="{{ route('public.raffle.show', $raffle->slug) }}" class="text-muted text-decoration-none small">
-                <i class="bi bi-arrow-left me-1"></i> Voltar para a rifa
+            <a href="{{ route('public.raffle.show', $raffle->slug) }}" class="btn btn-primary-gradient w-100 shadow-lg">
+                VOLTAR PARA A RIFA
             </a>
+            
+            <p class="mt-4 text-muted small">
+                Problemas com o pagamento? <br>
+                <a href="https://wa.me/{{ preg_replace('/\D/', '', App\Models\SystemSetting::getValue('support_whatsapp', '')) }}" class="text-primary text-decoration-none fw-bold">Fale com nosso suporte</a>
+            </p>
         </div>
     </div>
 
