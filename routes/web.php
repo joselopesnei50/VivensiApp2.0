@@ -257,6 +257,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/beneficiaries/reports/annual/export-pivot-type', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotTypeCsv']);
         Route::get('/beneficiaries/reports/annual/export-pivot-user', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotUserCsv']);
         Route::get('/beneficiaries/create', [App\Http\Controllers\BeneficiaryController::class, 'create']);
+        Route::get('/beneficiaries/import/template', [App\Http\Controllers\BeneficiaryController::class, 'downloadImportTemplate']);
+        Route::post('/beneficiaries/import', [App\Http\Controllers\BeneficiaryController::class, 'import']);
         Route::get('/beneficiaries/export', [App\Http\Controllers\BeneficiaryController::class, 'exportCsv']);
         Route::get('/beneficiaries/print', [App\Http\Controllers\BeneficiaryController::class, 'print']);
         Route::post('/beneficiaries', [App\Http\Controllers\BeneficiaryController::class, 'store']);

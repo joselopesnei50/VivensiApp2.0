@@ -910,6 +910,107 @@ class BeneficiaryController extends Controller
         return view('ngo.beneficiaries.create');
     }
 
+    public function downloadImportTemplate()
+    {
+        $filename = 'modelo_importacao_familias.csv';
+        $headers = ['Nome', 'NIS', 'CPF', 'Data_Nascimento', 'Telefone', 'Endereco', 'Status'];
+
+        return response()->streamDownload(function () use ($headers) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, $headers);
+            // Example row
+            fputcsv($out, ['Maria da Silva', '12345678910', '123.456.789-10', '1985-05-20', '(11) 99999-9999', 'Rua Exemplo, 123', 'active']);
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function import(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:5120',
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->getRealPath();
+        $handle = fopen($path, 'r');
+
+        // Check for BOM and skip
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
+        }
+
+        $header = fgetcsv($handle);
+        $successCount = 0;
+        $errorCount = 0;
+        $duplicatesUpdated = 0;
+        $errors = [];
+
+        while (($row = fgetcsv($handle)) !== false) {
+            if (empty(array_filter($row))) continue;
+
+            // Map columns: 0:Nome, 1:NIS, 2:CPF, 3:Nascimento, 4:Telefone, 5:Endereco, 6:Status
+            $name     = trim($row[0] ?? '');
+            $nis      = preg_replace('/\D+/', '', (string) ($row[1] ?? ''));
+            $cpf      = preg_replace('/\D+/', '', (string) ($row[2] ?? ''));
+            $birth    = trim($row[3] ?? '');
+            $phone    = trim($row[4] ?? '');
+            $address  = trim($row[5] ?? '');
+            $status   = trim($row[6] ?? 'active');
+
+            if (empty($name)) {
+                $errorCount++;
+                $errors[] = "Linha " . ($successCount + $errorCount + $duplicatesUpdated + 1) . ": Nome é obrigatório.";
+                continue;
+            }
+
+            try {
+                // Duplicate detection logic: Search by CPF or NIS within the same tenant
+                $existing = null;
+                if (!empty($cpf)) {
+                    $existing = Beneficiary::where('tenant_id', $tenantId)->where('cpf', $cpf)->first();
+                }
+                if (!$existing && !empty($nis)) {
+                    $existing = Beneficiary::where('tenant_id', $tenantId)->where('nis', $nis)->first();
+                }
+
+                $beneficiaryData = [
+                    'name'       => $name,
+                    'nis'        => $nis ?: null,
+                    'cpf'        => $cpf ?: null,
+                    'birth_date' => !empty($birth) ? Carbon::parse($birth)->toDateString() : null,
+                    'phone'      => $phone ?: null,
+                    'address'    => $address ?: null,
+                    'status'     => in_array($status, ['active', 'inactive', 'graduated']) ? $status : 'active',
+                    'tenant_id'  => $tenantId
+                ];
+
+                if ($existing) {
+                    $existing->update($beneficiaryData);
+                    $duplicatesUpdated++;
+                } else {
+                    Beneficiary::create($beneficiaryData);
+                    $successCount++;
+                }
+            } catch (\Exception $e) {
+                $errorCount++;
+                $errors[] = "Erro na linha do beneficiário '$name': " . $e->getMessage();
+            }
+        }
+
+        fclose($handle);
+
+        $msg = "Importação concluída: $successCount novos cadastros, $duplicatesUpdated duplicatas atualizadas.";
+        if ($errorCount > 0) {
+            $msg .= " Houve $errorCount falhas.";
+            return redirect()->back()->with('warning', $msg)->with('import_errors', $errors);
+        }
+
+        return redirect()->back()->with('success', $msg);
+    }
+
     public function show(Request $request, $id)
     {
         $tenantId = auth()->user()->tenant_id;

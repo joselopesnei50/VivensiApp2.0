@@ -58,5 +58,38 @@
             </button>
         </div>
     </form>
+<div class="vivensi-card" style="max-width: 800px; margin-top: 30px; border: 1px dashed #cbd5e1; background: #f8fafc;">
+    <h3 style="color: #334155; margin-bottom: 15px;"><i class="fas fa-file-import"></i> Importar via Planilha (CSV)</h3>
+    <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">
+        Se você tem muitos dados, pode subir um arquivo CSV. Se o CPF ou NIS já existir, os dados serão atualizados.
+    </p>
+
+    @if(session('import_errors'))
+        <div class="alert alert-danger" style="background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p><strong>Erros na importação:</strong></p>
+            <ul style="margin-bottom: 0; font-size: 0.85rem;">
+                @foreach(session('import_errors') as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ url('/ngo/beneficiaries/import') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="form-group">
+            <label class="form-label">Selecione o arquivo CSV</label>
+            <input type="file" name="file" class="form-control-vivensi" accept=".csv" required>
+            <div style="margin-top: 10px;">
+                <a href="{{ url('/ngo/beneficiaries/import/template') }}" style="font-size: 0.85rem; color: #3b82f6;"><i class="fas fa-download"></i> Baixar Modelo de Planilha</a>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: left;">
+            <button type="submit" class="btn-premium" style="background: #64748b;">
+                <i class="fas fa-upload"></i> Processar Planilha
+            </button>
+        </div>
+    </form>
 </div>
 @endsection
