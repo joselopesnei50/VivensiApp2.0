@@ -141,7 +141,7 @@
                             <i class="bi bi-link-45deg"></i>
                             <span class="fw-bold">Link Público</span>
                         </a>
-                        <form action="{{ route('raffles.destroy', $raffle) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta rifa e TODOS os seus bilhetes permanentemente? Esta ação não pode ser desfeita.')">
+                        <form action="{{ route('raffles.destroy', $raffle) }}" method="POST" onsubmit="return confirm('Excluir esta rifa permanentemente?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle shadow-none p-1" style="width: 32px; height: 32px;" title="Excluir Rifa">
