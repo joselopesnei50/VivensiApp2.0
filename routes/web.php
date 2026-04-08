@@ -540,11 +540,7 @@ Route::get('/validar-certificado/{id}', [App\Http\Controllers\HumanResourcesCont
 Route::get('/sign/{token}', [App\Http\Controllers\ContractController::class, 'showPublic'])->name('public.contract');
 Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign']);
 
-// Public Raffle Page
-Route::get('/rifa/{slug}', [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');
-Route::post('/rifa/{slug}/reserve', [App\Http\Controllers\PublicRaffleController::class, 'reserve'])->name('public.raffle.reserve');
-Route::post('/rifa/ticket/{ticket}/comprovante', [App\Http\Controllers\PublicRaffleController::class, 'uploadReceipt'])->name('public.raffle.receipt');
-Route::post('/openpix/webhook', [App\Http\Controllers\OpenPixWebhookController::class, 'receive'])->name('openpix.webhook');
+
 
 
 
@@ -559,3 +555,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/branding', [App\Http\Controllers\TenantBrandingController::class, 'update'])->name('settings.branding.update');
     Route::delete('/settings/branding/logo', [App\Http\Controllers\TenantBrandingController::class, 'removeLogo'])->name('settings.branding.remove-logo');
 });
+
+// Public Raffle Page (Moved to absolute bottom for public access)
+Route::get('/rifa/{slug}', [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');
+Route::post('/rifa/{slug}/reserve', [App\Http\Controllers\PublicRaffleController::class, 'reserve'])->name('public.raffle.reserve');
+Route::post('/rifa/ticket/{ticket}/comprovante', [App\Http\Controllers\PublicRaffleController::class, 'uploadReceipt'])->name('public.raffle.receipt');
+Route::post('/openpix/webhook', [App\Http\Controllers\OpenPixWebhookController::class, 'receive'])->name('openpix.webhook');

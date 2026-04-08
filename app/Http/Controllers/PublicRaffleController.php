@@ -32,6 +32,12 @@ class PublicRaffleController extends Controller
     public function reserve(Request $request, $slug)
     {
         $raffle = Raffle::where('slug', $slug)->firstOrFail();
+        $tenant = $raffle->tenant;
+
+        // Ensure NGO has at least one payment method configured
+        if (empty($tenant->pix_key) && empty($tenant->openpix_app_id)) {
+            return back()->with('error', 'Esta organização ainda não configurou os meios de pagamento (PIX). Por favor, entre em contato com o suporte da ONG.');
+        }
         
         $request->validate([
             'buyer_name' => 'required|string|max:255',
