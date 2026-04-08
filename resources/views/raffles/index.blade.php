@@ -144,8 +144,8 @@
                         <form action="{{ route('raffles.destroy', $raffle) }}" method="POST" onsubmit="return confirm('Excluir esta rifa permanentemente?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle shadow-none p-1" style="width: 32px; height: 32px;" title="Excluir Rifa">
-                                <i class="bi bi-trash"></i>
+                            <button type="submit" class="btn btn-danger btn-sm rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Excluir Rifa">
+                                <i class="bi bi-trash fs-6"></i>
                             </button>
                         </form>
                     </div>
