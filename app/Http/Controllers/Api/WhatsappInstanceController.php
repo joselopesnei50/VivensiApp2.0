@@ -134,9 +134,9 @@ class WhatsappInstanceController extends Controller
                     $result = ['base64' => $fetch['qrcode'], 'status' => $fetch['status'] ?? $instance->status];
                 } else {
                     $result = [
-                        'error'  => 'Gerando QR Code... aguarde 2-5 segundos.', 
-                        'status' => $instance->status,
-                        'details' => $fetch['error'] ?? null
+                        'error'   => $fetch['error'] ?? 'Gerando QR Code... aguarde 2-5 segundos.', 
+                        'status'  => $fetch['status'] ?? 'generating',
+                        'details' => $fetch['details'] ?? null
                     ];
                 }
             }

@@ -155,15 +155,25 @@ class EvolutionApiService
  
             if ($response->successful()) {
                 $data = $response->json();
+                
+                // Extração robusta do QR Code (suporta múltiplos formatos da v2)
+                $qrBase64 = $data['base64'] ?? ($data['qrcode']['base64'] ?? ($data['code'] ?? null));
+                $pairing  = $data['pairingCode'] ?? ($data['qrcode']['pairingCode'] ?? ($data['pairing'] ?? null));
+                
                 return [
-                    'qrcode'      => $data['base64'] ?? ($data['qrcode']['base64'] ?? null),
-                    'pairingCode' => $data['pairingCode'] ?? ($data['qrcode']['pairingCode'] ?? null),
+                    'qrcode'      => $qrBase64,
+                    'pairingCode' => $pairing,
                     'status'      => $data['instance']['status'] ?? ($data['status'] ?? 'unknown'),
                     'state'       => $data['instance']['state'] ?? ($data['state'] ?? 'unknown'),
                 ];
             }
  
-            return ['error' => 'Instância inicializando... tente novamente em instantes.'];
+            // Se a Evolution retornar 404, significa que a instância precisa ser "resetada" ou acordada
+            if ($response->status() === 404) {
+                 return ['error' => 'Instância não encontrada na API. Tente recriá-la ou aguarde a reinicialização.', 'status' => 'not_found'];
+            }
+
+            return ['error' => 'Aguardando QR Code da API...', 'status' => 'generating'];
         } catch (\Exception $e) {
             try {
                 Log::error('Evolution API: Exception in fetchConnectionCode', ['msg' => $e->getMessage()]);
