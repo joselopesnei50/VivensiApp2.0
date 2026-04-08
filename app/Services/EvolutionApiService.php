@@ -127,10 +127,28 @@ class EvolutionApiService
     public function fetchConnectionCode(string $instanceName): array
     {
         try {
+            // 1. Verificamos o estado atual (v2)
+            $stateRes = Http::timeout(10)->withoutVerifying()->withHeaders([
+                'apikey' => $this->globalApiKey
+            ])->get("{$this->baseUrl}/instance/connectionState/{$instanceName}");
+            
+            $state = $stateRes->json()['instance']['state'] ?? 'close';
+
+            // 2. Se estiver 'close', dispara o comando de conexão (wake up)
+            if ($state === 'close') {
+                Http::timeout(10)->withoutVerifying()->withHeaders([
+                    'apikey' => $this->globalApiKey
+                ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
+                
+                // Pequena pausa para a Evolution inicializar
+                usleep(500000); // 500ms
+            }
+
+            // 3. Busca o código de conexão
             $response = Http::timeout(20)->withoutVerifying()->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
-
+ 
             if ($response->successful()) {
                 $data = $response->json();
                 return [
@@ -140,17 +158,11 @@ class EvolutionApiService
                     'state'       => $data['instance']['state'] ?? ($data['state'] ?? 'unknown'),
                 ];
             }
-
-            Log::error('Evolution API: Fetch connection code failed', [
-                'instance' => $instanceName,
-                'status'   => $response->status(),
-                'body'     => $response->body()
-            ]);
-            
-            return ['error' => 'Falha ao buscar código de conexão'];
+ 
+            return ['error' => 'Instância inicializando... tente novamente em instantes.'];
         } catch (\Exception $e) {
             Log::error('Evolution API: Exception in fetchConnectionCode', ['msg' => $e->getMessage()]);
-            return ['error' => $e->getMessage()];
+            return ['error' => 'Falha de comunicação: ' . $e->getMessage()];
         }
     }
 
