@@ -171,7 +171,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($raffle->tickets->whereIn('status', ['pending', 'paid'])->sortByDesc('updated_at') as $ticket)
+                        @forelse($tickets->whereIn('status', ['pending', 'paid'])->sortByDesc(function($t) { return $t->updated_at?->timestamp ?? 0; }) as $ticket)
                         <tr>
                             <td class="ps-4">
                                 <span class="fw-800 text-primary">#{{ str_pad($ticket->number, 3, '0', STR_PAD_LEFT) }}</span>
@@ -192,7 +192,7 @@
                                 </span>
                             </td>
                             <td>
-                                <span class="small text-muted">{{ $ticket->updated_at->diffForHumans() }}</span>
+                                <span class="small text-muted">{{ $ticket->updated_at ? $ticket->updated_at->diffForHumans() : 'S/D' }}</span>
                             </td>
                             <td class="text-end pe-4">
                                 @if($ticket->payment_receipt_path)
