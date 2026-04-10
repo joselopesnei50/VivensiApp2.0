@@ -25,7 +25,7 @@ class EvolutionSetupAgent extends Command
         $this->line("Key: " . ($globalKey ? '********' . substr($globalKey, -4) : 'NÃO DEFINIDA'));
 
         // 2. Testar Conectividade Bruta
-        $target = $baseUrl ?: 'http://localhost:8080';
+        $target = $baseUrl ?: 'https://evo.vivensi.app.br';
         $this->info("\n📡 Testando conexão com: $target");
 
         try {
