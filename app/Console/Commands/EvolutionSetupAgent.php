@@ -53,8 +53,10 @@ class EvolutionSetupAgent extends Command
             $res = $evo->createInstance($testName, "master_token_" . uniqid());
 
             if (isset($res['error'])) {
-                $this->error("❌ Erro no provisionamento: " . ($res['error'] ?? 'Erro desconhecido'));
-                $this->line("Detalhes: " . json_encode($res['details'] ?? ''));
+                $this->error("❌ FALHA NO PROVISIONAMENTO!");
+                $this->line("Motivo: " . ($res['error'] ?? 'Erro desconhecido'));
+                $this->line("Resposta da API: " . json_encode($res['details'] ?? 'SEM RESPOSTA'));
+                $this->comment("\nDica: Se a resposta for 'Unauthorized', sua GLOBAL_KEY na AWS não é a mesma do Laravel.");
             } else {
                 $this->info("✅ INSTÂNCIA CRIADA COM SUCESSO!");
                 $this->line("Agora você pode ir ao painel e conectar seu WhatsApp.");
