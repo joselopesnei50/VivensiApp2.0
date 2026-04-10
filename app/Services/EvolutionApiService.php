@@ -91,43 +91,31 @@ class EvolutionApiService
     public function fetchConnectionCode(string $instanceName): array
     {
         try {
-            // 1. Acorda a instância se estiver desligada
-            $stateRes = Http::timeout(5)->withoutVerifying()->withHeaders([
-                'apikey' => $this->globalApiKey
-            ])->get("{$this->baseUrl}/instance/connectionState/{$instanceName}");
-            
-            $state = $stateRes->json()['instance']['state'] ?? 'close';
-
-            if ($state === 'close') {
-                Http::timeout(5)->withoutVerifying()->withHeaders([
-                    'apikey' => $this->globalApiKey
-                ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
-                usleep(500000); 
-            }
-
-            // 2. Busca o QR
-            $response = Http::timeout(10)->withoutVerifying()->withHeaders([
+            // 1. Tenta buscar o QR (Rápido)
+            $response = Http::timeout(3)->withoutVerifying()->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
  
             if ($response->successful()) {
                 $data = $response->json();
-                
-                // Extração robusta multi-camada (v2.1.1)
                 $qrBase64 = $data['base64'] ?? ($data['qrcode']['base64'] ?? ($data['code'] ?? null));
-                $pairing  = $data['pairingCode'] ?? ($data['qrcode']['pairingCode'] ?? ($data['pairing'] ?? null));
                 
-                return [
-                    'qrcode'      => $qrBase64,
-                    'pairingCode' => $pairing,
-                    'status'      => $data['instance']['status'] ?? ($data['status'] ?? 'unknown'),
-                    'state'       => $data['instance']['state'] ?? ($data['state'] ?? 'unknown'),
-                ];
+                if ($qrBase64) {
+                    return [
+                        'qrcode'      => $qrBase64,
+                        'status'      => 'open',
+                    ];
+                }
             }
- 
-            return ['error' => 'Instância inicializando...', 'status' => 'generating'];
+
+            // 2. Se falhar ou não tiver QR, tenta "acordar" em background (Curto Timeout)
+            Http::timeout(1)->withoutVerifying()->withHeaders([
+                'apikey' => $this->globalApiKey
+            ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
+
+            return ['error' => 'Gerando QR Code...', 'status' => 'generating'];
         } catch (\Exception $e) {
-            return ['error' => 'Erro de conexão local: ' . $e->getMessage()];
+            return ['error' => 'Aguardando API...', 'status' => 'generating'];
         }
     }
 
