@@ -30,7 +30,7 @@ class EvolutionSetupAgent extends Command
 
         try {
             $response = Http::timeout(5)->withoutVerifying()->withHeaders([
-                'apikey' => $globalKey ?: 'SenhaForteVivensi2026@!'
+                'apikey' => $globalKey ?: 'e838f5d5b86ea0fe27492c283c27498ffe0b250085896f1eaa8093baf0a3309e'
             ])->get("$target/instance/connectionState/ping");
 
             if ($response->successful() || $response->status() === 404) {
