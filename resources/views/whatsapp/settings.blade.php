@@ -563,7 +563,6 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer {{ auth()->user()->createToken("temp")->plainTextToken }}',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 }
             });
@@ -612,7 +611,6 @@
             fetch(`/api/whatsapp/instances/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': 'Bearer {{ auth()->user()->createToken("temp")->plainTextToken }}',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 }
             }).then(() => window.location.reload());
