@@ -40,6 +40,11 @@ class Kernel extends ConsoleKernel
     {
         $this->load(__DIR__.'/Commands');
 
+        // Registro explícito (caso o auto-loading falhe no servidor)
+        $this->commands([
+            \App\Console\Commands\EvolutionSetupAgent::class,
+        ]);
+
         require base_path('routes/console.php');
     }
 }
