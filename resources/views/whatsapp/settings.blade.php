@@ -555,6 +555,9 @@
     async function fetchQrCode() {
         if (!currentInstanceId) return;
 
+        const loadingText = document.getElementById('qr-code-loading');
+        const qrImage = document.getElementById('qr-code-image');
+
         try {
             const response = await fetch(`/api/whatsapp/instances/${currentInstanceId}/connect`, {
                 method: 'POST',
@@ -566,16 +569,22 @@
             });
             const data = await response.json();
 
+            if (data.error) {
+                loadingText.innerHTML = `<i class="fas fa-exclamation-triangle text-warning mb-2"></i><br><small>${data.error}</small>`;
+                loadingText.style.display = 'block';
+                qrImage.style.display = 'none';
+                return;
+            }
+
             let qrBase64 = data.qrcode || data.base64;
             
             if (qrBase64) {
-                // Ensure it has the correct prefix for image rendering
                 if (!qrBase64.startsWith('data:image')) {
                     qrBase64 = 'data:image/png;base64,' + qrBase64;
                 }
-                document.getElementById('qr-code-loading').style.display = 'none';
-                document.getElementById('qr-code-image').style.display = 'block';
-                document.getElementById('qr-code-image').src = qrBase64;
+                loadingText.style.display = 'none';
+                qrImage.style.display = 'block';
+                qrImage.src = qrBase64;
             } else if (data.status === 'open' || data.state === 'open' || (data.instance && data.instance.state === 'open')) {
                 clearInterval(pollInterval);
                 document.getElementById('qr-code-view').innerHTML = `
@@ -584,9 +593,12 @@
                     <p style="color: #64748b;">A página será recarregada.</p>
                 `;
                 setTimeout(() => window.location.reload(), 2000);
+            } else {
+                loadingText.innerHTML = `<i class="fas fa-sync fa-spin mb-2"></i><br>Gerando QR Code...<br><small style="font-size:0.7rem">Aguardando resposta da Evolution</small>`;
             }
         } catch (err) {
             console.error('Erro buscando QR Code', err);
+            loadingText.innerHTML = `<i class="fas fa-network-wired text-danger mb-2"></i><br><small>Erro de conexão local</small>`;
         }
     }
 
