@@ -26,7 +26,7 @@ class EvolutionApiService
     {
         // Prioridade: Localhost (mesma VPS) -> Config -> Env
         $this->baseUrl = config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL', 'http://localhost:8080'));
-        $this->globalApiKey = config('whatsapp.evolution_global_key', env('EVOLUTION_GLOBAL_KEY', 'e838f5d5b86ea0fe27492c283c27498ffe0b250085896f1eaa8093baf0a3309e'));
+        $this->globalApiKey = config('whatsapp.evolution_global_key', env('EVOLUTION_GLOBAL_KEY', '4f2a7b9c1d8e5f3a6b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a'));
         $this->contextModel = $contextModel;
 
         if ($contextModel) {
