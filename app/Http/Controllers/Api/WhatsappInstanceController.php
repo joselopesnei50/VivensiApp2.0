@@ -47,8 +47,8 @@ class WhatsappInstanceController extends Controller
     {
         $tenantId = auth()->user()->tenant_id;
 
-        // Cada tenant pode ter no máximo 3 instâncias (proteção anti-abuso)
-        $count = WhatsappInstance::forTenant($tenantId)->count();
+        // Limite de 3 instâncias por tenant — verificação atômica com lock para evitar race condition
+        $count = WhatsappInstance::forTenant($tenantId)->lockForUpdate()->count();
         abort_if($count >= 3, 422, 'Limite de 3 instâncias por conta atingido.');
 
         // Gerar nome único e token secreto para URL de webhook

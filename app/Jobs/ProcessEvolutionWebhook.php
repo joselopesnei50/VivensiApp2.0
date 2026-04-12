@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Jobs\ProcessWhatsappAiResponse;
 use App\Models\WhatsappBlacklist;
 use App\Models\WhatsappChat;
+use App\Models\WhatsappConfig;
 use App\Models\WhatsappInstance;
 use App\Models\WhatsappMessage;
 use App\Models\WhatsappAuditLog;
@@ -186,10 +188,11 @@ class ProcessEvolutionWebhook implements ShouldQueue
             $updateData['phone_number'] = preg_replace('/@.*/', '', $ownerJid);
         }
 
+        $cacheKey = 'evo_qr_' . $instance->instance_name;
         if ($qrcode && isset($qrcode['base64'])) {
-            \Illuminate\Support\Facades\Cache::put('evo_qr_' . $instance->id, $qrcode['base64'], 120);
-        } else if (is_string($qrcode) && str_starts_with($qrcode, 'data:image')) {
-             \Illuminate\Support\Facades\Cache::put('evo_qr_' . $instance->id, $qrcode, 120);
+            \Illuminate\Support\Facades\Cache::put($cacheKey, $qrcode['base64'], 120);
+        } elseif (is_string($qrcode) && str_starts_with($qrcode, 'data:image')) {
+            \Illuminate\Support\Facades\Cache::put($cacheKey, $qrcode, 120);
         }
 
         if (!empty($updateData)) {
