@@ -19,24 +19,28 @@ class PagSeguroController extends Controller
     }
 
     /**
-     * Iniatiate a Checkout for a Tenant/Plan.
-     * Request: { amount, description, sender: { name, email, cpf, phone }, tenant_id }
+     * Initiate a Checkout for a Tenant/Plan.
+     * Request: { amount, description, sender: { name, email, cpf, phone } }
+     * tenant_id is derived from the authenticated user — never trusted from input.
      */
     public function checkout(Request $request)
     {
+        // 0. Auth — only the tenant's own authenticated user may initiate a checkout
+        if (!$request->user()) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
         // 1. Validate
         $request->validate([
             'amount' => 'required|numeric|min:1',
             'description' => 'required|string',
             'sender.name' => 'required|string',
-            'sender.email' => 'required|email'. (app()->environment('production') ? '' : ''), // Allow sandbox emails
-             // CPF is critical for PagSeguro
-            'sender.cpf' => 'required|string', 
-            'tenant_id' => 'required|exists:tenants,id',
+            'sender.email' => 'required|email',
+            'sender.cpf' => 'required|string',
         ]);
 
-        // 2. Create Pending Transaction
-        $tenant = Tenant::findOrFail($request->tenant_id);
+        // 2. Derive tenant from authenticated user — reject if tenant is inactive/suspended
+        $tenant = Tenant::findOrFail($request->user()->tenant_id);
         
         // Generate a unique reference for PagSeguro to send back in webhook
         // Format: VIVENSI_TENANTID_TIMESTAMP
