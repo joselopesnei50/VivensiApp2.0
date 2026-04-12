@@ -11,6 +11,7 @@ use App\Models\WhatsappConfig;
 use App\Models\WhatsappChat;
 use App\Models\WhatsappMessage;
 use App\Models\WhatsappAuditLog;
+use App\Jobs\ProcessWhatsappAiResponse;
 use App\Services\Messaging\MetaCloudApiService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -132,7 +133,15 @@ class ProcessWhatsappWebhook implements ShouldQueue
 
             Log::info("Nova mensagem Meta WA recebida: Chat {$chat->id} | Msg: {$content}");
 
-            // 3. Auditoria
+            // 3. Marcar mensagem como lida (envia read receipt ao cliente)
+            try {
+                $metaService = new MetaCloudApiService($config);
+                $metaService->markMessageAsRead($messageId);
+            } catch (\Throwable $e) {
+                Log::warning("Falha ao marcar mensagem como lida: {$e->getMessage()}");
+            }
+
+            // 4. Auditoria
             WhatsappAuditLog::create([
                 'tenant_id' => $tenantId,
                 'chat_id' => $chat->id,

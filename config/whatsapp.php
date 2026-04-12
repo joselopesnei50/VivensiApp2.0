@@ -10,6 +10,6 @@ return [
 
     // Evolution API v2 connection settings
     'evolution_api_url' => env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br'),
-    'evolution_global_key' => env('EVOLUTION_GLOBAL_KEY', 'e838f5d5b86ea0fe27492c283c27498ffe0b250085896f1eaa8093baf0a3309e'),
+    'evolution_global_key' => env('EVOLUTION_GLOBAL_KEY'),
 ];
 
