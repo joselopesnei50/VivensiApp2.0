@@ -15,6 +15,7 @@ use App\Services\WhatsappOutboundPolicy;
 use App\Services\GeminiService;
 use App\Services\DeepSeekService;
 use App\Models\Tenant;
+use App\Services\Messaging\MetaCloudApiService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
@@ -75,7 +76,7 @@ class WhatsappController extends Controller
     {
         // 1. Validação de Handshake da Meta (GET)
         if ($request->isMethod('get')) {
-            $verifyToken = env('META_WEBHOOK_VERIFY_TOKEN', 'vivensi_seguro_2026');
+            $verifyToken = config('services.meta.webhook_verify_token');
             $mode = $request->query('hub_mode');
             $token = $request->query('hub_verify_token');
             $challenge = $request->query('hub_challenge');
@@ -86,9 +87,19 @@ class WhatsappController extends Controller
             return response()->json(['error' => 'Invalid verify token'], 403);
         }
 
-        // 2. Recebimento de Eventos (POST)
+        // 2. Verificação de Assinatura HMAC (Segurança — Meta envia X-Hub-Signature-256)
+        $appSecret = config('whatsapp.meta_app_secret', env('META_APP_SECRET', ''));
+        if (!empty($appSecret)) {
+            $signature = $request->header('X-Hub-Signature-256', '');
+            if (!MetaCloudApiService::verifyWebhookSignature($request->getContent(), $signature, $appSecret)) {
+                Log::warning('Meta Webhook: assinatura inválida', ['ip' => $request->ip()]);
+                return response()->json(['error' => 'Invalid signature'], 403);
+            }
+        }
+
+        // 3. Recebimento de Eventos (POST)
         $data = $request->all();
-        
+
         $phoneNumberId = $data['entry'][0]['changes'][0]['value']['metadata']['phone_number_id'] ?? null;
 
         if (!$phoneNumberId) {

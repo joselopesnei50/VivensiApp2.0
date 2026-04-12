@@ -19,6 +19,14 @@ class WhatsappConfig extends Model
         'allow_templates_outside_window' => 'boolean',
         'max_outbound_per_minute' => 'integer',
         'min_outbound_delay_seconds' => 'integer',
+        'meta_access_token' => 'encrypted',
+        'evolution_instance_token' => 'encrypted',
+    ];
+
+    protected $hidden = [
+        'meta_access_token',
+        'evolution_instance_token',
+        'client_token_hash',
     ];
 
     protected $fillable = [

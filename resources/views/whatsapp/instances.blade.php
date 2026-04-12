@@ -54,15 +54,15 @@
                                     <i class="fab fa-whatsapp" style="color: #10b981; font-size: 1.3rem;"></i>
                                 </div>
                                 <div>
-                                    <h4 style="color: white; font-weight: 800; font-size: 1.1rem; margin: 0;">{{ $instance->name }}</h4>
+                                    <h4 style="color: white; font-weight: 800; font-size: 1.1rem; margin: 0;">{{ $instance->instance_name }}</h4>
                                     <div style="font-size: 0.8rem; color: rgba(255,255,255,0.4); font-family: monospace;">{{ $instance->phone_number ?: 'Aguardando Número...' }}</div>
                                 </div>
                             </div>
                             
                             <!-- Badges de Status -->
-                            @if($instance->connection_status === 'open')
+                            @if($instance->status === 'open')
                                 <span style="background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">CONECTADO</span>
-                            @elseif($instance->connection_status === 'connecting')
+                            @elseif($instance->status === 'connecting')
                                 <span style="background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;"><i class="fas fa-spinner fa-spin"></i> CONECTANDO</span>
                             @else
                                 <span style="background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">DESCONECTADO</span>
@@ -83,14 +83,14 @@
                                 <div style="height: 100%; width: {{ $percent }}%; background: {{ $barColor }}; border-radius: 3px;"></div>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 0.75rem;">
-                                <div style="color: rgba(255,255,255,0.4);"><i class="fas fa-history"></i> Delay: {{ $instance->delay_min_seconds }}s a {{ $instance->delay_max_seconds }}s</div>
+                                <div style="color: rgba(255,255,255,0.4);"><i class="fas fa-history"></i> Delay: 1.5s a 4.0s</div>
                                 <div style="color: rgba(255,255,255,0.4);"><i class="fas fa-calendar-alt"></i> Criado: {{ $instance->created_at->format('d/m/Y') }}</div>
                             </div>
                         </div>
 
                         <!-- Ações da Instância -->
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            @if($instance->connection_status !== 'open')
+                            @if($instance->status !== 'open')
                                 <button onclick="checkStatus('{{ $instance->id }}')" class="btn btn-sm" style="background: rgba(79,70,229,0.1); color: #818cf8; border: 1px solid rgba(79,70,229,0.3); border-radius: 8px; flex: 1; font-weight: 600;">
                                     <i class="fas fa-qrcode"></i> Scan QR
                                 </button>
@@ -151,6 +151,13 @@
 </div>
 
 <script>
+    const CSRF = '{{ csrf_token() }}';
+    const webHeaders = {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': CSRF,
+        'Accept': 'application/json',
+    };
+
     let pollInterval = null;
     let currentInstanceId = null;
 
@@ -163,7 +170,7 @@
     }
 
     async function createInstance() {
-        const name = document.getElementById('instanceName').value;
+        const name = document.getElementById('instanceName').value.trim();
         if (!name) {
             alert('Por favor, informe um nome para a instância.');
             return;
@@ -175,32 +182,22 @@
         btn.disabled = true;
 
         try {
-            // Utilizamos a rota da API (precisa estar na web ou passar tenant_id)
-            // A rota correta precisa ser criada em routes/api.php para uso JS ou usar web.php
-            const response = await fetch(`/api/whatsapp/instances`, {
+            const response = await fetch(`/whatsapp/instances`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer {{ auth()->user()->createToken("temp")->plainTextToken }}', // Assuming Sanctum OR using Web sessions
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
+                headers: webHeaders,
                 body: JSON.stringify({ name: name })
             });
 
             const data = await response.json();
-            
+
             if (response.ok && data.instance) {
                 currentInstanceId = data.instance.id;
                 document.getElementById('create-instance-form').style.display = 'none';
                 document.getElementById('qr-code-view').style.display = 'block';
-                
-                // Buscar o QR logo após criar
                 fetchQrCode();
-                
-                // Iniciar polling
                 pollInterval = setInterval(fetchQrCode, 5000);
             } else {
-                alert('Erro ao criar instância: ' + (data.error || 'Desconhecido'));
+                alert('Erro ao criar instância: ' + (data.error || data.message || 'Desconhecido'));
                 btn.innerHTML = oldText;
                 btn.disabled = false;
             }
@@ -216,18 +213,14 @@
         if (!currentInstanceId) return;
 
         try {
-            const response = await fetch(`/api/whatsapp/instances/${currentInstanceId}/connect`, {
+            const response = await fetch(`/whatsapp/instances/${currentInstanceId}/connect`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer {{ auth()->user()->createToken("temp")->plainTextToken }}',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
+                headers: webHeaders,
             });
             const data = await response.json();
 
             if (data.qrcode || data.base64) {
-                document.getElementById('qr-code-image').src = data.qrcode || data.base64; // Base64
+                document.getElementById('qr-code-image').src = data.qrcode || data.base64;
             } else if (data.status === 'open' || data.state === 'open') {
                 clearInterval(pollInterval);
                 document.getElementById('qr-code-view').innerHTML = `
@@ -242,7 +235,6 @@
         }
     }
 
-    // Limpar polling ao fechar
     document.getElementById('newInstanceModal').addEventListener('hidden.bs.modal', function () {
         if (pollInterval) clearInterval(pollInterval);
         currentInstanceId = null;
@@ -250,12 +242,9 @@
 
     function confirmDelete(id) {
         if (confirm('Tem certeza que deseja excluir esta instância? Esta ação é irreversível.')) {
-            fetch(`/api/whatsapp/instances/${id}`, {
+            fetch(`/whatsapp/instances/${id}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': 'Bearer {{ auth()->user()->createToken("temp")->plainTextToken }}',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
+                headers: webHeaders,
             }).then(() => window.location.reload());
         }
     }

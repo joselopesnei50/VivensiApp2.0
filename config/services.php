@@ -39,7 +39,14 @@ return [
     'pagseguro' => [
         'email' => env('PAGSEGURO_EMAIL'),
         'token' => env('PAGSEGURO_TOKEN'),
+        'webhook_token' => env('PAGSEGURO_WEBHOOK_TOKEN'),
         'environment' => env('PAGSEGURO_ENV', 'sandbox'), // sandbox or production
+    ],
+
+    'meta' => [
+        'app_id' => env('META_APP_ID'),
+        'app_secret' => env('META_APP_SECRET'),
+        'webhook_verify_token' => env('META_WEBHOOK_VERIFY_TOKEN'),
     ],
 
 ];

@@ -11,7 +11,7 @@ return new class extends Migration
         // Add indexes to transactions
         Schema::table('transactions', function (Blueprint $table) {
             if (!Schema::hasColumn('transactions', 'tenant_id') || 
-                !$this->hasIndex('transactions', 'transactions_ten id_index')) {
+                !$this->hasIndex('transactions', 'transactions_tenant_id_index')) {
                 $table->index('tenant_id', 'transactions_tenant_id_index');
             }
             if (!$this->hasIndex('transactions', 'transactions_type_index')) {
