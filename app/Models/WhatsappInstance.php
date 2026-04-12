@@ -2,14 +2,23 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * WhatsappInstance
+ *
+ * ISOLAMENTO MULTI-TENANT: este model usa BelongsToTenant (global scope por Auth) +
+ * scopeForTenant() (scope explícito para webhooks e jobs onde Auth não está ativo).
+ * Em webhooks sempre use WhatsappInstance::where('instance_token', $token)->first()
+ * ou WhatsappInstance::forTenant($id) — nunca ::find() diretamente.
+ */
 class WhatsappInstance extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToTenant;
 
     protected $fillable = [
         'tenant_id',

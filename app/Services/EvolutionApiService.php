@@ -26,7 +26,7 @@ class EvolutionApiService
     {
         // Prioridade: Localhost (mesma VPS) -> Config -> Env
         $this->baseUrl = config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br'));
-        $this->globalApiKey = config('whatsapp.evolution_global_key', env('EVOLUTION_GLOBAL_KEY', '4f2a7b9c1d8e5f3a6b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a'));
+        $this->globalApiKey = config('whatsapp.evolution_global_key');
         $this->contextModel = $contextModel;
 
         if ($contextModel) {
@@ -42,7 +42,7 @@ class EvolutionApiService
      */
     public function createInstance(string $name, string $clientToken = null, ?string $number = null): array
     {
-        $webhookUrl  = config('app.url') . "/api/whatsapp/webhook?token=" . $clientToken;
+        $webhookUrl  = config('app.url') . "/api/evo/webhook/" . $clientToken;
 
         $payload = [
             'instanceName' => $name,
@@ -70,13 +70,12 @@ class EvolutionApiService
         ]);
 
         try {
-            // Timeout menor por ser local
-            $response = Http::timeout(45)->withoutVerifying()->withHeaders([
+            $response = Http::timeout(45)->withSslVerification($this->sslVerify())->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->post("{$this->baseUrl}/instance/create", $payload);
 
             if ($response->successful()) {
-                return array_merge($response->json(), ['generated_token' => $this->globalApiKey]);
+                return $response->json() ?? [];
             }
 
             return ['error' => 'Falha na criação da instância', 'details' => $response->body()];
@@ -92,14 +91,14 @@ class EvolutionApiService
     {
         try {
             // 1. Tenta buscar o QR (Rápido)
-            $response = Http::timeout(3)->withoutVerifying()->withHeaders([
+            $response = Http::timeout(3)->withSslVerification($this->sslVerify())->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
- 
+
             if ($response->successful()) {
                 $data = $response->json();
                 $qrBase64 = $data['base64'] ?? ($data['qrcode']['base64'] ?? ($data['code'] ?? null));
-                
+
                 if ($qrBase64) {
                     return [
                         'qrcode'      => $qrBase64,
@@ -109,7 +108,7 @@ class EvolutionApiService
             }
 
             // 2. Se falhar ou não tiver QR, tenta "acordar" em background (Curto Timeout)
-            Http::timeout(1)->withoutVerifying()->withHeaders([
+            Http::timeout(1)->withSslVerification($this->sslVerify())->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
 
@@ -124,7 +123,7 @@ class EvolutionApiService
         if (!$this->instanceName) return ['error' => 'Not configured'];
 
         try {
-            $response = Http::timeout(5)->withoutVerifying()->withHeaders([
+            $response = Http::timeout(5)->withSslVerification($this->sslVerify())->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->get("{$this->baseUrl}/instance/connectionState/{$this->instanceName}");
 
@@ -149,8 +148,8 @@ class EvolutionApiService
         ];
 
         try {
-            $response = Http::timeout(15)->withoutVerifying()->withHeaders([
-                'apikey' => $this->apiKey 
+            $response = Http::timeout(15)->withSslVerification($this->sslVerify())->withHeaders([
+                'apikey' => $this->apiKey
             ])->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
 
             if ($response->failed()) {
@@ -174,11 +173,57 @@ class EvolutionApiService
         }, $text);
     }
 
+    /**
+     * Solicita um Pairing Code para conectar o WhatsApp via número de telefone.
+     * Usado como alternativa ao QR Code.
+     *
+     * @param string $phone Número no formato E.164 sem '+' (ex: 5511999999999)
+     */
+    public function getPairingCode(string $phone): array
+    {
+        $instanceName = $this->instanceName;
+        if (!$instanceName) return ['error' => 'No instance configured'];
+
+        $cleanPhone = preg_replace('/\D/', '', $phone);
+
+        try {
+            $response = Http::timeout(15)
+                ->withSslVerification($this->sslVerify())
+                ->withHeaders(['apikey' => $this->globalApiKey])
+                ->post("{$this->baseUrl}/instance/pairingCode/{$instanceName}", [
+                    'number' => $cleanPhone,
+                ]);
+
+            if ($response->successful()) {
+                return $response->json() ?? ['error' => 'Empty response'];
+            }
+
+            return [
+                'error'   => 'Pairing Code request failed',
+                'status'  => $response->status(),
+                'details' => $response->body(),
+            ];
+        } catch (\Exception $e) {
+            return ['error' => 'Exception: ' . $e->getMessage()];
+        }
+    }
+
     public function logout(): array
     {
         if (!$this->instanceName) return ['error' => 'No instance'];
-        $response = Http::withoutVerifying()->withHeaders(['apikey' => $this->globalApiKey])
+        $response = Http::timeout(10)
+            ->withSslVerification($this->sslVerify())
+            ->withHeaders(['apikey' => $this->globalApiKey])
             ->delete("{$this->baseUrl}/instance/logout/{$this->instanceName}");
-        return $response->json();
+        return $response->json() ?? [];
+    }
+
+    /**
+     * SSL verification: habilitada em produção, desabilitada em localhost/dev.
+     */
+    protected function sslVerify(): bool
+    {
+        if (!app()->environment('production')) return false;
+        return !str_contains($this->baseUrl, 'localhost') && !str_contains($this->baseUrl, '127.0.0.1');
     }
 }
