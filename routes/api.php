@@ -32,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // ── Outros Webhooks ────────────────────────────────────────────────────────
-Route::post('/pagseguro/checkout', [App\Http\Controllers\Api\PagSeguroController::class, 'checkout']);
+Route::post('/pagseguro/checkout', [App\Http\Controllers\Api\PagSeguroController::class, 'checkout'])->middleware('auth:sanctum');
 Route::post('/webhooks/pagseguro', [App\Http\Controllers\Api\PagSeguroWebhookController::class, 'handle']);
 Route::post('/webhooks/asaas',     [App\Http\Controllers\Api\AsaasWebhookController::class, 'handle']);
 

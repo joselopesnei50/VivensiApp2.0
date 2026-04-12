@@ -29,7 +29,7 @@
 
     <!-- Article Content -->
     <div class="article-content" style="max-width: 800px; margin: 0 auto; padding: 0 5%;">
-        {!! $post->content !!}
+        {!! strip_tags($post->content, '<h1><h2><h3><h4><h5><h6><p><br><strong><b><em><i><u><ul><ol><li><a><blockquote><img><table><thead><tbody><tr><th><td><span><div><figure><figcaption><code><pre>') !!}
     </div>
 
     <!-- Back to Blog -->
