@@ -98,6 +98,109 @@ class MetaCloudApiService
     }
 
     /**
+     * Marca uma mensagem como lida (envia read receipt ao remetente).
+     * Deve ser chamado logo após receber e processar a mensagem inbound.
+     */
+    public function markMessageAsRead(string $messageId): array
+    {
+        if (!$this->isConfigured()) {
+            return ['error' => 'Meta Cloud API credentials missing'];
+        }
+
+        $url = "https://graph.facebook.com/{$this->apiVersion}/{$this->phoneNumberId}/messages";
+
+        return $this->dispatchRequest($url, [
+            'messaging_product' => 'whatsapp',
+            'status'            => 'read',
+            'message_id'        => $messageId,
+        ]);
+    }
+
+    /**
+     * Verifica a assinatura HMAC-SHA256 enviada pela Meta no header X-Hub-Signature-256.
+     * Deve ser chamado no webhook handler antes de processar qualquer payload.
+     *
+     * @param string $rawBody    Corpo bruto da requisição (não decodificado)
+     * @param string $signature  Valor do header X-Hub-Signature-256
+     * @param string $appSecret  Meta App Secret (META_APP_SECRET no .env)
+     */
+    public static function verifyWebhookSignature(string $rawBody, string $signature, string $appSecret): bool
+    {
+        if (empty($appSecret) || empty($signature)) {
+            return false;
+        }
+
+        $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $appSecret);
+
+        return hash_equals($expected, $signature);
+    }
+
+    /**
+     * Envia um Modelo com suporte a componente de HEADER (texto, imagem ou documento).
+     *
+     * @param string      $to           Número do destinatário
+     * @param string      $templateName Nome do template aprovado
+     * @param string      $languageCode Código de idioma (ex: pt_BR)
+     * @param array       $bodyVars     Variáveis do corpo {{1}}, {{2}}...
+     * @param array|null  $header       ['type' => 'text|image|document', 'value' => 'texto ou URL']
+     */
+    public function sendTemplateMessageFull(
+        string $to,
+        string $templateName,
+        string $languageCode = 'pt_BR',
+        array  $bodyVars     = [],
+        ?array $header       = null
+    ): array {
+        if (!$this->isConfigured()) {
+            return ['error' => 'Meta Cloud API credentials missing'];
+        }
+
+        $url        = "https://graph.facebook.com/{$this->apiVersion}/{$this->phoneNumberId}/messages";
+        $components = [];
+
+        // Header component (opcional)
+        if (!empty($header)) {
+            $type = $header['type'] ?? 'text';
+
+            if ($type === 'text') {
+                $components[] = [
+                    'type'       => 'header',
+                    'parameters' => [['type' => 'text', 'text' => (string) ($header['value'] ?? '')]],
+                ];
+            } elseif (in_array($type, ['image', 'video', 'document'], true)) {
+                $components[] = [
+                    'type'       => 'header',
+                    'parameters' => [[
+                        'type'  => $type,
+                        $type   => ['link' => (string) ($header['value'] ?? '')],
+                    ]],
+                ];
+            }
+        }
+
+        // Body component
+        if (!empty($bodyVars)) {
+            $components[] = [
+                'type'       => 'body',
+                'parameters' => array_map(fn ($v) => ['type' => 'text', 'text' => (string) $v], $bodyVars),
+            ];
+        }
+
+        $payload = [
+            'messaging_product' => 'whatsapp',
+            'to'                => $this->formatNumber($to),
+            'type'              => 'template',
+            'template'          => [
+                'name'       => $templateName,
+                'language'   => ['code' => $languageCode],
+                'components' => $components,
+            ],
+        ];
+
+        return $this->dispatchRequest($url, $payload);
+    }
+
+    /**
      * Busca os templates aprovados na conta do WhatsApp Business da ONG.
      */
     public function getTemplates(): array

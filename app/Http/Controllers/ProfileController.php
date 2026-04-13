@@ -36,7 +36,7 @@ class ProfileController extends Controller
                     $fail('A senha atual está incorreta.');
                 }
             }],
-            'password' => ['required', 'confirmed', 'min:6'],
+            'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
         auth()->user()->update([

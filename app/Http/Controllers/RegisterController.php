@@ -119,7 +119,8 @@ class RegisterController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Erro ao criar conta: ' . $e->getMessage())->withInput();
+            \Log::error('Erro ao criar conta', ['exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->with('error', 'Não foi possível criar a conta. Por favor, tente novamente ou entre em contato com o suporte.')->withInput();
         }
     }
 

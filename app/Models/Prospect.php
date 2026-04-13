@@ -21,7 +21,9 @@ class Prospect extends Model
         'lead_score',
         'ai_analysis',
         'personalized_pitch',
-        'status'
+        'status',
+        'source',   // 'maps' | 'web'
+        'snippet',  // trecho descritivo da busca web
     ];
 
     public function tenant()

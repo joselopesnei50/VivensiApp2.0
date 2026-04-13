@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\HandlePagSeguroWebhook;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -15,6 +16,15 @@ class PagSeguroWebhookController extends Controller
      */
     public function handle(Request $request)
     {
+        // 0. Token authentication
+        $expectedToken = SystemSetting::getValue('pagseguro_webhook_token') ?? config('services.pagseguro.webhook_token');
+        $providedToken = $request->header('x-pagseguro-token') ?? $request->query('token');
+
+        if (!$expectedToken || !$providedToken || !hash_equals((string) $expectedToken, (string) $providedToken)) {
+            Log::warning('PagSeguro Webhook: token inválido', ['ip' => $request->ip()]);
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         // 1. Basic Validation
         // PagSeguro sends form-data, not JSON usually.
         $notificationCode = $request->input('notificationCode');

@@ -24,14 +24,25 @@ class GeminiAnalysisService {
         $ngoContext = $tenant ? "da ONG {$tenant->name}" : "da organização";
         $projectContext = $project ? "focada no projeto '{$project->name}' ({$project->description})" : "de impacto social";
 
-        $prompt = "Você é um captador de recursos especializado {$ngoContext}. 
+        // Contexto adicional disponível para leads de busca web
+        $extraContext = '';
+        if (!empty($prospect->snippet)) {
+            $extraContext .= "\nDescrição Web: {$prospect->snippet}";
+        }
+        if (!empty($prospect->website)) {
+            $extraContext .= "\nSite: {$prospect->website}";
+        }
+        $sourceLabel = ($prospect->source ?? 'maps') === 'web' ? 'Busca Web Google' : 'Google Maps';
+
+        $prompt = "Você é um captador de recursos especializado {$ngoContext}.
         Atualmente, você está trabalhando {$projectContext}.
-        
+
         Analise o seguinte lead B2B para uma possível parceria ou patrocínio:
         Empresa: {$prospect->company_name}
         Categoria: {$prospect->category}
-        Localização: {$prospect->address}
-        Nota Google: {$prospect->google_rating}
+        Origem do Lead: {$sourceLabel}
+        Localização: {$prospect->address ?? 'Não informada'}
+        Nota Google: {$prospect->google_rating}{$extraContext}
 
         Objetivo: Identificar como a atividade desta empresa pode se alinhar aos objetivos do projeto citado e criar um pitch de venda curto, humano e persuasivo para WhatsApp. 
         O pitch NÃO deve mencionar o sistema Vivensi, mas sim o impacto social do projeto e o benefício da parceria para a empresa.
