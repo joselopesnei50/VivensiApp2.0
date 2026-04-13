@@ -22,6 +22,9 @@ class Kernel extends ConsoleKernel
             $schedule->command("whatsapp:cleanup --days={$days}")->dailyAt('03:30');
         }
 
+        // Redes Sociais: publica posts agendados a cada minuto
+        $schedule->command('posts:publish')->everyMinute()->withoutOverlapping()->runInBackground();
+
         // F8: Relatório Semanal com Bruce AI — todo domingo às 08:00
         $schedule->job(new \App\Jobs\SendWeeklyReportJob())
                  ->weeklyOn(0, '08:00')

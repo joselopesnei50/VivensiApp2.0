@@ -235,6 +235,50 @@ class BrevoService
     }
 
     /**
+     * Send Meeting Booking Confirmation
+     */
+    public function sendMeetingConfirmationEmail(\App\Models\MeetingBooking $booking, string $formattedDate): bool
+    {
+        $cancelUrl = route('booking.cancel', $booking->confirmation_token);
+
+        $notesHtml = $booking->notes
+            ? "<div style='background:#f8fafc;border-left:3px solid #4f46e5;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;font-size:14px;color:#475569;'>" . e($booking->notes) . "</div>"
+            : '';
+
+        $content = "
+            <p>Olá, <strong>" . e($booking->name) . "</strong>!</p>
+            <p>Sua reunião com a equipe <strong>Vivensi</strong> está confirmada. Abaixo estão os detalhes:</p>
+
+            <div style='background:#f1f5f9;border-radius:12px;overflow:hidden;margin:20px 0;'>
+                <table width='100%' cellpadding='0' cellspacing='0'>
+                    <tr><td style='padding:14px 20px;border-bottom:1px solid #e2e8f0;'>
+                        <span style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;'>Data</span><br>
+                        <strong style='font-size:15px;color:#0f172a;text-transform:capitalize;'>{$formattedDate}</strong>
+                    </td></tr>
+                    <tr><td style='padding:14px 20px;border-bottom:1px solid #e2e8f0;'>
+                        <span style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;'>Horário</span><br>
+                        <strong style='font-size:15px;color:#0f172a;'>{$booking->meeting_time} (Horário de Brasília)</strong>
+                    </td></tr>
+                    <tr><td style='padding:14px 20px;'>
+                        <span style='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;'>Duração</span><br>
+                        <strong style='font-size:15px;color:#0f172a;'>30 minutos · Videoconferência</strong>
+                    </td></tr>
+                </table>
+            </div>
+
+            {$notesHtml}
+
+            <p style='font-size:14px;color:#64748b;'>Nossa equipe enviará o link de videoconferência até 24 horas antes da reunião.</p>
+            <p style='font-size:14px;color:#64748b;'>Caso precise cancelar, <a href='{$cancelUrl}' style='color:#4f46e5;'>clique aqui</a>.</p>
+        ";
+
+        $subject = "✅ Reunião confirmada – {$formattedDate} às {$booking->meeting_time}";
+        $html = $this->wrapContent('Reunião Confirmada!', $content);
+
+        return $this->sendEmail($booking->email, $booking->name, $subject, $html);
+    }
+
+    /**
      * Send Manual Welcome Email (Created by Super Admin)
      */
     public function sendManualWelcomeEmail($user, $password, $planName, $billingMode)
