@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,24 +33,8 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Pagination\Paginator::useBootstrapFive();
 
         // Configuração Dinâmica de Broadcasting (Pusher/Soketi)
-        try {
-            if (class_exists(\App\Models\SystemSetting::class) && Schema::hasTable('system_settings')) {
-                $pusher_app_id = \App\Models\SystemSetting::getValue('pusher_app_id');
-                if ($pusher_app_id) {
-                    config([
-                        'broadcasting.connections.pusher.app_id' => $pusher_app_id,
-                        'broadcasting.connections.pusher.key'    => \App\Models\SystemSetting::getValue('pusher_app_key'),
-                        'broadcasting.connections.pusher.secret' => \App\Models\SystemSetting::getValue('pusher_app_secret'),
-                        'broadcasting.connections.pusher.options.host'   => \App\Models\SystemSetting::getValue('pusher_host', '127.0.0.1'),
-                        'broadcasting.connections.pusher.options.port'   => \App\Models\SystemSetting::getValue('pusher_port', '6001'),
-                        'broadcasting.connections.pusher.options.scheme' => \App\Models\SystemSetting::getValue('pusher_scheme', 'http'),
-                        'broadcasting.connections.pusher.options.useTLS' => \App\Models\SystemSetting::getValue('pusher_scheme', 'http') === 'https',
-                    ]);
-                }
-            }
-        } catch (\Throwable $e) {
-            // Tabela ainda não existe (primeiro deploy / migrations pendentes)
-        }
+        // Broadcasting dinâmico via SystemSetting — só ativa após migrations
+        // Configurar manualmente via config/broadcasting.php ou painel admin
 
         // Registrar Observers para Geocodificação Automática
         try {
