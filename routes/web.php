@@ -17,6 +17,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [App\Http\Controllers\PublicController::class, 'welcome']);
 Route::get('/solucoes/terceiro-setor', [App\Http\Controllers\PublicController::class, 'solutionsNgo'])->name('solutions.ngo');
+
+// ── Agendamento de Reunião (público) ─────────────────────────────────────
+Route::prefix('agendar')->name('booking.')->group(function () {
+    Route::get('/',              [App\Http\Controllers\MeetingBookingController::class, 'index'])->name('index');
+    Route::get('/slots',         [App\Http\Controllers\MeetingBookingController::class, 'slots'])->name('slots');
+    Route::post('/',             [App\Http\Controllers\MeetingBookingController::class, 'store'])->name('store')->middleware('throttle:10,1');
+    Route::get('/cancelar/{token}', [App\Http\Controllers\MeetingBookingController::class, 'cancel'])->name('cancel');
+});
 Route::get('/solucoes/gestor-projetos', [App\Http\Controllers\PublicController::class, 'solutionsManager'])->name('solutions.manager');
 Route::get('/solucoes/pessoa-comum', [App\Http\Controllers\PublicController::class, 'solutionsCommon'])->name('solutions.common');
 
@@ -69,7 +77,7 @@ Route::middleware('guest')->group(function () {
 
 // Register Routes
 Route::get('/register', [App\Http\Controllers\RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [App\Http\Controllers\RegisterController::class, 'register']);
+Route::post('/register', [App\Http\Controllers\RegisterController::class, 'register'])->middleware('throttle:10,1');
 
 // Donor Portal
 Route::get('/portal-doador/{token}', [App\Http\Controllers\DonorPortalController::class, 'show'])->name('donor.portal');
@@ -90,6 +98,7 @@ Route::group(['prefix' => 'academy', 'as' => 'academy.', 'middleware' => ['auth'
 Route::middleware(['auth'])->group(function () {
     Route::get('/prospecting', [App\Http\Controllers\ProspectingController::class, 'index'])->name('prospecting.index');
     Route::post('/prospecting/search', [App\Http\Controllers\ProspectingController::class, 'search'])->name('prospecting.search');
+    Route::post('/prospecting/analyze-all', [App\Http\Controllers\ProspectingController::class, 'analyzeAll'])->name('prospecting.analyze-all');
     Route::post('/prospecting/{id}/analyze', [App\Http\Controllers\ProspectingController::class, 'analyze'])->name('prospecting.analyze');
     Route::post('/prospecting/{id}/convert', [App\Http\Controllers\ProspectingController::class, 'convertToDeal'])->name('prospecting.convert');
     Route::delete('/prospecting/{id}', [App\Http\Controllers\ProspectingController::class, 'destroy'])->name('prospecting.destroy');
@@ -305,6 +314,44 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/audit/{id}', [App\Http\Controllers\AuditController::class, 'show']);
     });
 
+    // ── Criador de Banners ───────────────────────────────────────────────────
+    Route::prefix('banners')->name('banners.')->group(function () {
+        Route::get('/',                               [App\Http\Controllers\BannerController::class, 'index'])->name('index');
+        Route::post('/',                              [App\Http\Controllers\BannerController::class, 'store'])->name('store');
+        Route::get('/{banner}/builder',               [App\Http\Controllers\BannerController::class, 'builder'])->name('builder');
+        Route::post('/{banner}/sections',             [App\Http\Controllers\BannerController::class, 'addSection'])->name('sections.add');
+        Route::post('/sections/{section}/update',     [App\Http\Controllers\BannerController::class, 'updateSection'])->name('sections.update');
+        Route::post('/sections/{section}/delete',     [App\Http\Controllers\BannerController::class, 'deleteSection'])->name('sections.delete');
+        Route::post('/{banner}/settings',             [App\Http\Controllers\BannerController::class, 'updateSettings'])->name('settings');
+        Route::get('/{banner}/preview',               [App\Http\Controllers\BannerController::class, 'preview'])->name('preview');
+        Route::get('/{banner}/export',                [App\Http\Controllers\BannerController::class, 'exportHtml'])->name('export');
+        Route::post('/{banner}/apply-template',       [App\Http\Controllers\BannerController::class, 'applyTemplate'])->name('apply-template');
+        Route::post('/{banner}/duplicate',            [App\Http\Controllers\BannerController::class, 'duplicate'])->name('duplicate');
+        Route::delete('/{banner}',                    [App\Http\Controllers\BannerController::class, 'destroy'])->name('destroy');
+        // Fabric.js canvas editor
+        Route::get('/{banner}/canvas',                [App\Http\Controllers\BannerController::class, 'canvas'])->name('canvas');
+        Route::post('/{banner}/save-fabric',          [App\Http\Controllers\BannerController::class, 'saveFabric'])->name('save-fabric');
+        Route::post('/{banner}/upload-image',         [App\Http\Controllers\BannerController::class, 'uploadImage'])->name('upload-image');
+        Route::post('/{banner}/schedule-from-canvas', [App\Http\Controllers\BannerController::class, 'scheduleFromCanvas'])->name('schedule-from-canvas');
+        Route::post('/{banner}/generate-ai-text',     [App\Http\Controllers\BannerController::class, 'generateAiText'])->name('generate-ai-text');
+    });
+
+    // ── Redes Sociais (Manager & NGO only) ───────────────────────────────────
+    Route::prefix('social')->name('social.')->group(function () {
+        Route::get('/accounts',                     [App\Http\Controllers\SocialAccountController::class, 'index'])->name('accounts');
+        Route::get('/accounts/connect',             [App\Http\Controllers\SocialAccountController::class, 'connect'])->name('facebook.connect');
+        Route::get('/facebook/callback',            [App\Http\Controllers\SocialAccountController::class, 'callback'])->name('facebook.callback');
+        Route::patch('/accounts/{account}/disconnect', [App\Http\Controllers\SocialAccountController::class, 'disconnect'])->name('accounts.disconnect');
+        Route::delete('/accounts/{account}',        [App\Http\Controllers\SocialAccountController::class, 'destroy'])->name('accounts.destroy');
+
+        Route::get('/posts',                        [App\Http\Controllers\ScheduledPostController::class, 'index'])->name('posts.index');
+        Route::get('/posts/calendar',               [App\Http\Controllers\ScheduledPostController::class, 'calendar'])->name('posts.calendar');
+        Route::get('/posts/create',                 [App\Http\Controllers\ScheduledPostController::class, 'create'])->name('posts.create');
+        Route::post('/posts',                       [App\Http\Controllers\ScheduledPostController::class, 'store'])->name('posts.store');
+        Route::delete('/posts/{post}',              [App\Http\Controllers\ScheduledPostController::class, 'destroy'])->name('posts.destroy');
+        Route::post('/posts/generate-caption',      [App\Http\Controllers\ScheduledPostController::class, 'generateCaption'])->name('posts.generate-caption');
+    });
+
     // Notifications API
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'page'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsReadWeb'])->name('notifications.read');
@@ -354,6 +401,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/broadcast', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'index'])->name('whatsapp.broadcast.index');
     Route::post('/whatsapp/broadcast', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'sendBroadcast'])->name('whatsapp.broadcast.send');
     Route::post('/whatsapp/broadcast/import', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'importContacts'])->name('whatsapp.broadcast.import');
+
+    // Instâncias WhatsApp (gerenciamento via web session + CSRF, sem Sanctum tokens)
+    Route::get('/whatsapp/instances', [App\Http\Controllers\WhatsappController::class, 'instances'])->name('whatsapp.instances');
+    Route::post('/whatsapp/instances', [App\Http\Controllers\Api\WhatsappInstanceController::class, 'store'])->name('whatsapp.instances.store');
+    Route::get('/whatsapp/instances/{id}/status', [App\Http\Controllers\Api\WhatsappInstanceController::class, 'status'])->name('whatsapp.instances.status');
+    Route::post('/whatsapp/instances/{id}/connect', [App\Http\Controllers\Api\WhatsappInstanceController::class, 'connect'])->name('whatsapp.instances.connect');
+    Route::delete('/whatsapp/instances/{id}', [App\Http\Controllers\Api\WhatsappInstanceController::class, 'destroy'])->name('whatsapp.instances.destroy');
 
 
     // Marketing Intelligence (AI)
@@ -439,7 +493,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
 
     // Super Admin Routes (SaaS)
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware('super_admin')->group(function () {
         Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.dashboard');
         Route::get('/health', [App\Http\Controllers\AdminController::class, 'serverHealth'])->name('admin.health');
         Route::get('/tenants', [App\Http\Controllers\AdminController::class, 'tenants'])->name('admin.tenants.index');
