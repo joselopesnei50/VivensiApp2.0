@@ -12,12 +12,10 @@
         "guzzlehttp/guzzle": "*",
         "guzzlehttp/psr7": "*",
         "laravel/framework": "^9.0",
-        "laravel/horizon": "^5.45",
         "laravel/sanctum": "^2.14",
         "laravel/tinker": "^2.7",
         "open-pix/php-sdk": "*",
-        "pusher/pusher-php-server": "^7.2",
-        "sentry/sentry-laravel": "^4.20"
+        "pusher/pusher-php-server": "^7.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
