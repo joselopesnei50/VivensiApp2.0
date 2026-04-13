@@ -3,290 +3,444 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vivensi - Gestão de Projetos e Empresas | Performance SaaS</title>
-    <meta name="description" content="Escale seus projetos sem perder o controle. Kanban, Gantt e Financeiro integrados para empresas de alta performance.">
+    <title>Vivensi para Gestores | Projetos, CRM e Performance em um só lugar</title>
+    <meta name="description" content="Kanban, CRM, financeiro e WhatsApp IA integrados para gestores e equipes de projeto. Tome decisões baseadas em dados, não em palpites.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
 <style>
-/* CSS copied and adapted from solutions_ngo.blade.php */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-    --ink:#0B1120;--ink2:#1E2D40;
-    --primary:#4f46e5;--primary-light:#818cf8;
-    --accent:#16a34a;--accent-light:#4ade80;
-    --rose:#E8455A;
-    --blue:#3B6CF6;
+    --bg:#090909;
+    --bg2:#111111;
+    --bg3:#161616;
+    --border:rgba(255,255,255,.07);
+    --border-hover:rgba(255,255,255,.15);
+    --accent:#4F6EF7;
+    --accent-dark:#3a57d4;
+    --accent-dim:rgba(79,110,247,.12);
+    --accent-border:rgba(79,110,247,.28);
+    --blue:#4F6EF7;
     --teal:#00D4AA;
     --gold:#F5A623;
-    --surface:#F0F4FF;
+    --purple:#8B5CF6;
+    --rose:#E8455A;
     --white:#FFFFFF;
-    --glass:rgba(255,255,255,0.06);
-    --glass-border:rgba(255,255,255,0.12);
+    --text-dim:rgba(255,255,255,.45);
+    --text-muted:rgba(255,255,255,.25);
+    --glass:rgba(255,255,255,.04);
+    --glass-border:rgba(255,255,255,.09);
 }
 html{scroll-behavior:smooth}
-body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);overflow-x:hidden;line-height:1.6}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);overflow-x:hidden;line-height:1.6}
 
-/* ─── NAVBAR ─── */
-.nav{position:fixed;top:0;left:0;right:0;z-index:999;padding:18px 6%;display:flex;justify-content:space-between;align-items:center;background:rgba(11,17,32,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);transition:all .3s}
-.nav-logo img{height:36px}
-.nav-links{display:flex;gap:32px;list-style:none}
-.nav-links a{color:rgba(255,255,255,0.65);text-decoration:none;font-size:.9rem;font-weight:500;transition:color .3s}
-.nav-links a:hover,.nav-links a.active{color:var(--white)}
-.nav-actions{display:flex;gap:12px;align-items:center}
-.btn-ghost{color:rgba(255,255,255,0.7);text-decoration:none;font-weight:600;font-size:.9rem;padding:9px 20px;border-radius:50px;border:1px solid var(--glass-border);transition:all .3s}
-.btn-ghost:hover{background:var(--glass);color:var(--white)}
-.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark,#4338ca));color:white;text-decoration:none;font-weight:700;font-size:.9rem;padding:10px 24px;border-radius:50px;box-shadow:0 4px 20px rgba(79,70,229,.35);transition:all .3s}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(79,70,229,.5)}
+/* ══ NAV ════════════════════════════════════════════════════════ */
+.nav{
+    position:fixed;top:0;left:0;right:0;z-index:999;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 5%;height:64px;
+    background:rgba(9,9,9,.9);
+    backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid var(--border);
+    transition:all .3s;
+}
+.nav-logo img{height:30px;display:block}
+.nav-links{display:flex;gap:4px;list-style:none;align-items:center}
+.nav-links a{color:var(--text-dim);text-decoration:none;font-size:.83rem;font-weight:500;padding:7px 13px;border-radius:8px;transition:all .2s}
+.nav-links a:hover{color:var(--white);background:rgba(255,255,255,.06)}
+.nav-links a.active{color:var(--white)}
+.nav-ctas{display:flex;gap:8px;align-items:center}
+.btn-nav-ghost{color:var(--text-dim);text-decoration:none;font-size:.83rem;font-weight:600;padding:8px 16px;border-radius:8px;border:1px solid var(--border);transition:all .2s;background:transparent}
+.btn-nav-ghost:hover{color:var(--white);border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.btn-nav-solid{background:var(--accent);color:#fff;text-decoration:none;font-size:.83rem;font-weight:700;padding:9px 20px;border-radius:8px;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-nav-solid:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,110,247,.35)}
+@media(max-width:860px){.nav-links{display:none}}
 
-/* ─── HERO ─── */
-.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;background:radial-gradient(ellipse 80% 70% at 60% 40%, rgba(59,108,246,.15) 0%, transparent 60%), radial-gradient(ellipse 50% 60% at 20% 80%, rgba(22,163,74,.1) 0%, transparent 50%), var(--ink)}
-.hero-content{position:relative;z-index:2;padding:120px 6% 80px;max-width:1400px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);color:var(--accent-light);font-size:.8rem;font-weight:700;padding:6px 16px;border-radius:100px;margin-bottom:28px;letter-spacing:.05em;text-transform:uppercase}
-.hero-badge span{width:6px;height:6px;background:var(--accent-light);border-radius:50%;animation:pulseGreen 2s infinite}
-.hero-title{font-size:clamp(2.5rem,5vw,4rem);font-weight:900;line-height:1.05;letter-spacing:-.03em;margin-bottom:24px}
-.hero-title .accent{background:linear-gradient(135deg,var(--accent-light),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:1.15rem;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:40px;max-width:520px}
-.hero-actions{display:flex;gap:16px;flex-wrap:wrap}
-.btn-hero-main{background:linear-gradient(135deg,var(--primary),#4338ca);color:white;text-decoration:none;font-weight:700;font-size:1rem;padding:16px 36px;border-radius:60px;box-shadow:0 6px 30px rgba(79,70,229,.4);transition:all .3s;display:inline-flex;align-items:center;gap:10px}
-.btn-hero-main:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(79,70,229,.55)}
-.btn-hero-ghost{color:rgba(255,255,255,.8);text-decoration:none;font-weight:600;font-size:1rem;padding:16px 30px;border-radius:60px;border:1.5px solid rgba(255,255,255,.2);transition:all .3s;display:inline-flex;align-items:center;gap:10px}
-.btn-hero-ghost:hover{background:rgba(255,255,255,.07);color:white}
-.hero-stats{display:flex;gap:36px;margin-top:48px;padding-top:40px;border-top:1px solid rgba(255,255,255,.08)}
-.stat-item{text-align:left}
-.stat-num{font-size:1.9rem;font-weight:800;background:linear-gradient(135deg,var(--white),rgba(255,255,255,.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stat-label{font-size:.78rem;color:rgba(255,255,255,.45);letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+/* ══ HERO ════════════════════════════════════════════════════════ */
+.hero{
+    position:relative;min-height:100vh;display:flex;align-items:center;
+    padding:120px 5% 80px;overflow:hidden;background:var(--bg);
+}
+.hero::before{
+    content:'';position:absolute;inset:0;
+    background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
+    background-size:72px 72px;pointer-events:none;
+}
+.hero::after{
+    content:'';position:absolute;width:700px;height:700px;
+    top:-100px;right:-100px;border-radius:50%;
+    background:radial-gradient(circle,rgba(79,110,247,.12) 0%,rgba(0,212,170,.05) 40%,transparent 70%);
+    filter:blur(70px);pointer-events:none;
+}
+.hero-inner{position:relative;z-index:2;max-width:1240px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
 
-/* ─── MAP VISUAL ─── */
-.hero-map-wrap{position:relative;display:flex;align-items:center;justify-content:center}
-.map-container{position:relative;width:480px;height:540px}
-#brazil-map{width:100%;height:100%;opacity:.9}
-.map-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--accent-light);box-shadow:0 0 12px var(--accent);animation:mapPulse 2.5s infinite}
-.map-dot::before{content:'';position:absolute;inset:-6px;border-radius:50%;background:var(--accent-light);opacity:.2;animation:mapRipple 2.5s infinite}
-.map-dot.blue{background:var(--blue-light,#5B82FF);box-shadow:0 0 12px var(--blue);}.map-dot.blue::before{background:var(--blue-light,#5B82FF)}
-.map-dot.teal{background:var(--teal);box-shadow:0 0 12px var(--teal);}.map-dot.teal::before{background:var(--teal)}
-.d1{top:25%;left:35%;animation-delay:0s}.d2{top:30%;left:65%;animation-delay:.4s}.d3{top:45%;left:48%;animation-delay:.8s}
-.d4{top:65%;left:55%;animation-delay:1.2s}.d5{top:50%;left:70%;animation-delay:1.6s}.d6{top:80%;left:45%;animation-delay:.6s}
-.d7{top:40%;left:30%;animation-delay:1s}.d8{top:20%;left:50%;animation-delay:.2s}.d9{top:70%;left:65%;animation-delay:1.4s}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-dim);border:1px solid var(--accent-border);color:#93a8ff;font-size:.72rem;font-weight:800;padding:5px 14px;border-radius:100px;margin-bottom:24px;text-transform:uppercase;letter-spacing:.07em}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:#93a8ff;animation:pDot 2s infinite}
+@keyframes pDot{0%,100%{opacity:1}50%{opacity:.3}}
 
-.floating-card{position:absolute;background:rgba(16,24,48,.85);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:16px;padding:14px 18px;min-width:170px}
-.fc-1{top:10%;right:-10%;animation:floatY 4s ease-in-out infinite}
-.fc-2{bottom:15%;left:-15%;animation:floatY 5s ease-in-out infinite .8s}
-.fc-3{top:50%;right:-12%;animation:floatY 3.5s ease-in-out infinite 1.4s}
-.fc-label{font-size:.7rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-.fc-value{font-size:1.2rem;font-weight:800;color:white}
-.fc-delta{font-size:.75rem;color:var(--teal);margin-top:2px}
+.hero-title{font-size:clamp(2.4rem,5vw,4rem);font-weight:900;line-height:1.04;letter-spacing:-.04em;margin-bottom:20px;color:var(--white)}
+.hero-title em{font-style:normal;color:var(--accent)}
+.hero-sub{font-size:1.05rem;color:var(--text-dim);line-height:1.75;max-width:480px;margin-bottom:36px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:52px}
 
-/* ─── TRUST BAR ─── */
-.trust-bar{padding:24px 6%;background:rgba(255,255,255,.03);border-top:1px solid var(--glass-border);border-bottom:1px solid var(--glass-border)}
-.trust-inner{display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap}
-.trust-text{font-size:.8rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
-.trust-item{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.5);font-size:.85rem;font-weight:600}
+.btn-hero{display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:.95rem;padding:14px 30px;border-radius:10px;transition:all .2s}
+.btn-hero:hover{background:var(--accent-dark);transform:translateY(-2px);box-shadow:0 8px 28px rgba(79,110,247,.4)}
+.btn-hero-outline{display:inline-flex;align-items:center;gap:9px;color:var(--text-dim);text-decoration:none;font-weight:600;font-size:.95rem;padding:14px 26px;border-radius:10px;border:1px solid var(--border);transition:all .2s;background:transparent}
+.btn-hero-outline:hover{color:var(--white);background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
+
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap}
+.stat-item .snum{font-size:1.8rem;font-weight:900;letter-spacing:-.04em;color:var(--white)}
+.stat-item .slbl{font-size:.68rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+
+/* Kanban mini visual */
+.kanban-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:20px;overflow:hidden}
+.kb-header{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.kbh-dot{width:8px;height:8px;border-radius:50%}
+.kbh-title{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.5);margin-left:4px}
+.kb-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kb-col-title{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.kb-dot{width:5px;height:5px;border-radius:50%}
+.kd-orange{background:#fb923c}.kd-blue{background:var(--accent)}.kd-green{background:var(--teal)}
+.kb-card{background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:9px 10px;margin-bottom:7px;font-size:.66rem;color:rgba(255,255,255,.55);font-weight:600;line-height:1.3}
+.kb-card-val{font-size:.72rem;font-weight:800;color:var(--white);margin-top:3px}
+.kb-card-hot{border-color:rgba(79,110,247,.45);background:rgba(79,110,247,.09);animation:hotPulse 3s ease-in-out infinite}
+@keyframes hotPulse{0%,100%{border-color:rgba(79,110,247,.3)}50%{border-color:rgba(79,110,247,.7)}}
+.kb-metric-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.kb-metric{background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px}
+.kb-metric-lbl{font-size:.6rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.kb-metric-val{font-size:1.2rem;font-weight:900;letter-spacing:-.03em}
+
+/* Floating notifs */
+.hero-notif{position:absolute;display:flex;align-items:center;gap:9px;background:rgba(12,12,18,.92);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:12px;padding:10px 14px;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:3}
+.hn-1{bottom:-24px;left:-30px;animation:floatBadge 4s ease-in-out infinite}
+.hn-2{top:-20px;right:-20px;animation:floatBadge 4.5s ease-in-out infinite .8s}
+@keyframes floatBadge{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hn-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.hni-blue{background:rgba(79,110,247,.15);color:var(--accent)}
+.hni-green{background:rgba(74,222,128,.15);color:#4ade80}
+.hni-teal{background:rgba(0,212,170,.15);color:var(--teal)}
+.hn-text .hn-lbl{font-size:.58rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.hn-text .hn-val{font-size:.8rem;font-weight:800;color:var(--white)}
+
+@media(max-width:860px){.hero-inner{grid-template-columns:1fr}.kanban-wrap{display:none}}
+
+/* ══ TRUST BAR ════════════════════════════════════════════════ */
+.trust{padding:18px 5%;background:var(--glass);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.trust-row{display:flex;align-items:center;justify-content:center;gap:36px;flex-wrap:wrap}
+.trust-lbl{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.09em}
+.trust-item{display:flex;align-items:center;gap:7px;color:var(--text-dim);font-size:.8rem;font-weight:600}
 .trust-item i{color:var(--teal)}
 
-/* ─── SECTION COMMONS ─── */
-section{padding:100px 6%}
-.section-tag{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
-.tag-accent{color:var(--accent-light)}
-.tag-blue{color:var(--blue-light,#5B82FF)}
-.tag-teal{color:var(--teal)}
-.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:900;line-height:1.1;letter-spacing:-.02em;margin-bottom:20px}
-.section-sub{font-size:1.05rem;color:rgba(255,255,255,.55);line-height:1.7;max-width:580px}
+/* ══ SECTION COMMONS ══════════════════════════════════════════ */
+.section-tag{display:inline-flex;align-items:center;gap:7px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px}
+.st-blue{color:#93a8ff}.st-teal{color:var(--teal)}.st-gold{color:var(--gold)}.st-purple{color:#c4b5fd}.st-rose{color:#ff8a97}.st-white{color:rgba(255,255,255,.5)}
+.section-title{font-size:clamp(1.9rem,3.5vw,2.8rem);font-weight:900;line-height:1.08;letter-spacing:-.035em;margin-bottom:16px;color:var(--white)}
+.section-sub{font-size:.95rem;color:var(--text-dim);line-height:1.75;max-width:560px}
 .center{text-align:center;margin-left:auto;margin-right:auto}
 
-/* ─── PROBLEM → SOLUTION ─── */
-.problem-section{background:radial-gradient(ellipse 60% 80% at 20% 50%, rgba(22,163,74,.07) 0%, transparent 60%)}
-.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:1200px;margin:0 auto}
-.pain-list{display:flex;flex-direction:column;gap:20px;margin-top:40px}
-.pain-item{display:flex;align-items:flex-start;gap:16px;padding:22px;background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.15);border-radius:16px}
-.pain-icon{width:44px;height:44px;background:rgba(22,163,74,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--accent-light);font-size:1.1rem;flex-shrink:0}
-.pain-text h4{font-size:.95rem;font-weight:700;margin-bottom:4px}
-.pain-text p{font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.5}
-.solution-visual{position:relative}
-.dashboard-mock{background:rgba(30,45,64,.7);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;backdrop-filter:blur(10px)}
-.mock-header{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.07)}
-.mock-dot{width:10px;height:10px;border-radius:50%}
-.mock-title{font-size:.9rem;font-weight:700;color:rgba(255,255,255,.7)}
-.mock-kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
-.mock-kpi{background:rgba(255,255,255,.05);border-radius:12px;padding:14px}
-.mock-kpi-label{font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:4px}
-.mock-kpi-value{font-size:1.4rem;font-weight:800}
-.mock-bar-wrap{margin-top:14px}
-.mock-bar-label{display:flex;justify-content:space-between;font-size:.72rem;color:rgba(255,255,255,.4);margin-bottom:6px}
-.mock-bar{height:6px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin-bottom:10px}
-.mock-bar-fill{height:100%;border-radius:10px;animation:barGrow 1.5s ease forwards}
+/* fade-up reveal */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal-d1{transition-delay:.08s}.reveal-d2{transition-delay:.16s}.reveal-d3{transition-delay:.24s}
+.reveal-d4{transition-delay:.32s}.reveal-d5{transition-delay:.40s}.reveal-d6{transition-delay:.48s}
+.reveal-d7{transition-delay:.56s}.reveal-d8{transition-delay:.64s}.reveal-d9{transition-delay:.72s}
+.reveal-d10{transition-delay:.80s}.reveal-d11{transition-delay:.88s}.reveal-d12{transition-delay:.96s}
 
-/* ─── FEATURES ─── */
-.features-section{background:linear-gradient(180deg, rgba(59,108,246,.05) 0%, transparent 100%)}
-.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1200px;margin:60px auto 0}
-.feat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:36px;transition:all .4s;position:relative;overflow:hidden;cursor:default}
-.feat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(59,108,246,.08),rgba(0,212,170,.05));opacity:0;transition:opacity .4s}
-.feat-card:hover{border-color:rgba(255,255,255,.2);transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,.4)}
-.feat-card:hover::before{opacity:1}
-.feat-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:22px}
-.fi-accent{background:rgba(22,163,74,.15);color:var(--accent-light)}
-.fi-blue{background:rgba(59,108,246,.15);color:var(--blue-light,#5B82FF)}
-.fi-teal{background:rgba(0,212,170,.15);color:var(--teal)}
-.fi-gold{background:rgba(245,166,35,.15);color:var(--gold)}
-.fi-purple{background:rgba(155,93,229,.15);color:#B27CFF}
-.fi-sky{background:rgba(56,189,248,.15);color:#56C8F5}
-.feat-card h3{font-size:1.05rem;font-weight:700;margin-bottom:10px}
-.feat-card p{font-size:.875rem;color:rgba(255,255,255,.5);line-height:1.7}
-.feat-tag{display:inline-block;margin-top:14px;font-size:.7rem;padding:3px 10px;border-radius:100px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.ft-new{background:rgba(0,212,170,.15);color:var(--teal)}
+/* ══ PROBLEM SECTION ══════════════════════════════════════════ */
+.prob-section{padding:100px 5%;background:rgba(79,110,247,.03);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.prob-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;max-width:1240px;margin:0 auto}
+.pain-list{display:flex;flex-direction:column;gap:14px;margin-top:36px}
+.pain-item{display:flex;align-items:flex-start;gap:14px;padding:18px;background:rgba(79,110,247,.06);border:1px solid rgba(79,110,247,.15);border-radius:14px}
+.pain-icon{width:40px;height:40px;background:rgba(79,110,247,.14);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#93a8ff;font-size:1rem;flex-shrink:0}
+.pain-text h4{font-size:.9rem;font-weight:700;margin-bottom:3px}
+.pain-text p{font-size:.8rem;color:var(--text-dim);line-height:1.5}
+@media(max-width:860px){.prob-grid{grid-template-columns:1fr;gap:40px}}
 
-/* ─── PRICING ─── */
-.pricing-section{background:radial-gradient(ellipse 70% 60% at 50% 20%, rgba(59,108,246,.1) 0%, transparent 70%)}
-.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1100px;margin:60px auto 0}
-.price-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:24px;padding:40px;position:relative;transition:all .4s;overflow:hidden}
-.price-card.featured{background:linear-gradient(135deg,rgba(79,70,229,.15),rgba(22,163,74,.1));border-color:rgba(79,70,229,.4);transform:scale(1.03)}
-.price-card:hover{border-color:rgba(255,255,255,.25);transform:translateY(-8px);box-shadow:0 30px 60px rgba(0,0,0,.4)}
-.price-card.featured:hover{transform:scale(1.03) translateY(-8px)}
-.featured-badge{position:absolute;top:20px;right:20px;background:linear-gradient(135deg,var(--primary),#4338ca);color:white;font-size:.7rem;font-weight:800;padding:4px 12px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
-.price-name{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:16px}
-.price-amount{font-size:3rem;font-weight:900;line-height:1;letter-spacing:-.03em}
-.price-amount .cur{font-size:1.2rem;font-weight:700;vertical-align:top;margin-top:8px;display:inline-block;color:rgba(255,255,255,.6)}
-.price-amount .period{font-size:1rem;font-weight:400;color:rgba(255,255,255,.4)}
-.price-note{font-size:.78rem;color:rgba(255,255,255,.35);margin-top:4px}
-.price-divider{height:1px;background:rgba(255,255,255,.08);margin:24px 0}
-.price-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
-.price-features li{display:flex;align-items:center;gap:10px;font-size:.875rem;color:rgba(255,255,255,.7)}
-.price-features li i{color:var(--teal);font-size:.85rem;flex-shrink:0}
-.btn-plan{display:block;text-align:center;padding:15px;border-radius:60px;font-weight:700;font-size:.95rem;text-decoration:none;transition:all .3s}
-.btn-plan-main{background:linear-gradient(135deg,var(--primary),#4338ca);color:white;box-shadow:0 6px 24px rgba(79,70,229,.35)}
-.btn-plan-main:hover{box-shadow:0 10px 35px rgba(79,70,229,.55);transform:translateY(-2px)}
-.btn-plan-outline{border:1.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8)}
-.btn-plan-outline:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.4);color:white}
-.billing-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:32px}
-.toggle-label{font-size:.9rem;font-weight:600;color:rgba(255,255,255,.5)}
-.toggle-label.active{color:white}
-.switch{position:relative;display:inline-block;width:52px;height:28px}
+/* ══ FEATURES GRID ════════════════════════════════════════════ */
+.features-wrap{padding:100px 5%;background:var(--bg)}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:1240px;margin:52px auto 0}
+
+.fc{
+    background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;
+    transition:border-color .3s,transform .3s,box-shadow .3s;cursor:default;position:relative;overflow:hidden;
+}
+.fc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--fc-accent,var(--accent));opacity:0;transition:opacity .3s}
+.fc:hover{border-color:var(--border-hover);transform:translateY(-5px);box-shadow:0 20px 48px rgba(0,0,0,.45)}
+.fc:hover::before{opacity:1}
+.fc-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:18px;transition:transform .3s}
+.fc:hover .fc-icon{transform:scale(1.1)}
+.fi-blue{background:rgba(79,110,247,.12);color:#93a8ff;--fc-accent:#4F6EF7}
+.fi-teal{background:rgba(0,212,170,.12);color:var(--teal);--fc-accent:#00D4AA}
+.fi-gold{background:rgba(245,166,35,.12);color:var(--gold);--fc-accent:#F5A623}
+.fi-purple{background:rgba(139,92,246,.12);color:#c4b5fd;--fc-accent:#8B5CF6}
+.fi-rose{background:rgba(232,69,90,.12);color:#ff8a97;--fc-accent:#E8455A}
+.fi-sky{background:rgba(56,189,248,.12);color:#7dd3fc;--fc-accent:#38bdf8}
+.fi-green{background:rgba(74,222,128,.12);color:#4ade80;--fc-accent:#4ade80}
+.fi-orange{background:rgba(251,146,60,.12);color:#fb923c;--fc-accent:#fb923c}
+.fi-pink{background:rgba(244,114,182,.12);color:#f472b6;--fc-accent:#f472b6}
+
+.fc h3{font-size:.95rem;font-weight:800;margin-bottom:8px;color:var(--white)}
+.fc p{font-size:.8rem;color:var(--text-dim);line-height:1.65}
+.fc-tag{display:inline-flex;align-items:center;gap:4px;margin-top:14px;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:100px}
+.ft-new{background:rgba(0,212,170,.12);color:var(--teal);border:1px solid rgba(0,212,170,.2)}
+.ft-pro{background:rgba(245,166,35,.12);color:var(--gold);border:1px solid rgba(245,166,35,.2)}
+.ft-ai{background:rgba(139,92,246,.12);color:#c4b5fd;border:1px solid rgba(139,92,246,.2)}
+
+@media(max-width:1024px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.feat-grid{grid-template-columns:1fr}}
+
+/* ══ MODULE SPOTLIGHT ════════════════════════════════════════ */
+.spotlight{padding:80px 5%;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.spotlight-inner{max-width:1240px;margin:0 auto}
+.spotlight-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px}
+.spot-card{border-radius:20px;padding:36px;position:relative;overflow:hidden;border:1px solid var(--border)}
+.spot-card-blue{background:#060812}
+.spot-card-purple{background:#080610}
+.spot-accent-bar{position:absolute;top:0;left:0;right:0;height:3px}
+.sab-blue{background:var(--blue)}.sab-purple{background:var(--purple)}
+.spot-badge{display:inline-flex;align-items:center;gap:6px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:100px;margin-bottom:16px}
+.sbg-blue{background:rgba(79,110,247,.12);color:#93a8ff;border:1px solid rgba(79,110,247,.2)}
+.sbg-purple{background:rgba(139,92,246,.12);color:#c4b5fd;border:1px solid rgba(139,92,246,.2)}
+.spot-title{font-size:1.4rem;font-weight:900;letter-spacing:-.03em;margin-bottom:10px;color:var(--white)}
+.spot-desc{font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:24px}
+.spot-feats{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.spot-feats li{display:flex;align-items:center;gap:9px;font-size:.82rem;color:rgba(255,255,255,.6)}
+.spot-feats li i{font-size:.75rem;flex-shrink:0}
+.sfi-blue{color:#93a8ff}.sfi-purple{color:#c4b5fd}
+.spot-demo{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:14px}
+@media(max-width:860px){.spotlight-grid{grid-template-columns:1fr}}
+
+/* Campaign/KPI demo */
+.kpi-demo{display:flex;flex-direction:column;gap:10px}
+.kpi-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.72rem}
+.kpi-row:last-child{border-bottom:none}
+.kpi-lbl{color:var(--text-dim)}
+.kpi-val{font-weight:700;color:var(--white)}
+.kpi-pos{color:#4ade80}.kpi-neg{color:#f87171}
+.kpi-total{margin-top:8px;padding:10px;border-radius:8px;background:rgba(79,110,247,.1);border:1px solid rgba(79,110,247,.2);display:flex;justify-content:space-between;align-items:center}
+.kpi-total-lbl{font-size:.64rem;font-weight:700;color:var(--text-dim)}
+.kpi-total-val{font-size:.95rem;font-weight:900;color:var(--white)}
+
+/* AI pitch demo */
+.ai-demo{display:flex;flex-direction:column;gap:9px}
+.ai-header{display:flex;align-items:center;gap:7px;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
+.ai-live{width:5px;height:5px;border-radius:50%;background:#c4b5fd;animation:pDot 1.5s infinite}
+.ai-prospect{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+.ai-logo{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0}
+.ai-name{font-size:.74rem;font-weight:700;color:var(--white)}
+.ai-cat{font-size:.6rem;color:var(--text-muted);margin-top:1px}
+.ai-score-row{display:flex;justify-content:space-between;font-size:.6rem;color:var(--text-muted);margin-top:4px;margin-bottom:3px}
+.ai-score-pct{color:#c4b5fd;font-weight:800}
+.ai-bar{height:4px;background:rgba(255,255,255,.07);border-radius:100px;overflow:hidden}
+.ai-bar-fill{height:100%;border-radius:100px;background:var(--purple);animation:aiBar 3s ease-in-out infinite alternate}
+@keyframes aiBar{from{width:20%}to{width:92%}}
+.ai-pitch{margin-top:4px;padding:8px 10px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15);border-radius:8px}
+.ai-pitch-lbl{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(139,92,246,.55);margin-bottom:3px}
+.ai-pitch-txt{font-size:.68rem;color:rgba(255,255,255,.55);line-height:1.5}
+.ai-cursor{display:inline-block;width:1.5px;height:9px;background:#c4b5fd;margin-left:1px;animation:cursorBlink .7s step-end infinite;vertical-align:text-bottom}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ══ PARALLAX BOOKING CTA ════════════════════════════════════ */
+.parallax-cta{
+    position:relative;padding:120px 5%;overflow:hidden;
+    background:#06060e;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.parallax-bg{
+    position:absolute;inset:0;z-index:0;
+    background-image:
+        radial-gradient(ellipse 60% 80% at 80% 50%, rgba(79,110,247,.09) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 20% 30%, rgba(0,212,170,.06) 0%, transparent 60%);
+    will-change:transform;
+}
+.parallax-grid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:72px 72px}
+.parallax-inner{position:relative;z-index:2;max-width:760px;margin:0 auto;text-align:center}
+.parallax-eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--accent-dim);border:1px solid var(--accent-border);
+    color:#93a8ff;font-size:.7rem;font-weight:800;padding:5px 14px;border-radius:100px;
+    margin-bottom:28px;text-transform:uppercase;letter-spacing:.08em;
+}
+.plx-dot{width:6px;height:6px;border-radius:50%;background:#93a8ff;animation:pDot 1.8s infinite}
+.parallax-title{font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.06;letter-spacing:-.04em;color:var(--white);margin-bottom:20px}
+.parallax-sub{font-size:1rem;color:var(--text-dim);line-height:1.75;max-width:520px;margin:0 auto 40px}
+.btn-plx{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:1rem;padding:16px 36px;border-radius:12px;transition:all .25s}
+.btn-plx:hover{background:var(--accent-dark);transform:translateY(-3px);box-shadow:0 12px 36px rgba(79,110,247,.4)}
+.btn-plx-ghost{display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--text-dim);text-decoration:none;font-weight:600;font-size:1rem;padding:16px 28px;border-radius:12px;border:1px solid var(--border);transition:all .25s}
+.btn-plx-ghost:hover{color:var(--white);border-color:var(--border-hover);background:rgba(255,255,255,.05)}
+.plx-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+.plx-trust{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap}
+.plxt{display:flex;align-items:center;gap:7px;font-size:.76rem;color:var(--text-muted);font-weight:600}
+.plxt i{color:var(--teal);font-size:.7rem}
+
+/* ══ PRICING ═════════════════════════════════════════════════ */
+.pricing-wrap{padding:100px 5%;background:var(--bg)}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:2px;max-width:980px;margin:48px auto 0;border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.price-card{background:var(--bg2);padding:36px;position:relative;transition:background .25s;border-right:1px solid var(--border)}
+.price-card:last-child{border-right:none}
+.price-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent}
+.price-card.hot{background:rgb(10,12,22)}
+.price-card.hot::before{background:var(--accent)}
+.price-card:hover{background:var(--bg3)}
+.hot-badge{position:absolute;top:18px;right:18px;background:var(--accent);color:#fff;font-size:.6rem;font-weight:800;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
+.price-name{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:16px}
+.price-val{font-size:2.6rem;font-weight:900;line-height:1;letter-spacing:-.04em;color:var(--white);margin-bottom:4px}
+.price-val .cur{font-size:.95rem;font-weight:700;vertical-align:top;margin-top:5px;display:inline-block;color:rgba(255,255,255,.4)}
+.price-val .per{font-size:.82rem;font-weight:400;color:var(--text-muted)}
+.price-note{font-size:.68rem;color:var(--text-muted);margin-bottom:22px}
+.price-divider{height:1px;background:var(--border);margin:18px 0}
+.price-feats{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.price-feats li{display:flex;align-items:center;gap:9px;font-size:.8rem;color:rgba(255,255,255,.6)}
+.price-feats li i{color:var(--teal);font-size:.74rem;flex-shrink:0}
+.btn-price{display:block;text-align:center;padding:13px;border-radius:10px;font-weight:700;font-size:.85rem;text-decoration:none;transition:all .2s;cursor:pointer;width:100%;border:none;font-family:'Inter',sans-serif}
+.bp-solid{background:var(--accent);color:#fff}
+.bp-solid:hover{background:var(--accent-dark);transform:translateY(-1px)}
+.bp-outline{border:1px solid var(--border);color:rgba(255,255,255,.6);background:transparent}
+.bp-outline:hover{border-color:var(--border-hover);background:rgba(255,255,255,.05);color:var(--white)}
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:12px;margin:28px 0 0}
+.tgl-lbl{font-size:.85rem;font-weight:600;color:var(--text-muted);transition:color .3s}
+.tgl-lbl.on{color:var(--white)}
+.switch{position:relative;display:inline-block;width:46px;height:24px}
 .switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.15);border-radius:28px;transition:.3s}
-.slider:before{content:'';position:absolute;height:20px;width:20px;left:4px;bottom:4px;background:white;border-radius:50%;transition:.3s}
-input:checked+.slider{background:var(--primary)}
-input:checked+.slider:before{transform:translateX(24px)}
-.discount-badge{background:rgba(0,212,170,.15);color:var(--teal);font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:100px}
+.slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.12);border-radius:24px;transition:.3s}
+.slider::before{content:'';position:absolute;height:16px;width:16px;left:4px;bottom:4px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--accent)}
+input:checked+.slider::before{transform:translateX(22px)}
+.disc-badge{background:rgba(74,222,128,.12);color:var(--teal);font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:100px}
+@media(max-width:860px){.price-grid{grid-template-columns:1fr;border-radius:16px}.price-card{border-right:none;border-bottom:1px solid var(--border)}.price-card:last-child{border-bottom:none}}
 
-/* ─── FINAL CTA ─── */
-.final-cta{position:relative;overflow:hidden;text-align:center;background:linear-gradient(135deg,rgba(79,70,229,.2),rgba(59,108,246,.15));border-top:1px solid rgba(255,255,255,.07)}
-.final-cta h2{font-size:clamp(2rem,4vw,3.2rem);font-weight:900;letter-spacing:-.02em;margin-bottom:20px}
-.final-cta p{font-size:1.1rem;color:rgba(255,255,255,.6);margin-bottom:40px}
-
-/* ─── FOOTER ─── */
-footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border);padding:60px 6% 32px}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
-.footer-col h4{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:16px}
-.footer-col a{display:block;color:rgba(255,255,255,.55);text-decoration:none;font-size:.875rem;margin-bottom:10px;transition:color .3s}
-.footer-col a:hover{color:white}
-.footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-.footer-bottom p{font-size:.8rem;color:rgba(255,255,255,.3)}
-
-/* ─── ANIMATIONS ─── */
-@keyframes pulseGreen{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
-@keyframes mapPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
-@keyframes mapRipple{0%{transform:scale(1);opacity:.2}100%{transform:scale(3.5);opacity:0}}
-@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-@keyframes barGrow{from{width:0}to{width:var(--target-width)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-.animate-on-scroll{opacity:0;transform:translateY(30px);transition:all .7s cubic-bezier(.22,1,.36,1)}
-.animate-on-scroll.visible{opacity:1;transform:translateY(0)}
-
-/* ─── RESPONSIVE ─── */
-@media(max-width:900px){
-    .hero-content{grid-template-columns:1fr;text-align:center;gap:40px}
-    .hero-sub{margin:0 auto 40px;text-align:center}
-    .hero-actions{justify-content:center}
-    .hero-stats{justify-content:center}
-    .hero-map-wrap{display:none}
-    .problem-grid{grid-template-columns:1fr}
-    .features-grid{grid-template-columns:1fr 1fr}
-    .footer-grid{grid-template-columns:1fr 1fr}
-    .nav-links{display:none}
-    .pricing-grid{grid-template-columns:1fr}
-    .price-card.featured{transform:none}
-}
-@media(max-width:600px){
-    .features-grid{grid-template-columns:1fr}
-    .footer-grid{grid-template-columns:1fr}
-    section{padding:70px 5%}
-}
+/* ══ FOOTER ══════════════════════════════════════════════════ */
+footer{background:#060606;border-top:1px solid var(--border);padding:60px 5% 28px}
+.footer-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-brand p{font-size:.78rem;color:var(--text-muted);line-height:1.75;margin-top:12px;max-width:200px}
+.footer-col h5{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:14px}
+.footer-col a{display:block;color:rgba(255,255,255,.38);text-decoration:none;font-size:.8rem;margin-bottom:9px;transition:color .2s}
+.footer-col a:hover{color:var(--white)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.05);padding-top:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-bottom span{font-size:.7rem;color:rgba(255,255,255,.18)}
+.fb-heart{color:rgba(79,110,247,.7)}
+@media(max-width:768px){.footer-row{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.footer-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
-<nav class="nav">
-    <a href="{{ url('/') }}" class="nav-logo"><x-application-logo style="height: 36px; width: auto;" /></a>
+<nav class="nav" id="mainNav">
+    <a href="{{ url('/') }}" class="nav-logo">
+        <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi">
+    </a>
     <ul class="nav-links">
         <li><a href="{{ route('solutions.ngo') }}">Terceiro Setor</a></li>
         <li><a href="{{ route('solutions.manager') }}" class="active">Gestores</a></li>
         <li><a href="{{ route('solutions.common') }}">Pessoal</a></li>
-        <li><a href="#features">Recursos</a></li>
+        <li><a href="#features">Funcionalidades</a></li>
         <li><a href="#pricing">Planos</a></li>
     </ul>
-    <div class="nav-actions">
-        <a href="{{ route('login') }}" class="btn-ghost">Entrar</a>
-        <a href="#pricing" class="btn-primary"><i class="fas fa-rocket"></i> Começar Agora</a>
+    <div class="nav-ctas">
+        <a href="{{ route('login') }}" class="btn-nav-ghost">Entrar</a>
+        <a href="#pricing" class="btn-nav-solid">
+            <i class="fas fa-rocket"></i> Começar Agora
+        </a>
     </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-    <div class="hero-content">
+    <div class="hero-inner">
+        <!-- LEFT -->
         <div class="hero-left">
-            <div class="hero-badge"><span></span> Performance & Gestão de Projetos</div>
-            <h1 class="hero-title">Domine sua operação <br>com <span class="accent">inteligência real</span></h1>
-            <p class="hero-sub">A primeira plataforma que une Kanban, Gantt e Financeiro em tempo real. Tome decisões baseadas em dados, não em palpites.</p>
-            <div class="hero-actions">
-                <a href="#pricing" class="btn-hero-main"><i class="fas fa-chart-line"></i> Ver Planos</a>
-                <a href="#features" class="btn-hero-ghost"><i class="fas fa-play-circle"></i> Ver Demo</a>
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Performance & Gestão de Projetos
             </div>
+
+            <h1 class="hero-title">
+                Domine seus projetos<br>com <em>inteligência real</em>
+            </h1>
+
+            <p class="hero-sub">
+                A primeira plataforma que une Kanban, CRM, Financeiro e WhatsApp IA em tempo real. Tome decisões baseadas em dados, não em palpites.
+            </p>
+
+            <div class="hero-actions">
+                <a href="#pricing" class="btn-hero">
+                    <i class="fas fa-chart-line"></i> Ver Planos
+                </a>
+                <a href="#features" class="btn-hero-outline">
+                    <i class="fas fa-play" style="font-size:.75rem"></i> Ver Recursos
+                </a>
+            </div>
+
             <div class="hero-stats">
-                <div class="stat-item"><div class="stat-num">500+</div><div class="stat-label">Empresas</div></div>
-                <div class="stat-item"><div class="stat-num">12k+</div><div class="stat-label">Tasks diárias</div></div>
-                <div class="stat-item"><div class="stat-num">98%</div><div class="stat-label">Uptime</div></div>
+                <div class="stat-item">
+                    <div class="snum">500+</div>
+                    <div class="slbl">Empresas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="snum">12k+</div>
+                    <div class="slbl">Tasks diárias</div>
+                </div>
+                <div class="stat-item">
+                    <div class="snum">99.9%</div>
+                    <div class="slbl">Uptime SLA</div>
+                </div>
             </div>
         </div>
 
-        <div class="hero-map-wrap">
-            <div class="map-container">
-                <svg id="brazil-map" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="mapGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.5"/>
-                            <stop offset="100%" stop-color="#16a34a" stop-opacity="0.2"/>
-                        </linearGradient>
-                        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                    </defs>
-                    <path d="M144,38c5.4-3.7,13.2-5.7,19.9-4.4s14.4,5.7,21.4,6.7c7,1,11.6-1.7,18.3,2.4s11.9,12.8,15.5,19.2s8,15.5,13.4,21.6s12.4,13.2,12.4,25.3s-2.3,20.3-5.2,29.4s-2.3,17.9,4.1,28.4s13.4,20.3,17.8,30.4s6.4,24,6.4,35.5s-2.3,22.6-6.2,32.8s-8.5,19.2-14.7,26.7s-10.3,12.8-17,19.2s-11.1,14.8-13.7,25s-5.2,21.6-10.3,31.1s-10.3,16.2-17.3,24.6s-12.4,13.5-18,21.6s-10.1,16.9-14.9,25.7s-8.8,14.5-14.4,14.5s-11.1-6.4-17.3-15.5s-11.3-19.6-16.5-30.7s-9.3-24-11.9-36.1s-3.9-24-4.9-36.5s-1.3-24.3,0.5-35.8s4.1-22,8.5-31.7s6.4-20.9,6.4-33.4s-3.1-24-8-34.1s-9.3-20.9-13.1-32.4s-5.7-23-5.7-33.8s2.6-19.6,7.7-29.7s10.8-18.2,17.8-25.7s11.6-13.2,17.8-14.9s11.6,3.7,11.6,10.5s-2.8,15.2-5.9,23.3s-5.2,17.2-5.2,26s3.9,16.9,10.3,26c13.1,17.2,13.1,17.2,18.8,11.5c6.4-10.5,6.4-16.5,6.4-27s-3.1-20.3-7.5-27.4s-8.8-10.5-8.8-18.6S138.6,41.7,144,38z"
-                          fill="url(#mapGrad)" stroke="rgba(79,70,229,0.6)" stroke-width="1.5" filter="url(#glow)"/>
-                </svg>
-
-                <div class="map-dot d1"></div>
-                <div class="map-dot blue d2"></div>
-                <div class="map-dot d3"></div>
-                <div class="map-dot teal d4"></div>
-                <div class="map-dot blue d5"></div>
-                <div class="map-dot d6"></div>
-                <div class="map-dot d7"></div>
-                <div class="map-dot d8"></div>
-                <div class="map-dot blue d9"></div>
-
-                <div class="floating-card fc-1">
-                    <div class="fc-label">ROI Médio</div>
-                    <div class="fc-value">+34%</div>
-                    <div class="fc-delta"><i class="fas fa-arrow-up"></i> Eficiência operacional</div>
+        <!-- RIGHT — Kanban Visual -->
+        <div class="hero-visual">
+            <div style="position:relative">
+                <div class="hero-notif hn-2">
+                    <div class="hn-icon hni-green"><i class="fas fa-circle-check"></i></div>
+                    <div class="hn-text">
+                        <div class="hn-lbl">Task concluída</div>
+                        <div class="hn-val">Em dia · Sprint 3</div>
+                    </div>
                 </div>
-                <div class="floating-card fc-2">
-                    <div class="fc-label">Margem Real</div>
-                    <div class="fc-value">R$ 152k</div>
-                    <div class="fc-delta"><i class="fas fa-check"></i> Lucro validado</div>
+
+                <div class="kanban-wrap">
+                    <div class="kb-header">
+                        <div class="kbh-dot" style="background:#FF5F57"></div>
+                        <div class="kbh-dot" style="background:#FEBC2E"></div>
+                        <div class="kbh-dot" style="background:#28C840"></div>
+                        <span class="kbh-title">Vivensi — Gestão de Projetos</span>
+                    </div>
+                    <div class="kb-board">
+                        <div>
+                            <div class="kb-col-title"><span class="kb-dot kd-orange"></span> A Fazer</div>
+                            <div class="kb-card">Landing Página Cliente B<div class="kb-card-val">Alta</div></div>
+                            <div class="kb-card">Relatório Q2 Financeiro<div class="kb-card-val">Média</div></div>
+                        </div>
+                        <div>
+                            <div class="kb-col-title"><span class="kb-dot kd-blue"></span> Em Progresso</div>
+                            <div class="kb-card kb-card-hot">Proposta Banco Sul<div class="kb-card-val">R$ 45k</div></div>
+                            <div class="kb-card">API WhatsApp Integration<div class="kb-card-val">Dev</div></div>
+                        </div>
+                        <div>
+                            <div class="kb-col-title"><span class="kb-dot kd-green"></span> Concluído</div>
+                            <div class="kb-card">Setup CRM Leads<div class="kb-card-val">Entregue ✓</div></div>
+                            <div class="kb-card">Site Institucional<div class="kb-card-val">Deploy ✓</div></div>
+                        </div>
+                    </div>
+                    <div class="kb-metric-row">
+                        <div class="kb-metric">
+                            <div class="kb-metric-lbl">Margem Mês</div>
+                            <div class="kb-metric-val" style="color:var(--teal)">R$ 42k</div>
+                        </div>
+                        <div class="kb-metric">
+                            <div class="kb-metric-lbl">Sprint Health</div>
+                            <div class="kb-metric-val" style="color:#4ade80">84%</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="floating-card fc-3">
-                    <div class="fc-label">Status Projetos</div>
-                    <div class="fc-value">84% No Prazo</div>
-                    <div class="fc-delta" style="color:var(--teal)"><i class="fas fa-clock"></i> Gantt atualizado</div>
+
+                <div class="hero-notif hn-1">
+                    <div class="hn-icon hni-teal"><i class="fas fa-comment-dots"></i></div>
+                    <div class="hn-text">
+                        <div class="hn-lbl">Bruce AI</div>
+                        <div class="hn-val">Pitch gerado em 8s</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -294,27 +448,28 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
 </section>
 
 <!-- TRUST BAR -->
-<div class="trust-bar">
-    <div class="trust-inner">
-        <span class="trust-text">Infraestrutura robusta para sua empresa</span>
+<div class="trust">
+    <div class="trust-row">
+        <span class="trust-lbl">Infraestrutura robusta para sua empresa</span>
         <div class="trust-item"><i class="fas fa-shield-halved"></i> Audit Trails</div>
         <div class="trust-item"><i class="fas fa-server"></i> AWS Enterprise</div>
-        <div class="trust-item"><i class="fas fa-lock"></i> MFA + End-to-End</div>
-        <div class="trust-item"><i class="fas fa-microchip"></i> Gestão via Dados</div>
+        <div class="trust-item"><i class="fas fa-lock"></i> MFA + SSL</div>
+        <div class="trust-item"><i class="fas fa-microchip"></i> IA Nativa</div>
+        <div class="trust-item"><i class="fas fa-clock"></i> 99.9% Uptime</div>
     </div>
 </div>
 
 <!-- PROBLEM → SOLUTION -->
-<section class="problem-section animate-on-scroll" id="features">
-    <div class="problem-grid">
-        <div>
-            <div class="section-tag tag-accent"><i class="fas fa-triangle-exclamation"></i> O Gargalo da Gestão</div>
-            <h2 class="section-title">Pare de gerir por planilhas e comece a <span style="color:var(--accent-light)">gerir por lucro.</span></h2>
-            <p class="section-sub">Informação fragmentada. Projetos atrasados. Equipe sobrecarregada. Falta de visão financeira real. O Vivensi Manager resolve isso.</p>
+<section class="prob-section" id="problema">
+    <div class="prob-grid">
+        <div class="reveal">
+            <div class="section-tag st-blue"><i class="fas fa-triangle-exclamation"></i> O Gargalo Real</div>
+            <h2 class="section-title">Pare de gerir por planilhas.<br>Comece a gerir por resultado.</h2>
+            <p class="section-sub">Informação fragmentada. Projetos atrasados. Equipe sobrecarregada. Falta de visão financeira real. O Vivensi Manager resolve tudo isso.</p>
             <div class="pain-list">
                 <div class="pain-item">
                     <div class="pain-icon"><i class="fas fa-clock-rotate-left"></i></div>
-                    <div class="pain-text"><h4>Cronogramas que nunca batem</h4><p>Gerencie prazos reais com nosso gráfico de Gantt dinâmico e alertas de atraso.</p></div>
+                    <div class="pain-text"><h4>Cronogramas que nunca batem</h4><p>Gerencie prazos reais com Kanban visual e alertas automáticos de atraso.</p></div>
                 </div>
                 <div class="pain-item">
                     <div class="pain-icon"><i class="fas fa-sack-dollar"></i></div>
@@ -322,29 +477,39 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
                 </div>
                 <div class="pain-item">
                     <div class="pain-icon"><i class="fas fa-users-viewfinder"></i></div>
-                    <div class="pain-text"><h4>Falta de clareza nas responsabilidades</h4><p>Kanban visual com responsáveis e prazos definidos para cada micro-task.</p></div>
+                    <div class="pain-text"><h4>Falta de clareza nas responsabilidades</h4><p>Kanban com responsáveis, prazos definidos e histórico para cada task.</p></div>
                 </div>
             </div>
         </div>
-        <div class="solution-visual animate-on-scroll">
-            <div class="dashboard-mock">
-                <div class="mock-header">
-                    <div class="mock-dot" style="background:#FF5F57"></div>
-                    <div class="mock-dot" style="background:#FEBC2E"></div>
-                    <div class="mock-dot" style="background:#28C840"></div>
-                    <span class="mock-title" style="margin-left:8px">Vivensi — Dashboard Manager</span>
+        <div class="reveal reveal-d2">
+            <div class="kanban-wrap" style="background:#0d0f18;border-color:rgba(79,110,247,.15)">
+                <div class="kb-header">
+                    <div class="kbh-dot" style="background:#FF5F57"></div>
+                    <div class="kbh-dot" style="background:#FEBC2E"></div>
+                    <div class="kbh-dot" style="background:#28C840"></div>
+                    <span class="kbh-title">Vivensi — Dashboard Manager</span>
                 </div>
-                <div class="mock-kpi-row">
-                    <div class="mock-kpi"><div class="mock-kpi-label">Projetos Ativos</div><div class="mock-kpi-value" style="color:var(--accent-light)">12</div></div>
-                    <div class="mock-kpi"><div class="mock-kpi-label">Receita Estimada</div><div class="mock-kpi-value" style="color:var(--teal)">R$450k</div></div>
-                    <div class="mock-kpi"><div class="mock-kpi-label">Tasks Concluídas</div><div class="mock-kpi-value" style="color:var(--primary-light)">84%</div></div>
-                    <div class="mock-kpi"><div class="mock-kpi-label">Gargalo de Equipe</div><div class="mock-kpi-value" style="color:var(--gold)">Baixo</div></div>
-                </div>
-                <div class="mock-bar-wrap">
-                    <div class="mock-bar-label"><span>Rentabilidade Média</span><span style="color:var(--teal)">42%</span></div>
-                    <div class="mock-bar"><div class="mock-bar-fill" style="--target-width:42%;background:linear-gradient(90deg,var(--primary),var(--accent));width:0"></div></div>
-                    <div class="mock-bar-label"><span>Saúde dos Projetos</span><span style="color:var(--blue)">92%</span></div>
-                    <div class="mock-bar"><div class="mock-bar-fill" style="--target-width:92%;background:linear-gradient(90deg,var(--blue),var(--teal));width:0"></div></div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--glass);border:1px solid var(--border);border-radius:10px">
+                        <div style="width:34px;height:34px;border-radius:9px;background:rgba(79,110,247,.14);display:flex;align-items:center;justify-content:center;color:#93a8ff;font-size:.85rem;flex-shrink:0"><i class="fas fa-chart-line"></i></div>
+                        <div style="flex:1"><div style="font-size:.75rem;font-weight:700;color:var(--white)">Projeto Alpha — No prazo</div><div style="font-size:.65rem;color:var(--text-muted)">Sprint 3 · 84% concluído</div></div>
+                        <div style="font-size:.65rem;color:#4ade80;font-weight:700">✓ OK</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--glass);border:1px solid var(--border);border-radius:10px">
+                        <div style="width:34px;height:34px;border-radius:9px;background:rgba(0,212,170,.12);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:.85rem;flex-shrink:0"><i class="fas fa-coins"></i></div>
+                        <div style="flex:1"><div style="font-size:.75rem;font-weight:700;color:var(--white)">Margem acumulada Q2</div><div style="font-size:.65rem;color:var(--text-muted)">3 projetos · R$ 142.800</div></div>
+                        <div style="font-size:.65rem;color:var(--teal);font-weight:700">+18%</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--glass);border:1px solid var(--border);border-radius:10px">
+                        <div style="width:34px;height:34px;border-radius:9px;background:rgba(139,92,246,.14);display:flex;align-items:center;justify-content:center;color:#c4b5fd;font-size:.85rem;flex-shrink:0"><i class="fas fa-robot"></i></div>
+                        <div style="flex:1"><div style="font-size:.75rem;font-weight:700;color:var(--white)">Bruce AI — Pitch gerado</div><div style="font-size:.65rem;color:var(--text-muted)">Empresa: Banco Sul · 92% fit</div></div>
+                        <div style="font-size:.65rem;color:#c4b5fd;font-weight:700">IA</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--glass);border:1px solid var(--border);border-radius:10px">
+                        <div style="width:34px;height:34px;border-radius:9px;background:rgba(245,166,35,.12);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.85rem;flex-shrink:0"><i class="fas fa-calendar-check"></i></div>
+                        <div style="flex:1"><div style="font-size:.75rem;font-weight:700;color:var(--white)">Reunião agendada</div><div style="font-size:.65rem;color:var(--text-muted)">Cliente ABC · Amanhã 14h</div></div>
+                        <div style="font-size:.65rem;color:var(--gold);font-weight:700">📅</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -352,169 +517,342 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
 </section>
 
 <!-- FEATURES GRID -->
-<section class="features-section">
-    <div class="center animate-on-scroll">
-        <div class="section-tag tag-blue"><i class="fas fa-layer-group"></i> Ecossistema Manager</div>
-        <h2 class="section-title">Domine a operação de ponta a ponta</h2>
-        <p class="section-sub center" style="max-width:560px">Uma suite de ferramentas integradas para quem não tem tempo a perder.</p>
+<section class="features-wrap" id="features">
+    <div style="max-width:1240px;margin:0 auto">
+        <div class="reveal center">
+            <div class="section-tag st-blue"><i class="fas fa-layer-group"></i> Ecossistema Manager</div>
+            <h2 class="section-title">Domine a operação<br>de ponta a ponta</h2>
+            <p class="section-sub center" style="max-width:540px">Uma suite de ferramentas integradas para quem não tem tempo a perder. Cada módulo fala com o outro.</p>
+        </div>
+
+        <div class="feat-grid">
+            <div class="fc fi-blue reveal reveal-d1">
+                <div class="fc-icon fi-blue"><i class="fas fa-columns"></i></div>
+                <h3>Kanban de Projetos</h3>
+                <p>Visualize o mesmo projeto em Kanban, Lista ou Gantt. Drag & drop entre estágios com histórico completo de movimentações.</p>
+                <span class="fc-tag ft-new"><i class="fas fa-sparkles"></i> Novo</span>
+            </div>
+
+            <div class="fc fi-teal reveal reveal-d2">
+                <div class="fc-icon fi-teal"><i class="fas fa-coins"></i></div>
+                <h3>Controle Financeiro</h3>
+                <p>Vincule receitas e despesas a cada projeto. Saiba exatamente qual cliente é mais rentável — em tempo real.</p>
+            </div>
+
+            <div class="fc fi-purple reveal reveal-d3">
+                <div class="fc-icon fi-purple"><i class="fas fa-robot"></i></div>
+                <h3>Bruce AI — Prospecção</h3>
+                <p>Encontra, analisa e gera pitch personalizado para cada lead em segundos. Integração com Google Maps e WhatsApp.</p>
+                <span class="fc-tag ft-ai"><i class="fas fa-wand-magic-sparkles"></i> IA</span>
+            </div>
+
+            <div class="fc fi-gold reveal reveal-d4">
+                <div class="fc-icon fi-gold"><i class="fas fa-calendar-check"></i></div>
+                <h3>Reuniões & Agendamentos</h3>
+                <p>Sistema de booking público com slots configuráveis, confirmação automática por e-mail e cancelamento com token seguro.</p>
+                <span class="fc-tag ft-new"><i class="fas fa-sparkles"></i> Novo</span>
+            </div>
+
+            <div class="fc fi-rose reveal reveal-d5">
+                <div class="fc-icon fi-rose"><i class="fas fa-chart-pie"></i></div>
+                <h3>DRE & Relatórios</h3>
+                <p>Relatórios financeiros estruturados por projeto ou consolidado da empresa — gerados em 1 clique, prontos para diretoria.</p>
+            </div>
+
+            <div class="fc fi-sky reveal reveal-d6">
+                <div class="fc-icon fi-sky"><i class="fas fa-comment-dots"></i></div>
+                <h3>WhatsApp & IA Chatbot</h3>
+                <p>Atenda clientes, responda leads e automatize follow-ups pelo WhatsApp com IA treinada na sua base de conhecimento.</p>
+                <span class="fc-tag ft-ai"><i class="fas fa-wand-magic-sparkles"></i> IA</span>
+            </div>
+
+            <div class="fc fi-blue reveal reveal-d7">
+                <div class="fc-icon fi-blue"><i class="fas fa-megaphone"></i></div>
+                <h3>Broadcast WhatsApp</h3>
+                <p>Envie mensagens em massa para listas segmentadas. Importe contatos por CSV e acompanhe taxas de entrega em tempo real.</p>
+            </div>
+
+            <div class="fc fi-green reveal reveal-d8">
+                <div class="fc-icon fi-green"><i class="fas fa-file-signature"></i></div>
+                <h3>Contratos Digitais</h3>
+                <p>Crie, envie e assine contratos digitalmente com validade jurídica. Histórico completo de assinaturas com IP e timestamp.</p>
+            </div>
+
+            <div class="fc fi-pink reveal reveal-d9">
+                <div class="fc-icon fi-pink"><i class="fas fa-calendar-days"></i></div>
+                <h3>Redes Sociais & Conteúdo</h3>
+                <p>Calendário editorial, agendamento multi-rede e legenda gerada por IA. Marketing de forma organizada e consistente.</p>
+                <span class="fc-tag ft-ai"><i class="fas fa-wand-magic-sparkles"></i> IA</span>
+            </div>
+
+            <div class="fc fi-teal reveal reveal-d10">
+                <div class="fc-icon fi-teal"><i class="fas fa-globe"></i></div>
+                <h3>Landing Pages</h3>
+                <p>Builder visual para criar páginas de captura de leads com formulários, pixels e integração direta ao CRM da plataforma.</p>
+            </div>
+
+            <div class="fc fi-gold reveal reveal-d11">
+                <div class="fc-icon fi-gold"><i class="fas fa-fingerprint"></i></div>
+                <h3>Segurança Enterprise</h3>
+                <p>Logs de auditoria em todas as ações. Saiba quem fez o quê e quando. Controle de permissões granular por nível.</p>
+            </div>
+
+            <div class="fc fi-purple reveal reveal-d12">
+                <div class="fc-icon fi-purple"><i class="fas fa-brain"></i></div>
+                <h3>Marketing Intelligence</h3>
+                <p>Análise de mercado, posicionamento competitivo e estratégias de marketing geradas por IA para o seu nicho de atuação.</p>
+                <span class="fc-tag ft-ai"><i class="fas fa-wand-magic-sparkles"></i> IA</span>
+            </div>
+        </div>
     </div>
-    <div class="features-grid">
-        <div class="feat-card animate-on-scroll">
-            <div class="feat-icon fi-accent"><i class="fas fa-table-list"></i></div>
-            <h3>Gestão Híbrida</h3>
-            <p>Visualize o mesmo projeto em Kanban, Lista ou Gantt. Adapte a ferramenta ao seu fluxo, não o contrário.</p>
-            <span class="feat-tag ft-new">Novo</span>
+</section>
+
+<!-- MODULE SPOTLIGHT -->
+<section class="spotlight" id="modulos">
+    <div class="spotlight-inner">
+        <div class="reveal center">
+            <div class="section-tag st-blue"><i class="fas fa-star"></i> Destaques</div>
+            <h2 class="section-title">Módulos que impulsionam<br>resultados</h2>
+            <p class="section-sub center" style="max-width:500px">Dois dos recursos mais poderosos para gestores que precisam captar clientes e fechar projetos com qualidade.</p>
         </div>
-        <div class="feat-card animate-on-scroll">
-            <div class="feat-icon fi-blue"><i class="fas fa-coins"></i></div>
-            <h3>Margem Real</h3>
-            <p>Vincule cada despesa e receita a um projeto. Saiba exatamente qual cliente é mais rentável em tempo real.</p>
+
+        <div class="spotlight-grid">
+            <!-- Card 1: CRM/Financeiro -->
+            <div class="spot-card spot-card-blue reveal reveal-d1">
+                <div class="spot-accent-bar sab-blue"></div>
+                <div class="spot-badge sbg-blue"><i class="fas fa-chart-line"></i> Financeiro</div>
+                <div class="spot-title">Controle financeiro por projeto</div>
+                <p class="spot-desc">Vincule cada transação a um projeto ou cliente. Saiba exatamente a margem real de cada entrega, com DRE automático.</p>
+                <ul class="spot-feats">
+                    <li><i class="fas fa-circle-check sfi-blue"></i> Margem por projeto em tempo real</li>
+                    <li><i class="fas fa-circle-check sfi-blue"></i> DRE gerado em 1 clique</li>
+                    <li><i class="fas fa-circle-check sfi-blue"></i> Reconciliação bancária automática</li>
+                    <li><i class="fas fa-circle-check sfi-blue"></i> Relatório executivo em PDF</li>
+                </ul>
+                <div class="spot-demo">
+                    <div class="kpi-demo">
+                        <div class="kpi-row">
+                            <span class="kpi-lbl">Receita do mês</span>
+                            <span class="kpi-val kpi-pos">R$ 98.200</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-lbl">Despesas operacionais</span>
+                            <span class="kpi-val kpi-neg">− R$ 31.400</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-lbl">Custo de equipe</span>
+                            <span class="kpi-val kpi-neg">− R$ 24.800</span>
+                        </div>
+                        <div class="kpi-total">
+                            <span class="kpi-total-lbl">Lucro líquido</span>
+                            <span class="kpi-total-val">R$ 42.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Bruce AI Prospecção -->
+            <div class="spot-card spot-card-purple reveal reveal-d2">
+                <div class="spot-accent-bar sab-purple"></div>
+                <div class="spot-badge sbg-purple"><i class="fas fa-robot"></i> IA Nativa</div>
+                <div class="spot-title">Bruce AI — Prospecção inteligente</div>
+                <p class="spot-desc">A IA encontra empresas no Google Maps, analisa o fit com seu perfil e gera pitches personalizados para cada lead em segundos.</p>
+                <ul class="spot-feats">
+                    <li><i class="fas fa-circle-check sfi-purple"></i> Busca por cidade e segmento</li>
+                    <li><i class="fas fa-circle-check sfi-purple"></i> Score de fit automático (0-100%)</li>
+                    <li><i class="fas fa-circle-check sfi-purple"></i> Pitch gerado para WhatsApp ou e-mail</li>
+                    <li><i class="fas fa-circle-check sfi-purple"></i> CRM integrado para conversão</li>
+                </ul>
+                <div class="spot-demo">
+                    <div class="ai-demo">
+                        <div class="ai-header">
+                            <span class="ai-live"></span> Analisando em tempo real
+                        </div>
+                        <div class="ai-prospect">
+                            <div class="ai-logo">SF</div>
+                            <div>
+                                <div class="ai-name">Supermercado Família</div>
+                                <div class="ai-cat">Varejo · Google Maps</div>
+                            </div>
+                        </div>
+                        <div class="ai-score-row">
+                            <span>Fit Score</span>
+                            <span class="ai-score-pct">94%</span>
+                        </div>
+                        <div class="ai-bar"><div class="ai-bar-fill"></div></div>
+                        <div class="ai-pitch">
+                            <div class="ai-pitch-lbl">Pitch — WhatsApp</div>
+                            <div class="ai-pitch-txt">"Olá! Vi que o Supermercado Família apoia a comunidade local. Temos uma proposta de visibilidade…<span class="ai-cursor"></span>"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="feat-card animate-on-scroll">
-            <div class="feat-icon fi-teal"><i class="fas fa-fingerprint"></i></div>
-            <h3>Segurança Enterprise</h3>
-            <p>Logs de auditoria em todas as ações. Saiba quem fez o quê e quando. Controle de permissões granular.</p>
+    </div>
+</section>
+
+<!-- PARALLAX BOOKING CTA -->
+<section class="parallax-cta" id="agendar">
+    <div class="parallax-bg" id="parallaxBg"></div>
+    <div class="parallax-grid"></div>
+
+    <div class="parallax-inner reveal">
+        <div class="parallax-eyebrow">
+            <span class="plx-dot"></span>
+            <i class="fas fa-calendar-check"></i>
+            Demonstração Gratuita
         </div>
-        <div class="feat-card animate-on-scroll">
-            <div class="feat-icon fi-gold"><i class="fas fa-user-secret"></i></div>
-            <h3>Permissões por Nível</h3>
-            <p>Admin, Gerente e Colaborador. Cada um visualiza apenas o que é necessário para sua função.</p>
+
+        <h2 class="parallax-title">
+            Pronto para escalar<br>seus projetos?
+        </h2>
+
+        <p class="parallax-sub">
+            Agende uma demonstração de 30 minutos com nosso time. Mostre sua operação atual e veja exatamente como o Vivensi pode resolver seus gargalos.
+        </p>
+
+        <div class="plx-btns">
+            <a href="{{ route('booking.index') }}" class="btn-plx">
+                <i class="fas fa-calendar-check"></i> Agendar Demonstração Grátis
+            </a>
+            <a href="#pricing" class="btn-plx-ghost">
+                Ver planos <i class="fas fa-arrow-right" style="font-size:.75rem"></i>
+            </a>
         </div>
-        <div class="feat-card animate-on-scroll">
-            <div class="feat-icon fi-purple"><i class="fas fa-chart-pie"></i></div>
-            <h3>DRE Automático</h3>
-            <p>Relatórios financeiros estruturados por projeto ou consolidado da empresa a um clique de distância.</p>
-        </div>
-        <div class="feat-card animate-on-scroll">
-            <div class="feat-icon fi-sky"><i class="fas fa-mobile-screen-button"></i></div>
-            <h3>Acesso Web & Mobile</h3>
-            <p>Gestão na nuvem. Acompanhe o status da sua empresa de qualquer lugar, em qualquer dispositivo.</p>
+
+        <div class="plx-trust">
+            <div class="plxt"><i class="fas fa-check"></i> Sem compromisso</div>
+            <div class="plxt"><i class="fas fa-check"></i> 30 minutos</div>
+            <div class="plxt"><i class="fas fa-check"></i> Especialista dedicado</div>
+            <div class="plxt"><i class="fas fa-check"></i> Material incluso</div>
         </div>
     </div>
 </section>
 
 <!-- PRICING -->
-<section class="pricing-section" id="pricing">
-    <div class="center animate-on-scroll">
-        <div class="section-tag tag-accent"><i class="fas fa-bolt"></i> Escalabilidade</div>
-        <h2 class="section-title">Potencialize sua empresa</h2>
-        <p class="section-sub center">Escolha o plano que melhor se adapta ao tamanho do seu time.</p>
-        <div class="billing-toggle">
-            <span class="toggle-label active" id="lbl-monthly">Mensal</span>
-            <label class="switch"><input type="checkbox" id="billing-toggle" onchange="toggleBilling()"><span class="slider"></span></label>
-            <span class="toggle-label" id="lbl-yearly">Anual <span class="discount-badge">-10% OFF</span></span>
-        </div>
-    </div>
-    <div class="pricing-grid">
-        @forelse($plans as $plan)
-        <div class="price-card {{ $loop->index === 1 ? 'featured' : '' }}">
-            @if($loop->index === 1)<div class="featured-badge">Melhor Valor</div>@endif
-            <div class="price-name">{{ $plan->name }}</div>
-            <div class="price-amount">
-                <span class="cur">R$</span>
-                <span class="amount" data-monthly="{{ $plan->price }}" data-yearly="{{ $plan->price_yearly ?? ($plan->price * 12 * 0.9) }}">{{ number_format($plan->price, 2, ',', '.') }}</span>
-                <span class="period">/mês</span>
+<section class="pricing-wrap" id="pricing">
+    <div style="max-width:1240px;margin:0 auto">
+        <div class="reveal center">
+            <div class="section-tag st-blue"><i class="fas fa-bolt"></i> Escalabilidade</div>
+            <h2 class="section-title">Potencialize sua empresa</h2>
+            <p class="section-sub center">Escolha o plano que melhor se adapta ao seu time. Sem fidelização, sem taxa de setup.</p>
+            <div class="billing-toggle">
+                <span class="tgl-lbl on" id="lbl-m">Mensal</span>
+                <label class="switch"><input type="checkbox" id="billing-toggle" onchange="toggleBilling()"><span class="slider"></span></label>
+                <span class="tgl-lbl" id="lbl-y">Anual <span class="disc-badge">-10% OFF</span></span>
             </div>
-            <div class="price-note" id="price-note-{{ $loop->index }}">cobrado mensalmente</div>
-            <div class="price-divider"></div>
-            <ul class="price-features">
-                @if($plan->features)
-                    @foreach($plan->features as $feat)
-                    <li><i class="fas fa-circle-check"></i> {{ $feat }}</li>
-                    @endforeach
-                @endif
-            </ul>
-            <a href="{{ route('register', ['plan_id' => $plan->id, 'billing_cycle' => 'monthly']) }}"
-               class="btn-plan {{ $loop->index === 1 ? 'btn-plan-main' : 'btn-plan-outline' }} btn-subscribe"
-               data-plan-id="{{ $plan->id }}">
-               {{ $loop->index === 1 ? '🚀 Ativar Performance' : 'Escolher Plano' }}
-            </a>
         </div>
-        @empty
-        <div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,.5)">
-            <i class="fas fa-spinner fa-spin" style="font-size:2rem;margin-bottom:16px;display:block"></i>
-            Carregando planos...
+        <div class="price-grid">
+            @forelse($plans as $plan)
+            <div class="price-card {{ $loop->index === 1 ? 'hot' : '' }}">
+                @if($loop->index === 1)<div class="hot-badge">Melhor Valor</div>@endif
+                <div class="price-name">{{ $plan->name }}</div>
+                <div class="price-val">
+                    <span class="cur">R$</span>
+                    <span class="amount" data-m="{{ $plan->price }}" data-y="{{ $plan->price_yearly ?? ($plan->price * 12 * 0.9) }}">{{ number_format($plan->price, 2, ',', '.') }}</span>
+                    <span class="per">/mês</span>
+                </div>
+                <div class="price-note" id="pnote-{{ $loop->index }}">cobrado mensalmente</div>
+                <div class="price-divider"></div>
+                <ul class="price-feats">
+                    @if($plan->features)
+                        @foreach($plan->features as $f)
+                        <li><i class="fas fa-circle-check"></i> {{ $f }}</li>
+                        @endforeach
+                    @endif
+                </ul>
+                <a href="{{ route('register', ['plan_id' => $plan->id, 'billing_cycle' => 'monthly']) }}"
+                   class="btn-price {{ $loop->index === 1 ? 'bp-solid' : 'bp-outline' }} btn-subscribe"
+                   data-plan-id="{{ $plan->id }}">
+                   {{ $loop->index === 1 ? '🚀 Ativar Performance' : 'Escolher Plano' }}
+                </a>
+            </div>
+            @empty
+            <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim)">
+                <i class="fas fa-spinner fa-spin" style="font-size:2rem;display:block;margin-bottom:16px"></i>
+                Planos sob consulta — <a href="{{ route('login') }}" style="color:var(--accent)">fale conosco</a>
+            </div>
+            @endforelse
         </div>
-        @endforelse
-    </div>
-</section>
-
-<!-- FINAL CTA -->
-<section class="final-cta animate-on-scroll">
-    <div class="section-tag tag-accent center" style="justify-content:center"><i class="fas fa-rocket"></i> Futuro da Gestão</div>
-    <h2>Decisões rápidas. Execução impecável.</h2>
-    <p>Leve sua empresa para o próximo nível com a infraestrutura que ela merece.</p>
-    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-        <a href="#pricing" class="btn-hero-main" style="font-size:1.05rem;padding:18px 44px"><i class="fas fa-bolt"></i> Começar Agora</a>
-        <a href="{{ route('login') }}" class="btn-hero-ghost" style="font-size:1.05rem;padding:18px 36px">Falar com Consultor</a>
     </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-    <div class="footer-grid">
-        <div class="footer-col">
-            <x-application-logo style="height:32px;margin-bottom:16px;filter:brightness(0) invert(1);opacity:.7" />
-            <p style="font-size:.875rem;color:rgba(255,255,255,.35);line-height:1.7">Performance e Inteligência<br>para sua Gestão.</p>
+    <div class="footer-row">
+        <div class="footer-brand">
+            <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:28px;filter:brightness(0) invert(1);opacity:.6">
+            <p>Performance e inteligência para gestores e equipes de projeto.</p>
         </div>
         <div class="footer-col">
-            <h4>Soluções</h4>
-            <a href="{{ route('solutions.ngo') }}">Terceiro Setor</a>
-            <a href="{{ route('solutions.manager') }}">Projetos</a>
-            <a href="{{ route('solutions.common') }}">Pessoal</a>
+            <h5>Soluções</h5>
+            <a href="{{ route('solutions.ngo') }}">Para ONGs</a>
+            <a href="{{ route('solutions.manager') }}">Para Gestores</a>
+            <a href="{{ route('solutions.common') }}">Uso Pessoal</a>
+            <a href="#features">Recursos</a>
         </div>
         <div class="footer-col">
-            <h4>Empresa</h4>
-            <a href="{{ route('public.page', 'sobre') }}">Sobre</a>
-            <a href="{{ route('login') }}">Login</a>
-            <a href="{{ route('register') }}">Registro</a>
+            <h5>Produto</h5>
+            <a href="#pricing">Planos & Preços</a>
+            <a href="{{ route('login') }}">Acessar conta</a>
+            <a href="{{ route('register') }}">Criar conta grátis</a>
+            <a href="{{ route('booking.index') }}">Agendar Demo</a>
         </div>
         <div class="footer-col">
-            <h4>Legal</h4>
+            <h5>Legal</h5>
             <a href="{{ route('public.page', 'privacidade') }}">Privacidade</a>
-            <a href="{{ route('public.page', 'termos') }}">Termos</a>
+            <a href="{{ route('public.page', 'termos') }}">Termos de Uso</a>
+            <a href="{{ route('public.page', 'sobre') }}">Sobre o Vivensi</a>
         </div>
     </div>
     <div class="footer-bottom">
-        <p>© 2026 Vivensi. Tecnologia de Ponta.</p>
-        <p>Vivensi Manager — Alta Performance</p>
+        <span>© 2026 Vivensi. Todos os direitos reservados.</span>
+        <span>Vivensi Manager — Alta Performance <span class="fb-heart">♥</span></span>
     </div>
 </footer>
 
 <script>
+// ── Billing toggle ──────────────────────────────────────────────
 function toggleBilling(){
     const yearly = document.getElementById('billing-toggle').checked;
-    document.getElementById('lbl-monthly').classList.toggle('active',!yearly);
-    document.getElementById('lbl-yearly').classList.toggle('active',yearly);
-    document.querySelectorAll('.amount').forEach(el=>{
-        const m=parseFloat(el.dataset.monthly),y=parseFloat(el.dataset.yearly);
-        el.textContent=new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2}).format(yearly?y/12:m);
+    document.getElementById('lbl-m').classList.toggle('on', !yearly);
+    document.getElementById('lbl-y').classList.toggle('on', yearly);
+    document.querySelectorAll('.amount').forEach(el => {
+        const m = parseFloat(el.dataset.m), y = parseFloat(el.dataset.y);
+        el.textContent = new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2}).format(yearly ? y/12 : m);
     });
-    document.querySelectorAll('[id^="price-note-"]').forEach(el=>{
-        el.textContent=yearly?'cobrado anualmente (economize 10%)':'cobrado mensalmente';
+    document.querySelectorAll('[id^="pnote-"]').forEach(el => {
+        el.textContent = yearly ? 'cobrado anualmente (economize 10%)' : 'cobrado mensalmente';
     });
-    document.querySelectorAll('.btn-subscribe').forEach(btn=>{
-        const id=btn.dataset.planId,c=yearly?'yearly':'monthly';
-        btn.href=`/register?plan_id=${id}&billing_cycle=${c}`;
+    document.querySelectorAll('.btn-subscribe').forEach(btn => {
+        btn.href = `/register?plan_id=${btn.dataset.planId}&billing_cycle=${yearly ? 'yearly' : 'monthly'}`;
     });
 }
-const observer=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');
-        e.target.querySelectorAll('.mock-bar-fill').forEach(b=>{
-            const w=getComputedStyle(b).getPropertyValue('--target-width');
-            b.style.width=w;b.style.transition='width 1.2s cubic-bezier(.22,1,.36,1)';
-        });
-    }});
-},{threshold:0.15});
-document.querySelectorAll('.animate-on-scroll').forEach(el=>observer.observe(el));
-window.addEventListener('load',()=>{
-    setTimeout(()=>{
-        document.querySelectorAll('.mock-bar-fill').forEach(b=>{
-            const w=getComputedStyle(b).getPropertyValue('--target-width');
-            b.style.width=w;b.style.transition='width 1.2s cubic-bezier(.22,1,.36,1)';
-        });
-    },600);
-});
+
+// ── Intersection Observer — fade-up reveal ──────────────────────
+const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revealObs.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+// ── Navbar scroll ───────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+    document.getElementById('mainNav').style.borderBottomColor =
+        window.scrollY > 60 ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.07)';
+}, { passive: true });
+
+// ── Parallax background ─────────────────────────────────────────
+const parallaxBg = document.getElementById('parallaxBg');
+const isMobile = window.matchMedia('(max-width:768px)').matches;
+if (!isMobile && parallaxBg) {
+    window.addEventListener('scroll', () => {
+        const section = document.getElementById('agendar');
+        if (!section) return;
+        const rect = section.getBoundingClientRect();
+        const scrolled = -rect.top * 0.25;
+        parallaxBg.style.transform = `translateY(${scrolled}px)`;
+    }, { passive: true });
+}
 </script>
 @include('partials.whatsapp-button')
 </body>

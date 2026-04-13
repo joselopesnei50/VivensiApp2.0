@@ -2,59 +2,161 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use App\Jobs\ProcessProspect;
 use App\Models\Prospect;
 use App\Models\SystemSetting;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
-class LeadSearchService {
-    public function search($term, $location, $tenantId) {
-        $apiKey = SystemSetting::getValue('serper_api_key');
+class LeadSearchService
+{
+    // ── Busca por Localização (Google Maps) ───────────────────────────────────
 
-        if (!$apiKey) {
-            throw new \Exception('Chave da API Serper não configurada.');
-        }
+    /**
+     * Busca estabelecimentos físicos no Google Maps via Serper /maps.
+     * Retorna nome, endereço, telefone, site e avaliação.
+     *
+     * @return array{new: int, updated: int}
+     */
+    public function search(string $term, string $location, ?int $tenantId): array
+    {
+        $apiKey = $this->getApiKey();
 
         try {
             $response = Http::withHeaders(['X-API-KEY' => $apiKey])
                 ->timeout(15)
                 ->post('https://google.serper.dev/maps', [
-                    'q' => "$term em $location",
-                    'gl' => 'br', 
-                    'hl' => 'pt-br'
+                    'q'   => "$term em $location",
+                    'gl'  => 'br',
+                    'hl'  => 'pt-br',
+                    'num' => 20,
                 ]);
 
             if ($response->failed()) {
-                throw new \Exception('Erro na busca do Serper: ' . $response->body());
+                throw new \Exception('Erro na busca do Serper Maps: ' . $response->body());
             }
 
             $results = $response->json();
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            throw new \Exception('O serviço de busca (Serper) demorou muito para responder. Tente novamente em instantes.');
+            throw new \Exception('O serviço Serper demorou muito para responder. Tente novamente.');
         }
 
-        $prospectsCreated = 0;
+        $created = 0;
+        $updated = 0;
 
-        if (isset($results['places'])) {
-            foreach ($results['places'] as $item) {
-                Prospect::updateOrCreate(
-                    [
-                        'company_name' => $item['title'],
-                        'tenant_id' => $tenantId
-                    ],
-                    [
-                        'phone' => $item['phoneNumber'] ?? null,
-                        'address' => $item['address'] ?? null,
-                        'website' => $item['website'] ?? null,
-                        'google_rating' => $item['rating'] ?? 0,
-                        'total_reviews' => $item['ratingCount'] ?? 0,
-                        'category' => $term,
-                        'status' => 'raw'
-                    ]
-                );
-                $prospectsCreated++;
+        foreach ($results['places'] ?? [] as $item) {
+            if (empty($item['title'])) continue;
+
+            $prospect = Prospect::updateOrCreate(
+                ['company_name' => $item['title'], 'tenant_id' => $tenantId],
+                [
+                    'phone'         => $item['phoneNumber'] ?? null,
+                    'address'       => $item['address']     ?? null,
+                    'website'       => $item['website']      ?? null,
+                    'google_rating' => $item['rating']       ?? 0,
+                    'total_reviews' => $item['ratingCount']  ?? 0,
+                    'category'      => $term,
+                    'source'        => 'maps',
+                    'status'        => 'raw',
+                ]
+            );
+
+            if ($prospect->wasRecentlyCreated) {
+                ProcessProspect::dispatch($prospect)->onQueue('default');
+                $created++;
+            } else {
+                if ($prospect->status === 'raw') {
+                    ProcessProspect::dispatch($prospect)->onQueue('default');
+                }
+                $updated++;
             }
         }
 
-        return $prospectsCreated;
+        Log::info("Serper Maps: {$created} novos, {$updated} atualizados | {$term} em {$location}");
+
+        return ['new' => $created, 'updated' => $updated];
+    }
+
+    // ── Busca Web Orgânica (Google Search) ────────────────────────────────────
+
+    /**
+     * Busca resultados orgânicos do Google via Serper /search.
+     * Ideal para encontrar empresas online, negócios digitais, e-commerces,
+     * ONGs, associações e qualquer entidade sem endereço físico no Maps.
+     *
+     * @return array{new: int, updated: int}
+     */
+    public function searchWeb(string $term, ?int $tenantId): array
+    {
+        $apiKey = $this->getApiKey();
+
+        try {
+            $response = Http::withHeaders(['X-API-KEY' => $apiKey])
+                ->timeout(15)
+                ->post('https://google.serper.dev/search', [
+                    'q'   => $term,
+                    'gl'  => 'br',
+                    'hl'  => 'pt-br',
+                    'num' => 10,
+                ]);
+
+            if ($response->failed()) {
+                throw new \Exception('Erro na busca Serper Web: ' . $response->body());
+            }
+
+            $results = $response->json();
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new \Exception('O serviço Serper demorou muito para responder. Tente novamente.');
+        }
+
+        $created = 0;
+        $updated = 0;
+
+        foreach ($results['organic'] ?? [] as $item) {
+            if (empty($item['title']) || empty($item['link'])) continue;
+
+            // Filtrar resultados que claramente não são empresas (redes sociais genéricas, gov)
+            $blacklistDomains = ['wikipedia.org', 'facebook.com', 'instagram.com', 'youtube.com'];
+            $domain = parse_url($item['link'], PHP_URL_HOST) ?? '';
+            if (collect($blacklistDomains)->contains(fn ($d) => str_contains($domain, $d))) continue;
+
+            $prospect = Prospect::updateOrCreate(
+                ['company_name' => $item['title'], 'tenant_id' => $tenantId],
+                [
+                    'website'  => $item['link'],
+                    'snippet'  => $item['snippet'] ?? null,
+                    'category' => $term,
+                    'source'   => 'web',
+                    'status'   => 'raw',
+                ]
+            );
+
+            if ($prospect->wasRecentlyCreated) {
+                ProcessProspect::dispatch($prospect)->onQueue('default');
+                $created++;
+            } else {
+                if ($prospect->status === 'raw') {
+                    ProcessProspect::dispatch($prospect)->onQueue('default');
+                }
+                $updated++;
+            }
+        }
+
+        Log::info("Serper Web: {$created} novos, {$updated} atualizados | {$term}");
+
+        return ['new' => $created, 'updated' => $updated];
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function getApiKey(): string
+    {
+        $apiKey = SystemSetting::getValue('serper_api_key');
+
+        if (!$apiKey) {
+            throw new \Exception('Chave da API Serper não configurada. Acesse Super Admin › Configurações de API.');
+        }
+
+        return $apiKey;
     }
 }

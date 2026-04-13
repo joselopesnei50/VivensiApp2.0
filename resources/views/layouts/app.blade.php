@@ -117,6 +117,42 @@
         background: rgba(255,255,255,0.06);
         margin: 6px 14px;
     }
+    /* ── Language Switcher ──────────────────────────────── */
+    .lang-switcher { display: flex; justify-content: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.07); }
+    .lang-btn {
+        display: flex; align-items: center; gap: 6px;
+        text-decoration: none; padding: 5px 10px;
+        border-radius: 20px; background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+    .lang-btn img { border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); display: block; }
+    .lang-btn span { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.5px; }
+    /* ── Sub-menu indent items ──────────────────────────── */
+    .menu-sub-item { margin-left: 10px; }
+    /* ── Sidebar user-view ──────────────────────────────── */
+    .user-view {
+        padding: 12px 16px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .user-view .user-avatar {
+        width: 34px; height: 34px; flex-shrink: 0;
+        background: var(--primary-color, #4f46e5);
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 900; font-size: 0.8rem; color: white;
+    }
+    .user-view .user-info { flex: 1; min-width: 0; }
+    .user-view .user-name { font-size: 0.78rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-view .user-logout { font-size: 0.65rem; color: var(--text-secondary); text-decoration: none; font-weight: 600; }
+    .user-view .user-logout:hover { color: #ef4444; }
+    .user-view .user-settings { width: 28px; height: 28px; background: var(--border-color); border: 1px solid var(--border-color); border-radius: 7px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: background 0.2s; flex-shrink: 0; }
+    .user-view .user-settings:hover { opacity: 0.7; }
+    .user-view .user-settings i { font-size: 0.7rem; color: var(--text-secondary); }
 </style>
 
 @auth
@@ -126,28 +162,14 @@
             <x-application-logo style="max-width: 108px; height: auto;" />
         </a>
         {{-- Seletor de Idioma --}}
-        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06);">
-            <a href="#" title="Português (Brasil)"
-               style="display: flex; align-items: center; gap: 6px; text-decoration: none; padding: 5px 10px; border-radius: 20px; background: #f1f5f9; border: 1px solid #e2e8f0; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.06);"
-               onmouseover="this.style.background='#e2e8f0'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.12)'"
-               onmouseout="this.style.background='#f1f5f9'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'">
-                <img src="https://flagcdn.com/w40/br.png"
-                     srcset="https://flagcdn.com/w80/br.png 2x"
-                     width="22" height="15"
-                     alt="Brasil"
-                     style="border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); display: block;">
-                <span style="font-size: 0.65rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">PT</span>
+        <div class="lang-switcher">
+            <a href="#" title="Português (Brasil)" class="lang-btn">
+                <img src="https://flagcdn.com/w40/br.png" srcset="https://flagcdn.com/w80/br.png 2x" width="22" height="15" alt="Brasil">
+                <span>PT</span>
             </a>
-            <a href="#" title="Español"
-               style="display: flex; align-items: center; gap: 6px; text-decoration: none; padding: 5px 10px; border-radius: 20px; background: #f1f5f9; border: 1px solid #e2e8f0; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.06);"
-               onmouseover="this.style.background='#e2e8f0'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.12)'"
-               onmouseout="this.style.background='#f1f5f9'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'">
-                <img src="https://flagcdn.com/w40/es.png"
-                     srcset="https://flagcdn.com/w80/es.png 2x"
-                     width="22" height="15"
-                     alt="España"
-                     style="border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); display: block;">
-                <span style="font-size: 0.65rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">ES</span>
+            <a href="#" title="Español" class="lang-btn">
+                <img src="https://flagcdn.com/w40/es.png" srcset="https://flagcdn.com/w80/es.png 2x" width="22" height="15" alt="España">
+                <span>ES</span>
             </a>
         </div>
     </div>
@@ -158,31 +180,101 @@
             
             {{-- Academy Access removed from global and moved to specific roles below --}}            
             @if (auth()->user()->role == 'super_admin')
-                <!-- Menu Super Admin -->
-                <li><a href="{{ url('/admin') }}"><i class="fas fa-credit-card"></i> Visão Geral (SaaS)</a></li>
-                <li><a href="{{ url('/admin/tenants') }}"><i class="fas fa-building"></i> Organizações</a></li>
-                <li><a href="{{ route('admin.team.index') }}"><i class="fas fa-users-cog"></i> Time Vivensi</a></li>
-                <li><a href="{{ route('admin.chat') }}"><i class="fas fa-comments"></i> Chat Interno</a></li>
-                <li><a href="{{ route('admin.plans.index') }}"><i class="fas fa-tags"></i> Gestão de Planos</a></li>
-                <li><a href="{{ route('admin.email_logs') }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
-                <li><a href="{{ route('admin.blog.index') }}"><i class="fas fa-blog"></i> Blog CMS</a></li>
-                <li><a href="{{ route('admin.testimonials.index') }}"><i class="fas fa-quote-left"></i> Depoimentos</a></li>
-                <li><a href="{{ route('admin.pages.index') }}"><i class="fas fa-file-alt"></i> Páginas (CMS)</a></li>
-                <li><a href="{{ route('admin.academy.index') }}"><i class="fas fa-graduation-cap"></i> Vivensi Academy</a></li>
-                <li><a href="{{ route('whatsapp.broadcast.index') }}"><i class="fas fa-bullhorn"></i> Disparo em Massa (WA)</a></li>
-                <li><a href="{{ route('admin.health') }}"><i class="fas fa-server"></i> Saúde do Servidor</a></li>
-                <li><a href="{{ url('/horizon') }}" target="_blank"><i class="fas fa-satellite-dish"></i> Horizon (Filas)</a></li>
+                {{-- ═══ MENU SUPER ADMIN — Agrupado ═══ --}}
+                @php
+                    $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
+                    $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support');
+                    $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*');
+                    $sa_mkt_active   = request()->routeIs('admin.email_logs') || request()->routeIs('whatsapp.broadcast.index') || request()->is('prospecting*');
+                    $sa_infra_active = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->is('horizon*');
+                @endphp
 
-                <li><a href="{{ url('/admin/settings') }}"><i class="fas fa-cogs"></i> Configurações Globais</a></li>
-                <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
-                <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Ver como Aluno (Academy)</a></li>
-                <li><a href="{{ url('/admin/support') }}"><i class="fas fa-headset"></i> Gestão de Tickets</a></li>
+                {{-- Grupo: SaaS & Métricas --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $sa_saas_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-chart-line group-icon"></i> SaaS &amp; Métricas
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $sa_saas_active ? '300px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/admin') }}" class="{{ request()->is('admin') ? 'active' : '' }}"><i class="fas fa-gauge-high"></i> Visão Geral (SaaS)</a></li>
+                            <li><a href="{{ url('/admin/tenants') }}" class="{{ request()->is('admin/tenants*') ? 'active' : '' }}"><i class="fas fa-building"></i> Organizações</a></li>
+                            <li><a href="{{ route('admin.plans.index') }}" class="{{ request()->routeIs('admin.plans.index') ? 'active' : '' }}"><i class="fas fa-tags"></i> Gestão de Planos</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Equipe & Suporte --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $sa_team_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-users-cog group-icon"></i> Equipe &amp; Suporte
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $sa_team_active ? '250px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ route('admin.team.index') }}" class="{{ request()->routeIs('admin.team.index') ? 'active' : '' }}"><i class="fas fa-id-card"></i> Time Vivensi</a></li>
+                            <li><a href="{{ route('admin.chat') }}" class="{{ request()->routeIs('admin.chat') ? 'active' : '' }}"><i class="fas fa-comments"></i> Chat Interno</a></li>
+                            <li><a href="{{ url('/admin/support') }}" class="{{ request()->is('admin/support*') ? 'active' : '' }}"><i class="fas fa-headset"></i> Gestão de Tickets</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Conteúdo & CMS --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $sa_cms_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-layer-group group-icon"></i> Conteúdo &amp; CMS
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $sa_cms_active ? '350px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ route('admin.blog.index') }}" class="{{ request()->routeIs('admin.blog.index') ? 'active' : '' }}"><i class="fas fa-blog"></i> Blog CMS</a></li>
+                            <li><a href="{{ route('admin.testimonials.index') }}" class="{{ request()->routeIs('admin.testimonials.index') ? 'active' : '' }}"><i class="fas fa-quote-left"></i> Depoimentos</a></li>
+                            <li><a href="{{ route('admin.pages.index') }}" class="{{ request()->routeIs('admin.pages.index') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Páginas (CMS)</a></li>
+                            <li><a href="{{ route('admin.academy.index') }}" class="{{ request()->routeIs('admin.academy.index') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Academy (Admin)</a></li>
+                            <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-play-circle"></i> Ver como Aluno</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Comunicação & Marketing --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $sa_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-bullhorn group-icon"></i> Comunicação &amp; Marketing
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '250px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
+                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->routeIs('whatsapp.broadcast.index') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa (WA)</a></li>
+                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Infraestrutura --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $sa_infra_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-server group-icon"></i> Infraestrutura
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '250px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
+                            <li><a href="{{ url('/horizon') }}" target="_blank"><i class="fas fa-satellite-dish"></i> Horizon (Filas)</a></li>
+                            <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configurações Globais</a></li>
+                        </ul>
+                    </div>
+                </div>
             @elseif (auth()->user()->role == 'manager')
                 {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
                 @php
                     $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*');
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
-                    $mgr_mkt_active  = request()->is('manager/landing-pages*','marketing*','prospecting*','whatsapp*', 'raffles*');
+                    $mgr_mkt_active  = request()->is('manager/landing-pages*','marketing*','prospecting*','whatsapp*', 'raffles*','social*','banners*');
                     $mgr_ai_active   = request()->is('smart-analysis*');
                     $mgr_acad_active = request()->is('academy*');
                 @endphp
@@ -235,6 +327,8 @@
                             <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Modelos (Templates)</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
+                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            <li><a href="{{ route('banners.index') }}" class="{{ request()->is('banners*') ? 'active' : '' }}"><i class="fas fa-image" style="color:#8b5cf6;"></i> Criador de Banners</a></li>
                         </ul>
                     </div>
                 </div>
@@ -270,7 +364,7 @@
                 {{-- ═══ MENU TERCEIRO SETOR (ONG) — Agrupado ═══ --}}
                 @php
                     $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorships*');
-                    $ngo_mkt_active    = request()->is('ngo/landing-pages*','marketing*','prospecting*','whatsapp*', 'raffles*');
+                    $ngo_mkt_active    = request()->is('ngo/landing-pages*','marketing*','prospecting*','whatsapp*', 'raffles*','social*','banners*');
                     $ngo_fin_active    = request()->is('transactions*','ngo/budget*','ngo/reconciliation*');
                     $ngo_people_active = request()->is('ngo/team*','ngo/hr*','ngo/beneficiaries*');
                     $ngo_pat_active    = request()->is('ngo/inventory*','ngo/assets*');
@@ -312,6 +406,8 @@
                             <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Modelos (Templates)</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
+                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            <li><a href="{{ route('banners.index') }}" class="{{ request()->is('banners*') ? 'active' : '' }}"><i class="fas fa-image" style="color:#8b5cf6;"></i> Criador de Banners</a></li>
                         </ul>
                     </div>
                 </div>
@@ -345,8 +441,8 @@
                             <li><a href="{{ url('/ngo/team') }}" class="{{ request()->is('ngo/team*') ? 'active' : '' }}"><i class="fas fa-id-card"></i> Equipe da ONG</a></li>
                             <li><a href="{{ url('/ngo/hr') }}" class="{{ request()->is('ngo/hr*') ? 'active' : '' }}"><i class="fas fa-id-badge"></i> RH &amp; Voluntários</a></li>
                             <li><a href="{{ url('/ngo/beneficiaries') }}" class="{{ request()->is('ngo/beneficiaries') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> Beneficiários</a></li>
-                            <li style="margin-left:10px;"><a href="{{ url('/ngo/beneficiaries/insights') }}" class="{{ request()->is('ngo/beneficiaries/insights*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Indicadores Sociais</a></li>
-                            <li style="margin-left:10px;"><a href="{{ url('/ngo/beneficiaries/reports/annual') }}" class="{{ request()->is('ngo/beneficiaries/reports/annual*') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Relatório Anual</a></li>
+                            <li class="menu-sub-item"><a href="{{ url('/ngo/beneficiaries/insights') }}" class="{{ request()->is('ngo/beneficiaries/insights*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Indicadores Sociais</a></li>
+                            <li class="menu-sub-item"><a href="{{ url('/ngo/beneficiaries/reports/annual') }}" class="{{ request()->is('ngo/beneficiaries/reports/annual*') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Relatório Anual</a></li>
                         </ul>
                     </div>
                 </div>
@@ -425,12 +521,13 @@
     </nav>
     <div class="user-view">
         <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
-        <div>
-            <div style="font-weight: bold;">{{ auth()->user()->name ?? 'Usuário' }}</div>
-            <div style="font-size: 0.8rem; color: #888;">
-                <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();" style="color: inherit;">Sair</a>
-            </div>
+        <div class="user-info">
+            <div class="user-name">{{ auth()->user()->name ?? 'Usuário' }}</div>
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();" class="user-logout">Sair</a>
         </div>
+        <a href="{{ url('/profile') }}" class="user-settings" title="Configurações">
+            <i class="fas fa-cog"></i>
+        </a>
     </div>
 </aside>
 @endauth
@@ -457,7 +554,7 @@
 
             <!-- Linha vertical accent + texto do painel -->
             <div style="display: flex; align-items: center; gap: 16px;">
-                <div style="width: 3px; height: 32px; background: linear-gradient(180deg, #818cf8, #4f46e5); border-radius: 2px;"></div>
+                <div style="width: 3px; height: 32px; background: var(--primary-color, #4f46e5); border-radius: 2px;"></div>
                 <div>
                     @php $role = auth()->user()?->role; @endphp
                     <div style="font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px;">
@@ -587,7 +684,7 @@
                  style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 6px 12px 6px 6px; cursor: pointer;"
                  onmouseover="this.style.background='rgba(255,255,255,0.08)'"
                  onmouseout="this.style.background='rgba(255,255,255,0.04)'">
-                <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #4f46e5, #818cf8); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.75rem; color: white;">
+                <div style="width: 30px; height: 30px; background: var(--primary-color, #4f46e5); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.75rem; color: white;">
                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                 </div>
                 <div>

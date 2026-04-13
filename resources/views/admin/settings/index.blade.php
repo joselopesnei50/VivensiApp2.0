@@ -327,6 +327,31 @@
                                 Configure o Webhook no Z-API para: <strong>{{ url('/api/webhooks/zapi') }}</strong>
                             </div>
                         </div>
+
+                        {{-- Meta App Secret (Webhook Signature) --}}
+                        <div class="mt-4 pt-4 border-top">
+                            <label class="form-label fw-600 text-dark">
+                                Meta App Secret
+                                <span class="badge ms-2" style="background:#e7f3ff;color:#1877f2;">Cloud API</span>
+                                @if(!empty($meta_app_secret_configured))
+                                    <span class="badge bg-success ms-1">Configurado</span>
+                                @endif
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fab fa-facebook text-muted"></i>
+                                </span>
+                                <input type="password" name="meta_app_secret" value=""
+                                       class="form-control border-start-0 ps-0 form-control-lg"
+                                       placeholder="Cole aqui para definir / atualizar" autocomplete="off">
+                            </div>
+                            <div class="form-text">
+                                Segredo do App Meta (Facebook Developers) usado para verificar a assinatura
+                                HMAC-SHA256 dos webhooks recebidos. Encontre em:
+                                <strong>Facebook Developers → Seu App → Configurações → Básico → App Secret</strong>.
+                                <br>URL do webhook Meta: <code>{{ url('/api/whatsapp/webhook') }}</code>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -390,6 +415,179 @@
                 </div>
             </div>
             
+            <!-- META SOCIAL (Facebook Pages + Instagram) -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm overflow-hidden">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box rounded-3 p-3 me-3" style="background:#e7f3ff;">
+                                <i class="fab fa-facebook fa-lg" style="color:#1877f2;"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Meta Social — Facebook &amp; Instagram</h5>
+                                <p class="text-muted small mb-0">Credenciais do Meta App para agendamento e publicação de posts nas páginas dos clientes.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-600 text-dark">
+                                    App ID (Meta Developers)
+                                    @if(!empty($meta_social_app_id_configured))
+                                        <span class="badge bg-success ms-2">Configurado</span>
+                                    @endif
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fab fa-facebook text-muted"></i></span>
+                                    <input type="text" name="meta_social_app_id" value="{{ $meta_social_app_id }}"
+                                           class="form-control border-start-0 ps-0 form-control-lg"
+                                           placeholder="Ex: 123456789012345">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-600 text-dark">
+                                    App Secret (Meta Developers)
+                                    @if(!empty($meta_social_app_secret_configured))
+                                        <span class="badge bg-success ms-2">Configurado</span>
+                                    @endif
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
+                                    <input type="password" name="meta_social_app_secret" value=""
+                                           class="form-control border-start-0 ps-0 form-control-lg"
+                                           placeholder="Cole aqui para definir / atualizar" autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-light border border-info border-opacity-25 d-flex align-items-start mt-4 mb-0 p-3 rounded-3">
+                            <i class="fas fa-info-circle text-info me-3 mt-1 fs-5"></i>
+                            <div class="small text-muted">
+                                Crie um App em <strong>developers.facebook.com</strong> do tipo <em>Business</em>.
+                                Adicione os produtos <strong>Facebook Login</strong> e <strong>Instagram Graph API</strong>.
+                                URL de callback OAuth: <code>{{ url('/social/facebook/callback') }}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AGENDA DE REUNIÕES -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm overflow-hidden">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-indigo-50 text-indigo rounded-3 p-3 me-3">
+                                    <i class="fas fa-calendar-check fa-lg text-primary"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Agenda de Reuniões</h5>
+                                    <p class="text-muted small mb-0">Configure os horários disponíveis para agendamento público em <code>/agendar</code>.</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('booking.index') }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="fas fa-external-link-alt me-1"></i> Ver página pública
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+
+                            {{-- Dias disponíveis --}}
+                            <div class="col-12">
+                                <label class="form-label fw-600 text-dark">Dias disponíveis para agendamento</label>
+                                <div class="d-flex flex-wrap gap-2 mt-1">
+                                    @php
+                                        $activeDays = explode(',', $booking_days);
+                                        $dayLabels = [1=>'Segunda',2=>'Terça',3=>'Quarta',4=>'Quinta',5=>'Sexta',6=>'Sábado',0=>'Domingo'];
+                                    @endphp
+                                    @foreach($dayLabels as $num => $label)
+                                    <label class="booking-day-chip {{ in_array((string)$num, $activeDays) ? 'active' : '' }}">
+                                        <input type="checkbox" name="booking_days[]" value="{{ $num }}"
+                                               {{ in_array((string)$num, $activeDays) ? 'checked' : '' }}
+                                               class="d-none" onchange="this.closest('label').classList.toggle('active', this.checked)">
+                                        {{ $label }}
+                                    </label>
+                                    @endforeach
+                                </div>
+                                <div class="form-text">Dias em que a agenda estará aberta para novos agendamentos.</div>
+                            </div>
+
+                            {{-- Horário início/fim --}}
+                            <div class="col-md-3">
+                                <label class="form-label fw-600 text-dark">Horário de início</label>
+                                <input type="time" name="booking_start_time" value="{{ $booking_start_time }}" class="form-control form-control-lg">
+                                <div class="form-text">Primeiro slot do dia.</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-600 text-dark">Horário de término</label>
+                                <input type="time" name="booking_end_time" value="{{ $booking_end_time }}" class="form-control form-control-lg">
+                                <div class="form-text">Último slot começa antes deste horário.</div>
+                            </div>
+
+                            {{-- Duração do slot --}}
+                            <div class="col-md-3">
+                                <label class="form-label fw-600 text-dark">Duração de cada reunião</label>
+                                <select name="booking_slot_duration" class="form-select form-select-lg">
+                                    @foreach([15=>'15 minutos',30=>'30 minutos',45=>'45 minutos',60=>'1 hora'] as $min => $lbl)
+                                    <option value="{{ $min }}" {{ $booking_slot_duration == $min ? 'selected' : '' }}>{{ $lbl }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Antecedência mínima --}}
+                            <div class="col-md-3">
+                                <label class="form-label fw-600 text-dark">Antecedência mínima</label>
+                                <select name="booking_min_advance" class="form-select form-select-lg">
+                                    @foreach([0=>'Sem restrição',1=>'1 hora',2=>'2 horas',4=>'4 horas',24=>'1 dia',48=>'2 dias'] as $h => $lbl)
+                                    <option value="{{ $h }}" {{ $booking_min_advance == $h ? 'selected' : '' }}>{{ $lbl }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="form-text">Mínimo de horas de antecedência para agendar.</div>
+                            </div>
+
+                            {{-- Resumo de agendamentos --}}
+                            <div class="col-12">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <span class="fw-600 text-dark">Próximas reuniões</span>
+                                    <span class="badge bg-primary rounded-pill">{{ $booking_total }} confirmadas</span>
+                                </div>
+                                @if($booking_upcoming->isEmpty())
+                                    <p class="text-muted small mb-0">Nenhum agendamento confirmado no momento.</p>
+                                @else
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover align-middle mb-0" style="font-size:.85rem;">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>E-mail</th>
+                                                <th>Data</th>
+                                                <th>Horário</th>
+                                                <th>Observações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach($booking_upcoming as $bk)
+                                            <tr>
+                                                <td class="fw-600">{{ $bk->name }}</td>
+                                                <td class="text-muted">{{ $bk->email }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($bk->meeting_date)->locale('pt_BR')->isoFormat('ddd, D MMM') }}</td>
+                                                <td><span class="badge bg-light text-dark border">{{ substr($bk->meeting_time,0,5) }}</span></td>
+                                                <td class="text-muted" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $bk->notes ?: '—' }}</td>
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @endif
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Sticky Footer for Save -->
@@ -441,6 +639,22 @@
 
     .hover-scale { transition: transform 0.2s; }
     .hover-scale:hover { transform: translateY(-2px); }
+
+    /* Booking day chips */
+    .booking-day-chip {
+        display: inline-flex; align-items: center; justify-content: center;
+        padding: 7px 16px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 20px;
+        font-size: .82rem;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        transition: all .15s;
+        user-select: none;
+    }
+    .booking-day-chip:hover { border-color: #4f46e5; color: #4f46e5; background: #eff6ff; }
+    .booking-day-chip.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
 
     /* Custom Form Control to remove default borders mostly */
     .input-group-text { border-color: #e2e8f0; }

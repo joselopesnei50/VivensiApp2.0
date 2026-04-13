@@ -8,7 +8,6 @@ use App\Models\RaffleVisit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use OpenPix\PhpSdk\Client as OpenPixClient;
 use App\Mail\RaffleTicketReserved;
 use Illuminate\Support\Facades\Mail;
 
@@ -37,9 +36,9 @@ class PublicRaffleController extends Controller
         $raffle = Raffle::where('slug', $slug)->firstOrFail();
         $tenant = $raffle->tenant;
 
-        // Ensure NGO has at least one payment method configured
-        if (empty($tenant->pix_key) && empty($tenant->openpix_app_id)) {
-            return back()->with('error', 'Esta organização ainda não configurou os meios de pagamento (PIX). Por favor, entre em contato com o suporte da ONG.');
+        // Ensure NGO has PIX configured
+        if (empty($tenant->pix_key)) {
+            return back()->with('error', 'Esta organização ainda não configurou a chave PIX. Por favor, entre em contato com o suporte da ONG.');
         }
         
         $request->validate([
@@ -81,55 +80,11 @@ class PublicRaffleController extends Controller
                 \Illuminate\Support\Facades\Log::info("Números reservados com sucesso para: " . $request->buyer_email);
             } catch (\Exception $e) {}
 
-            // ── Multi-Tenant Payment Integration ─────────────────────────────
+            // ── Payment: Static PIX ───────────────────────────────────────────
             $tenant = $raffle->tenant;
             $totalAmount = count($selectedNumbers) * $raffle->ticket_price;
-            $correlationID = 'raffle_' . $raffle->id . '_' . Str::random(10);
-            
-            $pixPayload = '';
-            $qrCodeImage = null;
-            $paymentMethod = 'static';
 
-            // Check if Tenant has OpenPix configured (Automatic)
-            if (!empty($tenant->openpix_app_id)) {
-                try {
-                    $openpix = \OpenPix\PhpSdk\Client::create($tenant->openpix_app_id);
-                    $customer = [
-                        "name"  => $request->buyer_name,
-                        "email" => $request->buyer_email,
-                        "phone" => $request->buyer_phone,
-                    ];
-
-                    $chargeData = [
-                        "correlationID" => $correlationID,
-                        "value"         => (int) ($totalAmount * 100),
-                        "customer"      => $customer,
-                        "comment"       => "Rifa: " . $raffle->title,
-                    ];
-
-                    $result = $openpix->charges()->create($chargeData);
-                    $pixPayload = $result['charge']['brCode'] ?? '';
-                    $qrCodeImage = $result['charge']['qrCodeImage'] ?? null;
-                    $paymentMethod = $pixPayload ? 'dynamic' : 'static';
-                } catch (\Exception $e) {
-                    \Log::error("OpenPix Error (Tenant: {$tenant->id}): " . $e->getMessage());
-                }
-            }
-
-            // Fallback: Static PIX
-            if (empty($pixPayload)) {
-                $pixPayload = $this->generatePixPayload($raffle, $totalAmount);
-                $paymentMethod = 'static';
-            }
-
-            // Update tickets with correlationID (Done outside main transaction for safety)
-            try {
-                RaffleTicket::whereIn('id', $availableTickets->pluck('id'))->update([
-                    'transaction_id' => $correlationID
-                ]);
-            } catch (\Exception $e) {
-                \Log::error("Failed to update transaction_id: " . $e->getMessage());
-            }
+            $pixPayload = $this->generatePixPayload($raffle, $totalAmount);
 
             // Send Email (Fails Silently to not break Checkout)
             try {
@@ -139,14 +94,12 @@ class PublicRaffleController extends Controller
             }
 
             return view('public.raffles.checkout', [
-                'raffle' => $raffle,
-                'tenant' => $tenant,
-                'tickets' => $availableTickets,
-                'pixPayload' => $pixPayload,
-                'qrCodeImage' => $qrCodeImage,
-                'totalAmount' => $totalAmount,
-                'paymentMethod' => $paymentMethod,
-                'whatsappSupport' => $tenant->whatsapp_support ?? $tenant->support_phone ?? ''
+                'raffle'          => $raffle,
+                'tenant'          => $tenant,
+                'tickets'         => $availableTickets,
+                'pixPayload'      => $pixPayload,
+                'totalAmount'     => $totalAmount,
+                'whatsappSupport' => $tenant->whatsapp_support ?? $tenant->support_phone ?? '',
             ]);
 
         } catch (\Exception $e) {

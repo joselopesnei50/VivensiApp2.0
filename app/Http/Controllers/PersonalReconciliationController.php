@@ -23,7 +23,7 @@ class PersonalReconciliationController extends Controller
         ]);
 
         $file = $request->file('ofx_file');
-        $path = $file->storeAs('temp', 'upload_personal.ofx');
+        $path = $file->storeAs('temp', 'upload_personal_' . auth()->id() . '_' . uniqid() . '.ofx');
         
         try {
             $parsedTransactions = $parser->parse(storage_path('app/' . $path));

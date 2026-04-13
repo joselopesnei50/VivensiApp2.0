@@ -6,8 +6,10 @@
     <title>Pagamento PIX | {{ $raffle->title }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    {{-- QR Code nativo: geração 100% client-side sem dependência de API externa --}}
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -44,13 +46,22 @@
             text-align: center;
         }
 
-        .qr-code-img {
+        .qr-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .qr-wrapper img,
+        .qr-wrapper canvas {
             max-width: 200px;
-            margin: 0 auto 20px;
-            padding: 15px;
+            width: 200px;
+            height: 200px;
+            padding: 12px;
             background: white;
             border-radius: 20px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
         }
 
         .pix-code-box {
@@ -78,12 +89,14 @@
             padding: 5px 15px;
             font-size: 12px;
             font-weight: bold;
+            cursor: pointer;
             box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
         }
 
         .step-badge {
             width: 32px;
             height: 32px;
+            min-width: 32px;
             background: var(--primary);
             color: white;
             border-radius: 50%;
@@ -123,55 +136,50 @@
 </head>
 <body>
 
-    <div class="checkout-container">
-        <div class="text-center mb-4">
-            <h2 class="fw-800 mb-2">Quase lá! 🚀</h2>
-            <p class="text-muted">Sua reserva para {{ $tickets->count() }} {{ $tickets->count() > 1 ? 'números' : 'número' }} foi realizada.</p>
-            <div class="d-flex justify-content-center gap-2 flex-wrap">
-                @foreach($tickets as $ticket)
-                    <span class="badge bg-primary rounded-pill px-3 py-2">#{{ str_pad($ticket->number, 2, '0', STR_PAD_LEFT) }}</span>
-                @endforeach
+<div class="checkout-container">
+    <div class="text-center mb-4">
+        <h2 class="fw-800 mb-2">Quase lá! 🚀</h2>
+        <p class="text-muted">Sua reserva para {{ $tickets->count() }} {{ $tickets->count() > 1 ? 'números' : 'número' }} foi realizada.</p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            @foreach($tickets as $ticket)
+                <span class="badge bg-primary rounded-pill px-3 py-2">#{{ str_pad($ticket->number, 2, '0', STR_PAD_LEFT) }}</span>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="checkout-card">
+        <h4 class="fw-800 mb-4">Pagamento PIX</h4>
+
+        {{-- QR Code gerado client-side a partir do payload PIX --}}
+        <div class="qr-wrapper">
+            <canvas id="qr-native"></canvas>
+        </div>
+
+        <h3 class="fw-800 text-primary mb-4">Total: R$ {{ number_format($totalAmount, 2, ',', '.') }}</h3>
+
+        <div class="mb-5 text-start">
+            <div class="d-flex align-items-center mb-3">
+                <span class="step-badge">1</span>
+                <span class="fw-bold">Copie o código PIX abaixo</span>
+            </div>
+
+            <div class="pix-code-box">
+                <button class="btn-copy" onclick="copyPix()">COPIAR CÓDIGO</button>
+                <span id="pixPayload" style="font-size: 11px; opacity: 0.8;">{{ $pixPayload }}</span>
             </div>
         </div>
 
-        <div class="checkout-card">
-            <h4 class="fw-800 mb-4">{{ $paymentMethod === 'dynamic' ? 'Pagamento Automático' : 'Pagamento Manual' }}</h4>
-            
-            @if($qrCodeImage)
-                <img src="{{ $qrCodeImage }}" class="qr-code-img mb-4" alt="QR Code PIX">
-            @else
-                <!-- Fallback: QR Code placeholder or just instructions for static -->
-                <div class="mb-4 p-4 bg-light rounded-3">
-                    <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
-                    <p class="small text-muted mb-0">Escaneie ou copie o código abaixo para pagar.</p>
-                </div>
-            @endif
-
-            <h3 class="fw-800 text-primary mb-4">Total: R$ {{ number_format($totalAmount, 2, ',', '.') }}</h3>
-            
-            <div class="mb-5 text-start">
-                <div class="d-flex align-items-center mb-3">
-                    <span class="step-badge">1</span>
-                    <span class="fw-bold">Copie o código PIX abaixo</span>
-                </div>
-                
-                <div class="pix-code-box">
-                    <button class="btn-copy" onclick="copyPix()">COPIAR CÓDIGO</button>
-                    <span id="pixPayload" style="font-size: 11px; opacity: 0.8;">{{ $pixPayload }}</span>
-                </div>
-            </div>
-
-            @if($paymentMethod === 'static' && !empty($whatsappSupport))
+        @if(!empty($whatsappSupport))
             <div class="mb-5 text-start">
                 <div class="d-flex align-items-center mb-3">
                     <span class="step-badge">2</span>
                     <span class="fw-bold">Envie o comprovante pelo WhatsApp</span>
                 </div>
-                
+
                 @php
                     $numbersStr = $tickets->map(fn($t) => '#'.str_pad($t->number, 2, '0', STR_PAD_LEFT))->implode(', ');
-                    $waMessage = urlencode("Olá! Acabei de pagar a rifa: {$raffle->title}\nBilhetes: {$numbersStr}\nTotal: R$ " . number_format($totalAmount, 2, ',', '.') . "\nSegue o comprovante em anexo.");
-                    $waLink = "https://wa.me/" . preg_replace('/\D/', '', $whatsappSupport) . "?text=" . $waMessage;
+                    $waMessage  = urlencode("Olá! Acabei de pagar a rifa: {$raffle->title}\nBilhetes: {$numbersStr}\nTotal: R$ " . number_format($totalAmount, 2, ',', '.') . "\nSegue o comprovante em anexo.");
+                    $waLink     = "https://wa.me/" . preg_replace('/\D/', '', $whatsappSupport) . "?text=" . $waMessage;
                 @endphp
 
                 <a href="{{ $waLink }}" target="_blank" class="btn btn-success w-100 py-3 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center">
@@ -181,57 +189,61 @@
                     Clique acima para falar com <strong>{{ $tenant->name }}</strong>
                 </div>
             </div>
-            @else
-            <div class="mb-5 text-start">
-                <div class="d-flex align-items-center mb-3">
-                    <span class="step-badge">2</span>
-                    <span class="fw-bold">Aguarde a confirmação</span>
-                </div>
-                
-                <div class="info-alert">
-                    <i class="bi bi-info-circle-fill me-2 text-primary"></i>
-                    Nosso sistema identificará o pagamento automaticamente. Assim que confirmado, você receberá um e-mail.
-                </div>
-            </div>
-            @endif
+        @endif
 
-            <a href="{{ route('public.raffle.show', $raffle->slug) }}" class="btn btn-primary-gradient w-100 shadow-lg">
-                VOLTAR PARA A RIFA
-            </a>
-            
-            <p class="mt-4 text-muted small">
-                Problemas com o pagamento? <br>
-                <a href="https://wa.me/{{ preg_replace('/\D/', '', $whatsappSupport) }}" class="text-primary text-decoration-none fw-bold">Suporte {{ $tenant->name }}</a>
-            </p>
-        </div>
+        <a href="{{ route('public.raffle.show', $raffle->slug) }}" class="btn btn-primary-gradient w-100 shadow-lg">
+            VOLTAR PARA A RIFA
+        </a>
+
+        <p class="mt-4 text-muted small">
+            Problemas com o pagamento?<br>
+            <a href="https://wa.me/{{ preg_replace('/\D/', '', $whatsappSupport) }}" class="text-primary text-decoration-none fw-bold">Suporte {{ $tenant->name }}</a>
+        </p>
     </div>
+</div>
 
-    <script>
+<script>
+    // ── QR Code Nativo (PIX Estático) ─────────────────────────────────────────
+    // Só executa quando não há imagem do OpenPix (modo estático)
+    (function () {
+        const canvas = document.getElementById('qr-native');
+        if (!canvas) return; // OpenPix dinâmico: não precisa gerar
+
+        const pixPayload = document.getElementById('pixPayload').innerText.trim();
+        if (!pixPayload) return;
+
+        QRCode.toCanvas(canvas, pixPayload, {
+            width: 200,
+            margin: 1,
+            color: { dark: '#1e293b', light: '#ffffff' },
+            errorCorrectionLevel: 'M',
+        }, function (err) {
+            if (err) console.error('Erro ao gerar QR Code:', err);
+        });
+    })();
+
+    // ── Copiar código PIX ─────────────────────────────────────────────────────
     function copyPix() {
-        var copyText = document.getElementById("pixPayload").innerText;
-        navigator.clipboard.writeText(copyText).then(() => {
-            alert("Código PIX copiado!");
+        const pixText = document.getElementById('pixPayload').innerText.trim();
+        navigator.clipboard.writeText(pixText).then(() => {
+            Toastify({
+                text: '✅ Código PIX copiado!',
+                duration: 3000,
+                gravity: 'top',
+                position: 'center',
+                style: { background: 'linear-gradient(to right, #4361ee, #4cc9f0)' },
+            }).showToast();
+        }).catch(() => {
+            // Fallback para browsers sem clipboard API (ex: iOS antigo)
+            const el = document.createElement('textarea');
+            el.value = pixText;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert('Código PIX copiado!');
         });
     }
-    </script>
-</body>
-</html>
-
-    <script>
-        function copyPix() {
-            const pixText = document.getElementById("pixPayload").innerText;
-            navigator.clipboard.writeText(pixText);
-            
-            Toastify({
-                text: "Código PIX copiado!",
-                duration: 3000,
-                gravity: "top",
-                position: "center",
-                style: {
-                    background: "linear-gradient(to right, #4361ee, #4cc9f0)",
-                }
-            }).showToast();
-        }
-    </script>
+</script>
 </body>
 </html>

@@ -24,6 +24,7 @@ class AdminSettingsController extends Controller
         $zapi_configured = (bool) SystemSetting::getValue('zapi_instance_id') && (bool) SystemSetting::getValue('zapi_token');
         $serper_configured = (bool) SystemSetting::getValue('serper_api_key');
         $google_maps_configured = (bool) SystemSetting::getValue('google_maps_api_key');
+        $meta_app_secret_configured = (bool) SystemSetting::getValue('meta_app_secret');
         $pusher_configured = (bool) SystemSetting::getValue('pusher_app_id') && (bool) SystemSetting::getValue('pusher_app_key');
         $openpix_configured = (bool) SystemSetting::getValue('openpix_app_id');
 
@@ -52,6 +53,29 @@ class AdminSettingsController extends Controller
 
         $openpix_app_id = SystemSetting::getValue('openpix_app_id');
 
+        // Meta Social (Facebook/Instagram) — IDs only, secrets never shown
+        $meta_social_app_id_configured  = (bool) SystemSetting::getValue('meta_social_app_id');
+        $meta_social_app_secret_configured = (bool) SystemSetting::getValue('meta_social_app_secret');
+        $meta_social_app_id = SystemSetting::getValue('meta_social_app_id'); // App ID is not a secret
+
+        // Booking / agenda settings — safe fallbacks se a tabela ainda não existir
+        $booking_days          = SystemSetting::getValue('booking_days', '1,2,3,4,5');
+        $booking_start_time    = SystemSetting::getValue('booking_start_time', '09:00');
+        $booking_end_time      = SystemSetting::getValue('booking_end_time', '17:00');
+        $booking_slot_duration = SystemSetting::getValue('booking_slot_duration', '30');
+        $booking_min_advance   = SystemSetting::getValue('booking_min_advance', '1');
+
+        try {
+            $booking_total    = \App\Models\MeetingBooking::where('status', 'confirmed')->count();
+            $booking_upcoming = \App\Models\MeetingBooking::where('status', 'confirmed')
+                ->where('meeting_date', '>=', today())
+                ->orderBy('meeting_date')->orderBy('meeting_time')
+                ->limit(5)->get();
+        } catch (\Exception $e) {
+            $booking_total    = 0;
+            $booking_upcoming = collect();
+        }
+
         return view('admin.settings.index', compact(
             'deepseek_key',
             'gemini_key',
@@ -66,6 +90,7 @@ class AdminSettingsController extends Controller
             'serper_configured',
             'google_maps_configured',
             'pusher_configured',
+            'meta_app_secret_configured',
             'pagseguro_email',
             'pagseguro_env',
             'email_from',
@@ -82,7 +107,17 @@ class AdminSettingsController extends Controller
             'pusher_port',
             'pusher_scheme',
             'openpix_app_id',
-            'openpix_configured'
+            'openpix_configured',
+            'booking_days',
+            'booking_start_time',
+            'booking_end_time',
+            'booking_slot_duration',
+            'booking_min_advance',
+            'booking_total',
+            'booking_upcoming',
+            'meta_social_app_id',
+            'meta_social_app_id_configured',
+            'meta_social_app_secret_configured'
         ));
 
     }
@@ -94,6 +129,14 @@ class AdminSettingsController extends Controller
         }
 
         $validated = $request->validate([
+            // Booking / agenda
+            'booking_days'          => 'nullable|array',
+            'booking_days.*'        => 'integer|between:0,6',
+            'booking_start_time'    => 'nullable|date_format:H:i',
+            'booking_end_time'      => 'nullable|date_format:H:i',
+            'booking_slot_duration' => 'nullable|integer|in:15,30,45,60',
+            'booking_min_advance'   => 'nullable|integer|in:0,1,2,4,24,48',
+            // existing
             'deepseek_api_key' => 'nullable|string|max:5000',
             'gemini_api_key' => 'nullable|string|max:5000',
             'unsplash_access_key' => 'nullable|string|max:5000',
@@ -117,7 +160,10 @@ class AdminSettingsController extends Controller
             'pusher_host' => 'nullable|string|max:255',
             'pusher_port' => 'nullable|string|max:10',
             'pusher_scheme' => 'nullable|in:http,https',
-            'openpix_app_id' => 'nullable|string|max:5000',
+            'openpix_app_id'         => 'nullable|string|max:5000',
+            'meta_app_secret'        => 'nullable|string|max:5000',
+            'meta_social_app_id'     => 'nullable|string|max:255',
+            'meta_social_app_secret' => 'nullable|string|max:5000',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -129,10 +175,12 @@ class AdminSettingsController extends Controller
             'pagseguro_token' => 'api',
             'zapi_token' => 'whatsapp',
             'zapi_client_token' => 'whatsapp',
-            'serper_api_key' => 'api',
-            'google_maps_api_key' => 'api',
-            'pusher_app_secret' => 'broadcasting',
-            'openpix_app_id' => 'api',
+            'serper_api_key'     => 'api',
+            'google_maps_api_key'=> 'api',
+            'pusher_app_secret'  => 'broadcasting',
+            'openpix_app_id'     => 'api',
+            'meta_app_secret'        => 'whatsapp',
+            'meta_social_app_secret' => 'social',
         ] as $key => $group) {
             $val = trim((string) ($validated[$key] ?? ''));
             if ($val !== '') {
@@ -171,6 +219,28 @@ class AdminSettingsController extends Controller
             }
         }
 
+
+        // Meta Social (Facebook/Instagram)
+        if (!empty($validated['meta_social_app_id'])) {
+            SystemSetting::setValue('meta_social_app_id', $validated['meta_social_app_id'], 'social');
+        }
+
+        // Booking / agenda settings
+        $days = array_map('intval', $validated['booking_days'] ?? []);
+        SystemSetting::setValue('booking_days', implode(',', $days), 'booking');
+
+        if (!empty($validated['booking_start_time'])) {
+            SystemSetting::setValue('booking_start_time', $validated['booking_start_time'], 'booking');
+        }
+        if (!empty($validated['booking_end_time'])) {
+            SystemSetting::setValue('booking_end_time', $validated['booking_end_time'], 'booking');
+        }
+        if (isset($validated['booking_slot_duration'])) {
+            SystemSetting::setValue('booking_slot_duration', (string)$validated['booking_slot_duration'], 'booking');
+        }
+        if (isset($validated['booking_min_advance'])) {
+            SystemSetting::setValue('booking_min_advance', (string)$validated['booking_min_advance'], 'booking');
+        }
 
         return redirect()->back()->with('success', 'Configurações de API atualizadas com sucesso!');
     }

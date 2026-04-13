@@ -23,61 +23,282 @@
 html{scroll-behavior:smooth}
 body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);overflow-x:hidden;line-height:1.6}
 
-/* NAV */
-.nav{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;justify-content:space-between;align-items:center;padding:16px 6%;background:rgba(8,14,26,.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:all .3s}
-.nav-logo img{height:34px}
-.nav-links{display:flex;gap:28px;list-style:none}
-.nav-links a{color:rgba(255,255,255,.6);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .3s}
-.nav-links a:hover{color:white}
-.nav-ctas{display:flex;gap:12px}
-.btn-ghost{color:rgba(255,255,255,.7);text-decoration:none;font-size:.875rem;font-weight:600;padding:9px 20px;border-radius:50px;border:1px solid var(--border);transition:all .3s}
-.btn-ghost:hover{background:var(--glass);color:white;border-color:rgba(255,255,255,.2)}
-.btn-nav{background:linear-gradient(135deg,var(--blue),var(--violet));color:white;text-decoration:none;font-size:.875rem;font-weight:700;padding:10px 22px;border-radius:50px;box-shadow:0 4px 20px rgba(59,108,246,.35);transition:all .3s}
-.btn-nav:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(59,108,246,.5)}
-/* Mobile */
-.mobile-btn{display:none;background:none;border:none;color:white;font-size:1.4rem;cursor:pointer}
-@media(max-width:768px){
-    .nav-links,.nav-ctas{display:none}
-    .mobile-btn{display:block}
-    .mobile-menu{display:none;flex-direction:column;gap:16px;position:fixed;top:70px;left:0;right:0;background:rgba(8,14,26,.98);padding:24px 6%;border-bottom:1px solid var(--border)}
-    .mobile-menu.open{display:flex}
-    .mobile-menu a{color:rgba(255,255,255,.75);text-decoration:none;font-size:1rem;font-weight:600;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+/* ══ ANNOUNCE BAR ══════════════════════════════════════════════════ */
+.announce-bar{
+    position:fixed;top:0;left:0;right:0;z-index:1000;
+    background:#1a1a1a;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    display:flex;align-items:center;justify-content:center;
+    padding:9px 24px;gap:10px;
+    font-size:.75rem;font-weight:600;color:rgba(255,255,255,.55);
+    letter-spacing:.01em;
+    transition:transform .3s ease;
+}
+.announce-bar a{color:rgba(255,255,255,.85);text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:color .2s}
+.announce-bar a:hover{color:#fff}
+.announce-pill{
+    background:linear-gradient(135deg,rgba(79,110,247,.25),rgba(123,92,240,.2));
+    border:1px solid rgba(79,110,247,.35);
+    color:#93a8ff;
+    font-size:.68rem;font-weight:800;
+    padding:2px 9px;border-radius:100px;
+    letter-spacing:.06em;text-transform:uppercase;
+    white-space:nowrap;
 }
 
-/* ─── HERO ─── */
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:120px 6% 80px;
-    background:radial-gradient(ellipse 100% 80% at 50% 0%, rgba(59,108,246,.2) 0%, transparent 55%),
-               radial-gradient(ellipse 60% 50% at 80% 80%, rgba(124,58,237,.12) 0%, transparent 50%),
-               var(--ink)}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,108,246,.12);border:1px solid rgba(59,108,246,.3);color:var(--blue2);font-size:.78rem;font-weight:700;padding:6px 16px;border-radius:100px;margin-bottom:24px;letter-spacing:.06em;text-transform:uppercase;animation:fadeDown .6s ease forwards}
-.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--blue2);animation:pulseBlue 2s infinite}
-.hero-title{font-size:clamp(2.8rem,6vw,5.2rem);font-weight:900;line-height:1.0;letter-spacing:-.04em;text-align:center;margin-bottom:24px;animation:fadeUp .8s ease .15s both}
-.hero-title .g1{background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.7) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-title .g2{background:linear-gradient(135deg,var(--blue2),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:1.15rem;color:rgba(255,255,255,.55);text-align:center;max-width:580px;margin:0 auto 40px;line-height:1.7;animation:fadeUp .8s ease .3s both}
-.hero-ctas{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:72px;animation:fadeUp .8s ease .45s both}
-.btn-hero{background:linear-gradient(135deg,var(--blue),var(--violet));color:white;text-decoration:none;font-weight:700;font-size:1.05rem;padding:16px 40px;border-radius:60px;box-shadow:0 8px 32px rgba(59,108,246,.4);transition:all .3s;display:inline-flex;align-items:center;gap:10px}
-.btn-hero:hover{transform:translateY(-3px);box-shadow:0 14px 42px rgba(59,108,246,.6)}
-.btn-hero-outline{color:rgba(255,255,255,.8);text-decoration:none;font-weight:600;font-size:1.05rem;padding:16px 32px;border-radius:60px;border:1.5px solid rgba(255,255,255,.18);transition:all .3s;display:inline-flex;align-items:center;gap:10px}
-.btn-hero-outline:hover{background:rgba(255,255,255,.07);color:white}
+/* ══ NAV ══════════════════════════════════════════════════════════ */
+.nav{
+    position:fixed;top:37px;left:0;right:0;z-index:999;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 5%;height:64px;
+    background:rgba(9,9,9,.82);
+    backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid rgba(255,255,255,.06);
+    transition:all .3s;
+}
+.nav.scrolled{top:0;background:rgba(9,9,9,.95);}
+.nav-logo img{height:32px;display:block}
+.nav-links{display:flex;gap:4px;list-style:none;align-items:center}
+.nav-links a{
+    color:rgba(255,255,255,.5);text-decoration:none;
+    font-size:.83rem;font-weight:500;
+    padding:7px 13px;border-radius:8px;
+    transition:all .2s;white-space:nowrap;
+}
+.nav-links a:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.06)}
+.nav-links .nav-active{color:rgba(255,255,255,.9)}
+.nav-sep{width:1px;height:18px;background:rgba(255,255,255,.08);margin:0 4px}
+.nav-ctas{display:flex;gap:8px;align-items:center}
+.btn-ghost{
+    color:rgba(255,255,255,.6);text-decoration:none;
+    font-size:.83rem;font-weight:600;
+    padding:8px 18px;border-radius:8px;
+    border:1px solid rgba(255,255,255,.1);
+    transition:all .2s;background:transparent;
+}
+.btn-ghost:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18)}
+.btn-nav{
+    background:#ffffff;color:#0a0a0a;
+    text-decoration:none;font-size:.83rem;font-weight:700;
+    padding:9px 20px;border-radius:8px;
+    transition:all .2s;white-space:nowrap;
+    display:inline-flex;align-items:center;gap:7px;
+}
+.btn-nav:hover{background:#e8e8e8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,255,255,.15)}
+/* Mobile */
+.mobile-btn{display:none;background:none;border:none;color:rgba(255,255,255,.7);font-size:1.2rem;cursor:pointer;padding:6px}
+@media(max-width:860px){
+    .nav-links,.nav-ctas,.nav-sep{display:none}
+    .mobile-btn{display:block}
+    .announce-bar span:not(.announce-pill){display:none}
+    .mobile-menu{
+        display:none;flex-direction:column;gap:2px;
+        position:fixed;top:100px;left:0;right:0;
+        background:#111111;
+        padding:16px 20px 24px;
+        border-bottom:1px solid rgba(255,255,255,.07);
+        border-top:1px solid rgba(255,255,255,.07);
+        z-index:998;
+    }
+    .mobile-menu.open{display:flex}
+    .mobile-menu a{
+        color:rgba(255,255,255,.65);text-decoration:none;
+        font-size:.95rem;font-weight:500;
+        padding:12px 14px;border-radius:10px;
+        transition:all .2s;
+    }
+    .mobile-menu a:hover{background:rgba(255,255,255,.06);color:white}
+    .mobile-menu .m-cta{
+        margin-top:8px;background:#ffffff;color:#0a0a0a;
+        font-weight:700;border-radius:10px;text-align:center;
+    }
+    .mobile-menu .m-cta:hover{background:#e8e8e8}
+}
 
-/* MAP SECTION */
-.map-section{position:relative;width:100%;max-width:1100px;margin:0 auto;animation:fadeUp .8s ease .6s both}
-.map-wrap{position:relative}
-#brazil-svg{width:100%;max-width:780px;display:block;margin:0 auto}
-/* Dot grid representing data coverage */
-.map-dot{position:absolute;border-radius:50%;animation:mapPulse 2.5s ease-in-out infinite}
-.map-dot::after{content:'';position:absolute;inset:-5px;border-radius:50%;animation:mapRipple 2.5s ease-out infinite}
-/* Floating info cards */
-.fcard{position:absolute;background:rgba(13,20,40,.85);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 18px;min-width:160px;white-space:nowrap}
-.fcard-label{font-size:.68rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
-.fcard-value{font-size:1.15rem;font-weight:800;color:white}
-.fcard-sub{font-size:.72rem;color:var(--teal);margin-top:3px}
-.fc-a{top:8%;left:2%;animation:floatY 4s ease-in-out infinite}
-.fc-b{top:12%;right:2%;animation:floatY 5s ease-in-out infinite .6s}
-.fc-c{bottom:15%;left:5%;animation:floatY 3.8s ease-in-out infinite 1.2s}
-.fc-d{bottom:8%;right:3%;animation:floatY 4.5s ease-in-out infinite .3s}
-.fc-e{top:45%;right:-2%;animation:floatY 4.2s ease-in-out infinite .9s}
+/* ══ HERO ══════════════════════════════════════════════════════════ */
+.hero{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    overflow:hidden;
+    padding:140px 5% 80px;
+    background:#090909;
+}
+/* Grid texture */
+.hero::before{
+    content:'';position:absolute;inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+    background-size:72px 72px;
+    pointer-events:none;
+}
+/* Radial glow */
+.hero::after{
+    content:'';position:absolute;
+    width:900px;height:900px;
+    top:-200px;right:-100px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(79,110,247,.11) 0%,rgba(123,92,240,.06) 40%,transparent 70%);
+    filter:blur(60px);
+    pointer-events:none;
+}
+
+/* Layout */
+.hero-inner{
+    position:relative;z-index:2;
+    max-width:1280px;margin:0 auto;width:100%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:64px;
+    align-items:center;
+}
+
+/* LEFT */
+.hero-left{}
+.hero-announce{
+    display:inline-flex;align-items:center;gap:10px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:100px;
+    padding:6px 14px 6px 6px;
+    margin-bottom:32px;
+    font-size:.75rem;font-weight:600;color:rgba(255,255,255,.55);
+    text-decoration:none;
+    transition:border-color .2s;
+    width:fit-content;
+}
+.hero-announce:hover{border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.75)}
+.ha-tag{
+    background:linear-gradient(135deg,#4F6EF7,#7B5CF0);
+    color:#fff;font-size:.65rem;font-weight:800;
+    padding:3px 10px;border-radius:100px;
+    letter-spacing:.06em;text-transform:uppercase;
+    white-space:nowrap;
+}
+.ha-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulseDot 2s infinite}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+
+.hero-title{
+    font-size:clamp(3rem,5.5vw,5rem);
+    font-weight:900;
+    line-height:1.02;
+    letter-spacing:-.04em;
+    margin-bottom:22px;
+    animation:fadeUp .7s ease .1s both;
+}
+.ht-white{color:#ffffff}
+.ht-dim{color:rgba(255,255,255,.25)}
+.ht-grad{color:#6B8BFF}
+
+.hero-sub{
+    font-size:1.05rem;color:rgba(255,255,255,.45);
+    max-width:480px;line-height:1.75;
+    margin-bottom:36px;
+    animation:fadeUp .7s ease .2s both;
+}
+
+.hero-ctas{
+    display:flex;gap:12px;flex-wrap:wrap;
+    margin-bottom:52px;
+    animation:fadeUp .7s ease .3s both;
+}
+.btn-hero{
+    display:inline-flex;align-items:center;gap:8px;
+    background:#ffffff;color:#0a0a0a;
+    text-decoration:none;font-weight:700;font-size:.92rem;
+    padding:13px 28px;border-radius:10px;
+    transition:all .2s;
+}
+.btn-hero:hover{background:#e8e8e8;transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,255,255,.12)}
+.btn-hero-outline{
+    display:inline-flex;align-items:center;gap:8px;
+    color:rgba(255,255,255,.6);text-decoration:none;
+    font-weight:600;font-size:.92rem;
+    padding:13px 24px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.12);
+    transition:all .2s;background:transparent;
+}
+.btn-hero-outline:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.22)}
+
+/* Social proof row */
+.hero-proof{
+    display:flex;align-items:center;gap:16px;
+    animation:fadeUp .7s ease .4s both;
+}
+.hp-avatars{display:flex}
+.hp-av{
+    width:32px;height:32px;border-radius:50%;
+    background:linear-gradient(135deg,#4F6EF7,#7B5CF0);
+    border:2px solid #090909;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.62rem;font-weight:800;color:#fff;
+    margin-left:-10px;flex-shrink:0;
+}
+.hp-av:first-child{margin-left:0}
+.hp-av.av2{background:linear-gradient(135deg,#7B5CF0,#EC4899)}
+.hp-av.av3{background:linear-gradient(135deg,#06b6d4,#3B82F6)}
+.hp-av.av4{background:linear-gradient(135deg,#F59E0B,#EF4444)}
+.hp-text{font-size:.8rem;color:rgba(255,255,255,.4);line-height:1.4}
+.hp-text strong{color:rgba(255,255,255,.8);font-weight:700}
+.hp-sep{width:1px;height:28px;background:rgba(255,255,255,.08)}
+.hp-rating{display:flex;flex-direction:column;gap:2px}
+.hp-stars{display:flex;gap:2px;color:#F59E0B;font-size:.65rem}
+.hp-rlabel{font-size:.72rem;color:rgba(255,255,255,.35)}
+
+/* RIGHT — Brazil Map */
+.hero-right{position:relative;animation:fadeUp .7s ease .25s both;display:flex;align-items:center;justify-content:center}
+.hero-map-wrap{position:relative;width:100%;max-width:460px}
+.brazil-svg{width:100%;display:block;filter:drop-shadow(0 0 60px rgba(79,110,247,.18));animation:mapFadeIn .9s ease .5s both}
+@keyframes mapFadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+/* Brazil shape */
+.br-fill{fill:#0d1525;stroke:rgba(79,110,247,.48);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.br-state-line{fill:none;stroke:rgba(79,110,247,.11);stroke-width:.75;stroke-linecap:round}
+/* City dots */
+.city-dot{animation:cdPop 2.5s ease-in-out infinite}
+@keyframes cdPop{0%,100%{opacity:1}50%{opacity:.4}}
+.city-ring{fill:none;stroke-width:1.4;animation:crExpand 2.5s ease-out infinite}
+@keyframes crExpand{0%{r:7;opacity:.75}100%{r:24;opacity:0}}
+/* Connection lines */
+.conn-line{fill:none;stroke-width:.9;stroke-dasharray:3 4;animation:clFlow 2.8s linear infinite}
+@keyframes clFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-14}}
+/* Floating map badges */
+.map-badge{
+    position:absolute;background:rgba(10,10,15,.94);
+    border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px);
+    border-radius:12px;padding:10px 16px;white-space:nowrap;
+    z-index:3;box-shadow:0 8px 32px rgba(0,0,0,.45)
+}
+.mb-1{top:5%;right:-4%;animation:floatBadge 4s ease-in-out infinite}
+.mb-2{top:40%;left:-10%;animation:floatBadge 4.5s ease-in-out infinite .7s}
+.mb-3{bottom:8%;right:-2%;animation:floatBadge 3.8s ease-in-out infinite 1.3s}
+.mb-val{font-size:1rem;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1}
+.mb-lbl{font-size:.6rem;color:rgba(255,255,255,.35);font-weight:500;margin-top:3px}
+.mb-live{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.mb-ldot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulseDot 1.5s infinite;flex-shrink:0}
+@keyframes floatBadge{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* Hero responsive */
+@media(max-width:1100px){
+    .hero-inner{gap:40px}
+    .hero-title{font-size:clamp(2.6rem,5vw,4rem)}
+}
+@media(max-width:860px){
+    .hero-inner{grid-template-columns:1fr;gap:56px}
+    .hero-title{font-size:clamp(2.6rem,8vw,3.8rem)}
+    .hero-sub{max-width:100%}
+    .map-badge{display:none}
+    .hero-right{max-width:440px;margin:0 auto;width:100%}
+}
+@media(max-width:480px){
+    .hero-title{font-size:2.4rem}
+    .hero-map-wrap{max-width:320px}
+}
+
+/* MAP SECTION (legacy — hidden) */
+.map-section{display:none}
+.fcard,.fc-a,.fc-b,.fc-c,.fc-d,.fc-e{display:none}
 
 /* ─── TRUST ─── */
 .trust{padding:20px 6%;background:rgba(255,255,255,.025);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
@@ -86,105 +307,341 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .trust-item{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.5);font-size:.82rem;font-weight:600}
 .trust-item i{color:var(--teal)}
 
-/* ─── SEGMENTS ─── */
-.segments{padding:100px 6%}
-.seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1100px;margin:56px auto 0}
-.seg-card{border-radius:22px;padding:40px;position:relative;overflow:hidden;text-decoration:none;color:white;transition:all .4s;display:block}
-.seg-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .4s}
-.seg-card:hover{transform:translateY(-8px)}
-.seg-card:hover::before{opacity:1}
-.seg-ngo{background:linear-gradient(135deg,rgba(232,69,90,.18),rgba(245,166,35,.08));border:1px solid rgba(232,69,90,.25)}
-.seg-ngo::before{background:linear-gradient(135deg,rgba(232,69,90,.08),transparent)}
-.seg-mgr{background:linear-gradient(135deg,rgba(59,108,246,.18),rgba(0,212,170,.08));border:1px solid rgba(59,108,246,.25)}
-.seg-mgr::before{background:linear-gradient(135deg,rgba(59,108,246,.08),transparent)}
-.seg-ppl{background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(91,130,255,.08));border:1px solid rgba(124,58,237,.25)}
-.seg-ppl::before{background:linear-gradient(135deg,rgba(124,58,237,.08),transparent)}
-.seg-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;margin-bottom:22px}
-.si-rose{background:rgba(232,69,90,.2);color:#FF6B7A}
-.si-blue{background:rgba(59,108,246,.2);color:var(--blue2)}
-.si-purple{background:rgba(124,58,237,.2);color:#B27CFF}
-.seg-card h3{font-size:1.15rem;font-weight:800;margin-bottom:10px}
-.seg-card p{font-size:.875rem;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:20px}
-.seg-link{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;letter-spacing:.03em}
-.sl-rose{color:#FF6B7A}.sl-blue{color:var(--blue2)}.sl-purple{color:#B27CFF}
+/* ══ SEGMENTS ═════════════════════════════════════════════════════ */
+.segments{padding:120px 6%;background:#090909;position:relative}
+.segments::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:72px 72px;pointer-events:none}
 
-/* ─── FEATURES ─── */
-.features{padding:80px 6% 100px;background:rgba(255,255,255,.015)}
-.feat-inner{max-width:1200px;margin:0 auto}
-.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:56px}
-.feat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:28px;transition:all .35s}
-.feat-card:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);transform:translateY(-5px)}
-.feat-ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:16px}
-.fi-blue{background:rgba(59,108,246,.15);color:var(--blue2)}
-.fi-teal{background:rgba(0,212,170,.15);color:var(--teal)}
-.fi-rose{background:rgba(232,69,90,.15);color:#FF7080}
-.fi-gold{background:rgba(245,166,35,.15);color:var(--gold)}
-.fi-purple{background:rgba(124,58,237,.15);color:#B27CFF}
-.fi-sky{background:rgba(56,189,248,.15);color:#50C8F5}
-.fi-green{background:rgba(34,197,94,.15);color:#4ADE80}
-.fi-violet{background:rgba(167,139,250,.15);color:#A78BFA}
-.feat-card h4{font-size:.95rem;font-weight:700;margin-bottom:6px}
-.feat-card p{font-size:.8rem;color:rgba(255,255,255,.45);line-height:1.6}
+/* Section header */
+.seg-header{max-width:1240px;margin:0 auto 56px;display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap;position:relative;z-index:1}
+.seg-hdr-left{}
+.seg-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);margin-bottom:14px}
+.seg-title{font-size:clamp(2rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-.035em;line-height:1.06;color:#fff}
+.seg-title em{font-style:normal;color:rgba(255,255,255,.28)}
+.seg-hdr-right{max-width:260px;font-size:.85rem;color:rgba(255,255,255,.35);line-height:1.65}
+
+/* Grid */
+.seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;max-width:1240px;margin:0 auto;position:relative;z-index:1;border:1px solid rgba(255,255,255,.07);border-radius:20px;overflow:hidden}
+
+/* Card */
+.seg-card{background:#111;padding:40px 36px 36px;text-decoration:none;color:#fff;display:flex;flex-direction:column;gap:0;position:relative;transition:background .25s;border-right:1px solid rgba(255,255,255,.07)}
+.seg-card:last-child{border-right:none}
+.seg-card:hover{background:#161616}
+
+/* Accent top bar */
+.seg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;transition:opacity .25s}
+.seg-ngo::before{background:#ef4444}
+.seg-mgr::before{background:#4F6EF7}
+.seg-ppl::before{background:#8B5CF6}
+
+/* Number watermark */
+.seg-num{font-size:4.5rem;font-weight:900;letter-spacing:-.05em;color:rgba(255,255,255,.05);line-height:1;margin-bottom:20px;font-variant-numeric:tabular-nums}
+
+/* Icon row */
+.seg-icon-row{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.seg-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.si-rose{background:rgba(239,68,68,.12);color:#ef4444}
+.si-blue{background:rgba(79,110,247,.14);color:#6B8BFF}
+.si-purple{background:rgba(139,92,246,.14);color:#a78bfa}
+.seg-badge{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:100px}
+.sb-rose{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+.sb-blue{background:rgba(79,110,247,.12);color:#6B8BFF;border:1px solid rgba(79,110,247,.22)}
+.sb-purple{background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.22)}
+
+/* Content */
+.seg-card h3{font-size:1.2rem;font-weight:800;letter-spacing:-.02em;color:#fff;margin-bottom:10px;line-height:1.2}
+.seg-card p{font-size:.82rem;color:rgba(255,255,255,.38);line-height:1.7;margin-bottom:22px}
+
+/* Feature chips */
+.seg-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:28px}
+.seg-chip{font-size:.65rem;font-weight:600;color:rgba(255,255,255,.4);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:3px 9px}
+
+/* Stat */
+.seg-stat{margin-bottom:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)}
+.seg-stat-val{font-size:1.5rem;font-weight:900;letter-spacing:-.03em;color:#fff;line-height:1}
+.seg-stat-lbl{font-size:.7rem;color:rgba(255,255,255,.28);font-weight:500;margin-top:3px}
+
+/* CTA link */
+.seg-link{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;text-decoration:none;margin-top:auto;transition:gap .2s}
+.seg-link:hover{gap:12px}
+.sl-rose{color:#ef4444}.sl-blue{color:#6B8BFF}.sl-purple{color:#a78bfa}
+.seg-link-arrow{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:.6rem;transition:transform .2s}
+.sla-rose{background:rgba(239,68,68,.12)}.sla-blue{background:rgba(79,110,247,.14)}.sla-purple{background:rgba(139,92,246,.14)}
+.seg-card:hover .seg-link-arrow{transform:translateX(3px)}
+
+/* Responsive */
+@media(max-width:860px){.seg-grid{grid-template-columns:1fr;border-radius:16px}.seg-card{border-right:none;border-bottom:1px solid rgba(255,255,255,.07)}.seg-card:last-child{border-bottom:none}}
+@media(max-width:600px){.seg-header{flex-direction:column;align-items:flex-start}.seg-hdr-right{max-width:100%}}
+
+/* ══ FEATURES BENTO ══════════════════════════════════════════════ */
+.features{padding:120px 6%;background:#090909;position:relative;overflow:hidden}
+.features::before{content:'';position:absolute;width:700px;height:700px;bottom:-200px;right:-150px;border-radius:50%;background:radial-gradient(circle,rgba(79,110,247,.07) 0%,transparent 70%);filter:blur(60px);pointer-events:none}
+.feat-inner{max-width:1240px;margin:0 auto}
+
+/* Header — left aligned, horizontal layout */
+.feat-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:56px;gap:40px;flex-wrap:wrap}
+.feat-header-left{}
+.feat-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#4ade80;margin-bottom:14px}
+.feat-ey-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulseDot 2s infinite}
+.feat-title{font-size:clamp(2rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-.035em;line-height:1.08;color:#fff}
+.feat-title .ft-dim{color:rgba(255,255,255,.22)}
+.feat-title .ft-grad{color:#6B8BFF}
+.feat-header-right{flex-shrink:0;text-align:right}
+.fhr-val{font-size:2.2rem;font-weight:900;letter-spacing:-.04em;color:#fff;line-height:1}
+.fhr-label{font-size:.72rem;color:rgba(255,255,255,.3);margin-top:4px;font-weight:500}
+
+/* ─ BENTO GRID ─ */
+.bento-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:auto;gap:10px}
+
+/* Base card */
+.bc{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;position:relative;transition:border-color .3s,transform .3s}
+.bc:hover{border-color:rgba(255,255,255,.15)}
+.bc-2w{grid-column:span 2}
+.bc-2h{grid-row:span 2}
+
+/* Card body top */
+.bc-body{padding:18px 18px 10px;position:relative;z-index:2}
+.bc-tag{display:inline-flex;align-items:center;gap:5px;font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:100px;margin-bottom:8px}
+.bct-ai{background:rgba(167,139,250,.15);color:#a78bfa}
+.bct-fin{background:rgba(79,110,247,.15);color:#93a8ff}
+.bct-social{background:rgba(74,222,128,.14);color:#4ade80}
+.bct-ops{background:rgba(251,191,36,.12);color:#fbbf24}
+.bct-crm{background:rgba(249,115,22,.14);color:#fb923c}
+.bct-transp{background:rgba(34,211,238,.12);color:#22d3ee}
+.bc-title{font-size:.92rem;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
+.bc-desc{font-size:.72rem;color:rgba(255,255,255,.38);line-height:1.5;max-width:320px}
+
+/* ── BC-AI: Bruce AI — hero 2×2 ──────────────────────────────── */
+.bc-ai{background:linear-gradient(145deg,#0f0b20,#120e28);border-color:rgba(139,92,246,.2)}
+.ai-glow{position:absolute;top:-60px;right:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.22) 0%,transparent 70%);filter:blur(40px);pointer-events:none}
+
+.ai-demo{margin:2px 14px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.14);border-radius:12px;padding:11px;font-size:.74rem}
+.ai-demo-hdr{display:flex;align-items:center;gap:7px;margin-bottom:9px;font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.25)}
+.ai-live-dot{width:5px;height:5px;border-radius:50%;background:#a78bfa;animation:pulseDot 1.4s infinite}
+
+.ai-prospect{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.04);margin-bottom:8px}
+.ai-plogo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#4F6EF7,#7B5CF0);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0}
+.ai-pname{font-size:.74rem;font-weight:700;color:#fff}
+.ai-pcat{font-size:.6rem;color:rgba(255,255,255,.28);margin-top:1px}
+
+.ai-score-label{display:flex;justify-content:space-between;font-size:.58rem;color:rgba(255,255,255,.28);margin-bottom:4px;margin-top:8px}
+.ai-score-pct{color:#a78bfa;font-weight:800}
+.ai-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
+.ai-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#7B5CF0,#4F6EF7);animation:aiFill 3.5s ease-in-out infinite alternate}
+@keyframes aiFill{0%{width:18%}100%{width:94%}}
+
+.ai-pitch{margin-top:8px;padding:8px 10px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15);border-radius:8px}
+.ai-pitch-lbl{font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(167,139,250,.55);margin-bottom:4px}
+.ai-pitch-txt{font-size:.68rem;color:rgba(255,255,255,.6);line-height:1.5}
+.ai-cursor{display:inline-block;width:1.5px;height:9px;background:#a78bfa;margin-left:1px;animation:cursorBlink .7s step-end infinite;vertical-align:text-bottom}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── BC-DOADOR: Portal Doador VIP ────────────────────────────── */
+.bc-doador{background:#0d1117}
+.doador-feed{margin:2px 14px 14px;display:flex;flex-direction:column;gap:5px}
+.df-item{display:flex;align-items:center;gap:8px;padding:6px 9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px}
+.df-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:900;color:#fff;flex-shrink:0}
+.df-av1{background:linear-gradient(135deg,#4F6EF7,#7B5CF0)}
+.df-av2{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.df-av3{background:linear-gradient(135deg,#22d3ee,#4F6EF7)}
+.df-text{flex:1;font-size:.68rem;color:rgba(255,255,255,.5)}
+.df-text strong{color:rgba(255,255,255,.85);font-weight:700}
+.df-val{font-size:.72rem;font-weight:800;color:#4ade80;white-space:nowrap}
+.df-new{position:relative}
+.df-new::after{content:'NOVO';position:absolute;top:-3px;right:-3px;font-size:.48rem;font-weight:900;background:#4F6EF7;color:#fff;padding:1px 4px;border-radius:4px;letter-spacing:.04em}
+
+/* ── BC-CRM: Kanban ──────────────────────────────────────────── */
+.bc-crm{background:#0c0e14}
+.kanban-demo{margin:2px 14px 14px;display:flex;gap:6px}
+.kd-col{flex:1}
+.kd-hdr{font-size:.54rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.2);margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.kdd{width:4px;height:4px;border-radius:50%}
+.kdd-o{background:#fb923c}.kdd-b{background:#93a8ff}.kdd-g{background:#4ade80}
+.kd-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:5px 7px;margin-bottom:4px;font-size:.58rem;color:rgba(255,255,255,.55);font-weight:600;line-height:1.3}
+.kd-card-val{font-size:.65rem;font-weight:800;color:#fff;margin-top:2px}
+.kd-card-hot{border-color:rgba(79,110,247,.4);background:rgba(79,110,247,.09);animation:hotPulse 3s ease-in-out infinite}
+@keyframes hotPulse{0%,100%{border-color:rgba(79,110,247,.3)}50%{border-color:rgba(79,110,247,.7)}}
+
+/* ── BC-ALMOX: Almoxarifado ──────────────────────────────────── */
+.bc-almox{background:#0d1010}
+.almox-bars{margin:2px 14px 14px;display:flex;flex-direction:column;gap:8px}
+.ab-row{}
+.ab-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.ab-name{font-size:.66rem;color:rgba(255,255,255,.5);font-weight:600}
+.ab-qty{font-size:.62rem;color:rgba(255,255,255,.25);font-weight:600}
+.ab-track{height:5px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
+.ab-fill{height:100%;border-radius:100px}
+.abf1{background:linear-gradient(90deg,#4F6EF7,#7B5CF0);animation:abAnim1 2.8s ease-in-out infinite alternate}
+.abf2{background:linear-gradient(90deg,#4ade80,#22d3ee);animation:abAnim2 3.1s ease-in-out infinite alternate}
+.abf3{background:linear-gradient(90deg,#fb923c,#f59e0b);animation:abAnim3 3.4s ease-in-out infinite alternate}
+@keyframes abAnim1{from{width:42%}to{width:78%}}
+@keyframes abAnim2{from{width:65%}to{width:93%}}
+@keyframes abAnim3{from{width:28%}to{width:52%}}
+
+/* ── BC-VOLUNT: Voluntários ──────────────────────────────────── */
+.bc-volunt{background:#0e0c10}
+.podium-list{margin:2px 14px 14px;display:flex;flex-direction:column;gap:4px}
+.pl-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:7px;background:rgba(255,255,255,.03)}
+.pl-pos{font-size:.68rem;font-weight:900;width:14px;text-align:center;flex-shrink:0}
+.pl-p1{color:#f59e0b}.pl-p2{color:rgba(255,255,255,.35)}.pl-p3{color:#fb923c}
+.pl-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:900;color:#fff;flex-shrink:0}
+.plav1{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.plav2{background:linear-gradient(135deg,#6b7280,#9ca3af)}
+.plav3{background:linear-gradient(135deg,#fb923c,#f59e0b)}
+.pl-name{flex:1;font-size:.66rem;color:rgba(255,255,255,.6);font-weight:600}
+.pl-pts{font-size:.66rem;font-weight:800;color:rgba(255,255,255,.35)}
+.pl-pts-1{color:#f59e0b}
+.pl-bar{flex:1;max-width:50px;height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
+.plb-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#f59e0b,#fb923c)}
+
+/* ── BC-FIN: Prestação de Contas ─────────────────────────────── */
+.bc-fin{background:#0a0f1c}
+.fin-demo{margin:2px 14px 14px}
+.fin-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.66rem}
+.fin-row:last-of-type{border-bottom:none}
+.fin-lbl{color:rgba(255,255,255,.38)}
+.fin-val{font-weight:700;color:#fff}
+.fin-pos{color:#4ade80}.fin-neg{color:#f87171}
+.fin-total{margin-top:8px;padding:8px 11px;border-radius:8px;background:rgba(79,110,247,.1);border:1px solid rgba(79,110,247,.2);display:flex;justify-content:space-between;align-items:center}
+.fin-total-lbl{font-size:.64rem;font-weight:700;color:rgba(255,255,255,.5)}
+.fin-total-val{font-size:.95rem;font-weight:900;color:#fff}
+.fin-badge{font-size:.54rem;background:rgba(74,222,128,.15);color:#4ade80;padding:2px 6px;border-radius:100px;font-weight:800;margin-top:2px}
+
+/* ── BC-TRANSP: Transparência (2w) ──────────────────────────── */
+.bc-transp{background:#08111a}
+.transp-inner{margin:2px 16px 16px;display:flex;gap:20px;align-items:flex-start}
+.transp-counts{flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.tc-block .tc-lbl{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.25);margin-bottom:3px}
+.tc-block .tc-num{font-size:1.4rem;font-weight:900;letter-spacing:-.04em;color:#fff;line-height:1}
+.tc-block .tc-delta{font-size:.6rem;color:#4ade80;font-weight:700;margin-top:1px}
+.transp-feed{flex:1}
+.tf-hdr{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.2);margin-bottom:6px}
+.tf-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.62rem;color:rgba(255,255,255,.4)}
+.tf-item:last-child{border:none}
+.tfd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.tfd-g{background:#4ade80}.tfd-b{background:#93a8ff}.tfd-o{background:#fb923c}
+
+/* ── BC-EDITAL: IA Editais ───────────────────────────────────── */
+.bc-edital{background:#0c0c0c}
+.edital-demo{margin:2px 14px 14px}
+.ed-prog-hdr{display:flex;justify-content:space-between;font-size:.58rem;color:rgba(255,255,255,.3);font-weight:600;margin-bottom:4px}
+.ed-prog-pct{color:#a78bfa;font-weight:800}
+.ed-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:12px}
+.ed-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#7B5CF0,#4F6EF7);animation:edFill 4s ease-in-out infinite alternate}
+@keyframes edFill{from{width:28%}to{width:85%}}
+.ed-lines{display:flex;flex-direction:column;gap:5px}
+.ed-line{height:6px;background:rgba(255,255,255,.07);border-radius:100px}
+.el1{width:100%;animation:elGlow 2s ease-in-out infinite alternate}
+.el2{width:82%;animation:elGlow 2.3s ease-in-out infinite alternate .2s}
+.el3{width:91%;animation:elGlow 2.6s ease-in-out infinite alternate .4s}
+.el4{width:68%;animation:elGlow 2.9s ease-in-out infinite alternate .6s}
+.el5{width:78%;animation:elGlow 3.2s ease-in-out infinite alternate .8s}
+@keyframes elGlow{from{opacity:.3;background:rgba(255,255,255,.07)}to{opacity:1;background:rgba(139,92,246,.25)}}
+
+/* Responsive */
+@media(max-width:1024px){.bento-grid{grid-template-columns:repeat(2,1fr)}.bc-2w,.bc-2h{grid-column:span 1;grid-row:span 1}}
+@media(max-width:640px){.bento-grid{grid-template-columns:1fr}.feat-header{flex-direction:column;align-items:flex-start}.feat-header-right{text-align:left}}
 
 /* ─── IMPACT ─── */
-.impact{padding:100px 6%;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(59,108,246,.08) 0%,transparent 70%)}
-.impact-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.counter-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
-.counter-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px}
-.counter-num{font-size:2.4rem;font-weight:900;letter-spacing:-.03em}
-.cn-blue{background:linear-gradient(135deg,var(--blue2),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.cn-teal{color:var(--teal)}
-.cn-rose{color:#FF7080}
-.cn-gold{color:var(--gold)}
-.counter-label{font-size:.78rem;color:rgba(255,255,255,.4);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+.impact{padding:88px 6%;background:#090909;position:relative;border-top:1px solid rgba(255,255,255,.05)}
+.impact::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:72px 72px;pointer-events:none}
+.impact-inner{max-width:1240px;margin:0 auto;position:relative;z-index:1}
+.impact-head{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:48px}
+.impact-eyebrow{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);margin-bottom:12px}
+.impact-title{font-size:clamp(2.2rem,4vw,3rem);font-weight:900;letter-spacing:-.04em;line-height:1.04;color:#fff}
+.impact-title em{font-style:normal;color:rgba(255,255,255,.22)}
+.impact-right-txt{max-width:340px;font-size:.84rem;color:rgba(255,255,255,.32);line-height:1.7}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.07);border-radius:20px;overflow:hidden}
+.stat-block{padding:32px 28px;border-right:1px solid rgba(255,255,255,.07);position:relative;background:#111}
+.stat-block:last-child{border-right:none}
+.stat-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sb-1::before{background:#4F6EF7}
+.sb-2::before{background:#4ade80}
+.sb-3::before{background:#ef4444}
+.sb-4::before{background:#f59e0b}
+.stat-num{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;letter-spacing:-.04em;color:#fff;line-height:1;margin-bottom:6px}
+.stat-lbl{font-size:.64rem;color:rgba(255,255,255,.28);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.stat-delta{margin-top:8px;font-size:.62rem;font-weight:700;color:#4ade80;display:flex;align-items:center;gap:4px}
+@media(max-width:860px){.stats-row{grid-template-columns:1fr 1fr}.stat-block:nth-child(2){border-right:none}.stat-block:nth-child(3){border-right:1px solid rgba(255,255,255,.07)}.stat-block:nth-child(3),.stat-block:nth-child(4){border-top:1px solid rgba(255,255,255,.07)}}
+@media(max-width:480px){.stats-row{grid-template-columns:1fr}.stat-block{border-right:none!important;border-top:1px solid rgba(255,255,255,.07)}.stat-block:first-child{border-top:none}}
 
 /* ─── PRICING ─── */
-.pricing{padding:100px 6%;background:rgba(255,255,255,.015)}
-.pricing-inner{max-width:1100px;margin:0 auto}
-.billing-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin:32px 0 56px}
-.tgl-label{font-size:.9rem;font-weight:600;color:rgba(255,255,255,.45);transition:color .3s}
+.pricing{padding:100px 6%;background:#090909;position:relative;border-top:1px solid rgba(255,255,255,.05)}
+.pricing::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:72px 72px;pointer-events:none}
+.pricing-inner{max-width:1240px;margin:0 auto;position:relative;z-index:1}
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin:32px 0 52px}
+.tgl-label{font-size:.86rem;font-weight:600;color:rgba(255,255,255,.35);transition:color .3s}
 .tgl-label.on{color:white}
-.switch{position:relative;display:inline-block;width:50px;height:26px}
+.switch{position:relative;display:inline-block;width:46px;height:24px}
 .switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.15);border-radius:26px;transition:.3s}
-.slider:before{content:'';position:absolute;height:18px;width:18px;left:4px;bottom:4px;background:white;border-radius:50%;transition:.3s}
-input:checked+.slider{background:var(--blue)}
-input:checked+.slider:before{transform:translateX(24px)}
-.disc-badge{background:rgba(0,212,170,.15);color:var(--teal);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:100px}
-.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
-.price-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:36px;position:relative;transition:all .4s}
-.price-card.hot{background:linear-gradient(145deg,rgba(59,108,246,.18),rgba(124,58,237,.12));border-color:rgba(59,108,246,.4);transform:scale(1.03)}
-.price-card:hover{border-color:rgba(255,255,255,.2);box-shadow:0 24px 60px rgba(0,0,0,.4)}
-.price-card.hot:hover{transform:scale(1.03) translateY(-6px)}
-.hot-label{position:absolute;top:18px;right:18px;background:linear-gradient(135deg,var(--blue),var(--violet));color:white;font-size:.68rem;font-weight:800;padding:4px 12px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
-.price-name{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.45);margin-bottom:14px}
-.price-val{font-size:2.8rem;font-weight:900;line-height:1;letter-spacing:-.03em}
-.price-val .cur{font-size:1.1rem;font-weight:700;vertical-align:top;margin-top:6px;display:inline-block;color:rgba(255,255,255,.55)}
-.price-val .per{font-size:.95rem;font-weight:400;color:rgba(255,255,255,.35)}
-.price-note{font-size:.75rem;color:rgba(255,255,255,.3);margin-top:4px;margin-bottom:22px}
+.slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.12);border-radius:24px;transition:.3s}
+.slider:before{content:'';position:absolute;height:16px;width:16px;left:4px;bottom:4px;background:white;border-radius:50%;transition:.3s}
+input:checked+.slider{background:#4F6EF7}
+input:checked+.slider:before{transform:translateX(22px)}
+.disc-badge{background:rgba(74,222,128,.12);color:#4ade80;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:100px}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px;max-width:1000px;margin:0 auto;border:1px solid rgba(255,255,255,.07);border-radius:20px;overflow:hidden}
+.price-card{background:#111;padding:36px;position:relative;transition:background .25s;border-right:1px solid rgba(255,255,255,.07)}
+.price-card:last-child{border-right:none}
+.price-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent}
+.price-card.hot{background:#131820}
+.price-card.hot::before{background:#4F6EF7}
+.price-card:hover{background:#141414}
+.hot-label{position:absolute;top:18px;right:18px;background:#4F6EF7;color:white;font-size:.62rem;font-weight:800;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
+.price-name{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.28);margin-bottom:16px}
+.price-val{font-size:2.6rem;font-weight:900;line-height:1;letter-spacing:-.04em;color:#fff}
+.price-val .cur{font-size:1rem;font-weight:700;vertical-align:top;margin-top:6px;display:inline-block;color:rgba(255,255,255,.4)}
+.price-val .per{font-size:.86rem;font-weight:400;color:rgba(255,255,255,.28)}
+.price-note{font-size:.7rem;color:rgba(255,255,255,.22);margin-top:4px;margin-bottom:24px}
 .price-divider{height:1px;background:rgba(255,255,255,.07);margin:18px 0}
-.price-feats{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
-.price-feats li{display:flex;align-items:center;gap:9px;font-size:.84rem;color:rgba(255,255,255,.65)}
-.price-feats li i{color:var(--teal);font-size:.8rem;flex-shrink:0}
-.btn-price{display:block;text-align:center;padding:14px;border-radius:60px;font-weight:700;font-size:.9rem;text-decoration:none;transition:all .3s;border:none;cursor:pointer;width:100%}
-.btp-main{background:linear-gradient(135deg,var(--blue),var(--violet));color:white;box-shadow:0 6px 24px rgba(59,108,246,.35)}
-.btp-main:hover{box-shadow:0 10px 32px rgba(59,108,246,.55);transform:translateY(-2px)}
-.btp-out{border:1.5px solid rgba(255,255,255,.18);color:rgba(255,255,255,.75);background:none}
-.btp-out:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.35);color:white}
+.price-feats{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:28px}
+.price-feats li{display:flex;align-items:center;gap:9px;font-size:.8rem;color:rgba(255,255,255,.58)}
+.price-feats li i{color:#4ade80;font-size:.76rem;flex-shrink:0}
+.btn-price{display:block;text-align:center;padding:13px;border-radius:10px;font-weight:700;font-size:.86rem;text-decoration:none;transition:all .2s;border:none;cursor:pointer;width:100%}
+.btp-main{background:#ffffff;color:#0a0a0a}
+.btp-main:hover{background:#e8e8e8;transform:translateY(-1px)}
+.btp-out{border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);background:none}
+.btp-out:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.22);color:white}
 
 /* ─── CTA ─── */
-.cta-section{padding:100px 6%;text-align:center;background:linear-gradient(135deg,rgba(59,108,246,.15),rgba(124,58,237,.1));border-top:1px solid var(--border)}
-.cta-section h2{font-size:clamp(2rem,4vw,3rem);font-weight:900;letter-spacing:-.03em;margin-bottom:18px}
-.cta-section p{font-size:1.05rem;color:rgba(255,255,255,.55);margin-bottom:40px}
+.cta-section{padding:120px 6%;background:#090909;position:relative;border-top:1px solid rgba(255,255,255,.06)}
+.cta-section::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:72px 72px;pointer-events:none}
+.cta-inner{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1}
+.cta-big{font-size:clamp(4.5rem,9vw,8rem);font-weight:900;letter-spacing:-.055em;line-height:.9;color:#fff;margin-bottom:28px}
+.cta-big em{font-style:normal;color:rgba(255,255,255,.15)}
+.cta-tagline{font-size:.95rem;color:rgba(255,255,255,.4);line-height:1.75;max-width:420px;margin-bottom:36px}
+.cta-divider{width:100%;height:1px;background:rgba(255,255,255,.07);margin:32px 0}
+.cta-benefits{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.cb-icon{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:.74rem;color:rgba(255,255,255,.45);margin-bottom:9px}
+.cb-title{font-size:.8rem;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:3px}
+.cb-desc{font-size:.7rem;color:rgba(255,255,255,.28);line-height:1.55}
+.cta-right{background:#ffffff;border-radius:20px;padding:44px}
+.cta-form-title{font-size:1.5rem;font-weight:900;letter-spacing:-.03em;margin-bottom:5px;color:#0a0a0a;line-height:1.1}
+.cta-form-title span{color:#4F6EF7}
+.cta-form-sub{font-size:.76rem;color:rgba(0,0,0,.38);margin-bottom:24px;line-height:1.5}
+.cta-proof{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#f5f5f5;border-radius:10px;margin-bottom:22px}
+.cta-proof-av{display:flex}
+.cp-av{width:24px;height:24px;border-radius:50%;border:2px solid #fff;margin-left:-7px;background:#4F6EF7;display:flex;align-items:center;justify-content:center;font-size:.48rem;font-weight:900;color:#fff;flex-shrink:0}
+.cp-av:first-child{margin-left:0}
+.cp-av.cp2{background:#7B5CF0}.cp-av.cp3{background:#4ade80;color:#0a0a0a}.cp-av.cp4{background:#f59e0b;color:#0a0a0a}
+.cta-proof-text{font-size:.68rem;color:rgba(0,0,0,.45);line-height:1.4}
+.cta-proof-text strong{color:rgba(0,0,0,.78);font-weight:700}
+.btn-cta-main{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#0a0a0a;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;font-family:'Inter',sans-serif;text-decoration:none;cursor:pointer;transition:all .2s;margin-bottom:10px}
+.btn-cta-main:hover{background:#222;transform:translateY(-1px);color:#fff}
+.btn-cta-sec{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:#f0f0f0;color:#0a0a0a;border:none;border-radius:10px;font-size:.86rem;font-weight:600;font-family:'Inter',sans-serif;text-decoration:none;cursor:pointer;transition:all .2s}
+.btn-cta-sec:hover{background:#e6e6e6;color:#0a0a0a}
+.cta-form-note{margin-top:14px;font-size:.62rem;color:rgba(0,0,0,.28);text-align:center;line-height:1.6}
+.cta-form-note a{color:#4F6EF7;text-decoration:none}
+@media(max-width:900px){.cta-inner{grid-template-columns:1fr;gap:56px}.cta-big{font-size:clamp(3.8rem,12vw,5.5rem)}.cta-right{padding:32px}}
 
 /* ─── FOOTER ─── */
-footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);padding:60px 6% 30px}
-.footer-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
-.footer-col h5{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);margin-bottom:14px}
-.footer-col a{display:block;color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;margin-bottom:8px;transition:color .3s}
-.footer-col a:hover{color:white}
-.footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.footer-bottom span{font-size:.78rem;color:rgba(255,255,255,.25)}
+footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64px 6% 28px}
+.footer-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+.footer-brand-desc{font-size:.78rem;color:rgba(255,255,255,.22);line-height:1.75;margin-top:12px;max-width:220px}
+.footer-col h5{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.2);margin-bottom:16px}
+.footer-col a{display:block;color:rgba(255,255,255,.38);text-decoration:none;font-size:.8rem;margin-bottom:9px;transition:color .2s}
+.footer-col a:hover{color:rgba(255,255,255,.8)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.05);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-bottom span{font-size:.7rem;color:rgba(255,255,255,.18)}
+.footer-bottom .fb-heart{color:rgba(239,68,68,.6)}
 
 /* ─── SECTION HEADER ─── */
 .section-tag{display:inline-flex;align-items:center;gap:7px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
@@ -241,56 +698,56 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 @keyframes auBadgePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(167,139,250,.6)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(167,139,250,0)}}
 .au-title{font-size:clamp(3rem,6vw,5rem);font-weight:900;line-height:.95;letter-spacing:-.04em;margin-bottom:20px}
 .au-title-white{color:white}
-.au-title-grad{background:linear-gradient(135deg,#A78BFA,#5B82FF,#F5A623);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.au-title-grad{color:#a78bfa}
 .au-sub{font-size:1.05rem;color:rgba(255,255,255,.55);line-height:1.75;max-width:440px;margin-bottom:32px}
 .au-benefits{list-style:none;display:flex;flex-direction:column;gap:13px;margin-bottom:40px}
 .au-benefits li{display:flex;align-items:center;gap:12px;font-size:.92rem;color:rgba(255,255,255,.75)}
-.au-check{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,rgba(124,58,237,.4),rgba(59,108,246,.3));border:1px solid rgba(124,58,237,.5);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.6rem;color:#A78BFA}
+.au-check{width:22px;height:22px;border-radius:50%;background:rgba(124,58,237,.25);border:1px solid rgba(124,58,237,.45);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.6rem;color:#A78BFA}
 .au-ctas{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
-.au-btn-primary{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#7C3AED,#3B6CF6);color:white;text-decoration:none;font-weight:700;font-size:1rem;padding:15px 35px;border-radius:60px;box-shadow:0 8px 32px rgba(124,58,237,.45);transition:all .3s;white-space:nowrap}
-.au-btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(124,58,237,.65);color:white}
+.au-btn-primary{display:inline-flex;align-items:center;gap:10px;background:#7C3AED;color:white;text-decoration:none;font-weight:700;font-size:1rem;padding:15px 35px;border-radius:60px;box-shadow:0 8px 28px rgba(124,58,237,.35);transition:all .3s;white-space:nowrap}
+.au-btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(124,58,237,.55);color:white;background:#6d2ed6}
 .au-vagas{display:flex;flex-direction:column;gap:5px}
 .au-vagas-dots{display:flex;gap:5px}
 .au-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15)}
-.au-dot.active{background:linear-gradient(135deg,#7C3AED,#3B6CF6)}
+.au-dot.active{background:#7C3AED}
 .au-vagas span{font-size:.75rem;color:rgba(255,255,255,.4)}
-/* Right card */
-.au-card-wrap{position:relative}
-.au-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:450px;height:450px;border-radius:50%;background:radial-gradient(ellipse,rgba(124,58,237,.3) 0%,rgba(59,108,246,.1) 50%,transparent 70%);filter:blur(40px);pointer-events:none}
-.au-card{position:relative;background:rgba(15,10,35,.85);backdrop-filter:blur(30px);border:1px solid rgba(124,58,237,.35);border-radius:24px;padding:30px;z-index:1;box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05) inset;animation:auCardFloat 5s ease-in-out infinite}
-@keyframes auCardFloat{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-8px) rotate(.3deg)}75%{transform:translateY(4px) rotate(-.2deg)}}
-.au-card-header{display:flex;align-items:center;gap:14px;margin-bottom:24px}
-.au-card-logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7C3AED,#3B6CF6);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:white;flex-shrink:0}
-.au-card-title{font-size:.95rem;font-weight:800;color:white}
-.au-card-sub{font-size:.72rem;color:rgba(255,255,255,.4);margin-top:2px}
-.au-card-badge{margin-left:auto;background:linear-gradient(135deg,#7C3AED,#5B82FF);color:white;font-size:.65rem;font-weight:800;padding:4px 10px;border-radius:100px;letter-spacing:.06em}
-.au-progress-section{margin-bottom:20px}
-.au-progress-row{display:flex;justify-content:space-between;font-size:.75rem;color:rgba(255,255,255,.55);margin-bottom:5px;margin-top:14px}
-.au-pct{color:rgba(255,255,255,.8);font-weight:700}
-.au-bar{height:6px;border-radius:100px;background:rgba(255,255,255,.08);overflow:hidden}
-.au-bar-fill{height:100%;border-radius:100px;transition:width 1s ease}
-.au-modules{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-.au-module{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;font-size:.8rem;color:rgba(255,255,255,.65)}
-.au-module.active{background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.3);color:white}
-.au-mod-icon{flex-shrink:0;font-size:1rem;color:#A78BFA}
-.au-mod-tag{margin-left:auto;background:rgba(0,212,170,.15);color:var(--teal);font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap}
-.au-card-footer{display:flex;align-items:center;gap:12px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07)}
-.au-avatar-row{display:flex}
-.au-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#3B6CF6);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:white;margin-left:-8px;border:2px solid rgba(15,10,35,.8);first-child:margin-left:0}
-.au-avatar-row .au-avatar:first-child{margin-left:0}
-.au-avatar-more{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(15,10,35,.8);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:rgba(255,255,255,.5);margin-left:-8px}
-.au-footer-label{font-size:.73rem;color:rgba(255,255,255,.35)}
-/* Floating badges */
-.au-float-badge{position:absolute;display:flex;align-items:center;gap:8px;background:rgba(10,8,28,.9);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(16px);border-radius:12px;padding:10px 16px;font-size:.78rem;color:rgba(255,255,255,.8);font-weight:600;white-space:nowrap;z-index:2}
-.au-fb-1{top:-20px;right:-20px;animation:auFbFloat 4s ease-in-out infinite}
-.au-fb-2{bottom:-16px;left:-20px;animation:auFbFloat 4.5s ease-in-out infinite .8s}
-@keyframes auFbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+/* Right — open editorial layout (sem wrapper box) */
+.au-right{display:flex;flex-direction:column;gap:0}
+/* Numbers row */
+.au-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:28px}
+.au-num-item{padding:22px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px}
+.au-num-item:nth-child(2){background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.25)}
+.au-num-val{font-size:2.2rem;font-weight:900;letter-spacing:-.05em;color:#fff;line-height:1;margin-bottom:5px}
+.au-num-lbl{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.28)}
+/* Featured module card */
+.au-module-card{border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:20px}
+.au-module-thumb{height:96px;background:rgba(124,58,237,.18);display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid rgba(255,255,255,.06)}
+.au-module-thumb-icon{width:38px;height:38px;background:#7C3AED;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff}
+.au-module-live{position:absolute;top:10px;left:12px;display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.5);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:3px 9px}
+.au-module-live-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulseDot 1.5s infinite}
+.au-module-live-txt{font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#4ade80}
+.au-module-body{padding:16px 18px}
+.au-module-tag{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(167,139,250,.7);margin-bottom:5px}
+.au-module-name{font-size:.9rem;font-weight:800;color:#fff;margin-bottom:12px;line-height:1.3}
+.au-module-bar-wrap{display:flex;align-items:center;gap:10px}
+.au-module-bar{flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:100px;overflow:hidden}
+.au-module-bar-fill{height:100%;width:62%;background:#a78bfa;border-radius:100px}
+.au-module-pct{font-size:.62rem;font-weight:800;color:rgba(255,255,255,.35)}
+/* Testimonial — open quote style */
+.au-test-open{padding:20px 0 0}
+.au-test-mark{font-size:3.5rem;font-weight:900;color:rgba(124,58,237,.45);line-height:.6;margin-bottom:10px}
+.au-test-quote{font-size:.82rem;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:14px;font-style:italic}
+.au-test-author{display:flex;align-items:center;gap:10px}
+.au-test-av{width:30px;height:30px;border-radius:50%;background:rgba(124,58,237,.35);border:1px solid rgba(124,58,237,.45);display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;color:#C4B5FD;flex-shrink:0}
+.au-test-name{font-size:.74rem;font-weight:700;color:rgba(255,255,255,.8)}
+.au-test-role{font-size:.62rem;color:rgba(255,255,255,.28);margin-top:1px}
 
 /* ─── RESPONSIVE ─── */
-@media(max-width:1024px){.feat-grid{grid-template-columns:repeat(2,1fr)}.impact-inner{grid-template-columns:1fr}.au-container{grid-template-columns:1fr;gap:60px}}
+@media(max-width:1024px){.bento-grid{grid-template-columns:repeat(2,1fr)}.bc-2w,.bc-2h{grid-column:span 2;grid-row:span 1}.impact-inner{grid-template-columns:1fr}.au-container{grid-template-columns:1fr;gap:60px}}
 @media(max-width:768px){
     .seg-grid{grid-template-columns:1fr}
-    .feat-grid{grid-template-columns:1fr 1fr}
+    .bento-grid{grid-template-columns:1fr}
+    .bc-2w{grid-column:span 1}
     .counter-grid{grid-template-columns:1fr 1fr}
     .footer-row{grid-template-columns:1fr 1fr}
     .fc-c,.fc-d,.fc-e{display:none}
@@ -302,7 +759,6 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
     .au-title{font-size:3rem}
 }
 @media(max-width:480px){
-    .feat-grid{grid-template-columns:1fr}
     .footer-row{grid-template-columns:1fr}
     .hero-title{font-size:2.4rem}
     .au-title{font-size:2.5rem}
@@ -312,57 +768,238 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 </head>
 <body>
 
+<!-- ANNOUNCE BAR -->
+<div class="announce-bar" id="announceBar">
+    <span class="announce-pill">Novo</span>
+    <span>Prospecção Inteligente com Bruce AI chegou &mdash;</span>
+    <a href="#features">Conheça o recurso <i class="fas fa-arrow-right" style="font-size:.65rem"></i></a>
+</div>
+
 <!-- NAV -->
 <nav class="nav" id="mainNav">
-    <a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:40px;width:auto;"></a>
+    <a href="{{ url('/') }}" class="nav-logo">
+        <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi">
+    </a>
+
     <ul class="nav-links">
         <li><a href="{{ route('solutions.ngo') }}">Para ONGs</a></li>
         <li><a href="{{ route('solutions.manager') }}">Para Gestores</a></li>
         <li><a href="{{ route('solutions.common') }}">Uso Pessoal</a></li>
+        <li><a href="#features">Recursos</a></li>
+        <li><a href="#academy">Academy</a></li>
+        <div class="nav-sep"></div>
         <li><a href="#pricing">Preços</a></li>
-        <li><a href="{{ url('/blog') }}" style="color:rgba(255,255,255,.45)">Blog</a></li>
     </ul>
+
     <div class="nav-ctas">
         <a href="{{ route('login') }}" class="btn-ghost">Entrar</a>
-        <a href="{{ route('register') }}" class="btn-nav"><i class="fas fa-rocket"></i> Começar Grátis</a>
+        <a href="{{ route('register') }}" class="btn-nav">
+            Começar grátis <i class="fas fa-arrow-right" style="font-size:.7rem"></i>
+        </a>
     </div>
-    <button class="mobile-btn" onclick="document.getElementById('mobileMenu').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+
+    <button class="mobile-btn" id="mobileToggle" aria-label="Menu">
+        <i class="fas fa-bars" id="menuIcon"></i>
+    </button>
 </nav>
+
 <div class="mobile-menu" id="mobileMenu">
     <a href="{{ route('solutions.ngo') }}">Para ONGs</a>
     <a href="{{ route('solutions.manager') }}">Para Gestores</a>
     <a href="{{ route('solutions.common') }}">Uso Pessoal</a>
+    <a href="#features">Recursos</a>
+    <a href="#academy">Academy</a>
     <a href="#pricing">Preços</a>
     <a href="{{ route('login') }}">Entrar</a>
-    <a href="{{ route('register') }}" style="color:var(--blue2);font-weight:800">🚀 Começar Grátis</a>
+    <a href="{{ route('register') }}" class="m-cta">Começar grátis →</a>
 </div>
 
 <!-- HERO -->
 <section class="hero">
-    <div class="hero-badge"><span class="hero-badge-dot"></span> Plataforma #1 de Impacto Social no Brasil</div>
-    <h1 class="hero-title">
-        <span class="g1">Gestão que</span><br>
-        <span class="g2">Transforma Vidas</span><br>
-        <span class="g1">em escala real.</span>
-    </h1>
-    <p class="hero-sub">Da ONG de bairro à rede nacional — o Vivensi conecta pessoas, dados e propósito em um único ecossistema digital.</p>
-    <div class="hero-ctas">
-        <a href="{{ route('register') }}" class="btn-hero"><i class="fas fa-rocket"></i> Comece Gratuitamente</a>
-        <a href="#segments" class="btn-hero-outline"><i class="fas fa-th-large"></i> Ver Soluções</a>
+<div class="hero-inner">
+
+    <!-- LEFT -->
+    <div class="hero-left">
+        <a href="#features" class="hero-announce">
+            <span class="ha-tag">Novo</span>
+            <span class="ha-dot"></span>
+            Bruce AI agora prospecta parceiros automaticamente
+            <i class="fas fa-arrow-right" style="font-size:.65rem;opacity:.5;margin-left:2px"></i>
+        </a>
+
+        <h1 class="hero-title">
+            <span class="ht-white">Gestão que</span><br>
+            <span class="ht-grad">transforma</span><br>
+            <span class="ht-dim">vidas em escala.</span>
+        </h1>
+
+        <p class="hero-sub">
+            Da ONG de bairro à rede nacional — Vivensi conecta projetos, doações, voluntários e captação em um único ecossistema.
+        </p>
+
+        <div class="hero-ctas">
+            <a href="{{ route('register') }}" class="btn-hero">
+                Começar gratuitamente
+                <i class="fas fa-arrow-right" style="font-size:.75rem"></i>
+            </a>
+            <a href="#segments" class="btn-hero-outline">
+                <i class="fas fa-play" style="font-size:.7rem"></i>
+                Ver como funciona
+            </a>
+        </div>
+
+        <div class="hero-proof">
+            <div class="hp-avatars">
+                <div class="hp-av">J</div>
+                <div class="hp-av av2">M</div>
+                <div class="hp-av av3">A</div>
+                <div class="hp-av av4">C</div>
+            </div>
+            <div class="hp-text">
+                <strong>+2.400 organizações</strong><br>já gerenciam seu impacto
+            </div>
+            <div class="hp-sep"></div>
+            <div class="hp-rating">
+                <div class="hp-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <span class="hp-rlabel">4.9 / 5 &nbsp;·&nbsp; 840+ avaliações</span>
+            </div>
+        </div>
     </div>
 
+    <!-- RIGHT — Brazil Map -->
+    <div class="hero-right">
+        <div class="hero-map-wrap">
+
+            <!-- Badge: organizações ativas -->
+            <div class="map-badge mb-1">
+                <div class="mb-val">1.840+</div>
+                <div class="mb-lbl">organizações ativas</div>
+            </div>
+
+            <!-- Badge: cobertura ao vivo -->
+            <div class="map-badge mb-2">
+                <div class="mb-live">
+                    <span class="mb-ldot"></span>
+                    <span style="font-size:.58rem;color:#4ade80;font-weight:800;letter-spacing:.07em">AO VIVO</span>
+                </div>
+                <div class="mb-val" style="font-size:.88rem">26 estados + DF</div>
+                <div class="mb-lbl">cobertos pelo sistema</div>
+            </div>
+
+            <!-- Badge: captações -->
+            <div class="map-badge mb-3">
+                <div class="mb-val" style="color:#93a8ff">R$ 2,1M</div>
+                <div class="mb-lbl">captados este mês</div>
+            </div>
+
+            <!-- Animated Brazil SVG Map -->
+            <svg class="brazil-svg" viewBox="0 0 480 575" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="brGlow" cx="54%" cy="44%" r="50%">
+                        <stop offset="0%" stop-color="#4F6EF7" stop-opacity="1"/>
+                        <stop offset="100%" stop-color="#4F6EF7" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+
+                <!-- Brazil outline — simplified clockwise from NW -->
+                <path class="br-fill" d="
+                    M 30,148 L 12,82 L 42,50 L 165,38 L 258,18
+                    L 296,70 L 342,118 L 396,140 L 450,188
+                    L 448,220 L 415,280 L 385,340 L 358,390
+                    L 348,424 L 318,450 L 285,474 L 255,496
+                    L 228,518 L 196,535 L 168,545
+                    L 152,528 L 140,490 L 130,455 L 130,415
+                    L 148,378 L 155,348 L 138,315 L 120,280
+                    L 105,248 L 82,212 L 55,178 Z
+                "/>
+
+                <!-- Glow overlay -->
+                <path fill="url(#brGlow)" opacity=".13" d="
+                    M 30,148 L 12,82 L 42,50 L 165,38 L 258,18
+                    L 296,70 L 342,118 L 396,140 L 450,188
+                    L 448,220 L 415,280 L 385,340 L 358,390
+                    L 348,424 L 318,450 L 285,474 L 255,496
+                    L 228,518 L 196,535 L 168,545
+                    L 152,528 L 140,490 L 130,455 L 130,415
+                    L 148,378 L 155,348 L 138,315 L 120,280
+                    L 105,248 L 82,212 L 55,178 Z
+                "/>
+
+                <!-- State boundary lines -->
+                <line class="br-state-line" x1="160" y1="46" x2="295" y2="115"/>
+                <line class="br-state-line" x1="295" y1="115" x2="342" y2="118"/>
+                <line class="br-state-line" x1="160" y1="46" x2="108" y2="178"/>
+                <line class="br-state-line" x1="295" y1="115" x2="282" y2="262"/>
+                <line class="br-state-line" x1="282" y1="262" x2="346" y2="278"/>
+                <line class="br-state-line" x1="154" y1="282" x2="282" y2="262"/>
+                <line class="br-state-line" x1="130" y1="415" x2="284" y2="396"/>
+                <line class="br-state-line" x1="215" y1="448" x2="318" y2="444"/>
+                <line class="br-state-line" x1="238" y1="474" x2="308" y2="468"/>
+
+                <!-- Animated connection lines between cities -->
+                <line class="conn-line" stroke="rgba(74,222,128,.22)" x1="282" y1="396" x2="318" y2="444"/>
+                <line class="conn-line" stroke="rgba(79,110,247,.18)" x1="318" y1="444" x2="348" y2="422"/>
+                <line class="conn-line" stroke="rgba(79,110,247,.18)" x1="348" y1="422" x2="338" y2="384"/>
+                <line class="conn-line" stroke="rgba(79,110,247,.13)" x1="282" y1="396" x2="338" y2="384"/>
+                <line class="conn-line" stroke="rgba(79,110,247,.11)" x1="338" y1="384" x2="392" y2="292"/>
+                <line class="conn-line" stroke="rgba(147,168,255,.12)" x1="318" y1="444" x2="258" y2="470"/>
+                <line class="conn-line" stroke="rgba(147,168,255,.10)" x1="258" y1="470" x2="230" y2="495"/>
+
+                <!-- São Paulo — principal hub -->
+                <circle class="city-ring" stroke="#4ade80" cx="318" cy="444" r="7" style="animation-delay:0s"/>
+                <circle class="city-dot" fill="#4ade80" cx="318" cy="444" r="5" style="animation-delay:0s"/>
+
+                <!-- Rio de Janeiro -->
+                <circle class="city-ring" stroke="#4F6EF7" cx="348" cy="422" r="6" style="animation-delay:.5s"/>
+                <circle class="city-dot" fill="#4F6EF7" cx="348" cy="422" r="4" style="animation-delay:.5s"/>
+
+                <!-- Brasília -->
+                <circle class="city-ring" stroke="#93a8ff" cx="282" cy="396" r="6" style="animation-delay:1s"/>
+                <circle class="city-dot" fill="#93a8ff" cx="282" cy="396" r="4" style="animation-delay:1s"/>
+
+                <!-- Belo Horizonte -->
+                <circle class="city-ring" stroke="#4F6EF7" cx="338" cy="384" r="5" style="animation-delay:1.5s"/>
+                <circle class="city-dot" fill="#4F6EF7" cx="338" cy="384" r="3.5" style="animation-delay:1.5s"/>
+
+                <!-- Salvador -->
+                <circle class="city-ring" stroke="#4F6EF7" cx="392" cy="292" r="5" style="animation-delay:.8s"/>
+                <circle class="city-dot" fill="#4F6EF7" cx="392" cy="292" r="3.5" style="animation-delay:.8s"/>
+
+                <!-- Fortaleza -->
+                <circle class="city-ring" stroke="#4F6EF7" cx="393" cy="148" r="5" style="animation-delay:1.3s"/>
+                <circle class="city-dot" fill="#4F6EF7" cx="393" cy="148" r="3.5" style="animation-delay:1.3s"/>
+
+                <!-- Recife -->
+                <circle class="city-ring" stroke="#93a8ff" cx="440" cy="206" r="5" style="animation-delay:.3s"/>
+                <circle class="city-dot" fill="#93a8ff" cx="440" cy="206" r="3" style="animation-delay:.3s"/>
+
+                <!-- Manaus -->
+                <circle class="city-ring" stroke="#93a8ff" cx="118" cy="118" r="5" style="animation-delay:1.8s"/>
+                <circle class="city-dot" fill="#93a8ff" cx="118" cy="118" r="3" style="animation-delay:1.8s"/>
+
+                <!-- Curitiba -->
+                <circle class="city-ring" stroke="#4F6EF7" cx="258" cy="470" r="4.5" style="animation-delay:2s"/>
+                <circle class="city-dot" fill="#4F6EF7" cx="258" cy="470" r="3" style="animation-delay:2s"/>
+
+                <!-- Porto Alegre -->
+                <circle class="city-ring" stroke="#4F6EF7" cx="230" cy="495" r="4.5" style="animation-delay:.6s"/>
+                <circle class="city-dot" fill="#4F6EF7" cx="230" cy="495" r="3" style="animation-delay:.6s"/>
+
+                <!-- Belém -->
+                <circle class="city-ring" stroke="#93a8ff" cx="292" cy="78" r="4" style="animation-delay:2.3s"/>
+                <circle class="city-dot" fill="#93a8ff" cx="292" cy="78" r="2.5" style="animation-delay:2.3s"/>
+            </svg>
+
+        </div>
+    </div><!-- /hero-right -->
+
+</div><!-- /hero-inner -->
+
     @if($videoUrl)
-    <!-- VIDEO PLAYER -->
-    <div class="video-player-wrap" style="animation:fadeUp .8s ease .55s both">
-        <button class="video-play-btn" onclick="openVideoModal()" aria-label="Assistir demonstração">
-            <span class="play-ring"></span>
-            <span class="play-ring play-ring-2"></span>
-            <span class="play-icon-circle">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M8 5v14l11-7z"/></svg>
-            </span>
-        </button>
-        <span class="video-hint">Veja como funciona em <strong>2 minutos</strong></span>
-    </div>
     <!-- VIDEO MODAL -->
     <div class="video-modal" id="videoModal" onclick="closeVideoModal(event)">
         <div class="video-modal-inner">
@@ -372,8 +1009,8 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
     </div>
     @endif
 
-    <!-- MAP VISUALIZATION -->
-    <div class="map-section">
+    <!-- MAP VISUALIZATION (hidden) -->
+    <div class="map-section" style="display:none">
         <div class="map-wrap">
             <svg id="brazil-svg" viewBox="0 0 820 740" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -477,7 +1114,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
             <div class="fcard fc-c">
                 <div class="fcard-label">Beneficiários</div>
                 <div class="fcard-value">98.200</div>
-                <div class="fcard-sub"><i class="fas fa-heart"></i> em 27 estados</div>
+                <div class="fcard-sub"><i class="fas fa-heart"></i> em 26 estados + DF</div>
             </div>
             <div class="fcard fc-d">
                 <div class="fcard-label">Voluntários gamificados</div>
@@ -507,52 +1144,364 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 
 <!-- SEGMENTS -->
 <section class="segments" id="segments">
-    <div class="center aos">
-        <div class="section-tag st-blue"><i class="fas fa-th-large"></i> Soluções</div>
-        <h2 class="section-title">Uma plataforma,<br>três ecossistemas</h2>
-        <p class="section-sub center">Cada vertical é especializada para as necessidades do seu setor, mas todas compartilham a mesma base sólida.</p>
+
+    <div class="seg-header aos">
+        <div class="seg-hdr-left">
+            <div class="seg-eyebrow">
+                <i class="fas fa-layer-group" style="font-size:.65rem"></i> Soluções
+            </div>
+            <h2 class="seg-title">
+                Uma plataforma,<br>
+                <em>três verticais.</em>
+            </h2>
+        </div>
+        <p class="seg-hdr-right">
+            Cada vertical foi construída para um perfil específico — com fluxos, dados e terminologia do seu setor.
+        </p>
     </div>
+
     <div class="seg-grid">
+
+        {{-- ── ONGs & Terceiro Setor ──────────────────────────────────── --}}
         <a href="{{ route('solutions.ngo') }}" class="seg-card seg-ngo aos">
-            <div class="seg-icon si-rose"><i class="fas fa-hand-holding-heart"></i></div>
-            <h3>Para ONGs & Terceiro Setor</h3>
-            <p>Gestão de doadores, prestação de contas, editais, almoxarifado, voluntários gamificados e portal de transparência.</p>
-            <div class="seg-link sl-rose">Explorar solução <i class="fas fa-arrow-right"></i></div>
+            <div class="seg-num">01</div>
+
+            <div class="seg-icon-row">
+                <div class="seg-icon si-rose"><i class="fas fa-hand-holding-heart"></i></div>
+                <span class="seg-badge sb-rose">Terceiro Setor</span>
+            </div>
+
+            <h3>ONGs &amp; Entidades Sociais</h3>
+            <p>Do controle de doadores ao portal de transparência — tudo que uma organização social precisa para operar com profissionalismo e prestar contas.</p>
+
+            <div class="seg-chips">
+                <span class="seg-chip">Portal do Doador</span>
+                <span class="seg-chip">Prestação de Contas</span>
+                <span class="seg-chip">Almoxarifado</span>
+                <span class="seg-chip">Editais via IA</span>
+                <span class="seg-chip">Transparência Pública</span>
+                <span class="seg-chip">Voluntários</span>
+            </div>
+
+            <div class="seg-stat">
+                <div class="seg-stat-val">2.400+</div>
+                <div class="seg-stat-lbl">organizações gerenciadas na plataforma</div>
+            </div>
+
+            <span class="seg-link sl-rose">
+                Ver solução completa
+                <span class="seg-link-arrow sla-rose"><i class="fas fa-arrow-right"></i></span>
+            </span>
         </a>
+
+        {{-- ── Gestores & Projetos ────────────────────────────────────── --}}
         <a href="{{ route('solutions.manager') }}" class="seg-card seg-mgr aos">
-            <div class="seg-icon si-blue"><i class="fas fa-chart-bar"></i></div>
-            <h3>Para Gestores & Projetos</h3>
-            <p>Kanban de projetos, agenda de reuniões, controle financeiro, CRM de clientes e relatórios executivos em tempo real.</p>
-            <div class="seg-link sl-blue">Explorar solução <i class="fas fa-arrow-right"></i></div>
+            <div class="seg-num">02</div>
+
+            <div class="seg-icon-row">
+                <div class="seg-icon si-blue"><i class="fas fa-chart-gantt"></i></div>
+                <span class="seg-badge sb-blue">Gestão</span>
+            </div>
+
+            <h3>Gestores &amp; Equipes de Projeto</h3>
+            <p>Kanban, cronogramas, financeiro e CRM integrados. Visibilidade total sobre cada projeto — do planejamento à entrega.</p>
+
+            <div class="seg-chips">
+                <span class="seg-chip">Kanban de Projetos</span>
+                <span class="seg-chip">CRM de Clientes</span>
+                <span class="seg-chip">Controle Financeiro</span>
+                <span class="seg-chip">Reuniões & Agenda</span>
+                <span class="seg-chip">Relatórios Exec.</span>
+                <span class="seg-chip">Whatsapp IA</span>
+            </div>
+
+            <div class="seg-stat">
+                <div class="seg-stat-val">380+</div>
+                <div class="seg-stat-lbl">equipes de projeto ativas no sistema</div>
+            </div>
+
+            <span class="seg-link sl-blue">
+                Ver solução completa
+                <span class="seg-link-arrow sla-blue"><i class="fas fa-arrow-right"></i></span>
+            </span>
         </a>
+
+        {{-- ── Uso Pessoal & Profissional ─────────────────────────────── --}}
         <a href="{{ route('solutions.common') }}" class="seg-card seg-ppl aos">
-            <div class="seg-icon si-purple"><i class="fas fa-user-circle"></i></div>
-            <h3>Uso Pessoal & Profissional</h3>
-            <p>Finanças pessoais, contratos, whatsapp integrado, landing pages e muito mais para profissionais liberais.</p>
-            <div class="seg-link sl-purple">Explorar solução <i class="fas fa-arrow-right"></i></div>
+            <div class="seg-num">03</div>
+
+            <div class="seg-icon-row">
+                <div class="seg-icon si-purple"><i class="fas fa-briefcase"></i></div>
+                <span class="seg-badge sb-purple">Profissional</span>
+            </div>
+
+            <h3>Uso Pessoal &amp; Profissional</h3>
+            <p>Para freelancers, consultores e autônomos que precisam de controle financeiro, contratos e comunicação com clientes em um só lugar.</p>
+
+            <div class="seg-chips">
+                <span class="seg-chip">Finanças Pessoais</span>
+                <span class="seg-chip">Contratos Digitais</span>
+                <span class="seg-chip">Landing Pages</span>
+                <span class="seg-chip">Rifas & Eventos</span>
+                <span class="seg-chip">Whatsapp Integrado</span>
+                <span class="seg-chip">Agenda</span>
+            </div>
+
+            <div class="seg-stat">
+                <div class="seg-stat-val">1.200+</div>
+                <div class="seg-stat-lbl">profissionais autônomos cadastrados</div>
+            </div>
+
+            <span class="seg-link sl-purple">
+                Ver solução completa
+                <span class="seg-link-arrow sla-purple"><i class="fas fa-arrow-right"></i></span>
+            </span>
         </a>
+
     </div>
 </section>
 
 <!-- FEATURES -->
-<section class="features aos">
-    <div class="feat-inner">
-        <div class="center">
-            <div class="section-tag st-teal"><i class="fas fa-sparkles"></i> Funcionalidades</div>
-            <h2 class="section-title">Tudo incluso, sem surpresas</h2>
-            <p class="section-sub center">Cada recurso foi pensado pela equipe Vivensi com base no feedback de gestores reais do terceiro setor.</p>
+<section class="features aos" id="features">
+<div class="feat-inner">
+
+    <!-- Header -->
+    <div class="feat-header">
+        <div class="feat-header-left">
+            <div class="feat-eyebrow">
+                <span class="feat-ey-dot"></span> Plataforma Inteligente
+            </div>
+            <h2 class="feat-title">
+                Tudo que sua organização<br>
+                <span class="ft-dim">precisa,</span>
+                <span class="ft-grad"> em um só lugar.</span>
+            </h2>
         </div>
-        <div class="feat-grid">
-            <div class="feat-card"><div class="feat-ic fi-rose"><i class="fas fa-heart"></i></div><h4>Portal do Doador VIP</h4><p>Link mágico exclusivo por doador com histórico e informe de rendimentos.</p></div>
-            <div class="feat-card"><div class="feat-ic fi-blue"><i class="fas fa-file-invoice"></i></div><h4>Prestação de Contas</h4><p>DRE, Balancetes e relatórios em 1 clique, prontos para auditoria.</p></div>
-            <div class="feat-card"><div class="feat-ic fi-teal"><i class="fas fa-box-open"></i></div><h4>Almoxarifado Digital</h4><p>Controle de estoque físico de doações com movimentações e histórico.</p></div>
-            <div class="feat-card"><div class="feat-ic fi-gold"><i class="fas fa-trophy"></i></div><h4>Voluntários Gamificados</h4><p>Rankings, pontos por horas e crachás para motivar seu time social.</p></div>
-            <div class="feat-card"><div class="feat-ic fi-purple"><i class="fas fa-brain"></i></div><h4>IA para Editais</h4><p>Geração automática de projetos via IA com análise de viabilidade.</p></div>
-            <div class="feat-card"><div class="feat-ic fi-sky"><i class="fas fa-kanban"></i></div><h4>CRM Kanban</h4><p>Funil visual de patrocínios e deals com drag & drop profissional.</p></div>
-            <div class="feat-card"><div class="feat-ic fi-green"><i class="fas fa-headset"></i></div><h4>Suporte Especializado</h4><p>Atendimento humano dedicado para tirar dúvidas e ajudar na sua gestão.</p></div>
-            <div class="feat-card"><div class="feat-ic fi-violet"><i class="fas fa-globe"></i></div><h4>Portal de Transparência</h4><p>Página pública automática mostrando impacto em tempo real.</p></div>
+        <div class="feat-header-right">
+            <div class="fhr-val">8+</div>
+            <div class="fhr-label">Módulos integrados<br>com IA nativa</div>
         </div>
     </div>
+
+    <!-- BENTO GRID -->
+    <div class="bento-grid">
+
+        {{-- ── 1. BRUCE AI — hero 2×2 ──────────────────────────────────── --}}
+        <div class="bc bc-ai bc-2w bc-2h">
+            <div class="ai-glow"></div>
+            <div class="bc-body">
+                <span class="bc-tag bct-ai"><i class="fas fa-brain"></i> IA Nativa</span>
+                <div class="bc-title">Bruce AI — Prospecção Inteligente</div>
+                <div class="bc-desc">Encontra, analisa e gera pitch personalizado para cada lead em segundos. Você só precisa apertar "enviar".</div>
+            </div>
+            <div class="ai-demo">
+                <div class="ai-demo-hdr">
+                    <span class="ai-live-dot"></span> Analisando em tempo real
+                </div>
+                <div class="ai-prospect">
+                    <div class="ai-plogo">SF</div>
+                    <div>
+                        <div class="ai-pname">Supermercado Família</div>
+                        <div class="ai-pcat">Varejo Alimentar · Google Maps</div>
+                    </div>
+                </div>
+                <div class="ai-score-label">
+                    <span>Fit Score para o projeto</span>
+                    <span class="ai-score-pct">94%</span>
+                </div>
+                <div class="ai-bar-track"><div class="ai-bar-fill"></div></div>
+                <div class="ai-pitch">
+                    <div class="ai-pitch-lbl">Pitch gerado — WhatsApp</div>
+                    <div class="ai-pitch-txt">
+                        "Olá! Vi que o Supermercado Família apoia a comunidade local. Nosso projeto atende 1.800 famílias na região e buscamos um parceiro de visibilidade…<span class="ai-cursor"></span>"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 2. PORTAL DOADOR VIP ─────────────────────────────────────── --}}
+        <div class="bc bc-doador">
+            <div class="bc-body">
+                <span class="bc-tag bct-social"><i class="fas fa-heart"></i> Captação</span>
+                <div class="bc-title">Portal do Doador VIP</div>
+                <div class="bc-desc">Link mágico com histórico, recibos e informe de rendimentos.</div>
+            </div>
+            <div class="doador-feed">
+                <div class="df-item df-new">
+                    <div class="df-av df-av1">MR</div>
+                    <div class="df-text"><strong>Maria R.</strong> doou agora</div>
+                    <div class="df-val">R$ 500</div>
+                </div>
+                <div class="df-item">
+                    <div class="df-av df-av2">JP</div>
+                    <div class="df-text"><strong>João P.</strong> · recibo enviado</div>
+                    <div class="df-val">R$ 1.200</div>
+                </div>
+                <div class="df-item">
+                    <div class="df-av df-av3">AC</div>
+                    <div class="df-text"><strong>Ana C.</strong> · informe IR</div>
+                    <div class="df-val">R$ 3.600</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 3. CRM KANBAN ────────────────────────────────────────────── --}}
+        <div class="bc bc-crm">
+            <div class="bc-body">
+                <span class="bc-tag bct-crm"><i class="fas fa-kanban"></i> CRM</span>
+                <div class="bc-title">Funil de Patrocínios</div>
+                <div class="bc-desc">Deals com drag &amp; drop e automações por estágio.</div>
+            </div>
+            <div class="kanban-demo">
+                <div class="kd-col">
+                    <div class="kd-hdr"><span class="kdd kdd-o"></span>Prospect.</div>
+                    <div class="kd-card">Farmácia ABC<div class="kd-card-val">R$ 2k</div></div>
+                    <div class="kd-card">Loja XYZ<div class="kd-card-val">R$ 800</div></div>
+                </div>
+                <div class="kd-col">
+                    <div class="kd-hdr"><span class="kdd kdd-b"></span>Negoc.</div>
+                    <div class="kd-card kd-card-hot">Banco Sul<div class="kd-card-val">R$ 15k</div></div>
+                    <div class="kd-card">Clínica M.<div class="kd-card-val">R$ 5k</div></div>
+                </div>
+                <div class="kd-col">
+                    <div class="kd-hdr"><span class="kdd kdd-g"></span>Fechado</div>
+                    <div class="kd-card">Padaria B.<div class="kd-card-val">R$ 3k</div></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 4. ALMOXARIFADO ──────────────────────────────────────────── --}}
+        <div class="bc bc-almox">
+            <div class="bc-body">
+                <span class="bc-tag bct-ops"><i class="fas fa-boxes-stacked"></i> Operações</span>
+                <div class="bc-title">Almoxarifado Digital</div>
+                <div class="bc-desc">Estoque de doações com histórico de entradas e saídas.</div>
+            </div>
+            <div class="almox-bars">
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Cestas Básicas</span><span class="ab-qty">78 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf1"></div></div>
+                </div>
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Roupas / Agasalhos</span><span class="ab-qty">143 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf2"></div></div>
+                </div>
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Material Escolar</span><span class="ab-qty">52 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf3"></div></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 5. VOLUNTÁRIOS GAMIFICADOS ───────────────────────────────── --}}
+        <div class="bc bc-volunt">
+            <div class="bc-body">
+                <span class="bc-tag bct-social"><i class="fas fa-trophy"></i> Engajamento</span>
+                <div class="bc-title">Voluntários Gamificados</div>
+                <div class="bc-desc">Rankings, medalhas e pontos por horas de serviço.</div>
+            </div>
+            <div class="podium-list">
+                <div class="pl-item">
+                    <span class="pl-pos pl-p1">🥇</span>
+                    <div class="pl-av plav1">JL</div>
+                    <span class="pl-name">Juliana Lima</span>
+                    <div class="pl-bar"><div class="plb-fill" style="width:100%"></div></div>
+                    <span class="pl-pts pl-pts-1">2.840 pts</span>
+                </div>
+                <div class="pl-item">
+                    <span class="pl-pos pl-p2">🥈</span>
+                    <div class="pl-av plav2">CR</div>
+                    <span class="pl-name">Carlos R.</span>
+                    <div class="pl-bar"><div class="plb-fill" style="width:76%"></div></div>
+                    <span class="pl-pts">2.160 pts</span>
+                </div>
+                <div class="pl-item">
+                    <span class="pl-pos pl-p3">🥉</span>
+                    <div class="pl-av plav3">AM</div>
+                    <span class="pl-name">Ana M.</span>
+                    <div class="pl-bar"><div class="plb-fill" style="width:58%"></div></div>
+                    <span class="pl-pts">1.640 pts</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 6. PRESTAÇÃO DE CONTAS ───────────────────────────────────── --}}
+        <div class="bc bc-fin">
+            <div class="bc-body">
+                <span class="bc-tag bct-fin"><i class="fas fa-file-invoice-dollar"></i> Financeiro</span>
+                <div class="bc-title">Prestação de Contas</div>
+                <div class="bc-desc">DRE, balancetes e relatórios de auditoria gerados em 1 clique.</div>
+            </div>
+            <div class="fin-demo">
+                <div class="fin-row"><span class="fin-lbl">Receitas do mês</span><span class="fin-val fin-pos">R$ 48.200</span></div>
+                <div class="fin-row"><span class="fin-lbl">Despesas operacionais</span><span class="fin-val fin-neg">− R$ 12.840</span></div>
+                <div class="fin-row"><span class="fin-lbl">Projetos e ações</span><span class="fin-val fin-neg">− R$ 18.600</span></div>
+                <div class="fin-row"><span class="fin-lbl">Transferências</span><span class="fin-val fin-neg">− R$ 5.200</span></div>
+                <div class="fin-total">
+                    <div>
+                        <div class="fin-total-lbl">Superávit</div>
+                        <div class="fin-badge">Aprovado auditoria</div>
+                    </div>
+                    <div class="fin-total-val">R$ 11.560</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 7. PORTAL DE TRANSPARÊNCIA (2w) ─────────────────────────── --}}
+        <div class="bc bc-transp bc-2w">
+            <div class="bc-body">
+                <span class="bc-tag bct-transp"><i class="fas fa-earth-americas"></i> Transparência</span>
+                <div class="bc-title">Portal Público de Impacto</div>
+                <div class="bc-desc">Página gerada automaticamente com métricas reais em tempo real — para prestadores de contas, patrocinadores e imprensa.</div>
+            </div>
+            <div class="transp-inner">
+                <div class="transp-counts">
+                    <div class="tc-block">
+                        <div class="tc-lbl">Beneficiários</div>
+                        <div class="tc-num" id="tcCount1">98.490</div>
+                        <div class="tc-delta"><i class="fas fa-arrow-trend-up" style="font-size:.6rem"></i> +342 esse mês</div>
+                    </div>
+                    <div class="tc-block">
+                        <div class="tc-lbl">Captado 2025</div>
+                        <div class="tc-num">R$ 18,4M</div>
+                        <div class="tc-delta"><i class="fas fa-arrow-trend-up" style="font-size:.6rem"></i> +31% a.a.</div>
+                    </div>
+                </div>
+                <div class="transp-feed">
+                    <div class="tf-hdr">Atualizações ao vivo</div>
+                    <div class="tf-item"><span class="tfd tfd-g"></span>Ação Social — 240 kits distribuídos · 2h atrás</div>
+                    <div class="tf-item"><span class="tfd tfd-b"></span>Novo doador recorrente cadastrado · 5h atrás</div>
+                    <div class="tf-item"><span class="tfd tfd-o"></span>Relatório Q4 publicado e assinado · ontem</div>
+                    <div class="tf-item"><span class="tfd tfd-g"></span>Parceria confirmada: Instituto Horizonte · 2d atrás</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 8. IA PARA EDITAIS ────────────────────────────────────────── --}}
+        <div class="bc bc-edital">
+            <div class="bc-body">
+                <span class="bc-tag bct-ai"><i class="fas fa-wand-magic-sparkles"></i> IA</span>
+                <div class="bc-title">IA para Editais</div>
+                <div class="bc-desc">Geração automática de projetos com análise de viabilidade e fit com seu histórico.</div>
+            </div>
+            <div class="edital-demo">
+                <div class="ed-prog-hdr">
+                    <span>Redigindo projeto…</span>
+                    <span class="ed-prog-pct">87%</span>
+                </div>
+                <div class="ed-bar-track"><div class="ed-bar-fill"></div></div>
+                <div class="ed-lines">
+                    <div class="ed-line el1"></div>
+                    <div class="ed-line el2"></div>
+                    <div class="ed-line el3"></div>
+                    <div class="ed-line el4"></div>
+                    <div class="ed-line el5"></div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /bento-grid -->
+</div><!-- /feat-inner -->
 </section>
 
 <!-- ─── VIVENSI ACADEMY ─── -->
@@ -607,92 +1556,92 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
             </div>
         </div>
 
-        <!-- RIGHT COLUMN - Floating 3D card -->
+        <!-- RIGHT COLUMN — open editorial -->
         <div class="au-right aos">
-            <div class="au-card-wrap">
-                <!-- Glow halo -->
-                <div class="au-glow"></div>
-                <!-- Card -->
-                <div class="au-card">
-                    <div class="au-card-header">
-                        <div class="au-card-logo">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <div>
-                            <div class="au-card-title">Vivensi Academy</div>
-                            <div class="au-card-sub">Trilha de Gestão de Impacto</div>
-                        </div>
-                        <div class="au-card-badge">PRO</div>
-                    </div>
-                    <div class="au-progress-section">
-                        <div class="au-progress-row">
-                            <span>Captação de Recursos</span>
-                            <span class="au-pct">87%</span>
-                        </div>
-                        <div class="au-bar"><div class="au-bar-fill" style="width:87%;background:linear-gradient(90deg,#7C3AED,#5B82FF)"></div></div>
-                        <div class="au-progress-row">
-                            <span>Gestão por Impacto</span>
-                            <span class="au-pct">62%</span>
-                        </div>
-                        <div class="au-bar"><div class="au-bar-fill" style="width:62%;background:linear-gradient(90deg,#F5A623,#FF7080)"></div></div>
-                        <div class="au-progress-row">
-                            <span>Editais &amp; Projetos</span>
-                            <span class="au-pct">45%</span>
-                        </div>
-                        <div class="au-bar"><div class="au-bar-fill" style="width:45%;background:linear-gradient(90deg,#00D4AA,#3B6CF6)"></div></div>
-                    </div>
-                    <div class="au-modules">
-                        <div class="au-module active">
-                            <span class="au-mod-icon"><i class="fas fa-play-circle"></i></span>
-                            <span>Aula 4 — Captação via Lei de Incentivo</span>
-                            <span class="au-mod-tag">Ao vivo</span>
-                        </div>
-                        <div class="au-module">
-                            <span class="au-mod-icon" style="color:rgba(255,255,255,.3)"><i class="fas fa-lock"></i></span>
-                            <span style="color:rgba(255,255,255,.4)">Aula 5 — Formulando Editais Vencedores</span>
-                        </div>
-                        <div class="au-module">
-                            <span class="au-mod-icon" style="color:rgba(255,255,255,.3)"><i class="fas fa-lock"></i></span>
-                            <span style="color:rgba(255,255,255,.4)">Aula 6 — Prestação de Contas MROSC</span>
-                        </div>
-                    </div>
-                    <div class="au-card-footer">
-                        <div class="au-avatar-row">
-                            <div class="au-avatar">MR</div>
-                            <div class="au-avatar" style="background:linear-gradient(135deg,#E8455A,#F5A623)">CS</div>
-                            <div class="au-avatar" style="background:linear-gradient(135deg,#00D4AA,#3B6CF6)">JA</div>
-                            <div class="au-avatar-more">+124</div>
-                        </div>
-                        <span class="au-footer-label">alunos nessa trilha</span>
-                    </div>
+
+            <!-- Numbers — sem wrapper externo -->
+            <div class="au-nums">
+                <div class="au-num-item">
+                    <div class="au-num-val">127+</div>
+                    <div class="au-num-lbl">Alunos ativos</div>
                 </div>
-                <!-- Floating decorative badges -->
-                <div class="au-float-badge au-fb-1">
-                    <i class="fas fa-certificate" style="color:#F5A623"></i>
-                    Certificado Incluso
+                <div class="au-num-item">
+                    <div class="au-num-val">5</div>
+                    <div class="au-num-lbl">Módulos</div>
                 </div>
-                <div class="au-float-badge au-fb-2">
-                    <i class="fas fa-bolt" style="color:#00D4AA"></i>
-                    Acesso Vitalício
+                <div class="au-num-item">
+                    <div class="au-num-val">2.4k</div>
+                    <div class="au-num-lbl">Conteúdos</div>
                 </div>
             </div>
+
+            <!-- Featured module -->
+            <div class="au-module-card">
+                <div class="au-module-thumb">
+                    <div class="au-module-thumb-icon"><i class="fas fa-play"></i></div>
+                    <div class="au-module-live">
+                        <span class="au-module-live-dot"></span>
+                        <span class="au-module-live-txt">Ao vivo</span>
+                    </div>
+                </div>
+                <div class="au-module-body">
+                    <div class="au-module-tag">Trilha em andamento</div>
+                    <div class="au-module-name">Gestão de Impacto<br>&amp; OKRs Sociais</div>
+                    <div class="au-module-bar-wrap">
+                        <div class="au-module-bar"><div class="au-module-bar-fill"></div></div>
+                        <span class="au-module-pct">62% concluído</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonial — open quote -->
+            <div class="au-test-open">
+                <div class="au-test-mark">"</div>
+                <p class="au-test-quote">A Vivensi Academy transformou completamente como gerencio minha ONG. Conteúdo prático, aplicado ao dia a dia do terceiro setor.</p>
+                <div class="au-test-author">
+                    <div class="au-test-av">MR</div>
+                    <div>
+                        <div class="au-test-name">Maria Rodrigues</div>
+                        <div class="au-test-role">Diretora Executiva · ONG Vida Nova</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
 
 <!-- IMPACT COUNTERS -->
-<section class="impact">
+<section class="impact" id="impacto">
     <div class="impact-inner">
-        <div class="aos">
-            <div class="section-tag st-rose"><i class="fas fa-chart-area"></i> Impacto Real</div>
-            <h2 class="section-title">Números que<br>provam o propósito</h2>
-            <p class="section-sub">O Vivensi não é só software. É o motor de gestão que permite que organizações focadas em missão operem com excelência.</p>
+        <div class="impact-head aos">
+            <div>
+                <div class="impact-eyebrow">Impacto Real</div>
+                <h2 class="impact-title">Números que<br><em>comprovam</em> o propósito</h2>
+            </div>
+            <p class="impact-right-txt">O Vivensi não é só software — é o motor que permite organizações do terceiro setor operarem com excelência real, todos os dias.</p>
         </div>
-        <div class="counter-grid aos">
-            <div class="counter-card"><div class="counter-num cn-blue">2.847</div><div class="counter-label">ONGs cadastradas</div></div>
-            <div class="counter-card"><div class="counter-num cn-teal">98k+</div><div class="counter-label">Beneficiários impactados</div></div>
-            <div class="counter-card"><div class="counter-num cn-rose">R$12M</div><div class="counter-label">Doações rastreadas</div></div>
-            <div class="counter-card"><div class="counter-num cn-gold">34.5k</div><div class="counter-label">Voluntários ativos</div></div>
+        <div class="stats-row aos">
+            <div class="stat-block sb-1">
+                <div class="stat-num">2.847</div>
+                <div class="stat-lbl">ONGs cadastradas</div>
+                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> +312 este mês</div>
+            </div>
+            <div class="stat-block sb-2">
+                <div class="stat-num">98k+</div>
+                <div class="stat-lbl">Beneficiários impactados</div>
+                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> +8.4k este ano</div>
+            </div>
+            <div class="stat-block sb-3">
+                <div class="stat-num">R$12M</div>
+                <div class="stat-lbl">Doações rastreadas</div>
+                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> +R$1.2M este mês</div>
+            </div>
+            <div class="stat-block sb-4">
+                <div class="stat-num">34.5k</div>
+                <div class="stat-lbl">Voluntários ativos</div>
+                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> +2.1k novos</div>
+            </div>
         </div>
     </div>
 </section>
@@ -746,13 +1695,70 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 </section>
 
 <!-- FINAL CTA -->
-<section class="cta-section aos">
-    <div class="section-tag st-blue center" style="justify-content:center"><i class="fas fa-rocket"></i> Comece hoje</div>
-    <h2>Pronto para escalar seu impacto?</h2>
-    <p>Junte-se a mais de 2.800 organizações que já confiam no Vivensi.</p>
-    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-        <a href="{{ route('register') }}" class="btn-hero" style="font-size:1.05rem;padding:18px 44px"><i class="fas fa-rocket"></i> Criar Conta Grátis</a>
-        <a href="{{ route('login') }}" class="btn-hero-outline" style="font-size:1.05rem;padding:18px 36px"><i class="fas fa-sign-in-alt"></i> Já tenho conta</a>
+<section class="cta-section" id="contato">
+    <div class="cta-inner">
+
+        <!-- LEFT: editorial big text + benefits -->
+        <div class="aos">
+            <h2 class="cta-big">Vamos<br><em>começar?</em></h2>
+            <p class="cta-tagline">Sua organização merece tecnologia de ponta. Ative sua conta agora e veja a diferença nos primeiros 30 dias.</p>
+            <div class="cta-divider"></div>
+            <div class="cta-benefits">
+                <div>
+                    <div class="cb-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="cb-title">Ativação imediata.</div>
+                    <div class="cb-desc">Sua conta fica pronta em menos de 5 minutos.</div>
+                </div>
+                <div>
+                    <div class="cb-icon"><i class="fas fa-shield-halved"></i></div>
+                    <div class="cb-title">Sem cartão.</div>
+                    <div class="cb-desc">30 dias grátis sem dados de pagamento.</div>
+                </div>
+                <div>
+                    <div class="cb-icon"><i class="fas fa-headset"></i></div>
+                    <div class="cb-title">Suporte humano.</div>
+                    <div class="cb-desc">Time disponível por WhatsApp e e-mail.</div>
+                </div>
+                <div>
+                    <div class="cb-icon"><i class="fas fa-rotate-left"></i></div>
+                    <div class="cb-title">Garantia total.</div>
+                    <div class="cb-desc">Devolvemos 100% se não gostar em 30 dias.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: white card -->
+        <div class="cta-right aos">
+            <div class="cta-form-title">Criar conta <span>grátis</span></div>
+            <p class="cta-form-sub">30 dias grátis · Sem cartão de crédito · Cancele quando quiser</p>
+
+            <!-- Social proof -->
+            <div class="cta-proof">
+                <div class="cta-proof-av">
+                    <div class="cp-av">MR</div>
+                    <div class="cp-av cp2">CS</div>
+                    <div class="cp-av cp3">JA</div>
+                    <div class="cp-av cp4">LF</div>
+                </div>
+                <div class="cta-proof-text">
+                    <strong>+2.847 organizações</strong> já usam o Vivensi.<br>
+                    Junte-se a quem já transformou sua gestão.
+                </div>
+            </div>
+
+            <a href="{{ route('register') }}" class="btn-cta-main">
+                <i class="fas fa-rocket"></i> Criar minha conta grátis
+            </a>
+            <a href="{{ route('login') }}" class="btn-cta-sec">
+                <i class="fas fa-arrow-right-to-bracket"></i> Já tenho uma conta
+            </a>
+            <p class="cta-form-note">
+                Ao criar sua conta, você concorda com nossos
+                <a href="{{ route('public.page', 'termos') }}">Termos de Uso</a> e
+                <a href="{{ route('public.page', 'privacidade') }}">Política de Privacidade</a>.
+            </p>
+        </div>
+
     </div>
 </section>
 
@@ -760,31 +1766,33 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--border);paddi
 <footer>
     <div class="footer-row">
         <div class="footer-col">
-            <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:40px;margin-bottom:14px;filter:brightness(0) invert(1);opacity:.75">
-            <p style="font-size:.82rem;color:rgba(255,255,255,.3);line-height:1.7">Tecnologia para quem<br>transforma o Brasil.</p>
+            <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:32px;display:block;filter:brightness(0) invert(1);opacity:.6">
+            <p class="footer-brand-desc">Tecnologia para quem transforma o Brasil. Gestão inteligente para ONGs, gestores de projetos e pessoas.</p>
         </div>
         <div class="footer-col">
             <h5>Soluções</h5>
             <a href="{{ route('solutions.ngo') }}">Para ONGs</a>
             <a href="{{ route('solutions.manager') }}">Para Gestores</a>
             <a href="{{ route('solutions.common') }}">Uso Pessoal</a>
+            <a href="#features">Recursos</a>
         </div>
         <div class="footer-col">
             <h5>Produto</h5>
-            <a href="#pricing">Planos</a>
-            <a href="{{ route('login') }}">Login</a>
-            <a href="{{ route('register') }}">Criar conta</a>
+            <a href="#pricing">Planos &amp; Preços</a>
+            <a href="#academy">Vivensi Academy</a>
+            <a href="{{ route('login') }}">Acessar conta</a>
+            <a href="{{ route('register') }}">Criar conta grátis</a>
         </div>
         <div class="footer-col">
             <h5>Legal</h5>
             <a href="{{ route('public.page', 'privacidade') }}">Privacidade</a>
             <a href="{{ route('public.page', 'termos') }}">Termos de Uso</a>
-            <a href="{{ route('public.page', 'sobre') }}">Sobre</a>
+            <a href="{{ route('public.page', 'sobre') }}">Sobre o Vivensi</a>
         </div>
     </div>
     <div class="footer-bottom">
         <span>© 2026 Vivensi. Todos os direitos reservados.</span>
-        <span>Feito com <span style="color:var(--rose)">♥</span> para o terceiro setor brasileiro</span>
+        <span class="fb-tagline">Feito com <span class="fb-heart">♥</span> para o terceiro setor brasileiro</span>
     </div>
 </footer>
 
@@ -835,11 +1843,29 @@ const observer=new IntersectionObserver(entries=>{
 },{threshold:0.12});
 document.querySelectorAll('.aos').forEach(el=>observer.observe(el));
 
-// Navbar scroll
-window.addEventListener('scroll',()=>{
-    const n=document.getElementById('mainNav');
-    n.style.background=window.scrollY>60?'rgba(8,14,26,.98)':'rgba(8,14,26,.9)';
-});
+// Navbar scroll — add .scrolled class + hide announce bar
+const mainNav = document.getElementById('mainNav');
+const announceBar = document.getElementById('announceBar');
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 80) {
+        mainNav.classList.add('scrolled');
+        if (announceBar) announceBar.style.transform = 'translateY(-100%)';
+    } else {
+        mainNav.classList.remove('scrolled');
+        if (announceBar) announceBar.style.transform = '';
+    }
+}, { passive: true });
+
+// Mobile menu toggle
+const mobileToggle = document.getElementById('mobileToggle');
+const mobileMenu   = document.getElementById('mobileMenu');
+const menuIcon     = document.getElementById('menuIcon');
+if (mobileToggle) {
+    mobileToggle.addEventListener('click', () => {
+        const open = mobileMenu.classList.toggle('open');
+        menuIcon.className = open ? 'fas fa-xmark' : 'fas fa-bars';
+    });
+}
 
 // Mobile menu close on outside click
 document.addEventListener('click',e=>{
@@ -849,5 +1875,171 @@ document.addEventListener('click',e=>{
 });
 </script>
 @include('partials.whatsapp-button')
+
+{{-- ═══ Widget de Agendamento Flutuante ═══ --}}
+<style>
+    .booking-widget {
+        position: fixed;
+        bottom: 90px; /* acima do botão WhatsApp */
+        right: 24px;
+        z-index: 9990;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+    }
+    .bw-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08);
+        padding: 18px 20px 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 236px;
+        cursor: pointer;
+        transition: transform .2s, box-shadow .2s;
+        animation: bwSlideIn .4s cubic-bezier(.34,1.56,.64,1) both;
+        text-decoration: none;
+    }
+    .bw-card:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(0,0,0,.22); }
+    @keyframes bwSlideIn {
+        from { opacity:0; transform:translateY(20px) scale(.95); }
+        to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+    .bw-avatar {
+        width: 44px; height: 44px; flex-shrink: 0;
+        background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; font-weight: 900; color: #fff;
+    }
+    .bw-text { flex: 1; min-width: 0; }
+    .bw-label {
+        font-size: .62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: #94a3b8;
+        margin-bottom: 2px;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+    .bw-title {
+        font-size: .85rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+    .bw-arrow {
+        width: 28px; height: 28px; flex-shrink: 0;
+        background: #4f6ef7;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .bw-arrow svg { color: #fff; }
+
+    .bw-close {
+        width: 28px; height: 28px;
+        background: rgba(0,0,0,.35);
+        border: none;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        align-self: flex-end;
+        transition: background .2s;
+        flex-shrink: 0;
+    }
+    .bw-close:hover { background: rgba(0,0,0,.55); }
+    .bw-close svg { color: #fff; }
+
+    .bw-pill {
+        background: #4f6ef7;
+        color: #fff;
+        border: none;
+        border-radius: 24px;
+        padding: 10px 18px;
+        font-size: .82rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 16px rgba(79,110,247,.4);
+        transition: background .2s, transform .15s;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+    .bw-pill:hover { background: #3b5bd9; transform: scale(1.04); }
+    .bw-pill .bw-dot {
+        width: 7px; height: 7px;
+        background: #4ade80;
+        border-radius: 50%;
+        animation: bwPulse 2s infinite;
+    }
+    @keyframes bwPulse {
+        0%,100% { opacity:1; transform:scale(1); }
+        50% { opacity:.5; transform:scale(1.4); }
+    }
+
+    .booking-widget.collapsed .bw-card { display: none; }
+</style>
+
+<div class="booking-widget" id="bookingWidget">
+    <a href="{{ route('booking.index') }}" class="bw-card" id="bwCard">
+        <div class="bw-avatar">V</div>
+        <div class="bw-text">
+            <p class="bw-label">Equipe Vivensi</p>
+            <p class="bw-title">Agendar uma conversa</p>
+        </div>
+        <div class="bw-arrow">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+    </a>
+    <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+        <button class="bw-close" id="bwClose" title="Fechar">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <button class="bw-pill" onclick="window.location='{{ route('booking.index') }}'">
+            <span class="bw-dot"></span>
+            Falar com a equipe
+        </button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const widget = document.getElementById('bookingWidget');
+    const closeBtn = document.getElementById('bwClose');
+    const HIDDEN_KEY = 'bw_hidden_until';
+
+    // Hide for 1 hour after close
+    const hiddenUntil = localStorage.getItem(HIDDEN_KEY);
+    if (hiddenUntil && Date.now() < parseInt(hiddenUntil)) {
+        widget.style.display = 'none';
+        return;
+    }
+
+    // Show after 3s scroll or 8s timer
+    let shown = false;
+    function showWidget() {
+        if (shown) return;
+        shown = true;
+        widget.style.display = 'flex';
+    }
+
+    widget.style.display = 'none';
+    setTimeout(showWidget, 8000);
+    window.addEventListener('scroll', function onScroll() {
+        if (window.scrollY > 400) { showWidget(); window.removeEventListener('scroll', onScroll); }
+    }, { passive: true });
+
+    closeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        widget.style.display = 'none';
+        localStorage.setItem(HIDDEN_KEY, Date.now() + 3600000); // 1 hora
+    });
+})();
+</script>
 </body>
 </html>

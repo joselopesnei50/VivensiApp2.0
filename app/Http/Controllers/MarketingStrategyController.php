@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\SocialAccount;
 use App\Services\MarketingAIService;
 use App\Services\UnsplashService;
 
@@ -46,6 +47,10 @@ class MarketingStrategyController extends Controller
             }
         }
 
-        return view('admin.marketing.strategy_result', compact('strategy'));
+        $socialAccounts = SocialAccount::where('is_active', true)
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->get();
+
+        return view('admin.marketing.strategy_result', compact('strategy', 'socialAccounts'));
     }
 }
