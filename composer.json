@@ -12,6 +12,7 @@
         "guzzlehttp/guzzle": "*",
         "guzzlehttp/psr7": "*",
         "laravel/framework": "^9.0",
+        "laravel/horizon": "^5.0",
         "laravel/sanctum": "^2.14",
         "laravel/tinker": "^2.7",
         "open-pix/php-sdk": "*",
@@ -54,17 +55,19 @@
             "@php artisan key:generate --ansi"
         ]
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": []
-        }
-    },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "laravel/horizon"
+            ]
         }
     },
     "minimum-stability": "dev",
