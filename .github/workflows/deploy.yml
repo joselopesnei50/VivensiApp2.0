@@ -1,21 +1,47 @@
-name: Deploy to AWS VPS
+name: Deploy Vivensi
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main  # Certifique-se de que sua branch principal se chama 'main'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy via SSH
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH no Ploi (AWS Lightsail)
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
+          host: ${{ secrets.SERVER_IP }}
+          username: ploi
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # Entrar no diretório e rodar o script de deploy
-            cd /var/www/vivensi
-            bash deploy.sh
+            cd /home/ploi/vivensi.app.br
+            
+            # Puxa as alterações do GitHub
+            git pull origin main
+            
+            # Instala dependências do PHP
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+            
+            # Roda as migrations (banco de dados)
+            php artisan migrate --force
+            
+            # Instala e compila o Frontend (CSS/JS)
+            npm install
+            npm run build
+            
+            # Limpa e otimiza o cache do Laravel
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:clear
+            
+            # Recarrega o PHP para aplicar as mudanças
+            echo "" | sudo -S service php8.1-fpm reload
+            
+            echo "🚀 Vivensi App 2.0 atualizado com sucesso!"
