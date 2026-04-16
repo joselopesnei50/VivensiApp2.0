@@ -53,6 +53,20 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             \Illuminate\Support\Facades\Log::info('🟢 Scheduler alive — ' . now()->toDateTimeString());
         })->hourly()->name('scheduler:health-check')->withoutOverlapping();
+
+        // Limpeza de sessões antigas (evita disco cheio por acúmulo de SESSION_DRIVER=file)
+        $schedule->command('session:gc')
+                 ->hourly()
+                 ->withoutOverlapping();
+
+        // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
+        $schedule->call(function () {
+            $log = storage_path('logs/laravel.log');
+            if (file_exists($log) && filesize($log) > 50 * 1024 * 1024) {
+                file_put_contents($log, ''); // Zera o arquivo mantendo-o
+                \Illuminate\Support\Facades\Log::info('🗑️ laravel.log foi rotacionado (>50MB).');
+            }
+        })->hourly()->name('logs:rotate')->withoutOverlapping();
     }
 
     /**
