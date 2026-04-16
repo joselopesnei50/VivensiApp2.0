@@ -12,7 +12,10 @@
  */
 
 // --- Configuração ---
-$secret      = getenv('DEPLOY_WEBHOOK_SECRET') ?: 'NZt57fGTlbvrOK3ahVQP01qs68Rm2HdA';
+$secret = getenv('DEPLOY_WEBHOOK_SECRET');
+if (empty($secret)) {
+    respond(500, 'Webhook secret not configured');
+}
 $deployScript = '/var/www/vivensi/scripts/deploy.sh';
 $logFile      = '/var/www/vivensi/storage/logs/webhook.log';
 $branch       = 'refs/heads/main';
