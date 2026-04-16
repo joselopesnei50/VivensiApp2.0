@@ -1950,18 +1950,41 @@ function refreshLayers() {
         const div = document.createElement('div');
         div.className = 'layer-item' + (isActive ? ' active' : '');
         
+        const isLocked = !obj.selectable;
+        
         div.innerHTML = `
             <i class="li-icon ${icons[obj.type]||'fas fa-shapes'}"></i>
             <span class="li-name">${obj.name || obj.type}</span>
-            <i class="li-act fas fa-arrow-up" title="Trazer para Frente" onclick="event.stopPropagation();moveLayerUp(${realIdx})"></i>
-            <i class="li-act fas fa-arrow-down" title="Mover para Trás" onclick="event.stopPropagation();moveLayerDown(${realIdx})"></i>
+            <i class="li-act fas ${isLocked ? 'fa-lock' : 'fa-unlock'}" title="Bloquear/Desbloquear" onclick="event.stopPropagation();toggleLock(${realIdx})"></i>
             <i class="li-act fas ${obj.visible===false?'fa-eye-slash':'fa-eye'}" title="Visibilidade" onclick="event.stopPropagation();toggleVis(${realIdx})"></i>
             <i class="li-act fas fa-trash" title="Excluir" onclick="event.stopPropagation();delLayer(${realIdx})"></i>
         `;
         
+        // Drag and drop for reordering
+        div.draggable = true;
+        div.ondragstart = (e) => { e.dataTransfer.setData('text/plain', realIdx.toString()); div.style.opacity = '0.4'; };
+        div.ondragend = (e) => { div.style.opacity = '1'; };
+        div.ondragover = (e) => { e.preventDefault(); div.style.borderTop = '2px solid #6366f1'; };
+        div.ondragleave = (e) => { div.style.borderTop = '1px solid transparent'; };
+        div.ondrop = (e) => {
+            e.preventDefault();
+            div.style.borderTop = '1px solid transparent';
+            const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+            if(isNaN(fromIdx) || fromIdx === realIdx) return;
+            const targetObj = canvas.item(fromIdx);
+            if(targetObj) {
+                canvas.moveTo(targetObj, realIdx);
+                canvas.requestRenderAll();
+                refreshLayers();
+                pushHistory();
+            }
+        };
+
         div.onclick = () => { 
-            canvas.setActiveObject(obj); 
-            canvas.requestRenderAll(); 
+            if(obj.selectable) {
+                canvas.setActiveObject(obj); 
+                canvas.requestRenderAll(); 
+            }
             refreshLayers(); 
             updateProps(); 
         };
@@ -1969,8 +1992,24 @@ function refreshLayers() {
     });
 }
 
-function moveLayerUp(idx) { const o = canvas.item(idx); if(o) { canvas.bringForward(o); canvas.requestRenderAll(); refreshLayers(); pushHistory(); } }
-function moveLayerDown(idx) { const o = canvas.item(idx); if(o) { canvas.sendBackwards(o); canvas.requestRenderAll(); refreshLayers(); pushHistory(); } }
+function toggleLock(idx) { 
+    const o = canvas.item(idx); 
+    if(o) { 
+        const willLock = o.selectable;
+        o.set({
+            selectable: !willLock,
+            evented: !willLock,
+            lockMovementX: willLock,
+            lockMovementY: willLock,
+            lockRotation: willLock,
+            lockScalingX: willLock,
+            lockScalingY: willLock
+        });
+        if (willLock) canvas.discardActiveObject();
+        canvas.requestRenderAll(); 
+        refreshLayers(); 
+    } 
+}
 function toggleVis(idx) { const o = canvas.item(idx); if(o){ o.set('visible', !o.visible); canvas.requestRenderAll(); refreshLayers(); } }
 function delLayer(idx) { const o = canvas.item(idx); if(o){ canvas.remove(o); canvas.requestRenderAll(); refreshLayers(); } }
 
