@@ -24,9 +24,9 @@ class Kernel extends ConsoleKernel
             $schedule->command("whatsapp:cleanup --days={$days}")->dailyAt('03:30');
         }
 
-        // Redes Sociais: publica posts agendados a cada minuto
+        // Redes Sociais: publica posts agendados a cada 5 minutos
         $schedule->command('posts:publish')
-                 ->everyMinute()
+                 ->everyFiveMinutes()
                  ->withoutOverlapping()
                  ->runInBackground();
 
