@@ -70,7 +70,7 @@ class EvolutionApiService
         ]);
 
         try {
-            $response = Http::timeout(45)->withSslVerification($this->sslVerify())->withHeaders([
+            $response = $this->http()->timeout(45)->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->post("{$this->baseUrl}/instance/create", $payload);
 
@@ -91,7 +91,7 @@ class EvolutionApiService
     {
         try {
             // 1. Tenta buscar o QR (Rápido)
-            $response = Http::timeout(3)->withSslVerification($this->sslVerify())->withHeaders([
+            $response = $this->http()->timeout(3)->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
 
@@ -108,7 +108,7 @@ class EvolutionApiService
             }
 
             // 2. Se falhar ou não tiver QR, tenta "acordar" em background (Curto Timeout)
-            Http::timeout(1)->withSslVerification($this->sslVerify())->withHeaders([
+            $this->http()->timeout(1)->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
 
@@ -123,7 +123,7 @@ class EvolutionApiService
         if (!$this->instanceName) return ['error' => 'Not configured'];
 
         try {
-            $response = Http::timeout(5)->withSslVerification($this->sslVerify())->withHeaders([
+            $response = $this->http()->timeout(5)->withHeaders([
                 'apikey' => $this->globalApiKey
             ])->get("{$this->baseUrl}/instance/connectionState/{$this->instanceName}");
 
@@ -148,7 +148,7 @@ class EvolutionApiService
         ];
 
         try {
-            $response = Http::timeout(15)->withSslVerification($this->sslVerify())->withHeaders([
+            $response = $this->http()->timeout(15)->withHeaders([
                 'apikey' => $this->apiKey
             ])->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
 
@@ -211,19 +211,24 @@ class EvolutionApiService
     public function logout(): array
     {
         if (!$this->instanceName) return ['error' => 'No instance'];
-        $response = Http::timeout(10)
-            ->withSslVerification($this->sslVerify())
+        $response = $this->http()->timeout(10)
             ->withHeaders(['apikey' => $this->globalApiKey])
             ->delete("{$this->baseUrl}/instance/logout/{$this->instanceName}");
         return $response->json() ?? [];
     }
 
     /**
-     * SSL verification: habilitada em produção, desabilitada em localhost/dev.
+     * Retorna cliente HTTP com SSL configurado corretamente.
+     * Laravel 9 usa withoutVerifying() para desabilitar SSL.
      */
-    protected function sslVerify(): bool
+    protected function http(): \Illuminate\Http\Client\PendingRequest
     {
-        if (!app()->environment('production')) return false;
-        return !str_contains($this->baseUrl, 'localhost') && !str_contains($this->baseUrl, '127.0.0.1');
+        $shouldVerify = app()->environment('production')
+            && !str_contains($this->baseUrl, 'localhost')
+            && !str_contains($this->baseUrl, '127.0.0.1');
+
+        return $shouldVerify
+            ? \Illuminate\Support\Facades\Http::withOptions(['verify' => true])
+            : \Illuminate\Support\Facades\Http::withoutVerifying();
     }
 }
