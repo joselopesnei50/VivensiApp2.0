@@ -160,6 +160,8 @@
 
     let pollInterval = null;
     let currentInstanceId = null;
+    let pollAttempts = 0;
+    const MAX_POLL_ATTEMPTS = 36; // 36 × 5s = 3 minutos máximo
 
     function openNewInstanceModal() {
         document.getElementById('create-instance-form').style.display = 'block';
@@ -192,6 +194,7 @@
 
             if (response.ok && data.instance) {
                 currentInstanceId = data.instance.id;
+                pollAttempts = 0;
                 document.getElementById('create-instance-form').style.display = 'none';
                 document.getElementById('qr-code-view').style.display = 'block';
                 fetchQrCode();
@@ -209,8 +212,20 @@
         }
     }
 
+    function setQrStatus(msg, color = '#f59e0b') {
+        const el = document.querySelector('#qr-code-view > p');
+        if (el) { el.innerHTML = msg; el.style.color = color; }
+    }
+
     async function fetchQrCode() {
         if (!currentInstanceId) return;
+
+        pollAttempts++;
+        if (pollAttempts > MAX_POLL_ATTEMPTS) {
+            clearInterval(pollInterval);
+            setQrStatus('<i class="fas fa-exclamation-triangle"></i> Timeout: QR não gerado após 3 minutos. Feche e tente novamente.', '#ef4444');
+            return;
+        }
 
         try {
             const response = await fetch(`/whatsapp/instances/${currentInstanceId}/connect`, {
@@ -221,6 +236,7 @@
 
             if (data.qrcode || data.base64) {
                 document.getElementById('qr-code-image').src = data.qrcode || data.base64;
+                setQrStatus('<i class="fas fa-spinner fa-spin"></i> Aguardando conexão...', '#f59e0b');
             } else if (data.status === 'open' || data.state === 'open') {
                 clearInterval(pollInterval);
                 document.getElementById('qr-code-view').innerHTML = `
@@ -229,9 +245,12 @@
                     <p style="color: rgba(255,255,255,0.6);">A página será recarregada.</p>
                 `;
                 setTimeout(() => window.location.reload(), 2000);
+            } else if (data.error) {
+                setQrStatus(`<i class="fas fa-clock"></i> ${data.error} (tentativa ${pollAttempts})`, '#f59e0b');
             }
         } catch (err) {
             console.error('Erro buscando QR Code', err);
+            setQrStatus('<i class="fas fa-exclamation-circle"></i> Erro de comunicação com servidor', '#ef4444');
         }
     }
 
@@ -240,17 +259,29 @@
         currentInstanceId = null;
     });
 
-    function confirmDelete(id) {
-        if (confirm('Tem certeza que deseja excluir esta instância? Esta ação é irreversível.')) {
-            fetch(`/whatsapp/instances/${id}`, {
+    async function confirmDelete(id) {
+        if (!confirm('Tem certeza que deseja excluir esta instância? Esta ação é irreversível.')) return;
+
+        try {
+            const response = await fetch(`/whatsapp/instances/${id}`, {
                 method: 'DELETE',
                 headers: webHeaders,
-            }).then(() => window.location.reload());
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const data = await response.json().catch(() => ({}));
+                alert('Erro ao excluir: ' + (data.message || data.error || 'HTTP ' + response.status));
+            }
+        } catch (err) {
+            alert('Falha na comunicação: ' + err.message);
         }
     }
 
     function checkStatus(id) {
         currentInstanceId = id;
+        pollAttempts = 0;
         document.getElementById('create-instance-form').style.display = 'none';
         document.getElementById('qr-code-view').style.display = 'block';
         document.getElementById('qr-code-image').src = '';

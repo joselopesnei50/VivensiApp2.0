@@ -69,6 +69,26 @@ class WhatsappInstance extends Model
 
     // ── Métodos de Negócio ──────────────────────────────────────────────────
 
+    // ── Accessors para compatibilidade com EvolutionApiService ─────────────
+
+    /**
+     * Mapeia instance_name para o atributo esperado pelo EvolutionApiService.
+     */
+    public function getEvolutionInstanceNameAttribute(): string
+    {
+        return $this->instance_name ?? '';
+    }
+
+    /**
+     * Mapeia instance_token para o atributo esperado pelo EvolutionApiService.
+     */
+    public function getEvolutionInstanceTokenAttribute(): ?string
+    {
+        return $this->instance_token;
+    }
+
+    // ── Métodos de Negócio ──────────────────────────────────────────────────
+
     /**
      * Gera nome único de instância para um tenant.
      * Formato: vivensi_t{tenant_id}_{random6}
