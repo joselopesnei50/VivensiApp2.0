@@ -498,11 +498,11 @@
         btn.disabled = true;
 
         try {
-            const response = await fetch(`/api/whatsapp/instances`, {
+            const response = await fetch(`/whatsapp/instances`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer {{ auth()->user()->createToken("temp")->plainTextToken }}',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ name: name, number: number })
@@ -559,10 +559,11 @@
         const qrImage = document.getElementById('qr-code-image');
 
         try {
-            const response = await fetch(`/api/whatsapp/instances/${currentInstanceId}/connect`, {
+            const response = await fetch(`/whatsapp/instances/${currentInstanceId}/connect`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 }
             });
@@ -608,9 +609,11 @@
 
     function confirmDelete(id) {
         if (confirm('Tem certeza que deseja excluir esta instância? Esta ação é irreversível.')) {
-            fetch(`/api/whatsapp/instances/${id}`, {
+            fetch(`/whatsapp/instances/${id}`, {
                 method: 'DELETE',
                 headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 }
             }).then(() => window.location.reload());
