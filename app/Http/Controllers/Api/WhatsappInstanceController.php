@@ -113,6 +113,24 @@ class WhatsappInstanceController extends Controller
         $instance = $this->findForTenant($id);
         $evo = new EvolutionApiService($instance);
 
+        // Se o banco já marcou como conectado (via webhook), retorna imediatamente
+        if ($instance->status === 'open') {
+            return response()->json(['status' => 'open', 'state' => 'open']);
+        }
+
+        // Banco ainda não atualizou — consulta a Evolution API diretamente como fallback
+        $liveState = $evo->getConnectionState();
+        $liveStatus = $liveState['instance']['state'] ?? null;
+        if ($liveStatus && in_array($liveStatus, ['open', 'connecting', 'close'], true)) {
+            $instance->update(['status' => $liveStatus === 'close' ? 'close' : $liveStatus]);
+            $instance->refresh();
+        }
+
+        // Segunda verificação após sincronizar com a Evolution API
+        if ($instance->status === 'open') {
+            return response()->json(['status' => 'open', 'state' => 'open']);
+        }
+
         if ($request->filled('phone')) {
             // Pairing Code (v2 com busca ativa se necessário)
             $phone  = preg_replace('/\D/', '', $request->input('phone'));
@@ -130,7 +148,7 @@ class WhatsappInstanceController extends Controller
                 
                 if (isset($fetch['qrcode']) && $fetch['qrcode']) {
                     // Popula o cache para os próximos polls serem instantâneos
-                    \Illuminate\Support\Facades\Cache::put($cacheKey, $fetch['qrcode'], 40); // QR dura ~40s
+                    \Illuminate\Support\Facades\Cache::put($cacheKey, $fetch['qrcode'], 120); // QR válido por ~2 minutos
                     $result = ['base64' => $fetch['qrcode'], 'status' => $fetch['status'] ?? $instance->status];
                 } else {
                     $result = [
@@ -152,9 +170,11 @@ class WhatsappInstanceController extends Controller
     {
         $instance = $this->findForTenant($id);
 
-        // Desconectar da Evolution API antes de deletar
+        // Remove da Evolution API (logout + delete) — erros são ignorados intencionalmente
+        // para não bloquear a exclusão local caso a API esteja inacessível
         $evo = new EvolutionApiService($instance);
         $evo->logout();
+        $evo->deleteInstance();
 
         $instance->delete(); // Soft delete
 

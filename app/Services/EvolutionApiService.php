@@ -8,24 +8,21 @@ use Illuminate\Support\Str;
 
 /**
  * Evolution API Service 2.0 (Optimized for VPS Local Integration)
- * 
- * Versão re-implementada focada em performance local e compatibilidade v2.1.1.
  */
 class EvolutionApiService
 {
     protected $instanceName;
-    protected $apiKey; 
+    protected $apiKey;
     protected $globalApiKey;
     protected $baseUrl;
     protected $contextModel;
 
     /**
-     * @param \Illuminate\Database\Eloquent\Model|null $contextModel (App\Models\Tenant ou App\Models\User)
+     * @param \Illuminate\Database\Eloquent\Model|null $contextModel (WhatsappInstance, Tenant ou User)
      */
     public function __construct($contextModel = null)
     {
-        // Prioridade: Localhost (mesma VPS) -> Config -> Env
-        $this->baseUrl = config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br'));
+        $this->baseUrl      = rtrim(config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br')), '/');
         $this->globalApiKey = config('whatsapp.evolution_global_key');
         $this->contextModel = $contextModel;
 
@@ -38,50 +35,48 @@ class EvolutionApiService
     }
 
     /**
-     * Cria uma instância atômica.
+     * Cria uma instância na Evolution API.
+     * NÃO enviar 'number' — causa TypeError na v2.3.6 com QR Code.
      */
     public function createInstance(string $name, string $clientToken = null, ?string $number = null): array
     {
-        $webhookUrl  = config('app.url') . "/api/evo/webhook/" . $clientToken;
+        // rtrim garante que não haverá dupla barra na URL do webhook
+        $appUrl     = rtrim(config('app.url'), '/');
+        $webhookUrl = $appUrl . '/api/evo/webhook/' . $clientToken;
 
         $payload = [
             'instanceName' => $name,
             'qrcode'       => true,
             'integration'  => 'WHATSAPP-BAILEYS',
-        ];
-
-        // Nota: NÃO enviar 'number' na criação com QR Code — causa erro na Evolution API v2.3.6
-        // O número só é usado para Pairing Code (via getPairingCode() separadamente)
-
-        $payload = array_merge($payload, [
             'rejectCall'   => false,
             'groupsIgnore' => true,
             'alwaysOnline' => true,
             'readMessages' => true,
             'readStatus'   => true,
-            'webhook' => [
-                'enabled' => true,
-                'url'     => $webhookUrl,
+            'webhook'      => [
+                'enabled'  => true,
+                'url'      => $webhookUrl,
                 'byEvents' => false,
                 'base64'   => true,
-                'events'   => ['qrcode.updated', 'connection.update', 'messages.upsert', 'messages.update', 'send.message']
-            ]
-        ]);
+                'events'   => ['qrcode.updated', 'connection.update', 'messages.upsert', 'messages.update', 'send.message'],
+            ],
+        ];
+
+        Log::info('EVO createInstance', ['name' => $name, 'webhook' => $webhookUrl]);
 
         try {
             $response = $this->http()->timeout(45)->withHeaders([
-                'apikey' => $this->globalApiKey
+                'apikey' => $this->globalApiKey,
             ])->post("{$this->baseUrl}/instance/create", $payload);
 
             if ($response->successful()) {
                 return $response->json() ?? [];
             }
 
-            \Illuminate\Support\Facades\Log::error('EVOLUTION CREATE INSTANCE FAILED', [
+            Log::error('EVOLUTION CREATE INSTANCE FAILED', [
                 'status'  => $response->status(),
                 'body'    => $response->body(),
                 'payload' => $payload,
-                'url'     => $this->baseUrl,
             ]);
             return ['error' => 'Falha na criação da instância', 'details' => $response->body()];
         } catch (\Exception $e) {
@@ -90,35 +85,49 @@ class EvolutionApiService
     }
 
     /**
-     * Busca o código de conexão de forma resiliente.
+     * Busca o QR Code da instância diretamente na Evolution API.
+     * Logging detalhado para diagnóstico da estrutura real de resposta.
      */
     public function fetchConnectionCode(string $instanceName): array
     {
         try {
-            // 1. Tenta buscar o QR (Rápido)
-            $response = $this->http()->timeout(3)->withHeaders([
-                'apikey' => $this->globalApiKey
+            $response = $this->http()->timeout(8)->withHeaders([
+                'apikey' => $this->globalApiKey,
             ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
 
             if ($response->successful()) {
                 $data = $response->json();
-                $qrBase64 = $data['base64'] ?? ($data['qrcode']['base64'] ?? ($data['code'] ?? null));
+
+                // Log da estrutura real — essencial para diagnosticar incompatibilidade
+                Log::info('EVO fetchConnectionCode response', [
+                    'instance' => $instanceName,
+                    'keys'     => is_array($data) ? array_keys($data) : 'not-array',
+                    'data'     => $data,
+                ]);
+
+                // Tenta todas as estruturas conhecidas da Evolution API
+                $qrBase64 = $data['base64']
+                    ?? ($data['qrcode']['base64'] ?? null)
+                    ?? ($data['code'] ?? null)
+                    ?? (is_string($data['qrcode'] ?? null) ? $data['qrcode'] : null);
 
                 if ($qrBase64) {
-                    return [
-                        'qrcode'      => $qrBase64,
-                        'status'      => 'open',
-                    ];
+                    return ['qrcode' => $qrBase64, 'status' => 'connecting'];
                 }
+
+                // QR não disponível ainda — pode estar gerando
+                return ['error' => 'QR ainda não disponível', 'status' => 'generating'];
             }
 
-            // 2. Se falhar ou não tiver QR, tenta "acordar" em background (Curto Timeout)
-            $this->http()->timeout(1)->withHeaders([
-                'apikey' => $this->globalApiKey
-            ])->get("{$this->baseUrl}/instance/connect/{$instanceName}");
+            Log::warning('EVO fetchConnectionCode HTTP error', [
+                'instance' => $instanceName,
+                'status'   => $response->status(),
+                'body'     => $response->body(),
+            ]);
 
-            return ['error' => 'Gerando QR Code...', 'status' => 'generating'];
+            return ['error' => 'API retornou ' . $response->status(), 'status' => 'generating'];
         } catch (\Exception $e) {
+            Log::warning('EVO fetchConnectionCode exception', ['error' => $e->getMessage()]);
             return ['error' => 'Aguardando API...', 'status' => 'generating'];
         }
     }
@@ -129,10 +138,10 @@ class EvolutionApiService
 
         try {
             $response = $this->http()->timeout(5)->withHeaders([
-                'apikey' => $this->globalApiKey
+                'apikey' => $this->globalApiKey,
             ])->get("{$this->baseUrl}/instance/connectionState/{$this->instanceName}");
 
-            return $response->json();
+            return $response->json() ?? ['error' => 'Empty response'];
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }
@@ -142,25 +151,25 @@ class EvolutionApiService
     {
         if (!$this->instanceName || !$this->apiKey) return ['error' => 'Evolution API Missing Config'];
 
-        $number = (string) $to;
         $renderedMessage = $this->applySpintax($message);
 
         $payload = [
-            'number' => $number,
-            'text'   => $renderedMessage,
-            'delay'  => $delaySeconds > 0 ? $delaySeconds * 1000 : 1200,
+            'number'      => (string) $to,
+            'text'        => $renderedMessage,
+            'delay'       => $delaySeconds > 0 ? $delaySeconds * 1000 : 1200,
             'linkPreview' => false,
         ];
 
         try {
             $response = $this->http()->timeout(15)->withHeaders([
-                'apikey' => $this->apiKey
+                'apikey' => $this->apiKey,
             ])->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
 
             if ($response->failed()) {
-                try {
-                    Log::error('EVOLUTION API REJEITOU O ENVIO', ['status' => $response->status(), 'body' => $response->json()]);
-                } catch (\Exception $le) {}
+                Log::error('EVOLUTION API REJEITOU O ENVIO', [
+                    'status' => $response->status(),
+                    'body'   => $response->json(),
+                ]);
                 return ['error' => 'Failed to send', 'details' => $response->body()];
             }
 
@@ -180,22 +189,17 @@ class EvolutionApiService
 
     /**
      * Solicita um Pairing Code para conectar o WhatsApp via número de telefone.
-     * Usado como alternativa ao QR Code.
-     *
-     * @param string $phone Número no formato E.164 sem '+' (ex: 5511999999999)
      */
     public function getPairingCode(string $phone): array
     {
-        $instanceName = $this->instanceName;
-        if (!$instanceName) return ['error' => 'No instance configured'];
+        if (!$this->instanceName) return ['error' => 'No instance configured'];
 
         $cleanPhone = preg_replace('/\D/', '', $phone);
 
         try {
-            $response = Http::timeout(15)
-                ->withSslVerification($this->sslVerify())
+            $response = $this->http()->timeout(15)
                 ->withHeaders(['apikey' => $this->globalApiKey])
-                ->post("{$this->baseUrl}/instance/pairingCode/{$instanceName}", [
+                ->post("{$this->baseUrl}/instance/pairingCode/{$this->instanceName}", [
                     'number' => $cleanPhone,
                 ]);
 
@@ -216,15 +220,35 @@ class EvolutionApiService
     public function logout(): array
     {
         if (!$this->instanceName) return ['error' => 'No instance'];
-        $response = $this->http()->timeout(10)
-            ->withHeaders(['apikey' => $this->globalApiKey])
-            ->delete("{$this->baseUrl}/instance/logout/{$this->instanceName}");
-        return $response->json() ?? [];
+        try {
+            $response = $this->http()->timeout(5)
+                ->withHeaders(['apikey' => $this->globalApiKey])
+                ->delete("{$this->baseUrl}/instance/logout/{$this->instanceName}");
+            return $response->json() ?? [];
+        } catch (\Exception $e) {
+            return ['error' => 'Logout skipped (API unreachable): ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Remove completamente a instância da Evolution API.
+     */
+    public function deleteInstance(): array
+    {
+        if (!$this->instanceName) return ['error' => 'No instance'];
+        try {
+            $response = $this->http()->timeout(5)
+                ->withHeaders(['apikey' => $this->globalApiKey])
+                ->delete("{$this->baseUrl}/instance/delete/{$this->instanceName}");
+            return $response->json() ?? [];
+        } catch (\Exception $e) {
+            return ['error' => 'Delete skipped (API unreachable): ' . $e->getMessage()];
+        }
     }
 
     /**
      * Retorna cliente HTTP com SSL configurado corretamente.
-     * Laravel 9 usa withoutVerifying() para desabilitar SSL.
+     * Laravel 9 usa withoutVerifying() — não existe withSslVerification().
      */
     protected function http(): \Illuminate\Http\Client\PendingRequest
     {
