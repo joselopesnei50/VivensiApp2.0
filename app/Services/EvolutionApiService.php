@@ -50,9 +50,8 @@ class EvolutionApiService
             'integration'  => 'WHATSAPP-BAILEYS',
         ];
 
-        if ($number) {
-            $payload['number'] = preg_replace('/\D/', '', $number);
-        }
+        // Nota: NÃO enviar 'number' na criação com QR Code — causa erro na Evolution API v2.3.6
+        // O número só é usado para Pairing Code (via getPairingCode() separadamente)
 
         $payload = array_merge($payload, [
             'rejectCall'   => false,
