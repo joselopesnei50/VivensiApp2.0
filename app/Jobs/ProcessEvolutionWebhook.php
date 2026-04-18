@@ -74,8 +74,18 @@ class ProcessEvolutionWebhook implements ShouldQueue
         if (WhatsappMessage::where('message_id', $messageId)->exists()) return;
 
         $remoteJid = $key['remoteJid'] ?? '';
-        // Extrair número limpo do JID (ex: 5511999999999@s.whatsapp.net → 5511999999999)
-        $phone = preg_replace('/@.*/', '', $remoteJid);
+        $chatLid   = $messageData['chatLid'] ?? ($key['chatLid'] ?? null);
+
+        // Se remoteJid for @lid (identificador de privacidade do WhatsApp),
+        // usa o chatLid como identificador estável. Caso contrário extrai o número.
+        if (str_ends_with($remoteJid, '@lid')) {
+            // Usa chatLid se disponível, senão usa o próprio @lid como fallback
+            $phone = $chatLid ?? $remoteJid;
+        } else {
+            // Extrai número limpo do JID (ex: 5511999999999@s.whatsapp.net → 5511999999999)
+            $phone = preg_replace('/@.*/', '', $remoteJid);
+        }
+
         if (empty($phone)) return;
 
         // Extrair conteúdo da mensagem (texto simples)
@@ -183,9 +193,11 @@ class ProcessEvolutionWebhook implements ShouldQueue
         }
 
         if ($ownerJid) {
-            $updateData['owner_jid']    = $ownerJid;
-            // Extrai o número do JID: 5511999999999@s.whatsapp.net
-            $updateData['phone_number'] = preg_replace('/@.*/', '', $ownerJid);
+            $updateData['owner_jid'] = $ownerJid;
+            // Extrai o número do JID — ignora se for @lid (identificador de privacidade)
+            if (!str_ends_with($ownerJid, '@lid')) {
+                $updateData['phone_number'] = preg_replace('/@.*/', '', $ownerJid);
+            }
         }
 
         $cacheKey = 'evo_qr_' . $instance->instance_name;
