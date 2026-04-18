@@ -78,6 +78,12 @@ class EvolutionApiService
                 return $response->json() ?? [];
             }
 
+            \Illuminate\Support\Facades\Log::error('EVOLUTION CREATE INSTANCE FAILED', [
+                'status'  => $response->status(),
+                'body'    => $response->body(),
+                'payload' => $payload,
+                'url'     => $this->baseUrl,
+            ]);
             return ['error' => 'Falha na criação da instância', 'details' => $response->body()];
         } catch (\Exception $e) {
             return ['error' => 'Exceção na criação (API Fora?): ' . $e->getMessage()];
