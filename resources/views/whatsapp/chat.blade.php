@@ -587,11 +587,6 @@
                             </button>
                         </div>
                     @endif
-                <div style="display: flex; justify-content: center; gap: 5px;">
-                    <span class="tag-badge hot">Quente 🔥</span>
-                    <span class="tag-badge">Novo Lead</span>
-                </div>
-                <button class="btn btn-outline-primary btn-sm mt-3 w-100" style="border-radius: 20px;">Ver Perfil Completo</button>
             </div>
 
             <div class="crm-content">
@@ -603,16 +598,12 @@
                     </div>
                     <div class="crm-body collapse show" id="crm-contact-info">
                         <div class="info-row">
-                            <span class="label">E-mail</span>
-                            <span class="value">contato@empresa.com</span>
+                            <span class="label">Nome</span>
+                            <span class="value" id="crm-info-name">—</span>
                         </div>
-                         <div class="info-row">
-                            <span class="label">Empresa</span>
-                            <span class="value">Acme Solutions Ltda</span>
-                        </div>
-                         <div class="info-row mb-0">
-                            <span class="label">Cargo</span>
-                            <span class="value">Gerente de Compras</span>
+                        <div class="info-row mb-0">
+                            <span class="label">Telefone</span>
+                            <span class="value" id="crm-info-phone">—</span>
                         </div>
                     </div>
                 </div>
@@ -898,6 +889,8 @@
             $('#header-name, #crm-name').text(chat.contact_name);
             $('#crm-avatar, #header-avatar').text(chat.contact_name.charAt(0));
             $('#crm-phone').text(chat.contact_phone || '--');
+            $('#crm-info-name').text(chat.contact_name || '—');
+            $('#crm-info-phone').text(chat.contact_phone || '—');
             renderCompliance(chat);
         }
 
