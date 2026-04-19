@@ -567,8 +567,18 @@ class WhatsappController extends Controller
             }
         } else {
             // Fallback: Evolution API
-            $evo = new \App\Services\EvolutionApiService($tenant);
+            $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+                ->where('status', 'open')
+                ->first();
+            if (!$instance) {
+                return response()->json(['error' => 'Nenhuma instância WhatsApp conectada. Configure em Configurações.'], 422);
+            }
+            $evo = new \App\Services\EvolutionApiService($instance);
             $res = $evo->sendMessage($chat->wa_id, $content, null, 0);
+            if (isset($res['error'])) {
+                Log::error('Evolution sendMessage falhou', ['error' => $res, 'chat' => $chat->wa_id]);
+                return response()->json(['error' => 'Falha ao enviar: ' . ($res['error'] ?? 'Erro desconhecido')], 500);
+            }
             $messageId = $res['key']['id'] ?? ($res['messageId'] ?? $messageId);
         }
 

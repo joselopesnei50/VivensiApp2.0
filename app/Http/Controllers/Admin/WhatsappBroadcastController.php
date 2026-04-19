@@ -36,7 +36,11 @@ class WhatsappBroadcastController extends Controller
         // Config info (never inserting with firstOrCreate here to avoid constraint errors)
         $config = WhatsappConfig::where('tenant_id', $tenantId)->first();
 
-        return view('admin.whatsapp.broadcast.index', compact('contactsCount', 'config'));
+        $activeInstance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('status', 'open')
+            ->first();
+
+        return view('admin.whatsapp.broadcast.index', compact('contactsCount', 'config', 'activeInstance'));
     }
 
     /**
@@ -120,13 +124,15 @@ class WhatsappBroadcastController extends Controller
         }
 
         $sentCount = 0;
-        $contextModel = $this->getContextModel();
-        
-        if (!$contextModel || empty($contextModel->evolution_instance_name)) {
-            return redirect()->back()->with('error', 'Sua instância Evolution API não está configurada.');
+        $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('status', 'open')
+            ->first();
+
+        if (!$instance) {
+            return redirect()->back()->with('error', 'Nenhuma instância WhatsApp conectada. Configure em Aparelhos Conectados.');
         }
 
-        $evo = new EvolutionApiService($contextModel);
+        $evo = new EvolutionApiService($instance);
 
         foreach ($contacts as $contact) {
             try {
