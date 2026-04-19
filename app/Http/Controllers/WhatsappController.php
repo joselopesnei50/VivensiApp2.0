@@ -244,7 +244,14 @@ class WhatsappController extends Controller
 
         // Enviar via Evolution API
         try {
-            $evo = new EvolutionApiService($tenant);
+            $instance = \App\Models\WhatsappInstance::where('tenant_id', $chat->tenant_id)
+                ->where('status', 'open')
+                ->first();
+            if (!$instance) {
+                Log::warning("replyWithAi: nenhuma instância conectada para tenant {$chat->tenant_id}");
+                return;
+            }
+            $evo = new EvolutionApiService($instance);
             $res = $evo->sendMessage($chat->wa_id, $replyText, null, 2);
             
             if (isset($res['key']['id']) || isset($res['messageId'])) {
