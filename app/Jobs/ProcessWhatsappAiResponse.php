@@ -43,12 +43,16 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         $config = WhatsappConfig::find($this->configId);
         $chat = WhatsappChat::find($this->chatId);
 
+        Log::info('AI Job started', ['config_id' => $this->configId, 'chat_id' => $this->chatId]);
+
         if (!$config || !$chat) {
+            Log::warning('AI Job: config ou chat não encontrado', ['config_id' => $this->configId, 'chat_id' => $this->chatId]);
             return;
         }
 
         // Safety checks
         if (!$config->ai_enabled) {
+            Log::info('AI Job: ai_enabled=false, abortando');
             return;
         }
 
@@ -177,6 +181,7 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                 }
                 $evo = new \App\Services\EvolutionApiService($instance);
                 $res = $evo->sendMessage($chat->wa_id, $replyText, null, 2);
+                Log::info('AI Job sendMessage result', ['res' => $res, 'chat' => $chat->wa_id]);
                 $messageId = $res['key']['id'] ?? ($res['messageId'] ?? $messageId);
             }
 
