@@ -167,8 +167,15 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                     return;
                 }
             } else {
-                // Fallback para Evolution API (Legado/Em migração)
-                $evo = new \App\Services\EvolutionApiService($tenant);
+                // Fallback para Evolution API
+                $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+                    ->where('status', 'open')
+                    ->first();
+                if (!$instance) {
+                    Log::error('AI Response: nenhuma instância WhatsApp conectada', ['tenant_id' => $tenantId]);
+                    return;
+                }
+                $evo = new \App\Services\EvolutionApiService($instance);
                 $res = $evo->sendMessage($chat->wa_id, $replyText, null, 2);
                 $messageId = $res['key']['id'] ?? ($res['messageId'] ?? $messageId);
             }
