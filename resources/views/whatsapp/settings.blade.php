@@ -56,6 +56,12 @@
                 </h4>
                 
                 <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="outbound_enabled" value="1" id="outboundEnabled" {{ ($config->outbound_enabled ?? false) ? 'checked' : '' }}>
+                    <label class="form-check-label fw-700" for="outboundEnabled">Habilitar Envio de Mensagens</label>
+                    <div class="small text-muted mt-1">Ativa o envio de mensagens pelo sistema. Desativar bloqueia todos os disparos.</div>
+                </div>
+
+                <div class="form-check form-switch mb-3">
                     <input class="form-check-input" type="checkbox" name="enforce_24h_window" value="1" id="enforce24h" {{ ($config->enforce_24h_window ?? true) ? 'checked' : '' }}>
                     <label class="form-check-label fw-700" for="enforce24h">Respeitar Janela Restrita de 24h (Custos reduzidos)</label>
                     <div class="small text-muted mt-1">Garante que a IA só envia textos livres enquanto o WhatsApp permite gratuitamente.</div>
