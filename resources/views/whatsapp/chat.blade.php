@@ -767,11 +767,31 @@
                 loadChatData(currentChatId);
             }
 
-            // Auto-polling every 5 seconds for new messages
+            // Auto-polling every 3 seconds for new messages
             setInterval(function() {
                 if (!currentChatId) return;
                 pollNewMessages(currentChatId);
-            }, 5000);
+            }, 3000);
+
+            // Refresh sidebar chat list every 10 seconds
+            setInterval(function() {
+                $.get('{{ url("/whatsapp/chat/list") }}', function(data) {
+                    if (!data.chats) return;
+                    data.chats.forEach(function(chat) {
+                        const item = $('.contact-item[data-id="' + chat.id + '"]');
+                        if (item.length) {
+                            item.find('.contact-name').text(chat.contact_name || 'Sem Nome');
+                            item.find('.contact-time').text(chat.last_message_at_formatted || '');
+                            item.find('.last-msg').text(chat.last_message_preview || '');
+                        } else {
+                            // New chat appeared — reload page to show it
+                            if (!$('.contact-item[data-id="' + chat.id + '"]').length) {
+                                location.reload();
+                            }
+                        }
+                    });
+                });
+            }, 10000);
 
             // Filtering Logic
             $('.filter-tab').click(function() {

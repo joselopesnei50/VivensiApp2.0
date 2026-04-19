@@ -462,6 +462,27 @@ class WhatsappController extends Controller
         return view('whatsapp.chat', compact('chats'));
     }
 
+    public function chatList()
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $chats = WhatsappChat::where('tenant_id', $tenantId)
+            ->orderBy('last_message_at', 'desc')
+            ->get()
+            ->map(function ($chat) {
+                $last = WhatsappMessage::where('chat_id', $chat->id)->latest()->first();
+                return [
+                    'id'                   => $chat->id,
+                    'contact_name'         => $chat->contact_name ?? 'Sem Nome',
+                    'last_message_at_formatted' => $chat->last_message_at
+                        ? \Carbon\Carbon::parse($chat->last_message_at)->format('H:i')
+                        : '',
+                    'last_message_preview' => $last ? mb_substr($last->content, 0, 40) : '',
+                ];
+            });
+
+        return response()->json(['chats' => $chats]);
+    }
+
     public function getChatMessages(Request $request, $chatId)
     {
         $tenantId = auth()->user()->tenant_id;

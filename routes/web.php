@@ -384,6 +384,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/templates', [App\Http\Controllers\WhatsappController::class, 'templates'])->name('whatsapp.templates');
     Route::post('/whatsapp/settings', [App\Http\Controllers\WhatsappController::class, 'saveSettings']);
     Route::get('/whatsapp/chat', [App\Http\Controllers\WhatsappController::class, 'chatIndex'])->name('whatsapp.chat');
+    Route::get('/whatsapp/chat/list', [App\Http\Controllers\WhatsappController::class, 'chatList']);
     Route::get('/whatsapp/chat/{id}/messages', [App\Http\Controllers\WhatsappController::class, 'getChatMessages']);
     Route::post('/whatsapp/chat/send', [App\Http\Controllers\WhatsappController::class, 'sendMessage']);
     Route::post('/whatsapp/chat/start', [App\Http\Controllers\WhatsappController::class, 'startChat'])->name('whatsapp.chat.start');
