@@ -41,14 +41,15 @@
                 <h5 class="card-title mb-3 d-flex align-items-center">
                     <i class="fas fa-server text-primary me-2"></i> Status da Instância
                 </h5>
-                @if(isset($config) && $config->client_token_hash)
-                    <div class="alert alert-info py-2 mb-0" style="font-size: 0.9rem;">
-                        <i class="fas fa-check-circle me-1"></i> Configurado
+                @if(isset($activeInstance) && $activeInstance)
+                    <div class="alert alert-success py-2 mb-0" style="font-size: 0.9rem;">
+                        <i class="fas fa-check-circle me-1"></i> <strong>CONECTADO</strong><br>
+                        <small>{{ $activeInstance->phone_number ?: $activeInstance->instance_name }}</small>
                     </div>
                 @else
                     <div class="alert alert-warning py-2 mb-0" style="font-size: 0.9rem;">
-                        <i class="fas fa-exclamation-triangle me-1"></i> Instância não configurada. <br>
-                        <a href="{{ route('whatsapp.settings') }}" style="font-weight: bold; text-decoration: underline;">Configurar Agora</a>
+                        <i class="fas fa-exclamation-triangle me-1"></i> Nenhum aparelho conectado. <br>
+                        <a href="{{ route('whatsapp.settings') }}" style="font-weight: bold; text-decoration: underline;">Conectar Agora</a>
                     </div>
                 @endif
             </div>
