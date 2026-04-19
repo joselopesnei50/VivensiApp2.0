@@ -157,21 +157,21 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <i class="fab fa-whatsapp" style="color: #10b981; font-size: 1.5rem;"></i>
                                         <div>
-                                            <h6 style="margin: 0; font-weight: 700; color: #334155;">{{ $instance->name }}</h6>
+                                            <h6 style="margin: 0; font-weight: 700; color: #334155;">{{ $instance->instance_name }}</h6>
                                             <small style="color: #64748b; font-family: monospace;">{{ $instance->phone_number ?: 'Aguardando Número...' }}</small>
                                         </div>
                                     </div>
                                     <div>
-                                        @if($instance->connection_status === 'open')
+                                        @if($instance->status === 'open')
                                             <span class="badge" style="background: #dcfce7; color: #166534; font-size: 0.7rem; border: 1px solid #bbf7d0;">CONECTADO</span>
-                                        @elseif($instance->connection_status === 'connecting')
+                                        @elseif($instance->status === 'connecting')
                                             <span class="badge" style="background: #fef3c7; color: #92400e; font-size: 0.7rem; border: 1px solid #fde68a;"><i class="fas fa-spinner fa-spin"></i> CONECTANDO</span>
                                         @else
                                             <span class="badge" style="background: #fee2e2; color: #b91c1c; font-size: 0.7rem; border: 1px solid #fecaca;">DESCONECTADO</span>
                                         @endif
                                     </div>
                                 </div>
-                                
+
                                 <div style="background: #fff; border: 1px solid #f1f5f9; border-radius: 8px; padding: 10px; margin-bottom: 15px;">
                                     <div class="d-flex justify-content-between mb-1">
                                         <small class="fw-bold" style="color: #475569; font-size: 0.7rem;">Aquecimento Diário</small>
@@ -184,7 +184,7 @@
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    @if($instance->connection_status !== 'open')
+                                    @if($instance->status !== 'open')
                                         <button type="button" onclick="checkStatus('{{ $instance->id }}')" class="btn btn-sm btn-outline-primary fw-bold" style="flex: 1; border-radius: 8px;">
                                             <i class="fas fa-qrcode"></i> Scan QR
                                         </button>
