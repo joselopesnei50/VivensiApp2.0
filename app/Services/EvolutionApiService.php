@@ -162,7 +162,7 @@ class EvolutionApiService
 
         try {
             $response = $this->http()->timeout(15)->withHeaders([
-                'apikey' => $this->apiKey,
+                'apikey' => $this->globalApiKey,
             ])->post("{$this->baseUrl}/message/sendText/{$this->instanceName}", $payload);
 
             if ($response->failed()) {
