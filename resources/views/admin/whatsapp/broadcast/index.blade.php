@@ -371,7 +371,7 @@
             </div>
 
             <div class="compose-card-body">
-                <form action="{{ route('whatsapp.broadcast.send') }}" method="POST" id="broadcastForm">
+                <form action="{{ route('whatsapp.broadcast.send') }}" method="POST" id="broadcastForm" enctype="multipart/form-data">
                     @csrf
 
                     {{-- Público Alvo --}}
@@ -405,16 +405,34 @@
                         <textarea name="phones" class="message-textarea" rows="2" placeholder="5511999999999, 5521988888888, 5531977777777"></textarea>
                     </div>
 
+                    {{-- Imagem (opcional) --}}
+                    <div class="mb-4">
+                        <div class="section-label">Imagem <span style="font-weight:400;color:#94a3b8;text-transform:none;letter-spacing:0;">(opcional)</span></div>
+                        <div id="imageDropZone" class="import-zone" onclick="document.getElementById('broadcastImageInput').click()" ondragover="event.preventDefault();this.style.borderColor='#4f46e5'" ondragleave="this.style.borderColor=''" ondrop="handleImageDrop(event)">
+                            <i class="fas fa-image fa-2x mb-2" style="color:#94a3b8;"></i>
+                            <div style="font-size:0.8rem;color:#64748b;">Clique ou arraste uma imagem aqui</div>
+                            <div style="font-size:0.72rem;color:#94a3b8;margin-top:2px;">JPG, PNG, GIF, WEBP — máx. 5 MB</div>
+                        </div>
+                        <input type="file" id="broadcastImageInput" name="broadcast_image" accept=".jpg,.jpeg,.png,.gif,.webp" class="d-none" onchange="handleImageSelect(this)">
+                        <div id="imagePreviewWrap" class="d-none mt-2" style="position:relative;display:inline-block;">
+                            <img id="imagePreviewThumb" src="" alt="preview" style="max-height:120px;max-width:100%;border-radius:10px;border:1px solid #e2e8f0;">
+                            <button type="button" onclick="removeImage()" style="position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="fas fa-times"></i></button>
+                        </div>
+                        @error('broadcast_image')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- Mensagem --}}
                     <div class="mb-3">
                         <div class="d-flex align-items-center justify-content-between mb-2">
-                            <div class="section-label mb-0">Mensagem</div>
+                            <div class="section-label mb-0" id="messageSectionLabel">Mensagem</div>
                             <span class="spintax-badge" data-bs-toggle="collapse" data-bs-target="#spintaxHelper">
                                 <i class="fas fa-magic"></i> Spintax
                             </span>
                         </div>
                         <textarea name="message" id="messageInput" class="message-textarea" rows="6"
-                            placeholder="Digite sua mensagem aqui..." required
+                            placeholder="Digite sua mensagem aqui..."
                             oninput="updatePreview(); updateCharCount(this)"></textarea>
                         <div class="d-flex justify-content-between mt-1">
                             <span class="char-counter" id="charCounter">0 caracteres</span>
@@ -523,20 +541,72 @@
         counter.className = 'char-counter' + (len > 3500 ? ' danger' : len > 2500 ? ' warn' : '');
     }
 
+    let previewImageSrc = null;
+
     function updatePreview() {
         const msg = document.getElementById('messageInput').value;
         const preview = document.getElementById('waPreviewContent');
-        if (!msg.trim()) {
+        const hasImage = !!previewImageSrc;
+        const hasText  = !!msg.trim();
+
+        if (!hasImage && !hasText) {
             preview.innerHTML = `<div class="wa-placeholder"><i class="fas fa-comment-dots fa-2x mb-2" style="opacity:0.3;"></i><br>Digite a mensagem ao lado para ver o preview</div>`;
             return;
         }
         const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        const rendered = applySpintaxPreview(escapeHtml(msg));
+        const rendered = hasText ? applySpintaxPreview(escapeHtml(msg)) : '';
+        const imgHtml  = hasImage
+            ? `<img src="${previewImageSrc}" style="width:100%;border-radius:6px;margin-bottom:${hasText?'6px':'0'};">`
+            : '';
         preview.innerHTML = `
             <div class="wa-bubble">
-                ${rendered}
+                ${imgHtml}${rendered}
                 <div class="wa-bubble-time">${now} <i class="fas fa-check-double" style="color:#53bdeb;font-size:0.6rem;"></i></div>
             </div>`;
+    }
+
+    function handleImageSelect(input) {
+        if (!input.files || !input.files[0]) return;
+        setImagePreview(input.files[0]);
+    }
+
+    function handleImageDrop(e) {
+        e.preventDefault();
+        document.getElementById('imageDropZone').style.borderColor = '';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('broadcastImageInput').files = dt.files;
+            setImagePreview(file);
+        }
+    }
+
+    function setImagePreview(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImageSrc = e.target.result;
+            const wrap  = document.getElementById('imagePreviewWrap');
+            const thumb = document.getElementById('imagePreviewThumb');
+            thumb.src = previewImageSrc;
+            wrap.classList.remove('d-none');
+            wrap.style.display = 'inline-block';
+            document.getElementById('imageDropZone').style.display = 'none';
+            document.getElementById('messageSectionLabel').textContent = 'Legenda (opcional)';
+            document.getElementById('messageInput').placeholder = 'Adicione uma legenda para a imagem...';
+            updatePreview();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+        previewImageSrc = null;
+        document.getElementById('broadcastImageInput').value = '';
+        document.getElementById('imagePreviewWrap').classList.add('d-none');
+        document.getElementById('imageDropZone').style.display = '';
+        document.getElementById('messageSectionLabel').textContent = 'Mensagem';
+        document.getElementById('messageInput').placeholder = 'Digite sua mensagem aqui...';
+        updatePreview();
     }
 
     function applySpintaxPreview(text) {
@@ -562,8 +632,9 @@
     }
 
     function confirmDisparo() {
-        const msg = document.getElementById('messageInput').value.trim();
-        if (!msg) { alert('Digite a mensagem antes de disparar.'); return; }
+        const msg      = document.getElementById('messageInput').value.trim();
+        const hasImage = !!document.getElementById('broadcastImageInput').files.length;
+        if (!msg && !hasImage) { alert('Digite uma mensagem ou anexe uma imagem antes de disparar.'); return; }
         if (confirm('Deseja iniciar o disparo em massa?\n\nEsta ação enviará mensagens para os contatos selecionados e pode demorar alguns minutos.')) {
             document.getElementById('broadcastForm').submit();
         }

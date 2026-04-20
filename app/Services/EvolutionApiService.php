@@ -179,6 +179,38 @@ class EvolutionApiService
         }
     }
 
+    public function sendMedia(string $to, string $mediaUrl, string $caption = '', string $mediaType = 'image'): array
+    {
+        if (!$this->instanceName) return ['error' => 'No instance configured'];
+
+        $renderedCaption = $caption ? $this->applySpintax($caption) : '';
+
+        $payload = [
+            'number'    => (string) $to,
+            'mediatype' => $mediaType,
+            'caption'   => $renderedCaption,
+            'media'     => $mediaUrl,
+        ];
+
+        try {
+            $response = $this->http()->timeout(20)->withHeaders([
+                'apikey' => $this->globalApiKey,
+            ])->post("{$this->baseUrl}/message/sendMedia/{$this->instanceName}", $payload);
+
+            if ($response->failed()) {
+                Log::error('EVOLUTION API REJEITOU ENVIO DE MÍDIA', [
+                    'status' => $response->status(),
+                    'body'   => $response->json(),
+                ]);
+                return ['error' => 'Failed to send media', 'details' => $response->body()];
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            return ['error' => 'Exception: ' . $e->getMessage()];
+        }
+    }
+
     public function applySpintax(string $text): string
     {
         return preg_replace_callback('/\{(((?>[^\{\}]+)|(?R))*)\}/x', function ($match) {

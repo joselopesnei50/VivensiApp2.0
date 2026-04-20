@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Services\EvolutionApiService;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class WhatsappBroadcastController extends Controller
 {
@@ -103,19 +104,31 @@ class WhatsappBroadcastController extends Controller
         abort_unless($isAuthorized || $user->role === 'super_admin', 403);
 
         $request->validate([
-            'message' => 'required|string|max:4000',
-            'audience' => 'required|in:all,selected',
-            'cadence' => 'nullable|integer|in:1,3,5,10,30',
+            'message'         => 'nullable|string|max:4000',
+            'audience'        => 'required|in:all,selected',
+            'cadence'         => 'nullable|integer|in:1,3,5,10,30',
+            'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
         ]);
 
+        if (!$request->filled('message') && !$request->hasFile('broadcast_image')) {
+            return redirect()->back()->with('error', 'Digite uma mensagem ou anexe uma imagem para disparar.');
+        }
+
         $tenantId = auth()->user()->tenant_id;
-        $message = $request->input('message');
-        
+        $message  = $request->input('message', '');
+
+        // Store image if provided
+        $imageUrl = null;
+        if ($request->hasFile('broadcast_image')) {
+            $path     = $request->file('broadcast_image')->store('broadcasts', 'public');
+            $imageUrl = url(Storage::url($path));
+        }
+
         $query = WhatsappChat::where('tenant_id', $tenantId)->whereNull('opt_out_at')->whereNull('blocked_at');
-        
+
         if ($request->input('audience') === 'selected' && $request->has('phones')) {
             $phones = explode(',', $request->input('phones'));
-            $phones = array_map(function($p) { return preg_replace('/\D+/', '', $p); }, $phones);
+            $phones = array_map(function ($p) { return preg_replace('/\D+/', '', $p); }, $phones);
             $query->whereIn('wa_id', $phones);
         }
 
@@ -138,17 +151,17 @@ class WhatsappBroadcastController extends Controller
 
         foreach ($contacts as $contact) {
             try {
-                // Send synchronously to ensure delivery testing vs timeout
-                // A better approach is queuing, but we are working around a stuck queue worker.
-                $res = $evo->sendMessage($contact->wa_id, $message, null, rand(1, 3));
-                
+                $res = $imageUrl
+                    ? $evo->sendMedia($contact->wa_id, $imageUrl, $message)
+                    : $evo->sendMessage($contact->wa_id, $message, null, rand(1, 3));
+
                 if (isset($res['key']['id']) || isset($res['messageId'])) {
                     \App\Models\WhatsappMessage::create([
-                        'chat_id' => $contact->id,
+                        'chat_id'    => $contact->id,
                         'message_id' => $res['key']['id'] ?? ($res['messageId'] ?? 'BROADCAST_' . uniqid()),
-                        'content' => $message,
-                        'direction' => 'outbound',
-                        'type' => 'text'
+                        'content'    => $imageUrl ? ('[imagem] ' . $message) : $message,
+                        'direction'  => 'outbound',
+                        'type'       => $imageUrl ? 'image' : 'text',
                     ]);
                     $sentCount++;
                 }
@@ -156,8 +169,7 @@ class WhatsappBroadcastController extends Controller
             } catch (\Exception $e) {
                 Log::error("Broadcast failed for {$contact->wa_id}: " . $e->getMessage());
             }
-            
-            // Cadência configurável entre envios
+
             usleep($cadenceSeconds * 1000000);
         }
 
