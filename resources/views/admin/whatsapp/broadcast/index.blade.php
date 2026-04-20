@@ -145,6 +145,18 @@
                         @enderror
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Cadência de Envio</label>
+                        <select name="cadence" class="form-select">
+                            <option value="1">1 segundo entre mensagens (rápido)</option>
+                            <option value="3" selected>3 segundos entre mensagens (recomendado)</option>
+                            <option value="5">5 segundos entre mensagens (moderado)</option>
+                            <option value="10">10 segundos entre mensagens (seguro)</option>
+                            <option value="30">30 segundos entre mensagens (muito seguro)</option>
+                        </select>
+                        <div class="form-text">Intervalos maiores reduzem o risco de bloqueio pelo WhatsApp.</div>
+                    </div>
+
                     <div class="alert alert-warning d-flex mb-4" style="border-radius: 8px;">
                         <i class="fas fa-exclamation-triangle flex-shrink-0 me-2 mt-1"></i>
                         <div style="font-size: 0.85rem;">
