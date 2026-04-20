@@ -411,7 +411,7 @@
                         <div id="imageDropZone" class="import-zone" onclick="document.getElementById('broadcastImageInput').click()" ondragover="event.preventDefault();this.style.borderColor='#4f46e5'" ondragleave="this.style.borderColor=''" ondrop="handleImageDrop(event)">
                             <i class="fas fa-image fa-2x mb-2" style="color:#94a3b8;"></i>
                             <div style="font-size:0.8rem;color:#64748b;">Clique ou arraste uma imagem aqui</div>
-                            <div style="font-size:0.72rem;color:#94a3b8;margin-top:2px;">JPG, PNG, GIF, WEBP — máx. 5 MB</div>
+                            <div style="font-size:0.72rem;color:#94a3b8;margin-top:2px;">JPG, PNG, GIF, WEBP — máx. 2 MB</div>
                         </div>
                         <input type="file" id="broadcastImageInput" name="broadcast_image" accept=".jpg,.jpeg,.png,.gif,.webp" class="d-none" onchange="handleImageSelect(this)">
                         <div id="imagePreviewWrap" class="d-none mt-2" style="position:relative;display:inline-block;">
