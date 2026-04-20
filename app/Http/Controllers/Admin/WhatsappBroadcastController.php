@@ -107,7 +107,7 @@ class WhatsappBroadcastController extends Controller
             'message'         => 'nullable|string|max:4000',
             'audience'        => 'required|in:all,selected',
             'cadence'         => 'nullable|integer|in:1,3,5,10,30',
-            'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
+            'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ]);
 
         if (!$request->filled('message') && !$request->hasFile('broadcast_image')) {
