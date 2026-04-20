@@ -105,6 +105,7 @@ class WhatsappBroadcastController extends Controller
         $request->validate([
             'message' => 'required|string|max:4000',
             'audience' => 'required|in:all,selected',
+            'cadence' => 'nullable|integer|in:1,3,5,10,30',
         ]);
 
         $tenantId = auth()->user()->tenant_id;
@@ -123,6 +124,7 @@ class WhatsappBroadcastController extends Controller
             return redirect()->back()->with('error', 'Nenhum contato selecionado ou disponível para envio.');
         }
 
+        $cadenceSeconds = (int) ($request->input('cadence', 3));
         $sentCount = 0;
         $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
             ->where('status', 'open')
@@ -155,8 +157,8 @@ class WhatsappBroadcastController extends Controller
                 Log::error("Broadcast failed for {$contact->wa_id}: " . $e->getMessage());
             }
             
-            // Artificial delay to prevent API blocking
-            usleep(500000); // 0.5 sec
+            // Cadência configurável entre envios
+            usleep($cadenceSeconds * 1000000);
         }
 
         return redirect()->back()->with('success', "Disparo iniciado: {$sentCount} mensagens enviadas.");
