@@ -158,8 +158,6 @@ class WhatsappBroadcastController extends Controller
                     ? $evo->sendMedia($contact->wa_id, $imageBase64, $message, $imageMime)
                     : $evo->sendMessage($contact->wa_id, $message, null, rand(1, 3));
 
-                Log::info('Broadcast API response', ['wa_id' => $contact->wa_id, 'res' => $res]);
-
                 $messageId = $res['key']['id'] ?? $res['messageId'] ?? null;
                 $success   = !isset($res['error']) && !empty($res);
 
