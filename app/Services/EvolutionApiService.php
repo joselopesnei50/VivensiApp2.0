@@ -179,17 +179,23 @@ class EvolutionApiService
         }
     }
 
-    public function sendMedia(string $to, string $mediaUrl, string $caption = '', string $mediaType = 'image'): array
+    public function sendMedia(string $to, string $mediaBase64, string $caption = '', string $mimetype = 'image/jpeg'): array
     {
         if (!$this->instanceName) return ['error' => 'No instance configured'];
 
         $renderedCaption = $caption ? $this->applySpintax($caption) : '';
 
+        // Derive mediatype (image/video/document) from mimetype
+        $mediaType = explode('/', $mimetype)[0];
+        if (!in_array($mediaType, ['image', 'video', 'audio'])) $mediaType = 'image';
+
         $payload = [
             'number'    => (string) $to,
             'mediatype' => $mediaType,
+            'mimetype'  => $mimetype,
             'caption'   => $renderedCaption,
-            'media'     => $mediaUrl,
+            'media'     => $mediaBase64,
+            'fileName'  => 'broadcast.' . explode('/', $mimetype)[1],
         ];
 
         try {

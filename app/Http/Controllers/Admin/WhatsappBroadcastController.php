@@ -117,11 +117,14 @@ class WhatsappBroadcastController extends Controller
         $tenantId = auth()->user()->tenant_id;
         $message  = $request->input('message', '');
 
-        // Store image if provided
-        $imageUrl = null;
+        // Store image and prepare base64 for Evolution API
+        $imageBase64 = null;
+        $imageMime   = null;
         if ($request->hasFile('broadcast_image')) {
-            $path     = $request->file('broadcast_image')->store('broadcasts', 'public');
-            $imageUrl = url(Storage::url($path));
+            $file        = $request->file('broadcast_image');
+            $imageMime   = $file->getMimeType() ?: 'image/jpeg';
+            $path        = $file->store('broadcasts', 'public');
+            $imageBase64 = 'data:' . $imageMime . ';base64,' . base64_encode(Storage::disk('public')->get($path));
         }
 
         $query = WhatsappChat::where('tenant_id', $tenantId)->whereNull('opt_out_at')->whereNull('blocked_at');
@@ -151,8 +154,8 @@ class WhatsappBroadcastController extends Controller
 
         foreach ($contacts as $contact) {
             try {
-                $res = $imageUrl
-                    ? $evo->sendMedia($contact->wa_id, $imageUrl, $message)
+                $res = $imageBase64
+                    ? $evo->sendMedia($contact->wa_id, $imageBase64, $message, $imageMime)
                     : $evo->sendMessage($contact->wa_id, $message, null, rand(1, 3));
 
                 Log::info('Broadcast API response', ['wa_id' => $contact->wa_id, 'res' => $res]);
@@ -164,9 +167,9 @@ class WhatsappBroadcastController extends Controller
                     \App\Models\WhatsappMessage::create([
                         'chat_id'    => $contact->id,
                         'message_id' => $messageId ?? ('BROADCAST_' . uniqid()),
-                        'content'    => $imageUrl ? ('[imagem] ' . $message) : $message,
+                        'content'    => $imageBase64 ? ('[imagem] ' . $message) : $message,
                         'direction'  => 'outbound',
-                        'type'       => $imageUrl ? 'image' : 'text',
+                        'type'       => $imageBase64 ? 'image' : 'text',
                     ]);
                     $sentCount++;
                 }
