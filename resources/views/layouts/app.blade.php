@@ -56,6 +56,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
 
+    @stack('styles')
 </head>
 <body>
 
@@ -1213,6 +1214,8 @@
 
     <!-- Cookie Consent Banner (LGPD) -->
     @include('partials.cookie-banner')
+
+    @stack('scripts')
 </body>
 </html>
 
