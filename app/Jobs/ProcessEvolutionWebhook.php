@@ -168,19 +168,9 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
         // 5. Disparar resposta da IA se habilitada
         $config = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
-        Log::info('ProcessEvolutionWebhook: inbound processado', [
-            'tenant_id'  => $tenantId,
-            'chat_id'    => $chat->id,
-            'phone'      => $phone,
-            'content'    => substr($content, 0, 50),
-            'ai_enabled' => $config?->ai_enabled,
-            'opt_out'    => $chat->opt_out_at,
-            'blocked'    => $chat->blocked_at,
-        ]);
         if ($config?->ai_enabled && !$chat->opt_out_at && !$chat->blocked_at) {
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
                 ->onQueue('whatsapp');
-            Log::info('ProcessEvolutionWebhook: AI job despachado', ['chat_id' => $chat->id]);
         }
     }
 
