@@ -227,7 +227,7 @@ class NgoGrantController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|in:edital,plano_trabalho,anexo,comprovante,outros',
-            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,zip,doc,docx,xls,xlsx|max:10240',
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $file = $request->file('file');
