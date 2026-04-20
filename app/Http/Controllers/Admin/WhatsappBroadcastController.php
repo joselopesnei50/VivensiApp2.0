@@ -155,10 +155,15 @@ class WhatsappBroadcastController extends Controller
                     ? $evo->sendMedia($contact->wa_id, $imageUrl, $message)
                     : $evo->sendMessage($contact->wa_id, $message, null, rand(1, 3));
 
-                if (isset($res['key']['id']) || isset($res['messageId'])) {
+                Log::info('Broadcast API response', ['wa_id' => $contact->wa_id, 'res' => $res]);
+
+                $messageId = $res['key']['id'] ?? $res['messageId'] ?? null;
+                $success   = !isset($res['error']) && !empty($res);
+
+                if ($success) {
                     \App\Models\WhatsappMessage::create([
                         'chat_id'    => $contact->id,
-                        'message_id' => $res['key']['id'] ?? ($res['messageId'] ?? 'BROADCAST_' . uniqid()),
+                        'message_id' => $messageId ?? ('BROADCAST_' . uniqid()),
                         'content'    => $imageUrl ? ('[imagem] ' . $message) : $message,
                         'direction'  => 'outbound',
                         'type'       => $imageUrl ? 'image' : 'text',
