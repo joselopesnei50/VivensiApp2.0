@@ -1155,15 +1155,38 @@
         const items = header.nextElementSibling;
         const isCollapsed = header.classList.contains('collapsed');
         if (isCollapsed) {
-            // Expand
             header.classList.remove('collapsed');
             items.style.maxHeight = items.scrollHeight + 'px';
+            // Scroll sidebar so the header + its items are visible after expansion
+            setTimeout(() => {
+                const menu = document.querySelector('.sidebar-menu');
+                const headerRect = header.getBoundingClientRect();
+                const menuRect = menu.getBoundingClientRect();
+                // If header is below the visible area of the menu, scroll to it
+                if (headerRect.top < menuRect.top || headerRect.top > menuRect.bottom - 60) {
+                    menu.scrollTo({ top: menu.scrollTop + (headerRect.top - menuRect.top) - 16, behavior: 'smooth' });
+                }
+            }, 60);
         } else {
-            // Collapse
             header.classList.add('collapsed');
             items.style.maxHeight = '0';
         }
     }
+
+    // Scroll sidebar to show the active menu item on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        const activeLink = document.querySelector('.sidebar-menu a.active');
+        if (activeLink) {
+            const menu = document.querySelector('.sidebar-menu');
+            setTimeout(() => {
+                const linkRect = activeLink.getBoundingClientRect();
+                const menuRect = menu.getBoundingClientRect();
+                if (linkRect.bottom > menuRect.bottom || linkRect.top < menuRect.top) {
+                    menu.scrollTo({ top: menu.scrollTop + (linkRect.top - menuRect.top) - (menu.clientHeight / 2) + (linkRect.height / 2), behavior: 'smooth' });
+                }
+            }, 200);
+        }
+    });
 </script>
 
     @auth
