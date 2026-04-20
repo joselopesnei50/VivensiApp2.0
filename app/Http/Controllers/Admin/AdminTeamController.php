@@ -122,7 +122,6 @@ class AdminTeamController extends Controller
 
         $user = User::where('id', $id)->where('is_platform_team', true)->firstOrFail();
 
-        // Daily Tasks (Internal platform tasks have tenant_id = 1)
         $tasks = \App\Models\Task::where('assigned_to', $user->id)
                                  ->orderBy('status', 'asc')
                                  ->orderBy('due_date', 'asc')
