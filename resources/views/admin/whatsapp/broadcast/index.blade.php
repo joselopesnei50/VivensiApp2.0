@@ -526,6 +526,39 @@
     </div>
 
 </div>
+
+{{-- Modal de Confirmação de Disparo --}}
+<div class="modal fade" id="modalConfirmarDisparo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content" style="border-radius:20px;border:none;overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:28px 28px 20px;text-align:center;">
+                <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                    <i class="fas fa-rocket" style="font-size:1.5rem;color:#fff;"></i>
+                </div>
+                <h5 style="color:#fff;font-weight:800;margin:0;">Confirmar Disparo</h5>
+                <p style="color:rgba(255,255,255,0.75);font-size:0.85rem;margin:6px 0 0;">Esta ação não pode ser desfeita</p>
+            </div>
+            <div class="modal-body" style="padding:24px 28px;">
+                <div id="modalDisparoInfo" style="background:#f8fafc;border-radius:12px;padding:14px 16px;font-size:0.85rem;color:#475569;margin-bottom:16px;">
+                </div>
+                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;font-size:0.8rem;color:#92400e;">
+                    <i class="fas fa-shield-alt me-1" style="color:#d97706;"></i>
+                    Certifique-se que os contatos consentiram o recebimento para evitar bloqueios.
+                </div>
+            </div>
+            <div class="modal-footer" style="padding:0 28px 24px;border:none;gap:10px;">
+                <button type="button" class="btn btn-light fw-600 flex-fill" style="border-radius:10px;padding:10px;" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <button type="button" class="btn fw-700 flex-fill" id="btnConfirmarDisparo"
+                    style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;padding:10px;">
+                    <i class="fas fa-rocket me-1"></i> Disparar Agora
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -632,12 +665,44 @@
     }
 
     function confirmDisparo() {
-        const msg      = document.getElementById('messageInput').value.trim();
-        const hasImage = !!document.getElementById('broadcastImageInput').files.length;
-        if (!msg && !hasImage) { alert('Digite uma mensagem ou anexe uma imagem antes de disparar.'); return; }
-        if (confirm('Deseja iniciar o disparo em massa?\n\nEsta ação enviará mensagens para os contatos selecionados e pode demorar alguns minutos.')) {
-            document.getElementById('broadcastForm').submit();
+        const msg       = document.getElementById('messageInput').value.trim();
+        const hasImage  = !!document.getElementById('broadcastImageInput').files.length;
+        if (!msg && !hasImage) {
+            // Small inline toast instead of alert
+            const btn = document.querySelector('.launch-btn');
+            btn.style.background = '#ef4444';
+            btn.innerHTML = '<i class="fas fa-exclamation-circle"></i> Mensagem ou imagem obrigatória';
+            setTimeout(() => {
+                btn.style.background = '';
+                btn.innerHTML = '<i class="fas fa-rocket"></i> Iniciar Disparo';
+            }, 2500);
+            return;
         }
+
+        // Build info summary for modal
+        const audience   = document.querySelector('input[name=audience]:checked')?.value;
+        const cadence    = document.querySelector('input[name=cadence]:checked')?.value || 3;
+        const audienceTxt = audience === 'all' ? 'Todos os contatos do CRM' : 'Números específicos';
+        const imageTxt   = hasImage ? '<span style="color:#4f46e5;font-weight:600;"><i class="fas fa-image me-1"></i>Com imagem</span> + ' : '';
+        const msgPreview = msg ? `"${msg.substring(0, 60)}${msg.length > 60 ? '…' : ''}"` : '<em>sem texto</em>';
+
+        document.getElementById('modalDisparoInfo').innerHTML = `
+            <div class="d-flex flex-column gap-2">
+                <div><i class="fas fa-users me-2" style="color:#4f46e5;width:16px;"></i><strong>Público:</strong> ${audienceTxt}</div>
+                <div><i class="fas fa-comment me-2" style="color:#4f46e5;width:16px;"></i><strong>Mensagem:</strong> ${imageTxt}${msgPreview}</div>
+                <div><i class="fas fa-clock me-2" style="color:#4f46e5;width:16px;"></i><strong>Cadência:</strong> ${cadence}s entre envios</div>
+            </div>`;
+
+        const modal = new bootstrap.Modal(document.getElementById('modalConfirmarDisparo'));
+        modal.show();
     }
+
+    document.getElementById('btnConfirmarDisparo').addEventListener('click', function () {
+        bootstrap.Modal.getInstance(document.getElementById('modalConfirmarDisparo')).hide();
+        const btn = document.querySelector('.launch-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        document.getElementById('broadcastForm').submit();
+    });
 </script>
 @endpush
