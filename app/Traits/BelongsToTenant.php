@@ -22,6 +22,9 @@ trait BelongsToTenant
                 if ($user && $user->role !== 'super_admin') {
                     $builder->where($builder->getModel()->getTable() . '.tenant_id', $user->tenant_id);
                 }
+            } else {
+                // Contexto web sem autenticação — retorna vazio para evitar vazamento de dados entre tenants
+                $builder->whereRaw('0 = 1');
             }
         });
 
