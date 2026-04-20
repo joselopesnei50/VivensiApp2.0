@@ -124,7 +124,7 @@ class WhatsappBroadcastController extends Controller
             $file        = $request->file('broadcast_image');
             $imageMime   = $file->getMimeType() ?: 'image/jpeg';
             $path        = $file->store('broadcasts', 'public');
-            $imageBase64 = 'data:' . $imageMime . ';base64,' . base64_encode(Storage::disk('public')->get($path));
+            $imageBase64 = base64_encode(Storage::disk('public')->get($path));
         }
 
         $query = WhatsappChat::where('tenant_id', $tenantId)->whereNull('opt_out_at')->whereNull('blocked_at');
