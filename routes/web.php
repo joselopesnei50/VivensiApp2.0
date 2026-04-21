@@ -353,6 +353,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/posts/calendar',               [App\Http\Controllers\ScheduledPostController::class, 'calendar'])->name('posts.calendar');
         Route::get('/posts/create',                 [App\Http\Controllers\ScheduledPostController::class, 'create'])->name('posts.create');
         Route::post('/posts',                       [App\Http\Controllers\ScheduledPostController::class, 'store'])->name('posts.store');
+        Route::get('/posts/{post}/edit',            [App\Http\Controllers\ScheduledPostController::class, 'edit'])->name('posts.edit');
+        Route::put('/posts/{post}',                 [App\Http\Controllers\ScheduledPostController::class, 'update'])->name('posts.update');
         Route::delete('/posts/{post}',              [App\Http\Controllers\ScheduledPostController::class, 'destroy'])->name('posts.destroy');
         Route::post('/posts/generate-caption',      [App\Http\Controllers\ScheduledPostController::class, 'generateCaption'])->name('posts.generate-caption');
     });
