@@ -42,7 +42,7 @@ class ProcessWhatsappWebhook implements ShouldQueue
      */
     public function handle()
     {
-        $config = WhatsappConfig::find($this->configId);
+        $config = WhatsappConfig::withoutGlobalScopes()->find($this->configId);
         if (!$config) {
             Log::error("ProcessWhatsappWebhook: Config não encontrada ID {$this->configId}");
             return;

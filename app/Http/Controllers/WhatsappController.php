@@ -107,7 +107,7 @@ class WhatsappController extends Controller
             return response()->json(['status' => 'ignored'], 200);
         }
 
-        $config = WhatsappConfig::where('meta_phone_number_id', $phoneNumberId)->first();
+        $config = WhatsappConfig::withoutGlobalScopes()->where('meta_phone_number_id', $phoneNumberId)->first();
         if (!$config) {
             Log::warning('Meta Webhook recebido mas Phone ID não encontrado no banco', ['phone_number_id' => $phoneNumberId]);
             return response()->json(['status' => 'ignored'], 200);
@@ -245,7 +245,7 @@ class WhatsappController extends Controller
 
         // Enviar via Evolution API
         try {
-            $instance = \App\Models\WhatsappInstance::where('tenant_id', $chat->tenant_id)
+            $instance = \App\Models\WhatsappInstance::withoutGlobalScopes()->where('tenant_id', $chat->tenant_id)
                 ->where('status', 'open')
                 ->first();
             if (!$instance) {
