@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ScheduledPost;
 use App\Models\SocialAccount;
-use App\Models\SystemSetting;
+use App\Services\GeminiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class ScheduledPostController extends Controller
@@ -37,8 +36,8 @@ class ScheduledPostController extends Controller
             'media_url_external'=> 'nullable|url|max:2048',
         ]);
 
+        // Global scope on SocialAccount already ensures tenant ownership
         $account = SocialAccount::findOrFail($data['social_account_id']);
-        Gate::authorize('disconnect', $account);
 
         $mediaUrl  = null;
         $mediaType = 'none';
@@ -67,6 +66,28 @@ class ScheduledPostController extends Controller
 
         return redirect()->route('social.posts.index')
             ->with('success', 'Post agendado com sucesso!');
+    }
+
+    public function edit(ScheduledPost $post)
+    {
+        abort_if($post->status !== 'scheduled', 403, 'Apenas posts agendados podem ser editados.');
+        $accounts = SocialAccount::where('is_active', true)->get();
+        return view('social.posts.edit', compact('post', 'accounts'));
+    }
+
+    public function update(Request $request, ScheduledPost $post)
+    {
+        abort_if($post->status !== 'scheduled', 403, 'Apenas posts agendados podem ser editados.');
+
+        $data = $request->validate([
+            'platform'     => 'required|in:facebook,instagram,both',
+            'caption'      => 'required|string|max:2200',
+            'scheduled_at' => 'required|date|after:now',
+        ]);
+
+        $post->update($data);
+
+        return redirect()->route('social.posts.index')->with('success', 'Post atualizado com sucesso!');
     }
 
     public function destroy(ScheduledPost $post)
@@ -102,44 +123,35 @@ class ScheduledPostController extends Controller
         return response()->json($posts);
     }
 
-    /** API: gera legenda com DeepSeek */
+    /** API: gera legenda com Gemini */
     public function generateCaption(Request $request)
     {
         $request->validate([
-            'topic'   => 'required|string|max:300',
+            'topic'    => 'required|string|max:300',
             'platform' => 'required|in:facebook,instagram,both',
         ]);
 
-        $apiKey = SystemSetting::getValue('deepseek_api_key');
-        if (!$apiKey) {
-            return response()->json(['error' => 'DeepSeek não configurado.'], 422);
-        }
+        $gemini = new GeminiService();
 
         $tenantName = auth()->user()->tenant?->name ?? 'nossa organização';
         $platform   = $request->platform;
         $topic      = $request->topic;
 
-        $prompt = "Você é um especialista em marketing digital para o terceiro setor e gestão de projetos. "
-            . "Crie uma legenda para {$platform} sobre o seguinte tema: \"{$topic}\". "
+        $prompt = "Você é um especialista em marketing digital para o terceiro setor. "
+            . "Crie uma legenda para {$platform} sobre o tema: \"{$topic}\". "
             . "A legenda é para a organização \"{$tenantName}\". "
             . "Seja engajador, use emojis moderadamente, inclua uma chamada para ação e hashtags relevantes. "
-            . "Máximo de 300 palavras.";
+            . "Máximo de 300 palavras. Retorne apenas o texto da legenda, sem explicações.";
 
         try {
-            $response = Http::timeout(30)->withHeaders([
-                'Authorization' => "Bearer {$apiKey}",
-                'Content-Type'  => 'application/json',
-            ])->post('https://api.deepseek.com/v1/chat/completions', [
-                'model'    => 'deepseek-chat',
-                'messages' => [
-                    ['role' => 'system', 'content' => 'Você é um especialista em copywriting para redes sociais.'],
-                    ['role' => 'user',   'content' => $prompt],
-                ],
-                'max_tokens' => 500,
-            ]);
-
-            $caption = $response->json('choices.0.message.content');
-            return response()->json(['caption' => trim($caption)]);
+            $result = $gemini->generateText($prompt);
+            if (!$result) {
+                return response()->json(['error' => 'Não foi possível gerar legenda. Verifique a chave Gemini.'], 422);
+            }
+            $text = is_array($result)
+                ? ($result['candidates'][0]['content']['parts'][0]['text'] ?? '')
+                : (string) $result;
+            return response()->json(['caption' => trim($text)]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Falha ao gerar legenda. Tente novamente.'], 500);
         }

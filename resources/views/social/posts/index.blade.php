@@ -79,13 +79,18 @@
                             </td>
                             <td class="text-end pe-4">
                                 @if($post->status === 'scheduled')
-                                <form action="{{ route('social.posts.destroy', $post) }}" method="POST"
-                                      onsubmit="return confirm('Remover este post?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-xs btn-outline-danger" style="font-size:.72rem;padding:3px 8px;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="{{ route('social.posts.edit', $post) }}" class="btn btn-xs btn-outline-primary" style="font-size:.72rem;padding:3px 8px;" title="Editar">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <form action="{{ route('social.posts.destroy', $post) }}" method="POST"
+                                          onsubmit="return confirm('Remover este post?')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-xs btn-outline-danger" style="font-size:.72rem;padding:3px 8px;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                                 @endif
                             </td>
                         </tr>
