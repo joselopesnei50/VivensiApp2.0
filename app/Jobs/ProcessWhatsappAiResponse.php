@@ -40,7 +40,7 @@ class ProcessWhatsappAiResponse implements ShouldQueue
 
     public function handle(): void
     {
-        $config = WhatsappConfig::find($this->configId);
+        $config = WhatsappConfig::withoutGlobalScopes()->find($this->configId);
         $chat = WhatsappChat::find($this->chatId);
 
         if (!$config || !$chat) {
