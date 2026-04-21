@@ -217,6 +217,10 @@ class NgoGrantController extends Controller
             return response()->json(['error' => 'Não foi possível gerar a proposta no momento. Tente novamente.'], 500);
         }
 
+        // Persist so the user can retrieve it without regenerating
+        $grant->ai_proposal = $proposal;
+        $grant->save();
+
         return response()->json(['proposal' => $proposal]);
     }
 
@@ -394,6 +398,49 @@ class NgoGrantController extends Controller
         ]);
 
         return redirect('/ngo/grants')->with('success', 'Edital/Convênio registrado com sucesso!');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $grant = NgoGrant::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+
+        $data = $request->all();
+        if (isset($data['total_amount'])) {
+            $data['total_amount'] = str_replace('.', '', $data['total_amount']);
+            $data['total_amount'] = str_replace(',', '.', $data['total_amount']);
+        }
+
+        $validated = \Illuminate\Support\Facades\Validator::make($data, [
+            'title'           => 'required|string|max:255',
+            'grantor_name'    => 'required|string|max:255',
+            'contract_number' => 'nullable|string|max:100',
+            'total_amount'    => 'required|numeric',
+            'start_date'      => 'nullable|date',
+            'end_date'        => 'required|date',
+            'notes'           => 'nullable|string|max:20000',
+        ])->validate();
+
+        $grant->title           = $validated['title'];
+        $grant->agency          = $validated['grantor_name'];
+        $grant->contract_number = $validated['contract_number'] ?? null;
+        $grant->value           = $validated['total_amount'];
+        $grant->start_date      = $validated['start_date'] ?? null;
+        $grant->deadline        = $validated['end_date'];
+        $grant->notes           = $validated['notes'] ?? null;
+        $grant->save();
+
+        // Sync project metadata
+        if ($grant->project) {
+            $grant->project->update([
+                'name'       => $grant->title,
+                'description'=> $grant->notes,
+                'budget'     => $grant->value,
+                'start_date' => $grant->start_date,
+                'end_date'   => $grant->deadline,
+            ]);
+        }
+
+        return redirect()->route('ngo.grants.show', $grant->id)->with('success', 'Convênio atualizado com sucesso!');
     }
 
     public function destroy($id)

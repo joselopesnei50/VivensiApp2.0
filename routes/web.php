@@ -231,6 +231,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/grants', [App\Http\Controllers\NgoGrantController::class, 'store']);
         Route::get('/grants/{id}/generate-proposal', [App\Http\Controllers\NgoGrantController::class, 'generateProposal'])->name('ngo.grants.generate-proposal');
         Route::get('/grants/{id}', [App\Http\Controllers\NgoGrantController::class, 'show'])->name('ngo.grants.show');
+        Route::put('/grants/{id}', [App\Http\Controllers\NgoGrantController::class, 'update'])->name('ngo.grants.update');
         Route::delete('/grants/{id}', [App\Http\Controllers\NgoGrantController::class, 'destroy'])->name('ngo.grants.destroy');
         Route::post('/grants/{id}/status', [App\Http\Controllers\NgoGrantController::class, 'updateStatus'])->name('ngo.grants.status');
         Route::post('/grants/{id}/documents', [App\Http\Controllers\NgoGrantController::class, 'uploadDocument'])->name('ngo.grants.documents.upload');
@@ -435,10 +436,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/ngo/transparencia', [App\Http\Controllers\TransparencyController::class, 'index'])->name('transparency.index');
     Route::post('/ngo/transparencia/portal', [App\Http\Controllers\TransparencyController::class, 'updatePortal']);
     Route::post('/ngo/transparencia/board', [App\Http\Controllers\TransparencyController::class, 'addBoardMember']);
+    Route::put('/ngo/transparencia/board/{id}', [App\Http\Controllers\TransparencyController::class, 'updateBoardMember'])->name('ngo.transparency.board.update');
     Route::delete('/ngo/transparencia/board/{id}', [App\Http\Controllers\TransparencyController::class, 'deleteBoardMember']);
     Route::post('/ngo/transparencia/documents', [App\Http\Controllers\TransparencyController::class, 'addDocument']);
     Route::delete('/ngo/transparencia/documents/{id}', [App\Http\Controllers\TransparencyController::class, 'deleteDocument']);
     Route::post('/ngo/transparencia/partnerships', [App\Http\Controllers\TransparencyController::class, 'addPartnership']);
+    Route::put('/ngo/transparencia/partnerships/{id}', [App\Http\Controllers\TransparencyController::class, 'updatePartnership'])->name('ngo.transparency.partnerships.update');
     Route::delete('/ngo/transparencia/partnerships/{id}', [App\Http\Controllers\TransparencyController::class, 'deletePartnership']);
 
 }); // End of Auth/Subscription Group
