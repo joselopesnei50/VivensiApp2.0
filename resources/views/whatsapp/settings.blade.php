@@ -24,15 +24,122 @@
     <div class="row">
         <div class="col-md-7">
             <!-- AI Training Section -->
+            @php $ts = $config->ai_training_structured ?? []; @endphp
             <div class="vivensi-card" style="padding: 25px; margin-bottom: 30px; border-top: 4px solid #a855f7;">
-                <h4 style="margin: 0 0 20px 0; font-size: 1.1rem; color: #334155; font-weight: 700;">
-                    <i class="fas fa-brain me-2" style="color: #a855f7;"></i> Instruções de Treinamento (Prompt)
+                <h4 style="margin: 0 0 6px 0; font-size: 1.1rem; color: #334155; font-weight: 700;">
+                    <i class="fas fa-brain me-2" style="color: #a855f7;"></i> Treinamento Bruce AI
                 </h4>
-                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">
-                    Defina como o robô deve se comportar, o nome dele e o que ele deve responder aos clientes nas janelas abertas de 24h.
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+                    Preencha as seções abaixo. O sistema monta o prompt automaticamente para o Bruce.
                 </p>
-                <textarea name="ai_training" rows="10" class="form-control-vivensi" placeholder="Ex: Você é o 'Vivi', assistente virtual oficial da ONG..." style="font-family: inherit;">{{ $config->ai_training }}</textarea>
-                
+
+                <!-- Seção 1: Identidade do Bot -->
+                <div class="training-section">
+                    <div class="training-section-header" onclick="toggleSection('identity')">
+                        <span><i class="fas fa-robot me-2" style="color: #a855f7;"></i> Identidade do Assistente</span>
+                        <i class="fas fa-chevron-down training-chevron" id="chevron-identity"></i>
+                    </div>
+                    <div id="section-identity" class="training-section-body">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="training-label">Nome do Assistente</label>
+                                <input type="text" name="bot_name" class="form-control-vivensi" placeholder="Ex: Bruce" value="{{ $ts['bot_name'] ?? '' }}" maxlength="100">
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="training-label">Tom de Voz</label>
+                                <select name="bot_tone" class="form-control-vivensi">
+                                    @foreach(['amigável' => 'Amigável', 'formal' => 'Formal', 'empático' => 'Empático', 'animado' => 'Animado'] as $val => $label)
+                                        <option value="{{ $val }}" {{ ($ts['bot_tone'] ?? 'amigável') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção 2: Organização -->
+                <div class="training-section">
+                    <div class="training-section-header" onclick="toggleSection('org')">
+                        <span><i class="fas fa-building me-2" style="color: #6366f1;"></i> Organização</span>
+                        <i class="fas fa-chevron-down training-chevron" id="chevron-org"></i>
+                    </div>
+                    <div id="section-org" class="training-section-body">
+                        <div class="mb-3">
+                            <label class="training-label">Nome da Organização</label>
+                            <input type="text" name="org_name" class="form-control-vivensi" placeholder="Ex: ONG Esperança" value="{{ $ts['org_name'] ?? '' }}" maxlength="255">
+                        </div>
+                        <div>
+                            <label class="training-label">Missão / Descrição</label>
+                            <textarea name="org_mission" rows="3" class="form-control-vivensi" placeholder="Ex: Apoiamos famílias em situação de vulnerabilidade social..." maxlength="1000">{{ $ts['org_mission'] ?? '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção 3: Serviços -->
+                <div class="training-section">
+                    <div class="training-section-header" onclick="toggleSection('services')">
+                        <span><i class="fas fa-concierge-bell me-2" style="color: #10b981;"></i> Serviços Oferecidos</span>
+                        <i class="fas fa-chevron-down training-chevron" id="chevron-services"></i>
+                    </div>
+                    <div id="section-services" class="training-section-body">
+                        <label class="training-label">Descreva os serviços disponíveis</label>
+                        <textarea name="services" rows="4" class="form-control-vivensi" placeholder="Ex: Distribuição de cestas básicas (toda terça), psicólogo voluntário (agendamento), oficinas de costura..." maxlength="2000">{{ $ts['services'] ?? '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Seção 4: Horários -->
+                <div class="training-section">
+                    <div class="training-section-header" onclick="toggleSection('hours')">
+                        <span><i class="fas fa-clock me-2" style="color: #f59e0b;"></i> Horários de Atendimento</span>
+                        <i class="fas fa-chevron-down training-chevron" id="chevron-hours"></i>
+                    </div>
+                    <div id="section-hours" class="training-section-body">
+                        <label class="training-label">Horários e dias</label>
+                        <textarea name="working_hours" rows="3" class="form-control-vivensi" placeholder="Ex: Seg–Sex das 8h às 17h. Sáb das 8h às 12h. Feriados: fechado." maxlength="500">{{ $ts['working_hours'] ?? '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Seção 5: Contato -->
+                <div class="training-section">
+                    <div class="training-section-header" onclick="toggleSection('contact')">
+                        <span><i class="fas fa-address-card me-2" style="color: #0ea5e9;"></i> Informações de Contato</span>
+                        <i class="fas fa-chevron-down training-chevron" id="chevron-contact"></i>
+                    </div>
+                    <div id="section-contact" class="training-section-body">
+                        <label class="training-label">Endereço, telefone, site, e-mail</label>
+                        <textarea name="contact_info" rows="3" class="form-control-vivensi" placeholder="Ex: Rua das Flores 123, Bairro Luz, SP. Tel: (11) 99999-0000. Site: www.ongexemplo.org.br" maxlength="500">{{ $ts['contact_info'] ?? '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Seção 6: Perguntas Frequentes -->
+                <div class="training-section" style="margin-bottom: 0;">
+                    <div class="training-section-header" onclick="toggleSection('faq')">
+                        <span><i class="fas fa-question-circle me-2" style="color: #ef4444;"></i> Perguntas Frequentes (FAQ)</span>
+                        <i class="fas fa-chevron-down training-chevron" id="chevron-faq"></i>
+                    </div>
+                    <div id="section-faq" class="training-section-body">
+                        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 12px;">Adicione perguntas e respostas que o Bruce deve saber responder.</p>
+                        <div id="faq-list">
+                            @php $faqs = $ts['faq'] ?? [['question'=>'','answer'=>'']]; @endphp
+                            @foreach($faqs as $i => $faq)
+                            <div class="faq-row" data-index="{{ $i }}">
+                                <div class="faq-index">{{ $i + 1 }}</div>
+                                <div class="faq-fields">
+                                    <input type="text" name="faq[{{ $i }}][question]" class="form-control-vivensi mb-2" placeholder="Pergunta: Ex: Como me cadastrar?" value="{{ $faq['question'] ?? '' }}">
+                                    <textarea name="faq[{{ $i }}][answer]" rows="2" class="form-control-vivensi" placeholder="Resposta: Ex: Compareça à sede com RG e comprovante de renda.">{{ $faq['answer'] ?? '' }}</textarea>
+                                </div>
+                                <button type="button" class="faq-remove" onclick="removeFaq(this)" title="Remover">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            @endforeach
+                        </div>
+                        <button type="button" onclick="addFaq()" class="btn btn-sm btn-outline-secondary mt-2" style="border-radius: 8px; font-size: 0.8rem; border-style: dashed;">
+                            <i class="fas fa-plus me-1"></i> Adicionar Pergunta
+                        </button>
+                    </div>
+                </div>
+
                 <div style="margin-top: 20px;">
                     <label class="fw-700 mb-2 small">Motor Cognitivo (IA)</label>
                     <select name="ai_provider" class="form-control-vivensi">
@@ -274,13 +381,36 @@
     </div>
 </div>
 
+@push('styles')
 <style>
 .form-control-vivensi {
     background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
     padding: 10px 14px; width: 100%; transition: all 0.2s; font-size: 0.85rem;
 }
 .form-control-vivensi:focus { border-color: #6366f1; background: white; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); outline: none; }
+
+/* Structured Training Editor */
+.training-section { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.training-section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: #f8fafc; cursor: pointer;
+    font-weight: 700; font-size: 0.88rem; color: #334155;
+    user-select: none; transition: background 0.15s;
+}
+.training-section-header:hover { background: #f1f5f9; }
+.training-section-body { padding: 16px; background: #fff; }
+.training-chevron { font-size: 0.75rem; color: #94a3b8; transition: transform 0.2s; }
+.training-chevron.open { transform: rotate(180deg); }
+.training-label { display: block; font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+
+/* FAQ rows */
+.faq-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+.faq-index { min-width: 24px; height: 24px; background: #a855f7; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; margin-top: 4px; flex-shrink: 0; }
+.faq-fields { flex: 1; }
+.faq-remove { background: none; border: none; color: #cbd5e1; padding: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; transition: color 0.15s; }
+.faq-remove:hover { color: #ef4444; }
 </style>
+@endpush
 
 <script>
     function saveManualMeta() {
@@ -638,4 +768,69 @@
         pollInterval = setInterval(fetchQrCode, 5000);
     }
 </script>
+@push('scripts')
+<script>
+// --- Training Editor Accordion ---
+function toggleSection(id) {
+    const body = document.getElementById('section-' + id);
+    const chevron = document.getElementById('chevron-' + id);
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    chevron.classList.toggle('open', !isOpen);
+}
+
+// Open identity section by default on load
+document.addEventListener('DOMContentLoaded', function () {
+    ['identity', 'org', 'services', 'hours', 'contact', 'faq'].forEach(function(id) {
+        const body = document.getElementById('section-' + id);
+        const chevron = document.getElementById('chevron-' + id);
+        if (body) {
+            body.style.display = 'block';
+            chevron.classList.add('open');
+        }
+    });
+    reindexFaq();
+});
+
+// --- FAQ Management ---
+let faqCounter = document.querySelectorAll('.faq-row').length;
+
+function addFaq() {
+    const list = document.getElementById('faq-list');
+    const idx = faqCounter++;
+    const row = document.createElement('div');
+    row.className = 'faq-row';
+    row.dataset.index = idx;
+    row.innerHTML = `
+        <div class="faq-index">${list.children.length + 1}</div>
+        <div class="faq-fields">
+            <input type="text" name="faq[${idx}][question]" class="form-control-vivensi mb-2" placeholder="Pergunta: Ex: Como me cadastrar?">
+            <textarea name="faq[${idx}][answer]" rows="2" class="form-control-vivensi" placeholder="Resposta: Ex: Compareça à sede com RG e comprovante de renda."></textarea>
+        </div>
+        <button type="button" class="faq-remove" onclick="removeFaq(this)" title="Remover">
+            <i class="fas fa-times"></i>
+        </button>`;
+    list.appendChild(row);
+    reindexFaq();
+}
+
+function removeFaq(btn) {
+    const row = btn.closest('.faq-row');
+    if (document.querySelectorAll('.faq-row').length <= 1) {
+        row.querySelector('input').value = '';
+        row.querySelector('textarea').value = '';
+        return;
+    }
+    row.remove();
+    reindexFaq();
+}
+
+function reindexFaq() {
+    document.querySelectorAll('.faq-row').forEach(function(row, i) {
+        row.querySelector('.faq-index').textContent = i + 1;
+    });
+}
+</script>
+@endpush
+
 @endsection

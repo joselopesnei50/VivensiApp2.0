@@ -13,6 +13,7 @@ class WhatsappConfig extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'ai_enabled' => 'boolean',
+        'ai_training_structured' => 'array',
         'outbound_enabled' => 'boolean',
         'require_opt_in' => 'boolean',
         'enforce_24h_window' => 'boolean',
@@ -36,6 +37,7 @@ class WhatsappConfig extends Model
         'client_token',
         'client_token_hash',
         'ai_training',
+        'ai_training_structured',
         'ai_provider',
         'is_active',
         'ai_enabled',
