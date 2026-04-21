@@ -344,9 +344,20 @@ class WhatsappController extends Controller
         $config = WhatsappConfig::where('tenant_id', auth()->user()->tenant_id)->first();
         
         $validated = $request->validate([
-            'ai_training' => 'nullable|string|max:10000',
-            'ai_enabled' => 'nullable|boolean',
-            'ai_provider' => 'nullable|string|in:gemini,deepseek',
+            'ai_training'    => 'nullable|string|max:10000',
+            'ai_enabled'     => 'nullable|boolean',
+            'ai_provider'    => 'nullable|string|in:gemini,deepseek',
+            // Structured training fields
+            'bot_name'       => 'nullable|string|max:100',
+            'bot_tone'       => 'nullable|string|in:amigável,formal,empático,animado',
+            'org_name'       => 'nullable|string|max:255',
+            'org_mission'    => 'nullable|string|max:1000',
+            'services'       => 'nullable|string|max:2000',
+            'working_hours'  => 'nullable|string|max:500',
+            'contact_info'   => 'nullable|string|max:500',
+            'faq'            => 'nullable|array',
+            'faq.*.question' => 'nullable|string|max:300',
+            'faq.*.answer'   => 'nullable|string|max:1000',
             'outbound_enabled' => 'nullable|boolean',
             'require_opt_in' => 'nullable|boolean',
             'enforce_24h_window' => 'nullable|boolean',
@@ -366,6 +377,43 @@ class WhatsappController extends Controller
                 'pix_key' => $validated['pix_key'] ?? null,
                 'pix_key_type' => $validated['pix_key_type'] ?? null,
             ]);
+        }
+
+        // Se campos estruturados foram enviados, monta o prompt automaticamente
+        $structuredFields = ['bot_name','bot_tone','org_name','org_mission','services','working_hours','contact_info','faq'];
+        $hasStructured = collect($structuredFields)->some(fn($f) => $request->filled($f) || ($f === 'faq' && $request->has('faq')));
+
+        if ($hasStructured) {
+            $s = $request;
+            $botName  = $s->input('bot_name', 'Bruce');
+            $tone     = $s->input('bot_tone', 'amigável');
+            $faqs     = collect($s->input('faq', []))->filter(fn($f) => !empty($f['question']) && !empty($f['answer']));
+
+            $prompt  = "Você é *{$botName}*, assistente virtual da **{$s->input('org_name', 'organização')}**.\n";
+            $prompt .= "Seu tom é {$tone}, empático e prestativo.\n\n";
+
+            if ($s->filled('org_mission')) {
+                $prompt .= "**MISSÃO DA ORGANIZAÇÃO:**\n{$s->input('org_mission')}\n\n";
+            }
+            if ($s->filled('services')) {
+                $prompt .= "**SERVIÇOS OFERECIDOS:**\n{$s->input('services')}\n\n";
+            }
+            if ($s->filled('working_hours')) {
+                $prompt .= "**HORÁRIO DE ATENDIMENTO:**\n{$s->input('working_hours')}\n\n";
+            }
+            if ($s->filled('contact_info')) {
+                $prompt .= "**CONTATOS:**\n{$s->input('contact_info')}\n\n";
+            }
+            if ($faqs->isNotEmpty()) {
+                $prompt .= "**PERGUNTAS FREQUENTES:**\n";
+                foreach ($faqs as $faq) {
+                    $prompt .= "P: {$faq['question']}\nR: {$faq['answer']}\n\n";
+                }
+            }
+            $prompt .= "**REGRAS:**\n- Respostas curtas (máx. 3 parágrafos).\n- Nunca invente links ou telefones.\n- Se não souber, peça para aguardar atendimento humano.";
+
+            $validated['ai_training'] = $prompt;
+            $validated['ai_training_structured'] = $request->only($structuredFields);
         }
 
         $validated['ai_enabled'] = $request->boolean('ai_enabled');
@@ -400,6 +448,10 @@ class WhatsappController extends Controller
         // Remove meta credentials from config update array to avoid mass assignment issues if not fillable
         $configData = $validated;
         unset($configData['meta_waba_id'], $configData['meta_phone_number_id'], $configData['meta_access_token'], $configData['evolution_instance_name'], $configData['evolution_instance_token']);
+        // Remove individual structured fields — já consolidados em ai_training_structured
+        foreach (['bot_name','bot_tone','org_name','org_mission','services','working_hours','contact_info','faq'] as $f) {
+            unset($configData[$f]);
+        }
         
         $config->update($configData);
 
