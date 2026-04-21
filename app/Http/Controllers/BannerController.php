@@ -7,20 +7,16 @@ use App\Models\BannerSection;
 use App\Models\ScheduledPost;
 use App\Models\SocialAccount;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use DB;
 
 class BannerController extends Controller
 {
-    /** Restringe acesso a manager e ngo */
     private function checkAccess(): void
     {
-        abort_unless(
-            in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin']),
-            403,
-            'Acesso restrito a Gestores e Terceiro Setor.'
-        );
+        Gate::authorize('access-whatsapp');
     }
 
     public function index()
@@ -62,7 +58,7 @@ class BannerController extends Controller
     public function builder(Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
         $banner->load('sections');
         $sectionTypes   = $this->getSectionTypes();
         $scheduledPosts = ScheduledPost::where('status', 'scheduled')->get();
@@ -73,7 +69,7 @@ class BannerController extends Controller
     public function addSection(Request $request, Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
 
         $type     = $request->input('type');
         $maxOrder = $banner->sections()->max('sort_order') ?? -1;
@@ -91,7 +87,7 @@ class BannerController extends Controller
     public function updateSection(Request $request, BannerSection $section)
     {
         $this->checkAccess();
-        abort_unless($section->banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $section->banner);
 
         $raw     = $request->except(['_token', '_method']);
         $cleaned = [];
@@ -113,7 +109,7 @@ class BannerController extends Controller
     public function deleteSection(BannerSection $section)
     {
         $this->checkAccess();
-        abort_unless($section->banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $section->banner);
         $section->delete();
         return response()->json(['ok' => true]);
     }
@@ -121,7 +117,7 @@ class BannerController extends Controller
     public function applyTemplate(Request $request, Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
 
         $sections = $request->input('sections', []);
 
@@ -151,7 +147,7 @@ class BannerController extends Controller
     public function updateSettings(Request $request, Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
 
         $v = $request->validate([
             'title'         => 'sometimes|string|max:255',
@@ -194,7 +190,7 @@ class BannerController extends Controller
     public function destroy(Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
         $banner->delete();
         return redirect()->route('banners.index')->with('success', 'Banner removido.');
     }
@@ -202,7 +198,7 @@ class BannerController extends Controller
     public function duplicate(Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
 
         $new = $banner->replicate(['scheduled_post_id', 'thumbnail']);
         $new->title = $banner->title . ' (cópia)';
@@ -219,14 +215,14 @@ class BannerController extends Controller
 
     public function preview(Banner $banner)
     {
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
         $banner->load('sections');
         return view('banners.render', compact('banner'));
     }
 
     public function exportHtml(Banner $banner)
     {
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
         $banner->load('sections');
         $html = view('banners.render', compact('banner'))->render();
         return response($html, 200)
@@ -238,7 +234,7 @@ class BannerController extends Controller
     public function canvas(Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
         $formats = Banner::formats();
         $socialAccounts = SocialAccount::where('tenant_id', auth()->user()->tenant_id)
             ->where('is_active', true)->get();
@@ -249,7 +245,7 @@ class BannerController extends Controller
     public function saveFabric(Request $request, Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
 
         $v = $request->validate([
             'fabric_json' => 'required|string',
@@ -282,7 +278,7 @@ class BannerController extends Controller
     public function uploadImage(Request $request, Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
 
         $request->validate(['image' => 'required|image|max:10240']);
         $path = $request->file('image')->store('banners/uploads', 'public');
@@ -293,7 +289,7 @@ class BannerController extends Controller
     public function scheduleFromCanvas(Request $request, Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
 
         $v = $request->validate([
             'social_account_id' => 'required|integer',
@@ -339,7 +335,7 @@ class BannerController extends Controller
     public function generateAiText(Request $request, Banner $banner)
     {
         $this->checkAccess();
-        abort_unless($banner->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('update', $banner);
 
         $v = $request->validate([
             'prompt'    => 'required|string|max:500',

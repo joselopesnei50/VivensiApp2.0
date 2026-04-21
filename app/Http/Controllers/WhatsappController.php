@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use App\Jobs\ProcessWhatsappAiResponse;
 use App\Models\WhatsappConfig;
 use App\Models\WhatsappChat;
@@ -24,7 +25,7 @@ class WhatsappController extends Controller
 {
     public function updateCompliance(Request $request, $chatId)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        Gate::authorize('access-manager');
 
         $tenantId = auth()->user()->tenant_id;
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
@@ -276,8 +277,7 @@ class WhatsappController extends Controller
         abort_unless(auth()->check(), 401, 'Unauthorized');
         
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403, 'Acesso restrito.');
+        Gate::authorize('access-whatsapp');
 
         $contextModel = $this->getContextModel();
         
@@ -299,8 +299,7 @@ class WhatsappController extends Controller
         abort_unless(auth()->check(), 401, 'Unauthorized');
         
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403, 'Acesso restrito aos painéis de Gestor e Terceiro Setor.');
+        Gate::authorize('access-whatsapp');
 
         $contextModel = $this->getContextModel();
         
@@ -411,8 +410,7 @@ class WhatsappController extends Controller
     public function templates()
     {
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403, 'Acesso restrito.');
+        Gate::authorize('access-whatsapp');
 
         $contextModel = $this->getContextModel();
         
@@ -453,8 +451,7 @@ class WhatsappController extends Controller
     public function chatIndex()
     {
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403, 'Acesso restrito aos painéis de Gestor e Terceiro Setor.');
+        Gate::authorize('access-whatsapp');
 
         $chats = WhatsappChat::where('tenant_id', auth()->user()->tenant_id)
                              ->orderBy('last_message_at', 'desc')
@@ -518,8 +515,7 @@ class WhatsappController extends Controller
     public function updateTraining(Request $request)
     {
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403);
+        Gate::authorize('access-whatsapp');
 
         $request->validate(['training' => 'nullable|string']);
         
@@ -536,8 +532,7 @@ class WhatsappController extends Controller
     public function sendMessage(Request $request)
     {
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403);
+        Gate::authorize('access-whatsapp');
 
         $tenantId = auth()->user()->tenant_id;
         $chatId = $request->input('chat_id');

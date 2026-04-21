@@ -6,6 +6,7 @@ use App\Models\SocialAccount;
 use App\Models\SystemSetting;
 use App\Services\MetaSocialAuthService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class SocialAccountController extends Controller
 {
@@ -62,8 +63,7 @@ class SocialAccountController extends Controller
     /** Desconecta (desativa) uma conta */
     public function disconnect(SocialAccount $account)
     {
-        // Garante pertencimento ao tenant
-        abort_unless($account->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('disconnect', $account);
 
         $account->update(['is_active' => false, 'access_token' => '']);
 
@@ -73,7 +73,7 @@ class SocialAccountController extends Controller
     /** Remove permanentemente */
     public function destroy(SocialAccount $account)
     {
-        abort_unless($account->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('delete', $account);
         $account->delete();
         return back()->with('success', 'Conta removida.');
     }

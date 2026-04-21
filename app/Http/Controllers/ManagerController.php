@@ -6,6 +6,7 @@ use App\Models\Contract;
 use App\Models\LandingPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class ManagerController extends Controller
@@ -14,7 +15,7 @@ class ManagerController extends Controller
 
     private function guardManagerOnly(): void
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        Gate::authorize('access-manager');
     }
 
     public function contracts()

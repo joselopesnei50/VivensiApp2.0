@@ -9,6 +9,7 @@ use App\Models\WhatsappConfig;
 use App\Models\Tenant;
 use App\Services\EvolutionApiService;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,9 +20,8 @@ class WhatsappBroadcastController extends Controller
      */
     public function index()
     {
+        Gate::authorize('access-whatsapp');
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403);
 
         $tenantId = $user->tenant_id;
         $isSuperAdmin = ($user->role === 'super_admin');
@@ -49,9 +49,8 @@ class WhatsappBroadcastController extends Controller
      */
     public function importContacts(Request $request)
     {
+        Gate::authorize('access-whatsapp');
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403);
 
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt|max:2048',
@@ -99,9 +98,8 @@ class WhatsappBroadcastController extends Controller
      */
     public function sendBroadcast(Request $request)
     {
+        Gate::authorize('access-whatsapp');
         $user = auth()->user();
-        $isAuthorized = ($user->role === 'manager' || $user->role === 'ngo' || ($user->tenant && $user->tenant->type == 'ngo'));
-        abort_unless($isAuthorized || $user->role === 'super_admin', 403);
 
         $request->validate([
             'message'         => 'nullable|string|max:4000',

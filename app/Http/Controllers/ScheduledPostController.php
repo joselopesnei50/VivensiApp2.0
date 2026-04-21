@@ -6,6 +6,7 @@ use App\Models\ScheduledPost;
 use App\Models\SocialAccount;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,9 +37,8 @@ class ScheduledPostController extends Controller
             'media_url_external'=> 'nullable|url|max:2048',
         ]);
 
-        // Garante que a conta pertence ao tenant
         $account = SocialAccount::findOrFail($data['social_account_id']);
-        abort_unless($account->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('disconnect', $account);
 
         $mediaUrl  = null;
         $mediaType = 'none';
@@ -71,7 +71,7 @@ class ScheduledPostController extends Controller
 
     public function destroy(ScheduledPost $post)
     {
-        abort_unless($post->tenant_id === auth()->user()->tenant_id, 403);
+        Gate::authorize('delete', $post);
         abort_if($post->status === 'published', 403, 'Não é possível excluir um post já publicado.');
         $post->delete();
         return back()->with('success', 'Post removido.');

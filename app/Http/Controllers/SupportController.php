@@ -6,6 +6,7 @@ use App\Models\SupportTicket;
 use App\Models\SupportMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class SupportController extends Controller
 {
@@ -141,7 +142,7 @@ class SupportController extends Controller
     
     public function adminIndex(Request $request)
     {
-        if (Auth::user()->role != 'super_admin') abort(403);
+        Gate::authorize('access-admin');
 
         $query = SupportTicket::with('user');
 
