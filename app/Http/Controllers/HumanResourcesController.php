@@ -140,6 +140,74 @@ class HumanResourcesController extends Controller
         return redirect()->back()->with('success', 'Voluntário cadastrado com sucesso!');
     }
 
+    public function updateEmployee(Request $request, $id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $employee = Employee::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $data = $request->all();
+        if (isset($data['salary'])) {
+            $data['salary'] = str_replace('.', '', $data['salary']);
+            $data['salary'] = str_replace(',', '.', $data['salary']);
+        }
+
+        $validated = \Illuminate\Support\Facades\Validator::make($data, [
+            'name'              => 'required|string',
+            'position'          => 'required|string',
+            'contract_type'     => 'required|in:clt,pj,trainee,temporary',
+            'salary'            => 'required|numeric',
+            'work_hours_weekly' => 'required|string',
+            'hired_at'          => 'required|date',
+            'status'            => 'nullable|in:active,vacation,terminated',
+            'project_id'        => [
+                'nullable',
+                Rule::exists('projects', 'id')->where(function ($q) use ($tenantId) {
+                    $q->where('tenant_id', $tenantId);
+                }),
+            ],
+        ])->validate();
+
+        $employee->update($validated);
+
+        return redirect()->back()->with('success', 'Funcionário atualizado com sucesso!');
+    }
+
+    public function destroyEmployee($id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $employee = Employee::where('tenant_id', $tenantId)->findOrFail($id);
+        $employee->delete();
+
+        return redirect()->back()->with('success', 'Funcionário removido.');
+    }
+
+    public function updateVolunteer(Request $request, $id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $volunteer = Volunteer::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $validated = $request->validate([
+            'name'         => 'required|string',
+            'email'        => 'nullable|email',
+            'phone'        => 'nullable|string',
+            'skills'       => 'nullable|string',
+            'availability' => 'nullable|in:morning,afternoon,night,weekends',
+        ]);
+
+        $volunteer->update($validated);
+
+        return redirect()->back()->with('success', 'Voluntário atualizado com sucesso!');
+    }
+
+    public function destroyVolunteer($id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $volunteer = Volunteer::where('tenant_id', $tenantId)->findOrFail($id);
+        $volunteer->delete();
+
+        return redirect()->back()->with('success', 'Voluntário removido.');
+    }
+
     public function exportEmployeesCsv(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;

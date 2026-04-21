@@ -103,8 +103,27 @@
                     <td style="padding: 15px; text-align: center; color: #64748b;">
                         {{ $employee->work_hours_weekly }}
                     </td>
-                    <td style="padding: 15px; text-align: center;">
-                        <button type="button" title="Em breve" style="border: none; background: none; color: #94a3b8; cursor: not-allowed;" disabled><i class="fas fa-pen"></i></button>
+                    <td style="padding: 15px; text-align: center; white-space: nowrap;">
+                        <button type="button" title="Editar" style="border: none; background: none; color: #4f46e5; cursor: pointer; font-size: 1rem; padding: 4px 8px;"
+                            onclick='openEditEmployee(
+                                {{ $employee->id }},
+                                @json($employee->name),
+                                @json($employee->position),
+                                @json($employee->contract_type),
+                                "{{ number_format($employee->salary, 2, ',', '.') }}",
+                                @json($employee->work_hours_weekly),
+                                "{{ optional($employee->hired_at)->format('Y-m-d') }}",
+                                @json($employee->status ?? "active"),
+                                {{ $employee->project_id ?? "null" }}
+                            )'>
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <form method="POST" action="{{ url('/ngo/hr/employees/'.$employee->id) }}" style="display:inline;" onsubmit="return confirm('Remover funcionário {{ addslashes($employee->name) }}?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" title="Excluir" style="border: none; background: none; color: #ef4444; cursor: pointer; font-size: 1rem; padding: 4px 8px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach
@@ -212,15 +231,32 @@
             </div>
 
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #dcfce7; color: #166534; padding: 5px 10px;" onclick="alert('Em breve: abrir WhatsApp com mensagem padrão.');">
+                @if(!empty($volunteer->phone))
+                @php $vphone = preg_replace('/\D+/', '', (string) $volunteer->phone); @endphp
+                <a class="btn-premium" href="https://wa.me/{{ $vphone }}" target="_blank" rel="noopener" style="font-size: 0.8rem; background: #dcfce7; color: #166534; padding: 5px 10px;">
+                    <i class="fab fa-whatsapp"></i> Contatar
+                </a>
+                @else
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #f1f5f9; color: #94a3b8; padding: 5px 10px;" disabled>
                     <i class="fab fa-whatsapp"></i> Contatar
                 </button>
+                @endif
                 <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #f1f5f9; color: #64748b; padding: 5px 10px;" onclick='openCertificateModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
                     <i class="fas fa-certificate"></i> Certificado
                 </button>
                 <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fffbeb; color: #b45309; padding: 5px 10px; border: 1px solid #fde68a;" onclick='openLogHoursModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
                     <i class="fas fa-plus"></i> Horas
                 </button>
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #eef2ff; color: #4338ca; padding: 5px 10px;"
+                    onclick='openEditVolunteer({{ (int) $volunteer->id }}, @json($volunteer->name), @json($volunteer->email ?? ""), @json($volunteer->phone ?? ""), @json($volunteer->skills ?? ""), @json($volunteer->availability ?? ""))'>
+                    <i class="fas fa-pen"></i> Editar
+                </button>
+                <form method="POST" action="{{ url('/ngo/hr/volunteers/'.$volunteer->id) }}" style="display:inline;" onsubmit="return confirm('Remover voluntário {{ addslashes($volunteer->name) }}?')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn-premium" style="font-size: 0.8rem; background: #fee2e2; color: #dc2626; padding: 5px 10px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
             </div>
         </div>
         @endforeach
@@ -336,6 +372,82 @@
     </div>
 </div>
 
+<!-- Modal Edit Employee -->
+<div id="editEmployeeModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000; overflow-y: auto; pointer-events: auto !important; -webkit-overflow-scrolling: touch;">
+    <div class="vivensi-card" style="width: 95%; max-width: 600px; margin: 40px auto; pointer-events: auto !important; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>Editar Funcionário</h3>
+            <button onclick="closeModal('editEmployeeModal')" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form id="editEmployeeForm" method="POST" action="#">
+            @csrf @method('PUT')
+            <div class="form-group"><label>Nome Completo</label><input type="text" id="editEmpName" name="name" class="form-control-vivensi" required></div>
+            <div class="grid-2" style="gap: 15px;">
+                <div class="form-group"><label>Cargo/Função</label><input type="text" id="editEmpPosition" name="position" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Tipo Contrato</label>
+                    <select id="editEmpContractType" name="contract_type" class="form-control-vivensi">
+                        <option value="clt">CLT (Efetivo)</option>
+                        <option value="pj">PJ (Prestador)</option>
+                        <option value="trainee">Estagiário</option>
+                        <option value="temporary">Temporário</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid-2" style="gap: 15px;">
+                <div class="form-group"><label>Salário (R$)</label><input type="text" id="editEmpSalary" name="salary" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Carga Horária</label><input type="text" id="editEmpHours" name="work_hours_weekly" class="form-control-vivensi" required></div>
+            </div>
+            <div class="grid-2" style="gap: 15px;">
+                <div class="form-group"><label>Data de Admissão</label><input type="date" id="editEmpHiredAt" name="hired_at" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Status</label>
+                    <select id="editEmpStatus" name="status" class="form-control-vivensi">
+                        <option value="active">Ativo</option>
+                        <option value="vacation">Férias</option>
+                        <option value="terminated">Desligado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Projeto (opcional)</label>
+                <select id="editEmpProject" name="project_id" class="form-control-vivensi">
+                    <option value="">— Nenhum —</option>
+                    @foreach($projects as $p)
+                        <option value="{{ $p->id }}">{{ $p->name ?? ('Projeto #'.$p->id) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit" class="btn-premium" style="width: 100%; justify-content: center;">Salvar Alterações</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Edit Volunteer -->
+<div id="editVolunteerModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000; overflow-y: auto; pointer-events: auto !important; -webkit-overflow-scrolling: touch;">
+    <div class="vivensi-card" style="width: 95%; max-width: 500px; margin: 40px auto; pointer-events: auto !important; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>Editar Voluntário</h3>
+            <button onclick="closeModal('editVolunteerModal')" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form id="editVolunteerForm" method="POST" action="#">
+            @csrf @method('PUT')
+            <div class="form-group"><label>Nome</label><input type="text" id="editVolName" name="name" class="form-control-vivensi" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="editVolEmail" name="email" class="form-control-vivensi"></div>
+            <div class="form-group"><label>Telefone / WhatsApp</label><input type="text" id="editVolPhone" name="phone" class="form-control-vivensi"></div>
+            <div class="form-group"><label>Habilidades</label><input type="text" id="editVolSkills" name="skills" class="form-control-vivensi"></div>
+            <div class="form-group"><label>Disponibilidade</label>
+                <select id="editVolAvailability" name="availability" class="form-control-vivensi">
+                    <option value="">Selecione...</option>
+                    <option value="morning">Manhã</option>
+                    <option value="afternoon">Tarde</option>
+                    <option value="night">Noite</option>
+                    <option value="weekends">Finais de Semana</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-premium" style="width: 100%; justify-content: center;">Salvar Alterações</button>
+        </form>
+    </div>
+</div>
+
 <!-- Modal Log Hours -->
 <div id="logHoursModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000; overflow-y: auto; pointer-events: auto !important; -webkit-overflow-scrolling: touch;">
     <div class="vivensi-card" style="width: 95%; max-width: 450px; margin: 40px auto; pointer-events: auto !important; position: relative;">
@@ -422,6 +534,32 @@
         if (label) label.textContent = volunteerName || '—';
         if (form) form.action = "{{ url('/ngo/hr/volunteers') }}/" + volunteerId + "/certificate";
         openModal('certificateModal');
+    }
+
+    function openEditEmployee(id, name, position, contractType, salary, workHours, hiredAt, status, projectId) {
+        const form = document.getElementById('editEmployeeForm');
+        if (form) form.action = "{{ url('/ngo/hr/employees') }}/" + id;
+        document.getElementById('editEmpName').value = name || '';
+        document.getElementById('editEmpPosition').value = position || '';
+        document.getElementById('editEmpContractType').value = contractType || 'clt';
+        document.getElementById('editEmpSalary').value = salary || '';
+        document.getElementById('editEmpHours').value = workHours || '';
+        document.getElementById('editEmpHiredAt').value = hiredAt || '';
+        document.getElementById('editEmpStatus').value = status || 'active';
+        const projSel = document.getElementById('editEmpProject');
+        if (projSel) projSel.value = projectId || '';
+        openModal('editEmployeeModal');
+    }
+
+    function openEditVolunteer(id, name, email, phone, skills, availability) {
+        const form = document.getElementById('editVolunteerForm');
+        if (form) form.action = "{{ url('/ngo/hr/volunteers') }}/" + id;
+        document.getElementById('editVolName').value = name || '';
+        document.getElementById('editVolEmail').value = email || '';
+        document.getElementById('editVolPhone').value = phone || '';
+        document.getElementById('editVolSkills').value = skills || '';
+        document.getElementById('editVolAvailability').value = availability || '';
+        openModal('editVolunteerModal');
     }
 
     function openLogHoursModal(volunteerId, volunteerName) {

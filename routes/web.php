@@ -251,7 +251,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/hr/certificates/export', [App\Http\Controllers\HumanResourcesController::class, 'exportCertificatesCsv']);
         Route::get('/hr/certificates/{id}/download', [App\Http\Controllers\HumanResourcesController::class, 'downloadVolunteerCertificate']);
         Route::post('/hr/employees', [App\Http\Controllers\HumanResourcesController::class, 'storeEmployee']);
+        Route::put('/hr/employees/{id}', [App\Http\Controllers\HumanResourcesController::class, 'updateEmployee'])->name('ngo.hr.employees.update');
+        Route::delete('/hr/employees/{id}', [App\Http\Controllers\HumanResourcesController::class, 'destroyEmployee'])->name('ngo.hr.employees.destroy');
         Route::post('/hr/volunteers', [App\Http\Controllers\HumanResourcesController::class, 'storeVolunteer']);
+        Route::put('/hr/volunteers/{id}', [App\Http\Controllers\HumanResourcesController::class, 'updateVolunteer'])->name('ngo.hr.volunteers.update');
+        Route::delete('/hr/volunteers/{id}', [App\Http\Controllers\HumanResourcesController::class, 'destroyVolunteer'])->name('ngo.hr.volunteers.destroy');
         Route::post('/hr/volunteers/{id}/log-hours', [App\Http\Controllers\HumanResourcesController::class, 'logHours']);
 
         // Beneficiaries
