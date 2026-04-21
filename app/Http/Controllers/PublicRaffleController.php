@@ -174,15 +174,16 @@ class PublicRaffleController extends Controller
         // Additional Data Field (ID 62) — txid = '***' for static PIX (required by some banks)
         $additionalData = $tlv('62', $tlv('05', '***'));
 
-        // Assemble payload without CRC (Lean version for maximum compatibility)
-        $payload = '000201'            // Payload Format Indicator
-            . $mai                      // Merchant Account Info
-            . '52040000'               // Merchant Category Code
-            . '5303986'                // Transaction Currency (BRL)
-            . $tlv('54', $amountStr)   // Transaction Amount
-            . '5802BR'                 // Country Code
+        // Assemble payload — field 62 (txid='***') required by BACEN spec
+        $payload = '000201'             // Payload Format Indicator
+            . $mai                       // Merchant Account Info
+            . '52040000'                // Merchant Category Code
+            . '5303986'                 // Transaction Currency (BRL)
+            . $tlv('54', $amountStr)    // Transaction Amount
+            . '5802BR'                  // Country Code
             . $tlv('59', $merchantName) // Merchant Name
             . $tlv('60', $merchantCity) // Merchant City
+            . $additionalData           // Additional Data (ID 62 — txid required)
             . '6304';                   // CRC placeholder (value appended below)
 
         // ── CRC16-CCITT (polynomial 0x1021, init 0xFFFF) ─────────────────────
