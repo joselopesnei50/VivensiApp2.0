@@ -18,9 +18,12 @@
             <h3 style="margin: 0; font-size: 1.6rem; color: #1e293b; font-weight: 900;">{{ $grant->title }}</h3>
             <div class="text-muted small" style="margin-top: 6px;">ID: #{{ $grant->id }}</div>
         </div>
-        <div style="display:flex; gap: 10px; align-items:center;">
+        <div style="display:flex; gap: 10px; align-items:center; flex-wrap: wrap;">
             <button type="button" id="btnGenerateAiProposal" class="btn btn-premium" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 12px; font-weight: 800; padding: 10px 20px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
                 <i class="fas fa-sparkles me-2"></i> Copilot Pro IA
+            </button>
+            <button type="button" data-bs-toggle="modal" data-bs-target="#editGrantModal" class="btn btn-outline-primary" style="border-radius: 12px; font-weight: 700;">
+                <i class="fas fa-pen me-1"></i> Editar
             </button>
             <a href="{{ url('/ngo/grants') }}" class="btn btn-outline-secondary" style="border-radius: 12px;">Voltar</a>
             <form action="{{ route('ngo.grants.destroy', $grant->id) }}" method="POST" onsubmit="return confirm('Excluir este convênio/edital? Esta ação não pode ser desfeita.');">
@@ -444,6 +447,69 @@
 </div>
 </div>
 
+{{-- MODAL EDITAR CONVÊNIO --}}
+<div class="modal fade" id="editGrantModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 25px 50px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="padding: 24px 28px; border-bottom: 1px solid #f1f5f9;">
+                <h5 class="modal-title fw-bold" style="color: #0f172a;"><i class="fas fa-pen me-2 text-primary"></i>Editar Convênio / Edital</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 28px;">
+                <form action="{{ route('ngo.grants.update', $grant->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Título / Objeto</label>
+                        <input type="text" name="title" class="form-control" value="{{ $grant->title }}" required style="border-radius: 10px;">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-7">
+                            <label class="form-label fw-bold small text-muted">Concedente (Órgão/Empresa)</label>
+                            <input type="text" name="grantor_name" class="form-control" value="{{ $grant->agency }}" required style="border-radius: 10px;">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small text-muted">Número do Processo/Contrato</label>
+                            <input type="text" name="contract_number" class="form-control" value="{{ $grant->contract_number }}" style="border-radius: 10px;" placeholder="Opcional">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Valor Global (R$)</label>
+                        <input type="text" name="total_amount" id="edit_total_amount" class="form-control"
+                               value="{{ number_format($grant->value, 2, ',', '.') }}" required style="border-radius: 10px; font-weight: 700; color: #4f46e5;">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Início da Vigência</label>
+                            <input type="date" name="start_date" class="form-control" value="{{ $grant->start_date?->format('Y-m-d') }}" style="border-radius: 10px;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Fim da Vigência</label>
+                            <input type="date" name="end_date" class="form-control" value="{{ $grant->deadline?->format('Y-m-d') }}" required style="border-radius: 10px;">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted">Observações / Requisitos</label>
+                        <textarea name="notes" class="form-control" rows="4" style="border-radius: 10px;" placeholder="Cole aqui requisitos, objeto, itens de prestação de contas, etc.">{{ $grant->notes }}</textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">Cancelar</button>
+                        <button type="submit" class="btn btn-primary fw-bold" style="border-radius: 10px; background: #4f46e5; border: none; padding: 10px 28px;">
+                            <i class="fas fa-save me-2"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- MODAL COPILOT IA --}}
 <div class="modal fade" id="aiProposalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -465,9 +531,13 @@
                     <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
                     <p class="mt-4" style="color: rgba(255,255,255,0.6); font-weight: 600;">O Bruce está analisando o edital e redigindo sua proposta...</p>
                 </div>
-                <div id="aiProposalContent" style="display: none; line-height: 1.8; color: #e2e8f0; font-size: 0.95rem;">
-                    {{-- Texto gerado aparecerá aqui --}}
+                @if($grant->ai_proposal)
+                <div id="aiProposalSaved" style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="font-size: 0.82rem; color: #a5b4fc;"><i class="fas fa-history me-2"></i>Proposta salva disponível. Clique em <strong>Carregar Salva</strong> ou gere uma nova.</div>
+                    <button type="button" id="btnLoadSavedProposal" class="btn btn-sm" style="background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; font-weight: 700; white-space: nowrap;">Carregar Salva</button>
                 </div>
+                @endif
+                <div id="aiProposalContent" style="display: none; line-height: 1.8; color: #e2e8f0; font-size: 0.95rem;"></div>
             </div>
             <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.05); padding: 25px 40px;">
                 <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" style="border-radius: 12px; font-weight: 800;">Fechar</button>
@@ -489,6 +559,20 @@
         const content = document.getElementById('aiProposalContent');
         const btnCopy = document.getElementById('btnCopyAiProposal');
         let currentProposal = '';
+
+        @if($grant->ai_proposal)
+        const savedProposal = @json($grant->ai_proposal);
+        const btnLoadSaved = document.getElementById('btnLoadSavedProposal');
+        if (btnLoadSaved) {
+            btnLoadSaved.addEventListener('click', function() {
+                currentProposal = savedProposal;
+                content.innerHTML = marked.parse(savedProposal);
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                btnCopy.style.display = 'block';
+            });
+        }
+        @endif
 
         btnGenerate.addEventListener('click', async function() {
             modal.show();

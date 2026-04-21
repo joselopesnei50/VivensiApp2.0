@@ -358,6 +358,11 @@
                                 <td><span class="badge rounded-pill px-3 py-2" style="background: #eff6ff; color: #2563eb; font-weight: 700;">{{ $member->position }}</span></td>
                                 <td class="text-muted fw-500">{{ $member->tenure_start ? date('Y', strtotime($member->tenure_start)) : 'N/A' }} - {{ $member->tenure_end ? date('Y', strtotime($member->tenure_end)) : 'Ativo' }}</td>
                                 <td class="text-end">
+                                    <button type="button" class="btn btn-outline-primary btn-sm border-0 rounded-circle me-1"
+                                        style="width: 35px; height: 35px;"
+                                        onclick="openEditBoard({{ $member->id }}, @js($member->name), @js($member->position), '{{ $member->tenure_start?->format('Y-m-d') ?? '' }}', '{{ $member->tenure_end?->format('Y-m-d') ?? '' }}')">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
                                     <form action="{{ url('/ngo/transparencia/board/'.$member->id) }}" method="POST" class="d-inline">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-outline-danger btn-sm border-0 rounded-circle" style="width: 35px; height: 35px;"><i class="fas fa-trash"></i></button>
@@ -406,6 +411,11 @@
                                 <td><span class="fw-800 text-dark">R$ {{ number_format($p->value, 2, ',', '.') }}</span></td>
                                 <td><span class="badge bg-success rounded-pill px-3">{{ strtoupper($p->status) }}</span></td>
                                 <td class="text-end">
+                                    <button type="button" class="btn btn-outline-primary btn-sm border-0 rounded-circle me-1"
+                                        style="width: 35px; height: 35px;"
+                                        onclick="openEditPartnership({{ $p->id }}, @js($p->agency_name), @js($p->project_name), '{{ number_format($p->value,2,',','.') }}', @js($p->status ?? ''), @js($p->gazette_link ?? ''), '{{ $p->start_date?->format('Y-m-d') ?? '' }}', '{{ $p->end_date?->format('Y-m-d') ?? '' }}')">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
                                     <form action="{{ url('/ngo/transparencia/partnerships/'.$p->id) }}" method="POST" class="d-inline">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-outline-danger btn-sm border-0 rounded-circle" style="width: 35px; height: 35px;"><i class="fas fa-trash"></i></button>
@@ -539,19 +549,93 @@
     </div>
 </div>
 
+{{-- MODAL EDITAR DIRETOR --}}
+<div class="modal fade" id="editBoardModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="editBoardForm" method="POST" class="modal-content border-0 shadow-lg rounded-4">
+            @csrf
+            @method('PUT')
+            <div class="modal-header bg-dark text-white p-4">
+                <h5 class="fw-bold mb-0"><i class="fas fa-pen me-2"></i>Editar Membro da Diretoria</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4"><label class="form-label-premium">Nome Completo</label><input type="text" name="name" id="edit_board_name" class="input-premium" required></div>
+                <div class="mb-4"><label class="form-label-premium">Cargo Oficial</label><input type="text" name="position" id="edit_board_position" class="input-premium" required></div>
+                <div class="row">
+                    <div class="col-6"><label class="form-label-premium">Início Mandato</label><input type="date" name="tenure_start" id="edit_board_start" class="input-premium"></div>
+                    <div class="col-6"><label class="form-label-premium">Fim Mandato</label><input type="date" name="tenure_end" id="edit_board_end" class="input-premium"></div>
+                </div>
+            </div>
+            <div class="p-4 bg-light border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">SALVAR ALTERAÇÕES</button></div>
+        </form>
+    </div>
+</div>
+
+{{-- MODAL EDITAR PARCERIA --}}
+<div class="modal fade" id="editPartnershipModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="editPartnershipForm" method="POST" class="modal-content border-0 shadow-lg rounded-4">
+            @csrf
+            @method('PUT')
+            <div class="modal-header bg-dark text-white p-4">
+                <h5 class="fw-bold mb-0"><i class="fas fa-pen me-2"></i>Editar Parceria</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3"><label class="form-label-premium">Órgão Concedente</label><input type="text" name="agency_name" id="edit_p_agency" class="input-premium" required></div>
+                <div class="mb-3"><label class="form-label-premium">Nome do Projeto</label><input type="text" name="project_name" id="edit_p_project" class="input-premium" required></div>
+                <div class="mb-3"><label class="form-label-premium">Valor do Repasse (R$)</label><input type="text" name="value" id="edit_p_value" class="input-premium" required></div>
+                <div class="mb-3"><label class="form-label-premium">Status</label>
+                    <select name="status" id="edit_p_status" class="input-premium">
+                        <option value="active">Ativo</option>
+                        <option value="concluded">Concluído</option>
+                        <option value="analysis">Em análise</option>
+                        <option value="pending">Pendente</option>
+                    </select>
+                </div>
+                <div class="mb-3"><label class="form-label-premium">Link Diário Oficial (LAI)</label><input type="url" name="gazette_link" id="edit_p_gazette" class="input-premium" placeholder="https://..."></div>
+                <div class="row">
+                    <div class="col-6"><label class="form-label-premium">Início</label><input type="date" name="start_date" id="edit_p_start" class="input-premium"></div>
+                    <div class="col-6"><label class="form-label-premium">Fim</label><input type="date" name="end_date" id="edit_p_end" class="input-premium"></div>
+                </div>
+            </div>
+            <div class="p-4 bg-light border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">SALVAR ALTERAÇÕES</button></div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Move modals to body to prevent z-index/transform issues
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            document.body.appendChild(modal);
-        });
+        document.querySelectorAll('.modal').forEach(modal => document.body.appendChild(modal));
     });
+
+    function openEditBoard(id, name, position, start, end) {
+        document.getElementById('editBoardForm').action = '/ngo/transparencia/board/' + id;
+        document.getElementById('edit_board_name').value = name;
+        document.getElementById('edit_board_position').value = position;
+        document.getElementById('edit_board_start').value = start;
+        document.getElementById('edit_board_end').value = end;
+        new bootstrap.Modal(document.getElementById('editBoardModal')).show();
+    }
+
+    function openEditPartnership(id, agency, project, value, status, gazette, start, end) {
+        document.getElementById('editPartnershipForm').action = '/ngo/transparencia/partnerships/' + id;
+        document.getElementById('edit_p_agency').value = agency;
+        document.getElementById('edit_p_project').value = project;
+        document.getElementById('edit_p_value').value = value;
+        document.getElementById('edit_p_gazette').value = gazette;
+        document.getElementById('edit_p_start').value = start;
+        document.getElementById('edit_p_end').value = end;
+        const sel = document.getElementById('edit_p_status');
+        for (let o of sel.options) o.selected = (o.value === status);
+        new bootstrap.Modal(document.getElementById('editPartnershipModal')).show();
+    }
 </script>
-@endsection
+@endpush
 
 <style>
     /* Glassmorphism Backdrop for Modals */

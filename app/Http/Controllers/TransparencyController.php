@@ -183,6 +183,21 @@ class TransparencyController extends Controller
         return back()->with('success', 'Membro da diretoria adicionado!');
     }
 
+    public function updateBoardMember(Request $request, $id)
+    {
+        $member = BoardMember::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+
+        $validated = $request->validate([
+            'name'         => 'required|string|max:255',
+            'position'     => 'required|string|max:255',
+            'tenure_start' => 'nullable|date',
+            'tenure_end'   => 'nullable|date|after_or_equal:tenure_start',
+        ]);
+
+        $member->update($validated);
+        return back()->with('success', 'Membro atualizado!');
+    }
+
     public function deleteBoardMember($id)
     {
         BoardMember::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id)->delete();
@@ -297,6 +312,30 @@ class TransparencyController extends Controller
         $ext = pathinfo((string) $doc->file_path, PATHINFO_EXTENSION);
         $name = 'documento-' . Str::slug($doc->title) . ($ext ? ('.' . $ext) : '');
         return Storage::disk('public')->download($doc->file_path, $name);
+    }
+
+    public function updatePartnership(Request $request, $id)
+    {
+        $partnership = PublicPartnership::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+
+        $data = $request->all();
+        if (isset($data['value'])) {
+            $data['value'] = str_replace('.', '', (string) $data['value']);
+            $data['value'] = str_replace(',', '.', (string) $data['value']);
+        }
+
+        $validated = \Illuminate\Support\Facades\Validator::make($data, [
+            'agency_name'  => 'required|string|max:255',
+            'project_name' => 'required|string|max:255',
+            'value'        => 'required|numeric|min:0',
+            'gazette_link' => 'nullable|string|max:2048',
+            'status'       => 'nullable|string|max:60',
+            'start_date'   => 'nullable|date',
+            'end_date'     => 'nullable|date',
+        ])->validate();
+
+        $partnership->update($validated);
+        return back()->with('success', 'Parceria atualizada!');
     }
 
     public function deletePartnership($id)

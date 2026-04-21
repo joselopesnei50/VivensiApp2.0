@@ -24,6 +24,7 @@ class NgoGrant extends Model
         'deadline',
         'status',
         'notes',
+        'ai_proposal',
     ];
 
     protected $casts = [
