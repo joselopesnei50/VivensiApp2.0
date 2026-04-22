@@ -262,7 +262,7 @@
                         <i class="fas fa-server group-icon"></i> Infraestrutura
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '250px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '350px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
                             <li><a href="{{ url('/horizon') }}" target="_blank"><i class="fas fa-satellite-dish"></i> Horizon (Filas)</a></li>
