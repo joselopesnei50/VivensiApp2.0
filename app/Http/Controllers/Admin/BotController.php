@@ -116,19 +116,56 @@ class BotController extends Controller
         $request->validate(['instance_name' => 'required|string|max:100']);
 
         $instanceName = $request->input('instance_name');
+        $botWebhook   = rtrim(config('app.url'), '/') . '/api/whatsapp/bot';
 
         try {
-            $evo    = $this->makeEvolutionService($instanceName);
-            $result = $evo->createInstance($instanceName, null, null);
+            // Chamar diretamente a Evolution API com o webhook do bot
+            $baseUrl      = rtrim(config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL')), '/');
+            $globalApiKey = config('whatsapp.evolution_global_key');
 
-            // Salvar o nome da instância no SystemSetting
-            SystemSetting::setValue('bot_instance_name', $instanceName, 'bot');
+            $payload = [
+                'instanceName' => $instanceName,
+                'qrcode'       => true,
+                'integration'  => 'WHATSAPP-BAILEYS',
+                'rejectCall'   => false,
+                'groupsIgnore' => true,
+                'alwaysOnline' => true,
+                'readMessages' => true,
+                'readStatus'   => true,
+                'webhook'      => [
+                    'enabled'  => true,
+                    'url'      => $botWebhook,
+                    'byEvents' => false,
+                    'base64'   => false,
+                    'events'   => ['messages.upsert', 'connection.update', 'qrcode.updated'],
+                ],
+            ];
+
+            $response = \Illuminate\Support\Facades\Http::timeout(30)
+                ->withHeaders(['apikey' => $globalApiKey])
+                ->post("{$baseUrl}/instance/create", $payload);
+
+            if ($response->successful()) {
+                // Salvar o nome da instância no SystemSetting
+                SystemSetting::setValue('bot_instance_name', $instanceName, 'bot');
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Instância '{$instanceName}' criada! Webhook configurado para: {$botWebhook}",
+                    'data'    => $response->json(),
+                ]);
+            }
+
+            Log::error('Bot Admin: Evolution API recusou criação', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Instância criada! Aguarde o QR Code.',
-                'data'    => $result,
-            ]);
+                'success' => false,
+                'message' => "Evolution API retornou erro {$response->status()}: " . $response->body(),
+            ], 500);
+
         } catch (\Throwable $e) {
             Log::error('Bot Admin: createInstance failed', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
