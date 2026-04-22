@@ -13,6 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         '/api/whatsapp/webhook',
+        '/api/whatsapp/bot',       // Bot de Gestão Interna
         '/api/webhooks/asaas',
         '/lp/*/lead',
         '/validar-recibo',

@@ -14,6 +14,12 @@ Route::match(['get', 'post'], '/whatsapp/webhook', [App\Http\Controllers\Whatsap
 Route::post('/evo/webhook/{token}', [App\Http\Controllers\Api\EvolutionWebhookController::class, 'handle'])
     ->middleware('throttle:500,1');
 
+// ── Bot de Gestão Interna (Vivensi Command Bot) ───────────────────────────
+// Recebe mensagens do número do bot (5516997618695) via Evolution API
+Route::post('/whatsapp/bot', [App\Http\Controllers\Api\WhatsAppBotController::class, 'handle'])
+    ->middleware('throttle:300,1');
+
+
 // Legacy Z-API (manter retrocompatibilidade)
 Route::post('/webhooks/zapi', [App\Http\Controllers\WhatsappController::class, 'webhook'])
     ->middleware('throttle:300,1');
