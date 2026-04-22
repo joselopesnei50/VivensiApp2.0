@@ -270,6 +270,11 @@
                             <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp" style="color:#25d366;"></i> Command Bot (WA)</a></li>
                         </ul>
                     </div>
+
+                {{-- Link direto: Command Bot --}}
+                <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp" style="color:#25d366;"></i> Command Bot (WA)</a></li>
+                <div class="menu-divider"></div>
+
                 </div>
             @elseif (auth()->user()->role == 'manager')
                 {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
