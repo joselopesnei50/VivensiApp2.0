@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\Transaction;
 use App\Models\Attendance;
 use App\Models\Beneficiary;
+use App\Models\SystemSetting;
 use App\Services\EvolutionApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -26,11 +27,14 @@ use Illuminate\Support\Facades\Log;
 class WhatsAppBotController extends Controller
 {
     private string $botInstanceName;
-    private string $botPhone = '5516997618695'; // Número do bot configurado
+    private string $botPhone;
+    private bool   $botEnabled;
 
     public function __construct()
     {
-        $this->botInstanceName = config('whatsapp.bot_instance_name', 'vivensi-bot');
+        $this->botEnabled      = (bool) SystemSetting::getValue('bot_enabled', false);
+        $this->botPhone        = SystemSetting::getValue('bot_phone', '') ?? '';
+        $this->botInstanceName = SystemSetting::getValue('bot_instance_name', '') ?? '';
     }
 
     /**
@@ -38,6 +42,11 @@ class WhatsAppBotController extends Controller
      */
     public function handle(Request $request): \Illuminate\Http\JsonResponse
     {
+        // Bot desabilitado via painel admin
+        if (!$this->botEnabled) {
+            return response()->json(['status' => 'disabled'], 200);
+        }
+
         $data = $request->all();
         $event = $data['event'] ?? ($data['type'] ?? '');
 
@@ -544,18 +553,16 @@ class WhatsAppBotController extends Controller
 
     private function showHelp(User $user, string $waId): void
     {
-        $this->send($waId,
-            "ℹ️ *AJUDA — VIVENSI BOT*\n\n"
-            . "📌 Comandos disponíveis a qualquer momento:\n\n"
-            . "• *menu* — Voltar ao menu principal\n"
-            . "• *cancelar* — Cancelar operação atual\n\n"
-            . "📱 *Inserção direta:*\n"
+        $msg = SystemSetting::getValue('bot_msg_help', '')
+            ?: "ℹ️ *AJUDA — VIVENSI BOT*\n\n"
+            . "• *menu* — Voltar ao menu\n"
+            . "• *cancelar* — Cancelar operação\n"
             . "• ATEND: Nome | Tipo | Desc\n"
             . "• DESP: 100,00 | Descrição\n"
             . "• RECV: 100,00 | Descrição\n"
-            . "• BENEF: Nome ou CPF\n\n"
-            . "_Acesse o painel em vivensi.app.br_"
-        );
+            . "• BENEF: Nome ou CPF";
+
+        $this->send($waId, $msg);
     }
 
     // ─── Utilidades ───────────────────────────────────────────────────────────
@@ -575,22 +582,20 @@ class WhatsAppBotController extends Controller
     private function send(string $waId, string $text): void
     {
         try {
-            $phone = preg_replace('/\D/', '', explode('@', $waId)[0]);
-            $evo   = new EvolutionApiService();
+            $phone        = preg_replace('/\D/', '', explode('@', $waId)[0]);
+            $instanceName = $this->botInstanceName;
 
-            // Acessa a propriedade via reflection ou usa um método público
-            // O EvolutionApiService precisa de uma instância configurada
-            $config = \App\Models\WhatsappConfig::withoutGlobalScopes()
-                ->whereNotNull('evolution_instance_name')
-                ->where('ai_enabled', true)
-                ->first();
-
-            if ($config) {
-                $evo = new EvolutionApiService($config);
-                $evo->sendMessage($phone, $text);
-            } else {
-                Log::warning("WhatsApp Bot: Nenhuma instância configurada para enviar mensagem a {$phone}");
+            if (!$instanceName) {
+                Log::warning("WhatsApp Bot: bot_instance_name não configurado. Mensagem não enviada.");
+                return;
             }
+
+            $context = new \stdClass();
+            $context->evolution_instance_name  = $instanceName;
+            $context->evolution_instance_token = null;
+
+            $evo = new EvolutionApiService($context);
+            $evo->sendMessage($phone, $text);
         } catch (\Throwable $e) {
             Log::error("WhatsApp Bot: Falha ao enviar para {$waId}: " . $e->getMessage());
         }
