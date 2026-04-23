@@ -13,12 +13,13 @@ class SubscriptionPlan extends Model
         'name',
         'target_audience',
         'price',
-        'price_yearly', // New
+        'price_yearly',
         'interval',
         'features',
         'is_active',
         'asaas_id',
-        'pagseguro_plan_id_yearly', // New
+        'pagseguro_plan_id_yearly',
+        'abacatepay_product_id', // ID do produto na AbacatePay
     ];
 
     protected $casts = [
