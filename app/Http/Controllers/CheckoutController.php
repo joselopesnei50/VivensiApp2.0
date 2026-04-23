@@ -107,7 +107,7 @@ class CheckoutController extends Controller
             items: [['id' => $plan->abacatepay_product_id, 'quantity' => 1]],
             externalId: $externalId,
             returnUrl: route('dashboard'),
-            completionUrl: url('/checkout/sucesso'),
+            completionUrl: route('checkout.success'),
             methods: [$paymentMethod],
             metadata: [
                 'tenant_id'  => $tenant->id,

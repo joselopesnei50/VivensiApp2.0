@@ -74,7 +74,7 @@ class AbacatePayCheckoutController extends Controller
             ],
             externalId: $externalId,
             returnUrl: route('dashboard'),
-            completionUrl: url('/checkout/sucesso'),
+            completionUrl: route('checkout.success'),
             methods: [$paymentMethod],   // PIX ou CARD — escolha do usuário
             metadata: [
                 'tenant_id'   => $tenant->id,
