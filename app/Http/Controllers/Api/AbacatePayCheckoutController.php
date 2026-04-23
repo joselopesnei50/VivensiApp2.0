@@ -3,19 +3,29 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use App\Models\Transaction;
 use App\Services\AbacatePayService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * AbacatePayCheckoutController
+ *
+ * Inicia checkouts de assinatura na AbacatePay.
+ * O campo items[].id DEVE ser o ID do produto cadastrado no painel AbacatePay.
+ * Ref: https://docs.abacatepay.com/pages/payment/create
+ */
 class AbacatePayCheckoutController extends Controller
 {
     public function __construct(protected AbacatePayService $abacate) {}
 
     /**
-     * Inicia um checkout para pagamento de plano.
-     * POST /api/abacatepay/checkout
-     * Body: { plan_id, plan_name, amount }
+     * Inicia checkout de assinatura mensal com trial de 7 dias.
+     * Chamado pelo formulário em /checkout (POST checkout.process).
+     *
+     * Body: { plan_id, document, payment_method, gateway }
      */
     public function checkout(Request $request)
     {
@@ -24,20 +34,29 @@ class AbacatePayCheckoutController extends Controller
         }
 
         $request->validate([
-            'amount'    => 'required|numeric|min:1',
-            'plan_name' => 'required|string',
-            'plan_id'   => 'nullable|integer',
+            'plan_id'        => 'required|integer|exists:subscription_plans,id',
+            'payment_method' => 'nullable|in:PIX,CARD',
         ]);
 
-        $tenant     = Tenant::findOrFail($request->user()->tenant_id);
-        $externalId = 'VIVENSI_' . $tenant->id . '_' . time();
-        $amountCents = (int) round($request->input('amount') * 100);
+        $plan   = SubscriptionPlan::findOrFail($request->input('plan_id'));
+        $tenant = Tenant::findOrFail($request->user()->tenant_id);
+
+        // Verificar se o plano tem o ID do produto configurado na AbacatePay
+        if (empty($plan->abacatepay_product_id)) {
+            Log::error('AbacatePay checkout: plano sem abacatepay_product_id', ['plan_id' => $plan->id]);
+            return redirect()->back()->with('error',
+                'Este plano ainda não está configurado para pagamento via AbacatePay. Entre em contato com o suporte.'
+            );
+        }
+
+        $externalId     = 'VIVENSI_' . $tenant->id . '_' . time();
+        $paymentMethod  = $request->input('payment_method', 'PIX');
 
         // Registrar transação pendente
         $transaction = Transaction::create([
             'tenant_id'   => $tenant->id,
-            'amount'      => $request->input('amount'),
-            'description' => 'Plano: ' . $request->input('plan_name'),
+            'amount'      => $plan->price,
+            'description' => 'Assinatura: ' . $plan->name,
             'type'        => 'income',
             'status'      => 'pending',
             'date'        => now()->toDateString(),
@@ -45,43 +64,49 @@ class AbacatePayCheckoutController extends Controller
         ]);
 
         // Criar checkout na AbacatePay
-        // O item precisa existir no painel da AbacatePay (produto)
-        // Usamos externalId como referência e passamos os dados no metadata
+        // items[].id = ID do produto cadastrado no painel AbacatePay (obrigatório)
         $checkout = $this->abacate->createCheckout(
-            items: [['externalId' => 'vivensi-plan-' . ($request->input('plan_id') ?? 'custom'), 'quantity' => 1]],
+            items: [
+                [
+                    'id'       => $plan->abacatepay_product_id, // ✅ campo correto conforme docs
+                    'quantity' => 1,
+                ]
+            ],
             externalId: $externalId,
             returnUrl: route('dashboard'),
-            completionUrl: route('checkout.success'),
-            methods: ['PIX', 'CARD'],
+            completionUrl: url('/checkout/sucesso'),
+            methods: [$paymentMethod],   // PIX ou CARD — escolha do usuário
             metadata: [
-                'tenant_id'    => $tenant->id,
-                'tenant_name'  => $tenant->name,
-                'plan_name'    => $request->input('plan_name'),
-                'amount_brl'   => 'R$ ' . number_format($request->input('amount'), 2, ',', '.'),
+                'tenant_id'   => $tenant->id,
+                'tenant_name' => $tenant->name,
+                'plan_id'     => $plan->id,
+                'plan_name'   => $plan->name,
             ]
         );
 
-        if (!$checkout) {
+        if (!$checkout || empty($checkout['url'])) {
             $transaction->update(['status' => 'canceled']);
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Não foi possível iniciar o pagamento. Tente novamente.',
-            ], 500);
+            Log::error('AbacatePay: falha ao criar checkout', [
+                'plan'   => $plan->id,
+                'tenant' => $tenant->id,
+            ]);
+            return redirect()->back()->with('error',
+                'Não foi possível iniciar o pagamento. Verifique a configuração da API e tente novamente.'
+            );
         }
 
-        // Salvar ID da AbacatePay na transação
-        $transaction->update(['external_id' => $externalId, 'gateway_id' => $checkout['id'] ?? null]);
-
-        return response()->json([
-            'status'      => 'success',
-            'payment_url' => $checkout['url'],
-            'checkout_id' => $checkout['id'],
+        // Salvar o ID gerado pela AbacatePay na transação
+        $transaction->update([
             'external_id' => $externalId,
+            'gateway_id'  => $checkout['id'] ?? null,
         ]);
+
+        // Redirecionar para o checkout hospedado na AbacatePay
+        return redirect($checkout['url']);
     }
 
     /**
-     * Página de sucesso após pagamento.
+     * Página de sucesso após pagamento completado.
      */
     public function success()
     {

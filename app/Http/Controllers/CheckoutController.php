@@ -4,32 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
-use App\Services\AsaasService;
+use App\Models\Transaction;
+use App\Services\AbacatePayService;
 use App\Services\PagSeguroService;
 use App\Services\BrevoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class CheckoutController extends Controller
 {
-    protected $pagSeguro;
-    protected $brevo;
-
-    public function __construct(PagSeguroService $pagSeguro, BrevoService $brevo)
-    {
-        $this->pagSeguro = $pagSeguro;
-        $this->brevo = $brevo;
-    }
+    public function __construct(
+        protected AbacatePayService $abacate,
+        protected PagSeguroService  $pagSeguro,
+        protected BrevoService      $brevo,
+    ) {}
 
     /**
-     * Show checkout page
+     * Exibe a página de checkout para o plano selecionado.
      */
     public function index($plan_id)
     {
         $plan = SubscriptionPlan::findOrFail($plan_id);
         $user = auth()->user();
-        
-        // Ensure user has a tenant
+
         if (!$user->tenant_id) {
             return redirect('/dashboard')->with('error', 'Organização não encontrada para o usuário.');
         }
@@ -40,18 +38,24 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Process checkout - Create payment in PagSeguro
+     * Processa o checkout — AbacatePay (padrão) ou PagSeguro (legado).
      */
     public function process(Request $request)
     {
-        try {
-            $user = auth()->user();
-            $tenant = Tenant::findOrFail($user->tenant_id);
-            $plan = SubscriptionPlan::findOrFail($request->plan_id);
+        $request->validate([
+            'plan_id'        => 'required|integer|exists:subscription_plans,id',
+            'payment_method' => 'nullable|in:PIX,CARD',
+        ]);
 
-            // 1. Update Tenant Document if provided
+        try {
+            $user    = auth()->user();
+            $tenant  = Tenant::findOrFail($user->tenant_id);
+            $plan    = SubscriptionPlan::findOrFail($request->plan_id);
+            $gateway = $request->input('gateway', 'abacatepay');
+
+            // Salvar/atualizar documento do tenant
             if ($request->filled('document')) {
-                $tenant->document = $request->document;
+                $tenant->document = preg_replace('/\D/', '', $request->document);
                 $tenant->save();
             }
 
@@ -59,54 +63,114 @@ class CheckoutController extends Controller
                 return back()->with('error', 'CPF ou CNPJ é obrigatório para o faturamento.');
             }
 
-            // 2. Prepare Data for PagSeguro
-            // Generate a unique reference: VIVENSI_TENANT_PLAN_TIMESTAMP
-            $reference = sprintf("VIVENSI_%s_%s_%s", $tenant->id, $plan->id, time());
-
-            $transaction = \App\Models\Transaction::create([
-                'tenant_id' => $tenant->id,
-                'amount' => $plan->price,
-                'description' => 'Assinatura ' . $plan->name . ' (' . $reference . ')',
-                'type' => 'income',
-                'status' => 'pending',
-                'date' => now(),
-                'external_id' => $reference,
-            ]);
-
-            $paymentData = [
-                'reference' => $reference,
-                'amount' => $plan->price,
-                'description' => 'Assinatura ' . $plan->name,
-                'sender' => [
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'cpf' => $this->cleanCpf($tenant->document), // Ensure only numbers
-                ]
-            ];
-
-            // 3. Call PagSeguro
-            $result = $this->pagSeguro->createPayment($paymentData);
-
-            if ($result && isset($result['paymentLink'])) {
-                if (isset($result['code'])) {
-                    $transaction->update(['external_id' => $result['code']]);
-                }
-                return redirect()->away($result['paymentLink']);
+            // ── AbacatePay (padrão) ────────────────────────────────────────
+            if ($gateway === 'abacatepay') {
+                return $this->processAbacatePay($request, $tenant, $plan, $user);
             }
 
-            $transaction->update(['status' => 'canceled']);
-            return back()->with('error', 'Não foi possível gerar o link de pagamento. Tente novamente.');
+            // ── PagSeguro (legado) ─────────────────────────────────────────
+            return $this->processPagSeguro($request, $tenant, $plan, $user);
 
         } catch (Exception $e) {
+            Log::error('CheckoutController::process exception', ['error' => $e->getMessage()]);
             return back()->with('error', 'Erro ao processar pagamento: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Helper to clean CPF/CNPJ
-     */
-    private function cleanCpf($value)
+    // ─── AbacatePay ────────────────────────────────────────────────────────
+
+    private function processAbacatePay(Request $request, Tenant $tenant, SubscriptionPlan $plan, $user)
     {
-        return preg_replace('/[^0-9]/', '', $value);
+        if (empty($plan->abacatepay_product_id)) {
+            return back()->with('error',
+                'Este plano ainda não está configurado para pagamento via AbacatePay. Entre em contato com o suporte.'
+            );
+        }
+
+        $externalId    = 'VIVENSI_' . $tenant->id . '_' . time();
+        $paymentMethod = $request->input('payment_method', 'PIX');
+
+        // Registrar transação pendente
+        $transaction = Transaction::create([
+            'tenant_id'   => $tenant->id,
+            'amount'      => $plan->price,
+            'description' => 'Assinatura: ' . $plan->name,
+            'type'        => 'income',
+            'status'      => 'pending',
+            'date'        => now()->toDateString(),
+            'external_id' => $externalId,
+        ]);
+
+        // Criar checkout na AbacatePay
+        // items[].id = ID do produto cadastrado no painel AbacatePay (campo obrigatório)
+        $checkout = $this->abacate->createCheckout(
+            items: [['id' => $plan->abacatepay_product_id, 'quantity' => 1]],
+            externalId: $externalId,
+            returnUrl: route('dashboard'),
+            completionUrl: url('/checkout/sucesso'),
+            methods: [$paymentMethod],
+            metadata: [
+                'tenant_id'  => $tenant->id,
+                'plan_id'    => $plan->id,
+                'plan_name'  => $plan->name,
+            ]
+        );
+
+        if (!$checkout || empty($checkout['url'])) {
+            $transaction->update(['status' => 'canceled']);
+            Log::error('AbacatePay checkout falhou', ['plan' => $plan->id, 'tenant' => $tenant->id]);
+            return back()->with('error', 'Não foi possível iniciar o pagamento. Tente novamente.');
+        }
+
+        $transaction->update(['gateway_id' => $checkout['id'] ?? null]);
+
+        // Redirecionar para checkout hospedado pela AbacatePay
+        return redirect($checkout['url']);
+    }
+
+    // ─── PagSeguro (legado) ────────────────────────────────────────────────
+
+    private function processPagSeguro(Request $request, Tenant $tenant, SubscriptionPlan $plan, $user)
+    {
+        $reference = sprintf('VIVENSI_%s_%s_%s', $tenant->id, $plan->id, time());
+
+        $transaction = Transaction::create([
+            'tenant_id'   => $tenant->id,
+            'amount'      => $plan->price,
+            'description' => 'Assinatura ' . $plan->name . ' (' . $reference . ')',
+            'type'        => 'income',
+            'status'      => 'pending',
+            'date'        => now()->toDateString(),
+            'external_id' => $reference,
+        ]);
+
+        $result = $this->pagSeguro->createPayment([
+            'reference'   => $reference,
+            'amount'      => $plan->price,
+            'description' => 'Assinatura ' . $plan->name,
+            'sender'      => [
+                'name'  => $user->name,
+                'email' => $user->email,
+                'cpf'   => preg_replace('/\D/', '', $tenant->document),
+            ],
+        ]);
+
+        if ($result && isset($result['paymentLink'])) {
+            if (isset($result['code'])) {
+                $transaction->update(['external_id' => $result['code']]);
+            }
+            return redirect()->away($result['paymentLink']);
+        }
+
+        $transaction->update(['status' => 'canceled']);
+        return back()->with('error', 'Não foi possível gerar o link de pagamento. Tente novamente.');
+    }
+
+    /**
+     * Página de sucesso após pagamento.
+     */
+    public function success()
+    {
+        return view('checkout.success');
     }
 }
