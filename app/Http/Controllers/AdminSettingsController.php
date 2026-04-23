@@ -27,6 +27,7 @@ class AdminSettingsController extends Controller
         $meta_app_secret_configured = (bool) SystemSetting::getValue('meta_app_secret');
         $pusher_configured = (bool) SystemSetting::getValue('pusher_app_id') && (bool) SystemSetting::getValue('pusher_app_key');
         $openpix_configured = (bool) SystemSetting::getValue('openpix_app_id');
+        $abacatepay_configured = (bool) SystemSetting::getValue('abacatepay_api_key');
 
         $deepseek_key = null;
         $gemini_key = null;
