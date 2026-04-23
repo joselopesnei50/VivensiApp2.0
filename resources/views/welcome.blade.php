@@ -410,44 +410,29 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .bc-title{font-size:.92rem;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
 .bc-desc{font-size:.72rem;color:rgba(255,255,255,.38);line-height:1.5;max-width:320px}
 
-/* ── BC-AI: Bruce AI — hero 2×2 ──────────────────────────────── */
-.bc-ai{background:linear-gradient(145deg,#0f0b20,#120e28);border-color:rgba(139,92,246,.2)}
-.ai-glow{position:absolute;top:-60px;right:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.22) 0%,transparent 70%);filter:blur(40px);pointer-events:none}
-
-.ai-demo{margin:2px 14px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.14);border-radius:12px;padding:11px;font-size:.74rem}
-.ai-demo-hdr{display:flex;align-items:center;gap:7px;margin-bottom:9px;font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.25)}
-.ai-live-dot{width:5px;height:5px;border-radius:50%;background:#a78bfa;animation:pulseDot 1.4s infinite}
-
-.ai-prospect{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.04);margin-bottom:8px}
-.ai-plogo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#4F6EF7,#7B5CF0);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0}
-.ai-pname{font-size:.74rem;font-weight:700;color:#fff}
-.ai-pcat{font-size:.6rem;color:rgba(255,255,255,.28);margin-top:1px}
-
-.ai-score-label{display:flex;justify-content:space-between;font-size:.58rem;color:rgba(255,255,255,.28);margin-bottom:4px;margin-top:8px}
-.ai-score-pct{color:#a78bfa;font-weight:800}
-.ai-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
-.ai-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#7B5CF0,#4F6EF7);animation:aiFill 3.5s ease-in-out infinite alternate}
+/* ── BC-BOT: Mensageria & IA (2x2) ──────────────────────────────── */
+.bc-bot{background:linear-gradient(145deg,#0a192f,#0f2a24);border-color:rgba(37,211,102,.25)}
+.bot-glow{position:absolute;top:-60px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(37,211,102,.12) 0%,transparent 70%);filter:blur(40px);pointer-events:none}
+.bot-layout{display:flex; gap:12px; margin:2px 14px 14px; align-items: stretch;}
+.bot-chat{flex:1; background:#0b141a; border-radius:12px; border:1px solid rgba(255,255,255,0.05); padding:10px; display:flex; flex-direction:column; gap:8px; overflow:hidden;}
+.bmsg{font-size:.65rem; padding:8px 10px; border-radius:10px; max-width:85%; line-height:1.4;}
+.bmsg-in{background:#202c33; color:#e9edef; align-self:flex-start; border-top-left-radius:0;}
+.bmsg-out{background:#005c4b; color:#e9edef; align-self:flex-end; border-top-right-radius:0;}
+.bot-ai-side{flex:1; display:flex; flex-direction:column; gap:10px;}
+.ai-prospect{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.04);}
+.ai-plogo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#4F6EF7,#7B5CF0);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0;}
+.ai-pname{font-size:.74rem;font-weight:700;color:#fff;}
+.ai-pcat{font-size:.6rem;color:rgba(255,255,255,.28);margin-top:1px;}
+.ai-score-label{display:flex;justify-content:space-between;font-size:.58rem;color:rgba(255,255,255,.28);margin-bottom:4px;margin-top:2px;}
+.ai-score-pct{color:#a78bfa;font-weight:800;}
+.ai-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;}
+.ai-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#7B5CF0,#4F6EF7);animation:aiFill 3.5s ease-in-out infinite alternate;}
 @keyframes aiFill{0%{width:18%}100%{width:94%}}
-
-.ai-pitch{margin-top:8px;padding:8px 10px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15);border-radius:8px}
-.ai-pitch-lbl{font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(167,139,250,.55);margin-bottom:4px}
-.ai-pitch-txt{font-size:.68rem;color:rgba(255,255,255,.6);line-height:1.5}
-.ai-cursor{display:inline-block;width:1.5px;height:9px;background:#a78bfa;margin-left:1px;animation:cursorBlink .7s step-end infinite;vertical-align:text-bottom}
+.ai-pitch{padding:8px 10px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15);border-radius:8px;}
+.ai-pitch-lbl{font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(167,139,250,.55);margin-bottom:4px;}
+.ai-pitch-txt{font-size:.64rem;color:rgba(255,255,255,.6);line-height:1.5;}
+.ai-cursor{display:inline-block;width:1.5px;height:9px;background:#a78bfa;margin-left:1px;animation:cursorBlink .7s step-end infinite;vertical-align:text-bottom;}
 @keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
-
-/* ── BC-DOADOR: Portal Doador VIP ────────────────────────────── */
-.bc-doador{background:#0d1117}
-.doador-feed{margin:2px 14px 14px;display:flex;flex-direction:column;gap:5px}
-.df-item{display:flex;align-items:center;gap:8px;padding:6px 9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px}
-.df-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:900;color:#fff;flex-shrink:0}
-.df-av1{background:linear-gradient(135deg,#4F6EF7,#7B5CF0)}
-.df-av2{background:linear-gradient(135deg,#f59e0b,#ef4444)}
-.df-av3{background:linear-gradient(135deg,#22d3ee,#4F6EF7)}
-.df-text{flex:1;font-size:.68rem;color:rgba(255,255,255,.5)}
-.df-text strong{color:rgba(255,255,255,.85);font-weight:700}
-.df-val{font-size:.72rem;font-weight:800;color:#4ade80;white-space:nowrap}
-.df-new{position:relative}
-.df-new::after{content:'NOVO';position:absolute;top:-3px;right:-3px;font-size:.48rem;font-weight:900;background:#4F6EF7;color:#fff;padding:1px 4px;border-radius:4px;letter-spacing:.04em}
 
 /* ── BC-CRM: Kanban ──────────────────────────────────────────── */
 .bc-crm{background:#0c0e14}
@@ -461,21 +446,28 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .kd-card-hot{border-color:rgba(79,110,247,.4);background:rgba(79,110,247,.09);animation:hotPulse 3s ease-in-out infinite}
 @keyframes hotPulse{0%,100%{border-color:rgba(79,110,247,.3)}50%{border-color:rgba(79,110,247,.7)}}
 
-/* ── BC-ALMOX: Almoxarifado ──────────────────────────────────── */
-.bc-almox{background:#0d1010}
-.almox-bars{margin:2px 14px 14px;display:flex;flex-direction:column;gap:8px}
-.ab-row{}
-.ab-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
-.ab-name{font-size:.66rem;color:rgba(255,255,255,.5);font-weight:600}
-.ab-qty{font-size:.62rem;color:rgba(255,255,255,.25);font-weight:600}
-.ab-track{height:5px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
-.ab-fill{height:100%;border-radius:100px}
-.abf1{background:linear-gradient(90deg,#4F6EF7,#7B5CF0);animation:abAnim1 2.8s ease-in-out infinite alternate}
-.abf2{background:linear-gradient(90deg,#4ade80,#22d3ee);animation:abAnim2 3.1s ease-in-out infinite alternate}
-.abf3{background:linear-gradient(90deg,#fb923c,#f59e0b);animation:abAnim3 3.4s ease-in-out infinite alternate}
-@keyframes abAnim1{from{width:42%}to{width:78%}}
-@keyframes abAnim2{from{width:65%}to{width:93%}}
-@keyframes abAnim3{from{width:28%}to{width:52%}}
+/* ── BC-CANVA: LPs & Artes ────────────────────────────────────── */
+.bc-canva{background:#18181b}
+.canva-demo{margin:2px 14px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px;}
+.cv-toolbar{display:flex; gap:5px; margin-bottom:5px;}
+.cvt{width:12px; height:12px; border-radius:3px; background:rgba(255,255,255,0.1);}
+.cv-canvas{height:65px; border-radius:6px; background:linear-gradient(135deg, #a855f7, #ec4899); position:relative; overflow:hidden;}
+.cv-elem{position:absolute; background:rgba(255,255,255,0.9); border-radius:4px; width:40%; height:12px; top:15px; left:15px;}
+.cv-elem2{position:absolute; background:rgba(255,255,255,0.4); border-radius:3px; width:30%; height:6px; top:35px; left:15px;}
+
+/* ── BC-TRANSP: Transparência (2w) ──────────────────────────── */
+.bc-transp{background:#08111a}
+.transp-inner{margin:2px 16px 16px;display:flex;gap:20px;align-items:flex-start}
+.transp-counts{flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.tc-block .tc-lbl{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.25);margin-bottom:3px}
+.tc-block .tc-num{font-size:1.4rem;font-weight:900;letter-spacing:-.04em;color:#fff;line-height:1}
+.tc-block .tc-delta{font-size:.6rem;color:#4ade80;font-weight:700;margin-top:1px}
+.transp-feed{flex:1}
+.tf-hdr{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.2);margin-bottom:6px}
+.tf-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.62rem;color:rgba(255,255,255,.4)}
+.tf-item:last-child{border:none}
+.tfd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.tfd-g{background:#4ade80}.tfd-b{background:#93a8ff}.tfd-o{background:#fb923c}
 
 /* ── BC-VOLUNT: Voluntários ──────────────────────────────────── */
 .bc-volunt{background:#0e0c10}
@@ -493,6 +485,15 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .pl-bar{flex:1;max-width:50px;height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
 .plb-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#f59e0b,#fb923c)}
 
+/* ── BC-CONTRACTS: Contratos ─────────────────────────────────── */
+.bc-contracts{background:#111411}
+.ctr-demo{margin:2px 14px 14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:7px; position:relative; overflow:hidden;}
+.ctr-line{height:4px; background:rgba(255,255,255,.1); border-radius:2px; width:100%;}
+.ctr-line.w-70{width:70%;}
+.ctr-line.w-40{width:40%;}
+.ctr-sign{margin-top:6px; display:flex; justify-content:space-between; align-items:flex-end;}
+.ctr-badge{font-size:.5rem; font-weight:800; background:rgba(74,222,128,.15); color:#4ade80; padding:3px 8px; border-radius:100px; border:1px solid rgba(74,222,128,.3);}
+
 /* ── BC-FIN: Prestação de Contas ─────────────────────────────── */
 .bc-fin{background:#0a0f1c}
 .fin-demo{margin:2px 14px 14px}
@@ -506,36 +507,21 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .fin-total-val{font-size:.95rem;font-weight:900;color:#fff}
 .fin-badge{font-size:.54rem;background:rgba(74,222,128,.15);color:#4ade80;padding:2px 6px;border-radius:100px;font-weight:800;margin-top:2px}
 
-/* ── BC-TRANSP: Transparência (2w) ──────────────────────────── */
-.bc-transp{background:#08111a}
-.transp-inner{margin:2px 16px 16px;display:flex;gap:20px;align-items:flex-start}
-.transp-counts{flex-shrink:0;display:flex;flex-direction:column;gap:10px}
-.tc-block .tc-lbl{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.25);margin-bottom:3px}
-.tc-block .tc-num{font-size:1.4rem;font-weight:900;letter-spacing:-.04em;color:#fff;line-height:1}
-.tc-block .tc-delta{font-size:.6rem;color:#4ade80;font-weight:700;margin-top:1px}
-.transp-feed{flex:1}
-.tf-hdr{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.2);margin-bottom:6px}
-.tf-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.62rem;color:rgba(255,255,255,.4)}
-.tf-item:last-child{border:none}
-.tfd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.tfd-g{background:#4ade80}.tfd-b{background:#93a8ff}.tfd-o{background:#fb923c}
-
-/* ── BC-EDITAL: IA Editais ───────────────────────────────────── */
-.bc-edital{background:#0c0c0c}
-.edital-demo{margin:2px 14px 14px}
-.ed-prog-hdr{display:flex;justify-content:space-between;font-size:.58rem;color:rgba(255,255,255,.3);font-weight:600;margin-bottom:4px}
-.ed-prog-pct{color:#a78bfa;font-weight:800}
-.ed-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;margin-bottom:12px}
-.ed-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#7B5CF0,#4F6EF7);animation:edFill 4s ease-in-out infinite alternate}
-@keyframes edFill{from{width:28%}to{width:85%}}
-.ed-lines{display:flex;flex-direction:column;gap:5px}
-.ed-line{height:6px;background:rgba(255,255,255,.07);border-radius:100px}
-.el1{width:100%;animation:elGlow 2s ease-in-out infinite alternate}
-.el2{width:82%;animation:elGlow 2.3s ease-in-out infinite alternate .2s}
-.el3{width:91%;animation:elGlow 2.6s ease-in-out infinite alternate .4s}
-.el4{width:68%;animation:elGlow 2.9s ease-in-out infinite alternate .6s}
-.el5{width:78%;animation:elGlow 3.2s ease-in-out infinite alternate .8s}
-@keyframes elGlow{from{opacity:.3;background:rgba(255,255,255,.07)}to{opacity:1;background:rgba(139,92,246,.25)}}
+/* ── BC-ALMOX: Almoxarifado ──────────────────────────────────── */
+.bc-almox{background:#0d1010}
+.almox-bars{margin:2px 14px 14px;display:flex;flex-direction:column;gap:8px}
+.ab-row{}
+.ab-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.ab-name{font-size:.66rem;color:rgba(255,255,255,.5);font-weight:600}
+.ab-qty{font-size:.62rem;color:rgba(255,255,255,.25);font-weight:600}
+.ab-track{height:5px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
+.ab-fill{height:100%;border-radius:100px}
+.abf1{background:linear-gradient(90deg,#4F6EF7,#7B5CF0);animation:abAnim1 2.8s ease-in-out infinite alternate}
+.abf2{background:linear-gradient(90deg,#4ade80,#22d3ee);animation:abAnim2 3.1s ease-in-out infinite alternate}
+.abf3{background:linear-gradient(90deg,#fb923c,#f59e0b);animation:abAnim3 3.4s ease-in-out infinite alternate}
+@keyframes abAnim1{from{width:42%}to{width:78%}}
+@keyframes abAnim2{from{width:65%}to{width:93%}}
+@keyframes abAnim3{from{width:28%}to{width:52%}}
 
 /* Responsive */
 @media(max-width:1024px){.bento-grid{grid-template-columns:repeat(2,1fr)}.bc-2w,.bc-2h{grid-column:span 1;grid-row:span 1}}
@@ -1295,71 +1281,55 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <!-- BENTO GRID -->
     <div class="bento-grid">
 
-        {{-- ── 1. BRUCE AI — hero 2×2 ──────────────────────────────────── --}}
-        <div class="bc bc-ai bc-2w bc-2h">
-            <div class="ai-glow"></div>
+        {{-- ── 1. BOT & IA — hero 2×2 ──────────────────────────────────── --}}
+        <div class="bc bc-bot bc-2w bc-2h">
+            <div class="bot-glow"></div>
             <div class="bc-body">
+                <span class="bc-tag" style="background:rgba(37,211,102,.15); color:#25d366; margin-right: 5px;"><i class="fab fa-whatsapp"></i> Mensageria Omnichannel</span>
                 <span class="bc-tag bct-ai"><i class="fas fa-brain"></i> IA Nativa</span>
-                <div class="bc-title">Bruce AI — Prospecção Inteligente</div>
-                <div class="bc-desc">Encontra, analisa e gera pitch personalizado para cada lead em segundos. Você só precisa apertar "enviar".</div>
+                <div class="bc-title">Bruce AI + Bot de WhatsApp 24/7</div>
+                <div class="bc-desc">Atendimento automatizado via chatbot, disparos de WhatsApp em massa e prospecção ativa de clientes e doadores via Inteligência Artificial. Tudo integrado.</div>
             </div>
-            <div class="ai-demo">
-                <div class="ai-demo-hdr">
-                    <span class="ai-live-dot"></span> Analisando em tempo real
+            
+            <div class="bot-layout">
+                <!-- Lado WhatsApp -->
+                <div class="bot-chat">
+                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.4); text-transform:uppercase; font-weight:800; letter-spacing:1px;">Chatbot Ativo (Simulação)</div>
+                    <div class="bmsg bmsg-out">Olá! Sou o assistente virtual da Vivensi. Como posso ajudar você hoje?</div>
+                    <div class="bmsg bmsg-in">Gostaria de saber mais sobre como fazer uma doação para o projeto.</div>
+                    <div class="bmsg bmsg-out">Claro! Você pode doar via PIX, Cartão ou Boleto. Qual prefere?</div>
                 </div>
-                <div class="ai-prospect">
-                    <div class="ai-plogo">SF</div>
-                    <div>
-                        <div class="ai-pname">Supermercado Família</div>
-                        <div class="ai-pcat">Varejo Alimentar · Google Maps</div>
+                <!-- Lado Bruce AI -->
+                <div class="bot-ai-side">
+                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.4); text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:-5px;">Bruce AI: Prospecção</div>
+                    <div class="ai-prospect">
+                        <div class="ai-plogo">SF</div>
+                        <div>
+                            <div class="ai-pname">Supermercado Família</div>
+                            <div class="ai-pcat">Varejo Alimentar · Google Maps</div>
+                        </div>
                     </div>
-                </div>
-                <div class="ai-score-label">
-                    <span>Fit Score para o projeto</span>
-                    <span class="ai-score-pct">94%</span>
-                </div>
-                <div class="ai-bar-track"><div class="ai-bar-fill"></div></div>
-                <div class="ai-pitch">
-                    <div class="ai-pitch-lbl">Pitch gerado — WhatsApp</div>
-                    <div class="ai-pitch-txt">
-                        "Olá! Vi que o Supermercado Família apoia a comunidade local. Nosso projeto atende 1.800 famílias na região e buscamos um parceiro de visibilidade…<span class="ai-cursor"></span>"
+                    <div class="ai-score-label">
+                        <span>Fit Score para patrocínio</span>
+                        <span class="ai-score-pct">94%</span>
+                    </div>
+                    <div class="ai-bar-track"><div class="ai-bar-fill"></div></div>
+                    <div class="ai-pitch">
+                        <div class="ai-pitch-lbl">Pitch (WhatsApp)</div>
+                        <div class="ai-pitch-txt">
+                            "Olá! Vi que o Supermercado Família apoia ações locais. Nosso projeto atende 1.800 famílias. Buscamos um parceiro…<span class="ai-cursor"></span>"
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- ── 2. PORTAL DOADOR VIP ─────────────────────────────────────── --}}
-        <div class="bc bc-doador">
-            <div class="bc-body">
-                <span class="bc-tag bct-social"><i class="fas fa-heart"></i> Captação</span>
-                <div class="bc-title">Portal do Doador VIP</div>
-                <div class="bc-desc">Link mágico com histórico, recibos e informe de rendimentos.</div>
-            </div>
-            <div class="doador-feed">
-                <div class="df-item df-new">
-                    <div class="df-av df-av1">MR</div>
-                    <div class="df-text"><strong>Maria R.</strong> doou agora</div>
-                    <div class="df-val">R$ 500</div>
-                </div>
-                <div class="df-item">
-                    <div class="df-av df-av2">JP</div>
-                    <div class="df-text"><strong>João P.</strong> · recibo enviado</div>
-                    <div class="df-val">R$ 1.200</div>
-                </div>
-                <div class="df-item">
-                    <div class="df-av df-av3">AC</div>
-                    <div class="df-text"><strong>Ana C.</strong> · informe IR</div>
-                    <div class="df-val">R$ 3.600</div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 3. CRM KANBAN ────────────────────────────────────────────── --}}
+        {{-- ── 2. CRM KANBAN ────────────────────────────────────────────── --}}
         <div class="bc bc-crm">
             <div class="bc-body">
-                <span class="bc-tag bct-crm"><i class="fas fa-kanban"></i> CRM</span>
-                <div class="bc-title">Funil de Patrocínios</div>
-                <div class="bc-desc">Deals com drag &amp; drop e automações por estágio.</div>
+                <span class="bc-tag bct-crm"><i class="fas fa-kanban"></i> Projetos</span>
+                <div class="bc-title">CRM Kanban & Projetos</div>
+                <div class="bc-desc">Organize tarefas da equipe, captação de patrocínios e funil de vendas. Drag & drop.</div>
             </div>
             <div class="kanban-demo">
                 <div class="kd-col">
@@ -1379,35 +1349,80 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
         </div>
 
-        {{-- ── 4. ALMOXARIFADO ──────────────────────────────────────────── --}}
-        <div class="bc bc-almox">
+        {{-- ── 3. CANVA & LPs ───────────────────────────────────────────── --}}
+        <div class="bc bc-canva">
             <div class="bc-body">
-                <span class="bc-tag bct-ops"><i class="fas fa-boxes-stacked"></i> Operações</span>
-                <div class="bc-title">Almoxarifado Digital</div>
-                <div class="bc-desc">Estoque de doações com histórico de entradas e saídas.</div>
+                <span class="bc-tag" style="background:rgba(236, 72, 153, 0.15); color:#ec4899;"><i class="fas fa-magic"></i> Marketing</span>
+                <div class="bc-title">Construtor de LPs & Artes</div>
+                <div class="bc-desc">Crie páginas de alta conversão, rifas online e banners profissionais (estilo Canva).</div>
             </div>
-            <div class="almox-bars">
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Cestas Básicas</span><span class="ab-qty">78 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf1"></div></div>
+            <div class="canva-demo">
+                <div class="cv-toolbar">
+                    <div class="cvt"></div><div class="cvt"></div><div class="cvt"></div>
                 </div>
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Roupas / Agasalhos</span><span class="ab-qty">143 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf2"></div></div>
-                </div>
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Material Escolar</span><span class="ab-qty">52 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf3"></div></div>
+                <div class="cv-canvas">
+                    <div class="cv-elem"></div>
+                    <div class="cv-elem2"></div>
                 </div>
             </div>
         </div>
 
-        {{-- ── 5. VOLUNTÁRIOS GAMIFICADOS ───────────────────────────────── --}}
+        {{-- ── 4. PORTAL DE TRANSPARÊNCIA (2w) ─────────────────────────── --}}
+        <div class="bc bc-transp bc-2w">
+            <div class="bc-body">
+                <span class="bc-tag bct-transp"><i class="fas fa-earth-americas"></i> Transparência</span>
+                <div class="bc-title">Transparência Pública</div>
+                <div class="bc-desc">Página gerada automaticamente com métricas reais em tempo real para prestar contas a doadores e à sociedade.</div>
+            </div>
+            <div class="transp-inner">
+                <div class="transp-counts">
+                    <div class="tc-block">
+                        <div class="tc-lbl">Beneficiários</div>
+                        <div class="tc-num" id="tcCount1">98.490</div>
+                        <div class="tc-delta"><i class="fas fa-arrow-trend-up" style="font-size:.6rem"></i> +342 esse mês</div>
+                    </div>
+                    <div class="tc-block">
+                        <div class="tc-lbl">Captado 2025</div>
+                        <div class="tc-num">R$ 18,4M</div>
+                        <div class="tc-delta"><i class="fas fa-arrow-trend-up" style="font-size:.6rem"></i> +31% a.a.</div>
+                    </div>
+                </div>
+                <div class="transp-feed">
+                    <div class="tf-hdr">Atualizações ao vivo</div>
+                    <div class="tf-item"><span class="tfd tfd-g"></span>Ação Social — 240 kits distribuídos · 2h atrás</div>
+                    <div class="tf-item"><span class="tfd tfd-b"></span>Novo doador recorrente cadastrado · 5h atrás</div>
+                    <div class="tf-item"><span class="tfd tfd-o"></span>Relatório Q4 publicado e assinado · ontem</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 5. FINANCEIRO ────────────────────────────────────────────── --}}
+        <div class="bc bc-fin">
+            <div class="bc-body">
+                <span class="bc-tag bct-fin"><i class="fas fa-file-invoice-dollar"></i> Controles</span>
+                <div class="bc-title">Financeiro & Auditoria</div>
+                <div class="bc-desc">Fluxo de caixa simplificado, relatórios DRE em 1 clique e gestão de orçamentos.</div>
+            </div>
+            <div class="fin-demo">
+                <div class="fin-row"><span class="fin-lbl">Receitas</span><span class="fin-val fin-pos">R$ 48.200</span></div>
+                <div class="fin-row"><span class="fin-lbl">Despesas</span><span class="fin-val fin-neg">− R$ 12.840</span></div>
+                <div class="fin-row"><span class="fin-lbl">Ações</span><span class="fin-val fin-neg">− R$ 18.600</span></div>
+                <div class="fin-total">
+                    <div>
+                        <div class="fin-total-lbl">Superávit</div>
+                        <div class="fin-badge">Auditado</div>
+                    </div>
+                    <div class="fin-total-val">R$ 11.560</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 6. VOLUNTÁRIOS / RH ──────────────────────────────────────── --}}
         <div class="bc bc-volunt">
             <div class="bc-body">
                 <span class="bc-tag bct-social"><i class="fas fa-trophy"></i> Engajamento</span>
-                <div class="bc-title">Voluntários Gamificados</div>
-                <div class="bc-desc">Rankings, medalhas e pontos por horas de serviço.</div>
+                <div class="bc-title">RH & Voluntários</div>
+                <div class="bc-desc">Rankings, medalhas e pontos por horas de serviço ou metas atingidas.</div>
             </div>
             <div class="podium-list">
                 <div class="pl-item">
@@ -1434,77 +1449,43 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
         </div>
 
-        {{-- ── 6. PRESTAÇÃO DE CONTAS ───────────────────────────────────── --}}
-        <div class="bc bc-fin">
+        {{-- ── 7. CONTRATOS DIGITAIS ────────────────────────────────────── --}}
+        <div class="bc bc-contracts">
             <div class="bc-body">
-                <span class="bc-tag bct-fin"><i class="fas fa-file-invoice-dollar"></i> Financeiro</span>
-                <div class="bc-title">Prestação de Contas</div>
-                <div class="bc-desc">DRE, balancetes e relatórios de auditoria gerados em 1 clique.</div>
+                <span class="bc-tag" style="background:rgba(251,191,36,.12); color:#fbbf24;"><i class="fas fa-file-contract"></i> Jurídico</span>
+                <div class="bc-title">Contratos & Convênios</div>
+                <div class="bc-desc">Gere, envie e gerencie assinaturas eletrônicas com parceiros e prestadores.</div>
             </div>
-            <div class="fin-demo">
-                <div class="fin-row"><span class="fin-lbl">Receitas do mês</span><span class="fin-val fin-pos">R$ 48.200</span></div>
-                <div class="fin-row"><span class="fin-lbl">Despesas operacionais</span><span class="fin-val fin-neg">− R$ 12.840</span></div>
-                <div class="fin-row"><span class="fin-lbl">Projetos e ações</span><span class="fin-val fin-neg">− R$ 18.600</span></div>
-                <div class="fin-row"><span class="fin-lbl">Transferências</span><span class="fin-val fin-neg">− R$ 5.200</span></div>
-                <div class="fin-total">
-                    <div>
-                        <div class="fin-total-lbl">Superávit</div>
-                        <div class="fin-badge">Aprovado auditoria</div>
-                    </div>
-                    <div class="fin-total-val">R$ 11.560</div>
+            <div class="ctr-demo">
+                <div class="ctr-line w-100"></div>
+                <div class="ctr-line w-100"></div>
+                <div class="ctr-line w-70"></div>
+                <div class="ctr-sign">
+                    <div style="font-family:'Courier New'; font-style:italic; font-size:0.8rem; color:#fff;">Assinado</div>
+                    <div class="ctr-badge"><i class="fas fa-check"></i> Validade Jurídica</div>
                 </div>
             </div>
         </div>
 
-        {{-- ── 7. PORTAL DE TRANSPARÊNCIA (2w) ─────────────────────────── --}}
-        <div class="bc bc-transp bc-2w">
+        {{-- ── 8. ALMOXARIFADO ──────────────────────────────────────────── --}}
+        <div class="bc bc-almox">
             <div class="bc-body">
-                <span class="bc-tag bct-transp"><i class="fas fa-earth-americas"></i> Transparência</span>
-                <div class="bc-title">Portal Público de Impacto</div>
-                <div class="bc-desc">Página gerada automaticamente com métricas reais em tempo real — para prestadores de contas, patrocinadores e imprensa.</div>
+                <span class="bc-tag bct-ops"><i class="fas fa-boxes-stacked"></i> Operações</span>
+                <div class="bc-title">Gestão de Almoxarifado</div>
+                <div class="bc-desc">Estoque de doações e ativos corporativos com histórico de entradas e saídas.</div>
             </div>
-            <div class="transp-inner">
-                <div class="transp-counts">
-                    <div class="tc-block">
-                        <div class="tc-lbl">Beneficiários</div>
-                        <div class="tc-num" id="tcCount1">98.490</div>
-                        <div class="tc-delta"><i class="fas fa-arrow-trend-up" style="font-size:.6rem"></i> +342 esse mês</div>
-                    </div>
-                    <div class="tc-block">
-                        <div class="tc-lbl">Captado 2025</div>
-                        <div class="tc-num">R$ 18,4M</div>
-                        <div class="tc-delta"><i class="fas fa-arrow-trend-up" style="font-size:.6rem"></i> +31% a.a.</div>
-                    </div>
+            <div class="almox-bars">
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Cestas Básicas</span><span class="ab-qty">78 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf1"></div></div>
                 </div>
-                <div class="transp-feed">
-                    <div class="tf-hdr">Atualizações ao vivo</div>
-                    <div class="tf-item"><span class="tfd tfd-g"></span>Ação Social — 240 kits distribuídos · 2h atrás</div>
-                    <div class="tf-item"><span class="tfd tfd-b"></span>Novo doador recorrente cadastrado · 5h atrás</div>
-                    <div class="tf-item"><span class="tfd tfd-o"></span>Relatório Q4 publicado e assinado · ontem</div>
-                    <div class="tf-item"><span class="tfd tfd-g"></span>Parceria confirmada: Instituto Horizonte · 2d atrás</div>
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Roupas / Agasalhos</span><span class="ab-qty">143 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf2"></div></div>
                 </div>
-            </div>
-        </div>
-
-        {{-- ── 8. IA PARA EDITAIS ────────────────────────────────────────── --}}
-        <div class="bc bc-edital">
-            <div class="bc-body">
-                <span class="bc-tag bct-ai"><i class="fas fa-wand-magic-sparkles"></i> IA</span>
-                <div class="bc-title">IA para Editais</div>
-                <div class="bc-desc">Geração automática de projetos com análise de viabilidade e fit com seu histórico.</div>
-            </div>
-            <div class="edital-demo">
-                <div class="ed-prog-hdr">
-                    <span>Redigindo projeto…</span>
-                    <span class="ed-prog-pct">87%</span>
-                </div>
-                <div class="ed-bar-track"><div class="ed-bar-fill"></div></div>
-                <div class="ed-lines">
-                    <div class="ed-line el1"></div>
-                    <div class="ed-line el2"></div>
-                    <div class="ed-line el3"></div>
-                    <div class="ed-line el4"></div>
-                    <div class="ed-line el5"></div>
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Material Escolar</span><span class="ab-qty">52 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf3"></div></div>
                 </div>
             </div>
         </div>
