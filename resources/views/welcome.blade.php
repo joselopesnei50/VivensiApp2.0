@@ -794,7 +794,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <div class="nav-ctas">
         <a href="{{ route('login') }}" class="btn-ghost">Entrar</a>
         <a href="{{ route('register') }}" class="btn-nav">
-            Começar grátis <i class="fas fa-arrow-right" style="font-size:.7rem"></i>
+            Começar agora <i class="fas fa-arrow-right" style="font-size:.7rem"></i>
         </a>
     </div>
 
@@ -811,7 +811,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <a href="#academy">Academy</a>
     <a href="#pricing">Preços</a>
     <a href="{{ route('login') }}">Entrar</a>
-    <a href="{{ route('register') }}" class="m-cta">Começar grátis →</a>
+    <a href="{{ route('register') }}" class="m-cta">Começar agora →</a>
 </div>
 
 <!-- HERO -->
@@ -1729,7 +1729,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
         <!-- RIGHT: white card -->
         <div class="cta-right aos">
-            <div class="cta-form-title">Criar conta <span>grátis</span></div>
+            <div class="cta-form-title">Criar conta <span>agora</span></div>
             <p class="cta-form-sub">Pagamento Seguro · Cancele quando quiser</p>
 
             <!-- Social proof -->
@@ -1747,7 +1747,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
 
             <a href="{{ route('register') }}" class="btn-cta-main">
-                <i class="fas fa-rocket"></i> Criar minha conta grátis
+                <i class="fas fa-rocket"></i> Criar minha conta
             </a>
             <a href="{{ route('login') }}" class="btn-cta-sec">
                 <i class="fas fa-arrow-right-to-bracket"></i> Já tenho uma conta
@@ -1781,7 +1781,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             <a href="#pricing">Planos &amp; Preços</a>
             <a href="#academy">Vivensi Academy</a>
             <a href="{{ route('login') }}">Acessar conta</a>
-            <a href="{{ route('register') }}">Criar conta grátis</a>
+            <a href="{{ route('register') }}">Criar conta</a>
         </div>
         <div class="footer-col">
             <h5>Legal</h5>

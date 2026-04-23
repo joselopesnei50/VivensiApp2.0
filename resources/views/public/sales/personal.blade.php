@@ -41,7 +41,7 @@
             <p style="font-size: 1.4rem; max-width: 700px; margin: 0 auto 40px;">Esqueça as anotações manuais. Importe seu extrato, deixe o Vivensi categorizar tudo e receba dicas estratégicas para sobrar dinheiro no final do mês.</p>
             
             <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                <a href="{{ route('register', ['plan_id' => 3]) }}" class="btn-cta" style="background: #2563eb; font-size: 1.2rem; padding: 20px 50px;">Começar Grátis - 7 Dias</a>
+                <a href="{{ route('register', ['plan_id' => 3]) }}" class="btn-cta" style="background: #2563eb; font-size: 1.2rem; padding: 20px 50px;">Começar Agora</a>
                 <a href="#features" class="btn-outline" style="padding: 20px 50px; border-radius: 50px; text-decoration: none; font-weight: 700;">Ver Como Funciona</a>
             </div>
 
@@ -132,7 +132,7 @@
                 <li style="margin-bottom: 15px;"><i class="fas fa-check-circle" style="color: #3b82f6; margin-right: 10px;"></i> Orçamento e Metas Anuais</li>
                 <li style="margin-bottom: 15px;"><i class="fas fa-check-circle" style="color: #3b82f6; margin-right: 10px;"></i> Dashboard Mobile Full</li>
             </ul>
-            <a href="{{ route('register', ['plan_id' => 3]) }}" class="btn-cta" style="width: 100%; border-radius: 12px; font-size: 1.2rem; background: #2563eb;">Experimentar Grátis Agora</a>
+            <a href="{{ route('register', ['plan_id' => 3]) }}" class="btn-cta" style="width: 100%; border-radius: 12px; font-size: 1.2rem; background: #2563eb;">Assinar Agora</a>
         </div>
     </div>
 @endsection

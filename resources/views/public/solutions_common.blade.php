@@ -239,7 +239,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
             <p class="hero-sub">A simplicidade que você precisa com a inteligência que você merece. Domine suas finanças pessoais sem planilhas complicadas.</p>
             <div class="hero-actions">
                 <a href="#pricing" class="btn-hero-main"><i class="fas fa-wallet"></i> Ver Planos</a>
-                <a href="{{ route('login') }}" class="btn-hero-ghost"><i class="fas fa-user-plus"></i> Conta Grátis</a>
+                <a href="{{ route('login') }}" class="btn-hero-ghost"><i class="fas fa-user-plus"></i> Criar Conta</a>
             </div>
             <div class="hero-stats">
                 <div class="stat-item"><div class="stat-num">15k+</div><div class="stat-label">Usuários</div></div>
@@ -427,7 +427,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
         </div>
         @empty
         <div class="price-card">
-            <div class="price-name">Grátis</div>
+            <div class="price-name">Básico</div>
             <div class="price-amount"><span class="cur">R$</span>0<span class="period">/mês</span></div>
             <div class="price-note">Funcionalidades básicas</div>
             <div class="price-divider"></div>
@@ -435,7 +435,7 @@ footer{background:rgba(255,255,255,.02);border-top:1px solid var(--glass-border)
                 <li><i class="fas fa-circle-check"></i> Registro de Gastos</li>
                 <li><i class="fas fa-circle-check"></i> Metas Simples</li>
             </ul>
-            <a href="{{ route('register') }}" class="btn-plan btn-plan-outline">Criar Conta Grátis</a>
+            <a href="{{ route('register') }}" class="btn-plan btn-plan-outline">Criar Conta</a>
         </div>
         @endforelse
     </div>

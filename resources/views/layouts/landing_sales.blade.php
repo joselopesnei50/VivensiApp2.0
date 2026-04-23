@@ -171,7 +171,7 @@
                 <a href="{{ route('lang.switch', 'en') }}" title="English" style="text-decoration: none; opacity: {{ app()->getLocale() == 'en' ? '1' : '0.5' }}">🇺🇸</a>
             </div>
             <a href="{{ route('login') }}" style="color: #64748b; font-weight: 700; text-decoration: none;">Login</a>
-            <a href="#pricing" class="btn-cta">Testar Grátis 7 Dias</a>
+            <a href="#pricing" class="btn-cta">Assinar Agora</a>
         </div>
     </nav>
 
