@@ -410,115 +410,130 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .bc-title{font-size:.92rem;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
 .bc-desc{font-size:.72rem;color:rgba(255,255,255,.38);line-height:1.5;max-width:320px}
 
-/* ── BC-BOT: Mensageria & IA (2x2) ──────────────────────────────── */
-.bc-bot{background:linear-gradient(145deg,#0a192f,#0f2a24);border-color:rgba(37,211,102,.25)}
-.bot-glow{position:absolute;top:-60px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(37,211,102,.12) 0%,transparent 70%);filter:blur(40px);pointer-events:none}
-.bot-layout{display:flex; gap:12px; margin:2px 14px 14px; align-items: stretch;}
-.bot-chat{flex:1; background:#0b141a; border-radius:12px; border:1px solid rgba(255,255,255,0.05); padding:10px; display:flex; flex-direction:column; gap:8px; overflow:hidden;}
-.bmsg{font-size:.65rem; padding:8px 10px; border-radius:10px; max-width:85%; line-height:1.4;}
-.bmsg-in{background:#202c33; color:#e9edef; align-self:flex-start; border-top-left-radius:0;}
-.bmsg-out{background:#005c4b; color:#e9edef; align-self:flex-end; border-top-right-radius:0;}
-.bot-ai-side{flex:1; display:flex; flex-direction:column; gap:10px;}
-.ai-prospect{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.04);}
-.ai-plogo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#4F6EF7,#7B5CF0);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0;}
-.ai-pname{font-size:.74rem;font-weight:700;color:#fff;}
-.ai-pcat{font-size:.6rem;color:rgba(255,255,255,.28);margin-top:1px;}
-.ai-score-label{display:flex;justify-content:space-between;font-size:.58rem;color:rgba(255,255,255,.28);margin-bottom:4px;margin-top:2px;}
-.ai-score-pct{color:#a78bfa;font-weight:800;}
-.ai-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;}
-.ai-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#7B5CF0,#4F6EF7);animation:aiFill 3.5s ease-in-out infinite alternate;}
-@keyframes aiFill{0%{width:18%}100%{width:94%}}
-.ai-pitch{padding:8px 10px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15);border-radius:8px;}
-.ai-pitch-lbl{font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(167,139,250,.55);margin-bottom:4px;}
-.ai-pitch-txt{font-size:.64rem;color:rgba(255,255,255,.6);line-height:1.5;}
-.ai-cursor{display:inline-block;width:1.5px;height:9px;background:#a78bfa;margin-left:1px;animation:cursorBlink .7s step-end infinite;vertical-align:text-bottom;}
-@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+/* ── BC-3W (Full Width) ────────────────────────────────────────── */
+.bc-3w{grid-column:span 3}
+
+/* ── BC-MASTER-BOT: Mensageria (3x) ──────────────────────────── */
+.bc-master-bot{background:linear-gradient(135deg, #051A14 0%, #03080A 100%); border-color:rgba(37,211,102,.3); padding:0; display:flex; align-items:center; overflow:hidden;}
+.master-glow{position:absolute; top:-50%; left:-20%; width:600px; height:600px; background:radial-gradient(circle, rgba(37,211,102,.12) 0%, transparent 65%); filter:blur(60px); pointer-events:none; animation:slowPulse 8s ease-in-out infinite alternate;}
+@keyframes slowPulse{from{opacity:0.5; transform:scale(0.9);} to{opacity:1; transform:scale(1.1);}}
+.master-text{flex:1; padding:40px; position:relative; z-index:2;}
+.master-text .bc-title{font-size:2rem; font-weight:900; margin-bottom:12px; letter-spacing:-0.03em;}
+.master-text .bc-desc{font-size:0.85rem; color:rgba(255,255,255,.6); line-height:1.6; max-width:400px; margin-bottom:20px;}
+.master-features{display:flex; gap:15px; margin-top:20px;}
+.mf-item{display:flex; align-items:center; gap:8px; font-size:0.7rem; font-weight:700; color:#fff; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:100px; border:1px solid rgba(255,255,255,0.1);}
+
+.master-visual{flex:1.2; position:relative; height:100%; min-height:300px; display:flex; align-items:center; justify-content:center;}
+.glass-phone{width:280px; height:260px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); box-shadow:0 30px 60px -15px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.15); border-radius:24px; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); padding:16px; display:flex; flex-direction:column; gap:14px; position:relative; overflow:hidden; z-index:2;}
+.glass-phone::before{content:''; position:absolute; top:0; left:0; width:100%; height:50px; background:linear-gradient(180deg, rgba(37,211,102,0.15), transparent); pointer-events:none;}
+.gp-hdr{display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:10px;}
+.gp-av{width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #25D366, #128C7E); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; box-shadow:0 0 15px rgba(37,211,102,0.4);}
+.gp-info{display:flex; flex-direction:column;}
+.gp-name{font-size:0.8rem; font-weight:800; color:#fff;}
+.gp-status{font-size:0.6rem; color:#4ade80; font-weight:600;}
+.gp-msg{font-size:0.7rem; padding:10px 14px; border-radius:12px; max-width:85%; line-height:1.4; position:relative; z-index:2;}
+.gp-in{background:rgba(255,255,255,0.08); color:#e9edef; align-self:flex-start; border-top-left-radius:2px;}
+.gp-out{background:linear-gradient(135deg, #005c4b, #007a64); color:#e9edef; align-self:flex-end; border-top-right-radius:2px; box-shadow:0 4px 15px rgba(0,92,75,0.3);}
+
+.float-icon{position:absolute; background:rgba(20,30,25,0.8); border:1px solid rgba(255,255,255,0.1); border-radius:12px; backdrop-filter:blur(10px); padding:8px 12px; display:flex; align-items:center; gap:8px; font-size:0.65rem; font-weight:700; color:#fff; box-shadow:0 10px 20px rgba(0,0,0,0.4); z-index:3;}
+.fi-1{top:40px; left:40px; animation:floatAnim 4s ease-in-out infinite;}
+.fi-2{bottom:50px; right:40px; animation:floatAnim 5s ease-in-out infinite 1s;}
+@keyframes floatAnim{0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);}}
+
+/* ── BC-AI-RADAR: Bruce AI (2w) ──────────────────────────────── */
+.bc-ai-radar{background:linear-gradient(145deg, #0f0b20, #080512); border-color:rgba(139,92,246,0.2);}
+.radar-inner{display:flex; padding:18px 24px; gap:20px; align-items:center; height:100%;}
+.radar-text{flex:1;}
+.radar-visual{flex:1; position:relative; height:140px; background:radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 60%); border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px dashed rgba(139,92,246,0.3); overflow:hidden;}
+.radar-sweep{position:absolute; top:50%; left:50%; width:50%; height:50%; background:linear-gradient(45deg, rgba(139,92,246,0.6), transparent); transform-origin:0 0; animation:radarSpin 3s linear infinite;}
+@keyframes radarSpin{100%{transform:rotate(360deg);}}
+.radar-target{position:absolute; width:45px; height:45px; border-radius:50%; background:#1a1a2e; border:2px solid #8b5cf6; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.85rem; font-weight:900; box-shadow:0 0 20px rgba(139,92,246,0.6); z-index:2;}
 
 /* ── BC-CRM: Kanban ──────────────────────────────────────────── */
-.bc-crm{background:#0c0e14}
+.bc-crm{background:linear-gradient(145deg, #120905, #1a0f0a); border-color:rgba(249,115,22,0.2);}
 .kanban-demo{margin:2px 14px 14px;display:flex;gap:6px}
 .kd-col{flex:1}
-.kd-hdr{font-size:.54rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.2);margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.kd-hdr{font-size:.54rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.3);margin-bottom:5px;display:flex;align-items:center;gap:4px}
 .kdd{width:4px;height:4px;border-radius:50%}
 .kdd-o{background:#fb923c}.kdd-b{background:#93a8ff}.kdd-g{background:#4ade80}
-.kd-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:5px 7px;margin-bottom:4px;font-size:.58rem;color:rgba(255,255,255,.55);font-weight:600;line-height:1.3}
+.kd-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:5px 7px;margin-bottom:4px;font-size:.58rem;color:rgba(255,255,255,.7);font-weight:600;line-height:1.3; box-shadow:0 2px 5px rgba(0,0,0,0.2);}
 .kd-card-val{font-size:.65rem;font-weight:800;color:#fff;margin-top:2px}
-.kd-card-hot{border-color:rgba(79,110,247,.4);background:rgba(79,110,247,.09);animation:hotPulse 3s ease-in-out infinite}
-@keyframes hotPulse{0%,100%{border-color:rgba(79,110,247,.3)}50%{border-color:rgba(79,110,247,.7)}}
+.kd-card-hot{border-color:rgba(249,115,22,.4);background:rgba(249,115,22,.1);animation:hotPulse 3s ease-in-out infinite}
+@keyframes hotPulse{0%,100%{border-color:rgba(249,115,22,.3); box-shadow:0 0 10px rgba(249,115,22,0.2);}50%{border-color:rgba(249,115,22,.8); box-shadow:0 0 20px rgba(249,115,22,0.5);}}
 
 /* ── BC-CANVA: LPs & Artes ────────────────────────────────────── */
-.bc-canva{background:#18181b}
-.canva-demo{margin:2px 14px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px;}
+.bc-canva{background:linear-gradient(145deg, #181016, #20131b); border-color:rgba(236,72,153,0.2);}
+.canva-demo{margin:2px 14px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);}
 .cv-toolbar{display:flex; gap:5px; margin-bottom:5px;}
-.cvt{width:12px; height:12px; border-radius:3px; background:rgba(255,255,255,0.1);}
-.cv-canvas{height:65px; border-radius:6px; background:linear-gradient(135deg, #a855f7, #ec4899); position:relative; overflow:hidden;}
-.cv-elem{position:absolute; background:rgba(255,255,255,0.9); border-radius:4px; width:40%; height:12px; top:15px; left:15px;}
+.cvt{width:12px; height:12px; border-radius:3px; background:rgba(255,255,255,0.15);}
+.cv-canvas{height:65px; border-radius:6px; background:linear-gradient(135deg, #a855f7, #ec4899); position:relative; overflow:hidden; box-shadow:0 5px 15px rgba(236,72,153,0.3);}
+.cv-elem{position:absolute; background:rgba(255,255,255,0.9); border-radius:4px; width:40%; height:12px; top:15px; left:15px; box-shadow:0 2px 10px rgba(0,0,0,0.2);}
 .cv-elem2{position:absolute; background:rgba(255,255,255,0.4); border-radius:3px; width:30%; height:6px; top:35px; left:15px;}
 
 /* ── BC-TRANSP: Transparência (2w) ──────────────────────────── */
-.bc-transp{background:#08111a}
+.bc-transp{background:linear-gradient(145deg, #08111a, #0a1724); border-color:rgba(34,211,238,0.2);}
 .transp-inner{margin:2px 16px 16px;display:flex;gap:20px;align-items:flex-start}
 .transp-counts{flex-shrink:0;display:flex;flex-direction:column;gap:10px}
-.tc-block .tc-lbl{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.25);margin-bottom:3px}
-.tc-block .tc-num{font-size:1.4rem;font-weight:900;letter-spacing:-.04em;color:#fff;line-height:1}
+.tc-block .tc-lbl{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);margin-bottom:3px}
+.tc-block .tc-num{font-size:1.4rem;font-weight:900;letter-spacing:-.04em;color:#fff;line-height:1; text-shadow:0 0 15px rgba(34,211,238,0.3);}
 .tc-block .tc-delta{font-size:.6rem;color:#4ade80;font-weight:700;margin-top:1px}
 .transp-feed{flex:1}
-.tf-hdr{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.2);margin-bottom:6px}
-.tf-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.62rem;color:rgba(255,255,255,.4)}
+.tf-hdr{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);margin-bottom:6px}
+.tf-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.62rem;color:rgba(255,255,255,.6)}
 .tf-item:last-child{border:none}
-.tfd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.tfd-g{background:#4ade80}.tfd-b{background:#93a8ff}.tfd-o{background:#fb923c}
+.tfd{width:5px;height:5px;border-radius:50%;flex-shrink:0; box-shadow:0 0 8px currentColor;}
+.tfd-g{background:#4ade80; color:#4ade80;} .tfd-b{background:#22d3ee; color:#22d3ee;} .tfd-o{background:#fb923c; color:#fb923c;}
 
 /* ── BC-VOLUNT: Voluntários ──────────────────────────────────── */
-.bc-volunt{background:#0e0c10}
+.bc-volunt{background:linear-gradient(145deg, #0e0c10, #141117); border-color:rgba(251,191,36,0.2);}
 .podium-list{margin:2px 14px 14px;display:flex;flex-direction:column;gap:4px}
-.pl-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:7px;background:rgba(255,255,255,.03)}
+.pl-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:7px;background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,0.03);}
 .pl-pos{font-size:.68rem;font-weight:900;width:14px;text-align:center;flex-shrink:0}
-.pl-p1{color:#f59e0b}.pl-p2{color:rgba(255,255,255,.35)}.pl-p3{color:#fb923c}
-.pl-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:900;color:#fff;flex-shrink:0}
+.pl-p1{color:#f59e0b; text-shadow:0 0 10px rgba(245,158,11,0.5);} .pl-p2{color:rgba(255,255,255,.5);} .pl-p3{color:#fb923c;}
+.pl-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:900;color:#fff;flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,0.5);}
 .plav1{background:linear-gradient(135deg,#f59e0b,#ef4444)}
 .plav2{background:linear-gradient(135deg,#6b7280,#9ca3af)}
 .plav3{background:linear-gradient(135deg,#fb923c,#f59e0b)}
-.pl-name{flex:1;font-size:.66rem;color:rgba(255,255,255,.6);font-weight:600}
-.pl-pts{font-size:.66rem;font-weight:800;color:rgba(255,255,255,.35)}
+.pl-name{flex:1;font-size:.66rem;color:rgba(255,255,255,.8);font-weight:600}
+.pl-pts{font-size:.66rem;font-weight:800;color:rgba(255,255,255,.4)}
 .pl-pts-1{color:#f59e0b}
-.pl-bar{flex:1;max-width:50px;height:3px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
-.plb-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#f59e0b,#fb923c)}
+.pl-bar{flex:1;max-width:50px;height:4px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;}
+.plb-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#f59e0b,#fb923c); box-shadow:0 0 8px rgba(245,158,11,0.5);}
 
 /* ── BC-CONTRACTS: Contratos ─────────────────────────────────── */
-.bc-contracts{background:#111411}
-.ctr-demo{margin:2px 14px 14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:7px; position:relative; overflow:hidden;}
-.ctr-line{height:4px; background:rgba(255,255,255,.1); border-radius:2px; width:100%;}
+.bc-contracts{background:linear-gradient(145deg, #111411, #161a16); border-color:rgba(74,222,128,0.2);}
+.ctr-demo{margin:2px 14px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:7px; position:relative; overflow:hidden;}
+.ctr-line{height:4px; background:rgba(255,255,255,.15); border-radius:2px; width:100%;}
 .ctr-line.w-70{width:70%;}
 .ctr-line.w-40{width:40%;}
 .ctr-sign{margin-top:6px; display:flex; justify-content:space-between; align-items:flex-end;}
-.ctr-badge{font-size:.5rem; font-weight:800; background:rgba(74,222,128,.15); color:#4ade80; padding:3px 8px; border-radius:100px; border:1px solid rgba(74,222,128,.3);}
+.ctr-badge{font-size:.5rem; font-weight:800; background:rgba(74,222,128,.2); color:#4ade80; padding:4px 10px; border-radius:100px; border:1px solid rgba(74,222,128,.4); box-shadow:0 0 15px rgba(74,222,128,0.2);}
 
 /* ── BC-FIN: Prestação de Contas ─────────────────────────────── */
-.bc-fin{background:#0a0f1c}
+.bc-fin{background:linear-gradient(145deg, #0a0f1c, #0e1526); border-color:rgba(79,110,247,0.2);}
 .fin-demo{margin:2px 14px 14px}
 .fin-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.66rem}
 .fin-row:last-of-type{border-bottom:none}
-.fin-lbl{color:rgba(255,255,255,.38)}
+.fin-lbl{color:rgba(255,255,255,.5)}
 .fin-val{font-weight:700;color:#fff}
-.fin-pos{color:#4ade80}.fin-neg{color:#f87171}
-.fin-total{margin-top:8px;padding:8px 11px;border-radius:8px;background:rgba(79,110,247,.1);border:1px solid rgba(79,110,247,.2);display:flex;justify-content:space-between;align-items:center}
-.fin-total-lbl{font-size:.64rem;font-weight:700;color:rgba(255,255,255,.5)}
-.fin-total-val{font-size:.95rem;font-weight:900;color:#fff}
-.fin-badge{font-size:.54rem;background:rgba(74,222,128,.15);color:#4ade80;padding:2px 6px;border-radius:100px;font-weight:800;margin-top:2px}
+.fin-pos{color:#4ade80; text-shadow:0 0 8px rgba(74,222,128,0.3);}.fin-neg{color:#f87171}
+.fin-total{margin-top:8px;padding:8px 11px;border-radius:8px;background:rgba(79,110,247,.15);border:1px solid rgba(79,110,247,.3);display:flex;justify-content:space-between;align-items:center; box-shadow:0 5px 15px rgba(0,0,0,0.2);}
+.fin-total-lbl{font-size:.64rem;font-weight:700;color:rgba(255,255,255,.6)}
+.fin-total-val{font-size:.95rem;font-weight:900;color:#fff; text-shadow:0 0 10px rgba(79,110,247,0.4);}
+.fin-badge{font-size:.54rem;background:rgba(74,222,128,.2);color:#4ade80;padding:2px 6px;border-radius:100px;font-weight:800;margin-top:2px}
 
 /* ── BC-ALMOX: Almoxarifado ──────────────────────────────────── */
-.bc-almox{background:#0d1010}
+.bc-almox{background:linear-gradient(145deg, #0d1010, #131818); border-color:rgba(34,211,238,0.2);}
 .almox-bars{margin:2px 14px 14px;display:flex;flex-direction:column;gap:8px}
 .ab-row{}
 .ab-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
-.ab-name{font-size:.66rem;color:rgba(255,255,255,.5);font-weight:600}
-.ab-qty{font-size:.62rem;color:rgba(255,255,255,.25);font-weight:600}
-.ab-track{height:5px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden}
+.ab-name{font-size:.66rem;color:rgba(255,255,255,.6);font-weight:600}
+.ab-qty{font-size:.62rem;color:rgba(255,255,255,.3);font-weight:600}
+.ab-track{height:5px;background:rgba(255,255,255,.08);border-radius:100px;overflow:hidden}
 .ab-fill{height:100%;border-radius:100px}
-.abf1{background:linear-gradient(90deg,#4F6EF7,#7B5CF0);animation:abAnim1 2.8s ease-in-out infinite alternate}
-.abf2{background:linear-gradient(90deg,#4ade80,#22d3ee);animation:abAnim2 3.1s ease-in-out infinite alternate}
-.abf3{background:linear-gradient(90deg,#fb923c,#f59e0b);animation:abAnim3 3.4s ease-in-out infinite alternate}
+.abf1{background:linear-gradient(90deg,#4F6EF7,#7B5CF0);animation:abAnim1 2.8s ease-in-out infinite alternate; box-shadow:0 0 10px rgba(79,110,247,0.4);}
+.abf2{background:linear-gradient(90deg,#4ade80,#22d3ee);animation:abAnim2 3.1s ease-in-out infinite alternate; box-shadow:0 0 10px rgba(34,211,238,0.4);}
+.abf3{background:linear-gradient(90deg,#fb923c,#f59e0b);animation:abAnim3 3.4s ease-in-out infinite alternate; box-shadow:0 0 10px rgba(245,158,11,0.4);}
 @keyframes abAnim1{from{width:42%}to{width:78%}}
 @keyframes abAnim2{from{width:65%}to{width:93%}}
 @keyframes abAnim3{from{width:28%}to{width:52%}}
@@ -1279,119 +1294,115 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     </div>
 
     <!-- BENTO GRID -->
+    <!-- BENTO GRID -->
     <div class="bento-grid">
 
-        {{-- ── 1. BOT & IA — hero 2×2 ──────────────────────────────────── --}}
-        <div class="bc bc-bot bc-2w bc-2h">
-            <div class="bot-glow"></div>
-            <div class="bc-body">
-                <span class="bc-tag" style="background:rgba(37,211,102,.15); color:#25d366; margin-right: 5px;"><i class="fab fa-whatsapp"></i> Mensageria Omnichannel</span>
-                <span class="bc-tag bct-ai"><i class="fas fa-brain"></i> IA Nativa</span>
-                <div class="bc-title">Bruce AI + Bot de WhatsApp 24/7</div>
-                <div class="bc-desc">Atendimento automatizado via chatbot, disparos de WhatsApp em massa e prospecção ativa de clientes e doadores via Inteligência Artificial. Tudo integrado.</div>
-            </div>
+        {{-- ── 1. MENSAGERIA MASTER (3W - Full Width) ────────────────────── --}}
+        <div class="bc bc-master-bot bc-3w">
+            <div class="master-glow"></div>
             
-            <div class="bot-layout">
-                <!-- Lado WhatsApp -->
-                <div class="bot-chat">
-                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.4); text-transform:uppercase; font-weight:800; letter-spacing:1px;">Chatbot Ativo (Simulação)</div>
-                    <div class="bmsg bmsg-out">Olá! Sou o assistente virtual da Vivensi. Como posso ajudar você hoje?</div>
-                    <div class="bmsg bmsg-in">Gostaria de saber mais sobre como fazer uma doação para o projeto.</div>
-                    <div class="bmsg bmsg-out">Claro! Você pode doar via PIX, Cartão ou Boleto. Qual prefere?</div>
+            <!-- Conteúdo Textual -->
+            <div class="master-text">
+                <span class="bc-tag" style="background:rgba(37,211,102,.15); color:#25d366; margin-bottom:15px; font-size:0.65rem; padding:4px 10px;"><i class="fab fa-whatsapp"></i> WhatsApp Oficial</span>
+                <div class="bc-title">Mensageria Omnichannel & Automação</div>
+                <div class="bc-desc">
+                    Centralize seu atendimento com nosso chatbot 24/7. Responda doadores automaticamente, envie recibos e faça disparos em massa de campanhas direto pelo WhatsApp.
                 </div>
-                <!-- Lado Bruce AI -->
-                <div class="bot-ai-side">
-                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.4); text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:-5px;">Bruce AI: Prospecção</div>
-                    <div class="ai-prospect">
-                        <div class="ai-plogo">SF</div>
-                        <div>
-                            <div class="ai-pname">Supermercado Família</div>
-                            <div class="ai-pcat">Varejo Alimentar · Google Maps</div>
+                <div class="master-features">
+                    <div class="mf-item"><i class="fas fa-robot text-green-400"></i> Chatbot 24h</div>
+                    <div class="mf-item"><i class="fas fa-paper-plane text-green-400"></i> Disparos em Massa</div>
+                    <div class="mf-item"><i class="fas fa-users text-green-400"></i> Multi-atendentes</div>
+                </div>
+            </div>
+
+            <!-- Visual Glassmorphism -->
+            <div class="master-visual">
+                <div class="float-icon fi-1"><i class="fas fa-check-double text-blue-400"></i> Campanha Enviada (1.2k)</div>
+                <div class="float-icon fi-2"><i class="fas fa-file-invoice-dollar text-green-400"></i> Recibo de Doação Gerado</div>
+                
+                <div class="glass-phone">
+                    <div class="gp-hdr">
+                        <div class="gp-av"><i class="fas fa-heart"></i></div>
+                        <div class="gp-info">
+                            <div class="gp-name">Projeto Esperança</div>
+                            <div class="gp-status">bot ativo e respondendo...</div>
                         </div>
                     </div>
-                    <div class="ai-score-label">
-                        <span>Fit Score para patrocínio</span>
-                        <span class="ai-score-pct">94%</span>
-                    </div>
-                    <div class="ai-bar-track"><div class="ai-bar-fill"></div></div>
-                    <div class="ai-pitch">
-                        <div class="ai-pitch-lbl">Pitch (WhatsApp)</div>
-                        <div class="ai-pitch-txt">
-                            "Olá! Vi que o Supermercado Família apoia ações locais. Nosso projeto atende 1.800 famílias. Buscamos um parceiro…<span class="ai-cursor"></span>"
-                        </div>
-                    </div>
+                    <div class="gp-msg gp-in">Olá! Gostaria de fazer uma doação mensal. Como funciona?</div>
+                    <div class="gp-msg gp-out">Que maravilha! 💙 Você pode doar via PIX ou Cartão de Crédito. É só clicar no link abaixo: vivensi.app/doar</div>
                 </div>
             </div>
         </div>
 
-        {{-- ── 2. CRM KANBAN ────────────────────────────────────────────── --}}
+        {{-- ── 2. BRUCE AI RADAR (2W) ────────────────────────────────────── --}}
+        <div class="bc bc-ai-radar bc-2w">
+            <div class="radar-inner">
+                <div class="radar-text">
+                    <span class="bc-tag bct-ai"><i class="fas fa-brain"></i> IA Nativa</span>
+                    <div class="bc-title" style="font-size:1.4rem;">Bruce AI — Prospecção Ativa</div>
+                    <div class="bc-desc" style="max-width:280px; margin-top:8px;">
+                        Nossa IA encontra parceiros na sua região, analisa o Fit Score e redige o *pitch* perfeito para você só copiar e colar.
+                    </div>
+                </div>
+                <div class="radar-visual">
+                    <div class="radar-sweep"></div>
+                    <div class="radar-target">SF</div>
+                    <div style="position:absolute; bottom:15px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:10px; font-size:0.6rem; color:#fff; border:1px solid rgba(139,92,246,0.3); z-index:3;">Fit Score: 94%</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 3. CRM KANBAN ────────────────────────────────────────────── --}}
         <div class="bc bc-crm">
             <div class="bc-body">
                 <span class="bc-tag bct-crm"><i class="fas fa-kanban"></i> Projetos</span>
-                <div class="bc-title">CRM Kanban & Projetos</div>
-                <div class="bc-desc">Organize tarefas da equipe, captação de patrocínios e funil de vendas. Drag & drop.</div>
+                <div class="bc-title">CRM Kanban</div>
+                <div class="bc-desc">Gestão visual de parceiros e doadores.</div>
             </div>
             <div class="kanban-demo">
                 <div class="kd-col">
                     <div class="kd-hdr"><span class="kdd kdd-o"></span>Prospect.</div>
                     <div class="kd-card">Farmácia ABC<div class="kd-card-val">R$ 2k</div></div>
-                    <div class="kd-card">Loja XYZ<div class="kd-card-val">R$ 800</div></div>
                 </div>
                 <div class="kd-col">
                     <div class="kd-hdr"><span class="kdd kdd-b"></span>Negoc.</div>
                     <div class="kd-card kd-card-hot">Banco Sul<div class="kd-card-val">R$ 15k</div></div>
-                    <div class="kd-card">Clínica M.<div class="kd-card-val">R$ 5k</div></div>
-                </div>
-                <div class="kd-col">
-                    <div class="kd-hdr"><span class="kdd kdd-g"></span>Fechado</div>
-                    <div class="kd-card">Padaria B.<div class="kd-card-val">R$ 3k</div></div>
                 </div>
             </div>
         </div>
 
-        {{-- ── 3. CANVA & LPs ───────────────────────────────────────────── --}}
+        {{-- ── 4. CANVA & LPs ───────────────────────────────────────────── --}}
         <div class="bc bc-canva">
             <div class="bc-body">
                 <span class="bc-tag" style="background:rgba(236, 72, 153, 0.15); color:#ec4899;"><i class="fas fa-magic"></i> Marketing</span>
-                <div class="bc-title">Construtor de LPs & Artes</div>
-                <div class="bc-desc">Crie páginas de alta conversão, rifas online e banners profissionais (estilo Canva).</div>
+                <div class="bc-title">LPs & Design</div>
+                <div class="bc-desc">Páginas de alta conversão e artes nativas.</div>
             </div>
             <div class="canva-demo">
-                <div class="cv-toolbar">
-                    <div class="cvt"></div><div class="cvt"></div><div class="cvt"></div>
-                </div>
-                <div class="cv-canvas">
-                    <div class="cv-elem"></div>
-                    <div class="cv-elem2"></div>
-                </div>
+                <div class="cv-toolbar"><div class="cvt"></div><div class="cvt"></div><div class="cvt"></div></div>
+                <div class="cv-canvas"><div class="cv-elem"></div><div class="cv-elem2"></div></div>
             </div>
         </div>
 
-        {{-- ── 4. PORTAL DE TRANSPARÊNCIA (2w) ─────────────────────────── --}}
+        {{-- ── 5. PORTAL DE TRANSPARÊNCIA (2w) ─────────────────────────── --}}
         <div class="bc bc-transp bc-2w">
             <div class="bc-body">
                 <span class="bc-tag bct-transp"><i class="fas fa-earth-americas"></i> Transparência</span>
-                <div class="bc-title">Transparência Pública</div>
-                <div class="bc-desc">Página gerada automaticamente com métricas reais em tempo real para prestar contas a doadores e à sociedade.</div>
+                <div class="bc-title">Portal Público de Impacto</div>
+                <div class="bc-desc">Página gerada automaticamente com métricas reais em tempo real para prestar contas à sociedade.</div>
             </div>
             <div class="transp-inner">
                 <div class="transp-counts">
                     <div class="tc-block">
                         <div class="tc-lbl">Beneficiários</div>
                         <div class="tc-num" id="tcCount1">98.490</div>
-                        <div class="tc-delta"><i class="fas fa-arrow-trend-up" style="font-size:.6rem"></i> +342 esse mês</div>
-                    </div>
-                    <div class="tc-block">
-                        <div class="tc-lbl">Captado 2025</div>
-                        <div class="tc-num">R$ 18,4M</div>
-                        <div class="tc-delta"><i class="fas fa-arrow-trend-up" style="font-size:.6rem"></i> +31% a.a.</div>
                     </div>
                 </div>
                 <div class="transp-feed">
                     <div class="tf-hdr">Atualizações ao vivo</div>
                     <div class="tf-item"><span class="tfd tfd-g"></span>Ação Social — 240 kits distribuídos · 2h atrás</div>
                     <div class="tf-item"><span class="tfd tfd-b"></span>Novo doador recorrente cadastrado · 5h atrás</div>
-                    <div class="tf-item"><span class="tfd tfd-o"></span>Relatório Q4 publicado e assinado · ontem</div>
+                    <div class="tf-item"><span class="tfd tfd-o"></span>Relatório Q4 publicado · ontem</div>
                 </div>
             </div>
         </div>
