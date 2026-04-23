@@ -53,6 +53,10 @@ class AdminSettingsController extends Controller
 
         $openpix_app_id = SystemSetting::getValue('openpix_app_id');
 
+        // AbacatePay
+        $abacatepay_env = SystemSetting::getValue('abacatepay_environment', 'sandbox');
+        $abacatepay_webhook_secret = null; // never exposed
+
         // Meta Social (Facebook/Instagram) — IDs only, secrets never shown
         $meta_social_app_id_configured  = (bool) SystemSetting::getValue('meta_social_app_id');
         $meta_social_app_secret_configured = (bool) SystemSetting::getValue('meta_social_app_secret');
@@ -117,7 +121,10 @@ class AdminSettingsController extends Controller
             'booking_upcoming',
             'meta_social_app_id',
             'meta_social_app_id_configured',
-            'meta_social_app_secret_configured'
+            'meta_social_app_secret_configured',
+            'abacatepay_configured',
+            'abacatepay_env',
+            'abacatepay_webhook_secret'
         ));
 
     }
@@ -164,6 +171,10 @@ class AdminSettingsController extends Controller
             'meta_app_secret'        => 'nullable|string|max:5000',
             'meta_social_app_id'     => 'nullable|string|max:255',
             'meta_social_app_secret' => 'nullable|string|max:5000',
+            // AbacatePay
+            'abacatepay_api_key'        => 'nullable|string|max:5000',
+            'abacatepay_webhook_secret' => 'nullable|string|max:5000',
+            'abacatepay_environment'    => 'nullable|in:sandbox,production',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -178,9 +189,11 @@ class AdminSettingsController extends Controller
             'serper_api_key'     => 'api',
             'google_maps_api_key'=> 'api',
             'pusher_app_secret'  => 'broadcasting',
-            'openpix_app_id'     => 'api',
+            'openpix_app_id'         => 'api',
             'meta_app_secret'        => 'whatsapp',
             'meta_social_app_secret' => 'social',
+            'abacatepay_api_key'        => 'api',
+            'abacatepay_webhook_secret' => 'api',
         ] as $key => $group) {
             $val = trim((string) ($validated[$key] ?? ''));
             if ($val !== '') {
@@ -223,6 +236,11 @@ class AdminSettingsController extends Controller
         // Meta Social (Facebook/Instagram)
         if (!empty($validated['meta_social_app_id'])) {
             SystemSetting::setValue('meta_social_app_id', $validated['meta_social_app_id'], 'social');
+        }
+
+        // AbacatePay
+        if (!empty($validated['abacatepay_environment'])) {
+            SystemSetting::setValue('abacatepay_environment', $validated['abacatepay_environment'], 'api');
         }
 
         // Booking / agenda settings

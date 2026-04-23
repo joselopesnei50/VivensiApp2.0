@@ -184,6 +184,67 @@
                                 Webhook OpenPix: <strong>{{ url('/openpix/webhook') }}</strong>
                             </div>
                         </div>
+
+                        <hr class="my-4">
+
+                        {{-- AbacatePay --}}
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="fw-bold text-dark me-2">🥑 AbacatePay</span>
+                            @if(!empty($abacatepay_configured))
+                                <span class="badge bg-success">Configurada</span>
+                            @else
+                                <span class="badge bg-secondary">Não configurada</span>
+                            @endif
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-600 text-dark">Ambiente AbacatePay</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check card-radio">
+                                    <input class="form-check-input" type="radio" name="abacatepay_environment" id="abacateSandbox" value="sandbox" {{ ($abacatepay_env ?? 'sandbox') == 'sandbox' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="abacateSandbox">
+                                        <i class="fas fa-flask me-1 text-warning"></i> Dev Mode
+                                    </label>
+                                </div>
+                                <div class="form-check card-radio">
+                                    <input class="form-check-input" type="radio" name="abacatepay_environment" id="abacateProd" value="production" {{ ($abacatepay_env ?? '') == 'production' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="abacateProd">
+                                        <i class="fas fa-rocket me-1 text-success"></i> Produção
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-600 text-dark">API Key (Bearer Token)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-key text-muted"></i></span>
+                                <input type="password" name="abacatepay_api_key" value=""
+                                       class="form-control border-start-0 ps-0"
+                                       placeholder="{{ !empty($abacatepay_configured) ? 'Configurada (cole para atualizar)' : 'sk_dev_... ou sk_live_...' }}"
+                                       autocomplete="off">
+                            </div>
+                            <div class="form-text">Encontre no painel AbacatePay → Configurações → API Keys.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-600 text-dark">Webhook Secret</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-shield-alt text-muted"></i></span>
+                                <input type="password" name="abacatepay_webhook_secret" value=""
+                                       class="form-control border-start-0 ps-0"
+                                       placeholder="Chave secreta para autenticar o webhook"
+                                       autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-light border border-success border-opacity-25 d-flex align-items-start p-3 rounded-3 mb-0">
+                            <span class="me-2">🥑</span>
+                            <div class="small text-muted">
+                                Configure o Webhook no painel AbacatePay para:<br>
+                                <strong>{{ url('/api/abacatepay/webhook') }}?webhookSecret=<em>SEU_SECRET</em></strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
