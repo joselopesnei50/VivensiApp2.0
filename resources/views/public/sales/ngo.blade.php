@@ -135,7 +135,7 @@
         <h2 style="color: white; margin-bottom: 20px;">Pronto para transformar sua ONG?</h2>
         <p style="color: #e0e7ff; max-width: 700px; margin: 0 auto 40px;">Junte-se a centenas de organizações que já digitalizaram seu impacto socioambiental.</p>
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-            <a href="{{ route('register') }}" class="btn-cta" style="background: white; color: #4f46e5; padding: 20px 50px; font-size: 1.3rem;">Começar Agora - 7 Dias Grátis</a>
+            <a href="{{ route('register') }}" class="btn-cta" style="background: white; color: #4f46e5; padding: 20px 50px; font-size: 1.3rem;">Começar Agora</a>
             <a href="https://wa.me/5581999999999" class="btn-outline" style="border-color: white; color: white; padding: 20px 50px; font-size: 1.3rem; border-radius: 50px; text-decoration: none; font-weight: 700;">Falar com Especialista</a>
         </div>
     </section>
@@ -159,7 +159,7 @@
                 <li style="margin-bottom: 15px;"><i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px;"></i> Gestão de Doadores & CRM</li>
                 <li style="margin-bottom: 15px;"><i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px;"></i> Prestação de Contas Automatizada</li>
             </ul>
-            <a href="{{ route('register', ['plan_id' => 1]) }}" class="btn-cta" style="width: 100%; border-radius: 12px; font-size: 1.2rem;">Garantir Meus 7 Dias Grátis</a>
+            <a href="{{ route('register', ['plan_id' => 1]) }}" class="btn-cta" style="width: 100%; border-radius: 12px; font-size: 1.2rem;">Garantir Meu Acesso</a>
         </div>
     </div>
 @endsection

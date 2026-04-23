@@ -1712,7 +1712,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 <div>
                     <div class="cb-icon"><i class="fas fa-shield-halved"></i></div>
                     <div class="cb-title">Sem cartão.</div>
-                    <div class="cb-desc">30 dias grátis sem dados de pagamento.</div>
+                    <div class="cb-desc">Cancele quando quiser.</div>
                 </div>
                 <div>
                     <div class="cb-icon"><i class="fas fa-headset"></i></div>
@@ -1730,7 +1730,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         <!-- RIGHT: white card -->
         <div class="cta-right aos">
             <div class="cta-form-title">Criar conta <span>grátis</span></div>
-            <p class="cta-form-sub">30 dias grátis · Sem cartão de crédito · Cancele quando quiser</p>
+            <p class="cta-form-sub">Pagamento Seguro · Cancele quando quiser</p>
 
             <!-- Social proof -->
             <div class="cta-proof">

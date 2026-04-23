@@ -12,7 +12,7 @@
         <ul style="margin: 0; padding-left: 20px; color: #475569;">
             <li><strong>Organização:</strong> {{ $user->tenant->name ?? 'Não informada' }}</li>
             <li><strong>Plano:</strong> {{ $planName }}</li>
-            <li><strong>Período de Teste:</strong> 7 dias grátis</li>
+            <li><strong>Acesso Imediato:</strong> Assim que a fatura for confirmada</li>
         </ul>
     </div>
 
