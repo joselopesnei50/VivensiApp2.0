@@ -1155,9 +1155,18 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 <em>três verticais.</em>
             </h2>
         </div>
-        <p class="seg-hdr-right">
-            Cada vertical foi construída para um perfil específico — com fluxos, dados e terminologia do seu setor.
-        </p>
+        <div class="seg-hdr-right">
+            <p style="margin-bottom: 15px;">
+                Cada vertical foi construída para um perfil específico — com fluxos, dados e terminologia do seu setor.
+            </p>
+            <div style="background: rgba(37, 211, 102, 0.1); border: 1px solid rgba(37, 211, 102, 0.3); padding: 12px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px;">
+                <i class="fab fa-whatsapp" style="color: #25D366; font-size: 1.5rem;"></i>
+                <div>
+                    <strong style="color: white; display: block; font-size: 0.9rem;">Mensageria Completa Integrada</strong>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Disparo em massa, Chatbot 24/7 e Atendimento Humanizado.</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="seg-grid">
