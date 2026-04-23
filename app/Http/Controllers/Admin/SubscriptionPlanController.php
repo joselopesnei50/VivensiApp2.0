@@ -22,14 +22,15 @@ class SubscriptionPlanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'target_audience' => 'required|in:ngo,manager,common',
-            'price' => 'required|numeric|min:0',
-            'price_yearly' => 'nullable|numeric|min:0',
+            'name'                     => 'required|string|max:255',
+            'target_audience'          => 'required|in:ngo,manager,common',
+            'price'                    => 'required|numeric|min:0',
+            'price_yearly'             => 'nullable|numeric|min:0',
             'pagseguro_plan_id_yearly' => 'nullable|string|max:255',
-            'interval' => 'required|in:monthly,yearly',
-            'features' => 'nullable|array',
-            'is_active' => 'boolean',
+            'abacatepay_product_id'    => 'nullable|string|max:255', // ✅ adicionado
+            'interval'                 => 'required|in:monthly,yearly',
+            'features'                 => 'nullable|array',
+            'is_active'                => 'boolean',
         ]);
 
         SubscriptionPlan::create($validated);
@@ -45,14 +46,15 @@ class SubscriptionPlanController extends Controller
     public function update(Request $request, SubscriptionPlan $plan)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'target_audience' => 'required|in:ngo,manager,common',
-            'price' => 'required|numeric|min:0',
-            'price_yearly' => 'nullable|numeric|min:0',
+            'name'                     => 'required|string|max:255',
+            'target_audience'          => 'required|in:ngo,manager,common',
+            'price'                    => 'required|numeric|min:0',
+            'price_yearly'             => 'nullable|numeric|min:0',
             'pagseguro_plan_id_yearly' => 'nullable|string|max:255',
-            'interval' => 'required|in:monthly,yearly',
-            'features' => 'nullable|array',
-            'is_active' => 'boolean',
+            'abacatepay_product_id'    => 'nullable|string|max:255', // ✅ adicionado
+            'interval'                 => 'required|in:monthly,yearly',
+            'features'                 => 'nullable|array',
+            'is_active'                => 'boolean',
         ]);
 
         $plan->update($validated);
