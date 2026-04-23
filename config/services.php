@@ -37,10 +37,16 @@ return [
     ],
 
     'pagseguro' => [
-        'email' => env('PAGSEGURO_EMAIL'),
-        'token' => env('PAGSEGURO_TOKEN'),
-        'webhook_token' => env('PAGSEGURO_WEBHOOK_TOKEN'),
-        'environment' => env('PAGSEGURO_ENV', 'sandbox'), // sandbox or production
+        'email'          => env('PAGSEGURO_EMAIL'),
+        'token'          => env('PAGSEGURO_TOKEN'),
+        'webhook_token'  => env('PAGSEGURO_WEBHOOK_TOKEN'),
+        'environment'    => env('PAGSEGURO_ENV', 'sandbox'),
+    ],
+
+    'abacatepay' => [
+        'api_key'        => env('ABACATEPAY_API_KEY'),
+        'webhook_secret' => env('ABACATEPAY_WEBHOOK_SECRET'),
+        'environment'    => env('ABACATEPAY_ENV', 'sandbox'), // sandbox ou production
     ],
 
     'meta' => [

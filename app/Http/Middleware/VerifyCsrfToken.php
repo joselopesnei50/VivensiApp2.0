@@ -15,6 +15,7 @@ class VerifyCsrfToken extends Middleware
         '/api/whatsapp/webhook',
         '/api/whatsapp/bot',       // Bot de Gestão Interna
         '/api/webhooks/asaas',
+        '/api/abacatepay/webhook', // AbacatePay
         '/lp/*/lead',
         '/validar-recibo',
         '/openpix/webhook',
