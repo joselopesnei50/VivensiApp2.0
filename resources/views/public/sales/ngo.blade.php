@@ -41,7 +41,7 @@
             <p>A única plataforma brasileira que une Gestão Financeira, Portal da Transparência e Construtor de Páginas de Doação em um só lugar. Revolucione sua captação de recursos hoje.</p>
             
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <a href="{{ route('register', ['plan_id' => 1]) }}" class="btn-cta" style="font-size: 1.2rem; padding: 18px 40px;">Testar Grátis por 7 Dias</a>
+                <a href="{{ route('register', ['plan_id' => 1]) }}" class="btn-cta" style="font-size: 1.2rem; padding: 18px 40px;">Assinar Agora</a>
                 <a href="#features" class="btn-outline" style="padding: 18px 40px; border-radius: 50px; text-decoration: none; font-weight: 700; border: 2px solid #e2e8f0; color: #1e293b;">Ver Recursos</a>
             </div>
 
@@ -143,7 +143,7 @@
     <div id="pricing" style="padding: 100px 5%; background: var(--bg-light); text-align: center;">
         <span class="section-badge">INVESTIMENTO</span>
         <h2>O Valor de uma Gestão Profissional</h2>
-        <p>Preços transparentes, sem letras miúdas. Comece hoje seu teste gratuito.</p>
+        <p>Preços transparentes, sem letras miúdas. Comece hoje mesmo.</p>
         
         <div class="vivensi-card" style="max-width: 500px; margin: 0 auto; padding: 60px; background: white; border-radius: 30px; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1); border: 2px solid #4f46e5;">
             <div style="text-transform: uppercase; font-weight: 800; color: #4f46e5; letter-spacing: 2px; margin-bottom: 10px;">Plano Terceiro Setor</div>

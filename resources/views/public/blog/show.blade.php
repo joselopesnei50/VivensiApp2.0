@@ -41,7 +41,7 @@
             <a href="{{ route('public.blog.index') }}" class="btn-outline">
                 <i class="fas fa-arrow-left me-2"></i> Voltar ao Blog
             </a>
-            <a href="{{ url('/#pricing') }}" class="btn-cta">Testar Vivensi Grátis</a>
+            <a href="{{ url('/#pricing') }}" class="btn-cta">Testar Vivensi</a>
         </div>
     </div>
 </article>

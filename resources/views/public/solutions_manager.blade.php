@@ -713,7 +713,7 @@ footer{background:#060606;border-top:1px solid var(--border);padding:60px 5% 28p
 
         <div class="plx-btns">
             <a href="{{ route('booking.index') }}" class="btn-plx">
-                <i class="fas fa-calendar-check"></i> Agendar Demonstração Grátis
+                <i class="fas fa-calendar-check"></i> Agendar Demonstração
             </a>
             <a href="#pricing" class="btn-plx-ghost">
                 Ver planos <i class="fas fa-arrow-right" style="font-size:.75rem"></i>
@@ -795,7 +795,7 @@ footer{background:#060606;border-top:1px solid var(--border);padding:60px 5% 28p
             <h5>Produto</h5>
             <a href="#pricing">Planos & Preços</a>
             <a href="{{ route('login') }}">Acessar conta</a>
-            <a href="{{ route('register') }}">Criar conta grátis</a>
+            <a href="{{ route('register') }}">Criar conta</a>
             <a href="{{ route('booking.index') }}">Agendar Demo</a>
         </div>
         <div class="footer-col">

@@ -40,7 +40,7 @@
             <p>O Vivensi 2.0 é o centro de comando definitivo para empresas e gestores que não aceitam menos que o controle total. Cronogramas, custos e equipe em uma única interface inteligente.</p>
             
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <a href="{{ route('register', ['plan_id' => 2]) }}" class="btn-cta" style="background: #16a34a; box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.4); font-size: 1.2rem; padding: 18px 40px;">Iniciar Teste Grátis</a>
+                <a href="{{ route('register', ['plan_id' => 2]) }}" class="btn-cta" style="background: #16a34a; box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.4); font-size: 1.2rem; padding: 18px 40px;">Assinar Agora</a>
                 <a href="#workflow" class="btn-outline" style="padding: 18px 40px; border-radius: 50px; text-decoration: none; font-weight: 700;">Ver Ecossistema</a>
             </div>
 
@@ -154,7 +154,7 @@
                 <li style="margin-bottom: 15px;"><i class="fas fa-check-circle" style="color: #16a34a; margin-right: 10px;"></i> Fluxo Financeiro Real-Time</li>
                 <li style="margin-bottom: 15px;"><i class="fas fa-check-circle" style="color: #16a34a; margin-right: 10px;"></i> Suporte Prioritário</li>
             </ul>
-            <a href="{{ route('register', ['plan_id' => 2]) }}" class="btn-cta" style="width: 100%; border-radius: 12px; font-size: 1.2rem; background: #16a34a;">Ativar 7 Dias de Teste Grátis</a>
+            <a href="{{ route('register', ['plan_id' => 2]) }}" class="btn-cta" style="width: 100%; border-radius: 12px; font-size: 1.2rem; background: #16a34a;">Assinar Agora</a>
         </div>
     </div>
 @endsection
