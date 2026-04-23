@@ -12,9 +12,6 @@
                             <span class="badge rounded-pill px-3 py-2 fw-bold" style="background: rgba(255,255,255,0.15);">
                                 Plano Selecionado
                             </span>
-                            <span class="badge bg-success rounded-pill px-3 py-2 fw-bold">
-                                <i class="fas fa-gift me-1"></i> 7 dias grátis
-                            </span>
                         </div>
 
                         <h2 class="display-5 fw-800 mb-4">{{ $plan->name }}</h2>
@@ -38,12 +35,8 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-center fs-4 fw-800 mt-2">
                             <span>Hoje você paga</span>
-                            <span class="text-success">R$ 0,00</span>
+                            <span class="text-success">R$ {{ number_format($plan->price, 2, ',', '.') }}</span>
                         </div>
-                        <p class="small mt-2 mb-0" style="opacity:.6;">
-                            <i class="fas fa-calendar-alt me-1"></i>
-                            Primeira cobrança em 7 dias (R$ {{ number_format($plan->price, 2, ',', '.') }}/mês).
-                        </p>
                     </div>
                 </div>
 
@@ -101,7 +94,7 @@
                         <div class="mt-4">
                             <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill fw-bold fs-5 shadow-lg d-flex align-items-center justify-content-center gap-2">
                                 <i class="fas fa-lock"></i>
-                                Iniciar período grátis
+                                Assinar agora
                             </button>
                             <p class="text-center text-muted small mt-3 mb-0">
                                 <i class="fas fa-shield-alt me-1 text-success"></i>
