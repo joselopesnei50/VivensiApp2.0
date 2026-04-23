@@ -52,6 +52,14 @@
                     </div>
 
                     <div class="col-md-6">
+                         <label class="form-label fw-bold">🥑 ID do Produto (AbacatePay)</label>
+                         <input type="text" name="abacatepay_product_id" class="form-control-vivensi"
+                                value="{{ old('abacatepay_product_id', $plan->abacatepay_product_id) }}"
+                                placeholder="Ex: prod_abc123xyz">
+                         <div class="form-text">Copie do painel AbacatePay → Produtos.</div>
+                    </div>
+
+                    <div class="col-md-6">
                         <label class="form-label fw-bold">Intervalo de Cobrança</label>
                         <select name="interval" class="form-select border-0 bg-light rounded-3 py-3" required>
                             <option value="monthly" {{ old('interval', $plan->interval) == 'monthly' ? 'selected' : '' }}>Mensal</option>

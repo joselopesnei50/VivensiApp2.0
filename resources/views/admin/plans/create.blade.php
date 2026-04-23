@@ -51,6 +51,12 @@
                     </div>
 
                     <div class="col-md-6">
+                         <label class="form-label fw-bold">🥑 ID do Produto (AbacatePay)</label>
+                         <input type="text" name="abacatepay_product_id" class="form-control-vivensi" placeholder="Ex: prod_abc123xyz">
+                         <div class="form-text">Copie do painel AbacatePay → Produtos.</div>
+                    </div>
+
+                    <div class="col-md-6">
                         <label class="form-label fw-bold">Intervalo de Cobrança</label>
                         <select name="interval" class="form-select border-0 bg-light rounded-3 py-3" required>
                             <option value="monthly">Mensal</option>
@@ -96,8 +102,10 @@
         <div class="alert alert-info border-0 rounded-4 p-4 shadow-sm">
             <h5 class="fw-bold"><i class="fas fa-lightbulb me-2"></i> Dica do Sistema</h5>
             <p class="small mb-0">
-                Ao criar um plano, ele ficará disponível na página pública de contratação. 
-                Se a integração com o <strong>Asaas</strong> estiver ativa, os pagamentos serão processados automaticamente e o Tenant será liberado após a confirmação.
+                Ao criar um plano, ele ficará disponível para contratação.
+                Para usar o <strong>AbacatePay</strong>: crie o produto no painel AbacatePay
+                e cole o ID do produto (ex: <code>prod_abc123</code>) no campo acima.
+                O sistema usará esse ID para gerar checkouts de assinatura com trial de 7 dias.
             </p>
         </div>
     </div>
