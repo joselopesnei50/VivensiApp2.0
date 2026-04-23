@@ -72,9 +72,9 @@ class RegisterController extends Controller
                 'name' => $request->organization_name,
                 'type' => $tenantType,
                 'plan_id' => $request->plan_id,
-                'subscription_status' => 'trialing',
-                'trial_ends_at' => now()->addDays($trialDays),
-                'billing_cycle' => $billingCycle, // Ensure this column exists or store in meta
+                'subscription_status' => 'pending', // No more trial
+                'trial_ends_at' => null,
+                'billing_cycle' => $billingCycle,
             ]);
 
             // 2. Create User with selected role (Normalized)
@@ -112,7 +112,7 @@ class RegisterController extends Controller
             }
 
             if ($request->plan_id) {
-                return redirect('/dashboard')->with('success', 'Sua conta foi criada! Você tem 7 dias de teste grátis.');
+                return redirect('/checkout/' . $request->plan_id)->with('success', 'Conta criada! Conclua o pagamento para acessar o sistema.');
             }
 
             return redirect('/dashboard');
