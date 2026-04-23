@@ -20,7 +20,7 @@
 <header class="checkout-header">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
-            <a href="#" class="logo"><i class="fas fa-cube"></i> Vivensi</a>
+            <a href="#" class="logo"><x-application-logo style="max-height: 40px; width: auto;" /></a>
             <div class="user-info small text-muted">
                 <i class="fas fa-user-circle me-1"></i> {{ auth()->user()->email }} | 
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">
