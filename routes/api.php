@@ -42,6 +42,10 @@ Route::post('/pagseguro/checkout', [App\Http\Controllers\Api\PagSeguroController
 Route::post('/webhooks/pagseguro', [App\Http\Controllers\Api\PagSeguroWebhookController::class, 'handle']);
 Route::post('/webhooks/asaas',     [App\Http\Controllers\Api\AsaasWebhookController::class, 'handle']);
 
+// ── AbacatePay ────────────────────────────────────────────────────────────────
+Route::post('/abacatepay/checkout', [App\Http\Controllers\Api\AbacatePayCheckoutController::class, 'checkout'])->middleware(['auth:sanctum', 'throttle:20,1']);
+Route::post('/abacatepay/webhook',  [App\Http\Controllers\Api\AbacatePayWebhookController::class, 'handle'])->middleware('throttle:200,1');
+
 // ── Auth ──────────────────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
