@@ -27,7 +27,7 @@ class ScheduledPostController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'social_account_id' => 'required|integer',
+            'social_account_id' => 'nullable|integer',
             'platform'          => 'required|in:facebook,instagram,both',
             'caption'           => 'required|string|max:2200',
             'scheduled_at'      => 'required|date|after:now',
@@ -36,8 +36,10 @@ class ScheduledPostController extends Controller
             'media_url_external'=> 'nullable|url|max:2048',
         ]);
 
-        // Global scope on SocialAccount already ensures tenant ownership
-        $account = SocialAccount::findOrFail($data['social_account_id']);
+        // Conta é opcional — sem conta o post fica como rascunho
+        $account = $data['social_account_id']
+            ? SocialAccount::findOrFail($data['social_account_id'])
+            : null;
 
         $mediaUrl  = null;
         $mediaType = 'none';
@@ -54,14 +56,14 @@ class ScheduledPostController extends Controller
 
         ScheduledPost::create([
             'tenant_id'         => auth()->user()->tenant_id,
-            'social_account_id' => $account->id,
+            'social_account_id' => $account?->id,
             'user_id'           => auth()->id(),
             'platform'          => $data['platform'],
             'caption'           => $data['caption'],
             'media_url'         => $mediaUrl,
             'media_type'        => $mediaType,
             'scheduled_at'      => $data['scheduled_at'],
-            'status'            => 'scheduled',
+            'status'            => $account ? 'scheduled' : 'draft',
         ]);
 
         return redirect()->route('social.posts.index')
@@ -102,7 +104,7 @@ class ScheduledPostController extends Controller
     public function calendar()
     {
         $posts = ScheduledPost::with('account')
-            ->whereIn('status', ['scheduled', 'published'])
+            ->whereIn('status', ['draft', 'scheduled', 'published'])
             ->get()
             ->map(fn($p) => [
                 'id'    => $p->id,
@@ -111,6 +113,7 @@ class ScheduledPostController extends Controller
                 'color' => match($p->status) {
                     'published' => '#10b981',
                     'failed'    => '#ef4444',
+                    'draft'     => '#f59e0b',
                     default     => '#4f6ef7',
                 },
                 'extendedProps' => [
