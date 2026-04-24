@@ -284,6 +284,24 @@ class EvolutionApiService
         }
     }
 
+    public function getGroups(): array
+    {
+        if (!$this->instanceName || !$this->apiKey) return [];
+        try {
+            $response = $this->http()->timeout(15)->withHeaders([
+                'apikey' => $this->globalApiKey,
+            ])->get("{$this->baseUrl}/group/fetchAllGroups/{$this->instanceName}", [
+                'getParticipants' => 'false',
+            ]);
+            if ($response->failed()) return [];
+            $data = $response->json();
+            return is_array($data) ? $data : [];
+        } catch (\Exception $e) {
+            Log::error('EvolutionAPI getGroups error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
     /**
      * Retorna cliente HTTP com SSL configurado corretamente.
      * Laravel 9 usa withoutVerifying() — não existe withSslVerification().

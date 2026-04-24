@@ -247,6 +247,54 @@
         font-family: monospace;
         margin-top: 10px;
     }
+    /* Groups */
+    .group-checkbox-list {
+        max-height: 220px;
+        overflow-y: auto;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 8px;
+    }
+    .group-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.1s;
+        font-size: 0.85rem;
+    }
+    .group-item:hover { background: #f5f3ff; }
+    .group-item input[type=checkbox] { accent-color: #4f46e5; width:16px; height:16px; flex-shrink:0; }
+    /* History */
+    .history-card {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        overflow: hidden;
+        margin-top: 28px;
+    }
+    .history-card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .badge-audience {
+        display:inline-block;
+        padding:2px 10px;
+        border-radius:20px;
+        font-size:0.72rem;
+        font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:.04em;
+    }
+    .badge-all      { background:#e0e7ff;color:#4338ca; }
+    .badge-selected { background:#dcfce7;color:#166534; }
+    .badge-groups   { background:#fef3c7;color:#92400e; }
 </style>
 @endpush
 
@@ -377,9 +425,9 @@
                     {{-- Público Alvo --}}
                     <div class="mb-4">
                         <div class="section-label">Público Alvo</div>
-                        <div class="d-flex gap-3">
+                        <div class="d-flex gap-3 flex-wrap">
                             <label class="audience-option">
-                                <input type="radio" name="audience" value="all" checked onchange="toggleManualPhones(false)">
+                                <input type="radio" name="audience" value="all" checked onchange="onAudienceChange('all')">
                                 <div>
                                     <div style="font-weight:700;font-size:0.85rem;color:#334155;">
                                         <i class="fas fa-users me-1 text-primary"></i> Todos os Contatos
@@ -388,12 +436,21 @@
                                 </div>
                             </label>
                             <label class="audience-option">
-                                <input type="radio" name="audience" value="selected" onchange="toggleManualPhones(true)">
+                                <input type="radio" name="audience" value="selected" onchange="onAudienceChange('selected')">
                                 <div>
                                     <div style="font-weight:700;font-size:0.85rem;color:#334155;">
                                         <i class="fas fa-user-check me-1 text-success"></i> Números Específicos
                                     </div>
                                     <div style="font-size:0.75rem;color:#94a3b8;">Digite manualmente</div>
+                                </div>
+                            </label>
+                            <label class="audience-option">
+                                <input type="radio" name="audience" value="groups" onchange="onAudienceChange('groups')">
+                                <div>
+                                    <div style="font-weight:700;font-size:0.85rem;color:#334155;">
+                                        <i class="fas fa-people-group me-1" style="color:#d97706;"></i> Grupos
+                                    </div>
+                                    <div style="font-size:0.75rem;color:#94a3b8;">Selecionar grupos do WhatsApp</div>
                                 </div>
                             </label>
                         </div>
@@ -403,6 +460,27 @@
                     <div class="mb-4 d-none" id="manualPhonesWrapper">
                         <div class="section-label">Números (separados por vírgula)</div>
                         <textarea name="phones" class="message-textarea" rows="2" placeholder="5511999999999, 5521988888888, 5531977777777"></textarea>
+                    </div>
+
+                    {{-- Grupos --}}
+                    <div class="mb-4 d-none" id="groupsWrapper">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="section-label mb-0">Grupos do WhatsApp</div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadGroups()" style="font-size:0.78rem;border-radius:8px;">
+                                <i class="fas fa-sync-alt me-1"></i> Carregar grupos
+                            </button>
+                        </div>
+                        <div id="groupsLoadingMsg" class="text-muted small d-none">
+                            <i class="fas fa-spinner fa-spin me-1"></i> Buscando grupos...
+                        </div>
+                        <div id="groupsErrorMsg" class="text-danger small d-none"></div>
+                        <div id="groupsListWrapper" class="d-none">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <input type="text" id="groupsSearch" class="form-control form-control-sm" placeholder="Buscar grupo..." oninput="filterGroups(this.value)" style="max-width:220px;border-radius:8px;">
+                                <span id="groupsCount" class="text-muted small"></span>
+                            </div>
+                            <div class="group-checkbox-list" id="groupsCheckboxList"></div>
+                        </div>
                     </div>
 
                     {{-- Imagem (opcional) --}}
@@ -527,6 +605,85 @@
 
 </div>
 
+{{-- ── HISTÓRICO DE CAMPANHAS ── --}}
+<div class="history-card">
+    <div class="history-card-header">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#0ea5e9,#38bdf8);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-chart-bar text-white" style="font-size:0.9rem;"></i>
+        </div>
+        <div>
+            <h6 class="mb-0 fw-800" style="color:#1e293b;">Relatório de Disparos</h6>
+            <small class="text-muted">Últimas 20 campanhas enviadas</small>
+        </div>
+    </div>
+
+    @if($campaigns->isEmpty())
+        <div style="padding:40px;text-align:center;color:#94a3b8;">
+            <i class="fas fa-paper-plane fa-2x mb-3" style="opacity:0.3;"></i>
+            <p class="mb-0 small">Nenhuma campanha disparada ainda.</p>
+        </div>
+    @else
+    <div class="table-responsive">
+        <table class="table mb-0" style="font-size:0.85rem;">
+            <thead style="background:#f8fafc;">
+                <tr>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Data</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Mensagem</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Público</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Enviados</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Falhas</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Taxa</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($campaigns as $campaign)
+                @php
+                    $total = $campaign->total_sent + $campaign->total_failed;
+                    $rate  = $total > 0 ? round($campaign->total_sent / $total * 100) : 0;
+                    $audienceLabels = ['all' => 'Todos', 'selected' => 'Específicos', 'groups' => 'Grupos'];
+                    $audienceClasses = ['all' => 'badge-all', 'selected' => 'badge-selected', 'groups' => 'badge-groups'];
+                @endphp
+                <tr style="border-top:1px solid #f1f5f9;">
+                    <td style="padding:12px 20px;color:#475569;white-space:nowrap;">
+                        {{ $campaign->created_at->format('d/m/Y H:i') }}
+                    </td>
+                    <td style="padding:12px 20px;max-width:260px;">
+                        @if($campaign->has_image)
+                            <span style="color:#4f46e5;"><i class="fas fa-image me-1"></i></span>
+                        @endif
+                        <span style="color:#334155;">
+                            {{ $campaign->message ? Str::limit($campaign->message, 60) : '(apenas imagem)' }}
+                        </span>
+                    </td>
+                    <td style="padding:12px 20px;">
+                        <span class="badge-audience {{ $audienceClasses[$campaign->audience_type] ?? 'badge-all' }}">
+                            {{ $audienceLabels[$campaign->audience_type] ?? $campaign->audience_type }}
+                        </span>
+                    </td>
+                    <td style="padding:12px 20px;">
+                        <span style="font-weight:700;color:#16a34a;">{{ $campaign->total_sent }}</span>
+                    </td>
+                    <td style="padding:12px 20px;">
+                        <span style="font-weight:700;color:{{ $campaign->total_failed > 0 ? '#dc2626' : '#94a3b8' }};">
+                            {{ $campaign->total_failed }}
+                        </span>
+                    </td>
+                    <td style="padding:12px 20px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="flex:1;background:#f1f5f9;border-radius:99px;height:6px;min-width:60px;">
+                                <div style="width:{{ $rate }}%;background:{{ $rate >= 90 ? '#10b981' : ($rate >= 70 ? '#f59e0b' : '#ef4444') }};height:6px;border-radius:99px;transition:width .3s;"></div>
+                            </div>
+                            <span style="font-size:0.78rem;font-weight:700;color:#475569;min-width:32px;">{{ $rate }}%</span>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    @endif
+</div>
+
 {{-- Modal de Confirmação de Disparo --}}
 <div class="modal fade" id="modalConfirmarDisparo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
@@ -563,9 +720,64 @@
 
 @push('scripts')
 <script>
-    function toggleManualPhones(show) {
-        document.getElementById('manualPhonesWrapper').classList.toggle('d-none', !show);
+    let allGroups = [];
+
+    function onAudienceChange(val) {
+        document.getElementById('manualPhonesWrapper').classList.toggle('d-none', val !== 'selected');
+        document.getElementById('groupsWrapper').classList.toggle('d-none', val !== 'groups');
     }
+
+    function loadGroups() {
+        const loading = document.getElementById('groupsLoadingMsg');
+        const errEl   = document.getElementById('groupsErrorMsg');
+        const listEl  = document.getElementById('groupsListWrapper');
+
+        loading.classList.remove('d-none');
+        errEl.classList.add('d-none');
+        listEl.classList.add('d-none');
+
+        fetch('{{ route("whatsapp.broadcast.groups") }}', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            loading.classList.add('d-none');
+            if (data.error) { errEl.textContent = data.error; errEl.classList.remove('d-none'); return; }
+            allGroups = data;
+            renderGroups(data);
+            listEl.classList.remove('d-none');
+        })
+        .catch(() => {
+            loading.classList.add('d-none');
+            errEl.textContent = 'Erro ao carregar grupos. Tente novamente.';
+            errEl.classList.remove('d-none');
+        });
+    }
+
+    function renderGroups(groups) {
+        const container = document.getElementById('groupsCheckboxList');
+        document.getElementById('groupsCount').textContent = groups.length + ' grupos encontrados';
+        if (!groups.length) {
+            container.innerHTML = '<p class="text-muted small p-2 mb-0">Nenhum grupo encontrado.</p>';
+            return;
+        }
+        container.innerHTML = groups.map(g => `
+            <label class="group-item">
+                <input type="checkbox" name="group_ids[]" value="${escapeAttr(g.id)}">
+                <div style="flex:1;">
+                    <div style="font-weight:600;color:#334155;">${escapeHtml(g.name)}</div>
+                    ${g.size ? `<div style="font-size:0.72rem;color:#94a3b8;">${g.size} participantes</div>` : ''}
+                </div>
+            </label>
+        `).join('');
+    }
+
+    function filterGroups(q) {
+        const filtered = allGroups.filter(g => g.name.toLowerCase().includes(q.toLowerCase()));
+        renderGroups(filtered);
+    }
+
+    function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
 
     function updateCharCount(el) {
         const len = el.value.length;
@@ -682,7 +894,12 @@
         // Build info summary for modal
         const audience   = document.querySelector('input[name=audience]:checked')?.value;
         const cadence    = document.querySelector('input[name=cadence]:checked')?.value || 3;
-        const audienceTxt = audience === 'all' ? 'Todos os contatos do CRM' : 'Números específicos';
+        const groupsChecked = document.querySelectorAll('input[name="group_ids[]"]:checked').length;
+        const audienceTxt = audience === 'all'
+            ? 'Todos os contatos do CRM'
+            : audience === 'groups'
+                ? `${groupsChecked} grupo(s) selecionado(s)`
+                : 'Números específicos';
         const imageTxt   = hasImage ? '<span style="color:#4f46e5;font-weight:600;"><i class="fas fa-image me-1"></i>Com imagem</span> + ' : '';
         const msgPreview = msg ? `"${msg.substring(0, 60)}${msg.length > 60 ? '…' : ''}"` : '<em>sem texto</em>';
 
