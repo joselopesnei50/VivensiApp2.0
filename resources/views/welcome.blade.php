@@ -1304,188 +1304,368 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 <span class="feat-ey-dot"></span> Plataforma Inteligente
             </div>
             <h2 class="feat-title">
-                Tudo que sua organização<br>
-                <span class="ft-dim">precisa,</span>
-                <span class="ft-grad"> em um só lugar.</span>
+                13 módulos prontos para<br>
+                <span class="ft-dim">usar hoje,</span>
+                <span class="ft-grad"> integrados com IA.</span>
             </h2>
         </div>
         <div class="feat-header-right">
-            <div class="fhr-val">8+</div>
-            <div class="fhr-label">Módulos integrados<br>com IA nativa</div>
+            <div class="fhr-val">13+</div>
+            <div class="fhr-label">Módulos ativos<br>com IA em cada um</div>
         </div>
     </div>
 
     <!-- BENTO GRID -->
-    <!-- BENTO GRID -->
     <div class="bento-grid">
 
-        {{-- ── 1. MENSAGERIA MASTER (3W - Full Width) ────────────────────── --}}
+        {{-- ── 1. MENSAGERIA MASTER (Full Width) ──────────────────────────── --}}
         <div class="bc bc-master-bot bc-3w">
             <div class="master-glow"></div>
-            
-            <!-- Conteúdo Textual -->
             <div class="master-text">
-                <span class="bc-tag" style="background:rgba(37,211,102,.15); color:#25d366; margin-bottom:15px; font-size:0.65rem; padding:4px 10px;"><i class="fab fa-whatsapp"></i> WhatsApp Oficial</span>
-                <div class="bc-title">Mensageria Omnichannel & Automação</div>
+                <span class="bc-tag" style="background:rgba(37,211,102,.15);color:#25d366;margin-bottom:15px;font-size:.65rem;padding:4px 10px;"><i class="fab fa-whatsapp"></i> WhatsApp Oficial Meta</span>
+                <div class="bc-title">Atendimento, Automação e Campanhas pelo WhatsApp</div>
                 <div class="bc-desc">
-                    Centralize seu atendimento com nosso chatbot 24/7. Responda doadores automaticamente, envie recibos e faça disparos em massa de campanhas direto pelo WhatsApp.
+                    Seu bot responde doadores e clientes às 3h da manhã, envia link de doação, gera recibo em PDF e escalona para um humano — tudo sem você estar online. Dispare campanhas para listas segmentadas com um clique.
                 </div>
                 <div class="master-features">
-                    <div class="mf-item"><i class="fas fa-robot text-green-400"></i> Chatbot 24h</div>
-                    <div class="mf-item"><i class="fas fa-paper-plane text-green-400"></i> Disparos em Massa</div>
-                    <div class="mf-item"><i class="fas fa-users text-green-400"></i> Multi-atendentes</div>
+                    <div class="mf-item"><i class="fas fa-robot"></i> Bot IA 24/7</div>
+                    <div class="mf-item"><i class="fas fa-paper-plane"></i> Disparos em Massa</div>
+                    <div class="mf-item"><i class="fas fa-headset"></i> CRM de Conversas</div>
+                    <div class="mf-item"><i class="fas fa-file-invoice-dollar"></i> Recibo Automático</div>
                 </div>
             </div>
-
-            <!-- Visual Glassmorphism -->
             <div class="master-visual">
-                <div class="float-icon fi-1"><i class="fas fa-check-double text-blue-400"></i> Campanha Enviada (1.2k)</div>
-                <div class="float-icon fi-2"><i class="fas fa-file-invoice-dollar text-green-400"></i> Recibo de Doação Gerado</div>
-                
+                <div class="float-icon fi-1"><i class="fas fa-check-double" style="color:#25d366"></i> Campanha enviada · 1.284 entregues</div>
+                <div class="float-icon fi-2"><i class="fas fa-file-invoice-dollar" style="color:#4ade80"></i> Recibo de doação gerado</div>
                 <div class="glass-phone">
                     <div class="gp-hdr">
                         <div class="gp-av"><i class="fas fa-heart"></i></div>
                         <div class="gp-info">
                             <div class="gp-name">Projeto Esperança</div>
-                            <div class="gp-status">bot ativo e respondendo...</div>
+                            <div class="gp-status">Bruce AI · respondendo agora</div>
                         </div>
                     </div>
-                    <div class="gp-msg gp-in">Olá! Gostaria de fazer uma doação mensal. Como funciona?</div>
-                    <div class="gp-msg gp-out">Que maravilha! 💙 Você pode doar via PIX ou Cartão de Crédito. É só clicar no link abaixo: vivensi.app/doar</div>
+                    <div class="gp-msg gp-in">Olá! Quero fazer uma doação mensal. Como funciona?</div>
+                    <div class="gp-msg gp-out">Que maravilha! 💙 Você pode doar via PIX agora mesmo: vivensi.app/doar — Seu recibo chega automático!</div>
                 </div>
             </div>
         </div>
 
-        {{-- ── 2. BRUCE AI RADAR (3W) ────────────────────────────────────── --}}
-        <div class="bc bc-ai-radar bc-3w">
+        {{-- ── 2. FINANCEIRO (2w) ──────────────────────────────────────────── --}}
+        <div class="bc bc-fin bc-2w">
+            <div class="bc-body">
+                <span class="bc-tag bct-fin"><i class="fas fa-chart-line"></i> Financeiro</span>
+                <div class="bc-title">Gestão Financeira & Prestação de Contas</div>
+                <div class="bc-desc">DRE, conciliação bancária, categorias e relatórios prontos para auditoria ou editais — gerados com um clique.</div>
+            </div>
+            <div class="fin-demo">
+                <div class="fin-row"><span class="fin-lbl">Receitas do mês</span><span class="fin-val fin-pos">R$ 48.200</span></div>
+                <div class="fin-row"><span class="fin-lbl">Despesas</span><span class="fin-val fin-neg">− R$ 16.800</span></div>
+                <div class="fin-row"><span class="fin-lbl">Convênios ativos</span><span class="fin-val">3 editais</span></div>
+                <div class="fin-total">
+                    <div><span class="fin-total-lbl">Saldo do Período</span><div class="fin-badge">▲ +18% vs mês anterior</div></div>
+                    <span class="fin-total-val">R$ 31.400</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 3. BRUCE AI RADAR (1w) ──────────────────────────────────────── --}}
+        <div class="bc bc-ai-radar">
             <div class="radar-inner">
                 <div class="radar-text">
                     <span class="bc-tag bct-ai"><i class="fas fa-brain"></i> IA Nativa</span>
-                    <div class="bc-title" style="font-size:1.4rem;">Bruce AI — Prospecção Ativa</div>
-                    <div class="bc-desc" style="max-width:280px; margin-top:8px;">
-                        Nossa IA encontra parceiros na sua região, analisa o Fit Score e redige o *pitch* perfeito para você só copiar e colar.
+                    <div class="bc-title" style="font-size:1.1rem;">Bruce AI — Prospecção de Parceiros</div>
+                    <div class="bc-desc" style="max-width:200px;margin-top:6px;">
+                        A IA varre empresas da sua região, calcula o Fit Score e escreve o pitch de abordagem para você.
                     </div>
                 </div>
                 <div class="radar-visual">
                     <div class="radar-sweep"></div>
                     <div class="radar-target">SF</div>
-                    <div style="position:absolute; bottom:15px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:10px; font-size:0.6rem; color:#fff; border:1px solid rgba(139,92,246,0.3); z-index:3;">Fit Score: 94%</div>
+                    <div style="position:absolute;bottom:15px;background:rgba(0,0,0,.6);padding:4px 8px;border-radius:10px;font-size:.6rem;color:#fff;border:1px solid rgba(139,92,246,.3);z-index:3;">Fit Score: 94%</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 4. CRM KANBAN (2w) ──────────────────────────────────────────── --}}
+        <div class="bc bc-crm bc-2w">
+            <div class="bc-body">
+                <span class="bc-tag bct-crm"><i class="fas fa-kanban"></i> CRM & Patrocínios</span>
+                <div class="bc-title">Pipeline Visual de Negociações e Patrocínios</div>
+                <div class="bc-desc">Arraste cards entre colunas. Veja KPIs em tempo real: pipeline total, deals quentes e taxa de conversão por fase.</div>
+            </div>
+            <div class="kanban-demo">
+                <div class="kd-col">
+                    <div class="kd-hdr"><span class="kdd kdd-o"></span> Prospecção</div>
+                    <div class="kd-card">Empresa ABC<div class="kd-card-val">R$ 5.000</div></div>
+                    <div class="kd-card">Farmácia XP<div class="kd-card-val">R$ 2.400</div></div>
+                </div>
+                <div class="kd-col">
+                    <div class="kd-hdr"><span class="kdd kdd-b"></span> Proposta</div>
+                    <div class="kd-card kd-card-hot">Supermercado BH<div class="kd-card-val">R$ 12.000</div></div>
+                    <div class="kd-card">Tech Solutions<div class="kd-card-val">R$ 8.500</div></div>
+                </div>
+                <div class="kd-col">
+                    <div class="kd-hdr"><span class="kdd kdd-g"></span> Fechado</div>
+                    <div class="kd-card">Grupo Alfa<div class="kd-card-val">R$ 18.000</div></div>
+                    <div class="kd-card">Banco Beta<div class="kd-card-val">R$ 30.000</div></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 5. VOLUNTÁRIOS (1w) ─────────────────────────────────────────── --}}
+        <div class="bc bc-volunt">
+            <div class="bc-body">
+                <span class="bc-tag bct-ops"><i class="fas fa-trophy"></i> Voluntários</span>
+                <div class="bc-title">Gamificação da Equipe Voluntária</div>
+                <div class="bc-desc">Pontos, ranking e medalhas que mantêm sua equipe engajada e presente.</div>
+            </div>
+            <div class="podium-list">
+                <div class="pl-item">
+                    <div class="pl-pos pl-p1">1</div>
+                    <div class="pl-av plav1">AM</div>
+                    <div class="pl-name">Ana Maria</div>
+                    <div class="pl-pts pl-pts-1">2.840 pts</div>
+                    <div class="pl-bar"><div class="plb-fill" style="width:100%"></div></div>
+                </div>
+                <div class="pl-item">
+                    <div class="pl-pos pl-p2">2</div>
+                    <div class="pl-av plav2">JC</div>
+                    <div class="pl-name">João Carlos</div>
+                    <div class="pl-pts">2.210 pts</div>
+                    <div class="pl-bar"><div class="plb-fill" style="width:78%"></div></div>
+                </div>
+                <div class="pl-item">
+                    <div class="pl-pos pl-p3">3</div>
+                    <div class="pl-av plav3">LS</div>
+                    <div class="pl-name">Luísa S.</div>
+                    <div class="pl-pts">1.890 pts</div>
+                    <div class="pl-bar"><div class="plb-fill" style="width:66%"></div></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 6. PORTAL DE TRANSPARÊNCIA (2w) ────────────────────────────── --}}
+        <div class="bc bc-transp bc-2w">
+            <div class="bc-body">
+                <span class="bc-tag bct-transp"><i class="fas fa-earth-americas"></i> Transparência</span>
+                <div class="bc-title">Portal Público de Transparência</div>
+                <div class="bc-desc">Página gerada automaticamente com seus dados reais. Mostre para doadores e fiscais onde cada centavo foi aplicado.</div>
+            </div>
+            <div class="transp-inner">
+                <div class="transp-counts">
+                    <div class="tc-block">
+                        <div class="tc-lbl">Doadores ativos</div>
+                        <div class="tc-num">1.240</div>
+                        <div class="tc-delta">↑ +18 este mês</div>
+                    </div>
+                    <div class="tc-block">
+                        <div class="tc-lbl">Captado no ano</div>
+                        <div class="tc-num">R$312k</div>
+                        <div class="tc-delta">↑ +23% vs 2025</div>
+                    </div>
+                </div>
+                <div class="transp-feed">
+                    <div class="tf-hdr">Última atividade pública</div>
+                    <div class="tf-item"><span class="tfd tfd-g"></span> Doação R$ 200 recebida · há 3 min</div>
+                    <div class="tf-item"><span class="tfd tfd-b"></span> Relatório Q1 publicado · hoje</div>
+                    <div class="tf-item"><span class="tfd tfd-o"></span> Edital FEAS renovado · ontem</div>
+                    <div class="tf-item"><span class="tfd tfd-g"></span> 42 cestas entregues · seg</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 7. ALMOXARIFADO (1w) ────────────────────────────────────────── --}}
+        <div class="bc bc-almox">
+            <div class="bc-body">
+                <span class="bc-tag bct-ops"><i class="fas fa-boxes-stacked"></i> Almoxarifado</span>
+                <div class="bc-title">Controle de Estoque em Tempo Real</div>
+                <div class="bc-desc">Entradas, saídas, alertas de estoque mínimo e relatório de doações recebidas.</div>
+            </div>
+            <div class="almox-bars">
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Cestas Básicas</span><span class="ab-qty">142 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf1" style="width:42%"></div></div>
+                </div>
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Kits Higiene</span><span class="ab-qty">318 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf2" style="width:65%"></div></div>
+                </div>
+                <div class="ab-row">
+                    <div class="ab-hdr"><span class="ab-name">Material Escolar</span><span class="ab-qty">87 un</span></div>
+                    <div class="ab-track"><div class="ab-fill abf3" style="width:28%"></div></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 8. SOCIAL MEDIA (1w) ────────────────────────────────────────── --}}
+        <div class="bc bc-canva">
+            <div class="bc-body">
+                <span class="bc-tag bct-social"><i class="fas fa-calendar-check"></i> Social Media</span>
+                <div class="bc-title">Calendário Editorial com IA</div>
+                <div class="bc-desc">Agende posts no Facebook e Instagram. A IA escreve a legenda — você só aprova e agenda.</div>
+            </div>
+            <div class="canva-demo">
+                <div class="cv-toolbar">
+                    <div class="cvt"></div><div class="cvt"></div><div class="cvt"></div>
+                    <span style="font-size:.5rem;color:rgba(255,255,255,.3);margin-left:4px;">Calendário Editorial</span>
+                </div>
+                <div class="cv-canvas" style="background:linear-gradient(135deg,#1877f2,#6B8BFF);">
+                    <div class="cv-elem"></div>
+                    <div class="cv-elem2"></div>
+                    <div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,.2);border-radius:4px;padding:2px 6px;font-size:.5rem;color:#fff;font-weight:700;">IA ✓ Legenda pronta</div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:5px;">
+                    <div style="flex:1;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:4px;padding:3px 5px;font-size:.5rem;color:#4ade80;font-weight:700;text-align:center;">Seg · 10h</div>
+                    <div style="flex:1;background:rgba(79,110,247,.1);border:1px solid rgba(79,110,247,.2);border-radius:4px;padding:3px 5px;font-size:.5rem;color:#6B8BFF;font-weight:700;text-align:center;">Qua · 14h</div>
+                    <div style="flex:1;background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.2);border-radius:4px;padding:3px 5px;font-size:.5rem;color:#ec4899;font-weight:700;text-align:center;">Sex · 09h</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── 9. CONVÊNIOS / RH (2w) ──────────────────────────────────────── --}}
+        <div class="bc bc-contracts bc-2w">
+            <div class="bc-body" style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+                <div style="flex:1;min-width:180px;">
+                    <span class="bc-tag" style="background:rgba(74,222,128,.12);color:#4ade80;"><i class="fas fa-handshake"></i> Convênios</span>
+                    <div class="bc-title">Gestão de Convênios e Editais</div>
+                    <div class="bc-desc">Controle prazos, entregáveis e prestação de contas de editais governamentais. Nunca mais perca um prazo.</div>
+                </div>
+                <div style="flex:1;min-width:180px;">
+                    <span class="bc-tag" style="background:rgba(251,191,36,.1);color:#fbbf24;"><i class="fas fa-users-gear"></i> RH & Pessoas</span>
+                    <div class="bc-title" style="margin-top:2px;">Departamento Pessoal</div>
+                    <div class="bc-desc">Cadastro de funcionários e voluntários, controle de horas e gestão de equipe integrada.</div>
+                </div>
+            </div>
+            <div class="ctr-demo" style="margin:0 14px 14px;">
+                <div class="ctr-line"></div>
+                <div class="ctr-line w-70"></div>
+                <div class="ctr-line w-40"></div>
+                <div class="ctr-sign">
+                    <span style="font-size:.55rem;color:rgba(255,255,255,.3);">Prazo: 15/06/2026</span>
+                    <span class="ctr-badge">✓ Prestação em dia</span>
                 </div>
             </div>
         </div>
 
     </div><!-- /bento-grid -->
 
-    <!-- HUB DE MÓDULOS -->
-    <div class="hub-grid">
-        
-        <!-- COLUNA 1: Inteligência & Comunicação -->
+    <!-- HUB COMPLETO DE MÓDULOS -->
+    <div class="hub-grid" style="margin-top:48px;">
+
+        <!-- COLUNA 1: IA & Comunicação -->
         <div class="hub-col">
-            <div class="hub-col-title hc-purple"><i class="fas fa-brain"></i> Inteligência & Comunicação</div>
-            
-            <div class="hub-card">
-                <div class="hub-card-icon hi-purple"><i class="fas fa-robot"></i></div>
-                <div class="hub-card-title">Bot de Atendimento 24/7</div>
-                <div class="hub-card-desc">Atendimento automático via WhatsApp para doadores e clientes, sem intervenção manual.</div>
-            </div>
+            <div class="hub-col-title hc-purple"><i class="fas fa-brain"></i> IA & Comunicação</div>
 
             <div class="hub-card">
                 <div class="hub-card-icon hi-green"><i class="fab fa-whatsapp"></i></div>
-                <div class="hub-card-title">Disparo de WhatsApp</div>
-                <div class="hub-card-desc">Envie campanhas, alertas e cobranças em massa com segurança pela Evolution API.</div>
+                <div class="hub-card-title">Bot WhatsApp Treinável</div>
+                <div class="hub-card-desc">Configure a personalidade, missão e FAQ do bot pelo painel. Ele aprende e responde com o contexto da sua organização.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-green"><i class="fas fa-paper-plane"></i></div>
+                <div class="hub-card-title">Disparos em Massa</div>
+                <div class="hub-card-desc">Segmente sua lista de contatos e dispare campanhas de WhatsApp com imagens, links e CTA — respeitando a janela de 24h da Meta.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-purple"><i class="fas fa-wand-magic-sparkles"></i></div>
+                <div class="hub-card-title">Marketing Intelligence</div>
+                <div class="hub-card-desc">Briefing → IA gera texto, imagem e legenda para campanha completa. Exporte para redes sociais em segundos.</div>
             </div>
 
             <div class="hub-card">
                 <div class="hub-card-icon hi-blue"><i class="fas fa-satellite-dish"></i></div>
-                <div class="hub-card-title">Bruce AI (Prospecção)</div>
-                <div class="hub-card-desc">IA que encontra parceiros qualificados na sua região e redige o pitch de vendas.</div>
+                <div class="hub-card-title">Prospecção com Bruce AI</div>
+                <div class="hub-card-desc">Digite o perfil do parceiro ideal. A IA busca, pontua e escreve o e-mail de abordagem por você — basta enviar.</div>
             </div>
         </div>
 
-        <!-- COLUNA 2: Para ONGs -->
+        <!-- COLUNA 2: Captação & Doadores -->
         <div class="hub-col">
-            <div class="hub-col-title hc-green"><i class="fas fa-hands-holding-circle"></i> Para ONGs e Projetos</div>
-            
-            <div class="hub-card">
-                <div class="hub-card-icon hi-teal"><i class="fas fa-earth-americas"></i></div>
-                <div class="hub-card-title">Portal de Transparência</div>
-                <div class="hub-card-desc">Página pública gerada automaticamente com métricas em tempo real para a sociedade.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-orange"><i class="fas fa-trophy"></i></div>
-                <div class="hub-card-title">Gestão de Voluntários</div>
-                <div class="hub-card-desc">Gamificação com pontos, rankings e medalhas para engajar sua equipe voluntária.</div>
-            </div>
+            <div class="hub-col-title hc-green"><i class="fas fa-hands-holding-circle"></i> Captação & Doadores</div>
 
             <div class="hub-card">
                 <div class="hub-card-icon hi-pink"><i class="fas fa-heart"></i></div>
                 <div class="hub-card-title">CRM de Doadores</div>
-                <div class="hub-card-desc">Histórico completo de doações, retenção de parceiros e régua de cobrança.</div>
+                <div class="hub-card-desc">Histórico completo de cada doador: quanto deu, quando, por qual canal. Régua de relacionamento para reativação.</div>
             </div>
 
             <div class="hub-card">
-                <div class="hub-card-icon hi-blue"><i class="fas fa-handshake"></i></div>
-                <div class="hub-card-title">Gestão de Convênios</div>
-                <div class="hub-card-desc">Controle de prazos, entregáveis e prestação de contas de editais governamentais.</div>
+                <div class="hub-card-icon hi-orange"><i class="fas fa-handshake"></i></div>
+                <div class="hub-card-title">CRM de Patrocínios (Kanban)</div>
+                <div class="hub-card-desc">Pipeline visual com colunas de Prospecção → Proposta → Fechado. KPIs de conversão e valor total do pipeline em tempo real.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-teal"><i class="fas fa-earth-americas"></i></div>
+                <div class="hub-card-title">Portal de Transparência</div>
+                <div class="hub-card-desc">URL pública com métricas ao vivo: doações recebidas, projetos ativos, beneficiários. Ideal para prestação de contas.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-blue"><i class="fas fa-calendar-check"></i></div>
+                <div class="hub-card-title">Agendamento Online</div>
+                <div class="hub-card-desc">Formulário de agendamento com link público. Gerencie slots, confirmações automáticas e calendário de reuniões.</div>
             </div>
         </div>
 
-        <!-- COLUNA 3: Para Gestores -->
+        <!-- COLUNA 3: Gestão & Finanças -->
         <div class="hub-col">
-            <div class="hub-col-title hc-blue"><i class="fas fa-chart-line"></i> Para Gestores</div>
-            
-            <div class="hub-card">
-                <div class="hub-card-icon hi-orange"><i class="fas fa-kanban"></i></div>
-                <div class="hub-card-title">CRM Kanban de Projetos</div>
-                <div class="hub-card-desc">Pipeline visual para acompanhar negociações, vendas ou andamento de projetos.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-teal"><i class="fas fa-file-contract"></i></div>
-                <div class="hub-card-title">Contratos Online</div>
-                <div class="hub-card-desc">Geração de documentos e coleta de assinaturas digitais com validade jurídica.</div>
-            </div>
+            <div class="hub-col-title hc-blue"><i class="fas fa-chart-pie"></i> Gestão & Finanças</div>
 
             <div class="hub-card">
                 <div class="hub-card-icon hi-blue"><i class="fas fa-file-invoice-dollar"></i></div>
-                <div class="hub-card-title">Prestação de Contas</div>
-                <div class="hub-card-desc">Controle financeiro completo, DRE, conciliação e balancetes automatizados.</div>
+                <div class="hub-card-title">Financeiro Completo</div>
+                <div class="hub-card-desc">Lançamentos, categorias, DRE mensal, conciliação e balancetes. Exportação para contabilidade e editais em um clique.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-blue"><i class="fas fa-file-contract"></i></div>
+                <div class="hub-card-title">Gestão de Convênios</div>
+                <div class="hub-card-desc">Cadastre editais com prazo, valor, entregáveis e status. Alertas automáticos antes do vencimento da prestação de contas.</div>
             </div>
 
             <div class="hub-card">
                 <div class="hub-card-icon hi-purple"><i class="fas fa-boxes-stacked"></i></div>
-                <div class="hub-card-title">Almoxarifado Integrado</div>
-                <div class="hub-card-desc">Controle de entradas e saídas de materiais, doações ou insumos de escritório.</div>
-            </div>
-        </div>
-
-        <!-- COLUNA 4: Marketing & Operacional -->
-        <div class="hub-col">
-            <div class="hub-col-title hc-pink"><i class="fas fa-bullhorn"></i> Marketing & Operações</div>
-            
-            <div class="hub-card">
-                <div class="hub-card-icon hi-pink"><i class="fas fa-laptop-code"></i></div>
-                <div class="hub-card-title">Criação de Landing Pages</div>
-                <div class="hub-card-desc">Construtor "arraste e solte" para criar páginas de captação de alta conversão.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-purple"><i class="fas fa-palette"></i></div>
-                <div class="hub-card-title">Estúdio de Artes (Canva)</div>
-                <div class="hub-card-desc">Crie posts e banners para redes sociais diretamente dentro do sistema Vivensi.</div>
+                <div class="hub-card-title">Controle de Almoxarifado</div>
+                <div class="hub-card-desc">Entradas de doações físicas, saídas por projeto e alerta de estoque crítico. Relatório pronto para auditoria.</div>
             </div>
 
             <div class="hub-card">
                 <div class="hub-card-icon hi-red"><i class="fas fa-users-gear"></i></div>
-                <div class="hub-card-title">Departamento Pessoal</div>
-                <div class="hub-card-desc">Gestão de colaboradores CLT, férias, holerites e controle de ponto simples.</div>
+                <div class="hub-card-title">RH & Departamento Pessoal</div>
+                <div class="hub-card-desc">Ficha de funcionários e voluntários, controle de carga horária, funções e dados de contato centralizados.</div>
             </div>
-            
+        </div>
+
+        <!-- COLUNA 4: Social & Conteúdo -->
+        <div class="hub-col">
+            <div class="hub-col-title hc-pink"><i class="fas fa-bullhorn"></i> Social & Conteúdo</div>
+
             <div class="hub-card">
-                <div class="hub-card-icon hi-green"><i class="fas fa-ticket"></i></div>
-                <div class="hub-card-title">Módulo de Rifas</div>
-                <div class="hub-card-desc">Crie rifas digitais para arrecadar fundos de forma rápida com pagamentos PIX automáticos.</div>
+                <div class="hub-card-icon hi-blue"><i class="fas fa-calendar-days"></i></div>
+                <div class="hub-card-title">Calendário Editorial</div>
+                <div class="hub-card-desc">Visualize todos os posts agendados no FullCalendar. Arraste para reagendar. Crie para Facebook e Instagram na mesma tela.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-pink"><i class="fas fa-image"></i></div>
+                <div class="hub-card-title">Geração de Legenda com IA</div>
+                <div class="hub-card-desc">Descreva o tema do post em uma linha. A IA escreve uma legenda engajadora com emojis, hashtags e CTA — pronta para publicar.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-orange"><i class="fas fa-trophy"></i></div>
+                <div class="hub-card-title">Gamificação de Voluntários</div>
+                <div class="hub-card-desc">Ranking público, pontos por horas trabalhadas e medalhas desbloqueáveis. Engajamento real comprovado em campo.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-purple"><i class="fas fa-palette"></i></div>
+                <div class="hub-card-title">Estúdio de Design (Canva)</div>
+                <div class="hub-card-desc">Acesse o Canva diretamente no painel para criar artes de campanhas, posts e materiais institucionais sem sair do sistema.</div>
             </div>
         </div>
 
