@@ -236,7 +236,18 @@
                                 default => 'm3-event-low'
                             };
                         @endphp
-                        <a href="#" class="m3-event-chip {{ $prioClass }}" title="{{ $task->title }}">
+                        <a href="#"
+                           class="m3-event-chip {{ $prioClass }}"
+                           title="{{ $task->title }}"
+                           onclick="openTaskModal(this); return false;"
+                           data-id="{{ $task->id }}"
+                           data-title="{{ e($task->title) }}"
+                           data-desc="{{ e($task->description ?? '') }}"
+                           data-status="{{ $task->status }}"
+                           data-priority="{{ $task->priority }}"
+                           data-due="{{ $task->due_date ? $task->due_date->format('d/m/Y') : '' }}"
+                           data-assigned="{{ e($task->assignee->name ?? 'Não atribuído') }}"
+                           data-edit="{{ url('/tasks/create') }}?edit={{ $task->id }}">
                             {{ $task->title }}
                         </a>
                     @endforeach
@@ -257,4 +268,75 @@
         </div>
     </div>
 </div>
+<!-- Task Detail Modal -->
+<div id="taskModal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; font-family:'Roboto',sans-serif;" onclick="if(event.target===this) closeTaskModal()">
+    <div style="background:#fff; border-radius:28px; padding:32px; width:100%; max-width:440px; margin:16px; box-shadow:0 8px 40px rgba(0,0,0,0.18); position:relative;">
+        <button onclick="closeTaskModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;color:#49454E;font-size:22px;line-height:1;">&#x2715;</button>
+
+        <div id="tm-priority-badge" style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:14px;"></div>
+
+        <h2 id="tm-title" style="margin:0 0 10px;font-size:20px;font-weight:600;color:#1C1B1F;line-height:1.3;"></h2>
+        <p id="tm-desc" style="margin:0 0 20px;font-size:14px;color:#49454E;line-height:1.6;"></p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+            <div style="background:#F7F2FA;border-radius:12px;padding:12px;">
+                <div style="font-size:11px;font-weight:700;color:#79747E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Vencimento</div>
+                <div id="tm-due" style="font-size:14px;font-weight:600;color:#1C1B1F;"></div>
+            </div>
+            <div style="background:#F7F2FA;border-radius:12px;padding:12px;">
+                <div style="font-size:11px;font-weight:700;color:#79747E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Responsável</div>
+                <div id="tm-assigned" style="font-size:14px;font-weight:600;color:#1C1B1F;"></div>
+            </div>
+            <div style="background:#F7F2FA;border-radius:12px;padding:12px;">
+                <div style="font-size:11px;font-weight:700;color:#79747E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Status</div>
+                <div id="tm-status" style="font-size:14px;font-weight:600;color:#1C1B1F;"></div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+            <a id="tm-edit-link" href="#" style="flex:1;background:#6750A4;color:#fff;border:none;border-radius:20px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s;" onmouseover="this.style.background='#4f3d8a'" onmouseout="this.style.background='#6750A4'">
+                ✏️ Editar Compromisso
+            </a>
+            <button onclick="closeTaskModal()" style="flex:1;background:#E8DEF8;color:#21005D;border:none;border-radius:20px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#d0bfff'" onmouseout="this.style.background='#E8DEF8'">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const statusLabels = { pending:'Pendente', in_progress:'Em Andamento', completed:'Concluída', cancelled:'Cancelada' };
+    const priorityLabels = { high:'Alta', medium:'Média', low:'Baixa' };
+    const priorityStyles = {
+        high: 'background:#FFDAD6;color:#410002;',
+        medium: 'background:#EADDFF;color:#21005D;',
+        low: 'background:#E8DEF8;color:#1D192B;'
+    };
+
+    function openTaskModal(el) {
+        const d = el.dataset;
+        document.getElementById('tm-title').textContent = d.title;
+        document.getElementById('tm-desc').textContent = d.desc || 'Sem descrição.';
+        document.getElementById('tm-due').textContent = d.due || '—';
+        document.getElementById('tm-assigned').textContent = d.assigned;
+        document.getElementById('tm-status').textContent = statusLabels[d.status] || d.status;
+
+        const badge = document.getElementById('tm-priority-badge');
+        badge.textContent = '● ' + (priorityLabels[d.priority] || d.priority);
+        badge.style.cssText = (priorityStyles[d.priority] || 'background:#eee;') + 'display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:14px;';
+
+        document.getElementById('tm-edit-link').href = d.edit;
+
+        const modal = document.getElementById('taskModal');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeTaskModal() {
+        document.getElementById('taskModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTaskModal(); });
+</script>
 @endsection
