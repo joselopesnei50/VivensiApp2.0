@@ -367,6 +367,7 @@ class TaskController extends Controller
                            ->orWhere('created_by', auth()->id());
                     })
                     ->whereBetween('due_date', [$startOfMonth, $endOfMonth])
+                    ->with('assignee')
                     ->get();
 
         return view('tasks.calendar', compact('date', 'tasks'));
