@@ -1293,384 +1293,307 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     </div>
 </section>
 
-<!-- FEATURES -->
-<section class="features aos" id="features">
-<div class="feat-inner">
+<!-- FEATURES / PLATFORM ACCORDION -->
+<section class="pt-section aos" id="features">
+<style>
+/* ─── PLATFORM ACCORDION ─── */
+.pt-section{padding:90px 0;background:#080808}
+.pt-inner{max-width:1100px;margin:0 auto;padding:0 24px}
+.pt-head{text-align:center;margin-bottom:56px}
+.pt-head .feat-eyebrow{justify-content:center;margin-bottom:16px}
+.pt-h2{font-size:clamp(1.9rem,3.8vw,2.7rem);font-weight:900;color:#fff;letter-spacing:-0.03em;line-height:1.2;margin:0}
+.pt-h2 em{font-style:normal;color:rgba(255,255,255,.3)}
+.pt-h2-cta{display:block;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.35);margin-top:14px;letter-spacing:0}
+
+/* Accordion container */
+.pt-accord{border:1px solid rgba(255,255,255,.08);border-radius:20px;overflow:hidden;margin-bottom:10px;background:#0c0c0c;transition:border-color .3s,background .3s}
+.pt-accord.pt-open{border-color:rgba(255,255,255,.16);background:#0f0f0f}
+
+/* Accordion header */
+.pta-hdr{width:100%;background:transparent;border:none;padding:22px 26px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;color:#fff;transition:background .2s}
+.pta-hdr:hover{background:rgba(255,255,255,.025)}
+.pta-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;transition:transform .2s}
+.pt-accord.pt-open .pta-icon{transform:scale(1.08)}
+.pta-ic-rose{background:rgba(251,113,133,.15);color:#fb7185}
+.pta-ic-blue{background:rgba(96,165,250,.15);color:#60a5fa}
+.pta-ic-purple{background:rgba(167,139,250,.15);color:#a78bfa}
+.pta-meta{flex:1;min-width:0}
+.pta-name{font-size:1.05rem;font-weight:800;color:#fff;line-height:1.2}
+.pta-sub{font-size:.75rem;color:rgba(255,255,255,.32);margin-top:3px}
+.pta-badge{font-size:.65rem;font-weight:700;padding:4px 12px;border-radius:100px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);white-space:nowrap;flex-shrink:0}
+.pta-chevron{width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.25);transition:transform .3s;flex-shrink:0;font-size:.8rem}
+.pt-accord.pt-open .pta-chevron{transform:rotate(180deg);color:rgba(255,255,255,.6)}
+
+/* Accordion body */
+.pta-body{max-height:0;overflow:hidden;transition:max-height .42s ease}
+.pt-accord.pt-open .pta-body{max-height:1400px}
+.pta-content{display:grid;grid-template-columns:1fr 380px;gap:36px;padding:4px 26px 30px;align-items:start}
+
+/* Feature cards grid */
+.pta-feats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pta-feat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px;display:flex;gap:12px;align-items:flex-start;transition:border-color .2s,background .2s}
+.pta-feat:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+.pta-fi{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.afi-green{background:rgba(37,211,102,.15);color:#25d366}
+.afi-blue{background:rgba(96,165,250,.15);color:#60a5fa}
+.afi-purple{background:rgba(167,139,250,.15);color:#a78bfa}
+.afi-pink{background:rgba(236,72,153,.15);color:#ec4899}
+.afi-orange{background:rgba(251,146,60,.15);color:#fb923c}
+.afi-teal{background:rgba(45,212,191,.15);color:#2dd4bf}
+.afi-yellow{background:rgba(251,191,36,.15);color:#fbbf24}
+.afi-red{background:rgba(248,113,113,.15);color:#f87171}
+.pta-ft{font-size:.8rem;font-weight:700;color:#fff;margin-bottom:3px;line-height:1.3}
+.pta-fd{font-size:.7rem;color:rgba(255,255,255,.36);line-height:1.5}
+
+/* Demo visual */
+.pta-demo{position:sticky;top:88px}
+.pta-demo-box{background:#141414;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:18px;overflow:hidden}
+.ptd-label{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* Demo — NGO chat + stats */
+.ptd-chat-bubble{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px;margin-bottom:12px}
+.ptd-ch-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.05)}
+.ptd-ch-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;flex-shrink:0}
+.ptd-ch-name{font-size:.75rem;font-weight:700;color:#fff}
+.ptd-ch-status{font-size:.62rem;color:#25d366}
+.ptd-msg{font-size:.68rem;line-height:1.5;padding:7px 10px;border-radius:10px;margin-bottom:6px;max-width:90%}
+.ptd-msg-in{background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);border-bottom-left-radius:2px;align-self:flex-start}
+.ptd-msg-out{background:rgba(37,211,102,.12);color:rgba(255,255,255,.85);border-bottom-right-radius:2px;margin-left:auto}
+.ptd-msgs{display:flex;flex-direction:column}
+.ptd-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.ptd-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;text-align:center}
+.ptd-stat-v{font-size:.95rem;font-weight:800;color:#fff;display:block}
+.ptd-stat-l{font-size:.6rem;color:rgba(255,255,255,.3);margin-top:2px;display:block}
+
+/* Demo — Gestores kanban */
+.ptd-kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.ptd-kcol-hdr{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.ptd-kcol-hdr::before{content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ptd-kh-o::before{background:#fb923c}.ptd-kh-b::before{background:#60a5fa}.ptd-kh-g::before{background:#4ade80}
+.ptd-kcard{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:7px 8px;margin-bottom:5px;font-size:.62rem;color:rgba(255,255,255,.7)}
+.ptd-kcard span{display:block;font-size:.6rem;color:rgba(255,255,255,.35);margin-top:2px}
+.ptd-kcard.hot{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06)}
+.ptd-kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ptd-kpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;text-align:center}
+.ptd-kpi-v{font-size:.95rem;font-weight:800;color:#fff}
+.ptd-kpi-l{font-size:.6rem;color:rgba(255,255,255,.3);margin-top:2px}
+
+/* Demo — Pessoal agendamento */
+.ptd-slots{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.ptd-slot{font-size:.72rem;padding:9px 12px;border-radius:10px;display:flex;align-items:center;gap:8px;font-weight:600}
+.ptd-slot-ok{background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2)}
+.ptd-slot-ok::before{content:'✓';font-weight:900}
+.ptd-slot-free{background:rgba(255,255,255,.04);color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.07)}
+.ptd-slot-free::before{content:'○'}
+.ptd-tags{display:flex;flex-wrap:wrap;gap:6px}
+.ptd-tag{font-size:.62rem;font-weight:700;padding:4px 10px;border-radius:100px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:5px}
+
+/* Responsive */
+@media(max-width:860px){.pta-content{grid-template-columns:1fr}.pta-demo{display:none}}
+@media(max-width:640px){.pta-feats{grid-template-columns:1fr}.pta-hdr{padding:18px 20px;gap:12px}.pta-icon{width:42px;height:42px}.pta-name{font-size:.95rem}}
+</style>
+<div class="pt-inner">
 
     <!-- Header -->
-    <div class="feat-header">
-        <div class="feat-header-left">
-            <div class="feat-eyebrow">
-                <span class="feat-ey-dot"></span> Plataforma Inteligente
+    <div class="pt-head">
+        <div class="feat-eyebrow"><span class="feat-ey-dot"></span> Plataforma Inteligente</div>
+        <h2 class="pt-h2">
+            13 módulos prontos para usar hoje.<br>
+            <em>Escolha o que é para você.</em>
+        </h2>
+        <span class="pt-h2-cta">Clique no seu perfil e veja o que o Vivensi faz por você.</span>
+    </div>
+
+    <!-- ACCORDION SEGMENTS -->
+
+    {{-- ─── 1. ONGs & Terceiro Setor ─────────────────────────────── --}}
+    <div class="pt-accord pt-open" id="pt-ngo">
+        <button class="pta-hdr" onclick="ptToggle('ngo')" type="button">
+            <div class="pta-icon pta-ic-rose"><i class="fas fa-hand-holding-heart"></i></div>
+            <div class="pta-meta">
+                <div class="pta-name">ONGs &amp; Terceiro Setor</div>
+                <div class="pta-sub">Captação, transparência, convênios e voluntários</div>
             </div>
-            <h2 class="feat-title">
-                13 módulos prontos para<br>
-                <span class="ft-dim">usar hoje,</span>
-                <span class="ft-grad"> integrados com IA.</span>
-            </h2>
-        </div>
-        <div class="feat-header-right">
-            <div class="fhr-val">13+</div>
-            <div class="fhr-label">Módulos ativos<br>com IA em cada um</div>
+            <span class="pta-badge">6 módulos</span>
+            <div class="pta-chevron"><i class="fas fa-chevron-down"></i></div>
+        </button>
+        <div class="pta-body">
+            <div class="pta-content">
+                <div class="pta-feats">
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-green"><i class="fab fa-whatsapp"></i></div>
+                        <div><div class="pta-ft">Bot WhatsApp IA 24/7</div><div class="pta-fd">Responde doadores, envia link de doação e recibo em PDF automaticamente — sem você estar online.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-pink"><i class="fas fa-heart"></i></div>
+                        <div><div class="pta-ft">CRM de Doadores</div><div class="pta-fd">Histórico completo de cada doador: quanto deu, quando e por qual canal. Régua de reativação automática.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-teal"><i class="fas fa-earth-americas"></i></div>
+                        <div><div class="pta-ft">Portal de Transparência</div><div class="pta-fd">Página pública com métricas ao vivo: doações, projetos e beneficiários. Perfeito para editais e fiscais.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-yellow"><i class="fas fa-file-contract"></i></div>
+                        <div><div class="pta-ft">Convênios &amp; Editais</div><div class="pta-fd">Prazos, entregáveis e alertas automáticos antes do vencimento da prestação de contas.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-orange"><i class="fas fa-boxes-stacked"></i></div>
+                        <div><div class="pta-ft">Almoxarifado</div><div class="pta-fd">Entradas de doações físicas, saídas por projeto e relatório pronto para auditoria externa.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-purple"><i class="fas fa-trophy"></i></div>
+                        <div><div class="pta-ft">Gamificação de Voluntários</div><div class="pta-fd">Ranking público, pontos por horas trabalhadas e medalhas. Engajamento real, comprovado em campo.</div></div>
+                    </div>
+                </div>
+                <div class="pta-demo">
+                    <div class="pta-demo-box">
+                        <div class="ptd-label"><i class="fab fa-whatsapp"></i> WhatsApp Bot Ativo</div>
+                        <div class="ptd-chat-bubble">
+                            <div class="ptd-ch-hdr">
+                                <div class="ptd-ch-av"><i class="fas fa-heart"></i></div>
+                                <div><div class="ptd-ch-name">Projeto Esperança</div><div class="ptd-ch-status">Bruce AI · respondendo agora</div></div>
+                            </div>
+                            <div class="ptd-msgs">
+                                <div class="ptd-msg ptd-msg-in">Quero fazer uma doação mensal. Como funciona?</div>
+                                <div class="ptd-msg ptd-msg-out">💙 Que incrível! Você pode doar via PIX agora: vivensi.app/doar — O recibo chega automático!</div>
+                            </div>
+                        </div>
+                        <div class="ptd-label" style="margin-top:14px;"><i class="fas fa-earth-americas"></i> Portal de Transparência</div>
+                        <div class="ptd-stats-row">
+                            <div class="ptd-stat"><span class="ptd-stat-v">R$312k</span><span class="ptd-stat-l">Captado</span></div>
+                            <div class="ptd-stat"><span class="ptd-stat-v">1.240</span><span class="ptd-stat-l">Doadores</span></div>
+                            <div class="ptd-stat"><span class="ptd-stat-v">+23%</span><span class="ptd-stat-l">vs 2025</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- BENTO GRID -->
-    <div class="bento-grid">
-
-        {{-- ── 1. MENSAGERIA MASTER (Full Width) ──────────────────────────── --}}
-        <div class="bc bc-master-bot bc-3w">
-            <div class="master-glow"></div>
-            <div class="master-text">
-                <span class="bc-tag" style="background:rgba(37,211,102,.15);color:#25d366;margin-bottom:15px;font-size:.65rem;padding:4px 10px;"><i class="fab fa-whatsapp"></i> WhatsApp Oficial Meta</span>
-                <div class="bc-title">Atendimento, Automação e Campanhas pelo WhatsApp</div>
-                <div class="bc-desc">
-                    Seu bot responde doadores e clientes às 3h da manhã, envia link de doação, gera recibo em PDF e escalona para um humano — tudo sem você estar online. Dispare campanhas para listas segmentadas com um clique.
-                </div>
-                <div class="master-features">
-                    <div class="mf-item"><i class="fas fa-robot"></i> Bot IA 24/7</div>
-                    <div class="mf-item"><i class="fas fa-paper-plane"></i> Disparos em Massa</div>
-                    <div class="mf-item"><i class="fas fa-headset"></i> CRM de Conversas</div>
-                    <div class="mf-item"><i class="fas fa-file-invoice-dollar"></i> Recibo Automático</div>
-                </div>
+    {{-- ─── 2. Gestores & Projetos ──────────────────────────────────── --}}
+    <div class="pt-accord" id="pt-mgr">
+        <button class="pta-hdr" onclick="ptToggle('mgr')" type="button">
+            <div class="pta-icon pta-ic-blue"><i class="fas fa-briefcase"></i></div>
+            <div class="pta-meta">
+                <div class="pta-name">Gestores &amp; Projetos</div>
+                <div class="pta-sub">CRM, financeiro, RH, prospecção com IA e marketing</div>
             </div>
-            <div class="master-visual">
-                <div class="float-icon fi-1"><i class="fas fa-check-double" style="color:#25d366"></i> Campanha enviada · 1.284 entregues</div>
-                <div class="float-icon fi-2"><i class="fas fa-file-invoice-dollar" style="color:#4ade80"></i> Recibo de doação gerado</div>
-                <div class="glass-phone">
-                    <div class="gp-hdr">
-                        <div class="gp-av"><i class="fas fa-heart"></i></div>
-                        <div class="gp-info">
-                            <div class="gp-name">Projeto Esperança</div>
-                            <div class="gp-status">Bruce AI · respondendo agora</div>
+            <span class="pta-badge">6 módulos</span>
+            <div class="pta-chevron"><i class="fas fa-chevron-down"></i></div>
+        </button>
+        <div class="pta-body">
+            <div class="pta-content">
+                <div class="pta-feats">
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-orange"><i class="fas fa-kanban"></i></div>
+                        <div><div class="pta-ft">CRM Patrocínios Kanban</div><div class="pta-fd">Pipeline visual: Prospecção → Proposta → Fechado. KPIs de conversão e valor total do pipeline em tempo real.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-blue"><i class="fas fa-chart-line"></i></div>
+                        <div><div class="pta-ft">Financeiro Completo</div><div class="pta-fd">DRE, conciliação bancária, balancetes e exportação para contabilidade em um clique.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-purple"><i class="fas fa-brain"></i></div>
+                        <div><div class="pta-ft">Bruce AI — Prospecção</div><div class="pta-fd">IA busca empresas, calcula Fit Score e escreve o pitch de abordagem. Você só aprova e envia.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-red"><i class="fas fa-users-gear"></i></div>
+                        <div><div class="pta-ft">RH &amp; Departamento Pessoal</div><div class="pta-fd">Fichas de funcionários e voluntários, controle de horas e funções centralizados.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-green"><i class="fas fa-paper-plane"></i></div>
+                        <div><div class="pta-ft">Disparos em Massa WhatsApp</div><div class="pta-fd">Campanhas segmentadas com imagens, links e CTA — respeitando a janela de 24h da Meta.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-pink"><i class="fas fa-calendar-days"></i></div>
+                        <div><div class="pta-ft">Calendário Editorial</div><div class="pta-fd">Agende posts no Instagram e Facebook. A IA escreve a legenda — você aprova e publica.</div></div>
+                    </div>
+                </div>
+                <div class="pta-demo">
+                    <div class="pta-demo-box">
+                        <div class="ptd-label"><i class="fas fa-kanban"></i> CRM Patrocínios</div>
+                        <div class="ptd-kanban">
+                            <div>
+                                <div class="ptd-kcol-hdr ptd-kh-o">Prospecção</div>
+                                <div class="ptd-kcard">Empresa ABC<span>R$ 5k</span></div>
+                                <div class="ptd-kcard">Farmácia XP<span>R$ 2k</span></div>
+                            </div>
+                            <div>
+                                <div class="ptd-kcol-hdr ptd-kh-b">Proposta</div>
+                                <div class="ptd-kcard hot">Supermercado BH<span>R$ 12k</span></div>
+                                <div class="ptd-kcard">Tech Solutions<span>R$ 8k</span></div>
+                            </div>
+                            <div>
+                                <div class="ptd-kcol-hdr ptd-kh-g">Fechado</div>
+                                <div class="ptd-kcard">Grupo Alfa<span>R$ 18k</span></div>
+                                <div class="ptd-kcard">Banco Beta<span>R$ 30k</span></div>
+                            </div>
+                        </div>
+                        <div class="ptd-kpi-row">
+                            <div class="ptd-kpi"><div class="ptd-kpi-v">R$ 75k</div><div class="ptd-kpi-l">Pipeline total</div></div>
+                            <div class="ptd-kpi"><div class="ptd-kpi-v">71%</div><div class="ptd-kpi-l">Taxa conversão</div></div>
                         </div>
                     </div>
-                    <div class="gp-msg gp-in">Olá! Quero fazer uma doação mensal. Como funciona?</div>
-                    <div class="gp-msg gp-out">Que maravilha! 💙 Você pode doar via PIX agora mesmo: vivensi.app/doar — Seu recibo chega automático!</div>
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- ── 2. FINANCEIRO (2w) ──────────────────────────────────────────── --}}
-        <div class="bc bc-fin bc-2w">
-            <div class="bc-body">
-                <span class="bc-tag bct-fin"><i class="fas fa-chart-line"></i> Financeiro</span>
-                <div class="bc-title">Gestão Financeira & Prestação de Contas</div>
-                <div class="bc-desc">DRE, conciliação bancária, categorias e relatórios prontos para auditoria ou editais — gerados com um clique.</div>
+    {{-- ─── 3. Uso Pessoal / Negócio ───────────────────────────────── --}}
+    <div class="pt-accord" id="pt-personal">
+        <button class="pta-hdr" onclick="ptToggle('personal')" type="button">
+            <div class="pta-icon pta-ic-purple"><i class="fas fa-user"></i></div>
+            <div class="pta-meta">
+                <div class="pta-name">Uso Pessoal &amp; Negócio</div>
+                <div class="pta-sub">Bot WhatsApp, agendamento, marketing IA e redes sociais</div>
             </div>
-            <div class="fin-demo">
-                <div class="fin-row"><span class="fin-lbl">Receitas do mês</span><span class="fin-val fin-pos">R$ 48.200</span></div>
-                <div class="fin-row"><span class="fin-lbl">Despesas</span><span class="fin-val fin-neg">− R$ 16.800</span></div>
-                <div class="fin-row"><span class="fin-lbl">Convênios ativos</span><span class="fin-val">3 editais</span></div>
-                <div class="fin-total">
-                    <div><span class="fin-total-lbl">Saldo do Período</span><div class="fin-badge">▲ +18% vs mês anterior</div></div>
-                    <span class="fin-total-val">R$ 31.400</span>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 3. BRUCE AI RADAR (1w) ──────────────────────────────────────── --}}
-        <div class="bc bc-ai-radar">
-            <div class="radar-inner">
-                <div class="radar-text">
-                    <span class="bc-tag bct-ai"><i class="fas fa-brain"></i> IA Nativa</span>
-                    <div class="bc-title" style="font-size:1.1rem;">Bruce AI — Prospecção de Parceiros</div>
-                    <div class="bc-desc" style="max-width:200px;margin-top:6px;">
-                        A IA varre empresas da sua região, calcula o Fit Score e escreve o pitch de abordagem para você.
+            <span class="pta-badge">5 módulos</span>
+            <div class="pta-chevron"><i class="fas fa-chevron-down"></i></div>
+        </button>
+        <div class="pta-body">
+            <div class="pta-content">
+                <div class="pta-feats">
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-green"><i class="fab fa-whatsapp"></i></div>
+                        <div><div class="pta-ft">Bot WhatsApp Personalizado</div><div class="pta-fd">Chatbot treinável com a identidade, missão e FAQ do seu negócio ou projeto pessoal.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-blue"><i class="fas fa-calendar-check"></i></div>
+                        <div><div class="pta-ft">Agendamento Online</div><div class="pta-fd">Link público para clientes agendarem. Confirmações automáticas por WhatsApp sem você intervir.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-purple"><i class="fas fa-wand-magic-sparkles"></i></div>
+                        <div><div class="pta-ft">Marketing Intelligence IA</div><div class="pta-fd">IA gera campanha completa: texto, imagem e legenda. Exporte para redes sociais em segundos.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-teal"><i class="fas fa-file-invoice-dollar"></i></div>
+                        <div><div class="pta-ft">Financeiro Simplificado</div><div class="pta-fd">Controle de receitas e despesas, categorias e relatório mensal. Claro e direto ao ponto.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-pink"><i class="fas fa-calendar-days"></i></div>
+                        <div><div class="pta-ft">Social Media Integrado</div><div class="pta-fd">Calendário editorial + legenda gerada por IA + conexão direta com Facebook e Instagram via Meta.</div></div>
                     </div>
                 </div>
-                <div class="radar-visual">
-                    <div class="radar-sweep"></div>
-                    <div class="radar-target">SF</div>
-                    <div style="position:absolute;bottom:15px;background:rgba(0,0,0,.6);padding:4px 8px;border-radius:10px;font-size:.6rem;color:#fff;border:1px solid rgba(139,92,246,.3);z-index:3;">Fit Score: 94%</div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 4. CRM KANBAN (2w) ──────────────────────────────────────────── --}}
-        <div class="bc bc-crm bc-2w">
-            <div class="bc-body">
-                <span class="bc-tag bct-crm"><i class="fas fa-kanban"></i> CRM & Patrocínios</span>
-                <div class="bc-title">Pipeline Visual de Negociações e Patrocínios</div>
-                <div class="bc-desc">Arraste cards entre colunas. Veja KPIs em tempo real: pipeline total, deals quentes e taxa de conversão por fase.</div>
-            </div>
-            <div class="kanban-demo">
-                <div class="kd-col">
-                    <div class="kd-hdr"><span class="kdd kdd-o"></span> Prospecção</div>
-                    <div class="kd-card">Empresa ABC<div class="kd-card-val">R$ 5.000</div></div>
-                    <div class="kd-card">Farmácia XP<div class="kd-card-val">R$ 2.400</div></div>
-                </div>
-                <div class="kd-col">
-                    <div class="kd-hdr"><span class="kdd kdd-b"></span> Proposta</div>
-                    <div class="kd-card kd-card-hot">Supermercado BH<div class="kd-card-val">R$ 12.000</div></div>
-                    <div class="kd-card">Tech Solutions<div class="kd-card-val">R$ 8.500</div></div>
-                </div>
-                <div class="kd-col">
-                    <div class="kd-hdr"><span class="kdd kdd-g"></span> Fechado</div>
-                    <div class="kd-card">Grupo Alfa<div class="kd-card-val">R$ 18.000</div></div>
-                    <div class="kd-card">Banco Beta<div class="kd-card-val">R$ 30.000</div></div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 5. VOLUNTÁRIOS (1w) ─────────────────────────────────────────── --}}
-        <div class="bc bc-volunt">
-            <div class="bc-body">
-                <span class="bc-tag bct-ops"><i class="fas fa-trophy"></i> Voluntários</span>
-                <div class="bc-title">Gamificação da Equipe Voluntária</div>
-                <div class="bc-desc">Pontos, ranking e medalhas que mantêm sua equipe engajada e presente.</div>
-            </div>
-            <div class="podium-list">
-                <div class="pl-item">
-                    <div class="pl-pos pl-p1">1</div>
-                    <div class="pl-av plav1">AM</div>
-                    <div class="pl-name">Ana Maria</div>
-                    <div class="pl-pts pl-pts-1">2.840 pts</div>
-                    <div class="pl-bar"><div class="plb-fill" style="width:100%"></div></div>
-                </div>
-                <div class="pl-item">
-                    <div class="pl-pos pl-p2">2</div>
-                    <div class="pl-av plav2">JC</div>
-                    <div class="pl-name">João Carlos</div>
-                    <div class="pl-pts">2.210 pts</div>
-                    <div class="pl-bar"><div class="plb-fill" style="width:78%"></div></div>
-                </div>
-                <div class="pl-item">
-                    <div class="pl-pos pl-p3">3</div>
-                    <div class="pl-av plav3">LS</div>
-                    <div class="pl-name">Luísa S.</div>
-                    <div class="pl-pts">1.890 pts</div>
-                    <div class="pl-bar"><div class="plb-fill" style="width:66%"></div></div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 6. PORTAL DE TRANSPARÊNCIA (2w) ────────────────────────────── --}}
-        <div class="bc bc-transp bc-2w">
-            <div class="bc-body">
-                <span class="bc-tag bct-transp"><i class="fas fa-earth-americas"></i> Transparência</span>
-                <div class="bc-title">Portal Público de Transparência</div>
-                <div class="bc-desc">Página gerada automaticamente com seus dados reais. Mostre para doadores e fiscais onde cada centavo foi aplicado.</div>
-            </div>
-            <div class="transp-inner">
-                <div class="transp-counts">
-                    <div class="tc-block">
-                        <div class="tc-lbl">Doadores ativos</div>
-                        <div class="tc-num">1.240</div>
-                        <div class="tc-delta">↑ +18 este mês</div>
-                    </div>
-                    <div class="tc-block">
-                        <div class="tc-lbl">Captado no ano</div>
-                        <div class="tc-num">R$312k</div>
-                        <div class="tc-delta">↑ +23% vs 2025</div>
+                <div class="pta-demo">
+                    <div class="pta-demo-box">
+                        <div class="ptd-label"><i class="fas fa-calendar-check"></i> Agenda do dia</div>
+                        <div class="ptd-slots">
+                            <div class="ptd-slot ptd-slot-ok">09:00 — Maria Souza · Confirmado</div>
+                            <div class="ptd-slot ptd-slot-ok">11:30 — Pedro Lima · Confirmado</div>
+                            <div class="ptd-slot ptd-slot-free">14:00 — Disponível</div>
+                            <div class="ptd-slot ptd-slot-free">16:00 — Disponível</div>
+                        </div>
+                        <div class="ptd-tags">
+                            <span class="ptd-tag"><i class="fab fa-whatsapp" style="color:#25d366"></i> Bot enviou confirmações</span>
+                            <span class="ptd-tag"><i class="fas fa-wand-magic-sparkles" style="color:#a78bfa"></i> IA gerou legenda</span>
+                        </div>
                     </div>
                 </div>
-                <div class="transp-feed">
-                    <div class="tf-hdr">Última atividade pública</div>
-                    <div class="tf-item"><span class="tfd tfd-g"></span> Doação R$ 200 recebida · há 3 min</div>
-                    <div class="tf-item"><span class="tfd tfd-b"></span> Relatório Q1 publicado · hoje</div>
-                    <div class="tf-item"><span class="tfd tfd-o"></span> Edital FEAS renovado · ontem</div>
-                    <div class="tf-item"><span class="tfd tfd-g"></span> 42 cestas entregues · seg</div>
-                </div>
             </div>
         </div>
+    </div>
 
-        {{-- ── 7. ALMOXARIFADO (1w) ────────────────────────────────────────── --}}
-        <div class="bc bc-almox">
-            <div class="bc-body">
-                <span class="bc-tag bct-ops"><i class="fas fa-boxes-stacked"></i> Almoxarifado</span>
-                <div class="bc-title">Controle de Estoque em Tempo Real</div>
-                <div class="bc-desc">Entradas, saídas, alertas de estoque mínimo e relatório de doações recebidas.</div>
-            </div>
-            <div class="almox-bars">
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Cestas Básicas</span><span class="ab-qty">142 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf1" style="width:42%"></div></div>
-                </div>
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Kits Higiene</span><span class="ab-qty">318 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf2" style="width:65%"></div></div>
-                </div>
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Material Escolar</span><span class="ab-qty">87 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf3" style="width:28%"></div></div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 8. SOCIAL MEDIA (1w) ────────────────────────────────────────── --}}
-        <div class="bc bc-canva">
-            <div class="bc-body">
-                <span class="bc-tag bct-social"><i class="fas fa-calendar-check"></i> Social Media</span>
-                <div class="bc-title">Calendário Editorial com IA</div>
-                <div class="bc-desc">Agende posts no Facebook e Instagram. A IA escreve a legenda — você só aprova e agenda.</div>
-            </div>
-            <div class="canva-demo">
-                <div class="cv-toolbar">
-                    <div class="cvt"></div><div class="cvt"></div><div class="cvt"></div>
-                    <span style="font-size:.5rem;color:rgba(255,255,255,.3);margin-left:4px;">Calendário Editorial</span>
-                </div>
-                <div class="cv-canvas" style="background:linear-gradient(135deg,#1877f2,#6B8BFF);">
-                    <div class="cv-elem"></div>
-                    <div class="cv-elem2"></div>
-                    <div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,.2);border-radius:4px;padding:2px 6px;font-size:.5rem;color:#fff;font-weight:700;">IA ✓ Legenda pronta</div>
-                </div>
-                <div style="display:flex;gap:4px;margin-top:5px;">
-                    <div style="flex:1;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:4px;padding:3px 5px;font-size:.5rem;color:#4ade80;font-weight:700;text-align:center;">Seg · 10h</div>
-                    <div style="flex:1;background:rgba(79,110,247,.1);border:1px solid rgba(79,110,247,.2);border-radius:4px;padding:3px 5px;font-size:.5rem;color:#6B8BFF;font-weight:700;text-align:center;">Qua · 14h</div>
-                    <div style="flex:1;background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.2);border-radius:4px;padding:3px 5px;font-size:.5rem;color:#ec4899;font-weight:700;text-align:center;">Sex · 09h</div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 9. CONVÊNIOS / RH (2w) ──────────────────────────────────────── --}}
-        <div class="bc bc-contracts bc-2w">
-            <div class="bc-body" style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
-                <div style="flex:1;min-width:180px;">
-                    <span class="bc-tag" style="background:rgba(74,222,128,.12);color:#4ade80;"><i class="fas fa-handshake"></i> Convênios</span>
-                    <div class="bc-title">Gestão de Convênios e Editais</div>
-                    <div class="bc-desc">Controle prazos, entregáveis e prestação de contas de editais governamentais. Nunca mais perca um prazo.</div>
-                </div>
-                <div style="flex:1;min-width:180px;">
-                    <span class="bc-tag" style="background:rgba(251,191,36,.1);color:#fbbf24;"><i class="fas fa-users-gear"></i> RH & Pessoas</span>
-                    <div class="bc-title" style="margin-top:2px;">Departamento Pessoal</div>
-                    <div class="bc-desc">Cadastro de funcionários e voluntários, controle de horas e gestão de equipe integrada.</div>
-                </div>
-            </div>
-            <div class="ctr-demo" style="margin:0 14px 14px;">
-                <div class="ctr-line"></div>
-                <div class="ctr-line w-70"></div>
-                <div class="ctr-line w-40"></div>
-                <div class="ctr-sign">
-                    <span style="font-size:.55rem;color:rgba(255,255,255,.3);">Prazo: 15/06/2026</span>
-                    <span class="ctr-badge">✓ Prestação em dia</span>
-                </div>
-            </div>
-        </div>
-
-    </div><!-- /bento-grid -->
-
-    <!-- HUB COMPLETO DE MÓDULOS -->
-    <div class="hub-grid" style="margin-top:48px;">
-
-        <!-- COLUNA 1: IA & Comunicação -->
-        <div class="hub-col">
-            <div class="hub-col-title hc-purple"><i class="fas fa-brain"></i> IA & Comunicação</div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-green"><i class="fab fa-whatsapp"></i></div>
-                <div class="hub-card-title">Bot WhatsApp Treinável</div>
-                <div class="hub-card-desc">Configure a personalidade, missão e FAQ do bot pelo painel. Ele aprende e responde com o contexto da sua organização.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-green"><i class="fas fa-paper-plane"></i></div>
-                <div class="hub-card-title">Disparos em Massa</div>
-                <div class="hub-card-desc">Segmente sua lista de contatos e dispare campanhas de WhatsApp com imagens, links e CTA — respeitando a janela de 24h da Meta.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-purple"><i class="fas fa-wand-magic-sparkles"></i></div>
-                <div class="hub-card-title">Marketing Intelligence</div>
-                <div class="hub-card-desc">Briefing → IA gera texto, imagem e legenda para campanha completa. Exporte para redes sociais em segundos.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-blue"><i class="fas fa-satellite-dish"></i></div>
-                <div class="hub-card-title">Prospecção com Bruce AI</div>
-                <div class="hub-card-desc">Digite o perfil do parceiro ideal. A IA busca, pontua e escreve o e-mail de abordagem por você — basta enviar.</div>
-            </div>
-        </div>
-
-        <!-- COLUNA 2: Captação & Doadores -->
-        <div class="hub-col">
-            <div class="hub-col-title hc-green"><i class="fas fa-hands-holding-circle"></i> Captação & Doadores</div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-pink"><i class="fas fa-heart"></i></div>
-                <div class="hub-card-title">CRM de Doadores</div>
-                <div class="hub-card-desc">Histórico completo de cada doador: quanto deu, quando, por qual canal. Régua de relacionamento para reativação.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-orange"><i class="fas fa-handshake"></i></div>
-                <div class="hub-card-title">CRM de Patrocínios (Kanban)</div>
-                <div class="hub-card-desc">Pipeline visual com colunas de Prospecção → Proposta → Fechado. KPIs de conversão e valor total do pipeline em tempo real.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-teal"><i class="fas fa-earth-americas"></i></div>
-                <div class="hub-card-title">Portal de Transparência</div>
-                <div class="hub-card-desc">URL pública com métricas ao vivo: doações recebidas, projetos ativos, beneficiários. Ideal para prestação de contas.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-blue"><i class="fas fa-calendar-check"></i></div>
-                <div class="hub-card-title">Agendamento Online</div>
-                <div class="hub-card-desc">Formulário de agendamento com link público. Gerencie slots, confirmações automáticas e calendário de reuniões.</div>
-            </div>
-        </div>
-
-        <!-- COLUNA 3: Gestão & Finanças -->
-        <div class="hub-col">
-            <div class="hub-col-title hc-blue"><i class="fas fa-chart-pie"></i> Gestão & Finanças</div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-blue"><i class="fas fa-file-invoice-dollar"></i></div>
-                <div class="hub-card-title">Financeiro Completo</div>
-                <div class="hub-card-desc">Lançamentos, categorias, DRE mensal, conciliação e balancetes. Exportação para contabilidade e editais em um clique.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-blue"><i class="fas fa-file-contract"></i></div>
-                <div class="hub-card-title">Gestão de Convênios</div>
-                <div class="hub-card-desc">Cadastre editais com prazo, valor, entregáveis e status. Alertas automáticos antes do vencimento da prestação de contas.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-purple"><i class="fas fa-boxes-stacked"></i></div>
-                <div class="hub-card-title">Controle de Almoxarifado</div>
-                <div class="hub-card-desc">Entradas de doações físicas, saídas por projeto e alerta de estoque crítico. Relatório pronto para auditoria.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-red"><i class="fas fa-users-gear"></i></div>
-                <div class="hub-card-title">RH & Departamento Pessoal</div>
-                <div class="hub-card-desc">Ficha de funcionários e voluntários, controle de carga horária, funções e dados de contato centralizados.</div>
-            </div>
-        </div>
-
-        <!-- COLUNA 4: Social & Conteúdo -->
-        <div class="hub-col">
-            <div class="hub-col-title hc-pink"><i class="fas fa-bullhorn"></i> Social & Conteúdo</div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-blue"><i class="fas fa-calendar-days"></i></div>
-                <div class="hub-card-title">Calendário Editorial</div>
-                <div class="hub-card-desc">Visualize todos os posts agendados no FullCalendar. Arraste para reagendar. Crie para Facebook e Instagram na mesma tela.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-pink"><i class="fas fa-image"></i></div>
-                <div class="hub-card-title">Geração de Legenda com IA</div>
-                <div class="hub-card-desc">Descreva o tema do post em uma linha. A IA escreve uma legenda engajadora com emojis, hashtags e CTA — pronta para publicar.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-orange"><i class="fas fa-trophy"></i></div>
-                <div class="hub-card-title">Gamificação de Voluntários</div>
-                <div class="hub-card-desc">Ranking público, pontos por horas trabalhadas e medalhas desbloqueáveis. Engajamento real comprovado em campo.</div>
-            </div>
-
-            <div class="hub-card">
-                <div class="hub-card-icon hi-purple"><i class="fas fa-palette"></i></div>
-                <div class="hub-card-title">Estúdio de Design (Canva)</div>
-                <div class="hub-card-desc">Acesse o Canva diretamente no painel para criar artes de campanhas, posts e materiais institucionais sem sair do sistema.</div>
-            </div>
-        </div>
-
-    </div><!-- /hub-grid -->
-</div><!-- /feat-inner -->
+</div><!-- /pt-inner -->
 </section>
 
 <!-- ─── VIVENSI ACADEMY ─── -->
@@ -2042,6 +1965,14 @@ document.addEventListener('click',e=>{
     if(menu.classList.contains('open')&&!e.target.closest('#mobileMenu')&&!e.target.closest('.mobile-btn'))
         menu.classList.remove('open');
 });
+
+// Platform accordion
+function ptToggle(id) {
+    var accord = document.getElementById('pt-' + id);
+    var isOpen = accord.classList.contains('pt-open');
+    document.querySelectorAll('.pt-accord').forEach(function(a) { a.classList.remove('pt-open'); });
+    if (!isOpen) { accord.classList.add('pt-open'); }
+}
 </script>
 @include('partials.whatsapp-button')
 
