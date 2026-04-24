@@ -27,7 +27,7 @@ class AuthServiceProvider extends ServiceProvider
 
         // Acesso às funcionalidades de gestor
         Gate::define('access-manager', function (User $user) {
-            return in_array($user->role, ['manager', 'super_admin']);
+            return in_array($user->role, ['manager', 'ngo', 'super_admin']);
         });
 
         // Acesso exclusivo de super_admin
