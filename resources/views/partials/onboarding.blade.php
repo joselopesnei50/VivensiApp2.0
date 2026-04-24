@@ -54,6 +54,40 @@
         </div>
     </div>
 
+    {{-- Checklist de onboarding (só aparece enquanto não completou tudo) --}}
+    @if(!$onboarding['completed'] && count($onboarding['steps']) > 0)
+    <div style="border-top:1px solid rgba(255,255,255,0.06);padding:20px 44px 28px;position:relative;z-index:1;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:.7rem;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;">
+                <i class="fas fa-rocket me-1"></i> Guia de Início Rápido
+            </span>
+            <div style="flex:1;max-width:200px;height:5px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin:0 12px;">
+                <div style="height:100%;width:{{ $onboarding['percentage'] }}%;background:linear-gradient(90deg,#818cf8,#a78bfa);border-radius:10px;transition:width .4s;"></div>
+            </div>
+            <span style="font-size:.68rem;color:rgba(255,255,255,.3);">{{ collect($onboarding['steps'])->where('completed',true)->count() }}/{{ count($onboarding['steps']) }} concluídos</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            @foreach($onboarding['steps'] as $step)
+            <a href="{{ $step['completed'] ? '#' : $step['link'] }}"
+               @if(!$step['completed'] && $step['link'] !== '#')
+                   onclick="fetch('{{ route('onboarding.complete', $step['id']) }}',{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Content-Type':'application/json'}})"
+               @endif
+               style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;text-decoration:none;font-size:.75rem;font-weight:700;transition:all .15s;
+                      {{ $step['completed']
+                          ? 'background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:#34d399;'
+                          : 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);' }}">
+                @if($step['completed'])
+                    <i class="fas fa-check-circle" style="color:#10b981;"></i>
+                @else
+                    <i class="fas fa-circle-dot" style="color:rgba(255,255,255,.3);"></i>
+                @endif
+                {{ $step['label'] }}
+            </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <style>
     @keyframes pulse-dot {
         0%, 100% { opacity: 1; transform: scale(1); }
