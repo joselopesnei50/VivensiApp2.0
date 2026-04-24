@@ -93,6 +93,7 @@ class CheckoutController extends Controller
         // Registrar transação pendente
         $transaction = Transaction::create([
             'tenant_id'   => $tenant->id,
+            'plan_id'     => $plan->id,
             'amount'      => $plan->price,
             'description' => 'Assinatura: ' . $plan->name,
             'type'        => 'income',

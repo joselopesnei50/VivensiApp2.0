@@ -76,12 +76,16 @@ class Transaction extends Model
         'origem_verba_id',
         'receipt_path',
         'approval_status',
-        'volunteer_id'
+        'volunteer_id',
+        'gateway_id',
+        'paid_at',
+        'plan_id',
     ];
 
     protected $casts = [
-        'date' => 'date',
-        'amount' => 'decimal:2',
+        'date'    => 'date',
+        'paid_at' => 'datetime',
+        'amount'  => 'decimal:2',
         'public_receipt_expires_at' => 'datetime',
     ];
 
