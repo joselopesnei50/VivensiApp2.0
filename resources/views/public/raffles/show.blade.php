@@ -277,10 +277,16 @@
                                     </div>
                                 </div>
 
+                                @if(!$pixConfigured)
+                                    <div class="alert alert-warning rounded-3 p-3 mb-3 text-start" style="font-size: 0.85rem;">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <strong>Pagamento via PIX não configurado.</strong> Entre em contato com a organização para efetuar o pagamento.
+                                    </div>
+                                @endif
                                 <button type="submit" class="btn-reserve" disabled id="btnSubmit">
                                     RESERVAR E PAGAR COM PIX
                                 </button>
-                                
+
                                 <div class="text-center mt-3 text-muted small">
                                     <i class="bi bi-shield-check me-1 shadow-sm"></i> Ambiente 100% Seguro
                                 </div>

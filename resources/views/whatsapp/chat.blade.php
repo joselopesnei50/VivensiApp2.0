@@ -639,11 +639,16 @@
                     </div>
                 </div>
 
-                 <!-- Accordion 4 -->
+                <!-- Accordion 4 -->
                 <div class="crm-section">
                     <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-history">
                         <span><i class="fas fa-history me-2 text-muted"></i> Histórico</span>
                         <i class="fas fa-chevron-right text-muted small"></i>
+                    </div>
+                    <div class="crm-body collapse" id="crm-history">
+                        <div id="historyList" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+                            <div class="text-center text-muted small py-3">Selecione uma conversa para ver o histórico.</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -832,6 +837,7 @@
                 $('#window-warning').hide();
                 renderMessages(data.messages);
                 renderNotes(data.notes);
+                renderHistory(data.messages);
                 // Track last message id
                 if (data.messages && data.messages.length > 0) {
                     lastMessageId = data.messages[data.messages.length - 1].id;
@@ -953,6 +959,29 @@
              });
              $('#chat-messages-area').html(html);
              scrollToBottom();
+        }
+
+        function renderHistory(messages) {
+            const container = document.getElementById('historyList');
+            if (!container) return;
+            if (!messages || messages.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted small py-3">Nenhuma mensagem registrada.</div>';
+                return;
+            }
+            const last = messages.slice(-20).reverse();
+            let html = '';
+            last.forEach(msg => {
+                const isOut = msg.direction === 'outbound';
+                const time = new Date(msg.created_at).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+                html += `<div style="display:flex;gap:6px;align-items:flex-start;padding:5px 0;border-bottom:1px solid #f1f5f9;">
+                    <span style="font-size:0.65rem;background:${isOut?'#eef2ff':'#f0fdf4'};color:${isOut?'#4f46e5':'#16a34a'};padding:2px 6px;border-radius:6px;white-space:nowrap;flex-shrink:0;">${isOut?'Enviado':'Recebido'}</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.75rem;color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(msg.content)}</div>
+                        <div style="font-size:0.65rem;color:#94a3b8;">${time}</div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
         }
 
         function renderNotes(notes) {
