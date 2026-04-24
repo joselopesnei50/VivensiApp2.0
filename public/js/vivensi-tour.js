@@ -197,3 +197,9 @@ window.resetVivensiTour = () => {
     localStorage.removeItem('vivensi-tour-completed');
     location.reload();
 };
+
+// Inicia o tour direto (usado pelo botão do onboarding)
+window.startVivensiTour = () => {
+    localStorage.removeItem('vivensi-tour-completed');
+    location.reload();
+};
