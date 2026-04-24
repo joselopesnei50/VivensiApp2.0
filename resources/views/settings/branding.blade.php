@@ -133,21 +133,12 @@
                     <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin: 0 0 24px; line-height: 1.6;">Configure sua chave oficial para arrecadação automática em <strong>Rifas</strong> e <strong>Doações</strong>.</p>
 
                     <div class="row g-3">
-                        <div class="col-md-5">
-                            <label style="font-size: 0.8rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">Tipo de Chave</label>
-                            <select name="pix_key_type" 
-                                    style="width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-size: 0.95rem; outline: none; transition: border 0.2s; cursor: pointer;">
-                                <option value="" style="background: #0f172a;">Selecione o tipo...</option>
-                                <option value="cpf_cnpj" {{ $tenant->pix_key_type == 'cpf_cnpj' ? 'selected' : '' }} style="background: #0f172a;">CPF ou CNPJ</option>
-                                <option value="email" {{ $tenant->pix_key_type == 'email' ? 'selected' : '' }} style="background: #0f172a;">E-mail</option>
-                                <option value="phone" {{ $tenant->pix_key_type == 'phone' ? 'selected' : '' }} style="background: #0f172a;">Celular (WhatsApp)</option>
-                                <option value="random" {{ $tenant->pix_key_type == 'random' ? 'selected' : '' }} style="background: #0f172a;">Chave Aleatória (EVP)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-7">
-                            <label style="font-size: 0.8rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">Chave PIX Oficial</label>
+                        <div class="col-12">
+                            <label style="font-size: 0.8rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">
+                                Chave PIX Oficial <span style="color: #34d399; font-weight: 600; text-transform: none; letter-spacing: 0;">(cole diretamente — qualquer formato aceito)</span>
+                            </label>
                             <input type="text" name="pix_key" value="{{ old('pix_key', $tenant->pix_key) }}"
-                                   placeholder="Cole sua chave aqui..."
+                                   placeholder="Ex: 11999999999 · email@org.com · 00.000.000/0001-00 · chave-aleatória"
                                    style="width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; color: white; font-size: 0.95rem; font-weight: 700; outline: none; transition: all 0.2s;"
                                    onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 3px rgba(16,185,129,0.1)'"
                                    onblur="this.style.borderColor='rgba(16,185,129,0.2)'; this.style.boxShadow='none'">
