@@ -417,6 +417,14 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/instances/{id}/connect', [App\Http\Controllers\Api\WhatsappInstanceController::class, 'connect'])->name('whatsapp.instances.connect');
     Route::delete('/whatsapp/instances/{id}', [App\Http\Controllers\Api\WhatsappInstanceController::class, 'destroy'])->name('whatsapp.instances.destroy');
 
+    // WhatsApp Automações
+    Route::get('/whatsapp/automations',                    [App\Http\Controllers\WhatsappAutomationController::class, 'index'])->name('whatsapp.automations.index');
+    Route::get('/whatsapp/automations/create',             [App\Http\Controllers\WhatsappAutomationController::class, 'create'])->name('whatsapp.automations.create');
+    Route::post('/whatsapp/automations',                   [App\Http\Controllers\WhatsappAutomationController::class, 'store'])->name('whatsapp.automations.store');
+    Route::get('/whatsapp/automations/{automation}/edit',  [App\Http\Controllers\WhatsappAutomationController::class, 'edit'])->name('whatsapp.automations.edit');
+    Route::put('/whatsapp/automations/{automation}',       [App\Http\Controllers\WhatsappAutomationController::class, 'update'])->name('whatsapp.automations.update');
+    Route::delete('/whatsapp/automations/{automation}',    [App\Http\Controllers\WhatsappAutomationController::class, 'destroy'])->name('whatsapp.automations.destroy');
+    Route::patch('/whatsapp/automations/{automation}/toggle', [App\Http\Controllers\WhatsappAutomationController::class, 'toggle'])->name('whatsapp.automations.toggle');
 
     // Marketing Intelligence (AI)
     Route::get('/marketing/strategy', [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');
