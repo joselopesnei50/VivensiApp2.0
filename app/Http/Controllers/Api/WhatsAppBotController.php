@@ -47,6 +47,14 @@ class WhatsAppBotController extends Controller
             return response()->json(['status' => 'disabled'], 200);
         }
 
+        // Token de segurança opcional (WHATSAPP_BOT_SECRET no .env)
+        // Se configurado, rejeita requisições sem o header X-Bot-Secret correto.
+        $secret = config('services.whatsapp.bot_secret');
+        if ($secret && $request->header('X-Bot-Secret') !== $secret) {
+            Log::warning('WhatsApp Bot: requisição sem token válido', ['ip' => $request->ip()]);
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
+
         $data = $request->all();
         $event = $data['event'] ?? ($data['type'] ?? '');
 
