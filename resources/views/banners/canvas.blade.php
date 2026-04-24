@@ -85,17 +85,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080a10;font-family:
 #zoom-label{font-size:11px;color:#64748b;min-width:36px;text-align:center;font-weight:700}
 
 /* ── LAYOUT ──────────────────────────────────────────────── */
-#editor-layout{position:fixed;top:54px;left:0;right:0;bottom:0;display:flex}
+#editor-layout{position:fixed;top:54px;left:0;right:0;bottom:0;display:flex;align-items:stretch;overflow:hidden}
 
 /* ── LEFT PANEL ──────────────────────────────────────────── */
 #left-panel{
     width:276px;min-width:276px;
     background:#0e1018;border-right:1px solid rgba(255,255,255,.07);
     display:flex;flex-direction:column;overflow:hidden;
+    height:100%;
 }
 .lp-tabs{
     display:flex;border-bottom:1px solid rgba(255,255,255,.06);
-    background:rgba(0,0,0,.2);padding:0 4px;gap:1px;
+    background:rgba(0,0,0,.2);padding:0 4px;gap:1px;flex-shrink:0;
 }
 .lp-tab{
     flex:1;padding:11px 2px;text-align:center;font-size:9.5px;font-weight:700;color:#475569;
@@ -104,24 +105,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080a10;font-family:
 }
 .lp-tab.active{color:#818cf8;border-bottom-color:#6366f1}
 .lp-tab:hover:not(.active){color:#94a3b8}
-.lp-content{flex:1;overflow-y:auto;padding:10px;display:none}
+.lp-content{flex:1;overflow-y:auto;padding:10px;display:none;min-height:0}
 .lp-content.active{display:block}
 .lp-content::-webkit-scrollbar{width:3px}
 .lp-content::-webkit-scrollbar-thumb{background:rgba(99,102,241,.3);border-radius:2px}
 .sec-title{
-    font-size:9.5px;font-weight:800;color:#334155;letter-spacing:1.5px;text-transform:uppercase;
+    font-size:9.5px;font-weight:800;color:#6b7280;letter-spacing:1.5px;text-transform:uppercase;
     margin:14px 0 7px;display:flex;align-items:center;gap:5px;
 }
 .sec-title:first-child{margin-top:4px}
-.sec-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.05);margin-left:4px}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06);margin-left:4px}
 
-/* Template cards — portrait aspect + hover overlay */
-.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+/* Template cards — fixed height + hover overlay */
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px}
 .tpl-card{
     border-radius:9px;overflow:hidden;cursor:pointer;
-    border:1.5px solid rgba(255,255,255,.07);
-    transition:all .22s;aspect-ratio:.75;
+    border:1.5px solid rgba(255,255,255,.08);
+    transition:all .22s;height:110px;
     position:relative;background-size:cover;background-position:center;
+    background:#1a1d26;
 }
 .tpl-card:hover{
     border-color:#6366f1;
