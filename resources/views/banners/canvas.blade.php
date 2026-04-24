@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>Editor â€” {{ $banner->title }}</title>
+<title>Editor �?? {{ $banner->title }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800&family=Montserrat:wght@700;800;900&family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Oswald:wght@600;700&family=Raleway:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -14,7 +14,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:#080a10;font-family:'Inter',sans-serif;color:#e2e8f0}
 
-/* ── TOP BAR ─────────────────────────────────────────────── */
+/* ?? TOP BAR ??????????????????????????????????????????????? */
 #topbar{
     position:fixed;top:0;left:0;right:0;height:54px;
     background:linear-gradient(180deg,#14161f 0%,#111318 100%);
@@ -84,10 +84,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080a10;font-family:
 .zoom-controls button:hover{background:rgba(255,255,255,.08);color:#e2e8f0}
 #zoom-label{font-size:11px;color:#64748b;min-width:36px;text-align:center;font-weight:700}
 
-/* ── LAYOUT ──────────────────────────────────────────────── */
+/* ?? LAYOUT ???????????????????????????????????????????????? */
 #editor-layout{position:fixed;top:54px;left:0;right:0;bottom:0;display:flex;align-items:stretch;overflow:hidden}
 
-/* ── LEFT PANEL ──────────────────────────────────────────── */
+/* ?? LEFT PANEL ???????????????????????????????????????????? */
 #left-panel{
     width:276px;min-width:276px;
     background:#0e1018;border-right:1px solid rgba(255,255,255,.07);
@@ -116,7 +116,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080a10;font-family:
 .sec-title:first-child{margin-top:4px}
 .sec-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06);margin-left:4px}
 
-/* Template cards — fixed height + hover overlay */
+/* Template cards ? fixed height + hover overlay */
 .tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px}
 .tpl-card{
     border-radius:9px;overflow:hidden;cursor:pointer;
@@ -193,7 +193,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080a10;font-family:
 .li-act{font-size:10px;color:#334155;cursor:pointer;padding:2px 5px;border-radius:4px;transition:all .15s}
 .li-act:hover{color:#ef4444;background:rgba(239,68,68,.1)}
 
-/* ── CANVAS AREA ─────────────────────────────────────────── */
+/* ?? CANVAS AREA ??????????????????????????????????????????? */
 #canvas-area{
     flex:1;display:flex;align-items:center;justify-content:center;
     background:#080a10;overflow:hidden;position:relative;
@@ -219,7 +219,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080a10;font-family:
 #fabric-canvas{display:block}
 #snap-canvas{position:absolute;top:0;left:0;pointer-events:none;display:block}
 
-/* ── RIGHT PANEL ─────────────────────────────────────────── */
+/* ?? RIGHT PANEL ??????????????????????????????????????????? */
 #right-panel{
     width:276px;min-width:276px;background:#0e1018;
     border-left:1px solid rgba(255,255,255,.07);
@@ -286,7 +286,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#080a10;font-family:
 .cs-row{display:flex;gap:7px;margin-bottom:7px;align-items:center}
 .cs-label{font-size:10.5px;color:#475569;min-width:62px;font-weight:600}
 
-/* ── MODALS ──────────────────────────────────────────────── */
+/* ?? MODALS ???????????????????????????????????????????????? */
 .modal-overlay{
     position:fixed;inset:0;background:rgba(0,0,0,.82);
     display:flex;align-items:center;justify-content:center;
@@ -323,7 +323,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
 .modal-btn-primary{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;box-shadow:0 2px 12px rgba(99,102,241,.35)}.modal-btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(99,102,241,.45)}
 .modal-btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.3)}.modal-btn-success:hover{transform:translateY(-1px)}
 
-/* ── NOTIF ───────────────────────────────────────────────── */
+/* ?? NOTIF ????????????????????????????????????????????????? */
 #notif{
     position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);
     background:#0f1117;color:#e2e8f0;padding:10px 22px;border-radius:100px;
@@ -350,7 +350,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
     <a href="{{ route('banners.index') }}" class="tb-back"><i class="fas fa-arrow-left"></i> Studio</a>
     <div class="tb-divider"></div>
     <input id="title-input" type="text" value="{{ $banner->title }}" maxlength="120" autocomplete="off">
-    <span id="format-badge">{{ strtoupper(str_replace('_',' ',$banner->format)) }} · {{ $banner->width }}×{{ $banner->height }}px</span>
+    <span id="format-badge">{{ strtoupper(str_replace('_',' ',$banner->format)) }} � {{ $banner->width }}�{{ $banner->height }}px</span>
     <div class="tb-spacer"></div>
     <span id="save-status"><i class="fas fa-circle-check" style="font-size:9px"></i> Salvo</span>
     <div class="tb-divider"></div>
@@ -378,51 +378,51 @@ textarea.modal-input{resize:vertical;min-height:88px}
     <div id="left-panel">
         <div class="lp-tabs">
             <div class="lp-tab active" data-tab="templates" onclick="switchTab(this)">Templates</div>
-            <div class="lp-tab" data-tab="icones" onclick="switchTab(this)">Ícones</div>
+            <div class="lp-tab" data-tab="icones" onclick="switchTab(this)">�cones</div>
             <div class="lp-tab" data-tab="elementos" onclick="switchTab(this)">Formas</div>
             <div class="lp-tab" data-tab="imagens" onclick="switchTab(this)">Imagens</div>
             <div class="lp-tab" data-tab="camadas" onclick="switchTab(this)">Camadas</div>
         </div>
 
         <!-- TEMPLATES -->
-        <div id=”tab-templates” class=”lp-content active”>
-            <div style=”position:relative;padding:8px 0 6px”>
-                <i class=”fas fa-magnifying-glass” style=”position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#334155;font-size:11px;pointer-events:none”></i>
-                <input type=”text” id=”tpl-search” placeholder=”Buscar template...” oninput=”filterTemplates(this.value)”
-                    style=”width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:#e2e8f0;font-size:11px;padding:6px 10px 6px 30px;outline:none;transition:border-color .15s”
-                    onfocus=”this.style.borderColor=’#6366f1’” onblur=”this.style.borderColor=’rgba(255,255,255,.09)’”>
+        <div id=?tab-templates? class=?lp-content active?>
+            <div style=?position:relative;padding:8px 0 6px?>
+                <i class=?fas fa-magnifying-glass? style=?position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#334155;font-size:11px;pointer-events:none?></i>
+                <input type=?text? id=?tpl-search? placeholder=?Buscar template...? oninput=?filterTemplates(this.value)?
+                    style=?width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:#e2e8f0;font-size:11px;padding:6px 10px 6px 30px;outline:none;transition:border-color .15s?
+                    onfocus=?this.style.borderColor=?#6366f1?? onblur=?this.style.borderColor=?rgba(255,255,255,.09)??>
             </div>
-            <div class=”sec-title”>🛒 Black Friday</div>
-            <div class=”tpl-grid” id=”tpl-bf”></div>
-            <div class=”sec-title”>📱 Marketing & Agência</div>
-            <div class=”tpl-grid” id=”tpl-agency”></div>
-            <div class=”sec-title”>📷 Com Foto</div>
-            <div class=”tpl-grid” id=”tpl-photo”></div>
-            <div class=”sec-title”>🎨 Design Gráfico</div>
-            <div class=”tpl-grid” id=”tpl-graphic”></div>
-            <div class=”sec-title”>✈️ Viagem & Eventos</div>
-            <div class=”tpl-grid” id=”tpl-travel”></div>
-            <div class=”sec-title”>🏢 Corporativo</div>
-            <div class=”tpl-grid” id=”tpl-corp”></div>
-            <div class=”sec-title”>💚 Terceiro Setor (ONGs)</div>
-            <div class=”tpl-grid” id=”tpl-ngo”></div>
+            <div class=?sec-title?>? Black Friday</div>
+            <div class=?tpl-grid? id=?tpl-bf?></div>
+            <div class=?sec-title?>? Marketing & Ag�ncia</div>
+            <div class=?tpl-grid? id=?tpl-agency?></div>
+            <div class=?sec-title?>? Com Foto</div>
+            <div class=?tpl-grid? id=?tpl-photo?></div>
+            <div class=?sec-title?>? Design Gr�fico</div>
+            <div class=?tpl-grid? id=?tpl-graphic?></div>
+            <div class=?sec-title?>?? Viagem & Eventos</div>
+            <div class=?tpl-grid? id=?tpl-travel?></div>
+            <div class=?sec-title?>? Corporativo</div>
+            <div class=?tpl-grid? id=?tpl-corp?></div>
+            <div class=?sec-title?>? Terceiro Setor (ONGs)</div>
+            <div class=?tpl-grid? id=?tpl-ngo?></div>
         </div>
 
-        <!-- ÍCONES -->
-        <div id=”tab-icones” class=”lp-content”>
-            <div style=”position:relative;padding:8px 0 6px”>
-                <i class=”fas fa-magnifying-glass” style=”position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#334155;font-size:11px;pointer-events:none”></i>
-                <input type=”text” id=”ico-search” placeholder=”Buscar ícone...” oninput=”filterIcons(this.value)”
-                    style=”width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:#e2e8f0;font-size:11px;padding:6px 10px 6px 30px;outline:none;transition:border-color .15s”
-                    onfocus=”this.style.borderColor=’#6366f1’” onblur=”this.style.borderColor=’rgba(255,255,255,.09)’”>
+        <!-- �CONES -->
+        <div id=?tab-icones? class=?lp-content?>
+            <div style=?position:relative;padding:8px 0 6px?>
+                <i class=?fas fa-magnifying-glass? style=?position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#334155;font-size:11px;pointer-events:none?></i>
+                <input type=?text? id=?ico-search? placeholder=?Buscar �cone...? oninput=?filterIcons(this.value)?
+                    style=?width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:#e2e8f0;font-size:11px;padding:6px 10px 6px 30px;outline:none;transition:border-color .15s?
+                    onfocus=?this.style.borderColor=?#6366f1?? onblur=?this.style.borderColor=?rgba(255,255,255,.09)??>
             </div>
-            <div class="sec-title">Negócios</div>
+            <div class="sec-title">Neg�cios</div>
             <div class="ico-grid" id="ico-negocios"></div>
-            <div class="sec-title" style="margin-top:14px">Social & Comunicação</div>
+            <div class="sec-title" style="margin-top:14px">Social & Comunica��o</div>
             <div class="ico-grid" id="ico-social"></div>
             <div class="sec-title" style="margin-top:14px">E-commerce & Vendas</div>
             <div class="ico-grid" id="ico-ecomm"></div>
-            <div class="sec-title" style="margin-top:14px">Símbolos & Decorativos</div>
+            <div class="sec-title" style="margin-top:14px">S�mbolos & Decorativos</div>
             <div class="ico-grid" id="ico-deco"></div>
         </div>
 
@@ -430,17 +430,17 @@ textarea.modal-input{resize:vertical;min-height:88px}
         <div id="tab-elementos" class="lp-content">
             <div class="sec-title">Texto</div>
             <div class="elem-grid">
-                <button class="elem-btn" onclick="addText('heading')"><i class="fas fa-heading"></i>TÃ­tulo</button>
-                <button class="elem-btn" onclick="addText('sub')"><i class="fas fa-paragraph"></i>SubtÃ­tulo</button>
-                <button class="elem-btn" onclick="addText('body')"><i class="fas fa-font"></i>ParÃ¡grafo</button>
+                <button class="elem-btn" onclick="addText('heading')"><i class="fas fa-heading"></i>Título</button>
+                <button class="elem-btn" onclick="addText('sub')"><i class="fas fa-paragraph"></i>Subtítulo</button>
+                <button class="elem-btn" onclick="addText('body')"><i class="fas fa-font"></i>Parágrafo</button>
                 <button class="elem-btn" onclick="addText('badge')"><i class="fas fa-tag"></i>Etiqueta</button>
             </div>
             <div class="sec-title" style="margin-top:18px">Formas</div>
             <div class="elem-grid">
-                <button class="elem-btn" onclick="addShape('rect')"><i class="fas fa-square"></i>RetÃ¢ngulo</button>
-                <button class="elem-btn" onclick="addShape('circle')"><i class="fas fa-circle"></i>CÃ­rculo</button>
+                <button class="elem-btn" onclick="addShape('rect')"><i class="fas fa-square"></i>Retângulo</button>
+                <button class="elem-btn" onclick="addShape('circle')"><i class="fas fa-circle"></i>Círculo</button>
                 <button class="elem-btn" onclick="addShape('line')"><i class="fas fa-minus"></i>Linha</button>
-                <button class="elem-btn" onclick="addShape('triangle')"><i class="fas fa-play" style="transform:rotate(-90deg)"></i>TriÃ¢ngulo</button>
+                <button class="elem-btn" onclick="addShape('triangle')"><i class="fas fa-play" style="transform:rotate(-90deg)"></i>Triângulo</button>
                 <button class="elem-btn" onclick="addShape('star')"><i class="fas fa-star"></i>Estrela</button>
                 <button class="elem-btn" onclick="addShape('badge_pill')"><i class="fas fa-certificate"></i>Badge</button>
             </div>
@@ -453,7 +453,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
             </div>
             <div class="sec-title" style="margin-top:18px">Fundo</div>
             <div class="elem-grid">
-                <button class="elem-btn" onclick="setBgSolid()"><i class="fas fa-fill-drip"></i>Cor SÃ³lida</button>
+                <button class="elem-btn" onclick="setBgSolid()"><i class="fas fa-fill-drip"></i>Cor Sólida</button>
                 <button class="elem-btn" onclick="setBgGradient()"><i class="fas fa-layer-group"></i>Gradiente</button>
                 <button class="elem-btn" onclick="setBgGradient('sunset')"><i class="fas fa-sun"></i>Sunset</button>
                 <button class="elem-btn" onclick="setBgGradient('ocean')"><i class="fas fa-water"></i>Ocean</button>
@@ -475,7 +475,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
             <div id="img-upload" style="display:none">
                 <div class="upload-area" onclick="document.getElementById('img-file').click()">
                     <i class="fas fa-cloud-arrow-up"></i>
-                    <p>Clique para enviar<br><span style="font-size:10px;color:#475569">JPG, PNG, WEBP atÃ© 10MB</span></p>
+                    <p>Clique para enviar<br><span style="font-size:10px;color:#475569">JPG, PNG, WEBP até 10MB</span></p>
                 </div>
                 <input type="file" id="img-file" accept="image/*" style="display:none" onchange="handleUpload(this)">
                 <div class="sec-title">Enviadas</div>
@@ -518,7 +518,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
             <div class="cs-row">
                 <span class="cs-label">Cor de fundo</span>
                 <input type="color" class="prop-color" id="bg-color-input" value="#ffffff" onchange="updateBg(this.value)">
-                <span style="font-size:11px;color:#475569;margin-left:auto">{{ $banner->width }}Ã—{{ $banner->height }}</span>
+                <span style="font-size:11px;color:#475569;margin-left:auto">{{ $banner->width }}�?{{ $banner->height }}</span>
             </div>
             <div class="cs-row">
                 <span class="cs-label">Fonte matriz</span>
@@ -537,13 +537,13 @@ textarea.modal-input{resize:vertical;min-height:88px}
         <div class="modal-title"><i class="fas fa-wand-magic-sparkles" style="color:#818cf8;margin-right:8px"></i>Gerador de Copy com IA</div>
         <div class="modal-row">
             <label class="modal-label">Descreva o que a IA deve escrever</label>
-            <textarea id="ai-prompt" class="modal-input" rows="3" placeholder="Ex: TÃ­tulo impactante para campanha de doaÃ§Ã£o de agasalhos..."></textarea>
+            <textarea id="ai-prompt" class="modal-input" rows="3" placeholder="Ex: Título impactante para campanha de doação de agasalhos..."></textarea>
         </div>
         <div class="modal-row">
             <label class="modal-label">Tipo de texto</label>
             <select id="ai-field" class="modal-input">
-                <option value="title">TÃ­tulo (Curto)</option>
-                <option value="subtitle">SubtÃ­tulo (MÃ©dio)</option>
+                <option value="title">Título (Curto)</option>
+                <option value="subtitle">Subtítulo (Médio)</option>
                 <option value="message">Corpo do texto (Longo)</option>
                 <option value="button">Call to Action</option>
             </select>
@@ -562,7 +562,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
 
 <div id="schedule-modal" class="modal-overlay">
     <div class="modal-box">
-        <div class="modal-title"><i class="fas fa-calendar-plus" style="color:#34d399;margin-right:8px"></i>Agendar PublicaÃ§Ã£o</div>
+        <div class="modal-title"><i class="fas fa-calendar-plus" style="color:#34d399;margin-right:8px"></i>Agendar Publicação</div>
         @if($socialAccounts->isEmpty())
         <div style="text-align:center;padding:24px;color:#64748b">
             <i class="fas fa-link-slash" style="font-size:32px;margin-bottom:12px;display:block"></i>
@@ -598,7 +598,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
 <div id="tpl-confirm-modal" class="modal-overlay">
     <div class="modal-box" style="width:380px">
         <div class="modal-title" style="font-size:15px"><i class="fas fa-paint-brush" style="color:#818cf8;margin-right:8px"></i>Aplicar Template</div>
-        <p style="color:#94a3b8;font-size:13px;line-height:1.6">Deseja aplicar o template <strong id="tpl-confirm-name" style="color:#e2e8f0"></strong>? O canvas atual será substituído.</p>
+        <p style="color:#94a3b8;font-size:13px;line-height:1.6">Deseja aplicar o template <strong id="tpl-confirm-name" style="color:#e2e8f0"></strong>? O canvas atual ser� substitu�do.</p>
         <div class="modal-actions">
                 <button class="modal-btn modal-btn-cancel" onclick="closeModal('tpl-confirm-modal')">Cancelar</button>
                 <button class="modal-btn modal-btn-primary" onclick="applyPendingTpl()"><i class="fas fa-check"></i> Aplicar Template</button>
@@ -610,9 +610,9 @@ textarea.modal-input{resize:vertical;min-height:88px}
 <div id="notif"></div>
 
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 // CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 const BANNER_ID  = {{ $banner->id }};
 const BANNER_W   = {{ $banner->width }};
 const BANNER_H   = {{ $banner->height }};
@@ -622,9 +622,9 @@ const SCHED_URL  = '{{ route('banners.schedule-from-canvas', $banner) }}';
 const AI_URL     = '{{ route('banners.generate-ai-text', $banner) }}';
 const CSRF       = document.querySelector('meta[name=csrf-token]').content;
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // FABRIC INIT
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 const canvas = new fabric.Canvas('fabric-canvas', {
     width: BANNER_W,
     height: BANNER_H,
@@ -635,9 +635,9 @@ const canvas = new fabric.Canvas('fabric-canvas', {
     stateful: false,
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// SNAPPING â€” uses a separate overlay canvas (not fabric contextTop)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
+// SNAPPING �?? uses a separate overlay canvas (not fabric contextTop)
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 const snapEl = document.getElementById('snap-canvas');
 const snapCtx = snapEl.getContext('2d');
 let snapLines = { v: [], h: [] };
@@ -701,9 +701,9 @@ canvas.on('object:moving', function(e) {
 
 canvas.on('mouse:up', clearSnap);
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 // HISTORY
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 let hist = [], hIdx = -1, ignHist = false;
 
 function pushHistory() {
@@ -740,9 +740,9 @@ canvas.on('object:added',    pushHistory);
 canvas.on('object:removed',  pushHistory);
 canvas.on('object:modified', pushHistory);
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 // ZOOM
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 let zoomLvl = 1;
 
 function applyZoom(z) {
@@ -764,9 +764,9 @@ function zoomFit() {
 }
 window.addEventListener('resize', zoomFit);
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 // TABS
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 function switchTab(el) {
     if (!el) return;
     document.querySelectorAll('.lp-tab').forEach(t => t.classList.remove('active'));
@@ -787,9 +787,9 @@ function switchImgTab(el, tab) {
     if (upload) upload.style.display = tab === 'upload' ? 'block' : 'none';
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 // TEMPLATES
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 const W = BANNER_W, H = BANNER_H;
 
 
@@ -804,7 +804,7 @@ const TEMPLATES = {
     ],
     agency: [
         { label: 'Business Orange',    previewCss: 'linear-gradient(135deg,#ea580c,#d97706)',       build: tplBusinessOrange },
-        { label: 'Agência Square',     previewCss: 'linear-gradient(135deg,#0d1117,#00d4ff)',       build: tplAgenciaSquare },
+        { label: 'Ag�ncia Square',     previewCss: 'linear-gradient(135deg,#0d1117,#00d4ff)',       build: tplAgenciaSquare },
         { label: 'Marketing Teal',     previewCss: 'linear-gradient(135deg,#162d40,#0d9488)',       build: tplGraphicAgency },
         { label: 'Creative Red',       previewCss: 'linear-gradient(135deg,#7f1d1d,#e5e7eb)',       build: tplAgencyCreativeRed },
         { label: 'Marketing Blue',     previewCss: 'linear-gradient(135deg,#1e3a8a,#f8fafc)',       build: tplAgencyBlue },
@@ -812,7 +812,7 @@ const TEMPLATES = {
     ],
     photo: [
         { label: 'Viagem Explore',     preview: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=280&q=70', build: tplTravelExplorer },
-        { label: 'Arrecadação (Foto)', preview: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=280&q=70', build: tplPhotoNgo },
+        { label: 'Arrecada��o (Foto)', preview: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=280&q=70', build: tplPhotoNgo },
         { label: 'Tech Dark (Foto)',   preview: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=280&q=70',    build: tplPhotoTech },
     ],
     graphic: [
@@ -830,14 +830,14 @@ const TEMPLATES = {
     ],
     corp: [
         { label: 'KPI Report Dark',    previewCss: 'linear-gradient(135deg,#0f172a,#1e293b)',       build: tplKpiReport },
-        { label: 'Lançamento SaaS',    previewCss: 'linear-gradient(135deg,#1e1b4b,#312e81)',       build: tplLancamentoSaas },
+        { label: 'Lan�amento SaaS',    previewCss: 'linear-gradient(135deg,#1e1b4b,#312e81)',       build: tplLancamentoSaas },
         { label: 'Webinar Executivo',  previewCss: 'linear-gradient(135deg,#0c1428,#0ea5e9)',       build: tplWebinarCard },
         { label: 'Digital Mktg Dark',  previewCss: 'linear-gradient(135deg,#0d1d2b,#1a3a52)',       build: tplDigitalMktg },
     ],
     ngo: [
         { label: 'Solidariedade Neon', previewCss: 'linear-gradient(135deg,#030312,#6366f1)',       build: tplNgoNeon },
         { label: 'Impacto Social',     previewCss: 'linear-gradient(135deg,#052e16,#10b981)',       build: tplSocialImpact },
-        { label: 'Campanha Doação',    previewCss: 'linear-gradient(180deg,#ffffff,#ef4444)',       build: tplCampanhaDoacao },
+        { label: 'Campanha Doa��o',    previewCss: 'linear-gradient(180deg,#ffffff,#ef4444)',       build: tplCampanhaDoacao },
         { label: 'Voluntariado Pop',   previewCss: 'linear-gradient(135deg,#1a0a2e,#a855f7)',       build: tplVoluntariado },
     ],
 };
@@ -885,21 +885,21 @@ function applyPendingTpl() {
     if (_pendingTplBuild) { _pendingTplBuild(); _pendingTplBuild = null; }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // ICONS
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 const ICONS = {
     negocios: [
         { label:'Sucesso', svg:'<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>' },
         { label:'Dinheiro', svg:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M6 9h.01M18 15h.01"/>' },
         { label:'Raio/Power', svg:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
-        { label:'CalendÃ¡rio', svg:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/>' },
-        { label:'FÃ¡brica', svg:'<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v16z"/>' },
-        { label:'SemÃ¡foro', svg:'<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="7" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="12" cy="19" r="2"/><line x1="5" y1="5" x2="2" y2="5"/><line x1="5" y1="11" x2="2" y2="11"/><line x1="19" y1="5" x2="22" y2="5"/><line x1="19" y1="11" x2="22" y2="11"/>' },
+        { label:'Calendário', svg:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/>' },
+        { label:'Fábrica', svg:'<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v16z"/>' },
+        { label:'Semáforo', svg:'<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="7" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="12" cy="19" r="2"/><line x1="5" y1="5" x2="2" y2="5"/><line x1="5" y1="11" x2="2" y2="11"/><line x1="19" y1="5" x2="22" y2="5"/><line x1="19" y1="11" x2="22" y2="11"/>' },
         { label:'Escala', svg:'<line x1="12" y1="3" x2="12" y2="21"/><polyline points="17 8 12 3 7 8"/><line x1="3" y1="21" x2="21" y2="21"/>' },
-        { label:'RÃ©gua', svg:'<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/><rect x="2" y="4" width="4" height="16" rx="1"/>' },
-        { label:'GrÃ¡fico Up', svg:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>' },
-        { label:'TrofÃ©u', svg:'<polyline points="6 9 2 9 2 2 22 2 22 9 18 9"/><path d="M6 2v6c0 3.3 2.7 6 6 6s6-2.7 6-6V2"/><path d="M12 18v4"/><line x1="8" y1="22" x2="16" y2="22"/>' },
+        { label:'Régua', svg:'<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/><rect x="2" y="4" width="4" height="16" rx="1"/>' },
+        { label:'Gráfico Up', svg:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>' },
+        { label:'Troféu', svg:'<polyline points="6 9 2 9 2 2 22 2 22 9 18 9"/><path d="M6 2v6c0 3.3 2.7 6 6 6s6-2.7 6-6V2"/><path d="M12 18v4"/><line x1="8" y1="22" x2="16" y2="22"/>' },
         { label:'Martelo', svg:'<path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/>' },
         { label:'Maleta', svg:'<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>' },
     ],
@@ -907,8 +907,8 @@ const ICONS = {
         { label:'Fones', svg:'<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>' },
         { label:'Xadrez', svg:'<path d="M3 3h4l2.68 7.6L5 17h14l-4.68-6.4L17 3h4"/><line x1="12" y1="3" x2="12" y2="21"/>' },
         { label:'Msg Minus', svg:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/>' },
-        { label:'NotificaÃ§Ã£o', svg:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>' },
-        { label:'UsuÃ¡rios', svg:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+        { label:'Notificação', svg:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>' },
+        { label:'Usuários', svg:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
         { label:'Compartilhar', svg:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>' },
         { label:'Globo', svg:'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>' },
         { label:'Wifi', svg:'<path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>' },
@@ -925,12 +925,12 @@ const ICONS = {
     ],
     deco: [
         { label:'Estrela', svg:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
-        { label:'CoraÃ§Ã£o', svg:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>' },
-        { label:'CoraÃ§Ã£o Seta', svg:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>' },
+        { label:'Coração', svg:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>' },
+        { label:'Coração Seta', svg:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>' },
         { label:'Raio', svg:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>' },
         { label:'Flor', svg:'<circle cx="12" cy="12" r="4"/><path d="M12 2a10 10 0 0 1 10 10A10 10 0 0 1 12 22 10 10 0 0 1 2 12 10 10 0 0 1 12 2"/><path d="M12 8a4 4 0 0 1 4 4"/>' },
         { label:'Pata', svg:'<circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>' },
-        { label:'PoÃ§Ã£o', svg:'<path d="M10 2v2.343a7.5 7.5 0 1 0 4 0V2"/><line x1="8.5" y1="2" x2="15.5" y2="2"/>' },
+        { label:'Poção', svg:'<path d="M10 2v2.343a7.5 7.5 0 1 0 4 0V2"/><line x1="8.5" y1="2" x2="15.5" y2="2"/>' },
         { label:'Tarot', svg:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>' },
         { label:'Seta Up', svg:'<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>' },
         { label:'Seta Right', svg:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>' },
@@ -977,11 +977,11 @@ function addIconToCanvas(svgContent, label) {
         canvas.add(img);
         canvas.setActiveObject(img);
         canvas.requestRenderAll();
-        showNotif('Ãcone adicionado!', 'success');
+        showNotif('Ícone adicionado!', 'success');
     });
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // Helpers
 function gf() { return document.getElementById('global-font').value || 'Inter'; }
 function mkTxt(text, opts = {}) {
@@ -1035,8 +1035,8 @@ function finishTpl() {
     pushHistory();
 }
 
-// â”€â”€â”€ PHOTO TEMPLATES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Helper: load image without blocking â€” template always renders even if image fails
+// �??�??�?? PHOTO TEMPLATES �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
+// Helper: load image without blocking �?? template always renders even if image fails
 function asyncImg(url, cb) {
     fabric.Image.fromURL(url, function(img) {
         if (img && img.width > 0) { cb(img); pushHistory(); }
@@ -1047,12 +1047,12 @@ function tplPhotoNgo() {
     startTpl('#1c1917');
     // Render all content immediately (no image dependency)
     canvas.add(mkCircle({ x:W-100, y:-80, r:260, fill:'#1e3a5f', op:.6 }));
-    canvas.add(mkTxt('ARRECADAÃ‡ÃƒO\nSOLIDÃRIA', { sz: Math.round(H*.13), fw:'900', y:90, lh:1.05, shadow: new fabric.Shadow({color:'rgba(0,0,0,.6)',blur:20}) }));
+    canvas.add(mkTxt('ARRECADA�?�?O\nSOLIDÁRIA', { sz: Math.round(H*.13), fw:'900', y:90, lh:1.05, shadow: new fabric.Shadow({color:'rgba(0,0,0,.6)',blur:20}) }));
     canvas.add(mkTxt('Cada gesto vale uma vida. Doe e transforme.', { sz: Math.round(H*.036), y: Math.round(H*.65), lh: 1.6, fill:'#e2e8f0' }));
     canvas.add(mkRect({ x:60, y: Math.round(H*.8), w:190, h:48, fill:'#e11d48', rx:8, shadow: new fabric.Shadow({color:'rgba(225,29,72,.4)',blur:14,offsetY:6}) }));
     canvas.add(mkTxt('Contribuir Agora', { sz:14, fw:'700', x:60, y: Math.round(H*.8)+14, w:190, fill:'#fff', align:'center' }));
     finishTpl();
-    // Enhance with photo async â€” if fails, template still looks good
+    // Enhance with photo async �?? if fails, template still looks good
     asyncImg('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1080&q=80', img => {
         img.set({ scaleX: W/img.width, scaleY: H/img.height, left:0, top:0, opacity:0.35, name:'bg-img' });
         img.filters.push(new fabric.Image.filters.Brightness({ brightness: -0.2 })); img.applyFilters();
@@ -1068,9 +1068,9 @@ function tplPhotoTech() {
     canvas.add(mkRect({ x:0, y:0, w:W, h:H, fill:grad, name:'overlay' }));
     canvas.add(mkTxt('NOVO PRODUTO', { sz:12, fw:'800', y:75, fill:'#38bdf8', name:'tag' }));
     canvas.add(mkTxt('Tecnologia\nque Escala.', { sz: Math.round(H*.13), fw:'900', y:110, lh:1.05, w: W*.5, shadow: new fabric.Shadow({color:'rgba(0,0,0,.5)',blur:16}) }));
-    canvas.add(mkTxt('AutomaÃ§Ã£o inteligente para times de alta performance.', { sz: Math.round(H*.033), y: Math.round(H*.6), lh:1.6, w: W*.48, fill:'#cbd5e1' }));
+    canvas.add(mkTxt('Automação inteligente para times de alta performance.', { sz: Math.round(H*.033), y: Math.round(H*.6), lh:1.6, w: W*.48, fill:'#cbd5e1' }));
     canvas.add(mkRect({ x:60, y: Math.round(H*.78), w:210, h:48, fill:'#6366f1', rx:24, shadow: new fabric.Shadow({color:'rgba(99,102,241,.5)',blur:16,offsetY:6}) }));
-    canvas.add(mkTxt('Ver DemonstraÃ§Ã£o', { sz:14, fw:'700', x:60, y: Math.round(H*.78)+14, w:210, fill:'#fff', align:'center' }));
+    canvas.add(mkTxt('Ver Demonstração', { sz:14, fw:'700', x:60, y: Math.round(H*.78)+14, w:210, fill:'#fff', align:'center' }));
     finishTpl();
     asyncImg('https://images.unsplash.com/photo-1551434678-e076c223a692?w=1080&q=80', img => {
         img.set({ scaleX: W*.65/img.width, scaleY: H/img.height, left: W*.35, top:0, opacity:0.85, name:'img' });
@@ -1078,7 +1078,7 @@ function tplPhotoTech() {
     });
 }
 
-// â”€â”€â”€ GRAPHICAL TEMPLATES (sem fotos) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�?? GRAPHICAL TEMPLATES (sem fotos) �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 function tplGraphicNeonNgo() {
     startTpl('#1e1b4b');
     // BG shapes
@@ -1092,7 +1092,7 @@ function tplGraphicNeonNgo() {
     // Main title
     canvas.add(mkTxt('Juntos\nSomos\nMais.', { sz: Math.round(H*.135), fw:'900', y:140, lh:1.05, shadow: new fabric.Shadow({color:'rgba(99,102,241,.3)',blur:20}) }));
     // Subtitle
-    canvas.add(mkTxt('Cada contribuiÃ§Ã£o molda o futuro que queremos para todos.', { sz: Math.round(H*.034), y: Math.round(H*.66), lh:1.6, fill:'rgba(255,255,255,.85)', name:'sub' }));
+    canvas.add(mkTxt('Cada contribuição molda o futuro que queremos para todos.', { sz: Math.round(H*.034), y: Math.round(H*.66), lh:1.6, fill:'rgba(255,255,255,.85)', name:'sub' }));
     // CTA
     canvas.add(mkRect({ x:60, y: Math.round(H*.8), w:185, h:48, fill:'#6366f1', rx:24, shadow: new fabric.Shadow({color:'rgba(99,102,241,.5)',blur:16,offsetY:6}), name:'btn-bg' }));
     canvas.add(mkTxt('Quero Ajudar', { sz:15, fw:'700', x:60, y: Math.round(H*.8)+14, w:185, fill:'#fff', align:'center', name:'btn-txt' }));
@@ -1104,16 +1104,16 @@ function tplGraphicImpact() {
     canvas.add(mkCircle({ x: W*.75, y:-60, r:240, fill:'#10b981', op:.15, name:'c1' }));
     canvas.add(mkCircle({ x:-60, y: H*.7, r:180, fill:'#34d399', op:.08, name:'c2' }));
     // Stats pills
-    const stats = [{n:'5.200', l:'FamÃ­lias'},{n:'38', l:'Cidades'},{n:'R$1M', l:'Arrecadado'}];
+    const stats = [{n:'5.200', l:'Famílias'},{n:'38', l:'Cidades'},{n:'R$1M', l:'Arrecadado'}];
     stats.forEach((s, i) => {
         const bx = 60 + i * Math.round((W-120)/3);
         canvas.add(mkRect({ x: bx, y: Math.round(H*.54), w: Math.round((W-120)/3)-8, h:64, fill:'rgba(16,185,129,.15)', rx:12, name:'pill'+i }));
         canvas.add(mkTxt(s.n, { sz: Math.round(H*.05), fw:'900', x: bx, y: Math.round(H*.55)+2, w: Math.round((W-120)/3)-8, align:'center', fill:'#6ee7b7', name:'pn'+i }));
         canvas.add(mkTxt(s.l, { sz:11, fw:'600', x: bx, y: Math.round(H*.55)+Math.round(H*.05)+6, w: Math.round((W-120)/3)-8, align:'center', fill:'rgba(255,255,255,.7)', name:'pl'+i }));
     });
-    canvas.add(mkTxt('â™» RELATÃ“RIO DE IMPACTO 2025', { sz:11, fw:'800', y:58, fill:'#6ee7b7', name:'tag' }));
+    canvas.add(mkTxt('�?� RELAT�?RIO DE IMPACTO 2025', { sz:11, fw:'800', y:58, fill:'#6ee7b7', name:'tag' }));
     canvas.add(mkTxt('Nosso Impacto\nFala por Si.', { sz: Math.round(H*.12), fw:'900', y:95, lh:1.1, name:'title' }));
-    canvas.add(mkTxt('Obrigado a cada voluntÃ¡rio, doador e parceiro.', { sz: Math.round(H*.033), y: Math.round(H*.73), lh:1.5, fill:'rgba(255,255,255,.8)', name:'sub' }));
+    canvas.add(mkTxt('Obrigado a cada voluntário, doador e parceiro.', { sz: Math.round(H*.033), y: Math.round(H*.73), lh:1.5, fill:'rgba(255,255,255,.8)', name:'sub' }));
     finishTpl();
 }
 
@@ -1123,8 +1123,8 @@ function tplGraphicAwareness() {
     canvas.add(mkCircle({ x:-60, y: H, r:220, fill:'#ec4899', op:.08, name:'c2' }));
     // Horizontal accent
     canvas.add(mkRect({ x:0, y: Math.round(H*.48), w: W, h:2, fill:'rgba(236,72,153,.25)', name:'hr' }));
-    canvas.add(mkTxt('#CONSCIENTIZAÃ‡ÃƒO', { sz:11, fw:'800', y:58, fill:'#e879f9', name:'tag' }));
-    canvas.add(mkTxt('A MudanÃ§a\nComeÃ§a\nem VocÃª.', { sz: Math.round(H*.13), fw:'900', y:95, lh:1.05, shadow: new fabric.Shadow({color:'rgba(236,72,153,.3)',blur:20}), name:'title' }));
+    canvas.add(mkTxt('#CONSCIENTIZA�?�?O', { sz:11, fw:'800', y:58, fill:'#e879f9', name:'tag' }));
+    canvas.add(mkTxt('A Mudança\nComeça\nem Você.', { sz: Math.round(H*.13), fw:'900', y:95, lh:1.05, shadow: new fabric.Shadow({color:'rgba(236,72,153,.3)',blur:20}), name:'title' }));
     canvas.add(mkTxt('Sua voz tem o poder de transformar realidades. Use-a.', { sz: Math.round(H*.034), y: Math.round(H*.7), lh:1.6, fill:'rgba(255,255,255,.85)', name:'sub' }));
     finishTpl();
 }
@@ -1136,10 +1136,10 @@ function tplGraphicMinimal() {
     canvas.add(mkRect({ x:8, y:0, w: Math.round(W*.35), h:H, fill:'#f1f5f9', name:'sidebar' }));
     // Geometric accent
     canvas.add(mkCircle({ x: Math.round(W*.32), y: Math.round(H*.12), r: Math.round(H*.22), fill:'#e2e8f0', op:1, name:'circle-deco' }));
-    canvas.add(mkTxt('OrganizaÃ§Ã£o\nNome', { sz: Math.round(H*.05), fw:'800', x:30, y:60, w:200, fill:'#1e293b', align:'center', name:'orgname' }));
+    canvas.add(mkTxt('Organização\nNome', { sz: Math.round(H*.05), fw:'800', x:30, y:60, w:200, fill:'#1e293b', align:'center', name:'orgname' }));
     // Main area
     canvas.add(mkTxt('Proposta\nde Valor\nElegante.', { sz: Math.round(H*.1), fw:'900', x: Math.round(W*.42), y:60, w: W*.52, fill:'#0f172a', lh:1.1, name:'title' }));
-    canvas.add(mkTxt('Layout clean e profissional para apresentaÃ§Ãµes corporativas e materiais institucionais.', { sz: Math.round(H*.031), x: Math.round(W*.42), y: Math.round(H*.6), w: W*.52, fill:'#475569', lh:1.6, name:'sub' }));
+    canvas.add(mkTxt('Layout clean e profissional para apresentações corporativas e materiais institucionais.', { sz: Math.round(H*.031), x: Math.round(W*.42), y: Math.round(H*.6), w: W*.52, fill:'#475569', lh:1.6, name:'sub' }));
     canvas.add(mkRect({ x: Math.round(W*.42), y: Math.round(H*.8), w:180, h:44, fill:'#6366f1', rx:8, shadow: new fabric.Shadow({color:'rgba(99,102,241,.3)',blur:12,offsetY:4}), name:'btn-bg' }));
     canvas.add(mkTxt('Saiba Mais', { sz:14, fw:'700', x: Math.round(W*.42), y: Math.round(H*.8)+13, w:180, fill:'#fff', align:'center', name:'btn-txt' }));
     finishTpl();
@@ -1153,7 +1153,7 @@ function tplGraphicSplit() {
     const tri = new fabric.Triangle({ left: Math.round(W*.44), top:0, width: Math.round(W*.15), height:H, fill:'#6366f1', angle:0, selectable:true, name:'divider' });
     canvas.add(tri);
     // Left side content
-    canvas.add(mkTxt('NOVO\nLANÃ‡AMENTO', { sz: Math.round(H*.1), fw:'900', x:40, y:80, w: Math.round(W*.42), fill:'#f8fafc', lh:1.1, name:'title' }));
+    canvas.add(mkTxt('NOVO\nLAN�?AMENTO', { sz: Math.round(H*.1), fw:'900', x:40, y:80, w: Math.round(W*.42), fill:'#f8fafc', lh:1.1, name:'title' }));
     canvas.add(mkTxt('O produto que sua equipe esperava chegou.', { sz: Math.round(H*.033), x:40, y: Math.round(H*.62), w: Math.round(W*.42), fill:'#94a3b8', lh:1.6, name:'sub' }));
     canvas.add(mkRect({ x:40, y: Math.round(H*.8), w:160, h:44, fill:'#fff', rx:8, name:'btn-bg' }));
     canvas.add(mkTxt('Acessar', { sz:14, fw:'700', x:40, y: Math.round(H*.8)+13, w:160, fill:'#6366f1', align:'center', name:'btn-txt' }));
@@ -1168,9 +1168,9 @@ function tplGraphicDuotone() {
     canvas.add(mkCircle({ x: W-100, y: H, r:220, fill:'#ef4444', op:.12, name:'c2' }));
     // Horizontal line accent
     canvas.add(mkRect({ x:60, y: Math.round(H*.5), w: Math.round(W*.35), h:3, fill:'#fb923c', rx:2, name:'accent' }));
-    canvas.add(mkTxt('ðŸ† CONQUISTA 2025', { sz:13, fw:'800', y:55, fill:'#fb923c', name:'tag' }));
-    canvas.add(mkTxt('PrÃªmio\nde ExcelÃªncia\nEmpresarial.', { sz: Math.round(H*.12), fw:'900', y:95, lh:1.05, shadow: new fabric.Shadow({color:'rgba(251,146,60,.25)',blur:18}), name:'title' }));
-    canvas.add(mkTxt('Reconhecimento pela inovaÃ§Ã£o e impacto social gerado em 2025.', { sz: Math.round(H*.033), y: Math.round(H*.72), lh:1.6, fill:'rgba(255,255,255,.85)', name:'sub' }));
+    canvas.add(mkTxt('�?�? CONQUISTA 2025', { sz:13, fw:'800', y:55, fill:'#fb923c', name:'tag' }));
+    canvas.add(mkTxt('Prêmio\nde Excelência\nEmpresarial.', { sz: Math.round(H*.12), fw:'900', y:95, lh:1.05, shadow: new fabric.Shadow({color:'rgba(251,146,60,.25)',blur:18}), name:'title' }));
+    canvas.add(mkTxt('Reconhecimento pela inovação e impacto social gerado em 2025.', { sz: Math.round(H*.033), y: Math.round(H*.72), lh:1.6, fill:'rgba(255,255,255,.85)', name:'sub' }));
     finishTpl();
 }
 
@@ -1190,7 +1190,7 @@ function tplGraphicAgency() {
     canvas.add(mkCircle({ x:W*.05, y:H*.7, r:60, fill:'#ef4444', op:1, shadow: new fabric.Shadow({color:'rgba(239,68,68,0.6)',blur:20}) }));
     canvas.add(mkCircle({ x:W*.85, y:H*.65, r:45, fill:'#ef4444', op:0.9 }));
 
-    canvas.add(mkTxt('âž¤ VIVENSI LOGO', { sz:20, fw:'900', x:40, y:40, fill:'#fef08a' }));
+    canvas.add(mkTxt('�?� VIVENSI LOGO', { sz:20, fw:'900', x:40, y:40, fill:'#fef08a' }));
     canvas.add(mkTxt('SUA TAGLINE AQUI', { sz:10, fw:'700', x:42, y:65, fill:'#94a3b8' }));
 
     // Dark bar background for the main text
@@ -1225,11 +1225,11 @@ function tplGraphicBlackFriday() {
     canvas.add(badge);
     canvas.add(mkTxt('BLACK FRIDAY 2025', { sz:15, fw:'900', y:94, fill:'#fff', align:'center', w:W }));
 
-    canvas.add(mkTxt('ATÃ‰', { sz: Math.round(H*.04), fw:'800', x: W*.2, y: Math.round(H*.35), fill:'#f43f5e' }));
+    canvas.add(mkTxt('AT�?', { sz: Math.round(H*.04), fw:'800', x: W*.2, y: Math.round(H*.35), fill:'#f43f5e' }));
     canvas.add(mkTxt('70%', { sz: Math.round(H*.22), fw:'900', x: W*.2, y: Math.round(H*.35)+Math.round(H*.01), fill:'#ffffff', shadow: new fabric.Shadow({color:'rgba(0,0,0,.8)',blur:20}) }));
     canvas.add(mkTxt('DE DESCONTO', { sz: Math.round(H*.05), fw:'800', x: W*.2, y: Math.round(H*.35)+Math.round(H*.24), fill:'#f43f5e' }));
     
-    canvas.add(mkTxt('NÃƒO PERCA A MAIOR QUEIMA DE ESTOQUE DO ANO', { sz: Math.round(H*.025), fw:'600', x: W*.2, y: Math.round(H*.68), fill:'#a1a1aa' }));
+    canvas.add(mkTxt('N�?O PERCA A MAIOR QUEIMA DE ESTOQUE DO ANO', { sz: Math.round(H*.025), fw:'600', x: W*.2, y: Math.round(H*.68), fill:'#a1a1aa' }));
     
     canvas.add(mkRect({ x:W*.2, y: Math.round(H*.78), w:220, h:54, fill:'#ffffff', rx:8, shadow: new fabric.Shadow({color:'rgba(255,255,255,.3)',blur:15,offsetY:5}) }));
     canvas.add(mkTxt('COMPRAR AGORA', { sz:16, fw:'900', x:W*.2, y: Math.round(H*.78)+17, w:220, fill:'#000000', align:'center' }));
@@ -1240,8 +1240,8 @@ function tplAgencySquare() {
     startTpl('#fafaf9');
     canvas.add(mkRect({x:0, y:0, w:W*.65, h:H*.6, fill:'#78716c', rx:40}));
     canvas.add(mkTxt('We Are\nDigital\nMarketing\nAgency', {sz:Math.round(H*.09), fw:'900', x:40, y:80, lh:1.1, fill:'#ffffff'}));
-    canvas.add(mkTxt('â€¢ Business Analysis\nâ€¢ Market Research', {sz:16, fw:'600', x:40, y:H*.65, fill:'#57534e', lh:1.8}));
-    canvas.add(mkTxt('â€¢ SEO Service\nâ€¢ Brand Build', {sz:16, fw:'600', x:W*.32, y:H*.65, fill:'#57534e', lh:1.8}));
+    canvas.add(mkTxt('�?� Business Analysis\n�?� Market Research', {sz:16, fw:'600', x:40, y:H*.65, fill:'#57534e', lh:1.8}));
+    canvas.add(mkTxt('�?� SEO Service\n�?� Brand Build', {sz:16, fw:'600', x:W*.32, y:H*.65, fill:'#57534e', lh:1.8}));
     // Floating accent squares
     canvas.add(mkRect({x:W*.48, y:180, w:50, h:50, fill:'#f43f5e', rx:12, shadow:new fabric.Shadow({color:'rgba(0,0,0,0.2)',blur:10})}));
     canvas.add(mkRect({x:W*.45, y:260, w:55, h:55, fill:'#3b82f6', rx:12, shadow:new fabric.Shadow({color:'rgba(0,0,0,0.2)',blur:10})}));
@@ -1259,7 +1259,7 @@ function tplAgencySquare() {
     });
 }
 
-// â”€â”€â”€ NEW TEMPLATES (Black Friday, Agency, Fashion, Travel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�?? NEW TEMPLATES (Black Friday, Agency, Fashion, Travel) �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 
 function tplBfCameraDark() {
     startTpl('#1a0a00');
@@ -1291,7 +1291,7 @@ function tplBfWatchOrange() {
     canvas.add(mkRect({ x:W*.62, y:Math.round(H*.48), w:150, h:54, fill:'rgba(0,0,0,.35)', rx:4, name:'disc-bg' }));
     canvas.add(mkTxt('Get Upto\n45% Discount', { sz:16, fw:'800', x:W*.62, y:Math.round(H*.49), w:150, fill:'#fff', align:'center', lh:1.3 }));
     canvas.add(mkRect({ x:W*.5-80, y:Math.round(H*.8), w:160, h:42, fill:'#000', rx:21, name:'btn' }));
-    canvas.add(mkTxt('ORDER NOW â†’', { sz:13, fw:'800', x:W*.5-80, y:Math.round(H*.8)+13, w:160, fill:'#fff', align:'center' }));
+    canvas.add(mkTxt('ORDER NOW �??', { sz:13, fw:'800', x:W*.5-80, y:Math.round(H*.8)+13, w:160, fill:'#fff', align:'center' }));
     canvas.add(mkTxt('323-543-4145\nINCLUDEHEREYOURWEBSITE', { sz:11, fw:'600', y:Math.round(H*.9), fill:'rgba(255,255,255,.7)', align:'center', w:W, lh:1.6 }));
     finishTpl();
 }
@@ -1302,10 +1302,10 @@ function tplBfHeadphone() {
     canvas.add(mkTxt('Friday', { sz:Math.round(H*.16), fw:'900', y:60+Math.round(H*.15), fill:'#eab308', align:'center', w:W, shadow:new fabric.Shadow({color:'rgba(234,179,8,.4)',blur:16}) }));
     canvas.add(mkTxt('Limited Offer', { sz:Math.round(H*.035), fw:'700', y:60+Math.round(H*.31), fill:'rgba(255,255,255,.75)', align:'center', w:W }));
     canvas.add(mkRect({ x:W*.35, y:Math.round(H*.55), w:W*.3, h:2, fill:'rgba(234,179,8,.4)', name:'hr' }));
-    canvas.add(mkTxt('Get up To\n50% OFF\nDiscount â–º', { sz:Math.round(H*.05), fw:'900', x:W*.65, y:Math.round(H*.57), w:W*.3, fill:'#eab308', lh:1.2, align:'right' }));
+    canvas.add(mkTxt('Get up To\n50% OFF\nDiscount �?�', { sz:Math.round(H*.05), fw:'900', x:W*.65, y:Math.round(H*.57), w:W*.3, fill:'#eab308', lh:1.2, align:'right' }));
     canvas.add(mkTxt('205-741-8365\nwww.yourwebsite.com', { sz:12, fw:'600', x:40, y:Math.round(H*.88), fill:'#eab308', lh:1.5 }));
     canvas.add(mkRect({ x:W*.62, y:Math.round(H*.86), w:150, h:42, fill:'#eab308', rx:21, name:'btn' }));
-    canvas.add(mkTxt('â†’ SHOP NOW', { sz:13, fw:'800', x:W*.62, y:Math.round(H*.86)+13, w:150, fill:'#111', align:'center' }));
+    canvas.add(mkTxt('�?? SHOP NOW', { sz:13, fw:'800', x:W*.62, y:Math.round(H*.86)+13, w:150, fill:'#111', align:'center' }));
     finishTpl();
 }
 
@@ -1315,7 +1315,7 @@ function tplAgencyCreativeRed() {
     canvas.add(mkRect({ x:0, y:H*.85, w:W, h:3, fill:'#b91c1c', name:'footer-line' }));
     // Photo placeholder (replaced when image loads)
     canvas.add(mkRect({ x:W*.45, y:0, w:W*.55, h:H*.85, fill:'#e5e7eb', name:'img-placeholder' }));
-    // Red accent shapes â€” always visible
+    // Red accent shapes �?? always visible
     canvas.add(mkRect({ x:W*.2, y:0, w:W*.28, h:H*.5, fill:'#dc2626', rx:0, name:'red-block' }));
     canvas.add(mkTxt('WE ARE\nCREATIVE\nBUSINESS\nSOLUTIONS\nAGENCY', { sz:Math.round(H*.07), fw:'900', x:20, y:50, w:W*.35, fill:'#111827', lh:1.1, name:'title' }));
     canvas.add(mkTxt('WE ARE\nCREATIVE', { sz:Math.round(H*.08), fw:'900', x:W*.21, y:H*.08, w:W*.27, fill:'#fff', lh:1.1, align:'center', name:'title-red' }));
@@ -1347,7 +1347,7 @@ function tplAgencyBlue() {
     canvas.add(mkTxt('MARKETING\nAGENCY', { sz:Math.round(H*.1), fw:'900', x:W*.12, y:145, w:W*.6, fill:'#0f172a', lh:1.05 }));
     canvas.add(mkTxt('join online\nTRAINING SESSION', { sz:Math.round(H*.04), fw:'700', x:W*.12, y:H*.52, fill:'#0ea5e9', lh:1.3 }));
     const pts = ['Digital Marketing','Brand Build Strategies','SEO Campaign Strategies'];
-    pts.forEach((p,i) => canvas.add(mkTxt(`â€¢ ${p}`, { sz:13, fw:'600', x:W*.12, y:H*.65+i*22, fill:'#374151' })));
+    pts.forEach((p,i) => canvas.add(mkTxt(`�?� ${p}`, { sz:13, fw:'600', x:W*.12, y:H*.65+i*22, fill:'#374151' })));
     canvas.add(mkRect({ x:W*.12, y:H*.84, w:180, h:42, fill:'#1d4ed8', rx:21, name:'btn' }));
     canvas.add(mkTxt('CONTATO', { sz:14, fw:'800', x:W*.12, y:H*.84+13, w:180, fill:'#fff', align:'center' }));
     canvas.add(mkTxt('000 123 456 789', { sz:13, fw:'600', x:W*.58, y:H*.87, fill:'#0f172a' }));
@@ -1361,9 +1361,9 @@ function tplCleaningRed() {
     canvas.add(mkCircle({ x:W*.35, y:-80, r:180, fill:'#ffffff', op:1, name:'circle-deco' }));
     canvas.add(mkTxt('Cleaning\nService', { sz:Math.round(H*.07), fw:'900', x:30, y:60, w:W*.4, fill:'#ffffff', lh:1.2, name:'title' }));
     const pts2 = ['Roof & Window cleaning','Furniture cleaning','Floor Carpet cleaning','Hotel & Office cleaning'];
-    pts2.forEach((p,i) => canvas.add(mkTxt(`â— ${p}`, { sz:12, fw:'600', x:30, y:H*.55+i*26, fill:'#fff', name:'item'+i })));
+    pts2.forEach((p,i) => canvas.add(mkTxt(`�?� ${p}`, { sz:12, fw:'600', x:30, y:H*.55+i*26, fill:'#fff', name:'item'+i })));
     canvas.add(mkRect({ x:30, y:H*.84, w:140, h:40, fill:'#fff', rx:20, name:'btn-bg' }));
-    canvas.add(mkTxt('â†’ CALL NOW', { sz:12, fw:'800', x:30, y:H*.84+13, w:140, fill:'#dc2626', align:'center' }));
+    canvas.add(mkTxt('�?? CALL NOW', { sz:12, fw:'800', x:30, y:H*.84+13, w:140, fill:'#dc2626', align:'center' }));
     // Right side with images placeholder
     canvas.add(mkRect({ x:W*.48, y:H*.04, w:W*.48, h:H*.45, fill:'#fee2e2', rx:16, name:'img1-bg' }));
     canvas.add(mkRect({ x:W*.48, y:H*.52, w:W*.48, h:H*.42, fill:'#fecaca', rx:16, name:'img2-bg' }));
@@ -1401,7 +1401,7 @@ function tplSwipeUpStory() {
     for(let i=0;i<5;i++) for(let j=0;j<4;j++) canvas.add(mkCircle({ x:W*.65+i*16, y:H*.05+j*16, r:2, fill:'#fff', op:.3 }));
     for(let i=0;i<5;i++) for(let j=0;j<4;j++) canvas.add(mkCircle({ x:W*.65+i*16, y:H*.78+j*16, r:2, fill:'#fff', op:.3 }));
     canvas.add(mkRect({ x:W*.5-80, y:H*.89, w:160, h:42, fill:'#fbbf24', rx:21, name:'btn' }));
-    canvas.add(mkTxt('â–² Swipe Up', { sz:14, fw:'800', x:W*.5-80, y:H*.89+13, w:160, fill:'#1e1b4b', align:'center' }));
+    canvas.add(mkTxt('�?� Swipe Up', { sz:14, fw:'800', x:W*.5-80, y:H*.89+13, w:160, fill:'#1e1b4b', align:'center' }));
     finishTpl();
 }
 
@@ -1410,7 +1410,7 @@ function tplDigitalMktgDark() {
     canvas.add(mkRect({ x:W*.45, y:0, w:W*.55, h:H, fill:'#0a1520', name:'right-bg' }));
     canvas.add(mkCircle({ x:W*.5, y:H*.2, r:120, fill:'#0ea5e9', op:.06, name:'glow' }));
     canvas.add(mkTxt('LOGO\nTAGLINE HERE', { sz:12, fw:'800', x:20, y:30, fill:'rgba(255,255,255,.6)', lh:1.2 }));
-    canvas.add(mkTxt('f  â—‹  Ã—  â–¶', { sz:14, fw:'700', x:W*.7, y:34, w:W*.25, fill:'rgba(255,255,255,.5)', align:'right' }));
+    canvas.add(mkTxt('f  �??  �?  �?�', { sz:14, fw:'700', x:W*.7, y:34, w:W*.25, fill:'rgba(255,255,255,.5)', align:'right' }));
     canvas.add(mkTxt('Digital', { sz:Math.round(H*.075), fw:'300', x:W*.5, y:80, w:W*.48, fill:'#ffffff', align:'center', font:'Inter' }));
     canvas.add(mkTxt('MARKETING\nAGENCY', { sz:Math.round(H*.09), fw:'900', x:W*.5, y:80+Math.round(H*.07), w:W*.48, fill:'#fbbf24', align:'center', lh:1.0 }));
     canvas.add(mkRect({ x:W*.5, y:H*.38, w:W*.48, h:1, fill:'rgba(255,255,255,.1)', name:'hr' }));
@@ -1423,10 +1423,10 @@ function tplDigitalMktgDark() {
     finishTpl();
 }
 
-// â”€â”€â”€ PROMO TEMPLATES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�?? PROMO TEMPLATES �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 
 function tplPromoMegaSale() {
-    // â”€â”€ MEGA SALE BLACK FRIDAY (Blue Lightning) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // �??�?? MEGA SALE BLACK FRIDAY (Blue Lightning) �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
     // Fundo + radial glow no centro superior
     startTpl('#0a1a3d');
     // Deep radial glow
@@ -1447,12 +1447,12 @@ function tplPromoMegaSale() {
     // Logo / Marca topo-esq
     canvas.add(mkTxt('LOGO HERE', {sz:11,fw:'800',x:20,y:20,fill:'rgba(255,255,255,.7)'}));
     // Redes topo-dir
-    canvas.add(mkTxt('f  âœ¦  @', {sz:14,fw:'700',x:W-110,y:20,w:100,fill:'rgba(255,255,255,.55)',align:'right'}));
+    canvas.add(mkTxt('f  �?�  @', {sz:14,fw:'700',x:W-110,y:20,w:100,fill:'rgba(255,255,255,.55)',align:'right'}));
 
     // Tag
     canvas.add(mkTxt('MEGA SALE', {sz:Math.round(H*.04),fw:'900',y:Math.round(H*.08),fill:'#ffffff',align:'center',w:W}));
 
-    // Textos principais â€” BLACK + FRIDAY centralizados
+    // Textos principais �?? BLACK + FRIDAY centralizados
     const tBLACK = Math.round(H*.19);
     const szBig  = Math.round(H*.195);
     canvas.add(mkTxt('BLACK', {
@@ -1498,13 +1498,13 @@ function tplPromoMegaSale() {
     canvas.add(mkTxt('OFF', {sz:Math.round(H*.055),fw:'900',x:20+Math.round(H*.1)*.55,y:offY+Math.round(H*.055),fill:'#ffffff'}));
     canvas.add(mkTxt('PROMO:BLACKFRIDAY50', {sz:12,fw:'700',x:20,y:offY+Math.round(H*.1)+6,fill:'rgba(255,255,255,.5)',letterSpacing:2}));
 
-    // BotÃ£o CTA
+    // Botão CTA
     canvas.add(mkRect({x:W*.5-110,y:H-62,w:220,h:44,fill:'#fcdc00',rx:22,shadow:new fabric.Shadow({color:'rgba(252,220,0,.4)',blur:14,offsetY:4})}));
-    canvas.add(mkTxt('SHOP NOW CLICK HERE â†˜', {sz:13,fw:'900',x:W*.5-110,y:H-48,w:220,fill:'#0a1a3d',align:'center'}));
+    canvas.add(mkTxt('SHOP NOW CLICK HERE �??', {sz:13,fw:'900',x:W*.5-110,y:H-48,w:220,fill:'#0a1a3d',align:'center'}));
     canvas.add(mkTxt('your website goes here', {sz:11,fw:'500',y:H-14,fill:'rgba(255,255,255,.4)',align:'center',w:W}));
 
     finishTpl();
-    // Produto de fundo â€” vai para trÃ¡s de tudo
+    // Produto de fundo �?? vai para trás de tudo
     asyncImg('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1080&q=80', img => {
         const s = Math.max(W/img.width, H*.55/img.height);
         img.set({ scaleX:s, scaleY:s, left:W*.12, top:Math.round(H*.28),
@@ -1520,10 +1520,10 @@ function tplPromoMegaSale() {
 }
 
 function tplPromoWeekend() {
-    // â”€â”€ WEEKEND OFFER (White + Blue Organic curves) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // �??�?? WEEKEND OFFER (White + Blue Organic curves) �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
     startTpl('#f1f5f9');
 
-    // Grande mancha azul Ã  direita (curva orgÃ¢nica superior)
+    // Grande mancha azul à direita (curva orgânica superior)
     canvas.add(new fabric.Ellipse({left:W*.2,top:-H*.35,rx:W*.65,ry:H*.7,fill:'#0ea5e9',name:'blue-blob-top'}));
 
     // Mancha azul inferior esquerda pequena
@@ -1532,14 +1532,14 @@ function tplPromoWeekend() {
     // Logo top-left
     canvas.add(mkTxt('LOGO\nTACGLINE', {sz:11,fw:'800',x:22,y:22,fill:'#1e3a8a',lh:1.3}));
     // Social icons top-right
-    canvas.add(mkTxt('Follow Us Now\nf  âœ¦  â—‰  âœ‰', {sz:11,fw:'600',x:W-130,y:22,w:120,fill:'rgba(255,255,255,.85)',align:'right',lh:1.5}));
+    canvas.add(mkTxt('Follow Us Now\nf  �?�  �??  �??', {sz:11,fw:'600',x:W-130,y:22,w:120,fill:'rgba(255,255,255,.85)',align:'right',lh:1.5}));
 
-    // Data â€” left side
+    // Data �?? left side
     canvas.add(mkTxt('29', {sz:Math.round(H*.12),fw:'900',x:22,y:Math.round(H*.32),fill:'#0284c7',shadow:new fabric.Shadow({color:'rgba(0,0,0,.1)',blur:6})}));
     canvas.add(mkTxt('NOVEMBER', {sz:Math.round(H*.038),fw:'900',x:22,y:Math.round(H*.43),fill:'#1e3a8a'}));
     canvas.add(mkTxt('2 0 2 5', {sz:Math.round(H*.025),fw:'600',x:22,y:Math.round(H*.46)+4,fill:'#64748b',letterSpacing:6}));
 
-    // TÃ­tulos sobre a mancha azul â€” lado direito
+    // Títulos sobre a mancha azul �?? lado direito
     const txR = Math.round(W*.38);
     canvas.add(mkTxt('Limited TIME Offer', {sz:Math.round(H*.038),fw:'500',x:txR,y:Math.round(H*.07),w:W*.6,fill:'rgba(255,255,255,.9)',font:'Playfair Display'}));
     canvas.add(mkTxt('BLACK', {sz:Math.round(H*.155),fw:'900',x:txR,y:Math.round(H*.11),w:W*.6,fill:'#ffffff',shadow:new fabric.Shadow({color:'rgba(0,0,0,.3)',blur:14,offsetY:6})}));
@@ -1549,22 +1549,22 @@ function tplPromoWeekend() {
     canvas.add(mkTxt('FRIDAY', {sz:Math.round(H*.155),fw:'900',x:txR,y:Math.round(H*.31),w:W*.6,fill:'#0f172a',shadow:new fabric.Shadow({color:'rgba(0,0,0,.15)',blur:10,offsetY:5})}));
     canvas.add(mkTxt('THIS WEEKEND ONLY', {sz:Math.round(H*.03),fw:'700',x:txR,y:Math.round(H*.47),w:W*.6,fill:'rgba(15,23,42,.65)',letterSpacing:3}));
 
-    // Desconto badge â€” canto inferior direito
+    // Desconto badge �?? canto inferior direito
     const discX = Math.round(W*.65), discY = Math.round(H*.6);
     canvas.add(mkRect({x:discX,y:discY,w:190,h:70,fill:'rgba(255,255,255,.9)',rx:8,shadow:new fabric.Shadow({color:'rgba(0,0,0,.12)',blur:12})}));
     canvas.add(mkTxt('Save UP To', {sz:12,fw:'600',x:discX+8,y:discY+8,fill:'#64748b'}));
     canvas.add(mkTxt('45%', {sz:Math.round(H*.08),fw:'900',x:discX+8,y:discY+6,fill:'#0284c7'}));
     canvas.add(mkTxt('Discount', {sz:16,fw:'700',x:discX+Math.round(H*.08)*.55+8,y:discY+Math.round(H*.065),fill:'#1e3a8a'}));
 
-    // RodapÃ©
+    // Rodapé
     canvas.add(mkRect({x:0,y:H-70,w:W,h:70,fill:'#0284c7',name:'footer',rx:0}));
     canvas.add(mkRect({x:28,y:H-56,w:140,h:38,fill:'rgba(255,255,255,.15)',rx:19,name:'btn-bg'}));
-    canvas.add(mkTxt('âŠ™  ORDER NOW', {sz:13,fw:'800',x:28,y:H-43,w:140,fill:'#ffffff',align:'center'}));
+    canvas.add(mkTxt('�??  ORDER NOW', {sz:13,fw:'800',x:28,y:H-43,w:140,fill:'#ffffff',align:'center'}));
     canvas.add(mkTxt('323-517-4946', {sz:16,fw:'700',x:W*.45,y:H-50,fill:'#ffffff'}));
     canvas.add(mkTxt('www.yourwebsite.com', {sz:11,fw:'500',x:W*.45,y:H-30,fill:'rgba(255,255,255,.7)'}));
 
     finishTpl();
-    // Produto/instrumento async â€” entra na camada correta
+    // Produto/instrumento async �?? entra na camada correta
     asyncImg('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1080&q=80', img => {
         const scale = (H*.52)/img.height;
         img.set({ scaleX:scale, scaleY:scale,
@@ -1574,7 +1574,7 @@ function tplPromoWeekend() {
             name:'product-img'
         });
         canvas.add(img);
-        // Manda o produto para baixo dos textos â€” logo acima das manchas azuis
+        // Manda o produto para baixo dos textos �?? logo acima das manchas azuis
         const blobBottom = canvas.getObjects().find(o=>o.name==='blue-blob-bottom');
         if(blobBottom) canvas.moveObjectTo(img, canvas.getObjects().indexOf(blobBottom)+1);
         canvas.requestRenderAll();
@@ -1582,7 +1582,7 @@ function tplPromoWeekend() {
 }
 
 function tplPromoTravel() {
-    // â”€â”€ TRAVEL EXPLORER (Blue + Yellow, diagonal slash) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // �??�?? TRAVEL EXPLORER (Blue + Yellow, diagonal slash) �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
     startTpl('#1d6fa8');
 
     // Slash branca diagonal dominante (elemento de design)
@@ -1593,13 +1593,13 @@ function tplPromoTravel() {
     canvas.add(mkRect({x:W*.08,y:-H*.12,w:18,h:H*1.3,fill:'#eab308',angle:22,name:'yellow-line'}));
 
     // Logo top-left
-    canvas.add(mkTxt('âœˆ LOGO', {sz:14,fw:'900',x:22,y:20,fill:'#fde047'}));
+    canvas.add(mkTxt('�?? LOGO', {sz:14,fw:'900',x:22,y:20,fill:'#fde047'}));
     canvas.add(mkTxt('HERE', {sz:10,fw:'600',x:22,y:37,fill:'rgba(255,255,255,.7)'}));
     // Social top-right
     canvas.add(mkTxt('FOLLOW US NOW', {sz:9,fw:'700',x:W-112,y:22,w:100,fill:'rgba(255,255,255,.6)',align:'right'}));
-    canvas.add(mkTxt('f  âœ¦  â—‰  âœ‰', {sz:13,fw:'600',x:W-112,y:33,w:100,fill:'rgba(255,255,255,.85)',align:'right'}));
+    canvas.add(mkTxt('f  �?�  �??  �??', {sz:13,fw:'600',x:W-112,y:33,w:100,fill:'rgba(255,255,255,.85)',align:'right'}));
 
-    // Tagline + TÃ­tulo hierarquizado
+    // Tagline + Título hierarquizado
     const txY = Math.round(H*.14);
     canvas.add(mkTxt("It's", {sz:Math.round(H*.042),fw:'400',x:Math.round(W*.28),y:txY,fill:'#fde047',font:'Playfair Display'}));
     canvas.add(mkTxt('TIME TO', {sz:Math.round(H*.04),fw:'300',x:Math.round(W*.28)+Math.round(H*.042)*.42,y:txY,fill:'rgba(255,255,255,.9)'}));
@@ -1608,7 +1608,7 @@ function tplPromoTravel() {
     canvas.add(mkTxt('EXPLORE', {sz:Math.round(H*.12),fw:'900',x:Math.round(W*.25),y:Math.round(H*.31),fill:'#ffffff',shadow:new fabric.Shadow({color:'rgba(0,0,0,.35)',blur:14})}));
     canvas.add(mkTxt('THE WORLD WITH US!', {sz:Math.round(H*.028),fw:'600',x:Math.round(W*.28),y:Math.round(H*.44),fill:'rgba(255,255,255,.8)',letterSpacing:3}));
 
-    // RetÃ¢ngulos de enquadramento decorativos (estilo porta-foto)
+    // Retângulos de enquadramento decorativos (estilo porta-foto)
     const frX1 = Math.round(W*.22), frY1 = Math.round(H*.5);
     const frW1 = Math.round(W*.52), frH1 = Math.round(H*.22);
     canvas.add(mkRect({x:frX1,y:frY1,w:frW1,h:frH1,fill:'#0f3a5c',rx:6,name:'photo-frame-1'}));
@@ -1625,16 +1625,16 @@ function tplPromoTravel() {
     canvas.add(mkTxt('50%', {sz:Math.round(H*.09),fw:'900',x:Math.round(W*.6)+8,y:Math.round(H*.72),w:144,fill:'#ffffff',align:'center',shadow:new fabric.Shadow({color:'rgba(0,0,0,.15)',blur:6})}));
     canvas.add(mkTxt('Discount', {sz:14,fw:'700',x:Math.round(W*.6)+8,y:Math.round(H*.7)+56,w:144,fill:'rgba(255,255,255,.9)',align:'center'}));
 
-    // BotÃ£o CTA
+    // Botão CTA
     canvas.add(mkRect({x:W*.5-110,y:H-72,w:220,h:44,fill:'rgba(255,255,255,.2)',rx:22,stroke:'#ffffff',strokeWidth:1.5,name:'btn'}));
-    canvas.add(mkTxt('â†’  BOOK NOW', {sz:16,fw:'800',x:W*.5-110,y:H-56,w:220,fill:'#ffffff',align:'center'}));
+    canvas.add(mkTxt('�??  BOOK NOW', {sz:16,fw:'800',x:W*.5-110,y:H-56,w:220,fill:'#ffffff',align:'center'}));
 
-    // RodapÃ©
+    // Rodapé
     canvas.add(mkTxt('609-791-3583', {sz:20,fw:'900',y:H-24,fill:'#ffffff',align:'center',w:W}));
     canvas.add(mkTxt('WWW.YOURWEBSITE.COM', {sz:11,fw:'500',y:H-10,fill:'rgba(255,255,255,.5)',align:'center',w:W}));
 
     finishTpl();
-    // Foto1 (aviÃ£o)
+    // Foto1 (avião)
     asyncImg('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1080&q=80', img => {
         img.set({ scaleX:frW1/img.width, scaleY:frH1/img.height,
             left:frX1, top:frY1, rx:6, ry:6,
@@ -1660,24 +1660,24 @@ function tplPromoTravel() {
     });
 }
 
-// â”€â”€â”€ CORPORATE TEMPLATES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�?? CORPORATE TEMPLATES �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 function tplCorpKpi() {
     startTpl('#0f172a');
     // Grid decoration
     for (let i=1; i<4; i++) canvas.add(new fabric.Line([W*i/4,0,W*i/4,H],{stroke:'rgba(255,255,255,.025)',selectable:false,name:'grid'+i}));
-    canvas.add(mkTxt('RELATÃ“RIO DE DESEMPENHO Q1 2025', { sz:11, fw:'800', y:50, fill:'#475569', name:'tag' }));
+    canvas.add(mkTxt('RELAT�?RIO DE DESEMPENHO Q1 2025', { sz:11, fw:'800', y:50, fill:'#475569', name:'tag' }));
     canvas.add(mkTxt('Resultados\ndo Trimestre.', { sz: Math.round(H*.12), fw:'900', y:85, lh:1.1, fill:'#e2e8f0', name:'title' }));
     // Divider
     canvas.add(mkRect({ x:60, y: Math.round(H*.53), w: W-120, h:1, fill:'rgba(255,255,255,.1)', name:'div' }));
     // KPI row
-    const kpis = [{v:'â†‘ 34%', l:'Crescimento'},{v:'98%', l:'SatisfaÃ§Ã£o'},{v:'120', l:'Projetos'}];
+    const kpis = [{v:'�?? 34%', l:'Crescimento'},{v:'98%', l:'Satisfação'},{v:'120', l:'Projetos'}];
     kpis.forEach((k, i) => {
         const bx = 60 + i * Math.round((W-120)/3);
         const bw = Math.round((W-120)/3) - 8;
         canvas.add(mkTxt(k.v, { sz: Math.round(H*.06), fw:'900', x: bx, y: Math.round(H*.57), w: bw, align:'center', fill:'#6366f1', name:'kv'+i }));
         canvas.add(mkTxt(k.l, { sz:11, fw:'500', x: bx, y: Math.round(H*.63), w: bw, align:'center', fill:'#64748b', name:'kl'+i }));
     });
-    canvas.add(mkTxt('Meta superada em todos os indicadores. ParabÃ©ns ao time.', { sz: Math.round(H*.03), y: Math.round(H*.78), fill:'rgba(255,255,255,.5)', lh:1.5, name:'sub' }));
+    canvas.add(mkTxt('Meta superada em todos os indicadores. Parabéns ao time.', { sz: Math.round(H*.03), y: Math.round(H*.78), fill:'rgba(255,255,255,.5)', lh:1.5, name:'sub' }));
     finishTpl();
 }
 
@@ -1687,7 +1687,7 @@ function tplCorpLaunch() {
     canvas.add(mkCircle({ x:-60, y: H*.65, r:190, fill:'#6366f1', op:.08 }));
     canvas.add(mkTxt('NOVO PRODUTO', { sz:11, fw:'800', y:55, fill:'#a5b4fc', name:'tag' }));
     canvas.add(mkTxt('Chegou o\nMomento\nde Inovar.', { sz: Math.round(H*.12), fw:'900', y:90, lh:1.05, shadow: new fabric.Shadow({color:'rgba(99,102,241,.3)',blur:18}), name:'title' }));
-    canvas.add(mkTxt('Nossa nova soluÃ§Ã£o transforma a gestÃ£o de projetos para o prÃ³ximo nÃ­vel.', { sz: Math.round(H*.034), y: Math.round(H*.7), lh:1.6, fill:'rgba(255,255,255,.8)', name:'sub' }));
+    canvas.add(mkTxt('Nossa nova solução transforma a gestão de projetos para o próximo nível.', { sz: Math.round(H*.034), y: Math.round(H*.7), lh:1.6, fill:'rgba(255,255,255,.8)', name:'sub' }));
     canvas.add(mkRect({ x:60, y: Math.round(H*.83), w:175, h:48, fill:'#6366f1', rx:8, shadow: new fabric.Shadow({color:'rgba(99,102,241,.45)',blur:16,offsetY:6}), name:'btn-bg' }));
     canvas.add(mkTxt('Conhecer Agora', { sz:15, fw:'700', x:60, y: Math.round(H*.83)+14, w:175, fill:'#fff', align:'center', name:'btn-txt' }));
     finishTpl();
@@ -1699,17 +1699,17 @@ function tplCorpWebinar() {
     canvas.add(mkCircle({ x:80, y: H*.85, r:170, fill:'#6366f1', op:.07 }));
     // Live badge
     canvas.add(mkRect({ x:60, y:60, w:80, h:28, fill:'#ef4444', rx:14, name:'live-bg' }));
-    canvas.add(mkTxt('â— AO VIVO', { sz:10, fw:'800', x:60, y:67, w:80, fill:'#fff', align:'center', name:'live' }));
+    canvas.add(mkTxt('�?� AO VIVO', { sz:10, fw:'800', x:60, y:67, w:80, fill:'#fff', align:'center', name:'live' }));
     canvas.add(mkTxt('NOSSA EQUIPE', { sz:11, fw:'800', x:60, y:58, fill:'transparent', name:'hidden-space' }));
     canvas.add(mkTxt('Webinar\nExecutivo:', { sz: Math.round(H*.11), fw:'900', y:110, lh:1.1, fill:'#f8fafc', name:'title' }));
-    canvas.add(mkTxt('GestÃ£o de Alto Impacto em 2025', { sz: Math.round(H*.048), fw:'700', y: Math.round(H*.48), fill:'#38bdf8', name:'sub1' }));
-    canvas.add(mkTxt('ðŸ“…  15 de Agosto  â€¢  19h00  â€¢  Online e Gratuito', { sz:14, fw:'500', y: Math.round(H*.62), fill:'#94a3b8', name:'info' }));
+    canvas.add(mkTxt('Gestão de Alto Impacto em 2025', { sz: Math.round(H*.048), fw:'700', y: Math.round(H*.48), fill:'#38bdf8', name:'sub1' }));
+    canvas.add(mkTxt('�???  15 de Agosto  �?�  19h00  �?�  Online e Gratuito', { sz:14, fw:'500', y: Math.round(H*.62), fill:'#94a3b8', name:'info' }));
     canvas.add(mkRect({ x:60, y: Math.round(H*.78), w:200, h:48, fill:'#0ea5e9', rx:24, shadow: new fabric.Shadow({color:'rgba(14,165,233,.45)',blur:16,offsetY:6}), name:'btn-bg' }));
     canvas.add(mkTxt('Garantir Minha Vaga', { sz:14, fw:'700', x:60, y: Math.round(H*.78)+14, w:200, fill:'#fff', align:'center', name:'btn-txt' }));
     finishTpl();
 }
 
-/* â”€â”€ NEW PREMIUM TEMPLATES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* �??�?? NEW PREMIUM TEMPLATES �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�?? */
 
 function tplMegaSaleBlue() { tplPromoMegaSale(); }
 function tplBfWeekend() { tplPromoWeekend(); }
@@ -1723,13 +1723,13 @@ function tplBfCamera() {
     startTpl('linear-gradient(160deg,#1a0a00 0%,#4a1c00 60%,#1a0a00 100%)');
     canvas.add(mkCircle({ x:W*.6, y:H*.4, r:W*.35, fill: new fabric.Gradient({ type:'radial', coords:{x1:W*.5,y1:H*.5,x2:W*.5,y2:H*.5,r1:0,r2:W*.35}, colorStops:[{offset:0,color:'rgba(217,119,6,.3)'},{offset:1,color:'transparent'}]}) }));
     canvas.add(mkTxt('BLACK FRIDAY', { sz:12, fw:'700', x:25, y:40, fill:'#d97706', charSpacing:400 }));
-    canvas.add(mkTxt('CÃ‚MERAS &\nFOTOGRAFIA', { sz:Math.round(H*.08), fw:'800', x:25, y:65, fill:'rgba(255,255,255,.5)', lh:1.1 }));
+    canvas.add(mkTxt('C�?MERAS &\nFOTOGRAFIA', { sz:Math.round(H*.08), fw:'800', x:25, y:65, fill:'rgba(255,255,255,.5)', lh:1.1 }));
     canvas.add(mkTxt('-60%', { sz:Math.round(H*.22), fw:'900', x:25, y:120, fill:'#fbbf24', shadow:'0 10px 20px rgba(0,0,0,.5)' }));
     canvas.add(mkTxt('DE DESCONTO', { sz:14, fw:'700', x:25, y:120+Math.round(H*.18), fill:'rgba(255,255,255,.4)' }));
     
     // Icon decoration
     canvas.add(mkCircle({ x:60, y:H-140, r:40, fill:'rgba(255,255,255,.05)', stroke:'#d97706', strokeWidth:2 }));
-    canvas.add(mkTxt('ðŸ“·', { sz:32, x:38, y:H-144 }));
+    canvas.add(mkTxt('�??�', { sz:32, x:38, y:H-144 }));
     
     canvas.add(mkRect({ x:25, y:H-80, w:W-50, h:50, fill:'transparent', rx:8, stroke:'#d97706', strokeWidth:2 }));
     canvas.add(mkTxt('APROVEITE A OFERTA AGORA', { sz:14, fw:'800', x:25, y:H-64, w:W-50, align:'center', fill:'#d97706' }));
@@ -1739,11 +1739,11 @@ function tplBfCamera() {
 function tplBusinessOrange() {
     startTpl('linear-gradient(135deg,#ea580c 0%,#d97706 100%)');
     canvas.add(mkTxt('OFERTA ESPECIAL', { sz:12, fw:'800', x:30, y:H*.3, fill:'rgba(255,255,255,.6)', charSpacing:300 }));
-    canvas.add(mkTxt('Transforme\nseu Negócio', { sz:Math.round(H*.15), fw:'900', x:30, y:H*.34, fill:'#fff', lh:1.0 }));
+    canvas.add(mkTxt('Transforme\nseu Neg�cio', { sz:Math.round(H*.15), fw:'900', x:30, y:H*.34, fill:'#fff', lh:1.0 }));
     canvas.add(mkRect({ x:30, y:H*.58, w:100, h:4, fill:'rgba(255,255,255,.4)' }));
     canvas.add(mkTxt('Consultoria completa com especialistas\npara alavancar seus resultados em 2025.', { sz:16, fw:'400', x:30, y:H*.62, fill:'rgba(255,255,255,.8)', lh:1.5 }));
     canvas.add(mkRect({ x:30, y:H*.78, w:220, h:54, fill:'#fff', rx:10 }));
-    canvas.add(mkTxt('SAIBA MAIS →', { sz:18, fw:'900', x:30, y:H*.78+16, w:220, align:'center', fill:'#ea580c' }));
+    canvas.add(mkTxt('SAIBA MAIS ?', { sz:18, fw:'900', x:30, y:H*.78+16, w:220, align:'center', fill:'#ea580c' }));
     finishTpl();
 }
 
@@ -1751,12 +1751,12 @@ function tplBfFone() {
     startTpl('#0a0a0a');
     canvas.add(mkRect({ x:0, y:0, w:W, h:5, fill:'#eab308' }));
     canvas.add(mkTxt('BLACK FRIDAY', { sz:12, fw:'700', x:25, y:40, fill:'#eab308', charSpacing:400 }));
-    canvas.add(mkTxt('FONES & ÃUDIO', { sz:16, fw:'800', x:25, y:65, fill:'rgba(255,255,255,.4)', charSpacing:100 }));
+    canvas.add(mkTxt('FONES & ÁUDIO', { sz:16, fw:'800', x:25, y:65, fill:'rgba(255,255,255,.4)', charSpacing:100 }));
     canvas.add(mkTxt('80%', { sz:Math.round(H*.24), fw:'900', x:25, y:100, fill:'#fde047' }));
     canvas.add(mkTxt('OFF', { sz:28, fw:'900', x:Math.round(W*.65), y:210, fill:'rgba(255,255,255,.5)' }));
     
     canvas.add(mkCircle({ x:W/2, y:H/2+40, r:80, fill:'rgba(255,255,255,.03)', stroke:'rgba(234,179,8,.3)', strokeWidth:1 }));
-    canvas.add(mkTxt('ðŸŽ§', { sz:70, x:W/2-35, y:H/2 }));
+    canvas.add(mkTxt('�??�', { sz:70, x:W/2-35, y:H/2 }));
 
     canvas.add(mkRect({ x:25, y:H-90, w:W-50, h:54, fill:'#eab308', rx:10 }));
     canvas.add(mkTxt('COMPRAR AGORA', { sz:16, fw:'900', x:25, y:H-72, w:W-50, align:'center', fill:'#000' }));
@@ -1767,11 +1767,11 @@ function tplStartupTalkshow() {
     startTpl('linear-gradient(160deg,#0a1f1a 0%,#0d4a3e 60%,#0a2010 100%)');
     canvas.add(mkRect({ x:20, y:20, w:W-40, h:H-40, fill:'transparent', stroke:'rgba(212,175,55,.4)', strokeWidth:2, rx:20 }));
     canvas.add(mkTxt('STARTUP TALK', { sz:12, fw:'700', y:60, fill:'#d4af37', align:'center', w:W, charSpacing:400 }));
-    canvas.add(mkTxt('InovaÃ§Ã£o &\nNegÃ³cios', { sz:Math.round(H*.14), fw:'900', y:90, fill:'#fff', align:'center', w:W, lh:1.1 }));
+    canvas.add(mkTxt('Inovação &\nNegócios', { sz:Math.round(H*.14), fw:'900', y:90, fill:'#fff', align:'center', w:W, lh:1.1 }));
     canvas.add(mkCircle({ x:W/2, y:H/2+20, r:45, fill:'rgba(212,175,55,.1)', stroke:'rgba(212,175,55,.3)', strokeWidth:1.5 }));
-    canvas.add(mkTxt('ðŸŽ™ï¸', { sz:40, x:W/2-20, y:H/2-5 }));
+    canvas.add(mkTxt('�???️', { sz:40, x:W/2-20, y:H/2-5 }));
     canvas.add(mkRect({ x:60, y:H-100, w:W-120, h:45, fill:'rgba(212,175,55,.15)', stroke:'rgba(212,175,55,.3)', rx:10 }));
-    canvas.add(mkTxt('EPISÃ“DIO AO VIVO', { sz:14, fw:'700', y:H-85, fill:'#d4af37', align:'center', w:W }));
+    canvas.add(mkTxt('EPIS�?DIO AO VIVO', { sz:14, fw:'700', y:H-85, fill:'#d4af37', align:'center', w:W }));
     finishTpl();
 }
 
@@ -1788,8 +1788,8 @@ function tplHeadlineDark() {
     // Horizontal rule
     canvas.add(mkRect({ x:50, y:Math.round(H*.52), w:W-100, h:1, fill:'rgba(255,255,255,.12)' }));
     // Body text
-    canvas.add(mkTxt('Subtítulo descritivo ou chamada de ação. Personalize este texto para o seu banner.', { sz:Math.round(H*.033), x:50, y:Math.round(H*.55), w:W*.7, fill:'rgba(255,255,255,.5)', lh:1.7 }));
-    // CTA button — ghost style
+    canvas.add(mkTxt('Subt�tulo descritivo ou chamada de a��o. Personalize este texto para o seu banner.', { sz:Math.round(H*.033), x:50, y:Math.round(H*.55), w:W*.7, fill:'rgba(255,255,255,.5)', lh:1.7 }));
+    // CTA button ? ghost style
     canvas.add(mkRect({ x:50, y:Math.round(H*.8), w:180, h:48, fill:'transparent', rx:4, stroke:'rgba(255,255,255,.4)', strokeWidth:1.5 }));
     canvas.add(mkTxt('SAIBA MAIS', { sz:13, fw:'700', x:50, y:Math.round(H*.8)+16, w:180, fill:'rgba(255,255,255,.8)', align:'center', charSpacing:300 }));
     // Bottom right corner accent
@@ -1803,12 +1803,12 @@ function tplTravelWorld() {
     const warmGlow = new fabric.Gradient({ type:'radial', coords:{x1:W*.5,y1:H*.4,x2:W*.5,y2:H*.4,r1:0,r2:W*.6},
         colorStops:[{offset:0,color:'rgba(212,165,116,.25)'},{offset:1,color:'transparent'}]});
     canvas.add(mkRect({ x:0,y:0,w:W,h:H, fill:warmGlow, name:'glow-bg' }));
-    // Decorative circle elements — compass-like
+    // Decorative circle elements ? compass-like
     canvas.add(mkCircle({ x:W*.75, y:H*.3, r:130, fill:'transparent', stroke:'rgba(212,165,116,.18)', strokeWidth:2, op:1 }));
     canvas.add(mkCircle({ x:W*.75, y:H*.3, r:90,  fill:'transparent', stroke:'rgba(212,165,116,.12)', strokeWidth:1, op:1 }));
     canvas.add(mkCircle({ x:W*.75, y:H*.3, r:50,  fill:'rgba(212,165,116,.08)', stroke:'rgba(212,165,116,.2)', strokeWidth:1.5, op:1 }));
     // Logo / brand top
-    canvas.add(mkTxt('✈ TRAVEL WORLD', { sz:11, fw:'700', x:40, y:32, fill:'#d4a574', charSpacing:400 }));
+    canvas.add(mkTxt('? TRAVEL WORLD', { sz:11, fw:'700', x:40, y:32, fill:'#d4a574', charSpacing:400 }));
     // Main copy
     canvas.add(mkTxt('Explore', { sz:Math.round(H*.06), fw:'300', x:40, y:72, fill:'rgba(255,255,255,.7)', font:'Playfair Display' }));
     canvas.add(mkTxt('O Mundo', { sz:Math.round(H*.155), fw:'900', x:40, y:108, fill:'#ffffff', lh:1.0, shadow: new fabric.Shadow({color:'rgba(0,0,0,.5)',blur:18}) }));
@@ -1816,7 +1816,7 @@ function tplTravelWorld() {
     // Horizontal separator
     canvas.add(mkRect({ x:40, y:Math.round(H*.52), w:120, h:2, fill:'#d4a574', rx:1 }));
     // Destinations row
-    const dests = ['Paris', 'Tóquio', 'Cairo', 'Lisboa'];
+    const dests = ['Paris', 'T�quio', 'Cairo', 'Lisboa'];
     dests.forEach((d, i) => {
         canvas.add(mkTxt(d, { sz:11, fw:'600', x:40+i*Math.round((W-80)/4), y:Math.round(H*.55), fill:'rgba(255,255,255,.55)' }));
     });
@@ -1826,7 +1826,7 @@ function tplTravelWorld() {
     canvas.add(mkRect({ x:40, y:Math.round(H*.8), w:185, h:48, fill:'#d4a574', rx:24, shadow: new fabric.Shadow({color:'rgba(212,165,116,.4)',blur:14,offsetY:6}) }));
     canvas.add(mkTxt('RESERVAR VIAGEM', { sz:13, fw:'800', x:40, y:Math.round(H*.8)+15, w:185, fill:'#2c1a0e', align:'center' }));
     // Footer
-    canvas.add(mkTxt('www.seusite.com.br  •  contato@viagem.com', { sz:10, fw:'500', y:H-18, fill:'rgba(255,255,255,.3)', align:'center', w:W }));
+    canvas.add(mkTxt('www.seusite.com.br  ?  contato@viagem.com', { sz:10, fw:'500', y:H-18, fill:'rgba(255,255,255,.3)', align:'center', w:W }));
     finishTpl();
 }
 
@@ -1837,9 +1837,9 @@ function tplFashionPop() {
     canvas.add(mkTxt('NEW COLLECTION', { sz:11, fw:'700', y:50, fill:'rgba(255,255,255,.4)', align:'center', w:W, charSpacing:500 }));
     canvas.add(mkTxt('FASHION', { sz:Math.round(H*.18), fw:'900', y:80, fill:'#fff', align:'center', w:W }));
     canvas.add(mkTxt('POP', { sz:Math.round(H*.18), fw:'900', y:80+Math.round(H*.15), fill:'#f9a8d4', align:'center', w:W }));
-    canvas.add(mkTxt('SUMMER • SPRING', { sz:12, fw:'500', y:280, fill:'rgba(255,255,255,.4)', align:'center', w:W, charSpacing:300 }));
+    canvas.add(mkTxt('SUMMER ? SPRING', { sz:12, fw:'500', y:280, fill:'rgba(255,255,255,.4)', align:'center', w:W, charSpacing:300 }));
     canvas.add(mkRect({ x:W/2-100, y:H-90, w:200, h:50, fill:'#ec4899', rx:10 }));
-    canvas.add(mkTxt('EXPLORAR COLEÇÃO', { sz:14, fw:'800', y:H-72, fill:'#fff', align:'center', w:W }));
+    canvas.add(mkTxt('EXPLORAR COLE��O', { sz:14, fw:'800', y:H-72, fill:'#fff', align:'center', w:W }));
     finishTpl();
 }
 
@@ -1847,10 +1847,10 @@ function tplSplitGeo() {
     startTpl('#fff');
     canvas.add(mkRect({ x:0, y:0, w:W*.5, h:H, fill:'#1e1b4b' }));
     canvas.add(new fabric.Polygon([{x:W*.45,y:0},{x:W*.7,y:0},{x:W*.6,y:H},{x:W*.35,y:H}], { fill:'#4f46e5', selectable:false }));
-    canvas.add(mkTxt('SERVIÇOS', { sz:10, fw:'700', x:30, y:H*.3, fill:'#a5b4fc', charSpacing:400 }));
+    canvas.add(mkTxt('SERVI�OS', { sz:10, fw:'700', x:30, y:H*.3, fill:'#a5b4fc', charSpacing:400 }));
     canvas.add(mkTxt('Design\nPremium', { sz:Math.round(H*.14), fw:'900', x:30, y:H*.34, fill:'#fff', lh:1.0 }));
     canvas.add(mkRect({ x:30, y:H*.55, w:50, h:4, fill:'#7c5cff' }));
-    canvas.add(mkTxt('Sua marca com\nexcelência visual.', { sz:14, color:'rgba(255,255,255,.6)', x:30, y:H*.58, lh:1.5 }));
+    canvas.add(mkTxt('Sua marca com\nexcel�ncia visual.', { sz:14, color:'rgba(255,255,255,.6)', x:30, y:H*.58, lh:1.5 }));
     
     const services = ['Social Media', 'Branding', 'Web Design', 'Ads Graphics'];
     services.forEach((s,i) => {
@@ -1865,10 +1865,10 @@ function tplNeonDark() {
     canvas.add(mkCircle({ x:W/2, y:H*.3, r:100, fill:'rgba(124,92,255,.4)', op:.5, name:'glow' }));
     canvas.getObjects().find(o=>o.name==='glow').set('shadow', new fabric.Shadow({color:'#7c5cff',blur:60}));
     
-    canvas.add(mkTxt('◆ STUDIO ◆', { sz:12, fw:'700', y:60, fill:'#7c5cff', align:'center', w:W, charSpacing:500 }));
+    canvas.add(mkTxt('? STUDIO ?', { sz:12, fw:'700', y:60, fill:'#7c5cff', align:'center', w:W, charSpacing:500 }));
     canvas.add(mkTxt('NEON\nDARK', { sz:Math.round(H*.16), fw:'900', y:90, align:'center', w:W, lh:0.95, fill: new fabric.Gradient({ type:'linear', coords:{x1:0,y1:0,x2:W,y2:0}, colorStops:[{offset:0,color:'#7c5cff'},{offset:1,color:'#00d4ff'}]}) }));
     canvas.add(mkRect({ x:W*.15, y:230, w:W*.7, h:1, fill: new fabric.Gradient({ type:'linear', coords:{x1:0,y1:0,x2:W*.7,y2:0}, colorStops:[{offset:0,color:'transparent'},{offset:.5,color:'#7c5cff'},{offset:1,color:'transparent'}]}) }));
-    canvas.add(mkTxt('creative • studio • design', { sz:11, fw:'500', y:245, fill:'rgba(255,255,255,.3)', align:'center', w:W, charSpacing:300 }));
+    canvas.add(mkTxt('creative ? studio ? design', { sz:11, fw:'500', y:245, fill:'rgba(255,255,255,.3)', align:'center', w:W, charSpacing:300 }));
     
     canvas.add(mkRect({ x:60, y:H-100, w:W-120, h:48, fill:'transparent', stroke:'#7c5cff', strokeWidth:1.5, rx:10 }));
     canvas.add(mkTxt('ENTRAR EM CONTATO', { sz:14, fw:'800', y:H-84, fill:'#7c5cff', align:'center', w:W, charSpacing:100 }));
@@ -1880,9 +1880,9 @@ function tplAgenciaSquare() {
     canvas.add(mkRect({ x:0, y:0, w:5, h:H, fill: new fabric.Gradient({ type:'linear', coords:{x1:0,y1:0,x2:0,y2:H}, colorStops:[{offset:0,color:'#00d4ff'},{offset:1,color:'#7c5cff'}]}) }));
     canvas.add(mkTxt('MARKETING DIGITAL', { sz:10, fw:'700', x:30, y:40, fill:'#00d4ff', charSpacing:400 }));
     canvas.add(mkTxt('Sua marca\nno ', { sz:Math.round(H*.12), fw:'900', x:30, y:70, fill:'#fff', lh:1.1 }));
-    canvas.add(mkTxt('próximo\nnível', { sz:Math.round(H*.12), fw:'900', x:30, y:70+Math.round(H*.12), fill:'#00d4ff', lh:1.1 }));
+    canvas.add(mkTxt('pr�ximo\nn�vel', { sz:Math.round(H*.12), fw:'900', x:30, y:70+Math.round(H*.12), fill:'#00d4ff', lh:1.1 }));
     canvas.add(mkRect({ x:30, y:280, w:100, h:2, fill:'rgba(0,212,255,.3)' }));
-    canvas.add(mkTxt('Strategy • Creative • Performance', { sz:11, fw:'600', x:30, y:295, fill:'rgba(255,255,255,.4)', charSpacing:100 }));
+    canvas.add(mkTxt('Strategy ? Creative ? Performance', { sz:11, fw:'600', x:30, y:295, fill:'rgba(255,255,255,.4)', charSpacing:100 }));
     
     canvas.add(mkRect({ x:30, y:H-80, w:120, h:40, fill: new fabric.Gradient({ type:'linear', coords:{x1:0,y1:0,x2:120,y2:0}, colorStops:[{offset:0,color:'#00d4ff'},{offset:1,color:'#7c5cff'}]}), rx:6 }));
     canvas.add(mkTxt('CONTATO', { sz:12, fw:'900', x:30, y:H-68, w:120, align:'center', fill:'#fff' }));
@@ -1895,28 +1895,28 @@ function tplNgoNeon() {
     canvas.getObjects().find(o=>o.name==='glow').set('shadow', new fabric.Shadow({color:'#6366f1',blur:60}));
     
     canvas.add(mkCircle({ x:W/2, y:60, r:30, fill:'rgba(99,102,241,.1)', stroke:'rgba(99,102,241,.4)', strokeWidth:1.5 }));
-    canvas.add(mkTxt('â¤ï¸', { sz:28, x:W/2-21, y:45 }));
+    canvas.add(mkTxt('❤️', { sz:28, x:W/2-21, y:45 }));
     
     canvas.add(mkTxt('SOLIDARIEDADE', { sz:12, fw:'700', y:110, fill:'#818cf8', align:'center', w:W, charSpacing:400 }));
     canvas.add(mkTxt('Juntos\nPodemos\nMais', { sz:Math.round(H*.14), fw:'900', y:140, align:'center', w:W, lh:1.0, fill:'#fff' }));
     canvas.add(mkRect({ x:W*.2, y:H*.55, w:W*.6, h:1, fill: new fabric.Gradient({ type:'linear', coords:{x1:0,y1:0,x2:W*.6,y2:0}, colorStops:[{offset:0,color:'transparent'},{offset:.5,color:'#6366f1'},{offset:1,color:'transparent'}]}) }));
-    canvas.add(mkTxt('Transformando vidas atravÃ©s da aÃ§Ã£o coletiva', { sz:13, fw:'400', y:H*.58, fill:'rgba(255,255,255,.4)', align:'center', w:W }));
+    canvas.add(mkTxt('Transformando vidas através da ação coletiva', { sz:13, fw:'400', y:H*.58, fill:'rgba(255,255,255,.4)', align:'center', w:W }));
     
     canvas.add(mkRect({ x:60, y:H-90, w:W-120, h:50, fill:'#4f46e5', rx:10 }));
-    canvas.add(mkTxt('SEJA VOLUNTÃRIO', { sz:16, fw:'800', y:H-72, fill:'#fff', align:'center', w:W }));
+    canvas.add(mkTxt('SEJA VOLUNTÁRIO', { sz:16, fw:'800', y:H-72, fill:'#fff', align:'center', w:W }));
     finishTpl();
 }
 
 function tplSocialImpact() {
     startTpl('linear-gradient(135deg,#052e16 0%,#064e3b 100%)');
     canvas.add(mkCircle({ x:50, y:50, r:22, fill:'rgba(16,185,129,.1)', stroke:'rgba(16,185,129,.4)', strokeWidth:1.5 }));
-    canvas.add(mkTxt('ðŸŒ¿', { sz:20, x:40, y:40 }));
+    canvas.add(mkTxt('�??�', { sz:20, x:40, y:40 }));
     canvas.add(mkTxt('IMPACTO SOCIAL', { sz:11, fw:'700', x:85, y:45, fill:'#34d399', charSpacing:300 }));
     
-    canvas.add(mkTxt('Cada ação\ntransforma\nvidas', { sz:Math.round(H*.14), fw:'900', x:40, y:120, fill:'#fff', lh:1.1 }));
+    canvas.add(mkTxt('Cada a��o\ntransforma\nvidas', { sz:Math.round(H*.14), fw:'900', x:40, y:120, fill:'#fff', lh:1.1 }));
     canvas.add(mkTxt('vidas', { sz:Math.round(H*.14), fw:'900', x:40, y:120+Math.round(H*.22), fill:'#6ee7b7', lh:1.1 }));
     
-    canvas.add(mkTxt('Sua participação faz a diferença real\nna vida de quem mais precisa.', { sz:16, fw:'400', x:40, y:H*.6, fill:'rgba(255,255,255,.4)', lh:1.5 }));
+    canvas.add(mkTxt('Sua participa��o faz a diferen�a real\nna vida de quem mais precisa.', { sz:16, fw:'400', x:40, y:H*.6, fill:'rgba(255,255,255,.4)', lh:1.5 }));
     canvas.add(mkRect({ x:40, y:H-100, w:180, h:50, fill:'#10b981', rx:8 }));
     canvas.add(mkTxt('APOIE AGORA', { sz:16, fw:'800', x:40, y:H-82, w:180, align:'center', fill:'#fff' }));
     finishTpl();
@@ -1928,7 +1928,7 @@ function tplCampanhaDoacao() {
     canvas.add(mkRect({ x:25, y:40, w:160, h:28, fill:'#fef3c7', rx:6 }));
     canvas.add(mkTxt('CAMPANHA URGENTE', { sz:11, fw:'800', x:25, y:48, w:160, align:'center', fill:'#d97706', charSpacing:100 }));
     
-    canvas.add(mkTxt('Sua doaÃ§Ã£o\nsalva vidas', { sz:Math.round(H*.12), fw:'900', x:25, y:85, fill:'#1e293b', lh:1.2 }));
+    canvas.add(mkTxt('Sua doação\nsalva vidas', { sz:Math.round(H*.12), fw:'900', x:25, y:85, fill:'#1e293b', lh:1.2 }));
     canvas.add(mkRect({ x:25, y:210, w:W-50, h:1, fill:'#f1f5f9' }));
     
     canvas.add(mkTxt('Meta: R$ 50.000', { sz:14, fw:'600', x:25, y:230, fill:'#64748b' }));
@@ -1936,24 +1936,24 @@ function tplCampanhaDoacao() {
     
     canvas.add(mkRect({ x:25, y:280, w:W-50, h:10, fill:'#f1f5f9', rx:5 }));
     canvas.add(mkRect({ x:25, y:280, w:(W-50)*.64, h:10, fill: new fabric.Gradient({ type:'linear', coords:{x1:0,y1:0,x2:(W-50)*.64,y2:0}, colorStops:[{offset:0,color:'#10b981'},{offset:1,color:'#34d399'}]}), rx:5 }));
-    canvas.add(mkTxt('64% da meta alcanÃ§ada', { sz:11, fw:'500', x:25, y:295, fill:'#94a3b8' }));
+    canvas.add(mkTxt('64% da meta alcançada', { sz:11, fw:'500', x:25, y:295, fill:'#94a3b8' }));
     
     canvas.add(mkRect({ x:25, y:H-80, w:W-50, h:50, fill:'#ef4444', rx:10 }));
-    canvas.add(mkTxt('QUERO CONTRIBUIR â¤ï¸', { sz:16, fw:'800', x:25, y:H-62, w:W-50, align:'center', fill:'#fff' }));
+    canvas.add(mkTxt('QUERO CONTRIBUIR ❤️', { sz:16, fw:'800', x:25, y:H-62, w:W-50, align:'center', fill:'#fff' }));
     finishTpl();
 }
 
 function tplVoluntariado() {
     startTpl('linear-gradient(160deg,#1a0a2e 0%,#3b1f5e 50%,#1a0a2e 100%)');
-    canvas.add(mkTxt('SEJA VOLUNTÃRIO', { sz:12, fw:'700', y:60, fill:'#a855f7', align:'center', w:W, charSpacing:400 }));
+    canvas.add(mkTxt('SEJA VOLUNTÁRIO', { sz:12, fw:'700', y:60, fill:'#a855f7', align:'center', w:W, charSpacing:400 }));
     
-    const users = ['ðŸ‘¤','ðŸ‘¤','ðŸ‘¤'];
+    const users = ['�??�','�??�','�??�'];
     users.forEach((u,i) => {
         canvas.add(mkCircle({ x:W/2 - 40 + i*40, y:120, r:25, fill:'rgba(168,85,247,.1)', stroke:'rgba(168,85,247,.4)', strokeWidth:1 }));
         canvas.add(mkTxt(u, { sz:18, x:W/2 - 40 + i*40 - 9, y:110 }));
     });
     
-    canvas.add(mkTxt('FaÃ§a parte\nda mudanÃ§a', { sz:Math.round(H*.14), fw:'900', y:170, align:'center', w:W, lh:1.1, fill:'#fff' }));
+    canvas.add(mkTxt('Faça parte\nda mudança', { sz:Math.round(H*.14), fw:'900', y:170, align:'center', w:W, lh:1.1, fill:'#fff' }));
     canvas.add(mkTxt('Doe seu tempo, multiplique o impacto', { sz:14, fw:'400', y:260, fill:'rgba(255,255,255,.4)', align:'center', w:W }));
     
     canvas.add(mkRect({ x:60, y:H-90, w:W-120, h:50, fill:'rgba(168,85,247,.8)', rx:10 }));
@@ -1961,13 +1961,13 @@ function tplVoluntariado() {
     finishTpl();
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // ADD ELEMENTS
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 function addText(type) {
     const cfgs = {
-        heading: { text:'TÃ­tulo Principal', sz: Math.round(H*.09), fw:'800', fill:'#111827' },
-        sub:     { text:'SubtÃ­tulo do Banner', sz: Math.round(H*.04), fw:'600', fill:'#374151' },
+        heading: { text:'Título Principal', sz: Math.round(H*.09), fw:'800', fill:'#111827' },
+        sub:     { text:'Subtítulo do Banner', sz: Math.round(H*.04), fw:'600', fill:'#374151' },
         body:    { text:'Adicione aqui o texto do banner. Clique para editar e personalizar.', sz: Math.round(H*.03), fw:'400', fill:'#6b7280' },
         badge:   { text:'NOVO', sz: Math.round(H*.025), fw:'800', fill:'#ffffff' },
     };
@@ -2002,7 +2002,7 @@ function addShape(type) {
     else if (type === 'badge_pill') {
         const group = new fabric.Group([
             new fabric.Rect({ width:200, height:46, fill:'#ef4444', rx:23, left:-100, top:-23 }),
-            new fabric.Text('PROMOÃ‡ÃƒO', { fontSize:16, fontWeight:'800', fill:'#fff', left:-100, top:-10, width:200, textAlign:'center', fontFamily:'Inter' }),
+            new fabric.Text('PROMO�?�?O', { fontSize:16, fontWeight:'800', fill:'#fff', left:-100, top:-10, width:200, textAlign:'center', fontFamily:'Inter' }),
         ], { left:cx-100, top:cy-23, selectable:true, name:'badge_pill' });
         canvas.add(group); canvas.setActiveObject(group); canvas.requestRenderAll(); return;
     }
@@ -2053,9 +2053,9 @@ function updateGlobalFont(f) {
     canvas.requestRenderAll(); pushHistory();
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // IMAGES
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 const STOCK = [
     'https://images.unsplash.com/photo-1542838132-92c53300491e?w=280&q=70',
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=280&q=70',
@@ -2114,9 +2114,9 @@ function handleUpload(input) {
     input.value = '';
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // LAYERS
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 function refreshLayers() {
     const list = document.getElementById('layers-list');
     if (!list) return;
@@ -2199,9 +2199,9 @@ function toggleLock(idx) {
 function toggleVis(idx) { const o = canvas.item(idx); if(o){ o.set('visible', !o.visible); canvas.requestRenderAll(); refreshLayers(); } }
 function delLayer(idx) { const o = canvas.item(idx); if(o){ canvas.remove(o); canvas.requestRenderAll(); refreshLayers(); } }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // PROPERTIES PANEL
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 canvas.on('selection:created', () => { updateProps(); refreshLayers(); });
 canvas.on('selection:updated', () => { updateProps(); refreshLayers(); });
 canvas.on('selection:cleared', () => { showNoSel(); refreshLayers(); });
@@ -2224,7 +2224,7 @@ function updateProps() {
 
     if (objs.length > 1) {
         setRpHeader('fas fa-object-group', objs.length + ' Elementos');
-        document.getElementById('props-content').innerHTML = `<div class="prop-group"><div class="prop-group-title">SeleÃ§Ã£o MÃºltipla</div>
+        document.getElementById('props-content').innerHTML = `<div class="prop-group"><div class="prop-group-title">Seleção Múltipla</div>
             <div class="prop-row">
                 <button class="prop-btn" onclick="groupSel()"><i class="fas fa-object-group"></i> Agrupar</button>
                 <button class="prop-btn" onclick="dupActive()"><i class="fas fa-copy"></i> Duplicar</button>
@@ -2246,7 +2246,7 @@ function updateProps() {
     let html = '';
 
     // General actions
-    html += `<div class="prop-group"><div class="prop-group-title">AÃ§Ãµes</div>
+    html += `<div class="prop-group"><div class="prop-group-title">Ações</div>
         <div class="prop-row">
             <button class="prop-btn" onclick="dupActive()"><i class="fas fa-copy"></i> Duplicar</button>
             ${isGroup ? `<button class="prop-btn" onclick="ungroupSel()"><i class="fas fa-object-ungroup"></i> Desagrupar</button>` : ''}
@@ -2255,7 +2255,7 @@ function updateProps() {
             <button class="prop-btn" onclick="alignObj('hcenter')" title="Centralizar Horiz."><i class="fas fa-arrows-left-right-to-line"></i></button>
             <button class="prop-btn" onclick="alignObj('vcenter')" title="Centralizar Vert."><i class="fas fa-arrows-up-down-to-line"></i></button>
             <button class="prop-btn" onclick="sendLayer('front')" title="Para Frente"><i class="fas fa-chevron-double-up"></i></button>
-            <button class="prop-btn" onclick="sendLayer('back')" title="Para TrÃ¡s"><i class="fas fa-chevron-double-down"></i></button>
+            <button class="prop-btn" onclick="sendLayer('back')" title="Para Trás"><i class="fas fa-chevron-double-down"></i></button>
         </div>
         <div class="prop-row">
             <span class="prop-label">Opacidade</span>
@@ -2287,7 +2287,7 @@ function updateProps() {
             <div class="prop-row">
                 <button class="prop-btn ${isBold(obj)?'on':''}" onclick="toggleBold()"><i class="fas fa-bold"></i></button>
                 <button class="prop-btn ${obj.fontStyle==='italic'?'on':''}" onclick="toggleItalic()"><i class="fas fa-italic"></i></button>
-                <span class="prop-label" style="margin-left:4px">EspaÃ§.</span>
+                <span class="prop-label" style="margin-left:4px">Espaç.</span>
                 <input class="prop-input prop-sm" type="number" step="0.1" value="${obj.lineHeight||1.2}" onchange="setProp('lineHeight',+this.value)">
             </div>
             <button class="ai-btn" onclick="openAiModal()"><i class="fas fa-wand-magic-sparkles"></i> Escrever com IA</button>
@@ -2351,9 +2351,9 @@ function setShadow(p, v) { const o=canvas.getActiveObject(); if(!o||!o.shadow)re
 function applyFilter(t) { const o=canvas.getActiveObject(); if(!o||o.type!=='image')return; o.filters=[]; if(t==='grayscale')o.filters.push(new fabric.Image.filters.Grayscale()); else if(t==='sepia')o.filters.push(new fabric.Image.filters.Sepia()); else if(t==='blur')o.filters.push(new fabric.Image.filters.Blur({blur:.3})); else if(t==='bright')o.filters.push(new fabric.Image.filters.Brightness({brightness:.2})); else if(t==='dark')o.filters.push(new fabric.Image.filters.Brightness({brightness:-.3})); o.applyFilters(); canvas.requestRenderAll(); saveHistory(); }
 function c2hex(c) { if(!c||typeof c!=='string')return '#000000'; if(c.startsWith('#')){ let h=c.replace('#',''); if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; if(h.length>6)h=h.slice(0,6); return '#'+h; } if(c.startsWith('rgb')){ const m=c.match(/\d+/g); if(m&&m.length>=3)return '#'+[m[0],m[1],m[2]].map(n=>parseInt(n).toString(16).padStart(2,'0')).join(''); } return '#000000'; }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // KEYBOARD
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 document.addEventListener('keydown', e => {
     if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
     if (e.key==='Delete'||e.key==='Backspace') { e.preventDefault(); delActive(); }
@@ -2376,13 +2376,13 @@ document.addEventListener('keydown', e => {
     }
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // SAVE / AUTO-SAVE
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 let saveTimer = null;
 function setSaveStatus(s) {
     const el = document.getElementById('save-status');
-    if (s==='pending') { el.innerHTML='<i class="fas fa-circle" style="color:#f59e0b;font-size:10px"></i> AlteraÃ§Ãµes'; clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveFabric(false),2500); }
+    if (s==='pending') { el.innerHTML='<i class="fas fa-circle" style="color:#f59e0b;font-size:10px"></i> Alterações'; clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveFabric(false),2500); }
     else if (s==='saving') { el.innerHTML='<i class="fas fa-spinner fa-spin" style="color:#6366f1;font-size:10px"></i> Salvando...'; }
     else { el.innerHTML='<i class="fas fa-circle-check" style="color:#10b981;font-size:10px"></i> Salvo'; }
 }
@@ -2398,12 +2398,12 @@ function saveFabric(showMsg) {
             body: JSON.stringify({ fabric_json:jsonData, png_data:pngData, title }),
         }).then(r=>r.json()).then(()=>{ setSaveStatus('saved'); if(showMsg)showNotif('Banner salvo!','success'); })
           .catch(()=>{ setSaveStatus('pending'); if(showMsg)showNotif('Erro ao salvar.','error'); });
-    } catch(e) { setSaveStatus('pending'); if(showMsg)showNotif('NÃ£o salvo: imagens externas bloqueiam exportaÃ§Ã£o.','error'); }
+    } catch(e) { setSaveStatus('pending'); if(showMsg)showNotif('Não salvo: imagens externas bloqueiam exportação.','error'); }
 }
 
 function exportPng() {
     canvas.discardActiveObject(); 
-    canvas.renderAll(); // SÃ­ncrono para garantir que nÃ£o haja camada invisÃ­vel
+    canvas.renderAll(); // Síncrono para garantir que não haja camada invisível
     
     // Um leve atraso pode evitar o erro de toDataURL limpar canvas no meio de um render pendente
     setTimeout(() => {
@@ -2412,7 +2412,7 @@ function exportPng() {
             const a = document.createElement('a');
             a.href = dataUrl;
             a.download = 'BANNER-' + BANNER_ID + '.png';
-            document.body.appendChild(a); // NecessÃ¡rio para Firefox/alguns browsers
+            document.body.appendChild(a); // Necessário para Firefox/alguns browsers
             a.click();
             document.body.removeChild(a);
             showNotif('PNG exportado com sucesso!','success');
@@ -2425,9 +2425,9 @@ function exportPng() {
     }, 50);
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // AI + SCHEDULE MODALS
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 function openAiModal() { openModal('ai-modal'); document.getElementById('ai-result').style.display='none'; }
 function runAi() {
     const prompt = document.getElementById('ai-prompt').value.trim();
@@ -2436,7 +2436,7 @@ function runAi() {
     btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Gerando...';
     fetch(AI_URL, { method:'POST', headers:{'Content-Type':'application/json','X-CSRF-TOKEN':CSRF}, body:JSON.stringify({prompt, field:document.getElementById('ai-field').value}) })
         .then(r=>r.json()).then(d=>{ btn.disabled=false; btn.innerHTML='<i class="fas fa-wand-magic-sparkles"></i> Gerar'; if(d.ok){document.getElementById('ai-result').style.display='block';document.getElementById('ai-result-text').textContent=d.text;}else showNotif(d.error||'Erro na IA.','error'); })
-        .catch(()=>{ btn.disabled=false; btn.innerHTML='<i class="fas fa-wand-magic-sparkles"></i> Gerar'; showNotif('Falha de conexÃ£o.','error'); });
+        .catch(()=>{ btn.disabled=false; btn.innerHTML='<i class="fas fa-wand-magic-sparkles"></i> Gerar'; showNotif('Falha de conexão.','error'); });
 }
 function applyAiText() {
     const text = document.getElementById('ai-result-text').textContent.trim();
@@ -2474,9 +2474,9 @@ function showNotif(msg, type='') {
     clearTimeout(nTimer); nTimer=setTimeout(()=>el.classList.remove('show'),3500);
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 // INIT
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// �??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??�??
 document.addEventListener('DOMContentLoaded', () => {
     renderTemplateGrids();
     renderIconGrids();
@@ -2493,7 +2493,7 @@ document.addEventListener('DOMContentLoaded', () => {
             refreshLayers();
         });
     } else {
-        // Autoload template from URL query param (reliable — set by BannerController::store)
+        // Autoload template from URL query param (reliable ? set by BannerController::store)
         const autoload = @json($autoloadTemplate ?? null);
         if (autoload) {
             const fnName = 'tpl' + autoload.charAt(0).toUpperCase() + autoload.slice(1);
