@@ -840,7 +840,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
         <div class="hero-ctas">
             <a href="{{ route('register') }}" class="btn-hero">
-                Começar gratuitamente
+                Começar agora
                 <i class="fas fa-arrow-right" style="font-size:.75rem"></i>
             </a>
             <a href="#segments" class="btn-hero-outline">
@@ -1702,7 +1702,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         <!-- LEFT: editorial big text + benefits -->
         <div class="aos">
             <h2 class="cta-big">Vamos<br><em>começar?</em></h2>
-            <p class="cta-tagline">Sua organização merece tecnologia de ponta. Ative sua conta agora e veja a diferença nos primeiros 30 dias.</p>
+            <p class="cta-tagline">Sua organização merece tecnologia de ponta. Ative sua conta agora e transforme sua gestão.</p>
             <div class="cta-divider"></div>
             <div class="cta-benefits">
                 <div>
