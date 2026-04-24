@@ -33,6 +33,7 @@ class GeminiAnalysisService {
             $extraContext .= "\nSite: {$prospect->website}";
         }
         $sourceLabel = ($prospect->source ?? 'maps') === 'web' ? 'Busca Web Google' : 'Google Maps';
+        $prospectAddress = $prospect->address ?? 'Não informada';
 
         $prompt = "Você é um captador de recursos especializado {$ngoContext}.
         Atualmente, você está trabalhando {$projectContext}.
@@ -41,7 +42,7 @@ class GeminiAnalysisService {
         Empresa: {$prospect->company_name}
         Categoria: {$prospect->category}
         Origem do Lead: {$sourceLabel}
-        Localização: {$prospect->address ?? 'Não informada'}
+        Localização: {$prospectAddress}
         Nota Google: {$prospect->google_rating}{$extraContext}
 
         Objetivo: Identificar como a atividade desta empresa pode se alinhar aos objetivos do projeto citado e criar um pitch de venda curto, humano e persuasivo para WhatsApp. 
@@ -54,11 +55,10 @@ class GeminiAnalysisService {
             \"pitch\": \"texto para whatsapp (máximo 400 caracteres)\"
         }";
 
-        // Lista de tentativas verificada diretamente via API ListModels
         $attempts = [
-            ['ver' => 'v1beta', 'model' => 'models/gemini-flash-latest'], 
             ['ver' => 'v1beta', 'model' => 'models/gemini-2.0-flash'],
-            ['ver' => 'v1beta', 'model' => 'models/gemini-pro-latest'],
+            ['ver' => 'v1beta', 'model' => 'models/gemini-1.5-flash-latest'],
+            ['ver' => 'v1beta', 'model' => 'models/gemini-1.5-pro-latest'],
         ];
 
         $response = null;
@@ -69,7 +69,7 @@ class GeminiAnalysisService {
             $url = "https://generativelanguage.googleapis.com/{$attempt['ver']}/{$attempt['model']}:generateContent?key=" . $apiKey;
             
             try {
-                $response = Http::withHeaders([
+                $response = Http::timeout(30)->withHeaders([
                     'Content-Type' => 'application/json',
                 ])->post($url, [
                     'contents' => [['parts' => [['text' => $prompt]]]]

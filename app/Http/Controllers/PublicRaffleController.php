@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Mail\RaffleTicketReserved;
+use App\Mail\RaffleReservationAlert;
 use Illuminate\Support\Facades\Mail;
 
 class PublicRaffleController extends Controller
@@ -25,7 +26,8 @@ class PublicRaffleController extends Controller
         // Track visit (throttled: 1 per IP per hour per raffle)
         RaffleVisit::record($raffle, $request);
 
-        return view('public.raffles.show', compact('raffle'));
+        $pixConfigured = !empty($raffle->tenant->pix_key);
+        return view('public.raffles.show', compact('raffle', 'pixConfigured'));
     }
 
     public function reserve(Request $request, $slug)
@@ -86,11 +88,25 @@ class PublicRaffleController extends Controller
 
             $pixPayload = $this->generatePixPayload($raffle, $totalAmount);
 
-            // Send Email (Fails Silently to not break Checkout)
+            // Send Email to buyer (Fails Silently to not break Checkout)
             try {
                 Mail::to($request->buyer_email)->send(new RaffleTicketReserved($raffle, $availableTickets, $pixPayload, $totalAmount));
             } catch (\Exception $e) {
                 \Log::error("Email Error on Reservation: " . $e->getMessage());
+            }
+
+            // Notify tenant owner about new reservation
+            try {
+                $tenantOwner = $tenant->users()->orderBy('id')->first();
+                $notifyEmail = $tenant->report_email ?? ($tenantOwner?->email);
+                if ($notifyEmail) {
+                    Mail::to($notifyEmail)->send(new RaffleReservationAlert(
+                        $raffle, $availableTickets,
+                        $request->buyer_name, $request->buyer_phone, $totalAmount
+                    ));
+                }
+            } catch (\Exception $e) {
+                \Log::error("Tenant Notification Error on Reservation: " . $e->getMessage());
             }
 
             return view('public.raffles.checkout', [

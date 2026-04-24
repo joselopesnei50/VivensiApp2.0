@@ -48,6 +48,11 @@ class DeepSeekService
             }
 
             \Log::error('Erro API DeepSeek: ' . $response->body());
+
+            if ($response->status() === 401) {
+                return ['error' => 'Chave DeepSeek inválida ou expirada. Peça ao administrador para atualizar a chave no Painel Admin (Configurações → Integrações).'];
+            }
+
             return ['error' => 'Erro na API DeepSeek: ' . $response->body()];
 
         } catch (\Exception $e) {

@@ -158,10 +158,20 @@
 
         <h3 class="fw-800 text-primary mb-4">Total: R$ {{ number_format($totalAmount, 2, ',', '.') }}</h3>
 
+        @if(!empty($tenant->pix_key))
+        <div class="mb-3 p-3 rounded-3 text-start" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+            <div class="small text-muted fw-bold mb-1" style="text-transform: uppercase; letter-spacing: .5px; font-size: 0.7rem;">Chave PIX do Beneficiário</div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-800 text-dark" style="word-break: break-all;">{{ $tenant->pix_key }}</span>
+                <button type="button" onclick="copyPixKey(this)" class="btn btn-sm btn-success rounded-pill px-3 flex-shrink-0" style="font-size: 0.75rem; font-weight: 700;">Copiar</button>
+            </div>
+        </div>
+        @endif
+
         <div class="mb-5 text-start">
             <div class="d-flex align-items-center mb-3">
                 <span class="step-badge">1</span>
-                <span class="fw-bold">Copie o código PIX abaixo</span>
+                <span class="fw-bold">Copie o código PIX Copia e Cola abaixo</span>
             </div>
 
             <div class="pix-code-box">
@@ -222,6 +232,25 @@
             if (err) console.error('Erro ao gerar QR Code:', err);
         });
     })();
+
+    // ── Copiar chave PIX raw ──────────────────────────────────────────────────
+    function copyPixKey(btn) {
+        const key = btn.previousElementSibling.textContent.trim();
+        navigator.clipboard.writeText(key).then(() => {
+            const orig = btn.textContent;
+            btn.textContent = '✅ Copiado!';
+            setTimeout(() => btn.textContent = orig, 2000);
+        }).catch(() => {
+            const el = document.createElement('textarea');
+            el.value = key;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            btn.textContent = '✅ Copiado!';
+            setTimeout(() => btn.textContent = 'Copiar', 2000);
+        });
+    }
 
     // ── Copiar código PIX ─────────────────────────────────────────────────────
     function copyPix() {
