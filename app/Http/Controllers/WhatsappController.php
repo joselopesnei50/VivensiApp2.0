@@ -459,7 +459,6 @@ class WhatsappController extends Controller
         
         $structured = $configData['ai_training_structured'] ?? null;
         unset($configData['ai_training_structured']);
-        \Log::info('saveSettings configData', ['ai_enabled' => $configData['ai_enabled'] ?? 'AUSENTE', 'config_id' => $config->id]);
         $config->update($configData);
 
         if ($structured !== null) {
