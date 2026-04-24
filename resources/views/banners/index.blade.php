@@ -893,6 +893,7 @@
             </div>
             <form action="{{ route('banners.store') }}" method="POST">
                 @csrf
+                <input type="hidden" name="template_key" id="tpl-key-input" value="">
                 <div class="modal-body px-4">
                     <div class="mb-4">
                         <label class="form-label">Nome do Design *</label>
@@ -962,14 +963,13 @@ function openModalWithFormat(fmtKey) {
 
 /* ── TEMPLATE → CREATE + OPEN ──────────────── */
 function createAndOpen(title, format, template) {
-    // Create banner via form submit with prefilled data, then canvas will autoload template
     const modal = document.getElementById('newBannerModal');
     document.getElementById('modal-title-input').value = title;
     selectFormat(format);
     const inp = document.querySelector(`#fcard-${format} input`);
     if (inp) inp.checked = true;
-    // Store template key to autoload after redirect
-    sessionStorage.setItem('ds_autoload_tpl', template);
+    // Pass template key via hidden form field (reliable over sessionStorage)
+    document.getElementById('tpl-key-input').value = template || '';
     new bootstrap.Modal(modal).show();
     setTimeout(() => document.getElementById('modal-title-input').focus(), 350);
 }
