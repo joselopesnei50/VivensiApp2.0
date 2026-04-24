@@ -319,27 +319,6 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/audit/{id}', [App\Http\Controllers\AuditController::class, 'show']);
     });
 
-    // ── Criador de Banners ───────────────────────────────────────────────────
-    Route::prefix('banners')->name('banners.')->group(function () {
-        Route::get('/',                               [App\Http\Controllers\BannerController::class, 'index'])->name('index');
-        Route::post('/',                              [App\Http\Controllers\BannerController::class, 'store'])->name('store');
-        Route::get('/{banner}/builder',               [App\Http\Controllers\BannerController::class, 'builder'])->name('builder');
-        Route::post('/{banner}/sections',             [App\Http\Controllers\BannerController::class, 'addSection'])->name('sections.add');
-        Route::post('/sections/{section}/update',     [App\Http\Controllers\BannerController::class, 'updateSection'])->name('sections.update');
-        Route::post('/sections/{section}/delete',     [App\Http\Controllers\BannerController::class, 'deleteSection'])->name('sections.delete');
-        Route::post('/{banner}/settings',             [App\Http\Controllers\BannerController::class, 'updateSettings'])->name('settings');
-        Route::get('/{banner}/preview',               [App\Http\Controllers\BannerController::class, 'preview'])->name('preview');
-        Route::get('/{banner}/export',                [App\Http\Controllers\BannerController::class, 'exportHtml'])->name('export');
-        Route::post('/{banner}/apply-template',       [App\Http\Controllers\BannerController::class, 'applyTemplate'])->name('apply-template');
-        Route::post('/{banner}/duplicate',            [App\Http\Controllers\BannerController::class, 'duplicate'])->name('duplicate');
-        Route::delete('/{banner}',                    [App\Http\Controllers\BannerController::class, 'destroy'])->name('destroy');
-        // Fabric.js canvas editor
-        Route::get('/{banner}/canvas',                [App\Http\Controllers\BannerController::class, 'canvas'])->name('canvas');
-        Route::post('/{banner}/save-fabric',          [App\Http\Controllers\BannerController::class, 'saveFabric'])->name('save-fabric');
-        Route::post('/{banner}/upload-image',         [App\Http\Controllers\BannerController::class, 'uploadImage'])->name('upload-image');
-        Route::post('/{banner}/schedule-from-canvas', [App\Http\Controllers\BannerController::class, 'scheduleFromCanvas'])->name('schedule-from-canvas');
-        Route::post('/{banner}/generate-ai-text',     [App\Http\Controllers\BannerController::class, 'generateAiText'])->name('generate-ai-text');
-    });
 
     // ── Redes Sociais (Manager & NGO only) ───────────────────────────────────
     Route::prefix('social')->name('social.')->group(function () {
