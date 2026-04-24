@@ -538,9 +538,31 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 @keyframes abAnim2{from{width:65%}to{width:93%}}
 @keyframes abAnim3{from{width:28%}to{width:52%}}
 
-/* Responsive */
-@media(max-width:1024px){.bento-grid{grid-template-columns:repeat(2,1fr)}.bc-2w,.bc-2h{grid-column:span 1;grid-row:span 1}}
-@media(max-width:640px){.bento-grid{grid-template-columns:1fr}.feat-header{flex-direction:column;align-items:flex-start}.feat-header-right{text-align:left}}
+/* ── FEATURE HUB ─────────────────────────────────────────────── */
+.hub-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:20px; margin-top: 40px; }
+.hub-col { display:flex; flex-direction:column; gap:16px; }
+.hub-col-title { font-size: 0.8rem; font-weight: 800; color:#fff; text-transform: uppercase; letter-spacing: 0.08em; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+.hc-blue { color: #6B8BFF; border-bottom-color: rgba(107,139,255,0.2); }
+.hc-green { color: #4ade80; border-bottom-color: rgba(74,222,128,0.2); }
+.hc-purple { color: #a78bfa; border-bottom-color: rgba(167,139,250,0.2); }
+.hc-pink { color: #ec4899; border-bottom-color: rgba(236,72,153,0.2); }
+.hub-card { background: rgba(20,20,20,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; transition: all 0.3s ease; position: relative; overflow: hidden; display:flex; flex-direction:column; gap:4px; }
+.hub-card:hover { transform: translateY(-3px); background: rgba(30,30,30,0.8); border-color: rgba(255,255,255,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.hub-card-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 12px; }
+.hub-card-title { font-size: 0.82rem; font-weight: 800; color: #fff; line-height: 1.3; }
+.hub-card-desc { font-size: 0.72rem; color: rgba(255,255,255,0.45); line-height: 1.5; }
+
+/* Variations */
+.hi-blue { background: linear-gradient(135deg, rgba(79,110,247,.15), rgba(79,110,247,.05)); color: #6B8BFF; border: 1px solid rgba(79,110,247,.2); box-shadow: inset 0 0 10px rgba(79,110,247,.1); }
+.hi-green { background: linear-gradient(135deg, rgba(74,222,128,.15), rgba(74,222,128,.05)); color: #4ade80; border: 1px solid rgba(74,222,128,.2); box-shadow: inset 0 0 10px rgba(74,222,128,.1); }
+.hi-purple { background: linear-gradient(135deg, rgba(167,139,250,.15), rgba(167,139,250,.05)); color: #a78bfa; border: 1px solid rgba(167,139,250,.2); box-shadow: inset 0 0 10px rgba(167,139,250,.1); }
+.hi-pink { background: linear-gradient(135deg, rgba(236,72,153,.15), rgba(236,72,153,.05)); color: #ec4899; border: 1px solid rgba(236,72,153,.2); box-shadow: inset 0 0 10px rgba(236,72,153,.1); }
+.hi-orange { background: linear-gradient(135deg, rgba(249,115,22,.15), rgba(249,115,22,.05)); color: #fb923c; border: 1px solid rgba(249,115,22,.2); box-shadow: inset 0 0 10px rgba(249,115,22,.1); }
+.hi-teal { background: linear-gradient(135deg, rgba(34,211,238,.15), rgba(34,211,238,.05)); color: #22d3ee; border: 1px solid rgba(34,211,238,.2); box-shadow: inset 0 0 10px rgba(34,211,238,.1); }
+.hi-red { background: linear-gradient(135deg, rgba(239,68,68,.15), rgba(239,68,68,.05)); color: #ef4444; border: 1px solid rgba(239,68,68,.2); box-shadow: inset 0 0 10px rgba(239,68,68,.1); }
+
+@media(max-width: 1024px) { .hub-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width: 640px) { .hub-grid { grid-template-columns: 1fr; } }
 
 /* ─── IMPACT ─── */
 .impact{padding:88px 6%;background:#090909;position:relative;border-top:1px solid rgba(255,255,255,.05)}
@@ -1334,8 +1356,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
         </div>
 
-        {{-- ── 2. BRUCE AI RADAR (2W) ────────────────────────────────────── --}}
-        <div class="bc bc-ai-radar bc-2w">
+        {{-- ── 2. BRUCE AI RADAR (3W) ────────────────────────────────────── --}}
+        <div class="bc bc-ai-radar bc-3w">
             <div class="radar-inner">
                 <div class="radar-text">
                     <span class="bc-tag bct-ai"><i class="fas fa-brain"></i> IA Nativa</span>
@@ -1352,156 +1374,122 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
         </div>
 
-        {{-- ── 3. CRM KANBAN ────────────────────────────────────────────── --}}
-        <div class="bc bc-crm">
-            <div class="bc-body">
-                <span class="bc-tag bct-crm"><i class="fas fa-kanban"></i> Projetos</span>
-                <div class="bc-title">CRM Kanban</div>
-                <div class="bc-desc">Gestão visual de parceiros e doadores.</div>
-            </div>
-            <div class="kanban-demo">
-                <div class="kd-col">
-                    <div class="kd-hdr"><span class="kdd kdd-o"></span>Prospect.</div>
-                    <div class="kd-card">Farmácia ABC<div class="kd-card-val">R$ 2k</div></div>
-                </div>
-                <div class="kd-col">
-                    <div class="kd-hdr"><span class="kdd kdd-b"></span>Negoc.</div>
-                    <div class="kd-card kd-card-hot">Banco Sul<div class="kd-card-val">R$ 15k</div></div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 4. CANVA & LPs ───────────────────────────────────────────── --}}
-        <div class="bc bc-canva">
-            <div class="bc-body">
-                <span class="bc-tag" style="background:rgba(236, 72, 153, 0.15); color:#ec4899;"><i class="fas fa-magic"></i> Marketing</span>
-                <div class="bc-title">LPs & Design</div>
-                <div class="bc-desc">Páginas de alta conversão e artes nativas.</div>
-            </div>
-            <div class="canva-demo">
-                <div class="cv-toolbar"><div class="cvt"></div><div class="cvt"></div><div class="cvt"></div></div>
-                <div class="cv-canvas"><div class="cv-elem"></div><div class="cv-elem2"></div></div>
-            </div>
-        </div>
-
-        {{-- ── 5. PORTAL DE TRANSPARÊNCIA (2w) ─────────────────────────── --}}
-        <div class="bc bc-transp bc-2w">
-            <div class="bc-body">
-                <span class="bc-tag bct-transp"><i class="fas fa-earth-americas"></i> Transparência</span>
-                <div class="bc-title">Portal Público de Impacto</div>
-                <div class="bc-desc">Página gerada automaticamente com métricas reais em tempo real para prestar contas à sociedade.</div>
-            </div>
-            <div class="transp-inner">
-                <div class="transp-counts">
-                    <div class="tc-block">
-                        <div class="tc-lbl">Beneficiários</div>
-                        <div class="tc-num" id="tcCount1">98.490</div>
-                    </div>
-                </div>
-                <div class="transp-feed">
-                    <div class="tf-hdr">Atualizações ao vivo</div>
-                    <div class="tf-item"><span class="tfd tfd-g"></span>Ação Social — 240 kits distribuídos · 2h atrás</div>
-                    <div class="tf-item"><span class="tfd tfd-b"></span>Novo doador recorrente cadastrado · 5h atrás</div>
-                    <div class="tf-item"><span class="tfd tfd-o"></span>Relatório Q4 publicado · ontem</div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 5. FINANCEIRO ────────────────────────────────────────────── --}}
-        <div class="bc bc-fin">
-            <div class="bc-body">
-                <span class="bc-tag bct-fin"><i class="fas fa-file-invoice-dollar"></i> Controles</span>
-                <div class="bc-title">Financeiro & Auditoria</div>
-                <div class="bc-desc">Fluxo de caixa simplificado, relatórios DRE em 1 clique e gestão de orçamentos.</div>
-            </div>
-            <div class="fin-demo">
-                <div class="fin-row"><span class="fin-lbl">Receitas</span><span class="fin-val fin-pos">R$ 48.200</span></div>
-                <div class="fin-row"><span class="fin-lbl">Despesas</span><span class="fin-val fin-neg">− R$ 12.840</span></div>
-                <div class="fin-row"><span class="fin-lbl">Ações</span><span class="fin-val fin-neg">− R$ 18.600</span></div>
-                <div class="fin-total">
-                    <div>
-                        <div class="fin-total-lbl">Superávit</div>
-                        <div class="fin-badge">Auditado</div>
-                    </div>
-                    <div class="fin-total-val">R$ 11.560</div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 6. VOLUNTÁRIOS / RH ──────────────────────────────────────── --}}
-        <div class="bc bc-volunt">
-            <div class="bc-body">
-                <span class="bc-tag bct-social"><i class="fas fa-trophy"></i> Engajamento</span>
-                <div class="bc-title">RH & Voluntários</div>
-                <div class="bc-desc">Rankings, medalhas e pontos por horas de serviço ou metas atingidas.</div>
-            </div>
-            <div class="podium-list">
-                <div class="pl-item">
-                    <span class="pl-pos pl-p1">🥇</span>
-                    <div class="pl-av plav1">JL</div>
-                    <span class="pl-name">Juliana Lima</span>
-                    <div class="pl-bar"><div class="plb-fill" style="width:100%"></div></div>
-                    <span class="pl-pts pl-pts-1">2.840 pts</span>
-                </div>
-                <div class="pl-item">
-                    <span class="pl-pos pl-p2">🥈</span>
-                    <div class="pl-av plav2">CR</div>
-                    <span class="pl-name">Carlos R.</span>
-                    <div class="pl-bar"><div class="plb-fill" style="width:76%"></div></div>
-                    <span class="pl-pts">2.160 pts</span>
-                </div>
-                <div class="pl-item">
-                    <span class="pl-pos pl-p3">🥉</span>
-                    <div class="pl-av plav3">AM</div>
-                    <span class="pl-name">Ana M.</span>
-                    <div class="pl-bar"><div class="plb-fill" style="width:58%"></div></div>
-                    <span class="pl-pts">1.640 pts</span>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 7. CONTRATOS DIGITAIS ────────────────────────────────────── --}}
-        <div class="bc bc-contracts">
-            <div class="bc-body">
-                <span class="bc-tag" style="background:rgba(251,191,36,.12); color:#fbbf24;"><i class="fas fa-file-contract"></i> Jurídico</span>
-                <div class="bc-title">Contratos & Convênios</div>
-                <div class="bc-desc">Gere, envie e gerencie assinaturas eletrônicas com parceiros e prestadores.</div>
-            </div>
-            <div class="ctr-demo">
-                <div class="ctr-line w-100"></div>
-                <div class="ctr-line w-100"></div>
-                <div class="ctr-line w-70"></div>
-                <div class="ctr-sign">
-                    <div style="font-family:'Courier New'; font-style:italic; font-size:0.8rem; color:#fff;">Assinado</div>
-                    <div class="ctr-badge"><i class="fas fa-check"></i> Validade Jurídica</div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── 8. ALMOXARIFADO ──────────────────────────────────────────── --}}
-        <div class="bc bc-almox">
-            <div class="bc-body">
-                <span class="bc-tag bct-ops"><i class="fas fa-boxes-stacked"></i> Operações</span>
-                <div class="bc-title">Gestão de Almoxarifado</div>
-                <div class="bc-desc">Estoque de doações e ativos corporativos com histórico de entradas e saídas.</div>
-            </div>
-            <div class="almox-bars">
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Cestas Básicas</span><span class="ab-qty">78 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf1"></div></div>
-                </div>
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Roupas / Agasalhos</span><span class="ab-qty">143 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf2"></div></div>
-                </div>
-                <div class="ab-row">
-                    <div class="ab-hdr"><span class="ab-name">Material Escolar</span><span class="ab-qty">52 un</span></div>
-                    <div class="ab-track"><div class="ab-fill abf3"></div></div>
-                </div>
-            </div>
-        </div>
-
     </div><!-- /bento-grid -->
+
+    <!-- HUB DE MÓDULOS -->
+    <div class="hub-grid">
+        
+        <!-- COLUNA 1: Inteligência & Comunicação -->
+        <div class="hub-col">
+            <div class="hub-col-title hc-purple"><i class="fas fa-brain"></i> Inteligência & Comunicação</div>
+            
+            <div class="hub-card">
+                <div class="hub-card-icon hi-purple"><i class="fas fa-robot"></i></div>
+                <div class="hub-card-title">Bot de Atendimento 24/7</div>
+                <div class="hub-card-desc">Atendimento automático via WhatsApp para doadores e clientes, sem intervenção manual.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-green"><i class="fab fa-whatsapp"></i></div>
+                <div class="hub-card-title">Disparo de WhatsApp</div>
+                <div class="hub-card-desc">Envie campanhas, alertas e cobranças em massa com segurança pela Evolution API.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-blue"><i class="fas fa-satellite-dish"></i></div>
+                <div class="hub-card-title">Bruce AI (Prospecção)</div>
+                <div class="hub-card-desc">IA que encontra parceiros qualificados na sua região e redige o pitch de vendas.</div>
+            </div>
+        </div>
+
+        <!-- COLUNA 2: Para ONGs -->
+        <div class="hub-col">
+            <div class="hub-col-title hc-green"><i class="fas fa-hands-holding-circle"></i> Para ONGs e Projetos</div>
+            
+            <div class="hub-card">
+                <div class="hub-card-icon hi-teal"><i class="fas fa-earth-americas"></i></div>
+                <div class="hub-card-title">Portal de Transparência</div>
+                <div class="hub-card-desc">Página pública gerada automaticamente com métricas em tempo real para a sociedade.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-orange"><i class="fas fa-trophy"></i></div>
+                <div class="hub-card-title">Gestão de Voluntários</div>
+                <div class="hub-card-desc">Gamificação com pontos, rankings e medalhas para engajar sua equipe voluntária.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-pink"><i class="fas fa-heart"></i></div>
+                <div class="hub-card-title">CRM de Doadores</div>
+                <div class="hub-card-desc">Histórico completo de doações, retenção de parceiros e régua de cobrança.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-blue"><i class="fas fa-handshake"></i></div>
+                <div class="hub-card-title">Gestão de Convênios</div>
+                <div class="hub-card-desc">Controle de prazos, entregáveis e prestação de contas de editais governamentais.</div>
+            </div>
+        </div>
+
+        <!-- COLUNA 3: Para Gestores -->
+        <div class="hub-col">
+            <div class="hub-col-title hc-blue"><i class="fas fa-chart-line"></i> Para Gestores</div>
+            
+            <div class="hub-card">
+                <div class="hub-card-icon hi-orange"><i class="fas fa-kanban"></i></div>
+                <div class="hub-card-title">CRM Kanban de Projetos</div>
+                <div class="hub-card-desc">Pipeline visual para acompanhar negociações, vendas ou andamento de projetos.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-teal"><i class="fas fa-file-contract"></i></div>
+                <div class="hub-card-title">Contratos Online</div>
+                <div class="hub-card-desc">Geração de documentos e coleta de assinaturas digitais com validade jurídica.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-blue"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="hub-card-title">Prestação de Contas</div>
+                <div class="hub-card-desc">Controle financeiro completo, DRE, conciliação e balancetes automatizados.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-purple"><i class="fas fa-boxes-stacked"></i></div>
+                <div class="hub-card-title">Almoxarifado Integrado</div>
+                <div class="hub-card-desc">Controle de entradas e saídas de materiais, doações ou insumos de escritório.</div>
+            </div>
+        </div>
+
+        <!-- COLUNA 4: Marketing & Operacional -->
+        <div class="hub-col">
+            <div class="hub-col-title hc-pink"><i class="fas fa-bullhorn"></i> Marketing & Operações</div>
+            
+            <div class="hub-card">
+                <div class="hub-card-icon hi-pink"><i class="fas fa-laptop-code"></i></div>
+                <div class="hub-card-title">Criação de Landing Pages</div>
+                <div class="hub-card-desc">Construtor "arraste e solte" para criar páginas de captação de alta conversão.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-purple"><i class="fas fa-palette"></i></div>
+                <div class="hub-card-title">Estúdio de Artes (Canva)</div>
+                <div class="hub-card-desc">Crie posts e banners para redes sociais diretamente dentro do sistema Vivensi.</div>
+            </div>
+
+            <div class="hub-card">
+                <div class="hub-card-icon hi-red"><i class="fas fa-users-gear"></i></div>
+                <div class="hub-card-title">Departamento Pessoal</div>
+                <div class="hub-card-desc">Gestão de colaboradores CLT, férias, holerites e controle de ponto simples.</div>
+            </div>
+            
+            <div class="hub-card">
+                <div class="hub-card-icon hi-green"><i class="fas fa-ticket"></i></div>
+                <div class="hub-card-title">Módulo de Rifas</div>
+                <div class="hub-card-desc">Crie rifas digitais para arrecadar fundos de forma rápida com pagamentos PIX automáticos.</div>
+            </div>
+        </div>
+
+    </div><!-- /hub-grid -->
 </div><!-- /feat-inner -->
 </section>
 
