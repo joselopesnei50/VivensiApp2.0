@@ -26,18 +26,29 @@
                         @csrf
 
                         <div class="mb-4">
-                            <label class="form-label fw-600">Conta <span class="text-danger">*</span></label>
-                            <select name="social_account_id" class="form-select form-select-lg" id="accountSelect" required>
-                                <option value="">Selecione uma conta...</option>
-                                @foreach($accounts as $account)
-                                    <option value="{{ $account->id }}"
-                                        data-has-ig="{{ $account->instagram_business_id ? '1' : '0' }}"
-                                        {{ request('account') == $account->id ? 'selected' : '' }}>
-                                        {{ $account->page_name }}
-                                        @if($account->instagram_username) · @{{ $account->instagram_username }} @endif
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="form-label fw-600">Conta</label>
+                            @if($accounts->isEmpty())
+                                <div class="alert alert-warning border-0 rounded-3 py-2 px-3 mb-2" style="font-size:.82rem;">
+                                    <i class="fas fa-circle-info me-1"></i>
+                                    Nenhuma conta conectada ainda. O post será salvo como <strong>rascunho</strong> e poderá ser publicado quando você conectar uma conta em <a href="{{ route('social.accounts') }}">Redes Sociais</a>.
+                                </div>
+                                <input type="hidden" name="social_account_id" value="">
+                            @else
+                                <select name="social_account_id" class="form-select form-select-lg" id="accountSelect">
+                                    <option value="">— Sem conta (salvar como rascunho) —</option>
+                                    @foreach($accounts as $account)
+                                        <option value="{{ $account->id }}"
+                                            data-has-ig="{{ $account->instagram_business_id ? '1' : '0' }}"
+                                            {{ request('account') == $account->id ? 'selected' : '' }}>
+                                            {{ $account->page_name }}
+                                            @if($account->instagram_username) · @{{ $account->instagram_username }} @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div id="draftNotice" class="text-warning small mt-1" style="display:none;">
+                                    <i class="fas fa-circle-info me-1"></i> Sem conta selecionada — post salvo como rascunho.
+                                </div>
+                            @endif
                             @error('social_account_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 
@@ -167,14 +178,25 @@ document.querySelectorAll('.platform-chip').forEach(chip => {
     });
 });
 
-// Mostrar opções de Instagram se conta tiver Instagram
-document.getElementById('accountSelect').addEventListener('change', function() {
-    const opt = this.options[this.selectedIndex];
-    const hasIg = opt.dataset.hasIg === '1';
-    document.getElementById('igOption').style.display  = hasIg ? '' : 'none';
-    document.getElementById('bothOption').style.display = hasIg ? '' : 'none';
-    document.getElementById('previewPageName').textContent = opt.text || 'Sua Página';
-});
+// Mostrar opções de Instagram se conta tiver Instagram + aviso de rascunho
+const accountSel = document.getElementById('accountSelect');
+if (accountSel) {
+    accountSel.addEventListener('change', function() {
+        const opt = this.options[this.selectedIndex];
+        const hasIg = opt.dataset.hasIg === '1';
+        const isDraft = !this.value;
+        document.getElementById('igOption') && (document.getElementById('igOption').style.display  = hasIg ? '' : 'none');
+        document.getElementById('bothOption') && (document.getElementById('bothOption').style.display = hasIg ? '' : 'none');
+        document.getElementById('previewPageName').textContent = isDraft ? 'Rascunho' : (opt.text || 'Sua Página');
+        const notice = document.getElementById('draftNotice');
+        if (notice) notice.style.display = isDraft ? '' : 'none';
+        // Alterar texto do botão de submit
+        const btn = document.querySelector('button[type=submit]');
+        btn.innerHTML = isDraft
+            ? '<i class="fas fa-floppy-disk me-2"></i> Salvar Rascunho'
+            : '<i class="fas fa-calendar-check me-2"></i> Agendar Post';
+    });
+}
 
 // Char counter
 const captionEl = document.getElementById('caption');
