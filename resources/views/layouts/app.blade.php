@@ -336,7 +336,6 @@
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
-                            <li><a href="{{ route('banners.index') }}" class="{{ request()->is('banners*') ? 'active' : '' }}"><i class="fas fa-image" style="color:#8b5cf6;"></i> Criador de Banners</a></li>
                         </ul>
                     </div>
                 </div>
@@ -416,7 +415,6 @@
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
-                            <li><a href="{{ route('banners.index') }}" class="{{ request()->is('banners*') ? 'active' : '' }}"><i class="fas fa-image" style="color:#8b5cf6;"></i> Criador de Banners</a></li>
                         </ul>
                     </div>
                 </div>
