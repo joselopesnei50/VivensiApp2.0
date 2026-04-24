@@ -68,9 +68,13 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
             @foreach($onboarding['steps'] as $step)
-            <a href="{{ $step['completed'] ? '#' : $step['link'] }}"
-               @if(!$step['completed'] && $step['link'] !== '#')
-                   onclick="fetch('{{ route('onboarding.complete', $step['id']) }}',{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Content-Type':'application/json'}})"
+            <a href="{{ $step['completed'] ? '#' : ($step['id'] === 'tour' ? '#' : $step['link']) }}"
+               @if(!$step['completed'])
+                   @if($step['id'] === 'tour')
+                       onclick="window.startVivensiTour(); fetch('{{ route('onboarding.complete', $step['id']) }}',{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}}); return false;"
+                   @elseif($step['link'] !== '#')
+                       onclick="fetch('{{ route('onboarding.complete', $step['id']) }}',{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Content-Type':'application/json'}})"
+                   @endif
                @endif
                style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;text-decoration:none;font-size:.75rem;font-weight:700;transition:all .15s;
                       {{ $step['completed']
