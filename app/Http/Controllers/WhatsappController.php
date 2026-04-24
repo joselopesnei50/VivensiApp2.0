@@ -341,11 +341,7 @@ class WhatsappController extends Controller
     public function saveSettings(Request $request)
     {
         $contextModel = $this->getContextModel();
-        $tenantId = auth()->user()->tenant_id;
-        $config = WhatsappConfig::firstOrCreate(
-            ['tenant_id' => $tenantId],
-            ['ai_enabled' => false, 'outbound_enabled' => true]
-        );
+        $config = WhatsappConfig::where('tenant_id', auth()->user()->tenant_id)->first();
         
         $validated = $request->validate([
             'ai_training'    => 'nullable|string|max:10000',
@@ -451,23 +447,13 @@ class WhatsappController extends Controller
         
         // Remove meta credentials from config update array to avoid mass assignment issues if not fillable
         $configData = $validated;
-        unset($configData['meta_waba_id'], $configData['meta_phone_number_id'], $configData['meta_access_token'], $configData['evolution_instance_name'], $configData['evolution_instance_token'], $configData['pix_key'], $configData['pix_key_type']);
+        unset($configData['meta_waba_id'], $configData['meta_phone_number_id'], $configData['meta_access_token'], $configData['evolution_instance_name'], $configData['evolution_instance_token']);
         // Remove individual structured fields — já consolidados em ai_training_structured
         foreach (['bot_name','bot_tone','org_name','org_mission','services','working_hours','contact_info','faq'] as $f) {
             unset($configData[$f]);
         }
         
-        $structured = $configData['ai_training_structured'] ?? null;
-        unset($configData['ai_training_structured']);
         $config->update($configData);
-
-        if ($structured !== null) {
-            try {
-                $config->update(['ai_training_structured' => $structured]);
-            } catch (\Throwable $e) {
-                \Log::warning('ai_training_structured column missing — run migrations on VPS', ['error' => $e->getMessage()]);
-            }
-        }
 
         return back()->with('success', 'Configurações Salvas com Sucesso!');
     }
