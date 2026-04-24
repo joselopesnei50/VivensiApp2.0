@@ -35,6 +35,7 @@ class BannerController extends Controller
             'format'        => 'required|in:' . implode(',', array_keys(Banner::formats())),
             'custom_width'  => 'nullable|integer|min:100|max:4000',
             'custom_height' => 'nullable|integer|min:100|max:4000',
+            'template_key'  => 'nullable|string|max:80|alpha_dash',
         ]);
 
         $fmt    = Banner::formats()[$data['format']];
@@ -51,8 +52,12 @@ class BannerController extends Controller
             'settings'  => ['font_family' => 'Inter', 'bg_color' => '#ffffff'],
         ]);
 
-        return redirect()->route('banners.canvas', $banner)
-            ->with('success', 'Banner criado! Comece a editar no canvas.');
+        $tplKey = $data['template_key'] ?? null;
+
+        return redirect()->route('banners.canvas', array_filter([
+            'banner' => $banner->id,
+            'tpl'    => $tplKey,
+        ]));
     }
 
     public function builder(Banner $banner)
@@ -231,14 +236,15 @@ class BannerController extends Controller
     }
 
     /** Fabric.js canvas editor */
-    public function canvas(Banner $banner)
+    public function canvas(Banner $banner, Request $request)
     {
         $this->checkAccess();
         Gate::authorize('update', $banner);
         $formats = Banner::formats();
         $socialAccounts = SocialAccount::where('tenant_id', auth()->user()->tenant_id)
             ->where('is_active', true)->get();
-        return view('banners.canvas', compact('banner', 'formats', 'socialAccounts'));
+        $autoloadTemplate = preg_replace('/[^a-zA-Z0-9_-]/', '', $request->query('tpl', '')) ?: null;
+        return view('banners.canvas', compact('banner', 'formats', 'socialAccounts', 'autoloadTemplate'));
     }
 
     /** Save Fabric.js JSON + PNG thumbnail */
