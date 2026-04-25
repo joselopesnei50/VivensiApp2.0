@@ -34,10 +34,14 @@ class WhatsappBroadcastController extends Controller
         $activeInstance = WhatsappInstance::where('tenant_id', $tenantId)
             ->where('status', 'open')->first();
 
-        $campaigns = BroadcastCampaign::where('tenant_id', $tenantId)
-            ->orderByDesc('created_at')
-            ->limit(20)
-            ->get();
+        try {
+            $campaigns = BroadcastCampaign::where('tenant_id', $tenantId)
+                ->orderByDesc('created_at')
+                ->limit(20)
+                ->get();
+        } catch (\Exception $e) {
+            $campaigns = collect();
+        }
 
         return view('admin.whatsapp.broadcast.index',
             compact('contactsCount', 'config', 'activeInstance', 'campaigns'));
@@ -205,15 +209,18 @@ class WhatsappBroadcastController extends Controller
             usleep($cadenceSeconds * 1_000_000);
         }
 
-        // Log campaign
-        BroadcastCampaign::create([
-            'tenant_id'     => $tenantId,
-            'message'       => $message ?: null,
-            'has_image'     => (bool) $imageBase64,
-            'audience_type' => $audience,
-            'total_sent'    => $sentCount,
-            'total_failed'  => $failedCount,
-        ]);
+        try {
+            BroadcastCampaign::create([
+                'tenant_id'     => $tenantId,
+                'message'       => $message ?: null,
+                'has_image'     => (bool) $imageBase64,
+                'audience_type' => $audience,
+                'total_sent'    => $sentCount,
+                'total_failed'  => $failedCount,
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('BroadcastCampaign log failed: ' . $e->getMessage());
+        }
 
         return redirect()->back()->with('success',
             "Campanha concluída: {$sentCount} enviados" . ($failedCount ? ", {$failedCount} falhas." : "."));
