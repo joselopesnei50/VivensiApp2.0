@@ -20,6 +20,7 @@ class WhatsappBroadcastController extends Controller
 {
     public function index()
     {
+        try {
         Gate::authorize('access-whatsapp');
         $user = auth()->user();
         $tenantId = $user->tenant_id;
@@ -45,6 +46,11 @@ class WhatsappBroadcastController extends Controller
 
         return view('admin.whatsapp.broadcast.index',
             compact('contactsCount', 'config', 'activeInstance', 'campaigns'));
+
+        } catch (\Throwable $e) {
+            Log::error('BroadcastController@index: ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine());
+            return response('Erro: ' . $e->getMessage() . ' em ' . basename($e->getFile()) . ':' . $e->getLine(), 500);
+        }
     }
 
     public function importContacts(Request $request)

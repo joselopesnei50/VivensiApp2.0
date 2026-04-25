@@ -652,7 +652,7 @@
                             <span style="color:#4f46e5;"><i class="fas fa-image me-1"></i></span>
                         @endif
                         <span style="color:#334155;">
-                            {{ $campaign->message ? Str::limit($campaign->message, 60) : '(apenas imagem)' }}
+                            {{ $campaign->message ? (mb_strlen($campaign->message) > 60 ? mb_substr($campaign->message, 0, 60).'…' : $campaign->message) : '(apenas imagem)' }}
                         </span>
                     </td>
                     <td style="padding:12px 20px;">
