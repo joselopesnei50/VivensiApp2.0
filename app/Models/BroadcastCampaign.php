@@ -10,4 +10,10 @@ class BroadcastCampaign extends Model
         'tenant_id', 'name', 'message', 'has_image',
         'audience_type', 'total_sent', 'total_failed',
     ];
+
+    protected $casts = [
+        'has_image'  => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 }
