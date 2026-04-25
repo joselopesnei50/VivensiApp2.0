@@ -8,19 +8,18 @@ use App\Models\WhatsappChat;
 use App\Models\WhatsappConfig;
 use App\Models\WhatsappInstance;
 use App\Models\WhatsappMessage;
-use App\Models\BroadcastCampaign;
 use App\Models\Tenant;
 use App\Services\EvolutionApiService;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 
 class WhatsappBroadcastController extends Controller
 {
     public function index()
     {
-        try {
         Gate::authorize('access-whatsapp');
         $user = auth()->user();
         $tenantId = $user->tenant_id;
@@ -30,27 +29,21 @@ class WhatsappBroadcastController extends Controller
                 ->with('error', 'Configure a instância WhatsApp primeiro.');
         }
 
-        $contactsCount = WhatsappChat::where('tenant_id', $tenantId)->count();
-        $config        = WhatsappConfig::where('tenant_id', $tenantId)->first();
+        $contactsCount  = WhatsappChat::where('tenant_id', $tenantId)->count();
+        $config         = WhatsappConfig::where('tenant_id', $tenantId)->first();
         $activeInstance = WhatsappInstance::where('tenant_id', $tenantId)
-            ->where('status', 'open')->first();
+                            ->where('status', 'open')->first();
 
-        try {
-            $campaigns = BroadcastCampaign::where('tenant_id', $tenantId)
+        $campaigns = collect();
+        if (Schema::hasTable('broadcast_campaigns')) {
+            $campaigns = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
                 ->orderByDesc('created_at')
                 ->limit(20)
                 ->get();
-        } catch (\Exception $e) {
-            $campaigns = collect();
         }
 
         return view('admin.whatsapp.broadcast.index',
             compact('contactsCount', 'config', 'activeInstance', 'campaigns'));
-
-        } catch (\Throwable $e) {
-            Log::error('BroadcastController@index: ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine());
-            return response('Erro: ' . $e->getMessage() . ' em ' . basename($e->getFile()) . ':' . $e->getLine(), 500);
-        }
     }
 
     public function importContacts(Request $request)
@@ -105,7 +98,7 @@ class WhatsappBroadcastController extends Controller
         $mapped = array_map(fn($g) => [
             'id'   => $g['id'] ?? '',
             'name' => $g['subject'] ?? $g['name'] ?? 'Grupo sem nome',
-            'size' => $g['size'] ?? ($g['participants'] ? count($g['participants']) : 0),
+            'size' => isset($g['participants']) ? count($g['participants']) : ($g['size'] ?? 0),
         ], $groups);
 
         usort($mapped, fn($a, $b) => strcmp($a['name'], $b['name']));
@@ -128,10 +121,10 @@ class WhatsappBroadcastController extends Controller
             return redirect()->back()->with('error', 'Digite uma mensagem ou anexe uma imagem.');
         }
 
-        $tenantId        = auth()->user()->tenant_id;
-        $message         = $request->input('message', '');
-        $audience        = $request->input('audience');
-        $cadenceSeconds  = (int) $request->input('cadence', 3);
+        $tenantId       = auth()->user()->tenant_id;
+        $message        = $request->input('message', '');
+        $audience       = $request->input('audience');
+        $cadenceSeconds = (int) $request->input('cadence', 3);
 
         $instance = WhatsappInstance::where('tenant_id', $tenantId)
             ->where('status', 'open')->first();
@@ -140,7 +133,6 @@ class WhatsappBroadcastController extends Controller
             return redirect()->back()->with('error', 'Nenhuma instância WhatsApp conectada.');
         }
 
-        // Image
         $imageBase64 = null;
         $imageMime   = null;
         if ($request->hasFile('broadcast_image')) {
@@ -152,9 +144,7 @@ class WhatsappBroadcastController extends Controller
 
         $evo = new EvolutionApiService($instance);
 
-        // Build recipients list
         $recipients = collect();
-
         if ($audience === 'groups') {
             $groupIds = $request->input('group_ids', []);
             if (empty($groupIds)) {
@@ -165,9 +155,7 @@ class WhatsappBroadcastController extends Controller
             }
         } else {
             $query = WhatsappChat::where('tenant_id', $tenantId)
-                ->whereNull('opt_out_at')
-                ->whereNull('blocked_at');
-
+                ->whereNull('opt_out_at')->whereNull('blocked_at');
             if ($audience === 'selected' && $request->has('phones')) {
                 $phones = array_map(
                     fn($p) => preg_replace('/\D+/', '', $p),
@@ -182,8 +170,7 @@ class WhatsappBroadcastController extends Controller
             return redirect()->back()->with('error', 'Nenhum destinatário selecionado.');
         }
 
-        $sentCount   = 0;
-        $failedCount = 0;
+        $sentCount = $failedCount = 0;
 
         foreach ($recipients as $recipient) {
             try {
@@ -191,9 +178,7 @@ class WhatsappBroadcastController extends Controller
                     ? $evo->sendMedia($recipient->wa_id, $imageBase64, $message, $imageMime)
                     : $evo->sendMessage($recipient->wa_id, $message, null, rand(1, 3));
 
-                $success = !isset($res['error']) && !empty($res);
-
-                if ($success) {
+                if (!isset($res['error']) && !empty($res)) {
                     if ($recipient->id) {
                         WhatsappMessage::create([
                             'chat_id'    => $recipient->id,
@@ -211,21 +196,22 @@ class WhatsappBroadcastController extends Controller
                 Log::error("Broadcast failed for {$recipient->wa_id}: " . $e->getMessage());
                 $failedCount++;
             }
-
             usleep($cadenceSeconds * 1_000_000);
         }
 
-        try {
-            BroadcastCampaign::create([
-                'tenant_id'     => $tenantId,
-                'message'       => $message ?: null,
-                'has_image'     => (bool) $imageBase64,
-                'audience_type' => $audience,
-                'total_sent'    => $sentCount,
-                'total_failed'  => $failedCount,
-            ]);
-        } catch (\Exception $e) {
-            Log::warning('BroadcastCampaign log failed: ' . $e->getMessage());
+        if (Schema::hasTable('broadcast_campaigns')) {
+            try {
+                \App\Models\BroadcastCampaign::create([
+                    'tenant_id'     => $tenantId,
+                    'message'       => $message ?: null,
+                    'has_image'     => (bool) $imageBase64,
+                    'audience_type' => $audience,
+                    'total_sent'    => $sentCount,
+                    'total_failed'  => $failedCount,
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('BroadcastCampaign log failed: ' . $e->getMessage());
+            }
         }
 
         return redirect()->back()->with('success',
