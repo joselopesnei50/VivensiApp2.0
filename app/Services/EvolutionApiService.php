@@ -58,7 +58,7 @@ class EvolutionApiService
                 'url'      => $webhookUrl,
                 'byEvents' => false,
                 'base64'   => true,
-                'events'   => ['qrcode.updated', 'connection.update', 'messages.upsert', 'messages.update', 'send.message'],
+                'events'   => ['QRCODE_UPDATED', 'CONNECTION_UPDATE', 'MESSAGES_UPSERT', 'MESSAGES_UPDATE', 'SEND_MESSAGE'],
             ],
         ];
 
