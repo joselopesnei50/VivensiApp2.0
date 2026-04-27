@@ -109,6 +109,7 @@ Route::middleware(['auth', 'can:access-manager'])->group(function () {
     Route::post('/prospecting/{id}/analyze', [App\Http\Controllers\ProspectingController::class, 'analyze'])->name('prospecting.analyze');
     Route::post('/prospecting/{id}/convert', [App\Http\Controllers\ProspectingController::class, 'convertToDeal'])->name('prospecting.convert');
     Route::delete('/prospecting/{id}', [App\Http\Controllers\ProspectingController::class, 'destroy'])->name('prospecting.destroy');
+    Route::post('/prospecting/broadcast', [App\Http\Controllers\ProspectingController::class, 'broadcastWhatsapp'])->name('prospecting.broadcast');
 });
 
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'subscription'])->name('dashboard');
