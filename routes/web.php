@@ -101,8 +101,8 @@ Route::group(['prefix' => 'academy', 'as' => 'academy.', 'middleware' => ['auth'
     Route::get('/certificate/{code}', [App\Http\Controllers\AcademyController::class, 'downloadCertificate'])->name('certificate.download');
 });
 
-// Prospecting Routes (Authenticated)
-Route::middleware(['auth'])->group(function () {
+// Prospecting Routes (Manager/NGO/SuperAdmin only)
+Route::middleware(['auth', 'can:access-manager'])->group(function () {
     Route::get('/prospecting', [App\Http\Controllers\ProspectingController::class, 'index'])->name('prospecting.index');
     Route::post('/prospecting/search', [App\Http\Controllers\ProspectingController::class, 'search'])->name('prospecting.search');
     Route::post('/prospecting/analyze-all', [App\Http\Controllers\ProspectingController::class, 'analyzeAll'])->name('prospecting.analyze-all');

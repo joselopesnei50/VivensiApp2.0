@@ -14,14 +14,9 @@ class ProspectingController extends Controller
 {
     public function index(Request $request)
     {
-        $tenantId  = Auth::user()->tenant_id;
-        $status    = $request->query('status'); // filter: raw | analyzed | contacted
+        $status = $request->query('status');
 
-        $base = Prospect::query()->when(
-            $tenantId,
-            fn ($q) => $q->where('tenant_id', $tenantId),
-            fn ($q) => $q->whereNull('tenant_id')
-        );
+        $base = Prospect::query();
 
         $prospects = (clone $base)
             ->when($status, fn ($q) => $q->where('status', $status))
@@ -85,12 +80,7 @@ class ProspectingController extends Controller
     /** Analisa em lote todos os leads ainda em status raw. */
     public function analyzeAll()
     {
-        $tenantId = Auth::user()->tenant_id;
-
-        $rawLeads = Prospect::query()
-            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId), fn ($q) => $q->whereNull('tenant_id'))
-            ->where('status', 'raw')
-            ->get();
+        $rawLeads = Prospect::where('status', 'raw')->get();
 
         foreach ($rawLeads as $prospect) {
             ProcessProspect::dispatch($prospect)->onQueue('default');
@@ -139,10 +129,6 @@ class ProspectingController extends Controller
 
     private function findForTenant(int $id): Prospect
     {
-        $tenantId = Auth::user()->tenant_id;
-
-        return Prospect::query()
-            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId), fn ($q) => $q->whereNull('tenant_id'))
-            ->findOrFail($id);
+        return Prospect::findOrFail($id);
     }
 }
