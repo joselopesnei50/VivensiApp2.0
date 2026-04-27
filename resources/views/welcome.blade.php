@@ -1803,8 +1803,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 </div>
                 <div>
                     <div class="cb-icon"><i class="fas fa-shield-halved"></i></div>
-                    <div class="cb-title">Sem cartão.</div>
-                    <div class="cb-desc">Cancele quando quiser.</div>
+                    <div class="cb-title">Cancele quando quiser!</div>
                 </div>
                 <div>
                     <div class="cb-icon"><i class="fas fa-headset"></i></div>
