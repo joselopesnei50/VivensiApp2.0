@@ -50,7 +50,10 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            // [AUDIT A06 - ALTO] Alterado de 'single' para 'daily'.
+            // 'single' crescia indefinidamente e era truncado pelo scheduler (perdendo histórico).
+            // 'daily' rotaciona automaticamente com retenção de 14 dias.
+            'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
 

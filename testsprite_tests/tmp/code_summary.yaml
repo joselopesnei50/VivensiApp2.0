@@ -1,0 +1,545 @@
+version: "2"
+type: backend
+tech_stack:
+  - language: PHP 8.0+
+  - framework: Laravel 9
+  - database: MySQL (finmanage_pro)
+  - auth: Laravel Sanctum
+  - payments: PagSeguro, Asaas, AbacatePay
+  - messaging: WhatsApp Meta Cloud API, Evolution API
+  - other: Multi-tenant SaaS, Redis (queues), Laravel Echo (broadcasting)
+features:
+  - name: Authentication
+    description: User registration, login, password reset and profile management
+    files:
+      - app/Http/Controllers/Auth
+      - app/Http/Controllers/LoginController.php
+      - app/Http/Controllers/RegisterController.php
+      - app/Http/Controllers/ProfileController.php
+    endpoints:
+      - method: GET
+        path: /login
+        description: Show login form
+        auth_required: false
+        response_schema:
+          "200": HTML view
+      - method: POST
+        path: /login
+        description: Authenticate user
+        auth_required: false
+        request_schema:
+          body:
+            email: string
+            password: string
+        response_schema:
+          "302": Redirect to dashboard
+          "422": Validation error
+      - method: POST
+        path: /logout
+        description: Logout current user
+        auth_required: true
+        response_schema:
+          "302": Redirect to login
+      - method: GET
+        path: /register
+        description: Show registration form
+        auth_required: false
+        response_schema:
+          "200": HTML view
+      - method: POST
+        path: /register
+        description: Register new user/tenant
+        auth_required: false
+        request_schema:
+          body:
+            name: string
+            email: string
+            password: string
+            organization: string
+        response_schema:
+          "302": Redirect to dashboard
+          "422": Validation error
+    depends_on: []
+
+  - name: Dashboard
+    description: Main dashboard with KPIs and summary widgets
+    files:
+      - app/Http/Controllers/DashboardController.php
+    endpoints:
+      - method: GET
+        path: /dashboard
+        description: Show main dashboard
+        auth_required: true
+        response_schema:
+          "200": HTML view with metrics
+    depends_on:
+      - Authentication
+
+  - name: WhatsApp Management (Meta Cloud API)
+    description: Send/receive WhatsApp messages, webhook handling, message templates
+    files:
+      - app/Http/Controllers/WhatsappController.php
+      - app/Http/Controllers/WhatsappAutomationController.php
+    endpoints:
+      - method: GET
+        path: /api/whatsapp/webhook
+        description: Meta webhook verification handshake
+        auth_required: false
+        response_schema:
+          "200": hub.challenge value
+      - method: POST
+        path: /api/whatsapp/webhook
+        description: Receive WhatsApp events from Meta
+        auth_required: false
+        response_schema:
+          "200": OK
+      - method: GET
+        path: /api/whatsapp/templates
+        description: List WhatsApp message templates
+        auth_required: true
+        response_schema:
+          "200": Template[]
+    depends_on:
+      - Authentication
+
+  - name: WhatsApp Instances (Evolution API)
+    description: Manage Evolution API WhatsApp instances per tenant
+    files:
+      - app/Http/Controllers/Api/WhatsappInstanceController.php
+      - app/Http/Controllers/Api/EvolutionWebhookController.php
+    endpoints:
+      - method: GET
+        path: /api/whatsapp/instances
+        description: List WhatsApp instances for the authenticated tenant
+        auth_required: true
+        response_schema:
+          "200": Instance[]
+      - method: POST
+        path: /api/whatsapp/instances
+        description: Create a new WhatsApp instance
+        auth_required: true
+        request_schema:
+          body:
+            name: string
+        response_schema:
+          "201": Instance
+          "422": Validation error
+      - method: GET
+        path: /api/whatsapp/instances/{id}/status
+        description: Get connection status of an instance
+        auth_required: true
+        response_schema:
+          "200": status object
+      - method: POST
+        path: /api/whatsapp/instances/{id}/connect
+        description: Connect/reconnect a WhatsApp instance
+        auth_required: true
+        response_schema:
+          "200": QR code or status
+      - method: DELETE
+        path: /api/whatsapp/instances/{id}
+        description: Delete a WhatsApp instance
+        auth_required: true
+        response_schema:
+          "200": success message
+      - method: POST
+        path: /api/evo/webhook/{token}
+        description: Receive Evolution API webhook events
+        auth_required: false
+        response_schema:
+          "200": OK
+    depends_on:
+      - Authentication
+
+  - name: Projects Management
+    description: Create and manage projects with timelines, members, and health tracking
+    files:
+      - app/Http/Controllers/ProjectController.php
+      - app/Http/Controllers/ProjectTimelineController.php
+      - app/Models/Project.php
+      - app/Models/ProjectMember.php
+      - app/Models/ProjectTimelineRecord.php
+      - app/Models/ProjectHealthHistory.php
+    endpoints:
+      - method: GET
+        path: /projects
+        description: List all projects for the tenant
+        auth_required: true
+        response_schema:
+          "200": HTML view with Project[]
+      - method: POST
+        path: /projects
+        description: Create a new project
+        auth_required: true
+        request_schema:
+          body:
+            name: string
+            description: string
+            start_date: date
+            end_date: date
+        response_schema:
+          "302": Redirect to project
+          "422": Validation error
+      - method: GET
+        path: /projects/{id}
+        description: Show project details
+        auth_required: true
+        response_schema:
+          "200": HTML view
+      - method: PUT
+        path: /projects/{id}
+        description: Update a project
+        auth_required: true
+        response_schema:
+          "302": Redirect
+          "422": Validation error
+      - method: DELETE
+        path: /projects/{id}
+        description: Delete a project
+        auth_required: true
+        response_schema:
+          "302": Redirect
+    depends_on:
+      - Authentication
+
+  - name: Financial Transactions
+    description: Manage income and expense transactions with categories and reconciliation
+    files:
+      - app/Http/Controllers/TransactionController.php
+      - app/Http/Controllers/ReconciliationController.php
+      - app/Models/FinancialCategory.php
+    endpoints:
+      - method: GET
+        path: /transactions
+        description: List financial transactions
+        auth_required: true
+        response_schema:
+          "200": HTML view with Transaction[]
+      - method: POST
+        path: /transactions
+        description: Create a transaction
+        auth_required: true
+        request_schema:
+          body:
+            type: string
+            amount: number
+            description: string
+            date: date
+            category_id: integer
+        response_schema:
+          "302": Redirect
+          "422": Validation error
+      - method: GET
+        path: /transactions/{id}
+        description: Show transaction detail
+        auth_required: true
+        response_schema:
+          "200": HTML view
+      - method: PUT
+        path: /transactions/{id}
+        description: Update a transaction
+        auth_required: true
+        response_schema:
+          "302": Redirect
+      - method: DELETE
+        path: /transactions/{id}
+        description: Delete a transaction
+        auth_required: true
+        response_schema:
+          "302": Redirect
+    depends_on:
+      - Authentication
+
+  - name: Campaigns & Donations
+    description: Fundraising campaigns and donor management for NGOs
+    files:
+      - app/Http/Controllers/CampaignController.php
+      - app/Http/Controllers/NgoDonorController.php
+      - app/Models/Campaign.php
+      - app/Models/NgoDonor.php
+    endpoints:
+      - method: GET
+        path: /campaigns
+        description: List campaigns
+        auth_required: true
+        response_schema:
+          "200": HTML view with Campaign[]
+      - method: POST
+        path: /campaigns
+        description: Create a campaign
+        auth_required: true
+        response_schema:
+          "302": Redirect
+          "422": Validation error
+      - method: GET
+        path: /campaigns/{id}
+        description: Show campaign detail
+        auth_required: true
+        response_schema:
+          "200": HTML view
+      - method: GET
+        path: /donors
+        description: List donors
+        auth_required: true
+        response_schema:
+          "200": HTML view with NgoDonor[]
+    depends_on:
+      - Authentication
+
+  - name: Beneficiary Management
+    description: Register and manage NGO beneficiaries and family members
+    files:
+      - app/Http/Controllers/BeneficiaryController.php
+      - app/Models/Beneficiary.php
+      - app/Models/FamilyMember.php
+    endpoints:
+      - method: GET
+        path: /beneficiaries
+        description: List beneficiaries
+        auth_required: true
+        response_schema:
+          "200": HTML view with Beneficiary[]
+      - method: POST
+        path: /beneficiaries
+        description: Create a beneficiary
+        auth_required: true
+        request_schema:
+          body:
+            name: string
+            cpf: string
+            birth_date: date
+        response_schema:
+          "302": Redirect
+          "422": Validation error
+      - method: GET
+        path: /beneficiaries/{id}
+        description: Show beneficiary details
+        auth_required: true
+        response_schema:
+          "200": HTML view
+    depends_on:
+      - Authentication
+
+  - name: Human Resources
+    description: Employee management, contracts, and team administration
+    files:
+      - app/Http/Controllers/HumanResourcesController.php
+      - app/Http/Controllers/ContractController.php
+      - app/Http/Controllers/TeamController.php
+      - app/Models/Employee.php
+      - app/Models/Contract.php
+    endpoints:
+      - method: GET
+        path: /hr
+        description: HR dashboard
+        auth_required: true
+        response_schema:
+          "200": HTML view
+      - method: GET
+        path: /contracts
+        description: List contracts
+        auth_required: true
+        response_schema:
+          "200": HTML view with Contract[]
+      - method: POST
+        path: /contracts
+        description: Create a contract
+        auth_required: true
+        response_schema:
+          "302": Redirect
+          "422": Validation error
+    depends_on:
+      - Authentication
+
+  - name: LMS / Academy
+    description: Learning Management System with courses, modules, and lessons
+    files:
+      - app/Http/Controllers/AcademyController.php
+      - app/Models/Course.php
+      - app/Models/Module.php
+      - app/Models/Lesson.php
+      - app/Models/Certificate.php
+    endpoints:
+      - method: GET
+        path: /academy
+        description: List available courses
+        auth_required: true
+        response_schema:
+          "200": HTML view with Course[]
+      - method: GET
+        path: /academy/courses/{id}
+        description: Show course details and modules
+        auth_required: true
+        response_schema:
+          "200": HTML view
+    depends_on:
+      - Authentication
+
+  - name: Payments Integration
+    description: Checkout and webhook handling for PagSeguro, Asaas, and AbacatePay
+    files:
+      - app/Http/Controllers/Api/PagSeguroController.php
+      - app/Http/Controllers/Api/PagSeguroWebhookController.php
+      - app/Http/Controllers/Api/AsaasWebhookController.php
+      - app/Http/Controllers/Api/AbacatePayCheckoutController.php
+      - app/Http/Controllers/Api/AbacatePayWebhookController.php
+      - app/Http/Controllers/CheckoutController.php
+    endpoints:
+      - method: POST
+        path: /api/pagseguro/checkout
+        description: Create PagSeguro payment checkout
+        auth_required: true
+        response_schema:
+          "200": checkout URL
+          "422": Error
+      - method: POST
+        path: /api/webhooks/pagseguro
+        description: Receive PagSeguro payment webhook
+        auth_required: false
+        response_schema:
+          "200": OK
+      - method: POST
+        path: /api/webhooks/asaas
+        description: Receive Asaas payment webhook
+        auth_required: false
+        response_schema:
+          "200": OK
+      - method: POST
+        path: /api/abacatepay/checkout
+        description: Create AbacatePay checkout
+        auth_required: true
+        response_schema:
+          "200": checkout data
+      - method: POST
+        path: /api/abacatepay/webhook
+        description: Receive AbacatePay webhook
+        auth_required: false
+        response_schema:
+          "200": OK
+    depends_on:
+      - Authentication
+
+  - name: Inventory Management
+    description: Track and manage inventory items and movements
+    files:
+      - app/Http/Controllers/InventoryController.php
+      - app/Models/InventoryItem.php
+      - app/Models/InventoryMovement.php
+    endpoints:
+      - method: GET
+        path: /inventory
+        description: List inventory items
+        auth_required: true
+        response_schema:
+          "200": HTML view with InventoryItem[]
+      - method: POST
+        path: /inventory
+        description: Create inventory item
+        auth_required: true
+        response_schema:
+          "302": Redirect
+          "422": Validation error
+    depends_on:
+      - Authentication
+
+  - name: Reports & Analytics
+    description: Generate financial and operational reports with export functionality
+    files:
+      - app/Http/Controllers/ReportController.php
+      - app/Http/Controllers/ExportController.php
+      - app/Http/Controllers/SmartAnalysisController.php
+    endpoints:
+      - method: GET
+        path: /reports
+        description: Show reports dashboard
+        auth_required: true
+        response_schema:
+          "200": HTML view
+      - method: GET
+        path: /reports/export
+        description: Export report data
+        auth_required: true
+        response_schema:
+          "200": File download (PDF/CSV/XLSX)
+    depends_on:
+      - Authentication
+
+  - name: Meeting Booking
+    description: Public meeting scheduling with slot selection and cancellation
+    files:
+      - app/Http/Controllers/MeetingBookingController.php
+      - app/Models/MeetingBooking.php
+    endpoints:
+      - method: GET
+        path: /agendar
+        description: Show booking form
+        auth_required: false
+        response_schema:
+          "200": HTML view
+      - method: GET
+        path: /agendar/slots
+        description: Get available time slots
+        auth_required: false
+        response_schema:
+          "200": Slot[]
+      - method: POST
+        path: /agendar
+        description: Book a meeting
+        auth_required: false
+        request_schema:
+          body:
+            name: string
+            email: string
+            slot: datetime
+        response_schema:
+          "302": Confirmation page
+          "422": Validation error
+      - method: GET
+        path: /agendar/cancelar/{token}
+        description: Cancel a booking via token
+        auth_required: false
+        response_schema:
+          "200": Cancellation confirmation
+    depends_on: []
+
+  - name: Notifications
+    description: In-app notification system for users
+    files:
+      - app/Http/Controllers/NotificationController.php
+      - app/Models/Notification.php
+    endpoints:
+      - method: GET
+        path: /notifications
+        description: List notifications for current user
+        auth_required: true
+        response_schema:
+          "200": Notification[]
+    depends_on:
+      - Authentication
+
+  - name: Admin Panel
+    description: Super-admin panel for managing tenants and system settings
+    files:
+      - app/Http/Controllers/AdminController.php
+      - app/Http/Controllers/AdminSettingsController.php
+      - app/Http/Controllers/Admin
+    endpoints:
+      - method: GET
+        path: /admin
+        description: Admin dashboard
+        auth_required: true
+        response_schema:
+          "200": HTML view
+    depends_on:
+      - Authentication
+
+known_limitations:
+  - issue: Multi-tenant isolation relies on middleware; misconfiguration could expose cross-tenant data
+    location: app/Http/Middleware
+    impact: Data leakage between tenants
+  - issue: WhatsApp webhook endpoints lack signature verification in some routes
+    location: app/Http/Controllers/WhatsappController.php
+    impact: Spoofed webhook events could be accepted
+  - issue: Some payment webhook routes have no HMAC/signature validation
+    location: app/Http/Controllers/Api/AsaasWebhookController.php
+    impact: Fraudulent webhook events possible

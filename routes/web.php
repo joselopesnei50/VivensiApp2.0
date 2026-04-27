@@ -15,6 +15,12 @@ use Illuminate\Support\Facades\Route;
 
 
 
+// [AUDIT A12 - MÉDIO] Healthcheck público para monitoramento externo (UptimeRobot, AWS, Pingdom).
+// O endpoint /admin/health existente requer auth e não serve para monitoramento externo.
+Route::get('/ping', function () {
+    return response()->json(['status' => 'ok', 'ts' => now()->toIso8601String()]);
+})->name('health.ping');
+
 Route::get('/', [App\Http\Controllers\PublicController::class, 'welcome']);
 Route::get('/solucoes/terceiro-setor', [App\Http\Controllers\PublicController::class, 'solutionsNgo'])->name('solutions.ngo');
 
@@ -78,6 +84,7 @@ Route::middleware('guest')->group(function () {
 // Register Routes
 Route::get('/register', [App\Http\Controllers\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\RegisterController::class, 'register'])->middleware('throttle:10,1');
+Route::get('/interesse-registrado', [App\Http\Controllers\RegisterController::class, 'interestPage'])->name('register.interest');
 
 // Donor Portal
 Route::get('/portal-doador/{token}', [App\Http\Controllers\DonorPortalController::class, 'show'])->name('donor.portal');
@@ -618,6 +625,13 @@ Route::middleware(['auth'])->group(function () {
 
 // Public Raffle Page (Moved to absolute bottom for public access)
 Route::get('/rifa/{slug}', [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');
-Route::post('/rifa/{slug}/reserve', [App\Http\Controllers\PublicRaffleController::class, 'reserve'])->name('public.raffle.reserve');
-Route::post('/rifa/ticket/{ticket}/comprovante', [App\Http\Controllers\PublicRaffleController::class, 'uploadReceipt'])->name('public.raffle.receipt');
+// [AUDIT A03 - CRÍTICO] throttle:20,1 = máx 20 reservas por IP por minuto.
+// Sem este limite, bots podiam reservar todos os bilhetes de uma rifa em segundos.
+Route::post('/rifa/{slug}/reserve', [App\Http\Controllers\PublicRaffleController::class, 'reserve'])
+    ->middleware('throttle:20,1')
+    ->name('public.raffle.reserve');
+// [AUDIT A03] throttle:10,1 no upload de comprovante também
+Route::post('/rifa/ticket/{ticket}/comprovante', [App\Http\Controllers\PublicRaffleController::class, 'uploadReceipt'])
+    ->middleware('throttle:10,1')
+    ->name('public.raffle.receipt');
 Route::post('/openpix/webhook', [App\Http\Controllers\OpenPixWebhookController::class, 'receive'])->name('openpix.webhook');

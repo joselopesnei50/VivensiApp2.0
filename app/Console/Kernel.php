@@ -44,6 +44,13 @@ class Kernel extends ConsoleKernel
                      \Illuminate\Support\Facades\Log::error('SendWeeklyReportJob falhou.');
                  });
 
+        // [AUDIT A01 - CRÍTICO] Limpeza de reservas expiradas de rifas.
+        // Sem este agendamento, bilhetes reservados e não pagos ficavam
+        // bloqueados permanentemente, impedindo novos compradores.
+        $schedule->command('raffles:cleanup-reservations')
+                 ->everyFifteenMinutes()
+                 ->withoutOverlapping();
+
         // Backup automático do banco — todo dia às 02:00
         $schedule->command('db:backup')
                  ->dailyAt('02:00')
