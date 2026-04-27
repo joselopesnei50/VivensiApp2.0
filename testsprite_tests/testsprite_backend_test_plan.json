@@ -1,0 +1,27 @@
+[
+  {
+    "id": "TC001",
+    "title": "verify_evolution_api_webhook_signature_verification",
+    "description": "Test POST /api/evo/webhook/{token} endpoint to ensure it accepts requests with valid Webhook-Signature header and rejects requests with missing or invalid signature with 401 Unauthorized."
+  },
+  {
+    "id": "TC002",
+    "title": "validate_whatsapp_webhook_payload_sanitization",
+    "description": "Test POST /api/whatsapp/webhook endpoint to verify incoming WhatsApp message payloads are sanitized properly to prevent stored XSS and injection before persisting, ensuring sanitized data is stored and used internally."
+  },
+  {
+    "id": "TC003",
+    "title": "enforce_multitenant_broadcasting_channel_authorization",
+    "description": "Test POST /broadcasting/auth endpoint to confirm that channel subscription authorization is enforced per tenant, allowing access only to channels belonging to the authenticated tenant and denying cross-tenant access with 403 Forbidden."
+  },
+  {
+    "id": "TC004",
+    "title": "test_antiban_and_rate_control_on_whatsapp_instance_connect",
+    "description": "Test POST /api/whatsapp/instances/{id}/connect endpoint to verify AntiBanManager schedules outbound messages with randomized delays, enforces rate limits returning 429 on excess calls, and validates media integrity returning 422 on invalid Base64."
+  },
+  {
+    "id": "TC005",
+    "title": "verify_webhook_throttling_and_queue_failure_alerts",
+    "description": "Test POST /api/whatsapp/webhook and POST /api/webhooks/asaas endpoints to ensure per-route rate limiting is applied returning 429 on flood, webhook jobs are queued and processed, and failed jobs trigger alerts visible on /admin dashboard for super-admins."
+  }
+]

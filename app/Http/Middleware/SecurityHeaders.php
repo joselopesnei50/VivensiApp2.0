@@ -24,7 +24,9 @@ class SecurityHeaders
             $response->header('X-XSS-Protection', '1; mode=block'); // Proteção extra para navegadores mais antigos contra XSS
             $response->header('X-Content-Type-Options', 'nosniff'); // Previne o navegador de tentar adivinhar o MIME type e executar vírus disfarçado
             $response->header('Referrer-Policy', 'strict-origin-when-cross-origin'); // Mantém os dados da URL seguros ao sair do seu site
-            $response->header('Strict-Transport-Security', 'max-age=300'); // Força temporária para testes
+            // TODO [AUDIT A09]: Aumentar para max-age=31536000 após confirmar SSL estável em produção.
+            // Não aumentar antes — browsers gravam o HSTS por 1 ano sem reversão fácil.
+            $response->header('Strict-Transport-Security', 'max-age=300');
             
             // Content-Security-Policy (básico - pode ser aprofundado se o sistema exigir)
             // Permite fontes normais, fontes do Google, imagens do site e dados de data:, etc.

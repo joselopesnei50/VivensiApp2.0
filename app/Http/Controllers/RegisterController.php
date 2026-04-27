@@ -111,6 +111,12 @@ class RegisterController extends Controller
                 \Log::error('Erro ao enviar e-mail de boas-vindas: ' . $e->getMessage());
             }
 
+            // Se vendas fechadas, redireciona para página de interesse
+            $salesOpen = \App\Models\SystemSetting::getValue('sales_open', '0');
+            if (!$salesOpen || $salesOpen === '0') {
+                return redirect()->route('register.interest');
+            }
+
             if ($request->plan_id) {
                 return redirect('/checkout/' . $request->plan_id)->with('success', 'Conta criada! Conclua o pagamento para acessar o sistema.');
             }
@@ -122,6 +128,12 @@ class RegisterController extends Controller
             \Log::error('Erro ao criar conta', ['exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()->with('error', 'Não foi possível criar a conta. Por favor, tente novamente ou entre em contato com o suporte.')->withInput();
         }
+    }
+
+    public function interestPage()
+    {
+        $whatsapp = \App\Models\SystemSetting::getValue('support_whatsapp', '16997618695');
+        return view('auth.interest', compact('whatsapp'));
     }
 
     protected function getTenantTypeByPlan($plan_id)
