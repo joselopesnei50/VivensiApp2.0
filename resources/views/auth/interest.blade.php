@@ -122,23 +122,25 @@
         </div>
 
         <div class="icon-wrap">
-            <i class="fas fa-clock"></i>
+            <i class="fas fa-list-check"></i>
         </div>
 
-        <div class="badge">Acesso em breve</div>
+        <div class="badge">✅ Você está na lista</div>
 
-        <h1>Recebemos seu <span>interesse!</span></h1>
+        <h1>Você entrou na <span>lista de espera!</span></h1>
 
         <p>
-            O Vivensi está em fase de lançamento e disponível para
-            <strong>um número limitado de entidades</strong> neste momento.<br><br>
-            Nossa equipe analisará seu cadastro e entrará em contato
-            para liberar seu acesso. Fique de olho no seu e-mail!
+            Seu cadastro foi recebido com sucesso.<br><br>
+            O Vivensi está com vagas <strong>limitadas</strong> e liberamos
+            o acesso por ordem de cadastro. Nossa equipe entrará em contato
+            assim que uma vaga for aberta para você.<br><br>
+            Enquanto isso, fale com a gente pelo WhatsApp — adoramos
+            conversar com quem vai transformar o terceiro setor! 🚀
         </p>
 
         <div class="divider"></div>
 
-        <div class="whatsapp-label">Fale com a gente agora</div>
+        <div class="whatsapp-label">Acelere sua entrada — fale com a gente</div>
 
         @php
             $msg = urlencode('Olá! Acabei de me cadastrar no Vivensi e gostaria de saber mais sobre o acesso à plataforma.');
