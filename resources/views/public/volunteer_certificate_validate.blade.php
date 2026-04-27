@@ -2,6 +2,8 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Validação de Certificado</title>
     <style>
