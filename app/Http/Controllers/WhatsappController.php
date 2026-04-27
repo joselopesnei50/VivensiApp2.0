@@ -576,7 +576,21 @@ class WhatsappController extends Controller
             return response()->json(['success' => false, 'message' => 'Configuração não encontrada'], 404);
         }
 
-        $config->update(['ai_training' => $request->training]);
+        $newTraining = $request->training ?? '';
+
+        // Preserva o FAQ estruturado ao salvar o treinamento rápido
+        $structured = $config->ai_training_structured ?? [];
+        $faqs = collect($structured['faq'] ?? [])->filter(fn($f) => !empty($f['question']) && !empty($f['answer']));
+
+        if ($faqs->isNotEmpty()) {
+            $faqBlock  = "\n\n**PERGUNTAS FREQUENTES:**\n";
+            foreach ($faqs as $faq) {
+                $faqBlock .= "P: {$faq['question']}\nR: {$faq['answer']}\n\n";
+            }
+            $newTraining = rtrim($newTraining) . $faqBlock;
+        }
+
+        $config->update(['ai_training' => $newTraining]);
 
         return response()->json(['success' => true]);
     }
