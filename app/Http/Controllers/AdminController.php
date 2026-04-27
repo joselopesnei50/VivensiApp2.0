@@ -217,6 +217,29 @@ class AdminController extends Controller
         return back()->with('success', 'Organização reativada com sucesso. O acesso foi liberado.');
     }
 
+    public function destroyTenant($id)
+    {
+        if (auth()->user()->role !== 'super_admin') {
+            abort(403);
+        }
+
+        $tenant = Tenant::findOrFail($id);
+
+        // Só permite deletar contas inativas (pending, canceled, suspended)
+        if ($tenant->subscription_status === 'active') {
+            return back()->with('error', 'Não é possível deletar uma conta ativa. Suspenda-a primeiro.');
+        }
+
+        $tenantName = $tenant->name;
+
+        // Remove usuários e o tenant
+        User::where('tenant_id', $tenant->id)->delete();
+        $tenant->delete();
+
+        return redirect()->route('admin.tenants.index')
+            ->with('success', "Conta \"{$tenantName}\" e todos os seus usuários foram removidos.");
+    }
+
     public function createTenant()
     {
         if (auth()->user()->role !== 'super_admin') {

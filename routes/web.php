@@ -507,6 +507,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/tenants/{id}', [App\Http\Controllers\AdminController::class, 'showTenant'])->name('admin.tenants.show');
         Route::post('/tenants/{id}/suspend', [App\Http\Controllers\AdminController::class, 'suspendTenant'])->name('admin.tenants.suspend');
         Route::post('/tenants/{id}/activate', [App\Http\Controllers\AdminController::class, 'activateTenant'])->name('admin.tenants.activate');
+        Route::delete('/tenants/{id}', [App\Http\Controllers\AdminController::class, 'destroyTenant'])->name('admin.tenants.destroy');
         Route::resource('academy', App\Http\Controllers\Admin\AcademyController::class, ['as' => 'admin']);
         
         // Academy Modules & Lessons
