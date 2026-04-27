@@ -117,7 +117,13 @@ class ProspectingController extends Controller
 
             $prospect->update(['status' => 'contacted']);
 
-            return redirect('/sponsorships')->with('success', 'Lead enviado para o Funil com sucesso!');
+            $user   = Auth::user();
+            $tenant = $user->tenant;
+            $isNgo  = in_array($tenant?->type ?? '', ['ngo']) || $user->role === 'ngo';
+
+            $redirect = $isNgo ? '/ngo/sponsorships' : '/prospecting';
+
+            return redirect($redirect)->with('success', 'Lead enviado para o Funil com sucesso!');
         });
     }
 
