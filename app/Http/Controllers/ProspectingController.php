@@ -14,9 +14,11 @@ class ProspectingController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->query('status');
+        $tenantId = Auth::user()->tenant_id;
+        $status   = $request->query('status');
 
-        $base = Prospect::query();
+        $base = Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId);
 
         $prospects = (clone $base)
             ->when($status, fn ($q) => $q->where('status', $status))
@@ -26,7 +28,6 @@ class ProspectingController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        // Stats — consultas separadas para contar no total, não só na página atual
         $stats = [
             'total'     => (clone $base)->count(),
             'raw'       => (clone $base)->where('status', 'raw')->count(),
@@ -40,7 +41,7 @@ class ProspectingController extends Controller
 
     public function search(Request $request, LeadSearchService $searchService)
     {
-        $mode = $request->input('mode', 'maps'); // 'maps' | 'web'
+        $mode = $request->input('mode', 'maps');
 
         $request->validate([
             'term'     => 'required|string|max:100',
@@ -49,10 +50,10 @@ class ProspectingController extends Controller
 
         try {
             if ($mode === 'web') {
-                $result = $searchService->searchWeb($request->term, Auth::user()->tenant_id);
+                $result    = $searchService->searchWeb($request->term, Auth::user()->tenant_id);
                 $modeLabel = 'Busca Web';
             } else {
-                $result = $searchService->search($request->term, $request->location, Auth::user()->tenant_id);
+                $result    = $searchService->search($request->term, $request->location, Auth::user()->tenant_id);
                 $modeLabel = 'Google Maps';
             }
 
@@ -68,7 +69,6 @@ class ProspectingController extends Controller
         }
     }
 
-    /** Analisa um lead específico (re-dispara o job). */
     public function analyze(int $id)
     {
         $prospect = $this->findForTenant($id);
@@ -77,10 +77,14 @@ class ProspectingController extends Controller
         return back()->with('success', 'Análise da Bruce AI reiniciada para este lead.');
     }
 
-    /** Analisa em lote todos os leads ainda em status raw. */
     public function analyzeAll()
     {
-        $rawLeads = Prospect::where('status', 'raw')->get();
+        $tenantId = Auth::user()->tenant_id;
+
+        $rawLeads = Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'raw')
+            ->get();
 
         foreach ($rawLeads as $prospect) {
             ProcessProspect::dispatch($prospect)->onQueue('default');
@@ -89,7 +93,6 @@ class ProspectingController extends Controller
         return back()->with('success', "Bruce AI iniciou a análise de {$rawLeads->count()} lead(s) em fila.");
     }
 
-    /** Converte um lead para o Funil de Patrocínios (SponsorshipDeal). */
     public function convertToDeal(int $id)
     {
         $prospect = $this->findForTenant($id);
@@ -101,13 +104,13 @@ class ProspectingController extends Controller
                 'company_name'   => $prospect->company_name,
                 'contact_person' => 'Lead de Prospecção Automática',
                 'phone'          => $prospect->phone,
-                'email'          => null, // website não é email
+                'email'          => null,
                 'expected_value' => 0,
                 'stage'          => 'prospecting',
                 'notes'          => implode("\n\n", array_filter([
                     "Lead convertido da Prospecção Automática.",
-                    $prospect->address   ? "Endereço: {$prospect->address}"   : null,
-                    $prospect->website   ? "Site: {$prospect->website}"       : null,
+                    $prospect->address    ? "Endereço: {$prospect->address}"   : null,
+                    $prospect->website    ? "Site: {$prospect->website}"       : null,
                     $prospect->ai_analysis ? "Análise Bruce AI:\n{$prospect->ai_analysis}" : null,
                 ])),
             ]);
@@ -125,10 +128,12 @@ class ProspectingController extends Controller
         return back()->with('success', 'Lead removido da lista.');
     }
 
-    // ── Helpers ─────────────────────────────────────────────────────────────
-
     private function findForTenant(int $id): Prospect
     {
-        return Prospect::findOrFail($id);
+        $tenantId = Auth::user()->tenant_id;
+
+        return Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($id);
     }
 }
