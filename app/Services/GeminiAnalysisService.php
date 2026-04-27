@@ -21,10 +21,18 @@ class GeminiAnalysisService {
             ->latest()
             ->first() ?? \App\Models\Project::where('tenant_id', $prospect->tenant_id)->latest()->first();
 
-        $ngoContext = $tenant ? "da ONG {$tenant->name}" : "da organização";
-        $projectContext = $project ? "focada no projeto '{$project->name}' ({$project->description})" : "de impacto social";
+        $isNgo      = in_array($tenant?->type ?? '', ['ngo']);
+        $orgLabel   = $isNgo ? "ONG {$tenant->name}" : ($tenant?->name ?? 'empresa');
+        $roleLabel  = $isNgo ? 'captador de recursos' : 'consultor comercial';
+        $goalLabel  = $isNgo ? 'parceria ou patrocínio para projetos sociais' : 'parceria comercial ou negócio';
+        $pitchNote  = $isNgo
+            ? 'O pitch deve destacar o impacto social e o benefício da parceria para a imagem da empresa. NÃO mencione o sistema Vivensi.'
+            : 'O pitch deve destacar o benefício comercial e a oportunidade de negócio. NÃO mencione o sistema Vivensi.';
 
-        // Contexto adicional disponível para leads de busca web
+        $projectContext = $project
+            ? "trabalhando no projeto '{$project->name}'" . ($project->description ? " ({$project->description})" : '')
+            : 'buscando novas oportunidades';
+
         $extraContext = '';
         if (!empty($prospect->snippet)) {
             $extraContext .= "\nDescrição Web: {$prospect->snippet}";
@@ -32,21 +40,20 @@ class GeminiAnalysisService {
         if (!empty($prospect->website)) {
             $extraContext .= "\nSite: {$prospect->website}";
         }
-        $sourceLabel = ($prospect->source ?? 'maps') === 'web' ? 'Busca Web Google' : 'Google Maps';
+        $sourceLabel    = ($prospect->source ?? 'maps') === 'web' ? 'Busca Web Google' : 'Google Maps';
         $prospectAddress = $prospect->address ?? 'Não informada';
 
-        $prompt = "Você é um captador de recursos especializado {$ngoContext}.
-        Atualmente, você está trabalhando {$projectContext}.
+        $prompt = "Você é um {$roleLabel} da organização {$orgLabel}, {$projectContext}.
 
-        Analise o seguinte lead B2B para uma possível parceria ou patrocínio:
+        Analise o seguinte lead para uma possível {$goalLabel}:
         Empresa: {$prospect->company_name}
         Categoria: {$prospect->category}
         Origem do Lead: {$sourceLabel}
         Localização: {$prospectAddress}
         Nota Google: {$prospect->google_rating}{$extraContext}
 
-        Objetivo: Identificar como a atividade desta empresa pode se alinhar aos objetivos do projeto citado e criar um pitch de venda curto, humano e persuasivo para WhatsApp. 
-        O pitch NÃO deve mencionar o sistema Vivensi, mas sim o impacto social do projeto e o benefício da parceria para a empresa.
+        Objetivo: Identificar o alinhamento estratégico e criar um pitch curto e persuasivo para WhatsApp.
+        {$pitchNote}
         
         Retorne estritamente um JSON no formato:
         {
