@@ -117,7 +117,7 @@ class ProspectingController extends Controller
 
             $prospect->update(['status' => 'contacted']);
 
-            return back()->with('success', 'Lead enviado para o Funil de Patrocínios com sucesso!');
+            return redirect('/sponsorships')->with('success', 'Lead enviado para o Funil com sucesso!');
         });
     }
 

@@ -20,6 +20,9 @@
                         <i class="fas fa-wand-magic-sparkles me-2"></i> Analisar {{ $stats['raw'] }} Raw
                     </button>
                 </form>
+                <a href="{{ request()->fullUrl() }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+                    <i class="fas fa-sync-alt me-2"></i> Atualizar Resultados
+                </a>
             @endif
             <button class="btn btn-primary rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#searchModal">
                 <i class="fas fa-search me-2"></i> Nova Busca
