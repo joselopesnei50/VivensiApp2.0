@@ -5,10 +5,15 @@ namespace App\Http\Controllers;
 use App\Jobs\ProcessProspect;
 use App\Models\Prospect;
 use App\Models\SponsorshipDeal;
+use App\Models\BroadcastCampaign;
+use App\Models\WhatsappInstance;
 use App\Services\LeadSearchService;
+use App\Services\EvolutionApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class ProspectingController extends Controller
 {
@@ -132,6 +137,81 @@ class ProspectingController extends Controller
         $this->findForTenant($id)->delete();
 
         return back()->with('success', 'Lead removido da lista.');
+    }
+
+    public function broadcastWhatsapp(Request $request)
+    {
+        $request->validate([
+            'prospect_ids'   => 'required|array|min:1',
+            'prospect_ids.*' => 'integer',
+            'message'        => 'required|string|max:4000',
+        ]);
+
+        $tenantId = Auth::user()->tenant_id;
+
+        $instance = WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('status', 'open')
+            ->first();
+
+        if (!$instance) {
+            return back()->with('error', 'Nenhuma instância WhatsApp conectada. Configure em Aparelhos Conectados.');
+        }
+
+        $prospects = Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $request->prospect_ids)
+            ->whereNotNull('phone')
+            ->where('phone', '!=', '')
+            ->get();
+
+        if ($prospects->isEmpty()) {
+            return back()->with('error', 'Nenhum lead selecionado possui número de telefone.');
+        }
+
+        $evo      = new EvolutionApiService($instance);
+        $message  = $request->input('message');
+        $sent     = 0;
+        $failed   = 0;
+
+        foreach ($prospects as $prospect) {
+            $phone = preg_replace('/\D/', '', $prospect->phone);
+            if (strlen($phone) < 10) { $failed++; continue; }
+
+            try {
+                $res = $evo->sendMessage($phone, $message, null, 2);
+                if (!isset($res['error']) && !empty($res)) {
+                    $prospect->update(['status' => 'contacted']);
+                    $sent++;
+                } else {
+                    $failed++;
+                }
+            } catch (\Exception $e) {
+                Log::error("Prospecting broadcast failed for {$phone}: " . $e->getMessage());
+                $failed++;
+            }
+
+            usleep(3_000_000); // 3s entre envios
+        }
+
+        if (Schema::hasTable('broadcast_campaigns')) {
+            try {
+                BroadcastCampaign::create([
+                    'tenant_id'     => $tenantId,
+                    'message'       => $message,
+                    'has_image'     => false,
+                    'audience_type' => 'selected',
+                    'total_sent'    => $sent,
+                    'total_failed'  => $failed,
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('BroadcastCampaign log failed: ' . $e->getMessage());
+            }
+        }
+
+        $msg = "{$sent} mensagem(ns) enviada(s) via WhatsApp.";
+        if ($failed > 0) $msg .= " {$failed} falha(s).";
+
+        return back()->with('success', $msg);
     }
 
     private function findForTenant(int $id): Prospect
