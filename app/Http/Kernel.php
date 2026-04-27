@@ -21,7 +21,8 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        // SecurityHeaders desativado temporariamente até estabilização do servidor
+        // TODO [AUDIT A02]: SecurityHeaders — ler views (CSP, iframes, scripts externos)
+        // antes de reativar para não quebrar o frontend em produção.
         // \App\Http\Middleware\SecurityHeaders::class,
     ];
 

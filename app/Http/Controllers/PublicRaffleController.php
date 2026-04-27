@@ -131,16 +131,20 @@ class PublicRaffleController extends Controller
     public function uploadReceipt(Request $request, $ticketId)
     {
         $ticket = RaffleTicket::findOrFail($ticketId);
+
+        // TODO [AUDIT A04]: Validar propriedade do bilhete (IDOR).
+        // Revertido temporariamente — a view de checkout precisa incluir buyer_email no form primeiro.
+        // Não aplicar sem ler a view public/raffles/checkout.blade.php.
+        $request->validate([
+            'receipt' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
+
         if ($ticket->status !== 'pending') {
             return back()->with('error', 'Este bilhete não está aguardando pagamento.');
         }
         if ($ticket->reserved_at && \Carbon\Carbon::parse($ticket->reserved_at)->lt(now()->subMinutes(30))) {
             return back()->with('error', 'Sua reserva expirou. Por favor, realize uma nova reserva.');
         }
-        
-        $request->validate([
-            'receipt' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ]);
 
         if ($request->hasFile('receipt')) {
             $path = $request->file('receipt')->store('raffle_receipts', 'public');

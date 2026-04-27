@@ -32,7 +32,13 @@ class CheckSubscription
         }
 
         // 4. Exception routes (to avoid infinite redirect loops)
-        if ($request->routeIs('checkout.*') || $request->routeIs('logout') || $request->is('support*')) {
+        if ($request->routeIs('checkout.*') || $request->routeIs('logout') || $request->is('support*') || $request->routeIs('register.interest')) {
+            return $next($request);
+        }
+
+        // 4b. Se vendas fechadas, contas são ativadas manualmente — deixa passar
+        $salesOpen = \App\Models\SystemSetting::getValue('sales_open', '0');
+        if (!$salesOpen || $salesOpen === '0') {
             return $next($request);
         }
 
