@@ -62,21 +62,18 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         $tenant = Tenant::find($tenantId);
         $orgName = $tenant->name ?? ('Tenant #' . $tenantId);
 
-        // "Treinamento" da IA vindo do banco
-        $training = $config->ai_training ?? "Você é o Bruce AI, assistente virtual avançado da Vivensi.";
+        // Treinamento personalizado do tenant — é o protagonista do prompt
+        $training = $config->ai_training ?? "Você é um assistente virtual prestativo da organização {$orgName}. Responda de forma acolhedora e objetiva.";
 
-        $systemPrompt = "### INSTRUÇÕES DE SISTEMA (BRUCE AI) ###\n";
-        $systemPrompt .= "1. PERSONA: Você é o *Bruce*, assistente digital humanizado da **ONG Vivensi**. Seu tom é acolhedor, empático e extremamente prestativo.\n";
-        $systemPrompt .= "2. OBJETIVO: Ajudar o usuário com informações sobre a Vivensi e acolhê-lo. Você é a porta de entrada para um atendimento social de qualidade.\n";
-        $systemPrompt .= "3. CONTEXTO ESPECÍFICO: {$training}\n";
-        $systemPrompt .= "4. REGRAS DE OURO:\n";
-        $systemPrompt .= "   - Respostas CURTAS (máximo 2 ou 3 parágrafos pequenos).\n";
-        $systemPrompt .= "   - Use emojis de forma moderada para passar empatia (ex: 💙, 🙏).\n";
-        $systemPrompt .= "   - Se o usuário pedir para falar com um humano, diga que vai avisar a equipe e peça para ele aguardar um momento.\n";
-        $systemPrompt .= "   - NUNCA invente links ou telefones que não estejam no contexto.\n";
-        $systemPrompt .= "   - Se não souber algo, não tente adivinhar. Peça para o usuário aguardar que um colega humano irá complementar a informação.\n";
-        
-        $prompt = "{$systemPrompt}\n---\nÚLTIMA MENSAGEM DO USUÁRIO: {$this->userMessage}";
+        $systemPrompt  = $training . "\n\n";
+        $systemPrompt .= "### REGRAS GERAIS ###\n";
+        $systemPrompt .= "- Respostas CURTAS (máximo 2 ou 3 parágrafos pequenos).\n";
+        $systemPrompt .= "- Use emojis de forma moderada para passar empatia.\n";
+        $systemPrompt .= "- Se o usuário pedir para falar com um humano, diga que vai avisar a equipe e peça para ele aguardar.\n";
+        $systemPrompt .= "- NUNCA invente links ou telefones que não estejam no treinamento acima.\n";
+        $systemPrompt .= "- Se não souber algo, não invente. Peça para o usuário aguardar que a equipe irá complementar.\n";
+
+        $prompt = "{$systemPrompt}\n---\nMENSAGEM DO USUÁRIO: {$this->userMessage}";
 
         $replyText = '';
         $provider = $config->ai_provider ?? 'gemini';
