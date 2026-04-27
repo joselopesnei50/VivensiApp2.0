@@ -55,7 +55,19 @@
                     </span>
                 </td>
                 <td style="padding: 15px 25px; text-align: right;">
-                    <a href="{{ route('admin.tenants.show', $tenant->id) }}" class="btn-outline" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;">Detalhes</a>
+                    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;">
+                        <a href="{{ route('admin.tenants.show', $tenant->id) }}" class="btn-outline" style="padding: 6px 12px; border-radius: 6px; font-size: 0.8rem;">Detalhes</a>
+                        @if($tenant->subscription_status !== 'active')
+                            <form action="{{ route('admin.tenants.destroy', $tenant->id) }}" method="POST"
+                                  onsubmit="return confirm('Tem certeza? Isso remove a conta de {{ addslashes($tenant->name) }} e todos os seus usuários permanentemente.')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" style="padding:6px 12px;border-radius:6px;font-size:0.8rem;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;cursor:pointer;font-weight:600;">
+                                    <i class="fas fa-trash-alt me-1"></i> Deletar
+                                </button>
+                            </form>
+                        @endif
+                    </div>
                 </td>
             </tr>
             @endforeach
