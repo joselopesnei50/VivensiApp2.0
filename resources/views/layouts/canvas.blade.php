@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
+    <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>@yield('title')</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
