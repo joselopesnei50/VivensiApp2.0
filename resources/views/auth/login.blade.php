@@ -624,7 +624,7 @@
         <div class="divider">ou</div>
 
         <div class="register-row">
-            Ainda não tem conta? <a href="{{ route('register') }}">Criar conta gratuita</a>
+            Quer fazer parte? <a href="{{ route('register') }}">Entrar na lista de espera</a>
         </div>
 
         <div class="lang-bar">
