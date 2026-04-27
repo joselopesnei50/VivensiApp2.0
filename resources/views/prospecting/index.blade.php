@@ -485,13 +485,6 @@
     }
 </style>
 
-@if($stats['raw'] > 0)
-<script>
-    // Auto-refresh while there are raw leads being analyzed
-    setTimeout(function() { window.location.reload(); }, 5000);
-</script>
-@endif
-
 <script>
     function setMode(mode) {
         document.getElementById('searchMode').value = mode;
