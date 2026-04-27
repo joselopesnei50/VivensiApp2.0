@@ -56,9 +56,9 @@ class GeminiAnalysisService {
         }";
 
         $attempts = [
-            ['ver' => 'v1beta', 'model' => 'models/gemini-2.0-flash'],
-            ['ver' => 'v1beta', 'model' => 'models/gemini-1.5-flash'],
-            ['ver' => 'v1beta', 'model' => 'models/gemini-1.5-pro'],
+            ['ver' => 'v1beta', 'model' => 'models/gemini-2.5-flash'],
+            ['ver' => 'v1beta', 'model' => 'models/gemini-2.0-flash-001'],
+            ['ver' => 'v1beta', 'model' => 'models/gemini-2.0-flash-lite'],
         ];
 
         $response = null;
