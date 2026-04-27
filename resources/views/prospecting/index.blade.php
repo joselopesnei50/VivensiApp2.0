@@ -117,12 +117,27 @@
         @endforeach
     </div>
 
+    {{-- ── BARRA DE AÇÕES EM MASSA ──────────────────────────────────────────── --}}
+    <div id="bulkBar" class="d-none mb-3 p-3 rounded-3 d-flex align-items-center gap-3"
+         style="background:#f0fdf4;border:1px solid #86efac;">
+        <span id="bulkCount" class="fw-bold text-success small"></span>
+        <button type="button" class="btn btn-success btn-sm rounded-pill px-4 fw-bold"
+                onclick="openBroadcastModal()">
+            <i class="fab fa-whatsapp me-2"></i> Disparar WhatsApp para Selecionados
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
+                onclick="clearSelection()">Limpar Seleção</button>
+    </div>
+
     {{-- ── TABELA DE LEADS ─────────────────────────────────────────────────── --}}
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
+                        <th class="px-4 py-3 border-0" style="width:40px;">
+                            <input type="checkbox" id="selectAll" onchange="toggleAll(this)" title="Selecionar analisados com telefone">
+                        </th>
                         <th class="px-4 py-3 border-0">Empresa / Contato</th>
                         <th class="py-3 border-0 text-center" style="width:130px;">Score IA</th>
                         <th class="py-3 border-0" style="width:150px;">Categoria</th>
@@ -133,6 +148,15 @@
                 <tbody>
                     @forelse($prospects as $prospect)
                         <tr>
+                            {{-- Checkbox --}}
+                            <td class="px-4 py-3">
+                                @if($prospect->status === 'analyzed' && !empty($prospect->phone))
+                                    <input type="checkbox" class="prospect-cb"
+                                           value="{{ $prospect->id }}"
+                                           data-pitch="{{ e($prospect->personalized_pitch ?? '') }}"
+                                           onchange="updateBulkBar()">
+                                @endif
+                            </td>
                             {{-- Empresa --}}
                             <td class="px-4 py-3">
                                 <div class="d-flex align-items-start gap-3">
@@ -356,7 +380,7 @@
 
                     @empty
                         <tr>
-                            <td colspan="5" class="py-5 text-center text-muted">
+                            <td colspan="6" class="py-5 text-center text-muted">
                                 <i class="fas fa-crosshairs fa-3x mb-3 d-block opacity-25"></i>
                                 <span class="fw-semibold">Nenhum lead prospectado ainda.</span><br>
                                 <small>Clique em <strong>Nova Busca</strong> para iniciar sua prospecção com a Bruce AI.</small>
@@ -542,5 +566,92 @@
             alert('Pitch copiado! Cole no WhatsApp.');
         }
     }
+
+    // ── Bulk Selection ────────────────────────────────────────────────────────
+    function updateBulkBar() {
+        const checked = document.querySelectorAll('.prospect-cb:checked');
+        const bar     = document.getElementById('bulkBar');
+        const count   = document.getElementById('bulkCount');
+        if (checked.length > 0) {
+            bar.classList.remove('d-none');
+            bar.classList.add('d-flex');
+            count.textContent = checked.length + ' lead(s) selecionado(s)';
+        } else {
+            bar.classList.add('d-none');
+            bar.classList.remove('d-flex');
+        }
+    }
+
+    function toggleAll(cb) {
+        document.querySelectorAll('.prospect-cb').forEach(el => { el.checked = cb.checked; });
+        updateBulkBar();
+    }
+
+    function clearSelection() {
+        document.querySelectorAll('.prospect-cb').forEach(el => { el.checked = false; });
+        document.getElementById('selectAll').checked = false;
+        updateBulkBar();
+    }
+
+    function openBroadcastModal() {
+        const checked = document.querySelectorAll('.prospect-cb:checked');
+        if (!checked.length) return;
+
+        // Pega o pitch do primeiro lead selecionado como sugestão
+        const firstPitch = checked[0].dataset.pitch || '';
+        document.getElementById('broadcastMsg').value = firstPitch;
+
+        const modal = new bootstrap.Modal(document.getElementById('modalBroadcast'));
+        modal.show();
+    }
+
+    document.getElementById('formBroadcast')?.addEventListener('submit', function () {
+        const ids = Array.from(document.querySelectorAll('.prospect-cb:checked')).map(el => el.value);
+        const container = document.getElementById('broadcastIds');
+        container.innerHTML = '';
+        ids.forEach(id => {
+            const input = document.createElement('input');
+            input.type  = 'hidden';
+            input.name  = 'prospect_ids[]';
+            input.value = id;
+            container.appendChild(input);
+        });
+    });
 </script>
+
+{{-- Modal Disparo WhatsApp --}}
+<div class="modal fade" id="modalBroadcast" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:500px;">
+        <div class="modal-content border-0 rounded-4 overflow-hidden shadow-lg">
+            <div style="background:linear-gradient(135deg,#25d366,#128c7e);padding:24px 28px 18px;">
+                <h5 class="mb-1 fw-800 text-white"><i class="fab fa-whatsapp me-2"></i> Disparar WhatsApp</h5>
+                <p class="mb-0 text-white opacity-75 small">Enviar mensagem para os leads selecionados</p>
+            </div>
+            <form id="formBroadcast" action="{{ route('prospecting.broadcast') }}" method="POST">
+                @csrf
+                <div id="broadcastIds"></div>
+                <div class="p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Mensagem</label>
+                        <textarea id="broadcastMsg" name="message" rows="6"
+                            class="form-control rounded-3"
+                            placeholder="Digite a mensagem ou use o pitch gerado pela IA..."
+                            style="resize:vertical;font-size:0.9rem;" required></textarea>
+                        <div class="form-text">O pitch da IA foi pré-carregado. Edite se necessário.</div>
+                    </div>
+                    <div class="alert alert-warning py-2 small mb-0">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Cadência de 3 segundos entre envios para proteger o número.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4 gap-2">
+                    <button type="button" class="btn btn-light rounded-pill flex-fill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success rounded-pill flex-fill fw-bold">
+                        <i class="fab fa-whatsapp me-1"></i> Enviar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
