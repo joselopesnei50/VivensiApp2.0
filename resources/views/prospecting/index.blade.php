@@ -597,26 +597,15 @@
         const checked = document.querySelectorAll('.prospect-cb:checked');
         if (!checked.length) return;
 
-        // Pega o pitch do primeiro lead selecionado como sugestão
+        const ids = Array.from(checked).map(el => el.value);
         const firstPitch = checked[0].dataset.pitch || '';
+
         document.getElementById('broadcastMsg').value = firstPitch;
+        document.getElementById('broadcastIdsInput').value = ids.join(',');
 
         const modal = new bootstrap.Modal(document.getElementById('modalBroadcast'));
         modal.show();
     }
-
-    document.getElementById('formBroadcast')?.addEventListener('submit', function () {
-        const ids = Array.from(document.querySelectorAll('.prospect-cb:checked')).map(el => el.value);
-        const container = document.getElementById('broadcastIds');
-        container.innerHTML = '';
-        ids.forEach(id => {
-            const input = document.createElement('input');
-            input.type  = 'hidden';
-            input.name  = 'prospect_ids[]';
-            input.value = id;
-            container.appendChild(input);
-        });
-    });
 </script>
 
 {{-- Modal Disparo WhatsApp --}}
@@ -629,7 +618,7 @@
             </div>
             <form id="formBroadcast" action="{{ route('prospecting.broadcast') }}" method="POST">
                 @csrf
-                <div id="broadcastIds"></div>
+                <input type="hidden" name="prospect_ids_raw" id="broadcastIdsInput" value="">
                 <div class="p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted text-uppercase">Mensagem</label>

@@ -142,10 +142,15 @@ class ProspectingController extends Controller
     public function broadcastWhatsapp(Request $request)
     {
         $request->validate([
-            'prospect_ids'   => 'required|array|min:1',
-            'prospect_ids.*' => 'integer',
-            'message'        => 'required|string|max:4000',
+            'prospect_ids_raw' => 'required|string',
+            'message'          => 'required|string|max:4000',
         ]);
+
+        $ids = array_filter(array_map('intval', explode(',', $request->input('prospect_ids_raw'))));
+
+        if (empty($ids)) {
+            return back()->with('error', 'Nenhum lead selecionado.');
+        }
 
         $tenantId = Auth::user()->tenant_id;
 
@@ -159,7 +164,7 @@ class ProspectingController extends Controller
 
         $prospects = Prospect::withoutGlobalScope('tenant')
             ->where('tenant_id', $tenantId)
-            ->whereIn('id', $request->prospect_ids)
+            ->whereIn('id', $ids)
             ->whereNotNull('phone')
             ->where('phone', '!=', '')
             ->get();
