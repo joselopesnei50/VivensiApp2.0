@@ -173,29 +173,19 @@ class ProspectingController extends Controller
             return back()->with('error', 'Nenhum lead selecionado possui número de telefone.');
         }
 
-        $evo      = new EvolutionApiService($instance);
-        $message  = $request->input('message');
-        $sent     = 0;
-        $failed   = 0;
+        $message    = $request->input('message');
+        $instanceId = $instance->id;
+        $total      = $prospects->count();
 
         foreach ($prospects as $prospect) {
-            $phone = preg_replace('/\D/', '', $prospect->phone);
-            if (strlen($phone) < 10) { $failed++; continue; }
+            \App\Jobs\SendProspectWhatsapp::dispatch(
+                $prospect->id,
+                $tenantId,
+                $instanceId,
+                $message
+            )->onQueue('default')->delay(now()->addSeconds($prospects->search($prospect) * 3));
 
-            try {
-                $res = $evo->sendMessage($phone, $message, null, 2);
-                if (!isset($res['error']) && !empty($res)) {
-                    $prospect->update(['status' => 'contacted']);
-                    $sent++;
-                } else {
-                    $failed++;
-                }
-            } catch (\Exception $e) {
-                Log::error("Prospecting broadcast failed for {$phone}: " . $e->getMessage());
-                $failed++;
-            }
-
-            usleep(3_000_000); // 3s entre envios
+            $prospect->update(['status' => 'contacted']);
         }
 
         if (Schema::hasTable('broadcast_campaigns')) {
@@ -205,18 +195,15 @@ class ProspectingController extends Controller
                     'message'       => $message,
                     'has_image'     => false,
                     'audience_type' => 'selected',
-                    'total_sent'    => $sent,
-                    'total_failed'  => $failed,
+                    'total_sent'    => $total,
+                    'total_failed'  => 0,
                 ]);
             } catch (\Exception $e) {
                 Log::warning('BroadcastCampaign log failed: ' . $e->getMessage());
             }
         }
 
-        $msg = "{$sent} mensagem(ns) enviada(s) via WhatsApp.";
-        if ($failed > 0) $msg .= " {$failed} falha(s).";
-
-        return back()->with('success', $msg);
+        return back()->with('success', "{$total} mensagem(ns) agendada(s) para envio via WhatsApp. Processando em segundo plano.");
     }
 
     private function findForTenant(int $id): Prospect
