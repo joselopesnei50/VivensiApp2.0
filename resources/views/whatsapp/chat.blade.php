@@ -392,23 +392,24 @@
         .panel-hero {
             padding: 28px 20px 20px;
             text-align: center;
-            background: linear-gradient(160deg, #075e54 0%, #128c7e 100%);
-            color: white;
+            background: #f0f2f5;
+            border-bottom: 1px solid var(--border-color);
         }
         .hero-avatar {
             width: 72px; height: 72px;
-            background: rgba(255,255,255,0.2);
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
             border-radius: 50%;
             margin: 0 auto 12px;
             display: flex; align-items: center; justify-content: center;
             font-size: 2rem; color: white;
-            border: 3px solid rgba(255,255,255,0.3);
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(37,211,102,0.3);
         }
-        .panel-hero h3 { color: white; font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
-        .panel-hero span { color: rgba(255,255,255,0.75); font-size: 0.8rem; }
+        .panel-hero h3 { color: #111b21; font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
+        .panel-hero span { color: #667781; font-size: 0.8rem; }
 
-        .tag-badge { background: rgba(255,255,255,0.2); color: white; padding: 3px 10px; border-radius: 6px; font-size: 0.73rem; font-weight: 600; }
-        .tag-badge.hot { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .tag-badge { background: #e9edef; color: #3b4a54; padding: 3px 10px; border-radius: 6px; font-size: 0.73rem; font-weight: 600; }
+        .tag-badge.hot { background: #fef2f2; color: #991b1b; }
 
         .crm-section { border-bottom: 1px solid #f0f2f5; }
         .crm-header {
