@@ -160,7 +160,12 @@
                         <tr>
                             {{-- Checkbox --}}
                             <td class="px-4 py-3">
-                                @if($prospect->status === 'analyzed' && !empty($prospect->phone))
+                                @php
+                                    $cleanPhone = preg_replace('/\D/', '', $prospect->phone ?? '');
+                                    if (strlen($cleanPhone) <= 11 && !str_starts_with($cleanPhone, '55')) $cleanPhone = '55'.$cleanPhone;
+                                    $isMobile = strlen($cleanPhone) >= 13;
+                                @endphp
+                                @if($prospect->status === 'analyzed' && $isMobile)
                                     <input type="checkbox" class="prospect-cb"
                                            value="{{ $prospect->id }}"
                                            data-pitch="{{ e($prospect->personalized_pitch ?? '') }}"

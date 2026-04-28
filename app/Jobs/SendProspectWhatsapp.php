@@ -41,6 +41,17 @@ class SendProspectWhatsapp implements ShouldQueue
         $phone = preg_replace('/\D/', '', $prospect->phone);
         if (strlen($phone) < 10) return;
 
+        // Garante código do país 55 (Brasil)
+        if (strlen($phone) <= 11 && !str_starts_with($phone, '55')) {
+            $phone = '55' . $phone;
+        }
+
+        // Pula telefone fixo — WhatsApp só funciona em celular (13 dígitos com 55)
+        if (strlen($phone) < 13) {
+            Log::info("SendProspectWhatsapp: {$phone} ignorado (telefone fixo).");
+            return;
+        }
+
         $evo = new EvolutionApiService($instance);
         $res = $evo->sendMessage($phone, $this->message, null, 2);
 
