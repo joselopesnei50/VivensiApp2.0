@@ -46,11 +46,6 @@ class SendProspectWhatsapp implements ShouldQueue
             $phone = '55' . $phone;
         }
 
-        // Pula telefone fixo — WhatsApp só funciona em celular (13 dígitos com 55)
-        if (strlen($phone) < 13) {
-            Log::info("SendProspectWhatsapp: {$phone} ignorado (telefone fixo).");
-            return;
-        }
 
         $evo = new EvolutionApiService($instance);
         $res = $evo->sendMessage($phone, $this->message, null, 2);
