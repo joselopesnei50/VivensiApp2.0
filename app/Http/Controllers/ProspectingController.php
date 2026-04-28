@@ -139,6 +139,24 @@ class ProspectingController extends Controller
         return back()->with('success', 'Lead removido da lista.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $ids = array_filter(array_map('intval', explode(',', $request->input('prospect_ids_raw', ''))));
+
+        if (empty($ids)) {
+            return back()->with('error', 'Nenhum lead selecionado.');
+        }
+
+        $tenantId = Auth::user()->tenant_id;
+
+        $deleted = Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $ids)
+            ->delete();
+
+        return back()->with('success', "{$deleted} lead(s) deletado(s) com sucesso.");
+    }
+
     public function broadcastWhatsapp(Request $request)
     {
         $request->validate([
