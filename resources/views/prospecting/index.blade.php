@@ -654,7 +654,8 @@
                 </div>
                 <div class="modal-footer border-0 pt-0 px-4 pb-4 gap-2">
                     <button type="button" class="btn btn-light rounded-pill flex-fill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success rounded-pill flex-fill fw-bold">
+                    <button type="submit" id="btnEnviarBroadcast" class="btn btn-success rounded-pill flex-fill fw-bold"
+                            onclick="this.disabled=true;this.innerHTML='<i class=\'fas fa-spinner fa-spin me-1\'></i> Enviando...';this.form.submit();">
                         <i class="fab fa-whatsapp me-1"></i> Enviar
                     </button>
                 </div>
