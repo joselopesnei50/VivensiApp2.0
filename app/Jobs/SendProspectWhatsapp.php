@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\WhatsappInstance;
+use App\Models\WhatsappChat;
+use App\Models\WhatsappMessage;
 use App\Services\EvolutionApiService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -44,6 +46,28 @@ class SendProspectWhatsapp implements ShouldQueue
 
         if (isset($res['error'])) {
             Log::error("SendProspectWhatsapp failed for {$phone}: " . ($res['error'] ?? ''));
+            return;
         }
+
+        // Registra no chat para aparecer no histórico
+        $chat = WhatsappChat::firstOrCreate(
+            ['tenant_id' => $this->tenantId, 'wa_id' => $phone],
+            [
+                'contact_name'  => $prospect->company_name,
+                'contact_phone' => $phone,
+                'status'        => 'open',
+                'opt_in_at'     => now(),
+            ]
+        );
+
+        $chat->update(['last_message_at' => now()]);
+
+        WhatsappMessage::create([
+            'chat_id'    => $chat->id,
+            'message_id' => $res['key']['id'] ?? ('PROSPECT_' . uniqid()),
+            'content'    => $this->message,
+            'direction'  => 'outbound',
+            'type'       => 'text',
+        ]);
     }
 }
