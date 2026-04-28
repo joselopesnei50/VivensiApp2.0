@@ -125,8 +125,18 @@
                 onclick="openBroadcastModal()">
             <i class="fab fa-whatsapp me-2"></i> Disparar WhatsApp para Selecionados
         </button>
+        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold"
+                onclick="deletarSelecionados()">
+            <i class="fas fa-trash-alt me-1"></i> Deletar Selecionados
+        </button>
         <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
                 onclick="clearSelection()">Limpar Seleção</button>
+
+        <form id="formBulkDelete" action="{{ route('prospecting.bulk-delete') }}" method="POST" class="d-none">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="prospect_ids_raw" id="bulkDeleteIds" value="">
+        </form>
     </div>
 
     {{-- ── TABELA DE LEADS ─────────────────────────────────────────────────── --}}
@@ -591,6 +601,15 @@
         document.querySelectorAll('.prospect-cb').forEach(el => { el.checked = false; });
         document.getElementById('selectAll').checked = false;
         updateBulkBar();
+    }
+
+    function deletarSelecionados() {
+        const checked = document.querySelectorAll('.prospect-cb:checked');
+        if (!checked.length) return;
+        if (!confirm(checked.length + ' lead(s) serão deletados permanentemente. Confirmar?')) return;
+        const ids = Array.from(checked).map(el => el.value).join(',');
+        document.getElementById('bulkDeleteIds').value = ids;
+        document.getElementById('formBulkDelete').submit();
     }
 
     function openBroadcastModal() {
