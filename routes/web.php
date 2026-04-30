@@ -150,6 +150,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // Timeline Routes
     Route::post('/projects/{id}/timeline', [App\Http\Controllers\ProjectTimelineController::class, 'store'])->name('projects.timeline.store');
     Route::delete('/projects/{id}/timeline/{recordId}', [App\Http\Controllers\ProjectTimelineController::class, 'destroy'])->name('projects.timeline.destroy');
+
+    // Project Log (Diário de Evolução) Routes
+    Route::post('/projects/{id}/logs', [App\Http\Controllers\ProjectLogController::class, 'store'])->name('projects.logs.store');
+    Route::delete('/projects/{id}/logs/{logId}', [App\Http\Controllers\ProjectLogController::class, 'destroy'])->name('projects.logs.destroy');
+    Route::post('/projects/{id}/logs/summary', [App\Http\Controllers\ProjectLogController::class, 'generateSummary'])->name('projects.logs.summary');
     
     // Kanban Routes
     Route::get('/projects/{id}/kanban', [App\Http\Controllers\TaskController::class, 'kanban']);

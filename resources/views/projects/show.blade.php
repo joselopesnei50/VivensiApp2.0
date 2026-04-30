@@ -451,6 +451,162 @@
     </div>
 </div>
 
+<!-- ── Diário de Evolução do Projeto ──────────────────────────────────────── -->
+<div class="project-table-card mt-4" id="project-diary">
+
+    {{-- Header --}}
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:28px; flex-wrap:wrap; gap:12px;">
+        <div>
+            <h4 style="margin:0; font-weight:900; color:#1e293b; letter-spacing:-0.5px;">
+                <i class="fas fa-book-open me-2" style="color:#6366f1;"></i> Diário de Evolução
+            </h4>
+            <p style="margin:5px 0 0; color:#94a3b8; font-weight:600; font-size:.85rem;">
+                Atualizações diárias da equipe · {{ $logs->count() }} entr{{ $logs->count() === 1 ? 'ada' : 'adas' }}
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            @if($logs->count() >= 3)
+            <button id="btn-generate-summary" onclick="generateAiSummary()"
+                class="btn btn-sm fw-bold"
+                style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:12px;padding:10px 20px;">
+                <i class="fas fa-wand-magic-sparkles me-2"></i> Gerar Relatório IA
+            </button>
+            @endif
+        </div>
+    </div>
+
+    {{-- Relatório IA (se existir) --}}
+    @if($project->ai_summary)
+    <div id="ai-summary-box" style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:16px;padding:24px;margin-bottom:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="font-weight:800;color:#6d28d9;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">
+                <i class="fas fa-robot me-2"></i> Relatório Gerado por IA
+            </span>
+            <span style="font-size:.75rem;color:#a78bfa;font-weight:600;">
+                {{ $project->ai_summary_at?->format('d/m/Y H:i') }}
+            </span>
+        </div>
+        <div id="ai-summary-content" style="font-size:.88rem;color:#1e293b;line-height:1.75;white-space:pre-wrap;">{{ $project->ai_summary }}</div>
+    </div>
+    @else
+    <div id="ai-summary-box" style="display:none;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:16px;padding:24px;margin-bottom:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="font-weight:800;color:#6d28d9;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">
+                <i class="fas fa-robot me-2"></i> Relatório Gerado por IA
+            </span>
+            <span id="ai-summary-date" style="font-size:.75rem;color:#a78bfa;font-weight:600;"></span>
+        </div>
+        <div id="ai-summary-content" style="font-size:.88rem;color:#1e293b;line-height:1.75;white-space:pre-wrap;"></div>
+    </div>
+    @endif
+
+    {{-- Formulário de nova entrada --}}
+    <form action="{{ route('projects.logs.store', $project->id) }}" method="POST" class="mb-4">
+        @csrf
+        @if(session('log_success'))
+            <div class="alert alert-success rounded-3 border-0 mb-3 py-2 px-3" style="font-size:.85rem;">
+                {{ session('log_success') }}
+            </div>
+        @endif
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:18px;">
+            <label style="font-weight:700;font-size:.8rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:10px;">
+                Nova Entrada
+            </label>
+            <textarea name="body" rows="3" required maxlength="3000"
+                placeholder="Descreva o que foi feito hoje, dificuldades encontradas, próximas ações..."
+                style="width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:.88rem;resize:vertical;outline:none;line-height:1.6;"
+                onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+                <button type="submit"
+                    style="background:#6366f1;color:#fff;border:none;border-radius:12px;padding:10px 24px;font-weight:700;font-size:.85rem;cursor:pointer;">
+                    <i class="fas fa-plus me-2"></i> Registrar
+                </button>
+            </div>
+        </div>
+    </form>
+
+    {{-- Lista de entradas --}}
+    @if($logs->isEmpty())
+        <div style="text-align:center;padding:40px;color:#94a3b8;">
+            <i class="fas fa-journal-whills" style="font-size:2.5rem;margin-bottom:12px;display:block;color:#e2e8f0;"></i>
+            <span style="font-weight:600;">Nenhuma entrada ainda. Comece registrando o progresso de hoje.</span>
+        </div>
+    @else
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            @foreach($logs as $log)
+            <div style="background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:18px 20px;position:relative;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.8rem;flex-shrink:0;">
+                            {{ strtoupper(substr($log->user?->name ?? 'U', 0, 1)) }}
+                        </div>
+                        <div>
+                            <div style="font-weight:700;color:#1e293b;font-size:.88rem;">{{ $log->user?->name ?? 'Usuário' }}</div>
+                            <div style="font-size:.75rem;color:#94a3b8;">
+                                <i class="far fa-clock me-1"></i>{{ $log->created_at->format('d/m/Y H:i') }}
+                            </div>
+                        </div>
+                    </div>
+                    @if(in_array(auth()->user()->role, ['manager','super_admin']) || $log->user_id === auth()->id())
+                    <form action="{{ route('projects.logs.destroy', [$project->id, $log->id]) }}" method="POST"
+                          onsubmit="return confirm('Remover esta entrada?')">
+                        @csrf @method('DELETE')
+                        <button type="submit" style="background:none;border:none;color:#cbd5e1;cursor:pointer;padding:4px;"
+                            onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
+                            <i class="fas fa-trash-alt" style="font-size:.85rem;"></i>
+                        </button>
+                    </form>
+                    @endif
+                </div>
+                <p style="margin:0;color:#475569;font-size:.88rem;line-height:1.65;white-space:pre-wrap;">{{ $log->body }}</p>
+            </div>
+            @endforeach
+        </div>
+    @endif
+</div>
+
+<script>
+async function generateAiSummary() {
+    const btn = document.getElementById('btn-generate-summary');
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Gerando...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('{{ route("projects.logs.summary", $project->id) }}', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error ?? 'Erro ao gerar relatório.');
+            btn.innerHTML = orig;
+            btn.disabled = false;
+            return;
+        }
+
+        const box = document.getElementById('ai-summary-box');
+        document.getElementById('ai-summary-content').textContent = data.summary;
+        if (document.getElementById('ai-summary-date')) {
+            document.getElementById('ai-summary-date').textContent = data.summary_at;
+        }
+        box.style.display = 'block';
+        box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        btn.innerHTML = '<i class="fas fa-check me-2"></i> Relatório Gerado';
+        setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 3000);
+    } catch (e) {
+        alert('Falha na comunicação com o servidor.');
+        btn.innerHTML = orig;
+        btn.disabled = false;
+    }
+}
+</script>
+
 <!-- Timeline Modal -->
 @if($isManager)
 <div class="modal fade" id="addTimelineModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
