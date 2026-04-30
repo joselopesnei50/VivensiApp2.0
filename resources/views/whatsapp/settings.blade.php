@@ -87,7 +87,32 @@
                     </div>
                 </div>
 
-                <!-- Seção 4: Horários -->
+                <!-- Seção 4: Manual de Atendimento -->
+                <div class="training-section">
+                    <div class="training-section-header" onclick="toggleSection('manual')">
+                        <span><i class="fas fa-book-open me-2" style="color:#7c3aed;"></i> Manual de Atendimento & Base de Conhecimento</span>
+                        <i class="fas fa-chevron-down training-chevron" id="chevron-manual"></i>
+                    </div>
+                    <div id="section-manual" class="training-section-body">
+                        <p style="font-size:0.8rem;color:#64748b;margin-bottom:10px;">
+                            Cole aqui textos densos sobre o negócio: procedimentos internos, scripts de atendimento, políticas, contexto institucional, regras de captação, instruções específicas, etc. Quanto mais detalhado, mais preciso o bot.
+                        </p>
+                        <textarea name="training_manual" rows="10" class="form-control-vivensi"
+                            style="font-size:0.82rem;line-height:1.6;font-family:monospace;"
+                            placeholder="Exemplo:
+— Quando o cliente perguntar sobre doação, sempre enviar o link da campanha ativa antes de qualquer outra informação.
+— Não confirmar datas de eventos sem consultar o calendário oficial (sempre dizer 'vou verificar e retorno').
+— Se perguntarem sobre boletos vencidos, orientar a acessar o portal financeiro em financeiro.vivensi.app.br.
+— Nosso processo de cadastro tem 3 etapas: triagem social, entrevista e aprovação pelo coordenador.
+— Parceiros institucionais devem ser direcionados ao e-mail parcerias@suaong.org.br..."
+                            maxlength="8000">{{ $ts['training_manual'] ?? '' }}</textarea>
+                        <div class="d-flex justify-content-end mt-1">
+                            <small class="text-muted" id="manual-char-count">0 / 8000 caracteres</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção 5: Horários -->
                 <div class="training-section">
                     <div class="training-section-header" onclick="toggleSection('hours')">
                         <span><i class="fas fa-clock me-2" style="color: #f59e0b;"></i> Horários de Atendimento</span>
@@ -781,7 +806,7 @@ function toggleSection(id) {
 
 // Open identity section by default on load
 document.addEventListener('DOMContentLoaded', function () {
-    ['identity', 'org', 'services', 'hours', 'contact', 'faq'].forEach(function(id) {
+    ['identity', 'org', 'services', 'manual', 'hours', 'contact', 'faq'].forEach(function(id) {
         const body = document.getElementById('section-' + id);
         const chevron = document.getElementById('chevron-' + id);
         if (body) {
@@ -790,6 +815,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     reindexFaq();
+
+    // Contador de caracteres do manual
+    const manualTA = document.querySelector('textarea[name="training_manual"]');
+    const manualCount = document.getElementById('manual-char-count');
+    if (manualTA && manualCount) {
+        const update = () => manualCount.textContent = manualTA.value.length + ' / 8000 caracteres';
+        update();
+        manualTA.addEventListener('input', update);
+    }
 });
 
 // --- FAQ Management ---
