@@ -352,10 +352,11 @@ class WhatsappController extends Controller
             'bot_tone'       => 'nullable|string|in:amigável,formal,empático,animado',
             'org_name'       => 'nullable|string|max:255',
             'org_mission'    => 'nullable|string|max:1000',
-            'services'       => 'nullable|string|max:2000',
-            'working_hours'  => 'nullable|string|max:500',
-            'contact_info'   => 'nullable|string|max:500',
-            'faq'            => 'nullable|array',
+            'services'        => 'nullable|string|max:2000',
+            'training_manual' => 'nullable|string|max:8000',
+            'working_hours'   => 'nullable|string|max:500',
+            'contact_info'    => 'nullable|string|max:500',
+            'faq'             => 'nullable|array',
             'faq.*.question' => 'nullable|string|max:300',
             'faq.*.answer'   => 'nullable|string|max:1000',
             'outbound_enabled' => 'nullable|boolean',
@@ -380,7 +381,7 @@ class WhatsappController extends Controller
         }
 
         // Se campos estruturados foram enviados, monta o prompt automaticamente
-        $structuredFields = ['bot_name','bot_tone','org_name','org_mission','services','working_hours','contact_info','faq'];
+        $structuredFields = ['bot_name','bot_tone','org_name','org_mission','services','training_manual','working_hours','contact_info','faq'];
         $hasStructured = collect($structuredFields)->some(fn($f) => $request->filled($f) || ($f === 'faq' && $request->has('faq')));
 
         if ($hasStructured) {
@@ -397,6 +398,9 @@ class WhatsappController extends Controller
             }
             if ($s->filled('services')) {
                 $prompt .= "**SERVIÇOS OFERECIDOS:**\n{$s->input('services')}\n\n";
+            }
+            if ($s->filled('training_manual')) {
+                $prompt .= "**MANUAL DE ATENDIMENTO & BASE DE CONHECIMENTO:**\n{$s->input('training_manual')}\n\n";
             }
             if ($s->filled('working_hours')) {
                 $prompt .= "**HORÁRIO DE ATENDIMENTO:**\n{$s->input('working_hours')}\n\n";
