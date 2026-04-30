@@ -23,12 +23,15 @@ class Project extends Model
         'address',
         'latitude',
         'longitude',
+        'ai_summary',
+        'ai_summary_at',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'budget' => 'decimal:2',
+        'start_date'    => 'date',
+        'end_date'      => 'date',
+        'budget'        => 'decimal:2',
+        'ai_summary_at' => 'datetime',
     ];
 
     // Desativa a coluna updated_at que não existe no banco legado
@@ -60,5 +63,10 @@ class Project extends Model
     public function timelineRecords()
     {
         return $this->hasMany(ProjectTimelineRecord::class)->orderBy('date', 'desc')->orderBy('created_at', 'desc');
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(ProjectLog::class)->orderBy('created_at', 'desc');
     }
 }

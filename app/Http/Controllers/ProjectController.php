@@ -245,7 +245,13 @@ class ProjectController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
-        return view('projects.show', compact('project', 'totalSpent', 'transactions', 'percentUsed', 'members', 'availableUsers'));
+        $logs = \App\Models\ProjectLog::where('project_id', $project->id)
+            ->where('tenant_id', $tenantId)
+            ->with('user:id,name')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('projects.show', compact('project', 'totalSpent', 'transactions', 'percentUsed', 'members', 'availableUsers', 'logs'));
     }
 
     public function addMember(Request $request, $id)
