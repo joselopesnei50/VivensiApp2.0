@@ -101,6 +101,16 @@ Route::group(['prefix' => 'academy', 'as' => 'academy.', 'middleware' => ['auth'
     Route::get('/certificate/{code}', [App\Http\Controllers\AcademyController::class, 'downloadCertificate'])->name('certificate.download');
 });
 
+// Marketing Strategy Hub
+Route::middleware(['auth', 'can:access-manager'])->group(function () {
+    Route::get('/marketing',                         [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');
+    Route::get('/marketing/create',                  [App\Http\Controllers\MarketingStrategyController::class, 'create'])->name('marketing.create');
+    Route::post('/marketing',                        [App\Http\Controllers\MarketingStrategyController::class, 'store'])->name('marketing.store');
+    Route::get('/marketing/{marketing}',             [App\Http\Controllers\MarketingStrategyController::class, 'show'])->name('marketing.show');
+    Route::get('/marketing/{marketing}/status',      [App\Http\Controllers\MarketingStrategyController::class, 'status'])->name('marketing.status');
+    Route::delete('/marketing/{marketing}',          [App\Http\Controllers\MarketingStrategyController::class, 'destroy'])->name('marketing.destroy');
+});
+
 // Prospecting Routes (Manager/NGO/SuperAdmin only)
 Route::middleware(['auth', 'can:access-manager'])->group(function () {
     Route::get('/prospecting', [App\Http\Controllers\ProspectingController::class, 'index'])->name('prospecting.index');

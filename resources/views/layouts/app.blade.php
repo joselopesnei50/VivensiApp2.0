@@ -327,7 +327,7 @@
                     <div class="menu-group-items" style="max-height: {{ $mgr_mkt_active ? '400px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
-                            <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing/strategy*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Marketing Intelligence IA</a></li>
+                            <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Mensageria WhatsApp</a></li>
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
@@ -406,7 +406,7 @@
                     <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '400px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/ngo/landing-pages') }}" class="{{ request()->is('ngo/landing-pages*') ? 'active' : '' }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
-                            <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing/strategy*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Marketing Intelligence IA</a></li>
+                            <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Mensageria WhatsApp</a></li>
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
