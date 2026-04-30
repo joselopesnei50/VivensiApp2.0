@@ -425,9 +425,6 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::delete('/whatsapp/automations/{automation}',    [App\Http\Controllers\WhatsappAutomationController::class, 'destroy'])->name('whatsapp.automations.destroy');
     Route::patch('/whatsapp/automations/{automation}/toggle', [App\Http\Controllers\WhatsappAutomationController::class, 'toggle'])->name('whatsapp.automations.toggle');
 
-    // Marketing Intelligence (AI)
-    Route::get('/marketing/strategy', [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');
-    Route::post('/marketing/strategy', [App\Http\Controllers\MarketingStrategyController::class, 'generate'])->name('marketing.generate');
     Route::post('/marketing/magic-page', [App\Http\Controllers\LandingPageController::class, 'createMagic'])->name('ngo.landing-pages.create_magic');
 
     // Raffle Module (Admin)

@@ -22,8 +22,8 @@ class AbacatePayService
 
     public function __construct()
     {
-        $this->apiKey  = SystemSetting::getValue('abacatepay_api_key')
-                      ?? config('services.abacatepay.api_key', '');
+        $this->apiKey  = (string) (SystemSetting::getValue('abacatepay_api_key')
+                      ?? config('services.abacatepay.api_key', ''));
         $this->devMode = (SystemSetting::getValue('abacatepay_environment') ?? 'sandbox') === 'sandbox';
     }
 
