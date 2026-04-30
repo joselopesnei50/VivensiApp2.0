@@ -2,55 +2,74 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessMarketingPlan;
+use App\Models\MarketingPlan;
 use Illuminate\Http\Request;
-use App\Models\SocialAccount;
-use App\Services\MarketingAIService;
-use App\Services\UnsplashService;
+use Illuminate\Support\Facades\Auth;
 
 class MarketingStrategyController extends Controller
 {
-    protected $aiService;
-    protected $unsplashService;
-
-    public function __construct(MarketingAIService $aiService, UnsplashService $unsplashService)
-    {
-        $this->aiService = $aiService;
-        $this->unsplashService = $unsplashService;
-    }
-
     public function index()
     {
-        return view('admin.marketing.index');
+        $plans = MarketingPlan::orderByDesc('created_at')->paginate(10);
+        return view('marketing.index', compact('plans'));
     }
 
-    public function generate(Request $request)
+    public function create()
     {
-        $request->validate([
-            'goal' => 'required|string|max:500',
-            'audience' => 'required|string|max:200',
+        return view('marketing.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'objective'           => 'required|string|max:1000',
+            'target_audience'     => 'required|string|max:500',
+            'scope'               => 'required|in:online,online_offline',
+            'competitor_links'    => 'nullable|string|max:1000',
+            'budget_range'        => 'nullable|string|max:100',
+            'tone'                => 'required|in:professional,friendly,inspirational,urgent',
+            'extra_info'          => 'nullable|string|max:1000',
         ]);
 
-        // 1. Generate Strategy with AI
-        $strategy = $this->aiService->generateStrategy($request->goal, $request->audience);
+        $plan = MarketingPlan::create([
+            'tenant_id'           => Auth::user()->tenant_id,
+            'user_id'             => Auth::id(),
+            'title'               => mb_substr($validated['objective'], 0, 80),
+            'objective'           => $validated['objective'],
+            'target_audience'     => $validated['target_audience'],
+            'scope'               => $validated['scope'],
+            'competitor_links'    => $validated['competitor_links'] ?? null,
+            'budget_range'        => $validated['budget_range'] ?? null,
+            'tone'                => $validated['tone'],
+            'has_whatsapp_groups' => $request->boolean('has_whatsapp_groups'),
+            'extra_info'          => $validated['extra_info'] ?? null,
+            'status'              => 'pending',
+        ]);
 
-        if (!$strategy) {
-            return back()->with('error', 'Não foi possível gerar a estratégia. Tente novamente.');
-        }
+        ProcessMarketingPlan::dispatch($plan->id)->onQueue('default');
 
-        // 2. Fetch Images for Social Media Posts
-        if (isset($strategy['social']) && is_array($strategy['social'])) {
-            foreach ($strategy['social'] as &$post) {
-                if (isset($post['image_keyword'])) {
-                    $images = $this->unsplashService->searchPhotos($post['image_keyword'], 3);
-                    $post['images'] = $images;
-                }
-            }
-        }
+        return redirect()->route('marketing.show', $plan->id)
+            ->with('success', 'Plano criado! A IA está gerando seu mapa estratégico...');
+    }
 
-        $socialAccounts = SocialAccount::where('is_active', true)
-            ->where('tenant_id', auth()->user()->tenant_id)
-            ->get();
+    public function show(MarketingPlan $marketing)
+    {
+        return view('marketing.show', compact('marketing'));
+    }
 
-        return view('admin.marketing.strategy_result', compact('strategy', 'socialAccounts'));
+    public function status(MarketingPlan $marketing)
+    {
+        return response()->json([
+            'status'       => $marketing->status,
+            'mindmap_data' => $marketing->mindmap_data,
+            'ai_provider'  => $marketing->ai_provider,
+        ]);
+    }
+
+    public function destroy(MarketingPlan $marketing)
+    {
+        $marketing->delete();
+        return redirect()->route('marketing.index')->with('success', 'Plano removido.');
     }
 }
