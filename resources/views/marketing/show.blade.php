@@ -217,9 +217,8 @@
 
         {{-- Estado: Processando --}}
         <div id="state-processing"
-             style="{{ in_array($marketing->status, ['pending','processing']) ? '' : 'display:none;' }}
-                    position:absolute;inset:0;z-index:5;
-                    display:flex;flex-direction:column;align-items:center;justify-content:center;">
+             class="{{ in_array($marketing->status, ['pending','processing']) ? '' : 'd-none' }}"
+             style="position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;">
             <div class="mb-4">
                 <span class="status-pulse"></span>
                 <span class="fw-bold" style="color:#93c5fd;font-size:1.05rem;">A IA está gerando seu plano estratégico...</span>
@@ -229,16 +228,15 @@
                     <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated w-100"></div>
                 </div>
                 <p style="color:rgba(255,255,255,.4);font-size:.8rem;text-align:center;margin-top:14px;">
-                    Analisando briefing e gerando estratégias com Gemini AI.<br>Isso leva entre 10 e 30 segundos.
+                    Analisando briefing e gerando estratégias com Bruce AI.<br>Isso leva entre 10 e 30 segundos.
                 </p>
             </div>
         </div>
 
         {{-- Estado: Falhou --}}
         <div id="state-failed"
-             style="{{ $marketing->status === 'failed' ? '' : 'display:none;' }}
-                    position:absolute;inset:0;z-index:5;
-                    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+             class="{{ $marketing->status === 'failed' ? '' : 'd-none' }}"
+             style="position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
             <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color:#fbbf24;"></i>
             <h6 class="fw-bold" style="color:#f1f5f9;">Não foi possível gerar o plano</h6>
             <p style="color:rgba(255,255,255,.4);font-size:.85rem;max-width:320px;">
@@ -408,11 +406,11 @@ function pollStatus() {
         .then(r => r.json())
         .then(data => {
             if (data.status === 'done' && data.mindmap_data?.markdown) {
-                document.getElementById('state-processing').style.display = 'none';
+                document.getElementById('state-processing').classList.add('d-none');
                 setTimeout(() => renderMarkmap(data.mindmap_data.markdown), 100);
             } else if (data.status === 'failed') {
-                document.getElementById('state-processing').style.display = 'none';
-                document.getElementById('state-failed').style.display = 'flex';
+                document.getElementById('state-processing').classList.add('d-none');
+                document.getElementById('state-failed').classList.remove('d-none');
             } else {
                 setTimeout(pollStatus, 4000);
             }
