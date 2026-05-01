@@ -112,6 +112,35 @@
                         placeholder="Ex: Temos 2.000 seguidores no Instagram, já realizamos 3 rifas online, nosso maior canal é o WhatsApp...">{{ old('extra_info') }}</textarea>
                 </div>
 
+                {{-- Projeto relacionado --}}
+                @if($projects->isNotEmpty())
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-uppercase" style="color:#64748b;letter-spacing:.05em;">
+                        <i class="fas fa-sitemap me-1" style="color:#4f46e5;"></i> Relacionar com um Projeto
+                        <span class="fw-normal text-muted text-lowercase">(opcional)</span>
+                    </label>
+                    <select name="project_id" class="form-select rounded-3">
+                        <option value="">— Nenhum projeto —</option>
+                        @foreach($projects as $project)
+                            @php
+                                $statusLabel = match($project->status) {
+                                    'active'    => '● Ativo',
+                                    'paused'    => '⏸ Pausado',
+                                    'completed' => '✓ Concluído',
+                                    default     => $project->status,
+                                };
+                            @endphp
+                            <option value="{{ $project->id }}" {{ old('project_id') == $project->id ? 'selected' : '' }}>
+                                {{ $project->name }} — {{ $statusLabel }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="form-text text-muted" style="font-size:.78rem;">
+                        O plano ficará vinculado ao projeto para fácil acesso.
+                    </div>
+                </div>
+                @endif
+
                 {{-- Aviso IA --}}
                 <div class="alert border-0 rounded-3 mb-4 d-flex gap-3" style="background:#f5f3ff;">
                     <i class="fas fa-magic mt-1" style="color:#7c3aed;flex-shrink:0;"></i>
