@@ -328,129 +328,279 @@
     </div>
 </div>
 
-{{-- Markmap --}}
+{{-- D3 + Markmap (apenas o transformer para parse) --}}
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.15.4/dist/browser/index.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markmap-lib@0.15.4/dist/browser/index.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
+<style>
+/* ── Card styles (injetados aqui para funcionar no foreignObject) ── */
+.pm-card {
+    box-sizing: border-box;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 2px 8px rgba(15,23,42,.07);
+    transition: box-shadow .18s, transform .18s;
+    overflow: hidden;
+    user-select: none;
+    padding: 10px 14px;
+}
+.pm-card:hover { box-shadow: 0 6px 20px rgba(15,23,42,.13); transform: translateY(-1px); }
+.pm-inner  { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.pm-label  { line-height: 1.45; flex: 1; word-break: break-word; }
+.pm-chevron{ flex-shrink: 0; opacity: .4; font-size: 10px; margin-top: 2px; transition: transform .2s; }
+.pm-chevron.open { transform: rotate(90deg); opacity: .6; }
+.pm-actions{ margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; }
+.pm-btn    { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
+             background: #6366f1; color: #fff !important; border-radius: 7px;
+             font-size: 10px; font-weight: 700; text-decoration: none !important;
+             line-height: 1.5; transition: background .15s; }
+.pm-btn:hover { background: #4f46e5; }
+/* depth styles */
+.pm-d0 { background: linear-gradient(135deg,#6366f1,#8b5cf6); border:none;
+          padding: 16px 22px; border-radius: 18px;
+          box-shadow: 0 8px 28px rgba(99,102,241,.35); }
+.pm-d0 .pm-label  { color:#fff; font-size:15px; font-weight:800; }
+.pm-d0 .pm-chevron{ color:#fff; }
+
+.pm-d1 { border-left: 3px solid #6366f1; }
+.pm-d1 .pm-label  { color:#1e293b; font-size:13px; font-weight:700; }
+
+.pm-d2 { background:#f5f3ff; border-color:#ddd6fe; border-left:3px solid #8b5cf6; }
+.pm-d2 .pm-label  { color:#3730a3; font-size:12px; font-weight:600; }
+
+.pm-d3 { background:#f0fdf4; border-color:#bbf7d0; border-left:3px solid #10b981; }
+.pm-d3 .pm-label  { color:#065f46; font-size:11.5px; font-weight:600; }
+
+.pm-d4 { background:#eff6ff; border-color:#bfdbfe; border-left:3px solid #3b82f6; }
+.pm-d4 .pm-label  { color:#1e40af; font-size:11px; font-weight:500; }
+
+.pm-d5 { background:#fff7ed; border-color:#fed7aa; border-left:3px solid #f97316; }
+.pm-d5 .pm-label  { color:#9a3412; font-size:10.5px; font-weight:500; }
+</style>
 
 <script>
 const PLAN_STATUS = '{{ $marketing->status }}';
-const PLAN_ID     = {{ $marketing->id }};
 const STATUS_URL  = '{{ route("marketing.status", $marketing->id) }}';
 @if($marketing->status === 'done' && $marketing->mindmap_data)
-const MINDMAP_MD  = @json($marketing->mindmap_data['markdown'] ?? '');
+const MINDMAP_MD = @json($marketing->mindmap_data['markdown'] ?? '');
 @else
-const MINDMAP_MD  = null;
+const MINDMAP_MD = null;
 @endif
 
-let mmInstance = null;
+// ── Configuração de cards por profundidade ────────────────────────────────────
+const DEPTH_CFG = [
+    { w: 290, padV: 16 }, // 0
+    { w: 240, padV: 10 }, // 1
+    { w: 220, padV: 10 }, // 2
+    { w: 210, padV: 10 }, // 3
+    { w: 200, padV:  9 }, // 4
+    { w: 195, padV:  8 }, // 5+
+];
+function dcfg(d) { return DEPTH_CFG[Math.min(d, 5)]; }
 
-// ── Render ──────────────────────────────────────────────────────────────────
-function renderMarkmap(markdown) {
-    const { Markmap, loadCSS, loadJS } = window.markmap;
-    const t = new window.markmap.Transformer();
-    const { root, features } = t.transform(markdown);
-    const { styles, scripts } = t.getUsedAssets(features);
-    if (styles)  loadCSS(styles);
-    if (scripts) loadJS(scripts, { getMarkmap: () => window.markmap });
-
-    const svg = document.getElementById('mindmap-svg');
-    svg.style.visibility = 'visible';
-
-    // Injetar fonte premium antes de renderizar
-    if (!document.getElementById('markmap-font')) {
-        const link = document.createElement('link');
-        link.id   = 'markmap-font';
-        link.rel  = 'stylesheet';
-        link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap';
-        document.head.appendChild(link);
-    }
-
-    // Força cor clara em todos os textos SVG (atributos inline têm prioridade sobre CSS)
-    function fixTextColor() {
-        svg.querySelectorAll('text').forEach(el => {
-            el.setAttribute('fill', '#f1f5f9');
-            el.style.fill = '#f1f5f9';
-        });
-    }
-
-    // Observer para manter a cor quando o usuário expande/colapsa nós
-    const colorObserver = new MutationObserver(fixTextColor);
-    colorObserver.observe(svg, { childList: true, subtree: true, attributes: false });
-
-    mmInstance = Markmap.create(svg, {
-        autoFit: true,
-
-        color: (node) => {
-            const palette = [
-                '#a78bfa', // raiz — violeta
-                '#34d399', // nível 1 — verde esmeralda
-                '#60a5fa', // nível 2 — azul
-                '#f472b6', // nível 3 — rosa
-                '#fbbf24', // nível 4 — âmbar
-                '#fb923c', // nível 5 — laranja
-                '#818cf8', // nível 6 — índigo
-            ];
-            return palette[node.depth % palette.length];
-        },
-        duration: 350,
-        maxWidth: 380,
-        paddingX: 20,
-        spacingHorizontal: 80,
-        spacingVertical: 8,
-        initialExpandLevel: 2,
-        style: (id) => `
-            #${id} .markmap-node text {
-                font-family: 'Inter', 'Outfit', sans-serif !important;
-                font-size: 13px;
-                font-weight: 600;
-                fill: #f1f5f9 !important;
-            }
-            #${id} .markmap-node > circle {
-                stroke-width: 1.5;
-            }
-            #${id} .markmap-link {
-                stroke: rgba(255,255,255,.18) !important;
-            }
-        `,
-    }, root);
-
-    // Aplica cor após render inicial e após animação
-    setTimeout(fixTextColor, 500);
-    setTimeout(fixTextColor, 1200);
+// Estimativa de altura do card com base no texto + botões
+function cardH(node) {
+    const cfg = dcfg(node.depth);
+    const chars = (node.data.text || '').length;
+    const charsPerLine = Math.floor(cfg.w / 7.2);
+    const lines = Math.max(1, Math.ceil(chars / charsPerLine));
+    const textH = lines * 20;
+    const btnH  = (node.data.links?.length || 0) * 30;
+    return cfg.padV * 2 + textH + btnH + (btnH > 0 ? 8 : 0);
 }
 
-// ── Controles ───────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
+let pmSvg, pmG, pmZoom, pmRoot;
+
+// ── Parser: Markdown → árvore simples ────────────────────────────────────────
+function parseMd(markdown) {
+    const transformer = new window.markmap.Transformer();
+    const { root: mmRoot } = transformer.transform(markdown);
+
+    function convert(n) {
+        const div = document.createElement('div');
+        div.innerHTML = n.content || '';
+        const links = [...div.querySelectorAll('a')].map(a => ({
+            label: a.textContent.trim(),
+            href:  a.getAttribute('href') || '#',
+        }));
+        div.querySelectorAll('a').forEach(a => a.replaceWith(document.createTextNode('')));
+        return {
+            text:     div.textContent.replace(/\s+/g, ' ').trim(),
+            links,
+            depth:    n.depth,
+            children: (n.children || []).map(convert),
+        };
+    }
+    return convert(mmRoot);
+}
+
+// ── Renderer principal ────────────────────────────────────────────────────────
+function renderMarkmap(markdown) {
+    const svgEl = document.getElementById('mindmap-svg');
+    svgEl.innerHTML = '';
+    svgEl.style.visibility = 'visible';
+
+    // SVG setup
+    pmSvg = d3.select(svgEl);
+    pmSvg.append('defs').html(`
+        <filter id="pm-sh" x="-20%" y="-35%" width="140%" height="170%">
+            <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="rgba(15,23,42,.09)"/>
+        </filter>`);
+
+    pmG = pmSvg.append('g');
+
+    pmZoom = d3.zoom().scaleExtent([.1, 4])
+        .on('zoom', e => pmG.attr('transform', e.transform));
+    pmSvg.call(pmZoom).on('dblclick.zoom', null);
+
+    // Hierarquia D3
+    const data = parseMd(markdown);
+    pmRoot = d3.hierarchy(data);
+
+    // Colapsa nós a partir do nível 2
+    pmRoot.descendants().forEach(d => {
+        if (d.depth >= 2 && d.children) {
+            d._children = d.children;
+            d.children  = null;
+        }
+    });
+
+    pmDraw();
+    setTimeout(mmFit, 350);
+}
+
+// ── Desenho ───────────────────────────────────────────────────────────────────
+function pmDraw() {
+    // Layout
+    const layout = d3.tree()
+        .nodeSize([70, 310])
+        .separation((a, b) => {
+            const ah = cardH(a) / 2 + 12;
+            const bh = cardH(b) / 2 + 12;
+            return (ah + bh) / 70;
+        });
+    layout(pmRoot);
+
+    const nodes = pmRoot.descendants();
+    const links = pmRoot.links();
+
+    // Cores das linhas por profundidade da origem
+    const lineColors = ['#c7d2fe','#a7f3d0','#bfdbfe','#fde68a','#fbcfe8','#ddd6fe'];
+
+    // ── Links (curvas Bezier) ─────────────────────────────────────────────────
+    const linkPath = d3.linkHorizontal()
+        .x(d => d.y + dcfg(d.depth).w / 2)
+        .y(d => d.x);
+
+    pmG.selectAll('.pm-link')
+        .data(links, d => d.target.data.text + d.target.depth)
+        .join(
+            e => e.append('path').attr('class','pm-link')
+                    .attr('fill','none').attr('stroke-linecap','round'),
+            u => u,
+            x => x.remove()
+        )
+        .attr('stroke', d => lineColors[Math.min(d.source.depth, lineColors.length-1)])
+        .attr('stroke-width', d => Math.max(1.5, 3 - d.source.depth * .5))
+        .attr('stroke-opacity', .75)
+        .attr('d', linkPath);
+
+    // ── Nós (foreignObject com cards HTML) ────────────────────────────────────
+    const nodeSel = pmG.selectAll('.pm-fo')
+        .data(nodes, d => d.data.text + d.depth);
+
+    nodeSel.join(
+        enter => {
+            const fo = enter.append('foreignObject')
+                .attr('class', 'pm-fo')
+                .attr('overflow', 'visible');
+
+            fo.append('xhtml:div')
+                .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+                .on('click', (evt, d) => {
+                    if (evt.target.closest('a')) return;
+                    if (d.children)  { d._children = d.children;  d.children  = null; }
+                    else if (d._children) { d.children = d._children; d._children = null; }
+                    pmDraw();
+                });
+            return fo;
+        },
+        u => u,
+        x => x.remove()
+    )
+    .attr('x', d => d.y)
+    .attr('y', d => d.x - cardH(d) / 2)
+    .attr('width',  d => dcfg(d.depth).w)
+    .attr('height', d => cardH(d) + 4)
+    .select('div')
+    .attr('class', d => `pm-card pm-d${Math.min(d.depth, 5)}`)
+    .style('width',  d => dcfg(d.depth).w + 'px')
+    .style('min-height', d => cardH(d) + 'px')
+    .html(d => buildCard(d));
+}
+
+// ── HTML do card ─────────────────────────────────────────────────────────────
+function buildCard(d) {
+    const { text, links } = d.data;
+    const hasKids = d.children || d._children;
+    const open    = !!d.children;
+
+    const chevron = hasKids
+        ? `<span class="pm-chevron ${open ? 'open' : ''}">&#9654;</span>`
+        : '';
+
+    const btns = links?.length
+        ? `<div class="pm-actions">${links.map(l =>
+            `<a href="${l.href}" class="pm-btn" onclick="event.stopPropagation()">
+                <i class="fas fa-arrow-right" style="font-size:8px;"></i> ${l.label}
+             </a>`).join('')}
+           </div>`
+        : '';
+
+    return `<div class="pm-inner">
+                <span class="pm-label">${text}</span>
+                ${chevron}
+            </div>${btns}`;
+}
+
+// ── Controles ─────────────────────────────────────────────────────────────────
 function mmZoom(factor) {
-    if (!mmInstance) return;
-    const { x, y, k } = mmInstance.state.transform ?? { x: 0, y: 0, k: 1 };
-    mmInstance.transition(mmInstance.svg)
-        .call(mmInstance.zoom.scaleBy, factor);
+    pmSvg?.transition().duration(250).call(pmZoom.scaleBy, factor);
 }
 
 function mmFit() {
-    if (mmInstance) mmInstance.fit();
+    if (!pmG) return;
+    const svgEl = document.getElementById('mindmap-svg');
+    const W = svgEl.clientWidth, H = svgEl.clientHeight;
+    try {
+        const b = pmG.node().getBBox();
+        if (!b.width || !b.height) return;
+        const scale = Math.min(.95, .82 * Math.min(W / b.width, H / b.height));
+        const tx = (W - b.width * scale) / 2 - b.x * scale;
+        const ty = (H - b.height * scale) / 2 - b.y * scale;
+        pmSvg.transition().duration(420)
+            .call(pmZoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+    } catch(e) {}
 }
 
 function toggleFullscreen() {
-    const el = document.querySelector('.mindmap-shell');
-    const icon = document.getElementById('fs-icon');
+    const el  = document.querySelector('.mindmap-shell');
+    const ico = document.getElementById('fs-icon');
     if (!document.fullscreenElement) {
-        el.requestFullscreen().then(() => {
-            icon.className = 'fas fa-compress';
-            setTimeout(() => mmInstance?.fit(), 300);
-        });
+        el.requestFullscreen().then(() => { ico.className = 'fas fa-compress'; setTimeout(mmFit, 300); });
     } else {
-        document.exitFullscreen().then(() => {
-            icon.className = 'fas fa-expand';
-            setTimeout(() => mmInstance?.fit(), 300);
-        });
+        document.exitFullscreen().then(() => { ico.className = 'fas fa-expand'; setTimeout(mmFit, 300); });
     }
 }
 
-// ── Poll ─────────────────────────────────────────────────────────────────────
+// ── Poll ──────────────────────────────────────────────────────────────────────
 function pollStatus() {
-    fetch(STATUS_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    fetch(STATUS_URL, { headers: {'X-Requested-With':'XMLHttpRequest'} })
         .then(r => r.json())
         .then(data => {
             if (data.status === 'done' && data.mindmap_data?.markdown) {
@@ -466,7 +616,7 @@ function pollStatus() {
         .catch(() => setTimeout(pollStatus, 6000));
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     if (PLAN_STATUS === 'done' && MINDMAP_MD) {
         setTimeout(() => renderMarkmap(MINDMAP_MD), 200);
     } else if (PLAN_STATUS === 'pending' || PLAN_STATUS === 'processing') {
@@ -474,10 +624,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// ── Export ───────────────────────────────────────────────────────────────────
+// ── Export ────────────────────────────────────────────────────────────────────
 function exportMarkdown() {
     if (!MINDMAP_MD) return;
-    const blob = new Blob([MINDMAP_MD], { type: 'text/markdown' });
+    const blob = new Blob([MINDMAP_MD], {type:'text/markdown'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'plano-estrategico.md';
