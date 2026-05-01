@@ -369,8 +369,21 @@ function renderMarkmap(markdown) {
         document.head.appendChild(link);
     }
 
+    // Força cor clara em todos os textos SVG (atributos inline têm prioridade sobre CSS)
+    function fixTextColor() {
+        svg.querySelectorAll('text').forEach(el => {
+            el.setAttribute('fill', '#f1f5f9');
+            el.style.fill = '#f1f5f9';
+        });
+    }
+
+    // Observer para manter a cor quando o usuário expande/colapsa nós
+    const colorObserver = new MutationObserver(fixTextColor);
+    colorObserver.observe(svg, { childList: true, subtree: true, attributes: false });
+
     mmInstance = Markmap.create(svg, {
         autoFit: true,
+
         color: (node) => {
             const palette = [
                 '#a78bfa', // raiz — violeta
@@ -404,6 +417,10 @@ function renderMarkmap(markdown) {
             }
         `,
     }, root);
+
+    // Aplica cor após render inicial e após animação
+    setTimeout(fixTextColor, 500);
+    setTimeout(fixTextColor, 1200);
 }
 
 // ── Controles ───────────────────────────────────────────────────────────────
