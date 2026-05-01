@@ -533,6 +533,87 @@
                 </div>
             </div>
 
+            <!-- ESTATÍSTICAS DA PÁGINA PÚBLICA -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm overflow-hidden">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-indigo-50 text-indigo rounded-3 p-3 me-3">
+                                <i class="fas fa-chart-bar fa-lg text-primary"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Estatísticas da Página Pública</h5>
+                                <p class="text-muted small mb-0">Números exibidos na landing page. Deixe em branco para usar os valores reais do banco de dados.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-600 text-dark small">Contagem de Organizações</label>
+                                <input type="number" name="stat_orgs_count" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_orgs_count', '') }}"
+                                    placeholder="Auto (conta do banco)">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-600 text-dark small">Label de Organizações</label>
+                                <input type="text" name="stat_orgs_label" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_orgs_label', 'organizações já na plataforma') }}"
+                                    placeholder="organizações já na plataforma">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-600 text-dark small">Contagem de Projetos</label>
+                                <input type="number" name="stat_projects_count" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_projects_count', '') }}"
+                                    placeholder="Auto (conta do banco)">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-600 text-dark small">Label de Projetos</label>
+                                <input type="text" name="stat_projects_label" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_projects_label', 'projetos gerenciados') }}"
+                                    placeholder="projetos gerenciados">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-600 text-dark small">Contagem de Usuários</label>
+                                <input type="number" name="stat_users_count" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_users_count', '') }}"
+                                    placeholder="Auto (conta do banco)">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-600 text-dark small">Label de Usuários</label>
+                                <input type="text" name="stat_users_label" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_users_label', 'usuários ativos') }}"
+                                    placeholder="usuários ativos">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-600 text-dark small">Nota (Rating)</label>
+                                <input type="text" name="stat_rating_score" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_rating_score', '5.0') }}"
+                                    placeholder="5.0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-600 text-dark small">Label do Rating</label>
+                                <input type="text" name="stat_rating_label" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_rating_label', 'avaliação média') }}"
+                                    placeholder="avaliação média">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-600 text-dark small">Badge do Hero (texto acima do título)</label>
+                                <input type="text" name="stat_hero_badge" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_hero_badge', 'Novo — Em fase de lançamento') }}"
+                                    placeholder="Novo — Em fase de lançamento">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-600 text-dark small">Label de Crescimento (subtexto dos cards)</label>
+                                <input type="text" name="stat_impact_label" class="form-control"
+                                    value="{{ \App\Models\SystemSetting::getValue('stat_impact_label', 'Crescendo a cada dia') }}"
+                                    placeholder="Crescendo a cada dia">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- AGENDA DE REUNIÕES -->
             <div class="col-12">
                 <div class="card border-0 shadow-sm overflow-hidden">
