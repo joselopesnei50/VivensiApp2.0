@@ -168,6 +168,32 @@
         margin-bottom: 10px;
         display: inline-block;
     }
+    /* Role selection cards */
+    .role-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all .18s;
+        background: #fff;
+        user-select: none;
+        margin: 0;
+    }
+    .role-card:hover {
+        border-color: #a5b4fc;
+        background: #f5f3ff;
+    }
+    .role-card.role-card-active {
+        border-color: #6366f1;
+        background: #eef2ff;
+        box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+    }
+    .role-card.role-card-active .fw-900 { color: #4f46e5; }
+    .role-card.role-card-active i { color: #6366f1 !important; }
 </style>
 
 <div class="project-hero-premium">
@@ -700,25 +726,28 @@ async function generateAiSummary() {
                             <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Protocolo de Acesso</label>
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="p-4 border rounded-4 text-center cursor-pointer" onclick="document.getElementById('rV').click()">
-                                        <input type="radio" name="access_level" id="rV" value="viewer" class="d-none">
+                                    <label for="rV" class="role-card w-100" id="card-rV">
+                                        <input type="radio" name="access_level" id="rV" value="viewer" class="d-none" onchange="highlightRoleCard('r',this.id)">
+                                        <i class="fas fa-eye mb-2" style="font-size:1.3rem;color:#64748b;"></i>
                                         <div class="fw-900 mb-1">Viewer</div>
-                                        <div class="small opacity-50 fw-bold">Auditagem</div>
-                                    </div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Auditagem</div>
+                                    </label>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="p-4 border rounded-4 text-center cursor-pointer border-primary" onclick="document.getElementById('rE').click()">
-                                        <input type="radio" name="access_level" id="rE" value="editor" class="d-none" checked>
-                                        <div class="fw-900 mb-1 text-primary">Editor</div>
-                                        <div class="small opacity-50 fw-bold">Operacional</div>
-                                    </div>
+                                    <label for="rE" class="role-card role-card-active w-100" id="card-rE">
+                                        <input type="radio" name="access_level" id="rE" value="editor" class="d-none" checked onchange="highlightRoleCard('r',this.id)">
+                                        <i class="fas fa-pen-to-square mb-2" style="font-size:1.3rem;color:#6366f1;"></i>
+                                        <div class="fw-900 mb-1">Editor</div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Operacional</div>
+                                    </label>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="p-4 border rounded-4 text-center cursor-pointer" onclick="document.getElementById('rA').click()">
-                                        <input type="radio" name="access_level" id="rA" value="admin" class="d-none">
+                                    <label for="rA" class="role-card w-100" id="card-rA">
+                                        <input type="radio" name="access_level" id="rA" value="admin" class="d-none" onchange="highlightRoleCard('r',this.id)">
+                                        <i class="fas fa-shield-halved mb-2" style="font-size:1.3rem;color:#64748b;"></i>
                                         <div class="fw-900 mb-1">Admin</div>
-                                        <div class="small opacity-50 fw-bold">Total</div>
-                                    </div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Total</div>
+                                    </label>
                                 </div>
                             </div>
 
@@ -755,25 +784,28 @@ async function generateAiSummary() {
                             <label class="fw-800 text-uppercase mt-5 mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Protocolo de Acesso</label>
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="p-4 border rounded-4 text-center cursor-pointer" onclick="document.getElementById('nrV').click()">
-                                        <input type="radio" name="access_level" id="nrV" value="viewer" class="d-none">
+                                    <label for="nrV" class="role-card w-100" id="card-nrV">
+                                        <input type="radio" name="access_level" id="nrV" value="viewer" class="d-none" onchange="highlightRoleCard('nr',this.id)">
+                                        <i class="fas fa-eye mb-2" style="font-size:1.3rem;color:#64748b;"></i>
                                         <div class="fw-900 mb-1">Viewer</div>
-                                        <div class="small opacity-50 fw-bold">Auditagem</div>
-                                    </div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Auditagem</div>
+                                    </label>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="p-4 border rounded-4 text-center cursor-pointer border-primary" onclick="document.getElementById('nrE').click()">
-                                        <input type="radio" name="access_level" id="nrE" value="editor" class="d-none" checked>
-                                        <div class="fw-900 mb-1 text-primary">Editor</div>
-                                        <div class="small opacity-50 fw-bold">Operacional</div>
-                                    </div>
+                                    <label for="nrE" class="role-card role-card-active w-100" id="card-nrE">
+                                        <input type="radio" name="access_level" id="nrE" value="editor" class="d-none" checked onchange="highlightRoleCard('nr',this.id)">
+                                        <i class="fas fa-pen-to-square mb-2" style="font-size:1.3rem;color:#6366f1;"></i>
+                                        <div class="fw-900 mb-1">Editor</div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Operacional</div>
+                                    </label>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="p-4 border rounded-4 text-center cursor-pointer" onclick="document.getElementById('nrA').click()">
-                                        <input type="radio" name="access_level" id="nrA" value="admin" class="d-none">
+                                    <label for="nrA" class="role-card w-100" id="card-nrA">
+                                        <input type="radio" name="access_level" id="nrA" value="admin" class="d-none" onchange="highlightRoleCard('nr',this.id)">
+                                        <i class="fas fa-shield-halved mb-2" style="font-size:1.3rem;color:#64748b;"></i>
                                         <div class="fw-900 mb-1">Admin</div>
-                                        <div class="small opacity-50 fw-bold">Total</div>
-                                    </div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Total</div>
+                                    </label>
                                 </div>
                             </div>
 
@@ -788,6 +820,18 @@ async function generateAiSummary() {
 @endif
 
 <script>
+    function highlightRoleCard(prefix, selectedId) {
+        const ids = [prefix + 'V', prefix + 'E', prefix + 'A'];
+        ids.forEach(function(id) {
+            const card = document.getElementById('card-' + id);
+            if (!card) return;
+            const isSelected = (id === selectedId);
+            card.classList.toggle('role-card-active', isSelected);
+            const icon = card.querySelector('i');
+            if (icon) icon.style.color = isSelected ? '#6366f1' : '#64748b';
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const triggers = document.querySelectorAll('#teamModalTabs button');
         triggers.forEach(btn => {
