@@ -879,7 +879,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 <div class="hp-av av4">C</div>
             </div>
             <div class="hp-text">
-                <strong>+2.400 organizações</strong><br>já gerenciam seu impacto
+                <strong>{{ $siteStats['hero_badge'] }}</strong><br>{{ $siteStats['orgs_label'] }}
             </div>
             <div class="hp-sep"></div>
             <div class="hp-rating">
@@ -888,7 +888,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                     <i class="fas fa-star"></i><i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
                 </div>
-                <span class="hp-rlabel">4.9 / 5 &nbsp;·&nbsp; 840+ avaliações</span>
+                <span class="hp-rlabel">{{ $siteStats['rating_score'] }} / 5 &nbsp;·&nbsp; {{ $siteStats['rating_label'] }}</span>
             </div>
         </div>
     </div>
@@ -899,8 +899,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
             <!-- Badge: organizações ativas -->
             <div class="map-badge mb-1">
-                <div class="mb-val">1.840+</div>
-                <div class="mb-lbl">organizações ativas</div>
+                <div class="mb-val">{{ $siteStats['orgs_count'] }}+</div>
+                <div class="mb-lbl">{{ $siteStats['orgs_label'] }}</div>
             </div>
 
             <!-- Badge: cobertura ao vivo -->
@@ -915,8 +915,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
             <!-- Badge: captações -->
             <div class="map-badge mb-3">
-                <div class="mb-val" style="color:#93a8ff">R$ 2,1M</div>
-                <div class="mb-lbl">captados este mês</div>
+                <div class="mb-val" style="color:#93a8ff">{{ $siteStats['projects_count'] }}+</div>
+                <div class="mb-lbl">{{ $siteStats['projects_label'] }}</div>
             </div>
 
             <!-- Animated Brazil SVG Map -->
@@ -1125,29 +1125,29 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
             <!-- Floating cards -->
             <div class="fcard fc-a">
-                <div class="fcard-label">ONGs ativas</div>
-                <div class="fcard-value">2.847</div>
-                <div class="fcard-sub"><i class="fas fa-arrow-up"></i> +124 este mês</div>
+                <div class="fcard-label">Organizações ativas</div>
+                <div class="fcard-value">{{ $siteStats['orgs_count'] }}+</div>
+                <div class="fcard-sub"><i class="fas fa-arrow-up"></i> Crescendo</div>
             </div>
             <div class="fcard fc-b">
-                <div class="fcard-label">Doações captadas</div>
-                <div class="fcard-value">R$ 12,4M</div>
-                <div class="fcard-sub" style="color:var(--gold)"><i class="fas fa-chart-line"></i> +31% vs 2025</div>
+                <div class="fcard-label">Projetos gerenciados</div>
+                <div class="fcard-value">{{ $siteStats['projects_count'] }}+</div>
+                <div class="fcard-sub" style="color:var(--gold)"><i class="fas fa-chart-line"></i> Em expansão</div>
             </div>
             <div class="fcard fc-c">
-                <div class="fcard-label">Beneficiários</div>
-                <div class="fcard-value">98.200</div>
-                <div class="fcard-sub"><i class="fas fa-heart"></i> em 26 estados + DF</div>
+                <div class="fcard-label">Usuários ativos</div>
+                <div class="fcard-value">{{ $siteStats['users_count'] }}+</div>
+                <div class="fcard-sub"><i class="fas fa-heart"></i> {{ $siteStats['impact_label'] }}</div>
             </div>
             <div class="fcard fc-d">
-                <div class="fcard-label">Voluntários gamificados</div>
-                <div class="fcard-value">34.500</div>
-                <div class="fcard-sub" style="color:#B27CFF"><i class="fas fa-trophy"></i> 1.240 Diamante</div>
+                <div class="fcard-label">Avaliação média</div>
+                <div class="fcard-value">{{ $siteStats['rating_score'] }}/5</div>
+                <div class="fcard-sub" style="color:#B27CFF"><i class="fas fa-star"></i> {{ $siteStats['rating_label'] }}</div>
             </div>
             <div class="fcard fc-e">
-                <div class="fcard-label">Relatórios gerados</div>
-                <div class="fcard-value">18.930</div>
-                <div class="fcard-sub" style="color:rgba(255,255,255,.4)">Automáticos por IA</div>
+                <div class="fcard-label">Relatórios gerados por IA</div>
+                <div class="fcard-value">Bruce AI</div>
+                <div class="fcard-sub" style="color:rgba(255,255,255,.4)">Automáticos e precisos</div>
             </div>
         </div>
     </div>
@@ -1216,8 +1216,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
 
             <div class="seg-stat">
-                <div class="seg-stat-val">2.400+</div>
-                <div class="seg-stat-lbl">organizações gerenciadas na plataforma</div>
+                <div class="seg-stat-val">{{ $siteStats['orgs_count'] }}+</div>
+                <div class="seg-stat-lbl">{{ $siteStats['orgs_label'] }}</div>
             </div>
 
             <span class="seg-link sl-rose">
@@ -1248,8 +1248,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
 
             <div class="seg-stat">
-                <div class="seg-stat-val">380+</div>
-                <div class="seg-stat-lbl">equipes de projeto ativas no sistema</div>
+                <div class="seg-stat-val">{{ $siteStats['projects_count'] }}+</div>
+                <div class="seg-stat-lbl">{{ $siteStats['projects_label'] }}</div>
             </div>
 
             <span class="seg-link sl-blue">
@@ -1280,8 +1280,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
 
             <div class="seg-stat">
-                <div class="seg-stat-val">1.200+</div>
-                <div class="seg-stat-lbl">profissionais autônomos cadastrados</div>
+                <div class="seg-stat-val">{{ $siteStats['users_count'] }}+</div>
+                <div class="seg-stat-lbl">{{ $siteStats['users_label'] }}</div>
             </div>
 
             <span class="seg-link sl-purple">
@@ -1654,16 +1654,16 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             <!-- Numbers — sem wrapper externo -->
             <div class="au-nums">
                 <div class="au-num-item">
-                    <div class="au-num-val">127+</div>
-                    <div class="au-num-lbl">Alunos ativos</div>
+                    <div class="au-num-val">{{ $siteStats['users_count'] }}+</div>
+                    <div class="au-num-lbl">Usuários ativos</div>
                 </div>
                 <div class="au-num-item">
                     <div class="au-num-val">5</div>
                     <div class="au-num-lbl">Módulos</div>
                 </div>
                 <div class="au-num-item">
-                    <div class="au-num-val">2.4k</div>
-                    <div class="au-num-lbl">Conteúdos</div>
+                    <div class="au-num-val">Bruce AI</div>
+                    <div class="au-num-lbl">IA integrada</div>
                 </div>
             </div>
 
@@ -1708,31 +1708,31 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <div class="impact-inner">
         <div class="impact-head aos">
             <div>
-                <div class="impact-eyebrow">Impacto Real</div>
-                <h2 class="impact-title">Números que<br><em>comprovam</em> o propósito</h2>
+                <div class="impact-eyebrow">Crescimento Real</div>
+                <h2 class="impact-title">Plataforma em<br><em>expansão acelerada</em></h2>
             </div>
-            <p class="impact-right-txt">O Vivensi não é só software — é o motor que permite organizações do terceiro setor operarem com excelência real, todos os dias.</p>
+            <p class="impact-right-txt">O Vivensi não é só software — é o motor que permite organizações do terceiro setor e gestores de projetos operarem com excelência real, todos os dias.</p>
         </div>
         <div class="stats-row aos">
             <div class="stat-block sb-1">
-                <div class="stat-num">2.847</div>
-                <div class="stat-lbl">ONGs cadastradas</div>
-                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> +312 este mês</div>
+                <div class="stat-num">{{ $siteStats['orgs_count'] }}+</div>
+                <div class="stat-lbl">{{ $siteStats['orgs_label'] }}</div>
+                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> Em crescimento</div>
             </div>
             <div class="stat-block sb-2">
-                <div class="stat-num">98k+</div>
-                <div class="stat-lbl">Beneficiários impactados</div>
-                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> +8.4k este ano</div>
+                <div class="stat-num">{{ $siteStats['projects_count'] }}+</div>
+                <div class="stat-lbl">{{ $siteStats['projects_label'] }}</div>
+                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> Ativos na plataforma</div>
             </div>
             <div class="stat-block sb-3">
-                <div class="stat-num">R$12M</div>
-                <div class="stat-lbl">Doações rastreadas</div>
-                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> +R$1.2M este mês</div>
+                <div class="stat-num">{{ $siteStats['users_count'] }}+</div>
+                <div class="stat-lbl">{{ $siteStats['users_label'] }}</div>
+                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> {{ $siteStats['impact_label'] }}</div>
             </div>
             <div class="stat-block sb-4">
-                <div class="stat-num">34.5k</div>
-                <div class="stat-lbl">Voluntários ativos</div>
-                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> +2.1k novos</div>
+                <div class="stat-num">{{ $siteStats['rating_score'] }}/5</div>
+                <div class="stat-lbl">{{ $siteStats['rating_label'] }}</div>
+                <div class="stat-delta"><i class="fas fa-star" style="font-size:.56rem"></i> Pelos primeiros usuários</div>
             </div>
         </div>
     </div>
@@ -1832,7 +1832,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                     <div class="cp-av cp4">LF</div>
                 </div>
                 <div class="cta-proof-text">
-                    <strong>+2.847 organizações</strong> já usam o Vivensi.<br>
+                    <strong>+{{ $siteStats['orgs_count'] }} organizações</strong> já usam o Vivensi.<br>
                     Junte-se a quem já transformou sua gestão.
                 </div>
             </div>

@@ -261,6 +261,26 @@ class AdminSettingsController extends Controller
             SystemSetting::setValue('booking_min_advance', (string)$validated['booking_min_advance'], 'booking');
         }
 
+        // Estatísticas da página pública
+        $statFields = [
+            'stat_orgs_count', 'stat_orgs_label',
+            'stat_projects_count', 'stat_projects_label',
+            'stat_users_count', 'stat_users_label',
+            'stat_rating_score', 'stat_rating_label',
+            'stat_hero_badge', 'stat_impact_label',
+        ];
+        foreach ($statFields as $field) {
+            if ($request->has($field)) {
+                $val = trim((string) $request->input($field));
+                if ($val !== '') {
+                    SystemSetting::setValue($field, $val, 'site_stats');
+                } else {
+                    // Se deixou em branco, remove para usar o fallback do banco
+                    \App\Models\SystemSetting::where('key', $field)->delete();
+                }
+            }
+        }
+
         return redirect()->back()->with('success', 'Configurações de API atualizadas com sucesso!');
     }
 }
