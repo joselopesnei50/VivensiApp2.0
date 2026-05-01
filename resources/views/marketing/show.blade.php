@@ -394,10 +394,13 @@ function renderMarkmap(markdown) {
                 font-family: 'Inter', 'Outfit', sans-serif !important;
                 font-size: 13px;
                 font-weight: 600;
+                fill: #f1f5f9 !important;
             }
-            #${id} .markmap-node > text:first-child {
-                font-size: 15px;
-                font-weight: 700;
+            #${id} .markmap-node > circle {
+                stroke-width: 1.5;
+            }
+            #${id} .markmap-link {
+                stroke: rgba(255,255,255,.18) !important;
             }
         `,
     }, root);
