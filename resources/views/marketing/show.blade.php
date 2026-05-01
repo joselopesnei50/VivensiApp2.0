@@ -360,15 +360,46 @@ function renderMarkmap(markdown) {
     const svg = document.getElementById('mindmap-svg');
     svg.style.visibility = 'visible';
 
+    // Injetar fonte premium antes de renderizar
+    if (!document.getElementById('markmap-font')) {
+        const link = document.createElement('link');
+        link.id   = 'markmap-font';
+        link.rel  = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap';
+        document.head.appendChild(link);
+    }
+
     mmInstance = Markmap.create(svg, {
         autoFit: true,
         color: (node) => {
-            const palette = ['#818cf8','#34d399','#f472b6','#fbbf24','#60a5fa','#a78bfa','#fb923c'];
+            const palette = [
+                '#a78bfa', // raiz — violeta
+                '#34d399', // nível 1 — verde esmeralda
+                '#60a5fa', // nível 2 — azul
+                '#f472b6', // nível 3 — rosa
+                '#fbbf24', // nível 4 — âmbar
+                '#fb923c', // nível 5 — laranja
+                '#818cf8', // nível 6 — índigo
+            ];
             return palette[node.depth % palette.length];
         },
-        duration: 400,
-        maxWidth: 320,
-        paddingX: 16,
+        duration: 350,
+        maxWidth: 380,
+        paddingX: 20,
+        spacingHorizontal: 80,
+        spacingVertical: 8,
+        initialExpandLevel: 2,
+        style: (id) => `
+            #${id} .markmap-node text {
+                font-family: 'Inter', 'Outfit', sans-serif !important;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            #${id} .markmap-node > text:first-child {
+                font-size: 15px;
+                font-weight: 700;
+            }
+        `,
     }, root);
 }
 
