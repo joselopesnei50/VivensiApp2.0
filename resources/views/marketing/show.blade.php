@@ -14,22 +14,22 @@
 }
 /* ── Mapa ───────────────────────────────────────────────────────────────── */
 .mindmap-shell {
-    background: #0f172a;
+    background: #f8fafc;
     border-radius: 24px;
     position: relative;
     overflow: hidden;
     width: 100%;
     height: calc(100vh - 220px);
     min-height: 540px;
-    box-shadow: 0 25px 60px rgba(0,0,0,.25);
-    border: 1px solid rgba(255,255,255,.06);
+    box-shadow: 0 25px 60px rgba(0,0,0,.08);
+    border: 1px solid #e2e8f0;
 }
 .mindmap-shell::before {
     content: '';
     position: absolute; inset: 0;
     background:
-        radial-gradient(ellipse at 20% 30%, rgba(99,102,241,.12) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 70%, rgba(16,185,129,.08) 0%, transparent 55%);
+        radial-gradient(ellipse at 20% 30%, rgba(99,102,241,.06) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 70%, rgba(16,185,129,.05) 0%, transparent 55%);
     pointer-events: none;
     z-index: 0;
 }
@@ -40,9 +40,6 @@
     position: relative;
     z-index: 1;
 }
-/* nodes legíveis sobre fundo escuro */
-.mindmap-shell .markmap-node text { fill: #f1f5f9 !important; }
-.mindmap-shell .markmap-link { stroke: rgba(255,255,255,.15) !important; }
 
 /* ── Controles flutuantes ───────────────────────────────────────────────── */
 .map-controls {
@@ -57,16 +54,16 @@
 .map-btn {
     width: 40px; height: 40px;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.12);
-    background: rgba(255,255,255,.08);
-    backdrop-filter: blur(10px);
-    color: #fff;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
     font-size: .95rem;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     transition: all .15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
-.map-btn:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.3); }
+.map-btn:hover { background: #6366f1; color: #fff; border-color: #6366f1; }
 
 /* Fullscreen button top-right */
 .map-controls-top {
@@ -85,7 +82,7 @@
     left: 20px;
     z-index: 10;
     font-size: .72rem;
-    color: rgba(255,255,255,.35);
+    color: #94a3b8;
     font-weight: 600;
     pointer-events: none;
 }
@@ -221,13 +218,13 @@
              style="position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;">
             <div class="mb-4">
                 <span class="status-pulse"></span>
-                <span class="fw-bold" style="color:#93c5fd;font-size:1.05rem;">A IA está gerando seu plano estratégico...</span>
+                <span class="fw-bold" style="color:#4f46e5;font-size:1.05rem;">A IA está gerando seu plano estratégico...</span>
             </div>
             <div style="width:280px;">
-                <div class="progress" style="height:5px;border-radius:99px;background:rgba(255,255,255,.1);">
+                <div class="progress" style="height:5px;border-radius:99px;background:#e2e8f0;">
                     <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated w-100"></div>
                 </div>
-                <p style="color:rgba(255,255,255,.4);font-size:.8rem;text-align:center;margin-top:14px;">
+                <p style="color:#64748b;font-size:.8rem;text-align:center;margin-top:14px;">
                     Analisando briefing e gerando estratégias com Bruce AI.<br>Isso leva entre 10 e 30 segundos.
                 </p>
             </div>
@@ -238,8 +235,8 @@
              class="{{ $marketing->status === 'failed' ? '' : 'd-none' }}"
              style="position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
             <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color:#fbbf24;"></i>
-            <h6 class="fw-bold" style="color:#f1f5f9;">Não foi possível gerar o plano</h6>
-            <p style="color:rgba(255,255,255,.4);font-size:.85rem;max-width:320px;">
+            <h6 class="fw-bold" style="color:#1e293b;">Não foi possível gerar o plano</h6>
+            <p style="color:#64748b;font-size:.85rem;max-width:320px;">
                 As APIs de IA podem estar indisponíveis. Tente novamente em alguns minutos.
             </p>
             <a href="{{ route('marketing.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2">
