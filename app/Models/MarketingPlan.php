@@ -10,7 +10,7 @@ class MarketingPlan extends Model
     use BelongsToTenant;
 
     protected $fillable = [
-        'tenant_id', 'user_id', 'title', 'objective', 'target_audience',
+        'tenant_id', 'user_id', 'project_id', 'title', 'objective', 'target_audience',
         'scope', 'competitor_links', 'budget_range', 'tone',
         'has_whatsapp_groups', 'extra_info', 'mindmap_data',
         'ai_provider', 'status',
@@ -24,5 +24,10 @@ class MarketingPlan extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }
