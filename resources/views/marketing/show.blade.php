@@ -162,7 +162,7 @@
             </h4>
             @if($marketing->ai_provider)
                 <span class="badge bg-light text-dark border mt-1" style="font-size:.7rem;">
-                    IA: {{ ucfirst($marketing->ai_provider) }}
+                    <i class="fas fa-robot me-1"></i> Bruce AI
                 </span>
             @endif
         </div>
@@ -195,7 +195,7 @@
         <div class="map-controls-top">
             @if($marketing->ai_provider)
             <span class="map-btn" style="width:auto;padding:0 14px;font-size:.72rem;font-weight:700;gap:6px;pointer-events:none;">
-                <i class="fas fa-microchip"></i> {{ ucfirst($marketing->ai_provider) }}
+                <i class="fas fa-robot"></i> Bruce AI
             </span>
             @endif
             <button class="map-btn" onclick="toggleFullscreen()" title="Tela cheia">

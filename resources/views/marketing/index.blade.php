@@ -56,7 +56,7 @@
                     <div class="d-flex gap-2 flex-wrap mb-3">
                         <span class="badge bg-light text-dark border">{{ $plan->scope === 'online_offline' ? 'Online + Presencial' : 'Online' }}</span>
                         @if($plan->ai_provider)
-                            <span class="badge bg-light text-dark border">IA: {{ ucfirst($plan->ai_provider) }}</span>
+                            <span class="badge bg-light text-dark border"><i class="fas fa-robot me-1"></i> Bruce AI</span>
                         @endif
                     </div>
                     <div class="d-flex gap-2">
