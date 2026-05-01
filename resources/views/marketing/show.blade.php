@@ -3,51 +3,143 @@
 
 @push('styles')
 <style>
-    .mindmap-wrap {
-        background: #f8fafc;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-        position: relative;
-        min-height: 520px;
-    }
-    #mindmap-svg {
-        width: 100%;
-        height: 600px;
-    }
-    .markmap-node-circle { fill: #4f46e5; stroke: #4f46e5; }
-    .markmap-link { stroke: #c7d2fe; }
-    .markmap-node text { font-family: 'Inter', sans-serif; }
-    .status-pulse {
-        display: inline-block;
-        width: 10px; height: 10px;
-        border-radius: 50%;
-        background: #3b82f6;
-        animation: pulse-blue 1.5s infinite;
-        margin-right: 8px;
-    }
-    @keyframes pulse-blue {
-        0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,.4); }
-        50%      { box-shadow: 0 0 0 8px rgba(59,130,246,0); }
-    }
-    .action-chip {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 5px 14px;
-        border-radius: 20px;
-        font-size: .78rem;
-        font-weight: 700;
-        background: #eef2ff;
-        color: #4f46e5;
-        text-decoration: none;
-        border: 1px solid #c7d2fe;
-        transition: all .15s;
-        white-space: nowrap;
-    }
-    .action-chip:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
-    .briefing-card { background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; }
-    .briefing-row { display: flex; gap: 12px; margin-bottom: 12px; font-size: .88rem; }
-    .briefing-label { font-weight: 700; color: #64748b; min-width: 110px; }
-    .briefing-val { color: #1e293b; }
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.mkt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+/* ── Mapa ───────────────────────────────────────────────────────────────── */
+.mindmap-shell {
+    background: #0f172a;
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: calc(100vh - 220px);
+    min-height: 540px;
+    box-shadow: 0 25px 60px rgba(0,0,0,.25);
+    border: 1px solid rgba(255,255,255,.06);
+}
+.mindmap-shell::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse at 20% 30%, rgba(99,102,241,.12) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 70%, rgba(16,185,129,.08) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+#mindmap-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+/* nodes legíveis sobre fundo escuro */
+.mindmap-shell .markmap-node text { fill: #f1f5f9 !important; }
+.mindmap-shell .markmap-link { stroke: rgba(255,255,255,.15) !important; }
+
+/* ── Controles flutuantes ───────────────────────────────────────────────── */
+.map-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.map-btn {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: .95rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all .15s;
+}
+.map-btn:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.3); }
+
+/* Fullscreen button top-right */
+.map-controls-top {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+}
+
+/* ── Badge de hint ──────────────────────────────────────────────────────── */
+.map-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10;
+    font-size: .72rem;
+    color: rgba(255,255,255,.35);
+    font-weight: 600;
+    pointer-events: none;
+}
+
+/* ── Pulse loading ──────────────────────────────────────────────────────── */
+.status-pulse {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #3b82f6;
+    animation: pulse-blue 1.5s infinite;
+    margin-right: 8px;
+}
+@keyframes pulse-blue {
+    0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,.5); }
+    50%      { box-shadow: 0 0 0 8px rgba(59,130,246,0); }
+}
+
+/* ── Info strip ─────────────────────────────────────────────────────────── */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+.info-pill {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+}
+.info-pill .label { font-size: .72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+.info-pill .value { font-size: .88rem; font-weight: 700; color: #1e293b; }
+
+/* ── Quick actions ──────────────────────────────────────────────────────── */
+.action-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: .78rem;
+    font-weight: 700;
+    background: #eef2ff;
+    color: #4f46e5;
+    text-decoration: none;
+    border: 1px solid #c7d2fe;
+    transition: all .15s;
+    white-space: nowrap;
+}
+.action-chip:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+/* ── Fullscreen override ────────────────────────────────────────────────── */
+.mindmap-shell:-webkit-full-screen { height: 100vh; border-radius: 0; }
+.mindmap-shell:-moz-full-screen    { height: 100vh; border-radius: 0; }
+.mindmap-shell:fullscreen          { height: 100vh; border-radius: 0; }
 </style>
 @endpush
 
@@ -59,17 +151,22 @@
     @endif
 
     {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+    <div class="mkt-header">
         <div>
             <a href="{{ route('marketing.index') }}" class="text-muted small text-decoration-none">
                 <i class="fas fa-arrow-left me-1"></i> Meus Planos
             </a>
             <h4 class="fw-bold mt-1 mb-0" style="color:#1e293b;">
-                <i class="fas fa-sitemap me-2" style="color:#4f46e5;"></i>
-                {{ mb_substr($marketing->title ?? $marketing->objective, 0, 70) }}
+                <i class="fas fa-brain me-2" style="color:#4f46e5;"></i>
+                {{ mb_substr($marketing->title ?? $marketing->objective, 0, 80) }}
             </h4>
+            @if($marketing->ai_provider)
+                <span class="badge bg-light text-dark border mt-1" style="font-size:.7rem;">
+                    IA: {{ ucfirst($marketing->ai_provider) }}
+                </span>
+            @endif
         </div>
-        <div class="d-flex gap-2 flex-wrap">
+        <div class="d-flex gap-2 flex-wrap align-items-center">
             @if($marketing->status === 'done')
                 <button onclick="window.print()" class="btn btn-outline-secondary rounded-pill btn-sm px-3">
                     <i class="fas fa-print me-1"></i> Imprimir
@@ -78,107 +175,135 @@
                     <i class="fas fa-download me-1"></i> Exportar MD
                 </button>
             @endif
-            <a href="{{ route('marketing.create') }}" class="btn btn-primary rounded-pill btn-sm px-3 fw-bold">
+            <a href="{{ route('marketing.create') }}" class="btn btn-primary rounded-pill btn-sm px-4 fw-bold">
                 <i class="fas fa-plus me-1"></i> Novo Plano
             </a>
+            <form action="{{ route('marketing.destroy', $marketing->id) }}" method="POST"
+                  onsubmit="return confirm('Remover este plano?')" class="mb-0">
+                @csrf @method('DELETE')
+                <button class="btn btn-outline-danger rounded-pill btn-sm px-3">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
         </div>
     </div>
 
-    <div class="row g-4">
-        {{-- Mapa Mental --}}
-        <div class="col-xl-8">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header bg-white border-0 px-4 pt-4 pb-0 d-flex align-items-center justify-content-between">
-                    <h6 class="fw-bold mb-0" style="color:#1e293b;">
-                        <i class="fas fa-project-diagram me-2 text-primary"></i> Mapa Mental Estratégico
-                    </h6>
-                    @if($marketing->ai_provider)
-                        <span class="badge bg-light text-dark border" style="font-size:.72rem;">
-                            IA: {{ ucfirst($marketing->ai_provider) }}
-                        </span>
-                    @endif
+    {{-- ── Mapa Mental ── --}}
+    <div class="mindmap-shell mb-4">
+
+        {{-- Controles topo-direita --}}
+        <div class="map-controls-top">
+            @if($marketing->ai_provider)
+            <span class="map-btn" style="width:auto;padding:0 14px;font-size:.72rem;font-weight:700;gap:6px;pointer-events:none;">
+                <i class="fas fa-microchip"></i> {{ ucfirst($marketing->ai_provider) }}
+            </span>
+            @endif
+            <button class="map-btn" onclick="toggleFullscreen()" title="Tela cheia">
+                <i class="fas fa-expand" id="fs-icon"></i>
+            </button>
+        </div>
+
+        {{-- Controles laterais direita-baixo --}}
+        <div class="map-controls">
+            <button class="map-btn" onclick="mmZoom(1.25)" title="Zoom in"><i class="fas fa-plus"></i></button>
+            <button class="map-btn" onclick="mmZoom(0.8)"  title="Zoom out"><i class="fas fa-minus"></i></button>
+            <button class="map-btn" onclick="mmFit()"      title="Encaixar"><i class="fas fa-compress-arrows-alt"></i></button>
+        </div>
+
+        {{-- Hint --}}
+        <div class="map-hint">
+            <i class="fas fa-mouse me-1"></i> Scroll para zoom &nbsp;·&nbsp; Arraste para mover &nbsp;·&nbsp; Clique nos nós para expandir
+        </div>
+
+        {{-- Estado: Processando --}}
+        <div id="state-processing"
+             style="{{ in_array($marketing->status, ['pending','processing']) ? '' : 'display:none;' }}
+                    position:absolute;inset:0;z-index:5;
+                    display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div class="mb-4">
+                <span class="status-pulse"></span>
+                <span class="fw-bold" style="color:#93c5fd;font-size:1.05rem;">A IA está gerando seu plano estratégico...</span>
+            </div>
+            <div style="width:280px;">
+                <div class="progress" style="height:5px;border-radius:99px;background:rgba(255,255,255,.1);">
+                    <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated w-100"></div>
                 </div>
+                <p style="color:rgba(255,255,255,.4);font-size:.8rem;text-align:center;margin-top:14px;">
+                    Analisando briefing e gerando estratégias com Gemini AI.<br>Isso leva entre 10 e 30 segundos.
+                </p>
+            </div>
+        </div>
+
+        {{-- Estado: Falhou --}}
+        <div id="state-failed"
+             style="{{ $marketing->status === 'failed' ? '' : 'display:none;' }}
+                    position:absolute;inset:0;z-index:5;
+                    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color:#fbbf24;"></i>
+            <h6 class="fw-bold" style="color:#f1f5f9;">Não foi possível gerar o plano</h6>
+            <p style="color:rgba(255,255,255,.4);font-size:.85rem;max-width:320px;">
+                As APIs de IA podem estar indisponíveis. Tente novamente em alguns minutos.
+            </p>
+            <a href="{{ route('marketing.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2">
+                Tentar Novamente
+            </a>
+        </div>
+
+        {{-- SVG do mapa --}}
+        <svg id="mindmap-svg" style="{{ $marketing->status === 'done' ? '' : 'visibility:hidden;' }}"></svg>
+    </div>
+
+    {{-- ── Briefing + Ações ── --}}
+    <div class="row g-4">
+
+        {{-- Briefing --}}
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4">
-
-                    {{-- Estado: Processando --}}
-                    <div id="state-processing" style="{{ in_array($marketing->status, ['pending','processing']) ? '' : 'display:none;' }}">
-                        <div class="mindmap-wrap d-flex flex-column align-items-center justify-content-center" style="min-height:400px;">
-                            <div class="mb-4">
-                                <div class="status-pulse"></div>
-                                <span class="fw-bold" style="color:#3b82f6;">A IA está gerando seu plano estratégico...</span>
-                            </div>
-                            <div style="width:280px;">
-                                <div class="progress" style="height:6px;border-radius:99px;">
-                                    <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated w-100"></div>
-                                </div>
-                                <p class="text-muted small text-center mt-3">Analisando briefing e gerando estratégias com Gemini AI. Isso leva entre 10 e 30 segundos.</p>
-                            </div>
+                    <h6 class="fw-bold mb-3" style="color:#1e293b;">
+                        <i class="fas fa-clipboard-list me-2 text-warning"></i> Briefing do Plano
+                    </h6>
+                    <div class="info-grid">
+                        <div class="info-pill">
+                            <div class="label">Objetivo</div>
+                            <div class="value">{{ mb_substr($marketing->objective, 0, 140) }}</div>
+                        </div>
+                        <div class="info-pill">
+                            <div class="label">Público-alvo</div>
+                            <div class="value">{{ mb_substr($marketing->target_audience, 0, 100) }}</div>
+                        </div>
+                        <div class="info-pill">
+                            <div class="label">Abrangência</div>
+                            <div class="value">{{ $marketing->scope === 'online_offline' ? 'Online + Presencial' : 'Apenas Online' }}</div>
+                        </div>
+                        <div class="info-pill">
+                            <div class="label">Tom de Voz</div>
+                            <div class="value">{{ ucfirst($marketing->tone) }}</div>
+                        </div>
+                        @if($marketing->budget_range)
+                        <div class="info-pill">
+                            <div class="label">Orçamento</div>
+                            <div class="value">{{ $marketing->budget_range }}</div>
+                        </div>
+                        @endif
+                        <div class="info-pill">
+                            <div class="label">Criado em</div>
+                            <div class="value">{{ $marketing->created_at->format('d/m/Y H:i') }}</div>
                         </div>
                     </div>
-
-                    {{-- Estado: Falhou --}}
-                    <div id="state-failed" style="{{ $marketing->status === 'failed' ? '' : 'display:none;' }}">
-                        <div class="mindmap-wrap d-flex flex-column align-items-center justify-content-center text-center" style="min-height:300px;">
-                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                            <h6 class="fw-bold">Não foi possível gerar o plano</h6>
-                            <p class="text-muted small">As APIs de IA podem estar indisponíveis. Tente novamente em alguns minutos.</p>
-                            <a href="{{ route('marketing.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2">Tentar Novamente</a>
-                        </div>
-                    </div>
-
-                    {{-- Estado: Concluído --}}
-                    <div id="state-done" style="{{ $marketing->status === 'done' ? '' : 'display:none;' }}">
-                        <div class="mindmap-wrap mb-3">
-                            <svg id="mindmap-svg"></svg>
-                        </div>
-                        <p class="text-muted small text-center mb-0">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Use o scroll para zoom · Arraste para mover · Clique nos nós para expandir/colapsar
-                        </p>
-                    </div>
-
                 </div>
             </div>
         </div>
 
-        {{-- Sidebar --}}
-        <div class="col-xl-4">
-
-            {{-- Briefing --}}
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
+        {{-- Ações Rápidas --}}
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-4">
-                    <h6 class="fw-bold mb-3" style="color:#1e293b;">
-                        <i class="fas fa-clipboard-list me-2 text-warning"></i> Briefing
+                    <h6 class="fw-bold mb-1" style="color:#1e293b;">
+                        <i class="fas fa-bolt me-2 text-primary"></i> Executar no Vivensi
                     </h6>
-                    <div class="briefing-card">
-                        <div class="briefing-row">
-                            <span class="briefing-label">Objetivo</span>
-                            <span class="briefing-val">{{ mb_substr($marketing->objective, 0, 120) }}</span>
-                        </div>
-                        <div class="briefing-row">
-                            <span class="briefing-label">Público</span>
-                            <span class="briefing-val">{{ mb_substr($marketing->target_audience, 0, 80) }}</span>
-                        </div>
-                        <div class="briefing-row">
-                            <span class="briefing-label">Abrangência</span>
-                            <span class="briefing-val">{{ $marketing->scope === 'online_offline' ? 'Online + Presencial' : 'Apenas Online' }}</span>
-                        </div>
-                        <div class="briefing-row mb-0">
-                            <span class="briefing-label">Tom de Voz</span>
-                            <span class="briefing-val">{{ ucfirst($marketing->tone) }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Ações Rápidas --}}
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold mb-3" style="color:#1e293b;">
-                        <i class="fas fa-bolt me-2 text-primary"></i> Ações Rápidas no Vivensi
-                    </h6>
-                    <p class="text-muted small mb-3">Módulos disponíveis para executar seu plano agora:</p>
-                    <div class="d-flex flex-column gap-2">
+                    <p class="text-muted small mb-3">Módulos disponíveis para colocar o plano em prática:</p>
+                    <div class="d-flex flex-wrap gap-2">
                         <a href="{{ url('/whatsapp/broadcast') }}" class="action-chip">
                             <i class="fab fa-whatsapp"></i> Disparo WhatsApp
                         </a>
@@ -203,8 +328,8 @@
                     </div>
                 </div>
             </div>
-
         </div>
+
     </div>
 </div>
 
@@ -223,42 +348,71 @@ const MINDMAP_MD  = @json($marketing->mindmap_data['markdown'] ?? '');
 const MINDMAP_MD  = null;
 @endif
 
-// ── Render Markmap ──────────────────────────────────────────────────────────
+let mmInstance = null;
+
+// ── Render ──────────────────────────────────────────────────────────────────
 function renderMarkmap(markdown) {
     const { Markmap, loadCSS, loadJS } = window.markmap;
-    const { transformer } = window.markmap;
-
     const t = new window.markmap.Transformer();
     const { root, features } = t.transform(markdown);
-
     const { styles, scripts } = t.getUsedAssets(features);
-    if (styles) loadCSS(styles);
+    if (styles)  loadCSS(styles);
     if (scripts) loadJS(scripts, { getMarkmap: () => window.markmap });
 
     const svg = document.getElementById('mindmap-svg');
-    Markmap.create(svg, {
+    svg.style.visibility = 'visible';
+
+    mmInstance = Markmap.create(svg, {
         autoFit: true,
         color: (node) => {
-            const colors = ['#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
-            return colors[node.depth % colors.length];
+            const palette = ['#818cf8','#34d399','#f472b6','#fbbf24','#60a5fa','#a78bfa','#fb923c'];
+            return palette[node.depth % palette.length];
         },
         duration: 400,
-        maxWidth: 280,
+        maxWidth: 320,
+        paddingX: 16,
     }, root);
 }
 
-// ── Poll while processing ───────────────────────────────────────────────────
+// ── Controles ───────────────────────────────────────────────────────────────
+function mmZoom(factor) {
+    if (!mmInstance) return;
+    const { x, y, k } = mmInstance.state.transform ?? { x: 0, y: 0, k: 1 };
+    mmInstance.transition(mmInstance.svg)
+        .call(mmInstance.zoom.scaleBy, factor);
+}
+
+function mmFit() {
+    if (mmInstance) mmInstance.fit();
+}
+
+function toggleFullscreen() {
+    const el = document.querySelector('.mindmap-shell');
+    const icon = document.getElementById('fs-icon');
+    if (!document.fullscreenElement) {
+        el.requestFullscreen().then(() => {
+            icon.className = 'fas fa-compress';
+            setTimeout(() => mmInstance?.fit(), 300);
+        });
+    } else {
+        document.exitFullscreen().then(() => {
+            icon.className = 'fas fa-expand';
+            setTimeout(() => mmInstance?.fit(), 300);
+        });
+    }
+}
+
+// ── Poll ─────────────────────────────────────────────────────────────────────
 function pollStatus() {
     fetch(STATUS_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(r => r.json())
         .then(data => {
             if (data.status === 'done' && data.mindmap_data?.markdown) {
                 document.getElementById('state-processing').style.display = 'none';
-                document.getElementById('state-done').style.display = '';
                 setTimeout(() => renderMarkmap(data.mindmap_data.markdown), 100);
             } else if (data.status === 'failed') {
                 document.getElementById('state-processing').style.display = 'none';
-                document.getElementById('state-failed').style.display = '';
+                document.getElementById('state-failed').style.display = 'flex';
             } else {
                 setTimeout(pollStatus, 4000);
             }
@@ -274,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// ── Export ──────────────────────────────────────────────────────────────────
+// ── Export ───────────────────────────────────────────────────────────────────
 function exportMarkdown() {
     if (!MINDMAP_MD) return;
     const blob = new Blob([MINDMAP_MD], { type: 'text/markdown' });
