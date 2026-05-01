@@ -281,6 +281,18 @@
                             <div class="value">{{ $marketing->budget_range }}</div>
                         </div>
                         @endif
+                        @if($marketing->project)
+                        <div class="info-pill">
+                            <div class="label">Projeto</div>
+                            <div class="value">
+                                <a href="{{ url('/projects/details/' . $marketing->project_id) }}"
+                                   style="color:#4f46e5;text-decoration:none;font-weight:700;">
+                                    <i class="fas fa-sitemap me-1" style="font-size:.8rem;"></i>
+                                    {{ $marketing->project->name }}
+                                </a>
+                            </div>
+                        </div>
+                        @endif
                         <div class="info-pill">
                             <div class="label">Criado em</div>
                             <div class="value">{{ $marketing->created_at->format('d/m/Y H:i') }}</div>

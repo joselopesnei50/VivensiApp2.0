@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ProcessMarketingPlan;
 use App\Models\MarketingPlan;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,7 +18,11 @@ class MarketingStrategyController extends Controller
 
     public function create()
     {
-        return view('marketing.create');
+        $projects = Project::where('tenant_id', Auth::user()->tenant_id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'status']);
+
+        return view('marketing.create', compact('projects'));
     }
 
     public function store(Request $request)
@@ -30,11 +35,13 @@ class MarketingStrategyController extends Controller
             'budget_range'        => 'nullable|string|max:100',
             'tone'                => 'required|in:professional,friendly,inspirational,urgent',
             'extra_info'          => 'nullable|string|max:1000',
+            'project_id'          => 'nullable|integer|exists:projects,id',
         ]);
 
         $plan = MarketingPlan::create([
             'tenant_id'           => Auth::user()->tenant_id,
             'user_id'             => Auth::id(),
+            'project_id'          => $validated['project_id'] ?? null,
             'title'               => mb_substr($validated['objective'], 0, 80),
             'objective'           => $validated['objective'],
             'target_audience'     => $validated['target_audience'],
