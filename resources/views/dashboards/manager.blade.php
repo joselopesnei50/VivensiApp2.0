@@ -184,6 +184,108 @@
     </div>
 </div>
 
+{{-- ===== MÁQUINA DE ENGAJAMENTO ===== --}}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div style="background: #0f172a; border-radius: 28px; padding: 36px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h3 style="color: white; font-weight: 950; font-size: 1.5rem; letter-spacing: -1px; margin: 0;">Máquina de Engajamento</h3>
+                    <p style="color: rgba(255,255,255,0.5); font-size: .85rem; margin: 4px 0 0 0;">Análise de performance de disparos em massa e interações</p>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-action-pro" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" data-bs-toggle="modal" data-bs-target="#addPersonGlobalModal">
+                        <i class="fas fa-user-plus text-info"></i> Cadastrar Pessoa
+                    </button>
+                    <button class="btn-action-pro" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" data-bs-toggle="modal" data-bs-target="#importPersonGlobalModal">
+                        <i class="fas fa-file-csv text-warning"></i> Importar CSV
+                    </button>
+                    <a href="{{ route('whatsapp.broadcast.index') }}" class="btn-action-pro" style="background: #10b981; color: white; border: none; box-shadow: 0 10px 30px rgba(16,185,129,0.2);">
+                        <i class="fab fa-whatsapp"></i> Novo Disparo em Massa
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                {{-- Funil de Conversão --}}
+                <div class="col-lg-7">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 24px; height: 100%;">
+                        <h4 style="font-weight: 900; color: white; font-size: 1rem; margin-bottom: 24px;">Funil de Conversão do WhatsApp</h4>
+                        
+                        @php
+                            $sent = $whatsappStats['total_sent'] ?? 0;
+                            $delivered = $whatsappStats['total_delivered'] ?? 0;
+                            $replies = $whatsappStats['total_replies'] ?? 0;
+                            
+                            $deliveredPct = $sent > 0 ? round(($delivered / $sent) * 100) : 0;
+                            $repliesPct = $sent > 0 ? round(($replies / $sent) * 100) : 0;
+                        @endphp
+
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                            {{-- Enviadas --}}
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 120px; font-weight: 800; color: #94a3b8; font-size: 0.85rem;">Enviadas</div>
+                                <div style="flex: 1; height: 28px; background: rgba(255,255,255,0.05); border-radius: 8px; position: relative; overflow: hidden;">
+                                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: #6366f1; border-radius: 8px;"></div>
+                                </div>
+                                <div style="width: 60px; text-align: right; font-weight: 900; color: white;">{{ number_format($sent, 0, ',', '.') }}</div>
+                            </div>
+
+                            {{-- Entregues --}}
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 120px; font-weight: 800; color: #94a3b8; font-size: 0.85rem;">Entregues ({{ $deliveredPct }}%)</div>
+                                <div style="flex: 1; height: 28px; background: rgba(255,255,255,0.05); border-radius: 8px; position: relative; overflow: hidden;">
+                                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $deliveredPct }}%; background: #10b981; border-radius: 8px;"></div>
+                                </div>
+                                <div style="width: 60px; text-align: right; font-weight: 900; color: white;">{{ number_format($delivered, 0, ',', '.') }}</div>
+                            </div>
+
+                            {{-- Respostas --}}
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 120px; font-weight: 800; color: #94a3b8; font-size: 0.85rem;">Respostas ({{ $repliesPct }}%)</div>
+                                <div style="flex: 1; height: 28px; background: rgba(255,255,255,0.05); border-radius: 8px; position: relative; overflow: hidden;">
+                                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $repliesPct }}%; background: #f59e0b; border-radius: 8px;"></div>
+                                </div>
+                                <div style="width: 60px; text-align: right; font-weight: 900; color: white;">{{ number_format($replies, 0, ',', '.') }}</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 24px; padding: 16px; background: rgba(99,102,241,0.1); border-radius: 12px; border: 1px solid rgba(99,102,241,0.2); display: flex; gap: 12px; align-items: flex-start;">
+                            <i class="fas fa-lightbulb" style="color: #818cf8; margin-top: 2px;"></i>
+                            <div style="font-size: 0.8rem; color: #cbd5e1;">
+                                <strong style="color: white;">Dica de Engajamento:</strong> 
+                                Você pode gerar listas segmentadas de contatos diretamente dos seus projetos ativos clicando em "Pessoas & Contatos" na visualização do projeto.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Gráfico de Volume Diário --}}
+                <div class="col-lg-5">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 24px; height: 100%; display: flex; flex-direction: column;">
+                        <h4 style="font-weight: 900; color: white; font-size: 1rem; margin-bottom: 20px;">Volume de Mensagens (7d)</h4>
+                        
+                        <div style="flex: 1; min-height: 180px;">
+                            <canvas id="engagementChart"></canvas>
+                        </div>
+
+                        <div style="display: flex; gap: 15px; margin-top: 20px;">
+                            <div style="flex: 1; background: rgba(16,185,129,0.1); border-radius: 12px; padding: 12px; text-align: center;">
+                                <div style="font-size: 0.65rem; font-weight: 800; color: #10b981; text-transform: uppercase;">Entrega</div>
+                                <div style="font-size: 1.2rem; font-weight: 900; color: white;">{{ $deliveredPct }}%</div>
+                            </div>
+                            <div style="flex: 1; background: rgba(245,158,11,0.1); border-radius: 12px; padding: 12px; text-align: center;">
+                                <div style="font-size: 0.65rem; font-weight: 800; color: #f59e0b; text-transform: uppercase;">Resposta</div>
+                                <div style="font-size: 1.2rem; font-weight: 900; color: white;">{{ $repliesPct }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- ===== LINHA PRINCIPAL ===== --}}
 <div class="row g-4 mb-4">
 
@@ -506,8 +608,151 @@
                 }
             }
         });
+
+        const ctxEngagement = document.getElementById('engagementChart').getContext('2d');
+        new Chart(ctxEngagement, {
+            type: 'bar',
+            data: {
+                labels: @json($waDailyLabels),
+                datasets: [
+                    {
+                        label: 'Enviadas',
+                        data: @json($waDailySent),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6,
+                        borderWidth: 0,
+                        barThickness: 12
+                    },
+                    {
+                        label: 'Recebidas',
+                        data: @json($waDailyReceived),
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6,
+                        borderWidth: 0,
+                        barThickness: 12
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#ffffff'
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                        ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } }
+                    }
+                }
+            }
+        });
     });
 </script>
 @endpush
+
+<!-- Add Person Global Modal -->
+<div class="modal fade" id="addPersonGlobalModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">
+                <div>
+                    <h4 class="modal-title fw-900 mb-1">Cadastrar Nova Pessoa</h4>
+                    <p class="m-0 opacity-50 small fw-bold text-uppercase">Vincular contato a um projeto</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('projects.people.store.global') }}" method="POST">
+                @csrf
+                <div class="modal-body p-5">
+                    <div class="mb-4">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Projeto Destino</label>
+                        <select name="project_id" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 fw-700" required>
+                            <option value="">Selecione um projeto...</option>
+                            @foreach($projects as $proj)
+                                <option value="{{ $proj->id }}">{{ $proj->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Nome Completo</label>
+                        <input name="name" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">WhatsApp (com DDD)</label>
+                        <input name="phone" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="Ex: 11999999999">
+                    </div>
+                    <div class="mb-4">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Endereço</label>
+                        <input name="address" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
+                    </div>
+                    <div class="mb-0">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Cidade</label>
+                        <input name="city" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <button type="submit" class="btn-premium btn-premium-shine w-100 border-0 py-4 fs-5 fw-900">Salvar Contato no Projeto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Import Person Global Modal -->
+<div class="modal fade" id="importPersonGlobalModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">
+                <div>
+                    <h4 class="modal-title fw-900 mb-1">Importar Contatos (CSV)</h4>
+                    <p class="m-0 opacity-50 small fw-bold text-uppercase">Vincular lote de contatos a um projeto</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('projects.people.import.global') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-5">
+                    <div class="mb-4">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Projeto Destino</label>
+                        <select name="project_id" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 fw-700" required>
+                            <option value="">Selecione um projeto...</option>
+                            @foreach($projects as $proj)
+                                <option value="{{ $proj->id }}">{{ $proj->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4 p-4 rounded-4" style="background: rgba(99,102,241,0.05); border: 1px dashed rgba(99,102,241,0.3);">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="fas fa-file-csv fs-3 text-primary"></i>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">Padrão do Arquivo CSV</h6>
+                                <p class="small text-muted mb-0">Use as colunas: <strong>Nome, Telefone, Endereço, Cidade</strong></p>
+                            </div>
+                        </div>
+                        <input type="file" name="csv_file" class="form-control bg-white border-0 py-2" accept=".csv, .txt" required>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <button type="submit" class="btn-premium btn-premium-shine w-100 border-0 py-4 fs-5 fw-900" style="background: #10b981;">
+                        <i class="fas fa-cloud-upload-alt me-2"></i> Importar Contatos
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection

@@ -8,10 +8,10 @@
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                 <span style="background: var(--primary-color); width: 12px; height: 3px; border-radius: 2px;"></span>
-                <h6 style="color: var(--primary-color); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Dashboard Pessoal</h6>
+                <h6 style="color: var(--primary-color); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Painel de Negócios (MEI/Empresas)</h6>
             </div>
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.8rem; letter-spacing: -1.5px;">Olá, {{ explode(' ', auth()->user()->name)[0] }}!</h2>
-            <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Sua saúde financeira resumida em um só lugar.</p>
+            <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">A máquina de vendas e finanças do seu negócio.</p>
         </div>
         <div style="display: flex; gap: 12px;">
              <a href="{{ url('/personal/reconciliation') }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
@@ -44,7 +44,7 @@
         <div class="vivensi-card" style="padding: 35px; background: white; border: 1px solid rgba(16,185,129,0.1);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <span style="color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Entradas Totais</span>
+                    <span style="color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Faturamento (Entradas)</span>
                     <div style="font-size: 2.2rem; font-weight: 900; color: #10b981; margin-top: 10px;">
                         R$ {{ number_format($totalIncome, 2, ',', '.') }}
                     </div>
@@ -75,6 +75,51 @@
             </div>
              <div style="margin-top: 25px; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
                 <div style="height: 100%; background: #ef4444; width: {{ $totalIncome > 0 ? min(100, ($totalExpense / $totalIncome) * 100) : 0 }}%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Access CRM & Marketing -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h4 style="margin: 0 0 20px 0; font-size: 1.4rem; color: #1e293b; font-weight: 900; letter-spacing: -0.5px;">Máquina de Vendas & Marketing</h4>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <a href="{{ url('/whatsapp/chat') }}" style="display: block; padding: 25px; background: white; border-radius: 20px; text-decoration: none; border: 1px solid #f1f5f9; transition: all 0.3s; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='#25d366'; this.style.transform='translateY(-5px)';" onmouseout="this.style.borderColor='#f1f5f9'; this.style.transform='translateY(0)';">
+                    <div style="width: 60px; height: 60px; background: #ecfdf5; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; color: #25d366; font-size: 1.8rem; margin-bottom: 15px;">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h5 style="color: #1e293b; font-weight: 800; font-size: 1.1rem; margin-bottom: 5px;">WhatsApp CRM</h5>
+                    <p style="color: #64748b; font-size: 0.8rem; margin: 0; font-weight: 500;">Atenda seus clientes</p>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ route('marketing.index') }}" style="display: block; padding: 25px; background: white; border-radius: 20px; text-decoration: none; border: 1px solid #f1f5f9; transition: all 0.3s; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='#4f46e5'; this.style.transform='translateY(-5px)';" onmouseout="this.style.borderColor='#f1f5f9'; this.style.transform='translateY(0)';">
+                    <div style="width: 60px; height: 60px; background: #e0e7ff; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; color: #4f46e5; font-size: 1.8rem; margin-bottom: 15px;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h5 style="color: #1e293b; font-weight: 800; font-size: 1.1rem; margin-bottom: 5px;">Hub de IA</h5>
+                    <p style="color: #64748b; font-size: 0.8rem; margin: 0; font-weight: 500;">Estratégias de vendas</p>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url('/manager/landing-pages') }}" style="display: block; padding: 25px; background: white; border-radius: 20px; text-decoration: none; border: 1px solid #f1f5f9; transition: all 0.3s; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='#0ea5e9'; this.style.transform='translateY(-5px)';" onmouseout="this.style.borderColor='#f1f5f9'; this.style.transform='translateY(0)';">
+                    <div style="width: 60px; height: 60px; background: #e0f2fe; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; color: #0ea5e9; font-size: 1.8rem; margin-bottom: 15px;">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h5 style="color: #1e293b; font-weight: 800; font-size: 1.1rem; margin-bottom: 5px;">Landing Pages</h5>
+                    <p style="color: #64748b; font-size: 0.8rem; margin: 0; font-weight: 500;">Páginas de captura</p>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ route('whatsapp.broadcast.index') }}" style="display: block; padding: 25px; background: white; border-radius: 20px; text-decoration: none; border: 1px solid #f1f5f9; transition: all 0.3s; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);" onmouseover="this.style.borderColor='#8b5cf6'; this.style.transform='translateY(-5px)';" onmouseout="this.style.borderColor='#f1f5f9'; this.style.transform='translateY(0)';">
+                    <div style="width: 60px; height: 60px; background: #ede9fe; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; color: #8b5cf6; font-size: 1.8rem; margin-bottom: 15px;">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <h5 style="color: #1e293b; font-weight: 800; font-size: 1.1rem; margin-bottom: 5px;">Disparo em Massa</h5>
+                    <p style="color: #64748b; font-size: 0.8rem; margin: 0; font-weight: 500;">Promoções e ofertas</p>
+                </a>
             </div>
         </div>
     </div>

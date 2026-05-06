@@ -53,6 +53,11 @@ class ProcessWhatsappAiResponse implements ShouldQueue
             return;
         }
 
+        // Se o chat está em modo humano ou resolvido, não responder automaticamente
+        if (in_array($chat->mode ?? 'bot', ['human', 'queue', 'resolved'])) {
+            return;
+        }
+
         // If a human agent is assigned and chat is not open, don't auto-reply
         if ($chat->assigned_to && $chat->status !== 'open') {
             return;
@@ -219,5 +224,6 @@ class ProcessWhatsappAiResponse implements ShouldQueue
             }
         }
     }
+
 }
 

@@ -512,7 +512,53 @@ class WhatsappController extends Controller
         $chats = WhatsappChat::where('tenant_id', auth()->user()->tenant_id)
                              ->orderBy('last_message_at', 'desc')
                              ->get();
-        return view('whatsapp.chat', compact('chats'));
+                             
+        $projects = \App\Models\Project::where('tenant_id', auth()->user()->tenant_id)
+                                       ->where('status', 'active')
+                                       ->get();
+
+        return view('whatsapp.chat', compact('chats', 'projects'));
+    }
+
+    public function sendToKanban(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $tenantId = auth()->user()->tenant_id;
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id'
+        ]);
+
+        $project = \App\Models\Project::where('id', $validated['project_id'])
+                                      ->where('tenant_id', $tenantId)
+                                      ->firstOrFail();
+
+        // Add as ProjectPerson
+        $person = \App\Models\ProjectPerson::firstOrCreate(
+            [
+                'tenant_id' => $tenantId,
+                'project_id' => $project->id,
+                'phone' => $chat->contact_phone,
+            ],
+            [
+                'name' => $chat->contact_name,
+            ]
+        );
+
+        // Add as Task in Kanban
+        $task = \App\Models\Task::create([
+            'tenant_id' => $tenantId,
+            'project_id' => $project->id,
+            'created_by' => auth()->id(),
+            'title' => "Lead WhatsApp: {$chat->contact_name}",
+            'description' => "Novo contato vindo do atendimento via WhatsApp.\nTelefone: {$chat->contact_phone}\nPor favor, realizar a triagem/atendimento deste lead no projeto.",
+            'status' => 'todo',
+            'priority' => 'medium',
+        ]);
+
+        return response()->json(['success' => true, 'task' => $task, 'person' => $person]);
     }
 
     public function chatList()

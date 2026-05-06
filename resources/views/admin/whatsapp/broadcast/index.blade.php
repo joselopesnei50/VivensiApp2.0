@@ -422,12 +422,11 @@
                 <form action="{{ route('whatsapp.broadcast.send') }}" method="POST" id="broadcastForm" enctype="multipart/form-data">
                     @csrf
 
-                    {{-- Público Alvo --}}
                     <div class="mb-4">
                         <div class="section-label">Público Alvo</div>
                         <div class="d-flex gap-3 flex-wrap">
                             <label class="audience-option">
-                                <input type="radio" name="audience" value="all" checked onchange="onAudienceChange('all')">
+                                <input type="radio" name="audience" value="all" {{ !session('prefilled_phones') ? 'checked' : '' }} onchange="onAudienceChange('all')">
                                 <div>
                                     <div style="font-weight:700;font-size:0.85rem;color:#334155;">
                                         <i class="fas fa-users me-1 text-primary"></i> Todos os Contatos
@@ -436,7 +435,7 @@
                                 </div>
                             </label>
                             <label class="audience-option">
-                                <input type="radio" name="audience" value="selected" onchange="onAudienceChange('selected')">
+                                <input type="radio" name="audience" value="selected" {{ session('prefilled_phones') ? 'checked' : '' }} onchange="onAudienceChange('selected')">
                                 <div>
                                     <div style="font-weight:700;font-size:0.85rem;color:#334155;">
                                         <i class="fas fa-user-check me-1 text-success"></i> Números Específicos
@@ -457,9 +456,9 @@
                     </div>
 
                     {{-- Números manuais --}}
-                    <div class="mb-4 d-none" id="manualPhonesWrapper">
+                    <div class="mb-4 {{ session('prefilled_phones') ? '' : 'd-none' }}" id="manualPhonesWrapper">
                         <div class="section-label">Números (separados por vírgula)</div>
-                        <textarea name="phones" class="message-textarea" rows="2" placeholder="5511999999999, 5521988888888, 5531977777777"></textarea>
+                        <textarea name="phones" class="message-textarea" rows="2" placeholder="5511999999999, 5521988888888, 5531977777777">{{ session('prefilled_phones') }}</textarea>
                     </div>
 
                     {{-- Grupos --}}

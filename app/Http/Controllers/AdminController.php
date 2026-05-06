@@ -273,10 +273,10 @@ class AdminController extends Controller
 
             // 1. Determine Tenant Type and Status
             $tenantType = match($request->account_type) {
-                'ngo_admin' => 'ngo',
-                'project_manager' => 'business',
-                'client' => 'common',
-                default => 'common'
+                'ngo_admin'      => 'ngo',
+                'project_manager'=> 'business',
+                'client'         => 'common',
+                default          => 'common'
             };
 
             $status = match($request->billing_mode) {
@@ -306,9 +306,9 @@ class AdminController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => match($request->account_type) {
-                    'ngo_admin' => 'ngo',
+                    'ngo_admin'       => 'ngo',
                     'project_manager' => 'manager',
-                    default => $request->account_type
+                    default           => $request->account_type
                 },
                 'status' => 'active',
             ]);
