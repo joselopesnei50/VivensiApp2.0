@@ -81,9 +81,11 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         $prompt = "{$systemPrompt}\n---\nMENSAGEM DO USUÁRIO: {$this->userMessage}";
 
         $replyText = '';
-        $provider = $config->ai_provider ?? 'gemini';
+        // Default to DeepSeek as primary engine
+        $provider = $config->ai_provider ?? 'deepseek';
 
         try {
+            // Tentativa Principal: DeepSeek (ou o provedor explicitamente configurado)
             if ($provider === 'deepseek') {
                 $ds = new DeepSeekService();
                 $dsRes = $ds->chat([
@@ -91,21 +93,22 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                     ['role' => 'user', 'content' => $this->userMessage]
                 ]);
                 $replyText = (string) ($dsRes['choices'][0]['message']['content'] ?? '');
-                
-                // Fallback to Gemini if DeepSeek fails
-                if ($replyText === '') {
-                    $ai = new GeminiService();
-                    $aiResponse = $ai->callGemini([['text' => $prompt]]);
-                    $replyText = (string) ($aiResponse['candidates'][0]['content']['parts'][0]['text'] ?? '');
-                }
             } else {
-                // Default to Gemini
+                // Se estiver explicitamente como Gemini
                 $ai = new GeminiService();
                 $aiResponse = $ai->callGemini([['text' => $prompt]]);
                 $replyText = (string) ($aiResponse['candidates'][0]['content']['parts'][0]['text'] ?? '');
+            }
 
-                // Fallback to DeepSeek if Gemini fails
-                if ($replyText === '') {
+            // Fallback: Se o provedor principal falhar, tenta o secundário
+            if (empty(trim($replyText))) {
+                if ($provider === 'deepseek') {
+                    // DeepSeek falhou, tenta Gemini como bote salva-vidas
+                    $ai = new GeminiService();
+                    $aiResponse = $ai->callGemini([['text' => $prompt]]);
+                    $replyText = (string) ($aiResponse['candidates'][0]['content']['parts'][0]['text'] ?? '');
+                } else {
+                    // Gemini falhou, tenta DeepSeek como bote salva-vidas
                     $ds = new DeepSeekService();
                     $dsRes = $ds->chat([
                         ['role' => 'system', 'content' => $systemPrompt],
