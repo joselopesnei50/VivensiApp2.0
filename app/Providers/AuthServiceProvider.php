@@ -21,13 +21,13 @@ class AuthServiceProvider extends ServiceProvider
         // Acesso ao módulo WhatsApp (chat, broadcast, configurações)
         Gate::define('access-whatsapp', function (User $user) {
             return $user->role === 'super_admin'
-                || in_array($user->role, ['manager', 'ngo'])
+                || in_array($user->role, ['manager', 'ngo', 'common'])
                 || ($user->tenant && $user->tenant->type === 'ngo');
         });
 
         // Acesso às funcionalidades de gestor
         Gate::define('access-manager', function (User $user) {
-            return in_array($user->role, ['manager', 'ngo', 'super_admin']);
+            return in_array($user->role, ['manager', 'ngo', 'super_admin', 'common']);
         });
 
         // Acesso exclusivo de super_admin

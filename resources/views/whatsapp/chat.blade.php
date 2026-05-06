@@ -592,19 +592,40 @@
                 <span id="crm-phone">{{ $chats[0]->contact_phone }}</span>
                     <div class="compliance-badges" id="crmComplianceBadges" style="justify-content:center;"></div>
                     @if($isManager)
-                        <div id="crmComplianceActions" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top: 10px;">
-                            <button type="button" class="btn btn-sm btn-outline-success" style="border-radius: 999px; font-weight: 800;" onclick="complianceAction('opt_in')">
-                                <i class="fas fa-check me-1"></i> Opt-in
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" style="border-radius: 999px; font-weight: 800;" onclick="complianceAction('opt_out')">
-                                <i class="fas fa-ban me-1"></i> Opt-out
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-dark" style="border-radius: 999px; font-weight: 800;" onclick="complianceAction('block')">
-                                <i class="fas fa-lock me-1"></i> Bloquear
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" style="border-radius: 999px; font-weight: 800;" onclick="complianceAction('unblock')">
-                                <i class="fas fa-unlock me-1"></i> Desbloquear
-                            </button>
+                        <div class="mt-3 text-center">
+                            <!-- Compliance Dropdown -->
+                            <div class="dropdown d-inline-block w-100 px-3">
+                                <button class="btn btn-sm w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; color: #475569; font-weight: 600; padding: 8px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    <span><i class="fas fa-shield-alt me-2 text-muted"></i> Privacidade / Segurança</span>
+                                    <i class="fas fa-chevron-down small text-muted"></i>
+                                </button>
+                                <ul class="dropdown-menu shadow-sm border-0 w-100 mt-1" style="border-radius: 12px; font-size: 0.85rem; padding: 8px;">
+                                    <li><a class="dropdown-item fw-bold text-success rounded" href="#" onclick="complianceAction('opt_in')"><i class="fas fa-check me-2"></i>Opt-in (Permitir)</a></li>
+                                    <li><a class="dropdown-item fw-bold text-danger rounded" href="#" onclick="complianceAction('opt_out')"><i class="fas fa-ban me-2"></i>Opt-out (Remover)</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item fw-bold text-dark rounded" href="#" onclick="complianceAction('block')"><i class="fas fa-lock me-2"></i>Bloquear Número</a></li>
+                                    <li><a class="dropdown-item fw-bold text-secondary rounded" href="#" onclick="complianceAction('unblock')"><i class="fas fa-unlock me-2"></i>Desbloquear</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Project integration quick select -->
+                        <div class="mt-2 px-3 mb-2">
+                            <label class="form-label" style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Enviar para Projeto</label>
+                            <div class="input-group input-group-sm" style="box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-radius: 10px; overflow: hidden;">
+                                <span class="input-group-text bg-white text-primary border-end-0" style="border-color: #e2e8f0;"><i class="fas fa-project-diagram"></i></span>
+                                <select id="quickKanbanProject" class="form-select border-start-0 ps-0" style="font-size: 0.8rem; font-weight: 600; color: #475569; border-color: #e2e8f0; cursor: pointer;">
+                                    <option value="">Selecione o projeto...</option>
+                                    @if(isset($projects))
+                                        @foreach($projects as $proj)
+                                            <option value="{{ $proj->id }}">{{ $proj->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                <button class="btn btn-primary fw-bold px-3" type="button" onclick="quickSendToKanban(this)" title="Enviar para Kanban">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
                         </div>
                     @endif
             </div>
@@ -1368,6 +1389,28 @@
             }).fail(function(xhr) {
                 const msg = (xhr && xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : "Não foi possível criar a conversa. Verifique o telefone e configurações.";
                 alert(msg);
+            });
+        function quickSendToKanban(btn) {
+            if (!currentChatId) return alert('Selecione uma conversa primeiro.');
+            const projectId = document.getElementById('quickKanbanProject').value;
+            if (!projectId) return alert('Selecione um projeto na lista.');
+
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            $.post('{{ url("/whatsapp/chat") }}/' + currentChatId + '/kanban', {
+                _token: csrfToken,
+                project_id: projectId
+            }, function(res) {
+                if(res.success) {
+                    alert('Contato e Card criados com sucesso no Kanban do projeto!');
+                }
+            }).fail(function(xhr) {
+                alert('Erro ao enviar contato para o Kanban: ' + (xhr.responseJSON?.message || 'Desconhecido'));
+            }).always(function() {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
             });
         }
     </script>

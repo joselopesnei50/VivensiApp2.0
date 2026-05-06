@@ -409,6 +409,80 @@
             </div>
 
         </div>
+</div>
+
+<!-- Pessoas & Contatos Section -->
+<div class="project-table-card mt-4">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">Pessoas & Contatos</h4>
+            <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Gerencie o cadastro de pessoas relacionadas a este projeto.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-premium btn-premium-shine" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px 20px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#addPersonModal">
+                <i class="fas fa-user-plus me-2" style="color: #6366f1;"></i> Nova Pessoa
+            </button>
+            <button class="btn-premium btn-premium-shine" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px 20px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#importPersonProjectModal">
+                <i class="fas fa-file-csv me-2" style="color: #f59e0b;"></i> Importar CSV
+            </button>
+            @if($project->people->count() > 0)
+                <form action="{{ route('projects.broadcast.create', $project->id) }}" method="POST" style="margin: 0;">
+                    @csrf
+                    <button type="submit" class="btn-premium btn-premium-shine" style="background: #10b981; color: white; border: none; padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
+                        <i class="fab fa-whatsapp me-2"></i> Criar Lista de Disparo
+                    </button>
+                </form>
+            @endif
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover" style="vertical-align: middle;">
+            <thead>
+                <tr style="border-bottom: 2px solid #f1f5f9;">
+                    <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Nome</th>
+                    <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Telefone</th>
+                    <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Endereço/Cidade</th>
+                    <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; text-align: right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($project->people as $person)
+                <tr style="border-bottom: 1px solid #f8fafc;">
+                    <td style="padding: 15px;">
+                        <div style="font-weight: 800; color: #1e293b;">{{ $person->name }}</div>
+                    </td>
+                    <td style="padding: 15px;">
+                        <div style="font-weight: 600; color: #64748b;">
+                            <i class="fab fa-whatsapp" style="color: #10b981;"></i> {{ $person->phone ?: '-' }}
+                        </div>
+                    </td>
+                    <td style="padding: 15px;">
+                        <div style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                            {{ $person->address ?: '-' }} <br>
+                            <span style="color: #94a3b8;">{{ $person->city ?: '-' }}</span>
+                        </div>
+                    </td>
+                    <td style="padding: 15px; text-align: right;">
+                        <form action="{{ route('projects.people.destroy', [$project->id, $person->id]) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Excluir esta pessoa?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-light text-danger" style="border-radius: 8px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" style="padding: 40px; text-align: center;">
+                        <i class="fas fa-users-slash" style="font-size: 3rem; color: #f1f5f9; margin-bottom: 20px; display: block;"></i>
+                        <span style="font-weight: 700; color: #cbd5e1;">Nenhuma pessoa cadastrada neste projeto.</span>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -846,5 +920,82 @@ async function generateAiSummary() {
         });
     });
 </script>
+
+<!-- Add Person Modal -->
+@if($isManager)
+<div class="modal fade" id="addPersonModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">
+                <div>
+                    <h4 class="modal-title fw-900 mb-1">Cadastrar Pessoa</h4>
+                    <p class="m-0 opacity-50 small fw-bold text-uppercase">Vincular contato ao projeto</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('projects.people.store', $project->id) }}" method="POST">
+                @csrf
+                <div class="modal-body p-5">
+                    <div class="mb-4">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Nome Completo</label>
+                        <input name="name" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">WhatsApp (com DDD)</label>
+                        <input name="phone" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="Ex: 11999999999">
+                    </div>
+                    <div class="mb-4">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Endereço</label>
+                        <input name="address" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
+                    </div>
+                    <div class="mb-0">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Cidade</label>
+                        <input name="city" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <button type="submit" class="btn-premium btn-premium-shine w-100 border-0 py-4 fs-5 fw-900">Cadastrar Pessoa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Import Person Project Modal -->
+<div class="modal fade" id="importPersonProjectModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">
+                <div>
+                    <h4 class="modal-title fw-900 mb-1">Importar Contatos (CSV)</h4>
+                    <p class="m-0 opacity-50 small fw-bold text-uppercase">Importar lote para {{ $project->name }}</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('projects.people.import.global') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="project_id" value="{{ $project->id }}">
+                <div class="modal-body p-5">
+                    <div class="mb-4 p-4 rounded-4" style="background: rgba(99,102,241,0.05); border: 1px dashed rgba(99,102,241,0.3);">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="fas fa-file-csv fs-3 text-primary"></i>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">Padrão do Arquivo CSV</h6>
+                                <p class="small text-muted mb-0">Use as colunas: <strong>Nome, Telefone, Endereço, Cidade</strong></p>
+                            </div>
+                        </div>
+                        <input type="file" name="csv_file" class="form-control bg-white border-0 py-2" accept=".csv, .txt" required>
+                    </div>
+                </div>
+                <div class="p-5 pt-0">
+                    <button type="submit" class="btn-premium btn-premium-shine w-100 border-0 py-4 fs-5 fw-900" style="background: #10b981;">
+                        <i class="fas fa-cloud-upload-alt me-2"></i> Importar Contatos
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 @endsection
 
