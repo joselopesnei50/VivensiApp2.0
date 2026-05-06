@@ -513,12 +513,67 @@
                     </div>
                 </div>
             @else
-                <!-- Menu Comum -->
-                <li><a href="{{ url('/personal/reconciliation') }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
-                <li><a href="{{ url('/personal/budget') }}"><i class="fas fa-chart-line"></i> Planejamento Anual</a></li>
-                <li><a href="{{ url('/transactions/create') }}"><i class="fas fa-plus-circle"></i> Nova Transação</a></li>
+                <!-- Menu Comum / MEI / Empresa -->
+                @php
+                    $mei_fin_active  = request()->is('personal/reconciliation*','personal/budget*','transactions*');
+                    $mei_mkt_active  = request()->is('marketing*','prospecting*','whatsapp*','social*','manager/landing-pages*');
+                    $mei_crm_active  = request()->is('personal/clients*');
+                @endphp
+
+                {{-- Grupo: CRM & Clientes --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_crm_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-users group-icon"></i> CRM &amp; Clientes
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_crm_active ? '150px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/personal/clients') }}" class="{{ request()->is('personal/clients*') ? 'active' : '' }}"><i class="fas fa-address-book"></i> Meus Clientes</a></li>
+                            <li><a href="{{ url('/personal/clients/create') }}" class="{{ request()->is('personal/clients/create') ? 'active' : '' }}"><i class="fas fa-user-plus" style="color:#10b981;"></i> Novo Cliente</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Marketing & Comunicação --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_mkt_active ? '400px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
+                            <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
+                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
+                            <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Mensageria WhatsApp</a></li>
+                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
+                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
+                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Gestão Financeira --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_fin_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-coins group-icon"></i> Gestão Financeira
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_fin_active ? '200px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/transactions') }}" class="{{ request()->is('transactions*') ? 'active' : '' }}"><i class="fas fa-exchange-alt"></i> Fluxo de Caixa</a></li>
+                            <li><a href="{{ url('/personal/reconciliation') }}" class="{{ request()->is('personal/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
+                            <li><a href="{{ url('/personal/budget') }}" class="{{ request()->is('personal/budget*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Planejamento Anual</a></li>
+                        </ul>
+                    </div>
+                </div>
             @endif
             
+
+
             <li><a href="{{ url('/support') }}" class="{{ request()->is('support') ? 'active' : '' }}"><i class="fas fa-life-ring"></i> Suporte</a></li>
             <li><a href="{{ url('/profile') }}" class="{{ request()->is('profile') ? 'active' : '' }}"><i class="fas fa-cog"></i> Configurações</a></li>
             @if(in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin']))

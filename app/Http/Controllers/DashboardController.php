@@ -240,11 +240,47 @@ class DashboardController extends Controller
                 'type'  => 'beneficiary'
             ])->toArray();
 
+        // ── Máquina de Engajamento (WhatsApp) ──
+        $whatsappStats = [
+            'total_sent' => \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId);
+            })->where('direction', 'outbound')->count(),
+            'total_delivered' => \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId);
+            })->where('direction', 'outbound')->whereIn('status', ['delivered', 'read'])->count(),
+            'total_replies' => \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId);
+            })->where('direction', 'inbound')->count(),
+        ];
+
+        // Daily volume for the last 7 days
+        $waDailyLabels = [];
+        $waDailySent = [];
+        $waDailyReceived = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $day = now()->subDays($i);
+            $waDailyLabels[] = $day->format('d/m');
+            
+            $waDailySent[] = \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId);
+            })->where('direction', 'outbound')
+              ->whereDate('created_at', $day->toDateString())
+              ->count();
+
+            $waDailyReceived[] = \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId);
+            })->where('direction', 'inbound')
+              ->whereDate('created_at', $day->toDateString())
+              ->count();
+        }
+
         return view('dashboards.manager', compact(
             'activeProjects', 'impactFeed', 'stats',
             'projects', 'urgentTasks', 'pendingApprovals',
             'chartLabels', 'chartProjects', 'chartTasks',
-            'radarData', 'mapMarkers'
+            'radarData', 'mapMarkers', 'whatsappStats',
+            'waDailyLabels', 'waDailySent', 'waDailyReceived'
         ));
     }
 

@@ -399,4 +399,132 @@ class ProjectController extends Controller
 
         return redirect('/projects/details/'.$id)->with('success', 'Projeto atualizado com sucesso!');
     }
+
+    public function storePerson(Request $request, $id)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin'], true), 403);
+
+        $project = Project::where('id', $id)
+                          ->where('tenant_id', auth()->user()->tenant_id)
+                          ->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+        ]);
+
+        $validated['tenant_id'] = auth()->user()->tenant_id;
+        $validated['project_id'] = $project->id;
+
+        \App\Models\ProjectPerson::create($validated);
+
+        return back()->with('success', 'Pessoa adicionada ao projeto!');
+    }
+
+    public function storeGlobalPerson(Request $request)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+        ]);
+
+        // Validate that the project belongs to the tenant
+        $project = Project::where('id', $validated['project_id'])
+                          ->where('tenant_id', auth()->user()->tenant_id)
+                          ->firstOrFail();
+
+        $validated['tenant_id'] = auth()->user()->tenant_id;
+
+        \App\Models\ProjectPerson::create($validated);
+
+        return back()->with('success', 'Pessoa cadastrada e vinculada ao projeto com sucesso!');
+    }
+
+    public function importPeople(Request $request)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+
+        $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $project = Project::where('id', $request->project_id)
+                          ->where('tenant_id', auth()->user()->tenant_id)
+                          ->firstOrFail();
+
+        $data = array_map('str_getcsv', file($request->file('csv_file')->getRealPath()));
+
+        // check if header exists
+        if (count($data) > 0 && strtolower(trim($data[0][0])) === 'nome') {
+            array_shift($data);
+        }
+
+        $imported = 0;
+        foreach ($data as $row) {
+            if (count($row) >= 1) {
+                $name  = trim($row[0] ?? '');
+                if (!$name) continue;
+
+                $phone = isset($row[1]) ? trim($row[1]) : null;
+                $address = isset($row[2]) ? trim($row[2]) : null;
+                $city = isset($row[3]) ? trim($row[3]) : null;
+
+                \App\Models\ProjectPerson::create([
+                    'tenant_id' => auth()->user()->tenant_id,
+                    'project_id' => $project->id,
+                    'name' => $name,
+                    'phone' => $phone,
+                    'address' => $address,
+                    'city' => $city,
+                ]);
+                $imported++;
+            }
+        }
+
+        return back()->with('success', "{$imported} contatos importados com sucesso para o projeto!");
+    }
+
+    public function destroyPerson($projectId, $personId)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+
+        $person = \App\Models\ProjectPerson::where('id', $personId)
+            ->where('project_id', $projectId)
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->firstOrFail();
+            
+        $person->delete();
+
+        return back()->with('success', 'Pessoa removida.');
+    }
+
+    public function createBroadcastList($id)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+
+        $project = Project::with('people')
+            ->where('id', $id)
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->firstOrFail();
+
+        $phones = $project->people->filter(function($p) {
+            return !empty($p->phone);
+        })->map(function($p) {
+            return preg_replace('/\D+/', '', $p->phone);
+        })->filter()->implode(',');
+
+        if (empty($phones)) {
+            return back()->with('error', 'Nenhum telefone válido encontrado nas pessoas do projeto.');
+        }
+
+        return redirect()->route('whatsapp.broadcast.index')->with('prefilled_phones', $phones);
+    }
 }

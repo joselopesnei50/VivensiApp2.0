@@ -147,6 +147,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/projects/{id}/members/credential', [App\Http\Controllers\ProjectController::class, 'addMemberCredential']);
     Route::delete('/projects/{id}/members/{memberId}', [App\Http\Controllers\ProjectController::class, 'removeMember']);
     
+    // Project People Routes
+    Route::post('/projects/people/global', [App\Http\Controllers\ProjectController::class, 'storeGlobalPerson'])->name('projects.people.store.global');
+    Route::post('/projects/people/import', [App\Http\Controllers\ProjectController::class, 'importPeople'])->name('projects.people.import.global');
+    Route::post('/projects/{id}/people', [App\Http\Controllers\ProjectController::class, 'storePerson'])->name('projects.people.store');
+    Route::delete('/projects/{id}/people/{personId}', [App\Http\Controllers\ProjectController::class, 'destroyPerson'])->name('projects.people.destroy');
+    Route::post('/projects/{id}/broadcast', [App\Http\Controllers\ProjectController::class, 'createBroadcastList'])->name('projects.broadcast.create');
+    
     // Timeline Routes
     Route::post('/projects/{id}/timeline', [App\Http\Controllers\ProjectTimelineController::class, 'store'])->name('projects.timeline.store');
     Route::delete('/projects/{id}/timeline/{recordId}', [App\Http\Controllers\ProjectTimelineController::class, 'destroy'])->name('projects.timeline.destroy');
@@ -398,6 +405,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/chat/{id}/messages', [App\Http\Controllers\WhatsappController::class, 'getChatMessages']);
     Route::post('/whatsapp/chat/send', [App\Http\Controllers\WhatsappController::class, 'sendMessage']);
     Route::post('/whatsapp/chat/start', [App\Http\Controllers\WhatsappController::class, 'startChat'])->name('whatsapp.chat.start');
+    Route::post('/whatsapp/chat/{id}/kanban', [App\Http\Controllers\WhatsappController::class, 'sendToKanban']);
     Route::post('/whatsapp/chat/{id}/compliance', [App\Http\Controllers\WhatsappController::class, 'updateCompliance']);
     Route::post('/whatsapp/update-training', [App\Http\Controllers\WhatsappController::class, 'updateTraining']);
     // New Routes
@@ -604,6 +612,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/budget', [App\Http\Controllers\PersonalBudgetController::class, 'index']);
         Route::post('/budget/store', [App\Http\Controllers\PersonalBudgetController::class, 'store']);
         Route::get('/budget/ai-tips', [App\Http\Controllers\PersonalBudgetController::class, 'getAiTips']);
+
+        // CRM MEI / Clientes
+        Route::resource('clients', \App\Http\Controllers\ClientController::class);
     });
 });
 
@@ -637,6 +648,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/branding', [App\Http\Controllers\TenantBrandingController::class, 'update'])->name('settings.branding.update');
     Route::delete('/settings/branding/logo', [App\Http\Controllers\TenantBrandingController::class, 'removeLogo'])->name('settings.branding.remove-logo');
 });
+
 
 // Public Raffle Page (Moved to absolute bottom for public access)
 Route::get('/rifa/{slug}', [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');
