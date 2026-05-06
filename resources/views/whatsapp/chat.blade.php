@@ -1390,6 +1390,8 @@
                 const msg = (xhr && xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : "Não foi possível criar a conversa. Verifique o telefone e configurações.";
                 alert(msg);
             });
+        }
+
         function quickSendToKanban(btn) {
             if (!currentChatId) return alert('Selecione uma conversa primeiro.');
             const projectId = document.getElementById('quickKanbanProject').value;
