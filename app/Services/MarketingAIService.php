@@ -13,7 +13,7 @@ class MarketingAIService
     {
         $prompt = $this->buildPrompt($plan);
 
-        $result = $this->tryGemini($prompt) ?? $this->tryDeepSeek($prompt);
+        $result = $this->tryDeepSeek($prompt) ?? $this->tryGemini($prompt);
 
         if (!$result) {
             $plan->update(['status' => 'failed']);
