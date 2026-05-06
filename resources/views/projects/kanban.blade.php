@@ -172,14 +172,14 @@
 </div>
 
 <!-- Task Details Modal -->
-<div id="kbTaskOverlay" style="display:none; position:fixed; inset:0; background: rgba(15,23,42,.55); z-index: 2000;">
-    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding: 20px;">
-        <div style="width: min(760px, 96vw); background:#fff; border-radius: 20px; box-shadow: 0 30px 70px rgba(0,0,0,.25); overflow:hidden; border:1px solid #e2e8f0;">
+<div id="kbTaskOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background: rgba(15,23,42,.7); z-index: 70000; overflow-y: auto; padding: 20px 0; backdrop-filter: blur(4px);">
+    <div id="kbTaskInnerOverlay" style="min-height: 100%; display:flex; align-items:center; justify-content:center; padding: 20px; pointer-events: none;">
+        <div style="width: min(760px, 96vw); background:#fff; border-radius: 24px; box-shadow: 0 40px 100px rgba(0,0,0,.4); overflow:hidden; border:1px solid rgba(255,255,255,0.2); position: relative; max-height: 90vh; display: flex; flex-direction: column; pointer-events: all;">
             <div style="padding: 18px 20px; background: #0f172a; color:#fff; display:flex; justify-content: space-between; align-items:center; gap: 12px;">
                 <div style="font-weight: 900; letter-spacing: -.3px;" id="kbTitle">Atividade</div>
                 <button type="button" onclick="closeKanbanTaskModal()" style="border:none; background: rgba(255,255,255,.12); color:#fff; width: 36px; height: 36px; border-radius: 10px; font-weight: 900; cursor:pointer;">×</button>
             </div>
-            <div style="padding: 18px 20px;">
+            <div style="padding: 18px 20px; flex: 1; overflow-y: auto;">
                 <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
                     <span id="kbStatus" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0;">Status</span>
                     <span id="kbPriorityTag" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background:#eef2ff; color:#4f46e5; border:1px solid #e0e7ff;">Prioridade</span>
@@ -662,7 +662,8 @@
         document.getElementById('kbReadOnlyBox').style.display = '';
 
         kbSetBusy(false);
-        document.getElementById('kbTaskOverlay').style.display = 'block';
+        const overlay = document.getElementById('kbTaskOverlay');
+        overlay.style.display = 'flex';
     }
 
     function closeKanbanTaskModal() {
@@ -781,9 +782,10 @@
             // update current object
             __kbCurrent = { ...__kbCurrent, ...t };
             toggleKbEdit();
-            kbSetBusy(false);
         } catch (e) {
-            alert('Falha de conexão ao salvar.');
+            console.error('KB Save Error:', e);
+            alert('Falha de conexão ao salvar: ' + e.message);
+        } finally {
             kbSetBusy(false);
         }
     }
@@ -833,8 +835,10 @@
     // close modal clicking outside
     document.addEventListener('click', function(ev) {
         const overlay = document.getElementById('kbTaskOverlay');
-        if (!overlay || overlay.style.display !== 'block') return;
-        if (ev.target === overlay) closeKanbanTaskModal();
+        const innerOverlay = document.getElementById('kbTaskInnerOverlay');
+        if (!overlay || overlay.style.display !== 'flex') return;
+        // If they click the overlay itself OR the centering inner overlay (which has pointer-events: none but might be target)
+        if (ev.target === overlay || ev.target === innerOverlay) closeKanbanTaskModal();
     });
 
     // ESC closes task modal
