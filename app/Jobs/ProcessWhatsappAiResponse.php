@@ -25,17 +25,20 @@ class ProcessWhatsappAiResponse implements ShouldQueue
     public int $configId;
     public int $chatId;
     public string $userMessage;
+    public ?string $base64Audio;
 
     /**
      * @param int $configId WhatsappConfig id
      * @param int $chatId WhatsappChat id
      * @param string $userMessage inbound message text
+     * @param string|null $base64Audio optional audio data in base64
      */
-    public function __construct(int $configId, int $chatId, string $userMessage)
+    public function __construct(int $configId, int $chatId, string $userMessage, ?string $base64Audio = null)
     {
         $this->configId = $configId;
         $this->chatId = $chatId;
         $this->userMessage = $userMessage;
+        $this->base64Audio = $base64Audio;
     }
 
     public function handle(): void
@@ -72,6 +75,7 @@ class ProcessWhatsappAiResponse implements ShouldQueue
 
         $systemPrompt  = $training . "\n\n";
         $systemPrompt .= "### REGRAS GERAIS ###\n";
+        $systemPrompt .= "- IDIOMA: Identifique o idioma do usuário e responda SEMPRE no mesmo idioma (Português, Inglês, Espanhol, etc).\n";
         $systemPrompt .= "- Respostas CURTAS (máximo 2 ou 3 parágrafos pequenos).\n";
         $systemPrompt .= "- Use emojis de forma moderada para passar empatia.\n";
         $systemPrompt .= "- Se o usuário pedir para falar com um humano, diga que vai avisar a equipe e peça para ele aguardar.\n";
@@ -85,36 +89,51 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         $provider = $config->ai_provider ?? 'deepseek';
 
         try {
-            // Tentativa Principal: DeepSeek (ou o provedor explicitamente configurado)
-            if ($provider === 'deepseek') {
-                $ds = new DeepSeekService();
-                $dsRes = $ds->chat([
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $this->userMessage]
-                ]);
-                $replyText = (string) ($dsRes['choices'][0]['message']['content'] ?? '');
-            } else {
-                // Se estiver explicitamente como Gemini
+            // Se tivermos áudio, o Gemini é OBRIGATÓRIO (DeepSeek não processa áudio nativo)
+            if ($this->base64Audio) {
                 $ai = new GeminiService();
-                $aiResponse = $ai->callGemini([['text' => $prompt]]);
+                $aiResponse = $ai->callGemini([
+                    ['text' => $systemPrompt . "\nO usuário enviou um áudio. Entenda o que ele disse e responda no mesmo idioma dele."],
+                    [
+                        'inline_data' => [
+                            'mime_type' => 'audio/ogg', // Padrão WhatsApp (Opus)
+                            'data' => $this->base64Audio
+                        ]
+                    ]
+                ]);
                 $replyText = (string) ($aiResponse['candidates'][0]['content']['parts'][0]['text'] ?? '');
-            }
-
-            // Fallback: Se o provedor principal falhar, tenta o secundário
-            if (empty(trim($replyText))) {
+            } else {
+                // Tentativa Principal: DeepSeek (ou o provedor explicitamente configurado)
                 if ($provider === 'deepseek') {
-                    // DeepSeek falhou, tenta Gemini como bote salva-vidas
-                    $ai = new GeminiService();
-                    $aiResponse = $ai->callGemini([['text' => $prompt]]);
-                    $replyText = (string) ($aiResponse['candidates'][0]['content']['parts'][0]['text'] ?? '');
-                } else {
-                    // Gemini falhou, tenta DeepSeek como bote salva-vidas
                     $ds = new DeepSeekService();
                     $dsRes = $ds->chat([
                         ['role' => 'system', 'content' => $systemPrompt],
                         ['role' => 'user', 'content' => $this->userMessage]
                     ]);
                     $replyText = (string) ($dsRes['choices'][0]['message']['content'] ?? '');
+                } else {
+                    // Se estiver explicitamente como Gemini
+                    $ai = new GeminiService();
+                    $aiResponse = $ai->callGemini([['text' => $prompt]]);
+                    $replyText = (string) ($aiResponse['candidates'][0]['content']['parts'][0]['text'] ?? '');
+                }
+
+                // Fallback: Se o provedor principal falhar, tenta o secundário
+                if (empty(trim($replyText))) {
+                    if ($provider === 'deepseek') {
+                        // DeepSeek falhou, tenta Gemini como bote salva-vidas
+                        $ai = new GeminiService();
+                        $aiResponse = $ai->callGemini([['text' => $prompt]]);
+                        $replyText = (string) ($aiResponse['candidates'][0]['content']['parts'][0]['text'] ?? '');
+                    } else {
+                        // Gemini falhou, tenta DeepSeek como bote salva-vidas
+                        $ds = new DeepSeekService();
+                        $dsRes = $ds->chat([
+                            ['role' => 'system', 'content' => $systemPrompt],
+                            ['role' => 'user', 'content' => $this->userMessage]
+                        ]);
+                        $replyText = (string) ($dsRes['choices'][0]['message']['content'] ?? '');
+                    }
                 }
             }
 

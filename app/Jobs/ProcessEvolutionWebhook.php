@@ -88,9 +88,16 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
         if (empty($phone)) return;
 
-        // Extrair conteúdo da mensagem (texto simples)
-        $msg     = $messageData['message'] ?? [];
-        $content = $msg['conversation'] ?? ($msg['extendedTextMessage']['text'] ?? '');
+        // Extrair conteúdo da mensagem
+        $msg      = $messageData['message'] ?? [];
+        $content  = $msg['conversation'] ?? ($msg['extendedTextMessage']['text'] ?? '');
+        $isAudio  = isset($msg['audioMessage']);
+        
+        // Se for áudio, tentamos obter a transcrição ou o base64 (se disponível no webhook)
+        if ($isAudio && empty($content)) {
+            $content = "[Mensagem de Áudio]";
+        }
+        
         $senderName = $messageData['pushName'] ?? 'WhatsApp';
 
         // 1. Verificar blacklist
@@ -169,7 +176,9 @@ class ProcessEvolutionWebhook implements ShouldQueue
         // 5. Disparar resposta da IA se habilitada
         $config = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
         if ($config?->ai_enabled && !$chat->opt_out_at && !$chat->blocked_at) {
-            ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
+            $base64Audio = $msg['audioMessage']['base64'] ?? null;
+            
+            ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content, $base64Audio)
                 ->onQueue('whatsapp');
         }
     }
