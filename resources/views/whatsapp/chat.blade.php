@@ -194,10 +194,14 @@
             bottom: 1px; right: 1px;
         }
 
-        .contact-info { flex: 1; min-width: 0; }
-        .contact-top { display: flex; justify-content: space-between; margin-bottom: 3px; }
-        .contact-name { font-weight: 600; color: var(--text-heading); font-size: 0.92rem; }
-        .contact-time { font-size: 0.72rem; color: var(--text-muted); }
+        .contact-info { flex: 1; min-width: 0; overflow: hidden; }
+        .contact-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; gap: 6px; }
+        .contact-name {
+            font-weight: 600; color: var(--text-heading); font-size: 0.92rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            min-width: 0; flex: 1;
+        }
+        .contact-time { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
         .contact-bottom { display: flex; justify-content: space-between; align-items: center; }
         .last-message {
             font-size: 0.82rem; color: var(--text-muted);
@@ -555,16 +559,45 @@
                 <i class="fas fa-exclamation-triangle"></i> Janela de 24h fechada. Use um <strong>Template</strong>.
             </div>
 
-            <!-- Input -->
             <div class="input-area">
                 <div class="input-container">
+                    <!-- Hidden file input for image attachment -->
+                    <input type="file" id="imageFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" onchange="previewImage(event)">
+
                     <div class="input-box">
+                        <!-- Image Preview Area (hidden by default) -->
+                        <div id="imagePreviewArea" style="display:none; margin-bottom: 8px; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1; position: relative;">
+                            <img id="imagePreviewEl" src="" style="max-height:120px; max-width:100%; border-radius:8px; display:block; margin-bottom:6px;">
+                            <input type="text" id="imageCaptionInput" placeholder="Legenda (opcional)..." style="width:100%; border:none; background:transparent; font-size:0.85rem; outline:none; color:#334155;">
+                            <button onclick="cancelImage()" style="position:absolute; top:6px; right:6px; background:#ef4444; color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:0.8rem; cursor:pointer; line-height:1;">✕</button>
+                        </div>
+
+                        <!-- Audio Recording Area (hidden by default) -->
+                        <div id="audioRecordArea" style="display:none; margin-bottom: 8px; padding: 10px; background: #fef2f2; border-radius: 10px; border: 1px solid #fecaca; align-items:center; gap:10px;">
+                            <span id="audioRecordStatus" style="font-size:0.82rem; color:#ef4444; font-weight:700;">● Gravando... <span id="audioTimer">0:00</span></span>
+                            <audio id="audioPlayback" controls style="display:none; height:32px; flex:1;"></audio>
+                            <div style="display:flex; gap:6px; margin-top:6px;">
+                                <button id="stopRecordBtn" onclick="stopRecording()" style="background:#ef4444; color:white; border:none; border-radius:8px; padding:5px 14px; font-size:0.8rem; font-weight:700; cursor:pointer;">⏹ Parar</button>
+                                <button id="sendAudioBtn" onclick="sendAudio()" style="display:none; background:#25d366; color:white; border:none; border-radius:8px; padding:5px 14px; font-size:0.8rem; font-weight:700; cursor:pointer;"><i class="fas fa-paper-plane"></i> Enviar Áudio</button>
+                                <button onclick="cancelAudio()" style="background:#f1f5f9; color:#64748b; border:none; border-radius:8px; padding:5px 14px; font-size:0.8rem; font-weight:600; cursor:pointer;">✕ Descartar</button>
+                            </div>
+                        </div>
+
                         <div class="input-toolbar">
                             <button class="tool-btn text-warning" title="Respostas Rápidas" onclick="openCannedModal()">
                                 <i class="fas fa-bolt"></i> Rápidas
                             </button>
                             <button class="tool-btn text-success" id="tplToggleBtn" title="Template Oficial Meta" onclick="openTemplateModal()">
                                 <i class="fas fa-shield-halved"></i> Template
+                            </button>
+                            <button class="tool-btn" title="Anexar Imagem" onclick="document.getElementById('imageFileInput').click()" style="color:#6366f1;">
+                                <i class="fas fa-image"></i> Imagem
+                            </button>
+                            <button class="tool-btn" title="Gravar Áudio" onclick="startRecording()" id="recordBtn" style="color:#ef4444;">
+                                <i class="fas fa-microphone"></i> Áudio
+                            </button>
+                            <button class="tool-btn" title="Agendar Mensagem" onclick="openScheduleModal()" style="color:#f59e0b;">
+                                <i class="fas fa-clock"></i> Agendar
                             </button>
                         </div>
                         <textarea class="message-input" id="msgInput" rows="1" placeholder="Escreva uma mensagem..."></textarea>
@@ -779,6 +812,36 @@
                     <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-success fw-bold px-4" id="confirmSendTemplateBtn" disabled onclick="sendTemplate()">
                         <i class="fas fa-paper-plane me-1"></i> Disparar Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Message Modal -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 20px 50px rgba(0,0,0,0.15);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" style="color: #1e293b;"><i class="fas fa-clock text-warning me-2"></i> Agendar Mensagem</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">A mensagem será enviada automaticamente na data e hora selecionadas (com delay de ±5 min para segurança anti-ban).</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted text-uppercase" style="letter-spacing:.5px;">Mensagem</label>
+                        <textarea id="scheduleMsgContent" class="form-control" rows="4" placeholder="Digite a mensagem que será enviada..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted text-uppercase" style="letter-spacing:.5px;">Data e Hora do Envio</label>
+                        <input type="datetime-local" id="scheduleDatetime" class="form-control" style="border-radius:10px;">
+                    </div>
+                    <div id="scheduleResult" style="display:none;" class="alert alert-success py-2 small fw-semibold"></div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning fw-bold px-4 text-white" onclick="confirmSchedule()">
+                        <i class="fas fa-clock me-1"></i> Confirmar Agendamento
                     </button>
                 </div>
             </div>
@@ -1413,6 +1476,289 @@
             }).always(function() {
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
+            });
+        }
+
+        // ════════════════════════════════════════════════════
+        // FEATURE: ENVIO DE IMAGEM
+        // ════════════════════════════════════════════════════
+        let _imageBase64 = null;
+        let _imageMimetype = null;
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Limitar a 5MB
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Imagem muito grande! Máximo permitido: 5MB.');
+                event.target.value = '';
+                return;
+            }
+
+            _imageMimetype = file.type;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                _imageBase64 = e.target.result.split(',')[1]; // apenas a parte base64
+                document.getElementById('imagePreviewEl').src = e.target.result;
+                document.getElementById('imageCaptionInput').value = '';
+                document.getElementById('imagePreviewArea').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            // Limpa o input para permitir selecionar o mesmo arquivo novamente
+            event.target.value = '';
+        }
+
+        function cancelImage() {
+            _imageBase64 = null;
+            _imageMimetype = null;
+            document.getElementById('imagePreviewArea').style.display = 'none';
+            document.getElementById('imagePreviewEl').src = '';
+        }
+
+        function sendImage() {
+            if (!_imageBase64 || !currentChatId) return;
+            const caption = document.getElementById('imageCaptionInput').value.trim();
+
+            const sendBtn = event && event.target ? event.target : null;
+
+            $.ajax({
+                url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/send-media',
+                method: 'POST',
+                data: JSON.stringify({ _token: csrfToken, base64: _imageBase64, mimetype: _imageMimetype, caption: caption }),
+                contentType: 'application/json',
+                success: function(res) {
+                    if (res.success) {
+                        // Mostra a imagem no chat otimisticamente
+                        const isOut = true;
+                        const preview = document.getElementById('imagePreviewEl').src;
+                        const captionHtml = caption ? `<div style="font-size:0.82rem;margin-top:4px;">${escapeHtml(caption)}</div>` : '';
+                        $('#chat-messages-area').append(`
+                            <div class="message-row message-out">
+                                <div class="bubble out">
+                                    <img src="${preview}" style="max-width:200px; max-height:160px; border-radius:8px; display:block;">
+                                    ${captionHtml}
+                                    <div class="meta">Agora <i class="fas fa-check-double text-light"></i></div>
+                                </div>
+                            </div>
+                        `);
+                        scrollToBottom();
+                        cancelImage();
+                    }
+                },
+                error: function(xhr) {
+                    alert('Erro ao enviar imagem: ' + (xhr.responseJSON?.error || 'Desconhecido'));
+                }
+            });
+        }
+
+        // Sobrescrever sendMessage para enviar imagem se tiver uma pendente
+        const _originalSendMessage = sendMessage;
+        // Overriding sendMessage to also handle image
+        $(document).off('click', '.send-btn').on('click', '.send-btn', function() {
+            if (_imageBase64) {
+                sendImage();
+            } else {
+                sendMessage();
+            }
+        });
+
+        // ════════════════════════════════════════════════════
+        // FEATURE: GRAVAÇÃO E ENVIO DE ÁUDIO
+        // ════════════════════════════════════════════════════
+        let _mediaRecorder = null;
+        let _audioChunks   = [];
+        let _audioBlob     = null;
+        let _audioTimerInt = null;
+        let _audioSeconds  = 0;
+
+        function startRecording() {
+            if (!currentChatId) { alert('Selecione uma conversa primeiro.'); return; }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Seu navegador não suporta gravação de áudio. Use Chrome ou Firefox.');
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    _audioChunks = [];
+                    _audioBlob   = null;
+                    _audioSeconds = 0;
+
+                    // Tenta OGG/Opus primeiro (nativo do WhatsApp), fallback para webm
+                    const mimeType = MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+                        ? 'audio/ogg;codecs=opus'
+                        : 'audio/webm;codecs=opus';
+
+                    _mediaRecorder = new MediaRecorder(stream, { mimeType });
+                    _mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) _audioChunks.push(e.data); };
+                    _mediaRecorder.onstop = function() {
+                        stream.getTracks().forEach(t => t.stop());
+                        _audioBlob = new Blob(_audioChunks, { type: mimeType });
+                        const url = URL.createObjectURL(_audioBlob);
+                        const player = document.getElementById('audioPlayback');
+                        player.src = url;
+                        player.style.display = 'block';
+
+                        document.getElementById('audioRecordStatus').style.display = 'none';
+                        document.getElementById('stopRecordBtn').style.display = 'none';
+                        document.getElementById('sendAudioBtn').style.display = 'inline-block';
+                        clearInterval(_audioTimerInt);
+                    };
+
+                    _mediaRecorder.start(100);
+
+                    // Anti-ban: limitar a 2 minutos
+                    setTimeout(() => {
+                        if (_mediaRecorder && _mediaRecorder.state === 'recording') {
+                            stopRecording();
+                            alert('Duração máxima de 2 minutos atingida. Envie o áudio.');
+                        }
+                    }, 120000);
+
+                    // Mostrar UI de gravação
+                    const area = document.getElementById('audioRecordArea');
+                    area.style.display = 'block';
+                    document.getElementById('audioRecordStatus').style.display = 'inline';
+                    document.getElementById('stopRecordBtn').style.display = 'inline-block';
+                    document.getElementById('sendAudioBtn').style.display = 'none';
+                    document.getElementById('audioPlayback').style.display = 'none';
+
+                    // Timer
+                    _audioTimerInt = setInterval(() => {
+                        _audioSeconds++;
+                        const m = Math.floor(_audioSeconds / 60);
+                        const s = _audioSeconds % 60;
+                        document.getElementById('audioTimer').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+                    }, 1000);
+                })
+                .catch(function(err) {
+                    alert('Não foi possível acessar o microfone: ' + err.message);
+                });
+        }
+
+        function stopRecording() {
+            if (_mediaRecorder && _mediaRecorder.state === 'recording') {
+                _mediaRecorder.stop();
+            }
+            clearInterval(_audioTimerInt);
+        }
+
+        function cancelAudio() {
+            if (_mediaRecorder && _mediaRecorder.state === 'recording') {
+                _mediaRecorder.stop();
+            }
+            clearInterval(_audioTimerInt);
+            _audioBlob   = null;
+            _audioChunks = [];
+            document.getElementById('audioRecordArea').style.display = 'none';
+            document.getElementById('audioPlayback').style.display   = 'none';
+            document.getElementById('audioRecordStatus').style.display = 'inline';
+            document.getElementById('stopRecordBtn').style.display = 'inline-block';
+            document.getElementById('sendAudioBtn').style.display = 'none';
+            document.getElementById('audioTimer').textContent = '0:00';
+        }
+
+        function sendAudio() {
+            if (!_audioBlob || !currentChatId) return;
+
+            const btn = document.getElementById('sendAudioBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64 = reader.result.split(',')[1];
+
+                $.ajax({
+                    url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/send-audio',
+                    method: 'POST',
+                    data: JSON.stringify({ _token: csrfToken, base64: base64, mimetype: _audioBlob.type }),
+                    contentType: 'application/json',
+                    success: function(res) {
+                        if (res.success) {
+                            $('#chat-messages-area').append(`
+                                <div class="message-row message-out">
+                                    <div class="bubble out">
+                                        🎙️ <em style="font-size:0.85rem;">Áudio enviado</em>
+                                        <div class="meta">Agora <i class="fas fa-check-double text-light"></i></div>
+                                    </div>
+                                </div>
+                            `);
+                            scrollToBottom();
+                            cancelAudio();
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Erro ao enviar áudio: ' + (xhr.responseJSON?.error || 'Desconhecido'));
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Áudio';
+                    }
+                });
+            };
+            reader.readAsDataURL(_audioBlob);
+        }
+
+        // ════════════════════════════════════════════════════
+        // FEATURE: AGENDAMENTO DE MENSAGENS
+        // ════════════════════════════════════════════════════
+        function openScheduleModal() {
+            if (!currentChatId) { alert('Selecione uma conversa primeiro.'); return; }
+
+            // Pre-fill com o conteúdo do textarea se houver
+            const currentMsg = $('#msgInput').val().trim();
+            if (currentMsg) {
+                document.getElementById('scheduleMsgContent').value = currentMsg;
+            }
+
+            // Define data mínima (agora + 5 min)
+            const minDate = new Date(Date.now() + 5 * 60000);
+            const pad = n => String(n).padStart(2, '0');
+            const minStr = `${minDate.getFullYear()}-${pad(minDate.getMonth()+1)}-${pad(minDate.getDate())}T${pad(minDate.getHours())}:${pad(minDate.getMinutes())}`;
+            document.getElementById('scheduleDatetime').min = minStr;
+            document.getElementById('scheduleDatetime').value = '';
+            document.getElementById('scheduleResult').style.display = 'none';
+
+            new bootstrap.Modal(document.getElementById('scheduleModal')).show();
+        }
+
+        function confirmSchedule() {
+            const content     = document.getElementById('scheduleMsgContent').value.trim();
+            const scheduledAt = document.getElementById('scheduleDatetime').value;
+
+            if (!content) { alert('Digite a mensagem a ser agendada.'); return; }
+            if (!scheduledAt) { alert('Selecione a data e hora do envio.'); return; }
+
+            const btn = document.querySelector('#scheduleModal .btn-warning');
+            const origHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agendando...';
+
+            $.ajax({
+                url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/schedule',
+                method: 'POST',
+                data: JSON.stringify({ _token: csrfToken, content: content, scheduled_at: scheduledAt }),
+                contentType: 'application/json',
+                success: function(res) {
+                    if (res.success) {
+                        const resultEl = document.getElementById('scheduleResult');
+                        resultEl.innerHTML = `<i class="fas fa-check-circle me-1"></i> ${res.message}`;
+                        resultEl.style.display = 'block';
+                        document.getElementById('scheduleMsgContent').value = '';
+                        // Fecha o modal após 2.5s
+                        setTimeout(() => {
+                            bootstrap.Modal.getInstance(document.getElementById('scheduleModal'))?.hide();
+                        }, 2500);
+                    }
+                },
+                error: function(xhr) {
+                    alert('Erro ao agendar: ' + (xhr.responseJSON?.error || xhr.responseJSON?.message || 'Desconhecido'));
+                },
+                complete: function() {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
             });
         }
     </script>
