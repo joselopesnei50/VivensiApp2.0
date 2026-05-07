@@ -218,8 +218,9 @@ class ManagerController extends Controller
     public function approvals()
     {
         $this->guardManagerOnly();
+        $hasCategories = \Illuminate\Support\Facades\Schema::hasTable('financial_categories');
         $with = ['project'];
-        if (\Illuminate\Support\Facades\Schema::hasTable('financial_categories')) {
+        if ($hasCategories) {
             $with[] = 'category';
         }
 
@@ -228,6 +229,13 @@ class ManagerController extends Controller
                             ->with($with)
                             ->orderByDesc('date')
                             ->get();
+
+        // Prevent lazy-load of category relation if table is absent on this env
+        if (!$hasCategories) {
+            $pendingApprovals->each(function ($t) {
+                $t->setRelation('category', null);
+            });
+        }
 
         $totalAmount = $pendingApprovals->sum('amount');
 
