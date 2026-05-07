@@ -21,9 +21,7 @@ class WhatsappAutomationController extends Controller
 
     public function store(Request $request)
     {
-        $data = $this->validated($request);
-        $data['tenant_id'] = auth()->user()->tenant_id;
-        WhatsappAutomation::create($data);
+        WhatsappAutomation::create($this->validated($request));
         return redirect()->route('whatsapp.automations.index')->with('success', 'Automação criada com sucesso!');
     }
 
@@ -50,6 +48,12 @@ class WhatsappAutomationController extends Controller
         return back()->with('success', $automation->is_active ? 'Automação ativada.' : 'Automação pausada.');
     }
 
+    public function logs(WhatsappAutomation $automation)
+    {
+        $logs = $automation->logs()->latest('sent_at')->paginate(50);
+        return view('whatsapp.automations.logs', compact('automation', 'logs'));
+    }
+
     private function validated(Request $request): array
     {
         return $request->validate([
@@ -60,6 +64,7 @@ class WhatsappAutomationController extends Controller
             'audience'          => 'required|in:all,donors,sponsors,contacts',
             'send_window_start' => 'required|date_format:H:i',
             'send_window_end'   => 'required|date_format:H:i|after:send_window_start',
+            'is_active'         => 'required|boolean',
         ]);
     }
 }

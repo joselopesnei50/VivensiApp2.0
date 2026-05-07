@@ -441,6 +441,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::put('/whatsapp/automations/{automation}',       [App\Http\Controllers\WhatsappAutomationController::class, 'update'])->name('whatsapp.automations.update');
     Route::delete('/whatsapp/automations/{automation}',    [App\Http\Controllers\WhatsappAutomationController::class, 'destroy'])->name('whatsapp.automations.destroy');
     Route::patch('/whatsapp/automations/{automation}/toggle', [App\Http\Controllers\WhatsappAutomationController::class, 'toggle'])->name('whatsapp.automations.toggle');
+    Route::get('/whatsapp/automations/{automation}/logs',   [App\Http\Controllers\WhatsappAutomationController::class, 'logs'])->name('whatsapp.automations.logs');
 
     Route::post('/marketing/magic-page', [App\Http\Controllers\LandingPageController::class, 'createMagic'])->name('ngo.landing-pages.create_magic');
 
