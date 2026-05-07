@@ -129,7 +129,7 @@
                             {{-- Data --}}
                             <td class="py-3" style="white-space:nowrap;">
                                 <div style="font-size:.83rem;font-weight:600;color:#334155;">
-                                    {{ $t->date->format('d/m/Y') }}
+                                    {{ $t->date ? $t->date->format('d/m/Y') : '—' }}
                                 </div>
                             </td>
 
