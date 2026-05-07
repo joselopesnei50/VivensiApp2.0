@@ -96,6 +96,7 @@
                 </div>
 
                 @forelse($projects as $p)
+                @if($p->project)
                 <a href="{{ $basePath . '/projects/' . $p->project->id }}"
                    class="project-row text-decoration-none">
                     <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -107,6 +108,7 @@
                     </div>
                     <i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.7rem;flex-shrink:0;"></i>
                 </a>
+                @endif
                 @empty
                 <div class="text-center py-4">
                     <div style="width:44px;height:44px;background:rgba(99,102,241,.08);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;">
