@@ -199,12 +199,21 @@
             </div>
             <form action="{{ $basePath . '/tasks' }}" method="POST">
                 @csrf
-                <input type="hidden" name="assigned_to" value="{{ $employee->id }}">
                 <input type="hidden" name="priority" value="medium">
                 <input type="hidden" name="status" value="todo">
                 <input type="hidden" name="redirect_to_schedule" value="1">
 
                 <div class="modal-body px-4 py-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Atribuir para</label>
+                        <select name="assigned_to" class="form-select rounded-3" required>
+                            @foreach($teamMembers as $member)
+                                <option value="{{ $member->id }}" {{ $member->id == $employee->id ? 'selected' : '' }}>
+                                    {{ $member->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Assunto / Título</label>
                         <input type="text" name="title" class="form-control rounded-3" required placeholder="Ex: Revisar planilha de custos">
@@ -217,8 +226,8 @@
                         <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Projeto Relacionado (Opcional)</label>
                         <select name="project_id" class="form-select rounded-3">
                             <option value="">Nenhum específico</option>
-                            @foreach($projects as $p)
-                                <option value="{{ $p->project->id }}">{{ $p->project->name }}</option>
+                            @foreach($allProjects as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }}</option>
                             @endforeach
                         </select>
                     </div>

@@ -152,24 +152,34 @@ class ManagerController extends Controller
     public function teamDetail($id)
     {
         $this->guardManagerOnly();
+        $tenantId = auth()->user()->tenant_id;
+
         $employee = \App\Models\User::where('id', $id)
-                        ->where('tenant_id', auth()->user()->tenant_id)
+                        ->where('tenant_id', $tenantId)
                         ->firstOrFail();
-        
+
         $projects = \App\Models\ProjectMember::where('user_id', $id)
-                        ->where('tenant_id', auth()->user()->tenant_id)
+                        ->where('tenant_id', $tenantId)
                         ->with('project')
                         ->get();
-        
-        // Reminders are essentially tasks created by the manager for this employee
+
+        $allProjects = \App\Models\Project::where('tenant_id', $tenantId)
+                        ->orderBy('name')
+                        ->get(['id', 'name']);
+
+        $teamMembers = \App\Models\User::where('tenant_id', $tenantId)
+                        ->whereIn('role', ['employee', 'manager'])
+                        ->orderBy('name')
+                        ->get(['id', 'name']);
+
         $reminders = \App\Models\Task::where('assigned_to', $id)
-                        ->where('tenant_id', auth()->user()->tenant_id)
+                        ->where('tenant_id', $tenantId)
                         ->with('project')
                         ->orderBy('created_at', 'desc')
                         ->limit(10)
                         ->get();
 
-        return view('manager.team_detail', compact('employee', 'projects', 'reminders'));
+        return view('manager.team_detail', compact('employee', 'projects', 'allProjects', 'teamMembers', 'reminders'));
     }
 
     public function storeQuick(Request $request)
