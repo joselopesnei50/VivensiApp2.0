@@ -1,11 +1,27 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="header-page" style="margin-bottom: 30px;">
-    <div>
-        <h6 style="color: #6366f1; font-weight: 700; text-transform: uppercase; margin: 0 0 5px 0; letter-spacing: 1px;">Omnichannel Oficial</h6>
-        <h2 style="margin: 0; color: #111827; font-weight: 800; font-size: 2rem;">Treinamento da IA & WhatsApp Oficial</h2>
-        <p style="color: #6b7280; margin: 5px 0 0 0;">Utilizamos a infraestrutura direta da Meta para máxima segurança de dados e blindagem contra bloqueios.</p>
+<div class="d-flex align-items-start gap-3 mb-4 flex-wrap">
+    <div class="flex-1">
+        <div style="font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">
+            WhatsApp / Configurações
+        </div>
+        <h2 class="fw-800 mb-0" style="font-size:1.6rem;color:#0f172a;line-height:1.2;">Treinamento da IA & WhatsApp Oficial</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:.85rem;">Infraestrutura direta da Meta — máxima segurança e blindagem contra bloqueios.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap mt-1">
+        <a href="{{ route('whatsapp.automations.index') }}" class="btn btn-sm btn-outline-secondary rounded-3" style="font-size:.8rem;">
+            <i class="fas fa-robot me-1"></i> Automações
+        </a>
+        <a href="{{ route('whatsapp.templates') }}" class="btn btn-sm btn-outline-secondary rounded-3" style="font-size:.8rem;">
+            <i class="fas fa-layer-group me-1"></i> Templates
+        </a>
+        <a href="{{ route('whatsapp.broadcast.index') }}" class="btn btn-sm btn-outline-secondary rounded-3" style="font-size:.8rem;">
+            <i class="fas fa-rocket me-1"></i> Disparo
+        </a>
+        <a href="{{ route('whatsapp.chat') }}" class="btn btn-sm rounded-3 fw-bold" style="font-size:.8rem;background:#25d366;color:#fff;">
+            <i class="fab fa-whatsapp me-1"></i> Chat
+        </a>
     </div>
 </div>
 
@@ -25,13 +41,17 @@
         <div class="col-md-7">
             <!-- AI Training Section -->
             @php $ts = $config->ai_training_structured ?? []; @endphp
-            <div class="vivensi-card" style="padding: 25px; margin-bottom: 30px; border-top: 4px solid #a855f7;">
-                <h4 style="margin: 0 0 6px 0; font-size: 1.1rem; color: #334155; font-weight: 700;">
-                    <i class="fas fa-brain me-2" style="color: #a855f7;"></i> Treinamento Bruce AI
-                </h4>
-                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
-                    Preencha as seções abaixo. O sistema monta o prompt automaticamente para o Bruce.
-                </p>
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="border-top: 3px solid #a855f7 !important;">
+                <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span style="width:34px;height:34px;background:rgba(168,85,247,.1);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-brain" style="color:#a855f7;font-size:.9rem;"></i>
+                    </span>
+                    <div>
+                        <div class="fw-bold" style="font-size:.95rem;color:#0f172a;line-height:1.2;">Treinamento Bruce AI</div>
+                        <div style="font-size:.72rem;color:#94a3b8;">O sistema monta o prompt automaticamente com base nas seções abaixo.</div>
+                    </div>
+                </div>
 
                 <!-- Seção 1: Identidade do Bot -->
                 <div class="training-section">
@@ -165,44 +185,57 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 20px;">
-                    <label class="fw-700 mb-2 small">Motor Cognitivo (IA)</label>
-                    <select name="ai_provider" class="form-control-vivensi">
-                        <option value="gemini" {{ ($config->ai_provider ?? 'gemini') == 'gemini' ? 'selected' : '' }}>Google Gemini (Rápido)</option>
-                        <option value="deepseek" {{ ($config->ai_provider ?? '') == 'deepseek' ? 'selected' : '' }}>DeepSeek Chat (V3)</option>
-                    </select>
-                </div>
-
-                <div style="margin-top: 20px; display: flex; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px;">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="ai_enabled" value="1" id="aiEnabled" {{ $config->ai_enabled ? 'checked' : '' }}>
-                        <label class="form-check-label fw-700" for="aiEnabled">Habilitar Robô de Atendimento</label>
+                <div class="settings-robot-config mt-4">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-sm-7">
+                            <label class="training-label mb-1">Motor Cognitivo</label>
+                            <select name="ai_provider" class="form-control-vivensi">
+                                <option value="gemini" {{ ($config->ai_provider ?? 'gemini') == 'gemini' ? 'selected' : '' }}>
+                                    ⚡ Google Gemini (Rápido)
+                                </option>
+                                <option value="deepseek" {{ ($config->ai_provider ?? '') == 'deepseek' ? 'selected' : '' }}>
+                                    🧠 DeepSeek Chat (V3)
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-sm-5">
+                            <label class="training-label mb-1">Robô Ativo</label>
+                            <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" name="ai_enabled" value="1" id="aiEnabled" {{ $config->ai_enabled ? 'checked' : '' }}>
+                                </div>
+                                <label for="aiEnabled" class="mb-0 fw-bold" style="font-size:.83rem;color:#334155;cursor:pointer;">
+                                    {{ $config->ai_enabled ? 'Habilitado' : 'Desabilitado' }}
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
+                </div>{{-- card-body --}}
+            </div>{{-- card --}}
+
             <!-- Send Policies -->
-            <div class="vivensi-card" style="padding: 25px; margin-bottom: 30px; border-top: 4px solid #f59e0b;">
-                <h4 style="margin: 0 0 14px 0; font-size: 1.1rem; color: #334155; font-weight: 700;">
-                    <i class="fas fa-gavel me-2" style="color: #f59e0b;"></i> Políticas de Envio da Meta
-                </h4>
-                
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" name="outbound_enabled" value="1" id="outboundEnabled" {{ ($config->outbound_enabled ?? false) ? 'checked' : '' }}>
-                    <label class="form-check-label fw-700" for="outboundEnabled">Habilitar Envio de Mensagens</label>
-                    <div class="small text-muted mt-1">Ativa o envio de mensagens pelo sistema. Desativar bloqueia todos os disparos.</div>
-                </div>
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="border-top: 3px solid #f59e0b !important;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" style="font-size:.95rem;color:#334155;">
+                        <i class="fas fa-gavel me-2" style="color:#f59e0b;"></i> Políticas de Envio Meta
+                    </h5>
 
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" name="enforce_24h_window" value="1" id="enforce24h" {{ ($config->enforce_24h_window ?? true) ? 'checked' : '' }}>
-                    <label class="form-check-label fw-700" for="enforce24h">Respeitar Janela Restrita de 24h (Custos reduzidos)</label>
-                    <div class="small text-muted mt-1">Garante que a IA só envia textos livres enquanto o WhatsApp permite gratuitamente.</div>
-                </div>
-
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" name="allow_templates_outside_window" value="1" id="allowTemplates" {{ ($config->allow_templates_outside_window ?? true) ? 'checked' : '' }}>
-                    <label class="form-check-label fw-700" for="allowTemplates">Permitir disparos pagos em Massa (Templates)</label>
-                    <div class="small text-muted mt-1">Ao ativar, relatórios e campanhas usarão modelos aprovados pela Meta fora da janela de atendimento. O cartão atrelado no Facebook Business será cobrado.</div>
+                    @foreach([
+                        ['outbound_enabled',           $config->outbound_enabled ?? false,             'Habilitar Envio de Mensagens',                    'Desativar bloqueia todos os disparos do sistema.'],
+                        ['enforce_24h_window',         $config->enforce_24h_window ?? true,            'Respeitar Janela de 24h (Custos reduzidos)',       'A IA só envia textos livres enquanto o WhatsApp permite gratuitamente.'],
+                        ['allow_templates_outside_window', $config->allow_templates_outside_window ?? true, 'Permitir Templates pagos fora da janela',      'Campanhas usarão modelos Meta aprovados. O cartão no Facebook Business será cobrado.'],
+                    ] as [$field, $checked, $label, $desc])
+                    <div class="d-flex align-items-start gap-3 py-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                        <div class="form-check form-switch mb-0 mt-1">
+                            <input class="form-check-input" type="checkbox" name="{{ $field }}" value="1" id="{{ $field }}" {{ $checked ? 'checked' : '' }}>
+                        </div>
+                        <label for="{{ $field }}" class="mb-0" style="cursor:pointer;">
+                            <div class="fw-bold" style="font-size:.85rem;color:#334155;">{{ $label }}</div>
+                            <div class="text-muted" style="font-size:.75rem;line-height:1.5;margin-top:2px;">{{ $desc }}</div>
+                        </label>
+                    </div>
+                    @endforeach
                 </div>
             </div>
 
@@ -210,57 +243,55 @@
 
         <div class="col-md-5">
             <!-- Meta API Official Connection Panel -->
-            <div class="card-vivensi p-4" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: #fff;">
-                <!-- BOTÃO FIXO DE AJUDA -->
-                <div class="mb-4 text-end">
-                    <button type="button" class="btn btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#metaHelpModal" style="background: #eff6ff; color: #1877f2; border-radius: 8px; border: 1px solid #dbeafe;">
-                        <i class="fas fa-question-circle me-1"></i> Guia: Como conectar WhatsApp Oficial?
-                    </button>
-                </div>
-
-                <div class="text-center">
-                    <div class="integration-badge mb-4">
-                        <i class="fab fa-facebook" style="color: #1877f2; font-size: 2.5rem;"></i>
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="width:34px;height:34px;background:#eff6ff;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;">
+                                <i class="fab fa-facebook" style="color:#1877f2;font-size:1rem;"></i>
+                            </span>
+                            <div>
+                                <div class="fw-bold" style="font-size:.9rem;color:#0f172a;line-height:1.2;">WhatsApp Business API</div>
+                                <div style="font-size:.7rem;color:#94a3b8;">Meta Cloud API — sem celular ligado</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#metaHelpModal"
+                                style="background:#eff6ff;color:#1877f2;border:none;border-radius:8px;font-size:.72rem;font-weight:700;padding:5px 10px;">
+                            <i class="fas fa-question-circle me-1"></i> Guia
+                        </button>
                     </div>
-                    <h4 class="fw-800 mb-2">WhatsApp Business API</h4>
-                    <p class="text-muted small px-3">Conexão oficial via Meta Cloud API. Sem necessidade de celular ligado.</p>
 
-                    <div id="meta_status_container" class="mt-4">
+                    <div id="meta_status_container">
                         @if(!empty($contextModel->meta_waba_id) && !empty($contextModel->meta_phone_number_id))
-                            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                                <i class="fas fa-check-circle fa-3x" style="color: #22c55e; margin-bottom: 10px;"></i>
-                                <h5 style="color: #166534; font-weight: 800; font-size: 1rem; margin: 0;">SISTEMA ONLINE (APROVADO)</h5>
-                                <hr style="border-color: #d1fae5; margin: 15px 0;">
-                                <div style="text-align: left; font-size: 0.75rem; color: #166534;">
-                                    <b>ID WhatsApp Business:</b> {{ $contextModel->meta_waba_id }}<br>
-                                    <b>Telefone Cloud ID:</b> {{ $contextModel->meta_phone_number_id }}
+                            <div class="rounded-3 p-3 mb-3" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fas fa-check-circle" style="color:#22c55e;font-size:1rem;"></i>
+                                    <span class="fw-bold" style="color:#166534;font-size:.85rem;">Conectado e Aprovado</span>
+                                </div>
+                                <div style="font-size:.72rem;color:#166534;line-height:1.8;">
+                                    <div><span class="fw-bold">WABA ID:</span> <code style="background:rgba(0,0,0,.04);padding:1px 6px;border-radius:4px;">{{ $contextModel->meta_waba_id }}</code></div>
+                                    <div><span class="fw-bold">Phone ID:</span> <code style="background:rgba(0,0,0,.04);padding:1px 6px;border-radius:4px;">{{ $contextModel->meta_phone_number_id }}</code></div>
                                 </div>
                             </div>
-                            
-                            <button type="button" onclick="disconnectMeta()" class="btn btn-outline-danger w-100 fw-bold" style="border-radius: 8px; padding: 10px;">
+                            <button type="button" onclick="disconnectMeta()" class="btn btn-outline-danger w-100 fw-bold rounded-3" style="font-size:.83rem;padding:9px;">
                                 <i class="fas fa-unlink me-2"></i> Desconectar e Mudar Credenciais
                             </button>
                         @else
-                            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 25px 20px; border-radius: 12px; margin-bottom: 20px; text-align: left;">
-                                <h5 style="color: #475569; font-weight: 700; font-size: 0.9rem; margin-bottom: 15px; text-align: center;">Configuração Oficial Meta API</h5>
-                                
+                            <div class="rounded-3 p-3 mb-3" style="background:#f8fafc;border:1px dashed #cbd5e1;">
+                                <div class="mb-2">
+                                    <label class="training-label">WABA ID</label>
+                                    <input type="text" id="manual_waba_id" class="form-control-vivensi" placeholder="Ex: 109283746554321">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="training-label">Phone Number ID</label>
+                                    <input type="text" id="manual_phone_id" class="form-control-vivensi" placeholder="Ex: 223344556677889">
+                                </div>
                                 <div class="mb-3">
-                                    <label class="small fw-700 text-muted">WhatsApp Business Account (WABA ID)</label>
-                                    <input type="text" id="manual_waba_id" class="form-control-vivensi mt-1" placeholder="Ex: 109283746554321">
+                                    <label class="training-label">Access Token Permanente</label>
+                                    <input type="password" id="manual_access_token" class="form-control-vivensi" placeholder="EAABxb...">
                                 </div>
-
-                                <div class="mb-3">
-                                    <label class="small fw-700 text-muted">Phone Number ID (Cloud API)</label>
-                                    <input type="text" id="manual_phone_id" class="form-control-vivensi mt-1" placeholder="Ex: 223344556677889">
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="small fw-700 text-muted">Access Token Permanente</label>
-                                    <input type="password" id="manual_access_token" class="form-control-vivensi mt-1" placeholder="EAABxb...">
-                                </div>
-
-                                <button type="button" onclick="saveManualMeta()" class="btn w-100 fw-bold" style="background: #1877f2; color: #fff; padding: 12px; border-radius: 8px;">
-                                    <i class="fab fa-facebook-f me-2"></i> Salvar e Conectar Meta
+                                <button type="button" onclick="saveManualMeta()" class="btn w-100 fw-bold rounded-3" style="background:#1877f2;color:#fff;padding:11px;font-size:.85rem;">
+                                    <i class="fab fa-facebook-f me-2"></i> Salvar e Conectar
                                 </button>
                             </div>
                         @endif
@@ -269,84 +300,96 @@
             </div>
 
             <!-- Evolution API Connection Panel -->
-            <div class="card-vivensi p-4 mt-4" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: #fff;">
-                <div class="text-center mb-4">
-                    <div class="integration-badge mb-3">
-                        <i class="fas fa-qrcode" style="color: #10b981; font-size: 2.5rem;"></i>
-                    </div>
-                    <h4 class="fw-800 mb-2">Aparelhos Conectados (Evolution)</h4>
-                    <p class="text-muted small px-3">Conexões autônomas de WhatsApp para disparos em massa nativos e fallback do Cloud API.</p>
-                </div>
-
-                <!-- Lista de Instâncias -->
-                <div id="instances_list_container">
-                    @if($instances->isEmpty())
-                        <div style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 25px 20px; border-radius: 12px; text-align: center;">
-                            <h5 style="color: #475569; font-weight: 700; font-size: 0.95rem; margin-bottom: 10px;">Nenhum WhatsApp Conectado</h5>
-                            <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Adicione um aparelho celular escaneando o QR Code para habilitar disparos assíncronos.</p>
-                            <button type="button" onclick="openNewInstanceModal()" class="btn w-100 fw-bold" style="background: #10b981; color: #fff; padding: 12px; border-radius: 8px;">
-                                <i class="fas fa-plus me-2"></i> Conectar Novo Aparelho
-                            </button>
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span style="width:34px;height:34px;background:#ecfdf5;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-qrcode" style="color:#10b981;font-size:.9rem;"></i>
+                        </span>
+                        <div>
+                            <div class="fw-bold" style="font-size:.9rem;color:#0f172a;line-height:1.2;">Aparelhos Conectados</div>
+                            <div style="font-size:.7rem;color:#94a3b8;">Conexões Evolution para disparo nativo</div>
                         </div>
-                    @else
-                        @foreach($instances as $instance)
-                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 15px; text-align: left;">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
+                    </div>
+
+                    <div id="instances_list_container">
+                        @if($instances->isEmpty())
+                            <div class="rounded-3 p-4 text-center" style="background:#f8fafc;border:1px dashed #cbd5e1;">
+                                <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                                    <i class="fab fa-whatsapp" style="color:#10b981;font-size:1.2rem;"></i>
+                                </div>
+                                <p class="fw-bold mb-1" style="color:#334155;font-size:.88rem;">Nenhum aparelho conectado</p>
+                                <p class="text-muted mb-3" style="font-size:.78rem;">Escaneie o QR Code para habilitar disparos assíncronos.</p>
+                                <button type="button" onclick="openNewInstanceModal()" class="btn w-100 fw-bold rounded-3" style="background:#10b981;color:#fff;padding:11px;font-size:.85rem;">
+                                    <i class="fas fa-plus me-2"></i> Conectar Novo Aparelho
+                                </button>
+                            </div>
+                        @else
+                            @foreach($instances as $instance)
+                            @php
+                                $percent = $instance->daily_limit > 0
+                                    ? min(100, intval(($instance->messages_sent_today / $instance->daily_limit) * 100)) : 0;
+                            @endphp
+                            <div class="rounded-3 p-3 mb-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div class="d-flex align-items-center gap-2">
-                                        <i class="fab fa-whatsapp" style="color: #10b981; font-size: 1.5rem;"></i>
+                                        <span style="width:32px;height:32px;background:#ecfdf5;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;">
+                                            <i class="fab fa-whatsapp" style="color:#10b981;font-size:.9rem;"></i>
+                                        </span>
                                         <div>
-                                            <h6 style="margin: 0; font-weight: 700; color: #334155;">{{ $instance->instance_name }}</h6>
-                                            <small style="color: #64748b; font-family: monospace;">{{ $instance->phone_number ?: 'Aguardando Número...' }}</small>
+                                            <div class="fw-bold" style="font-size:.85rem;color:#334155;">{{ $instance->instance_name }}</div>
+                                            <div style="font-size:.7rem;color:#94a3b8;font-family:monospace;">{{ $instance->phone_number ?: 'Aguardando...' }}</div>
                                         </div>
                                     </div>
-                                    <div>
-                                        @if($instance->status === 'open')
-                                            <span class="badge" style="background: #dcfce7; color: #166534; font-size: 0.7rem; border: 1px solid #bbf7d0;">CONECTADO</span>
-                                        @elseif($instance->status === 'connecting')
-                                            <span class="badge" style="background: #fef3c7; color: #92400e; font-size: 0.7rem; border: 1px solid #fde68a;"><i class="fas fa-spinner fa-spin"></i> CONECTANDO</span>
-                                        @else
-                                            <span class="badge" style="background: #fee2e2; color: #b91c1c; font-size: 0.7rem; border: 1px solid #fecaca;">DESCONECTADO</span>
-                                        @endif
-                                    </div>
+                                    @if($instance->status === 'open')
+                                        <span class="badge rounded-pill" style="background:#dcfce7;color:#166534;font-size:.65rem;border:1px solid #bbf7d0;">CONECTADO</span>
+                                    @elseif($instance->status === 'connecting')
+                                        <span class="badge rounded-pill" style="background:#fef3c7;color:#92400e;font-size:.65rem;border:1px solid #fde68a;">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>CONECTANDO
+                                        </span>
+                                    @else
+                                        <span class="badge rounded-pill" style="background:#fee2e2;color:#b91c1c;font-size:.65rem;border:1px solid #fecaca;">DESCONECTADO</span>
+                                    @endif
                                 </div>
 
-                                <div style="background: #fff; border: 1px solid #f1f5f9; border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+                                <div class="mb-2 p-2 rounded-2" style="background:#fff;border:1px solid #f1f5f9;">
                                     <div class="d-flex justify-content-between mb-1">
-                                        <small class="fw-bold" style="color: #475569; font-size: 0.7rem;">Aquecimento Diário</small>
-                                        <small class="fw-bold" style="color: #10b981; font-size: 0.7rem;">{{ $instance->messages_sent_today }} / {{ $instance->daily_limit }}</small>
+                                        <small class="fw-bold" style="color:#64748b;font-size:.68rem;">Aquecimento diário</small>
+                                        <small class="fw-bold" style="color:{{ $percent > 80 ? '#ef4444' : '#10b981' }};font-size:.68rem;">{{ $instance->messages_sent_today }} / {{ $instance->daily_limit }}</small>
                                     </div>
-                                    <div class="progress" style="height: 6px; background: #e2e8f0;">
-                                        @php $percent = $instance->daily_limit > 0 ? min(100, intval(($instance->messages_sent_today / $instance->daily_limit) * 100)) : 0; @endphp
-                                        <div class="progress-bar" style="background: {{ $percent > 80 ? '#ef4444' : ($percent > 50 ? '#f59e0b' : '#10b981') }}; width: {{ $percent }}%;"></div>
+                                    <div class="progress" style="height:5px;background:#e2e8f0;border-radius:99px;">
+                                        <div class="progress-bar" style="background:{{ $percent > 80 ? '#ef4444' : ($percent > 50 ? '#f59e0b' : '#10b981') }};width:{{ $percent }}%;border-radius:99px;"></div>
                                     </div>
                                 </div>
 
                                 <div class="d-flex gap-2">
                                     @if($instance->status !== 'open')
-                                        <button type="button" onclick="checkStatus('{{ $instance->id }}')" class="btn btn-sm btn-outline-primary fw-bold" style="flex: 1; border-radius: 8px;">
-                                            <i class="fas fa-qrcode"></i> Scan QR
+                                        <button type="button" onclick="checkStatus('{{ $instance->id }}')" class="btn btn-sm btn-outline-primary fw-bold rounded-3" style="flex:1;font-size:.78rem;">
+                                            <i class="fas fa-qrcode me-1"></i> Scan QR
                                         </button>
                                     @else
-                                        <a href="{{ route('whatsapp.broadcast.index') }}" class="btn btn-sm btn-outline-success fw-bold" style="flex: 1; border-radius: 8px;">
-                                            <i class="fas fa-paper-plane"></i> Disparar
+                                        <a href="{{ route('whatsapp.broadcast.index') }}" class="btn btn-sm btn-outline-success fw-bold rounded-3" style="flex:1;font-size:.78rem;">
+                                            <i class="fas fa-paper-plane me-1"></i> Disparar
                                         </a>
                                     @endif
-                                    <button type="button" onclick="confirmDelete('{{ $instance->id }}')" class="btn btn-sm btn-outline-danger" style="border-radius: 8px;">
+                                    <button type="button" onclick="confirmDelete('{{ $instance->id }}')" class="btn btn-sm btn-outline-danger rounded-3" style="font-size:.78rem;">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
-                        @endforeach
-                        
-                        <button type="button" onclick="openNewInstanceModal()" class="btn btn-outline-secondary w-100 fw-bold" style="border-radius: 8px; padding: 10px; border-style: dashed;">
-                            <i class="fas fa-plus"></i> Adicionar Outro Aparelho
-                        </button>
-                    @endif
+                            @endforeach
+
+                            <button type="button" onclick="openNewInstanceModal()" class="btn btn-outline-secondary w-100 fw-bold rounded-3" style="font-size:.82rem;padding:9px;border-style:dashed;">
+                                <i class="fas fa-plus me-1"></i> Adicionar Outro Aparelho
+                            </button>
+                        @endif
+                    </div>
                 </div>
             </div>
 
-            <button type="submit" class="btn-premium" style="width: 100%; padding: 15px; margin-top: 20px;">
-                <i class="fas fa-save me-2"></i> Salvar Treinamento Bruce AI
+            <!-- Save Button -->
+            <button type="submit" class="btn btn-primary w-100 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-2" style="padding:14px;font-size:.95rem;">
+                <i class="fas fa-save"></i> Salvar Configurações
             </button>
         </div>
     </div>
@@ -408,31 +451,52 @@
 
 @push('styles')
 <style>
-.form-control-vivensi {
-    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
-    padding: 10px 14px; width: 100%; transition: all 0.2s; font-size: 0.85rem;
-}
-.form-control-vivensi:focus { border-color: #6366f1; background: white; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); outline: none; }
+.fw-800 { font-weight: 800; }
+.flex-1  { flex: 1; }
 
-/* Structured Training Editor */
-.training-section { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.form-control-vivensi {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 9px 13px;
+    width: 100%;
+    transition: border-color .2s, box-shadow .2s;
+    font-size: 0.85rem;
+    color: #334155;
+}
+.form-control-vivensi:focus {
+    border-color: #6366f1;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    outline: none;
+}
+
+/* Training accordions */
+.training-section { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
 .training-section-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 16px; background: #f8fafc; cursor: pointer;
-    font-weight: 700; font-size: 0.88rem; color: #334155;
-    user-select: none; transition: background 0.15s;
+    padding: 11px 15px; background: #f8fafc; cursor: pointer;
+    font-weight: 700; font-size: .85rem; color: #334155;
+    user-select: none; transition: background .15s;
 }
 .training-section-header:hover { background: #f1f5f9; }
-.training-section-body { padding: 16px; background: #fff; }
-.training-chevron { font-size: 0.75rem; color: #94a3b8; transition: transform 0.2s; }
+.training-section-body { padding: 14px 15px; background: #fff; }
+.training-chevron { font-size: .72rem; color: #94a3b8; transition: transform .2s; }
 .training-chevron.open { transform: rotate(180deg); }
-.training-label { display: block; font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+.training-label { display: block; font-size: .76rem; font-weight: 600; color: #64748b; margin-bottom: 5px; letter-spacing: .02em; }
+
+/* Robot config section separator */
+.settings-robot-config {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 16px;
+    margin-top: 8px;
+}
 
 /* FAQ rows */
-.faq-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
-.faq-index { min-width: 24px; height: 24px; background: #a855f7; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; margin-top: 4px; flex-shrink: 0; }
+.faq-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; padding: 11px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+.faq-index { min-width: 22px; height: 22px; background: #a855f7; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 800; margin-top: 4px; flex-shrink: 0; }
 .faq-fields { flex: 1; }
-.faq-remove { background: none; border: none; color: #cbd5e1; padding: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; transition: color 0.15s; }
+.faq-remove { background: none; border: none; color: #cbd5e1; padding: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; transition: color .15s; }
 .faq-remove:hover { color: #ef4444; }
 </style>
 @endpush
