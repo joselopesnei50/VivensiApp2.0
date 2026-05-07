@@ -5,7 +5,7 @@
 <div class="container-fluid py-4">
     <div class="d-flex align-items-center gap-3 mb-4">
         <a href="{{ route('whatsapp.automations.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i>
+            <i class="fas fa-arrow-left me-1"></i> Voltar
         </a>
         <div>
             <h2 class="fw-bold mb-0" style="font-size:1.6rem;">
@@ -111,6 +111,22 @@
                                         onclick="insertVar('{nome}')">+ {nome}</button>
                                 <button type="button" class="btn btn-xs btn-outline-secondary" style="font-size:.72rem;padding:3px 10px;"
                                         onclick="insertVar('{organizacao}')">+ {organizacao}</button>
+                            </div>
+                        </div>
+
+                        {{-- Status --}}
+                        <div class="mb-4 p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="fw-600">Ativar automação</div>
+                                    <div class="text-muted small">Quando ativa, o sistema processa esta regra diariamente.</div>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    <input type="hidden" name="is_active" value="0">
+                                    <input class="form-check-input" type="checkbox" name="is_active" value="1"
+                                           style="width:2.5em;height:1.3em;cursor:pointer;"
+                                           {{ old('is_active', $automation?->is_active ?? true) ? 'checked' : '' }}>
+                                </div>
                             </div>
                         </div>
 

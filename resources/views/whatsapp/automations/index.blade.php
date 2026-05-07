@@ -71,10 +71,10 @@
 
                             {{-- Stats + Ações --}}
                             <div class="d-flex align-items-center gap-3 flex-wrap">
-                                <div class="text-center">
+                                <a href="{{ route('whatsapp.automations.logs', $automation) }}" class="text-center text-decoration-none" title="Ver logs de envio">
                                     <div class="fw-bold" style="font-size:1.2rem;color:#4f46e5;">{{ $automation->logs_count }}</div>
                                     <div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">enviados</div>
-                                </div>
+                                </a>
 
                                 <span class="badge rounded-pill px-3 py-2" style="font-size:.7rem;background:{{ $automation->is_active ? 'rgba(16,185,129,.1)' : 'rgba(100,116,139,.1)' }};color:{{ $automation->is_active ? '#059669' : '#64748b' }};">
                                     {{ $automation->is_active ? 'Ativa' : 'Pausada' }}
