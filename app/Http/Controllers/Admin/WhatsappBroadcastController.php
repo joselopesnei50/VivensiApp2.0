@@ -106,6 +106,30 @@ class WhatsappBroadcastController extends Controller
         return response()->json($mapped);
     }
 
+    public function campaigns()
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $campaigns   = collect();
+        $totalSent   = 0;
+        $totalFailed = 0;
+        $completed   = 0;
+
+        if (Schema::hasTable('broadcast_campaigns')) {
+            $campaigns   = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)->orderByDesc('created_at')->paginate(25);
+            $totalSent   = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)->sum('total_sent');
+            $totalFailed = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)->sum('total_failed');
+            $completed   = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)->where('status', 'completed')->count();
+        }
+
+        $totalMessages  = $totalSent + $totalFailed;
+        $successRate    = $totalMessages > 0 ? round(($totalSent / $totalMessages) * 100) : 0;
+
+        return view('admin.whatsapp.broadcast.campaigns',
+            compact('campaigns', 'totalSent', 'totalFailed', 'completed', 'successRate'));
+    }
+
     public function sendBroadcast(Request $request)
     {
         Gate::authorize('access-whatsapp');
