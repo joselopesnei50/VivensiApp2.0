@@ -218,9 +218,14 @@ class ManagerController extends Controller
     public function approvals()
     {
         $this->guardManagerOnly();
+        $with = ['project'];
+        if (\Illuminate\Support\Facades\Schema::hasTable('financial_categories')) {
+            $with[] = 'category';
+        }
+
         $pendingApprovals = \App\Models\Transaction::where('tenant_id', auth()->user()->tenant_id)
                             ->where('status', 'pending')
-                            ->with(['project', 'category'])
+                            ->with($with)
                             ->orderByDesc('date')
                             ->get();
 
