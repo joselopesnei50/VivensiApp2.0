@@ -628,10 +628,15 @@
         <div style="width:36px;height:36px;background:linear-gradient(135deg,#0ea5e9,#38bdf8);border-radius:10px;display:flex;align-items:center;justify-content:center;">
             <i class="fas fa-chart-bar text-white" style="font-size:0.9rem;"></i>
         </div>
-        <div>
+        <div class="flex-1">
             <h6 class="mb-0 fw-800" style="color:#1e293b;">Relatório de Disparos</h6>
             <small class="text-muted">Últimas 20 campanhas enviadas</small>
         </div>
+        <a href="{{ route('whatsapp.broadcast.campaigns') }}"
+           class="btn btn-sm btn-outline-primary rounded-3 fw-600 ms-auto"
+           style="font-size:.78rem;padding:5px 14px;">
+            <i class="fas fa-clock-rotate-left me-1"></i> Ver histórico completo
+        </a>
     </div>
 
     @if($campaigns->isEmpty())
