@@ -8,7 +8,6 @@
     $managerCount  = $employees->where('role', 'manager')->count();
     $overdueCount  = $employees->sum('tasks_overdue_count');
     $avatarColors  = ['#4F46E5','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899'];
-    $avatarDarks   = ['#4338ca','#059669','#d97706','#dc2626','#7c3aed','#db2777'];
 @endphp
 
 {{-- Header --}}
