@@ -36,6 +36,12 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // WhatsApp: envia mensagens agendadas a cada minuto (ex: lembretes, follow-ups)
+        $schedule->command('whatsapp:send-scheduled')
+                 ->everyMinute()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Relatório Semanal com Bruce AI — todo domingo às 08:00
         $schedule->job(new \App\Jobs\SendWeeklyReportJob())
                  ->weeklyOn(0, '08:00')

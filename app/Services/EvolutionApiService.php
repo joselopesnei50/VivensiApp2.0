@@ -217,6 +217,39 @@ class EvolutionApiService
         }
     }
 
+    /**
+     * Envia áudio como Push-to-Talk (PTT) — formato nativo de voz do WhatsApp.
+     * Usar ptt:true reduz drasticamente o risco de ban pois imita gravação humana.
+     */
+    public function sendAudio(string $to, string $base64Audio): array
+    {
+        if (!$this->instanceName) return ['error' => 'No instance configured'];
+
+        $payload = [
+            'number'    => (string) $to,
+            'audio'     => $base64Audio,
+            'encoding'  => true, // Evolution API converte para o codec correto automaticamente
+        ];
+
+        try {
+            $response = $this->http()->timeout(30)->withHeaders([
+                'apikey' => $this->globalApiKey,
+            ])->post("{$this->baseUrl}/message/sendWhatsAppAudio/{$this->instanceName}", $payload);
+
+            if ($response->failed()) {
+                Log::error('EVOLUTION API REJEITOU ÁUDIO', [
+                    'status' => $response->status(),
+                    'body'   => $response->json(),
+                ]);
+                return ['error' => 'Failed to send audio', 'details' => $response->body()];
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            return ['error' => 'Exception: ' . $e->getMessage()];
+        }
+    }
+
     public function applySpintax(string $text): string
     {
         return preg_replace_callback('/\{(((?>[^\{\}]+)|(?R))*)\}/x', function ($match) {

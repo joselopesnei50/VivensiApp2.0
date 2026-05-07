@@ -1025,4 +1025,169 @@ class WhatsappController extends Controller
 
     // Removemos os metodos de Conexão Evolution API (getStatus, getQrCode, getPairingCode)
     // porque agora a autenticação é o Meta Embedded Flow.
+
+    /**
+     * Enviar imagem/mídia pelo OmniChannel Chat
+     * Método de envio via Evolution API com proteção anti-ban
+     */
+    public function sendMedia(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $validated = $request->validate([
+            'base64'   => ['required', 'string'],
+            'mimetype' => ['required', 'string', 'in:image/jpeg,image/png,image/webp,image/gif'],
+            'caption'  => ['nullable', 'string', 'max:1024'],
+        ]);
+
+        // Anti-ban: verifica se imagem não está bloqueada/opt-out
+        if ($chat->blocked_at || $chat->opt_out_at) {
+            return response()->json(['error' => 'Contato bloqueado ou com opt-out. Envio cancelado.'], 422);
+        }
+
+        $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('status', 'open')
+            ->first();
+
+        if (!$instance) {
+            return response()->json(['error' => 'Nenhuma instância WhatsApp conectada.'], 422);
+        }
+
+        // Anti-ban: delay humano de 2s antes do envio de mídia
+        sleep(2);
+
+        $evo = new EvolutionApiService($instance);
+        $res = $evo->sendMedia($chat->wa_id, $validated['base64'], $validated['caption'] ?? '', $validated['mimetype']);
+
+        if (isset($res['error'])) {
+            Log::error('sendMedia falhou', ['chat_id' => $chatId, 'error' => $res]);
+            return response()->json(['error' => 'Falha ao enviar mídia: ' . ($res['error'] ?? 'Erro desconhecido')], 500);
+        }
+
+        $messageId = $res['key']['id'] ?? ('MEDIA_' . uniqid());
+        $caption   = $validated['caption'] ?? '';
+
+        $msg = WhatsappMessage::create([
+            'chat_id'    => $chat->id,
+            'message_id' => $messageId,
+            'content'    => $caption !== '' ? "[Imagem] {$caption}" : '[Imagem enviada]',
+            'direction'  => 'outbound',
+            'type'       => 'image',
+        ]);
+
+        $chat->update(['last_message_at' => now()]);
+
+        WhatsappAuditLog::create([
+            'tenant_id'     => $tenantId,
+            'chat_id'       => $chat->id,
+            'actor_user_id' => auth()->id(),
+            'actor_type'    => 'user',
+            'event'         => 'outbound_media',
+            'details'       => ['type' => 'image', 'mimetype' => $validated['mimetype'], 'provider_message_id' => $messageId],
+        ]);
+
+        return response()->json(['success' => true, 'message' => $msg]);
+    }
+
+    /**
+     * Enviar áudio (PTT - Push To Talk) pelo OmniChannel Chat
+     * Usa formato OGG/Opus nativo do WhatsApp para máxima furtividade anti-ban
+     */
+    public function sendAudio(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $validated = $request->validate([
+            'base64'   => ['required', 'string'],
+            'mimetype' => ['nullable', 'string'],
+        ]);
+
+        // Anti-ban: bloquear envio se contato está restrito
+        if ($chat->blocked_at || $chat->opt_out_at) {
+            return response()->json(['error' => 'Contato bloqueado ou com opt-out. Envio cancelado.'], 422);
+        }
+
+        $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('status', 'open')
+            ->first();
+
+        if (!$instance) {
+            return response()->json(['error' => 'Nenhuma instância WhatsApp conectada.'], 422);
+        }
+
+        // Anti-ban: delay de 3s antes do envio de áudio (simula gravação/envio humano)
+        sleep(3);
+
+        $evo = new EvolutionApiService($instance);
+        $res = $evo->sendAudio($chat->wa_id, $validated['base64']);
+
+        if (isset($res['error'])) {
+            Log::error('sendAudio falhou', ['chat_id' => $chatId, 'error' => $res]);
+            return response()->json(['error' => 'Falha ao enviar áudio: ' . ($res['error'] ?? 'Erro desconhecido')], 500);
+        }
+
+        $messageId = $res['key']['id'] ?? ('AUDIO_' . uniqid());
+
+        $msg = WhatsappMessage::create([
+            'chat_id'    => $chat->id,
+            'message_id' => $messageId,
+            'content'    => '🎙️ [Áudio enviado]',
+            'direction'  => 'outbound',
+            'type'       => 'audio',
+        ]);
+
+        $chat->update(['last_message_at' => now()]);
+
+        WhatsappAuditLog::create([
+            'tenant_id'     => $tenantId,
+            'chat_id'       => $chat->id,
+            'actor_user_id' => auth()->id(),
+            'actor_type'    => 'user',
+            'event'         => 'outbound_audio',
+            'details'       => ['type' => 'audio_ptt', 'provider_message_id' => $messageId],
+        ]);
+
+        return response()->json(['success' => true, 'message' => $msg]);
+    }
+
+    /**
+     * Agendar mensagem de texto para envio futuro
+     */
+    public function scheduleMessage(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $validated = $request->validate([
+            'content'      => ['required', 'string', 'max:4096'],
+            'scheduled_at' => ['required', 'date', 'after:now'],
+        ]);
+
+        if ($chat->blocked_at || $chat->opt_out_at) {
+            return response()->json(['error' => 'Contato bloqueado ou com opt-out. Agendamento cancelado.'], 422);
+        }
+
+        $scheduled = \App\Models\ScheduledWhatsappMessage::create([
+            'tenant_id'    => $tenantId,
+            'chat_id'      => $chat->id,
+            'content'      => $validated['content'],
+            'scheduled_at' => $validated['scheduled_at'],
+            'status'       => 'pending',
+            'created_by'   => auth()->id(),
+        ]);
+
+        return response()->json([
+            'success'    => true,
+            'scheduled'  => $scheduled,
+            'message'    => 'Mensagem agendada para ' . \Carbon\Carbon::parse($validated['scheduled_at'])->format('d/m/Y H:i'),
+        ]);
+    }
 }

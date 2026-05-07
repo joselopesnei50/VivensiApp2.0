@@ -416,6 +416,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/status', [App\Http\Controllers\WhatsappController::class, 'getStatus']);
     Route::post('/whatsapp/pairing-code', [App\Http\Controllers\WhatsappController::class, 'generatePairingCode'])->middleware('throttle:5,1');
     Route::get('/whatsapp/qr-code', [App\Http\Controllers\WhatsappController::class, 'getQrCode'])->middleware('throttle:10,1');
+    // OmniChannel Media & Scheduling
+    Route::post('/whatsapp/chat/{id}/send-media',    [App\Http\Controllers\WhatsappController::class, 'sendMedia']);
+    Route::post('/whatsapp/chat/{id}/send-audio',    [App\Http\Controllers\WhatsappController::class, 'sendAudio']);
+    Route::post('/whatsapp/chat/{id}/schedule',      [App\Http\Controllers\WhatsappController::class, 'scheduleMessage']);
     
     Route::get('/whatsapp/broadcast', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'index'])->name('whatsapp.broadcast.index');
     Route::post('/whatsapp/broadcast', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'sendBroadcast'])->name('whatsapp.broadcast.send');
