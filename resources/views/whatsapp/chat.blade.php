@@ -1543,12 +1543,11 @@
             $.ajax({
                 url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/send-media',
                 method: 'POST',
-                data: JSON.stringify({ _token: csrfToken, base64: _imageBase64, mimetype: _imageMimetype, caption: caption }),
+                headers: { 'X-CSRF-TOKEN': csrfToken },
+                data: JSON.stringify({ base64: _imageBase64, mimetype: _imageMimetype, caption: caption }),
                 contentType: 'application/json',
                 success: function(res) {
                     if (res.success) {
-                        // Mostra a imagem no chat otimisticamente
-                        const isOut = true;
                         const preview = document.getElementById('imagePreviewEl').src;
                         const captionHtml = caption ? `<div style="font-size:0.82rem;margin-top:4px;">${escapeHtml(caption)}</div>` : '';
                         $('#chat-messages-area').append(`
@@ -1562,10 +1561,13 @@
                         `);
                         scrollToBottom();
                         cancelImage();
+                    } else {
+                        alert('Erro ao enviar imagem: ' + (res.error || 'Falha no envio'));
                     }
                 },
                 error: function(xhr) {
-                    alert('Erro ao enviar imagem: ' + (xhr.responseJSON?.error || 'Desconhecido'));
+                    const msg = xhr.responseJSON?.error || xhr.responseJSON?.message || 'Erro desconhecido (status ' + xhr.status + ')';
+                    alert('Erro ao enviar imagem: ' + msg);
                 }
             });
         }
@@ -1692,7 +1694,8 @@
                 $.ajax({
                     url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/send-audio',
                     method: 'POST',
-                    data: JSON.stringify({ _token: csrfToken, base64: base64, mimetype: _audioBlob.type }),
+                    headers: { 'X-CSRF-TOKEN': csrfToken },
+                    data: JSON.stringify({ base64: base64, mimetype: _audioBlob.type }),
                     contentType: 'application/json',
                     success: function(res) {
                         if (res.success) {
@@ -1706,10 +1709,15 @@
                             `);
                             scrollToBottom();
                             cancelAudio();
+                        } else {
+                            alert('Erro ao enviar áudio: ' + (res.error || 'Falha no envio'));
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Áudio';
                         }
                     },
                     error: function(xhr) {
-                        alert('Erro ao enviar áudio: ' + (xhr.responseJSON?.error || 'Desconhecido'));
+                        const msg = xhr.responseJSON?.error || xhr.responseJSON?.message || 'Erro desconhecido (status ' + xhr.status + ')';
+                        alert('Erro ao enviar áudio: ' + msg);
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Áudio';
                     }
@@ -1756,7 +1764,8 @@
             $.ajax({
                 url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/schedule',
                 method: 'POST',
-                data: JSON.stringify({ _token: csrfToken, content: content, scheduled_at: scheduledAt }),
+                headers: { 'X-CSRF-TOKEN': csrfToken },
+                data: JSON.stringify({ content: content, scheduled_at: scheduledAt }),
                 contentType: 'application/json',
                 success: function(res) {
                     if (res.success) {
@@ -1764,14 +1773,16 @@
                         resultEl.innerHTML = `<i class="fas fa-check-circle me-1"></i> ${res.message}`;
                         resultEl.style.display = 'block';
                         document.getElementById('scheduleMsgContent').value = '';
-                        // Fecha o modal após 2.5s
                         setTimeout(() => {
                             bootstrap.Modal.getInstance(document.getElementById('scheduleModal'))?.hide();
                         }, 2500);
+                    } else {
+                        alert('Erro ao agendar: ' + (res.error || 'Falha no agendamento'));
                     }
                 },
                 error: function(xhr) {
-                    alert('Erro ao agendar: ' + (xhr.responseJSON?.error || xhr.responseJSON?.message || 'Desconhecido'));
+                    const msg = xhr.responseJSON?.error || xhr.responseJSON?.message || 'Erro desconhecido (status ' + xhr.status + ')';
+                    alert('Erro ao agendar: ' + msg);
                 },
                 complete: function() {
                     btn.disabled = false;
