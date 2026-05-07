@@ -1,56 +1,183 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="header-page" style="margin-bottom: 30px;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <h2 style="margin: 0; color: #111827; font-weight: 800; font-size: 2rem;">Blog CMS</h2>
-            <p style="color: #6b7280; margin: 5px 0 0 0;">Gerencie os artigos publicados na página inicial.</p>
+@php
+    $basePath = rtrim(request()->getBaseUrl(), '/');
+    $total      = $posts->count();
+    $published  = $posts->where('is_published', true)->count();
+    $drafts     = $total - $published;
+@endphp
+
+{{-- Header --}}
+<div class="d-flex align-items-start gap-3 mb-4 flex-wrap">
+    <div class="flex-1">
+        <div style="font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">
+            Admin / CMS
         </div>
-        <a href="{{ route('admin.blog.create') }}" class="btn-premium">
-            <i class="fas fa-plus me-2"></i> Novo Artigo
-        </a>
+        <h2 class="fw-800 mb-0" style="font-size:1.6rem;color:#0f172a;line-height:1.2;">Blog CMS</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:.85rem;">Gerencie os artigos publicados na página inicial.</p>
+    </div>
+    <a href="{{ route('admin.blog.create') }}"
+       class="btn btn-primary fw-bold rounded-3 d-flex align-items-center gap-2 flex-shrink-0"
+       style="margin-top:4px;">
+        <i class="fas fa-plus"></i> Novo Artigo
+    </a>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-success border-0 shadow-sm rounded-4 mb-4">{{ session('success') }}</div>
+@endif
+
+{{-- Stats --}}
+<div class="row g-3 mb-4">
+    <div class="col-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(99,102,241,.1);display:inline-flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+                <i class="fas fa-newspaper" style="color:#6366f1;font-size:.8rem;"></i>
+            </div>
+            <div class="fw-800" style="font-size:1.5rem;color:#4f46e5;line-height:1.1;">{{ $total }}</div>
+            <div style="font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">artigos</div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(16,185,129,.1);display:inline-flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+                <i class="fas fa-circle-check" style="color:#10b981;font-size:.8rem;"></i>
+            </div>
+            <div class="fw-800" style="font-size:1.5rem;color:#059669;line-height:1.1;">{{ $published }}</div>
+            <div style="font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">publicados</div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,.1);display:inline-flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+                <i class="fas fa-pen-to-square" style="color:#f59e0b;font-size:.8rem;"></i>
+            </div>
+            <div class="fw-800" style="font-size:1.5rem;color:#d97706;line-height:1.1;">{{ $drafts }}</div>
+            <div style="font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">rascunhos</div>
+        </div>
     </div>
 </div>
 
-<div class="vivensi-card" style="padding: 0; overflow: hidden;">
-    <table class="table" style="margin-bottom: 0;">
-        <thead style="background: #f8fafc;">
-            <tr>
-                <th style="padding: 15px 25px; color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Título</th>
-                <th style="padding: 15px 25px; color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Status</th>
-                <th style="padding: 15px 25px; color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Data de Publicação</th>
-                <th style="padding: 15px 25px; color: #64748b; font-size: 0.8rem; text-transform: uppercase; text-align: right;">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($posts as $post)
-            <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="padding: 20px 25px;">
-                    <div style="font-weight: 700; color: #1e293b;">{{ $post->title }}</div>
-                    <div style="font-size: 0.75rem; color: #94a3b8;">/blog/{{ $post->slug }}</div>
-                </td>
-                <td style="padding: 20px 25px;">
-                    @if($post->is_published)
-                        <span style="background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">Publicado</span>
-                    @else
-                        <span style="background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">Rascunho</span>
-                    @endif
-                </td>
-                <td style="padding: 20px 25px; color: #64748b; font-size: 0.85rem;">
-                    {{ $post->published_at ? $post->published_at : 'Não publicado' }}
-                </td>
-                <td style="padding: 20px 25px; text-align: right;">
-                    <a href="{{ route('admin.blog.edit', $post->id) }}" class="btn btn-sm btn-light" style="border: 1px solid #e2e8f0;"><i class="fas fa-edit"></i></a>
-                    <form action="{{ route('admin.blog.destroy', $post->id) }}" method="POST" style="display: inline-block;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-light" style="border: 1px solid #e2e8f0; color: #ef4444;" onclick="return confirm('Tem certeza?')"><i class="fas fa-trash"></i></button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+{{-- Table --}}
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-0">
+
+        @if($posts->isEmpty())
+            <div class="text-center py-5 px-4">
+                <div style="width:60px;height:60px;background:rgba(99,102,241,.1);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+                    <i class="fas fa-newspaper" style="font-size:1.4rem;color:#6366f1;"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-1">Nenhum artigo ainda</h6>
+                <p class="text-muted small mb-3">Crie o primeiro post do blog da Vivensi.</p>
+                <a href="{{ route('admin.blog.create') }}" class="btn btn-primary fw-bold rounded-3 px-4">
+                    <i class="fas fa-plus me-2"></i> Novo Artigo
+                </a>
+            </div>
+        @else
+            <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between"
+                 style="background:#f8fafc;border-radius:1rem 1rem 0 0;">
+                <span style="font-size:.78rem;font-weight:700;color:#64748b;">{{ $total }} artigo{{ $total !== 1 ? 's' : '' }}</span>
+                <span style="font-size:.72rem;color:#94a3b8;">mais recentes primeiro</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th class="px-4 py-3 th-lbl">Artigo</th>
+                            <th class="py-3 th-lbl">Status</th>
+                            <th class="py-3 th-lbl">Publicação</th>
+                            <th class="pe-4 py-3 th-lbl text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($posts as $post)
+                        <tr style="border-color:#f1f5f9;">
+                            <td class="px-4 py-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    @if($post->image)
+                                        <img src="{{ $post->image }}" alt=""
+                                             style="width:52px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+                                    @else
+                                        <div style="width:52px;height:40px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                            <i class="fas fa-image" style="color:#cbd5e1;font-size:.85rem;"></i>
+                                        </div>
+                                    @endif
+                                    <div style="min-width:0;">
+                                        <div class="fw-bold text-truncate" style="font-size:.88rem;color:#0f172a;max-width:320px;">{{ $post->title }}</div>
+                                        <div style="font-size:.72rem;color:#94a3b8;">/blog/{{ $post->slug }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3">
+                                @if($post->is_published)
+                                    <span class="status-pill pill-published"><i class="fas fa-circle" style="font-size:.45rem;"></i> Publicado</span>
+                                @else
+                                    <span class="status-pill pill-draft"><i class="fas fa-circle" style="font-size:.45rem;"></i> Rascunho</span>
+                                @endif
+                            </td>
+                            <td class="py-3" style="font-size:.83rem;color:#64748b;white-space:nowrap;">
+                                @if($post->published_at)
+                                    {{ \Carbon\Carbon::parse($post->published_at)->format('d/m/Y H:i') }}
+                                @else
+                                    <span style="color:#cbd5e1;">—</span>
+                                @endif
+                            </td>
+                            <td class="pe-4 py-3">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ route('admin.blog.edit', $post->id) }}"
+                                       class="action-btn btn-edit" title="Editar">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <form action="{{ route('admin.blog.destroy', $post->id) }}" method="POST"
+                                          onsubmit="return confirm('Excluir este artigo?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn btn-del" title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+    </div>
 </div>
+
+@push('styles')
+<style>
+.fw-800 { font-weight: 800; }
+.flex-1 { flex: 1; }
+
+.th-lbl {
+    font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;
+    font-weight:700;color:#94a3b8;border-bottom:none;
+}
+
+.status-pill {
+    display:inline-flex;align-items:center;gap:5px;
+    padding:3px 10px;border-radius:20px;
+    font-size:.68rem;font-weight:700;white-space:nowrap;
+}
+.pill-published { background:#dcfce7;color:#166534; }
+.pill-draft     { background:#f1f5f9;color:#64748b; }
+
+.action-btn {
+    width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:.8rem;transition:background .15s,color .15s;
+    text-decoration:none;
+}
+.btn-edit { background:#f1f5f9;color:#475569; }
+.btn-edit:hover { background:#e0e7ff;color:#4f46e5; }
+.btn-del  { background:#f1f5f9;color:#ef4444; }
+.btn-del:hover  { background:#fee2e2;color:#dc2626; }
+</style>
+@endpush
 @endsection
