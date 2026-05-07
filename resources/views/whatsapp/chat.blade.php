@@ -231,28 +231,46 @@
         }
 
         .chat-header {
-            height: 64px;
-            background: #f0f2f5;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 0 24px;
             flex-shrink: 0;
+            z-index: 10;
         }
 
-        .chat-user-profile { display: flex; align-items: center; gap: 13px; }
+        .chat-user-profile { display: flex; align-items: center; gap: 16px; }
         .header-avatar {
-            width: 42px; height: 42px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
             color: white; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 1rem;
+            font-weight: 700; font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
         }
-        .header-info h4 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-heading); }
-        .header-info span { font-size: 0.78rem; color: var(--text-muted); display: block; margin-top: 1px; }
-
-        .chat-actions { display: flex; gap: 4px; }
+        .header-info { display: flex; flex-direction: column; gap: 2px; }
+        .header-info h4 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+        .header-info #header-status { font-size: 0.8rem; color: #64748b; display: flex; align-items: center; gap: 5px; }
+        
+        .compliance-badges { display: flex; gap: 6px; margin-top: 4px; }
+        .c-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .c-ok   { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .c-warn { background: #fffbeb; color: #d97706; border: 1px solid #fef3c7; }
+        .c-bad  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
         .chat-actions button {
             background: transparent; border: none;
             color: var(--text-muted);
@@ -536,16 +554,16 @@
             <!-- Header -->
             <div class="chat-header">
                 <div class="chat-user-profile">
-                    <div class="header-avatar" id="header-avatar">{{ substr($chats[0]->contact_name, 0, 1) }}</div>
+                    <div class="header-avatar" id="header-avatar">{{ count($chats) > 0 ? substr($chats[0]->contact_name, 0, 1) : '?' }}</div>
                     <div class="header-info">
-                        <h4 id="header-name">{{ $chats[0]->contact_name }}</h4>
-                        <span id="header-status"><i class="fas fa-circle text-success" style="font-size: 8px;"></i> Online agora</span>
+                        <h4 id="header-name">{{ count($chats) > 0 ? $chats[0]->contact_name : 'Nenhum chat' }}</h4>
+                        <span id="header-status"><i class="fas fa-circle text-success" style="font-size: 7px;"></i> Online agora</span>
                         <div class="compliance-badges" id="waComplianceBadges"></div>
                     </div>
                 </div>
                 <div class="chat-actions">
-                    <button title="Configurações WhatsApp" onclick="location.href='{{ url('/whatsapp/settings') }}'"><i class="fas fa-cog"></i></button>
-                    <button title="Novo Contato" onclick="startNewChat()"><i class="fas fa-user-plus"></i></button>
+                    <button class="tool-btn" title="Configurações" onclick="location.href='{{ url('/whatsapp/settings') }}'"><i class="fas fa-cog"></i></button>
+                    <button class="tool-btn" title="Novo Contato" onclick="startNewChat()"><i class="fas fa-user-plus"></i></button>
                 </div>
             </div>
 

@@ -115,6 +115,7 @@ class WhatsappBroadcastController extends Controller
             'audience'        => 'required|in:all,selected,groups',
             'cadence'         => 'nullable|integer|in:1,3,5,10,30',
             'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'scheduled_at'    => 'nullable|date|after:now',
         ]);
 
         if (!$request->filled('message') && !$request->hasFile('broadcast_image')) {
@@ -125,6 +126,7 @@ class WhatsappBroadcastController extends Controller
         $message        = $request->input('message', '');
         $audience       = $request->input('audience');
         $cadenceSeconds = (int) $request->input('cadence', 3);
+        $scheduledAt    = $request->input('scheduled_at');
 
         $instance = WhatsappInstance::where('tenant_id', $tenantId)
             ->where('status', 'open')->first();
@@ -133,88 +135,31 @@ class WhatsappBroadcastController extends Controller
             return redirect()->back()->with('error', 'Nenhuma instância WhatsApp conectada.');
         }
 
-        $imageBase64 = null;
-        $imageMime   = null;
+        $imagePath = null;
+        $hasImage  = false;
         if ($request->hasFile('broadcast_image')) {
-            $file        = $request->file('broadcast_image');
-            $imageMime   = $file->getMimeType() ?: 'image/jpeg';
-            $path        = $file->store('broadcasts', 'public');
-            $imageBase64 = base64_encode(Storage::disk('public')->get($path));
+            $imagePath = $request->file('broadcast_image')->store('broadcasts', 'public');
+            $hasImage  = true;
         }
 
-        $evo = new EvolutionApiService($instance);
+        $campaign = \App\Models\BroadcastCampaign::create([
+            'tenant_id'     => $tenantId,
+            'message'       => $message ?: null,
+            'has_image'     => $hasImage,
+            'image_path'    => $imagePath,
+            'audience_type' => $audience,
+            'cadence'       => $cadenceSeconds,
+            'scheduled_at'  => $scheduledAt,
+            'status'        => $scheduledAt ? 'scheduled' : 'processing',
+            'group_ids'     => $audience === 'groups' ? $request->input('group_ids', []) : null,
+            'phones'        => $audience === 'selected' ? $request->input('phones') : null,
+        ]);
 
-        $recipients = collect();
-        if ($audience === 'groups') {
-            $groupIds = $request->input('group_ids', []);
-            if (empty($groupIds)) {
-                return redirect()->back()->with('error', 'Selecione ao menos um grupo.');
-            }
-            foreach ($groupIds as $gid) {
-                $recipients->push((object)['wa_id' => $gid, 'id' => null]);
-            }
-        } else {
-            $query = WhatsappChat::where('tenant_id', $tenantId)
-                ->whereNull('opt_out_at')->whereNull('blocked_at');
-            if ($audience === 'selected' && $request->has('phones')) {
-                $phones = array_map(
-                    fn($p) => preg_replace('/\D+/', '', $p),
-                    explode(',', $request->input('phones'))
-                );
-                $query->whereIn('wa_id', $phones);
-            }
-            $recipients = $query->get();
+        if (!$scheduledAt) {
+            \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id);
+            return redirect()->back()->with('success', 'Disparo iniciado em segundo plano!');
         }
 
-        if ($recipients->isEmpty()) {
-            return redirect()->back()->with('error', 'Nenhum destinatário selecionado.');
-        }
-
-        $sentCount = $failedCount = 0;
-
-        foreach ($recipients as $recipient) {
-            try {
-                $res = $imageBase64
-                    ? $evo->sendMedia($recipient->wa_id, $imageBase64, $message, $imageMime)
-                    : $evo->sendMessage($recipient->wa_id, $message, null, rand(1, 3));
-
-                if (!isset($res['error']) && !empty($res)) {
-                    if ($recipient->id) {
-                        WhatsappMessage::create([
-                            'chat_id'    => $recipient->id,
-                            'message_id' => $res['key']['id'] ?? ('BROADCAST_' . uniqid()),
-                            'content'    => $imageBase64 ? ('[imagem] ' . $message) : $message,
-                            'direction'  => 'outbound',
-                            'type'       => $imageBase64 ? 'image' : 'text',
-                        ]);
-                    }
-                    $sentCount++;
-                } else {
-                    $failedCount++;
-                }
-            } catch (\Exception $e) {
-                Log::error("Broadcast failed for {$recipient->wa_id}: " . $e->getMessage());
-                $failedCount++;
-            }
-            usleep($cadenceSeconds * 1_000_000);
-        }
-
-        if (Schema::hasTable('broadcast_campaigns')) {
-            try {
-                \App\Models\BroadcastCampaign::create([
-                    'tenant_id'     => $tenantId,
-                    'message'       => $message ?: null,
-                    'has_image'     => (bool) $imageBase64,
-                    'audience_type' => $audience,
-                    'total_sent'    => $sentCount,
-                    'total_failed'  => $failedCount,
-                ]);
-            } catch (\Exception $e) {
-                Log::warning('BroadcastCampaign log failed: ' . $e->getMessage());
-            }
-        }
-
-        return redirect()->back()->with('success',
-            "Campanha concluída: {$sentCount} enviados" . ($failedCount ? ", {$failedCount} falhas." : "."));
+        return redirect()->back()->with('success', 'Disparo agendado para ' . $campaign->scheduled_at->format('d/m/Y H:i') . '!');
     }
 }

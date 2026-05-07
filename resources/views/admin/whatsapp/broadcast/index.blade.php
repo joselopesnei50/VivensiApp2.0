@@ -577,6 +577,24 @@
                         </div>
                     </div>
 
+                    {{-- Agendamento --}}
+                    <div class="mb-4">
+                        <div class="section-label">Agendamento</div>
+                        <div class="p-3 rounded-3" style="background:#f8fafc; border: 1px solid #e2e8f0;">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-switch" type="checkbox" id="scheduleToggle" onchange="toggleSchedule(this.checked)">
+                                <label class="form-check-label fw-600 small ms-2" for="scheduleToggle">Agendar para mais tarde</label>
+                            </div>
+                            <div id="scheduleInputWrapper" class="d-none">
+                                <label class="form-label small text-muted mb-1">Selecione data e hora:</label>
+                                <input type="datetime-local" name="scheduled_at" id="scheduledAtInput" class="form-control form-control-sm" style="border-radius:8px; max-width:240px;">
+                                <div class="text-muted mt-1" style="font-size:0.7rem;">
+                                    <i class="fas fa-info-circle me-1"></i> Deixe pelo menos 5 minutos de margem.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Aviso --}}
                     <div class="d-flex gap-3 p-3 mb-4 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;">
                         <i class="fas fa-shield-alt mt-1" style="color:#d97706;flex-shrink:0;"></i>
@@ -629,8 +647,8 @@
                     <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Data</th>
                     <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Mensagem</th>
                     <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Público</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Status</th>
                     <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Enviados</th>
-                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Falhas</th>
                     <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Taxa</th>
                 </tr>
             </thead>
@@ -660,9 +678,25 @@
                         </span>
                     </td>
                     <td style="padding:12px 20px;">
-                        <span style="font-weight:700;color:#16a34a;">{{ $campaign->total_sent }}</span>
+                        @php
+                            $statusMap = [
+                                'scheduled' => ['bg' => '#eef2ff', 'color' => '#4f46e5', 'label' => 'Agendado'],
+                                'processing' => ['bg' => '#fff7ed', 'color' => '#c2410c', 'label' => 'Processando'],
+                                'completed' => ['bg' => '#f0fdf4', 'color' => '#16a34a', 'label' => 'Concluído'],
+                                'failed' => ['bg' => '#fef2f2', 'color' => '#dc2626', 'label' => 'Falhou'],
+                            ];
+                            $s = $statusMap[$campaign->status] ?? ['bg' => '#f1f5f9', 'color' => '#475569', 'label' => $campaign->status];
+                        @endphp
+                        <span style="background:{{ $s['bg'] }}; color:{{ $s['color'] }}; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">
+                            {{ $s['label'] }}
+                        </span>
+                        @if($campaign->status === 'scheduled' && $campaign->scheduled_at)
+                            <div style="font-size:0.65rem; color:#94a3b8; margin-top:2px;">{{ $campaign->scheduled_at->format('d/m H:i') }}</div>
+                        @endif
                     </td>
                     <td style="padding:12px 20px;">
+                        <span style="font-weight:700;color:#16a34a;">{{ $campaign->total_sent }}</span>
+                        <span class="text-muted mx-1">/</span>
                         <span style="font-weight:700;color:{{ $campaign->total_failed > 0 ? '#dc2626' : '#94a3b8' }};">
                             {{ $campaign->total_failed }}
                         </span>
@@ -724,6 +758,10 @@
     function onAudienceChange(val) {
         document.getElementById('manualPhonesWrapper').classList.toggle('d-none', val !== 'selected');
         document.getElementById('groupsWrapper').classList.toggle('d-none', val !== 'groups');
+    }
+
+    function toggleSchedule(checked) {
+        document.getElementById('scheduleInputWrapper').classList.toggle('d-none', !checked);
     }
 
     function loadGroups() {
@@ -894,6 +932,10 @@
         const audience   = document.querySelector('input[name=audience]:checked')?.value;
         const cadence    = document.querySelector('input[name=cadence]:checked')?.value || 3;
         const groupsChecked = document.querySelectorAll('input[name="group_ids[]"]:checked').length;
+        
+        const isScheduled = document.getElementById('scheduleToggle').checked;
+        const scheduledTime = document.getElementById('scheduledAtInput').value;
+
         const audienceTxt = audience === 'all'
             ? 'Todos os contatos do CRM'
             : audience === 'groups'
@@ -901,12 +943,21 @@
                 : 'Números específicos';
         const imageTxt   = hasImage ? '<span style="color:#4f46e5;font-weight:600;"><i class="fas fa-image me-1"></i>Com imagem</span> + ' : '';
         const msgPreview = msg ? `"${msg.substring(0, 60)}${msg.length > 60 ? '…' : ''}"` : '<em>sem texto</em>';
+        
+        let scheduleInfo = '';
+        if (isScheduled && scheduledTime) {
+            const date = new Date(scheduledTime);
+            scheduleInfo = `<div class="mt-2 text-warning fw-bold"><i class="fas fa-clock me-2"></i>Agendado para: ${date.toLocaleString()}</div>`;
+        } else {
+            scheduleInfo = `<div class="mt-2 text-primary fw-bold"><i class="fas fa-bolt me-2"></i>Início IMEDIATO</div>`;
+        }
 
         document.getElementById('modalDisparoInfo').innerHTML = `
             <div class="d-flex flex-column gap-2">
                 <div><i class="fas fa-users me-2" style="color:#4f46e5;width:16px;"></i><strong>Público:</strong> ${audienceTxt}</div>
                 <div><i class="fas fa-comment me-2" style="color:#4f46e5;width:16px;"></i><strong>Mensagem:</strong> ${imageTxt}${msgPreview}</div>
-                <div><i class="fas fa-clock me-2" style="color:#4f46e5;width:16px;"></i><strong>Cadência:</strong> ${cadence}s entre envios</div>
+                <div><i class="fas fa-stopwatch me-2" style="color:#4f46e5;width:16px;"></i><strong>Cadência:</strong> ${cadence}s entre envios</div>
+                ${scheduleInfo}
             </div>`;
 
         const modal = new bootstrap.Modal(document.getElementById('modalConfirmarDisparo'));
@@ -917,7 +968,14 @@
         bootstrap.Modal.getInstance(document.getElementById('modalConfirmarDisparo')).hide();
         const btn = document.querySelector('.launch-btn');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        
+        const isScheduled = document.getElementById('scheduleToggle').checked;
+        if (isScheduled) {
+            btn.innerHTML = '<i class="fas fa-clock fa-spin"></i> Agendando...';
+        } else {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        }
+        
         document.getElementById('broadcastForm').submit();
     });
 </script>
