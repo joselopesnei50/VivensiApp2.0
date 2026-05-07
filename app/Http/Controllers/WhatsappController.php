@@ -1055,41 +1055,44 @@ class WhatsappController extends Controller
         if (!$instance) {
             return response()->json(['error' => 'Nenhuma instância WhatsApp conectada.'], 422);
         }
+        try {
+            $evo = new EvolutionApiService($instance);
+            
+            // Log para debug (pode remover depois)
+            \Log::info("Enviando mídia para {$chat->wa_id}", ['mime' => $validated['mimetype']]);
 
-        // Anti-ban: delay humano de 2s antes do envio de mídia
-        sleep(2);
+            $res = $evo->sendMedia($chat->wa_id, $validated['base64'], $validated['caption'] ?? '', $validated['mimetype']);
 
-        $evo = new EvolutionApiService($instance);
-        $res = $evo->sendMedia($chat->wa_id, $validated['base64'], $validated['caption'] ?? '', $validated['mimetype']);
+            if (isset($res['error']) || empty($res)) {
+                \Log::error("Erro Evolution API (Media):", ['response' => $res, 'chat' => $chat->wa_id]);
+                return response()->json(['success' => false, 'error' => $res['message'] ?? $res['error'] ?? 'Erro na Evolution API']);
+            }
 
-        if (isset($res['error'])) {
-            Log::error('sendMedia falhou', ['chat_id' => $chatId, 'error' => $res]);
-            return response()->json(['error' => 'Falha ao enviar mídia: ' . ($res['error'] ?? 'Erro desconhecido')], 500);
+            // Registrar mensagem
+            $msg = WhatsappMessage::create([
+                'chat_id'    => $chat->id,
+                'message_id' => $res['key']['id'] ?? ('MEDIA_' . uniqid()),
+                'content'    => (($validated['caption'] ?? '') ? "[imagem] " . $validated['caption'] : "[imagem]"),
+                'direction'  => 'outbound',
+                'type'       => 'image',
+            ]);
+
+            $chat->update(['last_message_at' => now()]);
+
+            WhatsappAuditLog::create([
+                'tenant_id'     => $tenantId,
+                'chat_id'       => $chat->id,
+                'actor_user_id' => auth()->id(),
+                'actor_type'    => 'user',
+                'event'         => 'outbound_media',
+                'details'       => ['type' => 'image', 'mimetype' => $validated['mimetype'], 'provider_message_id' => $msg->message_id],
+            ]);
+
+            return response()->json(['success' => true, 'message' => $msg]);
+        } catch (\Exception $e) {
+            \Log::error("Exception no envio de mídia: " . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
-
-        $messageId = $res['key']['id'] ?? ('MEDIA_' . uniqid());
-        $caption   = $validated['caption'] ?? '';
-
-        $msg = WhatsappMessage::create([
-            'chat_id'    => $chat->id,
-            'message_id' => $messageId,
-            'content'    => $caption !== '' ? "[Imagem] {$caption}" : '[Imagem enviada]',
-            'direction'  => 'outbound',
-            'type'       => 'image',
-        ]);
-
-        $chat->update(['last_message_at' => now()]);
-
-        WhatsappAuditLog::create([
-            'tenant_id'     => $tenantId,
-            'chat_id'       => $chat->id,
-            'actor_user_id' => auth()->id(),
-            'actor_type'    => 'user',
-            'event'         => 'outbound_media',
-            'details'       => ['type' => 'image', 'mimetype' => $validated['mimetype'], 'provider_message_id' => $messageId],
-        ]);
-
-        return response()->json(['success' => true, 'message' => $msg]);
     }
 
     /**
@@ -1121,39 +1124,41 @@ class WhatsappController extends Controller
             return response()->json(['error' => 'Nenhuma instância WhatsApp conectada.'], 422);
         }
 
-        // Anti-ban: delay de 3s antes do envio de áudio (simula gravação/envio humano)
-        sleep(3);
+        try {
+            $evo = new EvolutionApiService($instance);
+            sleep(2);
+            $res = $evo->sendAudio($chat->wa_id, $validated['base64']);
 
-        $evo = new EvolutionApiService($instance);
-        $res = $evo->sendAudio($chat->wa_id, $validated['base64']);
+            if (isset($res['error']) || empty($res)) {
+                Log::error("Erro Evolution API (Audio):", ['response' => $res, 'chat' => $chat->wa_id]);
+                return response()->json(['success' => false, 'error' => $res['message'] ?? $res['error'] ?? 'Erro na Evolution API']);
+            }
 
-        if (isset($res['error'])) {
-            Log::error('sendAudio falhou', ['chat_id' => $chatId, 'error' => $res]);
-            return response()->json(['error' => 'Falha ao enviar áudio: ' . ($res['error'] ?? 'Erro desconhecido')], 500);
+            $messageId = $res['key']['id'] ?? ('AUDIO_' . uniqid());
+            $msg = WhatsappMessage::create([
+                'chat_id'    => $chat->id,
+                'message_id' => $messageId,
+                'content'    => '🎙️ [Áudio enviado]',
+                'direction'  => 'outbound',
+                'type'       => 'audio',
+            ]);
+
+            $chat->update(['last_message_at' => now()]);
+
+            WhatsappAuditLog::create([
+                'tenant_id'     => $tenantId,
+                'chat_id'       => $chat->id,
+                'actor_user_id' => auth()->id(),
+                'actor_type'    => 'user',
+                'event'         => 'outbound_audio',
+                'details'       => ['type' => 'audio_ptt', 'provider_message_id' => $messageId],
+            ]);
+
+            return response()->json(['success' => true, 'message' => $msg]);
+        } catch (\Exception $e) {
+            Log::error("Exception no envio de áudio: " . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
-
-        $messageId = $res['key']['id'] ?? ('AUDIO_' . uniqid());
-
-        $msg = WhatsappMessage::create([
-            'chat_id'    => $chat->id,
-            'message_id' => $messageId,
-            'content'    => '🎙️ [Áudio enviado]',
-            'direction'  => 'outbound',
-            'type'       => 'audio',
-        ]);
-
-        $chat->update(['last_message_at' => now()]);
-
-        WhatsappAuditLog::create([
-            'tenant_id'     => $tenantId,
-            'chat_id'       => $chat->id,
-            'actor_user_id' => auth()->id(),
-            'actor_type'    => 'user',
-            'event'         => 'outbound_audio',
-            'details'       => ['type' => 'audio_ptt', 'provider_message_id' => $messageId],
-        ]);
-
-        return response()->json(['success' => true, 'message' => $msg]);
     }
 
     /**
