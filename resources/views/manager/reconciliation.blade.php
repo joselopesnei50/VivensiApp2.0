@@ -4,12 +4,17 @@
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
     $banks = [
-        ['name' => 'Banco do Brasil', 'icon' => 'fas fa-landmark',  'color' => '#f59e0b'],
-        ['name' => 'Itaú',            'icon' => 'fas fa-university', 'color' => '#ef4444'],
-        ['name' => 'Bradesco',        'icon' => 'fas fa-university', 'color' => '#dc2626'],
-        ['name' => 'Santander',       'icon' => 'fas fa-university', 'color' => '#b91c1c'],
-        ['name' => 'Nubank',          'icon' => 'fas fa-credit-card','color' => '#7c3aed'],
-        ['name' => 'Inter',           'icon' => 'fas fa-piggy-bank', 'color' => '#ea580c'],
+        ['name' => 'Banco do Brasil', 'icon' => 'fas fa-landmark',   'color' => '#f59e0b'],
+        ['name' => 'Itaú',            'icon' => 'fas fa-university',  'color' => '#ef4444'],
+        ['name' => 'Bradesco',        'icon' => 'fas fa-university',  'color' => '#dc2626'],
+        ['name' => 'Santander',       'icon' => 'fas fa-university',  'color' => '#b91c1c'],
+        ['name' => 'Nubank',          'icon' => 'fas fa-credit-card', 'color' => '#7c3aed'],
+        ['name' => 'Inter',           'icon' => 'fas fa-piggy-bank',  'color' => '#ea580c'],
+    ];
+    $steps = [
+        ['n' => '1', 'color' => '#6366f1', 'title' => 'Exporte o extrato',  'desc' => 'No seu internet banking, exporte o período desejado no formato OFX.'],
+        ['n' => '2', 'color' => '#0284c7', 'title' => 'Importe aqui',       'desc' => 'Selecione ou arraste o arquivo .ofx no campo ao lado.'],
+        ['n' => '3', 'color' => '#10b981', 'title' => 'Revise e confirme',  'desc' => 'O sistema exibe os lançamentos para você confirmar ou ignorar.'],
     ];
 @endphp
 
@@ -95,18 +100,14 @@
                     <h6 class="fw-bold mb-0" style="font-size:.9rem;color:#0f172a;">Como funciona</h6>
                 </div>
 
-                @foreach([
-                    ['1', '#6366f1', 'Exporte o extrato', 'No seu internet banking, exporte o período desejado no formato OFX.'],
-                    ['2', '#0284c7', 'Importe aqui',      'Selecione ou arraste o arquivo .ofx no campo ao lado.'],
-                    ['3', '#10b981', 'Revise e confirme', 'O sistema exibe os lançamentos para você confirmar ou ignorar.'],
-                ] as [$n, $color, $title, $desc])
+                @foreach($steps as $step)
                 <div class="d-flex gap-3 {{ !$loop->last ? 'mb-3' : '' }}">
-                    <div style="width:28px;height:28px;border-radius:50%;background:{{ $color }};color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
-                        {{ $n }}
+                    <div style="width:28px;height:28px;border-radius:50%;background:{{ $step['color'] }};color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
+                        {{ $step['n'] }}
                     </div>
                     <div>
-                        <div class="fw-bold" style="font-size:.85rem;color:#0f172a;">{{ $title }}</div>
-                        <div style="font-size:.78rem;color:#64748b;margin-top:2px;">{{ $desc }}</div>
+                        <div class="fw-bold" style="font-size:.85rem;color:#0f172a;">{{ $step['title'] }}</div>
+                        <div style="font-size:.78rem;color:#64748b;margin-top:2px;">{{ $step['desc'] }}</div>
                     </div>
                 </div>
                 @endforeach
