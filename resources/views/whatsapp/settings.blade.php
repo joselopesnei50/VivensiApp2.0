@@ -221,21 +221,35 @@
                         <i class="fas fa-gavel me-2" style="color:#f59e0b;"></i> Políticas de Envio Meta
                     </h5>
 
-                    @foreach([
-                        ['outbound_enabled',           $config->outbound_enabled ?? false,             'Habilitar Envio de Mensagens',                    'Desativar bloqueia todos os disparos do sistema.'],
-                        ['enforce_24h_window',         $config->enforce_24h_window ?? true,            'Respeitar Janela de 24h (Custos reduzidos)',       'A IA só envia textos livres enquanto o WhatsApp permite gratuitamente.'],
-                        ['allow_templates_outside_window', $config->allow_templates_outside_window ?? true, 'Permitir Templates pagos fora da janela',      'Campanhas usarão modelos Meta aprovados. O cartão no Facebook Business será cobrado.'],
-                    ] as [$field, $checked, $label, $desc])
-                    <div class="d-flex align-items-start gap-3 py-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                    <div class="d-flex align-items-start gap-3 py-3 border-bottom">
                         <div class="form-check form-switch mb-0 mt-1">
-                            <input class="form-check-input" type="checkbox" name="{{ $field }}" value="1" id="{{ $field }}" {{ $checked ? 'checked' : '' }}>
+                            <input class="form-check-input" type="checkbox" name="outbound_enabled" value="1" id="outboundEnabled" {{ ($config->outbound_enabled ?? false) ? 'checked' : '' }}>
                         </div>
-                        <label for="{{ $field }}" class="mb-0" style="cursor:pointer;">
-                            <div class="fw-bold" style="font-size:.85rem;color:#334155;">{{ $label }}</div>
-                            <div class="text-muted" style="font-size:.75rem;line-height:1.5;margin-top:2px;">{{ $desc }}</div>
+                        <label for="outboundEnabled" class="mb-0" style="cursor:pointer;">
+                            <div class="fw-bold" style="font-size:.85rem;color:#334155;">Habilitar Envio de Mensagens</div>
+                            <div class="text-muted" style="font-size:.75rem;line-height:1.5;margin-top:2px;">Desativar bloqueia todos os disparos do sistema.</div>
                         </label>
                     </div>
-                    @endforeach
+
+                    <div class="d-flex align-items-start gap-3 py-3 border-bottom">
+                        <div class="form-check form-switch mb-0 mt-1">
+                            <input class="form-check-input" type="checkbox" name="enforce_24h_window" value="1" id="enforce24h" {{ ($config->enforce_24h_window ?? true) ? 'checked' : '' }}>
+                        </div>
+                        <label for="enforce24h" class="mb-0" style="cursor:pointer;">
+                            <div class="fw-bold" style="font-size:.85rem;color:#334155;">Respeitar Janela de 24h (Custos reduzidos)</div>
+                            <div class="text-muted" style="font-size:.75rem;line-height:1.5;margin-top:2px;">A IA só envia textos livres enquanto o WhatsApp permite gratuitamente.</div>
+                        </label>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3 py-3">
+                        <div class="form-check form-switch mb-0 mt-1">
+                            <input class="form-check-input" type="checkbox" name="allow_templates_outside_window" value="1" id="allowTemplates" {{ ($config->allow_templates_outside_window ?? true) ? 'checked' : '' }}>
+                        </div>
+                        <label for="allowTemplates" class="mb-0" style="cursor:pointer;">
+                            <div class="fw-bold" style="font-size:.85rem;color:#334155;">Permitir Templates pagos fora da janela</div>
+                            <div class="text-muted" style="font-size:.75rem;line-height:1.5;margin-top:2px;">Campanhas usarão modelos Meta aprovados. O cartão no Facebook Business será cobrado.</div>
+                        </label>
+                    </div>
                 </div>
             </div>
 
