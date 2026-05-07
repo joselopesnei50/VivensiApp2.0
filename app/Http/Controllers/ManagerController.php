@@ -218,12 +218,15 @@ class ManagerController extends Controller
     public function approvals()
     {
         $this->guardManagerOnly();
-        // For now, listing transactions that might need approval (status pending)
         $pendingApprovals = \App\Models\Transaction::where('tenant_id', auth()->user()->tenant_id)
                             ->where('status', 'pending')
-                            ->with('project')
+                            ->with(['project', 'category'])
+                            ->orderByDesc('date')
                             ->get();
-        return view('manager.approvals', compact('pendingApprovals'));
+
+        $totalAmount = $pendingApprovals->sum('amount');
+
+        return view('manager.approvals', compact('pendingApprovals', 'totalAmount'));
     }
 
 }
