@@ -9,13 +9,16 @@ class BroadcastCampaign extends Model
 {
     use BelongsToTenant;
     protected $fillable = [
-        'tenant_id', 'name', 'message', 'has_image',
-        'audience_type', 'total_sent', 'total_failed',
+        'tenant_id', 'name', 'message', 'has_image', 'image_path',
+        'audience_type', 'status', 'scheduled_at', 'cadence',
+        'group_ids', 'phones', 'total_sent', 'total_failed',
     ];
 
     protected $casts = [
-        'has_image'  => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'has_image'    => 'boolean',
+        'group_ids'    => 'array',
+        'scheduled_at' => 'datetime',
+        'created_at'   => 'datetime',
+        'updated_at'   => 'datetime',
     ];
 }
