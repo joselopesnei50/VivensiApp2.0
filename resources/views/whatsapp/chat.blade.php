@@ -478,6 +478,141 @@
         @media (max-width: 992px) {
             .intelligence-panel { display: none; }
         }
+
+        /* ── Sidebar accent bar ── */
+        .sidebar-accent {
+            height: 3px;
+            background: linear-gradient(90deg, #25d366, #128c7e, #075e54);
+        }
+
+        /* ── Status dots on avatars ── */
+        .status-dot {
+            width: 11px; height: 11px;
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 1px; right: 1px;
+        }
+        .status-dot.open    { background: #25d366; box-shadow: 0 0 0 2px rgba(37,211,102,.25); }
+        .status-dot.waiting { background: #f59e0b; }
+        .status-dot.closed  { background: #94a3b8; }
+
+        /* ── Contact item status border ── */
+        .contact-item.status-waiting { border-left-color: #f59e0b; }
+        .contact-item.status-closed  { border-left-color: #e2e8f0; }
+        .contact-item.active         { border-left-color: var(--accent); }
+
+        /* ── Contact status pill ── */
+        .contact-status-pill {
+            font-size: .6rem; font-weight: 700;
+            padding: 1px 6px; border-radius: 10px;
+            text-transform: uppercase; letter-spacing: .04em;
+            flex-shrink: 0;
+        }
+        .pill-open    { background: #dcfce7; color: #16a34a; }
+        .pill-waiting { background: #fef3c7; color: #d97706; }
+        .pill-closed  { background: #f1f5f9; color: #94a3b8; }
+
+        /* ── Improved input toolbar ── */
+        .tool-btn {
+            background: transparent; border: none;
+            font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; padding: 4px 10px;
+            border-radius: 20px;
+            transition: all 0.15s;
+            display: inline-flex; align-items: center; gap: 5px;
+            white-space: nowrap;
+        }
+        .tool-btn:hover { opacity: .85; }
+        .tool-btn.tb-rapid    { color: #d97706; background: rgba(245,158,11,.1); }
+        .tool-btn.tb-rapid:hover { background: rgba(245,158,11,.18); }
+        .tool-btn.tb-template { color: #16a34a; background: rgba(16,185,129,.1); }
+        .tool-btn.tb-template:hover { background: rgba(16,185,129,.18); }
+        .tool-btn.tb-image    { color: #6366f1; background: rgba(99,102,241,.1); }
+        .tool-btn.tb-image:hover { background: rgba(99,102,241,.18); }
+        .tool-btn.tb-audio    { color: #ef4444; background: rgba(239,68,68,.1); }
+        .tool-btn.tb-audio:hover { background: rgba(239,68,68,.18); }
+        .tool-btn.tb-schedule { color: #0ea5e9; background: rgba(14,165,233,.1); }
+        .tool-btn.tb-schedule:hover { background: rgba(14,165,233,.18); }
+
+        /* ── Compact right panel hero ── */
+        .panel-hero-compact {
+            padding: 16px 18px 14px;
+            background: #f0f2f5;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .panel-hero-top {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+        }
+        .hero-avatar-sm {
+            width: 46px; height: 46px;
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; color: white; font-weight: 700;
+            box-shadow: 0 3px 8px rgba(37,211,102,.3);
+        }
+        .hero-info { flex: 1; min-width: 0; }
+        .hero-info h3 { color: #111b21; font-size: .95rem; font-weight: 700; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hero-info span { color: #667781; font-size: .75rem; font-family: monospace; }
+
+        /* ── Section header with chevron animation ── */
+        .crm-header[aria-expanded="true"] .crm-chevron { transform: rotate(180deg); }
+        .crm-chevron { transition: transform .2s; }
+
+        /* ── Better chat header avatar ── */
+        .header-avatar-dynamic {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.1rem; color: white;
+            flex-shrink: 0;
+        }
+
+        /* ── Window warning banner ── */
+        #window-warning {
+            margin: 0 16px 8px;
+            border-radius: 10px;
+            font-size: .85rem;
+        }
+
+        /* ── Audio record area ── */
+        #audioRecordArea {
+            border-radius: 10px;
+        }
+
+        /* ── Image preview area ── */
+        #imagePreviewArea {
+            border-radius: 10px;
+        }
+
+        /* ── Empty state improvement ── */
+        .empty-state-card {
+            background: white;
+            padding: 48px 40px;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,.06);
+            text-align: center;
+            max-width: 380px;
+        }
+        .empty-state-icon {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, rgba(37,211,102,.15), rgba(18,140,126,.15));
+            border-radius: 20px;
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
+        }
+        .new-chat-btn {
+            background: var(--primary-color);
+            color: white; border: none;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-size: .9rem; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 8px;
+            cursor: pointer; transition: all .15s;
+            margin-top: 20px;
+        }
+        .new-chat-btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
     </style>
 </head>
 <body>
@@ -489,18 +624,26 @@
         <!-- 1. LEFT SIDEBAR -->
         <div class="crm-sidebar">
             <div class="sidebar-header">
+                <div class="sidebar-accent"></div>
                 <div class="header-top-row">
-                    <h1 class="app-title"><i class="fab fa-whatsapp" style="color: #25D366;"></i> OmniChannel</h1>
-                    <a href="{{ url('/dashboard') }}" class="back-link"><i class="fas fa-arrow-left"></i> Voltar</a>
+                    <h1 class="app-title">
+                        <span style="width:30px;height:30px;background:linear-gradient(135deg,#25d366,#128c7e);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;">
+                            <i class="fab fa-whatsapp" style="color:#fff;font-size:.9rem;"></i>
+                        </span>
+                        OmniChannel
+                    </h1>
+                    <a href="{{ url('/dashboard') }}" class="back-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
                 </div>
                 <div class="search-area">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Buscar conversas...">
+                    <input type="text" class="search-input" placeholder="Buscar por nome ou número...">
                 </div>
             </div>
-            
-             <div class="filter-tabs">
-                <button class="filter-tab active" data-filter="all">Todas</button>
+
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">
+                    Todas <span style="background:rgba(0,0,0,.1);border-radius:10px;padding:0 5px;font-size:.65rem;margin-left:2px;">{{ count($chats) }}</span>
+                </button>
                 <button class="filter-tab" data-filter="unread">Não Lidas</button>
                 <button class="filter-tab" data-filter="waiting">Aguardando</button>
             </div>
@@ -508,33 +651,46 @@
             <div class="contact-list" id="chatList">
                 @foreach($chats as $chat)
                 @php
-                    // Logic to simulate unread/waiting for demonstration if real data isn't perfect yet
-                    $isUnread = $loop->index == 1; 
+                    $isUnread  = $loop->index == 1;
                     $isWaiting = $chat->status === 'waiting' || $loop->index == 2;
+                    $statusClass = $chat->status === 'waiting' ? 'waiting' : ($chat->status === 'closed' ? 'closed' : 'open');
+                    $avatarColors = ['#4F46E5','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899'];
+                    $avatarColor  = $avatarColors[$chat->id % 6];
+                    $lastMsg = $chat->messages()->latest()->first();
+                    $lastTime = $chat->last_message_at
+                        ? (\Carbon\Carbon::parse($chat->last_message_at)->isToday()
+                            ? \Carbon\Carbon::parse($chat->last_message_at)->format('H:i')
+                            : \Carbon\Carbon::parse($chat->last_message_at)->format('d/m'))
+                        : '';
                 @endphp
-                <div class="contact-item {{ $loop->first ? 'active' : '' }}" 
-                     onclick="selectChat(this, {{ $chat->id }})" 
+                <div class="contact-item {{ $loop->first ? 'active' : '' }} status-{{ $statusClass }}"
+                     onclick="selectChat(this, {{ $chat->id }})"
                      data-id="{{ $chat->id }}"
                      data-unread="{{ $isUnread ? 'true' : 'false' }}"
                      data-waiting="{{ $isWaiting ? 'true' : 'false' }}">
-                    
-                    <div class="avatar" style="background: {{ ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'][$chat->id % 6] }};">
+
+                    <div class="avatar" style="background: {{ $avatarColor }};">
                         {{ strtoupper(substr($chat->contact_name ?? '?', 0, 1)) }}
+                        <span class="status-dot {{ $statusClass }}"></span>
                     </div>
                     <div class="contact-info">
                         <div class="contact-top">
                             <span class="contact-name">{{ $chat->contact_name ?? 'Sem Nome' }}</span>
-                            <span class="contact-time text-muted">{{ $chat->last_message_at ? \Carbon\Carbon::parse($chat->last_message_at)->format('H:i') : '' }}</span>
+                            <span class="contact-time">{{ $lastTime }}</span>
                         </div>
                         <div class="contact-bottom">
                             <span class="last-message">
-                                @php $lastMsg = $chat->messages()->latest()->first(); @endphp
                                 @if($lastMsg && $lastMsg->direction == 'outbound')
-                                    <i class="fas fa-check-double" style="color: var(--primary-color);"></i>
+                                    <i class="fas fa-check-double" style="color:var(--primary-color);font-size:.7rem;"></i>
                                 @endif
                                 {{ $lastMsg?->content ?? 'Iniciar conversa' }}
                             </span>
-                            @if($isUnread) <span class="badge-unread">1</span> @endif
+                            <div class="d-flex align-items-center gap-1">
+                                @if($isUnread) <span class="badge-unread">1</span> @endif
+                                @if($statusClass === 'waiting')
+                                    <span class="contact-status-pill pill-waiting">Aguard.</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -554,16 +710,26 @@
             <!-- Header -->
             <div class="chat-header">
                 <div class="chat-user-profile">
-                    <div class="header-avatar" id="header-avatar">{{ count($chats) > 0 ? substr($chats[0]->contact_name, 0, 1) : '?' }}</div>
+                    <div class="header-avatar-dynamic" id="header-avatar"
+                         style="background: linear-gradient(135deg, {{ ['#4F46E5','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899'][$chats[0]->id % 6] }}, {{ ['#7c3aed','#059669','#d97706','#dc2626','#7c3aed','#db2777'][$chats[0]->id % 6] }});">
+                        {{ count($chats) > 0 ? strtoupper(substr($chats[0]->contact_name, 0, 1)) : '?' }}
+                    </div>
                     <div class="header-info">
                         <h4 id="header-name">{{ count($chats) > 0 ? $chats[0]->contact_name : 'Nenhum chat' }}</h4>
-                        <span id="header-status"><i class="fas fa-circle text-success" style="font-size: 7px;"></i> Online agora</span>
-                        <div class="compliance-badges" id="waComplianceBadges"></div>
+                        <span id="header-status">
+                            <i class="fas fa-circle" style="font-size:6px;color:#25d366;"></i>
+                            Online agora
+                        </span>
+                        <div class="compliance-badges" id="waComplianceBadges" style="margin-top:2px;"></div>
                     </div>
                 </div>
-                <div class="chat-actions">
-                    <button class="tool-btn" title="Configurações" onclick="location.href='{{ url('/whatsapp/settings') }}'"><i class="fas fa-cog"></i></button>
-                    <button class="tool-btn" title="Novo Contato" onclick="startNewChat()"><i class="fas fa-user-plus"></i></button>
+                <div class="chat-actions d-flex align-items-center gap-1">
+                    <button class="tool-btn" title="Nova Conversa" onclick="startNewChat()" style="color:#25d366;background:rgba(37,211,102,.1);">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button class="tool-btn" title="Configurações" onclick="location.href='{{ url('/whatsapp/settings') }}'" style="color:#64748b;background:#f1f5f9;">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
             </div>
 
@@ -601,20 +767,20 @@
                             </div>
                         </div>
 
-                        <div class="input-toolbar">
-                            <button class="tool-btn text-warning" title="Respostas Rápidas" onclick="openCannedModal()">
+                        <div class="input-toolbar" style="flex-wrap:wrap;">
+                            <button class="tool-btn tb-rapid" title="Respostas Rápidas" onclick="openCannedModal()">
                                 <i class="fas fa-bolt"></i> Rápidas
                             </button>
-                            <button class="tool-btn text-success" id="tplToggleBtn" title="Template Oficial Meta" onclick="openTemplateModal()">
+                            <button class="tool-btn tb-template" id="tplToggleBtn" title="Template Oficial Meta" onclick="openTemplateModal()">
                                 <i class="fas fa-shield-halved"></i> Template
                             </button>
-                            <button class="tool-btn" title="Anexar Imagem" onclick="document.getElementById('imageFileInput').click()" style="color:#6366f1;">
+                            <button class="tool-btn tb-image" title="Anexar Imagem" onclick="document.getElementById('imageFileInput').click()">
                                 <i class="fas fa-image"></i> Imagem
                             </button>
-                            <button class="tool-btn" title="Gravar Áudio" onclick="startRecording()" id="recordBtn" style="color:#ef4444;">
+                            <button class="tool-btn tb-audio" title="Gravar Áudio" onclick="startRecording()" id="recordBtn">
                                 <i class="fas fa-microphone"></i> Áudio
                             </button>
-                            <button class="tool-btn" title="Agendar Mensagem" onclick="openScheduleModal()" style="color:#f59e0b;">
+                            <button class="tool-btn tb-schedule" title="Agendar Mensagem" onclick="openScheduleModal()">
                                 <i class="fas fa-clock"></i> Agendar
                             </button>
                         </div>
@@ -637,56 +803,38 @@
         
         <!-- 3. RIGHT PANEL (CRM) -->
         <div class="intelligence-panel" id="crm-panel">
-            <div class="panel-hero">
-                <div class="hero-avatar" id="crm-avatar">{{ strtoupper(substr($chats[0]->contact_name, 0, 1)) }}</div>
-                <h3 id="crm-name">{{ $chats[0]->contact_name }}</h3>
-                <span id="crm-phone">{{ $chats[0]->contact_phone }}</span>
-                    <div class="compliance-badges" id="crmComplianceBadges" style="justify-content:center;"></div>
+            <div class="panel-hero-compact">
+                <div class="panel-hero-top">
+                    <div class="hero-avatar-sm" id="crm-avatar">{{ strtoupper(substr($chats[0]->contact_name, 0, 1)) }}</div>
+                    <div class="hero-info">
+                        <h3 id="crm-name">{{ $chats[0]->contact_name }}</h3>
+                        <span id="crm-phone">{{ $chats[0]->contact_phone }}</span>
+                    </div>
                     @if($isManager)
-                        <div class="mt-3 text-center">
-                            <!-- Compliance Dropdown -->
-                            <div class="dropdown d-inline-block w-100 px-3">
-                                <button class="btn btn-sm w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; color: #475569; font-weight: 600; padding: 8px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                    <span><i class="fas fa-shield-alt me-2 text-muted"></i> Privacidade / Segurança</span>
-                                    <i class="fas fa-chevron-down small text-muted"></i>
-                                </button>
-                                <ul class="dropdown-menu shadow-sm border-0 w-100 mt-1" style="border-radius: 12px; font-size: 0.85rem; padding: 8px;">
-                                    <li><a class="dropdown-item fw-bold text-success rounded" href="#" onclick="complianceAction('opt_in')"><i class="fas fa-check me-2"></i>Opt-in (Permitir)</a></li>
-                                    <li><a class="dropdown-item fw-bold text-danger rounded" href="#" onclick="complianceAction('opt_out')"><i class="fas fa-ban me-2"></i>Opt-out (Remover)</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item fw-bold text-dark rounded" href="#" onclick="complianceAction('block')"><i class="fas fa-lock me-2"></i>Bloquear Número</a></li>
-                                    <li><a class="dropdown-item fw-bold text-secondary rounded" href="#" onclick="complianceAction('unblock')"><i class="fas fa-unlock me-2"></i>Desbloquear</a></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Project integration quick select -->
-                        <div class="mt-2 px-3 mb-2">
-                            <label class="form-label" style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Enviar para Projeto</label>
-                            <div class="input-group input-group-sm" style="box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-radius: 10px; overflow: hidden;">
-                                <span class="input-group-text bg-white text-primary border-end-0" style="border-color: #e2e8f0;"><i class="fas fa-project-diagram"></i></span>
-                                <select id="quickKanbanProject" class="form-select border-start-0 ps-0" style="font-size: 0.8rem; font-weight: 600; color: #475569; border-color: #e2e8f0; cursor: pointer;">
-                                    <option value="">Selecione o projeto...</option>
-                                    @if(isset($projects))
-                                        @foreach($projects as $proj)
-                                            <option value="{{ $proj->id }}">{{ $proj->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                                <button class="btn btn-primary fw-bold px-3" type="button" onclick="quickSendToKanban(this)" title="Enviar para Kanban">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <div class="dropdown ms-auto">
+                        <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#475569;padding:5px 8px;">
+                            <i class="fas fa-shield-alt text-muted" style="font-size:.8rem;"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-1" style="border-radius:12px;font-size:.84rem;padding:6px;min-width:200px;">
+                            <li><a class="dropdown-item fw-bold text-success rounded py-1" href="#" onclick="complianceAction('opt_in')"><i class="fas fa-check me-2"></i>Opt-in (Permitir)</a></li>
+                            <li><a class="dropdown-item fw-bold text-danger rounded py-1" href="#" onclick="complianceAction('opt_out')"><i class="fas fa-ban me-2"></i>Opt-out (Remover)</a></li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item fw-bold text-dark rounded py-1" href="#" onclick="complianceAction('block')"><i class="fas fa-lock me-2"></i>Bloquear</a></li>
+                            <li><a class="dropdown-item fw-bold text-secondary rounded py-1" href="#" onclick="complianceAction('unblock')"><i class="fas fa-unlock me-2"></i>Desbloquear</a></li>
+                        </ul>
+                    </div>
                     @endif
+                </div>
+                <div class="compliance-badges" id="crmComplianceBadges" style="flex-wrap:wrap;gap:4px;"></div>
             </div>
 
             <div class="crm-content">
                 <!-- Accordion 1 -->
                 <div class="crm-section">
-                    <div class="crm-header" data-bs-toggle="collapse" data-bs-target="#crm-contact-info">
+                    <div class="crm-header" data-bs-toggle="collapse" data-bs-target="#crm-contact-info" aria-expanded="true">
                         <span><i class="far fa-id-card me-2 text-muted"></i> Dados de Contato</span>
-                        <i class="fas fa-chevron-down text-muted small"></i>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
                     </div>
                     <div class="crm-body collapse show" id="crm-contact-info">
                         <div class="info-row">
@@ -699,12 +847,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Accordion 2 -->
                 <div class="crm-section">
-                    <div class="crm-header" data-bs-toggle="collapse" data-bs-target="#crm-notes">
+                    <div class="crm-header" data-bs-toggle="collapse" data-bs-target="#crm-notes" aria-expanded="true">
                         <span><i class="far fa-sticky-note me-2 text-warning"></i> Notas & IA</span>
-                        <i class="fas fa-chevron-down text-muted small"></i>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
                     </div>
                     <div class="crm-body collapse show" id="crm-notes">
                         <div class="mb-3 text-end"><button class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.75rem;" onclick="openNoteModal()">+ Criar Nota</button></div>
@@ -716,14 +864,14 @@
 
                 <!-- Accordion 3: AI Training -->
                 <div class="crm-section">
-                    <div class="crm-header" data-bs-toggle="collapse" data-bs-target="#crm-ai-brain">
-                        <span><i class="fas fa-brain me-2 text-info"></i> Cérebro do Bruce (Treinamento IA)</span>
-                        <i class="fas fa-chevron-down text-muted small"></i>
+                    <div class="crm-header" data-bs-toggle="collapse" data-bs-target="#crm-ai-brain" aria-expanded="true">
+                        <span><i class="fas fa-brain me-2 text-info"></i> Cérebro do Bruce (IA)</span>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
                     </div>
                     <div class="crm-body collapse show" id="crm-ai-brain">
                         <div class="mb-2">
                             <label class="label">Instruções de Personalidade</label>
-                            <textarea id="aiTrainingArea" class="form-control form-control-sm" rows="5" style="font-size: 0.8rem; background: #fffbeb;" placeholder="Ex: Você é um vendedor focado em..."></textarea>
+                            <textarea id="aiTrainingArea" class="form-control form-control-sm" rows="4" style="font-size: 0.8rem; background: #fffbeb;" placeholder="Ex: Você é um vendedor focado em..."></textarea>
                         </div>
                         <button type="button" class="btn btn-sm btn-info text-white w-100 py-1" onclick="updateAiTraining()" style="font-weight: 700; font-size: 0.75rem;">
                             <i class="fas fa-save me-1"></i> Atualizar Conhecimento
@@ -733,9 +881,9 @@
 
                 <!-- Accordion 4 -->
                 <div class="crm-section">
-                    <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-history">
+                    <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-history" aria-expanded="false">
                         <span><i class="fas fa-history me-2 text-muted"></i> Histórico</span>
-                        <i class="fas fa-chevron-right text-muted small"></i>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
                     </div>
                     <div class="crm-body collapse" id="crm-history">
                         <div id="historyList" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
@@ -749,11 +897,18 @@
         @else
         <!-- EMPTY STATE (NO CHATS) -->
         <div class="empty-state" style="flex: 1;">
-            <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05);">
-                <i class="fab fa-whatsapp fa-4x text-success mb-3"></i>
-                <h2>Bem-vindo ao OmniChannel</h2>
-                <p>Nenhuma conversa ativa no momento.<br>Aguarde novas mensagens ou inicie um atendimento ativo.</p>
-                <button class="send-btn" style="margin: 20px auto;" onclick="startNewChat()">Nova Transmissão</button>
+            <div class="empty-state-card">
+                <div class="empty-state-icon">
+                    <i class="fab fa-whatsapp" style="font-size:2rem;color:#25d366;"></i>
+                </div>
+                <h5 style="font-weight:700;color:#111b21;margin-bottom:8px;">Bem-vindo ao OmniChannel</h5>
+                <p style="color:#667781;font-size:.88rem;margin:0;line-height:1.6;">
+                    Nenhuma conversa ativa no momento.<br>
+                    Aguarde novas mensagens ou inicie um atendimento ativo.
+                </p>
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    <i class="fas fa-plus"></i> Nova Conversa
+                </button>
             </div>
         </div>
         @endif
