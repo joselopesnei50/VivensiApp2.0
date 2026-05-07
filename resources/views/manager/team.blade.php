@@ -115,7 +115,7 @@
         $open       = (int) ($e->tasks_open_count ?? 0);
         $overdue    = (int) ($e->tasks_overdue_count ?? 0);
         $dueSoon    = (int) ($e->tasks_due_soon_count ?? 0);
-        $projects   = (int) ($e->project_members_count ?? 0);
+        $projCount  = (int) ($e->project_members_count ?? 0);
         $colorIdx   = $e->id % 6;
         $bg         = $avatarColors[$colorIdx];
         $isActive   = $status === 'active';
@@ -128,7 +128,8 @@
            data-status="{{ $status }}"
            data-search="{{ e($searchText) }}"
            data-open="{{ $open }}"
-           data-overdue="{{ $overdue }}">
+           data-overdue="{{ $overdue }}"
+           data-projects="{{ $projCount }}">
 
             {{-- Card top: avatar + name --}}
             <div class="d-flex align-items-center gap-3 mb-3">
@@ -156,7 +157,7 @@
                 @if($open >= 10)
                     <span class="emp-badge badge-dark">Sobrecarregado</span>
                 @endif
-                @if($projects === 0)
+                @if($projCount === 0)
                     <span class="emp-badge badge-muted">Sem projetos</span>
                 @endif
             </div>
@@ -164,12 +165,13 @@
             {{-- Stats --}}
             <div class="d-flex gap-3 pt-2 border-top">
                 <div class="text-center" style="flex:1;">
-                    <div class="fw-800" style="font-size:1.1rem;color:#0f172a;">{{ $projects }}</div>
+                    <div class="fw-800" style="font-size:1.1rem;color:#0f172a;">{{ $projCount }}</div>
                     <div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;">Projetos</div>
                 </div>
                 <div style="width:1px;background:#f1f5f9;"></div>
                 <div class="text-center" style="flex:1;">
                     <div class="fw-800" style="font-size:1.1rem;color:{{ $overdue > 0 ? '#dc2626' : '#0f172a' }};">{{ $open }}</div>
+
                     <div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;">Tarefas</div>
                 </div>
                 <div style="width:1px;background:#f1f5f9;"></div>
