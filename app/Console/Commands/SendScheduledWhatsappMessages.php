@@ -18,19 +18,36 @@ class SendScheduledWhatsappMessages extends Command
 
     public function handle(): void
     {
-        // Busca mensagens pendentes com agendamento <= agora (com janela de 10 min para atrasos)
-        $due = ScheduledWhatsappMessage::where('status', 'pending')
+        // 1. OmniChannel Individual Messages
+        $dueMessages = ScheduledWhatsappMessage::where('status', 'pending')
             ->where('scheduled_at', '<=', Carbon::now())
             ->with('chat')
-            ->limit(30) // Limite de segurança por execução
+            ->limit(30)
             ->get();
 
-        if ($due->isEmpty()) {
-            return;
+        if ($dueMessages->isNotEmpty()) {
+            $this->info("Processando {$dueMessages->count()} mensagens individuais agendadas...");
+            $this->processIndividualMessages($dueMessages);
         }
 
-        $this->info("Processando {$due->count()} mensagens agendadas...");
+        // 2. Broadcast Campaigns
+        $dueCampaigns = \App\Models\BroadcastCampaign::where('status', 'scheduled')
+            ->where('scheduled_at', '<=', Carbon::now())
+            ->get();
 
+        if ($dueCampaigns->isNotEmpty()) {
+            $this->info("Iniciando {$dueCampaigns->count()} campanhas de disparo em massa agendadas...");
+            foreach ($dueCampaigns as $campaign) {
+                \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id);
+                $campaign->update(['status' => 'processing']);
+            }
+        }
+
+        $this->info('Processamento concluído.');
+    }
+
+    protected function processIndividualMessages($due)
+    {
         foreach ($due as $scheduled) {
             try {
                 $chat     = $scheduled->chat;
@@ -41,7 +58,6 @@ class SendScheduledWhatsappMessages extends Command
                     continue;
                 }
 
-                // Compliance: não enviar para bloqueados/opt-out
                 if ($chat->blocked_at || $chat->opt_out_at) {
                     $scheduled->update(['status' => 'cancelled', 'error_message' => 'Contato com opt-out ou bloqueado.']);
                     continue;
@@ -56,7 +72,6 @@ class SendScheduledWhatsappMessages extends Command
                     continue;
                 }
 
-                // Anti-ban: delay aleatório de 5-15 segundos entre mensagens agendadas
                 $delay = rand(5, 15);
                 sleep($delay);
 
@@ -64,39 +79,26 @@ class SendScheduledWhatsappMessages extends Command
                 $res = $evo->sendMessage($chat->wa_id, $scheduled->content, null, 0);
 
                 if (isset($res['error'])) {
-                    $scheduled->update([
-                        'status'        => 'failed',
-                        'error_message' => $res['error'] ?? 'Erro na Evolution API',
-                    ]);
-                    Log::error("Scheduled WA Message #{$scheduled->id} failed", $res);
+                    $scheduled->update(['status' => 'failed', 'error_message' => $res['error'] ?? 'Erro na Evolution API']);
                     continue;
                 }
 
-                $messageId = $res['key']['id'] ?? ('SCHED_' . uniqid());
-
                 WhatsappMessage::create([
                     'chat_id'    => $chat->id,
-                    'message_id' => $messageId,
+                    'message_id' => $res['key']['id'] ?? ('SCHED_' . uniqid()),
                     'content'    => $scheduled->content,
                     'direction'  => 'outbound',
                     'type'       => 'text',
                 ]);
 
                 $chat->update(['last_message_at' => now()]);
-
-                $scheduled->update([
-                    'status'  => 'sent',
-                    'sent_at' => now(),
-                ]);
-
-                $this->info("✓ Mensagem #{$scheduled->id} enviada para {$chat->wa_id}");
+                $scheduled->update(['status' => 'sent', 'sent_at' => now()]);
+                $this->info("✓ Individual #{$scheduled->id} enviada.");
 
             } catch (\Throwable $e) {
-                Log::error("Scheduled WA error #{$scheduled->id}: " . $e->getMessage());
+                Log::error("Scheduled individual error #{$scheduled->id}: " . $e->getMessage());
                 $scheduled->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
             }
         }
-
-        $this->info('Processamento concluído.');
     }
 }
