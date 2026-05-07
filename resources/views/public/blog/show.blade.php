@@ -23,13 +23,13 @@
     <!-- Featured Image -->
     <div style="max-width: 1000px; margin: 0 auto 60px; padding: 0 5%;">
         <div style="width: 100%; height: 500px; border-radius: 30px; overflow: hidden; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.15);">
-            <img src="{{ $post->image ?: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643' }}" alt="{{ $post->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="{{ $post->image ?: asset('images/blog-placeholder.jpg') }}" alt="{{ $post->title }}" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
     </div>
 
     <!-- Article Content -->
     <div class="article-content" style="max-width: 800px; margin: 0 auto; padding: 0 5%;">
-        {!! strip_tags($post->content, '<h1><h2><h3><h4><h5><h6><p><br><strong><b><em><i><u><ul><ol><li><a><blockquote><img><table><thead><tbody><tr><th><td><span><div><figure><figcaption><code><pre>') !!}
+        {!! $post->content_html !!}
     </div>
 
     <!-- Back to Blog -->

@@ -2,10 +2,10 @@
 
 @section('content')
 @php
-    $basePath = rtrim(request()->getBaseUrl(), '/');
-    $total      = $posts->count();
-    $published  = $posts->where('is_published', true)->count();
-    $drafts     = $total - $published;
+    $basePath  = rtrim(request()->getBaseUrl(), '/');
+    $total     = $totalCount;
+    $published = $publishedCount;
+    $drafts    = $draftCount;
 @endphp
 
 {{-- Header --}}
@@ -144,6 +144,12 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+        @endif
+
+        @if($posts->hasPages())
+            <div class="px-4 py-3 border-top d-flex justify-content-center">
+                {{ $posts->links() }}
             </div>
         @endif
 

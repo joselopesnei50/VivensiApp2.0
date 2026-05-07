@@ -20,4 +20,12 @@ class Post extends Model
         'is_published' => 'boolean',
         'published_at' => 'datetime',
     ];
+
+    public function getContentHtmlAttribute(): string
+    {
+        return \Illuminate\Support\Str::markdown($this->content ?? '', [
+            'html_input'         => 'strip',
+            'allow_unsafe_links' => false,
+        ]);
+    }
 }

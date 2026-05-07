@@ -11,8 +11,12 @@ class BlogController extends Controller
 {
     public function index()
     {
-        $posts = Post::orderBy('created_at', 'desc')->get();
-        return view('admin.blog.index', compact('posts'));
+        $posts          = Post::orderBy('created_at', 'desc')->paginate(15);
+        $totalCount     = Post::count();
+        $publishedCount = Post::where('is_published', true)->count();
+        $draftCount     = $totalCount - $publishedCount;
+
+        return view('admin.blog.index', compact('posts', 'totalCount', 'publishedCount', 'draftCount'));
     }
 
     public function create()
@@ -23,19 +27,19 @@ class BlogController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|max:255',
+            'title'   => 'required|max:255',
             'content' => 'required',
-            'image' => 'nullable|image|max:2048' // Validação de imagem real
+            'image'   => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->except('image');
-        $data['slug'] = Str::slug($request->title);
-        $data['published_at'] = $request->has('is_published') ? now() : null;
+        $data = $request->only(['title', 'content']);
+        $data['is_published'] = $request->boolean('is_published');
+        $data['slug']         = $this->uniqueSlug(Str::slug($request->title));
+        $data['published_at'] = $data['is_published'] ? now() : null;
 
-        // Upload de Imagem
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('blog', 'public');
-            $data['image'] = '/storage/' . $path; // Salva o caminho acessível
+            $path         = $request->file('image')->store('blog', 'public');
+            $data['image'] = '/storage/' . $path;
         }
 
         Post::create($data);
@@ -54,24 +58,27 @@ class BlogController extends Controller
         $post = Post::findOrFail($id);
 
         $request->validate([
-            'title' => 'required|max:255',
+            'title'   => 'required|max:255',
             'content' => 'required',
-            'image' => 'nullable|image|max:2048'
+            'image'   => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->except('image');
-        $data['slug'] = Str::slug($request->title);
-        $data['is_published'] = $request->has('is_published');
-        $data['published_at'] = ($request->has('is_published') && !$post->is_published) ? now() : $post->published_at;
+        $data = $request->only(['title', 'content']);
+        $data['is_published'] = $request->boolean('is_published');
 
-        // Upload de Nova Imagem
+        $newSlug = Str::slug($request->title);
+        $data['slug'] = ($newSlug !== $post->slug)
+            ? $this->uniqueSlug($newSlug, $post->id)
+            : $post->slug;
+
+        if ($data['is_published'] && !$post->is_published) {
+            $data['published_at'] = now();
+        } else {
+            $data['published_at'] = $post->published_at;
+        }
+
         if ($request->hasFile('image')) {
-            // (Opcional) Deletar imagem antiga se existir
-            // if ($post->image && \Illuminate\Support\Facades\Storage::exists(str_replace('/storage/', 'public/', $post->image))) {
-            //    \Illuminate\Support\Facades\Storage::delete(str_replace('/storage/', 'public/', $post->image));
-            // }
-
-            $path = $request->file('image')->store('blog', 'public');
+            $path          = $request->file('image')->store('blog', 'public');
             $data['image'] = '/storage/' . $path;
         }
 
@@ -84,5 +91,23 @@ class BlogController extends Controller
     {
         $post->delete();
         return back()->with('success', 'Post excluído com sucesso!');
+    }
+
+    private function uniqueSlug(string $base, ?int $excludeId = null): string
+    {
+        $slug  = $base;
+        $count = 1;
+
+        while (true) {
+            $query = Post::where('slug', $slug);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            if (!$query->exists()) {
+                return $slug;
+            }
+            $slug = $base . '-' . $count;
+            $count++;
+        }
     }
 }
