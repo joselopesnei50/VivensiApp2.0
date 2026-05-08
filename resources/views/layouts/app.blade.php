@@ -91,14 +91,16 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1.4px;
-        color: rgba(148,163,184,.5);
+        color: #94a3b8;
         cursor: pointer;
         user-select: none;
         transition: color 0.2s;
         margin: 0;
     }
-    .menu-group-header:hover { color: rgba(148,163,184,.9); }
+    .menu-group-header:hover { color: #475569; }
     .menu-group-header.group-active { color: var(--primary-color, #4f46e5); }
+    [data-theme="dark"] .menu-group-header { color: rgba(148,163,184,.45); }
+    [data-theme="dark"] .menu-group-header:hover { color: rgba(148,163,184,.85); }
     .menu-group-header .group-icon { width: 14px; text-align: center; font-size: 0.62rem; opacity: 0.8; }
     .menu-group-header .group-arrow {
         margin-left: auto;
