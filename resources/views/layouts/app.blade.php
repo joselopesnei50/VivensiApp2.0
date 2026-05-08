@@ -81,31 +81,30 @@
     }
 
     /* ── Accordion Menu Groups ─────────────────────────── */
-    .menu-group { margin-bottom: 2px; }
+    .menu-group { margin-bottom: 0; }
     .menu-group-header {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        font-size: 0.68rem;
+        gap: 7px;
+        padding: 16px 20px 4px;
+        font-size: 0.6rem;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: #475569;
+        letter-spacing: 1.4px;
+        color: rgba(148,163,184,.5);
         cursor: pointer;
         user-select: none;
-        border-radius: 8px;
-        transition: background 0.2s, color 0.2s;
-        margin: 2px 6px 0 6px;
+        transition: color 0.2s;
+        margin: 0;
     }
-    .menu-group-header:hover { background: rgba(255,255,255,0.05); color: #cbd5e1; }
+    .menu-group-header:hover { color: rgba(148,163,184,.9); }
     .menu-group-header.group-active { color: var(--primary-color, #4f46e5); }
-    .menu-group-header .group-icon { width: 16px; text-align: center; font-size: 0.75rem; }
+    .menu-group-header .group-icon { width: 14px; text-align: center; font-size: 0.62rem; opacity: 0.8; }
     .menu-group-header .group-arrow {
         margin-left: auto;
-        font-size: 0.6rem;
+        font-size: 0.52rem;
         transition: transform 0.25s;
-        opacity: 0.6;
+        opacity: 0.35;
     }
     .menu-group-header.collapsed .group-arrow { transform: rotate(-90deg); }
     .menu-group-items {
@@ -115,8 +114,8 @@
     .menu-group-items.collapsed { max-height: 0 !important; }
     .menu-divider {
         height: 1px;
-        background: rgba(255,255,255,0.06);
-        margin: 6px 14px;
+        background: rgba(148,163,184,.06);
+        margin: 4px 0;
     }
     /* ── Language Switcher ──────────────────────────────── */
     .lang-switcher { display: flex; justify-content: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.07); }
