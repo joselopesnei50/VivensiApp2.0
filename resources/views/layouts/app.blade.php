@@ -269,11 +269,6 @@
                             <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp" style="color:#25d366;"></i> Command Bot (WA)</a></li>
                         </ul>
                     </div>
-
-                {{-- Link direto: Command Bot --}}
-                <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp" style="color:#25d366;"></i> Command Bot (WA)</a></li>
-                <div class="menu-divider"></div>
-
                 </div>
             @elseif (auth()->user()->role == 'manager')
                 {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
@@ -1232,6 +1227,16 @@
             items.style.maxHeight = '0';
         }
     }
+
+    // Fix server-rendered max-height for expanded groups (prevents items being clipped)
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.menu-group-header:not(.collapsed)').forEach(function(header) {
+            const items = header.nextElementSibling;
+            if (items && items.classList.contains('menu-group-items')) {
+                items.style.maxHeight = items.scrollHeight + 'px';
+            }
+        });
+    });
 
     // Scroll sidebar to show the active menu item on page load
     document.addEventListener('DOMContentLoaded', function () {
