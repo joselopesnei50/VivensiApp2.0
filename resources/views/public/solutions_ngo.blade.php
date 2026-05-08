@@ -392,7 +392,7 @@ footer{background:#060606;border-top:1px solid var(--border);padding:60px 5% 28p
     <ul class="nav-links">
         <li><a href="{{ route('solutions.ngo') }}" class="active">Terceiro Setor</a></li>
         <li><a href="{{ route('solutions.manager') }}">Gestores</a></li>
-        <li><a href="{{ route('solutions.common') }}">Pessoal</a></li>
+        <li><a href="{{ route('solutions.common') }}">MEI/PME</a></li>
         <li><a href="#features">Funcionalidades</a></li>
         <li><a href="#pricing">Planos</a></li>
     </ul>
