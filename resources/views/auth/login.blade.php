@@ -7,11 +7,11 @@
         $statUsers = 0;
     }
 
-    function fmtStat(int $n): string {
+    $fmtStat = function(int $n): string {
         if ($n >= 1000) return number_format($n / 1000, 1, '.', '') . 'k+';
         if ($n > 0)     return $n . '+';
         return '—';
-    }
+    };
 @endphp
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -334,12 +334,12 @@
 
         <div class="stats-row">
             <div class="stat-item">
-                <div class="stat-value">{{ fmtStat($statOrgs) }}</div>
+                <div class="stat-value">{{ $fmtStat($statOrgs) }}</div>
                 <div class="stat-label">Organizações</div>
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <div class="stat-value">{{ fmtStat($statUsers) }}</div>
+                <div class="stat-value">{{ $fmtStat($statUsers) }}</div>
                 <div class="stat-label">Gestores ativos</div>
             </div>
             <div class="stat-divider"></div>
@@ -364,8 +364,12 @@
 
     <div class="left-bottom">
         <div class="left-footer-links">
+            @if(\Illuminate\Support\Facades\Route::has('legal.privacy'))
             <a href="{{ route('legal.privacy') }}">Privacidade</a>
+            @endif
+            @if(\Illuminate\Support\Facades\Route::has('legal.terms'))
             <a href="{{ route('legal.terms') }}">Termos</a>
+            @endif
             <a href="mailto:suporte@vivensi.app.br">Suporte</a>
         </div>
         <span class="left-footer-copy">© {{ date('Y') }} Vivensi</span>
@@ -415,7 +419,9 @@
         <div class="field">
             <div class="field-row">
                 <label for="password">Senha</label>
+                @if(\Illuminate\Support\Facades\Route::has('password.request'))
                 <a href="{{ route('password.request') }}" class="forgot-link">Esqueceu?</a>
+                @endif
             </div>
             <div class="field-wrap">
                 <input type="password" id="password" name="password"
@@ -441,7 +447,7 @@
     <div class="divider">ou</div>
 
     <div class="register-row">
-        Quer fazer parte? <a href="{{ route('register') }}">Entrar na lista de espera</a>
+        Quer fazer parte? <a href="{{ \Illuminate\Support\Facades\Route::has('register') ? route('register') : '#' }}">Entrar na lista de espera</a>
     </div>
 
 </div>
