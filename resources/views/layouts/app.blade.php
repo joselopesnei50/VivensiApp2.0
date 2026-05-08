@@ -187,7 +187,7 @@
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*');
                     $sa_mkt_active   = request()->routeIs('admin.email_logs') || request()->routeIs('whatsapp.broadcast.index') || request()->is('prospecting*');
-                    $sa_infra_active = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->is('horizon*') || request()->routeIs('admin.bot');
+                    $sa_infra_active = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot');
                 @endphp
 
                 {{-- Grupo: SaaS & Métricas --}}
@@ -265,7 +265,6 @@
                     <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '350px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
-                            <li><a href="{{ url('/horizon') }}" target="_blank"><i class="fas fa-satellite-dish"></i> Horizon (Filas)</a></li>
                             <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configurações Globais</a></li>
                             <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp" style="color:#25d366;"></i> Command Bot (WA)</a></li>
                         </ul>
