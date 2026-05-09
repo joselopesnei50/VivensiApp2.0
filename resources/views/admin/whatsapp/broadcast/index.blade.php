@@ -983,5 +983,24 @@
         
         document.getElementById('broadcastForm').submit();
     });
+
+    // Auto-refresh da tabela a cada 8 segundos se houver campanha em andamento
+    setInterval(() => {
+        const tableHtml = document.querySelector('.table-responsive')?.innerHTML || '';
+        if (tableHtml.includes('Processando')) {
+            fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTable = doc.querySelector('.table-responsive');
+                const currentTable = document.querySelector('.table-responsive');
+                if (newTable && currentTable) {
+                    currentTable.innerHTML = newTable.innerHTML;
+                }
+            })
+            .catch(err => console.error('Erro no auto-refresh:', err));
+        }
+    }, 8000);
 </script>
 @endpush
