@@ -92,18 +92,27 @@ class WhatsappBroadcastController extends Controller
             return response()->json(['error' => 'Nenhuma instância conectada.'], 422);
         }
 
-        $evo    = new EvolutionApiService($instance);
-        $groups = $evo->getGroups();
+        try {
+            $evo    = new EvolutionApiService($instance);
+            $groups = $evo->getGroups();
 
-        $mapped = array_map(fn($g) => [
-            'id'   => $g['id'] ?? '',
-            'name' => $g['subject'] ?? $g['name'] ?? 'Grupo sem nome',
-            'size' => isset($g['participants']) ? count($g['participants']) : ($g['size'] ?? 0),
-        ], $groups);
+            if (!is_array($groups)) {
+                return response()->json(['error' => 'O formato de grupos retornado pela API é inválido.']);
+            }
 
-        usort($mapped, fn($a, $b) => strcmp($a['name'], $b['name']));
+            $mapped = array_map(fn($g) => [
+                'id'   => $g['id'] ?? (is_string($g) ? $g : ''),
+                'name' => $g['subject'] ?? $g['name'] ?? (is_string($g) ? $g : 'Grupo sem nome'),
+                'size' => isset($g['participants']) && is_array($g['participants']) ? count($g['participants']) : ($g['size'] ?? 0),
+            ], $groups);
 
-        return response()->json($mapped);
+            usort($mapped, fn($a, $b) => strcmp((string)$a['name'], (string)$b['name']));
+
+            return response()->json($mapped);
+        } catch (\Exception $e) {
+            Log::error("Erro ao buscar grupos no Broadcast: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'Erro interno ao processar grupos: ' . $e->getMessage()]);
+        }
     }
 
     public function campaigns()
