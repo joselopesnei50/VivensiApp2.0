@@ -24,9 +24,11 @@ class TransactionController extends Controller
         $stats = [
             'income' => Transaction::where('tenant_id', $tenant_id)
                                    ->where('type', 'income')
+                                   ->where('status', 'paid')
                                    ->sum('amount'),
             'expense' => Transaction::where('tenant_id', $tenant_id)
                                    ->where('type', 'expense')
+                                   ->where('status', 'paid')
                                    ->sum('amount')
         ];
         $stats['balance'] = $stats['income'] - $stats['expense'];
