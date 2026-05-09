@@ -42,4 +42,14 @@ class NgoDonor extends Model
             }
         });
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(\App\Models\Transaction::class, 'ngo_donor_id');
+    }
+
+    public function getPortalUrlAttribute(): string
+    {
+        return url('/portal-doador/' . $this->portal_token);
+    }
 }
