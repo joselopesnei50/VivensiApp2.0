@@ -269,6 +269,81 @@
     </div>
 </div>
 
+{{-- ===== PORTFÓLIO DE PROJETOS ===== --}}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div style="background: #0f172a; border-radius: 28px; padding: 36px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2); height: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px;">
+                <div>
+                    <h3 style="color: white; font-weight: 950; font-size: 1.5rem; letter-spacing: -1px; margin: 0;">Portfólio de Projetos</h3>
+                    <p style="color: rgba(255,255,255,0.5); font-size: .85rem; margin: 4px 0 0 0;">Acompanhamento Físico e Financeiro</p>
+                </div>
+                <a href="{{ url('/projects') }}" style="font-size: 0.75rem; font-weight: 900; color: var(--ngo-primary); text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">
+                    Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+                @forelse($projects as $proj)
+                @php
+                    $statusColors = [
+                        'active'    => ['#10b981', 'rgba(16,185,129,0.1)', 'Ativo'],
+                        'paused'    => ['#f59e0b', 'rgba(245,158,11,0.1)', 'Pausado'],
+                        'completed' => ['#6366f1', 'rgba(99,102,241,0.1)', 'Concluído'],
+                        'canceled'  => ['#94a3b8', 'rgba(255,255,255,0.05)', 'Cancelado'],
+                    ];
+                    $sc = $statusColors[$proj->status] ?? ['white','rgba(255,255,255,0.05)','—'];
+                    $barColor = $proj->progress >= 100 ? '#10b981' : ($proj->progress >= 60 ? '#6366f1' : '#f59e0b');
+                @endphp
+                <div style="padding: 18px 20px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); border-radius: 18px; transition:.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'; this.style.transform=''">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                        <div>
+                            <a href="{{ url('/projects/'.$proj->id) }}" style="font-weight:800; color:white; font-size:1.05rem; text-decoration:none;">{{ $proj->name }}</a>
+                        </div>
+                        <span style="font-size: 0.65rem; background: {{ $sc[1] }}; color: {{ $sc[0] }}; padding: 4px 10px; border-radius: 99px; font-weight: 900; text-transform: uppercase;">{{ $sc[2] }}</span>
+                    </div>
+                    <div style="display: flex; gap: 20px; margin-bottom: 8px; flex-direction: column;">
+                        <!-- Progresso de Tarefas -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 4px;">
+                                <span>Tarefas: {{ $proj->progress }}%</span>
+                            </div>
+                            <div style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.05); overflow: hidden;">
+                                <div style="height: 100%; width:{{ $proj->progress }}%; background:{{ $barColor }}; box-shadow: 0 0 10px {{ $barColor }};"></div>
+                            </div>
+                        </div>
+                        <!-- Progresso Financeiro (Budget) -->
+                        @if($proj->budget > 0)
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 4px;">
+                                <span>Verba Consumida: {{ $proj->budget_percent }}%</span>
+                                <span style="color: {{ $proj->budget_percent >= 100 ? '#ef4444' : '#10b981' }}">
+                                    R$ {{ number_format($proj->spent, 0, ',', '.') }} / R$ {{ number_format($proj->budget, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.05); overflow: hidden;">
+                                <div style="height: 100%; width:{{ min(100, $proj->budget_percent) }}%; background:{{ $proj->budget_percent >= 100 ? '#ef4444' : '#10b981' }}; box-shadow: 0 0 10px {{ $proj->budget_percent >= 100 ? '#ef4444' : '#10b981' }};"></div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @empty
+                <div style="grid-column: 1 / -1;">
+                    <x-empty-state 
+                        icon="fa-rocket" 
+                        title="Nenhum Projeto Ativo" 
+                        description="Crie seu primeiro projeto para gerenciar tarefas e orçamentos." 
+                        action_label="Criar Novo Projeto" 
+                        action_url="{{ url('/projects/create') }}" 
+                    />
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
