@@ -109,7 +109,7 @@ class WhatsappBroadcastController extends Controller
             usort($mapped, fn($a, $b) => strcmp((string)$a['name'], (string)$b['name']));
 
             return response()->json($mapped);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Erro ao buscar grupos no Broadcast: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json(['error' => 'Erro interno ao processar grupos: ' . $e->getMessage()]);
         }
