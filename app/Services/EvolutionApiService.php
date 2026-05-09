@@ -321,7 +321,7 @@ class EvolutionApiService
     {
         if (!$this->instanceName || !$this->apiKey) return [];
         try {
-            $response = $this->http()->timeout(15)->withHeaders([
+            $response = $this->http()->timeout(45)->withHeaders([
                 'apikey' => $this->globalApiKey,
             ])->get("{$this->baseUrl}/group/fetchAllGroups/{$this->instanceName}", [
                 'getParticipants' => 'false',
