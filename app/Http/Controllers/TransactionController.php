@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\Project;
 use App\Models\User;
 use App\Mail\PendingExpenseApprovalMail;
+use App\Services\DonorRetentionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -122,6 +123,15 @@ class TransactionController extends Controller
             }
         }
 
+        // Dispara mensagem de agradecimento via WhatsApp para doações confirmadas
+        if (!$needsApproval && $transaction->type === 'income' && $transaction->status === 'paid') {
+            try {
+                (new DonorRetentionService())->notifyDonationReceived($transaction);
+            } catch (\Throwable $e) {
+                \Log::warning('DonorRetention: não foi possível enviar agradecimento: ' . $e->getMessage());
+            }
+        }
+
         return redirect('/transactions')->with('success', 'Lançamento registrado com sucesso!');
     }
 
@@ -234,6 +244,16 @@ class TransactionController extends Controller
         $updates = ['status' => 'paid', 'approval_status' => 'approved'];
 
         $transaction->update($updates);
+
+        // Dispara mensagem de agradecimento via WhatsApp quando aprovação confirma uma doação
+        if ($transaction->type === 'income' && $updates['status'] === 'paid') {
+            try {
+                $transaction->refresh();
+                (new DonorRetentionService())->notifyDonationReceived($transaction);
+            } catch (\Throwable $e) {
+                \Log::warning('DonorRetention: não foi possível enviar agradecimento: ' . $e->getMessage());
+            }
+        }
 
         return back()->with('success', 'Lançamento aprovado!');
     }
