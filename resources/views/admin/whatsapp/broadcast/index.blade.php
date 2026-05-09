@@ -784,7 +784,22 @@
         .then(r => r.json())
         .then(data => {
             loading.classList.add('d-none');
-            if (data.error) { errEl.textContent = data.error; errEl.classList.remove('d-none'); return; }
+            
+            // Handle Laravel exceptions or our custom errors
+            const errMsg = data.error || data.message || null;
+            if (errMsg) { 
+                errEl.textContent = errMsg; 
+                errEl.classList.remove('d-none'); 
+                return; 
+            }
+            
+            // Extra safety check: must be an array
+            if (!Array.isArray(data)) {
+                errEl.textContent = 'Erro de comunicação: A API não retornou uma lista válida.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+
             allGroups = data;
             renderGroups(data);
             listEl.classList.remove('d-none');
