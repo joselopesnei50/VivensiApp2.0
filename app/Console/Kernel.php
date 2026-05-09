@@ -90,6 +90,14 @@ class Kernel extends ConsoleKernel
                      \Illuminate\Support\Facades\Log::error('❌ Falha na régua de reativação de doadores.');
                  });
 
+        // Alertas de Projetos: prazo e orçamento — todo dia às 08:15
+        $schedule->command('projects:deadline-alerts')
+                 ->dailyAt('08:15')
+                 ->withoutOverlapping()
+                 ->onSuccess(function () {
+                     \Illuminate\Support\Facades\Log::info('✅ Alertas de projetos enviados.');
+                 });
+
         // Financeiro: revoga tokens de recibos públicos expirados — todo dia às 04:00
         $schedule->command('receipts:cleanup-expired-tokens')
                  ->dailyAt('04:00')

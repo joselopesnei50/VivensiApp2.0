@@ -254,6 +254,69 @@ class ProjectController extends Controller
         return view('projects.show', compact('project', 'totalSpent', 'transactions', 'percentUsed', 'members', 'availableUsers', 'logs'));
     }
 
+    public function exportPdf($id)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
+
+        $tenantId = auth()->user()->tenant_id;
+
+        $project = Project::where('id', $id)
+                          ->where('tenant_id', $tenantId)
+                          ->firstOrFail();
+
+        // Gastos do projeto
+        $totalSpent = \App\Models\Transaction::where('tenant_id', $tenantId)
+            ->where('project_id', $id)
+            ->where('type', 'expense')
+            ->where('status', 'paid')
+            ->sum('amount');
+
+        $percentUsed = ($project->budget > 0)
+            ? min(100, round(($totalSpent / $project->budget) * 100, 1))
+            : 0;
+
+        // Tarefas por status
+        $tasks = \App\Models\Task::where('tenant_id', $tenantId)
+            ->where('project_id', $id)
+            ->orderByRaw("FIELD(status, 'todo', 'in_progress', 'review', 'done', 'completed')")
+            ->get();
+
+        $taskStats = [
+            'total'       => $tasks->count(),
+            'done'        => $tasks->whereIn('status', ['done', 'completed'])->count(),
+            'in_progress' => $tasks->where('status', 'in_progress')->count(),
+            'todo'        => $tasks->where('status', 'todo')->count(),
+            'overdue'     => $tasks->filter(fn($t) => $t->due_date && \Carbon\Carbon::parse($t->due_date)->isPast() && !in_array($t->status, ['done','completed']))->count(),
+        ];
+        $taskStats['progress'] = $taskStats['total'] > 0
+            ? round(($taskStats['done'] / $taskStats['total']) * 100)
+            : 0;
+
+        // Membros
+        $members = \App\Models\ProjectMember::where('project_id', $id)
+            ->where('tenant_id', $tenantId)
+            ->with('user:id,name,email,role')
+            ->get();
+
+        // Transações recentes
+        $transactions = \App\Models\Transaction::where('tenant_id', $tenantId)
+            ->where('project_id', $id)
+            ->orderBy('date', 'desc')
+            ->limit(20)
+            ->get();
+
+        $tenant = auth()->user()->tenant;
+
+        $data = compact('project', 'totalSpent', 'percentUsed', 'tasks', 'taskStats', 'members', 'transactions', 'tenant');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('projects.report_pdf', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Relatorio_' . \Illuminate\Support\Str::slug($project->name) . '_' . now()->format('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
     public function addMember(Request $request, $id)
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
