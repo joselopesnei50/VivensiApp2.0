@@ -66,4 +66,19 @@ class DonorPortalController extends Controller
         $pdf = Pdf::loadView('donor.ir_pdf', $data);
         return $pdf->download("Informe_de_Rendimentos_{$year}_{$donor->name}.pdf");
     }
+
+    public function update(Request $request, $token)
+    {
+        $donor = NgoDonor::withoutGlobalScopes()->where('portal_token', $token)->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+        ]);
+
+        $donor->update($validated);
+
+        return redirect()->back()->with('success', 'Dados atualizados com sucesso!');
+    }
 }
