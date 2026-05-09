@@ -78,6 +78,18 @@ class Kernel extends ConsoleKernel
                  ->dailyAt('08:00')
                  ->withoutOverlapping();
 
+        // CRM Doadores: régua de reativação — toda segunda-feira às 10:30
+        // Envia mensagem de WhatsApp para doadores que não doam há 60+ dias
+        $schedule->command('donors:send-reactivation --days=60')
+                 ->weeklyOn(1, '10:30')
+                 ->withoutOverlapping()
+                 ->onSuccess(function () {
+                     \Illuminate\Support\Facades\Log::info('✅ Régua de reativação de doadores concluída.');
+                 })
+                 ->onFailure(function () {
+                     \Illuminate\Support\Facades\Log::error('❌ Falha na régua de reativação de doadores.');
+                 });
+
         // Financeiro: revoga tokens de recibos públicos expirados — todo dia às 04:00
         $schedule->command('receipts:cleanup-expired-tokens')
                  ->dailyAt('04:00')
