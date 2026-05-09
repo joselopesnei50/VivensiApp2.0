@@ -62,9 +62,7 @@ class TransactionController extends Controller
         // Sanitização de Moeda Brasileira (R$ 1.000,00 -> 1000.00)
         $data = $request->all();
         if (isset($data['amount'])) {
-             // Remove ponto de milhar e troca vírgula por ponto
-             $data['amount'] = str_replace('.', '', $data['amount']);
-             $data['amount'] = str_replace(',', '.', $data['amount']);
+            $data['amount'] = sanitize_br_currency($data['amount']);
         }
 
         // Validamos os dados sanitizados
@@ -177,11 +175,9 @@ class TransactionController extends Controller
                                    ->where('tenant_id', auth()->user()->tenant_id)
                                    ->firstOrFail();
         
-        // Sanitização de Moeda Brasileira (R$ 1.000,00 -> 1000.00)
         $data = $request->all();
         if (isset($data['amount'])) {
-             $data['amount'] = str_replace('.', '', $data['amount']);
-             $data['amount'] = str_replace(',', '.', $data['amount']);
+            $data['amount'] = sanitize_br_currency($data['amount']);
         }
 
         $validator = \Illuminate\Support\Facades\Validator::make($data, [

@@ -356,10 +356,8 @@ class NgoGrantController extends Controller
     {
         $data = $request->all();
         
-        // Sanitização de Moeda
         if (isset($data['total_amount'])) {
-             $data['total_amount'] = str_replace('.', '', $data['total_amount']);
-             $data['total_amount'] = str_replace(',', '.', $data['total_amount']);
+            $data['total_amount'] = sanitize_br_currency($data['total_amount']);
         }
 
         $validated = \Illuminate\Support\Facades\Validator::make($data, [
@@ -406,8 +404,7 @@ class NgoGrantController extends Controller
 
         $data = $request->all();
         if (isset($data['total_amount'])) {
-            $data['total_amount'] = str_replace('.', '', $data['total_amount']);
-            $data['total_amount'] = str_replace(',', '.', $data['total_amount']);
+            $data['total_amount'] = sanitize_br_currency($data['total_amount']);
         }
 
         $validated = \Illuminate\Support\Facades\Validator::make($data, [

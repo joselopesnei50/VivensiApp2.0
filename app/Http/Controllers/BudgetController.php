@@ -53,10 +53,29 @@ class BudgetController extends Controller
                                 ->get();
 
         // Categorias para o formulário de metas
-        $incomeCategories = FinancialCategory::where('type', 'income')->get();
-        $expenseCategories = FinancialCategory::where('type', 'expense')->get();
+        $incomeCategories = FinancialCategory::where('tenant_id', $tenant_id)->where('type', 'income')->get();
+        $expenseCategories = FinancialCategory::where('tenant_id', $tenant_id)->where('type', 'expense')->get();
 
-        return view('ngo.budget.index', compact('targets', 'realized', 'year', 'incomeCategories', 'expenseCategories'));
+        // Projeção anual — apenas para o ano corrente
+        $forecast = collect();
+        if ((int) $year === (int) date('Y')) {
+            $dayOfYear   = (int) date('z') + 1; // dias decorridos (1-366)
+            $daysInYear  = date('L') ? 366 : 365;
+            $remaining   = $daysInYear - $dayOfYear;
+
+            foreach ($realized as $r) {
+                $dailyRate = $dayOfYear > 0 ? ($r->total / $dayOfYear) : 0;
+                $forecast[$r->category_id . '|' . $r->type] = [
+                    'projected_total'     => round($dailyRate * $daysInYear, 2),
+                    'projected_remaining' => round($dailyRate * $remaining, 2),
+                ];
+            }
+        }
+
+        return view('ngo.budget.index', compact(
+            'targets', 'realized', 'year',
+            'incomeCategories', 'expenseCategories', 'forecast'
+        ));
     }
 
     public function exportCsv(Request $request)
@@ -162,7 +181,7 @@ class BudgetController extends Controller
         $plannedResult = $plannedIncome - $plannedExpense;
         $realResult = $realIncome - $realExpense;
 
-        $orgName = (auth()->user()->tenant_id == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $orgName = strtoupper(auth()->user()->tenant->name ?? 'ORGANIZAÇÃO');
         $generatedAt = now()->format('d/m/Y H:i');
 
         $pdf = app('dompdf.wrapper');

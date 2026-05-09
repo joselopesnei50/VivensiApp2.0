@@ -6,7 +6,6 @@ use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use App\Models\Transaction;
 use App\Services\AbacatePayService;
-use App\Services\PagSeguroService;
 use App\Services\BrevoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +15,6 @@ class CheckoutController extends Controller
 {
     public function __construct(
         protected AbacatePayService $abacate,
-        protected PagSeguroService  $pagSeguro,
         protected BrevoService      $brevo,
     ) {}
 
@@ -68,8 +66,11 @@ class CheckoutController extends Controller
                 return $this->processAbacatePay($request, $tenant, $plan, $user);
             }
 
-            // ── PagSeguro (legado) ─────────────────────────────────────────
-            return $this->processPagSeguro($request, $tenant, $plan, $user);
+            // ── PagSeguro foi descontinuado — redireciona para AbacatePay ──
+            Log::info('CheckoutController: tentativa de uso do PagSeguro descontinuado', [
+                'tenant_id' => $tenant->id, 'plan_id' => $plan->id,
+            ]);
+            return $this->processAbacatePay($request, $tenant, $plan, $user);
 
         } catch (Exception $e) {
             Log::error('CheckoutController::process exception', ['error' => $e->getMessage()]);
@@ -127,44 +128,6 @@ class CheckoutController extends Controller
 
         // Redirecionar para checkout hospedado pela AbacatePay
         return redirect($checkout['url']);
-    }
-
-    // ─── PagSeguro (legado) ────────────────────────────────────────────────
-
-    private function processPagSeguro(Request $request, Tenant $tenant, SubscriptionPlan $plan, $user)
-    {
-        $reference = sprintf('VIVENSI_%s_%s_%s', $tenant->id, $plan->id, time());
-
-        $transaction = Transaction::create([
-            'tenant_id'   => $tenant->id,
-            'amount'      => $plan->price,
-            'description' => 'Assinatura ' . $plan->name . ' (' . $reference . ')',
-            'type'        => 'income',
-            'status'      => 'pending',
-            'date'        => now()->toDateString(),
-            'external_id' => $reference,
-        ]);
-
-        $result = $this->pagSeguro->createPayment([
-            'reference'   => $reference,
-            'amount'      => $plan->price,
-            'description' => 'Assinatura ' . $plan->name,
-            'sender'      => [
-                'name'  => $user->name,
-                'email' => $user->email,
-                'cpf'   => preg_replace('/\D/', '', $tenant->document),
-            ],
-        ]);
-
-        if ($result && isset($result['paymentLink'])) {
-            if (isset($result['code'])) {
-                $transaction->update(['external_id' => $result['code']]);
-            }
-            return redirect()->away($result['paymentLink']);
-        }
-
-        $transaction->update(['status' => 'canceled']);
-        return back()->with('error', 'Não foi possível gerar o link de pagamento. Tente novamente.');
     }
 
     /**
