@@ -89,6 +89,7 @@ Route::get('/interesse-registrado', [App\Http\Controllers\RegisterController::cl
 // Donor Portal — throttle: máx 30 requisições/minuto por IP
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/portal-doador/{token}', [App\Http\Controllers\DonorPortalController::class, 'show'])->name('donor.portal');
+    Route::post('/portal-doador/{token}/update', [App\Http\Controllers\DonorPortalController::class, 'update'])->name('donor.portal.update');
     Route::get('/portal-doador/{token}/ir-pdf', [App\Http\Controllers\DonorPortalController::class, 'downloadIrPdf'])->name('donor.portal.pdf');
 });
 
