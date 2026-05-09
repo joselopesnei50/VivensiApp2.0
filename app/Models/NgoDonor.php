@@ -24,6 +24,9 @@ class NgoDonor extends Model
         'document',
         'type', // individual, company, government
         'portal_token',
+        'address',
+        'latitude',
+        'longitude',
     ];
 
     /**

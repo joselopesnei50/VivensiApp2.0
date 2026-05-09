@@ -28,7 +28,8 @@ class NgoDonorController extends Controller
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
             'type' => 'required|in:individual,company,government',
-            'document' => 'nullable|string'
+            'document' => 'nullable|string',
+            'address' => 'nullable|string|max:255'
         ]);
 
         $donor = new NgoDonor($validated);
@@ -58,7 +59,8 @@ class NgoDonorController extends Controller
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
             'type' => 'required|in:individual,company,government',
-            'document' => 'nullable|string'
+            'document' => 'nullable|string',
+            'address' => 'nullable|string|max:255'
         ]);
 
         $donor->update($validated);

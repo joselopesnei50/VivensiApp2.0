@@ -74,6 +74,9 @@
                 <label class="form-label-premium">Nome / Razão Social</label>
                 <input type="text" name="name" class="form-input-premium" value="{{ $donor->name }}" required>
 
+                <label class="form-label-premium">Endereço Completo</label>
+                <input type="text" name="address" class="form-input-premium" value="{{ $donor->address }}">
+
                 <div class="row">
                     <div class="col-md-6">
                         <label class="form-label-premium">Tipo</label>

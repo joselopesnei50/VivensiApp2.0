@@ -46,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
         try {
             \App\Models\Beneficiary::observe(\App\Observers\BeneficiaryObserver::class);
             \App\Models\Project::observe(\App\Observers\ProjectObserver::class);
+            \App\Models\NgoDonor::observe(\App\Observers\NgoDonorObserver::class);
         } catch (\Throwable $e) {
             // Silently ignore observer registration errors during boot
         }
