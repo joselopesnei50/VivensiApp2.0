@@ -326,8 +326,30 @@
                         @endif
                     </div>
                 </div>
-                <div class="progress-mini" style="background: rgba(255,255,255,0.05);">
-                    <div class="progress-mini-bar" style="width:{{ $proj->progress }}%; background:{{ $barColor }}; box-shadow: 0 0 10px {{ $barColor }};"></div>
+                <div style="display: flex; gap: 20px; margin-bottom: 8px;">
+                    <!-- Progresso de Tarefas -->
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">
+                            <span>Tarefas: {{ $proj->progress }}%</span>
+                        </div>
+                        <div class="progress-mini" style="background: rgba(255,255,255,0.05);">
+                            <div class="progress-mini-bar" style="width:{{ $proj->progress }}%; background:{{ $barColor }}; box-shadow: 0 0 10px {{ $barColor }};"></div>
+                        </div>
+                    </div>
+                    <!-- Progresso Financeiro (Budget) -->
+                    @if($proj->budget > 0)
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">
+                            <span>Verba: {{ $proj->budget_percent }}% consumida</span>
+                            <span style="color: {{ $proj->budget_percent >= 100 ? '#f43f5e' : '#10b981' }}">
+                                R$ {{ number_format($proj->spent, 0, ',', '.') }} / R$ {{ number_format($proj->budget, 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <div class="progress-mini" style="background: rgba(255,255,255,0.05);">
+                            <div class="progress-mini-bar" style="width:{{ min(100, $proj->budget_percent) }}%; background:{{ $proj->budget_percent >= 100 ? '#f43f5e' : '#10b981' }}; box-shadow: 0 0 10px {{ $proj->budget_percent >= 100 ? '#f43f5e' : '#10b981' }};"></div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
             @empty
