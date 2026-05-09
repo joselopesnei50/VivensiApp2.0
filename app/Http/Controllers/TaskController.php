@@ -353,23 +353,38 @@ class TaskController extends Controller
 
     public function calendar(Request $request)
     {
-        $date = $request->has('date') 
-            ? \Carbon\Carbon::parse($request->date) 
-            : \Carbon\Carbon::now();
-            
-        $startOfMonth = $date->copy()->startOfMonth();
-        $endOfMonth = $date->copy()->endOfMonth();
+        \Carbon\Carbon::setLocale('pt_BR');
 
-        // Fetch Tasks (Assignments & Deadlines)
-        $tasks = Task::where('tenant_id', auth()->user()->tenant_id)
-                    ->where(function($q) {
-                         $q->where('assigned_to', auth()->id())
-                           ->orWhere('created_by', auth()->id());
+        $date = $request->has('date')
+            ? \Carbon\Carbon::parse($request->date)
+            : \Carbon\Carbon::now();
+
+        $startOfMonth = $date->copy()->startOfMonth();
+        $endOfMonth   = $date->copy()->endOfMonth();
+        $userId       = auth()->id();
+        $tenantId     = auth()->user()->tenant_id;
+
+        $tasks = Task::where('tenant_id', $tenantId)
+                    ->where(function ($q) use ($userId) {
+                        $q->where('assigned_to', $userId)
+                          ->orWhere('created_by', $userId);
                     })
                     ->whereBetween('due_date', [$startOfMonth, $endOfMonth])
-                    ->with('assignee')
+                    ->with(['assignee', 'project'])
                     ->get();
 
-        return view('tasks.calendar', compact('date', 'tasks'));
+        $overdueTasks = Task::where('tenant_id', $tenantId)
+                    ->where(function ($q) use ($userId) {
+                        $q->where('assigned_to', $userId)
+                          ->orWhere('created_by', $userId);
+                    })
+                    ->where('due_date', '<', now()->startOfDay())
+                    ->whereNotIn('status', ['done', 'completed', 'cancelled'])
+                    ->with(['assignee', 'project'])
+                    ->orderBy('due_date')
+                    ->limit(8)
+                    ->get();
+
+        return view('tasks.calendar', compact('date', 'tasks', 'overdueTasks'));
     }
 }
