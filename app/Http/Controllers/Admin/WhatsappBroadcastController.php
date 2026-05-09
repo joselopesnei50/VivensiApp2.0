@@ -97,7 +97,7 @@ class WhatsappBroadcastController extends Controller
             $groups = $evo->getGroups();
 
             if (!is_array($groups)) {
-                return response()->json(['error' => 'O formato de grupos retornado pela API é inválido.']);
+                return response()->json(['error' => 'O formato de grupos retornado pela API é inválido.'], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
             }
 
             $mapped = array_map(fn($g) => [
@@ -108,10 +108,16 @@ class WhatsappBroadcastController extends Controller
 
             usort($mapped, fn($a, $b) => strcmp((string)$a['name'], (string)$b['name']));
 
-            return response()->json($mapped);
+            return response()->json($mapped, 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
         } catch (\Throwable $e) {
-            Log::error("Erro ao buscar grupos no Broadcast: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return response()->json(['error' => 'Erro interno ao processar grupos: ' . $e->getMessage()]);
+            try {
+                Log::error("Erro ao buscar grupos no Broadcast: " . $e->getMessage());
+            } catch (\Throwable $logEx) {
+                // Ignore log errors (e.g. permission denied)
+            }
+            return response()->json([
+                'error' => 'Erro fatal interno: ' . $e->getMessage() . ' no arquivo ' . basename($e->getFile()) . ':' . $e->getLine()
+            ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
         }
     }
 
