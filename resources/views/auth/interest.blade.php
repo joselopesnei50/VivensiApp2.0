@@ -386,7 +386,7 @@
     {{-- Date pill --}}
     <div class="date-pill">
         <i class="fas fa-calendar-star"></i>
-        25 de Maio de 2026 &nbsp;·&nbsp; Domingo
+        25 de Maio de 2026 &nbsp;·&nbsp; Segunda-feira
     </div>
 
     {{-- Countdown --}}
