@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 use App\Traits\BelongsToTenant;
 
 class Transaction extends Model
 {
-    use \App\Traits\Auditable, BelongsToTenant;
+    use \App\Traits\Auditable, BelongsToTenant, SoftDeletes;
     use HasFactory;
 
     private static function publicReceiptTtlDays(): ?int
@@ -80,12 +81,15 @@ class Transaction extends Model
         'gateway_id',
         'paid_at',
         'plan_id',
+        'ofx_fitid',
+        'reconciled_at',
     ];
 
     protected $casts = [
-        'date'    => 'date',
-        'paid_at' => 'datetime',
-        'amount'  => 'decimal:2',
+        'date'           => 'date',
+        'paid_at'        => 'datetime',
+        'reconciled_at'  => 'datetime',
+        'amount'         => 'decimal:2',
         'public_receipt_expires_at' => 'datetime',
     ];
 

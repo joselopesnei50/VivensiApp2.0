@@ -86,9 +86,11 @@ Route::get('/register', [App\Http\Controllers\RegisterController::class, 'showRe
 Route::post('/register', [App\Http\Controllers\RegisterController::class, 'register'])->middleware('throttle:10,1');
 Route::get('/interesse-registrado', [App\Http\Controllers\RegisterController::class, 'interestPage'])->name('register.interest');
 
-// Donor Portal
-Route::get('/portal-doador/{token}', [App\Http\Controllers\DonorPortalController::class, 'show'])->name('donor.portal');
-Route::get('/portal-doador/{token}/ir-pdf', [App\Http\Controllers\DonorPortalController::class, 'downloadIrPdf'])->name('donor.portal.pdf');
+// Donor Portal — throttle: máx 30 requisições/minuto por IP
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/portal-doador/{token}', [App\Http\Controllers\DonorPortalController::class, 'show'])->name('donor.portal');
+    Route::get('/portal-doador/{token}/ir-pdf', [App\Http\Controllers\DonorPortalController::class, 'downloadIrPdf'])->name('donor.portal.pdf');
+});
 
 // Public Campaign Route
 Route::get('/c/{slug}', [App\Http\Controllers\CampaignController::class, 'show']);
