@@ -374,7 +374,7 @@
 
     {{-- Headline --}}
     <h1 class="headline">
-        O ERP que o <span class="grad">Terceiro Setor</span><br>estava esperando
+        O ERP que o <span class="grad">Terceiro Setor</span><br>e Gestores de Projetos estava esperando
     </h1>
 
     <p class="subtitle">
