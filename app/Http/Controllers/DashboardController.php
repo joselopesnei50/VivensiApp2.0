@@ -117,10 +117,19 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(6)
             ->get()
-            ->map(function ($p) {
+            ->map(function ($p) use ($tenantId) {
                 $p->progress = $p->total_tasks > 0
                     ? (int) round(($p->done_tasks / $p->total_tasks) * 100)
                     : 0;
+                
+                $spent = \App\Models\Transaction::where('tenant_id', $tenantId)
+                    ->where('project_id', $p->id)
+                    ->where('type', 'expense')
+                    ->where('status', 'paid')
+                    ->sum('amount');
+                $p->spent = $spent;
+                $p->budget_percent = ($p->budget > 0) ? min(100, (int) round(($spent / $p->budget) * 100)) : 0;
+                
                 return $p;
             });
 
