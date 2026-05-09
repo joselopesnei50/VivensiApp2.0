@@ -108,7 +108,17 @@ class DashboardController extends Controller
 
     private function managerDashboard($tenantId)
     {
-        // ── Projetos com progresso real (tarefas concluídas / total) ──
+        // ── Projetos com progresso real — sem N+1 ──
+        // Busca gastos de todos os projetos em 1 query e faz join em memória
+        $spentByProject = DB::table('transactions')
+            ->where('tenant_id', $tenantId)
+            ->where('type', 'expense')
+            ->where('status', 'paid')
+            ->whereNotNull('project_id')
+            ->select('project_id', DB::raw('SUM(amount) as spent'))
+            ->groupBy('project_id')
+            ->pluck('spent', 'project_id');
+
         $projects = Project::where('tenant_id', $tenantId)
             ->withCount([
                 'tasks as total_tasks',
@@ -117,19 +127,13 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(6)
             ->get()
-            ->map(function ($p) use ($tenantId) {
+            ->map(function ($p) use ($spentByProject) {
                 $p->progress = $p->total_tasks > 0
                     ? (int) round(($p->done_tasks / $p->total_tasks) * 100)
                     : 0;
-                
-                $spent = \App\Models\Transaction::where('tenant_id', $tenantId)
-                    ->where('project_id', $p->id)
-                    ->where('type', 'expense')
-                    ->where('status', 'paid')
-                    ->sum('amount');
+                $spent = (float) ($spentByProject[$p->id] ?? 0);
                 $p->spent = $spent;
                 $p->budget_percent = ($p->budget > 0) ? min(100, (int) round(($spent / $p->budget) * 100)) : 0;
-                
                 return $p;
             });
 
@@ -251,40 +255,50 @@ class DashboardController extends Controller
                 'type'  => 'beneficiary'
             ])->toArray();
 
-        // ── Máquina de Engajamento (WhatsApp) ──
+        // ── Máquina de Engajamento (WhatsApp) — 2 queries em vez de 21 ──
+        $waStats = DB::table('whatsapp_messages')
+            ->join('whatsapp_chats', 'whatsapp_messages.chat_id', '=', 'whatsapp_chats.id')
+            ->where('whatsapp_chats.tenant_id', $tenantId)
+            ->select(
+                'whatsapp_messages.direction',
+                DB::raw("SUM(CASE WHEN whatsapp_messages.status IN ('delivered','read') AND whatsapp_messages.direction='outbound' THEN 1 ELSE 0 END) as delivered"),
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('whatsapp_messages.direction')
+            ->get()
+            ->keyBy('direction');
+
         $whatsappStats = [
-            'total_sent' => \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId);
-            })->where('direction', 'outbound')->count(),
-            'total_delivered' => \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId);
-            })->where('direction', 'outbound')->whereIn('status', ['delivered', 'read'])->count(),
-            'total_replies' => \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId);
-            })->where('direction', 'inbound')->count(),
+            'total_sent'      => (int) ($waStats['outbound']->total ?? 0),
+            'total_delivered' => (int) ($waStats['outbound']->delivered ?? 0),
+            'total_replies'   => (int) ($waStats['inbound']->total ?? 0),
         ];
 
-        // Daily volume for the last 7 days
+        // Daily volume (last 7 days) — 1 query com GROUP BY
+        $sevenDaysAgo = now()->subDays(6)->startOfDay();
+        $waDailyRaw = DB::table('whatsapp_messages')
+            ->join('whatsapp_chats', 'whatsapp_messages.chat_id', '=', 'whatsapp_chats.id')
+            ->where('whatsapp_chats.tenant_id', $tenantId)
+            ->where('whatsapp_messages.created_at', '>=', $sevenDaysAgo)
+            ->selectRaw("DATE(whatsapp_messages.created_at) as day, whatsapp_messages.direction, COUNT(*) as total")
+            ->groupByRaw("DATE(whatsapp_messages.created_at), whatsapp_messages.direction")
+            ->get()
+            ->groupBy('day');
+
         $waDailyLabels = [];
-        $waDailySent = [];
+        $waDailySent   = [];
         $waDailyReceived = [];
 
         for ($i = 6; $i >= 0; $i--) {
-            $day = now()->subDays($i);
-            $waDailyLabels[] = $day->format('d/m');
-            
-            $waDailySent[] = \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId);
-            })->where('direction', 'outbound')
-              ->whereDate('created_at', $day->toDateString())
-              ->count();
-
-            $waDailyReceived[] = \App\Models\WhatsappMessage::whereHas('chat', function($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId);
-            })->where('direction', 'inbound')
-              ->whereDate('created_at', $day->toDateString())
-              ->count();
+            $day = now()->subDays($i)->toDateString();
+            $waDailyLabels[] = now()->subDays($i)->format('d/m');
+            $dayData = $waDailyRaw->get($day, collect());
+            $waDailySent[]     = (int) ($dayData->firstWhere('direction', 'outbound')->total ?? 0);
+            $waDailyReceived[] = (int) ($dayData->firstWhere('direction', 'inbound')->total ?? 0);
         }
+
+        // Cache das métricas pesadas por 5 minutos
+        \Cache::put("manager_wa_stats_{$tenantId}", $whatsappStats, 300);
 
         return view('dashboards.manager', compact(
             'activeProjects', 'impactFeed', 'stats',
@@ -312,7 +326,16 @@ class DashboardController extends Controller
             ];
         });
 
-        // ── Projetos com progresso real (tarefas concluídas / total) e Financeiro ──
+        // ── Projetos com progresso real — sem N+1 ──
+        $ngoSpentByProject = DB::table('transactions')
+            ->where('tenant_id', $tenantId)
+            ->where('type', 'expense')
+            ->where('status', 'paid')
+            ->whereNotNull('project_id')
+            ->select('project_id', DB::raw('SUM(amount) as spent'))
+            ->groupBy('project_id')
+            ->pluck('spent', 'project_id');
+
         $projects = Project::where('tenant_id', $tenantId)
             ->withCount([
                 'tasks as total_tasks',
@@ -321,19 +344,13 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(6)
             ->get()
-            ->map(function ($p) use ($tenantId) {
+            ->map(function ($p) use ($ngoSpentByProject) {
                 $p->progress = $p->total_tasks > 0
                     ? (int) round(($p->done_tasks / $p->total_tasks) * 100)
                     : 0;
-                
-                $spent = \App\Models\Transaction::where('tenant_id', $tenantId)
-                    ->where('project_id', $p->id)
-                    ->where('type', 'expense')
-                    ->where('status', 'paid')
-                    ->sum('amount');
+                $spent = (float) ($ngoSpentByProject[$p->id] ?? 0);
                 $p->spent = $spent;
                 $p->budget_percent = ($p->budget > 0) ? min(100, (int) round(($spent / $p->budget) * 100)) : 0;
-                
                 return $p;
             });
 
@@ -517,29 +534,30 @@ class DashboardController extends Controller
             ]);
         }
 
-        // 6 Meses de histórico para o gráfico
+        // 6 Meses de histórico para o gráfico — 2 queries em vez de 12
+        \Carbon\Carbon::setLocale('pt_BR');
+        $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
+
+        $monthlyData = DB::table('transactions')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'paid')
+            ->where('date', '>=', $sixMonthsAgo)
+            ->selectRaw('YEAR(date) as y, MONTH(date) as m, type, SUM(amount) as total')
+            ->groupByRaw('YEAR(date), MONTH(date), type')
+            ->get()
+            ->groupBy(fn($r) => sprintf('%04d-%02d', $r->y, $r->m));
+
         $chartLabels  = [];
         $chartIncome  = [];
         $chartExpense = [];
 
         for ($i = 5; $i >= 0; $i--) {
-            $date     = now()->subMonths($i);
-            $monthNum = $date->month;
-            $year     = $date->year;
-
-            $chartLabels[] = ucfirst($date->translatedFormat('M/Y'));
-
-            $chartIncome[] = (float) Transaction::where('tenant_id', $tenantId)
-                ->where('type', 'income')
-                ->whereMonth('date', $monthNum)
-                ->whereYear('date', $year)
-                ->sum('amount');
-
-            $chartExpense[] = (float) Transaction::where('tenant_id', $tenantId)
-                ->where('type', 'expense')
-                ->whereMonth('date', $monthNum)
-                ->whereYear('date', $year)
-                ->sum('amount');
+            $date  = now()->subMonths($i);
+            $key   = $date->format('Y-m');
+            $rows  = $monthlyData->get($key, collect());
+            $chartLabels[]  = ucfirst($date->translatedFormat('M/Y'));
+            $chartIncome[]  = (float) ($rows->firstWhere('type', 'income')->total  ?? 0);
+            $chartExpense[] = (float) ($rows->firstWhere('type', 'expense')->total ?? 0);
         }
 
         return view('dashboards.common', compact(
