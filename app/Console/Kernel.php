@@ -73,6 +73,11 @@ class Kernel extends ConsoleKernel
             \Illuminate\Support\Facades\Log::info('🟢 Scheduler alive — ' . now()->toDateTimeString());
         })->hourly()->name('scheduler:health-check')->withoutOverlapping();
 
+        // Financeiro: revoga tokens de recibos públicos expirados — todo dia às 04:00
+        $schedule->command('receipts:cleanup-expired-tokens')
+                 ->dailyAt('04:00')
+                 ->withoutOverlapping();
+
         // Limpeza de sessões antigas (evita disco cheio por acúmulo de SESSION_DRIVER=file)
         $schedule->command('session:gc')
                  ->hourly()

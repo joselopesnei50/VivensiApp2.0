@@ -33,26 +33,37 @@ class ReconciliationController extends Controller
                             ->orderBy('name')
                             ->get();
 
+            $tenantId = auth()->user()->tenant_id;
+
+            // Carrega fitids já importados para este tenant — evita N+1 e duplicação
+            $existingFitids = Transaction::withTrashed()
+                ->where('tenant_id', $tenantId)
+                ->whereNotNull('ofx_fitid')
+                ->pluck('ofx_fitid')
+                ->flip();
+
             $matches = [];
             foreach ($parsedTransactions as $pt) {
-                // Tenta encontrar transação no sistema
-                $dbTrn = Transaction::where('tenant_id', auth()->user()->tenant_id)
-                    ->where('amount', $pt['amount']) // Amount is absolute in parser
+                // Verifica duplicata pelo FITID (ID único do banco)
+                $alreadyImported = isset($existingFitids[$pt['fitid']]);
+
+                // Tenta encontrar transação correspondente no sistema (por valor + data ±2 dias)
+                $dbTrn = Transaction::where('tenant_id', $tenantId)
+                    ->where('amount', $pt['amount'])
                     ->where('type', $pt['type'])
                     ->whereBetween('date', [
-                        Carbon::parse($pt['date'])->subDays(2), 
-                        Carbon::parse($pt['date'])->addDays(2)
+                        Carbon::parse($pt['date'])->subDays(2),
+                        Carbon::parse($pt['date'])->addDays(2),
                     ])
                     ->first();
 
-                // Guess Category ID
+                // Sugere categoria apenas para transações novas
                 $suggestedCategoryId = null;
-                if (!$dbTrn) {
+                if (!$dbTrn && !$alreadyImported) {
                     $suggestedCatName = $this->guessCategory($pt['description'], $pt['type']);
                     if ($suggestedCatName) {
-                        // Find or Create the category
                         $cat = FinancialCategory::firstOrCreate(
-                            ['tenant_id' => auth()->user()->tenant_id, 'name' => $suggestedCatName],
+                            ['tenant_id' => $tenantId, 'name' => $suggestedCatName],
                             ['type' => $pt['type']]
                         );
                         $suggestedCategoryId = $cat->id;
@@ -60,9 +71,10 @@ class ReconciliationController extends Controller
                 }
 
                 $matches[] = [
-                    'ofx' => $pt,
-                    'system' => $dbTrn,
-                    'suggested_category_id' => $suggestedCategoryId
+                    'ofx'                    => $pt,
+                    'system'                 => $dbTrn,
+                    'suggested_category_id'  => $suggestedCategoryId,
+                    'already_imported'       => $alreadyImported,
                 ];
             }
 
@@ -88,24 +100,45 @@ class ReconciliationController extends Controller
              return redirect('/ngo/reconciliation')->with('success', 'Nenhuma transação importada.');
         }
 
+        $tenantId = auth()->user()->tenant_id;
+
+        // Carrega fitids existentes para bloquear duplicatas na importação
+        $existingFitids = Transaction::withTrashed()
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('ofx_fitid')
+            ->pluck('ofx_fitid')
+            ->flip();
+
+        // Garante que existe categoria "Não Categorizado" para o tenant
+        $uncategorized = FinancialCategory::firstOrCreate(
+            ['tenant_id' => $tenantId, 'name' => 'Não Categorizado'],
+            ['type' => 'expense']
+        );
+
         $count = 0;
         foreach ($data as $trnData) {
-            // Se foi marcado para importar (checked) e não é duplicado
-            if (isset($trnData['checked']) && $trnData['checked'] == 1) {
-                $trn = new Transaction();
-                $trn->tenant_id = auth()->user()->tenant_id;
-                $trn->description = $trnData['description'];
-                $trn->amount = $trnData['amount'];
-                $trn->type = $trnData['type'];
-                $trn->date = $trnData['date'];
-                $trn->status = 'paid'; // OFX é realizado
-                
-                // Use selected category or Uncategorized (1) default
-                $trn->category_id = $trnData['category_id'] ?? 1;
-                
-                $trn->save();
-                $count++;
+            if (!isset($trnData['checked']) || $trnData['checked'] != 1) {
+                continue;
             }
+
+            // Bloqueia duplicatas pelo fitid mesmo que o checkbox esteja marcado
+            $fitid = $trnData['fitid'] ?? null;
+            if ($fitid && isset($existingFitids[$fitid])) {
+                continue;
+            }
+
+            $trn = new Transaction();
+            $trn->tenant_id    = $tenantId;
+            $trn->description  = $trnData['description'];
+            $trn->amount       = $trnData['amount'];
+            $trn->type         = $trnData['type'];
+            $trn->date         = $trnData['date'];
+            $trn->status       = 'paid';
+            $trn->category_id  = !empty($trnData['category_id']) ? $trnData['category_id'] : $uncategorized->id;
+            $trn->ofx_fitid    = $fitid;
+            $trn->reconciled_at = now();
+            $trn->save();
+            $count++;
         }
 
         return redirect('/ngo/reconciliation')->with('success', "$count transações importadas com sucesso!");
