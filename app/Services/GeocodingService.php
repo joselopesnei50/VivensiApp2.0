@@ -47,6 +47,9 @@ class GeocodingService
     private function geocodeWithNominatim(string $address): ?array
     {
         try {
+            // Respect Nominatim rate limit of 1 request per second
+            sleep(2);
+            
             // Nominatim requires a User-Agent
             $response = Http::withHeaders([
                 'User-Agent' => 'VivensiApp/1.0 (contact@vivensi.com)',
@@ -61,6 +64,8 @@ class GeocodingService
                     'lat' => (float) $response[0]['lat'],
                     'lng' => (float) $response[0]['lon'],
                 ];
+            } else {
+                Log::warning("Nominatim failed to find address: {$address}. Response: " . $response->body());
             }
         } catch (\Exception $e) {
             Log::error("Nominatim Geocoding Error: " . $e->getMessage());
