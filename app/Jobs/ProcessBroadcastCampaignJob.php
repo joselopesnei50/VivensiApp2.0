@@ -20,7 +20,8 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $campaignId;
-    public $timeout = 3600; // 1 hour
+    public $timeout = 3600;
+    public $tries   = 1;
 
     public function __construct($campaignId)
     {
@@ -90,10 +91,12 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     }
                     $sentCount++;
                 } else {
+                    $errorMsg = is_array($res) ? json_encode($res) : 'Unknown Error';
+                    Log::warning("Broadcast failed for {$waId}: " . $errorMsg);
                     $failedCount++;
                 }
             } catch (\Exception $e) {
-                Log::error("Broadcast recipient failed: " . $e->getMessage());
+                Log::error("Broadcast recipient exception for {$waId}: " . $e->getMessage());
                 $failedCount++;
             }
 
