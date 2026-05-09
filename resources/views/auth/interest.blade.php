@@ -363,7 +363,7 @@
 
     {{-- Logo --}}
     <div class="logo-wrap">
-        <img src="{{ asset('novalogo.png') }}" alt="Vivensi">
+        <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi">
     </div>
 
     {{-- Badge --}}
