@@ -364,7 +364,7 @@
             @elseif (auth()->user()->role == 'ngo' || (auth()->user()->tenant && auth()->user()->tenant->type == 'ngo'))
                 {{-- ═══ MENU TERCEIRO SETOR (ONG) — Agrupado ═══ --}}
                 @php
-                    $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorships*');
+                    $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*');
                     $ngo_mkt_active    = request()->is('ngo/landing-pages*','marketing*','prospecting*','whatsapp*', 'raffles*','social*','banners*');
                     $ngo_fin_active    = request()->is('transactions*','ngo/budget*','ngo/reconciliation*');
                     $ngo_people_active = request()->is('ngo/team*','ngo/hr*','ngo/beneficiaries*');
@@ -374,14 +374,15 @@
                     $ngo_ai_active     = request()->is('smart-analysis*');
                 @endphp
 
-                {{-- Grupo: Captação & Doadores --}}
+                {{-- Grupo: Projetos & Captação --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_capt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-hand-holding-heart group-icon"></i> Captação &amp; Doadores
+                        <i class="fas fa-hand-holding-heart group-icon"></i> Projetos &amp; Captação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $ngo_capt_active ? '300px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $ngo_capt_active ? '350px' : '0' }};">
                         <ul>
+                            <li><a href="{{ url('/projects') }}" class="{{ request()->is('projects*') ? 'active' : '' }}"><i class="fas fa-project-diagram"></i> Projetos Ativos</a></li>
                             <li><a href="{{ url('/ngo/donors') }}" class="{{ request()->is('ngo/donors*') ? 'active' : '' }}"><i class="fas fa-heart"></i> Doadores</a></li>
                             <li><a href="{{ url('/ngo/receipts') }}" class="{{ request()->is('ngo/receipts*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Recibos</a></li>
                             <li><a href="{{ url('/ngo/grants') }}" class="{{ request()->is('ngo/grants*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Editais &amp; Convênios</a></li>
