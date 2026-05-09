@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\Project;
+use App\Models\User;
+use App\Mail\PendingExpenseApprovalMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
 {
@@ -100,7 +103,24 @@ class TransactionController extends Controller
             }
         }
 
-        $transaction->save(); 
+        $transaction->save();
+
+        // Notifica gestores quando despesa precisa de aprovação
+        if ($needsApproval) {
+            try {
+                $managers = User::where('tenant_id', auth()->user()->tenant_id)
+                    ->whereIn('role', ['manager', 'ngo', 'super_admin'])
+                    ->whereNotNull('email')
+                    ->get();
+
+                foreach ($managers as $manager) {
+                    Mail::to($manager->email)
+                        ->queue(new PendingExpenseApprovalMail($transaction, auth()->user()));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Erro ao notificar gestores sobre despesa pendente: ' . $e->getMessage());
+            }
+        }
 
         return redirect('/transactions')->with('success', 'Lançamento registrado com sucesso!');
     }

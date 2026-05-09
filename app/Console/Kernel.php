@@ -73,6 +73,11 @@ class Kernel extends ConsoleKernel
             \Illuminate\Support\Facades\Log::info('🟢 Scheduler alive — ' . now()->toDateTimeString());
         })->hourly()->name('scheduler:health-check')->withoutOverlapping();
 
+        // Editais: alerta de deadline próximo — todo dia às 08:00
+        $schedule->command('grants:deadline-alert')
+                 ->dailyAt('08:00')
+                 ->withoutOverlapping();
+
         // Financeiro: revoga tokens de recibos públicos expirados — todo dia às 04:00
         $schedule->command('receipts:cleanup-expired-tokens')
                  ->dailyAt('04:00')
