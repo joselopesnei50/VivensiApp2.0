@@ -84,10 +84,8 @@ class ReceiptController extends Controller
 
         $data = $request->all();
         
-        // Sanitização (R$ 1.000,00 -> 1000.00)
         if (isset($data['amount'])) {
-             $data['amount'] = str_replace('.', '', $data['amount']);
-             $data['amount'] = str_replace(',', '.', $data['amount']);
+            $data['amount'] = sanitize_br_currency($data['amount']);
         }
 
         $transaction = new Transaction();
