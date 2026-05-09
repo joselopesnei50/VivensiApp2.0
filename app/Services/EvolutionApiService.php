@@ -328,7 +328,26 @@ class EvolutionApiService
             ]);
             if ($response->failed()) return [];
             $data = $response->json();
-            return is_array($data) ? $data : [];
+            
+            if (!is_array($data)) {
+                return [];
+            }
+            
+            if (isset($data['data']) && is_array($data['data'])) {
+                return $data['data'];
+            }
+            if (isset($data['groups']) && is_array($data['groups'])) {
+                return $data['groups'];
+            }
+            if (isset($data['instances']) && is_array($data['instances'])) {
+                return $data['instances'];
+            }
+            
+            if (array_keys($data) === range(0, count($data) - 1)) {
+                return $data;
+            }
+
+            return [];
         } catch (\Exception $e) {
             Log::error('EvolutionAPI getGroups error: ' . $e->getMessage());
             return [];
