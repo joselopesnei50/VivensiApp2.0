@@ -46,13 +46,27 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-bottom: 35px;">
+                <div class="form-group" style="margin-bottom: 25px;">
                     <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Endereço de E-mail</label>
                     <div style="position: relative;">
                         <input type="email" name="email" value="{{ old('email', $user->email) }}" required 
                                style="width: 100%; padding: 15px 20px 15px 50px; border: 2px solid #f1f5f9; border-radius: 14px; background: #f8fafc; font-weight: 700; color: #1e293b; transition: all 0.3s;"
                                onfocus="this.style.borderColor='var(--primary-color)'; this.style.background='white';">
                         <i class="fas fa-envelope" style="position: absolute; left: 20px; top: 18px; color: #cbd5e1; font-size: 0.9rem;"></i>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 35px;">
+                    <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">
+                        WhatsApp / Telefone
+                        <span style="font-weight: 500; color: #94a3b8; font-size: 0.78rem; margin-left: 6px;">usado para notificações automáticas</span>
+                    </label>
+                    <div style="position: relative;">
+                        <input type="text" name="phone" value="{{ old('phone', $user->phone) }}"
+                               placeholder="Ex: 5511999998888 (com DDI)"
+                               style="width: 100%; padding: 15px 20px 15px 50px; border: 2px solid #f1f5f9; border-radius: 14px; background: #f8fafc; font-weight: 700; color: #1e293b; transition: all 0.3s;"
+                               onfocus="this.style.borderColor='#25d366'; this.style.background='white';">
+                        <i class="fab fa-whatsapp" style="position: absolute; left: 20px; top: 18px; color: #25d366; font-size: 1rem;"></i>
                     </div>
                 </div>
                 
