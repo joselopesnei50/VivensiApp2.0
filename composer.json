@@ -68,7 +68,8 @@
     "extra": {
         "laravel": {
             "dont-discover": [
-                "laravel/horizon"
+                "laravel/horizon",
+                "sentry/sentry-laravel"
             ]
         }
     },
