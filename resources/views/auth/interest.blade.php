@@ -93,7 +93,10 @@
             margin-bottom: 44px;
             text-align: center;
         }
-        .logo-wrap img { height: 42px; }
+        .logo-wrap img {
+            height: 52px;
+            filter: drop-shadow(0 0 24px rgba(99,102,241,0.4));
+        }
 
         /* ───── BADGE ───── */
         .launch-badge {
@@ -231,9 +234,9 @@
         /* ───── FEATURES ───── */
         .features {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 12px;
-            max-width: 860px;
+            max-width: 1020px;
             width: 100%;
             margin-bottom: 52px;
         }
@@ -332,8 +335,11 @@
         }
 
         /* ───── RESPONSIVE ───── */
-        @media (max-width: 860px) {
-            .features { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 1020px) {
+            .features { grid-template-columns: repeat(3, 1fr); max-width: 660px; }
+        }
+        @media (max-width: 680px) {
+            .features { grid-template-columns: repeat(2, 1fr); max-width: 480px; }
         }
         @media (max-width: 540px) {
             .headline { font-size: 2rem; letter-spacing: -0.5px; }
@@ -427,6 +433,11 @@
             <span class="feat-icon">💰</span>
             <div class="feat-title">Financeiro</div>
             <div class="feat-desc">Orçamento, conciliação OFX e relatórios completos</div>
+        </div>
+        <div class="feat">
+            <span class="feat-icon">📁</span>
+            <div class="feat-title">Projetos</div>
+            <div class="feat-desc">Kanban, tarefas, prazos e gestão de equipes</div>
         </div>
     </div>
 
