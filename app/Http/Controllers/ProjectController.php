@@ -16,7 +16,7 @@ class ProjectController extends Controller
 {
     public function index(Request $request)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin', 'ngo'], true), 403);
 
         // No sistema legado: $_SESSION['tenant_id']
         // No Laravel: auth()->user()->tenant_id
@@ -46,7 +46,7 @@ class ProjectController extends Controller
             ->withCount('members');
 
         // Usuário operacional: só vê projetos onde é membro
-        if (!in_array($user->role, ['manager', 'super_admin'], true)) {
+        if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
             $projectIds = ProjectMember::where('tenant_id', $tenantId)
                 ->where('user_id', $user->id)
                 ->pluck('project_id');
@@ -65,7 +65,7 @@ class ProjectController extends Controller
             $projectsQ->where('projects.status', $status);
         }
 
-        if (in_array($user->role, ['manager', 'super_admin'], true) && $memberId !== null && $memberId !== '') {
+        if (in_array($user->role, ['manager', 'super_admin', 'ngo'], true) && $memberId !== null && $memberId !== '') {
             $projectsQ->whereExists(function ($sq) use ($tenantId, $memberId) {
                 $sq->selectRaw('1')
                     ->from('project_members')
@@ -146,9 +146,9 @@ class ProjectController extends Controller
         $projects = $projectsQ->paginate(18)->appends($request->query());
 
         $teamUsers = null;
-        if (in_array($user->role, ['manager', 'super_admin'], true)) {
+        if (in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
             $teamUsers = User::where('tenant_id', $tenantId)
-                ->whereIn('role', ['employee', 'manager'])
+                ->whereIn('role', ['employee', 'manager', 'ngo'])
                 ->orderBy('name')
                 ->get(['id', 'name', 'role']);
         }
@@ -158,13 +158,13 @@ class ProjectController extends Controller
 
     public function create()
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
         return view('projects.create');
     }
 
     public function store(Request $request)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         // Sanitização de Moeda Brasileira (R$ 1.000,00 -> 1000.00)
         $data = $request->all();
@@ -197,7 +197,7 @@ class ProjectController extends Controller
 
     public function show($id)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin', 'ngo'], true), 403);
 
         $user = auth()->user();
         $tenantId = $user->tenant_id;
@@ -206,7 +206,7 @@ class ProjectController extends Controller
                           ->where('tenant_id', $tenantId)
                           ->firstOrFail();
 
-        if (!in_array($user->role, ['manager', 'super_admin'], true)) {
+        if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
             $isMember = ProjectMember::where('tenant_id', $tenantId)
                 ->where('project_id', $project->id)
                 ->where('user_id', $user->id)
@@ -240,7 +240,7 @@ class ProjectController extends Controller
         // Available Users to Add (Users in tenant not already in project)
         $memberIds = $members->pluck('user_id')->toArray();
         $availableUsers = User::where('tenant_id', $tenantId)
-            ->whereIn('role', ['employee', 'manager'])
+            ->whereIn('role', ['employee', 'manager', 'ngo'])
             ->whereNotIn('id', $memberIds)
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
@@ -256,7 +256,7 @@ class ProjectController extends Controller
 
     public function addMember(Request $request, $id)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $project = Project::where('id', $id)
                           ->where('tenant_id', auth()->user()->tenant_id)
@@ -283,7 +283,7 @@ class ProjectController extends Controller
 
     public function addMemberCredential(Request $request, $id)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $tenantId = auth()->user()->tenant_id;
 
@@ -342,7 +342,7 @@ class ProjectController extends Controller
 
     public function removeMember($projectId, $memberId)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $member = \App\Models\ProjectMember::where('id', $memberId)
                         ->where('project_id', $projectId)
@@ -356,7 +356,7 @@ class ProjectController extends Controller
 
     public function edit($id)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $project = Project::where('id', $id)
                           ->where('tenant_id', auth()->user()->tenant_id)
@@ -367,7 +367,7 @@ class ProjectController extends Controller
 
     public function update(Request $request, $id)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $project = Project::where('id', $id)
                           ->where('tenant_id', auth()->user()->tenant_id)
@@ -402,7 +402,7 @@ class ProjectController extends Controller
 
     public function storePerson(Request $request, $id)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin', 'ngo'], true), 403);
 
         $project = Project::where('id', $id)
                           ->where('tenant_id', auth()->user()->tenant_id)
@@ -425,7 +425,7 @@ class ProjectController extends Controller
 
     public function storeGlobalPerson(Request $request)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
@@ -449,7 +449,7 @@ class ProjectController extends Controller
 
     public function importPeople(Request $request)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $request->validate([
             'project_id' => 'required|exists:projects,id',
@@ -494,7 +494,7 @@ class ProjectController extends Controller
 
     public function destroyPerson($projectId, $personId)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $person = \App\Models\ProjectPerson::where('id', $personId)
             ->where('project_id', $projectId)
@@ -508,7 +508,7 @@ class ProjectController extends Controller
 
     public function createBroadcastList($id)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
         $project = Project::with('people')
             ->where('id', $id)
