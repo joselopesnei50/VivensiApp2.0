@@ -118,17 +118,30 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             return collect($groupIds)->map(fn($id) => (object)['wa_id' => $id, 'id' => null]);
         }
 
-        $query = WhatsappChat::where('tenant_id', $campaign->tenant_id)
-            ->whereNull('opt_out_at')->whereNull('blocked_at');
-
         if ($campaign->audience_type === 'selected' && $campaign->phones) {
             $phones = array_map(
                 fn($p) => preg_replace('/\D+/', '', $p),
                 explode(',', $campaign->phones)
             );
-            $query->whereIn('wa_id', $phones);
+            $phones = array_filter($phones, fn($p) => strlen($p) >= 10);
+
+            $existingChats = WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                ->whereIn('wa_id', $phones)
+                ->get()
+                ->keyBy('wa_id');
+
+            return collect($phones)->map(function ($phone) use ($existingChats) {
+                if ($existingChats->has($phone)) {
+                    $chat = $existingChats->get($phone);
+                    if ($chat->opt_out_at || $chat->blocked_at) return null;
+                    return (object)['wa_id' => $phone, 'id' => $chat->id];
+                }
+                return (object)['wa_id' => $phone, 'id' => null];
+            })->filter()->values();
         }
 
-        return $query->get();
+        return WhatsappChat::where('tenant_id', $campaign->tenant_id)
+            ->whereNull('opt_out_at')->whereNull('blocked_at')
+            ->get();
     }
 }
