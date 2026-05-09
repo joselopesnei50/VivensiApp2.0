@@ -16,12 +16,18 @@ class RegisterController extends Controller
 {
     public function showRegistrationForm(Request $request)
     {
+        // Vendas fechadas → redireciona direto para lista de espera antes de mostrar o form
+        $salesOpen = \App\Models\SystemSetting::getValue('sales_open', '0');
+        if (!$salesOpen || $salesOpen === '0') {
+            return redirect()->route('register.interest');
+        }
+
         $plan_id = $request->query('plan_id');
         $plan = null;
         if ($plan_id) {
             $plan = SubscriptionPlan::find($plan_id);
         }
-        
+
         return view('auth.register', compact('plan'));
     }
 
