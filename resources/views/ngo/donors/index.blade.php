@@ -150,6 +150,16 @@
                 <td class="text-end">
                     <div class="d-flex justify-content-end gap-2">
                         @if($d->phone)
+                            {{-- Botão Portal VIP --}}
+                            @php
+                                $portalLink = url('/portal-doador/' . $d->portal_token);
+                                $waMsg = urlencode("Olá " . explode(' ', $d->name)[0] . "! 💙\n\nComo forma de transparência e gratidão pelo seu apoio, criamos um Portal VIP exclusivo para você acompanhar o impacto das suas doações e baixar seus informes de rendimentos.\n\nAcesse aqui: " . $portalLink);
+                                $waUrl = "https://wa.me/" . preg_replace('/\D/', '', $d->phone) . "?text=" . $waMsg;
+                            @endphp
+                            <a href="{{ $waUrl }}" target="_blank" class="action-circle" style="background: #eef2ff; color: #6366f1;" title="Enviar Portal VIP via WhatsApp">
+                                <i class="fas fa-magic"></i>
+                            </a>
+
                             <a href="https://wa.me/{{ preg_replace('/\D/', '', $d->phone) }}" target="_blank" class="action-circle text-success" title="WhatsApp">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
