@@ -168,6 +168,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     
     // Kanban Routes
     Route::get('/projects/{id}/kanban', [App\Http\Controllers\TaskController::class, 'kanban']);
+    // Exportação PDF do Projeto
+    Route::get('/projects/{id}/export-pdf', [App\Http\Controllers\ProjectController::class, 'exportPdf'])->name('projects.export.pdf');
     // Task Routes
     Route::get('/tasks', [App\Http\Controllers\TaskController::class, 'index']);
     Route::get('/tasks/calendar', [App\Http\Controllers\TaskController::class, 'calendar'])->name('tasks.calendar');
