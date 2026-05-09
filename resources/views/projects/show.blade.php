@@ -223,6 +223,9 @@
                     <a href="{{ $basePath . '/projects/'.$project->id.'/edit' }}" class="btn-action-pro" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
                         <i class="fas fa-cog" style="color: #94a3b8;"></i> Ajustes
                     </a>
+                    <a href="{{ url('/projects/'.$project->id.'/export-pdf') }}" target="_blank" class="btn-action-pro" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: white;" title="Exportar Relatório PDF">
+                        <i class="fas fa-file-pdf" style="color: #f87171;"></i> Relatório PDF
+                    </a>
                 @endif
                 <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
                     <i class="fas fa-tasks" style="color: #6366f1;"></i> Quadros Kanban
