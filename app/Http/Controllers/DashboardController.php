@@ -141,12 +141,14 @@ class DashboardController extends Controller
         // ── Resumo financeiro do mês atual ──
         $monthlyIncome = (float) Transaction::where('tenant_id', $tenantId)
             ->where('type', 'income')
+            ->where('status', 'paid')
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount');
 
         $monthlyExpense = (float) Transaction::where('tenant_id', $tenantId)
             ->where('type', 'expense')
+            ->where('status', 'paid')
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount');
@@ -292,7 +294,7 @@ class DashboardController extends Controller
 
             return [
                 'runway'           => number_format($advisor->getSurvivalMetrics()['months_left'], 1),
-                'monthly_income'   => Transaction::where('tenant_id', $tenantId)->where('type', 'income')->whereMonth('date', now()->month)->sum('amount'),
+                'monthly_income'   => Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->month)->sum('amount'),
                 'volunteers_count' => Volunteer::where('tenant_id', $tenantId)->count(),
                 'total_donors'     => NgoDonor::where('tenant_id', $tenantId)->count(),
                 'active_campaigns' => Campaign::where('tenant_id', $tenantId)->where('status', 'active')->get(),
@@ -426,10 +428,12 @@ class DashboardController extends Controller
         // Totais financeiros do período inteiro
         $totalIncome = (float) Transaction::where('tenant_id', $tenantId)
             ->where('type', 'income')
+            ->where('status', 'paid')
             ->sum('amount');
 
         $totalExpense = (float) Transaction::where('tenant_id', $tenantId)
             ->where('type', 'expense')
+            ->where('status', 'paid')
             ->sum('amount');
 
         $balance = $totalIncome - $totalExpense;
