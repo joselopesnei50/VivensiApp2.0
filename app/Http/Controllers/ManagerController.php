@@ -45,45 +45,65 @@ class ManagerController extends Controller
     public function schedule(Request $request)
     {
         $this->guardManagerOnly();
-        $date = $request->has('date') 
-            ? \Carbon\Carbon::parse($request->date) 
+        \Carbon\Carbon::setLocale('pt_BR');
+
+        $date     = $request->has('date')
+            ? \Carbon\Carbon::parse($request->date)
             : \Carbon\Carbon::now();
-            
+
         $startOfMonth = $date->copy()->startOfMonth();
-        $endOfMonth = $date->copy()->endOfMonth();
+        $endOfMonth   = $date->copy()->endOfMonth();
+        $tenantId     = auth()->user()->tenant_id;
+        $filterMember = $request->get('member');
 
-        $tenantId = auth()->user()->tenant_id;
-
-        // Agenda corporativa: restringe a tarefas de usuários do gestor (evita "mistura" com outros perfis)
-        $allowedUsersSub = function ($q) use ($tenantId) {
-            $q->select('id')
-                ->from('users')
-                ->where('tenant_id', $tenantId)
-                ->whereIn('role', ['employee', 'manager']);
-        };
-
-        // Fetch Tasks (Assignments & Deadlines)
-        $tasks = \App\Models\Task::where('tenant_id', $tenantId)
-            ->whereBetween('due_date', [$startOfMonth, $endOfMonth])
-            ->where(function ($q) use ($allowedUsersSub) {
-                $q->whereNull('assigned_to')
-                    ->orWhereIn('assigned_to', $allowedUsersSub);
-            })
-            ->where(function ($q) use ($allowedUsersSub) {
-                $q->whereNull('created_by')
-                    ->orWhereIn('created_by', $allowedUsersSub);
-            })
-            ->with([
-                'assignee:id,name',
-                'project:id,name',
-                'creator:id,name',
-            ])
+        // Membros da equipe para o filtro lateral
+        $teamMembers = \App\Models\User::where('tenant_id', $tenantId)
+            ->whereIn('role', ['employee', 'manager'])
+            ->select('id', 'name', 'role')
+            ->orderBy('name')
             ->get();
-                    
-        // Fetch Projects (Start/End dates if available, currently just mocking tasks for now or using tasks assignments)
-        // Ideally we would verify Project start_date / end_date too, but let's stick to tasks first.
 
-        return view('manager.schedule', compact('date', 'tasks'));
+        $allowedIds = $teamMembers->pluck('id');
+
+        // Query base: tarefas da equipe do tenant
+        $base = \App\Models\Task::where('tenant_id', $tenantId)
+            ->where(function ($q) use ($allowedIds) {
+                $q->whereIn('assigned_to', $allowedIds)
+                  ->orWhereIn('created_by', $allowedIds);
+            });
+
+        // Filtro por membro específico
+        if ($filterMember) {
+            $base->where(function ($q) use ($filterMember) {
+                $q->where('assigned_to', $filterMember)
+                  ->orWhere('created_by', $filterMember);
+            });
+        }
+
+        $tasks = (clone $base)
+            ->whereBetween('due_date', [$startOfMonth, $endOfMonth])
+            ->with(['assignee:id,name', 'project:id,name', 'creator:id,name'])
+            ->get();
+
+        $overdueTasks = (clone $base)
+            ->where('due_date', '<', now()->startOfDay())
+            ->whereNotIn('status', ['done', 'completed', 'cancelled'])
+            ->with(['assignee:id,name', 'project:id,name'])
+            ->orderBy('due_date')
+            ->limit(10)
+            ->get();
+
+        $noDateTasks = (clone $base)
+            ->whereNull('due_date')
+            ->whereNotIn('status', ['done', 'completed', 'cancelled'])
+            ->with(['assignee:id,name', 'project:id,name'])
+            ->limit(20)
+            ->get();
+
+        return view('manager.schedule', compact(
+            'date', 'tasks', 'overdueTasks', 'noDateTasks',
+            'teamMembers', 'filterMember'
+        ));
     }
     public function team()
     {
