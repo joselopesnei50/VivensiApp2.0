@@ -45,7 +45,8 @@ class DonorRetentionService
      */
     public function sendThankYouMessage(NgoDonor $donor, ?Transaction $transaction = null): bool
     {
-        $config = WhatsappConfig::where('tenant_id', $donor->tenant_id)
+        $config = WhatsappConfig::withoutGlobalScopes()
+            ->where('tenant_id', $donor->tenant_id)
             ->where('is_active', true)
             ->first();
 
@@ -120,7 +121,8 @@ class DonorRetentionService
      */
     public function sendReactivationReminders(int $tenantId, int $inactiveDays = 60): int
     {
-        $config = WhatsappConfig::where('tenant_id', $tenantId)
+        $config = WhatsappConfig::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->first();
 
@@ -131,7 +133,8 @@ class DonorRetentionService
         $cutoff = now()->subDays($inactiveDays);
 
         // Busca doadores ativos que não tiveram transação recente
-        $donors = NgoDonor::where('tenant_id', $tenantId)
+        $donors = NgoDonor::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
             ->whereNotNull('phone')
             ->whereDoesntHave('transactions', function ($q) use ($cutoff) {
                 $q->where('type', 'income')
