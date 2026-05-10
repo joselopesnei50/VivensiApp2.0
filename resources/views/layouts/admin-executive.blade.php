@@ -88,12 +88,12 @@
             <span>Disparo em Massa</span>
         </a>
 
-        <a href="{{ route('admin.bot') }}" class="nav-item {{ request()->is('admin/bot') && !request()->has('tab') ? 'active' : '' }}">
+        <a href="{{ route('admin.bot') }}" class="nav-item {{ request()->is('admin/bot*') ? 'active' : '' }}">
             <i class="fas fa-robot"></i>
             <span>Bot Interno</span>
         </a>
 
-        <a href="{{ route('admin.bot') }}?tab=atendimento" class="nav-item {{ request()->is('admin/bot*') && request()->get('tab') === 'atendimento' ? 'active' : '' }}">
+        <a href="{{ url('/whatsapp/settings') }}" class="nav-item {{ request()->is('whatsapp/settings*') ? 'active' : '' }}">
             <i class="fas fa-headset"></i>
             <span>Bot de Atendimento</span>
         </a>
