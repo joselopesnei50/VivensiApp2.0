@@ -119,7 +119,9 @@ class AbacatePayService
 
     private function getHmacKey(): string
     {
+        // Prioridade: .env → SystemSetting (painel admin) → erro
         return config('services.abacatepay.hmac_key')
+            ?? \App\Models\SystemSetting::getValue('abacatepay_hmac_key')
             ?? throw new \RuntimeException('ABACATEPAY_HMAC_KEY not configured');
     }
 
