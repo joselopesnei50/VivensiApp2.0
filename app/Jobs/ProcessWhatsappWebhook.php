@@ -11,6 +11,7 @@ use App\Models\WhatsappConfig;
 use App\Models\WhatsappChat;
 use App\Models\WhatsappMessage;
 use App\Models\WhatsappAuditLog;
+use App\Models\SystemSetting;
 use App\Jobs\ProcessWhatsappAiResponse;
 use App\Services\Messaging\MetaCloudApiService;
 use Illuminate\Support\Facades\Log;
@@ -150,8 +151,72 @@ class ProcessWhatsappWebhook implements ShouldQueue
                 'details' => ['message_id' => $messageId, 'type' => $type]
             ]);
 
-            // 4. Trigger AI (Bruce) se habilitado
-            if ($config->ai_enabled && (!$chat->assigned_to || $chat->status == 'open') && !$chat->opt_out_at && !$chat->blocked_at) {
+            // 4. Bot de Atendimento: FAQ + off-hours + AI
+            $atendEnabled = SystemSetting::getValue('atend_enabled', '0') === '1';
+            $canAutoReply = !$chat->assigned_to || $chat->status === 'open';
+
+            if ($atendEnabled && $canAutoReply && !$chat->opt_out_at && !$chat->blocked_at) {
+                // 4a. Verificar horário de atendimento
+                $workStart = SystemSetting::getValue('atend_work_start', '00:00');
+                $workEnd   = SystemSetting::getValue('atend_work_end',   '23:59');
+                $now       = now();
+                $inHours   = $now->format('H:i') >= $workStart && $now->format('H:i') <= $workEnd;
+
+                if (!$inHours) {
+                    $offMsg = SystemSetting::getValue('atend_off_hours_msg',
+                        'Nosso atendimento está indisponível no momento. Retornaremos em breve!');
+                    try {
+                        $metaService = new MetaCloudApiService($config);
+                        $metaService->sendTextMessage($chat->wa_id, $offMsg);
+                        WhatsappMessage::create([
+                            'chat_id'   => $chat->id,
+                            'message_id'=> 'bot_offhours_' . time(),
+                            'content'   => $offMsg,
+                            'direction' => 'outbound',
+                            'type'      => 'text',
+                            'status'    => 'sent',
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::warning("Bot atendimento off-hours send failed: " . $e->getMessage());
+                    }
+                } else {
+                    // 4b. Verificar FAQ por palavra-chave
+                    $faqJson  = SystemSetting::getValue('atend_faq', '[]');
+                    $faqItems = json_decode($faqJson, true) ?: [];
+                    $faqReply = null;
+
+                    foreach ($faqItems as $item) {
+                        $keyword = mb_strtolower(trim($item['keyword'] ?? ''));
+                        if ($keyword && str_contains(mb_strtolower($content), $keyword)) {
+                            $faqReply = $item['response'];
+                            break;
+                        }
+                    }
+
+                    if ($faqReply) {
+                        try {
+                            $metaService = new MetaCloudApiService($config);
+                            $metaService->sendTextMessage($chat->wa_id, $faqReply);
+                            WhatsappMessage::create([
+                                'chat_id'   => $chat->id,
+                                'message_id'=> 'bot_faq_' . time(),
+                                'content'   => $faqReply,
+                                'direction' => 'outbound',
+                                'type'      => 'text',
+                                'status'    => 'sent',
+                            ]);
+                            Log::info("Bot FAQ match para chat {$chat->id}: keyword={$keyword}");
+                        } catch (\Throwable $e) {
+                            Log::warning("Bot FAQ send failed: " . $e->getMessage());
+                        }
+                    } elseif ($config->ai_enabled) {
+                        // 4c. Dispatch AI response
+                        ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
+                            ->onQueue('whatsapp');
+                    }
+                }
+            } elseif ($config->ai_enabled && $canAutoReply && !$chat->opt_out_at && !$chat->blocked_at) {
+                // Bot de atendimento desligado mas AI ativada na config do tenant
                 ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
                     ->onQueue('whatsapp');
             }

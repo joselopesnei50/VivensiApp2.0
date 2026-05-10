@@ -53,7 +53,13 @@
 {{-- ── TABS ── --}}
 <div class="bot-tabs mb-4">
     <button class="bot-tab active" onclick="switchTab('config', this)">
-        <i class="fas fa-sliders me-2"></i>Configurações
+        <i class="fas fa-sliders me-2"></i>Bot Interno
+    </button>
+    <button class="bot-tab" onclick="switchTab('atendimento', this)">
+        <i class="fas fa-headset me-2"></i>Bot de Atendimento
+        @if(($atendSettings['atend_enabled'] ?? '0') === '1')
+            <span class="tab-count" style="background:#10b981;">ON</span>
+        @endif
     </button>
     <button class="bot-tab" onclick="switchTab('users', this)">
         <i class="fas fa-users me-2"></i>Usuários
@@ -62,6 +68,168 @@
     <button class="bot-tab" onclick="switchTab('messages', this)">
         <i class="fas fa-comment-dots me-2"></i>Mensagens
     </button>
+</div>
+
+{{-- ── TAB: BOT DE ATENDIMENTO ── --}}
+<div id="tab-atendimento" class="tab-pane-bot" style="display:none;">
+    <form method="POST" action="{{ route('admin.bot.atendimento.save') }}">
+        @csrf
+        <div class="row g-3">
+
+            {{-- Configurações Gerais --}}
+            <div class="col-lg-7">
+                <div class="exec-card">
+                    <div class="exec-card-head">
+                        <div>
+                            <div class="exec-card-title">Bot de Atendimento — Contatos Externos</div>
+                            <div class="exec-card-sub">Responde automaticamente clientes que mandam mensagem no WhatsApp do tenant</div>
+                        </div>
+                    </div>
+
+                    {{-- Toggle --}}
+                    <div class="toggle-row mb-4">
+                        <div>
+                            <div class="toggle-label">Habilitar Bot de Atendimento</div>
+                            <div class="toggle-sub">Ativa respostas automáticas para contatos externos (FAQ + IA)</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="atend_enabled" value="1"
+                                {{ ($atendSettings['atend_enabled'] ?? '0') === '1' ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    {{-- Mensagem de boas-vindas --}}
+                    <div class="field mb-3">
+                        <label class="field-label">
+                            <i class="fas fa-hand-wave me-1 text-primary"></i> Mensagem de Boas-vindas
+                        </label>
+                        <textarea name="atend_welcome_msg" class="field-input" rows="3"
+                            placeholder="Olá! Como posso ajudar?">{{ $atendSettings['atend_welcome_msg'] ?? '' }}</textarea>
+                        <div class="field-hint">Enviada na primeira interação do contato.</div>
+                    </div>
+
+                    {{-- Horário de Atendimento --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="field-label"><i class="fas fa-clock me-1 text-primary"></i> Início do Atendimento</label>
+                            <input type="time" name="atend_work_start" class="field-input"
+                                value="{{ $atendSettings['atend_work_start'] ?? '08:00' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="field-label"><i class="fas fa-clock me-1 text-primary"></i> Fim do Atendimento</label>
+                            <input type="time" name="atend_work_end" class="field-input"
+                                value="{{ $atendSettings['atend_work_end'] ?? '18:00' }}">
+                        </div>
+                    </div>
+
+                    {{-- Mensagem fora do horário --}}
+                    <div class="field mb-4">
+                        <label class="field-label">
+                            <i class="fas fa-moon me-1 text-warning"></i> Mensagem Fora do Horário
+                        </label>
+                        <textarea name="atend_off_hours_msg" class="field-input" rows="2"
+                            placeholder="Nosso atendimento funciona das 08h às 18h...">{{ $atendSettings['atend_off_hours_msg'] ?? '' }}</textarea>
+                        <div class="field-hint">Enviada quando o contato escreve fora do horário configurado.</div>
+                    </div>
+
+                    <button type="submit" class="field-btn">
+                        <i class="fas fa-save me-2"></i> Salvar Configurações de Atendimento
+                    </button>
+                </div>
+            </div>
+
+            {{-- IA --}}
+            <div class="col-lg-5">
+                <div class="exec-card mb-3">
+                    <div class="exec-card-head">
+                        <div>
+                            <div class="exec-card-title">Inteligência Artificial</div>
+                            <div class="exec-card-sub">IA responde quando nenhuma palavra-chave for encontrada</div>
+                        </div>
+                    </div>
+
+                    <div class="toggle-row mb-3">
+                        <div>
+                            <div class="toggle-label">Habilitar IA (Bruce AI)</div>
+                            <div class="toggle-sub">DeepSeek / Gemini responde automaticamente</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="ai_enabled" value="1"
+                                {{ ($waConfig && $waConfig->ai_enabled) ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="field mb-3">
+                        <label class="field-label">Provedor de IA</label>
+                        <select name="ai_provider" class="field-input">
+                            <option value="deepseek" {{ ($waConfig->ai_provider ?? '') === 'deepseek' ? 'selected' : '' }}>DeepSeek (padrão)</option>
+                            <option value="gemini"   {{ ($waConfig->ai_provider ?? '') === 'gemini'   ? 'selected' : '' }}>Google Gemini</option>
+                        </select>
+                    </div>
+
+                    <div class="field mb-0">
+                        <label class="field-label">Treinamento / Contexto da IA</label>
+                        <textarea name="ai_training" class="field-input" rows="6"
+                            placeholder="Você é um assistente da [Nome da organização]. Responda apenas sobre nossos serviços...">{{ $waConfig->ai_training ?? '' }}</textarea>
+                        <div class="field-hint">Descreva o comportamento da IA — quem ela é, o que pode e não pode responder.</div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- FAQ --}}
+            <div class="col-12">
+                <div class="exec-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <div>
+                            <div class="exec-card-title">Respostas por Palavra-chave (FAQ)</div>
+                            <div class="exec-card-sub">Se o contato digitar a palavra-chave, o bot responde automaticamente — antes de acionar a IA</div>
+                        </div>
+                        <button type="button" onclick="addFaqRow()" style="background:#6366f1; color:white; border:none; border-radius:10px; padding:8px 16px; font-weight:800; font-size:.8rem; cursor:pointer;">
+                            <i class="fas fa-plus me-1"></i> Adicionar Pergunta
+                        </button>
+                    </div>
+
+                    <div id="faq-list" style="display:flex; flex-direction:column; gap:12px;">
+                        @foreach($atendFaq as $i => $faq)
+                        <div class="faq-row" style="display:grid; grid-template-columns:1fr 2fr auto; gap:12px; align-items:start; padding:14px; background:#f8fafc; border-radius:12px; border:1px solid #f1f5f9;">
+                            <div>
+                                <label class="field-label">Palavra-chave</label>
+                                <input type="text" name="faq_keyword[]" class="field-input" placeholder="ex: horario, preço, endereço"
+                                    value="{{ $faq['keyword'] }}">
+                            </div>
+                            <div>
+                                <label class="field-label">Resposta automática</label>
+                                <textarea name="faq_response[]" class="field-input" rows="2"
+                                    placeholder="Texto que o bot enviará...">{{ $faq['response'] }}</textarea>
+                            </div>
+                            <div style="padding-top:22px;">
+                                <button type="button" onclick="this.closest('.faq-row').remove()"
+                                    style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:.85rem;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        @endforeach
+
+                        @if(empty($atendFaq))
+                        <div id="faq-empty" style="text-align:center; padding:30px; border:2px dashed #e2e8f0; border-radius:12px; color:#94a3b8; font-size:.85rem; font-weight:600;">
+                            <i class="fas fa-question-circle d-block mb-2" style="font-size:1.5rem;"></i>
+                            Nenhuma palavra-chave cadastrada. Clique em "+ Adicionar Pergunta".
+                        </div>
+                        @endif
+                    </div>
+
+                    <div style="margin-top:20px; text-align:right;">
+                        <button type="submit" class="field-btn">
+                            <i class="fas fa-save me-2"></i> Salvar FAQ e IA
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 
 {{-- ── TAB: CONFIG ── --}}
@@ -586,6 +754,31 @@ async function checkStatus() {
             badge.innerHTML = '<div class="status-block status-warn"><i class="fas fa-spinner fa-spin me-2"></i>Estado: ' + state + '. Continue aguardando.</div>';
         }
     } catch(e) { alert('Erro ao verificar status.'); }
+}
+
+function addFaqRow() {
+    const empty = document.getElementById('faq-empty');
+    if (empty) empty.remove();
+
+    const div = document.createElement('div');
+    div.className = 'faq-row';
+    div.style = 'display:grid; grid-template-columns:1fr 2fr auto; gap:12px; align-items:start; padding:14px; background:#f8fafc; border-radius:12px; border:1px solid #f1f5f9;';
+    div.innerHTML = `
+        <div>
+            <label class="field-label">Palavra-chave</label>
+            <input type="text" name="faq_keyword[]" class="field-input" placeholder="ex: horario, preço, endereço">
+        </div>
+        <div>
+            <label class="field-label">Resposta automática</label>
+            <textarea name="faq_response[]" class="field-input" rows="2" placeholder="Texto que o bot enviará..."></textarea>
+        </div>
+        <div style="padding-top:22px;">
+            <button type="button" onclick="this.closest('.faq-row').remove()"
+                style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:.85rem;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>`;
+    document.getElementById('faq-list').appendChild(div);
 }
 </script>
 @endpush

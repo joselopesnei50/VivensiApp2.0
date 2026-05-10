@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use App\Models\User;
+use App\Models\WhatsappConfig;
 use App\Services\EvolutionApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -32,6 +33,21 @@ class BotController extends Controller
         'bot_msg_help'             => "• *menu* — Voltar ao menu principal\n• *cancelar* — Cancelar operação\n• ATEND: Nome | Tipo | Desc\n• DESP: 100,00 | Descrição\n• RECV: 100,00 | Descrição\n• BENEF: Nome ou CPF",
     ];
 
+    /** Chaves do Bot de Atendimento (contatos externos) */
+    private const ATEND_KEYS = [
+        'atend_enabled', 'atend_welcome_msg', 'atend_off_hours_msg',
+        'atend_work_start', 'atend_work_end', 'atend_faq',
+    ];
+
+    private const ATEND_DEFAULTS = [
+        'atend_enabled'      => '0',
+        'atend_welcome_msg'  => "Olá! 👋 Seja bem-vindo(a). Como posso ajudar?\n\nDigite sua dúvida ou escolha uma opção:",
+        'atend_off_hours_msg'=> "Olá! Nosso atendimento funciona de segunda a sexta, das 08h às 18h. Retornaremos em breve! 🙏",
+        'atend_work_start'   => '08:00',
+        'atend_work_end'     => '18:00',
+        'atend_faq'          => '[]',
+    ];
+
     public function index()
     {
         // Ler configurações atuais
@@ -39,6 +55,17 @@ class BotController extends Controller
         foreach (self::BOT_KEYS as $key) {
             $settings[$key] = SystemSetting::getValue($key, self::DEFAULTS[$key] ?? null);
         }
+
+        // Bot de Atendimento: configurações
+        $atendSettings = [];
+        foreach (self::ATEND_KEYS as $key) {
+            $atendSettings[$key] = SystemSetting::getValue($key, self::ATEND_DEFAULTS[$key] ?? null);
+        }
+        $atendFaq = json_decode($atendSettings['atend_faq'] ?? '[]', true) ?: [];
+
+        // WhatsappConfig do tenant do super_admin (para ai_enabled, ai_training, ai_provider)
+        $tenantId    = auth()->user()->tenant_id;
+        $waConfig    = WhatsappConfig::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
 
         // Usuários do sistema com seus telefones
         $users = User::withoutGlobalScopes()
@@ -61,7 +88,10 @@ class BotController extends Controller
 
         $webhookUrl = rtrim(config('app.url'), '/') . '/api/whatsapp/bot';
 
-        return view('admin.bot.index', compact('settings', 'users', 'instanceStatus', 'webhookUrl'));
+        return view('admin.bot.index', compact(
+            'settings', 'users', 'instanceStatus', 'webhookUrl',
+            'atendSettings', 'atendFaq', 'waConfig'
+        ));
     }
 
     public function save(Request $request)
@@ -204,6 +234,59 @@ class BotController extends Controller
         } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function saveAtendimento(Request $request)
+    {
+        $request->validate([
+            'atend_welcome_msg'  => 'nullable|string|max:2000',
+            'atend_off_hours_msg'=> 'nullable|string|max:2000',
+            'atend_work_start'   => 'nullable|string|max:5',
+            'atend_work_end'     => 'nullable|string|max:5',
+            'faq_keyword'        => 'nullable|array',
+            'faq_keyword.*'      => 'nullable|string|max:100',
+            'faq_response'       => 'nullable|array',
+            'faq_response.*'     => 'nullable|string|max:1000',
+            'ai_enabled'         => 'nullable|boolean',
+            'ai_provider'        => 'nullable|in:deepseek,gemini',
+            'ai_training'        => 'nullable|string|max:5000',
+        ]);
+
+        // Toggle
+        SystemSetting::setValue('atend_enabled', $request->has('atend_enabled') ? '1' : '0', 'attendance_bot');
+
+        // Text fields
+        foreach (['atend_welcome_msg', 'atend_off_hours_msg', 'atend_work_start', 'atend_work_end'] as $field) {
+            if ($request->filled($field)) {
+                SystemSetting::setValue($field, $request->input($field), 'attendance_bot');
+            }
+        }
+
+        // FAQ: zip keywords + responses
+        $keywords  = $request->input('faq_keyword', []);
+        $responses = $request->input('faq_response', []);
+        $faq = [];
+        foreach ($keywords as $i => $keyword) {
+            $keyword  = trim($keyword ?? '');
+            $response = trim($responses[$i] ?? '');
+            if ($keyword && $response) {
+                $faq[] = ['keyword' => $keyword, 'response' => $response];
+            }
+        }
+        SystemSetting::setValue('atend_faq', json_encode($faq, JSON_UNESCAPED_UNICODE), 'attendance_bot');
+
+        // WhatsappConfig AI settings for this tenant
+        $tenantId = auth()->user()->tenant_id;
+        $waConfig = WhatsappConfig::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
+        if ($waConfig) {
+            $waConfig->update([
+                'ai_enabled'  => $request->has('ai_enabled'),
+                'ai_provider' => $request->input('ai_provider', $waConfig->ai_provider ?? 'deepseek'),
+                'ai_training' => $request->input('ai_training', $waConfig->ai_training),
+            ]);
+        }
+
+        return back()->with('success', '✅ Configurações do Bot de Atendimento salvas!');
     }
 
     private function makeEvolutionService(string $instanceName): EvolutionApiService
