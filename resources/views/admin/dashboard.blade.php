@@ -186,60 +186,7 @@
     </div>
 </div>
 
-{{-- ── HUB DE MENSAGERIA ── --}}
-<div class="row g-3 mb-4">
-    <div class="col-12">
-        <div class="exec-card p-4">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div>
-                    <div class="exec-card-title">Hub de Mensageria</div>
-                    <div class="exec-card-sub">WhatsApp Chat, Disparo em Massa e Automação de Bot</div>
-                </div>
-                <span style="background:#ecfdf5; color:#10b981; font-size:.65rem; font-weight:900; padding:4px 12px; border-radius:99px; border:1px solid #d1fae5; text-transform:uppercase; letter-spacing:1px;">
-                    <i class="fas fa-circle me-1" style="font-size:.4rem;"></i> Conectado
-                </span>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <a href="{{ url('/whatsapp/chat') }}" style="display:flex; align-items:center; gap:16px; padding:20px; background:#f0fdf4; border-radius:16px; border:1px solid #d1fae5; text-decoration:none; transition:all .2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(16,185,129,.12)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
-                        <div style="width:52px; height:52px; background:#10b981; border-radius:14px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem; flex-shrink:0;">
-                            <i class="fab fa-whatsapp"></i>
-                        </div>
-                        <div>
-                            <div style="font-weight:900; color:#0f172a; font-size:.95rem; margin-bottom:3px;">Chat WhatsApp</div>
-                            <div style="font-size:.78rem; color:#64748b; font-weight:600;">Atenda contatos em tempo real</div>
-                        </div>
-                        <i class="fas fa-chevron-right ms-auto" style="color:#94a3b8; font-size:.75rem;"></i>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="{{ url('/whatsapp/broadcast') }}" style="display:flex; align-items:center; gap:16px; padding:20px; background:#f5f3ff; border-radius:16px; border:1px solid #ede9fe; text-decoration:none; transition:all .2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(99,102,241,.12)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
-                        <div style="width:52px; height:52px; background:#6366f1; border-radius:14px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem; flex-shrink:0;">
-                            <i class="fas fa-paper-plane"></i>
-                        </div>
-                        <div>
-                            <div style="font-weight:900; color:#0f172a; font-size:.95rem; margin-bottom:3px;">Disparo em Massa</div>
-                            <div style="font-size:.78rem; color:#64748b; font-weight:600;">Campanhas e promoções em lote</div>
-                        </div>
-                        <i class="fas fa-chevron-right ms-auto" style="color:#94a3b8; font-size:.75rem;"></i>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="{{ route('admin.bot') }}" style="display:flex; align-items:center; gap:16px; padding:20px; background:#fff7ed; border-radius:16px; border:1px solid #fed7aa; text-decoration:none; transition:all .2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(245,158,11,.12)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
-                        <div style="width:52px; height:52px; background:#f59e0b; border-radius:14px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem; flex-shrink:0;">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <div>
-                            <div style="font-weight:900; color:#0f172a; font-size:.95rem; margin-bottom:3px;">Bot & Automação</div>
-                            <div style="font-size:.78rem; color:#64748b; font-weight:600;">Configure respostas e fluxos do bot</div>
-                        </div>
-                        <i class="fas fa-chevron-right ms-auto" style="color:#94a3b8; font-size:.75rem;"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 {{-- ── RECENT TENANTS + FUNNEL ── --}}
 <div class="row g-3">
