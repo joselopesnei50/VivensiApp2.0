@@ -267,6 +267,7 @@
                             <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
                             <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configurações Globais</a></li>
                             <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp" style="color:#25d366;"></i> Command Bot (WA)</a></li>
+                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-headset" style="color:#6366f1;"></i> Bot de Atendimento</a></li>
                         </ul>
                     </div>
                 </div>
