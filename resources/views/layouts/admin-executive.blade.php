@@ -76,26 +76,9 @@
 
         <div class="nav-divider"></div>
 
-        <div style="padding: 6px 16px 4px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.25);">Mensageria</div>
-
-        <a href="{{ url('/whatsapp/chat') }}" class="nav-item {{ request()->is('whatsapp/chat*') ? 'active' : '' }}">
-            <i class="fab fa-whatsapp"></i>
-            <span>Chat WhatsApp</span>
-        </a>
-
-        <a href="{{ url('/whatsapp/broadcast') }}" class="nav-item {{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}">
-            <i class="fas fa-paper-plane"></i>
-            <span>Disparo em Massa</span>
-        </a>
-
         <a href="{{ route('admin.bot') }}" class="nav-item {{ request()->is('admin/bot*') ? 'active' : '' }}">
             <i class="fas fa-robot"></i>
             <span>Bot Interno</span>
-        </a>
-
-        <a href="{{ url('/whatsapp/settings') }}" class="nav-item {{ request()->is('whatsapp/settings*') ? 'active' : '' }}">
-            <i class="fas fa-headset"></i>
-            <span>Bot de Atendimento</span>
         </a>
 
         <div class="nav-divider"></div>
