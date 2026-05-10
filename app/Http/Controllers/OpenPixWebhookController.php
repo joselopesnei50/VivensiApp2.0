@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use OpenPix\PhpSdk\Client;
 use App\Models\RaffleTicket;
 use App\Models\Raffle;
@@ -56,22 +57,36 @@ class OpenPixWebhookController extends Controller
     private function handleChargePaid(Request $request)
     {
         $correlationID = $request->input("charge.correlationID");
-        $tickets = RaffleTicket::where('transaction_id', $correlationID)->get();
 
-        if ($tickets->isEmpty()) {
-            Log::warning("OpenPix Webhook: No tickets found for correlationID: " . $correlationID);
-            return response()->json(["message" => "No tickets found."], 404);
+        if (!$correlationID) {
+            return response()->json(["message" => "Missing correlationID."], 400);
         }
 
-        foreach ($tickets as $ticket) {
-            if ($ticket->status !== 'paid') {
+        $emailsToSend = [];
+
+        DB::transaction(function () use ($correlationID, &$emailsToSend) {
+            $tickets = RaffleTicket::where('transaction_id', $correlationID)
+                ->where('status', '!=', 'paid')
+                ->lockForUpdate()
+                ->get();
+
+            if ($tickets->isEmpty()) {
+                Log::info("OpenPix Webhook: tickets já pagos ou não encontrados para correlationID: {$correlationID}");
+                return;
+            }
+
+            foreach ($tickets as $ticket) {
                 $ticket->update(['status' => 'paid']);
-                
-                try {
-                    Mail::to($ticket->buyer_email)->send(new RaffleTicketPaid($ticket->raffle, $ticket));
-                } catch (\Exception $e) {
-                    Log::error("Error sending RaffleTicketPaid email: " . $e->getMessage());
-                }
+                $emailsToSend[] = $ticket;
+            }
+        });
+
+        // Enviar emails fora da transaction para não bloquear
+        foreach ($emailsToSend as $ticket) {
+            try {
+                Mail::to($ticket->buyer_email)->send(new RaffleTicketPaid($ticket->raffle, $ticket));
+            } catch (\Exception $e) {
+                Log::error("Error sending RaffleTicketPaid email: " . $e->getMessage());
             }
         }
 
