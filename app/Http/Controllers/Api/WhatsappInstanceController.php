@@ -45,15 +45,22 @@ class WhatsappInstanceController extends Controller
      */
     public function store(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id;
+        $tenantId = auth()->user()->tenant_id; // NULL for super_admin
 
         // Limite de 3 instâncias por tenant — verificação atômica com lock para evitar race condition
-        $count = WhatsappInstance::forTenant($tenantId)->lockForUpdate()->count();
+        $countQuery = WhatsappInstance::withoutGlobalScopes()->lockForUpdate();
+        if ($tenantId === null) {
+            $countQuery->whereNull('tenant_id');
+        } else {
+            $countQuery->where('tenant_id', $tenantId);
+        }
+        $count = $countQuery->count();
         abort_if($count >= 3, 422, 'Limite de 3 instâncias por conta atingido.');
 
-        // Gerar nome único e token secreto para URL de webhook
-        $instanceName = WhatsappInstance::generateInstanceName($tenantId);
-        $instanceToken = Str::random(48);
+        // Gerar nome único — super_admin usa prefixo 'admin' para evitar vivensi_t_XXXXX
+        $namePrefix = $tenantId ?? 'admin';
+        $instanceName = 'vivensi_t' . $namePrefix . '_' . \Illuminate\Support\Str::random(6);
+        $instanceToken = \Illuminate\Support\Str::random(48);
         $number = $request->input('number');
 
         // Limpa cache de QR antigo (se houver tentativa anterior limpando registro órfão)
@@ -185,7 +192,13 @@ class WhatsappInstanceController extends Controller
 
     private function findForTenant(int $id): WhatsappInstance
     {
-        $tenantId = auth()->user()->tenant_id;
-        return WhatsappInstance::forTenant($tenantId)->findOrFail($id);
+        $tenantId = auth()->user()->tenant_id; // NULL for super_admin
+        $query = WhatsappInstance::withoutGlobalScopes();
+        if ($tenantId === null) {
+            $query->whereNull('tenant_id');
+        } else {
+            $query->where('tenant_id', $tenantId);
+        }
+        return $query->findOrFail($id);
     }
 }
