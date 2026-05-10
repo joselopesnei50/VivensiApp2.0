@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\PostView;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
@@ -16,7 +18,26 @@ class BlogController extends Controller
         $publishedCount = Post::where('is_published', true)->count();
         $draftCount     = $totalCount - $publishedCount;
 
-        return view('admin.blog.index', compact('posts', 'totalCount', 'publishedCount', 'draftCount'));
+        // Analytics: views por post (1 query com GROUP BY)
+        $viewsByPost = DB::table('post_views')
+            ->select('post_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('post_id')
+            ->pluck('total', 'post_id');
+
+        $totalViews  = $viewsByPost->sum();
+        $viewsMonth  = DB::table('post_views')
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->count();
+
+        // Injetar view_count em cada post
+        foreach ($posts as $post) {
+            $post->view_count = (int) ($viewsByPost[$post->id] ?? 0);
+        }
+
+        return view('admin.blog.index', compact(
+            'posts', 'totalCount', 'publishedCount', 'draftCount',
+            'totalViews', 'viewsMonth'
+        ));
     }
 
     public function create()
