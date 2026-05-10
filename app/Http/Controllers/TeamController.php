@@ -34,7 +34,7 @@ class TeamController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'role' => 'required|in:ngo,manager,employee',
-            'password' => 'required|string|min:6',
+            'password' => ['required', 'string', 'min:12', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'],
         ]);
 
         $user = new User();

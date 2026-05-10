@@ -22,6 +22,8 @@ class Beneficiary extends Model
         'status'
     ];
 
+    protected $hidden = ['cpf', 'nis', 'birth_date'];
+
     protected $casts = [
         'birth_date' => 'date',
     ];
