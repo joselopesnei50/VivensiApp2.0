@@ -149,6 +149,11 @@
                     <div>
                         <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Radar de Alertas</span>
                         <div style="font-size: 2.8rem; font-weight: 950; margin-top: 8px; color: #f59e0b; letter-spacing: -2px;">{{ $stats['pending_tasks'] }}</div>
+                        @if($stats['overdue_tasks'] > 0)
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #ef4444; margin-top: 4px;">
+                            <i class="fas fa-circle-exclamation me-1"></i>{{ $stats['overdue_tasks'] }} vencida{{ $stats['overdue_tasks'] > 1 ? 's' : '' }}
+                        </div>
+                        @endif
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; color: #f59e0b; font-weight: 800; font-size: 0.8rem;">
                         <i class="fas fa-wave-square"></i> Ação Requerida
@@ -162,6 +167,12 @@
                         <div style="font-size: 1.6rem; font-weight: 950; margin-top: 8px; color: #34d399; letter-spacing: -1px;">
                             R$ {{ number_format($stats['monthly_income'], 0, ',', '.') }}
                         </div>
+                        @if($stats['income_change'] !== null)
+                        @php $ic = $stats['income_change']; @endphp
+                        <div style="font-size: 0.7rem; font-weight: 800; color: {{ $ic >= 0 ? '#34d399' : '#f87171' }}; margin-top: 4px;">
+                            {{ $ic >= 0 ? '▲' : '▼' }} {{ number_format(abs($ic), 1) }}% vs mês anterior
+                        </div>
+                        @endif
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; color: #34d399; font-weight: 800; font-size: 0.8rem;">
                         <i class="fas fa-arrow-trend-up"></i>
@@ -250,11 +261,21 @@
                             </div>
                         </div>
 
+                        @php
+                            if ($sent > 10 && $deliveredPct < 50) {
+                                $engagementTip = 'Sua taxa de entrega está abaixo de 50%. Verifique se os números estão corretos com DDI (+55) e sem espaços.';
+                            } elseif ($sent > 10 && $repliesPct < 10) {
+                                $engagementTip = 'Taxa de resposta baixa. Personalize as mensagens com o nome do contato e envie em horários de pico (9h–11h ou 18h–20h).';
+                            } elseif ($sent > 10 && $deliveredPct >= 70) {
+                                $engagementTip = 'Boa taxa de entrega! Para aumentar respostas, inclua uma pergunta direta ou call-to-action claro no início da mensagem.';
+                            } else {
+                                $engagementTip = 'Gere listas segmentadas de contatos diretamente dos seus projetos ativos em "Pessoas & Contatos" na visualização do projeto.';
+                            }
+                        @endphp
                         <div style="margin-top: 24px; padding: 16px; background: rgba(99,102,241,0.1); border-radius: 12px; border: 1px solid rgba(99,102,241,0.2); display: flex; gap: 12px; align-items: flex-start;">
                             <i class="fas fa-lightbulb" style="color: #818cf8; margin-top: 2px;"></i>
                             <div style="font-size: 0.8rem; color: #cbd5e1;">
-                                <strong style="color: white;">Dica de Engajamento:</strong> 
-                                Você pode gerar listas segmentadas de contatos diretamente dos seus projetos ativos clicando em "Pessoas & Contatos" na visualização do projeto.
+                                <strong style="color: white;">Dica de Engajamento:</strong> {{ $engagementTip }}
                             </div>
                         </div>
                     </div>
@@ -325,6 +346,7 @@
                             </span>
                         @endif
                     </div>
+                    <span style="font-size:.6rem; font-weight:900; color:{{ $sc[0] }}; background:{{ $sc[1] }}; padding:3px 10px; border-radius:99px; border:1px solid {{ $sc[0] }}40; text-transform:uppercase; letter-spacing:.5px;">{{ $sc[2] }}</span>
                 </div>
                 <div style="display: flex; gap: 20px; margin-bottom: 8px;">
                     <!-- Progresso de Tarefas -->
@@ -374,14 +396,19 @@
             <div style="position: relative; width: 100%; max-width: 300px; margin: 0 auto;">
                 <canvas id="healthRadarChart"></canvas>
             </div>
+            @php
+                $radarAvg = round(collect($radarData['scores'])->avg());
+                $healthLabel = $radarAvg >= 70 ? 'Saudável' : ($radarAvg >= 40 ? 'Estável' : 'Crítico');
+                $healthColor = $radarAvg >= 70 ? '#10b981' : ($radarAvg >= 40 ? '#f59e0b' : '#ef4444');
+            @endphp
             <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around;">
                 <div style="text-align: center;">
                     <div style="font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 900; text-transform: uppercase;">Média Geral</div>
-                    <div style="font-size: 1.2rem; font-weight: 950; color: #10b981;">{{ round(collect($radarData['scores'])->avg()) }}%</div>
+                    <div style="font-size: 1.2rem; font-weight: 950; color: {{ $healthColor }};">{{ $radarAvg }}%</div>
                 </div>
                 <div style="text-align: center;">
                     <div style="font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 900; text-transform: uppercase;">Status</div>
-                    <div style="font-size: 1.2rem; font-weight: 950; color: #6366f1;">Estável</div>
+                    <div style="font-size: 1.2rem; font-weight: 950; color: {{ $healthColor }};">{{ $healthLabel }}</div>
                 </div>
             </div>
         </div>

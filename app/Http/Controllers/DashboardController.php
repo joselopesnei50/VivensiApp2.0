@@ -151,7 +151,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // ── Resumo financeiro do mês atual ──
+        // ── Resumo financeiro do mês atual e anterior ──
         $monthlyIncome = (float) Transaction::where('tenant_id', $tenantId)
             ->where('type', 'income')
             ->where('status', 'paid')
@@ -159,12 +159,29 @@ class DashboardController extends Controller
             ->whereYear('date', now()->year)
             ->sum('amount');
 
+        $lastMonthIncome = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')
+            ->where('status', 'paid')
+            ->whereMonth('date', now()->subMonth()->month)
+            ->whereYear('date', now()->subMonth()->year)
+            ->sum('amount');
+
+        $incomeChange = $lastMonthIncome > 0
+            ? (($monthlyIncome - $lastMonthIncome) / $lastMonthIncome) * 100
+            : null;
+
         $monthlyExpense = (float) Transaction::where('tenant_id', $tenantId)
             ->where('type', 'expense')
             ->where('status', 'paid')
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount');
+
+        $overdueTasksCount = Task::where('tenant_id', $tenantId)
+            ->whereNotIn('status', ['done', 'completed'])
+            ->whereNotNull('due_date')
+            ->where('due_date', '<', now()->toDateString())
+            ->count();
 
         // ── Aprovações de despesas pendentes ──
         $pendingApprovals = Transaction::where('tenant_id', $tenantId)
@@ -194,7 +211,10 @@ class DashboardController extends Controller
         $stats = [
             'team_size'         => User::where('tenant_id', $tenantId)->count(),
             'pending_tasks'     => Task::where('tenant_id', $tenantId)->whereNotIn('status', ['done', 'completed'])->count(),
+            'overdue_tasks'     => $overdueTasksCount,
             'monthly_income'    => $monthlyIncome,
+            'last_month_income' => $lastMonthIncome,
+            'income_change'     => $incomeChange,
             'monthly_expense'   => $monthlyExpense,
             'monthly_balance'   => $monthlyIncome - $monthlyExpense,
             'pending_approvals' => $pendingApprovals->count(),
