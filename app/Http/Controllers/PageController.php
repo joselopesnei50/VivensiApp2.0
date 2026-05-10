@@ -6,12 +6,13 @@ use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
-    public function show($slug)
+    public function show($slug, \Illuminate\Http\Request $request)
     {
-        // 1. Try to find in Database (CMS CMS content)
+        // 1. Try to find in Database (CMS content)
         $page = \App\Models\Page::where('slug', $slug)->first();
 
         if ($page) {
+            \App\Models\PageView::record($page, $request);
             return view('pages.show', compact('page'));
         }
 
