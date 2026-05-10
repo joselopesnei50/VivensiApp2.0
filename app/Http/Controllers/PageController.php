@@ -22,11 +22,10 @@ class PageController extends Controller
             abort(404);
         }
 
-        // 3. Map slug to legacy view name
+        // 3. Map slug to legacy view (only where view actually exists)
         $viewMap = [
-            'termos' => 'legal.terms',
+            'termos'      => 'legal.terms',
             'privacidade' => 'legal.privacy',
-            'sobre' => 'pages.about',
         ];
 
         if (isset($viewMap[$slug]) && view()->exists($viewMap[$slug])) {
