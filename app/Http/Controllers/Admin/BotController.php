@@ -87,10 +87,11 @@ class BotController extends Controller
         }
 
         $webhookUrl = rtrim(config('app.url'), '/') . '/api/whatsapp/bot';
+        $activeTab  = request()->get('tab', 'config');
 
         return view('admin.bot.index', compact(
             'settings', 'users', 'instanceStatus', 'webhookUrl',
-            'atendSettings', 'atendFaq', 'waConfig'
+            'atendSettings', 'atendFaq', 'waConfig', 'activeTab'
         ));
     }
 

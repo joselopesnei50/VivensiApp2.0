@@ -52,26 +52,26 @@
 
 {{-- ── TABS ── --}}
 <div class="bot-tabs mb-4">
-    <button class="bot-tab active" onclick="switchTab('config', this)">
+    <button class="bot-tab {{ $activeTab === 'config' ? 'active' : '' }}" onclick="switchTab('config', this)">
         <i class="fas fa-sliders me-2"></i>Bot Interno
     </button>
-    <button class="bot-tab" onclick="switchTab('atendimento', this)">
+    <button class="bot-tab {{ $activeTab === 'atendimento' ? 'active' : '' }}" onclick="switchTab('atendimento', this)">
         <i class="fas fa-headset me-2"></i>Bot de Atendimento
         @if(($atendSettings['atend_enabled'] ?? '0') === '1')
             <span class="tab-count" style="background:#10b981;">ON</span>
         @endif
     </button>
-    <button class="bot-tab" onclick="switchTab('users', this)">
+    <button class="bot-tab {{ $activeTab === 'users' ? 'active' : '' }}" onclick="switchTab('users', this)">
         <i class="fas fa-users me-2"></i>Usuários
         <span class="tab-count">{{ $users->count() }}</span>
     </button>
-    <button class="bot-tab" onclick="switchTab('messages', this)">
+    <button class="bot-tab {{ $activeTab === 'messages' ? 'active' : '' }}" onclick="switchTab('messages', this)">
         <i class="fas fa-comment-dots me-2"></i>Mensagens
     </button>
 </div>
 
 {{-- ── TAB: BOT DE ATENDIMENTO ── --}}
-<div id="tab-atendimento" class="tab-pane-bot" style="display:none;">
+<div id="tab-atendimento" class="tab-pane-bot" style="display:{{ $activeTab === 'atendimento' ? 'block' : 'none' }};">
     <form method="POST" action="{{ route('admin.bot.atendimento.save') }}">
         @csrf
         <div class="row g-3">
@@ -233,7 +233,7 @@
 </div>
 
 {{-- ── TAB: CONFIG ── --}}
-<div id="tab-config" class="tab-pane-bot">
+<div id="tab-config" class="tab-pane-bot" style="display:{{ $activeTab === 'config' || $activeTab === '' ? 'block' : 'none' }};">
     <div class="row g-3">
 
         {{-- General Settings --}}
@@ -365,7 +365,7 @@
 </div>
 
 {{-- ── TAB: USERS ── --}}
-<div id="tab-users" class="tab-pane-bot d-none">
+<div id="tab-users" class="tab-pane-bot" style="display:none;">
     <div class="exec-card p-0">
         <div class="exec-card-head px-4 py-3 border-bottom">
             <div>
@@ -432,7 +432,7 @@
 </div>
 
 {{-- ── TAB: MESSAGES ── --}}
-<div id="tab-messages" class="tab-pane-bot d-none">
+<div id="tab-messages" class="tab-pane-bot" style="display:none;">
     <div class="exec-card">
         <div class="exec-card-head">
             <div>
@@ -683,11 +683,19 @@ textarea.field-input { resize:vertical;min-height:120px; }
 @push('scripts')
 <script>
 function switchTab(name, el) {
-    document.querySelectorAll('.tab-pane-bot').forEach(p => p.classList.add('d-none'));
+    document.querySelectorAll('.tab-pane-bot').forEach(p => p.style.display = 'none');
     document.querySelectorAll('.bot-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.remove('d-none');
-    el.classList.add('active');
+    document.getElementById('tab-' + name).style.display = 'block';
+    if (el) el.classList.add('active');
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    const activeTab = '{{ $activeTab }}';
+    const btn = document.querySelector(`.bot-tab[onclick*="'${activeTab}'"]`);
+    if (activeTab && activeTab !== 'config') {
+        switchTab(activeTab, btn);
+    }
+});
 
 function openPhoneModal(userId, userName, currentPhone) {
     document.getElementById('modalUserName').textContent = userName;
