@@ -31,6 +31,12 @@ class Tenant extends Model
         'whatsapp_support',
     ];
 
+    protected $hidden = [
+        'pix_key',
+        'pix_key_type',
+        'openpix_app_id',
+    ];
+
     protected $casts = [
         'trial_ends_at'           => 'date',
         'weekly_report_enabled'   => 'boolean',

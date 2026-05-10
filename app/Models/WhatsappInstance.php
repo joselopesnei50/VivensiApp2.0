@@ -36,6 +36,10 @@ class WhatsappInstance extends Model
         'settings',
     ];
 
+    protected $hidden = [
+        'instance_token', // Nunca expor o token de autenticação da Evolution API em JSON
+    ];
+
     protected $casts = [
         'settings'        => 'array',
         'daily_reset_at'  => 'datetime',
