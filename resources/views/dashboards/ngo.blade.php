@@ -72,8 +72,15 @@
             </div>
             <div style="color: #34d399; font-size: 2rem; font-weight: 950; letter-spacing: -1px; line-height: 1;">R$ {{ number_format($stats['monthly_income'], 0, ',', '.') }}</div>
         </div>
-        <div style="color: #10b981; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
-            <i class="fas fa-trending-up"></i> +15% <span style="font-size: 0.65rem; color: rgba(255,255,255,0.35); font-weight: 600;">vs mês ant.</span>
+        @php
+            $ic = $stats['income_change'] ?? null;
+            $icColor = ($ic === null) ? '#94a3b8' : ($ic >= 0 ? '#10b981' : '#ef4444');
+            $icIcon  = ($ic === null) ? 'fa-minus' : ($ic >= 0 ? 'fa-trending-up' : 'fa-trending-down');
+            $icText  = ($ic === null) ? 'Sem dados do mês ant.' : (($ic >= 0 ? '+' : '') . number_format($ic, 1) . '% vs mês ant.');
+        @endphp
+        <div style="color: {{ $icColor }}; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+            <i class="fas {{ $icIcon }}"></i>
+            {{ $icText }}
         </div>
     </div>
 
@@ -105,7 +112,8 @@
             <div style="color: white; font-size: 3rem; font-weight: 950; letter-spacing: -2px; line-height: 1;">{{ $stats['total_donors'] }}</div>
         </div>
         <div style="color: #f87171; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
-            <i class="fas fa-heart"></i> Doações Recorrentes
+            <i class="fas fa-users"></i>
+            {{ $stats['beneficiary_count'] ?? 0 }} Beneficiários cadastrados
         </div>
     </div>
 
@@ -140,9 +148,14 @@
                     <div style="font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 900; text-transform: uppercase;">Vitalidade</div>
                     <div style="font-size: 1.2rem; font-weight: 950; color: #10b981;">{{ round(collect($radarData['scores'])->avg()) }}%</div>
                 </div>
+                @php
+                    $radarAvg = round(collect($radarData['scores'])->avg());
+                    $confidenceLabel = $radarAvg >= 70 ? 'Alta' : ($radarAvg >= 40 ? 'Média' : 'Baixa');
+                    $confidenceColor = $radarAvg >= 70 ? 'var(--ngo-primary)' : ($radarAvg >= 40 ? '#f59e0b' : '#ef4444');
+                @endphp
                 <div style="text-align: center;">
                     <div style="font-size: 0.6rem; color: rgba(255,255,255,0.4); font-weight: 900; text-transform: uppercase;">Confiança</div>
-                    <div style="font-size: 1.2rem; font-weight: 950; color: var(--ngo-primary);">Alta</div>
+                    <div style="font-size: 1.2rem; font-weight: 950; color: {{ $confidenceColor }};">{{ $confidenceLabel }}</div>
                 </div>
             </div>
         </div>
@@ -598,13 +611,32 @@
 
             {{-- Linhas --}}
             @forelse($stats['recent_grants'] as $grant)
-            <div style="display: flex; align-items: center; gap: 0; padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.03); margin-bottom: 8px; transition: background 0.2s; cursor: pointer;"
+            @php
+                $grantStatusMap = [
+                    'open'      => ['#10b981', 'rgba(16,185,129,0.15)', 'Aberto'],
+                    'reporting' => ['#f59e0b', 'rgba(245,158,11,0.15)', 'Em Prestação'],
+                    'closed'    => ['#94a3b8', 'rgba(148,163,184,0.1)',  'Encerrado'],
+                ];
+                $gs = $grantStatusMap[$grant->status] ?? ['#a5b4fc', 'rgba(129,140,248,0.12)', $grant->status];
+                $daysLeft = $grant->deadline ? now()->diffInDays(\Carbon\Carbon::parse($grant->deadline), false) : null;
+                $isUrgent = $daysLeft !== null && $daysLeft >= 0 && $daysLeft <= 7;
+            @endphp
+            <div style="display: flex; align-items: center; gap: 0; padding: 16px; border-radius: 12px; background: {{ $isUrgent ? 'rgba(239,68,68,0.05)' : 'rgba(255,255,255,0.03)' }}; border: 1px solid {{ $isUrgent ? 'rgba(239,68,68,0.2)' : 'transparent' }}; margin-bottom: 8px; transition: background 0.2s; cursor: pointer;"
                  onmouseover="this.style.background='rgba(255,255,255,0.07)'"
-                 onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-                <div style="flex: 2; font-weight: 700; font-size: 0.9rem; color: white; padding-right: 12px;">{{ \Illuminate\Support\Str::limit($grant->title, 40) }}</div>
-                <div style="flex: 1; font-weight: 800; font-size: 0.9rem; color: #34d399;">R$ {{ number_format($grant->value, 2, ',', '.') }}</div>
+                 onmouseout="this.style.background='{{ $isUrgent ? 'rgba(239,68,68,0.05)' : 'rgba(255,255,255,0.03)' }}'">
+                <div style="flex: 2; padding-right: 12px;">
+                    <div style="font-weight: 700; font-size: 0.9rem; color: white;">{{ \Illuminate\Support\Str::limit($grant->title, 38) }}</div>
+                    @if($daysLeft !== null && $daysLeft >= 0)
+                    <div style="font-size: 0.68rem; color: {{ $isUrgent ? '#ef4444' : 'rgba(255,255,255,0.4)' }}; font-weight: 700; margin-top: 2px;">
+                        @if($isUrgent) ⚠️ @endif
+                        Prazo: {{ \Carbon\Carbon::parse($grant->deadline)->format('d/m/Y') }}
+                        ({{ $daysLeft === 0 ? 'hoje' : "em {$daysLeft} dia(s)" }})
+                    </div>
+                    @endif
+                </div>
+                <div style="flex: 1; font-weight: 800; font-size: 0.9rem; color: #34d399;">R$ {{ number_format($grant->value, 0, ',', '.') }}</div>
                 <div style="flex: 1; text-align: right;">
-                    <span style="display: inline-block; background: rgba(129,140,248,0.12); border: 1px solid rgba(129,140,248,0.25); color: #a5b4fc; padding: 4px 12px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;">{{ $grant->status }}</span>
+                    <span style="display: inline-block; background: {{ $gs[1] }}; color: {{ $gs[0] }}; padding: 4px 12px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;">{{ $gs[2] }}</span>
                 </div>
             </div>
             @empty
@@ -656,20 +688,31 @@
             </a>
         </div>
 
-        <!-- Próximos Passos -->
+        <!-- Próximos Prazos de Editais -->
+        @if(isset($stats['upcoming_deadlines']) && $stats['upcoming_deadlines']->isNotEmpty())
         <div class="mt-4" style="padding: 24px; background: #0f172a; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
-            <h6 style="color: rgba(255,255,255,0.35); font-weight: 900; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 18px;">PRÓXIMOS PASSOS</h6>
-            <div style="display: flex; flex-direction: column; gap: 14px;">
-                <div style="display: flex; gap: 14px; align-items: center; padding: 12px 14px; background: rgba(129,140,248,0.06); border-radius: 12px; border: 1px solid rgba(129,140,248,0.12);">
-                    <div style="width: 8px; height: 8px; min-width: 8px; background: #818cf8; border-radius: 50%; box-shadow: 0 0 8px #818cf8;"></div>
-                    <span style="font-size: 0.85rem; color: #e2e8f0; font-weight: 700;">Validar transparência de fev/2026</span>
-                </div>
-                <div style="display: flex; gap: 14px; align-items: center; padding: 12px 14px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="width: 8px; height: 8px; min-width: 8px; background: rgba(255,255,255,0.2); border-radius: 50%;"></div>
-                    <span style="font-size: 0.85rem; color: rgba(255,255,255,0.45); font-weight: 600;">Exportar balancete social</span>
-                </div>
+            <h6 style="color: rgba(255,255,255,0.35); font-weight: 900; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 18px;">⏳ EDITAIS COM PRAZO PRÓXIMO</h6>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                @foreach($stats['upcoming_deadlines'] as $dl)
+                    @php
+                        $days = now()->diffInDays(\Carbon\Carbon::parse($dl->deadline), false);
+                        $dlColor = $days <= 3 ? '#ef4444' : ($days <= 7 ? '#f59e0b' : '#818cf8');
+                        $dlBg    = $days <= 3 ? 'rgba(239,68,68,0.08)' : ($days <= 7 ? 'rgba(245,158,11,0.06)' : 'rgba(129,140,248,0.06)');
+                        $dlBorder= $days <= 3 ? 'rgba(239,68,68,0.2)'  : ($days <= 7 ? 'rgba(245,158,11,0.15)' : 'rgba(129,140,248,0.12)');
+                    @endphp
+                    <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; background: {{ $dlBg }}; border-radius: 12px; border: 1px solid {{ $dlBorder }};">
+                        <div style="width: 8px; height: 8px; min-width: 8px; background: {{ $dlColor }}; border-radius: 50%; box-shadow: 0 0 6px {{ $dlColor }};"></div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.82rem; color: #e2e8f0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $dl->title }}</div>
+                            <div style="font-size: 0.68rem; color: {{ $dlColor }}; font-weight: 800; margin-top: 2px;">
+                                {{ $days === 0 ? 'Vence hoje!' : "Vence em {$days} dia(s)" }} — {{ \Carbon\Carbon::parse($dl->deadline)->format('d/m') }}
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
+        @endif
     </div>
 </div>
 
