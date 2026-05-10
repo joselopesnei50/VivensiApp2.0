@@ -249,7 +249,6 @@
                     <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '250px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
-                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->routeIs('whatsapp.broadcast.index') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa (WA)</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
                         </ul>
                     </div>
