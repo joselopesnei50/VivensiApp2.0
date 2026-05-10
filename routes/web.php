@@ -635,15 +635,17 @@ Route::get('/blog', [App\Http\Controllers\PublicController::class, 'blogIndex'])
 Route::get('/blog/{slug}', [App\Http\Controllers\PublicController::class, 'blogShow'])->name('public.blog.show');
 
 // Public Routes (No Auth)
-Route::get('/t/{tenant_id}', [App\Http\Controllers\TransparencyController::class, 'publicView']);
+Route::get('/t/{tenant_id}', [App\Http\Controllers\TransparencyController::class, 'publicView'])
+    ->where('tenant_id', '[0-9]+')
+    ->middleware('throttle:10,1');
 Route::get('/r/{token}', [App\Http\Controllers\ReceiptController::class, 'show'])->name('public.receipt');
 Route::get('/validar-recibo', [App\Http\Controllers\ReceiptController::class, 'validateForm'])->name('public.receipt.validate');
-Route::post('/validar-recibo', [App\Http\Controllers\ReceiptController::class, 'validateSubmit'])->middleware('throttle:30,1');
+Route::post('/validar-recibo', [App\Http\Controllers\ReceiptController::class, 'validateSubmit'])->middleware('throttle:5,1');
 Route::get('/validar-certificado/{id}', [App\Http\Controllers\HumanResourcesController::class, 'publicValidateVolunteerCertificate'])
-    ->middleware('throttle:60,1')
+    ->middleware('throttle:5,1')
     ->name('public.volunteer_certificate.validate');
 Route::get('/sign/{token}', [App\Http\Controllers\ContractController::class, 'showPublic'])->name('public.contract');
-Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign']);
+Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign'])->middleware('throttle:10,1');
 
 
 
