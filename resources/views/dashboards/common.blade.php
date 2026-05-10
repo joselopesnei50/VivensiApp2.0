@@ -8,10 +8,17 @@
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                 <span style="background: var(--primary-color); width: 12px; height: 3px; border-radius: 2px;"></span>
-                <h6 style="color: var(--primary-color); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Painel de Negócios (MEI/Empresas)</h6>
+                <h6 style="color: var(--primary-color); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Meu Painel — {{ now()->translatedFormat('F \d\e Y') }}</h6>
             </div>
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.8rem; letter-spacing: -1.5px;">Olá, {{ explode(' ', auth()->user()->name)[0] }}!</h2>
-            <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">A máquina de vendas e finanças do seu negócio.</p>
+            <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">
+                Visão financeira e operacional do seu dia.
+                @if($overdueCount > 0)
+                    <span style="margin-left: 10px; background: #fef2f2; color: #ef4444; font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: 99px; border: 1px solid #fecaca;">
+                        <i class="fas fa-circle-exclamation me-1"></i>{{ $overdueCount }} tarefa{{ $overdueCount > 1 ? 's' : '' }} vencida{{ $overdueCount > 1 ? 's' : '' }}
+                    </span>
+                @endif
+            </p>
         </div>
         <div style="display: flex; gap: 12px;">
              <a href="{{ url('/personal/reconciliation') }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
@@ -25,56 +32,75 @@
 </div>
 
 <div class="row g-4 mb-5">
-    <!-- Saldo Total -->
+    <!-- Saldo do Mês -->
     <div class="col-md-4">
         <div class="vivensi-card" style="padding: 35px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border: none; overflow: hidden; position: relative;">
             <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; color: rgba(255,255,255,0.03); transform: rotate(-15deg);"><i class="fas fa-wallet"></i></div>
-            <span style="color: rgba(255,255,255,0.6); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Saldo Disponível</span>
-            <div style="font-size: 2.6rem; font-weight: 900; color: white; margin-top: 10px; text-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-                R$ {{ number_format($balance, 2, ',', '.') }}
+            <span style="color: rgba(255,255,255,0.6); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Saldo do Mês</span>
+            <div style="font-size: 2.4rem; font-weight: 900; color: {{ $monthlyBalance >= 0 ? '#34d399' : '#f87171' }}; margin-top: 10px; text-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                R$ {{ number_format($monthlyBalance, 2, ',', '.') }}
             </div>
-            <div style="margin-top: 20px; font-size: 0.8rem; background: rgba(255,255,255,0.1); display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 20px; backdrop-filter: blur(5px);">
-                <i class="fas fa-shield-alt me-2 text-success"></i> Fundos Protegidos
+            <div style="margin-top: 8px; font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 600;">
+                Acumulado total: R$ {{ number_format($balance, 0, ',', '.') }}
+            </div>
+            <div style="margin-top: 16px; font-size: 0.8rem; background: rgba(255,255,255,0.1); display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 20px; backdrop-filter: blur(5px);">
+                <i class="fas fa-calendar-day me-2" style="color: #818cf8;"></i> {{ ucfirst(now()->translatedFormat('F Y')) }}
             </div>
         </div>
     </div>
-    
-    <!-- Entradas -->
+
+    <!-- Entradas do Mês -->
     <div class="col-md-4">
         <div class="vivensi-card" style="padding: 35px; background: white; border: 1px solid rgba(16,185,129,0.1);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <span style="color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Faturamento (Entradas)</span>
+                    <span style="color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Entradas — Mês Atual</span>
                     <div style="font-size: 2.2rem; font-weight: 900; color: #10b981; margin-top: 10px;">
-                        R$ {{ number_format($totalIncome, 2, ',', '.') }}
+                        R$ {{ number_format($monthlyIncome, 2, ',', '.') }}
                     </div>
+                    @if($incomeChange !== null)
+                    <div style="font-size: 0.72rem; font-weight: 800; color: {{ $incomeChange >= 0 ? '#10b981' : '#ef4444' }}; margin-top: 5px;">
+                        {{ $incomeChange >= 0 ? '▲' : '▼' }} {{ number_format(abs($incomeChange), 1) }}% vs mês anterior
+                    </div>
+                    @endif
                 </div>
                 <div style="width: 50px; height: 50px; background: #ecfdf5; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 1.2rem;">
                     <i class="fas fa-arrow-down-long"></i>
                 </div>
             </div>
-            <div style="margin-top: 25px; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
+            <div style="margin-top: 20px; font-size: 0.72rem; color: #94a3b8; font-weight: 600;">
+                Total histórico: R$ {{ number_format($totalIncome, 0, ',', '.') }}
+            </div>
+            <div style="margin-top: 8px; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
                 <div style="height: 100%; background: #10b981; width: 100%;"></div>
             </div>
         </div>
     </div>
 
-    <!-- Saídas -->
+    <!-- Saídas do Mês -->
     <div class="col-md-4">
         <div class="vivensi-card" style="padding: 35px; background: white; border: 1px solid rgba(239,68,68,0.1);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <span style="color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Saídas Totais</span>
+                    <span style="color: #64748b; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Saídas — Mês Atual</span>
                     <div style="font-size: 2.2rem; font-weight: 900; color: #ef4444; margin-top: 10px;">
-                        R$ {{ number_format($totalExpense, 2, ',', '.') }}
+                        R$ {{ number_format($monthlyExpense, 2, ',', '.') }}
                     </div>
+                    @if($expenseChange !== null)
+                    <div style="font-size: 0.72rem; font-weight: 800; color: {{ $expenseChange <= 0 ? '#10b981' : '#ef4444' }}; margin-top: 5px;">
+                        {{ $expenseChange >= 0 ? '▲' : '▼' }} {{ number_format(abs($expenseChange), 1) }}% vs mês anterior
+                    </div>
+                    @endif
                 </div>
                 <div style="width: 50px; height: 50px; background: #fef2f2; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1.2rem;">
                     <i class="fas fa-arrow-up-long"></i>
                 </div>
             </div>
-             <div style="margin-top: 25px; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
-                <div style="height: 100%; background: #ef4444; width: {{ $totalIncome > 0 ? min(100, ($totalExpense / $totalIncome) * 100) : 0 }}%;"></div>
+            <div style="margin-top: 20px; font-size: 0.72rem; color: #94a3b8; font-weight: 600;">
+                Total histórico: R$ {{ number_format($totalExpense, 0, ',', '.') }}
+            </div>
+            <div style="margin-top: 8px; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
+                <div style="height: 100%; background: #ef4444; width: {{ $monthlyIncome > 0 ? min(100, ($monthlyExpense / $monthlyIncome) * 100) : 0 }}%;"></div>
             </div>
         </div>
     </div>
@@ -306,16 +332,29 @@
 
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 @forelse($pendingTasks as $task)
-                <div style="padding: 15px 20px; background: #f8fafc; border-radius: 16px; border-left: 6px solid {{ $task->priority === 'high' ? '#ef4444' : '#6366f1' }}; border-top: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;">
+                @php
+                    $isOverdue = $task->due_date && \Carbon\Carbon::parse($task->due_date)->isPast();
+                    $prioMap = [
+                        'critical' => ['#7f1d1d', '#fef2f2', 'Crítica'],
+                        'high'     => ['#ef4444', '#fef2f2', 'Alta'],
+                        'medium'   => ['#f59e0b', '#fffbeb', 'Média'],
+                        'low'      => ['#10b981', '#ecfdf5', 'Baixa'],
+                    ];
+                    $pc = $prioMap[$task->priority] ?? ['#6366f1', '#e0e7ff', ucfirst($task->priority ?? '—')];
+                    $borderColor = $isOverdue ? '#ef4444' : $pc[0];
+                @endphp
+                <div style="padding: 15px 20px; background: {{ $isOverdue ? '#fef2f2' : '#f8fafc' }}; border-radius: 16px; border-left: 6px solid {{ $borderColor }}; border-top: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                         <span style="font-weight: 800; color: #1e293b; font-size: 0.95rem;">{{ $task->title }}</span>
-                        <span style="font-size: 0.65rem; background: {{ $task->priority === 'high' ? '#fef2f2' : '#e0e7ff' }}; padding: 4px 10px; border-radius: 20px; font-weight: 900; color: {{ $task->priority === 'high' ? '#ef4444' : '#4f46e5' }}; text-transform: uppercase;">
-                            {{ $task->priority }}
+                        <span style="font-size: 0.65rem; background: {{ $pc[1] }}; padding: 4px 10px; border-radius: 20px; font-weight: 900; color: {{ $pc[0] }}; text-transform: uppercase; white-space: nowrap;">
+                            {{ $pc[2] }}
                         </span>
                     </div>
                     <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">
-                            <i class="far fa-calendar-check me-1"></i> {{ $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') : 'Rotina' }}
+                        <span style="font-size: 0.75rem; color: {{ $isOverdue ? '#ef4444' : '#94a3b8' }}; font-weight: 700;">
+                            <i class="far fa-{{ $isOverdue ? 'calendar-xmark' : 'calendar-check' }} me-1"></i>
+                            {{ $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') : 'Rotina' }}
+                            @if($isOverdue) <strong>(VENCIDA)</strong> @endif
                         </span>
                         <i class="fas fa-chevron-right" style="color: #cbd5e1; font-size: 0.8rem;"></i>
                     </div>
@@ -359,7 +398,7 @@
                 <a href="{{ url('/personal/budget') }}" style="color: var(--primary-light); font-size: 0.75rem; font-weight: 800; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">
                     Análise Profunda <i class="fas fa-chevron-right ms-1"></i>
                 </a>
-                <span style="font-size: 0.6rem; color: rgba(255,255,255,0.3); font-weight: 600;">FEVEREIRO 2026</span>
+                <span style="font-size: 0.6rem; color: rgba(255,255,255,0.3); font-weight: 600;">{{ strtoupper(now()->translatedFormat('F Y')) }}</span>
             </div>
         </div>
 
