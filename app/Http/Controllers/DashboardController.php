@@ -529,6 +529,38 @@ class DashboardController extends Controller
 
         $balance = $totalIncome - $totalExpense;
 
+        // Mês atual e anterior (para KPIs com MoM)
+        $monthlyIncome = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')->where('status', 'paid')
+            ->whereMonth('date', now()->month)->whereYear('date', now()->year)
+            ->sum('amount');
+
+        $monthlyExpense = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'expense')->where('status', 'paid')
+            ->whereMonth('date', now()->month)->whereYear('date', now()->year)
+            ->sum('amount');
+
+        $lastMonthIncome = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')->where('status', 'paid')
+            ->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)
+            ->sum('amount');
+
+        $lastMonthExpense = (float) Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'expense')->where('status', 'paid')
+            ->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)
+            ->sum('amount');
+
+        $incomeChange  = $lastMonthIncome  > 0 ? (($monthlyIncome  - $lastMonthIncome)  / $lastMonthIncome)  * 100 : null;
+        $expenseChange = $lastMonthExpense > 0 ? (($monthlyExpense - $lastMonthExpense) / $lastMonthExpense) * 100 : null;
+        $monthlyBalance = $monthlyIncome - $monthlyExpense;
+
+        $overdueCount = Task::where('tenant_id', $tenantId)
+            ->where('assigned_to', $userId)
+            ->whereNotIn('status', ['done', 'completed'])
+            ->whereNotNull('due_date')
+            ->where('due_date', '<', now()->toDateString())
+            ->count();
+
         // Transações recentes
         $recentTransactions = Transaction::where('tenant_id', $tenantId)
             ->orderBy('date', 'desc')
@@ -601,6 +633,9 @@ class DashboardController extends Controller
 
         return view('dashboards.common', compact(
             'totalIncome', 'totalExpense', 'balance',
+            'monthlyIncome', 'monthlyExpense', 'monthlyBalance',
+            'lastMonthIncome', 'incomeChange', 'expenseChange',
+            'overdueCount',
             'recentTransactions', 'pendingTasks',
             'chartLabels', 'chartIncome', 'chartExpense',
             'impactFeed'
