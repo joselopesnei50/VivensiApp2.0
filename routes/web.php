@@ -564,6 +564,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // ── Bot de Gestão Interna (Command Bot) ───────────────────────────────
         Route::get('/bot',                    [App\Http\Controllers\Admin\BotController::class, 'index'])->name('admin.bot');
         Route::post('/bot/settings',          [App\Http\Controllers\Admin\BotController::class, 'save'])->name('admin.bot.save');
+        Route::post('/bot/atendimento',       [App\Http\Controllers\Admin\BotController::class, 'saveAtendimento'])->name('admin.bot.atendimento.save');
         Route::post('/bot/users/{id}/phone',  [App\Http\Controllers\Admin\BotController::class, 'updateUserPhone'])->name('admin.bot.user.phone');
         Route::post('/bot/instance/create',   [App\Http\Controllers\Admin\BotController::class, 'createInstance'])->name('admin.bot.instance.create');
         Route::get('/bot/instance/qr',        [App\Http\Controllers\Admin\BotController::class, 'getQrCode'])->name('admin.bot.instance.qr');
