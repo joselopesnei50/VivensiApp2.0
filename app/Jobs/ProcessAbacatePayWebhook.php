@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProcessAbacatePayWebhook implements ShouldQueue
@@ -43,47 +44,67 @@ class ProcessAbacatePayWebhook implements ShouldQueue
     {
         $checkout   = $payload['data']['checkout'] ?? null;
         $externalId = $checkout['externalId'] ?? null;
+        $webhookId  = $payload['id'] ?? null;
 
         if (!$checkout || !$externalId) {
             Log::warning('AbacatePay: checkout.completed sem externalId');
             return;
         }
 
-        $tenant = $this->findTenantByExternalId($externalId);
+        // Idempotência: registrar o webhook_id; se já processado, sair silenciosamente
+        if ($webhookId) {
+            try {
+                $inserted = DB::table('processed_webhooks')->insertOrIgnore([
+                    'gateway'      => 'abacatepay',
+                    'webhook_id'   => $webhookId,
+                    'event'        => 'checkout.completed',
+                    'processed_at' => now(),
+                ]);
+                if (!$inserted) {
+                    Log::info('AbacatePay: webhook duplicado ignorado', ['webhookId' => $webhookId]);
+                    return;
+                }
+            } catch (\Throwable $e) {
+                // Violação de unicidade = outro worker já processou
+                Log::info('AbacatePay: webhook já processado por outro worker', ['webhookId' => $webhookId]);
+                return;
+            }
+        }
 
+        $tenant = $this->findTenantByExternalId($externalId);
         if (!$tenant) {
             Log::error('AbacatePay: tenant não encontrado', ['externalId' => $externalId]);
             return;
         }
 
-        // Extrair plan_id do metadata
         $planId = $checkout['metadata']['plan_id'] ?? null;
 
-        // Atualizar transação como paga
-        try {
-            Transaction::withoutGlobalScopes()
+        DB::transaction(function () use ($externalId, $tenant, $planId, $checkout) {
+            // lockForUpdate garante que dois workers simultâneos não processem o mesmo registro
+            $transaction = Transaction::withoutGlobalScopes()
                 ->where('external_id', $externalId)
-                ->update([
+                ->lockForUpdate()
+                ->first();
+
+            if ($transaction && $transaction->status !== 'paid') {
+                $transaction->update([
                     'status'          => 'paid',
                     'approval_status' => 'approved',
                     'paid_at'         => now(),
                 ]);
-        } catch (\Throwable $e) {
-            Log::warning('AbacatePay: falha ao atualizar transação', ['error' => $e->getMessage(), 'externalId' => $externalId]);
-        }
+            }
 
-        // Ativar assinatura e vincular plano
-        $tenant->subscription_status = 'active';
-        if ($planId && SubscriptionPlan::find($planId)) {
-            $tenant->plan_id = $planId;
-        }
-        $tenant->save();
+            $tenant->subscription_status = 'active';
+            if ($planId && SubscriptionPlan::find($planId)) {
+                $tenant->plan_id = $planId;
+            }
+            $tenant->save();
+        });
 
         Log::info('AbacatePay: checkout.completed processado', [
             'tenant'     => $tenant->id,
             'plan_id'    => $planId,
             'externalId' => $externalId,
-            'amount'     => ($checkout['paidAmount'] ?? 0) / 100,
         ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\RaffleTicket;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class CleanupRaffleReservations extends Command
@@ -27,26 +28,26 @@ class CleanupRaffleReservations extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
-        $expiredTickets = RaffleTicket::where('status', 'pending')
+        // UPDATE atômico em vez de get()+foreach — elimina race condition quando
+        // dois workers executam simultaneamente
+        $count = RaffleTicket::where('status', 'pending')
             ->where('reserved_at', '<', Carbon::now()->subMinutes(30))
-            ->get();
-
-        $count = $expiredTickets->count();
-
-        foreach ($expiredTickets as $ticket) {
-            $ticket->update([
-                'status' => 'available',
-                'buyer_name' => null,
+            ->update([
+                'status'      => 'available',
+                'buyer_name'  => null,
                 'buyer_email' => null,
                 'buyer_phone' => null,
                 'reserved_at' => null,
             ]);
+
+        if ($count > 0) {
+            Log::info("CleanupRaffleReservations: {$count} bilhetes liberados.");
         }
 
         $this->info("Sucesso: {$count} bilhetes de rifa foram liberados.");
-        
-        return 0;
+
+        return self::SUCCESS;
     }
 }
