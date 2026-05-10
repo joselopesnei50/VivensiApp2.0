@@ -1,55 +1,39 @@
 #!/usr/bin/env bash
-# =============================================================================
-# Vivensi — Deploy Script
-# Executado pelo webhook do GitHub após git push no branch main
-# Uso: bash /var/www/vivensi/scripts/deploy.sh
-# =============================================================================
-
+# deploy.sh — Script de deploy seguro do Vivensi
+# Executar na raiz do projeto: bash scripts/deploy.sh
 set -euo pipefail
 
-APP_DIR="/var/www/vivensi"
-LOG_FILE="${APP_DIR}/storage/logs/deploy.log"
-TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-PHP_BIN="/usr/bin/php8.1"
-ARTISAN="${APP_DIR}/artisan"
-WEB_USER="www-data"
+echo "🚀 Vivensi Deploy — $(date '+%Y-%m-%d %H:%M:%S')"
 
-log() {
-    echo "[${TIMESTAMP}] $1" | tee -a "$LOG_FILE"
-}
+# 1. Código
+git pull origin main
 
-log "========================================"
-log "🚀 Deploy iniciado"
+# 2. Dependências (sem pacotes de dev)
+composer install --no-dev --optimize-autoloader
 
-# 1. Puxar código mais recente
-log "📥 Atualizando código..."
-cd "$APP_DIR"
-sudo -u "$WEB_USER" git pull origin main
+# 3. Cache Laravel
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
 
-# 2. Instalar/atualizar dependências (sem dev, otimizado)
-log "📦 Atualizando dependências Composer..."
-sudo -u "$WEB_USER" composer install \
-    --no-dev \
-    --optimize-autoloader \
-    --no-interaction \
-    --quiet
+# 4. Migrações
+php artisan migrate --force
 
-# 3. Executar migrações pendentes
-log "🗃️  Rodando migrações..."
-sudo -u "$WEB_USER" "$PHP_BIN" "$ARTISAN" migrate --force
+# 5. Storage
+php artisan storage:link 2>/dev/null || true
 
-# 4. Recriar caches
-log "⚡ Recriando caches..."
-sudo -u "$WEB_USER" "$PHP_BIN" "$ARTISAN" config:clear
-sudo -u "$WEB_USER" "$PHP_BIN" "$ARTISAN" config:cache
-sudo -u "$WEB_USER" "$PHP_BIN" "$ARTISAN" route:clear
-sudo -u "$WEB_USER" "$PHP_BIN" "$ARTISAN" route:cache
-sudo -u "$WEB_USER" "$PHP_BIN" "$ARTISAN" view:clear
-sudo -u "$WEB_USER" "$PHP_BIN" "$ARTISAN" view:cache
+# 6. Reiniciar workers
+if command -v supervisorctl &>/dev/null; then
+    sudo supervisorctl reread
+    sudo supervisorctl update
+    sudo supervisorctl restart vivensi-worker-default:* 2>/dev/null || sudo supervisorctl start vivensi-worker-default:* || true
+    sudo supervisorctl restart vivensi-worker-whatsapp:* 2>/dev/null || sudo supervisorctl start vivensi-worker-whatsapp:* || true
+    echo "✅ Workers reiniciados"
+fi
 
-# 5. Reiniciar workers de fila
-log "🔄 Reiniciando workers..."
-sudo supervisorctl restart vivensi-worker:* 2>/dev/null || true
+# 7. Permissões de storage
+sudo chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+sudo chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
-log "✅ Deploy concluído com sucesso!"
-log "========================================"
+echo "✅ Deploy concluído"
