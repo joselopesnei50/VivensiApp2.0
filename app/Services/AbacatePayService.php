@@ -17,9 +17,6 @@ class AbacatePayService
     protected string $baseUrl = 'https://api.abacatepay.com/v2';
     protected bool   $devMode;
 
-    /** Chave pública HMAC para validação de webhooks */
-    const WEBHOOK_HMAC_KEY = 't9dXRhHHo3yDEj5pVDYz0frf7q6bMKyMRmxxCPIPp3RCplBfXRxqlC6ZpiWmOqj4L63qEaeUOtrCI8P0VMUgo6iIga2ri9ogaHFs0WIIywSMg0q7RmBfybe1E5XJcfC4IW3alNqym0tXoAKkzvfEjZxV6bE0oG2zJrNNYmUCKZyV0KZ3JS8Votf9EAWWYdiDkMkpbMdPggfh1EqHlVkMiTady6jOR3hyzGEHrIz2Ret0xHKMbiqkr9HS1JhNHDX9';
-
     public function __construct()
     {
         $this->apiKey  = (string) (SystemSetting::getValue('abacatepay_api_key')
@@ -115,9 +112,15 @@ class AbacatePayService
     public function verifyWebhookSignature(string $rawBody, string $signature): bool
     {
         $expected = base64_encode(
-            hash_hmac('sha256', $rawBody, self::WEBHOOK_HMAC_KEY, true)
+            hash_hmac('sha256', $rawBody, $this->getHmacKey(), true)
         );
         return hash_equals($expected, $signature);
+    }
+
+    private function getHmacKey(): string
+    {
+        return config('services.abacatepay.hmac_key')
+            ?? throw new \RuntimeException('ABACATEPAY_HMAC_KEY not configured');
     }
 
     /**
