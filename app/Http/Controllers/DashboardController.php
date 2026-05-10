@@ -315,14 +315,33 @@ class DashboardController extends Controller
         $stats = \Cache::remember("ngo_stats_{$tenantId}", 300, function () use ($tenantId) {
             $advisor = new AiFinancialAdvisor($tenantId);
 
+            $monthlyIncome     = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount');
+            $lastMonthIncome   = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)->sum('amount');
+
+            $incomeChange = null;
+            if ($lastMonthIncome > 0) {
+                $incomeChange = (($monthlyIncome - $lastMonthIncome) / $lastMonthIncome) * 100;
+            }
+
             return [
-                'runway'           => number_format($advisor->getSurvivalMetrics()['months_left'], 1),
-                'monthly_income'   => Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->month)->sum('amount'),
-                'volunteers_count' => Volunteer::where('tenant_id', $tenantId)->count(),
-                'total_donors'     => NgoDonor::where('tenant_id', $tenantId)->count(),
-                'active_campaigns' => Campaign::where('tenant_id', $tenantId)->where('status', 'active')->get(),
-                'recent_grants'    => NgoGrant::where('tenant_id', $tenantId)->orderBy('created_at', 'desc')->limit(3)->get(),
-                'ai_insight'       => data_get($advisor->getInsights(), '0.message', 'Adicione mais transações para gerar insights precisos.'),
+                'runway'             => number_format($advisor->getSurvivalMetrics()['months_left'], 1),
+                'monthly_income'     => $monthlyIncome,
+                'last_month_income'  => $lastMonthIncome,
+                'income_change'      => $incomeChange,
+                'volunteers_count'   => Volunteer::where('tenant_id', $tenantId)->count(),
+                'total_donors'       => NgoDonor::where('tenant_id', $tenantId)->count(),
+                'beneficiary_count'  => Beneficiary::where('tenant_id', $tenantId)->count(),
+                'active_campaigns'   => Campaign::where('tenant_id', $tenantId)->where('status', 'active')->get(),
+                'recent_grants'      => NgoGrant::where('tenant_id', $tenantId)->orderBy('created_at', 'desc')->limit(3)->get(),
+                'upcoming_deadlines' => NgoGrant::where('tenant_id', $tenantId)
+                                            ->whereNotIn('status', ['closed'])
+                                            ->whereNotNull('deadline')
+                                            ->where('deadline', '>=', now())
+                                            ->where('deadline', '<=', now()->addDays(30))
+                                            ->orderBy('deadline')
+                                            ->limit(3)
+                                            ->get(),
+                'ai_insight'         => data_get($advisor->getInsights(), '0.message', 'Adicione mais transações para gerar insights precisos.'),
             ];
         });
 
