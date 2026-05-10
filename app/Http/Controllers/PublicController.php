@@ -50,9 +50,10 @@ class PublicController extends Controller
         return view('public.blog.index', compact('posts'));
     }
 
-    public function blogShow($slug)
+    public function blogShow($slug, Request $request)
     {
         $post = \App\Models\Post::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        \App\Models\PostView::record($post, $request);
         return view('public.blog.show', compact('post'));
     }
 
