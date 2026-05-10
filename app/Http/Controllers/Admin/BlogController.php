@@ -32,7 +32,7 @@ class BlogController extends Controller
             'image'   => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only(['title', 'content']);
+        $data = $request->only(['title', 'content', 'excerpt', 'meta_description', 'tags']);
         $data['is_published'] = $request->boolean('is_published');
         $data['slug']         = $this->uniqueSlug(Str::slug($request->title));
         $data['published_at'] = $data['is_published'] ? now() : null;
@@ -63,7 +63,7 @@ class BlogController extends Controller
             'image'   => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only(['title', 'content']);
+        $data = $request->only(['title', 'content', 'excerpt', 'meta_description', 'tags']);
         $data['is_published'] = $request->boolean('is_published');
 
         $newSlug = Str::slug($request->title);

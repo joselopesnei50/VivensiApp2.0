@@ -1853,6 +1853,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     </div>
 </section>
 
+@include('components.blog-section')
+
 <!-- FOOTER -->
 <footer>
     <div class="footer-row">
