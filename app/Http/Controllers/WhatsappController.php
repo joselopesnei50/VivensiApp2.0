@@ -73,6 +73,47 @@ class WhatsappController extends Controller
         return response()->json(['success' => true, 'chat' => $chat]);
     }
 
+    public function toggleBot(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $tenantId = auth()->user()->tenant_id;
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $chat->update([
+            'is_bot_active' => $request->boolean('is_bot_active'),
+            // Se reativar o bot, removemos o atendente fixo para permitir a automação
+            'assigned_to' => $request->boolean('is_bot_active') ? null : $chat->assigned_to
+        ]);
+
+        return response()->json(['success' => true, 'chat' => $chat]);
+    }
+
+    public function assignChat(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $tenantId = auth()->user()->tenant_id;
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $chat->update([
+            'assigned_to' => auth()->id(),
+            'is_bot_active' => false, // Ao assumir, o bot é desligado automaticamente
+            'status' => 'human_attending'
+        ]);
+
+        WhatsappAuditLog::create([
+            'tenant_id' => $tenantId,
+            'chat_id' => $chat->id,
+            'actor_user_id' => auth()->id(),
+            'actor_type' => 'user',
+            'event' => 'chat_assigned',
+            'details' => ['action' => 'take_over'],
+        ]);
+
+        return response()->json(['success' => true, 'chat' => $chat]);
+    }
+
     public function webhook(Request $request)
     {
         // 1. Validação de Handshake da Meta (GET)

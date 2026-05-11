@@ -33,6 +33,7 @@ class WhatsappChat extends Model
         'opt_out_at',
         'blocked_at',
         'blocked_reason',
+        'is_bot_active',
         'last_outbound_at',
     ];
 
