@@ -65,10 +65,17 @@ class ProcessEvolutionWebhook implements ShouldQueue
         $messageData = $this->payload['data'] ?? $this->payload;
         $key         = $messageData['key'] ?? [];
         $messageId   = $key['id'] ?? null;
-        $fromMe      = (bool) ($key['fromMe'] ?? false);
-
-        // Ignorar mensagens enviadas pela própria instância
-        if ($fromMe || !$messageId) return;
+        // Se a mensagem partiu de nós (celular ou painel), desativamos o bot para esta conversa
+        if ($fromMe) {
+            $remoteJid = $key['remoteJid'] ?? '';
+            $phone = preg_replace('/@.*/', '', $remoteJid);
+            if ($phone) {
+                WhatsappChat::where('tenant_id', $tenantId)
+                    ->where('wa_id', $phone)
+                    ->update(['is_bot_active' => false]);
+            }
+            return;
+        }
 
         // Idempotência: ignorar re-entregas
         if (WhatsappMessage::where('message_id', $messageId)->exists()) return;
@@ -175,7 +182,9 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
         // 5. Disparar resposta da IA se habilitada
         $config = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
-        if ($config?->ai_enabled && !$chat->opt_out_at && !$chat->blocked_at) {
+        $isBotAllowed = $chat->is_bot_active && is_null($chat->assigned_to);
+
+        if ($config?->ai_enabled && $isBotAllowed && !$chat->opt_out_at && !$chat->blocked_at) {
             $base64Audio = $msg['audioMessage']['base64'] ?? null;
             
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content, $base64Audio)

@@ -723,11 +723,19 @@
                         <div class="compliance-badges" id="waComplianceBadges" style="margin-top:2px;"></div>
                     </div>
                 </div>
-                <div class="chat-actions d-flex align-items-center gap-1">
-                    <button class="tool-btn" title="Nova Conversa" onclick="startNewChat()" style="color:#25d366;background:rgba(37,211,102,.1);">
+                <div class="chat-actions d-flex align-items-center gap-2">
+                    <div id="bot-status-container" style="display:none;">
+                        <button class="tool-btn" id="btn-toggle-bot" onclick="toggleBotStatus()" style="font-size: 0.75rem; border-radius: 12px; padding: 6px 12px;">
+                            <i class="fas fa-robot me-1"></i> <span id="bot-status-text">Bot: Ativo</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-primary" id="btn-assign-chat" onclick="assignChatToMe()" style="display:none; font-size: 0.75rem; border-radius: 12px; font-weight: 700; padding: 6px 12px; background: var(--wa-green-dark); border: none;">
+                        <i class="fas fa-handshake me-1"></i> Assumir
+                    </button>
+                    <button class="tool-btn" title="Nova Conversa" onclick="startNewChat()" style="color:#25d366;background:rgba(37,211,102,.1); width: 36px; height: 36px; padding: 0; justify-content: center;">
                         <i class="fas fa-user-plus"></i>
                     </button>
-                    <button class="tool-btn" title="Configurações" onclick="location.href='{{ url('/whatsapp/settings') }}'" style="color:#64748b;background:#f1f5f9;">
+                    <button class="tool-btn" title="Configurações" onclick="location.href='{{ url('/whatsapp/settings') }}'" style="color:#64748b;background:#f1f5f9; width: 36px; height: 36px; padding: 0; justify-content: center;">
                         <i class="fas fa-cog"></i>
                     </button>
                 </div>
@@ -1194,6 +1202,32 @@
             $('#crm-phone').text(chat.contact_phone || '--');
             $('#crm-info-name').text(chat.contact_name || '—');
             $('#crm-info-phone').text(chat.contact_phone || '—');
+            
+            // Bot/Assignment UI
+            const botContainer = document.getElementById('bot-status-container');
+            const botBtn = document.getElementById('btn-toggle-bot');
+            const botText = document.getElementById('bot-status-text');
+            const assignBtn = document.getElementById('btn-assign-chat');
+
+            if (chat) {
+                botContainer.style.display = 'block';
+                if (chat.is_bot_active) {
+                    botBtn.className = 'tool-btn bg-success text-white';
+                    botText.innerText = 'Bot: Ativo';
+                    assignBtn.style.display = 'block';
+                } else {
+                    botBtn.className = 'tool-btn bg-secondary text-white';
+                    botText.innerText = 'Bot: Pausado';
+                    assignBtn.style.display = chat.assigned_to ? 'none' : 'block';
+                }
+
+                if (chat.assigned_to) {
+                    assignBtn.style.display = 'none';
+                    botText.innerText = 'Atendimento Humano';
+                    botBtn.className = 'tool-btn bg-primary text-white';
+                }
+            }
+
             renderCompliance(chat);
         }
 
@@ -1942,6 +1976,29 @@
                 complete: function() {
                     btn.disabled = false;
                     btn.innerHTML = origHtml;
+                }
+            });
+        }
+
+        function assignChatToMe() {
+            if (!currentChatId) return;
+            $.post('{{ url("/whatsapp/chat") }}/' + currentChatId + '/assign', { _token: csrfToken }, function(res) {
+                if(res.success) {
+                    loadChatData(currentChatId);
+                }
+            });
+        }
+
+        function toggleBotStatus() {
+            if (!currentChatId) return;
+            const btn = document.getElementById('btn-toggle-bot');
+            const isActive = !btn.classList.contains('bg-success');
+            $.post('{{ url("/whatsapp/chat") }}/' + currentChatId + '/toggle-bot', { 
+                _token: csrfToken,
+                is_bot_active: isActive
+            }, function(res) {
+                if(res.success) {
+                    loadChatData(currentChatId);
                 }
             });
         }
