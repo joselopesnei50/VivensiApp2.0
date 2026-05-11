@@ -65,6 +65,8 @@ class ProcessEvolutionWebhook implements ShouldQueue
         $messageData = $this->payload['data'] ?? $this->payload;
         $key         = $messageData['key'] ?? [];
         $messageId   = $key['id'] ?? null;
+        $fromMe      = (bool) ($key['fromMe'] ?? false);
+
         // Se a mensagem partiu de nós (celular ou painel), desativamos o bot para esta conversa
         if ($fromMe) {
             $remoteJid = $key['remoteJid'] ?? '';
@@ -76,6 +78,8 @@ class ProcessEvolutionWebhook implements ShouldQueue
             }
             return;
         }
+
+        if (!$messageId) return;
 
         // Idempotência: ignorar re-entregas
         if (WhatsappMessage::where('message_id', $messageId)->exists()) return;
