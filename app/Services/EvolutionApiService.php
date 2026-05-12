@@ -80,6 +80,10 @@ class EvolutionApiService
             ]);
             return ['error' => 'Falha na criação da instância', 'details' => $response->body()];
         } catch (\Exception $e) {
+            Log::error('EVOLUTION CREATE INSTANCE EXCEPTION', [
+                'message' => $e->getMessage(),
+                'instance' => $name
+            ]);
             return ['error' => 'Exceção na criação (API Fora?): ' . $e->getMessage()];
         }
     }

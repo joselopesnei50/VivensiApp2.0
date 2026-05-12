@@ -28,6 +28,7 @@ class AdminSettingsController extends Controller
         $pusher_configured = (bool) SystemSetting::getValue('pusher_app_id') && (bool) SystemSetting::getValue('pusher_app_key');
         $openpix_configured = (bool) SystemSetting::getValue('openpix_app_id');
         $abacatepay_configured = (bool) SystemSetting::getValue('abacatepay_api_key');
+        $together_ai_configured = (bool) SystemSetting::getValue('together_ai_api_key');
 
         $deepseek_key = null;
         $gemini_key = null;
@@ -125,7 +126,8 @@ class AdminSettingsController extends Controller
             'meta_social_app_secret_configured',
             'abacatepay_configured',
             'abacatepay_env',
-            'abacatepay_webhook_secret'
+            'abacatepay_webhook_secret',
+            'together_ai_configured'
         ));
 
     }
@@ -176,6 +178,7 @@ class AdminSettingsController extends Controller
             'abacatepay_api_key'        => 'nullable|string|max:5000',
             'abacatepay_webhook_secret' => 'nullable|string|max:5000',
             'abacatepay_environment'    => 'nullable|in:sandbox,production',
+            'together_ai_api_key'       => 'nullable|string|max:5000',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -195,6 +198,7 @@ class AdminSettingsController extends Controller
             'meta_social_app_secret' => 'social',
             'abacatepay_api_key'        => 'api',
             'abacatepay_webhook_secret' => 'api',
+            'together_ai_api_key'       => 'api',
         ] as $key => $group) {
             $val = trim((string) ($validated[$key] ?? ''));
             if ($val !== '') {
