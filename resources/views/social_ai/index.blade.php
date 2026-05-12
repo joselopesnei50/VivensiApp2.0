@@ -84,22 +84,8 @@
 
 /* ── Generator Card ─────────────────────────────── */
 .sai-generator {
-    background: rgba(255,255,255,0.035);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 28px;
-    padding: 40px;
-    margin-bottom: 48px;
-    position: relative;
-    overflow: hidden;
-}
-.sai-generator::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), rgba(168,85,247,0.5), transparent);
+    padding: 0 0 48px 0;
+    margin-bottom: 0;
 }
 .sai-generator-title {
     font-size: 1.15rem;
@@ -399,9 +385,15 @@
     background: rgba(37,211,102,0.12);
     color: #4ade80;
     border: 1px solid rgba(37,211,102,0.2);
-    width: 100%;
+    text-decoration: none;
 }
-.sai-action-btn.whatsapp:hover { background: rgba(37,211,102,0.22); }
+.sai-action-btn.whatsapp:hover { background: rgba(37,211,102,0.22); color: #4ade80; }
+.sai-action-btn.schedule {
+    background: rgba(79,70,229,0.12);
+    color: var(--primary-light, #818CF8);
+    border: 1px solid rgba(79,70,229,0.2);
+}
+.sai-action-btn.schedule:hover { background: rgba(79,70,229,0.22); }
 .sai-action-btn.delete {
     background: rgba(239,68,68,0.07);
     color: rgba(248,113,113,0.7);
@@ -555,6 +547,57 @@
     padding: 20px;
 }
 .sai-failed-img i { font-size: 2.5rem; opacity: 0.5; }
+
+/* ── Schedule Modal extras ──────────────────────── */
+.sai-platform-btns {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 20px;
+}
+.sai-platform-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.sai-platform-btn:has(input:checked) {
+    background: rgba(79,70,229,0.15);
+    border-color: rgba(79,70,229,0.4);
+    color: var(--primary-light, #818CF8);
+}
+.sai-platform-btn input[type="radio"] { display: none; }
+.sai-modal-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: block;
+}
+.sai-datetime-input {
+    width: 100%;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 13px 16px;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.3s;
+    color-scheme: dark;
+}
+.sai-datetime-input:focus { border-color: rgba(79,70,229,0.5); }
 
 /* ── Context Panel ──────────────────────────────── */
 .sai-context-toggle {
@@ -799,7 +842,7 @@
                     @endif
 
                     <div class="sai-card-actions">
-                        @if($post->status !== 'processing')
+                        @if($post->status === 'draft')
                         <div class="sai-card-row">
                             <button class="sai-action-btn copy" onclick="copyCaption({{ $post->id }}, `{{ addslashes($post->body_text) }}`)" {{ !$post->body_text ? 'disabled' : '' }}>
                                 <i class="fas fa-copy"></i> Copiar
@@ -808,12 +851,26 @@
                                 <i class="fas fa-expand"></i> Ver
                             </button>
                         </div>
-                        <button class="sai-action-btn whatsapp" onclick="sendWhatsApp(`{{ addslashes($post->body_text) }}`)">
-                            <i class="fab fa-whatsapp"></i> Enviar via WhatsApp
-                        </button>
+                        <div class="sai-card-row">
+                            <a href="{{ route('social-ai.to-broadcast', $post->id) }}" class="sai-action-btn whatsapp">
+                                <i class="fab fa-whatsapp"></i> Broadcast
+                            </a>
+                            <button class="sai-action-btn schedule" onclick="openScheduleModal({{ $post->id }})">
+                                <i class="fas fa-calendar-plus"></i> Agendar
+                            </button>
+                        </div>
+                        @elseif($post->status === 'scheduled')
+                        <div class="sai-card-row">
+                            <button class="sai-action-btn copy" onclick="copyCaption({{ $post->id }}, `{{ addslashes($post->body_text) }}`)" {{ !$post->body_text ? 'disabled' : '' }}>
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                            <a href="{{ route('social.posts.index') }}" class="sai-action-btn expand">
+                                <i class="fas fa-calendar"></i> Ver no Cal.
+                            </a>
+                        </div>
                         @endif
                         <button class="sai-action-btn delete" onclick="deletePost({{ $post->id }})">
-                            <i class="fas fa-trash-alt"></i> Excluir Rascunho
+                            <i class="fas fa-trash-alt"></i> Excluir
                         </button>
                     </div>
                 </div>
@@ -838,7 +895,44 @@
 </div>
 </div>
 
-{{-- ── MODAL ────────────────────────────────────── --}}
+{{-- ── MODAL AGENDAMENTO ───────────────────────────── --}}
+<div class="sai-modal-backdrop" id="scheduleModal" onclick="if(event.target===this) closeScheduleModal()">
+    <div class="sai-modal">
+        <button class="sai-modal-close" onclick="closeScheduleModal()"><i class="fas fa-xmark"></i></button>
+        <h4 style="margin-bottom:6px"><i class="fas fa-calendar-plus" style="color:var(--primary-color,#4F46E5);margin-right:8px"></i>Agendar no Calendário</h4>
+        <p style="font-size:.82rem;color:rgba(255,255,255,.35);margin-bottom:22px">O post será enviado para o Calendário de Publicação do Facebook/Instagram.</p>
+
+        <span class="sai-modal-label">Plataforma</span>
+        <div class="sai-platform-btns">
+            <label class="sai-platform-btn">
+                <input type="radio" name="sch_platform" value="facebook" checked>
+                <i class="fab fa-facebook-f"></i> Facebook
+            </label>
+            <label class="sai-platform-btn">
+                <input type="radio" name="sch_platform" value="instagram">
+                <i class="fab fa-instagram"></i> Instagram
+            </label>
+            <label class="sai-platform-btn">
+                <input type="radio" name="sch_platform" value="both">
+                <i class="fas fa-layer-group"></i> Ambas
+            </label>
+        </div>
+
+        <span class="sai-modal-label">Data e Hora de Publicação</span>
+        <input type="datetime-local" id="sch_datetime" class="sai-datetime-input">
+
+        <div class="sai-modal-actions" style="margin-top:22px">
+            <button class="sai-modal-btn secondary" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.1)" onclick="closeScheduleModal()">
+                Cancelar
+            </button>
+            <button class="sai-modal-btn primary" id="btnConfirmSchedule" onclick="confirmSchedule()">
+                <i class="fas fa-calendar-check"></i> Agendar
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- ── MODAL CONTEÚDO ───────────────────────────────── --}}
 <div class="sai-modal-backdrop" id="postModal" onclick="if(event.target===this) closeModal()">
     <div class="sai-modal">
         <button class="sai-modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
@@ -989,6 +1083,55 @@ async function deletePost(id) {
         }
     } catch (e) {
         toast('Falha na comunicação.', 'error');
+    }
+}
+
+// ── Schedule Modal ─────────────────────────────────
+let _schedulePostId = null;
+function openScheduleModal(postId) {
+    _schedulePostId = postId;
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    const min = now.toISOString().slice(0, 16);
+    const dt  = document.getElementById('sch_datetime');
+    dt.min   = min;
+    dt.value = min;
+    document.getElementById('scheduleModal').classList.add('open');
+}
+function closeScheduleModal() {
+    document.getElementById('scheduleModal').classList.remove('open');
+    _schedulePostId = null;
+}
+async function confirmSchedule() {
+    const platform = document.querySelector('input[name="sch_platform"]:checked')?.value;
+    const datetime = document.getElementById('sch_datetime').value;
+    if (!datetime) { toast('Selecione uma data e hora.', 'error'); return; }
+
+    const btn = document.getElementById('btnConfirmSchedule');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Agendando...';
+
+    try {
+        const res  = await fetch(`/social-ai/${_schedulePostId}/schedule`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body:    JSON.stringify({ platform, scheduled_at: datetime }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            closeScheduleModal();
+            toast(data.message, 'success');
+            setTimeout(() => window.location.href = data.calendar_url, 1800);
+        } else {
+            toast(data.message, 'error');
+            if (data.connect_url) setTimeout(() => window.location.href = data.connect_url, 2500);
+        }
+    } catch (e) {
+        toast('Falha na comunicação com o servidor.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-calendar-check"></i> Agendar';
     }
 }
 

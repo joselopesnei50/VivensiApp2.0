@@ -656,10 +656,12 @@ Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 's
 
 // ── Social AI Hub (Geração de Conteúdo) ──────────────────────────────────
 Route::middleware(['auth'])->group(function () {
-    Route::get('/social-ai',                    [App\Http\Controllers\SocialAIPostController::class, 'index'])->name('social-ai.index');
-    Route::post('/social-ai/generate',          [App\Http\Controllers\SocialAIPostController::class, 'generate'])->name('social-ai.generate');
-    Route::get('/social-ai/{post}/status',      [App\Http\Controllers\SocialAIPostController::class, 'getStatus'])->name('social-ai.status');
-    Route::delete('/social-ai/{post}',          [App\Http\Controllers\SocialAIPostController::class, 'destroy'])->name('social-ai.destroy');
+    Route::get('/social-ai',                         [App\Http\Controllers\SocialAIPostController::class, 'index'])->name('social-ai.index');
+    Route::post('/social-ai/generate',               [App\Http\Controllers\SocialAIPostController::class, 'generate'])->name('social-ai.generate');
+    Route::get('/social-ai/{post}/status',           [App\Http\Controllers\SocialAIPostController::class, 'getStatus'])->name('social-ai.status');
+    Route::get('/social-ai/{post}/to-broadcast',     [App\Http\Controllers\SocialAIPostController::class, 'toBroadcast'])->name('social-ai.to-broadcast');
+    Route::post('/social-ai/{post}/schedule',        [App\Http\Controllers\SocialAIPostController::class, 'scheduleToCalendar'])->name('social-ai.schedule');
+    Route::delete('/social-ai/{post}',               [App\Http\Controllers\SocialAIPostController::class, 'destroy'])->name('social-ai.destroy');
 });
 
 // ── Inteligência Territorial (IBGE) ──────────────────────────────────

@@ -42,8 +42,10 @@ class WhatsappBroadcastController extends Controller
                 ->get();
         }
 
+        $preMessage = session('ai_broadcast_message');
+
         return view('admin.whatsapp.broadcast.index',
-            compact('contactsCount', 'config', 'activeInstance', 'campaigns'));
+            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'preMessage'));
     }
 
     public function importContacts(Request $request)
