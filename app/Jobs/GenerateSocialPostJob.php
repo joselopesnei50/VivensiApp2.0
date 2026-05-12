@@ -53,7 +53,7 @@ class GenerateSocialPostJob implements ShouldQueue
             $filename = 'social_ai/' . uniqid() . '.jpg';
             Storage::disk('public')->put($filename, $imageContents);
 
-            // 5. Finalizar Post
+            // 5. Finalizar Post (status 'draft' = gerado, pronto para publicar)
             $post->update([
                 'image_path' => $filename,
                 'image_url'  => $imageUrl,

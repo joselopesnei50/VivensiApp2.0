@@ -185,7 +185,7 @@
                 @php
                     $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support');
-                    $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*');
+                    $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
                     $sa_mkt_active   = request()->routeIs('admin.email_logs') || request()->routeIs('whatsapp.broadcast.index') || request()->is('prospecting*');
                     $sa_infra_active = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot');
                 @endphp
@@ -228,7 +228,7 @@
                         <i class="fas fa-layer-group group-icon"></i> Conteúdo &amp; CMS
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_cms_active ? '350px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_cms_active ? '450px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.blog.index') }}" class="{{ request()->routeIs('admin.blog.index') ? 'active' : '' }}"><i class="fas fa-blog"></i> Blog CMS</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
@@ -276,7 +276,7 @@
                 @php
                     $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*');
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
-                    $mgr_mkt_active  = request()->is('manager/landing-pages*','marketing*','prospecting*','whatsapp*', 'raffles*','social*','banners*');
+                    $mgr_mkt_active  = request()->is('manager/landing-pages*','marketing*','prospecting*','whatsapp*','raffles*','social/accounts*','social-ai*','banners*');
                     $mgr_ai_active   = request()->is('smart-analysis*');
                     $mgr_acad_active = request()->is('academy*');
                 @endphp
@@ -331,7 +331,7 @@
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
-                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                         </ul>
                     </div>
                 </div>
@@ -367,7 +367,7 @@
                 {{-- ═══ MENU TERCEIRO SETOR (ONG) — Agrupado ═══ --}}
                 @php
                     $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*');
-                    $ngo_mkt_active    = request()->is('ngo/landing-pages*','marketing*','prospecting*','whatsapp*', 'raffles*','social*','banners*');
+                    $ngo_mkt_active    = request()->is('ngo/landing-pages*','marketing*','prospecting*','whatsapp*','raffles*','social/accounts*','social-ai*','banners*');
                     $ngo_fin_active    = request()->is('transactions*','ngo/budget*','ngo/reconciliation*');
                     $ngo_people_active = request()->is('ngo/team*','ngo/hr*','ngo/beneficiaries*');
                     $ngo_pat_active    = request()->is('ngo/inventory*','ngo/assets*');
@@ -412,7 +412,7 @@
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
-                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                         </ul>
                     </div>
                 </div>
@@ -514,7 +514,7 @@
                 <!-- Menu Comum / MEI / Empresa -->
                 @php
                     $mei_fin_active  = request()->is('personal/reconciliation*','personal/budget*','transactions*');
-                    $mei_mkt_active  = request()->is('marketing*','prospecting*','whatsapp*','social*','manager/landing-pages*');
+                    $mei_mkt_active  = request()->is('marketing*','prospecting*','whatsapp*','social/accounts*','social-ai*','manager/landing-pages*');
                     $mei_crm_active  = request()->is('personal/clients*');
                 @endphp
 
@@ -549,7 +549,7 @@
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
-                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                         </ul>
                     </div>
                 </div>
