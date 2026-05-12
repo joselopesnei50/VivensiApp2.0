@@ -33,16 +33,21 @@ class SocialAIContentService
     /**
      * Gera o texto do post e o prompt da imagem usando DeepSeek.
      */
-    public function generateContent(string $theme): array
+    public function generateContent(string $theme, ?string $userContext = null): array
     {
         if (!$this->deepseekKey) {
             throw new Exception("DeepSeek API Key não configurada no sistema.");
         }
 
-        $prompt = "Atue como um especialista em marketing digital. Crie um post para rede social sobre o tema: '{$theme}'.
+        $contextBlock = $userContext
+            ? "\n\nInstruções adicionais fornecidas pelo usuário (siga-as com prioridade):\n\"{$userContext}\""
+            : '';
+
+        $prompt = "Atue como um especialista em marketing digital. Crie um post para rede social sobre o tema: '{$theme}'.{$contextBlock}
+
         Retorne OBRIGATORIAMENTE um JSON com os seguintes campos:
-        'caption': A legenda do post em português, persuasiva e com emojis.
-        'image_prompt': Um prompt descritivo detalhado em INGLÊS para gerar uma imagem fotorrealista de alta qualidade sobre este tema.
+        'caption': A legenda do post em português, persuasiva e com emojis, respeitando qualquer instrução de tom, público ou detalhe fornecido.
+        'image_prompt': Um prompt descritivo detalhado em INGLÊS para gerar uma imagem fotorrealista de alta qualidade sobre este tema, também considerando as instruções adicionais.
         Responda apenas o JSON puro, sem blocos de código markdown.";
 
         $response = Http::timeout(60)->withHeaders([

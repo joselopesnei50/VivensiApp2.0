@@ -40,7 +40,7 @@ class GenerateSocialPostJob implements ShouldQueue
             $aiService->validateQuota($post->user_id);
 
             // 2. Chamar DeepSeek (Texto + Prompt Imagem)
-            $content = $aiService->generateContent($post->title_theme);
+            $content = $aiService->generateContent($post->title_theme, $post->user_context);
             
             $post->update([
                 'body_text' => $content['caption'],

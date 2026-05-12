@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class AiSocialPost extends Model
 {
     protected $fillable = [
-        'tenant_id', 'user_id', 'title_theme', 'body_text', 'image_path', 'image_url', 'status', 'scheduled_at', 'error_message'
+        'tenant_id', 'user_id', 'title_theme', 'user_context', 'body_text', 'image_path', 'image_url', 'status', 'scheduled_at', 'error_message'
     ];
 
     protected $casts = [
