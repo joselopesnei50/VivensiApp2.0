@@ -63,7 +63,7 @@
                             <div class="form-text">Motor principal para o assistente virtual Bruce AI.</div>
                         </div>
 
-                        <div class="mb-0">
+                        <div class="mb-0 mt-4">
                             <label class="form-label fw-600 text-dark">Google Gemini API Key <span class="badge bg-light text-dark border ms-2">Visão Computacional</span>
                                 @if(!empty($gemini_configured))
                                     <span class="badge bg-success ms-2">Configurada</span>
@@ -74,6 +74,19 @@
                                 <input type="password" name="gemini_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="Cole aqui para definir / atualizar" autocomplete="off">
                             </div>
                             <div class="form-text">Utilizado para leitura de PDFs e análise de imagens.</div>
+                        </div>
+
+                        <div class="mb-0 mt-4">
+                            <label class="form-label fw-600 text-dark">Together AI API Key <span class="badge bg-light text-dark border ms-2">Geração de Imagem</span>
+                                @if(!empty($together_ai_configured))
+                                    <span class="badge bg-success ms-2">Configurada</span>
+                                @endif
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fas fa-magic text-muted"></i></span>
+                                <input type="password" name="together_ai_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="Cole aqui para definir / atualizar" autocomplete="off">
+                            </div>
+                            <div class="form-text">Necessário para o módulo de criação de posts para redes sociais (FLUX.1).</div>
                         </div>
 
                         <div class="mb-0 mt-4">
