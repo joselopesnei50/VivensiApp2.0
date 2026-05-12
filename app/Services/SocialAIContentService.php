@@ -45,7 +45,7 @@ class SocialAIContentService
         'image_prompt': Um prompt descritivo detalhado em INGLÊS para gerar uma imagem fotorrealista de alta qualidade sobre este tema.
         Responda apenas o JSON puro, sem blocos de código markdown.";
 
-        $response = Http::withHeaders([
+        $response = Http::timeout(60)->withHeaders([
             'Authorization' => 'Bearer ' . $this->deepseekKey,
             'Content-Type'  => 'application/json',
         ])->post('https://api.deepseek.com/v1/chat/completions', [
@@ -80,7 +80,7 @@ class SocialAIContentService
             throw new Exception("Together AI API Key não configurada no sistema.");
         }
 
-        $response = Http::withHeaders([
+        $response = Http::timeout(120)->withHeaders([
             'Authorization' => 'Bearer ' . $this->togetherKey,
             'Content-Type'  => 'application/json',
         ])->post('https://api.together.xyz/v1/images/generations', [
