@@ -7,17 +7,21 @@ use App\Models\AiImageUsageLog;
 use App\Jobs\GenerateSocialPostJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class SocialAIPostController extends Controller
 {
     public function index()
     {
-        Gate::authorize('access-whatsapp'); // Reutilizando a gate existente de mensageria
-        
-        $userId = auth()->id();
-        $posts = AiSocialPost::where('user_id', $userId)
+        Gate::authorize('access-social-ai');
+
+        $userId   = auth()->id();
+        $tenantId = auth()->user()->tenant_id;
+
+        $posts = AiSocialPost::where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(12);
 
         $quotaUsed = AiImageUsageLog::getCurrentUsage($userId);
 
@@ -26,47 +30,66 @@ class SocialAIPostController extends Controller
 
     public function generate(Request $request)
     {
-        Gate::authorize('access-whatsapp');
+        Gate::authorize('access-social-ai');
 
         $request->validate([
             'theme' => 'required|string|max:500',
         ]);
 
-        $userId = auth()->id();
+        $userId   = auth()->id();
         $tenantId = auth()->user()->tenant_id;
 
-        // Verifica cota ANTES de despachar para evitar filas inúteis
         $currentUsage = AiImageUsageLog::getCurrentUsage($userId);
         if ($currentUsage >= 60) {
             return response()->json([
-                'success' => false, 
-                'message' => 'Limite mensal de 60 imagens atingido.'
+                'success' => false,
+                'message' => 'Limite mensal de 60 imagens atingido. Sua cota renova no próximo mês.',
             ], 422);
         }
 
-        // Cria o registro com status inicial
         $post = AiSocialPost::create([
             'tenant_id'   => $tenantId,
             'user_id'     => $userId,
             'title_theme' => $request->theme,
-            'status'      => 'draft', // Será atualizado pelo Job
+            'status'      => 'processing',
         ]);
 
-        // Despacha o Job
         GenerateSocialPostJob::dispatch($post->id);
 
         return response()->json([
             'success' => true,
-            'message' => 'Geração iniciada! O post aparecerá em instantes no seu hub.',
-            'post'    => $post
+            'message' => 'Geração iniciada! O post aparecerá aqui em instantes.',
+            'post_id' => $post->id,
+        ]);
+    }
+
+    public function getStatus($postId)
+    {
+        $post = AiSocialPost::where('user_id', auth()->id())
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->findOrFail($postId);
+
+        return response()->json([
+            'status'     => $post->status,
+            'body_text'  => $post->body_text,
+            'image_url'  => $post->image_path
+                ? Storage::disk('public')->url($post->image_path)
+                : null,
         ]);
     }
 
     public function destroy($id)
     {
-        $post = AiSocialPost::where('user_id', auth()->id())->findOrFail($id);
+        $post = AiSocialPost::where('user_id', auth()->id())
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->findOrFail($id);
+
+        if ($post->image_path && Storage::disk('public')->exists($post->image_path)) {
+            Storage::disk('public')->delete($post->image_path);
+        }
+
         $post->delete();
 
-        return redirect()->back()->with('success', 'Post removido com sucesso.');
+        return response()->json(['success' => true]);
     }
 }

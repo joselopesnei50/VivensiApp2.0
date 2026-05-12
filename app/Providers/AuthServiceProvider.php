@@ -35,6 +35,11 @@ class AuthServiceProvider extends ServiceProvider
             return $user->role === 'super_admin';
         });
 
+        // Acesso ao módulo Social AI Hub (geração de conteúdo com IA)
+        Gate::define('access-social-ai', function (User $user) {
+            return in_array($user->role, ['manager', 'ngo', 'super_admin', 'common']);
+        });
+
         // super_admin ignora todas as Policies automaticamente
         Gate::before(function (User $user, string $ability) {
             if ($user->role === 'super_admin') return true;
