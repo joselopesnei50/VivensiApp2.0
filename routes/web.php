@@ -662,6 +662,13 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/social-ai/{post}',          [App\Http\Controllers\SocialAIPostController::class, 'destroy'])->name('social-ai.destroy');
 });
 
+// ── Inteligência Territorial (IBGE) ──────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::get('/intelligence/territorial', [App\Http\Controllers\SocialIndicatorController::class, 'index'])->name('intelligence.territorial');
+    Route::get('/api/ibge/cities', [App\Http\Controllers\SocialIndicatorController::class, 'searchCities'])->name('ibge.cities.search');
+    Route::get('/api/ibge/indicators/{cityCode}', [App\Http\Controllers\SocialIndicatorController::class, 'getIndicators'])->name('ibge.indicators');
+});
+
 // ── F6: Busca Global ──────────────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
     Route::get('/search', [App\Http\Controllers\GlobalSearchController::class, 'search'])->name('search.global');
