@@ -189,12 +189,18 @@ class EvolutionApiService
         $mediaType = explode('/', $mimetype)[0];
         if (!in_array($mediaType, ['image', 'video', 'audio'])) $mediaType = 'image';
 
+        // Ensure base64 has the data URI prefix for Evolution API v2
+        if (!str_starts_with($mediaBase64, 'data:')) {
+            $mediaBase64 = "data:{$mimetype};base64,{$mediaBase64}";
+        }
+
         $payload = [
             'number'    => (string) $to,
             'mediatype' => $mediaType,
             'mimetype'  => $mimetype,
             'caption'   => $renderedCaption,
-            'media'     => $mediaBase64,
+            'media'     => $mediaBase64, // Alguns aceitam aqui
+            'base64'    => $mediaBase64, // Outros exigem aqui
             'fileName'  => 'broadcast.' . explode('/', $mimetype)[1],
         ];
 
