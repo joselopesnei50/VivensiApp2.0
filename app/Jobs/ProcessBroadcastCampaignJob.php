@@ -57,19 +57,20 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
         $sentCount = 0;
         $failedCount = 0;
 
-        $imageBase64 = null;
-        $imageMime   = null;
+        $mediaToSend = null;
+        $imageMime   = 'image/jpeg';
+        
         if ($campaign->has_image && $campaign->image_path) {
+            // Tentamos primeiro enviar a URL pública (mais leve, evita erro 413)
+            $mediaToSend = Storage::disk('public')->url($campaign->image_path);
+            
+            // Se a URL não for absoluta (ex: /storage/...), prefixamos com o APP_URL
+            if (!str_starts_with($mediaToSend, 'http')) {
+                $mediaToSend = rtrim(config('app.url'), '/') . $mediaToSend;
+            }
+
             if (Storage::disk('public')->exists($campaign->image_path)) {
-                $content = Storage::disk('public')->get($campaign->image_path);
-                if ($content) {
-                    $imageBase64 = base64_encode($content);
-                    $imageMime = Storage::disk('public')->mimeType($campaign->image_path);
-                } else {
-                    Log::error("Broadcast: Could not read image file content: {$campaign->image_path}");
-                }
-            } else {
-                Log::error("Broadcast: Image file not found on public disk: {$campaign->image_path}");
+                $imageMime = Storage::disk('public')->mimeType($campaign->image_path);
             }
         }
 
@@ -81,8 +82,8 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             try {
                 $waId = $recipient->wa_id;
                 
-                $res = $imageBase64
-                    ? $evo->sendMedia($waId, $imageBase64, $campaign->message, $imageMime)
+                $res = $mediaToSend
+                    ? $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime)
                     : $evo->sendMessage($waId, $campaign->message, null, rand(1, 3));
 
                 if (!isset($res['error']) && !empty($res)) {
