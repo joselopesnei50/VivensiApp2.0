@@ -179,7 +179,7 @@ class EvolutionApiService
         }
     }
 
-    public function sendMedia(string $to, string $mediaBase64, string $caption = '', string $mimetype = 'image/jpeg'): array
+    public function sendMedia(string $to, string $media, string $caption = '', string $mimetype = 'image/jpeg'): array
     {
         if (!$this->instanceName) return ['error' => 'No instance configured'];
 
@@ -189,20 +189,21 @@ class EvolutionApiService
         $mediaType = explode('/', $mimetype)[0];
         if (!in_array($mediaType, ['image', 'video', 'audio'])) $mediaType = 'image';
 
-        // Ensure base64 has the data URI prefix for Evolution API v2
-        if (!str_starts_with($mediaBase64, 'data:')) {
-            $mediaBase64 = "data:{$mimetype};base64,{$mediaBase64}";
-        }
-
         $payload = [
             'number'    => (string) $to,
             'mediatype' => $mediaType,
             'mimetype'  => $mimetype,
             'caption'   => $renderedCaption,
-            'media'     => $mediaBase64, // Alguns aceitam aqui
-            'base64'    => $mediaBase64, // Outros exigem aqui
+            'media'     => $media,
             'fileName'  => 'broadcast.' . explode('/', $mimetype)[1],
         ];
+
+        // Se não for uma URL, assumimos que é Base64 e garantimos o prefixo (apenas no campo media)
+        if (!str_starts_with($media, 'http')) {
+            if (!str_starts_with($media, 'data:')) {
+                $payload['media'] = "data:{$mimetype};base64,{$media}";
+            }
+        }
 
         try {
             $response = $this->http()->timeout(20)->withHeaders([
