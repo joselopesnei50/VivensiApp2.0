@@ -448,6 +448,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/automations/{automation}/edit',  [App\Http\Controllers\WhatsappAutomationController::class, 'edit'])->name('whatsapp.automations.edit');
     Route::put('/whatsapp/automations/{automation}',       [App\Http\Controllers\WhatsappAutomationController::class, 'update'])->name('whatsapp.automations.update');
     Route::delete('/whatsapp/automations/{automation}',    [App\Http\Controllers\WhatsappAutomationController::class, 'destroy'])->name('whatsapp.automations.destroy');
+
+    // IA Social Post Module
+    Route::get('/social-ai', [App\Http\Controllers\SocialAIPostController::class, 'index'])->name('social-ai.index');
+    Route::post('/social-ai', [App\Http\Controllers\SocialAIPostController::class, 'store'])->name('social-ai.store');
+    Route::get('/social-ai/{id}/status', [App\Http\Controllers\SocialAIPostController::class, 'getStatus'])->name('social-ai.status');
     Route::patch('/whatsapp/automations/{automation}/toggle', [App\Http\Controllers\WhatsappAutomationController::class, 'toggle'])->name('whatsapp.automations.toggle');
     Route::get('/whatsapp/automations/{automation}/logs',   [App\Http\Controllers\WhatsappAutomationController::class, 'logs'])->name('whatsapp.automations.logs');
 
@@ -652,6 +657,13 @@ Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 's
 
 
 
+
+// ── Social AI Hub (Geração de Conteúdo) ──────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::get('/social-ai', [App\Http\Controllers\SocialAIPostController::class, 'index'])->name('social-ai.index');
+    Route::post('/social-ai/generate', [App\Http\Controllers\SocialAIPostController::class, 'generate'])->name('social-ai.generate');
+    Route::delete('/social-ai/{post}', [App\Http\Controllers\SocialAIPostController::class, 'destroy'])->name('social-ai.destroy');
+});
 
 // ── F6: Busca Global ──────────────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
