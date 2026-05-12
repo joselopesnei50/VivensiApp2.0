@@ -19,8 +19,9 @@ class GenerateSocialPostJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 3; // Tenta 3 vezes em caso de falha
-    public $backoff = 60; // Espera 60 segundos entre tentativas
+    public $tries   = 3;
+    public $backoff  = 60;
+    public $timeout  = 300; // 5 min: DeepSeek(60) + Together AI(120) + download(60) + margem
 
     protected $postId;
 
@@ -49,7 +50,7 @@ class GenerateSocialPostJob implements ShouldQueue
             $imageUrl = $aiService->generateImage($content['image_prompt']);
 
             // 4. Download e Save da Imagem no Storage Local
-            $imageContents = Http::get($imageUrl)->body();
+            $imageContents = Http::timeout(60)->get($imageUrl)->body();
             $filename = 'social_ai/' . uniqid() . '.jpg';
             Storage::disk('public')->put($filename, $imageContents);
 
