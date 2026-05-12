@@ -62,8 +62,14 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
         if ($campaign->has_image && $campaign->image_path) {
             if (Storage::disk('public')->exists($campaign->image_path)) {
                 $content = Storage::disk('public')->get($campaign->image_path);
-                $imageBase64 = base64_encode($content);
-                $imageMime = Storage::disk('public')->mimeType($campaign->image_path);
+                if ($content) {
+                    $imageBase64 = base64_encode($content);
+                    $imageMime = Storage::disk('public')->mimeType($campaign->image_path);
+                } else {
+                    Log::error("Broadcast: Could not read image file content: {$campaign->image_path}");
+                }
+            } else {
+                Log::error("Broadcast: Image file not found on public disk: {$campaign->image_path}");
             }
         }
 
@@ -83,7 +89,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     if (isset($recipient->id)) {
                         WhatsappMessage::create([
                             'chat_id'    => $recipient->id,
-                            'message_id' => $res['key']['id'] ?? ('BROADCAST_' . uniqid()),
+                            'message_id' => $res['key']['id'] ?? ($res['messageId'] ?? ('BROADCAST_' . uniqid())),
                             'content'    => $campaign->has_image ? ('[imagem] ' . $campaign->message) : $campaign->message,
                             'direction'  => 'outbound',
                             'type'       => $campaign->has_image ? 'image' : 'text',
@@ -91,12 +97,12 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     }
                     $sentCount++;
                 } else {
-                    $errorMsg = is_array($res) ? json_encode($res) : 'Unknown Error';
-                    Log::warning("Broadcast failed for {$waId}: " . $errorMsg);
+                    $errorMsg = is_array($res) ? json_encode($res) : ($res ?: 'Unknown Error');
+                    Log::warning("Broadcast failed for {$waId}. Campaign ID: {$campaign->id}. Error: " . $errorMsg);
                     $failedCount++;
                 }
             } catch (\Exception $e) {
-                Log::error("Broadcast recipient exception for {$waId}: " . $e->getMessage());
+                Log::error("Broadcast recipient exception for {$waId}. Campaign ID: {$campaign->id}. Message: " . $e->getMessage());
                 $failedCount++;
             }
 
