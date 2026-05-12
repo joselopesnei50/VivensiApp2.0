@@ -510,7 +510,18 @@
                         </div>
                         <textarea name="message" id="messageInput" class="message-textarea" rows="6"
                             placeholder="Digite sua mensagem aqui..."
-                            oninput="updatePreview(); updateCharCount(this)"></textarea>
+                            oninput="updatePreview(); updateCharCount(this)">{{ old('message') }}</textarea>
+                        @if(!empty($preMessage))
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const el = document.getElementById('messageInput');
+                                if (el) {
+                                    el.value = @json($preMessage);
+                                    el.dispatchEvent(new Event('input'));
+                                }
+                            });
+                        </script>
+                        @endif
                         <div class="d-flex justify-content-between mt-1">
                             <span class="char-counter" id="charCounter">0 caracteres</span>
                             <span style="font-size:0.72rem;color:#94a3b8;">Máx. 4000 caracteres</span>
