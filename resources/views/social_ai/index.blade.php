@@ -556,6 +556,71 @@
 }
 .sai-failed-img i { font-size: 2.5rem; opacity: 0.5; }
 
+/* ── Context Panel ──────────────────────────────── */
+.sai-context-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    cursor: pointer;
+    width: fit-content;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.82rem;
+    font-weight: 600;
+    user-select: none;
+    transition: color 0.2s;
+}
+.sai-context-toggle:hover { color: rgba(255,255,255,0.85); }
+.sai-context-arrow {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
+}
+.sai-context-arrow.open { transform: rotate(180deg); }
+.sai-context-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+.sai-context-panel.open {
+    max-height: 260px;
+    opacity: 1;
+}
+.sai-context-textarea {
+    width: 100%;
+    margin-top: 14px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px 18px;
+    color: #fff;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    resize: none;
+    height: 130px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-family: inherit;
+}
+.sai-context-textarea::placeholder { color: rgba(255,255,255,0.2); }
+.sai-context-textarea:focus {
+    border-color: rgba(79,70,229,0.5);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+}
+.sai-context-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding: 0 2px;
+}
+.sai-ctx-count {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.25);
+    font-variant-numeric: tabular-nums;
+}
+.sai-ctx-count.near-limit { color: #f59e0b; }
+
 /* ── Pagination override ─────────────────────────── */
 .sai-pagination .page-link {
     background: rgba(255,255,255,0.05);
@@ -610,6 +675,25 @@
                 <i class="fas fa-magic" id="btnIcon"></i>
                 <span id="btnText">Gerar Post</span>
             </button>
+        </div>
+
+        {{-- Campo de contexto do usuário --}}
+        <div class="sai-context-toggle" onclick="toggleContext()">
+            <i class="fas fa-sliders" style="color:var(--primary-color,#4F46E5)"></i>
+            <span>Personalizar instruções para a IA</span>
+            <i class="fas fa-chevron-down sai-context-arrow" id="ctxArrow"></i>
+        </div>
+        <div class="sai-context-panel" id="ctxPanel">
+            <textarea id="userContext" class="sai-context-textarea"
+                placeholder="Descreva detalhes que a IA deve considerar. Exemplos:&#10;• Tom de voz: informal, técnico, inspirador, divertido...&#10;• Público-alvo: jovens universitários, mães empreendedoras, empresários...&#10;• Produto/serviço específico: nome, diferenciais, preço...&#10;• Estilo da imagem: minimalista, colorida, profissional...&#10;• Hashtags ou palavras obrigatórias..."
+                maxlength="1000"
+                oninput="updateCtxCount()"></textarea>
+            <div class="sai-context-footer">
+                <span style="color:rgba(255,255,255,0.25); font-size:0.72rem;">
+                    <i class="fas fa-circle-info"></i> Opcional — quanto mais detalhes, melhor o resultado.
+                </span>
+                <span class="sai-ctx-count" id="ctxCount">0 / 1000</span>
+            </div>
         </div>
         <div class="sai-tags">
             <span class="label-hint">Sugestões:</span>
@@ -792,6 +876,20 @@ function toast(msg, type = 'info') {
     setTimeout(() => el.remove(), 4500);
 }
 
+// ── Context panel toggle ───────────────────────────
+function toggleContext() {
+    const panel = document.getElementById('ctxPanel');
+    const arrow = document.getElementById('ctxArrow');
+    panel.classList.toggle('open');
+    arrow.classList.toggle('open');
+}
+function updateCtxCount() {
+    const el  = document.getElementById('userContext');
+    const cnt = document.getElementById('ctxCount');
+    cnt.textContent = `${el.value.length} / 1000`;
+    cnt.classList.toggle('near-limit', el.value.length > 800);
+}
+
 // ── Theme suggestions ──────────────────────────────
 function setTheme(text) {
     document.getElementById('postTheme').value = text;
@@ -811,17 +909,21 @@ async function generatePost() {
     icon.className = 'fas fa-circle-notch fa-spin';
     text.textContent = 'Iniciando...';
 
+    const userContext = document.getElementById('userContext').value.trim();
+
     try {
         const res  = await fetch(ROUTE_GENERATE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-            body: JSON.stringify({ theme }),
+            body: JSON.stringify({ theme, user_context: userContext || null }),
         });
         const data = await res.json();
 
         if (data.success) {
             toast(data.message, 'success');
-            document.getElementById('postTheme').value = '';
+            document.getElementById('postTheme').value  = '';
+            document.getElementById('userContext').value = '';
+            updateCtxCount();
             setTimeout(() => location.reload(), 1200);
         } else {
             toast(data.message || 'Erro ao iniciar geração.', 'error');
