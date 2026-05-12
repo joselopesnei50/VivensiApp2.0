@@ -21,8 +21,7 @@ class Kernel extends ConsoleKernel
         // WhatsApp Automações: processa regras de reativação todos os dias às 10:00
         $schedule->job(new \App\Jobs\ProcessWhatsappAutomations())
                  ->dailyAt('10:00')
-                 ->withoutOverlapping()
-                 ->onQueue('whatsapp');
+                 ->withoutOverlapping();
 
         // WhatsApp: limpeza de dados antigos — todo dia às 03:30
         $days = (int) config('whatsapp.retention_days', 365);
