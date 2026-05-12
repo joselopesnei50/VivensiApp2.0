@@ -5,34 +5,10 @@
 /* ── Base & Background ──────────────────────────── */
 .sai-wrapper {
     min-height: 100vh;
-    background: #07070f;
+    background: #0a0f1a;
     padding: 32px;
-    position: relative;
-    overflow-x: hidden;
 }
-.sai-wrapper::before {
-    content: '';
-    position: fixed;
-    top: -20%;
-    left: -10%;
-    width: 700px;
-    height: 700px;
-    background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-}
-.sai-wrapper::after {
-    content: '';
-    position: fixed;
-    bottom: -20%;
-    right: -10%;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(168,85,247,0.10) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-}
-.sai-content { position: relative; z-index: 1; }
+.sai-content { position: relative; }
 
 /* ── Header ─────────────────────────────────────── */
 .sai-header {
@@ -52,10 +28,7 @@
     line-height: 1;
 }
 .sai-title-block h1 span {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary-color, #4F46E5);
 }
 .sai-title-block p {
     color: rgba(255,255,255,0.4);
@@ -101,7 +74,7 @@
 .sai-quota-bar-fill {
     height: 100%;
     border-radius: 10px;
-    background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
+    background: var(--primary-color, #4F46E5);
     transition: width 1s ease;
 }
 @keyframes shimmer {
@@ -140,7 +113,7 @@
 .sai-generator-title .icon {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
+    background: var(--primary-color, #4F46E5);
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -165,11 +138,11 @@
 }
 .sai-input::placeholder { color: rgba(255,255,255,0.25); }
 .sai-input:focus {
-    border-color: rgba(99,102,241,0.6);
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    border-color: rgba(79,70,229,0.6);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
 }
 .sai-btn-generate {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: var(--primary-color, #4F46E5);
     border: none;
     border-radius: 16px;
     padding: 18px 32px;
@@ -182,11 +155,12 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+    box-shadow: 0 8px 24px rgba(79,70,229,0.3);
 }
 .sai-btn-generate:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(99,102,241,0.5);
+    filter: brightness(1.1);
+    box-shadow: 0 12px 32px rgba(79,70,229,0.45);
 }
 .sai-btn-generate:disabled {
     opacity: 0.6;
@@ -217,16 +191,16 @@
     user-select: none;
 }
 .sai-tag:hover {
-    background: rgba(99,102,241,0.2);
-    border-color: rgba(99,102,241,0.4);
-    color: #a5b4fc;
+    background: rgba(79,70,229,0.15);
+    border-color: rgba(79,70,229,0.4);
+    color: var(--primary-light, #818CF8);
 }
 
 /* ── Section Title ──────────────────────────────── */
 .sai-section-title {
-    font-size: 1rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    color: rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.4);
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-bottom: 24px;
@@ -254,7 +228,7 @@
 }
 .sai-card:hover {
     transform: translateY(-6px);
-    border-color: rgba(99,102,241,0.35);
+    border-color: rgba(79,70,229,0.35);
     box-shadow: 0 24px 48px rgba(0,0,0,0.4);
 }
 
@@ -322,7 +296,7 @@
     -webkit-backdrop-filter: blur(8px);
 }
 .sai-badge.draft      { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
-.sai-badge.processing { background: rgba(99,102,241,0.25); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); animation: pulseBadge 2s infinite; }
+.sai-badge.processing { background: rgba(79,70,229,0.2); color: var(--primary-light, #818CF8); border: 1px solid rgba(79,70,229,0.4); animation: pulseBadge 2s infinite; }
 .sai-badge.failed     { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
 .sai-badge.published  { background: rgba(14,165,233,0.2); color: #38bdf8; border: 1px solid rgba(14,165,233,0.3); }
 .sai-badge.scheduled  { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
@@ -358,7 +332,7 @@
     transition: background 0.2s;
     text-decoration: none;
 }
-.sai-img-btn:hover { background: rgba(99,102,241,0.5); color: #fff; }
+.sai-img-btn:hover { background: rgba(79,70,229,0.6); color: #fff; }
 
 /* ── Card Body ──────────────────────────────────── */
 .sai-card-body {
@@ -416,11 +390,11 @@
 }
 .sai-action-btn.copy:hover { background: rgba(255,255,255,0.12); color: #fff; }
 .sai-action-btn.expand {
-    background: rgba(99,102,241,0.12);
-    color: #a5b4fc;
-    border: 1px solid rgba(99,102,241,0.2);
+    background: rgba(79,70,229,0.12);
+    color: var(--primary-light, #818CF8);
+    border: 1px solid rgba(79,70,229,0.2);
 }
-.sai-action-btn.expand:hover { background: rgba(99,102,241,0.25); }
+.sai-action-btn.expand:hover { background: rgba(79,70,229,0.22); }
 .sai-action-btn.whatsapp {
     background: rgba(37,211,102,0.12);
     color: #4ade80;
@@ -555,10 +529,10 @@
     transition: all 0.2s;
 }
 .sai-modal-btn.primary {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: var(--primary-color, #4F46E5);
     color: #fff;
 }
-.sai-modal-btn.primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.sai-modal-btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .sai-modal-btn.secondary {
     background: rgba(37,211,102,0.12);
     color: #4ade80;
@@ -592,11 +566,11 @@
     transition: all 0.2s;
 }
 .sai-pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: var(--primary-color, #4F46E5);
     border-color: transparent;
     color: #fff;
 }
-.sai-pagination .page-link:hover { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+.sai-pagination .page-link:hover { background: rgba(79,70,229,0.2); color: var(--primary-light, #818CF8); }
 </style>
 @endpush
 
@@ -639,19 +613,42 @@
         </div>
         <div class="sai-tags">
             <span class="label-hint">Sugestões:</span>
-            <span class="sai-tag" onclick="setTheme('Dicas de gestão para ONGs')">Gestão para ONGs</span>
-            <span class="sai-tag" onclick="setTheme('Captação de doadores online')">Captação de Doadores</span>
-            <span class="sai-tag" onclick="setTheme('Transparência e prestação de contas')">Transparência</span>
-            <span class="sai-tag" onclick="setTheme('Voluntariado e impacto social')">Voluntariado</span>
-            <span class="sai-tag" onclick="setTheme('Planejamento estratégico para projetos sociais')">Planejamento</span>
-            <span class="sai-tag" onclick="setTheme('Edital de financiamento para projetos sociais')">Editais</span>
+            @php $role = auth()->user()->role ?? 'common'; @endphp
+
+            @if($role === 'ngo')
+                {{-- ONG / Terceiro Setor --}}
+                <span class="sai-tag" onclick="setTheme('Impacto real do nosso projeto na comunidade')">Impacto do projeto</span>
+                <span class="sai-tag" onclick="setTheme('Como fazer uma doação e transformar vidas')">Captação de doadores</span>
+                <span class="sai-tag" onclick="setTheme('Transparência e prestação de contas da nossa ONG')">Transparência</span>
+                <span class="sai-tag" onclick="setTheme('Chamada para novos voluntários — venha fazer parte!')">Chamada de voluntários</span>
+                <span class="sai-tag" onclick="setTheme('Resultado da nossa última campanha social')">Resultado de campanha</span>
+                <span class="sai-tag" onclick="setTheme('Edital aprovado: o que isso significa para a comunidade')">Edital aprovado</span>
+
+            @elseif(in_array($role, ['manager', 'super_admin']))
+                {{-- Gestor de Projetos --}}
+                <span class="sai-tag" onclick="setTheme('Resultado alcançado no trimestre — nossa equipe entregou!')">Resultado do trimestre</span>
+                <span class="sai-tag" onclick="setTheme('Lançamento de novo projeto estratégico')">Lançamento de projeto</span>
+                <span class="sai-tag" onclick="setTheme('Como a tecnologia está transformando nossa gestão')">Gestão e tecnologia</span>
+                <span class="sai-tag" onclick="setTheme('Destaque do profissional da semana na nossa equipe')">Destaque da equipe</span>
+                <span class="sai-tag" onclick="setTheme('Meta batida! Celebrando a conquista da nossa equipe')">Meta alcançada</span>
+                <span class="sai-tag" onclick="setTheme('Convite para parceria estratégica com nossa empresa')">Parceria estratégica</span>
+
+            @else
+                {{-- MEI / Empreendedor --}}
+                <span class="sai-tag" onclick="setTheme('Promoção especial do meu produto ou serviço')">Promoção especial</span>
+                <span class="sai-tag" onclick="setTheme('Novidade na minha loja — confira o que chegou!')">Novidade na loja</span>
+                <span class="sai-tag" onclick="setTheme('Dica rápida para clientes do meu negócio')">Dica para clientes</span>
+                <span class="sai-tag" onclick="setTheme('Depoimento real de cliente satisfeito com meu serviço')">Depoimento de cliente</span>
+                <span class="sai-tag" onclick="setTheme('Lançamento de novo produto ou serviço da minha empresa')">Lançamento de serviço</span>
+                <span class="sai-tag" onclick="setTheme('Bastidores do meu negócio — como tudo acontece por aqui')">Bastidores do negócio</span>
+            @endif
         </div>
     </div>
 
     {{-- ── POSTS GRID ───────────────────────────── --}}
     @if($posts->total() > 0)
     <div class="sai-section-title">
-        <i class="fas fa-layer-group" style="color:#6366f1"></i>
+        <i class="fas fa-layer-group" style="color:var(--primary-color,#4F46E5)"></i>
         Seus Rascunhos ({{ $posts->total() }})
     </div>
     @endif
