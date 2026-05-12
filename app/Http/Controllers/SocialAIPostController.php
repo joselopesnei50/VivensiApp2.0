@@ -33,7 +33,8 @@ class SocialAIPostController extends Controller
         Gate::authorize('access-social-ai');
 
         $request->validate([
-            'theme' => 'required|string|max:500',
+            'theme'        => 'required|string|max:500',
+            'user_context' => 'nullable|string|max:1000',
         ]);
 
         $userId   = auth()->id();
@@ -48,10 +49,11 @@ class SocialAIPostController extends Controller
         }
 
         $post = AiSocialPost::create([
-            'tenant_id'   => $tenantId,
-            'user_id'     => $userId,
-            'title_theme' => $request->theme,
-            'status'      => 'processing',
+            'tenant_id'    => $tenantId,
+            'user_id'      => $userId,
+            'title_theme'  => $request->theme,
+            'user_context' => $request->user_context,
+            'status'       => 'processing',
         ]);
 
         GenerateSocialPostJob::dispatch($post->id);
