@@ -562,21 +562,30 @@ async function triggerSearch() {
 
     try {
         const resp = await fetch(ROUTE_INDICATORS(code, name));
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data = await resp.json();
+        if (!resp.ok) throw new Error(`Servidor retornou HTTP ${resp.status}`);
 
-        renderKpis(data.indicators);
-        renderBars(data.indicators);
+        let data;
+        try { data = await resp.json(); }
+        catch (jsonErr) {
+            throw new Error('Resposta inválida do servidor. Verifique se o PHP não tem erros.');
+        }
+
+        if (!data || typeof data.indicators !== 'object') {
+            throw new Error('Estrutura de dados inesperada da API.');
+        }
+
+        try { renderKpis(data.indicators); } catch(e) { console.error('renderKpis:', e); }
+        try { renderBars(data.indicators); } catch(e) { console.error('renderBars:', e); }
 
         ai.className   = 'it-ai-body';
-        ai.textContent = data.analysis;
+        ai.textContent = data.analysis || '—';
         document.getElementById('cacheDate').textContent = new Date().toLocaleDateString('pt-BR');
         toast(`Análise de ${name} concluída!`, 'success');
 
     } catch (err) {
-        console.error(err);
+        console.error('[Territorial]', err);
         ai.className   = 'it-ai-body';
-        ai.textContent = 'Erro ao buscar dados. Verifique sua conexão e tente novamente.';
+        ai.textContent = 'Erro ao buscar dados: ' + err.message;
         toast('Falha ao buscar indicadores.', 'error');
     } finally {
         btn.disabled = false; icon.className = 'fas fa-chart-bar'; txt.textContent = 'Analisar';
