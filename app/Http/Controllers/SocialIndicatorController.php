@@ -6,6 +6,7 @@ use App\Services\IBGEDataService;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SocialIndicatorController extends Controller
 {
@@ -33,9 +34,9 @@ class SocialIndicatorController extends Controller
 
     public function getIndicators(Request $request, string $cityCode)
     {
-        $cityName  = $request->get('city_name', '');
-        $data      = $this->ibgeService->getCityIndicators($cityCode, $cityName);
-        $analysis  = $this->generateAIAnalysis($data, $cityName ?: $cityCode);
+        $cityName = $request->get('city_name', '');
+        $data     = $this->ibgeService->getCityIndicators($cityCode, $cityName);
+        $analysis = $this->generateAIAnalysis($data, $cityName ?: $cityCode);
 
         return response()->json([
             'indicators' => $data,
@@ -52,37 +53,41 @@ class SocialIndicatorController extends Controller
 
         $resumo = [];
         foreach ($data as $key => $info) {
-            if ($info['value'] !== null) {
-                $resumo[] = "{$key}: {$info['value']} ({$info['year']})";
+            if (!empty($info['value'])) {
+                $resumo[] = "{$info['label']}: {$info['value']} {$info['unit']} ({$info['year']})";
             }
         }
 
-        $prompt = "Atue como especialista em análise socioeconômica brasileira. "
-            . "Com base nos dados do IBGE para o município de {$cityName}: " . implode(', ', $resumo) . ". "
-            . "Escreva um parágrafo curto (máximo 5 linhas) apontando os principais desafios sociais "
-            . "e como projetos do terceiro setor podem atuar nessa realidade. Seja objetivo e empático.";
+        if (empty($resumo)) {
+            return 'Dados insuficientes para gerar análise automática.';
+        }
+
+        $prompt = "Você é o Bruce AI, especialista em análise socioeconômica brasileira do Vivensi App. "
+            . "Analise os dados oficiais do IBGE para o município de {$cityName}: "
+            . implode('; ', $resumo) . ". "
+            . "Escreva 3 a 5 linhas apontando os principais desafios sociais deste município e "
+            . "como projetos do terceiro setor podem atuar de forma estratégica. "
+            . "Seja objetivo, empático e baseado nos números apresentados. "
+            . "Não repita os dados literalmente — interprete-os.";
 
         try {
             $response = Http::timeout(30)
                 ->withHeaders(['Authorization' => "Bearer {$apiKey}", 'Content-Type' => 'application/json'])
                 ->post('https://api.deepseek.com/v1/chat/completions', [
-                    'model'    => 'deepseek-chat',
-                    'messages' => [
-                        ['role' => 'system', 'content' => 'Você é o Bruce AI, assistente estratégico do Vivensi App.'],
-                        ['role' => 'user',   'content' => $prompt],
-                    ],
-                    'temperature'=> 0.7,
-                    'max_tokens' => 300,
+                    'model'       => 'deepseek-chat',
+                    'messages'    => [['role' => 'user', 'content' => $prompt]],
+                    'temperature' => 0.7,
+                    'max_tokens'  => 350,
                 ]);
 
             if ($response->successful()) {
                 return $response->json()['choices'][0]['message']['content'] ?? 'Análise não disponível.';
             }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('DeepSeek AI Error (territorial): ' . $e->getMessage());
+            Log::error('DeepSeek AI Error (territorial): ' . $e->getMessage());
         }
 
-        return 'Não foi possível gerar a análise no momento. Tente novamente.';
+        return 'Não foi possível gerar a análise no momento.';
     }
 
     private function normalize(string $str): string
