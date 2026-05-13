@@ -235,9 +235,9 @@
                     <div class="it-strip-unit" id="su-area"></div>
                 </div>
                 <div class="it-strip-item">
-                    <div class="it-strip-label">IDHM</div>
-                    <div class="it-strip-val" id="sv-idhm">—</div>
-                    <div class="it-strip-unit" id="su-idhm"></div>
+                    <div class="it-strip-label">Mortalidade Infantil</div>
+                    <div class="it-strip-val" id="sv-mortalidade">—</div>
+                    <div class="it-strip-unit" id="su-mortalidade">por 1.000 nasc.</div>
                 </div>
                 <div class="it-strip-item">
                     <div class="it-strip-label">PIB per capita</div>
@@ -314,21 +314,12 @@
                     </div>
                 </div>
                 <div class="it-section-body">
-                    <div class="it-kpis cols3">
+                    <div class="it-kpis cols2">
                         <div class="it-kpi" id="card-mortalidade">
                             <div class="it-kpi-lbl">Mortalidade Infantil</div>
                             <div class="kpi-val" id="kv-mortalidade">—</div>
                             <div><span class="kpi-year" id="ky-mortalidade" style="background:#FFF1F2;color:#9F1239"></span></div>
                             <div class="kpi-bar"><div class="kpi-bar-fill" id="kb-mortalidade" style="background:#E11D48"></div></div>
-                        </div>
-                        <div class="it-kpi">
-                            <div class="it-kpi-lbl">IDHM</div>
-                            <div class="kpi-val" id="kv-idhm">—</div>
-                            <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-                                <span class="kpi-year" id="ky-idhm" style="background:#F5F3FF;color:#5B21B6"></span>
-                                <span class="idhm-badge" id="idhm-cat"></span>
-                            </div>
-                            <div class="kpi-bar"><div class="kpi-bar-fill" id="kb-idhm" style="background:#7C3AED"></div></div>
                         </div>
                         <div class="it-kpi">
                             <div class="it-kpi-lbl">Óbitos Registrados</div>
@@ -507,10 +498,10 @@ async function triggerSearch() {
         try { data = await resp.json(); } catch { throw new Error('Resposta inválida do servidor.'); }
         if (!data || !data.raw) throw new Error('Estrutura de dados inesperada.');
 
-        try { renderStrip(data.raw); }         catch(e) { console.error('strip:', e); }
+        try { renderStrip(data.raw); }                  catch(e) { console.error('strip:', e); }
         try { renderInfancia(data.raw, data.derived); } catch(e) { console.error('infancia:', e); }
-        try { renderSaude(data.raw, data.derived); }     catch(e) { console.error('saude:', e); }
-        try { renderEconomia(data.raw); }       catch(e) { console.error('economia:', e); }
+        try { renderSaude(data.raw); }                  catch(e) { console.error('saude:', e); }
+        try { renderEconomia(data.raw); }               catch(e) { console.error('economia:', e); }
 
         ai.className   = 'it-ai-body';
         ai.textContent = data.analysis || '—';
@@ -554,29 +545,24 @@ function setKpiND(id) {
 
 // ── Strip (overview) ──────────────────────────────────────
 function renderStrip(raw) {
-    const MAP = {
-        populacao: { id:'populacao', fmt: v => fmtNum(v) + ' hab.',  unit: '' },
-        area:      { id:'area',      fmt: v => fmtNum(v,0) + ' km²', unit: '' },
-        idhm:      { id:'idhm',      fmt: v => v.toFixed(3),         unit: idhm_cat_text(v) },
-        pib:       { id:'pib',       fmt: v => 'R$ ' + fmtNum(v,0),  unit: 'por habitante' },
-    };
-    Object.entries(MAP).forEach(([key, cfg]) => {
-        const ind = raw[key];
+    // NOTA: unit deve ser função (não expressão) para evitar ReferenceError ao criar o objeto
+    const items = [
+        { key: 'populacao',   id: 'populacao',  fmt: v => fmtNum(v) + ' hab.',      unit: () => '' },
+        { key: 'area',        id: 'area',        fmt: v => fmtNum(v, 2) + ' km²',    unit: () => '' },
+        { key: 'mortalidade', id: 'mortalidade', fmt: v => fmtNum(v, 1),             unit: () => '/1.000 nasc.' },
+        { key: 'pib',         id: 'pib',         fmt: v => 'R$ ' + fmtNum(v, 0),    unit: () => '/hab.' },
+    ];
+    items.forEach(cfg => {
+        const ind = raw[cfg.key];
         const sv  = document.getElementById(`sv-${cfg.id}`);
         const su  = document.getElementById(`su-${cfg.id}`);
-        if (!ind || ind.value == null) { if (sv) sv.textContent = '—'; return; }
+        if (!sv) return;
+        if (!ind || ind.value == null) { sv.textContent = '—'; return; }
         const num = numBR(ind.value);
-        if (isNaN(num)) return;
-        if (sv) sv.textContent = cfg.fmt(num);
-        if (su) su.textContent = cfg.unit || (ind.year ? ind.year : '');
+        if (isNaN(num)) { sv.textContent = '—'; return; }
+        sv.textContent = cfg.fmt(num);
+        if (su) su.textContent = cfg.unit() || (ind.year ? ind.year : '');
     });
-}
-
-function idhm_cat_text(v) {
-    if (v >= 0.8)  return 'Muito Alto';
-    if (v >= 0.7)  return 'Alto';
-    if (v >= 0.55) return 'Médio';
-    return 'Baixo';
 }
 
 // ── Infância & Educação ───────────────────────────────────
@@ -635,71 +621,60 @@ function renderInfancia(raw, derived) {
 }
 
 // ── Saúde ─────────────────────────────────────────────────
-function renderSaude(raw, derived) {
-    // Mortalidade
+function renderSaude(raw) {
+    // Mortalidade infantil
     const mort = raw['mortalidade'];
     if (mort && mort.value != null) {
         const num = numBR(mort.value);
-        setKpi('mortalidade', fmtNum(num,1), `${mort.year || ''}`, null, (num / 50) * 100, '#E11D48');
+        // Barra: meta OMS é <10; escala até 30 (acima disso é emergência)
+        setKpi('mortalidade', fmtNum(num, 1), mort.year || '', null, Math.min((num / 30) * 100, 100), '#E11D48');
 
-        const callout   = document.getElementById('callout-saude');
-        const ctText    = document.getElementById('callout-saude-text');
+        const callout = document.getElementById('callout-saude');
+        const ctText  = document.getElementById('callout-saude-text');
         if (callout && ctText) {
             callout.style.display = 'block';
             const oms = num > 10;
-            ctText.innerHTML = `Mortalidade infantil de <strong>${fmtNum(num,1)} por 1.000 nascidos vivos</strong>. ${oms ? '<strong>Acima da meta OMS (< 10/mil)</strong>. Projetos de saúde materno-infantil, pré-natal e nutrição têm alto impacto neste contexto.' : 'Dentro da meta OMS (< 10/mil). Foco em manutenção e prevenção de regressão — especialmente em territórios periféricos.'}`;
+            ctText.innerHTML = `Mortalidade infantil de <strong>${fmtNum(num,1)} por 1.000 nascidos vivos</strong> (${mort.year || '—'}). `
+                + (oms
+                    ? '<strong>Acima da meta OMS (< 10/mil).</strong> Projetos de saúde materno-infantil, pré-natal, nutrição e vigilância sanitária têm alto impacto neste contexto.'
+                    : 'Dentro da meta OMS (< 10/mil). Foco em manutenção e prevenção — especialmente em territórios periféricos do município.');
         }
     } else { setKpiND('mortalidade'); }
 
-    // IDHM
-    const idhm = raw['idhm'];
-    if (idhm && idhm.value != null) {
-        const num = numBR(idhm.value);
-        setKpi('idhm', num.toFixed(3), `IDHM ${idhm.year || ''}`, null, num * 100, '#7C3AED');
-        const cat    = derived?.idhm_categoria;
-        const catEl  = document.getElementById('idhm-cat');
-        if (catEl && cat) {
-            catEl.textContent      = cat.label;
-            catEl.style.color      = cat.color;
-            catEl.style.background = cat.bg;
-            catEl.style.border     = `1px solid ${cat.color}40`;
-        }
-    } else { setKpiND('idhm'); }
-
-    // Óbitos
+    // Óbitos registrados (SIDRA Registro Civil)
     const ob = raw['obitos'];
     if (ob && ob.value != null) {
         const num = numBR(ob.value);
-        setKpi('obitos', fmtNum(num,0), `${ob.year || ''}`, null, null, null);
+        setKpi('obitos', fmtNum(num, 0), ob.year || '', null, null, null);
     } else { setKpiND('obitos'); }
 }
 
 // ── Economia ──────────────────────────────────────────────
 function renderEconomia(raw) {
+    // PIB per capita — indicador 47001, retorna em R$/ano
     const pib = raw['pib'];
     if (pib && pib.value != null) {
         const num = numBR(pib.value);
-        // PIB do endpoint pode vir em R$ mil; ajusta se valor < 1000
-        const display = num < 1000 ? fmtNum(num * 1000, 0) : fmtNum(num, 0);
-        setKpi('pib', 'R$ ' + display, `${pib.year || ''}`, null, Math.min((num / 100) * 100, 100), '#D97706');
+        // Barra proporcional: referência R$ 100k = 100%
+        setKpi('pib', 'R$ ' + fmtNum(num, 0), pib.year || '', null, Math.min((num / 100000) * 100, 100), '#D97706');
     } else { setKpiND('pib'); }
 
     const den = raw['densidade'];
     if (den && den.value != null) {
         const num = numBR(den.value);
-        setKpi('densidade', fmtNum(num,1) + ' hab/km²', `${den.year || ''}`, null, null, null);
+        setKpi('densidade', fmtNum(num, 1) + ' hab/km²', den.year || '', null, null, null);
     } else { setKpiND('densidade'); }
 
     const ar = raw['area'];
     if (ar && ar.value != null) {
         const num = numBR(ar.value);
-        setKpi('area', fmtNum(num,0) + ' km²', `${ar.year || ''}`, null, null, null);
+        setKpi('area', fmtNum(num, 2) + ' km²', ar.year || '', null, null, null);
     } else { setKpiND('area'); }
 }
 
 // ── Reset ─────────────────────────────────────────────────
 function resetAll() {
-    ['educacao','saneamento','fora-pct','fora-est','mortalidade','idhm','obitos','pib','densidade','area']
+    ['educacao','saneamento','fora-pct','fora-est','mortalidade','obitos','pib','densidade','area']
         .forEach(k => {
             const ve = document.getElementById(`kv-${k}`);
             const ye = document.getElementById(`ky-${k}`);
@@ -708,10 +683,8 @@ function resetAll() {
             if (ye) ye.textContent = '';
             if (be) be.style.width = '0%';
         });
-    ['sv-populacao','sv-area','sv-idhm','sv-pib'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
+    ['sv-populacao','sv-area','sv-mortalidade','sv-pib'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
     ['callout-educacao','callout-saude'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-    const icat = document.getElementById('idhm-cat');
-    if (icat) icat.textContent = '';
 }
 
 // ── Toast ─────────────────────────────────────────────────
