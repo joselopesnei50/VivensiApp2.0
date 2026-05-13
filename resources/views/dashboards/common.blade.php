@@ -31,6 +31,8 @@
     </div>
 </div>
 
+@include('partials.quick_access')
+
 <div class="row g-4 mb-5">
     <!-- Saldo do Mês -->
     <div class="col-md-4">
