@@ -2,75 +2,86 @@
 
 @push('styles')
 <style>
-/* ── Base ───────────────────────────────────────── */
+/* ════════════════════════════════════════════════════
+   SOCIAL AI HUB — Premium Design System
+   Base: white content, #f8fafc page bg, indigo accent
+   ════════════════════════════════════════════════════ */
+
+/* ── Page shell ─────────────────────────────────── */
 .sai-wrapper {
     min-height: 100vh;
-    background: var(--bg-body, #F3F4F6);
-    padding: 32px;
+    background: #f8fafc;
+    padding: 0;
 }
-.sai-content { position: relative; }
 
-/* ── Header ─────────────────────────────────────── */
+/* ── Page header zone (white, pinned) ───────────── */
 .sai-header {
+    background: #ffffff;
+    border-bottom: 1px solid #EAECF0;
+    padding: 28px 36px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 40px;
     flex-wrap: wrap;
     gap: 20px;
+    margin-bottom: 0;
 }
 .sai-title-block h1 {
-    font-size: 2.4rem;
-    font-weight: 900;
-    letter-spacing: -1.5px;
-    color: var(--text-primary, #111827);
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #101828;
     margin: 0;
-    line-height: 1;
+    line-height: 1.2;
 }
-.sai-title-block h1 span {
-    color: var(--primary-color, #4F46E5);
-}
+.sai-title-block h1 span { color: var(--primary-color, #4F46E5); }
 .sai-title-block p {
-    color: var(--text-secondary, #6B7280);
-    margin: 8px 0 0;
-    font-size: 0.95rem;
+    color: #667085;
+    margin: 4px 0 0;
+    font-size: 0.88rem;
 }
 
-/* ── Quota Card ─────────────────────────────────── */
+/* ── Page body ───────────────────────────────────── */
+.sai-content { padding: 32px 36px; }
+
+/* ── Quota pill ──────────────────────────────────── */
 .sai-quota-card {
     background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 20px;
-    padding: 20px 28px;
-    min-width: 240px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid #EAECF0;
+    border-radius: 12px;
+    padding: 14px 22px;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 .sai-quota-card .label {
     font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--text-secondary, #9CA3AF);
+    letter-spacing: 1.5px;
+    color: #667085;
     font-weight: 700;
-    margin-bottom: 6px;
+    white-space: nowrap;
 }
 .sai-quota-card .numbers {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: var(--text-primary, #111827);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #101828;
     line-height: 1;
+    white-space: nowrap;
 }
 .sai-quota-card .numbers small {
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 400;
-    color: var(--text-secondary, #9CA3AF);
+    color: #98A2B3;
 }
 .sai-quota-bar {
-    width: 100%;
-    height: 5px;
-    background: var(--border-color, #E5E7EB);
+    width: 120px;
+    height: 6px;
+    background: #F2F4F7;
     border-radius: 10px;
-    margin-top: 12px;
     overflow: hidden;
+    flex-shrink: 0;
 }
 .sai-quota-bar-fill {
     height: 100%;
@@ -83,101 +94,105 @@
     100% { background-position: 400px 0; }
 }
 
-/* ── Generator Card ─────────────────────────────── */
+/* ── Generator — hero card ───────────────────────── */
 .sai-generator {
-    padding: 0 0 48px 0;
-    margin-bottom: 0;
+    background: #ffffff;
+    border: 1px solid #EAECF0;
+    border-top: 4px solid var(--primary-color, #4F46E5);
+    border-radius: 16px;
+    padding: 32px 36px 28px;
+    margin-bottom: 36px;
+    box-shadow: 0 1px 3px rgba(16,24,40,0.06), 0 8px 24px rgba(16,24,40,0.05);
 }
 .sai-generator-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--text-primary, #111827);
-    margin-bottom: 20px;
+    color: #101828;
+    margin-bottom: 18px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 .sai-generator-title .icon {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     background: var(--primary-color, #4F46E5);
-    border-radius: 10px;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    color: #fff;
+    flex-shrink: 0;
 }
 .sai-input-row {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: stretch;
 }
 .sai-input {
     flex: 1;
-    background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 16px;
-    padding: 18px 24px;
-    color: var(--text-primary, #111827);
-    font-size: 1rem;
+    background: #F9FAFB;
+    border: 1.5px solid #D0D5DD;
+    border-radius: 12px;
+    padding: 15px 20px;
+    color: #101828;
+    font-size: 0.95rem;
     outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
-.sai-input::placeholder { color: var(--text-secondary, #9CA3AF); }
+.sai-input::placeholder { color: #98A2B3; }
 .sai-input:focus {
+    background: #fff;
     border-color: var(--primary-color, #4F46E5);
-    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+    box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
 }
 .sai-btn-generate {
     background: var(--primary-color, #4F46E5);
     border: none;
-    border-radius: 16px;
-    padding: 18px 32px;
+    border-radius: 12px;
+    padding: 15px 28px;
     color: #fff;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
     white-space: nowrap;
     display: flex;
     align-items: center;
-    gap: 10px;
-    box-shadow: 0 8px 24px rgba(79,70,229,0.3);
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(79,70,229,0.35);
 }
 .sai-btn-generate:hover:not(:disabled) {
-    transform: translateY(-2px);
-    filter: brightness(1.1);
-    box-shadow: 0 12px 32px rgba(79,70,229,0.45);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(79,70,229,0.45);
 }
-.sai-btn-generate:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
+.sai-btn-generate:active:not(:disabled) { transform: translateY(0); }
+.sai-btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
 .sai-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 18px;
+    gap: 6px;
+    margin-top: 16px;
 }
 .sai-tags .label-hint {
-    font-size: 0.75rem;
-    color: var(--text-secondary, #9CA3AF);
+    font-size: 0.72rem;
+    color: #98A2B3;
     align-self: center;
     margin-right: 4px;
+    font-weight: 600;
 }
 .sai-tag {
-    background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 0.78rem;
-    color: var(--text-secondary, #6B7280);
+    background: #F9FAFB;
+    border: 1px solid #EAECF0;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.75rem;
+    color: #475467;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
     user-select: none;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    font-weight: 500;
 }
 .sai-tag:hover {
     background: var(--primary-bg, #EEF2FF);
@@ -185,14 +200,14 @@
     color: var(--primary-color, #4F46E5);
 }
 
-/* ── Section Title ──────────────────────────────── */
+/* ── Section label ──────────────────────────────── */
 .sai-section-title {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: var(--text-secondary, #9CA3AF);
+    color: #98A2B3;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 24px;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -201,25 +216,25 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: var(--border-color, #E5E7EB);
+    background: #EAECF0;
 }
 
 /* ── Post Card ──────────────────────────────────── */
 .sai-card {
     background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 20px;
+    border: 1px solid #EAECF0;
+    border-radius: 16px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     height: 100%;
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    box-shadow: 0 1px 3px rgba(16,24,40,0.06), 0 4px 12px rgba(16,24,40,0.04);
 }
 .sai-card:hover {
     transform: translateY(-4px);
     border-color: var(--primary-color, #4F46E5);
-    box-shadow: 0 12px 32px rgba(79,70,229,0.12);
+    box-shadow: 0 4px 8px rgba(79,70,229,0.08), 0 16px 40px rgba(79,70,229,0.10);
 }
 
 /* ── Card Image Area ──────────────────────────────*/
@@ -326,16 +341,16 @@
 
 /* ── Card Body ──────────────────────────────────── */
 .sai-card-body {
-    padding: 22px;
+    padding: 18px 20px 20px;
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 .sai-card-theme {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     font-weight: 700;
-    color: var(--text-primary, #111827);
+    color: #101828;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -343,8 +358,8 @@
     overflow: hidden;
 }
 .sai-card-caption {
-    font-size: 0.8rem;
-    color: var(--text-secondary, #6B7280);
+    font-size: 0.78rem;
+    color: #667085;
     line-height: 1.6;
     flex: 1;
     display: -webkit-box;
@@ -361,57 +376,58 @@
 .sai-card-row { display: flex; gap: 8px; }
 .sai-action-btn {
     flex: 1;
-    padding: 10px;
-    border-radius: 12px;
-    font-size: 0.78rem;
+    padding: 9px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
-    border: none;
-    transition: all 0.2s;
+    border: 1px solid transparent;
+    transition: all 0.15s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
+    letter-spacing: 0.1px;
 }
 .sai-action-btn.copy {
-    background: var(--bg-body, #F3F4F6);
-    color: var(--text-secondary, #6B7280);
-    border: 1px solid var(--border-color, #E5E7EB);
+    background: #F9FAFB;
+    color: #475467;
+    border-color: #EAECF0;
 }
-.sai-action-btn.copy:hover { background: #E5E7EB; color: var(--text-primary, #111827); }
+.sai-action-btn.copy:hover { background: #F2F4F7; color: #101828; }
 .sai-action-btn.expand {
-    background: var(--primary-bg, #EEF2FF);
-    color: var(--primary-color, #4F46E5);
-    border: 1px solid rgba(79,70,229,0.2);
+    background: #F4F3FF;
+    color: #5B21B6;
+    border-color: #DDD6FE;
 }
-.sai-action-btn.expand:hover { background: rgba(79,70,229,0.15); color: var(--primary-color,#4F46E5); text-decoration: none; }
+.sai-action-btn.expand:hover { background: #EDE9FE; color: #5B21B6; text-decoration: none; }
 .sai-action-btn.whatsapp {
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
+    background: #F0FDF4;
+    color: #166534;
+    border-color: #BBF7D0;
     text-decoration: none;
 }
-.sai-action-btn.whatsapp:hover { background: #dcfce7; color: #16a34a; }
+.sai-action-btn.whatsapp:hover { background: #DCFCE7; color: #166534; }
 .sai-action-btn.schedule {
-    background: var(--primary-bg, #EEF2FF);
-    color: var(--primary-color, #4F46E5);
-    border: 1px solid rgba(79,70,229,0.2);
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border-color: #BFDBFE;
 }
-.sai-action-btn.schedule:hover { background: rgba(79,70,229,0.15); }
+.sai-action-btn.schedule:hover { background: #DBEAFE; color: #1D4ED8; }
 .sai-action-btn.delete {
-    background: #fff5f5;
-    color: #dc2626;
-    border: 1px solid #fecaca;
+    background: transparent;
+    color: #98A2B3;
+    border-color: transparent;
     width: 100%;
-    font-size: 0.73rem;
+    font-size: 0.72rem;
 }
-.sai-action-btn.delete:hover { background: #fee2e2; }
+.sai-action-btn.delete:hover { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
 
 /* ── Empty State ─────────────────────────────────── */
 .sai-empty {
     text-align: center;
     padding: 80px 20px;
-    color: var(--text-secondary, #9CA3AF);
+    color: #98A2B3;
 }
 .sai-empty .empty-icon {
     font-size: 4rem;
@@ -432,22 +448,22 @@
 }
 .sai-toast {
     background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 14px;
-    padding: 14px 20px;
-    color: var(--text-primary, #111827);
-    font-size: 0.88rem;
+    border: 1px solid #EAECF0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: #101828;
+    font-size: 0.85rem;
     font-weight: 500;
     min-width: 300px;
     max-width: 380px;
     display: flex;
     align-items: center;
     gap: 12px;
-    animation: slideInToast 0.4s cubic-bezier(0.34,1.56,0.64,1);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    animation: slideInToast 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 4px 12px rgba(16,24,40,0.1), 0 12px 32px rgba(16,24,40,0.06);
 }
-.sai-toast.success { border-left: 3px solid #10b981; }
-.sai-toast.error   { border-left: 3px solid #ef4444; }
+.sai-toast.success { border-left: 3px solid #12B76A; }
+.sai-toast.error   { border-left: 3px solid #F04438; }
 .sai-toast.info    { border-left: 3px solid var(--primary-color, #4F46E5); }
 .sai-toast .t-icon { font-size: 1.1rem; flex-shrink: 0; }
 @keyframes slideInToast {
@@ -470,44 +486,44 @@
 .sai-modal-backdrop.open { display: flex; }
 .sai-modal {
     background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 24px;
+    border: 1px solid #EAECF0;
+    border-radius: 20px;
     width: 100%;
-    max-width: 620px;
+    max-width: 580px;
     max-height: 90vh;
     overflow-y: auto;
-    padding: 36px;
+    padding: 32px;
     position: relative;
-    animation: modalIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 8px 24px rgba(16,24,40,0.08), 0 32px 64px rgba(16,24,40,0.12);
 }
 @keyframes modalIn {
-    from { transform: scale(0.9) translateY(20px); opacity: 0; }
-    to   { transform: scale(1) translateY(0);       opacity: 1; }
+    from { transform: scale(0.92) translateY(16px); opacity: 0; }
+    to   { transform: scale(1) translateY(0);        opacity: 1; }
 }
 .sai-modal-close {
     position: absolute;
-    top: 18px; right: 18px;
-    width: 36px; height: 36px;
-    background: var(--bg-body, #F3F4F6);
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 10px;
-    color: var(--text-secondary, #6B7280);
+    top: 16px; right: 16px;
+    width: 32px; height: 32px;
+    background: #F9FAFB;
+    border: 1px solid #EAECF0;
+    border-radius: 8px;
+    color: #667085;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s;
+    transition: all 0.15s;
 }
-.sai-modal-close:hover { background: #E5E7EB; color: var(--text-primary, #111827); }
-.sai-modal img { width: 100%; border-radius: 16px; margin-bottom: 24px; }
-.sai-modal h4 { font-size: 1rem; font-weight: 700; color: var(--text-primary, #111827); margin-bottom: 12px; }
+.sai-modal-close:hover { background: #F2F4F7; color: #101828; }
+.sai-modal img { width: 100%; border-radius: 12px; margin-bottom: 20px; }
+.sai-modal h4 { font-size: 1rem; font-weight: 700; color: #101828; margin-bottom: 10px; }
 .sai-modal-caption {
-    background: var(--bg-body, #F3F4F6);
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 12px;
-    padding: 16px;
-    color: var(--text-primary, #374151);
-    font-size: 0.88rem;
+    background: #F9FAFB;
+    border: 1px solid #EAECF0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: #344054;
+    font-size: 0.85rem;
     line-height: 1.7;
     white-space: pre-wrap;
     max-height: 200px;
@@ -516,25 +532,26 @@
 .sai-modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .sai-modal-btn {
     flex: 1;
-    padding: 12px;
-    border-radius: 12px;
+    padding: 11px;
+    border-radius: 10px;
     font-size: 0.85rem;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    border: none;
-    transition: all 0.2s;
+    border: 1px solid transparent;
+    transition: all 0.15s;
 }
 .sai-modal-btn.primary {
     background: var(--primary-color, #4F46E5);
     color: #fff;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.3);
 }
-.sai-modal-btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.sai-modal-btn.primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
 .sai-modal-btn.secondary {
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
+    background: #F0FDF4;
+    color: #166534;
+    border-color: #BBF7D0;
 }
-.sai-modal-btn.secondary:hover { background: #dcfce7; }
+.sai-modal-btn.secondary:hover { background: #DCFCE7; }
 
 /* ── Failed State ───────────────────────────────── */
 .sai-failed-img {
@@ -563,62 +580,65 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px;
-    background: var(--bg-body, #F3F4F6);
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 12px;
-    color: var(--text-secondary, #6B7280);
+    gap: 7px;
+    padding: 11px;
+    background: #F9FAFB;
+    border: 1.5px solid #EAECF0;
+    border-radius: 10px;
+    color: #475467;
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.82rem;
+    transition: all 0.15s;
+    font-size: 0.8rem;
     font-weight: 600;
 }
 .sai-platform-btn:has(input:checked) {
-    background: var(--primary-bg, #EEF2FF);
+    background: #F4F3FF;
     border-color: var(--primary-color, #4F46E5);
     color: var(--primary-color, #4F46E5);
 }
 .sai-platform-btn input[type="radio"] { display: none; }
 .sai-modal-label {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: var(--text-secondary, #9CA3AF);
+    color: #98A2B3;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: block;
 }
 .sai-datetime-input {
     width: 100%;
-    background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 12px;
-    padding: 13px 16px;
-    color: var(--text-primary, #111827);
+    background: #F9FAFB;
+    border: 1.5px solid #D0D5DD;
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #101828;
     font-size: 0.9rem;
     outline: none;
-    transition: border-color 0.3s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     color-scheme: light;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.sai-datetime-input:focus { border-color: var(--primary-color, #4F46E5); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+.sai-datetime-input:focus { background: #fff; border-color: var(--primary-color, #4F46E5); box-shadow: 0 0 0 4px rgba(79,70,229,0.08); }
 
 /* ── Context Panel ──────────────────────────────── */
 .sai-context-toggle {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 18px;
+    gap: 7px;
+    margin-top: 14px;
     cursor: pointer;
     width: fit-content;
-    color: var(--text-secondary, #6B7280);
-    font-size: 0.82rem;
+    color: #667085;
+    font-size: 0.8rem;
     font-weight: 600;
     user-select: none;
-    transition: color 0.2s;
+    transition: color 0.15s;
+    padding: 6px 12px;
+    background: #F9FAFB;
+    border: 1px solid #EAECF0;
+    border-radius: 20px;
 }
-.sai-context-toggle:hover { color: var(--primary-color, #4F46E5); }
+.sai-context-toggle:hover { color: var(--primary-color, #4F46E5); border-color: var(--primary-color, #4F46E5); background: #F4F3FF; }
 .sai-context-arrow {
     font-size: 0.7rem;
     transition: transform 0.3s ease;
@@ -636,25 +656,25 @@
 }
 .sai-context-textarea {
     width: 100%;
-    margin-top: 14px;
-    background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    border-radius: 14px;
-    padding: 16px 18px;
-    color: var(--text-primary, #111827);
-    font-size: 0.88rem;
+    margin-top: 12px;
+    background: #F9FAFB;
+    border: 1.5px solid #D0D5DD;
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #101828;
+    font-size: 0.85rem;
     line-height: 1.6;
     resize: none;
-    height: 130px;
+    height: 120px;
     outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     font-family: inherit;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.sai-context-textarea::placeholder { color: var(--text-secondary, #9CA3AF); }
+.sai-context-textarea::placeholder { color: #98A2B3; }
 .sai-context-textarea:focus {
+    background: #fff;
     border-color: var(--primary-color, #4F46E5);
-    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+    box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
 }
 .sai-context-footer {
     display: flex;
@@ -664,8 +684,8 @@
     padding: 0 2px;
 }
 .sai-ctx-count {
-    font-size: 0.72rem;
-    color: var(--text-secondary, #9CA3AF);
+    font-size: 0.7rem;
+    color: #98A2B3;
     font-variant-numeric: tabular-nums;
 }
 .sai-ctx-count.near-limit { color: #f59e0b; }
@@ -673,41 +693,45 @@
 /* ── Pagination override ─────────────────────────── */
 .sai-pagination .page-link {
     background: #fff;
-    border: 1px solid var(--border-color, #E5E7EB);
-    color: var(--text-secondary, #6B7280);
-    border-radius: 10px !important;
+    border: 1px solid #EAECF0;
+    color: #475467;
+    border-radius: 8px !important;
     margin: 0 3px;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 .sai-pagination .page-item.active .page-link {
     background: var(--primary-color, #4F46E5);
     border-color: transparent;
     color: #fff;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.3);
 }
-.sai-pagination .page-link:hover { background: rgba(79,70,229,0.2); color: var(--primary-light, #818CF8); }
+.sai-pagination .page-link:hover { background: #F4F3FF; color: var(--primary-color, #4F46E5); border-color: #DDD6FE; }
 </style>
 @endpush
 
 @section('content')
 <div class="sai-wrapper">
-<div class="sai-content">
 
-    {{-- ── HEADER ──────────────────────────────── --}}
+    {{-- ── PAGE HEADER (full-width, white, pinned) ── --}}
     <div class="sai-header">
         <div class="sai-title-block">
             <h1>Social <span>AI Hub</span></h1>
             <p>Gere posts estratégicos com texto e imagem em segundos, direto pela IA.</p>
         </div>
         <div class="sai-quota-card">
-            <div class="label">Imagens geradas este mês</div>
-            <div class="numbers">
-                {{ $quotaUsed }} <small>/ 60</small>
+            <div>
+                <div class="label">Imagens / mês</div>
+                <div class="numbers">{{ $quotaUsed }} <small>/ 60</small></div>
             </div>
             <div class="sai-quota-bar">
                 <div class="sai-quota-bar-fill" style="width: {{ min(($quotaUsed / 60) * 100, 100) }}%"></div>
             </div>
         </div>
     </div>
+
+<div class="sai-content">
 
     {{-- ── GENERATOR ────────────────────────────── --}}
     <div class="sai-generator">
@@ -899,7 +923,8 @@
     @endif
 
 </div>
-</div>
+</div>{{-- /sai-content --}}
+</div>{{-- /sai-wrapper --}}
 
 {{-- ── MODAL AGENDAMENTO ───────────────────────────── --}}
 <div class="sai-modal-backdrop" id="scheduleModal" onclick="if(event.target===this) closeScheduleModal()">
