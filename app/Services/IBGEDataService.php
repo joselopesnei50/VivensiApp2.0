@@ -10,22 +10,23 @@ use Carbon\Carbon;
 
 class IBGEDataService
 {
-    // Endpoint "Pesquisas/Indicadores" — mais confiável que SIDRA para dados municipais
-    protected $indicadoresUrl = 'https://servicodados.ibge.gov.br/api/v1/pesquisas/-/indicadores';
-    protected $sidraUrl       = 'https://servicodados.ibge.gov.br/api/v3/agregados';
-    protected $localidadesUrl = 'https://servicodados.ibge.gov.br/api/v1/localidades';
+    protected string $indicadoresUrl = 'https://servicodados.ibge.gov.br/api/v1/pesquisas/-/indicadores';
+    protected string $sidraUrl       = 'https://servicodados.ibge.gov.br/api/v3/agregados';
+    protected string $localidadesUrl = 'https://servicodados.ibge.gov.br/api/v1/localidades';
 
-    // Indicadores IBGE Cidades (confiáveis para todos os municípios)
+    // Indicadores via IBGE Cidades/Pesquisas (confiáveis para todos os municípios)
     protected array $ibgeCidadesIndicadores = [
-        'populacao'    => ['code' => '29167', 'label' => 'População',          'unit' => 'habitantes'],
-        'area'         => ['code' => '77861', 'label' => 'Área Territorial',   'unit' => 'km²'],
-        'densidade'    => ['code' => '29168', 'label' => 'Densidade Demog.',   'unit' => 'hab/km²'],
-        'pib'          => ['code' => '30279', 'label' => 'PIB per capita',     'unit' => 'R$/ano'],
-        'idhm'         => ['code' => '30255', 'label' => 'IDHM',               'unit' => 'índice'],
-        'mortalidade'  => ['code' => '29987', 'label' => 'Mortalidade Infantil','unit' => 'por 1.000'],
+        'populacao'   => ['code' => '29167', 'label' => 'População',            'unit' => 'hab.'],
+        'pop_atual'   => ['code' => '29171', 'label' => 'Estim. Pop. 2024',    'unit' => 'hab.'],
+        'area'        => ['code' => '77861', 'label' => 'Área Territorial',     'unit' => 'km²'],
+        'densidade'   => ['code' => '29168', 'label' => 'Densidade Demog.',     'unit' => 'hab/km²'],
+        'pib'         => ['code' => '30279', 'label' => 'PIB per capita',       'unit' => 'R$/ano'],
+        'idhm'        => ['code' => '30255', 'label' => 'IDHM',                'unit' => 'índice'],
+        'mortalidade' => ['code' => '29987', 'label' => 'Mortalidade Infantil', 'unit' => '/1.000 nascidos'],
+        'obitos'      => ['code' => '29773', 'label' => 'Óbitos Registrados',  'unit' => 'por ano'],
     ];
 
-    // Indicadores SIDRA (específicos — usado como complemento)
+    // Indicadores via SIDRA (complementares — fallback quando indisponível)
     protected array $sidraIndicadores = [
         'educacao'   => ['table' => '1383', 'variable' => '156',     'label' => 'Escolarização 6–14 anos', 'unit' => '%'],
         'saneamento' => ['table' => '3218', 'variable' => '1000096', 'label' => 'Saneamento Adequado',     'unit' => '%'],
@@ -43,8 +44,8 @@ class IBGEDataService
     {
         $results = [];
 
-        // ── 1. IBGE Cidades / Indicadores endpoint (uma única requisição para 6 indicadores) ─
-        $codes   = implode('|', array_column($this->ibgeCidadesIndicadores, 'code'));
+        // ── 1. IBGE Cidades — uma requisição para todos os indicadores ─────────────────
+        $codes    = implode('|', array_column($this->ibgeCidadesIndicadores, 'code'));
         $cacheKey = "ibge_indicadores_{$cityCode}";
 
         $rawData = Cache::remember($cacheKey, 86400 * 7, function () use ($codes, $cityCode) {
@@ -56,7 +57,7 @@ class IBGEDataService
             foreach ($rawData as $item) {
                 $indicatorId = (string) $item['id'];
 
-                // Lookup string key directly — array_search+array_column returns int index, not string key
+                // Lookup correto: iterar pelo array associativo (nunca usar array_search+array_column)
                 $key = null;
                 foreach ($this->ibgeCidadesIndicadores as $k => $cfg) {
                     if ($cfg['code'] === $indicatorId) { $key = $k; break; }
@@ -64,47 +65,47 @@ class IBGEDataService
                 if ($key === null) continue;
 
                 $res  = $item['res'][0]['res'] ?? [];
-                $year = !empty($res) ? max(array_keys($res)) : null;
-                $val  = $year ? ($res[$year] ?? null) : null;
+                if (empty($res)) continue;
 
-                // Skip invalid
-                if ($val === '-' || $val === '' || $val === null) continue;
+                // Pega o último período com valor válido (numérico)
+                $filtered = array_filter($res, fn($v) => $v !== '-' && $v !== '' && $v !== null && is_numeric(str_replace(['.', ','], '', $v)));
+                if (empty($filtered)) continue;
+
+                arsort($filtered); // Sort by key (year) descending
+                $year  = array_key_first($filtered);
+                $value = $filtered[$year];
 
                 $results[$key] = [
-                    'value'  => $val,
+                    'value'  => $value,
                     'year'   => $year,
                     'label'  => $this->ibgeCidadesIndicadores[$key]['label'],
                     'unit'   => $this->ibgeCidadesIndicadores[$key]['unit'],
                     'cached' => false,
                 ];
 
-                // Persist to local cache
+                // Persiste no cache local
                 IbgeIndicatorCache::updateOrCreate(
                     ['city_ibge_code' => $cityCode, 'indicator_key' => $key],
-                    ['value' => $val, 'year' => (int)$year, 'city_name' => $cityName]
+                    ['value' => $value, 'year' => (int) $year, 'city_name' => $cityName]
                 );
             }
         }
 
-        // Fill missing main indicators from local DB cache
+        // ── 2. Preenche indicadores faltantes do banco local (cache 30 dias) ──────────
         foreach ($this->ibgeCidadesIndicadores as $key => $cfg) {
             if (isset($results[$key])) continue;
+
             $cached = IbgeIndicatorCache::where('city_ibge_code', $cityCode)
-                ->where('indicator_key', $key)->first();
-            if ($cached) {
-                $results[$key] = [
-                    'value'  => $cached->value,
-                    'year'   => $cached->year,
-                    'label'  => $cfg['label'],
-                    'unit'   => $cfg['unit'],
-                    'cached' => true,
-                ];
-            } else {
-                $results[$key] = ['value' => null, 'year' => null, 'label' => $cfg['label'], 'unit' => $cfg['unit'], 'cached' => false];
-            }
+                ->where('indicator_key', $key)
+                ->where('updated_at', '>=', Carbon::now()->subDays(30))
+                ->first();
+
+            $results[$key] = $cached
+                ? ['value' => $cached->value, 'year' => $cached->year,  'label' => $cfg['label'], 'unit' => $cfg['unit'], 'cached' => true]
+                : ['value' => null,            'year' => null,           'label' => $cfg['label'], 'unit' => $cfg['unit'], 'cached' => false];
         }
 
-        // ── 2. SIDRA — Educação e Saneamento ─────────────────────────────────────────────────
+        // ── 3. SIDRA — Educação e Saneamento ─────────────────────────────────────────
         foreach ($this->sidraIndicadores as $key => $cfg) {
             $results[$key] = $this->getSidraIndicator($cityCode, $key, $cfg, $cityName);
         }
@@ -128,7 +129,7 @@ class IBGEDataService
             $resp = Http::timeout(15)->get($url);
 
             if ($resp->successful()) {
-                $data = $resp->json();
+                $data  = $resp->json();
                 $serie = $data[0]['resultados'][0]['series'][0]['serie'] ?? [];
                 $filtered = array_filter($serie, fn($v) => $v !== '-' && $v !== '' && $v !== null);
 
@@ -139,14 +140,14 @@ class IBGEDataService
 
                     IbgeIndicatorCache::updateOrCreate(
                         ['city_ibge_code' => $cityCode, 'indicator_key' => $key],
-                        ['value' => $value, 'year' => (int)$year, 'city_name' => $cityName]
+                        ['value' => $value, 'year' => (int) $year, 'city_name' => $cityName]
                     );
 
                     return ['value' => $value, 'year' => $year, 'label' => $cfg['label'], 'unit' => $cfg['unit'], 'cached' => false];
                 }
             }
         } catch (\Exception $e) {
-            Log::error("IBGE SIDRA Error [{$key} / {$cityCode}]: " . $e->getMessage());
+            Log::warning("IBGE SIDRA [{$key}/{$cityCode}]: " . $e->getMessage());
         }
 
         return ['value' => null, 'year' => null, 'label' => $cfg['label'], 'unit' => $cfg['unit'], 'cached' => false];

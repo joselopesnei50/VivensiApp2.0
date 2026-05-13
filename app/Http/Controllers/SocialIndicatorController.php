@@ -23,10 +23,8 @@ class SocialIndicatorController extends Controller
         $cities = $this->ibgeService->getCities();
 
         if ($query) {
-            $normalized = $this->normalize($query);
-            $cities = array_values(array_filter($cities, function ($city) use ($normalized) {
-                return str_contains($this->normalize($city['nome']), $normalized);
-            }));
+            $norm   = $this->normalize($query);
+            $cities = array_values(array_filter($cities, fn($c) => str_contains($this->normalize($c['nome']), $norm)));
         }
 
         return response()->json(array_slice($cities, 0, 12));
@@ -35,40 +33,120 @@ class SocialIndicatorController extends Controller
     public function getIndicators(Request $request, string $cityCode)
     {
         $cityName = $request->get('city_name', '');
-        $data     = $this->ibgeService->getCityIndicators($cityCode, $cityName);
-        $analysis = $this->generateAIAnalysis($data, $cityName ?: $cityCode);
+        $raw      = $this->ibgeService->getCityIndicators($cityCode, $cityName);
+
+        // ── Indicadores derivados (calculados a partir dos brutos) ─────────────────────
+        $derived = $this->computeDerived($raw);
+
+        // ── Agrupa por tema para a view ────────────────────────────────────────────────
+        $themed = [
+            'demografia' => $this->pick($raw, ['populacao', 'pop_atual', 'area', 'densidade']),
+            'infancia'   => $this->pick($raw, ['educacao', 'saneamento']) + $this->pick($derived, ['fora_escola_pct', 'fora_escola_est']),
+            'saude'      => $this->pick($raw, ['mortalidade', 'idhm', 'obitos']),
+            'economia'   => $this->pick($raw, ['pib']),
+        ];
+
+        $analysis = $this->generateAIAnalysis($raw, $derived, $cityName ?: $cityCode);
 
         return response()->json([
-            'indicators' => $data,
-            'analysis'   => $analysis,
+            'raw'      => $raw,
+            'derived'  => $derived,
+            'themed'   => $themed,
+            'analysis' => $analysis,
         ]);
     }
 
-    protected function generateAIAnalysis(array $data, string $cityName): string
+    // ── Calcula indicadores derivados ────────────────────────────────────────────────
+    protected function computeDerived(array $raw): array
+    {
+        $derived = [];
+
+        // Crianças fora da escola (% e estimativa absoluta)
+        $enrollVal = $raw['educacao']['value'] ?? null;
+        $popVal    = $raw['populacao']['value'] ?? ($raw['pop_atual']['value'] ?? null);
+
+        if ($enrollVal !== null) {
+            $enrollRate = (float) str_replace(',', '.', $enrollVal);
+            $pctFora    = round(100 - $enrollRate, 2);
+
+            $derived['fora_escola_pct'] = [
+                'value' => $pctFora,
+                'year'  => $raw['educacao']['year'] ?? null,
+                'label' => 'Fora da Escola (6–14 anos)',
+                'unit'  => '%',
+                'derived' => true,
+            ];
+
+            // Estimativa absoluta (13% da população está na faixa 6-14 anos — média nacional)
+            if ($popVal !== null) {
+                $pop  = (float) str_replace(['.', ','], ['', '.'], $popVal);
+                $est  = (int) round($pop * 0.13 * ($pctFora / 100));
+                $derived['fora_escola_est'] = [
+                    'value'   => $est,
+                    'year'    => $raw['educacao']['year'] ?? null,
+                    'label'   => 'Crianças Fora da Escola',
+                    'unit'    => 'crianças (estimativa)',
+                    'derived' => true,
+                ];
+            }
+        }
+
+        // Taxa de mortalidade infantil — contexto (ideal OMS: < 10)
+        $mortVal = $raw['mortalidade']['value'] ?? null;
+        if ($mortVal !== null) {
+            $mort = (float) str_replace(',', '.', $mortVal);
+            $derived['mortalidade_contexto'] = $mort > 10
+                ? 'Acima da meta OMS (< 10/mil). Projetos de saúde materno-infantil são prioritários.'
+                : 'Dentro da meta OMS (< 10/mil). Manutenção e prevenção são a chave.';
+        }
+
+        // IDHM — categoria
+        $idhmVal = $raw['idhm']['value'] ?? null;
+        if ($idhmVal !== null) {
+            $idhm = (float) str_replace(',', '.', $idhmVal);
+            $derived['idhm_categoria'] = match(true) {
+                $idhm >= 0.800 => ['label' => 'Muito Alto', 'color' => '#166534', 'bg' => '#F0FDF4'],
+                $idhm >= 0.700 => ['label' => 'Alto',       'color' => '#1D4ED8', 'bg' => '#EFF6FF'],
+                $idhm >= 0.550 => ['label' => 'Médio',      'color' => '#92400E', 'bg' => '#FFFBEB'],
+                default        => ['label' => 'Baixo',       'color' => '#9F1239', 'bg' => '#FFF1F2'],
+            };
+        }
+
+        return $derived;
+    }
+
+    protected function pick(array $arr, array $keys): array
+    {
+        return array_intersect_key($arr, array_flip($keys));
+    }
+
+    // ── Análise Bruce AI ──────────────────────────────────────────────────────────────
+    protected function generateAIAnalysis(array $raw, array $derived, string $cityName): string
     {
         $apiKey = SystemSetting::getValue('deepseek_api_key');
         if (!$apiKey) {
             return 'Análise automática indisponível. Configure a DeepSeek API Key no Painel Admin.';
         }
 
-        $resumo = [];
-        foreach ($data as $key => $info) {
-            if (!empty($info['value'])) {
-                $resumo[] = "{$info['label']}: {$info['value']} {$info['unit']} ({$info['year']})";
-            }
+        $itens = [];
+        foreach ($raw as $key => $info) {
+            if (!empty($info['value'])) $itens[] = "{$info['label']}: {$info['value']} {$info['unit']}";
+        }
+        if (!empty($derived['fora_escola_pct'])) {
+            $itens[] = "Crianças fora da escola: {$derived['fora_escola_pct']['value']}% da faixa 6–14 anos";
+        }
+        if (!empty($derived['fora_escola_est'])) {
+            $itens[] = "Estimativa absoluta: {$derived['fora_escola_est']['value']} crianças sem acesso à escola";
         }
 
-        if (empty($resumo)) {
-            return 'Dados insuficientes para gerar análise automática.';
-        }
+        if (empty($itens)) return 'Dados insuficientes para gerar análise.';
 
-        $prompt = "Você é o Bruce AI, especialista em análise socioeconômica brasileira do Vivensi App. "
-            . "Analise os dados oficiais do IBGE para o município de {$cityName}: "
-            . implode('; ', $resumo) . ". "
-            . "Escreva 3 a 5 linhas apontando os principais desafios sociais deste município e "
-            . "como projetos do terceiro setor podem atuar de forma estratégica. "
-            . "Seja objetivo, empático e baseado nos números apresentados. "
-            . "Não repita os dados literalmente — interprete-os.";
+        $prompt = "Você é o Bruce AI, especialista em diagnóstico social para o terceiro setor brasileiro. "
+            . "Analise esses dados do IBGE para {$cityName}: " . implode('; ', $itens) . ". "
+            . "Escreva 4 a 6 linhas identificando: (1) os principais vulnerabilidades sociais do município, "
+            . "(2) qual população precisa de mais atenção, (3) que tipo de projeto social teria maior impacto. "
+            . "Seja específico, use os números apresentados e conecte-os a oportunidades reais para ONGs. "
+            . "Linguagem empática e profissional.";
 
         try {
             $response = Http::timeout(30)
@@ -77,7 +155,7 @@ class SocialIndicatorController extends Controller
                     'model'       => 'deepseek-chat',
                     'messages'    => [['role' => 'user', 'content' => $prompt]],
                     'temperature' => 0.7,
-                    'max_tokens'  => 350,
+                    'max_tokens'  => 400,
                 ]);
 
             if ($response->successful()) {
