@@ -14,21 +14,21 @@ class IBGEDataService
     protected string $sidraUrl       = 'https://servicodados.ibge.gov.br/api/v3/agregados';
     protected string $localidadesUrl = 'https://servicodados.ibge.gov.br/api/v1/localidades';
 
-    // Indicadores via IBGE Cidades/Pesquisas — códigos verificados via API em 2026-05
+    // Indicadores via IBGE Cidades/Pesquisas — todos verificados via API em 2026-05
     protected array $ibgeCidadesIndicadores = [
-        'populacao'   => ['code' => '29166', 'label' => 'População (Censo)',    'unit' => 'hab.'],
-        'pop_atual'   => ['code' => '29171', 'label' => 'Pop. Estimada',        'unit' => 'hab.'],
-        'area'        => ['code' => '29167', 'label' => 'Área Territorial',     'unit' => 'km²'],
-        'densidade'   => ['code' => '29168', 'label' => 'Densidade Demog.',     'unit' => 'hab/km²'],
-        'pib'         => ['code' => '47001', 'label' => 'PIB per capita',       'unit' => 'R$/ano'],
-        'mortalidade' => ['code' => '30279', 'label' => 'Mortalidade Infantil', 'unit' => '/1.000 nascidos'],
+        'populacao'   => ['code' => '29166', 'label' => 'População (Censo 2022)',  'unit' => 'hab.'],
+        'pop_atual'   => ['code' => '29171', 'label' => 'Pop. Estimada',           'unit' => 'hab.'],
+        'area'        => ['code' => '29167', 'label' => 'Área Territorial',        'unit' => 'km²'],
+        'densidade'   => ['code' => '29168', 'label' => 'Densidade Demog.',        'unit' => 'hab/km²'],
+        'pib'         => ['code' => '47001', 'label' => 'PIB per capita',          'unit' => 'R$/ano'],
+        'mortalidade' => ['code' => '30279', 'label' => 'Mortalidade Infantil',    'unit' => '/1.000 nascidos'],
+        'educacao'    => ['code' => '60045', 'label' => 'Escolarização 6–14 anos', 'unit' => '%'],
+        'saneamento'  => ['code' => '60030', 'label' => 'Saneamento Adequado',     'unit' => '%'],
     ];
 
-    // Indicadores via SIDRA (Educação, Saneamento, Óbitos do Registro Civil)
+    // Indicadores via SIDRA (apenas Óbitos do Registro Civil — SIDRA T2683/V343)
     protected array $sidraIndicadores = [
-        'educacao'   => ['table' => '1383', 'variable' => '156',     'label' => 'Escolarização 6–14 anos', 'unit' => '%'],
-        'saneamento' => ['table' => '3218', 'variable' => '1000096', 'label' => 'Saneamento Adequado',     'unit' => '%'],
-        'obitos'     => ['table' => '2683', 'variable' => '343',     'label' => 'Óbitos Registrados',      'unit' => 'por ano'],
+        'obitos' => ['table' => '2683', 'variable' => '343', 'label' => 'Óbitos Registrados', 'unit' => 'por ano'],
     ];
 
     public function getCities(): array
@@ -45,7 +45,7 @@ class IBGEDataService
 
         // ── 1. IBGE Cidades — uma requisição para todos os indicadores ─────────────────
         $codes    = implode('|', array_column($this->ibgeCidadesIndicadores, 'code'));
-        $cacheKey = "ibge_indicadores_v3_{$cityCode}";
+        $cacheKey = "ibge_indicadores_v4_{$cityCode}";
 
         $rawData = Cache::remember($cacheKey, 86400 * 7, function () use ($codes, $cityCode) {
             $resp = Http::timeout(20)->get("{$this->indicadoresUrl}/{$codes}/resultados/{$cityCode}");
