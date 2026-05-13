@@ -2,10 +2,10 @@
 
 @push('styles')
 <style>
-/* ── Base & Background ──────────────────────────── */
+/* ── Base ───────────────────────────────────────── */
 .sai-wrapper {
     min-height: 100vh;
-    background: #0a0f1a;
+    background: var(--bg-body, #F3F4F6);
     padding: 32px;
 }
 .sai-content { position: relative; }
@@ -20,10 +20,10 @@
     gap: 20px;
 }
 .sai-title-block h1 {
-    font-size: 2.6rem;
+    font-size: 2.4rem;
     font-weight: 900;
     letter-spacing: -1.5px;
-    color: #fff;
+    color: var(--text-primary, #111827);
     margin: 0;
     line-height: 1;
 }
@@ -31,42 +31,43 @@
     color: var(--primary-color, #4F46E5);
 }
 .sai-title-block p {
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary, #6B7280);
     margin: 8px 0 0;
     font-size: 0.95rem;
 }
 
 /* ── Quota Card ─────────────────────────────────── */
 .sai-quota-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
     border-radius: 20px;
     padding: 20px 28px;
     min-width: 240px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 .sai-quota-card .label {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: rgba(255,255,255,0.35);
+    color: var(--text-secondary, #9CA3AF);
     font-weight: 700;
     margin-bottom: 6px;
 }
 .sai-quota-card .numbers {
     font-size: 1.8rem;
     font-weight: 900;
-    color: #fff;
+    color: var(--text-primary, #111827);
     line-height: 1;
 }
 .sai-quota-card .numbers small {
     font-size: 1rem;
     font-weight: 400;
-    color: rgba(255,255,255,0.25);
+    color: var(--text-secondary, #9CA3AF);
 }
 .sai-quota-bar {
     width: 100%;
     height: 5px;
-    background: rgba(255,255,255,0.08);
+    background: var(--border-color, #E5E7EB);
     border-radius: 10px;
     margin-top: 12px;
     overflow: hidden;
@@ -88,9 +89,9 @@
     margin-bottom: 0;
 }
 .sai-generator-title {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    color: rgba(255,255,255,0.9);
+    color: var(--text-primary, #111827);
     margin-bottom: 20px;
     display: flex;
     align-items: center;
@@ -113,19 +114,20 @@
 }
 .sai-input {
     flex: 1;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
     border-radius: 16px;
     padding: 18px 24px;
-    color: #fff;
+    color: var(--text-primary, #111827);
     font-size: 1rem;
     outline: none;
     transition: border-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.sai-input::placeholder { color: rgba(255,255,255,0.25); }
+.sai-input::placeholder { color: var(--text-secondary, #9CA3AF); }
 .sai-input:focus {
-    border-color: rgba(79,70,229,0.6);
-    box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+    border-color: var(--primary-color, #4F46E5);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
 }
 .sai-btn-generate {
     background: var(--primary-color, #4F46E5);
@@ -161,32 +163,33 @@
 }
 .sai-tags .label-hint {
     font-size: 0.75rem;
-    color: rgba(255,255,255,0.3);
+    color: var(--text-secondary, #9CA3AF);
     align-self: center;
     margin-right: 4px;
 }
 .sai-tag {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
     border-radius: 8px;
     padding: 6px 14px;
     font-size: 0.78rem;
-    color: rgba(255,255,255,0.6);
+    color: var(--text-secondary, #6B7280);
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 .sai-tag:hover {
-    background: rgba(79,70,229,0.15);
-    border-color: rgba(79,70,229,0.4);
-    color: var(--primary-light, #818CF8);
+    background: var(--primary-bg, #EEF2FF);
+    border-color: var(--primary-color, #4F46E5);
+    color: var(--primary-color, #4F46E5);
 }
 
 /* ── Section Title ──────────────────────────────── */
 .sai-section-title {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary, #9CA3AF);
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-bottom: 24px;
@@ -198,24 +201,25 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: rgba(255,255,255,0.06);
+    background: var(--border-color, #E5E7EB);
 }
 
 /* ── Post Card ──────────────────────────────────── */
 .sai-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 24px;
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
+    border-radius: 20px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     height: 100%;
     transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .sai-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(79,70,229,0.35);
-    box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+    transform: translateY(-4px);
+    border-color: var(--primary-color, #4F46E5);
+    box-shadow: 0 12px 32px rgba(79,70,229,0.12);
 }
 
 /* ── Card Image Area ──────────────────────────────*/
@@ -243,7 +247,7 @@
 /* ── Skeleton Loading ───────────────────────────── */
 .sai-skeleton {
     aspect-ratio: 1/1;
-    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
     background-size: 400px 100%;
     animation: shimmer 1.5s infinite linear;
     display: flex;
@@ -256,14 +260,14 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    border: 3px solid rgba(99,102,241,0.4);
-    border-top-color: #6366f1;
+    border: 3px solid rgba(79,70,229,0.2);
+    border-top-color: var(--primary-color, #4F46E5);
     animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .sai-skeleton .sk-text {
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.3);
+    color: var(--text-secondary, #9CA3AF);
     font-weight: 500;
 }
 
@@ -331,7 +335,7 @@
 .sai-card-theme {
     font-size: 0.9rem;
     font-weight: 700;
-    color: rgba(255,255,255,0.9);
+    color: var(--text-primary, #111827);
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -340,7 +344,7 @@
 }
 .sai-card-caption {
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary, #6B7280);
     line-height: 1.6;
     flex: 1;
     display: -webkit-box;
@@ -370,44 +374,44 @@
     gap: 6px;
 }
 .sai-action-btn.copy {
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.7);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--bg-body, #F3F4F6);
+    color: var(--text-secondary, #6B7280);
+    border: 1px solid var(--border-color, #E5E7EB);
 }
-.sai-action-btn.copy:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.sai-action-btn.copy:hover { background: #E5E7EB; color: var(--text-primary, #111827); }
 .sai-action-btn.expand {
-    background: rgba(79,70,229,0.12);
-    color: var(--primary-light, #818CF8);
+    background: var(--primary-bg, #EEF2FF);
+    color: var(--primary-color, #4F46E5);
     border: 1px solid rgba(79,70,229,0.2);
 }
-.sai-action-btn.expand:hover { background: rgba(79,70,229,0.22); }
+.sai-action-btn.expand:hover { background: rgba(79,70,229,0.15); color: var(--primary-color,#4F46E5); text-decoration: none; }
 .sai-action-btn.whatsapp {
-    background: rgba(37,211,102,0.12);
-    color: #4ade80;
-    border: 1px solid rgba(37,211,102,0.2);
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
     text-decoration: none;
 }
-.sai-action-btn.whatsapp:hover { background: rgba(37,211,102,0.22); color: #4ade80; }
+.sai-action-btn.whatsapp:hover { background: #dcfce7; color: #16a34a; }
 .sai-action-btn.schedule {
-    background: rgba(79,70,229,0.12);
-    color: var(--primary-light, #818CF8);
+    background: var(--primary-bg, #EEF2FF);
+    color: var(--primary-color, #4F46E5);
     border: 1px solid rgba(79,70,229,0.2);
 }
-.sai-action-btn.schedule:hover { background: rgba(79,70,229,0.22); }
+.sai-action-btn.schedule:hover { background: rgba(79,70,229,0.15); }
 .sai-action-btn.delete {
-    background: rgba(239,68,68,0.07);
-    color: rgba(248,113,113,0.7);
-    border: 1px solid rgba(239,68,68,0.15);
+    background: #fff5f5;
+    color: #dc2626;
+    border: 1px solid #fecaca;
     width: 100%;
     font-size: 0.73rem;
 }
-.sai-action-btn.delete:hover { background: rgba(239,68,68,0.15); color: #f87171; }
+.sai-action-btn.delete:hover { background: #fee2e2; }
 
 /* ── Empty State ─────────────────────────────────── */
 .sai-empty {
     text-align: center;
     padding: 80px 20px;
-    color: rgba(255,255,255,0.2);
+    color: var(--text-secondary, #9CA3AF);
 }
 .sai-empty .empty-icon {
     font-size: 4rem;
@@ -427,12 +431,11 @@
     gap: 10px;
 }
 .sai-toast {
-    background: rgba(20,20,35,0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
-    padding: 16px 22px;
-    color: #fff;
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
+    border-radius: 14px;
+    padding: 14px 20px;
+    color: var(--text-primary, #111827);
     font-size: 0.88rem;
     font-weight: 500;
     min-width: 300px;
@@ -441,11 +444,11 @@
     align-items: center;
     gap: 12px;
     animation: slideInToast 0.4s cubic-bezier(0.34,1.56,0.64,1);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
-.sai-toast.success { border-left: 3px solid #34d399; }
-.sai-toast.error   { border-left: 3px solid #f87171; }
-.sai-toast.info    { border-left: 3px solid #a5b4fc; }
+.sai-toast.success { border-left: 3px solid #10b981; }
+.sai-toast.error   { border-left: 3px solid #ef4444; }
+.sai-toast.info    { border-left: 3px solid var(--primary-color, #4F46E5); }
 .sai-toast .t-icon { font-size: 1.1rem; flex-shrink: 0; }
 @keyframes slideInToast {
     from { transform: translateX(120%); opacity: 0; }
@@ -466,9 +469,9 @@
 }
 .sai-modal-backdrop.open { display: flex; }
 .sai-modal {
-    background: #0f1120;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 28px;
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
+    border-radius: 24px;
     width: 100%;
     max-width: 620px;
     max-height: 90vh;
@@ -476,33 +479,34 @@
     padding: 36px;
     position: relative;
     animation: modalIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
 }
 @keyframes modalIn {
-    from { transform: scale(0.85) translateY(20px); opacity: 0; }
-    to   { transform: scale(1) translateY(0);        opacity: 1; }
+    from { transform: scale(0.9) translateY(20px); opacity: 0; }
+    to   { transform: scale(1) translateY(0);       opacity: 1; }
 }
 .sai-modal-close {
     position: absolute;
     top: 18px; right: 18px;
     width: 36px; height: 36px;
-    background: rgba(255,255,255,0.06);
-    border: none;
+    background: var(--bg-body, #F3F4F6);
+    border: 1px solid var(--border-color, #E5E7EB);
     border-radius: 10px;
-    color: rgba(255,255,255,0.5);
+    color: var(--text-secondary, #6B7280);
     cursor: pointer;
     font-size: 0.9rem;
     display: flex; align-items: center; justify-content: center;
     transition: background 0.2s;
 }
-.sai-modal-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.sai-modal-close:hover { background: #E5E7EB; color: var(--text-primary, #111827); }
 .sai-modal img { width: 100%; border-radius: 16px; margin-bottom: 24px; }
-.sai-modal h4 { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+.sai-modal h4 { font-size: 1rem; font-weight: 700; color: var(--text-primary, #111827); margin-bottom: 12px; }
 .sai-modal-caption {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
+    background: var(--bg-body, #F3F4F6);
+    border: 1px solid var(--border-color, #E5E7EB);
     border-radius: 12px;
     padding: 16px;
-    color: rgba(255,255,255,0.7);
+    color: var(--text-primary, #374151);
     font-size: 0.88rem;
     line-height: 1.7;
     white-space: pre-wrap;
@@ -526,11 +530,11 @@
 }
 .sai-modal-btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .sai-modal-btn.secondary {
-    background: rgba(37,211,102,0.12);
-    color: #4ade80;
-    border: 1px solid rgba(37,211,102,0.2);
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
 }
-.sai-modal-btn.secondary:hover { background: rgba(37,211,102,0.22); }
+.sai-modal-btn.secondary:hover { background: #dcfce7; }
 
 /* ── Failed State ───────────────────────────────── */
 .sai-failed-img {
@@ -540,13 +544,13 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background: rgba(239,68,68,0.05);
-    color: rgba(248,113,113,0.6);
+    background: #fff5f5;
+    color: #dc2626;
     font-size: 0.8rem;
     text-align: center;
     padding: 20px;
 }
-.sai-failed-img i { font-size: 2.5rem; opacity: 0.5; }
+.sai-failed-img i { font-size: 2.5rem; opacity: 0.4; }
 
 /* ── Schedule Modal extras ──────────────────────── */
 .sai-platform-btns {
@@ -561,25 +565,25 @@
     justify-content: center;
     gap: 8px;
     padding: 12px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--bg-body, #F3F4F6);
+    border: 1px solid var(--border-color, #E5E7EB);
     border-radius: 12px;
-    color: rgba(255,255,255,0.45);
+    color: var(--text-secondary, #6B7280);
     cursor: pointer;
     transition: all 0.2s;
     font-size: 0.82rem;
     font-weight: 600;
 }
 .sai-platform-btn:has(input:checked) {
-    background: rgba(79,70,229,0.15);
-    border-color: rgba(79,70,229,0.4);
-    color: var(--primary-light, #818CF8);
+    background: var(--primary-bg, #EEF2FF);
+    border-color: var(--primary-color, #4F46E5);
+    color: var(--primary-color, #4F46E5);
 }
 .sai-platform-btn input[type="radio"] { display: none; }
 .sai-modal-label {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    color: rgba(255,255,255,0.4);
+    color: var(--text-secondary, #9CA3AF);
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 10px;
@@ -587,17 +591,18 @@
 }
 .sai-datetime-input {
     width: 100%;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
     border-radius: 12px;
     padding: 13px 16px;
-    color: #fff;
+    color: var(--text-primary, #111827);
     font-size: 0.9rem;
     outline: none;
     transition: border-color 0.3s;
-    color-scheme: dark;
+    color-scheme: light;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.sai-datetime-input:focus { border-color: rgba(79,70,229,0.5); }
+.sai-datetime-input:focus { border-color: var(--primary-color, #4F46E5); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
 
 /* ── Context Panel ──────────────────────────────── */
 .sai-context-toggle {
@@ -607,13 +612,13 @@
     margin-top: 18px;
     cursor: pointer;
     width: fit-content;
-    color: rgba(255,255,255,0.5);
+    color: var(--text-secondary, #6B7280);
     font-size: 0.82rem;
     font-weight: 600;
     user-select: none;
     transition: color 0.2s;
 }
-.sai-context-toggle:hover { color: rgba(255,255,255,0.85); }
+.sai-context-toggle:hover { color: var(--primary-color, #4F46E5); }
 .sai-context-arrow {
     font-size: 0.7rem;
     transition: transform 0.3s ease;
@@ -632,11 +637,11 @@
 .sai-context-textarea {
     width: 100%;
     margin-top: 14px;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
     border-radius: 14px;
     padding: 16px 18px;
-    color: #fff;
+    color: var(--text-primary, #111827);
     font-size: 0.88rem;
     line-height: 1.6;
     resize: none;
@@ -644,11 +649,12 @@
     outline: none;
     transition: border-color 0.3s, box-shadow 0.3s;
     font-family: inherit;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.sai-context-textarea::placeholder { color: rgba(255,255,255,0.2); }
+.sai-context-textarea::placeholder { color: var(--text-secondary, #9CA3AF); }
 .sai-context-textarea:focus {
-    border-color: rgba(79,70,229,0.5);
-    box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+    border-color: var(--primary-color, #4F46E5);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
 }
 .sai-context-footer {
     display: flex;
@@ -659,16 +665,16 @@
 }
 .sai-ctx-count {
     font-size: 0.72rem;
-    color: rgba(255,255,255,0.25);
+    color: var(--text-secondary, #9CA3AF);
     font-variant-numeric: tabular-nums;
 }
 .sai-ctx-count.near-limit { color: #f59e0b; }
 
 /* ── Pagination override ─────────────────────────── */
 .sai-pagination .page-link {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.5);
+    background: #fff;
+    border: 1px solid var(--border-color, #E5E7EB);
+    color: var(--text-secondary, #6B7280);
     border-radius: 10px !important;
     margin: 0 3px;
     transition: all 0.2s;
@@ -838,7 +844,7 @@
                     @if($post->body_text)
                     <div class="sai-card-caption">{{ $post->body_text }}</div>
                     @elseif($post->status === 'processing')
-                    <div class="sai-card-caption" style="font-style:italic; opacity:.4">Gerando legenda...</div>
+                    <div class="sai-card-caption" style="font-style:italic">Gerando legenda...</div>
                     @endif
 
                     <div class="sai-card-actions">
@@ -900,7 +906,7 @@
     <div class="sai-modal">
         <button class="sai-modal-close" onclick="closeScheduleModal()"><i class="fas fa-xmark"></i></button>
         <h4 style="margin-bottom:6px"><i class="fas fa-calendar-plus" style="color:var(--primary-color,#4F46E5);margin-right:8px"></i>Agendar no Calendário</h4>
-        <p style="font-size:.82rem;color:rgba(255,255,255,.35);margin-bottom:22px">O post será enviado para o Calendário de Publicação do Facebook/Instagram.</p>
+        <p style="font-size:.82rem;color:var(--text-secondary,#6B7280);margin-bottom:22px">O post será enviado para o Calendário de Publicação do Facebook/Instagram.</p>
 
         <span class="sai-modal-label">Plataforma</span>
         <div class="sai-platform-btns">
@@ -922,7 +928,7 @@
         <input type="datetime-local" id="sch_datetime" class="sai-datetime-input">
 
         <div class="sai-modal-actions" style="margin-top:22px">
-            <button class="sai-modal-btn secondary" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.1)" onclick="closeScheduleModal()">
+            <button class="sai-modal-btn secondary" onclick="closeScheduleModal()">
                 Cancelar
             </button>
             <button class="sai-modal-btn primary" id="btnConfirmSchedule" onclick="confirmSchedule()">
