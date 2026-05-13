@@ -42,8 +42,8 @@ class SocialIndicatorController extends Controller
         $themed = [
             'demografia' => $this->pick($raw, ['populacao', 'pop_atual', 'area', 'densidade']),
             'infancia'   => $this->pick($raw, ['educacao', 'saneamento']) + $this->pick($derived, ['fora_escola_pct', 'fora_escola_est']),
-            'saude'      => $this->pick($raw, ['mortalidade', 'idhm', 'obitos']),
-            'economia'   => $this->pick($raw, ['pib']),
+            'saude'      => $this->pick($raw, ['mortalidade', 'obitos']),
+            'economia'   => $this->pick($raw, ['pib', 'densidade', 'area']),
         ];
 
         $analysis = $this->generateAIAnalysis($raw, $derived, $cityName ?: $cityCode);
@@ -98,18 +98,6 @@ class SocialIndicatorController extends Controller
             $derived['mortalidade_contexto'] = $mort > 10
                 ? 'Acima da meta OMS (< 10/mil). Projetos de saúde materno-infantil são prioritários.'
                 : 'Dentro da meta OMS (< 10/mil). Manutenção e prevenção são a chave.';
-        }
-
-        // IDHM — categoria
-        $idhmVal = $raw['idhm']['value'] ?? null;
-        if ($idhmVal !== null) {
-            $idhm = (float) str_replace(',', '.', $idhmVal);
-            $derived['idhm_categoria'] = match(true) {
-                $idhm >= 0.800 => ['label' => 'Muito Alto', 'color' => '#166534', 'bg' => '#F0FDF4'],
-                $idhm >= 0.700 => ['label' => 'Alto',       'color' => '#1D4ED8', 'bg' => '#EFF6FF'],
-                $idhm >= 0.550 => ['label' => 'Médio',      'color' => '#92400E', 'bg' => '#FFFBEB'],
-                default        => ['label' => 'Baixo',       'color' => '#9F1239', 'bg' => '#FFF1F2'],
-            };
         }
 
         return $derived;
