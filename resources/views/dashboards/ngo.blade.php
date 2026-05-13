@@ -40,6 +40,8 @@
     </div>
 </div>
 
+@include('partials.quick_access')
+
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px;">
 
     <!-- Runway -->

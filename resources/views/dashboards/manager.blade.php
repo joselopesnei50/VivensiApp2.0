@@ -195,6 +195,8 @@
     </div>
 </div>
 
+@include('partials.quick_access')
+
 {{-- ===== MÁQUINA DE ENGAJAMENTO ===== --}}
 <div class="row g-4 mb-4">
     <div class="col-12">
