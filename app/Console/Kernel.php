@@ -107,6 +107,12 @@ class Kernel extends ConsoleKernel
                  ->hourly()
                  ->withoutOverlapping();
 
+        // IBGE: re-sincroniza indicadores de municípios já pesquisados (toda madrugada às 02:30)
+        $schedule->command('vivensi:sync-ibge')
+                 ->dailyAt('02:30')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');
