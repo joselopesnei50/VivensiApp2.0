@@ -92,10 +92,9 @@ class SocialIndicatorController extends Controller
 
     private function normalize(string $str): string
     {
-        return strtolower(
-            preg_replace('/[\x{0300}-\x{036f}]/u', '',
-                \Normalizer::normalize($str, \Normalizer::FORM_D)
-            )
-        );
+        $str  = mb_strtolower($str, 'UTF-8');
+        $from = ['á','à','ã','â','ä','é','è','ê','ë','í','ì','î','ï','ó','ò','õ','ô','ö','ú','ù','û','ü','ç','ñ'];
+        $to   = ['a','a','a','a','a','e','e','e','e','i','i','i','i','o','o','o','o','o','u','u','u','u','c','n'];
+        return str_replace($from, $to, $str);
     }
 }

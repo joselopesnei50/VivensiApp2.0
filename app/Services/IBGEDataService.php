@@ -55,17 +55,13 @@ class IBGEDataService
         if ($rawData) {
             foreach ($rawData as $item) {
                 $indicatorId = (string) $item['id'];
-                $key = array_search(
-                    $indicatorId,
-                    array_column($this->ibgeCidadesIndicadores, 'code')
-                );
-                if ($key === false) {
-                    // find by numeric id
-                    foreach ($this->ibgeCidadesIndicadores as $k => $cfg) {
-                        if ($cfg['code'] === $indicatorId) { $key = $k; break; }
-                    }
+
+                // Lookup string key directly — array_search+array_column returns int index, not string key
+                $key = null;
+                foreach ($this->ibgeCidadesIndicadores as $k => $cfg) {
+                    if ($cfg['code'] === $indicatorId) { $key = $k; break; }
                 }
-                if ($key === false) continue;
+                if ($key === null) continue;
 
                 $res  = $item['res'][0]['res'] ?? [];
                 $year = !empty($res) ? max(array_keys($res)) : null;
