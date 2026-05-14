@@ -252,6 +252,14 @@
                 <div class="gallery-card" onclick="addBlock('testimonials')"><i class="fas fa-quote-right"></i><span>Depoimentos</span><p>Mostre o que dizem de você.</p></div>
                 <div class="gallery-card" onclick="addBlock('social_links')"><i class="fas fa-share-alt"></i><span>Redes Sociais</span><p>Links para seus perfis.</p></div>
                 <div class="gallery-card" onclick="addBlock('footer_links')"><i class="fas fa-shoe-prints"></i><span>Rodapé</span><p>Finalização da página.</p></div>
+                <div class="gallery-card" onclick="addBlock('event_card')"><i class="fas fa-calendar-star"></i><span>Evento</span><p>Data, local, horário e inscrição.</p></div>
+                <div class="gallery-card" onclick="addBlock('countdown')"><i class="fas fa-hourglass-half"></i><span>Contagem Regressiva</span><p>Urgência para campanhas com prazo.</p></div>
+                <div class="gallery-card" onclick="addBlock('two_columns')"><i class="fas fa-table-columns"></i><span>Duas Colunas</span><p>Imagem + texto lado a lado.</p></div>
+                <div class="gallery-card" onclick="addBlock('membership')"><i class="fas fa-id-badge"></i><span>Planos de Apoio</span><p>Tiers de associação e doação.</p></div>
+                <div class="gallery-card" onclick="addBlock('rich_text')"><i class="fas fa-align-left"></i><span>Texto Livre</span><p>Manifesto, carta aberta, editorial.</p></div>
+                <div class="gallery-card" onclick="addBlock('awards')"><i class="fas fa-trophy"></i><span>Prêmios & Selos</span><p>Reconhecimentos e certificações.</p></div>
+                <div class="gallery-card" onclick="addBlock('cta_whatsapp')"><i class="fab fa-whatsapp"></i><span>WhatsApp CTA</span><p>Seção dedicada de contato via WA.</p></div>
+                <div class="gallery-card" onclick="addBlock('pricing')"><i class="fas fa-tags"></i><span>Preços / Planos</span><p>Tabela de planos com features.</p></div>
             </div>
         </div>
     </div>
