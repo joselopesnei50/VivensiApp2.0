@@ -779,7 +779,9 @@
                 fetchQrCode();
                 pollInterval = setInterval(fetchQrCode, 5000);
             } else {
-                alert('Erro ao criar instância: ' + (data.error || 'Desconhecido'));
+                const errMsg = data.error || data.message || 'Sem resposta do servidor';
+                const errDet = data.details ? '\n\nDetalhes: ' + data.details : '';
+                alert('Não foi possível criar a instância:\n' + errMsg + errDet);
                 btn.innerHTML = oldText;
                 btn.disabled = false;
             }
