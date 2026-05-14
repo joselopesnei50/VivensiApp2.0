@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class ProjectLog extends Model
 {
+    use BelongsToTenant;
     public $timestamps = false;
 
     protected $fillable = ['project_id', 'tenant_id', 'user_id', 'body', 'created_at'];
