@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\ProjectLog;
-use App\Models\SystemSetting;
+use App\Services\DeepSeekService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ProjectLogController extends Controller
@@ -87,7 +86,7 @@ INSTRUÇÕES:
 - Seja objetivo, direto e profissional
 - Máximo 500 palavras";
 
-        $summary = $this->callGemini($prompt);
+        $summary = $this->callDeepSeek($prompt);
 
         if (!$summary) {
             return response()->json(['error' => 'Não foi possível gerar o relatório. Tente novamente.'], 500);
@@ -104,28 +103,16 @@ INSTRUÇÕES:
         ]);
     }
 
-    private function callGemini(string $prompt): ?string
+    private function callDeepSeek(string $prompt): ?string
     {
-        $apiKey = SystemSetting::getValue('gemini_api_key');
-        if (!$apiKey) return null;
-
-        foreach (['models/gemini-2.5-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-lite'] as $model) {
-            try {
-                $url = "https://generativelanguage.googleapis.com/v1beta/{$model}:generateContent?key={$apiKey}";
-                $res = Http::timeout(30)->post($url, [
-                    'contents'         => [['parts' => [['text' => $prompt]]]],
-                    'generationConfig' => ['temperature' => 0.4, 'maxOutputTokens' => 1024],
-                ]);
-
-                if ($res->successful()) {
-                    $text = $res->json('candidates.0.content.parts.0.text');
-                    if ($text) return trim($text);
-                }
-            } catch (\Exception $e) {
-                Log::warning("ProjectLog Gemini {$model}: " . $e->getMessage());
-            }
+        try {
+            $ds     = new DeepSeekService();
+            $result = $ds->chat([['role' => 'user', 'content' => $prompt]]);
+            $text   = $result['choices'][0]['message']['content'] ?? null;
+            return $text ? trim($text) : null;
+        } catch (\Exception $e) {
+            Log::warning("ProjectLog DeepSeek: " . $e->getMessage());
+            return null;
         }
-
-        return null;
     }
 }

@@ -119,12 +119,6 @@ class SendWeeklyReportJob implements ShouldQueue
 
     private function generateAiSummary(array $kpis, string $role, string $orgName, string $weekLabel): string
     {
-        $apiKey = \App\Models\SystemSetting::getValue('gemini_api_key');
-
-        if (!$apiKey) {
-            return "Sua equipe teve uma semana de trabalho. Continue monitorando os indicadores no painel para tomar as melhores decisões estratégicas.";
-        }
-
         $kpiText = collect($kpis)->map(fn($v, $k) => "- {$k}: " . (is_numeric($v) ? 'R$ ' . number_format($v, 2, ',', '.') : $v))->implode("\n");
 
         $prompt = "Você é o Bruce AI, assistente de gestão da plataforma Vivensi. "
@@ -134,16 +128,12 @@ class SendWeeklyReportJob implements ShouldQueue
             . "Termine com uma sugestão estratégica curta. Não use markdown.";
 
         try {
-            $response = Http::withHeaders(['Content-Type' => 'application/json'])
-                ->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}", [
-                    'contents' => [['parts' => [['text' => $prompt]]]],
-                    'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 200],
-                ]);
-
-            return $response->json('candidates.0.content.parts.0.text')
+            $ds     = new \App\Services\DeepSeekService();
+            $result = $ds->chat([['role' => 'user', 'content' => $prompt]]);
+            return $result['choices'][0]['message']['content']
                 ?? "Uma boa semana encerrou. Acesse o painel para ver todos os detalhes.";
         } catch (\Throwable $e) {
-            Log::warning("[WeeklyReport] Gemini AI falhou: " . $e->getMessage());
+            Log::warning("[WeeklyReport] DeepSeek falhou: " . $e->getMessage());
             return "Acesse seu painel para conferir os resultados da semana e planejar os próximos passos.";
         }
     }
