@@ -13,7 +13,7 @@ class MarketingAIService
     {
         $prompt = $this->buildPrompt($plan);
 
-        $result = $this->tryDeepSeek($prompt) ?? $this->tryGemini($prompt);
+        $result = $this->tryDeepSeek($prompt);
 
         if (!$result) {
             $plan->update(['status' => 'failed']);
@@ -241,34 +241,6 @@ REGRAS ABSOLUTAS DE SAÍDA
 
 Gere agora o mapa mental completo:
 PROMPT;
-    }
-
-    private function tryGemini(string $prompt): ?array
-    {
-        $apiKey = SystemSetting::getValue('gemini_api_key');
-        if (!$apiKey) return null;
-
-        foreach (['models/gemini-2.5-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-lite'] as $model) {
-            try {
-                $url = "https://generativelanguage.googleapis.com/v1beta/{$model}:generateContent?key={$apiKey}";
-                $response = Http::timeout(90)->post($url, [
-                    'contents' => [['parts' => [['text' => $prompt]]]],
-                    'generationConfig' => [
-                        'temperature'     => 0.8,
-                        'maxOutputTokens' => 8192,
-                        'topP'            => 0.95,
-                    ],
-                ]);
-
-                if ($response->successful()) {
-                    $text = $response->json('candidates.0.content.parts.0.text');
-                    if ($text) return ['markdown' => $this->cleanMarkdown(trim($text)), 'provider' => 'gemini'];
-                }
-            } catch (\Exception $e) {
-                Log::warning("MarketingAI Gemini {$model}: " . $e->getMessage());
-            }
-        }
-        return null;
     }
 
     private function tryDeepSeek(string $prompt): ?array

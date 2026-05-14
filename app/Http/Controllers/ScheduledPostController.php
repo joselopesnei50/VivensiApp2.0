@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ScheduledPost;
 use App\Models\SocialAccount;
-use App\Services\GeminiService;
+use App\Services\DeepSeekService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -134,7 +134,7 @@ class ScheduledPostController extends Controller
             'platform' => 'required|in:facebook,instagram,both',
         ]);
 
-        $gemini = new GeminiService();
+        $ds = new DeepSeekService();
 
         $tenantName = auth()->user()->tenant?->name ?? 'nossa organização';
         $platform   = $request->platform;
@@ -147,13 +147,11 @@ class ScheduledPostController extends Controller
             . "Máximo de 300 palavras. Retorne apenas o texto da legenda, sem explicações.";
 
         try {
-            $result = $gemini->generateText($prompt);
-            if (!$result) {
-                return response()->json(['error' => 'Não foi possível gerar legenda. Verifique a chave Gemini.'], 422);
+            $result = $ds->chat([['role' => 'user', 'content' => $prompt]]);
+            $text   = $result['choices'][0]['message']['content'] ?? null;
+            if (!$text) {
+                return response()->json(['error' => 'Não foi possível gerar legenda. Verifique a chave DeepSeek no painel admin.'], 422);
             }
-            $text = is_array($result)
-                ? ($result['candidates'][0]['content']['parts'][0]['text'] ?? '')
-                : (string) $result;
             return response()->json(['caption' => trim($text)]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Falha ao gerar legenda. Tente novamente.'], 500);
