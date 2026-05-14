@@ -927,9 +927,11 @@
 </style>
 
 <script>
-    const __vivensiIsAuth = {{ auth()->check() ? 'true' : 'false' }};
+    const __vivensiIsAuth  = {{ auth()->check() ? 'true' : 'false' }};
+    const __vivensiUserId  = {{ auth()->id() ?? 'null' }};
     let __vivensiLastUnread = null;
     let __vivensiToastCooldownUntil = 0;
+    let __vivensiEchoConnected = false;
 
     // Safety check on load to prevent stuck overlays
     // Safety check on load to prevent stuck overlays
@@ -1161,35 +1163,45 @@
     document.addEventListener('DOMContentLoaded', function() {
         if (!__vivensiIsAuth) return;
 
-        // Initialize badge and poll as fallback (reduced frequency to 2 mins)
+        // Badge inicial + polling de fallback (30s quando WebSocket cai, 2min quando conectado)
         updateBadge();
-        setInterval(() => {
+        let __pollInterval = setInterval(() => {
             if (!document.hidden) updateBadge();
-        }, 120000);
+        }, __vivensiEchoConnected ? 120000 : 30000);
 
-        // Listen for new notifications in real-time
-        window.Echo.private(`notifications.${__vivensiUserId}`)
-            .listen('NotificationCreated', (e) => {
-                console.log('F2: Real-time notification received', e);
-                
-                // Update badge count
-                updateBadge();
+        // WebSocket em tempo real via Laravel Echo
+        if (__vivensiUserId && window.Echo) {
+            try {
+                window.Echo.private(`notifications.${__vivensiUserId}`)
+                    .listen('NotificationCreated', (e) => {
+                        __vivensiEchoConnected = true;
+                        clearInterval(__pollInterval);
+                        __pollInterval = setInterval(() => {
+                            if (!document.hidden) updateBadge();
+                        }, 120000);
 
-                // Show toast if tab is active (bypass general cooldown for real-time events)
-                if (!document.hidden) {
-                    showToast({
-                        title: e.title || 'Nova notificação',
-                        message: e.message || '',
-                        link: e.link || null
+                        updateBadge();
+
+                        if (!document.hidden) {
+                            showToast({
+                                title:   e.title   || 'Nova notificação',
+                                message: e.message || '',
+                                link:    e.link    || null
+                            });
+                        }
+
+                        const dropdown = document.getElementById('notif-dropdown');
+                        if (dropdown && dropdown.style.display === 'block') {
+                            fetchNotifications();
+                        }
+                    })
+                    .error((err) => {
+                        console.warn('[Notificações] WebSocket falhou, mantendo polling de 30s.', err);
                     });
-                }
-                
-                // Refresh list if dropdown is open
-                const dropdown = document.getElementById('notif-dropdown');
-                if (dropdown && dropdown.style.display === 'block') {
-                    fetchNotifications();
-                }
-            });
+            } catch (err) {
+                console.warn('[Notificações] Echo indisponível, mantendo polling de 30s.', err);
+            }
+        }
     });
 
     // F4: Export Menu toggle
