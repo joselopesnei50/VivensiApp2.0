@@ -152,7 +152,7 @@
                     <div class="toggle-row mb-3">
                         <div>
                             <div class="toggle-label">Habilitar IA (Bruce AI)</div>
-                            <div class="toggle-sub">DeepSeek / Gemini responde automaticamente</div>
+                            <div class="toggle-sub">DeepSeek responde automaticamente</div>
                         </div>
                         <label class="switch">
                             <input type="checkbox" name="ai_enabled" value="1"
@@ -161,13 +161,7 @@
                         </label>
                     </div>
 
-                    <div class="field mb-3">
-                        <label class="field-label">Provedor de IA</label>
-                        <select name="ai_provider" class="field-input">
-                            <option value="deepseek" {{ ($waConfig->ai_provider ?? '') === 'deepseek' ? 'selected' : '' }}>DeepSeek (padrão)</option>
-                            <option value="gemini"   {{ ($waConfig->ai_provider ?? '') === 'gemini'   ? 'selected' : '' }}>Google Gemini</option>
-                        </select>
-                    </div>
+                    <input type="hidden" name="ai_provider" value="deepseek">
 
                     <div class="field mb-0">
                         <label class="field-label">Treinamento / Contexto da IA</label>
