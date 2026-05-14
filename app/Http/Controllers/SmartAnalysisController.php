@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\AiFinancialAdvisor;
-use App\Services\GeminiService;
 use App\Services\DeepSeekService;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
@@ -195,33 +194,20 @@ class SmartAnalysisController extends Controller
 
         $prompt = $this->buildDeepAnalysisPrompt($metrics, $transactions, $tenantType, $role);
 
-        // Attempt Gemini first, then DeepSeek as fallback
-        $ai = new GeminiService();
-        $result = $ai->callGemini([['text' => $prompt]]);
+        $ai         = new DeepSeekService();
+        $resultDeep = $ai->chat([['role' => 'user', 'content' => $prompt]]);
 
-        $geminiText = $result['candidates'][0]['content']['parts'][0]['text'] ?? null;
-
-        // Treat missing/empty candidates as failure too.
-        if (isset($result['error']) || !$geminiText) {
-            $ai = new DeepSeekService();
-            $messages = [['role' => 'user', 'content' => $prompt]];
-            $resultDeep = $ai->chat($messages);
-            
-            if (isset($resultDeep['choices'][0]['message']['content'])) {
-                $analysis = $resultDeep['choices'][0]['message']['content'];
-            } else {
-                \Log::error('Ambas as AIs falharam. Erro DeepSeek: ' . ($resultDeep['error'] ?? 'Desconhecido'));
-                // FALLBACK ESTRATÉGICO: Bruce AI v1 (Motor Local)
-                $analysis = "### 🧠 Insights Estratégicos (Bruce AI v1) 
-                            \n\n*Nota: O motor de análise cognitiva está temporariamente processando em modo local.*
-                            \n\n1. **Autonomia (Runway):** Seu tempo de sobrevivência de **" . number_format($metrics['months_left'], 1) . " meses** é " . ($metrics['months_left'] < 6 ? 'crítico. Recomenda-se contenção de custos imediatos.' : 'saudável. Há margem para investimentos planejados.') . "
-                            \n2. **Caixa Disponível:** Status de **R$ " . number_format($metrics['balance'], 2, ',', '.') . "** em conta.
-                            \n3. **Bruce AI Recomenda:** Com base nas suas últimas " . $transactions->count() . " transações, foque em " . ($transactions->where('type', 'income')->count() > 0 ? 'fidelizar os doadores atuais.' : 'diversificar as fontes de captação de recursos.') . "
-                            \n\n**O relatório cognitivo detalhado será reativado assim que a comunicação com os clusters Gemini/DeepSeek for normalizada.**";
-            }
+        if (isset($resultDeep['choices'][0]['message']['content'])) {
+            $analysis = $resultDeep['choices'][0]['message']['content'];
         } else {
-            \Log::info('Sucesso com Gemini');
-            $analysis = $geminiText;
+            \Log::error('DeepSeek falhou na análise financeira: ' . ($resultDeep['error'] ?? 'Desconhecido'));
+            // FALLBACK: Bruce AI v1 (motor local quando DeepSeek indisponível)
+            $analysis = "### 🧠 Insights Estratégicos (Bruce AI v1)"
+                . "\n\n*Nota: O motor de análise cognitiva está temporariamente em modo local.*"
+                . "\n\n1. **Autonomia (Runway):** Seu tempo de sobrevivência de **" . number_format($metrics['months_left'], 1) . " meses** é " . ($metrics['months_left'] < 6 ? 'crítico. Recomenda-se contenção de custos imediatos.' : 'saudável. Há margem para investimentos planejados.') . "."
+                . "\n2. **Caixa Disponível:** Status de **R$ " . number_format($metrics['balance'], 2, ',', '.') . "** em conta."
+                . "\n3. **Bruce AI Recomenda:** Com base nas suas últimas " . $transactions->count() . " transações, foque em " . ($transactions->where('type', 'income')->count() > 0 ? 'fidelizar os doadores atuais.' : 'diversificar as fontes de captação de recursos.') . "."
+                . "\n\n**O relatório detalhado retornará assim que a conexão com DeepSeek for normalizada.**";
         }
 
         return response()->json(['analysis' => $analysis]);

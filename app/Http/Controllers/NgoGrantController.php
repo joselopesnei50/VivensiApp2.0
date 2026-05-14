@@ -210,11 +210,12 @@ class NgoGrantController extends Controller
         
         Use um tom profissional, persuasivo e focado em resultados sociais mensuráveis. Formate em Markdown.";
 
-        $gemini = new \App\Services\GeminiService();
-        $proposal = $gemini->generateText($prompt);
+        $ds     = new \App\Services\DeepSeekService();
+        $result = $ds->chat([['role' => 'user', 'content' => $prompt]]);
+        $proposal = $result['choices'][0]['message']['content'] ?? null;
 
         if (!$proposal) {
-            return response()->json(['error' => 'Não foi possível gerar a proposta no momento. Tente novamente.'], 500);
+            return response()->json(['error' => 'Não foi possível gerar a proposta no momento. Verifique a chave DeepSeek no painel admin.'], 500);
         }
 
         // Persist so the user can retrieve it without regenerating
