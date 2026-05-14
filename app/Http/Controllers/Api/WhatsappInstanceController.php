@@ -45,36 +45,66 @@ class WhatsappInstanceController extends Controller
      */
     public function store(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id; // NULL for super_admin
+        $user     = auth()->user();
+        $tenantId = $user->tenant_id; // NULL only for super_admin
 
-        // Limite de 3 instâncias por tenant — verificação atômica com lock para evitar race condition
-        $countQuery = WhatsappInstance::withoutGlobalScopes()->lockForUpdate();
-        if ($tenantId === null) {
-            $countQuery->whereNull('tenant_id');
-        } else {
-            $countQuery->where('tenant_id', $tenantId);
+        // ── Conta instâncias ATIVAS (exclui soft-deleted) via DB facade
+        // NÃO usar withoutGlobalScopes() pois remove também o SoftDeletes scope,
+        // fazendo instâncias deletadas contarem no limite.
+        $count = \Illuminate\Support\Facades\DB::table('whatsapp_instances')
+            ->when($tenantId === null,
+                fn($q) => $q->whereNull('tenant_id'),
+                fn($q) => $q->where('tenant_id', $tenantId)
+            )
+            ->whereNull('deleted_at')
+            ->count();
+
+        if ($count >= 3) {
+            return response()->json([
+                'error' => 'Limite de 3 instâncias por conta atingido. Delete uma instância existente antes de criar outra.',
+            ], 422);
         }
-        $count = $countQuery->count();
-        abort_if($count >= 3, 422, 'Limite de 3 instâncias por conta atingido.');
 
-        // Gerar nome único — super_admin usa prefixo 'admin' para evitar vivensi_t_XXXXX
-        $namePrefix = $tenantId ?? 'admin';
-        $instanceName = 'vivensi_t' . $namePrefix . '_' . \Illuminate\Support\Str::random(6);
-        $instanceToken = \Illuminate\Support\Str::random(48);
-        $number = $request->input('number');
+        // Gera nome único — super_admin usa prefixo 'admin'
+        $namePrefix   = $tenantId ?? 'admin';
+        $instanceName = 'vivensi_t' . $namePrefix . '_' . Str::random(6);
+        $instanceToken = Str::random(48);
+        $number        = $request->input('number');
 
-        // Limpa cache de QR antigo (se houver tentativa anterior limpando registro órfão)
         \Illuminate\Support\Facades\Cache::forget('evo_qr_' . $instanceName);
 
-        // Chamar a Evolution API para criar a instância
+        // ── Chama a Evolution API
         $evo    = new EvolutionApiService();
         $result = $evo->createInstance($instanceName, $instanceToken, $number);
 
         if (isset($result['error'])) {
-            return response()->json($result, 422);
+            \Illuminate\Support\Facades\Log::error('EVO store: falha ao criar instância', [
+                'tenant_id' => $tenantId,
+                'user_id'   => $user->id,
+                'instance'  => $instanceName,
+                'error'     => $result['error'],
+                'details'   => $result['details'] ?? null,
+            ]);
+            return response()->json([
+                'error'   => 'Não foi possível criar a instância na Evolution API.',
+                'details' => $result['details'] ?? $result['error'],
+            ], 422);
         }
 
-        // Salvar no banco local
+        // Valida que a Evolution realmente criou a instância
+        if (empty($result) || (!isset($result['instance']) && !isset($result['hash']))) {
+            \Illuminate\Support\Facades\Log::error('EVO store: resposta inesperada da Evolution API', [
+                'tenant_id' => $tenantId,
+                'instance'  => $instanceName,
+                'result'    => $result,
+            ]);
+            return response()->json([
+                'error'   => 'Resposta inesperada da Evolution API.',
+                'details' => json_encode($result),
+            ], 422);
+        }
+
+        // ── Salva no banco local
         $instance = WhatsappInstance::create([
             'tenant_id'      => $tenantId,
             'instance_name'  => $instanceName,
