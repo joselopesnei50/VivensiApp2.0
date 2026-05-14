@@ -40,19 +40,16 @@ class EvolutionApiService
      */
     public function createInstance(string $name, string $clientToken = null, ?string $number = null): array
     {
-        // rtrim garante que não haverá dupla barra na URL do webhook
         $appUrl     = rtrim(config('app.url'), '/');
         $webhookUrl = $appUrl . '/api/evo/webhook/' . $clientToken;
 
+        // Evolution API v2.3.6: NÃO enviar qrcode:true nem campos de configuração
+        // durante a criação — causa "TypeError: Cannot read properties of undefined
+        // (reading 'state')". Payload mínimo + webhook apenas. QR é buscado depois
+        // via /instance/connect pelo método connect().
         $payload = [
             'instanceName' => $name,
-            'qrcode'       => true,
             'integration'  => 'WHATSAPP-BAILEYS',
-            'rejectCall'   => false,
-            'groupsIgnore' => true,
-            'alwaysOnline' => true,
-            'readMessages' => true,
-            'readStatus'   => true,
             'webhook'      => [
                 'enabled'  => true,
                 'url'      => $webhookUrl,
