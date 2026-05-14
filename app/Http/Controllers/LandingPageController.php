@@ -838,7 +838,92 @@ class LandingPageController extends Controller
                 'goal_amount' => '50.000',
                 'note' => 'Última atualização: ' . date('d/m/Y'),
                 'bg_color' => '#f8fafc'
-            ]
+            ],
+
+            // ── NOVOS TEMPLATES ─────────────────────────────────────────────
+
+            'event_card' => [
+                'title' => 'Evento Especial',
+                'description' => 'Venha participar do nosso evento e fazer parte desta transformação social. Vagas limitadas!',
+                'date' => '28 de Junho, 2026',
+                'time' => '14h às 18h',
+                'location' => 'Rua das Flores, 123 — Centro, São Paulo/SP',
+                'button_text' => 'Quero Me Inscrever',
+                'button_url' => '#inscricao',
+                'bg_color' => '#f0f9ff',
+                'accent_color' => '#0284c7',
+            ],
+
+            'countdown' => [
+                'title' => 'A campanha encerra em:',
+                'subtitle' => 'Não perca a oportunidade de fazer parte desta causa. Cada segundo conta.',
+                'deadline' => date('Y') + 1 . '-06-30 23:59:59',
+                'button_text' => 'Participar Agora',
+                'button_url' => '#contato',
+                'bg_gradient' => 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+                'text_color' => '#ffffff',
+            ],
+
+            'two_columns' => [
+                'title' => 'Por que nos apoiar?',
+                'text' => 'Cada contribuição faz a diferença real. Com sua ajuda, podemos ampliar nossos projetos e alcançar mais famílias em situação de vulnerabilidade social. Juntos construímos algo maior.',
+                'image_url' => 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=800&auto=format&fit=crop',
+                'image_position' => 'right',
+                'button_text' => 'Saiba Mais',
+                'button_url' => '#contato',
+                'bg_color' => '#ffffff',
+            ],
+
+            'membership' => [
+                'title' => 'Torne-se um Apoiador',
+                'subtitle' => 'Escolha o plano que mais se encaixa na sua capacidade de contribuição.',
+                'bg_color' => '#f8fafc',
+                'items' => [
+                    ['name' => 'Amigo', 'price' => 'R$ 30/mês', 'color' => '#3b82f6', 'highlight' => false, 'benefits' => 'Boletim mensal | Reconhecimento online | Certificado digital'],
+                    ['name' => 'Protetor', 'price' => 'R$ 70/mês', 'color' => '#8b5cf6', 'highlight' => true, 'benefits' => 'Boletim mensal | Visita guiada anual | Relatório exclusivo | Placa de reconhecimento'],
+                    ['name' => 'Guardião', 'price' => 'R$ 150/mês', 'color' => '#f59e0b', 'highlight' => false, 'benefits' => 'Todos os benefícios | Placa premium | Convite eventos VIP | Agradecimento público'],
+                ],
+            ],
+
+            'rich_text' => [
+                'title' => 'Nossa mensagem para você',
+                'text' => 'Escreva aqui um texto livre, um manifesto, uma mensagem especial ou qualquer conteúdo que você queira compartilhar com seus visitantes. Este bloco é ideal para narrativas, cartas abertas, agradecimentos ou comunicados importantes da sua organização.',
+                'text_align' => 'center',
+                'bg_color' => '#ffffff',
+                'text_color' => '#1e293b',
+            ],
+
+            'awards' => [
+                'title' => 'Reconhecimentos & Certificações',
+                'subtitle' => 'Nossa credibilidade é construída com transparência e resultados verificáveis.',
+                'bg_color' => '#fafafa',
+                'items' => [
+                    ['icon' => '🏆', 'title' => 'Prêmio Nacional ONG 2025', 'desc' => 'Reconhecida como uma das 10 melhores ONGs do Brasil.'],
+                    ['icon' => '✅', 'title' => 'Certificação OSCIP', 'desc' => 'Organização da Sociedade Civil de Interesse Público.'],
+                    ['icon' => '📰', 'title' => 'Destaque na Mídia', 'desc' => 'Reportagem especial no Jornal Nacional em 2024.'],
+                    ['icon' => '🤝', 'title' => 'Parceria Ministerial', 'desc' => 'Convênio com o Ministério da Cidadania.'],
+                ],
+            ],
+
+            'cta_whatsapp' => [
+                'title' => 'Fale conosco pelo WhatsApp',
+                'subtitle' => 'Nossa equipe está pronta para responder suas dúvidas e receber sua contribuição com todo o carinho.',
+                'phone' => '5511999999999',
+                'message' => 'Olá! Quero saber mais sobre como posso ajudar sua organização.',
+                'button_text' => 'Iniciar Conversa no WhatsApp',
+                'bg_color' => '#f0fdf4',
+            ],
+
+            'pricing' => [
+                'title' => 'Planos e Valores',
+                'subtitle' => 'Soluções transparentes para cada momento da sua jornada.',
+                'bg_color' => '#ffffff',
+                'items' => [
+                    ['name' => 'Básico', 'price' => 'R$ 99', 'period' => '/mês', 'color' => '#3b82f6', 'highlight' => false, 'features' => 'Acesso básico | 1 usuário | Suporte por e-mail | Relatórios mensais'],
+                    ['name' => 'Profissional', 'price' => 'R$ 249', 'period' => '/mês', 'color' => '#7c3aed', 'highlight' => true, 'features' => 'Tudo do Básico | Até 5 usuários | Suporte prioritário | Relatórios avançados | Integrações'],
+                    ['name' => 'Empresarial', 'price' => 'Sob consulta', 'period' => '', 'color' => '#0f172a', 'highlight' => false, 'features' => 'Tudo do Profissional | Usuários ilimitados | Suporte dedicado | Customização total | API'],
+                ],
+            ],
         ];
 
         return $defaults[$type] ?? [];

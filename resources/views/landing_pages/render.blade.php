@@ -977,6 +977,258 @@
                 </div>
             </section>
         @endif
+
+        {{-- ── NOVOS TEMPLATES ─────────────────────────────────────────── --}}
+
+        @if($section->type == 'event_card')
+            @php
+                $evBg     = \App\Support\LandingPageSanitizer::cssColor($section->content['bg_color'] ?? null, '#f0f9ff');
+                $evAccent = \App\Support\LandingPageSanitizer::cssColor($section->content['accent_color'] ?? null, '#0284c7');
+                $evBtn    = \App\Support\LandingPageSanitizer::url($section->content['button_url'] ?? '#');
+            @endphp
+            <section style="background: {{ $evBg }}; padding: 72px 0;">
+                <div class="container" style="max-width: 860px; margin: 0 auto; padding: 0 24px;">
+                    <div style="background: #fff; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,.08); display: flex; flex-wrap: wrap;">
+                        <div style="width: 8px; background: {{ $evAccent }}; flex-shrink: 0; min-height: 100%;"></div>
+                        <div style="flex: 1; padding: 48px 40px;">
+                            <div style="display: inline-flex; align-items: center; gap: 8px; background: {{ $evAccent }}18; color: {{ $evAccent }}; border-radius: 99px; padding: 5px 14px; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">
+                                <i class="fas fa-calendar-star"></i> Evento
+                            </div>
+                            <h2 style="font-size: 2rem; font-weight: 900; color: #0f172a; margin: 0 0 14px; letter-spacing: -1px;">{{ $section->content['title'] ?? 'Evento Especial' }}</h2>
+                            <p style="color: #475569; font-size: 1.05rem; line-height: 1.7; margin: 0 0 28px;">{{ $section->content['description'] ?? '' }}</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 32px;">
+                                <div style="display: flex; align-items: center; gap: 10px; color: #334155;">
+                                    <span style="width: 38px; height: 38px; background: {{ $evAccent }}15; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: {{ $evAccent }};"><i class="fas fa-calendar"></i></span>
+                                    <div><div style="font-size: .7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .8px;">Data</div><strong>{{ $section->content['date'] ?? '—' }}</strong></div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; color: #334155;">
+                                    <span style="width: 38px; height: 38px; background: {{ $evAccent }}15; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: {{ $evAccent }};"><i class="fas fa-clock"></i></span>
+                                    <div><div style="font-size: .7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .8px;">Horário</div><strong>{{ $section->content['time'] ?? '—' }}</strong></div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; color: #334155;">
+                                    <span style="width: 38px; height: 38px; background: {{ $evAccent }}15; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: {{ $evAccent }};"><i class="fas fa-map-pin"></i></span>
+                                    <div><div style="font-size: .7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .8px;">Local</div><strong>{{ $section->content['location'] ?? '—' }}</strong></div>
+                                </div>
+                            </div>
+                            @if(!empty($section->content['button_text']))
+                            <a href="{{ $evBtn }}" style="display: inline-block; background: {{ $evAccent }}; color: #fff; font-weight: 800; padding: 15px 32px; border-radius: 14px; text-decoration: none; font-size: .95rem; box-shadow: 0 6px 20px {{ $evAccent }}40;">
+                                {{ $section->content['button_text'] }} →
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </section>
+        @endif
+
+        @if($section->type == 'countdown')
+            @php
+                $cdBg    = \App\Support\LandingPageSanitizer::cssBg($section->content['bg_gradient'] ?? null, 'linear-gradient(135deg,#7c3aed,#4f46e5)');
+                $cdColor = \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#ffffff');
+                $cdBtn   = \App\Support\LandingPageSanitizer::url($section->content['button_url'] ?? '#');
+                $cdDeadline = e($section->content['deadline'] ?? '');
+            @endphp
+            <section style="background: {{ $cdBg }}; color: {{ $cdColor }}; padding: 80px 0; text-align: center;" data-deadline="{{ $cdDeadline }}">
+                <div class="container" style="max-width: 700px; margin: 0 auto; padding: 0 24px;">
+                    <p style="font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: .7; margin-bottom: 12px;">⏳ Tempo restante</p>
+                    <h2 style="font-size: 1.8rem; font-weight: 900; margin: 0 0 40px; letter-spacing: -.5px;">{{ $section->content['title'] ?? 'A campanha encerra em:' }}</h2>
+                    <div class="lp-countdown" style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 36px;">
+                        @foreach(['days' => 'Dias', 'hours' => 'Horas', 'minutes' => 'Min', 'seconds' => 'Seg'] as $key => $label)
+                        <div style="background: rgba(255,255,255,.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.2); border-radius: 18px; padding: 20px 24px; min-width: 90px;">
+                            <div class="lp-cd-{{ $key }}" style="font-size: 2.8rem; font-weight: 900; letter-spacing: -2px; line-height: 1;">00</div>
+                            <div style="font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: .7; margin-top: 6px;">{{ $label }}</div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @if(!empty($section->content['subtitle']))
+                    <p style="opacity: .8; font-size: 1rem; margin-bottom: 28px;">{{ $section->content['subtitle'] }}</p>
+                    @endif
+                    @if(!empty($section->content['button_text']))
+                    <a href="{{ $cdBtn }}" style="display: inline-block; background: #fff; color: #4f46e5; font-weight: 900; padding: 16px 36px; border-radius: 14px; text-decoration: none; font-size: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,.15);">
+                        {{ $section->content['button_text'] }} →
+                    </a>
+                    @endif
+                </div>
+            </section>
+            <script>
+            (function(){
+                var sec = document.querySelector('section[data-deadline]');
+                if (!sec) return;
+                var deadline = new Date(sec.dataset.deadline);
+                function tick() {
+                    var diff = Math.max(0, deadline - new Date());
+                    var d = Math.floor(diff/864e5), h = Math.floor((diff%864e5)/36e5),
+                        m = Math.floor((diff%36e5)/6e4),  s = Math.floor((diff%6e4)/1e3);
+                    function fmt(n){ return String(n).padStart(2,'0'); }
+                    var el = sec.querySelector.bind(sec);
+                    var days=el('.lp-cd-days'), hrs=el('.lp-cd-hours'), mins=el('.lp-cd-minutes'), secs=el('.lp-cd-seconds');
+                    if(days) days.textContent=fmt(d);
+                    if(hrs)  hrs.textContent=fmt(h);
+                    if(mins) mins.textContent=fmt(m);
+                    if(secs) secs.textContent=fmt(s);
+                }
+                tick(); setInterval(tick, 1000);
+            })();
+            </script>
+        @endif
+
+        @if($section->type == 'two_columns')
+            @php
+                $tcBg  = \App\Support\LandingPageSanitizer::cssColor($section->content['bg_color'] ?? null, '#ffffff');
+                $tcImg = \App\Support\LandingPageSanitizer::url($section->content['image_url'] ?? '');
+                $tcBtn = \App\Support\LandingPageSanitizer::url($section->content['button_url'] ?? '#');
+                $imgRight = ($section->content['image_position'] ?? 'right') === 'right';
+            @endphp
+            <section style="background: {{ $tcBg }}; padding: 80px 0;">
+                <div class="container" style="max-width: 1100px; margin: 0 auto; padding: 0 24px;">
+                    <div style="display: flex; align-items: center; gap: 60px; flex-wrap: wrap; flex-direction: {{ $imgRight ? 'row' : 'row-reverse' }};">
+                        <div style="flex: 1; min-width: 280px;">
+                            <h2 style="font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -1px; margin: 0 0 20px;">{{ $section->content['title'] ?? '' }}</h2>
+                            <p style="color: #475569; font-size: 1.05rem; line-height: 1.8; margin: 0 0 28px;">{{ $section->content['text'] ?? '' }}</p>
+                            @if(!empty($section->content['button_text']))
+                            <a href="{{ $tcBtn }}" style="display: inline-flex; align-items: center; gap: 8px; background: var(--primary, #4f46e5); color: #fff; font-weight: 800; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-size: .9rem;">
+                                {{ $section->content['button_text'] }} <i class="fas fa-arrow-right" style="font-size:.8rem;"></i>
+                            </a>
+                            @endif
+                        </div>
+                        @if($tcImg)
+                        <div style="flex: 1; min-width: 280px;">
+                            <img src="{{ $tcImg }}" alt="{{ $section->content['title'] ?? '' }}" style="width: 100%; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.1); display: block;">
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </section>
+        @endif
+
+        @if($section->type == 'membership')
+            @php $mbBg = \App\Support\LandingPageSanitizer::cssColor($section->content['bg_color'] ?? null, '#f8fafc'); @endphp
+            <section style="background: {{ $mbBg }}; padding: 80px 0; text-align: center;">
+                <div class="container" style="max-width: 1100px; margin: 0 auto; padding: 0 24px;">
+                    <h2 style="font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -1px; margin: 0 0 12px;">{{ $section->content['title'] ?? 'Torne-se um Apoiador' }}</h2>
+                    <p style="color: #64748b; font-size: 1.05rem; margin: 0 0 48px;">{{ $section->content['subtitle'] ?? '' }}</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; text-align: left;">
+                        @foreach($section->content['items'] ?? [] as $mb)
+                        @php
+                            $mbColor = \App\Support\LandingPageSanitizer::cssColor($mb['color'] ?? null, '#4f46e5');
+                            $isHL    = !empty($mb['highlight']);
+                        @endphp
+                        <div style="background: {{ $isHL ? '#fff' : '#fff' }}; border-radius: 20px; padding: 32px 28px; border: {{ $isHL ? "2px solid {$mbColor}" : '1px solid #e2e8f0' }}; position: relative; box-shadow: {{ $isHL ? '0 12px 40px rgba(0,0,0,.1)' : '0 2px 8px rgba(0,0,0,.04)' }};">
+                            @if($isHL)
+                            <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: {{ $mbColor }}; color: #fff; font-size: .65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; padding: 5px 16px; border-radius: 99px; white-space: nowrap;">Mais Popular</div>
+                            @endif
+                            <div style="width: 44px; height: 44px; background: {{ $mbColor }}20; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                <i class="fas fa-star" style="color: {{ $mbColor }};"></i>
+                            </div>
+                            <h3 style="font-size: 1.2rem; font-weight: 900; color: #0f172a; margin: 0 0 6px;">{{ $mb['name'] ?? '' }}</h3>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: {{ $mbColor }}; margin-bottom: 20px;">{{ $mb['price'] ?? '' }}</div>
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                                @foreach(explode('|', $mb['benefits'] ?? '') as $benefit)
+                                <li style="display: flex; align-items: center; gap: 10px; font-size: .88rem; color: #475569;">
+                                    <i class="fas fa-check" style="color: {{ $mbColor }}; font-size: .75rem; flex-shrink: 0;"></i>
+                                    {{ trim($benefit) }}
+                                </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
+
+        @if($section->type == 'rich_text')
+            @php
+                $rtBg    = \App\Support\LandingPageSanitizer::cssColor($section->content['bg_color'] ?? null, '#ffffff');
+                $rtColor = \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#1e293b');
+                $rtAlign = in_array($section->content['text_align'] ?? 'center', ['left','center','right']) ? $section->content['text_align'] : 'center';
+            @endphp
+            <section style="background: {{ $rtBg }}; padding: 72px 0;">
+                <div class="container" style="max-width: 760px; margin: 0 auto; padding: 0 24px; text-align: {{ $rtAlign }};">
+                    @if(!empty($section->content['title']))
+                    <h2 style="font-size: 1.9rem; font-weight: 900; color: {{ $rtColor }}; letter-spacing: -1px; margin: 0 0 24px;">{{ $section->content['title'] }}</h2>
+                    @endif
+                    <p style="color: {{ $rtColor }}; font-size: 1.1rem; line-height: 1.85; opacity: .85;">{{ $section->content['text'] ?? '' }}</p>
+                </div>
+            </section>
+        @endif
+
+        @if($section->type == 'awards')
+            @php $awBg = \App\Support\LandingPageSanitizer::cssColor($section->content['bg_color'] ?? null, '#fafafa'); @endphp
+            <section style="background: {{ $awBg }}; padding: 80px 0; text-align: center;">
+                <div class="container" style="max-width: 1100px; margin: 0 auto; padding: 0 24px;">
+                    <h2 style="font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -1px; margin: 0 0 12px;">{{ $section->content['title'] ?? 'Reconhecimentos' }}</h2>
+                    @if(!empty($section->content['subtitle']))<p style="color: #64748b; font-size: 1rem; margin: 0 0 48px;">{{ $section->content['subtitle'] }}</p>@endif
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; text-align: left;">
+                        @foreach($section->content['items'] ?? [] as $aw)
+                        <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 28px 24px;">
+                            <div style="font-size: 2rem; margin-bottom: 12px;">{{ $aw['icon'] ?? '🏆' }}</div>
+                            <h4 style="font-size: .95rem; font-weight: 800; color: #0f172a; margin: 0 0 8px;">{{ $aw['title'] ?? '' }}</h4>
+                            <p style="color: #64748b; font-size: .83rem; line-height: 1.6; margin: 0;">{{ $aw['desc'] ?? '' }}</p>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
+
+        @if($section->type == 'cta_whatsapp')
+            @php
+                $waBg  = \App\Support\LandingPageSanitizer::cssColor($section->content['bg_color'] ?? null, '#f0fdf4');
+                $waPhone = preg_replace('/\D/', '', $section->content['phone'] ?? '5511999999999');
+                $waMsg = rawurlencode($section->content['message'] ?? 'Olá! Quero saber mais.');
+                $waBtn = \App\Support\LandingPageSanitizer::url($section->content['button_url'] ?? "https://wa.me/{$waPhone}?text={$waMsg}");
+            @endphp
+            <section style="background: {{ $waBg }}; padding: 80px 0; text-align: center;">
+                <div class="container" style="max-width: 700px; margin: 0 auto; padding: 0 24px;">
+                    <div style="width: 72px; height: 72px; background: #25D366; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 30px rgba(37,211,102,.3);">
+                        <i class="fab fa-whatsapp" style="font-size: 2rem; color: #fff;"></i>
+                    </div>
+                    <h2 style="font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -1px; margin: 0 0 16px;">{{ $section->content['title'] ?? 'Fale no WhatsApp' }}</h2>
+                    <p style="color: #475569; font-size: 1.05rem; line-height: 1.7; margin: 0 0 32px;">{{ $section->content['subtitle'] ?? '' }}</p>
+                    <a href="https://wa.me/{{ $waPhone }}?text={{ $waMsg }}" target="_blank" rel="noopener"
+                       style="display: inline-flex; align-items: center; gap: 10px; background: #25D366; color: #fff; font-weight: 900; padding: 18px 40px; border-radius: 16px; text-decoration: none; font-size: 1rem; box-shadow: 0 8px 30px rgba(37,211,102,.3);">
+                        <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i>
+                        {{ $section->content['button_text'] ?? 'Iniciar Conversa' }}
+                    </a>
+                </div>
+            </section>
+        @endif
+
+        @if($section->type == 'pricing')
+            @php $prBg = \App\Support\LandingPageSanitizer::cssColor($section->content['bg_color'] ?? null, '#ffffff'); @endphp
+            <section style="background: {{ $prBg }}; padding: 80px 0; text-align: center;">
+                <div class="container" style="max-width: 1100px; margin: 0 auto; padding: 0 24px;">
+                    <h2 style="font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -1px; margin: 0 0 12px;">{{ $section->content['title'] ?? 'Planos e Valores' }}</h2>
+                    @if(!empty($section->content['subtitle']))<p style="color: #64748b; font-size: 1rem; margin: 0 0 48px;">{{ $section->content['subtitle'] }}</p>@endif
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; text-align: left;">
+                        @foreach($section->content['items'] ?? [] as $pr)
+                        @php
+                            $prColor = \App\Support\LandingPageSanitizer::cssColor($pr['color'] ?? null, '#4f46e5');
+                            $prHL    = !empty($pr['highlight']);
+                        @endphp
+                        <div style="background: {{ $prHL ? $prColor : '#fff' }}; border-radius: 20px; padding: 36px 28px; border: {{ $prHL ? 'none' : '1px solid #e2e8f0' }}; position: relative; box-shadow: {{ $prHL ? '0 20px 50px rgba(0,0,0,.15)' : '0 2px 8px rgba(0,0,0,.04)' }}; color: {{ $prHL ? '#fff' : '#0f172a' }};">
+                            @if($prHL)
+                            <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #fff; color: {{ $prColor }}; font-size: .65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; padding: 5px 16px; border-radius: 99px; white-space: nowrap;">Recomendado</div>
+                            @endif
+                            <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0 0 8px; opacity: {{ $prHL ? '1' : '1' }};">{{ $pr['name'] ?? '' }}</h3>
+                            <div style="font-size: 2.2rem; font-weight: 900; margin-bottom: 4px; letter-spacing: -1px;">{{ $pr['price'] ?? '' }}<span style="font-size: 1rem; font-weight: 600; opacity: .7;">{{ $pr['period'] ?? '' }}</span></div>
+                            <hr style="border: none; border-top: 1px solid {{ $prHL ? 'rgba(255,255,255,.2)' : '#f1f5f9' }}; margin: 20px 0;">
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                                @foreach(explode('|', $pr['features'] ?? '') as $feat)
+                                <li style="display: flex; align-items: center; gap: 10px; font-size: .88rem; opacity: .9;">
+                                    <i class="fas fa-check-circle" style="color: {{ $prHL ? 'rgba(255,255,255,.8)' : $prColor }}; font-size: .8rem; flex-shrink: 0;"></i>
+                                    {{ trim($feat) }}
+                                </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
+
     @endforeach
 
     <!-- Lightbox (galeria) -->
