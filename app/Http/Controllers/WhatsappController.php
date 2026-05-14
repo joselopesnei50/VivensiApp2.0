@@ -266,18 +266,10 @@ class WhatsappController extends Controller
         $prompt .= "Instrução: Responda ao cliente de forma curta e objetiva. Se não souber a resposta, peça para ele aguardar um atendente humano.\n";
         $prompt .= "Usuário: {$userMessage}";
 
-        // Tenta Gemini primeiro
-        $ai = new GeminiService();
-        $aiResponse = $ai->callGemini([['text' => $prompt]]);
-
-        $replyText = "";
-        if (isset($aiResponse['candidates'][0]['content']['parts'][0]['text'])) {
-            $replyText = $aiResponse['candidates'][0]['content']['parts'][0]['text'];
-        } else {
-            $ds = new \App\Services\DeepSeekService();
-            $dsRes = $ds->chat([['role' => 'user', 'content' => $prompt]]);
-            $replyText = $dsRes['choices'][0]['message']['content'] ?? "Entendi. Vou encaminhar sua solicitação para um especialista. Aguarde um momento.";
-        }
+        $ds = new \App\Services\DeepSeekService();
+        $dsRes = $ds->chat([['role' => 'user', 'content' => $prompt]]);
+        $replyText = $dsRes['choices'][0]['message']['content']
+            ?? "Entendi. Vou encaminhar sua solicitação para um especialista. Aguarde um momento.";
 
         Log::info("Bruce AI Response for Chat {$chat->id}: " . $replyText);
 
