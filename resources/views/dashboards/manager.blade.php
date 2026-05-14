@@ -3,6 +3,8 @@
 @section('content')
 @include('partials.onboarding')
 
+@include('partials.quick_access')
+
 <style>
     .command-center-hero {
         background: #0f172a;
@@ -194,8 +196,6 @@
         </div>
     </div>
 </div>
-
-@include('partials.quick_access')
 
 {{-- ===== MÁQUINA DE ENGAJAMENTO ===== --}}
 <div class="row g-4 mb-4">
