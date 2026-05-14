@@ -186,17 +186,14 @@
                 </div>
 
                 <div class="settings-robot-config mt-4">
+                    <input type="hidden" name="ai_provider" value="deepseek">
                     <div class="row g-3 align-items-center">
                         <div class="col-sm-7">
                             <label class="training-label mb-1">Motor Cognitivo</label>
-                            <select name="ai_provider" class="form-control-vivensi">
-                                <option value="gemini" {{ ($config->ai_provider ?? 'gemini') == 'gemini' ? 'selected' : '' }}>
-                                    ⚡ Google Gemini (Rápido)
-                                </option>
-                                <option value="deepseek" {{ ($config->ai_provider ?? '') == 'deepseek' ? 'selected' : '' }}>
-                                    🧠 DeepSeek Chat (V3)
-                                </option>
-                            </select>
+                            <div class="p-2 rounded-3 d-flex align-items-center gap-2" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                                <i class="fas fa-brain" style="color:#16a34a;font-size:.9rem;"></i>
+                                <span style="font-size:.85rem;font-weight:700;color:#166534;">DeepSeek Chat (V3)</span>
+                            </div>
                         </div>
                         <div class="col-sm-5">
                             <label class="training-label mb-1">Robô Ativo</label>
