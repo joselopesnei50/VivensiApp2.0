@@ -41,7 +41,13 @@ class CampaignController extends Controller
 
     public function show($slug)
     {
-        $campaign = Campaign::where('slug', $slug)->firstOrFail();
+        // Usar withoutGlobalScopes pois é rota pública (sem Auth).
+        // SEGURANÇA: filtrar apenas campanhas ativas para não expor rascunhos.
+        $campaign = Campaign::withoutGlobalScopes()
+            ->where('slug', $slug)
+            ->where('status', 'active')
+            ->firstOrFail();
+
         return view('public.campaign', compact('campaign'));
     }
 }
