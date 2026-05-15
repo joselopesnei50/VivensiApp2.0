@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LgpdDataRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
@@ -45,5 +48,115 @@ class ProfileController extends Controller
         ]);
 
         return back()->with('success', 'Senha alterada com sucesso!');
+    }
+
+    // ── LGPD: Portabilidade de dados (Art. 18, VI LGPD) ─────────────────────
+    public function exportData()
+    {
+        $user = auth()->user();
+
+        LgpdDataRequest::create([
+            'user_id'    => $user->id,
+            'tenant_id'  => $user->tenant_id,
+            'type'       => 'export',
+            'status'     => 'completed',
+            'ip_address' => request()->ip(),
+        ]);
+
+        $data = [
+            'exportado_em' => now()->toIso8601String(),
+            'titular'      => [
+                'id'           => $user->id,
+                'nome'         => $user->name,
+                'email'        => $user->email,
+                'telefone'     => $user->phone,
+                'cargo'        => $user->role,
+                'departamento' => $user->department,
+                'criado_em'    => optional($user->created_at)->toIso8601String(),
+                'ultimo_login' => optional($user->last_login_at)->toIso8601String(),
+                'termos_aceitos_em' => optional($user->terms_accepted_at)->toIso8601String(),
+            ],
+            'tarefas' => DB::table('tasks')
+                ->where('assigned_to', $user->id)
+                ->select('id', 'title', 'status', 'due_date', 'created_at')
+                ->get(),
+            'projetos' => DB::table('project_members')
+                ->join('projects', 'projects.id', '=', 'project_members.project_id')
+                ->where('project_members.user_id', $user->id)
+                ->select('projects.id', 'projects.title', 'projects.status', 'project_members.role', 'project_members.created_at')
+                ->get(),
+            'mensagens_whatsapp' => DB::table('whatsapp_messages')
+                ->where('tenant_id', $user->tenant_id)
+                ->where('direction', 'outbound')
+                ->select('id', 'to_number', 'body', 'status', 'created_at')
+                ->limit(500)
+                ->get(),
+            'chats_internos' => DB::table('internal_chat_messages')
+                ->where('sender_id', $user->id)
+                ->select('id', 'body', 'created_at')
+                ->get(),
+            'notificacoes' => DB::table('notifications')
+                ->where('notifiable_id', $user->id)
+                ->select('id', 'type', 'data', 'read_at', 'created_at')
+                ->limit(200)
+                ->get(),
+        ];
+
+        $filename = 'meus_dados_vivensi_' . now()->format('Ymd_His') . '.json';
+
+        Log::info('LGPD export', ['user_id' => $user->id, 'tenant_id' => $user->tenant_id, 'ip' => request()->ip()]);
+
+        return response()->json($data, 200, [
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Type'        => 'application/json; charset=utf-8',
+        ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    }
+
+    // ── LGPD: Solicitação de apagamento (Art. 18, VI LGPD) ──────────────────
+    public function requestDelete(Request $request)
+    {
+        $request->validate([
+            'confirm_phrase' => ['required', 'in:EXCLUIR MINHA CONTA'],
+            'reason'         => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $user = auth()->user();
+
+        // Evita duplicidade de pedido pendente
+        $existing = LgpdDataRequest::where('user_id', $user->id)
+            ->where('type', 'delete')
+            ->whereIn('status', ['pending', 'processing'])
+            ->first();
+
+        if ($existing) {
+            return back()->with('lgpd_info', 'Você já possui uma solicitação de exclusão em andamento (protocolo #' . $existing->id . ').');
+        }
+
+        $req = LgpdDataRequest::create([
+            'user_id'    => $user->id,
+            'tenant_id'  => $user->tenant_id,
+            'type'       => 'delete',
+            'status'     => 'pending',
+            'ip_address' => $request->ip(),
+            'notes'      => $request->reason,
+        ]);
+
+        Log::warning('LGPD delete request', [
+            'user_id'    => $user->id,
+            'tenant_id'  => $user->tenant_id,
+            'request_id' => $req->id,
+            'ip'         => $request->ip(),
+        ]);
+
+        // Notifica o super admin via log estruturado (DPO deve monitorar)
+        Log::channel('stack')->critical('LGPD_DELETE_REQUEST', [
+            'protocolo'  => $req->id,
+            'user_id'    => $user->id,
+            'user_email' => $user->email,
+            'tenant_id'  => $user->tenant_id,
+            'prazo_lgpd' => now()->addDays(15)->toDateString(),
+        ]);
+
+        return back()->with('lgpd_success', 'Solicitação de exclusão registrada. Protocolo: #' . $req->id . '. Nossa equipe processará em até 15 dias úteis conforme a LGPD.');
     }
 }
