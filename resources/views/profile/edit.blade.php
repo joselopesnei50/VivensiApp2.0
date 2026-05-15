@@ -118,5 +118,121 @@
     </div>
 
 </div>
+
+{{-- ── LGPD: Direitos do Titular ──────────────────────────────────────── --}}
+<div class="row g-5 mt-2">
+    <div class="col-12">
+        <div class="vivensi-card" style="padding: 40px; border-radius: 28px; background: white; border: 1px solid #fef3c7; box-shadow: 0 15px 45px rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 8px;">
+                <div style="width: 48px; height: 48px; background: #fffbeb; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 1.2rem; border: 1px solid #fde68a;">
+                    <i class="fas fa-scale-balanced"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 1.2rem; letter-spacing: -0.5px;">Privacidade & Direitos LGPD</h3>
+                    <p style="margin: 2px 0 0 0; color: #64748b; font-size: 0.82rem;">Lei Geral de Proteção de Dados — Art. 18, Lei 13.709/2018</p>
+                </div>
+            </div>
+
+            @if(session('lgpd_success'))
+                <div style="background: #ecfdf5; color: #065f46; padding: 16px 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #a7f3d0; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-check-circle"></i> {{ session('lgpd_success') }}
+                </div>
+            @endif
+            @if(session('lgpd_info'))
+                <div style="background: #eff6ff; color: #1d4ed8; padding: 16px 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #bfdbfe; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-info-circle"></i> {{ session('lgpd_info') }}
+                </div>
+            @endif
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px;">
+
+                {{-- Exportar dados --}}
+                <div style="background: #f8fafc; border-radius: 18px; padding: 28px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                        <div style="width: 40px; height: 40px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1rem;">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <strong style="color: #1e293b; font-size: 0.95rem;">Exportar meus dados</strong>
+                    </div>
+                    <p style="color: #64748b; font-size: 0.82rem; line-height: 1.6; margin: 0 0 20px 0;">
+                        Baixe uma cópia completa de todos os seus dados pessoais armazenados na plataforma (portabilidade — Art. 18, V).
+                    </p>
+                    <a href="{{ route('profile.export') }}"
+                       style="display: inline-flex; align-items: center; gap: 8px; background: #3b82f6; color: white; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: background 0.2s;"
+                       onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                        <i class="fas fa-file-arrow-down"></i> Baixar JSON com meus dados
+                    </a>
+                </div>
+
+                {{-- Solicitar exclusão --}}
+                <div style="background: #fff5f5; border-radius: 18px; padding: 28px; border: 1px solid #fee2e2;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                        <div style="width: 40px; height: 40px; background: #fef2f2; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1rem;">
+                            <i class="fas fa-user-slash"></i>
+                        </div>
+                        <strong style="color: #1e293b; font-size: 0.95rem;">Solicitar exclusão da conta</strong>
+                    </div>
+                    <p style="color: #64748b; font-size: 0.82rem; line-height: 1.6; margin: 0 0 16px 0;">
+                        Solicite o apagamento permanente dos seus dados pessoais (Art. 18, VI). Processado em até 15 dias úteis.
+                    </p>
+                    <button onclick="document.getElementById('lgpd-delete-modal').style.display='flex'"
+                            style="display: inline-flex; align-items: center; gap: 8px; background: #ef4444; color: white; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer; transition: background 0.2s;"
+                            onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <i class="fas fa-trash-alt"></i> Solicitar exclusão
+                    </button>
+                </div>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 0.75rem; margin: 20px 0 0 0; text-align: center;">
+                Dúvidas sobre privacidade? Entre em contato com nosso DPO: <strong>privacidade@vivensi.com.br</strong>
+            </p>
+        </div>
+    </div>
+</div>
+
+{{-- Modal de confirmação de exclusão --}}
+<div id="lgpd-delete-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:24px; padding:40px; max-width:480px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.25);">
+        <div style="text-align:center; margin-bottom:24px;">
+            <div style="width:64px; height:64px; background:#fef2f2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:#ef4444; font-size:1.5rem;">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
+            <h3 style="margin:0 0 8px; color:#1e293b; font-weight:900; font-size:1.3rem;">Confirmar exclusão permanente</h3>
+            <p style="color:#64748b; font-size:0.88rem; line-height:1.6; margin:0;">
+                Esta ação é <strong>irreversível</strong>. Todos os seus dados pessoais serão permanentemente removidos em até 15 dias úteis após confirmação da nossa equipe.
+            </p>
+        </div>
+
+        <form action="{{ route('profile.delete') }}" method="POST">
+            @csrf
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:#1e293b;">
+                    Digite exatamente: <code style="background:#fef2f2; color:#ef4444; padding:2px 6px; border-radius:4px;">EXCLUIR MINHA CONTA</code>
+                </label>
+                <input type="text" name="confirm_phrase" required autocomplete="off"
+                       placeholder="EXCLUIR MINHA CONTA"
+                       style="width:100%; padding:14px 18px; border:2px solid #fee2e2; border-radius:12px; font-size:0.9rem; font-weight:700; color:#1e293b; box-sizing:border-box;"
+                       onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#fee2e2'">
+                @error('confirm_phrase')<span style="color:#ef4444;font-size:0.75rem;font-weight:700;display:block;margin-top:5px;">{{ $message }}</span>@enderror
+            </div>
+            <div style="margin-bottom:24px;">
+                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:#1e293b;">Motivo (opcional)</label>
+                <textarea name="reason" rows="2" placeholder="Ex: Não utilizo mais a plataforma."
+                          style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.85rem; resize:vertical; box-sizing:border-box;"></textarea>
+            </div>
+            <div style="display:flex; gap:12px;">
+                <button type="button" onclick="document.getElementById('lgpd-delete-modal').style.display='none'"
+                        style="flex:1; padding:14px; border-radius:12px; border:2px solid #e2e8f0; background:white; font-weight:700; font-size:0.9rem; cursor:pointer; color:#64748b;">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        style="flex:1; padding:14px; border-radius:12px; border:none; background:#ef4444; color:white; font-weight:800; font-size:0.9rem; cursor:pointer;">
+                    Confirmar solicitação
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
