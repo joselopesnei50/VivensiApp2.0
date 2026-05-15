@@ -148,27 +148,39 @@ class BotController extends Controller
 
         $instanceName = $request->input('instance_name');
         $botWebhook   = rtrim(config('app.url'), '/') . '/api/whatsapp/bot';
+        $baseUrl      = rtrim(config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL')), '/');
+        $globalApiKey = config('whatsapp.evolution_global_key');
 
         try {
-            // Chamar diretamente a Evolution API com o webhook do bot
-            $baseUrl      = rtrim(config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL')), '/');
-            $globalApiKey = config('whatsapp.evolution_global_key');
+            // 1. Verifica se a instância já existe na Evolution API
+            $stateResponse = \Illuminate\Support\Facades\Http::timeout(10)
+                ->withHeaders(['apikey' => $globalApiKey])
+                ->get("{$baseUrl}/instance/connectionState/{$instanceName}");
 
+            if ($stateResponse->successful()) {
+                // Instância já existe — apenas registra o nome e retorna sucesso
+                SystemSetting::setValue('bot_instance_name', $instanceName, 'bot');
+
+                Log::info('Bot Admin: instância já existia, vinculada ao bot', ['instance' => $instanceName]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Instância '{$instanceName}' já existe na Evolution API e foi vinculada ao bot com sucesso.",
+                    'data'    => $stateResponse->json(),
+                ]);
+            }
+
+            // 2. Instância não existe — criar com payload mínimo (sem qrcode, sem settings extras)
+            // Evolution API v2.3.6: campos extras causam TypeError durante criação.
             $payload = [
                 'instanceName' => $instanceName,
-                'qrcode'       => true,
                 'integration'  => 'WHATSAPP-BAILEYS',
-                'rejectCall'   => false,
-                'groupsIgnore' => true,
-                'alwaysOnline' => true,
-                'readMessages' => true,
-                'readStatus'   => true,
                 'webhook'      => [
                     'enabled'  => true,
                     'url'      => $botWebhook,
                     'byEvents' => false,
                     'base64'   => false,
-                    'events'   => ['messages.upsert', 'connection.update', 'qrcode.updated'],
+                    'events'   => ['MESSAGES_UPSERT', 'CONNECTION_UPDATE', 'QRCODE_UPDATED'],
                 ],
             ];
 
@@ -177,12 +189,13 @@ class BotController extends Controller
                 ->post("{$baseUrl}/instance/create", $payload);
 
             if ($response->successful()) {
-                // Salvar o nome da instância no SystemSetting
                 SystemSetting::setValue('bot_instance_name', $instanceName, 'bot');
+
+                Log::info('Bot Admin: instância criada', ['instance' => $instanceName, 'webhook' => $botWebhook]);
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Instância '{$instanceName}' criada! Webhook configurado para: {$botWebhook}",
+                    'message' => "Instância '{$instanceName}' criada com sucesso! Webhook: {$botWebhook}",
                     'data'    => $response->json(),
                 ]);
             }
