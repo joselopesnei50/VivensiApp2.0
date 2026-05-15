@@ -521,6 +521,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit']);
     Route::post('/profile/update', [App\Http\Controllers\ProfileController::class, 'update']);
     Route::post('/profile/password', [App\Http\Controllers\ProfileController::class, 'updatePassword']);
+    // LGPD – Direitos do Titular (Arts. 18–20, Lei 13.709/2018)
+    Route::get('/profile/export', [App\Http\Controllers\ProfileController::class, 'exportData'])->name('profile.export')->middleware('throttle:3,60');
+    Route::post('/profile/delete', [App\Http\Controllers\ProfileController::class, 'requestDelete'])->name('profile.delete')->middleware('throttle:2,60');
 
     // Support Routes (User Side)
     Route::prefix('support')->group(function () {
@@ -616,6 +619,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // Chat API (Interno)
         Route::get('/api/chat/messages/{receiverId}', [App\Http\Controllers\InternalChatController::class, 'getMessages']);
         Route::post('/api/chat/send', [App\Http\Controllers\InternalChatController::class, 'sendMessage']);
+
+        // LGPD – Painel DPO (Arts. 18–20, 48 — Lei 13.709/2018)
+        Route::get('/lgpd', [App\Http\Controllers\Admin\LgpdController::class, 'index'])->name('admin.lgpd.index');
+        Route::post('/lgpd/requests/{lgpdRequest}/process', [App\Http\Controllers\Admin\LgpdController::class, 'processRequest'])->name('admin.lgpd.process');
+        Route::post('/lgpd/breaches', [App\Http\Controllers\Admin\LgpdController::class, 'storeBreach'])->name('admin.lgpd.breach.store');
+        Route::patch('/lgpd/breaches/{breach}/status', [App\Http\Controllers\Admin\LgpdController::class, 'updateBreachStatus'])->name('admin.lgpd.breach.status');
     });
 
     // Personal Client Modules
