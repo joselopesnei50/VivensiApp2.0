@@ -158,14 +158,30 @@ class BotController extends Controller
                 ->get("{$baseUrl}/instance/connectionState/{$instanceName}");
 
             if ($stateResponse->successful()) {
-                // Instância já existe — apenas registra o nome e retorna sucesso
+                // Instância já existe — atualiza o webhook e salva o nome
                 SystemSetting::setValue('bot_instance_name', $instanceName, 'bot');
 
-                Log::info('Bot Admin: instância já existia, vinculada ao bot', ['instance' => $instanceName]);
+                // Garante que o webhook aponta para este sistema
+                \Illuminate\Support\Facades\Http::timeout(10)
+                    ->withHeaders(['apikey' => $globalApiKey])
+                    ->post("{$baseUrl}/webhook/set/{$instanceName}", [
+                        'webhook' => [
+                            'enabled'  => true,
+                            'url'      => $botWebhook,
+                            'byEvents' => false,
+                            'base64'   => false,
+                            'events'   => ['MESSAGES_UPSERT', 'CONNECTION_UPDATE', 'QRCODE_UPDATED'],
+                        ],
+                    ]);
+
+                Log::info('Bot Admin: instância já existia, webhook atualizado', [
+                    'instance' => $instanceName,
+                    'webhook'  => $botWebhook,
+                ]);
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Instância '{$instanceName}' já existe na Evolution API e foi vinculada ao bot com sucesso.",
+                    'message' => "Instância '{$instanceName}' já existe e foi vinculada. Webhook atualizado para: {$botWebhook}",
                     'data'    => $stateResponse->json(),
                 ]);
             }
