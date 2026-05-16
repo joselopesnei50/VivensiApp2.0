@@ -154,10 +154,135 @@
     .user-view .user-settings { width: 28px; height: 28px; background: var(--border-color); border: 1px solid var(--border-color); border-radius: 7px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: background 0.2s; flex-shrink: 0; }
     .user-view .user-settings:hover { opacity: 0.7; }
     .user-view .user-settings i { font-size: 0.7rem; color: var(--text-secondary); }
+
+    /* ═══ Executive Sidebar — Super Admin Only (.sidebar-sa) ═══════════════
+       Completely scoped — zero impact on manager/ngo/common menus          */
+
+    /* Group headers → flat section labels (Linear/Stripe style) */
+    .sidebar-sa .menu-group-header {
+        padding: 10px 16px 3px;
+        font-size: 0.57rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        color: rgba(100,116,139,0.55);
+        border-radius: 0;
+        margin: 4px 0 2px;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.15s;
+    }
+    .sidebar-sa .menu-group-header:hover { color: rgba(148,163,184,0.75); background: transparent; }
+    .sidebar-sa .menu-group-header.group-active { color: rgba(165,180,252,0.65); }
+    .sidebar-sa .menu-group-header .group-icon { width: 13px; text-align: center; font-size: 0.62rem; }
+    .sidebar-sa .menu-group-header .group-arrow { margin-left: auto; font-size: 0.5rem; opacity: 0.4; transition: transform 0.25s; }
+    .sidebar-sa .menu-group-header.collapsed .group-arrow { transform: rotate(-90deg); }
+    .sidebar-sa .menu-group-header.group-active .group-arrow { opacity: 0.6; }
+
+    /* Menu items → executive precision */
+    .sidebar-sa .sidebar-menu ul { margin: 0; padding: 0; }
+    .sidebar-sa .sidebar-menu ul li a {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 10px 6px 14px;
+        margin: 1px 8px;
+        border-radius: 7px;
+        font-size: 0.79rem;
+        font-weight: 600;
+        color: rgba(148,163,184,0.8);
+        text-decoration: none;
+        transition: all 0.12s;
+        border-left: 2px solid transparent;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .sidebar-sa .sidebar-menu ul li a i,
+    .sidebar-sa .sidebar-menu ul li a .fab {
+        width: 15px;
+        text-align: center;
+        font-size: 0.76rem;
+        flex-shrink: 0;
+        opacity: 0.65;
+        transition: opacity 0.12s;
+    }
+    .sidebar-sa .sidebar-menu ul li a:hover {
+        background: rgba(255,255,255,0.05);
+        color: rgba(226,232,240,0.95);
+        border-left-color: rgba(99,102,241,0.35);
+    }
+    .sidebar-sa .sidebar-menu ul li a:hover i,
+    .sidebar-sa .sidebar-menu ul li a:hover .fab { opacity: 1; }
+    .sidebar-sa .sidebar-menu ul li a.active {
+        background: rgba(99,102,241,0.15);
+        color: #a5b4fc;
+        border-left-color: #6366f1;
+        font-weight: 700;
+    }
+    .sidebar-sa .sidebar-menu ul li a.active i,
+    .sidebar-sa .sidebar-menu ul li a.active .fab { opacity: 1; color: #818cf8; }
+
+    /* Dividers → ultra subtle */
+    .sidebar-sa .menu-divider { margin: 1px 0; background: rgba(255,255,255,0.04); height: 1px; }
+
+    /* Notification badges */
+    .sa-badge {
+        margin-left: auto;
+        font-size: 0.58rem;
+        font-weight: 900;
+        padding: 2px 6px;
+        border-radius: 10px;
+        background: rgba(99,102,241,0.25);
+        color: #a5b4fc;
+        line-height: 1.5;
+        flex-shrink: 0;
+    }
+    .sa-badge.sa-red   { background: rgba(239,68,68,0.2);  color: #fca5a5; }
+    .sa-badge.sa-amber { background: rgba(245,158,11,0.2); color: #fcd34d; }
+    .sa-badge.sa-green { background: rgba(34,197,94,0.15); color: #86efac; }
+
+    /* ── Live Users Card ──────────────────────────────────────────────── */
+    .sa-live-card {
+        margin: 6px 10px 10px;
+        background: rgba(255,255,255,0.035);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px;
+        padding: 11px 13px;
+        transition: border-color 0.2s;
+    }
+    .sa-live-card:hover { border-color: rgba(99,102,241,0.25); }
+    .sa-live-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .sa-pulse {
+        width: 7px; height: 7px; border-radius: 50%; background: #22c55e; flex-shrink: 0;
+        box-shadow: 0 0 0 0 rgba(34,197,94,0.5);
+        animation: sa-heartbeat 2.2s infinite;
+    }
+    @keyframes sa-heartbeat {
+        0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+        70%  { box-shadow: 0 0 0 7px rgba(34,197,94,0); }
+        100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+    }
+    .sa-live-lbl { font-size: 0.6rem; font-weight: 800; color: rgba(148,163,184,0.6); text-transform: uppercase; letter-spacing: 1.2px; flex: 1; }
+    .sa-live-cnt { font-size: 0.78rem; font-weight: 900; color: #4ade80; }
+    .sa-live-row { display: flex; align-items: center; gap: 7px; padding: 4px 0; border-top: 1px solid rgba(255,255,255,0.04); }
+    .sa-live-av {
+        width: 22px; height: 22px; border-radius: 6px;
+        background: rgba(99,102,241,0.28); color: #a5b4fc;
+        font-size: 0.6rem; font-weight: 900;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sa-live-nfo { flex: 1; min-width: 0; }
+    .sa-live-nm  { font-size: 0.7rem; font-weight: 700; color: rgba(226,232,240,0.88); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sa-live-tn  { font-size: 0.6rem; color: rgba(100,116,139,0.55); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sa-live-ago { font-size: 0.58rem; color: rgba(100,116,139,0.5); white-space: nowrap; flex-shrink: 0; }
+    .sa-live-empty { font-size: 0.68rem; color: rgba(100,116,139,0.45); text-align: center; padding: 6px 0 2px; }
 </style>
 
 @auth
-<aside class="sidebar">
+<aside class="sidebar{{ auth()->user()->role === 'super_admin' ? ' sidebar-sa' : '' }}">
     <div class="sidebar-header" style="justify-content: center; flex-direction: column; height: auto; padding: 18px 24px 14px;">
         <a href="{{ url('/dashboard') }}" class="logo" style="display: block; text-align: center;">
             <x-application-logo style="max-width: 108px; height: auto;" />
@@ -181,16 +306,34 @@
             
             {{-- Academy Access removed from global and moved to specific roles below --}}            
             @if (auth()->user()->role == 'super_admin')
-                {{-- ═══ MENU SUPER ADMIN — Agrupado ═══ --}}
+                {{-- ═══ MENU SUPER ADMIN — Executive Edition ═══ --}}
                 @php
                     $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
                     $sa_mkt_active   = request()->routeIs('admin.email_logs') || request()->routeIs('whatsapp.broadcast.index') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*');
                     $sa_infra_active = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
+                    // Badges de notificação
+                    try {
+                        $sa_badge_bookings = \App\Models\MeetingBooking::where('status','confirmed')->where('meeting_date','>=',today())->count();
+                        $sa_badge_lgpd     = \App\Models\LgpdDataRequest::where('status','pending')->count();
+                        $sa_badge_tasks    = \App\Models\Task::where('tenant_id',1)->whereNotIn('status',['done','completed'])->where(function($q){ $q->whereNotNull('due_date')->where('due_date','<',now()); })->count();
+                    } catch(\Throwable $e) {
+                        $sa_badge_bookings = 0; $sa_badge_lgpd = 0; $sa_badge_tasks = 0;
+                    }
                 @endphp
 
-                {{-- Grupo: SaaS & Métricas --}}
+                {{-- ── Live Users Card ─────────────────────────────────── --}}
+                <div class="sa-live-card">
+                    <div class="sa-live-hdr">
+                        <span class="sa-pulse"></span>
+                        <span class="sa-live-lbl">Ao Vivo</span>
+                        <span class="sa-live-cnt" id="saLiveCnt">—</span>
+                    </div>
+                    <div id="saLiveList"><div class="sa-live-empty">Carregando...</div></div>
+                </div>
+
+                {{-- ── SaaS & Métricas ──────────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_saas_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-chart-line group-icon"></i> SaaS &amp; Métricas
@@ -198,33 +341,39 @@
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_saas_active ? '300px' : '0' }};">
                         <ul>
-                            <li><a href="{{ url('/admin') }}" class="{{ request()->is('admin') ? 'active' : '' }}"><i class="fas fa-gauge-high"></i> Visão Geral (SaaS)</a></li>
+                            <li><a href="{{ url('/admin') }}" class="{{ request()->is('admin') ? 'active' : '' }}"><i class="fas fa-gauge-high"></i> Visão Geral</a></li>
                             <li><a href="{{ url('/admin/tenants') }}" class="{{ request()->is('admin/tenants*') ? 'active' : '' }}"><i class="fas fa-building"></i> Organizações</a></li>
-                            <li><a href="{{ route('admin.plans.index') }}" class="{{ request()->routeIs('admin.plans.index') ? 'active' : '' }}"><i class="fas fa-tags"></i> Gestão de Planos</a></li>
+                            <li><a href="{{ route('admin.plans.index') }}" class="{{ request()->routeIs('admin.plans.index') ? 'active' : '' }}"><i class="fas fa-tags"></i> Planos</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Equipe & Suporte --}}
+                {{-- ── Equipe & Operações ───────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_team_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-users-cog group-icon"></i> Equipe &amp; Suporte
+                        <i class="fas fa-users-cog group-icon"></i> Equipe &amp; Operações
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_team_active ? '250px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_team_active ? '280px' : '0' }};">
                         <ul>
-                            <li><a href="{{ route('admin.executive.index') }}" class="{{ request()->routeIs('admin.executive.*') ? 'active' : '' }}"><i class="fas fa-briefcase" style="color:#4f46e5;"></i> Agenda Executiva</a></li>
+                            <li><a href="{{ route('admin.executive.index') }}" class="{{ request()->routeIs('admin.executive.*') ? 'active' : '' }}">
+                                <i class="fas fa-briefcase"></i> Agenda Executiva
+                                @if($sa_badge_tasks > 0)<span class="sa-badge sa-red">{{ $sa_badge_tasks }}</span>@endif
+                            </a></li>
                             <li><a href="{{ route('admin.team.index') }}" class="{{ request()->routeIs('admin.team.index') ? 'active' : '' }}"><i class="fas fa-id-card"></i> Time Vivensi</a></li>
                             <li><a href="{{ route('admin.chat') }}" class="{{ request()->routeIs('admin.chat') ? 'active' : '' }}"><i class="fas fa-comments"></i> Chat Interno</a></li>
-                            <li><a href="{{ url('/admin/support') }}" class="{{ request()->is('admin/support*') ? 'active' : '' }}"><i class="fas fa-headset"></i> Gestão de Tickets</a></li>
-                            <li><a href="{{ route('admin.bookings.index') }}" class="{{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}"><i class="fas fa-calendar-check" style="color:#4f46e5;"></i> Agenda de Reuniões</a></li>
+                            <li><a href="{{ url('/admin/support') }}" class="{{ request()->is('admin/support*') ? 'active' : '' }}"><i class="fas fa-headset"></i> Suporte &amp; Tickets</a></li>
+                            <li><a href="{{ route('admin.bookings.index') }}" class="{{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
+                                <i class="fas fa-calendar-check"></i> Agenda de Reuniões
+                                @if($sa_badge_bookings > 0)<span class="sa-badge sa-green">{{ $sa_badge_bookings }}</span>@endif
+                            </a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Conteúdo & CMS --}}
+                {{-- ── Conteúdo & CMS ───────────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_cms_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-layer-group group-icon"></i> Conteúdo &amp; CMS
@@ -233,26 +382,26 @@
                     <div class="menu-group-items" style="max-height: {{ $sa_cms_active ? '450px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.blog.index') }}" class="{{ request()->routeIs('admin.blog.index') ? 'active' : '' }}"><i class="fas fa-blog"></i> Blog CMS</a></li>
-                            <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
-                            <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
+                            <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot"></i> Inteligência Territorial</a></li>
+                            <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Social AI Hub</a></li>
                             <li><a href="{{ route('admin.testimonials.index') }}" class="{{ request()->routeIs('admin.testimonials.index') ? 'active' : '' }}"><i class="fas fa-quote-left"></i> Depoimentos</a></li>
                             <li><a href="{{ route('admin.pages.index') }}" class="{{ request()->routeIs('admin.pages.index') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Páginas (CMS)</a></li>
-                            <li><a href="{{ route('admin.academy.index') }}" class="{{ request()->routeIs('admin.academy.index') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Academy (Admin)</a></li>
+                            <li><a href="{{ route('admin.academy.index') }}" class="{{ request()->routeIs('admin.academy.index') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Academy</a></li>
                             <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-play-circle"></i> Ver como Aluno</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Comunicação & Marketing --}}
+                {{-- ── Comunicação & Growth ─────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-bullhorn group-icon"></i> Comunicação &amp; Marketing
+                        <i class="fas fa-rocket group-icon"></i> Comunicação &amp; Growth
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '250px' : '0' }};">
                         <ul>
-                            <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.*') ? 'active' : '' }}"><i class="fas fa-bullhorn" style="color:#6366f1;"></i> Campanhas de E-mail</a></li>
+                            <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Campanhas de E-mail</a></li>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
                         </ul>
@@ -260,19 +409,22 @@
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Infraestrutura --}}
+                {{-- ── Infraestrutura & Compliance ──────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_infra_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-server group-icon"></i> Infraestrutura
+                        <i class="fas fa-shield-halved group-icon"></i> Infra &amp; Compliance
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '350px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
-                            <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configurações Globais</a></li>
-                            <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp" style="color:#25d366;"></i> Command Bot (WA)</a></li>
-                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-headset" style="color:#6366f1;"></i> Bot de Atendimento</a></li>
-                            <li><a href="{{ route('admin.lgpd.index') }}" class="{{ request()->routeIs('admin.lgpd.*') ? 'active' : '' }}"><i class="fas fa-scale-balanced" style="color:#d97706;"></i> Painel LGPD / DPO</a></li>
+                            <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurações Globais</a></li>
+                            <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Command Bot (WA)</a></li>
+                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-headset"></i> Bot de Atendimento</a></li>
+                            <li><a href="{{ route('admin.lgpd.index') }}" class="{{ request()->routeIs('admin.lgpd.*') ? 'active' : '' }}">
+                                <i class="fas fa-scale-balanced"></i> Painel LGPD / DPO
+                                @if($sa_badge_lgpd > 0)<span class="sa-badge sa-amber">{{ $sa_badge_lgpd }}</span>@endif
+                            </a></li>
                         </ul>
                     </div>
                 </div>
@@ -1228,6 +1380,40 @@
             dropdown.style.display = 'none';
         }
     });
+
+    // ── Live Users Widget (Super Admin Only) ─────────────────────
+    @if(auth()->check() && auth()->user()->role === 'super_admin')
+    (function saLive() {
+        async function fetchLive() {
+            try {
+                const r = await fetch('/admin/live-users', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!r.ok) return;
+                const d = await r.json();
+                document.getElementById('saLiveCnt').textContent = d.count;
+                const el = document.getElementById('saLiveList');
+                if (!d.count) {
+                    el.innerHTML = '<div class="sa-live-empty">Nenhum usuário ativo agora</div>';
+                } else {
+                    el.innerHTML = d.users.slice(0, 5).map(u =>
+                        `<div class="sa-live-row">
+                            <div class="sa-live-av">${u.initial}</div>
+                            <div class="sa-live-nfo">
+                                <span class="sa-live-nm">${u.name}</span>
+                                <span class="sa-live-tn">${u.tenant}</span>
+                            </div>
+                            <span class="sa-live-ago">${u.seen}</span>
+                        </div>`
+                    ).join('') + (d.count > 5 ? `<div class="sa-live-empty">+${d.count-5} outros</div>` : '');
+                }
+            } catch(e) {
+                const el = document.getElementById('saLiveList');
+                if (el) el.innerHTML = '<div class="sa-live-empty">—</div>';
+            }
+        }
+        fetchLive();
+        setInterval(fetchLive, 30000);
+    })();
+    @endif
 
     // ── Accordion Sidebar Groups ────────────────────────────────
     function toggleGroup(header) {
