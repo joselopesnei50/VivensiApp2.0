@@ -168,7 +168,7 @@
         font-weight: 800;
         letter-spacing: 1.2px;
         text-transform: uppercase;
-        color: #94a3b8;           /* slate-400 */
+        color: #e2e8f0;           /* slate-200 — +60% brilho */
         border-radius: 0;
         margin: 0;
         cursor: pointer;
@@ -179,7 +179,7 @@
         transition: color 0.15s;
         background: transparent !important;
     }
-    .sidebar-sa .menu-group-header:hover { color: #cbd5e1; }
+    .sidebar-sa .menu-group-header:hover { color: #f8fafc; }
     .sidebar-sa .menu-group-header.group-active { color: #a5b4fc; }
     .sidebar-sa .menu-group-header .group-icon { font-size: 0.65rem; width: 14px; text-align: center; }
     .sidebar-sa .menu-group-header .group-arrow {
@@ -199,7 +199,7 @@
         border-radius: 8px !important;
         font-size: 0.82rem !important;
         font-weight: 500 !important;
-        color: #cbd5e1 !important;       /* slate-300 — legível */
+        color: #f1f5f9 !important;       /* slate-100 — +60% brilho */
         text-decoration: none !important;
         transition: background 0.12s, color 0.12s, border-color 0.12s !important;
         border-left: 2px solid transparent !important;
@@ -216,17 +216,17 @@
         text-align: center !important;
         font-size: 0.78rem !important;
         flex-shrink: 0 !important;
-        color: #94a3b8 !important;       /* slate-400 */
+        color: #cbd5e1 !important;       /* slate-300 — +60% brilho */
         transition: color 0.12s !important;
     }
     .sidebar-sa .sidebar-menu ul li a:hover {
-        background: rgba(255,255,255,0.07) !important;
-        color: #e2e8f0 !important;
-        border-left-color: rgba(99,102,241,0.4) !important;
+        background: rgba(255,255,255,0.09) !important;
+        color: #ffffff !important;
+        border-left-color: rgba(99,102,241,0.5) !important;
     }
     .sidebar-sa .sidebar-menu ul li a:hover i,
     .sidebar-sa .sidebar-menu ul li a:hover .fab,
-    .sidebar-sa .sidebar-menu ul li a:hover .fas { color: #cbd5e1 !important; }
+    .sidebar-sa .sidebar-menu ul li a:hover .fas { color: #e2e8f0 !important; }
     .sidebar-sa .sidebar-menu ul li a.active {
         background: rgba(99,102,241,0.16) !important;
         color: #e0e7ff !important;
@@ -280,7 +280,7 @@
         0%,100% { opacity: 1; }
         50%      { opacity: 0.4; }
     }
-    .sa-live-txt { font-size: 0.72rem; font-weight: 600; color: #94a3b8; flex: 1; }
+    .sa-live-txt { font-size: 0.72rem; font-weight: 600; color: #cbd5e1; flex: 1; }
     .sa-live-num { font-size: 0.78rem; font-weight: 800; color: #4ade80; min-width: 16px; text-align: right; }
 </style>
 
