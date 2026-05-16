@@ -168,7 +168,7 @@
         font-weight: 800;
         letter-spacing: 1.2px;
         text-transform: uppercase;
-        color: #64748b;           /* slate-500 — legível sem queimar os olhos */
+        color: #94a3b8;           /* slate-400 */
         border-radius: 0;
         margin: 0;
         cursor: pointer;
@@ -179,11 +179,11 @@
         transition: color 0.15s;
         background: transparent !important;
     }
-    .sidebar-sa .menu-group-header:hover { color: #94a3b8; }
-    .sidebar-sa .menu-group-header.group-active { color: #818cf8; }
+    .sidebar-sa .menu-group-header:hover { color: #cbd5e1; }
+    .sidebar-sa .menu-group-header.group-active { color: #a5b4fc; }
     .sidebar-sa .menu-group-header .group-icon { font-size: 0.65rem; width: 14px; text-align: center; }
     .sidebar-sa .menu-group-header .group-arrow {
-        margin-left: auto; font-size: 0.55rem; color: #475569;
+        margin-left: auto; font-size: 0.55rem; color: #64748b;
         transition: transform 0.2s;
     }
     .sidebar-sa .menu-group-header.collapsed .group-arrow { transform: rotate(-90deg); }
@@ -199,7 +199,7 @@
         border-radius: 8px !important;
         font-size: 0.82rem !important;
         font-weight: 500 !important;
-        color: #94a3b8 !important;       /* slate-400 — visível no escuro */
+        color: #cbd5e1 !important;       /* slate-300 — legível */
         text-decoration: none !important;
         transition: background 0.12s, color 0.12s, border-color 0.12s !important;
         border-left: 2px solid transparent !important;
@@ -216,7 +216,7 @@
         text-align: center !important;
         font-size: 0.78rem !important;
         flex-shrink: 0 !important;
-        color: #64748b !important;       /* slate-500 */
+        color: #94a3b8 !important;       /* slate-400 */
         transition: color 0.12s !important;
     }
     .sidebar-sa .sidebar-menu ul li a:hover {
@@ -226,7 +226,7 @@
     }
     .sidebar-sa .sidebar-menu ul li a:hover i,
     .sidebar-sa .sidebar-menu ul li a:hover .fab,
-    .sidebar-sa .sidebar-menu ul li a:hover .fas { color: #94a3b8 !important; }
+    .sidebar-sa .sidebar-menu ul li a:hover .fas { color: #cbd5e1 !important; }
     .sidebar-sa .sidebar-menu ul li a.active {
         background: rgba(99,102,241,0.16) !important;
         color: #e0e7ff !important;
