@@ -46,78 +46,102 @@ class WhatsappInstanceController extends Controller
     public function store(Request $request)
     {
         $user     = auth()->user();
-        $tenantId = $user->tenant_id; // NULL only for super_admin
+        $tenantId = $user->tenant_id; // Para super_admin = 2 (tenant da plataforma)
 
-        // ── Conta instâncias ATIVAS (exclui soft-deleted) via DB facade
-        // NÃO usar withoutGlobalScopes() pois remove também o SoftDeletes scope,
-        // fazendo instâncias deletadas contarem no limite.
-        $count = \Illuminate\Support\Facades\DB::table('whatsapp_instances')
-            ->when($tenantId === null,
-                fn($q) => $q->whereNull('tenant_id'),
-                fn($q) => $q->where('tenant_id', $tenantId)
-            )
-            ->whereNull('deleted_at')
-            ->count();
+        try {
+            // ── Conta instâncias ativas (sem soft-deleted)
+            $count = \Illuminate\Support\Facades\DB::table('whatsapp_instances')
+                ->where('tenant_id', $tenantId)
+                ->whereNull('deleted_at')
+                ->count();
 
-        if ($count >= 3) {
+            if ($count >= 3) {
+                return response()->json([
+                    'error' => 'Limite de 3 instâncias atingido. Delete uma instância existente antes de criar outra.',
+                ], 422);
+            }
+
+            // Gera nome único
+            $instanceName  = 'vivensi_t' . ($tenantId ?? 'sa') . '_' . Str::random(6);
+            $instanceToken = Str::random(48);
+            $number        = $request->input('number');
+
+            \Illuminate\Support\Facades\Cache::forget('evo_qr_' . $instanceName);
+
+            // ── Verifica se a chave da Evolution API está configurada
+            $globalKey = config('whatsapp.evolution_global_key');
+            if (!$globalKey) {
+                \Illuminate\Support\Facades\Log::error('EVO store: EVOLUTION_GLOBAL_KEY não configurada no .env');
+                return response()->json([
+                    'error'   => 'Chave da Evolution API não configurada.',
+                    'details' => 'Configure EVOLUTION_GLOBAL_KEY no arquivo .env do servidor.',
+                ], 422);
+            }
+
+            // ── Chama a Evolution API
+            $evo    = new EvolutionApiService();
+            $result = $evo->createInstance($instanceName, $instanceToken, $number);
+
+            if (isset($result['error'])) {
+                \Illuminate\Support\Facades\Log::error('EVO store: falha ao criar instância', [
+                    'tenant_id' => $tenantId,
+                    'user_id'   => $user->id,
+                    'instance'  => $instanceName,
+                    'error'     => $result['error'],
+                    'details'   => $result['details'] ?? null,
+                ]);
+                return response()->json([
+                    'error'   => 'Evolution API recusou a criação: ' . $result['error'],
+                    'details' => $result['details'] ?? null,
+                ], 422);
+            }
+
+            // Valida resposta mínima da Evolution API
+            if (empty($result) || (!isset($result['instance']) && !isset($result['hash']))) {
+                \Illuminate\Support\Facades\Log::error('EVO store: resposta inesperada', [
+                    'tenant_id' => $tenantId,
+                    'instance'  => $instanceName,
+                    'result'    => $result,
+                ]);
+                return response()->json([
+                    'error'   => 'Resposta inesperada da Evolution API.',
+                    'details' => json_encode($result),
+                ], 422);
+            }
+
+            // ── Salva no banco
+            $settings = $result['settings'] ?? [];
+            if (!is_array($settings)) {
+                $settings = [];
+            }
+
+            $instance = WhatsappInstance::create([
+                'tenant_id'      => $tenantId,
+                'instance_name'  => $instanceName,
+                'instance_token' => $instanceToken,
+                'status'         => 'connecting',
+                'settings'       => $settings,
+            ]);
+
             return response()->json([
-                'error' => 'Limite de 3 instâncias por conta atingido. Delete uma instância existente antes de criar outra.',
-            ], 422);
-        }
+                'instance'    => $instance,
+                'pairingCode' => $result['qrcode']['pairingCode'] ?? ($result['pairingCode'] ?? null),
+                'qrcode'      => $result['qrcode']['base64'] ?? ($result['base64'] ?? null),
+            ]);
 
-        // Gera nome único — super_admin usa prefixo 'admin'
-        $namePrefix   = $tenantId ?? 'admin';
-        $instanceName = 'vivensi_t' . $namePrefix . '_' . Str::random(6);
-        $instanceToken = Str::random(48);
-        $number        = $request->input('number');
-
-        \Illuminate\Support\Facades\Cache::forget('evo_qr_' . $instanceName);
-
-        // ── Chama a Evolution API
-        $evo    = new EvolutionApiService();
-        $result = $evo->createInstance($instanceName, $instanceToken, $number);
-
-        if (isset($result['error'])) {
-            \Illuminate\Support\Facades\Log::error('EVO store: falha ao criar instância', [
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('EVO store: exception inesperada', [
                 'tenant_id' => $tenantId,
-                'user_id'   => $user->id,
-                'instance'  => $instanceName,
-                'error'     => $result['error'],
-                'details'   => $result['details'] ?? null,
+                'user_id'   => $user->id ?? null,
+                'error'     => $e->getMessage(),
+                'file'      => $e->getFile(),
+                'line'      => $e->getLine(),
             ]);
             return response()->json([
-                'error'   => 'Não foi possível criar a instância na Evolution API.',
-                'details' => $result['details'] ?? $result['error'],
-            ], 422);
+                'error'   => 'Erro interno ao criar instância.',
+                'details' => config('app.debug') ? $e->getMessage() : 'Verifique os logs do servidor.',
+            ], 500);
         }
-
-        // Valida que a Evolution realmente criou a instância
-        if (empty($result) || (!isset($result['instance']) && !isset($result['hash']))) {
-            \Illuminate\Support\Facades\Log::error('EVO store: resposta inesperada da Evolution API', [
-                'tenant_id' => $tenantId,
-                'instance'  => $instanceName,
-                'result'    => $result,
-            ]);
-            return response()->json([
-                'error'   => 'Resposta inesperada da Evolution API.',
-                'details' => json_encode($result),
-            ], 422);
-        }
-
-        // ── Salva no banco local
-        $instance = WhatsappInstance::create([
-            'tenant_id'      => $tenantId,
-            'instance_name'  => $instanceName,
-            'instance_token' => $instanceToken,
-            'status'         => 'connecting',
-            'settings'       => $result['settings'] ?? [],
-        ]);
-
-        return response()->json([
-            'instance'    => $instance,
-            'pairingCode' => $result['qrcode']['pairingCode'] ?? ($result['pairingCode'] ?? null),
-            'qrcode'      => $result['qrcode']['base64'] ?? ($result['base64'] ?? null),
-        ]);
     }
 
     /**
