@@ -147,9 +147,13 @@ class BotController extends Controller
         $request->validate(['instance_name' => 'required|string|max:100']);
 
         $instanceName = $request->input('instance_name');
-        $botWebhook   = rtrim(config('app.url'), '/') . '/api/whatsapp/bot';
         $baseUrl      = rtrim(config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL')), '/');
         $globalApiKey = config('whatsapp.evolution_global_key');
+
+        // Inclui o token na URL para que a Evolution API o envie como query string
+        $botSecret  = config('services.whatsapp.bot_secret');
+        $botWebhook = rtrim(config('app.url'), '/') . '/api/whatsapp/bot'
+            . ($botSecret ? '?bot_token=' . urlencode($botSecret) : '');
 
         try {
             // 1. Verifica se a instância já existe na Evolution API
