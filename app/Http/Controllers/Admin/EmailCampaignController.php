@@ -26,18 +26,28 @@ class EmailCampaignController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'         => ['required', 'string', 'max:255'],
-            'subject'      => ['required', 'string', 'max:255'],
-            'html_content' => ['required', 'string'],
-            'sender_name'  => ['nullable', 'string', 'max:100'],
-            'sender_email' => ['nullable', 'email', 'max:150'],
-            'audience_type'=> ['required', 'in:tenant_admins,all_users,leads,all'],
+            'name'          => ['required', 'string', 'max:255'],
+            'subject'       => ['required', 'string', 'max:255'],
+            'html_content'  => ['required', 'string'],
+            'sender_name'   => ['nullable', 'string', 'max:100'],
+            'sender_email'  => ['nullable', 'email', 'max:150'],
+            'audience_type' => ['required', 'in:tenant_admins,all_users,leads,all,manual,none'],
+            'manual_emails_raw' => ['nullable', 'string'],
         ]);
 
-        $campaign = EmailCampaign::create(array_merge($validated, [
-            'created_by' => auth()->id(),
-            'status'     => 'draft',
-        ]));
+        $manualEmails = $this->parseManualEmailsInput($request->input('manual_emails_raw', ''));
+
+        $campaign = EmailCampaign::create([
+            'created_by'    => auth()->id(),
+            'name'          => $validated['name'],
+            'subject'       => $validated['subject'],
+            'html_content'  => $validated['html_content'],
+            'sender_name'   => $validated['sender_name'] ?? null,
+            'sender_email'  => $validated['sender_email'] ?? null,
+            'audience_type' => $validated['audience_type'],
+            'manual_emails' => !empty($manualEmails) ? json_encode($manualEmails) : null,
+            'status'        => 'draft',
+        ]);
 
         return redirect()->route('admin.email_campaigns.index')
             ->with('success', "Campanha \"{$campaign->name}\" criada como rascunho.");
@@ -76,7 +86,7 @@ class EmailCampaignController extends Controller
 
         try {
             // 1. Coleta destinatários
-            $contacts = $this->resolveRecipients($emailCampaign->audience_type);
+            $contacts = $this->resolveRecipients($emailCampaign->audience_type, $emailCampaign->manual_emails);
 
             if (empty($contacts)) {
                 $emailCampaign->update(['status' => 'error', 'error_message' => 'Nenhum destinatário encontrado para o público selecionado.']);
@@ -170,30 +180,31 @@ class EmailCampaignController extends Controller
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
-    private function resolveRecipients(string $type): array
+    private function resolveRecipients(string $type, ?string $manualEmailsJson = null): array
     {
         $contacts = collect();
 
-        if (in_array($type, ['tenant_admins', 'all_users', 'all'])) {
-            $query = User::where('status', 'active')->whereNotNull('email');
+        // Público baseado em tipo
+        if (in_array($type, ['tenant_admins', 'all_users', 'all', 'manual'])) {
+            if ($type !== 'manual') {
+                $query = User::where('status', 'active')->whereNotNull('email');
 
-            if ($type === 'tenant_admins') {
-                // Apenas o primeiro usuário (admin) de cada tenant
-                $query->whereIn('id', function ($q) {
-                    $q->selectRaw('MIN(id)')->from('users')
-                      ->whereNotNull('tenant_id')->groupBy('tenant_id');
-                });
+                if ($type === 'tenant_admins') {
+                    $query->whereIn('id', function ($q) {
+                        $q->selectRaw('MIN(id)')->from('users')
+                          ->whereNotNull('tenant_id')->groupBy('tenant_id');
+                    });
+                }
+
+                $contacts = $contacts->merge(
+                    $query->get(['email', 'name'])->map(fn($u) => ['email' => $u->email, 'name' => $u->name])
+                );
             }
-
-            $contacts = $contacts->merge(
-                $query->get(['email', 'name'])->map(fn($u) => ['email' => $u->email, 'name' => $u->name])
-            );
         }
 
         if (in_array($type, ['leads', 'all'])) {
             $leads = DB::table('landing_page_leads')
-                ->whereNotNull('email')
-                ->where('email', '!=', '')
+                ->whereNotNull('email')->where('email', '!=', '')
                 ->get(['email', 'name']);
 
             $contacts = $contacts->merge(
@@ -201,7 +212,38 @@ class EmailCampaignController extends Controller
             );
         }
 
-        // Remove duplicatas por e-mail
-        return $contacts->unique('email')->values()->toArray();
+        // E-mails manuais (avulsos) — sempre incluídos se informados
+        if ($manualEmailsJson) {
+            $manual = json_decode($manualEmailsJson, true) ?? [];
+            $contacts = $contacts->merge(collect($manual));
+        }
+
+        return $contacts->unique('email')->filter(fn($c) => filter_var($c['email'], FILTER_VALIDATE_EMAIL))->values()->toArray();
+    }
+
+    private function parseManualEmailsInput(string $raw): array
+    {
+        $lines    = preg_split('/[\n,;]+/', $raw);
+        $contacts = [];
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (!$line) continue;
+
+            // Formato "Nome <email@dominio.com>"
+            if (preg_match('/^(.+?)\s*<([^>]+)>\s*$/', $line, $m)) {
+                $email = trim($m[2]);
+                $name  = trim($m[1]);
+            } else {
+                $email = $line;
+                $name  = '';
+            }
+
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $contacts[] = ['email' => strtolower($email), 'name' => $name ?: $email];
+            }
+        }
+
+        return $contacts;
     }
 }

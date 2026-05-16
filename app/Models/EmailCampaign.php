@@ -8,7 +8,7 @@ class EmailCampaign extends Model
 {
     protected $fillable = [
         'created_by', 'name', 'subject', 'html_content',
-        'sender_name', 'sender_email', 'audience_type',
+        'sender_name', 'sender_email', 'audience_type', 'manual_emails',
         'recipient_count', 'brevo_list_id', 'brevo_campaign_id',
         'status', 'scheduled_at', 'sent_at', 'error_message',
         'stat_delivered', 'stat_opens', 'stat_clicks',
@@ -52,7 +52,15 @@ class EmailCampaign extends Model
             'all_users'     => 'Todos os Usuários',
             'leads'         => 'Leads (Landing Pages)',
             'all'           => 'Todos (Usuários + Leads)',
+            'manual'        => 'E-mails Manuais',
+            'none'          => 'Somente E-mails Adicionais',
             default         => $this->audience_type,
         };
+    }
+
+    public function parsedManualEmails(): array
+    {
+        if (!$this->manual_emails) return [];
+        return json_decode($this->manual_emails, true) ?? [];
     }
 }
