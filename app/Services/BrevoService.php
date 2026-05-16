@@ -296,21 +296,52 @@ class BrevoService
 
     /**
      * Cria uma lista de contatos no Brevo e retorna o ID da lista.
-     * Sem folderId — pastas podem não existir na conta.
+     * folderId é obrigatório na API v3 — busca o primeiro folder disponível.
      */
     public function createContactList(string $name): ?int
     {
+        // Busca o primeiro folder disponível na conta
+        $folderId = $this->getFirstFolderId();
+
+        $payload = ['name' => $name];
+        if ($folderId) {
+            $payload['folderId'] = $folderId;
+        }
+
         $response = Http::withHeaders($this->apiHeaders())
-            ->post("{$this->baseApiUrl}/contacts/lists", ['name' => $name]);
+            ->post("{$this->baseApiUrl}/contacts/lists", $payload);
 
         if ($response->successful()) {
+            Log::info('Brevo createContactList ok', ['id' => $response->json('id'), 'folderId' => $folderId]);
             return $response->json('id');
         }
 
         Log::error('Brevo createContactList failed', [
-            'status' => $response->status(),
-            'body'   => $response->body(),
+            'status'   => $response->status(),
+            'body'     => $response->body(),
+            'folderId' => $folderId,
         ]);
+        return null;
+    }
+
+    /**
+     * Retorna o ID do primeiro folder de contatos da conta Brevo.
+     */
+    protected function getFirstFolderId(): ?int
+    {
+        try {
+            $response = Http::withHeaders($this->apiHeaders())
+                ->get("{$this->baseApiUrl}/contacts/folders", ['limit' => 5, 'offset' => 0]);
+
+            if ($response->successful()) {
+                $folders = $response->json('folders') ?? [];
+                if (!empty($folders)) {
+                    return (int) $folders[0]['id'];
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Brevo getFirstFolderId failed: ' . $e->getMessage());
+        }
         return null;
     }
 
