@@ -155,130 +155,133 @@
     .user-view .user-settings:hover { opacity: 0.7; }
     .user-view .user-settings i { font-size: 0.7rem; color: var(--text-secondary); }
 
-    /* ═══ Executive Sidebar — Super Admin Only (.sidebar-sa) ═══════════════
-       Completely scoped — zero impact on manager/ngo/common menus          */
+    /* ═══════════════════════════════════════════════════════════════════════
+       Executive Sidebar — Super Admin Only  (.sidebar-sa)
+       Scoped 100% — zero impacto em menus de clientes
+       Padrão: Linear / Vercel / Stripe — contraste WCAG AA
+    ══════════════════════════════════════════════════════════════════════ */
 
-    /* Group headers → flat section labels (Linear/Stripe style) */
+    /* ── Cabeçalhos de seção ──────────────────────────────────────────── */
     .sidebar-sa .menu-group-header {
-        padding: 10px 16px 3px;
-        font-size: 0.57rem;
-        font-weight: 900;
-        letter-spacing: 1.5px;
-        color: rgba(100,116,139,0.55);
+        padding: 14px 16px 4px;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: #64748b;           /* slate-500 — legível sem queimar os olhos */
         border-radius: 0;
-        margin: 4px 0 2px;
+        margin: 0;
         cursor: pointer;
         user-select: none;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 7px;
         transition: color 0.15s;
+        background: transparent !important;
     }
-    .sidebar-sa .menu-group-header:hover { color: rgba(148,163,184,0.75); background: transparent; }
-    .sidebar-sa .menu-group-header.group-active { color: rgba(165,180,252,0.65); }
-    .sidebar-sa .menu-group-header .group-icon { width: 13px; text-align: center; font-size: 0.62rem; }
-    .sidebar-sa .menu-group-header .group-arrow { margin-left: auto; font-size: 0.5rem; opacity: 0.4; transition: transform 0.25s; }
+    .sidebar-sa .menu-group-header:hover { color: #94a3b8; }
+    .sidebar-sa .menu-group-header.group-active { color: #818cf8; }
+    .sidebar-sa .menu-group-header .group-icon { font-size: 0.65rem; width: 14px; text-align: center; }
+    .sidebar-sa .menu-group-header .group-arrow {
+        margin-left: auto; font-size: 0.55rem; color: #475569;
+        transition: transform 0.2s;
+    }
     .sidebar-sa .menu-group-header.collapsed .group-arrow { transform: rotate(-90deg); }
-    .sidebar-sa .menu-group-header.group-active .group-arrow { opacity: 0.6; }
 
-    /* Menu items → executive precision */
-    .sidebar-sa .sidebar-menu ul { margin: 0; padding: 0; }
+    /* ── Itens do menu ────────────────────────────────────────────────── */
+    .sidebar-sa .sidebar-menu ul { margin: 0; padding: 0; list-style: none; }
     .sidebar-sa .sidebar-menu ul li a {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        padding: 6px 10px 6px 14px;
-        margin: 1px 8px;
-        border-radius: 7px;
-        font-size: 0.79rem;
-        font-weight: 600;
-        color: rgba(148,163,184,0.8);
-        text-decoration: none;
-        transition: all 0.12s;
-        border-left: 2px solid transparent;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 8px 12px 8px 16px !important;
+        margin: 1px 8px !important;
+        border-radius: 8px !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        color: #94a3b8 !important;       /* slate-400 — visível no escuro */
+        text-decoration: none !important;
+        transition: background 0.12s, color 0.12s, border-color 0.12s !important;
+        border-left: 2px solid transparent !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    /* Força ícones com cor consistente — remove inline colors */
     .sidebar-sa .sidebar-menu ul li a i,
-    .sidebar-sa .sidebar-menu ul li a .fab {
-        width: 15px;
-        text-align: center;
-        font-size: 0.76rem;
-        flex-shrink: 0;
-        opacity: 0.65;
-        transition: opacity 0.12s;
+    .sidebar-sa .sidebar-menu ul li a .fab,
+    .sidebar-sa .sidebar-menu ul li a .fas,
+    .sidebar-sa .sidebar-menu ul li a .far {
+        width: 16px !important;
+        text-align: center !important;
+        font-size: 0.78rem !important;
+        flex-shrink: 0 !important;
+        color: #64748b !important;       /* slate-500 */
+        transition: color 0.12s !important;
     }
     .sidebar-sa .sidebar-menu ul li a:hover {
-        background: rgba(255,255,255,0.05);
-        color: rgba(226,232,240,0.95);
-        border-left-color: rgba(99,102,241,0.35);
+        background: rgba(255,255,255,0.07) !important;
+        color: #e2e8f0 !important;
+        border-left-color: rgba(99,102,241,0.4) !important;
     }
     .sidebar-sa .sidebar-menu ul li a:hover i,
-    .sidebar-sa .sidebar-menu ul li a:hover .fab { opacity: 1; }
+    .sidebar-sa .sidebar-menu ul li a:hover .fab,
+    .sidebar-sa .sidebar-menu ul li a:hover .fas { color: #94a3b8 !important; }
     .sidebar-sa .sidebar-menu ul li a.active {
-        background: rgba(99,102,241,0.15);
-        color: #a5b4fc;
-        border-left-color: #6366f1;
-        font-weight: 700;
+        background: rgba(99,102,241,0.16) !important;
+        color: #e0e7ff !important;
+        border-left-color: #6366f1 !important;
+        font-weight: 600 !important;
     }
     .sidebar-sa .sidebar-menu ul li a.active i,
-    .sidebar-sa .sidebar-menu ul li a.active .fab { opacity: 1; color: #818cf8; }
+    .sidebar-sa .sidebar-menu ul li a.active .fab,
+    .sidebar-sa .sidebar-menu ul li a.active .fas { color: #818cf8 !important; }
 
-    /* Dividers → ultra subtle */
-    .sidebar-sa .menu-divider { margin: 1px 0; background: rgba(255,255,255,0.04); height: 1px; }
+    /* ── Divisores ────────────────────────────────────────────────────── */
+    .sidebar-sa .menu-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.06);
+        margin: 2px 0;
+    }
 
-    /* Notification badges */
+    /* ── Badges de notificação ────────────────────────────────────────── */
     .sa-badge {
         margin-left: auto;
-        font-size: 0.58rem;
-        font-weight: 900;
-        padding: 2px 6px;
-        border-radius: 10px;
-        background: rgba(99,102,241,0.25);
-        color: #a5b4fc;
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 20px;
         line-height: 1.5;
         flex-shrink: 0;
+        background: rgba(99,102,241,0.25);
+        color: #c7d2fe;
     }
-    .sa-badge.sa-red   { background: rgba(239,68,68,0.2);  color: #fca5a5; }
-    .sa-badge.sa-amber { background: rgba(245,158,11,0.2); color: #fcd34d; }
-    .sa-badge.sa-green { background: rgba(34,197,94,0.15); color: #86efac; }
+    .sa-badge.sa-red   { background: rgba(239,68,68,0.25);  color: #fecaca; }
+    .sa-badge.sa-amber { background: rgba(251,191,36,0.2);  color: #fde68a; }
+    .sa-badge.sa-green { background: rgba(34,197,94,0.2);   color: #bbf7d0; }
 
-    /* ── Live Users Card ──────────────────────────────────────────────── */
-    .sa-live-card {
-        margin: 6px 10px 10px;
-        background: rgba(255,255,255,0.035);
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 12px;
-        padding: 11px 13px;
-        transition: border-color 0.2s;
+    /* ── Widget Ao Vivo ───────────────────────────────────────────────── */
+    .sa-live-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 12px 4px;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
     }
-    .sa-live-card:hover { border-color: rgba(99,102,241,0.25); }
-    .sa-live-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
     .sa-pulse {
-        width: 7px; height: 7px; border-radius: 50%; background: #22c55e; flex-shrink: 0;
-        box-shadow: 0 0 0 0 rgba(34,197,94,0.5);
-        animation: sa-heartbeat 2.2s infinite;
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #22c55e; flex-shrink: 0;
+        animation: sa-pulse 2s infinite;
     }
-    @keyframes sa-heartbeat {
-        0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
-        70%  { box-shadow: 0 0 0 7px rgba(34,197,94,0); }
-        100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+    @keyframes sa-pulse {
+        0%,100% { opacity: 1; }
+        50%      { opacity: 0.4; }
     }
-    .sa-live-lbl { font-size: 0.6rem; font-weight: 800; color: rgba(148,163,184,0.6); text-transform: uppercase; letter-spacing: 1.2px; flex: 1; }
-    .sa-live-cnt { font-size: 0.78rem; font-weight: 900; color: #4ade80; }
-    .sa-live-row { display: flex; align-items: center; gap: 7px; padding: 4px 0; border-top: 1px solid rgba(255,255,255,0.04); }
-    .sa-live-av {
-        width: 22px; height: 22px; border-radius: 6px;
-        background: rgba(99,102,241,0.28); color: #a5b4fc;
-        font-size: 0.6rem; font-weight: 900;
-        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .sa-live-nfo { flex: 1; min-width: 0; }
-    .sa-live-nm  { font-size: 0.7rem; font-weight: 700; color: rgba(226,232,240,0.88); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sa-live-tn  { font-size: 0.6rem; color: rgba(100,116,139,0.55); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sa-live-ago { font-size: 0.58rem; color: rgba(100,116,139,0.5); white-space: nowrap; flex-shrink: 0; }
-    .sa-live-empty { font-size: 0.68rem; color: rgba(100,116,139,0.45); text-align: center; padding: 6px 0 2px; }
+    .sa-live-txt { font-size: 0.72rem; font-weight: 600; color: #94a3b8; flex: 1; }
+    .sa-live-num { font-size: 0.78rem; font-weight: 800; color: #4ade80; min-width: 16px; text-align: right; }
 </style>
 
 @auth
@@ -323,14 +326,11 @@
                     }
                 @endphp
 
-                {{-- ── Live Users Card ─────────────────────────────────── --}}
-                <div class="sa-live-card">
-                    <div class="sa-live-hdr">
-                        <span class="sa-pulse"></span>
-                        <span class="sa-live-lbl">Ao Vivo</span>
-                        <span class="sa-live-cnt" id="saLiveCnt">—</span>
-                    </div>
-                    <div id="saLiveList"><div class="sa-live-empty">Carregando...</div></div>
+                {{-- ── Widget: Usuários ao vivo ────────────────────────── --}}
+                <div class="sa-live-pill">
+                    <span class="sa-pulse"></span>
+                    <span class="sa-live-txt">Online agora</span>
+                    <span class="sa-live-num" id="saLiveNum">—</span>
                 </div>
 
                 {{-- ── SaaS & Métricas ──────────────────────────────────── --}}
@@ -1383,32 +1383,17 @@
 
     // ── Live Users Widget (Super Admin Only) ─────────────────────
     @if(auth()->check() && auth()->user()->role === 'super_admin')
-    (function saLive() {
-        async function fetchLive() {
-            try {
-                const r = await fetch('/admin/live-users', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                if (!r.ok) return;
-                const d = await r.json();
-                document.getElementById('saLiveCnt').textContent = d.count;
-                const el = document.getElementById('saLiveList');
-                if (!d.count) {
-                    el.innerHTML = '<div class="sa-live-empty">Nenhum usuário ativo agora</div>';
-                } else {
-                    el.innerHTML = d.users.slice(0, 5).map(u =>
-                        `<div class="sa-live-row">
-                            <div class="sa-live-av">${u.initial}</div>
-                            <div class="sa-live-nfo">
-                                <span class="sa-live-nm">${u.name}</span>
-                                <span class="sa-live-tn">${u.tenant}</span>
-                            </div>
-                            <span class="sa-live-ago">${u.seen}</span>
-                        </div>`
-                    ).join('') + (d.count > 5 ? `<div class="sa-live-empty">+${d.count-5} outros</div>` : '');
-                }
-            } catch(e) {
-                const el = document.getElementById('saLiveList');
-                if (el) el.innerHTML = '<div class="sa-live-empty">—</div>';
-            }
+    (function() {
+        const el = document.getElementById('saLiveNum');
+        if (!el) return;
+        function fetchLive() {
+            fetch('/admin/live-users', {
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(r => r.ok ? r.json() : Promise.reject(r.status))
+            .then(d => { el.textContent = d.count; })
+            .catch(() => { el.textContent = '0'; });
         }
         fetchLive();
         setInterval(fetchLive, 30000);
