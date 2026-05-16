@@ -540,6 +540,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::prefix('admin')->middleware('super_admin')->group(function () {
         Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.dashboard');
         Route::get('/health', [App\Http\Controllers\AdminController::class, 'serverHealth'])->name('admin.health');
+        Route::get('/live-users', [App\Http\Controllers\AdminController::class, 'liveUsers'])->name('admin.live_users');
         Route::get('/tenants', [App\Http\Controllers\AdminController::class, 'tenants'])->name('admin.tenants.index');
         Route::get('/tenants/create', [App\Http\Controllers\AdminController::class, 'createTenant'])->name('admin.tenants.create');
         Route::post('/tenants', [App\Http\Controllers\AdminController::class, 'storeTenant'])->name('admin.tenants.store');
