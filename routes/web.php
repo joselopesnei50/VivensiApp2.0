@@ -626,6 +626,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/lgpd/breaches', [App\Http\Controllers\Admin\LgpdController::class, 'storeBreach'])->name('admin.lgpd.breach.store');
         Route::patch('/lgpd/breaches/{breach}/status', [App\Http\Controllers\Admin\LgpdController::class, 'updateBreachStatus'])->name('admin.lgpd.breach.status');
 
+        // Agenda Executiva — Gestão de tarefas da equipe interna Vivensi
+        Route::get('/executive', [App\Http\Controllers\Admin\ExecutiveAgendaController::class, 'index'])->name('admin.executive.index');
+        Route::post('/executive/tasks', [App\Http\Controllers\Admin\ExecutiveAgendaController::class, 'storeTask'])->name('admin.executive.task.store');
+        Route::patch('/executive/tasks/{task}', [App\Http\Controllers\Admin\ExecutiveAgendaController::class, 'updateTask'])->name('admin.executive.task.update');
+        Route::delete('/executive/tasks/{task}', [App\Http\Controllers\Admin\ExecutiveAgendaController::class, 'destroyTask'])->name('admin.executive.task.destroy');
+
         // Agenda de Reuniões — Gestão pelo Super Admin
         Route::get('/bookings', [App\Http\Controllers\Admin\MeetingBookingController::class, 'index'])->name('admin.bookings.index');
         Route::patch('/bookings/{booking}/status', [App\Http\Controllers\Admin\MeetingBookingController::class, 'updateStatus'])->name('admin.bookings.status');

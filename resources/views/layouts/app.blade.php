@@ -184,7 +184,7 @@
                 {{-- ═══ MENU SUPER ADMIN — Agrupado ═══ --}}
                 @php
                     $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
-                    $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*');
+                    $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
                     $sa_mkt_active   = request()->routeIs('admin.email_logs') || request()->routeIs('whatsapp.broadcast.index') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*');
                     $sa_infra_active = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
@@ -214,6 +214,7 @@
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_team_active ? '250px' : '0' }};">
                         <ul>
+                            <li><a href="{{ route('admin.executive.index') }}" class="{{ request()->routeIs('admin.executive.*') ? 'active' : '' }}"><i class="fas fa-briefcase" style="color:#4f46e5;"></i> Agenda Executiva</a></li>
                             <li><a href="{{ route('admin.team.index') }}" class="{{ request()->routeIs('admin.team.index') ? 'active' : '' }}"><i class="fas fa-id-card"></i> Time Vivensi</a></li>
                             <li><a href="{{ route('admin.chat') }}" class="{{ request()->routeIs('admin.chat') ? 'active' : '' }}"><i class="fas fa-comments"></i> Chat Interno</a></li>
                             <li><a href="{{ url('/admin/support') }}" class="{{ request()->is('admin/support*') ? 'active' : '' }}"><i class="fas fa-headset"></i> Gestão de Tickets</a></li>
