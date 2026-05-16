@@ -117,6 +117,28 @@ class AdminController extends Controller
         ));
     }
 
+    public function liveUsers()
+    {
+        if (auth()->user()->role !== 'super_admin') abort(403);
+
+        $users = User::where('last_seen_at', '>=', now()->subMinutes(10))
+            ->select('id', 'name', 'role', 'tenant_id', 'last_seen_at')
+            ->with('tenant:id,name')
+            ->orderByDesc('last_seen_at')
+            ->limit(20)
+            ->get()
+            ->map(fn($u) => [
+                'id'      => $u->id,
+                'name'    => $u->name,
+                'role'    => $u->role,
+                'tenant'  => $u->tenant?->name ?? 'Plataforma',
+                'seen'    => $u->last_seen_at->diffForHumans(null, true, true),
+                'initial' => strtoupper(substr($u->name, 0, 1)),
+            ]);
+
+        return response()->json(['count' => $users->count(), 'users' => $users]);
+    }
+
     public function serverHealth()
     {
         if (auth()->user()->role !== 'super_admin') {
