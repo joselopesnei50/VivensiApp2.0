@@ -625,6 +625,15 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/lgpd/requests/{lgpdRequest}/process', [App\Http\Controllers\Admin\LgpdController::class, 'processRequest'])->name('admin.lgpd.process');
         Route::post('/lgpd/breaches', [App\Http\Controllers\Admin\LgpdController::class, 'storeBreach'])->name('admin.lgpd.breach.store');
         Route::patch('/lgpd/breaches/{breach}/status', [App\Http\Controllers\Admin\LgpdController::class, 'updateBreachStatus'])->name('admin.lgpd.breach.status');
+
+        // E-mail Marketing — Campanhas com métricas (Brevo Campaign API)
+        Route::get('/email-campaigns', [App\Http\Controllers\Admin\EmailCampaignController::class, 'index'])->name('admin.email_campaigns.index');
+        Route::get('/email-campaigns/create', [App\Http\Controllers\Admin\EmailCampaignController::class, 'create'])->name('admin.email_campaigns.create');
+        Route::post('/email-campaigns', [App\Http\Controllers\Admin\EmailCampaignController::class, 'store'])->name('admin.email_campaigns.store');
+        Route::get('/email-campaigns/{emailCampaign}', [App\Http\Controllers\Admin\EmailCampaignController::class, 'show'])->name('admin.email_campaigns.show');
+        Route::post('/email-campaigns/{emailCampaign}/send', [App\Http\Controllers\Admin\EmailCampaignController::class, 'send'])->name('admin.email_campaigns.send');
+        Route::post('/email-campaigns/{emailCampaign}/stats', [App\Http\Controllers\Admin\EmailCampaignController::class, 'refreshStats'])->name('admin.email_campaigns.stats');
+        Route::delete('/email-campaigns/{emailCampaign}', [App\Http\Controllers\Admin\EmailCampaignController::class, 'destroy'])->name('admin.email_campaigns.destroy');
     });
 
     // Personal Client Modules

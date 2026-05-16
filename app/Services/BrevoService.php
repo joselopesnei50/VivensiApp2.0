@@ -278,6 +278,155 @@ class BrevoService
         return $this->sendEmail($booking->email, $booking->name, $subject, $html);
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // CAMPAIGN API — Disparos em massa com métricas (Brevo /v3/emailCampaigns)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    protected string $baseApiUrl = 'https://api.brevo.com/v3';
+
+    protected function apiHeaders(): array
+    {
+        $this->resolveConfig();
+        return [
+            'api-key'      => $this->apiKey,
+            'Content-Type' => 'application/json',
+            'Accept'       => 'application/json',
+        ];
+    }
+
+    /**
+     * Cria uma lista de contatos no Brevo e retorna o ID da lista.
+     */
+    public function createContactList(string $name): ?int
+    {
+        $response = Http::withHeaders($this->apiHeaders())
+            ->post("{$this->baseApiUrl}/contacts/lists", ['name' => $name, 'folderId' => 1]);
+
+        if ($response->successful()) {
+            return $response->json('id');
+        }
+
+        Log::error('Brevo createContactList failed', ['body' => $response->body()]);
+        return null;
+    }
+
+    /**
+     * Importa contatos para uma lista do Brevo.
+     * $contacts = [['email' => '...', 'name' => '...'], ...]
+     */
+    public function importContacts(int $listId, array $contacts): bool
+    {
+        if (empty($contacts)) return false;
+
+        $jsonBody = implode("\n", array_map(
+            fn($c) => json_encode(['email' => $c['email'], 'attributes' => ['FIRSTNAME' => $c['name'] ?? '']]),
+            $contacts
+        ));
+
+        $response = Http::withHeaders($this->apiHeaders())
+            ->post("{$this->baseApiUrl}/contacts/import", [
+                'listIds'          => [$listId],
+                'jsonBody'         => $jsonBody,
+                'emailBlacklist'   => false,
+                'smsBlacklist'     => false,
+                'updateExistingContacts' => true,
+                'emptyContactsAttributes' => false,
+            ]);
+
+        if (!$response->successful()) {
+            Log::error('Brevo importContacts failed', ['status' => $response->status(), 'body' => $response->body()]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Cria uma campanha de e-mail no Brevo e retorna o campaignId.
+     */
+    public function createBrevoEmailCampaign(array $data): ?int
+    {
+        $this->resolveConfig();
+
+        $payload = [
+            'name'        => $data['name'],
+            'subject'     => $data['subject'],
+            'sender'      => [
+                'name'  => $data['sender_name']  ?? $this->senderName,
+                'email' => $data['sender_email'] ?? $this->senderEmail,
+            ],
+            'type'        => 'classic',
+            'htmlContent' => $data['html_content'],
+            'recipients'  => ['listIds' => [$data['brevo_list_id']]],
+            'unsubscriptionPageId' => null,
+            'header'      => null,
+            'footer'      => null,
+        ];
+
+        $response = Http::withHeaders($this->apiHeaders())
+            ->post("{$this->baseApiUrl}/emailCampaigns", $payload);
+
+        if ($response->successful()) {
+            return $response->json('id');
+        }
+
+        Log::error('Brevo createBrevoEmailCampaign failed', [
+            'status' => $response->status(),
+            'body'   => $response->body(),
+        ]);
+        return null;
+    }
+
+    /**
+     * Dispara uma campanha imediatamente.
+     */
+    public function sendBrevoEmailCampaign(int $campaignId): bool
+    {
+        $response = Http::withHeaders($this->apiHeaders())
+            ->post("{$this->baseApiUrl}/emailCampaigns/{$campaignId}/sendNow");
+
+        if (!$response->successful()) {
+            Log::error('Brevo sendBrevoEmailCampaign failed', [
+                'campaignId' => $campaignId,
+                'status'     => $response->status(),
+                'body'       => $response->body(),
+            ]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Busca estatísticas de uma campanha enviada.
+     */
+    public function getBrevoEmailCampaignStats(int $campaignId): array
+    {
+        $response = Http::withHeaders($this->apiHeaders())
+            ->get("{$this->baseApiUrl}/emailCampaigns/{$campaignId}");
+
+        if (!$response->successful()) {
+            Log::warning('Brevo getBrevoEmailCampaignStats failed', [
+                'campaignId' => $campaignId,
+                'status'     => $response->status(),
+            ]);
+            return [];
+        }
+
+        $data   = $response->json();
+        $stats  = $data['statistics']['globalStats'] ?? $data['statistics'] ?? [];
+
+        return [
+            'delivered'    => $stats['delivered']    ?? $stats['clickers'] ?? null,
+            'opens'        => $stats['uniqueViews']  ?? $stats['opens']    ?? null,
+            'clicks'       => $stats['uniqueClicks'] ?? $stats['clicks']   ?? null,
+            'bounces'      => ($stats['softBounces'] ?? 0) + ($stats['hardBounces'] ?? 0),
+            'unsubscribes' => $stats['unsubscriptions'] ?? null,
+            'spam'         => $stats['complaints']   ?? null,
+            'status'       => $data['status']        ?? null,
+        ];
+    }
+
     /**
      * Send Manual Welcome Email (Created by Super Admin)
      */
