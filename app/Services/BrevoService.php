@@ -296,46 +296,67 @@ class BrevoService
 
     /**
      * Cria uma lista de contatos no Brevo e retorna o ID da lista.
+     * Sem folderId — pastas podem não existir na conta.
      */
     public function createContactList(string $name): ?int
     {
         $response = Http::withHeaders($this->apiHeaders())
-            ->post("{$this->baseApiUrl}/contacts/lists", ['name' => $name, 'folderId' => 1]);
+            ->post("{$this->baseApiUrl}/contacts/lists", ['name' => $name]);
 
         if ($response->successful()) {
             return $response->json('id');
         }
 
-        Log::error('Brevo createContactList failed', ['body' => $response->body()]);
+        Log::error('Brevo createContactList failed', [
+            'status' => $response->status(),
+            'body'   => $response->body(),
+        ]);
         return null;
     }
 
     /**
-     * Importa contatos para uma lista do Brevo.
+     * Adiciona contatos a uma lista de forma síncrona (POST /contacts por lote).
+     * Diferente do import bulk (assíncrono), este método garante que os contatos
+     * estejam na lista antes da campanha ser criada.
      * $contacts = [['email' => '...', 'name' => '...'], ...]
      */
     public function importContacts(int $listId, array $contacts): bool
     {
         if (empty($contacts)) return false;
 
-        $jsonBody = implode("\n", array_map(
-            fn($c) => json_encode(['email' => $c['email'], 'attributes' => ['FIRSTNAME' => $c['name'] ?? '']]),
-            $contacts
-        ));
+        $chunks = array_chunk($contacts, 150);
+        $errors = 0;
 
-        $response = Http::withHeaders($this->apiHeaders())
-            ->post("{$this->baseApiUrl}/contacts/import", [
-                'listIds'          => [$listId],
-                'jsonBody'         => $jsonBody,
-                'emailBlacklist'   => false,
-                'smsBlacklist'     => false,
-                'updateExistingContacts' => true,
-                'emptyContactsAttributes' => false,
-            ]);
+        foreach ($chunks as $chunk) {
+            $payload = array_map(fn($c) => [
+                'email'      => $c['email'],
+                'listIds'    => [$listId],
+                'attributes' => ['FIRSTNAME' => $c['name'] ?? ''],
+                'updateEnabled' => true,
+            ], $chunk);
 
-        if (!$response->successful()) {
-            Log::error('Brevo importContacts failed', ['status' => $response->status(), 'body' => $response->body()]);
-            return false;
+            $response = Http::withHeaders($this->apiHeaders())
+                ->post("{$this->baseApiUrl}/contacts/batch", ['contacts' => $payload]);
+
+            if (!$response->successful()) {
+                // Tenta um a um se o batch falhar
+                foreach ($chunk as $c) {
+                    $r = Http::withHeaders($this->apiHeaders())
+                        ->post("{$this->baseApiUrl}/contacts", [
+                            'email'         => $c['email'],
+                            'listIds'       => [$listId],
+                            'attributes'    => ['FIRSTNAME' => $c['name'] ?? ''],
+                            'updateEnabled' => true,
+                        ]);
+                    if (!$r->successful() && $r->status() !== 400) {
+                        $errors++;
+                    }
+                }
+            }
+        }
+
+        if ($errors > 0) {
+            Log::warning('Brevo importContacts: alguns contatos falharam', ['errors' => $errors, 'listId' => $listId]);
         }
 
         return true;
@@ -343,25 +364,29 @@ class BrevoService
 
     /**
      * Cria uma campanha de e-mail no Brevo e retorna o campaignId.
+     * Payload mínimo — campos nulos causam erro 400 na API v3.
      */
     public function createBrevoEmailCampaign(array $data): ?int
     {
         $this->resolveConfig();
 
+        $senderName  = $data['sender_name']  ?: $this->senderName;
+        $senderEmail = $data['sender_email'] ?: $this->senderEmail;
+
         $payload = [
             'name'        => $data['name'],
             'subject'     => $data['subject'],
-            'sender'      => [
-                'name'  => $data['sender_name']  ?? $this->senderName,
-                'email' => $data['sender_email'] ?? $this->senderEmail,
-            ],
-            'type'        => 'classic',
+            'sender'      => ['name' => $senderName, 'email' => $senderEmail],
             'htmlContent' => $data['html_content'],
-            'recipients'  => ['listIds' => [$data['brevo_list_id']]],
-            'unsubscriptionPageId' => null,
-            'header'      => null,
-            'footer'      => null,
+            'recipients'  => ['listIds' => [(int) $data['brevo_list_id']]],
         ];
+
+        Log::info('Brevo createBrevoEmailCampaign payload', [
+            'name'     => $payload['name'],
+            'subject'  => $payload['subject'],
+            'sender'   => $payload['sender'],
+            'listId'   => $data['brevo_list_id'],
+        ]);
 
         $response = Http::withHeaders($this->apiHeaders())
             ->post("{$this->baseApiUrl}/emailCampaigns", $payload);
@@ -371,8 +396,9 @@ class BrevoService
         }
 
         Log::error('Brevo createBrevoEmailCampaign failed', [
-            'status' => $response->status(),
-            'body'   => $response->body(),
+            'status'  => $response->status(),
+            'body'    => $response->body(),
+            'payload' => array_merge($payload, ['htmlContent' => '[omitted]']),
         ]);
         return null;
     }
