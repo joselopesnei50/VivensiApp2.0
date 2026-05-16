@@ -291,7 +291,7 @@
 </div>
 
 {{-- ── ÚLTIMAS CAMPANHAS DE E-MAIL ── --}}
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-4" style="margin-top: 32px !important;">
     <div class="col-12">
         <div class="exec-card p-0">
             <div class="exec-card-head px-4 py-3" style="border-bottom:1px solid #f1f5f9;">
