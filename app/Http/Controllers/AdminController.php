@@ -107,13 +107,20 @@ class AdminController extends Controller
                               ->groupBy('subscription_plans.id', 'subscription_plans.name')
                               ->get();
 
+        // 6. Últimas campanhas de e-mail
+        $latestCampaigns = \App\Models\EmailCampaign::with('creator')
+            ->latest()
+            ->limit(5)
+            ->get();
+
         return view('admin.dashboard', compact(
-            'mrr', 'newClientsMonth', 'churnRate', 
-            'growthLabels', 'growthValues', 
-            'churnRiskUsers', 
+            'mrr', 'newClientsMonth', 'churnRate',
+            'growthLabels', 'growthValues',
+            'churnRiskUsers',
             'totalBlocks', 'totalDonations',
             'leadSourceData',
-            'totalTenants', 'totalUsers', 'onlineUsers', 'recentTenants', 'lpMetrics', 'planDistribution'
+            'totalTenants', 'totalUsers', 'onlineUsers', 'recentTenants', 'lpMetrics', 'planDistribution',
+            'latestCampaigns'
         ));
     }
 
