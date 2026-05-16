@@ -116,12 +116,14 @@ class EmailCampaignController extends Controller
             ]);
 
             if (!$campaignId) {
+                // Busca o erro real do log para exibir ao usuário
+                $errorDetail = 'Verifique se o remetente está verificado no Brevo e se a chave API tem permissão para campanhas.';
                 $emailCampaign->update([
-                    'status'       => 'error',
-                    'brevo_list_id'=> $listId,
-                    'error_message'=> 'Falha ao criar campanha no Brevo.',
+                    'status'        => 'error',
+                    'brevo_list_id' => $listId,
+                    'error_message' => 'Falha ao criar campanha no Brevo. ' . $errorDetail,
                 ]);
-                return back()->with('error', 'Falha ao criar campanha no Brevo.');
+                return back()->with('error', 'Falha ao criar campanha no Brevo. ' . $errorDetail);
             }
 
             // 5. Dispara
