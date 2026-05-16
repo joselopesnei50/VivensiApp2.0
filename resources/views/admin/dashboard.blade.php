@@ -290,6 +290,136 @@
     </div>
 </div>
 
+{{-- ── ÚLTIMAS CAMPANHAS DE E-MAIL ── --}}
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="exec-card p-0">
+            <div class="exec-card-head px-4 py-3" style="border-bottom:1px solid #f1f5f9;">
+                <div>
+                    <div class="exec-card-title"><i class="fas fa-bullhorn me-2" style="color:#6366f1;"></i>Últimas Campanhas de E-mail</div>
+                    <div class="exec-card-sub">Performance de entregabilidade · Brevo Campaign API</div>
+                </div>
+                <a href="{{ route('admin.email_campaigns.create') }}" class="dash-btn-primary" style="font-size:.78rem;padding:8px 16px;">
+                    <i class="fas fa-plus me-1"></i> Nova Campanha
+                </a>
+            </div>
+
+            @if($latestCampaigns->isEmpty())
+                <div style="text-align:center;padding:48px 20px;color:#94a3b8;">
+                    <i class="fas fa-envelope-open" style="font-size:2.5rem;display:block;margin-bottom:14px;opacity:0.3;"></i>
+                    <p style="font-weight:700;margin:0 0 16px;">Nenhuma campanha criada ainda.</p>
+                    <a href="{{ route('admin.email_campaigns.create') }}" class="dash-btn-primary" style="font-size:.82rem;">
+                        Criar primeira campanha
+                    </a>
+                </div>
+            @else
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Campanha</th>
+                                <th>Público</th>
+                                <th class="text-center">Destinatários</th>
+                                <th class="text-center">Entregues</th>
+                                <th class="text-center">Abertura</th>
+                                <th class="text-center">Cliques</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($latestCampaigns as $c)
+                            @php
+                                $openRate  = ($c->stat_delivered && $c->stat_opens)  ? round($c->stat_opens  / $c->stat_delivered * 100, 1) : null;
+                                $clickRate = ($c->stat_delivered && $c->stat_clicks) ? round($c->stat_clicks / $c->stat_delivered * 100, 1) : null;
+                                $stMap = [
+                                    'draft'    => ['badge-gray',   'Rascunho'],
+                                    'sending'  => ['badge-amber',  'Enviando'],
+                                    'sent'     => ['badge-green',  'Enviada'],
+                                    'error'    => ['badge-red',    'Erro'],
+                                    'scheduled'=> ['badge-indigo', 'Agendada'],
+                                ];
+                                [$stClass, $stLabel] = $stMap[$c->status] ?? ['badge-gray', $c->status];
+                            @endphp
+                            <tr>
+                                <td>
+                                    <div class="cell-bold" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $c->name }}</div>
+                                    <div class="cell-muted" style="font-size:.7rem;margin-top:2px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $c->subject }}</div>
+                                </td>
+                                <td><span class="cell-muted" style="font-size:.78rem;">{{ $c->audienceLabel() }}</span></td>
+                                <td class="text-center">
+                                    <span class="cell-bold">{{ $c->recipient_count ?: '—' }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="cell-bold">{{ $c->stat_delivered ? number_format($c->stat_delivered) : '—' }}</span>
+                                </td>
+                                <td class="text-center">
+                                    @if($openRate !== null)
+                                        <span style="font-weight:800;color:{{ $openRate >= 20 ? '#059669' : ($openRate >= 10 ? '#d97706' : '#ef4444') }};font-size:.88rem;">
+                                            {{ $openRate }}%
+                                        </span>
+                                    @else
+                                        <span class="cell-muted">—</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($clickRate !== null)
+                                        <span style="font-weight:800;color:#3b82f6;font-size:.88rem;">{{ $clickRate }}%</span>
+                                    @else
+                                        <span class="cell-muted">—</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge-pill {{ $stClass }}">{{ $stLabel }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div style="display:flex;gap:6px;justify-content:center;align-items:center;">
+                                        <a href="{{ route('admin.email_campaigns.show', $c) }}"
+                                           style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:#f1f5f9;color:#475569;text-decoration:none;font-size:.78rem;transition:background .15s;"
+                                           onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'"
+                                           title="Ver campanha">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if($c->status === 'draft')
+                                        <form action="{{ route('admin.email_campaigns.send', $c) }}" method="POST"
+                                              onsubmit="return confirm('Disparar campanha?')">
+                                            @csrf
+                                            <button type="submit"
+                                                    style="width:30px;height:30px;border-radius:8px;background:#eff6ff;color:#3b82f6;border:none;cursor:pointer;font-size:.78rem;transition:background .15s;"
+                                                    onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'"
+                                                    title="Disparar agora">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </form>
+                                        @endif
+                                        @if($c->status === 'sent' && $c->brevo_campaign_id)
+                                        <form action="{{ route('admin.email_campaigns.stats', $c) }}" method="POST">
+                                            @csrf
+                                            <button type="submit"
+                                                    style="width:30px;height:30px;border-radius:8px;background:#f0fdf4;color:#059669;border:none;cursor:pointer;font-size:.78rem;"
+                                                    title="Atualizar métricas">
+                                                <i class="fas fa-arrow-rotate-right"></i>
+                                            </button>
+                                        </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div style="padding:14px 20px;border-top:1px solid #f8fafc;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:.75rem;color:#94a3b8;">Exibindo as {{ $latestCampaigns->count() }} campanhas mais recentes</span>
+                    <a href="{{ route('admin.email_campaigns.index') }}" class="dash-btn-ghost" style="font-size:.75rem;padding:6px 14px;">
+                        Ver todas <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
 @push('styles')
 <style>
 /* ── HEADER ── */
@@ -394,6 +524,7 @@
 .badge-green  { background:#f0fdf4;color:#16a34a; }
 .badge-amber  { background:#fffbeb;color:#d97706; }
 .badge-gray   { background:#f8fafc;color:#64748b; }
+.badge-red    { background:#fef2f2;color:#dc2626; }
 .badge-danger { background:#9f1239;color:white; }
 
 /* ── TABLES ── */
