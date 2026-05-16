@@ -12,6 +12,7 @@ class MeetingBooking extends Model
         'name', 'email', 'phone', 'notes',
         'meeting_date', 'meeting_time',
         'status', 'confirmation_token',
+        'meeting_link', 'admin_notes',
     ];
 
     protected $casts = [
