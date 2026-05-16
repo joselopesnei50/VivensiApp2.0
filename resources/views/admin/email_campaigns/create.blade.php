@@ -117,6 +117,7 @@
                     'all_users'     => ['icon'=>'fa-users','label'=>'Todos os Usuários Ativos','desc'=>'Todos os usuários com status ativo no sistema'],
                     'leads'         => ['icon'=>'fa-user-plus','label'=>'Leads (Landing Pages)','desc'=>'Contatos capturados pelas páginas de captura'],
                     'all'           => ['icon'=>'fa-globe','label'=>'Todos (Usuários + Leads)','desc'=>'Combinação completa sem duplicatas'],
+                    'none'          => ['icon'=>'fa-at','label'=>'Somente E-mails Avulsos','desc'=>'Apenas os e-mails inseridos manualmente abaixo'],
                 ];
             @endphp
             @foreach($audiences as $val => $aud)
@@ -146,6 +147,24 @@
                 <li>O Brevo processa e envia</li>
                 <li>Atualize as métricas após o envio</li>
             </ol>
+        </div>
+
+        {{-- E-mails manuais --}}
+        <div class="vivensi-card" style="padding:28px; border-radius:20px; margin-bottom:20px;">
+            <h4 style="margin:0 0 6px; font-weight:900; color:#1e293b; font-size:1.05rem;">
+                <i class="fas fa-at me-2" style="color:#6366f1;"></i>E-mails avulsos
+            </h4>
+            <p style="color:#64748b; font-size:0.78rem; margin:0 0 14px; line-height:1.6;">
+                Adicione endereços extras além do público selecionado. Um por linha, vírgula ou ponto-e-vírgula.<br>
+                Aceita: <code style="font-size:0.72rem; background:#f1f5f9; padding:2px 5px; border-radius:4px;">email@exemplo.com</code>
+                ou <code style="font-size:0.72rem; background:#f1f5f9; padding:2px 5px; border-radius:4px;">Nome &lt;email@exemplo.com&gt;</code>
+            </p>
+            <textarea name="manual_emails_raw" id="manualEmails" rows="6"
+                      placeholder="joao@empresa.com&#10;Maria Silva <maria@empresa.com>&#10;ana@gmail.com"
+                      style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.82rem; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;"
+                      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'"
+                      oninput="countEmails(this)">{{ old('manual_emails_raw') }}</textarea>
+            <div id="emailCount" style="color:#94a3b8; font-size:0.72rem; margin-top:6px; text-align:right;"></div>
         </div>
 
         {{-- Ações --}}
@@ -180,6 +199,17 @@ function togglePreview() {
 function selectAudience(label, val) {
     document.querySelectorAll('[onclick^="selectAudience"]').forEach(l => l.style.borderColor = '#f1f5f9');
     label.style.borderColor = '#6366f1';
+}
+
+function countEmails(textarea) {
+    const lines = textarea.value.split(/[\n,;]+/).map(l => l.trim()).filter(l => l.length > 0);
+    const valid = lines.filter(l => {
+        const m = l.match(/<([^>]+)>/);
+        const email = m ? m[1] : l;
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    });
+    const el = document.getElementById('emailCount');
+    if (el) el.textContent = valid.length > 0 ? valid.length + ' e-mail(s) válido(s) detectado(s)' : '';
 }
 
 function insertTemplate() {
