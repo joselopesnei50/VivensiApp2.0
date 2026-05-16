@@ -38,16 +38,15 @@ class WhatsAppBotController extends Controller
             return response()->json(['status' => 'disabled'], 200);
         }
 
-        // 2. Segurança: Token Obrigatório (WHATSAPP_BOT_SECRET no .env)
+        // 2. Segurança: token via query string (?bot_token=xxx) ou header X-Bot-Secret
+        // A Evolution API não envia headers customizados, por isso o token é embutido na URL.
         $secret = config('services.whatsapp.bot_secret');
-        if (!$secret) {
-            Log::error('WhatsApp Bot: WHATSAPP_BOT_SECRET não configurado no .env');
-            return response()->json(['status' => 'error', 'message' => 'Server configuration missing'], 500);
-        }
-
-        if ($request->header('X-Bot-Secret') !== $secret) {
-            Log::warning('WhatsApp Bot: tentativa de acesso sem token válido', ['ip' => $request->ip()]);
-            return response()->json(['status' => 'unauthorized'], 401);
+        if ($secret) {
+            $provided = $request->query('bot_token') ?? $request->header('X-Bot-Secret');
+            if ($provided !== $secret) {
+                Log::warning('WhatsApp Bot: token inválido', ['ip' => $request->ip()]);
+                return response()->json(['status' => 'unauthorized'], 401);
+            }
         }
 
         $data = $request->all();
