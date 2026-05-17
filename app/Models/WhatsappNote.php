@@ -9,7 +9,7 @@ class WhatsappNote extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['chat_id', 'user_id', 'content', 'type'];
+    protected $fillable = ['tenant_id', 'chat_id', 'user_id', 'content', 'type'];
 
     public function chat()
     {

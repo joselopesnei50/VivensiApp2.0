@@ -1473,8 +1473,6 @@
             $('#msgInput').val(text);
             $('#cannedModal').modal('hide');
             $('#msgInput').focus();
-            nextSendIsTemplate = true;
-            $('#templateModeBadge').show();
         }
 
         function openTemplateModal() {
