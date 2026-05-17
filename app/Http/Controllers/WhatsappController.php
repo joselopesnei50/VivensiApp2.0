@@ -935,10 +935,11 @@ class WhatsappController extends Controller
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
         
         $note = WhatsappNote::create([
-            'chat_id' => $chat->id,
-            'user_id' => auth()->id(),
-            'content' => $request->input('content'),
-            'type' => 'manual'
+            'tenant_id' => $tenantId,
+            'chat_id'   => $chat->id,
+            'user_id'   => auth()->id(),
+            'content'   => $request->input('content'),
+            'type'      => 'manual',
         ]);
         
         // Carrega o usuario para exibir nome/avatar
