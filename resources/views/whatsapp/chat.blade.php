@@ -1065,21 +1065,23 @@
 
             // Refresh sidebar chat list every 10 seconds
             setInterval(function() {
-                $.get('{{ url("/whatsapp/chat/list") }}', function(data) {
-                    if (!data.chats) return;
-                    data.chats.forEach(function(chat) {
-                        const item = $('.contact-item[data-id="' + chat.id + '"]');
-                        if (item.length) {
-                            item.find('.contact-name').text(chat.contact_name || 'Sem Nome');
-                            item.find('.contact-time').text(chat.last_message_at_formatted || '');
-                            item.find('.last-msg').text(chat.last_message_preview || '');
-                        } else {
-                            // New chat appeared — reload page to show it
-                            if (!$('.contact-item[data-id="' + chat.id + '"]').length) {
+                $.ajax({
+                    url: '{{ url("/whatsapp/chat/list") }}',
+                    method: 'GET',
+                    timeout: 5000,
+                    success: function(data) {
+                        if (!data.chats) return;
+                        data.chats.forEach(function(chat) {
+                            const item = $('.contact-item[data-id="' + chat.id + '"]');
+                            if (item.length) {
+                                item.find('.contact-name').text(chat.contact_name || 'Sem Nome');
+                                item.find('.contact-time').text(chat.last_message_at_formatted || '');
+                                item.find('.last-msg').text(chat.last_message_preview || '');
+                            } else {
                                 location.reload();
                             }
-                        }
-                    });
+                        });
+                    }
                 });
             }, 10000);
 
@@ -1087,13 +1089,13 @@
             $('.filter-tab').click(function() {
                 $('.filter-tab').removeClass('active');
                 $(this).addClass('active');
-                
+
                 const filter = $(this).data('filter');
-                
+
                 $('.contact-item').each(function() {
                     const isUnread = $(this).data('unread') == true;
                     const isWaiting = $(this).data('waiting') == true;
-                    
+
                     if(filter === 'all') $(this).show();
                     else if(filter === 'unread') {
                         isUnread ? $(this).show() : $(this).hide();
@@ -1101,6 +1103,15 @@
                     else if(filter === 'waiting') {
                         isWaiting ? $(this).show() : $(this).hide();
                     }
+                });
+            });
+
+            // Search filter
+            $('.search-input').on('input', function() {
+                const q = $(this).val().toLowerCase().trim();
+                $('.contact-item').each(function() {
+                    const text = $(this).text().toLowerCase();
+                    $(this).toggle(q === '' || text.includes(q));
                 });
             });
         });
@@ -1165,27 +1176,30 @@
         // Silent poll — appends only NEW messages without full reload
         function pollNewMessages(id) {
             const url = '{{ url("/whatsapp/chat") }}/' + id + '/messages' + (lastMessageId ? '?after=' + lastMessageId : '');
-            $.get(url, function(data) {
-                if (!data.messages) return;
-                const msgs = data.messages;
-                // If this is an incremental response (after=), only append new ones
-                if (lastMessageId && msgs.length > 0) {
-                    let html = '';
-                    const isAtBottom = isScrolledToBottom();
-                    msgs.forEach(msg => {
-                        let isOut = msg.direction === 'outbound';
-                        html += `<div class="message-row ${isOut ? 'message-out' : 'message-in'}">
-                            <div class="bubble ${isOut ? 'out' : 'in'}">
-                                ${escapeHtml(msg.content)}
-                                <div class="meta">${new Date(msg.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${isOut ? ' <i class="fas fa-check-double text-light"></i>' : ''}</div>
-                            </div></div>`;
-                    });
-                    $('#chat-messages-area').append(html);
-                    lastMessageId = msgs[msgs.length - 1].id;
-                    if (isAtBottom) scrollToBottom();
-                } else if (!lastMessageId) {
-                    // First poll after load, just update last id
-                    if (msgs.length > 0) lastMessageId = msgs[msgs.length - 1].id;
+            $.ajax({
+                url: url,
+                method: 'GET',
+                timeout: 5000,
+                success: function(data) {
+                    if (!data.messages) return;
+                    const msgs = data.messages;
+                    if (lastMessageId && msgs.length > 0) {
+                        let html = '';
+                        const isAtBottom = isScrolledToBottom();
+                        msgs.forEach(msg => {
+                            let isOut = msg.direction === 'outbound';
+                            html += `<div class="message-row ${isOut ? 'message-out' : 'message-in'}">
+                                <div class="bubble ${isOut ? 'out' : 'in'}">
+                                    ${escapeHtml(msg.content)}
+                                    <div class="meta">${new Date(msg.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${isOut ? ' <i class="fas fa-check-double text-light"></i>' : ''}</div>
+                                </div></div>`;
+                        });
+                        $('#chat-messages-area').append(html);
+                        lastMessageId = msgs[msgs.length - 1].id;
+                        if (isAtBottom) scrollToBottom();
+                    } else if (!lastMessageId) {
+                        if (msgs.length > 0) lastMessageId = msgs[msgs.length - 1].id;
+                    }
                 }
             });
         }
@@ -1721,15 +1735,18 @@
             document.getElementById('imagePreviewEl').src = '';
         }
 
+        let _isSendingImage = false;
         function sendImage() {
-            if (!_imageBase64 || !currentChatId) return;
+            if (!_imageBase64 || !currentChatId || _isSendingImage) return;
+            _isSendingImage = true;
             const caption = document.getElementById('imageCaptionInput').value.trim();
-
-            const sendBtn = event && event.target ? event.target : null;
+            const sendBtn = document.querySelector('.send-image-btn');
+            if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...'; }
 
             $.ajax({
                 url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/send-media',
                 method: 'POST',
+                timeout: 15000,
                 headers: { 'X-CSRF-TOKEN': csrfToken },
                 data: JSON.stringify({ base64: _imageBase64, mimetype: _imageMimetype, caption: caption }),
                 contentType: 'application/json',
@@ -1750,12 +1767,15 @@
                         cancelImage();
                     } else {
                         alert('Erro ao enviar imagem: ' + (res.error || 'Falha no envio'));
+                        if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar'; }
                     }
                 },
                 error: function(xhr) {
                     const msg = xhr.responseJSON?.error || xhr.responseJSON?.message || 'Erro desconhecido (status ' + xhr.status + ')';
                     alert('Erro ao enviar imagem: ' + msg);
-                }
+                    if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar'; }
+                },
+                complete: function() { _isSendingImage = false; }
             });
         }
 

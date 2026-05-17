@@ -80,10 +80,11 @@ class WhatsappController extends Controller
         $tenantId = auth()->user()->tenant_id;
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
 
+        $reactivating = $request->boolean('is_bot_active');
         $chat->update([
-            'is_bot_active' => $request->boolean('is_bot_active'),
-            // Se reativar o bot, removemos o atendente fixo para permitir a automação
-            'assigned_to' => $request->boolean('is_bot_active') ? null : $chat->assigned_to
+            'is_bot_active' => $reactivating,
+            'assigned_to'   => $reactivating ? null : $chat->assigned_to,
+            'status'        => $reactivating ? 'open' : $chat->status,
         ]);
 
         return response()->json(['success' => true, 'chat' => $chat]);
