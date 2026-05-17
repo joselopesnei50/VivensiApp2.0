@@ -129,20 +129,18 @@ class WhatsappController extends Controller
             return response()->json(['error' => 'Invalid verify token'], 403);
         }
 
-        // 2. Verificação de Assinatura HMAC (Segurança — Meta envia X-Hub-Signature-256)
+        // 2. Verificação de Assinatura HMAC obrigatória
         $appSecret = config('whatsapp.meta_app_secret', env('META_APP_SECRET', ''));
         $signature = $request->header('X-Hub-Signature-256', '');
 
-        if (!empty($appSecret)) {
-            // Secret configurado — verifica assinatura obrigatoriamente
-            if (!MetaCloudApiService::verifyWebhookSignature($request->getContent(), $signature, $appSecret)) {
-                Log::warning('Meta Webhook: assinatura HMAC inválida', ['ip' => $request->ip()]);
-                return response()->json(['error' => 'Invalid signature'], 403);
-            }
-        } elseif (!empty($signature)) {
-            // Secret NÃO configurado mas Meta enviou assinatura — rejeita para evitar bypass
-            Log::error('Meta Webhook: assinatura recebida mas META_APP_SECRET não configurado — configure a variável de ambiente.', ['ip' => $request->ip()]);
-            return response()->json(['error' => 'Webhook secret not configured'], 500);
+        if (empty($appSecret)) {
+            Log::error('Meta Webhook: META_APP_SECRET não configurado — requisição bloqueada.', ['ip' => $request->ip()]);
+            return response()->json(['error' => 'Webhook not configured'], 503);
+        }
+
+        if (!MetaCloudApiService::verifyWebhookSignature($request->getContent(), $signature, $appSecret)) {
+            Log::warning('Meta Webhook: assinatura HMAC inválida', ['ip' => $request->ip()]);
+            return response()->json(['error' => 'Invalid signature'], 403);
         }
 
         // 3. Recebimento de Eventos (POST)

@@ -650,9 +650,20 @@ class HumanResourcesController extends Controller
     {
         $codeRaw = (string) $request->get('code', '');
         $code = strtoupper(trim($codeRaw));
-        // Remove spaces / line breaks / punctuation from copied codes.
         $code = preg_replace('/[^A-Z0-9]/', '', $code) ?? '';
 
+        // Rejeita sem tocar no banco se não vier código — impede enumeração por ID
+        if (strlen($code) < 6) {
+            return view('public.volunteer_certificate_validate', [
+                'cert'         => null,
+                'orgName'      => '',
+                'certificateNo'=> '',
+                'providedCode' => $code,
+                'isValid'      => false,
+            ]);
+        }
+
+        // Busca pelo código primeiro para não revelar existência por ID
         $certRow = VolunteerCertificate::query()
             ->join('volunteers as v', 'v.id', '=', 'volunteer_certificates.volunteer_id')
             ->where('volunteer_certificates.id', (int) $id)
@@ -661,7 +672,17 @@ class HumanResourcesController extends Controller
                 'v.tenant_id as tenant_id',
                 'v.name as volunteer_name',
             ])
-            ->firstOrFail();
+            ->first(); // first() em vez de firstOrFail() — não revela 404 vs 200
+
+        if (!$certRow) {
+            return view('public.volunteer_certificate_validate', [
+                'cert'         => null,
+                'orgName'      => '',
+                'certificateNo'=> '',
+                'providedCode' => $code,
+                'isValid'      => false,
+            ]);
+        }
 
         $tenantId = (int) $certRow->tenant_id;
         $volunteerId = (int) $certRow->volunteer_id;
