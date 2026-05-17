@@ -427,6 +427,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/chat/{id}/send-media',    [App\Http\Controllers\WhatsappController::class, 'sendMedia'])->name('whatsapp.chat.send-media');
     Route::post('/whatsapp/chat/{id}/send-audio',    [App\Http\Controllers\WhatsappController::class, 'sendAudio'])->name('whatsapp.chat.send-audio');
     Route::post('/whatsapp/chat/{id}/schedule',      [App\Http\Controllers\WhatsappController::class, 'scheduleMessage'])->name('whatsapp.chat.schedule');
+    Route::get('/api/whatsapp/templates',            [App\Http\Controllers\WhatsappController::class, 'templatesJson'])->name('whatsapp.templates.json');
     
     Route::get('/whatsapp/broadcast', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'index'])->name('whatsapp.broadcast.index');
     Route::post('/whatsapp/broadcast', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'sendBroadcast'])->name('whatsapp.broadcast.send');
