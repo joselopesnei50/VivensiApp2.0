@@ -157,6 +157,7 @@ class EvolutionApiService
         $payload = [
             'number' => (string) $to,
             'text'   => $renderedMessage,
+            'delay'  => $delaySeconds > 0 ? $delaySeconds * 1000 : 1200,
         ];
 
         try {
