@@ -668,6 +668,69 @@
 
 </div>
 
+{{-- ── CAMPANHAS AGENDADAS ── --}}
+@if($scheduled->isNotEmpty())
+<div class="history-card" style="border-left:4px solid #4f46e5;">
+    <div class="history-card-header">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-clock text-white" style="font-size:0.9rem;"></i>
+        </div>
+        <div class="flex-1">
+            <h6 class="mb-0 fw-800" style="color:#1e293b;">Disparos Agendados</h6>
+            <small class="text-muted">{{ $scheduled->count() }} campanha(s) aguardando envio</small>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0" style="font-size:0.85rem;">
+            <thead style="background:#f8fafc;">
+                <tr>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;border:none;">Data Agendada</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;border:none;">Mensagem</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;border:none;">Público</th>
+                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;border:none;">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($scheduled as $sc)
+                <tr style="border-top:1px solid #f1f5f9;">
+                    <td style="padding:12px 20px;white-space:nowrap;">
+                        <span style="font-weight:700;color:#4f46e5;">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ $sc->scheduled_at->format('d/m/Y H:i') }}
+                        </span>
+                        <div style="font-size:0.7rem;color:#94a3b8;">
+                            {{ $sc->scheduled_at->diffForHumans() }}
+                        </div>
+                    </td>
+                    <td style="padding:12px 20px;max-width:260px;">
+                        @if($sc->has_image)
+                            <span style="color:#4f46e5;"><i class="fas fa-image me-1"></i></span>
+                        @endif
+                        {{ $sc->message ? mb_substr($sc->message, 0, 60).(mb_strlen($sc->message) > 60 ? '…' : '') : '(apenas imagem)' }}
+                    </td>
+                    <td style="padding:12px 20px;">
+                        @php $audienceLabels2 = ['all'=>'Todos','selected'=>'Específicos','groups'=>'Grupos']; @endphp
+                        <span class="badge-audience badge-{{ $sc->audience_type === 'groups' ? 'groups' : ($sc->audience_type === 'selected' ? 'selected' : 'all') }}">
+                            {{ $audienceLabels2[$sc->audience_type] ?? $sc->audience_type }}
+                        </span>
+                    </td>
+                    <td style="padding:12px 20px;">
+                        <form method="POST" action="{{ route('whatsapp.broadcast.cancel', $sc->id) }}"
+                              onsubmit="return confirm('Cancelar este agendamento?');">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size:0.75rem;border-radius:8px;padding:3px 10px;">
+                                <i class="fas fa-times me-1"></i> Cancelar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
+
 {{-- ── HISTÓRICO DE CAMPANHAS ── --}}
 <div class="history-card">
     <div class="history-card-header">

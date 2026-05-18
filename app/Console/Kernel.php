@@ -41,6 +41,12 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Broadcast: despacha campanhas agendadas no horário programado
+        $schedule->command('broadcast:process-scheduled')
+                 ->everyMinute()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Relatório Semanal com Bruce AI — todo domingo às 08:00
         $schedule->job(new \App\Jobs\SendWeeklyReportJob())
                  ->weeklyOn(0, '08:00')
