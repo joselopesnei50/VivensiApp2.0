@@ -155,10 +155,8 @@ class EvolutionApiService
         $renderedMessage = $this->applySpintax($message);
 
         $payload = [
-            'number'      => (string) $to,
-            'text'        => $renderedMessage,
-            'delay'       => $delaySeconds > 0 ? $delaySeconds * 1000 : 1200,
-            'linkPreview' => false,
+            'number' => (string) $to,
+            'text'   => $renderedMessage,
         ];
 
         try {
