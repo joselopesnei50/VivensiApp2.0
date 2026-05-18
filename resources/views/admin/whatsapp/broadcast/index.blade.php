@@ -633,7 +633,9 @@
                             </div>
                             <div id="scheduleInputWrapper" class="d-none">
                                 <label class="form-label small text-muted mb-1">Selecione data e hora:</label>
-                                <input type="datetime-local" name="scheduled_at" id="scheduledAtInput" class="form-control form-control-sm" style="border-radius:8px; max-width:240px;">
+                                <input type="datetime-local" name="scheduled_at" id="scheduledAtInput"
+                                       class="form-control form-control-sm" style="border-radius:8px; max-width:240px;"
+                                       disabled>
                                 <div class="text-muted mt-1" style="font-size:0.7rem;">
                                     <i class="fas fa-info-circle me-1"></i> Deixe pelo menos 5 minutos de margem.
                                 </div>
@@ -669,8 +671,7 @@
 </div>
 
 {{-- ── CAMPANHAS AGENDADAS ── --}}
-@if($scheduled->isNotEmpty())
-<div class="history-card" style="border-left:4px solid #4f46e5;">
+<div class="history-card" style="border-left:4px solid #4f46e5; margin-bottom:20px;">
     <div class="history-card-header">
         <div style="width:36px;height:36px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;">
             <i class="fas fa-clock text-white" style="font-size:0.9rem;"></i>
@@ -680,6 +681,13 @@
             <small class="text-muted">{{ $scheduled->count() }} campanha(s) aguardando envio</small>
         </div>
     </div>
+
+    @if($scheduled->isEmpty())
+        <div style="padding:32px;text-align:center;color:#94a3b8;">
+            <i class="fas fa-clock fa-2x mb-3" style="opacity:0.25;"></i>
+            <p class="mb-0 small">Nenhum disparo agendado.<br>Use "Agendar para mais tarde" ao criar uma campanha.</p>
+        </div>
+    @else
     <div class="table-responsive">
         <table class="table mb-0" style="font-size:0.85rem;">
             <thead style="background:#f8fafc;">
@@ -691,25 +699,20 @@
                 </tr>
             </thead>
             <tbody>
+                @php $audienceLabels2 = ['all'=>'Todos','selected'=>'Específicos','groups'=>'Grupos']; @endphp
                 @foreach($scheduled as $sc)
                 <tr style="border-top:1px solid #f1f5f9;">
                     <td style="padding:12px 20px;white-space:nowrap;">
                         <span style="font-weight:700;color:#4f46e5;">
-                            <i class="fas fa-clock me-1"></i>
-                            {{ $sc->scheduled_at->format('d/m/Y H:i') }}
+                            <i class="fas fa-clock me-1"></i>{{ $sc->scheduled_at->format('d/m/Y H:i') }}
                         </span>
-                        <div style="font-size:0.7rem;color:#94a3b8;">
-                            {{ $sc->scheduled_at->diffForHumans() }}
-                        </div>
+                        <div style="font-size:0.7rem;color:#94a3b8;">{{ $sc->scheduled_at->diffForHumans() }}</div>
                     </td>
                     <td style="padding:12px 20px;max-width:260px;">
-                        @if($sc->has_image)
-                            <span style="color:#4f46e5;"><i class="fas fa-image me-1"></i></span>
-                        @endif
+                        @if($sc->has_image)<span style="color:#4f46e5;"><i class="fas fa-image me-1"></i></span>@endif
                         {{ $sc->message ? mb_substr($sc->message, 0, 60).(mb_strlen($sc->message) > 60 ? '…' : '') : '(apenas imagem)' }}
                     </td>
                     <td style="padding:12px 20px;">
-                        @php $audienceLabels2 = ['all'=>'Todos','selected'=>'Específicos','groups'=>'Grupos']; @endphp
                         <span class="badge-audience badge-{{ $sc->audience_type === 'groups' ? 'groups' : ($sc->audience_type === 'selected' ? 'selected' : 'all') }}">
                             {{ $audienceLabels2[$sc->audience_type] ?? $sc->audience_type }}
                         </span>
@@ -728,8 +731,8 @@
             </tbody>
         </table>
     </div>
+    @endif
 </div>
-@endif
 
 {{-- ── HISTÓRICO DE CAMPANHAS ── --}}
 <div class="history-card">
@@ -876,6 +879,9 @@
 
     function toggleSchedule(checked) {
         document.getElementById('scheduleInputWrapper').classList.toggle('d-none', !checked);
+        const input = document.getElementById('scheduledAtInput');
+        input.disabled = !checked;
+        if (!checked) input.value = '';
     }
 
     function loadGroups() {
