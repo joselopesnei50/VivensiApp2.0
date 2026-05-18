@@ -73,8 +73,8 @@ class WhatsappBroadcastController extends Controller
         foreach ($data as $row) {
             if (count($row) >= 2) {
                 $name  = trim($row[0]);
-                $phone = preg_replace('/\D+/', '', $row[1]);
-                if (strlen($phone) >= 10) {
+                $phone = \App\Services\EvolutionApiService::normalizeBrazilianPhone($row[1]);
+                if ($phone && strlen($phone) >= 12) {
                     WhatsappChat::firstOrCreate(
                         ['tenant_id' => $tenantId, 'wa_id' => $phone],
                         ['contact_name' => $name, 'contact_phone' => $phone,

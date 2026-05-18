@@ -74,14 +74,70 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             }
         }
 
+        // Para envios individuais (não grupo direto), valida e corrige JIDs via Evolution API
+        // Resolve o problema do "9º dígito" brasileiro: entrega no celular depende do JID exato
+        $isGroupChatMode = ($campaign->audience_type === 'groups')
+            && (($campaign->group_send_mode ?? 'group') === 'group');
+
+        $jidMap = [];
+        if (!$isGroupChatMode) {
+            $normalizedNumbers = $recipients
+                ->pluck('wa_id')
+                ->map(fn($n) => EvolutionApiService::normalizeBrazilianPhone((string) $n))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if (!empty($normalizedNumbers)) {
+                Log::info('Validando números no WhatsApp antes do disparo', [
+                    'campaign_id' => $campaign->id,
+                    'total'       => count($normalizedNumbers),
+                ]);
+                $jidMap = $evo->checkWhatsappNumbers($normalizedNumbers);
+                Log::info('Validação concluída', [
+                    'campaign_id' => $campaign->id,
+                    'validos'     => count($jidMap),
+                    'invalidos'   => count($normalizedNumbers) - count($jidMap),
+                ]);
+
+                // Cache os JIDs validados no banco para reuso futuro
+                if (!empty($jidMap)) {
+                    foreach ($jidMap as $original => $jid) {
+                        WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                            ->where('wa_id', $original)
+                            ->update([
+                                'wa_jid'                 => $jid,
+                                'whatsapp_validated_at'  => now(),
+                            ]);
+                    }
+                }
+            }
+        }
+
         foreach ($recipients as $recipient) {
-            // Refresh campaign to check for manual cancellation (optional)
             $campaign->refresh();
             if ($campaign->status !== 'processing') break;
 
             try {
-                $waId = $recipient->wa_id;
-                
+                $rawWaId = $recipient->wa_id;
+
+                if ($isGroupChatMode) {
+                    $waId = $rawWaId;
+                } else {
+                    $normalized = EvolutionApiService::normalizeBrazilianPhone((string) $rawWaId);
+                    if (!$normalized || !isset($jidMap[$normalized])) {
+                        Log::warning('Número inválido ou não existe no WhatsApp — pulando', [
+                            'campaign_id' => $campaign->id,
+                            'wa_id'       => $rawWaId,
+                        ]);
+                        $failedCount++;
+                        $campaign->update(['total_sent' => $sentCount, 'total_failed' => $failedCount]);
+                        continue;
+                    }
+                    $waId = $jidMap[$normalized];
+                }
+
                 $res = $mediaToSend
                     ? $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime)
                     : $evo->sendMessage($waId, $campaign->message, null, rand(1, 3));
