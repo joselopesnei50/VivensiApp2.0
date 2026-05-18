@@ -25,17 +25,24 @@ class ProcessScheduledBroadcasts extends Command
         });
 
         foreach ($campaigns as $campaign) {
-            // Transição atômica: só processa se ainda estiver 'scheduled'
+            // Garante transição atômica: só dispara se ainda estiver 'scheduled'
             $updated = BroadcastCampaign::withoutGlobalScopes()
                 ->where('id', $campaign->id)
                 ->where('status', 'scheduled')
                 ->update(['status' => 'processing']);
 
-            if (!$updated) continue; // já foi pego por outro processo
+            if ($updated === 0) {
+                Log::info("Broadcast #{$campaign->id} já foi disparado por outro processo. Skipping.");
+                continue;
+            }
 
             ProcessBroadcastCampaignJob::dispatch($campaign->id);
             Log::info("Broadcast agendado disparado: campanha #{$campaign->id} (tenant {$campaign->tenant_id})");
             $this->info("Campanha #{$campaign->id} despachada.");
+        }
+
+        if ($campaigns->isNotEmpty()) {
+            $this->info("{$campaigns->count()} campanha(s) verificada(s).");
         }
     }
 }
