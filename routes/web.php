@@ -410,7 +410,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/chat/{id}/messages', [App\Http\Controllers\WhatsappController::class, 'getChatMessages']);
     Route::post('/whatsapp/chat/send', [App\Http\Controllers\WhatsappController::class, 'sendMessage']);
     Route::post('/whatsapp/chat/start', [App\Http\Controllers\WhatsappController::class, 'startChat'])->name('whatsapp.chat.start');
-    Route::post('/whatsapp/chat/{id}/kanban', [App\Http\Controllers\WhatsappController::class, 'sendToKanban']);
+    Route::post('/whatsapp/chat/{id}/kanban',              [App\Http\Controllers\WhatsappController::class, 'sendToKanban']);
+    Route::post('/whatsapp/chat/{id}/kanban-sponsorship', [App\Http\Controllers\WhatsappController::class, 'sendToSponsorshipKanban']);
     Route::post('/whatsapp/chat/{id}/compliance', [App\Http\Controllers\WhatsappController::class, 'updateCompliance']);
     Route::post('/whatsapp/chat/{id}/toggle-bot', [App\Http\Controllers\WhatsappController::class, 'toggleBot'])->name('whatsapp.chat.toggle-bot');
     Route::post('/whatsapp/chat/{id}/assign', [App\Http\Controllers\WhatsappController::class, 'assignChat'])->name('whatsapp.chat.assign');

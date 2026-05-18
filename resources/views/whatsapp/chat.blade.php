@@ -618,6 +618,7 @@
 <body>
 @php
     $isManager = in_array(auth()->user()->role, ['manager', 'super_admin'], true);
+    $isNgo     = auth()->user()->role === 'ngo';
 @endphp
 
     <div class="crm-layout">
@@ -887,6 +888,54 @@
                     </div>
                 </div>
 
+                {{-- Accordion Kanban (manager = projetos | ngo = patrocínios) --}}
+                @if($isManager || $isNgo)
+                <div class="crm-section">
+                    <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-kanban" aria-expanded="false">
+                        <span>
+                            <i class="fas fa-columns me-2" style="color:#6366f1;"></i>
+                            @if($isNgo) Enviar p/ Kanban de Patrocínios @else Enviar p/ Kanban de Projeto @endif
+                        </span>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
+                    </div>
+                    <div class="crm-body collapse" id="crm-kanban">
+                        @if($isManager)
+                            <div class="mb-2">
+                                <label class="label mb-1">Selecionar Projeto</label>
+                                <select id="kanbanProjectSelect" class="form-select form-select-sm" style="border-radius:8px;font-size:0.82rem;">
+                                    <option value="">— escolha um projeto —</option>
+                                    @foreach($projects as $proj)
+                                        <option value="{{ $proj->id }}">{{ $proj->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="small text-muted mb-2" style="font-size:0.75rem;">
+                                <i class="fas fa-sticky-note me-1" style="color:#f59e0b;"></i>
+                                As notas do atendimento serão incluídas no card automaticamente.
+                            </div>
+                            <button class="btn btn-sm w-100 fw-700" onclick="sendChatToProjectKanban()"
+                                style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:8px;font-size:0.82rem;padding:7px;">
+                                <i class="fas fa-columns me-1"></i> Criar Card no Kanban
+                            </button>
+                        @elseif($isNgo)
+                            <div class="mb-2">
+                                <label class="label mb-1">Nome da Empresa / Patrocinador</label>
+                                <input type="text" id="sponsorCompanyName" class="form-control form-control-sm" placeholder="Ex: Empresa ABC Ltda" style="border-radius:8px;font-size:0.82rem;">
+                                <div class="small text-muted mt-1" style="font-size:0.75rem;">
+                                    <i class="fas fa-sticky-note me-1" style="color:#f59e0b;"></i>
+                                    Notas do chat serão incluídas no deal de patrocínio.
+                                </div>
+                            </div>
+                            <button class="btn btn-sm w-100 fw-700" onclick="sendChatToSponsorshipKanban()"
+                                style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:8px;font-size:0.82rem;padding:7px;">
+                                <i class="fas fa-handshake me-1"></i> Enviar p/ Patrocínios
+                            </button>
+                        @endif
+                        <div id="kanbanResult" class="mt-2 d-none small fw-600 text-success text-center"></div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Accordion 4 -->
                 <div class="crm-section">
                     <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-history" aria-expanded="false">
@@ -1146,6 +1195,70 @@
                 // AI Training
                 if(data.ai_training !== undefined) {
                     $('#aiTrainingArea').val(data.ai_training);
+                }
+            });
+        }
+
+        function sendChatToProjectKanban() {
+            const projectId = document.getElementById('kanbanProjectSelect')?.value;
+            if (!projectId) { alert('Selecione um projeto antes de continuar.'); return; }
+            if (!currentChatId) { alert('Selecione uma conversa primeiro.'); return; }
+
+            const btn = document.querySelector('#crm-kanban .btn');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enviando...';
+
+            $.ajax({
+                url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/kanban',
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken },
+                contentType: 'application/json',
+                data: JSON.stringify({ project_id: projectId }),
+                success: function(res) {
+                    const el = document.getElementById('kanbanResult');
+                    el.innerHTML = '<i class="fas fa-check-circle me-1"></i> Card criado no Kanban!';
+                    el.classList.remove('d-none');
+                    setTimeout(() => el.classList.add('d-none'), 4000);
+                },
+                error: function(xhr) {
+                    alert('Erro: ' + (xhr.responseJSON?.message || 'Falha ao criar card.'));
+                },
+                complete: function() {
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                }
+            });
+        }
+
+        function sendChatToSponsorshipKanban() {
+            if (!currentChatId) { alert('Selecione uma conversa primeiro.'); return; }
+            const companyName = document.getElementById('sponsorCompanyName')?.value.trim() || '';
+
+            const btn = document.querySelector('#crm-kanban .btn');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enviando...';
+
+            $.ajax({
+                url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/kanban-sponsorship',
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken },
+                contentType: 'application/json',
+                data: JSON.stringify({ company_name: companyName }),
+                success: function(res) {
+                    const el = document.getElementById('kanbanResult');
+                    el.innerHTML = '<i class="fas fa-check-circle me-1"></i> Deal criado em Patrocínios!';
+                    el.classList.remove('d-none', 'text-success');
+                    el.classList.add('text-success');
+                    setTimeout(() => el.classList.add('d-none'), 4000);
+                },
+                error: function(xhr) {
+                    alert('Erro: ' + (xhr.responseJSON?.message || 'Falha ao criar deal.'));
+                },
+                complete: function() {
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
                 }
             });
         }
