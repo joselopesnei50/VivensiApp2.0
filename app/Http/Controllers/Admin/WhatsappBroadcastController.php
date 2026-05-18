@@ -189,6 +189,9 @@ class WhatsappBroadcastController extends Controller
             'cadence'         => 'nullable|integer|in:1,3,5,10,30',
             'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
             'scheduled_at'    => 'nullable|date|after:now',
+            'group_send_mode' => 'nullable|in:group,members',
+            'group_ids'       => 'nullable|array',
+            'group_ids.*'     => 'string',
         ]);
 
         if (!$request->filled('message') && !$request->hasFile('broadcast_image')) {
@@ -199,7 +202,15 @@ class WhatsappBroadcastController extends Controller
         $message        = $request->input('message', '');
         $audience       = $request->input('audience');
         $cadenceSeconds = (int) $request->input('cadence', 3);
-        $scheduledAt    = $request->input('scheduled_at');
+
+        // Converte scheduled_at para UTC garantindo timezone correto da aplicação
+        $scheduledAt = null;
+        if ($request->filled('scheduled_at')) {
+            $scheduledAt = \Carbon\Carbon::parse(
+                $request->input('scheduled_at'),
+                config('app.timezone')
+            )->utc();
+        }
 
         $instance = WhatsappInstance::where('tenant_id', $tenantId)
             ->where('status', 'open')->first();
@@ -231,6 +242,17 @@ class WhatsappBroadcastController extends Controller
             'group_ids'       => $audience === 'groups' ? $request->input('group_ids', []) : null,
             'group_send_mode' => $groupSendMode,
             'phones'          => $audience === 'selected' ? $request->input('phones') : null,
+        ]);
+
+        \Illuminate\Support\Facades\Log::info('Broadcast campaign created', [
+            'campaign_id'     => $campaign->id,
+            'tenant_id'       => $tenantId,
+            'audience_type'   => $audience,
+            'group_send_mode' => $groupSendMode,
+            'group_count'     => is_array($request->input('group_ids')) ? count($request->input('group_ids')) : 0,
+            'has_image'       => $hasImage,
+            'scheduled_at'    => $scheduledAt?->toDateTimeString(),
+            'status'          => $campaign->status,
         ]);
 
         if (!$scheduledAt) {

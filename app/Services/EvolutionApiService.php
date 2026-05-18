@@ -326,40 +326,55 @@ class EvolutionApiService
 
     /**
      * Retorna os JIDs dos participantes de um grupo específico.
-     * Usado no broadcast modo "members" (mensagem individual para cada membro).
+     * Usa o endpoint dedicado findGroupInfos para busca direta por groupJid.
      */
     public function getGroupMembers(string $groupId): array
     {
-        if (!$this->instanceName || !$this->apiKey) return [];
+        if (!$this->instanceName || !$this->apiKey) {
+            Log::warning('getGroupMembers: instance ou apiKey ausente', ['groupId' => $groupId]);
+            return [];
+        }
         try {
-            $response = $this->http()->timeout(45)->withHeaders([
+            $response = $this->http()->timeout(30)->withHeaders([
                 'apikey' => $this->globalApiKey,
-            ])->get("{$this->baseUrl}/group/fetchAllGroups/{$this->instanceName}", [
-                'getParticipants' => 'true',
+            ])->get("{$this->baseUrl}/group/findGroupInfos/{$this->instanceName}", [
+                'groupJid' => $groupId,
             ]);
 
-            if ($response->failed()) return [];
+            if ($response->failed()) {
+                Log::warning('getGroupMembers HTTP failed', [
+                    'groupId' => $groupId,
+                    'status'  => $response->status(),
+                    'body'    => $response->body(),
+                ]);
+                return [];
+            }
+
             $data = $response->json();
             if (!is_array($data)) return [];
 
-            // Normaliza resposta (array_is_list() requer PHP 8.1 — usa alternativa compatível com 8.0)
-            $isList = array_keys($data) === range(0, count($data) - 1);
-            $groups = $data['data'] ?? $data['groups'] ?? ($isList ? $data : []);
+            // Normaliza estruturas conhecidas da Evolution API
+            $participants = $data['participants']
+                ?? ($data['data']['participants'] ?? null)
+                ?? ($data['data'][0]['participants'] ?? []);
 
-            foreach ($groups as $group) {
-                $id = $group['id'] ?? '';
-                if ($id !== $groupId) continue;
+            $jids = collect($participants)
+                ->map(fn($p) => is_array($p) ? ($p['id'] ?? $p['jid'] ?? null) : $p)
+                ->filter(fn($jid) => $jid && str_ends_with($jid, '@s.whatsapp.net'))
+                ->values()
+                ->all();
 
-                $participants = $group['participants'] ?? [];
-                return collect($participants)
-                    ->map(fn($p) => is_array($p) ? ($p['id'] ?? null) : $p)
-                    ->filter(fn($jid) => $jid && str_ends_with($jid, '@s.whatsapp.net'))
-                    ->values()
-                    ->all();
-            }
-            return [];
+            Log::info('getGroupMembers OK', [
+                'groupId'       => $groupId,
+                'members_count' => count($jids),
+            ]);
+
+            return $jids;
         } catch (\Exception $e) {
-            Log::error('EvolutionAPI getGroupMembers error: ' . $e->getMessage());
+            Log::error('EvolutionAPI getGroupMembers error', [
+                'groupId' => $groupId,
+                'error'   => $e->getMessage(),
+            ]);
             return [];
         }
     }
