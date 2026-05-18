@@ -435,6 +435,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/broadcast/import', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'importContacts'])->name('whatsapp.broadcast.import');
     Route::get('/whatsapp/broadcast/groups',    [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'getGroups'])->name('whatsapp.broadcast.groups');
     Route::get('/whatsapp/broadcast/campaigns', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'campaigns'])->name('whatsapp.broadcast.campaigns');
+    Route::delete('/whatsapp/broadcast/{id}/cancel', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'cancelScheduled'])->name('whatsapp.broadcast.cancel');
 
     // Instâncias WhatsApp (gerenciamento via web session + CSRF, sem Sanctum tokens)
     Route::get('/whatsapp/instances', [App\Http\Controllers\WhatsappController::class, 'instances'])->name('whatsapp.instances');
