@@ -335,14 +335,17 @@ class EvolutionApiService
 
         if (strlen($digits) < 10) return null;
 
-        // Adiciona DDI 55 se ausente (10 ou 11 dígitos = DDD + número)
-        if (strlen($digits) === 10 || strlen($digits) === 11) {
-            $digits = '55' . $digits;
+        // Já tem DDI 55 e tamanho correto (12 = sem 9 / 13 = com 9)
+        if (str_starts_with($digits, '55') && in_array(strlen($digits), [12, 13])) {
+            return $digits;
         }
 
-        // Após normalização: 12 = 55+DDD+8 dígitos | 13 = 55+DDD+9 dígitos
-        if (strlen($digits) < 12 || strlen($digits) > 13) return null;
+        // Sem DDI: 10 dígitos (DDD+8) ou 11 dígitos (DDD+9+8)
+        if (in_array(strlen($digits), [10, 11])) {
+            return '55' . $digits;
+        }
 
+        // Formatos esquisitos — retorna como está para a Evolution decidir
         return $digits;
     }
 
