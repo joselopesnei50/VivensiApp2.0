@@ -203,12 +203,13 @@ class WhatsappBroadcastController extends Controller
         $audience       = $request->input('audience');
         $cadenceSeconds = (int) $request->input('cadence', 3);
 
-        // Converte scheduled_at para UTC garantindo timezone correto da aplicação
+        // datetime-local envia horário do browser sem timezone.
+        // Interpreta como America/Sao_Paulo (Brasil UTC-3) e converte para UTC para armazenar.
         $scheduledAt = null;
         if ($request->filled('scheduled_at')) {
             $scheduledAt = \Carbon\Carbon::parse(
                 $request->input('scheduled_at'),
-                config('app.timezone')
+                'America/Sao_Paulo'
             )->utc();
         }
 
