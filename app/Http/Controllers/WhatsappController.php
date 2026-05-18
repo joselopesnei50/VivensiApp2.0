@@ -585,18 +585,53 @@ class WhatsappController extends Controller
             ]
         );
 
-        // Add as Task in Kanban
+        // Consolida notas do chat para incluir no card
+        $notes = \App\Models\WhatsappNote::where('chat_id', $chat->id)
+            ->orderBy('created_at', 'asc')->get();
+        $notesBlock = $notes->isNotEmpty()
+            ? "\n\n--- Notas do Atendimento ---\n" . $notes->map(fn($n) => "• {$n->content}")->join("\n")
+            : '';
+
         $task = \App\Models\Task::create([
-            'tenant_id' => $tenantId,
+            'tenant_id'  => $tenantId,
             'project_id' => $project->id,
             'created_by' => auth()->id(),
-            'title' => "Lead WhatsApp: {$chat->contact_name}",
-            'description' => "Novo contato vindo do atendimento via WhatsApp.\nTelefone: {$chat->contact_phone}\nPor favor, realizar a triagem/atendimento deste lead no projeto.",
-            'status' => 'todo',
-            'priority' => 'medium',
+            'title'      => "Lead WhatsApp: {$chat->contact_name}",
+            'description'=> "Contato via WhatsApp.\nTelefone: {$chat->contact_phone}{$notesBlock}",
+            'status'     => 'todo',
+            'priority'   => 'medium',
         ]);
 
         return response()->json(['success' => true, 'task' => $task, 'person' => $person]);
+    }
+
+    /**
+     * Envia contato do chat para o Kanban de Patrocínios (role ngo).
+     */
+    public function sendToSponsorshipKanban(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $tenantId = auth()->user()->tenant_id;
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $notes = \App\Models\WhatsappNote::where('chat_id', $chat->id)
+            ->orderBy('created_at', 'asc')->get();
+        $notesText = $notes->isNotEmpty()
+            ? $notes->map(fn($n) => "• {$n->content}")->join("\n")
+            : '';
+
+        $deal = \App\Models\SponsorshipDeal::create([
+            'tenant_id'      => $tenantId,
+            'company_name'   => $request->input('company_name') ?: $chat->contact_name,
+            'contact_person' => $chat->contact_name,
+            'phone'          => $chat->contact_phone,
+            'stage'          => 'prospecting',
+            'contact_date'   => now()->toDateString(),
+            'notes'          => trim("Lead via WhatsApp.\n{$notesText}"),
+        ]);
+
+        return response()->json(['success' => true, 'deal' => $deal]);
     }
 
     public function chatList()
