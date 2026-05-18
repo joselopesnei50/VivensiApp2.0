@@ -343,8 +343,9 @@ class EvolutionApiService
             $data = $response->json();
             if (!is_array($data)) return [];
 
-            // Normaliza resposta
-            $groups = $data['data'] ?? $data['groups'] ?? (array_is_list($data) ? $data : []);
+            // Normaliza resposta (array_is_list() requer PHP 8.1 — usa alternativa compatível com 8.0)
+            $isList = array_keys($data) === range(0, count($data) - 1);
+            $groups = $data['data'] ?? $data['groups'] ?? ($isList ? $data : []);
 
             foreach ($groups as $group) {
                 $id = $group['id'] ?? '';

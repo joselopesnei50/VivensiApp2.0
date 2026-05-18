@@ -1249,8 +1249,7 @@
                 success: function(res) {
                     const el = document.getElementById('kanbanResult');
                     el.innerHTML = '<i class="fas fa-check-circle me-1"></i> Deal criado em Patrocínios!';
-                    el.classList.remove('d-none', 'text-success');
-                    el.classList.add('text-success');
+                    el.classList.remove('d-none');
                     setTimeout(() => el.classList.add('d-none'), 4000);
                 },
                 error: function(xhr) {
