@@ -325,6 +325,45 @@ class EvolutionApiService
         }
     }
 
+    /**
+     * Retorna os JIDs dos participantes de um grupo específico.
+     * Usado no broadcast modo "members" (mensagem individual para cada membro).
+     */
+    public function getGroupMembers(string $groupId): array
+    {
+        if (!$this->instanceName || !$this->apiKey) return [];
+        try {
+            $response = $this->http()->timeout(45)->withHeaders([
+                'apikey' => $this->globalApiKey,
+            ])->get("{$this->baseUrl}/group/fetchAllGroups/{$this->instanceName}", [
+                'getParticipants' => 'true',
+            ]);
+
+            if ($response->failed()) return [];
+            $data = $response->json();
+            if (!is_array($data)) return [];
+
+            // Normaliza resposta
+            $groups = $data['data'] ?? $data['groups'] ?? (array_is_list($data) ? $data : []);
+
+            foreach ($groups as $group) {
+                $id = $group['id'] ?? '';
+                if ($id !== $groupId) continue;
+
+                $participants = $group['participants'] ?? [];
+                return collect($participants)
+                    ->map(fn($p) => is_array($p) ? ($p['id'] ?? null) : $p)
+                    ->filter(fn($jid) => $jid && str_ends_with($jid, '@s.whatsapp.net'))
+                    ->values()
+                    ->all();
+            }
+            return [];
+        } catch (\Exception $e) {
+            Log::error('EvolutionAPI getGroupMembers error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
     public function getGroups(): array
     {
         if (!$this->instanceName || !$this->apiKey) return [];

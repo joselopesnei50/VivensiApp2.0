@@ -122,6 +122,43 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
     {
         if ($campaign->audience_type === 'groups') {
             $groupIds = $campaign->group_ids ?: [];
+
+            // Modo "members": expande cada grupo nos seus membros individuais
+            if (($campaign->group_send_mode ?? 'group') === 'members') {
+                $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
+                    ->where('status', 'open')->first();
+
+                if (!$instance) {
+                    Log::error("Broadcast members mode: no active instance for tenant {$campaign->tenant_id}");
+                    return collect();
+                }
+
+                $evo = new EvolutionApiService($instance);
+                $members = collect();
+
+                foreach ($groupIds as $groupId) {
+                    $jids = $evo->getGroupMembers($groupId);
+                    foreach ($jids as $jid) {
+                        // Extrai número limpo do JID (55XXXXXXXXX@s.whatsapp.net → 55XXXXXXXXX)
+                        $phone = str_replace('@s.whatsapp.net', '', $jid);
+                        $chat = WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                            ->where('wa_id', $phone)->first();
+
+                        // Respeita opt-out
+                        if ($chat && ($chat->opt_out_at || $chat->blocked_at)) continue;
+
+                        $members->push((object)[
+                            'wa_id' => $phone,
+                            'id'    => $chat?->id,
+                        ]);
+                    }
+                }
+
+                // Remove duplicatas (membro em múltiplos grupos)
+                return $members->unique('wa_id')->values();
+            }
+
+            // Modo "group": envia UMA mensagem para o chat do grupo
             return collect($groupIds)->map(fn($id) => (object)['wa_id' => $id, 'id' => null]);
         }
 
