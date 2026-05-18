@@ -381,7 +381,9 @@ class EvolutionApiService
                 $exists   = $row['exists'] ?? false;
                 $jid      = $row['jid'] ?? null;
                 if ($exists && $original && $jid) {
-                    $map[$original] = $jid;
+                    // Extrai só os dígitos do JID (remove @s.whatsapp.net)
+                    $cleanJid = preg_replace('/\D/', '', explode('@', $jid)[0]);
+                    $map[(string) $original] = $cleanJid;
                 }
             }
             return $map;
