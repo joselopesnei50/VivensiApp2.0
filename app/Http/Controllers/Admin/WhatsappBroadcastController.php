@@ -183,17 +183,22 @@ class WhatsappBroadcastController extends Controller
             $hasImage  = true;
         }
 
+        $groupSendMode = ($audience === 'groups')
+            ? $request->input('group_send_mode', 'group')
+            : 'group';
+
         $campaign = \App\Models\BroadcastCampaign::create([
-            'tenant_id'     => $tenantId,
-            'message'       => $message ?: null,
-            'has_image'     => $hasImage,
-            'image_path'    => $imagePath,
-            'audience_type' => $audience,
-            'cadence'       => $cadenceSeconds,
-            'scheduled_at'  => $scheduledAt,
-            'status'        => $scheduledAt ? 'scheduled' : 'processing',
-            'group_ids'     => $audience === 'groups' ? $request->input('group_ids', []) : null,
-            'phones'        => $audience === 'selected' ? $request->input('phones') : null,
+            'tenant_id'       => $tenantId,
+            'message'         => $message ?: null,
+            'has_image'       => $hasImage,
+            'image_path'      => $imagePath,
+            'audience_type'   => $audience,
+            'cadence'         => $cadenceSeconds,
+            'scheduled_at'    => $scheduledAt,
+            'status'          => $scheduledAt ? 'scheduled' : 'processing',
+            'group_ids'       => $audience === 'groups' ? $request->input('group_ids', []) : null,
+            'group_send_mode' => $groupSendMode,
+            'phones'          => $audience === 'selected' ? $request->input('phones') : null,
         ]);
 
         if (!$scheduledAt) {

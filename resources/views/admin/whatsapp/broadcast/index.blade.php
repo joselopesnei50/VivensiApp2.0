@@ -469,6 +469,36 @@
                                 <i class="fas fa-sync-alt me-1"></i> Carregar grupos
                             </button>
                         </div>
+
+                        {{-- Modo de envio para grupos --}}
+                        <div class="mb-3 p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                            <div class="section-label mb-2">Modo de Envio</div>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <label class="audience-option" style="flex:1;min-width:180px;">
+                                    <input type="radio" name="group_send_mode" value="group" checked onchange="updateGroupModeInfo()">
+                                    <div>
+                                        <div style="font-weight:700;font-size:0.85rem;color:#334155;">
+                                            <i class="fas fa-people-group me-1" style="color:#d97706;"></i> Mensagem no Grupo
+                                        </div>
+                                        <div style="font-size:0.73rem;color:#94a3b8;">1 msg enviada para o chat do grupo</div>
+                                    </div>
+                                </label>
+                                <label class="audience-option" style="flex:1;min-width:180px;">
+                                    <input type="radio" name="group_send_mode" value="members" onchange="updateGroupModeInfo()">
+                                    <div>
+                                        <div style="font-weight:700;font-size:0.85rem;color:#334155;">
+                                            <i class="fas fa-user-check me-1" style="color:#10b981;"></i> Individual p/ Cada Membro
+                                        </div>
+                                        <div style="font-size:0.73rem;color:#94a3b8;">Mensagem privada para cada pessoa</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="groupModeInfo" class="mt-2 small" style="color:#64748b;font-size:0.78rem;">
+                                <i class="fas fa-info-circle me-1" style="color:#4f46e5;"></i>
+                                <span id="groupModeInfoText">A mensagem será enviada uma vez para o chat do grupo.</span>
+                            </div>
+                        </div>
+
                         <div id="groupsLoadingMsg" class="text-muted small d-none">
                             <i class="fas fa-spinner fa-spin me-1"></i> Buscando grupos...
                         </div>
@@ -479,6 +509,11 @@
                                 <span id="groupsCount" class="text-muted small"></span>
                             </div>
                             <div class="group-checkbox-list" id="groupsCheckboxList"></div>
+                            <div id="membersModeWarning" class="d-none mt-2 p-2 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;font-size:0.78rem;color:#92400e;">
+                                <i class="fas fa-exclamation-triangle me-1" style="color:#d97706;"></i>
+                                <strong>Modo individual:</strong> Será enviada uma mensagem privada para cada membro dos grupos selecionados.
+                                O total de mensagens enviadas pode ser muito maior que o número de grupos.
+                            </div>
                         </div>
                     </div>
 
@@ -845,6 +880,19 @@
         renderGroups(filtered);
     }
 
+    function updateGroupModeInfo() {
+        const mode = document.querySelector('input[name="group_send_mode"]:checked')?.value || 'group';
+        const infoText = document.getElementById('groupModeInfoText');
+        const warning  = document.getElementById('membersModeWarning');
+        if (mode === 'members') {
+            infoText.textContent = 'Cada membro receberá uma mensagem privada (no inbox pessoal dele).';
+            warning?.classList.remove('d-none');
+        } else {
+            infoText.textContent = 'A mensagem será enviada uma vez para o chat do grupo.';
+            warning?.classList.add('d-none');
+        }
+    }
+
     function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
 
     function updateCharCount(el) {
@@ -967,10 +1015,12 @@
         const isScheduled = document.getElementById('scheduleToggle').checked;
         const scheduledTime = document.getElementById('scheduledAtInput').value;
 
+        const groupMode = document.querySelector('input[name="group_send_mode"]:checked')?.value || 'group';
+        const groupModeTxt = groupMode === 'members' ? ' — individual p/ cada membro' : ' — mensagem no grupo';
         const audienceTxt = audience === 'all'
             ? 'Todos os contatos do CRM'
             : audience === 'groups'
-                ? `${groupsChecked} grupo(s) selecionado(s)`
+                ? `${groupsChecked} grupo(s) selecionado(s)${groupModeTxt}`
                 : 'Números específicos';
         const imageTxt   = hasImage ? '<span style="color:#4f46e5;font-weight:600;"><i class="fas fa-image me-1"></i>Com imagem</span> + ' : '';
         const msgPreview = msg ? `"${msg.substring(0, 60)}${msg.length > 60 ? '…' : ''}"` : '<em>sem texto</em>';
