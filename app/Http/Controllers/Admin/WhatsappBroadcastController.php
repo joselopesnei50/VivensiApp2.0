@@ -129,7 +129,7 @@ class WhatsappBroadcastController extends Controller
         }
     }
 
-    public function campaigns()
+    public function campaigns(\Illuminate\Http\Request $request)
     {
         Gate::authorize('access-whatsapp');
         $tenantId = auth()->user()->tenant_id;
@@ -140,14 +140,29 @@ class WhatsappBroadcastController extends Controller
         $completed   = 0;
 
         if (Schema::hasTable('broadcast_campaigns')) {
-            $campaigns   = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)->orderByDesc('created_at')->paginate(25);
+            $query = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId);
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->input('status'));
+            }
+            if ($request->filled('audience')) {
+                $query->where('audience_type', $request->input('audience'));
+            }
+            if ($request->filled('from')) {
+                $query->whereDate('created_at', '>=', $request->input('from'));
+            }
+            if ($request->filled('to')) {
+                $query->whereDate('created_at', '<=', $request->input('to'));
+            }
+
+            $campaigns   = $query->orderByDesc('created_at')->paginate(25)->withQueryString();
             $totalSent   = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)->sum('total_sent');
             $totalFailed = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)->sum('total_failed');
             $completed   = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)->where('status', 'completed')->count();
         }
 
-        $totalMessages  = $totalSent + $totalFailed;
-        $successRate    = $totalMessages > 0 ? round(($totalSent / $totalMessages) * 100) : 0;
+        $totalMessages = $totalSent + $totalFailed;
+        $successRate   = $totalMessages > 0 ? round(($totalSent / $totalMessages) * 100) : 0;
 
         return view('admin.whatsapp.broadcast.campaigns',
             compact('campaigns', 'totalSent', 'totalFailed', 'completed', 'successRate'));
@@ -233,6 +248,7 @@ class WhatsappBroadcastController extends Controller
 
         $campaign = \App\Models\BroadcastCampaign::create([
             'tenant_id'       => $tenantId,
+            'created_by'      => auth()->id(),
             'message'         => $message ?: null,
             'has_image'       => $hasImage,
             'image_path'      => $imagePath,
