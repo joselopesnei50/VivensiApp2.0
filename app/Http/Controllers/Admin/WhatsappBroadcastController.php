@@ -151,11 +151,22 @@ class WhatsappBroadcastController extends Controller
     {
         Gate::authorize('access-whatsapp');
 
+        // Detecta falha de upload no nível do PHP (upload_max_filesize / post_max_size)
+        if ($request->hasFile('broadcast_image') && !$request->file('broadcast_image')->isValid()) {
+            $maxMb = min(
+                (int) ini_get('upload_max_filesize'),
+                (int) ini_get('post_max_size')
+            );
+            return redirect()->back()->withErrors([
+                'broadcast_image' => "A imagem não pôde ser enviada. Verifique se o arquivo é menor que {$maxMb}MB e tente novamente.",
+            ])->withInput();
+        }
+
         $request->validate([
             'message'         => 'nullable|string|max:4000',
             'audience'        => 'required|in:all,selected,groups',
             'cadence'         => 'nullable|integer|in:1,3,5,10,30',
-            'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
             'scheduled_at'    => 'nullable|date|after:now',
         ]);
 
