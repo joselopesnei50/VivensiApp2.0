@@ -84,7 +84,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                 
                 $res = $mediaToSend
                     ? $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime)
-                    : $evo->sendMessage($waId, $campaign->message);
+                    : $evo->sendMessage($waId, $campaign->message, null, rand(1, 3));
 
                 if (!isset($res['error']) && !empty($res)) {
                     if (isset($recipient->id)) {
