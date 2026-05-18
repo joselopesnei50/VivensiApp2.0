@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\BroadcastCampaign;
 use App\Jobs\ProcessBroadcastCampaignJob;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProcessScheduledBroadcasts extends Command
@@ -14,19 +15,27 @@ class ProcessScheduledBroadcasts extends Command
 
     public function handle(): void
     {
-        $campaigns = BroadcastCampaign::withoutGlobalScopes()
-            ->where('status', 'scheduled')
-            ->where('scheduled_at', '<=', now())
-            ->get();
+        // lockForUpdate previne race condition se o command rodar em paralelo
+        $campaigns = DB::transaction(function () {
+            return BroadcastCampaign::withoutGlobalScopes()
+                ->where('status', 'scheduled')
+                ->where('scheduled_at', '<=', now())
+                ->lockForUpdate()
+                ->get();
+        });
 
         foreach ($campaigns as $campaign) {
-            $campaign->update(['status' => 'processing']);
+            // Transição atômica: só processa se ainda estiver 'scheduled'
+            $updated = BroadcastCampaign::withoutGlobalScopes()
+                ->where('id', $campaign->id)
+                ->where('status', 'scheduled')
+                ->update(['status' => 'processing']);
+
+            if (!$updated) continue; // já foi pego por outro processo
+
             ProcessBroadcastCampaignJob::dispatch($campaign->id);
             Log::info("Broadcast agendado disparado: campanha #{$campaign->id} (tenant {$campaign->tenant_id})");
-        }
-
-        if ($campaigns->isNotEmpty()) {
-            $this->info("{$campaigns->count()} campanha(s) despachada(s).");
+            $this->info("Campanha #{$campaign->id} despachada.");
         }
     }
 }

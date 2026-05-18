@@ -125,6 +125,11 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
 
             // Modo "members": expande cada grupo nos seus membros individuais
             if (($campaign->group_send_mode ?? 'group') === 'members') {
+                Log::info('Broadcast members mode: iniciando expansão de grupos', [
+                    'campaign_id' => $campaign->id,
+                    'group_count' => count($groupIds),
+                ]);
+
                 $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
                     ->where('status', 'open')->first();
 
@@ -138,13 +143,17 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
 
                 foreach ($groupIds as $groupId) {
                     $jids = $evo->getGroupMembers($groupId);
+                    Log::info('Broadcast members mode: grupo expandido', [
+                        'campaign_id' => $campaign->id,
+                        'group_id'    => $groupId,
+                        'jids_count'  => count($jids),
+                    ]);
+
                     foreach ($jids as $jid) {
-                        // Extrai número limpo do JID (55XXXXXXXXX@s.whatsapp.net → 55XXXXXXXXX)
                         $phone = str_replace('@s.whatsapp.net', '', $jid);
                         $chat = WhatsappChat::where('tenant_id', $campaign->tenant_id)
                             ->where('wa_id', $phone)->first();
 
-                        // Respeita opt-out
                         if ($chat && ($chat->opt_out_at || $chat->blocked_at)) continue;
 
                         $members->push((object)[
@@ -154,8 +163,18 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     }
                 }
 
-                // Remove duplicatas (membro em múltiplos grupos)
-                return $members->unique('wa_id')->values();
+                $unique = $members->unique('wa_id')->values();
+
+                Log::info('Broadcast members mode: total final', [
+                    'campaign_id'  => $campaign->id,
+                    'total_unique' => $unique->count(),
+                ]);
+
+                if ($unique->isEmpty() && !empty($groupIds)) {
+                    Log::error("Broadcast members mode: nenhum membro retornado para campanha #{$campaign->id}. Verifique permissões do bot ou versão Evolution API.");
+                }
+
+                return $unique;
             }
 
             // Modo "group": envia UMA mensagem para o chat do grupo
