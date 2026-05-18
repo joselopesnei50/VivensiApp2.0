@@ -35,13 +35,13 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             return;
         }
 
-        $campaign->update(['status' => 'processing']);
+        $campaign->update(['status' => 'processing', 'started_at' => now()]);
 
         $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
             ->where('status', 'open')->first();
 
         if (!$instance) {
-            $campaign->update(['status' => 'failed']);
+            $campaign->update(['status' => 'failed', 'completed_at' => now()]);
             Log::error("Broadcast failed: No active instance for tenant {$campaign->tenant_id}");
             return;
         }
@@ -50,9 +50,11 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
         $recipients = $this->getRecipients($campaign);
 
         if ($recipients->isEmpty()) {
-            $campaign->update(['status' => 'completed']);
+            $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
             return;
         }
+
+        $campaign->update(['actual_recipients' => $recipients->count()]);
 
         $sentCount = 0;
         $failedCount = 0;
@@ -171,7 +173,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             sleep($campaign->cadence ?: 3);
         }
 
-        $campaign->update(['status' => 'completed']);
+        $campaign->update(['status' => 'completed', 'completed_at' => now()]);
     }
 
     protected function getRecipients($campaign)
