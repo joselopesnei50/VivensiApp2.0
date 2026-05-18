@@ -34,18 +34,24 @@ class WhatsappBroadcastController extends Controller
         $activeInstance = WhatsappInstance::where('tenant_id', $tenantId)
                             ->where('status', 'open')->first();
 
-        $campaigns = collect();
+        $campaigns  = collect();
+        $scheduled  = collect();
         if (Schema::hasTable('broadcast_campaigns')) {
             $campaigns = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
                 ->orderByDesc('created_at')
                 ->limit(20)
+                ->get();
+
+            $scheduled = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
+                ->where('status', 'scheduled')
+                ->orderBy('scheduled_at')
                 ->get();
         }
 
         $preMessage = session('ai_broadcast_message');
 
         return view('admin.whatsapp.broadcast.index',
-            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'preMessage'));
+            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'scheduled', 'preMessage'));
     }
 
     public function importContacts(Request $request)
@@ -145,6 +151,21 @@ class WhatsappBroadcastController extends Controller
 
         return view('admin.whatsapp.broadcast.campaigns',
             compact('campaigns', 'totalSent', 'totalFailed', 'completed', 'successRate'));
+    }
+
+    public function cancelScheduled(int $id)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $campaign = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
+            ->where('id', $id)
+            ->where('status', 'scheduled')
+            ->firstOrFail();
+
+        $campaign->update(['status' => 'failed']);
+
+        return redirect()->back()->with('success', 'Campanha agendada cancelada com sucesso.');
     }
 
     public function sendBroadcast(Request $request)
