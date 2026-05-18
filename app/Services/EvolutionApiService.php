@@ -325,6 +325,73 @@ class EvolutionApiService
     }
 
     /**
+     * Normaliza número brasileiro para formato WhatsApp (55 + DDD + número).
+     * Garante DDI 55, aceita com/sem parênteses, espaços, hífens.
+     * Retorna null se o número for inválido.
+     */
+    public static function normalizeBrazilianPhone(string $raw): ?string
+    {
+        $digits = preg_replace('/\D/', '', $raw);
+
+        if (strlen($digits) < 10) return null;
+
+        // Adiciona DDI 55 se ausente (10 ou 11 dígitos = DDD + número)
+        if (strlen($digits) === 10 || strlen($digits) === 11) {
+            $digits = '55' . $digits;
+        }
+
+        // Após normalização: 12 = 55+DDD+8 dígitos | 13 = 55+DDD+9 dígitos
+        if (strlen($digits) < 12 || strlen($digits) > 13) return null;
+
+        return $digits;
+    }
+
+    /**
+     * Valida existência dos números no WhatsApp e retorna o JID exato de cada um.
+     * Resolve o problema do "9º dígito" brasileiro: conta pode ter sido registrada
+     * com ou sem o 9 — este método retorna o JID real para entrega correta no celular.
+     *
+     * @param  array  $numbers  Números normalizados (apenas dígitos, com DDI 55)
+     * @return array  Map [numeroOriginal => jidCorreto] — inexistentes são omitidos
+     */
+    public function checkWhatsappNumbers(array $numbers): array
+    {
+        if (!$this->instanceName || empty($numbers)) return [];
+        try {
+            $response = $this->http()->timeout(30)->withHeaders([
+                'apikey' => $this->globalApiKey,
+            ])->post("{$this->baseUrl}/chat/whatsappNumbers/{$this->instanceName}", [
+                'numbers' => array_values(array_unique($numbers)),
+            ]);
+
+            if ($response->failed()) {
+                Log::warning('checkWhatsappNumbers HTTP failed', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+                return [];
+            }
+
+            $data = $response->json();
+            if (!is_array($data)) return [];
+
+            $map = [];
+            foreach ($data as $row) {
+                $original = $row['number'] ?? null;
+                $exists   = $row['exists'] ?? false;
+                $jid      = $row['jid'] ?? null;
+                if ($exists && $original && $jid) {
+                    $map[$original] = $jid;
+                }
+            }
+            return $map;
+        } catch (\Exception $e) {
+            Log::error('checkWhatsappNumbers exception', ['error' => $e->getMessage()]);
+            return [];
+        }
+    }
+
+    /**
      * Retorna os JIDs dos participantes de um grupo específico.
      * Usa o endpoint dedicado findGroupInfos para busca direta por groupJid.
      */
