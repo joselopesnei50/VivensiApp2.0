@@ -368,11 +368,11 @@ class EvolutionApiService
             ]);
 
             if ($response->failed()) {
-                Log::warning('checkWhatsappNumbers HTTP failed', [
+                Log::error('checkWhatsappNumbers HTTP failed', [
                     'status' => $response->status(),
                     'body'   => $response->body(),
                 ]);
-                return [];
+                throw new \RuntimeException("Evolution API checkWhatsappNumbers falhou (HTTP {$response->status()}): {$response->body()}");
             }
 
             $data = $response->json();
@@ -390,9 +390,11 @@ class EvolutionApiService
                 }
             }
             return $map;
+        } catch (\RuntimeException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('checkWhatsappNumbers exception', ['error' => $e->getMessage()]);
-            return [];
+            throw new \RuntimeException('checkWhatsappNumbers exception: ' . $e->getMessage(), 0, $e);
         }
     }
 
