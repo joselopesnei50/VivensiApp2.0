@@ -427,14 +427,25 @@ class EvolutionApiService
             $data = $response->json();
             if (!is_array($data)) return [];
 
-            // Normaliza estruturas conhecidas da Evolution API
+            // Normaliza todas as estruturas conhecidas da Evolution API
+            // Ordem: raiz → data → array[0] → data[0]
             $participants = $data['participants']
+                ?? ($data[0]['participants'] ?? null)
                 ?? ($data['data']['participants'] ?? null)
-                ?? ($data['data'][0]['participants'] ?? []);
+                ?? ($data['data'][0]['participants'] ?? null);
+
+            if ($participants === null) {
+                Log::warning('getGroupMembers: participants não encontrado na resposta', [
+                    'groupId'   => $groupId,
+                    'data_keys' => array_keys($data),
+                    'data_raw'  => json_encode(array_slice($data, 0, 2)),
+                ]);
+                return [];
+            }
 
             $jids = collect($participants)
                 ->map(fn($p) => is_array($p) ? ($p['id'] ?? $p['jid'] ?? null) : $p)
-                ->filter(fn($jid) => $jid && str_ends_with($jid, '@s.whatsapp.net'))
+                ->filter(fn($jid) => $jid && str_contains($jid, '@') && !str_ends_with($jid, '@g.us'))
                 ->values()
                 ->all();
 
