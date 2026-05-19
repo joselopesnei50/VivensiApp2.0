@@ -735,101 +735,103 @@
 </div>
 
 {{-- ── HISTÓRICO DE CAMPANHAS ── --}}
-<div class="history-card">
-    <div class="history-card-header">
-        <div style="width:36px;height:36px;background:linear-gradient(135deg,#0ea5e9,#38bdf8);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-            <i class="fas fa-chart-bar text-white" style="font-size:0.9rem;"></i>
+<div class="history-card" id="historicoDisparos">
+
+    {{-- Header --}}
+    <div class="history-card-header" style="background:linear-gradient(135deg,#0ea5e9 0%,#38bdf8 100%);border-radius:14px 14px 0 0;padding:18px 24px;">
+        <div style="width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-chart-bar" style="color:#fff;font-size:0.95rem;"></i>
         </div>
         <div class="flex-1">
-            <h6 class="mb-0 fw-800" style="color:#1e293b;">Relatório de Disparos</h6>
-            <small class="text-muted">Últimas 20 campanhas enviadas</small>
+            <h6 class="mb-0 fw-800" style="color:#fff;font-size:.95rem;">Relatório de Disparos</h6>
+            <small style="color:rgba(255,255,255,.75);font-size:.72rem;">Últimas {{ $campaigns->count() }} campanhas</small>
         </div>
         <a href="{{ route('whatsapp.broadcast.campaigns') }}"
-           class="btn btn-sm btn-outline-primary rounded-3 fw-600 ms-auto"
-           style="font-size:.78rem;padding:5px 14px;">
-            <i class="fas fa-clock-rotate-left me-1"></i> Ver histórico completo
+           style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:.75rem;font-weight:700;padding:6px 14px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:.15s;"
+           onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.2)'">
+            <i class="fas fa-arrow-up-right-from-square"></i> Ver tudo
         </a>
     </div>
 
     @if($campaigns->isEmpty())
-        <div style="padding:40px;text-align:center;color:#94a3b8;">
-            <i class="fas fa-paper-plane fa-2x mb-3" style="opacity:0.3;"></i>
-            <p class="mb-0 small">Nenhuma campanha disparada ainda.</p>
+        <div style="padding:48px 24px;text-align:center;">
+            <div style="width:56px;height:56px;background:rgba(14,165,233,.08);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                <i class="fas fa-paper-plane" style="font-size:1.3rem;color:#38bdf8;"></i>
+            </div>
+            <p class="mb-0" style="color:#94a3b8;font-size:.83rem;">Nenhuma campanha disparada ainda.</p>
         </div>
     @else
-    <div class="table-responsive">
-        <table class="table mb-0" style="font-size:0.85rem;">
-            <thead style="background:#f8fafc;">
-                <tr>
-                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Data</th>
-                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Mensagem</th>
-                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Público</th>
-                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Status</th>
-                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Enviados</th>
-                    <th style="padding:12px 20px;font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border:none;">Taxa</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($campaigns as $campaign)
-                @php
-                    $total = $campaign->total_sent + $campaign->total_failed;
-                    $rate  = $total > 0 ? round($campaign->total_sent / $total * 100) : 0;
-                    $audienceLabels = ['all' => 'Todos', 'selected' => 'Específicos', 'groups' => 'Grupos'];
-                    $audienceClasses = ['all' => 'badge-all', 'selected' => 'badge-selected', 'groups' => 'badge-groups'];
-                @endphp
-                <tr style="border-top:1px solid #f1f5f9;">
-                    <td style="padding:12px 20px;color:#475569;white-space:nowrap;">
-                        {{ $campaign->created_at->format('d/m/Y H:i') }}
-                    </td>
-                    <td style="padding:12px 20px;max-width:260px;">
-                        @if($campaign->has_image)
-                            <span style="color:#4f46e5;"><i class="fas fa-image me-1"></i></span>
-                        @endif
-                        <span style="color:#334155;">
-                            {{ $campaign->message ? (mb_strlen($campaign->message) > 60 ? mb_substr($campaign->message, 0, 60).'…' : $campaign->message) : '(apenas imagem)' }}
-                        </span>
-                    </td>
-                    <td style="padding:12px 20px;">
-                        <span class="badge-audience {{ $audienceClasses[$campaign->audience_type] ?? 'badge-all' }}">
-                            {{ $audienceLabels[$campaign->audience_type] ?? $campaign->audience_type }}
-                        </span>
-                    </td>
-                    <td style="padding:12px 20px;">
-                        @php
-                            $statusMap = [
-                                'scheduled' => ['bg' => '#eef2ff', 'color' => '#4f46e5', 'label' => 'Agendado'],
-                                'processing' => ['bg' => '#fff7ed', 'color' => '#c2410c', 'label' => 'Processando'],
-                                'completed' => ['bg' => '#f0fdf4', 'color' => '#16a34a', 'label' => 'Concluído'],
-                                'failed' => ['bg' => '#fef2f2', 'color' => '#dc2626', 'label' => 'Falhou'],
-                            ];
-                            $s = $statusMap[$campaign->status] ?? ['bg' => '#f1f5f9', 'color' => '#475569', 'label' => $campaign->status];
-                        @endphp
-                        <span style="background:{{ $s['bg'] }}; color:{{ $s['color'] }}; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">
-                            {{ $s['label'] }}
-                        </span>
-                        @if($campaign->status === 'scheduled' && $campaign->scheduled_at)
-                            <div style="font-size:0.65rem; color:#94a3b8; margin-top:2px;">{{ $campaign->scheduled_at->format('d/m H:i') }}</div>
-                        @endif
-                    </td>
-                    <td style="padding:12px 20px;">
-                        <span style="font-weight:700;color:#16a34a;">{{ $campaign->total_sent }}</span>
-                        <span class="text-muted mx-1">/</span>
-                        <span style="font-weight:700;color:{{ $campaign->total_failed > 0 ? '#dc2626' : '#94a3b8' }};">
-                            {{ $campaign->total_failed }}
-                        </span>
-                    </td>
-                    <td style="padding:12px 20px;">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <div style="flex:1;background:#f1f5f9;border-radius:99px;height:6px;min-width:60px;">
-                                <div style="width:{{ $rate }}%;background:{{ $rate >= 90 ? '#10b981' : ($rate >= 70 ? '#f59e0b' : '#ef4444') }};height:6px;border-radius:99px;transition:width .3s;"></div>
-                            </div>
-                            <span style="font-size:0.78rem;font-weight:700;color:#475569;min-width:32px;">{{ $rate }}%</span>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
+        @foreach($campaigns as $campaign)
+        @php
+            $total = $campaign->total_sent + $campaign->total_failed;
+            $rate  = $total > 0 ? round($campaign->total_sent / $total * 100) : 0;
+            $rateColor = $rate >= 90 ? '#10b981' : ($rate >= 70 ? '#f59e0b' : '#ef4444');
+            $audLabels  = ['all'=>'Todos','selected'=>'Específicos','groups'=>'Grupos'];
+            $audColors  = ['all'=>['bg'=>'rgba(99,102,241,.1)','c'=>'#4338ca'],'selected'=>['bg'=>'rgba(16,185,129,.1)','c'=>'#166534'],'groups'=>['bg'=>'rgba(245,158,11,.1)','c'=>'#92400e']];
+            $aud = $audColors[$campaign->audience_type] ?? $audColors['all'];
+            $sMap = ['scheduled'=>['bg'=>'rgba(99,102,241,.1)','c'=>'#4f46e5','icon'=>'clock','lbl'=>'Agendado'],
+                     'processing'=>['bg'=>'rgba(245,158,11,.1)','c'=>'#d97706','icon'=>'spinner','lbl'=>'Processando'],
+                     'completed' =>['bg'=>'rgba(16,185,129,.1)', 'c'=>'#059669','icon'=>'circle-check','lbl'=>'Concluído'],
+                     'failed'    =>['bg'=>'rgba(239,68,68,.1)',  'c'=>'#dc2626','icon'=>'circle-xmark','lbl'=>'Falhou']];
+            $s = $sMap[$campaign->status] ?? ['bg'=>'rgba(100,116,139,.1)','c'=>'#475569','icon'=>'circle','lbl'=>$campaign->status];
+            $isMembers = $campaign->audience_type === 'groups' && $campaign->group_send_mode === 'members';
+        @endphp
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;border-left:3px solid {{ $rateColor }};transition:.15s;"
+             onmouseover="this.style.background='#f0f9ff';this.style.borderColor='#bae6fd'"
+             onmouseout="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';this.style.borderLeftColor='{{ $rateColor }}'">
+
+            {{-- Row 1: date + status + audience --}}
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <span style="font-size:.72rem;color:#64748b;font-weight:600;">
+                    <i class="fas fa-calendar-day" style="font-size:.65rem;color:#94a3b8;"></i>
+                    {{ $campaign->created_at->format('d/m H:i') }}
+                </span>
+                <span style="background:{{ $s['bg'] }};color:{{ $s['c'] }};padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
+                    <i class="fas fa-{{ $s['icon'] }} {{ $campaign->status === 'processing' ? 'fa-spin' : '' }}" style="font-size:.6rem;"></i>
+                    {{ $s['lbl'] }}
+                </span>
+                <span style="background:{{ $aud['bg'] }};color:{{ $aud['c'] }};padding:2px 8px;border-radius:20px;font-size:.63rem;font-weight:700;margin-left:auto;">
+                    {{ $audLabels[$campaign->audience_type] ?? $campaign->audience_type }}
+                    @if($isMembers) · membros @endif
+                </span>
+            </div>
+
+            {{-- Row 2: message preview --}}
+            <div style="font-size:.8rem;color:#334155;line-height:1.4;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">
+                @if($campaign->has_image)<i class="fas fa-image" style="color:#6366f1;font-size:.7rem;margin-right:4px;"></i>@endif
+                {{ $campaign->message ?: '(apenas imagem)' }}
+            </div>
+
+            {{-- Row 3: metrics + progress --}}
+            <div style="display:flex;align-items:center;gap:14px;">
+                <div style="display:flex;align-items:center;gap:4px;">
+                    <span style="font-size:.82rem;font-weight:800;color:#059669;">{{ number_format($campaign->total_sent) }}</span>
+                    <span style="font-size:.7rem;color:#94a3b8;">env</span>
+                    <span style="color:#e2e8f0;margin:0 2px;">/</span>
+                    <span style="font-size:.82rem;font-weight:800;color:{{ $campaign->total_failed > 0 ? '#dc2626' : '#94a3b8' }};">{{ number_format($campaign->total_failed) }}</span>
+                    <span style="font-size:.7rem;color:#94a3b8;">falha</span>
+                </div>
+                @if($total > 0)
+                <div style="flex:1;display:flex;align-items:center;gap:6px;">
+                    <div style="flex:1;background:#e2e8f0;border-radius:99px;height:4px;overflow:hidden;">
+                        <div style="width:{{ $rate }}%;height:4px;background:{{ $rateColor }};border-radius:99px;"></div>
+                    </div>
+                    <span style="font-size:.73rem;font-weight:800;color:{{ $rateColor }};min-width:30px;">{{ $rate }}%</span>
+                </div>
+                @endif
+                @if($campaign->duration)
+                <span style="font-size:.68rem;color:#94a3b8;white-space:nowrap;"><i class="fas fa-stopwatch" style="font-size:.6rem;"></i> {{ $campaign->duration }}</span>
+                @endif
+            </div>
+        </div>
+        @endforeach
+    </div>
+
+    <div style="padding:12px 20px;border-top:1px solid #f1f5f9;text-align:center;">
+        <a href="{{ route('whatsapp.broadcast.campaigns') }}" style="font-size:.78rem;color:#0ea5e9;font-weight:700;text-decoration:none;">
+            Ver relatório completo <i class="fas fa-arrow-right ms-1"></i>
+        </a>
     </div>
     @endif
 </div>
