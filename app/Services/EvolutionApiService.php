@@ -198,11 +198,10 @@ class EvolutionApiService
             'fileName'  => 'broadcast.' . explode('/', $mimetype)[1],
         ];
 
-        // Se não for uma URL, assumimos que é Base64 e garantimos o prefixo (apenas no campo media)
+        // Evolution API v2 aceita URL ou base64 puro (sem prefixo data:)
         if (!str_starts_with($media, 'http')) {
-            if (!str_starts_with($media, 'data:')) {
-                $payload['media'] = "data:{$mimetype};base64,{$media}";
-            }
+            // Remove prefixo data:...;base64, se presente
+            $payload['media'] = preg_replace('/^data:[^;]+;base64,/', '', $media);
         }
 
         try {
