@@ -416,10 +416,10 @@ class EvolutionApiService
             ]);
 
             if ($response->failed()) {
-                Log::warning('getGroupMembers HTTP failed', [
+                Log::error('[DIAG] getGroupMembers HTTP failed', [
                     'groupId' => $groupId,
                     'status'  => $response->status(),
-                    'body'    => $response->body(),
+                    'body'    => substr($response->body(), 0, 500),
                 ]);
                 return [];
             }
