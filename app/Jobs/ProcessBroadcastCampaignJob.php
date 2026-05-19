@@ -26,6 +26,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
     public function __construct($campaignId)
     {
         $this->campaignId = $campaignId;
+        $this->onQueue('whatsapp');
     }
 
     public function handle()

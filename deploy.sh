@@ -116,10 +116,14 @@ if [[ "$QUEUE_DRIVER_VAL" != "sync" && "$QUEUE_DRIVER_VAL" != "" ]]; then
     echo "🔄 Reiniciando workers de fila..."
     $PHP_BIN $PHP_FLAGS artisan queue:restart --no-interaction || true
 
-    # Horizon: reiniciar via Supervisor se disponível
+    # Reiniciar workers via Supervisor
     if command -v supervisorctl &>/dev/null; then
-        echo "🔄 Reiniciando Horizon via Supervisor..."
-        sudo supervisorctl restart horizon 2>/dev/null || true
+        echo "🔄 Reiniciando workers via Supervisor..."
+        sudo supervisorctl reread 2>/dev/null || true
+        sudo supervisorctl update 2>/dev/null || true
+        sudo supervisorctl restart vivensi-worker-default:* 2>/dev/null || true
+        sudo supervisorctl restart vivensi-worker-whatsapp:* 2>/dev/null || true
+        sudo supervisorctl status 2>/dev/null || true
     fi
 fi
 
