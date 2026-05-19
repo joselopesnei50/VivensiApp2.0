@@ -38,7 +38,7 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 90,
+            'retry_after' => 3700, // maior que o $timeout=3600 do ProcessBroadcastCampaignJob
             'after_commit' => false,
         ],
 
