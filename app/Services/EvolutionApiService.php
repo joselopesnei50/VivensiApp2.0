@@ -451,8 +451,13 @@ class EvolutionApiService
                 return [];
             }
 
+            // Evolution API retorna participantes com @lid no 'id' e o número real em 'phoneNumber'
+            // Priorizamos phoneNumber (@s.whatsapp.net) sobre id (@lid)
             $jids = collect($participants)
-                ->map(fn($p) => is_array($p) ? ($p['id'] ?? $p['jid'] ?? null) : $p)
+                ->map(function ($p) {
+                    if (!is_array($p)) return $p;
+                    return $p['phoneNumber'] ?? $p['id'] ?? $p['jid'] ?? null;
+                })
                 ->filter(fn($jid) => $jid && str_contains($jid, '@') && !str_ends_with($jid, '@g.us'))
                 ->values()
                 ->all();
