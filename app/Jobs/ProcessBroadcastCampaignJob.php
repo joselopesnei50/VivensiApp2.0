@@ -48,7 +48,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
         }
 
         $evo = new EvolutionApiService($instance);
-        $recipients = $this->getRecipients($campaign);
+        $recipients = $this->getRecipients($campaign, $evo);
 
         if ($recipients->isEmpty()) {
             $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
@@ -184,7 +184,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
         $campaign->update(['status' => 'completed', 'completed_at' => now()]);
     }
 
-    protected function getRecipients($campaign)
+    protected function getRecipients($campaign, EvolutionApiService $evo = null)
     {
         if ($campaign->audience_type === 'groups') {
             $groupIds = $campaign->group_ids ?: [];
@@ -196,16 +196,17 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     'group_count' => count($groupIds),
                 ]);
 
-                $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
-                    ->where('status', 'open')->first();
-
-                if (!$instance) {
-                    Log::error("Broadcast members mode: no active instance for tenant {$campaign->tenant_id}");
-                    return collect();
+                if (!$evo) {
+                    $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
+                        ->where('status', 'open')->first();
+                    if (!$instance) {
+                        Log::error("Broadcast members mode: no active instance for tenant {$campaign->tenant_id}");
+                        return collect();
+                    }
+                    $evo = new EvolutionApiService($instance);
                 }
-
-                $evo = new EvolutionApiService($instance);
                 $members = collect();
+                $allPhones = [];
 
                 foreach ($groupIds as $groupId) {
                     $jids = $evo->getGroupMembers($groupId);
@@ -214,19 +215,25 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                         'group_id'    => $groupId,
                         'jids_count'  => count($jids),
                     ]);
-
                     foreach ($jids as $jid) {
-                        $phone = str_replace('@s.whatsapp.net', '', $jid);
-                        $chat = WhatsappChat::where('tenant_id', $campaign->tenant_id)
-                            ->where('wa_id', $phone)->first();
-
-                        if ($chat && ($chat->opt_out_at || $chat->blocked_at)) continue;
-
-                        $members->push((object)[
-                            'wa_id' => $phone,
-                            'id'    => $chat?->id,
-                        ]);
+                        $allPhones[] = str_replace('@s.whatsapp.net', '', $jid);
                     }
+                }
+
+                // Uma única query para todos os membros (evita N+1)
+                $allPhones = array_unique($allPhones);
+                $chatsMap = WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                    ->whereIn('wa_id', $allPhones)
+                    ->get()
+                    ->keyBy('wa_id');
+
+                foreach ($allPhones as $phone) {
+                    $chat = $chatsMap->get($phone);
+                    if ($chat && ($chat->opt_out_at || $chat->blocked_at)) continue;
+                    $members->push((object)[
+                        'wa_id' => $phone,
+                        'id'    => $chat?->id,
+                    ]);
                 }
 
                 $unique = $members->unique('wa_id')->values();
