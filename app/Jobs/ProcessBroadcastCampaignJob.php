@@ -104,15 +104,22 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     'invalidos'   => count($normalizedNumbers) - count($jidMap),
                 ]);
 
-                // Cache os JIDs validados no banco para reuso futuro
+                // Cache os JIDs validados no banco para reuso futuro (opcional — não bloqueia o envio)
                 if (!empty($jidMap)) {
                     foreach ($jidMap as $original => $jid) {
-                        WhatsappChat::where('tenant_id', $campaign->tenant_id)
-                            ->where('wa_id', $original)
-                            ->update([
-                                'wa_jid'                 => $jid,
-                                'whatsapp_validated_at'  => now(),
+                        try {
+                            WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                                ->whereRaw('`wa_id` = ?', [(string) $original])
+                                ->update([
+                                    'wa_jid'                => (string) $jid,
+                                    'whatsapp_validated_at' => now(),
+                                ]);
+                        } catch (\Exception $e) {
+                            Log::warning('Falha ao cachear wa_jid — broadcast continua', [
+                                'wa_id' => $original,
+                                'error' => $e->getMessage(),
                             ]);
+                        }
                     }
                 }
             }
