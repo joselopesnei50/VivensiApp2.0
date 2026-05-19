@@ -416,23 +416,15 @@ class EvolutionApiService
             ]);
 
             if ($response->failed()) {
-                Log::error('[DIAG] getGroupMembers HTTP failed', [
+                Log::warning('getGroupMembers HTTP failed', [
                     'groupId' => $groupId,
                     'status'  => $response->status(),
-                    'body'    => substr($response->body(), 0, 500),
+                    'body'    => $response->body(),
                 ]);
                 return [];
             }
 
             $data = $response->json();
-
-            // Log temporário de diagnóstico (remover após confirmar estrutura)
-            Log::error('[DIAG] getGroupMembers RAW response', [
-                'groupId'   => $groupId,
-                'is_array'  => is_array($data),
-                'top_keys'  => is_array($data) ? array_keys($data) : 'not-array',
-                'raw'       => substr($response->body(), 0, 600),
-            ]);
 
             if (!is_array($data)) return [];
 
