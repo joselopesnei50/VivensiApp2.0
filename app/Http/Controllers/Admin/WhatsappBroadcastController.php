@@ -205,12 +205,16 @@ class WhatsappBroadcastController extends Controller
             'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
             'scheduled_at'    => 'nullable|date|after:now',
             'group_send_mode' => 'nullable|in:group,members',
-            'group_ids'       => 'nullable|array',
+            'group_ids'       => 'required_if:audience,groups|array|min:1',
             'group_ids.*'     => 'string',
         ]);
 
         if (!$request->filled('message') && !$request->hasFile('broadcast_image')) {
             return redirect()->back()->with('error', 'Digite uma mensagem ou anexe uma imagem.');
+        }
+
+        if ($request->input('audience') === 'groups' && empty($request->input('group_ids'))) {
+            return redirect()->back()->with('error', 'Selecione pelo menos um grupo para disparar.');
         }
 
         $tenantId       = auth()->user()->tenant_id;
