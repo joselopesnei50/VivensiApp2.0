@@ -426,8 +426,8 @@ class EvolutionApiService
 
             $data = $response->json();
 
-            // Log completo da resposta para diagnóstico
-            Log::info('getGroupMembers RAW response', [
+            // Log temporário de diagnóstico (remover após confirmar estrutura)
+            Log::error('[DIAG] getGroupMembers RAW response', [
                 'groupId'   => $groupId,
                 'is_array'  => is_array($data),
                 'top_keys'  => is_array($data) ? array_keys($data) : 'not-array',
