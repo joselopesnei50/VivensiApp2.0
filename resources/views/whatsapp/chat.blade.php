@@ -1641,9 +1641,9 @@
                 const card = $(`
                     <div class="col-md-6">
                         <div class="template-card p-3 border rounded-3 position-relative" style="cursor:pointer; transition: 0.2s; background: white;">
-                            <div class="fw-bold small mb-1 text-truncate" title="${tpl.name}">${tpl.name}</div>
+                            <div class="fw-bold small mb-1 text-truncate" title="${escapeHtml(tpl.name)}">${escapeHtml(tpl.name)}</div>
                             <div class="text-muted" style="font-size: 0.7rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 32px;">
-                                ${tpl.components.find(c => c.type === 'BODY')?.text || ''}
+                                ${escapeHtml(tpl.components.find(c => c.type === 'BODY')?.text || '')}
                             </div>
                             <div class="mt-2 d-flex justify-content-between align-items-center">
                                 <span class="badge bg-light text-dark border p-1 px-2" style="font-size: 0.65rem;">${tpl.language}</span>
@@ -2089,7 +2089,7 @@
                 success: function(res) {
                     if (res.success) {
                         const resultEl = document.getElementById('scheduleResult');
-                        resultEl.innerHTML = `<i class="fas fa-check-circle me-1"></i> ${res.message}`;
+                        resultEl.innerHTML = `<i class="fas fa-check-circle me-1"></i> ${escapeHtml(res.message ?? '')}`;
                         resultEl.style.display = 'block';
                         document.getElementById('scheduleMsgContent').value = '';
                         setTimeout(() => {
