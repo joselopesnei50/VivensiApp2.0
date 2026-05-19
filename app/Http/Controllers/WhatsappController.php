@@ -637,18 +637,27 @@ class WhatsappController extends Controller
     public function chatList()
     {
         $tenantId = auth()->user()->tenant_id;
+
+        // Subquery correlated: busca última mensagem em query única (sem N+1)
         $chats = WhatsappChat::where('tenant_id', $tenantId)
+            ->addSelect([
+                'last_message_preview' => WhatsappMessage::select('content')
+                    ->whereColumn('chat_id', 'whatsapp_chats.id')
+                    ->latest()
+                    ->limit(1),
+            ])
             ->orderBy('last_message_at', 'desc')
             ->get()
             ->map(function ($chat) {
-                $last = WhatsappMessage::where('chat_id', $chat->id)->latest()->first();
                 return [
-                    'id'                   => $chat->id,
-                    'contact_name'         => $chat->contact_name ?? 'Sem Nome',
+                    'id'                        => $chat->id,
+                    'contact_name'              => $chat->contact_name ?? 'Sem Nome',
                     'last_message_at_formatted' => $chat->last_message_at
                         ? \Carbon\Carbon::parse($chat->last_message_at)->format('H:i')
                         : '',
-                    'last_message_preview' => $last ? mb_substr($last->content, 0, 40) : '',
+                    'last_message_preview'      => $chat->last_message_preview
+                        ? mb_substr($chat->last_message_preview, 0, 40)
+                        : '',
                 ];
             });
 
@@ -921,8 +930,18 @@ class WhatsappController extends Controller
                 }
             } else {
                 // Fallback: Evolution API
-                $tenantModel = Tenant::find($tenantId);
-                $evo = new \App\Services\EvolutionApiService($tenantModel);
+                $instanceStart = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+                    ->where('status', 'open')
+                    ->first();
+                if (!$instanceStart) {
+                    return response()->json([
+                        'chat_id' => $chat->id,
+                        'sent'    => false,
+                        'error'   => 'Nenhuma instância WhatsApp conectada.',
+                        'code'    => 'no_instance',
+                    ], 422);
+                }
+                $evo = new \App\Services\EvolutionApiService($instanceStart);
                 $res = $evo->sendMessage($chat->wa_id, $content, null, 0);
                 $messageId = $res['key']['id'] ?? ($res['messageId'] ?? $messageId);
                 $sent = empty($res['error']);
@@ -1117,9 +1136,11 @@ class WhatsappController extends Controller
             'caption'  => ['nullable', 'string', 'max:1024'],
         ]);
 
-        // Anti-ban: verifica se imagem não está bloqueada/opt-out
-        if ($chat->blocked_at || $chat->opt_out_at) {
-            return response()->json(['error' => 'Contato bloqueado ou com opt-out. Envio cancelado.'], 422);
+        $config = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
+        $policy = app(WhatsappOutboundPolicy::class);
+        $reason = null; $code = null;
+        if (!$policy->canSend($config, $chat, false, $reason, $code)) {
+            return response()->json(['error' => $reason ?: 'Envio não permitido.', 'code' => $code], 422);
         }
 
         $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
@@ -1131,8 +1152,6 @@ class WhatsappController extends Controller
         }
         try {
             $evo = new EvolutionApiService($instance);
-            
-            // Log para debug (pode remover depois)
             \Log::info("Enviando mídia para {$chat->wa_id}", ['mime' => $validated['mimetype']]);
 
             $res = $evo->sendMedia($chat->wa_id, $validated['base64'], $validated['caption'] ?? '', $validated['mimetype']);
@@ -1185,9 +1204,11 @@ class WhatsappController extends Controller
             'mimetype' => ['nullable', 'string'],
         ]);
 
-        // Anti-ban: bloquear envio se contato está restrito
-        if ($chat->blocked_at || $chat->opt_out_at) {
-            return response()->json(['error' => 'Contato bloqueado ou com opt-out. Envio cancelado.'], 422);
+        $configAudio = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
+        $policyAudio = app(WhatsappOutboundPolicy::class);
+        $reasonAudio = null; $codeAudio = null;
+        if (!$policyAudio->canSend($configAudio, $chat, false, $reasonAudio, $codeAudio)) {
+            return response()->json(['error' => $reasonAudio ?: 'Envio não permitido.', 'code' => $codeAudio], 422);
         }
 
         $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
