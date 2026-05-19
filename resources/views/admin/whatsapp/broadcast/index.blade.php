@@ -744,7 +744,7 @@
         </div>
         <div class="flex-1">
             <h6 class="mb-0 fw-800" style="color:#fff;font-size:.95rem;">Relatório de Disparos</h6>
-            <small style="color:rgba(255,255,255,.75);font-size:.72rem;">Últimas {{ $campaigns->count() }} campanhas</small>
+            <small style="color:rgba(255,255,255,.75);font-size:.72rem;">Últimas 10 campanhas · <a href="{{ route('whatsapp.broadcast.campaigns') }}" style="color:rgba(255,255,255,.9);font-weight:700;">ver todas</a></small>
         </div>
         <a href="{{ route('whatsapp.broadcast.campaigns') }}"
            style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:.75rem;font-weight:700;padding:6px 14px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:.15s;"

@@ -39,7 +39,7 @@ class WhatsappBroadcastController extends Controller
         if (Schema::hasTable('broadcast_campaigns')) {
             $campaigns = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
                 ->orderByDesc('created_at')
-                ->limit(20)
+                ->limit(10)
                 ->get();
 
             $scheduled = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
