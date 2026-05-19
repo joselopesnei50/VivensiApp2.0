@@ -425,10 +425,18 @@ class EvolutionApiService
             }
 
             $data = $response->json();
+
+            // Log completo da resposta para diagnóstico
+            Log::info('getGroupMembers RAW response', [
+                'groupId'   => $groupId,
+                'is_array'  => is_array($data),
+                'top_keys'  => is_array($data) ? array_keys($data) : 'not-array',
+                'raw'       => substr($response->body(), 0, 600),
+            ]);
+
             if (!is_array($data)) return [];
 
             // Normaliza todas as estruturas conhecidas da Evolution API
-            // Ordem: raiz → data → array[0] → data[0]
             $participants = $data['participants']
                 ?? ($data[0]['participants'] ?? null)
                 ?? ($data['data']['participants'] ?? null)
@@ -450,8 +458,9 @@ class EvolutionApiService
                 ->all();
 
             Log::info('getGroupMembers OK', [
-                'groupId'       => $groupId,
-                'members_count' => count($jids),
+                'groupId'        => $groupId,
+                'members_count'  => count($jids),
+                'sample_jid'     => $jids[0] ?? null,
             ]);
 
             return $jids;
