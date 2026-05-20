@@ -148,22 +148,49 @@
                     </span>
                 </td>
                 <td class="text-end">
-                    <div class="d-flex justify-content-end gap-2">
+                    @php
+                        $portalLink = url('/portal-doador/' . $d->portal_token);
+                        $waMsg = urlencode("Olá " . explode(' ', $d->name)[0] . "! 💙\n\nCriamos um Portal VIP exclusivo para você acompanhar o impacto das suas doações e baixar seus informes de rendimentos.\n\nAcesse aqui: " . $portalLink);
+                        $waUrl = "https://wa.me/" . preg_replace('/\D/', '', $d->phone ?? '') . "?text=" . $waMsg;
+                    @endphp
+                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+
+                        {{-- Copiar link do portal --}}
+                        <button type="button"
+                            class="action-circle"
+                            style="background:#f0fdf4;color:#059669;border:none;cursor:pointer;"
+                            title="Copiar link do Portal VIP"
+                            onclick="copyPortalLink('{{ $portalLink }}', this)">
+                            <i class="fas fa-link"></i>
+                        </button>
+
+                        {{-- Enviar por e-mail --}}
+                        @if($d->email)
+                            <form action="{{ route('ngo.donors.send-portal-email', $d->id) }}" method="POST" style="display:inline;"
+                                  onsubmit="return confirm('Enviar Portal VIP para {{ $d->email }}?')">
+                                @csrf
+                                <button type="submit" class="action-circle border-0"
+                                    style="background:#eff6ff;color:#3b82f6;cursor:pointer;"
+                                    title="Enviar Portal VIP por e-mail para {{ $d->email }}">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </form>
+                        @endif
+
+                        {{-- Enviar via WhatsApp (com mensagem pré-pronta) --}}
                         @if($d->phone)
-                            {{-- Botão Portal VIP --}}
-                            @php
-                                $portalLink = url('/portal-doador/' . $d->portal_token);
-                                $waMsg = urlencode("Olá " . explode(' ', $d->name)[0] . "! 💙\n\nComo forma de transparência e gratidão pelo seu apoio, criamos um Portal VIP exclusivo para você acompanhar o impacto das suas doações e baixar seus informes de rendimentos.\n\nAcesse aqui: " . $portalLink);
-                                $waUrl = "https://wa.me/" . preg_replace('/\D/', '', $d->phone) . "?text=" . $waMsg;
-                            @endphp
-                            <a href="{{ $waUrl }}" target="_blank" class="action-circle" style="background: #eef2ff; color: #6366f1;" title="Enviar Portal VIP via WhatsApp">
+                            <a href="{{ $waUrl }}" target="_blank"
+                               class="action-circle" style="background:#eef2ff;color:#6366f1;"
+                               title="Enviar Portal VIP via WhatsApp">
                                 <i class="fas fa-magic"></i>
                             </a>
-
-                            <a href="https://wa.me/{{ preg_replace('/\D/', '', $d->phone) }}" target="_blank" class="action-circle text-success" title="WhatsApp">
+                            <a href="https://wa.me/{{ preg_replace('/\D/', '', $d->phone) }}" target="_blank"
+                               class="action-circle text-success"
+                               title="WhatsApp direto">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                         @endif
+
                         <a href="{{ url('/ngo/donors/'.$d->id.'/edit') }}" class="action-circle" title="Editar">
                             <i class="fas fa-edit"></i>
                         </a>
@@ -191,4 +218,24 @@
         {{ $donors->links() }}
     </div>
 </div>
+
+@push('scripts')
+<script>
+function copyPortalLink(url, btn) {
+    navigator.clipboard.writeText(url).then(function() {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        btn.style.background = '#dcfce7';
+        btn.style.color = '#15803d';
+        setTimeout(function() {
+            btn.innerHTML = orig;
+            btn.style.background = '#f0fdf4';
+            btn.style.color = '#059669';
+        }, 2000);
+    }).catch(function() {
+        prompt('Copie o link abaixo:', url);
+    });
+}
+</script>
+@endpush
 @endsection
