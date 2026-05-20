@@ -9,7 +9,15 @@ class EnsureSuperAdmin
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!$request->user() || $request->user()->role !== 'super_admin') {
+        $user = $request->user();
+
+        // Suporta coluna role legada E spatie role (HasRoles)
+        $isSuperAdmin = $user && (
+            $user->role === 'super_admin'
+            || $user->hasRole('super_admin')
+        );
+
+        if (!$isSuperAdmin) {
             abort(403, 'Acesso restrito a administradores.');
         }
 
