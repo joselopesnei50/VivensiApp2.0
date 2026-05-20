@@ -1,0 +1,54 @@
+<?php
+
+// ── Projetos & Tarefas ────────────────────────────────────────────────────────
+Route::middleware(['auth', 'subscription'])->group(function () {
+    // Projetos
+    Route::get('/projects',              [App\Http\Controllers\ProjectController::class, 'index']);
+    Route::get('/projects/create',       [App\Http\Controllers\ProjectController::class, 'create']);
+    Route::post('/projects',             [App\Http\Controllers\ProjectController::class, 'store']);
+    Route::get('/projects/details/{id}', [App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
+    Route::get('/projects/{id}',         [App\Http\Controllers\ProjectController::class, 'show']);
+    Route::get('/projects/{id}/edit',    [App\Http\Controllers\ProjectController::class, 'edit']);
+    Route::put('/projects/{id}',         [App\Http\Controllers\ProjectController::class, 'update']);
+    Route::post('/projects/{id}/members',             [App\Http\Controllers\ProjectController::class, 'addMember']);
+    Route::post('/projects/{id}/members/credential',  [App\Http\Controllers\ProjectController::class, 'addMemberCredential']);
+    Route::delete('/projects/{id}/members/{memberId}', [App\Http\Controllers\ProjectController::class, 'removeMember']);
+    Route::post('/projects/people/global',            [App\Http\Controllers\ProjectController::class, 'storeGlobalPerson'])->name('projects.people.store.global');
+    Route::post('/projects/people/import',            [App\Http\Controllers\ProjectController::class, 'importPeople'])->name('projects.people.import.global');
+    Route::post('/projects/{id}/people',              [App\Http\Controllers\ProjectController::class, 'storePerson'])->name('projects.people.store');
+    Route::delete('/projects/{id}/people/{personId}', [App\Http\Controllers\ProjectController::class, 'destroyPerson'])->name('projects.people.destroy');
+    Route::post('/projects/{id}/broadcast',           [App\Http\Controllers\ProjectController::class, 'createBroadcastList'])->name('projects.broadcast.create');
+    Route::get('/projects/{id}/kanban',               [App\Http\Controllers\TaskController::class, 'kanban']);
+    Route::get('/projects/{id}/export-pdf',           [App\Http\Controllers\ProjectController::class, 'exportPdf'])->name('projects.export.pdf');
+
+    // Timeline
+    Route::post('/projects/{id}/timeline',              [App\Http\Controllers\ProjectTimelineController::class, 'store'])->name('projects.timeline.store');
+    Route::delete('/projects/{id}/timeline/{recordId}', [App\Http\Controllers\ProjectTimelineController::class, 'destroy'])->name('projects.timeline.destroy');
+
+    // Diário de Evolução (Logs)
+    Route::post('/projects/{id}/logs',            [App\Http\Controllers\ProjectLogController::class, 'store'])->name('projects.logs.store');
+    Route::delete('/projects/{id}/logs/{logId}',  [App\Http\Controllers\ProjectLogController::class, 'destroy'])->name('projects.logs.destroy');
+    Route::post('/projects/{id}/logs/summary',    [App\Http\Controllers\ProjectLogController::class, 'generateSummary'])->name('projects.logs.summary');
+
+    // Tarefas
+    Route::get('/tasks',             [App\Http\Controllers\TaskController::class, 'index']);
+    Route::get('/tasks/calendar',    [App\Http\Controllers\TaskController::class, 'calendar'])->name('tasks.calendar');
+    Route::get('/tasks/create',      [App\Http\Controllers\TaskController::class, 'create']);
+    Route::post('/tasks',            [App\Http\Controllers\TaskController::class, 'store']);
+    Route::post('/api/tasks/update-status', [App\Http\Controllers\TaskController::class, 'updateStatus']);
+    Route::post('/api/tasks/update',        [App\Http\Controllers\TaskController::class, 'updateTask']);
+    Route::post('/api/tasks/create',        [App\Http\Controllers\TaskController::class, 'createApi']);
+
+    // Transações Financeiras
+    Route::prefix('transactions')->group(function () {
+        Route::get('/',              [App\Http\Controllers\TransactionController::class, 'index']);
+        Route::get('/create',        [App\Http\Controllers\TransactionController::class, 'create']);
+        Route::post('/',             [App\Http\Controllers\TransactionController::class, 'store']);
+        Route::get('/{id}',          [App\Http\Controllers\TransactionController::class, 'show']);
+        Route::put('/{id}',          [App\Http\Controllers\TransactionController::class, 'update']);
+        Route::post('/{id}/approve', [App\Http\Controllers\TransactionController::class, 'approve'])->name('transactions.approve');
+        Route::post('/{id}/reject',  [App\Http\Controllers\TransactionController::class, 'reject'])->name('transactions.reject');
+        Route::get('/export',        [App\Http\Controllers\TransactionController::class, 'export']);
+        Route::delete('/{id}',       [App\Http\Controllers\TransactionController::class, 'destroy']);
+    });
+});
