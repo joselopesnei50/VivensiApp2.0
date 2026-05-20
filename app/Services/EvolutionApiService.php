@@ -507,6 +507,26 @@ class EvolutionApiService
     }
 
     /**
+     * Envia presença "composing" (digitando) ou "paused" para o destinatário.
+     * Usado pelo AntiBanManager para simular comportamento humano antes de enviar.
+     */
+    public function sendPresence(string $instanceName, string $remoteJid, string $presence = 'composing'): void
+    {
+        $inst = $instanceName ?: $this->instanceName;
+        if (!$inst) return;
+        try {
+            $this->http()->timeout(5)->withHeaders([
+                'apikey' => $this->globalApiKey,
+            ])->post("{$this->baseUrl}/chat/sendPresence/{$inst}", [
+                'number'  => $remoteJid,
+                'options' => ['presence' => $presence, 'delay' => 1200],
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('sendPresence falhou (não crítico): ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Retorna cliente HTTP com SSL configurado corretamente.
      * Laravel 9 usa withoutVerifying() — não existe withSslVerification().
      */
