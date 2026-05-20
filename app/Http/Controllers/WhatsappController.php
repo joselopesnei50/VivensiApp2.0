@@ -1171,6 +1171,7 @@ class WhatsappController extends Controller
             ]);
 
             $chat->update(['last_message_at' => now()]);
+            $policy->recordSend($config, $chat);
 
             WhatsappAuditLog::create([
                 'tenant_id'     => $tenantId,
@@ -1239,6 +1240,7 @@ class WhatsappController extends Controller
             ]);
 
             $chat->update(['last_message_at' => now()]);
+            $policyAudio->recordSend($configAudio, $chat);
 
             WhatsappAuditLog::create([
                 'tenant_id'     => $tenantId,

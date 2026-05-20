@@ -12,6 +12,7 @@ use App\Models\WhatsappChat;
 use App\Models\WhatsappInstance;
 use App\Models\WhatsappMessage;
 use App\Services\EvolutionApiService;
+use App\Services\Messaging\AntiBanManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -47,7 +48,8 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             return;
         }
 
-        $evo = new EvolutionApiService($instance);
+        $evo     = new EvolutionApiService($instance);
+        $antiBan = new AntiBanManager($evo);
         $recipients = $this->getRecipients($campaign, $evo);
 
         if ($recipients->isEmpty()) {
@@ -57,8 +59,9 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
 
         $campaign->update(['actual_recipients' => $recipients->count()]);
 
-        $sentCount = 0;
-        $failedCount = 0;
+        $sentCount        = 0;
+        $failedCount      = 0;
+        $consecutiveErrors = 0;
 
         $mediaToSend = null;
         $imageMime   = 'image/jpeg';
@@ -129,6 +132,26 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             $campaign->refresh();
             if ($campaign->status !== 'processing') break;
 
+            // ── Anti-ban: verifica janela de horário e limite diário ──────────
+            if (!$antiBan->canSendMessage($instance)) {
+                $instance->refresh();
+                // Fora da janela horária: aguarda 30 min e tenta novamente
+                if (!$instance->isWithinSafeWindow()) {
+                    Log::info("Broadcast pausado: fora da janela horária — aguardando 30 min", ['campaign_id' => $campaign->id]);
+                    sleep(1800);
+                    if (!$antiBan->canSendMessage($instance)) {
+                        $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+                        Log::error("Broadcast encerrado: janela de horário expirou", ['campaign_id' => $campaign->id]);
+                        return;
+                    }
+                } else {
+                    // Limite diário atingido: encerra campanha
+                    $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+                    Log::error("Broadcast encerrado: limite diário atingido", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
+                    return;
+                }
+            }
+
             try {
                 $rawWaId = $recipient->wa_id;
 
@@ -148,6 +171,11 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     $waId = $jidMap[$normalized];
                 }
 
+                // ── Anti-ban: simula digitação antes do envio (apenas individuais) ──
+                if (!$isGroupChatMode) {
+                    $antiBan->simulateHumanTyping($instance, $waId);
+                }
+
                 $res = $mediaToSend
                     ? $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime)
                     : $evo->sendMessage($waId, $campaign->message, null, rand(1, 3));
@@ -163,22 +191,59 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                         ]);
                     }
                     $sentCount++;
+                    $consecutiveErrors = 0;
+                    $antiBan->recordSent($instance); // contabiliza no limite diário
                 } else {
                     $errorMsg = is_array($res) ? json_encode($res) : ($res ?: 'Unknown Error');
                     Log::warning("Broadcast failed for {$waId}. Campaign ID: {$campaign->id}. Error: " . $errorMsg);
                     $failedCount++;
+                    $consecutiveErrors++;
+
+                    // ── Circuit breaker: detecta sinal de ban / rate limit ────────
+                    $details = strtolower(json_encode($res));
+                    $isBanSignal = str_contains($details, '429')
+                        || str_contains($details, 'rate')
+                        || str_contains($details, 'banned')
+                        || str_contains($details, 'suspended')
+                        || str_contains($details, 'blocked');
+
+                    if ($isBanSignal) {
+                        Log::critical("Broadcast: sinal de ban/rate-limit detectado — campanha pausada 30 min", [
+                            'campaign_id' => $campaign->id,
+                            'sent'        => $sentCount,
+                            'details'     => substr($details, 0, 300),
+                        ]);
+                        sleep(1800); // 30 min de pausa automática
+                        $consecutiveErrors = 0;
+                    }
+
+                    // 5 erros consecutivos sem sinal de ban → parar campanha
+                    if ($consecutiveErrors >= 5) {
+                        Log::error("Broadcast encerrado: 5 erros consecutivos na API", ['campaign_id' => $campaign->id]);
+                        $campaign->update(['status' => 'failed', 'completed_at' => now(), 'total_sent' => $sentCount, 'total_failed' => $failedCount]);
+                        return;
+                    }
                 }
             } catch (\Exception $e) {
-                Log::error("Broadcast recipient exception for {$waId}. Campaign ID: {$campaign->id}. Message: " . $e->getMessage());
+                Log::error("Broadcast recipient exception. Campaign ID: {$campaign->id}. Message: " . $e->getMessage());
                 $failedCount++;
+                $consecutiveErrors++;
             }
 
             $campaign->update([
                 'total_sent'   => $sentCount,
-                'total_failed' => $failedCount
+                'total_failed' => $failedCount,
             ]);
 
-            sleep($campaign->cadence ?: 3);
+            // ── Anti-ban: delay aleatório (cadência + 0 a 5s extra) ──────────
+            $minDelay = max(2, $campaign->cadence ?: 3);
+            sleep(rand($minDelay, $minDelay + 5));
+
+            // ── Anti-ban: pausa longa a cada 50 mensagens enviadas ───────────
+            if ($sentCount > 0 && $sentCount % 50 === 0) {
+                Log::info("Broadcast: pausa anti-ban a cada 50 msgs", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
+                sleep(rand(25, 45));
+            }
         }
 
         $campaign->update(['status' => 'completed', 'completed_at' => now()]);
