@@ -34,11 +34,11 @@ class NgoGrantDocument extends Model
     protected static function booted()
     {
         static::deleting(function (NgoGrantDocument $doc) {
-            $disk = 'public';
+            if (!$doc->file_path) return;
             try {
-                if ($doc->file_path) {
-                    Storage::disk($disk)->delete($doc->file_path);
-                }
+                // Tenta disco local (privado) primeiro; fallback para public (legado)
+                $disk = Storage::disk('local')->exists($doc->file_path) ? 'local' : 'public';
+                Storage::disk($disk)->delete($doc->file_path);
             } catch (\Throwable $e) {
                 // Keep flow stable; file may already be missing.
             }

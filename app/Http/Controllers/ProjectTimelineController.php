@@ -11,7 +11,13 @@ class ProjectTimelineController extends Controller
 {
     public function store(Request $request, $projectId)
     {
-        $project = Project::findOrFail($projectId);
+        abort_unless(
+            in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true),
+            403
+        );
+
+        $tenantId = auth()->user()->tenant_id;
+        $project  = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -39,7 +45,15 @@ class ProjectTimelineController extends Controller
 
     public function destroy($projectId, $id)
     {
-        $record = ProjectTimelineRecord::where('project_id', $projectId)->findOrFail($id);
+        abort_unless(
+            in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true),
+            403
+        );
+
+        $tenantId = auth()->user()->tenant_id;
+        $record   = ProjectTimelineRecord::where('project_id', $projectId)
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($id);
 
         if ($record->media_path) {
             Storage::disk('public')->delete($record->media_path);
