@@ -13,8 +13,20 @@ class ProjectLogController extends Controller
     public function store(Request $request, int $projectId)
     {
         $tenantId = auth()->user()->tenant_id;
+        $user     = auth()->user();
 
         $project = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
+
+        // Employees só podem escrever logs se forem membros do projeto
+        if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
+            abort_unless(
+                \App\Models\ProjectMember::where('tenant_id', $tenantId)
+                    ->where('project_id', $project->id)
+                    ->where('user_id', $user->id)
+                    ->exists(),
+                403
+            );
+        }
 
         $request->validate(['body' => 'required|string|max:3000']);
 

@@ -150,7 +150,8 @@ class NgoGrantController extends Controller
 
     public function show($id)
     {
-        $grant = NgoGrant::with([
+        $tenantId = auth()->user()->tenant_id;
+        $grant = NgoGrant::where('tenant_id', $tenantId)->with([
             'documents' => fn($q) => $q->orderBy('created_at', 'desc'),
             'project.transactions' => fn($q) => $q->orderBy('date', 'desc'),
             'project.tasks',
@@ -174,7 +175,7 @@ class NgoGrantController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $grant = NgoGrant::findOrFail($id);
+        $grant = NgoGrant::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
 
         $validated = $request->validate([
             'status' => 'required|in:open,reporting,closed',
@@ -227,7 +228,8 @@ class NgoGrantController extends Controller
 
     public function uploadDocument(Request $request, $id)
     {
-        $grant = NgoGrant::findOrFail($id);
+        $tenantId = auth()->user()->tenant_id;
+        $grant = NgoGrant::where('tenant_id', $tenantId)->findOrFail($id);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -236,8 +238,7 @@ class NgoGrantController extends Controller
         ]);
 
         $file = $request->file('file');
-        $tenantId = auth()->user()->tenant_id;
-        $disk = 'public';
+        $disk = 'local'; // disco privado — não acessível via URL pública
         $dir = "ngo_grants/{$tenantId}/{$grant->id}";
         $path = $file->store($dir, $disk);
 
@@ -258,10 +259,12 @@ class NgoGrantController extends Controller
 
     public function downloadDocument($id, $docId)
     {
-        $grant = NgoGrant::findOrFail($id);
+        $tenantId = auth()->user()->tenant_id;
+        $grant = NgoGrant::where('tenant_id', $tenantId)->findOrFail($id);
         $doc = NgoGrantDocument::where('ngo_grant_id', $grant->id)->findOrFail($docId);
 
-        $disk = 'public';
+        // Tenta disco local (privado) primeiro; fallback para public (arquivos legados)
+        $disk = Storage::disk('local')->exists($doc->file_path) ? 'local' : 'public';
         if (!Storage::disk($disk)->exists($doc->file_path)) {
             return back()->with('error', 'Arquivo não encontrado no servidor.');
         }
@@ -293,9 +296,12 @@ class NgoGrantController extends Controller
         return Storage::disk($disk)->download($doc->file_path, $filename);
     }
 
+    // deleteDocument — tenant check added below
+    }
+
     public function deleteDocument($id, $docId)
     {
-        $grant = NgoGrant::findOrFail($id);
+        $grant = NgoGrant::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
         $doc = NgoGrantDocument::where('ngo_grant_id', $grant->id)->findOrFail($docId);
 
         $doc->delete();
@@ -443,7 +449,7 @@ class NgoGrantController extends Controller
 
     public function destroy($id)
     {
-        $grant = NgoGrant::findOrFail($id);
+        $grant = NgoGrant::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
 
         // Delete associated stored files (DB cascade won't trigger Eloquent events for docs).
         try {

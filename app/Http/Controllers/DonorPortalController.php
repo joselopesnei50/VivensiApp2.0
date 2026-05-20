@@ -71,10 +71,12 @@ class DonorPortalController extends Controller
     {
         $donor = NgoDonor::withoutGlobalScopes()->where('portal_token', $token)->firstOrFail();
 
+        // Email removido das atualizações públicas: alteração de email via link
+        // público poderia permitir sequestro de comunicações futuras do doador.
+        // Para trocar o email, o doador deve contatar a ONG diretamente.
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
+            'name'  => 'required|string|max:255',
+            'phone' => 'nullable|string|max:30',
         ]);
 
         $donor->update($validated);
