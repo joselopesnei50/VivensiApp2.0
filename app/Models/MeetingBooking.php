@@ -39,6 +39,7 @@ class MeetingBooking extends Model
     {
         // Lê configurações do banco (com defaults sensatos)
         $activeDays    = array_map('intval', explode(',', SystemSetting::getValue('booking_days', '1,2,3,4,5')));
+        $activeMonths  = array_map('intval', explode(',', SystemSetting::getValue('booking_months', '1,2,3,4,5,6,7,8,9,10,11,12')));
         $startTime     = SystemSetting::getValue('booking_start_time', '09:00');
         $endTime       = SystemSetting::getValue('booking_end_time', '17:00');
         $slotMinutes   = (int) SystemSetting::getValue('booking_slot_duration', '30');
@@ -46,8 +47,14 @@ class MeetingBooking extends Model
 
         $day    = \Carbon\Carbon::parse($date);
         $dayNum = (int) $day->format('N') % 7; // ISO: 1=Mon…7=Sun → convert: Mon=1,Sun=0
+        $monthNum = (int) $day->format('n'); // 1=Janeiro … 12=Dezembro
 
-        // Verifica se o dia está ativo
+        // Verifica se o mês está ativo
+        if (!in_array($monthNum, $activeMonths)) {
+            return [];
+        }
+
+        // Verifica se o dia da semana está ativo
         if (!in_array($dayNum, $activeDays)) {
             return [];
         }
