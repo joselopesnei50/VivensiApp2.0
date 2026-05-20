@@ -66,6 +66,7 @@ class AdminSettingsController extends Controller
 
         // Booking / agenda settings — safe fallbacks se a tabela ainda não existir
         $booking_days          = SystemSetting::getValue('booking_days', '1,2,3,4,5');
+        $booking_months        = SystemSetting::getValue('booking_months', '1,2,3,4,5,6,7,8,9,10,11,12');
         $booking_start_time    = SystemSetting::getValue('booking_start_time', '09:00');
         $booking_end_time      = SystemSetting::getValue('booking_end_time', '17:00');
         $booking_slot_duration = SystemSetting::getValue('booking_slot_duration', '30');
@@ -115,6 +116,7 @@ class AdminSettingsController extends Controller
             'openpix_app_id',
             'openpix_configured',
             'booking_days',
+            'booking_months',
             'booking_start_time',
             'booking_end_time',
             'booking_slot_duration',
@@ -142,6 +144,8 @@ class AdminSettingsController extends Controller
             // Booking / agenda
             'booking_days'          => 'nullable|array',
             'booking_days.*'        => 'integer|between:0,6',
+            'booking_months'        => 'nullable|array',
+            'booking_months.*'      => 'integer|between:1,12',
             'booking_start_time'    => 'nullable|date_format:H:i',
             'booking_end_time'      => 'nullable|date_format:H:i',
             'booking_slot_duration' => 'nullable|integer|in:15,30,45,60',
@@ -251,6 +255,9 @@ class AdminSettingsController extends Controller
         // Booking / agenda settings
         $days = array_map('intval', $validated['booking_days'] ?? []);
         SystemSetting::setValue('booking_days', implode(',', $days), 'booking');
+
+        $months = array_map('intval', $validated['booking_months'] ?? []);
+        SystemSetting::setValue('booking_months', implode(',', $months ?: [1,2,3,4,5,6,7,8,9,10,11,12]), 'booking');
 
         if (!empty($validated['booking_start_time'])) {
             SystemSetting::setValue('booking_start_time', $validated['booking_start_time'], 'booking');

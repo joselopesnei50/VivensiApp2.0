@@ -649,9 +649,29 @@
                     <div class="card-body p-4">
                         <div class="row g-4">
 
+                            {{-- Meses disponíveis --}}
+                            <div class="col-12">
+                                <label class="form-label fw-600 text-dark">Meses disponíveis para agendamento</label>
+                                <div class="d-flex flex-wrap gap-2 mt-1">
+                                    @php
+                                        $activeMonths = explode(',', $booking_months ?? '1,2,3,4,5,6,7,8,9,10,11,12');
+                                        $monthLabels  = [1=>'Jan',2=>'Fev',3=>'Mar',4=>'Abr',5=>'Mai',6=>'Jun',7=>'Jul',8=>'Ago',9=>'Set',10=>'Out',11=>'Nov',12=>'Dez'];
+                                    @endphp
+                                    @foreach($monthLabels as $num => $label)
+                                    <label class="booking-day-chip {{ in_array((string)$num, $activeMonths) ? 'active' : '' }}">
+                                        <input type="checkbox" name="booking_months[]" value="{{ $num }}"
+                                               {{ in_array((string)$num, $activeMonths) ? 'checked' : '' }}
+                                               class="d-none" onchange="this.closest('label').classList.toggle('active', this.checked)">
+                                        {{ $label }}
+                                    </label>
+                                    @endforeach
+                                </div>
+                                <div class="form-text">Meses em que a agenda estará aberta. Desmarque meses de férias, recesso ou baixa demanda.</div>
+                            </div>
+
                             {{-- Dias disponíveis --}}
                             <div class="col-12">
-                                <label class="form-label fw-600 text-dark">Dias disponíveis para agendamento</label>
+                                <label class="form-label fw-600 text-dark">Dias da semana disponíveis</label>
                                 <div class="d-flex flex-wrap gap-2 mt-1">
                                     @php
                                         $activeDays = explode(',', $booking_days);
