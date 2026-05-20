@@ -214,6 +214,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/donors/{id}/edit', [App\Http\Controllers\NgoDonorController::class, 'edit']);
         Route::put('/donors/{id}', [App\Http\Controllers\NgoDonorController::class, 'update']);
         Route::delete('/donors/{id}', [App\Http\Controllers\NgoDonorController::class, 'destroy']);
+        Route::post('/donors/{id}/send-portal-email', [App\Http\Controllers\NgoDonorController::class, 'sendPortalEmail'])->name('ngo.donors.send-portal-email');
         
         // Campaigns
         Route::get('/campaigns', [App\Http\Controllers\CampaignController::class, 'index']);

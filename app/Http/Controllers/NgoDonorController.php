@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\DonorPortalMail;
 use App\Models\NgoDonor;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class NgoDonorController extends Controller
 {
@@ -73,9 +76,25 @@ class NgoDonorController extends Controller
         $donor = NgoDonor::where('id', $id)
                          ->where('tenant_id', auth()->user()->tenant_id)
                          ->firstOrFail();
-                         
+
         $donor->delete();
 
         return redirect('/ngo/donors')->with('success', 'Doador excluído com sucesso!');
+    }
+
+    public function sendPortalEmail($id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $donor    = NgoDonor::where('id', $id)->where('tenant_id', $tenantId)->firstOrFail();
+
+        if (empty($donor->email)) {
+            return back()->with('error', 'Este doador não tem e-mail cadastrado.');
+        }
+
+        $tenant = Tenant::find($tenantId);
+
+        Mail::to($donor->email)->send(new DonorPortalMail($donor, $tenant));
+
+        return back()->with('success', "Portal VIP enviado para {$donor->email} com sucesso!");
     }
 }
