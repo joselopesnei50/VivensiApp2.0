@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
         // \App\Models\User::factory(10)->create();
         $this->call(RecoverySeeder::class);
         $this->call(PageSeeder::class);
+        $this->call(RolesAndPermissionsSeeder::class);
     }
 }

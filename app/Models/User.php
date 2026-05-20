@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 use App\Services\BrevoService;
 use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     // Conectando à tabela existente do sistema atual
     protected $table = 'users';
@@ -74,6 +75,28 @@ class User extends Authenticatable
     public function projectMembers()
     {
         return $this->hasMany(ProjectMember::class, 'user_id');
+    }
+
+    // ── Helpers de role (compatíveis com coluna role + spatie) ────────────────
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isNgo(): bool
+    {
+        return $this->role === 'ngo' || ($this->tenant && $this->tenant->type === 'ngo');
+    }
+
+    public function isManager(): bool
+    {
+        return $this->role === 'manager';
+    }
+
+    public function isMei(): bool
+    {
+        return $this->role === 'common';
     }
 
     /**

@@ -18,32 +18,58 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // Acesso ao módulo WhatsApp (chat, broadcast, configurações)
+        // super_admin sempre passa — verificado antes de qualquer Gate/Policy
+        Gate::before(function (User $user, string $ability) {
+            if ($user->role === 'super_admin') return true;
+            return null;
+        });
+
+        // ── Gates de módulo ───────────────────────────────────────────────────
+        // Cada gate verifica spatie permissions (quando seeder rodou) com
+        // fallback para coluna role (antes do seeder / usuários legados).
+
         Gate::define('access-whatsapp', function (User $user) {
-            return $user->role === 'super_admin'
-                || in_array($user->role, ['manager', 'ngo', 'common'])
-                || ($user->tenant && $user->tenant->type === 'ngo');
+            if ($user->hasPermissionTo('access-whatsapp')) return true;
+            return in_array($user->role, ['manager', 'ngo', 'common']);
         });
 
-        // Acesso às funcionalidades de gestor
         Gate::define('access-manager', function (User $user) {
-            return in_array($user->role, ['manager', 'ngo', 'super_admin', 'common']);
+            if ($user->hasPermissionTo('access-manager')) return true;
+            return in_array($user->role, ['manager', 'ngo', 'common']);
         });
 
-        // Acesso exclusivo de super_admin
         Gate::define('access-admin', function (User $user) {
             return $user->role === 'super_admin';
         });
 
-        // Acesso ao módulo Social AI Hub (geração de conteúdo com IA)
         Gate::define('access-social-ai', function (User $user) {
-            return in_array($user->role, ['manager', 'ngo', 'super_admin', 'common']);
+            if ($user->hasPermissionTo('access-social-ai')) return true;
+            return in_array($user->role, ['manager', 'ngo', 'common']);
         });
 
-        // super_admin ignora todas as Policies automaticamente
-        Gate::before(function (User $user, string $ability) {
-            if ($user->role === 'super_admin') return true;
-            return null;
+        Gate::define('manage-settings', function (User $user) {
+            if ($user->hasPermissionTo('manage-settings')) return true;
+            return $user->role === 'super_admin';
+        });
+
+        Gate::define('manage-donors', function (User $user) {
+            if ($user->hasPermissionTo('manage-donors')) return true;
+            return in_array($user->role, ['ngo', 'super_admin']);
+        });
+
+        Gate::define('manage-grants', function (User $user) {
+            if ($user->hasPermissionTo('manage-grants')) return true;
+            return in_array($user->role, ['ngo', 'super_admin']);
+        });
+
+        Gate::define('manage-projects', function (User $user) {
+            if ($user->hasPermissionTo('manage-projects')) return true;
+            return in_array($user->role, ['manager', 'super_admin']);
+        });
+
+        Gate::define('manage-broadcast', function (User $user) {
+            if ($user->hasPermissionTo('manage-broadcast')) return true;
+            return in_array($user->role, ['manager', 'ngo', 'super_admin']);
         });
     }
 }
