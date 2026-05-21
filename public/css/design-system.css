@@ -729,87 +729,116 @@ body { font-family: var(--ds-font-sans); }
     border-color: var(--primary-color);
 }
 
+/* ── Transição suave ao recolher/expandir ─────────────────────────────── */
+.sidebar { transition: width 0.25s ease, transform 0.3s ease !important; }
+
 /* ── Sidebar collapsed mode (64px icon-only) ──────────────────────────── */
 .sidebar.sb-collapsed {
     width: 64px !important;
-    overflow: visible;      /* deixa o botão de collapse aparecer fora */
+    /* overflow:visible mantém o botão collapse visível fora dos 64px */
 }
 
-/* Elementos a esconder no modo recolhido */
+/* Elementos completamente ocultos no modo recolhido */
 .sidebar.sb-collapsed .sidebar-header .logo,
 .sidebar.sb-collapsed .panel-badge,
 .sidebar.sb-collapsed .lang-switcher,
 .sidebar.sb-collapsed .sa-live-pill,
 .sidebar.sb-collapsed .menu-divider,
 .sidebar.sb-collapsed .menu-group-items,
+.sidebar.sb-collapsed .menu-group-header .group-arrow,
 .sidebar.sb-collapsed .suc-info,
 .sidebar.sb-collapsed .suc-arrow {
     display: none !important;
 }
 
-/* Links: font-size 0 esconde text nodes; ícones recuperam tamanho */
+/* ── Links no modo recolhido ─────────────────────────────────────────── */
+/* font-size:0 esconde text nodes; display:flex + min-height garantem área clicável */
 .sidebar.sb-collapsed .sidebar-menu a {
-    font-size: 0 !important;
-    padding: 12px 0 !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: center !important;
+    font-size: 0 !important;
+    min-height: 44px !important;
+    padding: 0 !important;
     margin-right: 0 !important;
-    border-radius: 0 !important;
     border-left: none !important;
-    position: relative;
+    border-radius: 0 !important;
+    position: relative !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
-.sidebar.sb-collapsed .sidebar-menu a i,
-.sidebar.sb-collapsed .sidebar-menu a .fas,
-.sidebar.sb-collapsed .sidebar-menu a .fab,
-.sidebar.sb-collapsed .sidebar-menu a .far,
-.sidebar.sb-collapsed .sidebar-menu a .fal {
-    font-size: 1.1rem !important;
-    margin-right: 0 !important;
-    width: auto !important;
+
+/* Ícones: tamanho explícito em rem (independente do font-size:0 do pai) */
+.sidebar.sb-collapsed .sidebar-menu a i {
+    font-size: 1.15rem !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
 }
+
+/* Badges (contadores numéricos) desaparecem */
 .sidebar.sb-collapsed .sidebar-menu a .sa-badge { display: none !important; }
 
-/* Tooltip ao hover no modo recolhido */
+/* ── Tooltip ao hover ────────────────────────────────────────────────── */
 .sidebar.sb-collapsed .sidebar-menu a:hover::after {
     content: attr(data-tooltip);
     position: absolute;
-    left: calc(100% + 12px);
+    left: calc(100% + 10px);
     top: 50%;
     transform: translateY(-50%);
     background: #1e293b;
     color: #fff;
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 5px 10px;
+    padding: 5px 12px;
     border-radius: 7px;
     white-space: nowrap;
     pointer-events: none;
     z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
 }
 
-/* Group headers no modo recolhido: esconde texto, centraliza ícone */
+/* ── Group headers no modo recolhido ────────────────────────────────── */
 .sidebar.sb-collapsed .menu-group-header {
-    font-size: 0 !important;
-    padding: 10px 0 !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: center !important;
+    font-size: 0 !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    cursor: default !important;
+    pointer-events: none !important;
 }
-.sidebar.sb-collapsed .menu-group-header i {
-    font-size: 0.9rem !important;
-    margin-right: 0 !important;
+.sidebar.sb-collapsed .menu-group-header .group-icon {
+    font-size: 0.85rem !important;
+    margin: 0 !important;
+    pointer-events: none !important;
 }
 
-/* User card recolhido: só avatar */
+/* ── User card recolhido: só avatar centrado ────────────────────────── */
 .sidebar.sb-collapsed .sidebar-user-card {
-    justify-content: center;
-    padding: 12px 0;
+    justify-content: center !important;
+    padding: 12px 0 !important;
 }
 
-/* Ícone do botão aponta para direita quando recolhido */
+/* ── Ícone do botão aponta para direita quando recolhido ─────────────── */
 .sidebar.sb-collapsed .collapse-icon { transform: rotate(180deg); }
 
-/* Main content shift */
-.main-content.sb-expanded { margin-left: var(--sidebar-width, 260px); }
-.main-content.sb-collapsed { margin-left: 64px !important; }
+/* ── Main content: ajusta TANTO margin QUANTO width ─────────────────── */
+/* BUG FIX: sem width, o conteúdo ficava com calc(100%-260px) mesmo     */
+/* com sidebar em 64px, gerando ~196px de sobra na lateral direita       */
+.main-content.sb-expanded {
+    margin-left: var(--sidebar-width, 260px);
+    width: calc(100% - var(--sidebar-width, 260px));
+}
+.main-content.sb-collapsed {
+    margin-left: 64px !important;
+    width: calc(100% - 64px) !important;
+}
+.main-content {
+    transition: margin-left 0.25s ease, width 0.25s ease !important;
+}
 
 /* ── User card — modern style ─────────────────────────────────────────── */
 .sidebar-user-card {
