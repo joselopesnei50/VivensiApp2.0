@@ -113,7 +113,7 @@ class AuditController extends Controller
                 foreach ($rows as $log) {
                     fputcsv($out, [
                         optional($log->created_at)->format('Y-m-d H:i:s'),
-                        $log->user->name ?? 'Sistema',
+                        $log->user?->name ?? 'Sistema',
                         $log->event,
                         $log->auditable_type,
                         $log->auditable_id,

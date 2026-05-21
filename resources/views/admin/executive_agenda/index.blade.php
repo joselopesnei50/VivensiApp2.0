@@ -239,7 +239,7 @@
         @foreach($upcoming->take(10) as $t)
         @php
             $pc = $priorityConfig[$t->priority] ?? $priorityConfig['medium'];
-            $daysLeft = now()->startOfDay()->diffInDays($t->due_date->startOfDay(), false);
+            $daysLeft = $t->due_date ? now()->startOfDay()->diffInDays($t->due_date->startOfDay(), false) : null;
         @endphp
         <div style="display:flex; align-items:center; gap:14px; padding:12px 16px; background:#f8fafc; border-radius:12px; border:1px solid #f1f5f9;">
             <div class="priority-dot" style="background:{{ $pc['dot'] }};"></div>

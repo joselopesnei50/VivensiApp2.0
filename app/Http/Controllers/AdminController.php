@@ -139,7 +139,7 @@ class AdminController extends Controller
                 'name'    => $u->name,
                 'role'    => $u->role,
                 'tenant'  => $u->tenant?->name ?? 'Plataforma',
-                'seen'    => $u->last_seen_at->diffForHumans(null, true, true),
+                'seen'    => $u->last_seen_at?->diffForHumans(null, true, true) ?? 'N/A',
                 'initial' => strtoupper(substr($u->name, 0, 1)),
             ]);
 
