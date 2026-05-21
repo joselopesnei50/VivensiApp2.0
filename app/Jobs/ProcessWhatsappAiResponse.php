@@ -39,6 +39,7 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         $this->chatId = $chatId;
         $this->userMessage = $userMessage;
         $this->base64Audio = $base64Audio;
+        $this->onQueue('ai');
     }
 
     public function handle(): void

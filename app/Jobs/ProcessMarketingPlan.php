@@ -18,7 +18,10 @@ class ProcessMarketingPlan implements ShouldQueue
     public int $tries   = 2;
     public int $timeout = 120;
 
-    public function __construct(protected int $planId) {}
+    public function __construct(protected int $planId)
+    {
+        $this->onQueue('ai');
+    }
 
     public function handle(MarketingAIService $ai): void
     {

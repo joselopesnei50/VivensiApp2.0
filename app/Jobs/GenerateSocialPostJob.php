@@ -28,6 +28,7 @@ class GenerateSocialPostJob implements ShouldQueue
     public function __construct(int $postId)
     {
         $this->postId = $postId;
+        $this->onQueue('ai');
     }
 
     public function handle(SocialAIContentService $aiService)
