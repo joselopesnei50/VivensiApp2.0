@@ -25,6 +25,11 @@ class SendWeeklyReportJob implements ShouldQueue
     public int $tries = 2;
     public int $timeout = 120;
 
+    public function __construct()
+    {
+        $this->onQueue('emails');
+    }
+
     public function handle(): void
     {
         $weekStart = Carbon::now()->subDays(7)->startOfDay();

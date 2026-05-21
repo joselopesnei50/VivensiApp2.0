@@ -17,7 +17,10 @@ class PublishScheduledPostJob implements ShouldQueue
     public int $tries   = 2;
     public int $timeout = 60;
 
-    public function __construct(public readonly int $postId) {}
+    public function __construct(public readonly int $postId)
+    {
+        $this->onQueue('social');
+    }
 
     public function handle(MetaSocialPublisherService $publisher): void
     {
