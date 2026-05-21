@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\WhatsAppPolicyException;
 use App\Models\WhatsappAuditLog;
 use App\Models\WhatsappChat;
 use App\Models\WhatsappConfig;
@@ -43,7 +44,7 @@ class WhatsAppService
                 'content_hash' => hash('sha256', $content),
                 'content_len'  => mb_strlen($content),
             ]);
-            throw new \RuntimeException($reason ?: 'Envio não permitido.', 422);
+            throw new WhatsAppPolicyException($reason ?: 'Envio não permitido.', $code ?? 'BLOCKED', 422);
         }
 
         $messageId = 'MANUAL_' . uniqid();
@@ -123,7 +124,7 @@ class WhatsAppService
         $code   = null;
 
         if (!$policy->canSend($config, $chat, false, $reason, $code)) {
-            throw new \RuntimeException($reason ?: 'Envio não permitido.', 422);
+            throw new WhatsAppPolicyException($reason ?: 'Envio não permitido.', $code ?? 'BLOCKED', 422);
         }
 
         $instance = $this->requireInstance($chat->tenant_id);
@@ -176,7 +177,7 @@ class WhatsAppService
         $code   = null;
 
         if (!$policy->canSend($config, $chat, false, $reason, $code)) {
-            throw new \RuntimeException($reason ?: 'Envio não permitido.', 422);
+            throw new WhatsAppPolicyException($reason ?: 'Envio não permitido.', $code ?? 'BLOCKED', 422);
         }
 
         $instance = $this->requireInstance($chat->tenant_id);

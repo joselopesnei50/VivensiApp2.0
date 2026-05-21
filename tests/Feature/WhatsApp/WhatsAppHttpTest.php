@@ -6,8 +6,6 @@ use App\Models\WhatsappChat;
 use App\Models\WhatsappConfig;
 use App\Models\WhatsappAuditLog;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
-
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 function waUser(string $role = 'manager'): array

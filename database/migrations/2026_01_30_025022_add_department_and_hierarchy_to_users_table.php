@@ -21,8 +21,7 @@ return new class extends Migration
             if (!Schema::hasColumn('users', 'supervisor_id')) {
                 $table->unsignedBigInteger('supervisor_id')->nullable()->after('department');
             } else {
-                // Manual SQL change to avoid doctrine/dbal dependency
-                DB::statement('ALTER TABLE users MODIFY supervisor_id INT UNSIGNED NULL');
+                $table->unsignedBigInteger('supervisor_id')->nullable()->change();
             }
         });
 

@@ -7,8 +7,6 @@ use App\Models\WhatsappConfig;
 use App\Services\WhatsAppService;
 use App\Services\WhatsappOutboundPolicy;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
-
 it('startChat creates a new chat for unknown phone', function () {
     $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
 
