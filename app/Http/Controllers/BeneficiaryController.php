@@ -1149,10 +1149,13 @@ class BeneficiaryController extends Controller
                     ->where(fn ($q) => $q->where('tenant_id', $tenantId))
                     ->ignore($beneficiary->id),
             ],
-            'birth_date' => 'nullable|date',
-            'phone' => 'nullable|string|max:60',
-            'address' => 'nullable|string|max:255',
-            'status' => 'required|in:active,inactive,graduated',
+            'birth_date'  => 'nullable|date',
+            'gender'      => 'nullable|in:masculino,feminino,nao_binario,outro,prefiro_nao_informar',
+            'race_color'  => 'nullable|in:branca,preta,parda,amarela,indigena,prefiro_nao_informar',
+            'education'   => 'nullable|in:sem_escolaridade,fundamental_incompleto,fundamental_completo,medio_incompleto,medio_completo,superior_incompleto,superior_completo,pos_graduacao',
+            'phone'       => 'nullable|string|max:60',
+            'address'     => 'nullable|string|max:255',
+            'status'      => 'required|in:active,inactive,graduated',
         ])->validate();
 
         $beneficiary->fill($validated);
