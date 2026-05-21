@@ -25,51 +25,52 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         // ── Gates de módulo ───────────────────────────────────────────────────
-        // Cada gate verifica spatie permissions (quando seeder rodou) com
-        // fallback para coluna role (antes do seeder / usuários legados).
+        // Verifica spatie permissions (quando seeder rodou) com fallback para
+        // coluna role. O try/catch absorve PermissionDoesNotExist em ambientes
+        // de teste onde o seeder ainda não rodou.
 
-        Gate::define('access-whatsapp', function (User $user) {
-            if ($user->hasPermissionTo('access-whatsapp')) return true;
-            return in_array($user->role, ['manager', 'ngo', 'common']);
+        $perm = function (User $user, string $permission): bool {
+            try {
+                return $user->hasPermissionTo($permission);
+            } catch (\Throwable) {
+                return false;
+            }
+        };
+
+        Gate::define('access-whatsapp', function (User $user) use ($perm) {
+            return $perm($user, 'access-whatsapp') || in_array($user->role, ['manager', 'ngo', 'common']);
         });
 
-        Gate::define('access-manager', function (User $user) {
-            if ($user->hasPermissionTo('access-manager')) return true;
-            return in_array($user->role, ['manager', 'ngo', 'common']);
+        Gate::define('access-manager', function (User $user) use ($perm) {
+            return $perm($user, 'access-manager') || in_array($user->role, ['manager', 'ngo', 'common']);
         });
 
         Gate::define('access-admin', function (User $user) {
             return $user->role === 'super_admin';
         });
 
-        Gate::define('access-social-ai', function (User $user) {
-            if ($user->hasPermissionTo('access-social-ai')) return true;
-            return in_array($user->role, ['manager', 'ngo', 'common']);
+        Gate::define('access-social-ai', function (User $user) use ($perm) {
+            return $perm($user, 'access-social-ai') || in_array($user->role, ['manager', 'ngo', 'common']);
         });
 
-        Gate::define('manage-settings', function (User $user) {
-            if ($user->hasPermissionTo('manage-settings')) return true;
-            return $user->role === 'super_admin';
+        Gate::define('manage-settings', function (User $user) use ($perm) {
+            return $perm($user, 'manage-settings') || $user->role === 'super_admin';
         });
 
-        Gate::define('manage-donors', function (User $user) {
-            if ($user->hasPermissionTo('manage-donors')) return true;
-            return in_array($user->role, ['ngo', 'super_admin']);
+        Gate::define('manage-donors', function (User $user) use ($perm) {
+            return $perm($user, 'manage-donors') || in_array($user->role, ['ngo', 'super_admin']);
         });
 
-        Gate::define('manage-grants', function (User $user) {
-            if ($user->hasPermissionTo('manage-grants')) return true;
-            return in_array($user->role, ['ngo', 'super_admin']);
+        Gate::define('manage-grants', function (User $user) use ($perm) {
+            return $perm($user, 'manage-grants') || in_array($user->role, ['ngo', 'super_admin']);
         });
 
-        Gate::define('manage-projects', function (User $user) {
-            if ($user->hasPermissionTo('manage-projects')) return true;
-            return in_array($user->role, ['manager', 'super_admin']);
+        Gate::define('manage-projects', function (User $user) use ($perm) {
+            return $perm($user, 'manage-projects') || in_array($user->role, ['manager', 'super_admin']);
         });
 
-        Gate::define('manage-broadcast', function (User $user) {
-            if ($user->hasPermissionTo('manage-broadcast')) return true;
-            return in_array($user->role, ['manager', 'ngo', 'super_admin']);
+        Gate::define('manage-broadcast', function (User $user) use ($perm) {
+            return $perm($user, 'manage-broadcast') || in_array($user->role, ['manager', 'ngo', 'super_admin']);
         });
     }
 }

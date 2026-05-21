@@ -6,8 +6,6 @@ use App\Models\WhatsappChat;
 use App\Models\WhatsappConfig;
 use App\Services\WhatsappOutboundPolicy;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
-
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 function makeChat(array $attrs = []): WhatsappChat
@@ -102,8 +100,8 @@ it('blocks when opt-in is required and not set', function () {
 
 it('allows when opt-in is required and set', function () {
     $chat   = makeChat([
-        'opt_in_at'      => now()->subDay(),
-        'last_inbound_at'=> now()->subHour(),
+        'opt_in_at'       => now()->subDay(),
+        'last_inbound_at' => now()->subHour(),
     ]);
     $config = makeConfig($chat, ['require_opt_in' => true, 'enforce_24h_window' => false]);
 

@@ -749,6 +749,8 @@ class WhatsappController extends Controller
                 $isTemplate, $templateData,
                 auth()->id()
             );
+        } catch (\App\Exceptions\WhatsAppPolicyException $e) {
+            return response()->json(['error' => $e->getMessage(), 'code' => $e->policyCode], 422);
         } catch (\RuntimeException $e) {
             $status = $e->getCode() >= 400 ? $e->getCode() : 500;
             return response()->json(['error' => $e->getMessage()], $status);
