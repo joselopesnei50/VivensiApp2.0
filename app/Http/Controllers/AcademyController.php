@@ -170,7 +170,7 @@ class AcademyController extends Controller
         $certificate = \App\Models\Certificate::with(['user', 'course'])->where('code', $code)->firstOrFail();
         
         // Check if user is the owner or admin
-        if (auth()->id() !== $certificate->user_id && auth()->user()->role !== 'super_admin') {
+        if (auth()->id() !== $certificate->user_id && !auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 

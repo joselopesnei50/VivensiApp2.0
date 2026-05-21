@@ -40,9 +40,9 @@ class TaskController extends Controller
             // Evita "vazamento" de perfis de outros módulos no seletor de responsável
             $usersQ = User::where('tenant_id', $user->tenant_id);
 
-            if ($user->role === 'manager') {
+            if ($user->isManager()) {
                 $usersQ->whereIn('role', ['employee', 'manager']);
-            } elseif ($user->role === 'ngo' || (($user->tenant?->type ?? null) === 'ngo')) {
+            } elseif ($user->isNgo() || (($user->tenant?->type ?? null) === 'ngo')) {
                 $usersQ->whereNotIn('role', ['super_admin']);
             }
 
@@ -227,10 +227,10 @@ class TaskController extends Controller
         $projectExistsRule = Rule::exists('projects', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId));
         $assigneeExistsRule = Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId));
 
-        if ($user->role === 'manager') {
+        if ($user->isManager()) {
             $assigneeExistsRule = $assigneeExistsRule->whereIn('role', ['employee', 'manager']);
         }
-        if ($user->role === 'ngo' || (($user->tenant?->type ?? null) === 'ngo')) {
+        if ($user->isNgo() || (($user->tenant?->type ?? null) === 'ngo')) {
             $assigneeExistsRule = $assigneeExistsRule->whereNotIn('role', ['super_admin']);
         }
 
@@ -304,12 +304,12 @@ class TaskController extends Controller
         $assigneeExistsRule = Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId));
 
         // Manager: pode atribuir a funcionários/gestores do mesmo tenant
-        if ($user->role === 'manager') {
+        if ($user->isManager()) {
             $assigneeExistsRule = $assigneeExistsRule->whereIn('role', ['employee', 'manager']);
         }
 
         // NGO: pode atribuir a usuários do tenant (exceto super_admin)
-        if ($user->role === 'ngo' || (($user->tenant?->type ?? null) === 'ngo')) {
+        if ($user->isNgo() || (($user->tenant?->type ?? null) === 'ngo')) {
             $assigneeExistsRule = $assigneeExistsRule->whereNotIn('role', ['super_admin']);
         }
 

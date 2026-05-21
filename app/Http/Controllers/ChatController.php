@@ -32,9 +32,9 @@ class ChatController extends Controller
 
         // Role-Specific Context
         $contextPrompt = "";
-        if ($role === 'ngo' || ($user->tenant && $user->tenant->type === 'ngo')) {
+        if ($user->isNgo() || ($user->tenant && $user->tenant->type === 'ngo')) {
             $contextPrompt = "O usuário é uma ONG/OSC. Foque em: Finanças do Terceiro Setor, Prestação de Contas, Transparência, Doadores e Editais. Use termos como 'Entidade', 'Recursos', 'Doador'.";
-        } elseif ($role === 'manager') {
+        } elseif ($user->isManager()) {
             $contextPrompt = "O usuário é um Gestor de Projetos. Foque em: Cronogramas, Alocação de Recursos, Prazos, Equipe e Orçamento de Projetos. Use termos corporativos leves.";
         } else {
             // Common / Personal

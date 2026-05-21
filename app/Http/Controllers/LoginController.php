@@ -21,7 +21,7 @@ class LoginController extends Controller
             $user = Auth::user();
             $user->update(['last_login_at' => now()]);
 
-            if ($user->role === 'super_admin' || $user->is_platform_team) {
+            if ($user->isSuperAdmin() || $user->is_platform_team) {
                 return redirect('/admin');
             }
 
