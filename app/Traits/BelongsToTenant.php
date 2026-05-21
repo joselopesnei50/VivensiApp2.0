@@ -19,7 +19,7 @@ trait BelongsToTenant
 
             if (Auth::check()) {
                 $user = Auth::user();
-                if ($user && $user->role !== 'super_admin') {
+                if ($user && !$user->isSuperAdmin()) {
                     $builder->where($builder->getModel()->getTable() . '.tenant_id', $user->tenant_id);
                 }
             } else {

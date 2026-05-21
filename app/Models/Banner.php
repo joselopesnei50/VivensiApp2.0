@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToTenant;
 
 class Banner extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = [
         'tenant_id', 'user_id', 'title', 'format',
         'width', 'height', 'settings', 'thumbnail', 'scheduled_post_id',
@@ -17,15 +20,6 @@ class Banner extends Model
         'width'    => 'integer',
         'height'   => 'integer',
     ];
-
-    protected static function booted(): void
-    {
-        static::addGlobalScope('tenant', function ($query) {
-            if (auth()->check()) {
-                $query->where('tenant_id', auth()->user()->tenant_id);
-            }
-        });
-    }
 
     public function user()
     {

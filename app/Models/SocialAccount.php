@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
+use App\Traits\BelongsToTenant;
 
 class SocialAccount extends Model
 {
+    use BelongsToTenant;
     protected $fillable = [
         'tenant_id', 'platform', 'page_id', 'page_name', 'page_picture',
         'access_token', 'token_expires_at', 'instagram_business_id',
@@ -17,16 +18,6 @@ class SocialAccount extends Model
         'token_expires_at' => 'datetime',
         'is_active'        => 'boolean',
     ];
-
-    // Escopo automático por tenant
-    protected static function booted(): void
-    {
-        static::addGlobalScope('tenant', function (Builder $q) {
-            if (auth()->check() && auth()->user()->tenant_id) {
-                $q->where('tenant_id', auth()->user()->tenant_id);
-            }
-        });
-    }
 
     public function tenant()      { return $this->belongsTo(Tenant::class); }
     public function posts()       { return $this->hasMany(ScheduledPost::class); }
