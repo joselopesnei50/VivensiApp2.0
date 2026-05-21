@@ -100,6 +100,14 @@ $PHP_BIN $PHP_FLAGS artisan package:discover --no-interaction --ansi
 echo "🗄️  Executando migrações..."
 $PHP_BIN $PHP_FLAGS artisan migrate --force --no-interaction
 
+# ── 6.1 Roles e Permissões (spatie/laravel-permission) ───────────────────
+echo "🔑 Sincronizando roles e permissões..."
+$PHP_BIN $PHP_FLAGS artisan db:seed --class=RolesAndPermissionsSeeder --no-interaction || true
+
+# ── 6.2 Sincronizar usuários legados com as novas roles spatie ────────────
+echo "👥 Sincronizando roles dos usuários existentes..."
+$PHP_BIN $PHP_FLAGS artisan vivensi:sync-roles --no-interaction || true
+
 # ── 7. Cache de config/rotas/views ───────────────────────────────────────
 echo "⚡ Otimizando cache Laravel..."
 $PHP_BIN $PHP_FLAGS artisan config:cache --no-interaction
@@ -121,10 +129,19 @@ if [[ "$QUEUE_DRIVER_VAL" != "sync" && "$QUEUE_DRIVER_VAL" != "" ]]; then
         echo "🔄 Reiniciando workers via Supervisor..."
         sudo supervisorctl reread 2>/dev/null || true
         sudo supervisorctl update 2>/dev/null || true
+        # Workers antigos (database driver)
         sudo supervisorctl restart vivensi-worker-default:* 2>/dev/null || true
         sudo supervisorctl restart vivensi-worker-whatsapp:* 2>/dev/null || true
+        # Horizon (redis driver — quando migrado para redis)
+        sudo supervisorctl restart vivensi-horizon:* 2>/dev/null || true
         sudo supervisorctl status 2>/dev/null || true
     fi
+fi
+
+# ── 9.1 Limpar cache do Sentry (se DSN configurado) ──────────────────────
+SENTRY_DSN_VAL=$(grep "^SENTRY_LARAVEL_DSN=" "$APP_DIR/.env" | cut -d= -f2)
+if [ -n "$SENTRY_DSN_VAL" ] && [ "$SENTRY_DSN_VAL" != "" ]; then
+    echo "🔔 Sentry DSN configurado — erros serão monitorados."
 fi
 
 # ── 10. Sair do modo de manutenção ───────────────────────────────────────
