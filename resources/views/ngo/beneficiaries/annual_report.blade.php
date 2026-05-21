@@ -7,15 +7,15 @@
         <p style="color: #64748b; margin: 5px 0 0 0;">Resumo anual do Social: atendimentos, tipos, equipe e famílias.</p>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a class="btn-premium" style="background:#111827;" href="{{ url('/ngo/beneficiaries') }}"><i class="fas fa-arrow-left"></i> Voltar</a>
-        <a class="btn-premium" style="background:#16a34a;" href="{{ url('/ngo/beneficiaries/reports/annual/pdf') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-pdf"></i> Baixar PDF</a>
-        <a class="btn-premium" style="background:#15803d;" href="{{ url('/ngo/beneficiaries/reports/annual/pdf-appendix') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-pdf"></i> PDF + anexos</a>
-        <a class="btn-premium" style="background:#4f46e5;" href="{{ url('/ngo/beneficiaries/reports/annual/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV detalhado</a>
-        <a class="btn-premium" style="background:#0ea5e9;" href="{{ url('/ngo/beneficiaries/reports/annual/export-grouped') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV agrupado (técnico)</a>
-        <a class="btn-premium" style="background:#f59e0b; color:#111827;" href="{{ url('/ngo/beneficiaries/reports/annual/export-grouped-simple') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV agrupado</a>
-        <a class="btn-premium" style="background:#111827;" href="{{ url('/ngo/beneficiaries/reports/annual/export-pivot-type') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV Pivot (tipo)</a>
-        <a class="btn-premium" style="background:#334155;" href="{{ url('/ngo/beneficiaries/reports/annual/export-pivot-user') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV Pivot (equipe)</a>
-        <button class="btn-premium" style="background:#f1f5f9; color:#0f172a;" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+        <a class="btn-ds btn-ds-ghost" href="{{ url('/ngo/beneficiaries') }}"><i class="fas fa-arrow-left"></i> Voltar</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/pdf') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-pdf"></i> Baixar PDF</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/pdf-appendix') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-pdf"></i> PDF + anexos</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV detalhado</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-grouped') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV agrupado (técnico)</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-grouped-simple') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV agrupado</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-pivot-type') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV Pivot (tipo)</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-pivot-user') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV Pivot (equipe)</a>
+        <button class="btn-ds btn-ds-outline" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
     </div>
 </div>
 
@@ -45,7 +45,7 @@
         </div>
         <div style="display:flex; gap: 10px;">
             <button class="btn-premium" type="submit"><i class="fas fa-filter"></i> Aplicar</button>
-            <a class="btn-premium" style="background:#f1f5f9; color:#0f172a;" href="{{ url('/ngo/beneficiaries/reports/annual') }}">Reset</a>
+            <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual') }}">Reset</a>
         </div>
         <div style="color:#64748b; font-weight:800; margin-left:auto;">
             Período: {{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} → {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }}
@@ -155,7 +155,7 @@
                     </td>
                     <td style="padding:10px; text-align:right;">{{ number_format((int) $r->c) }}</td>
                     <td style="padding:10px; text-align:right;">
-                        <a class="btn-premium" style="font-size:.85rem; padding: 6px 10px; background:#f1f5f9; color:#0f172a;" href="{{ url('/ngo/beneficiaries/' . $r->id) }}">
+                        <a class="btn-ds btn-ds-outline" style="font-size:.85rem; padding: 6px 10px;" href="{{ url('/ngo/beneficiaries/' . $r->id) }}">
                             <i class="fas fa-eye"></i>
                         </a>
                     </td>

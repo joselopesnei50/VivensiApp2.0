@@ -13,7 +13,7 @@
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Monitoramento de receitas e auditoria de caixa.</p>
         </div>
         <div style="display: flex; gap: 15px;">
-            <a href="{{ url('/transactions/export') }}" class="btn-premium" style="background: white; color: #64748b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
+            <a href="{{ url('/transactions/export') }}" class="btn-ds btn-ds-outline" style="text-decoration: none; font-weight: 700;">
                 <i class="fas fa-file-export me-2"></i> Exportar
             </a>
             <a href="{{ url('/transactions/create') }}" class="btn-premium btn-premium-shine" style="border: none; padding: 14px 28px; font-weight: 800; display: flex; align-items: center; gap: 10px;">

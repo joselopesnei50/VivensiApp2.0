@@ -7,10 +7,10 @@
         <p style="color: #64748b; margin: 5px 0 0 0;">Relatório para controle interno, auditoria e assinatura.</p>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a href="{{ url('/ngo/assets') }}" class="btn-premium" style="background:#64748b;">
+        <a href="{{ url('/ngo/assets') }}" class="btn-ds btn-ds-ghost">
             <i class="fas fa-arrow-left"></i> Voltar
         </a>
-        <button type="button" onclick="window.print()" class="btn-premium" style="background:#475569;">
+        <button type="button" onclick="window.print()" class="btn-ds btn-ds-outline">
             <i class="fas fa-print"></i> Imprimir
         </button>
     </div>

@@ -20,7 +20,7 @@
         <a href="{{ url('/ngo/budget/export?year='.$year) }}" class="btn-premium" style="background:#4f46e5;">
             <i class="fas fa-file-csv"></i> Exportar CSV
         </a>
-        <button type="button" onclick="window.print()" class="btn-premium" style="background:#475569;">
+        <button type="button" onclick="window.print()" class="btn-ds btn-ds-outline">
             <i class="fas fa-print"></i> Imprimir
         </button>
         <button onclick="toggleModal()" class="btn-premium">

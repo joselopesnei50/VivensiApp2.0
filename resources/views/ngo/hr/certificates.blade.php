@@ -7,13 +7,13 @@
         <p style="color: #64748b; margin: 5px 0 0 0;">Histórico, filtros e exportação para prestação de contas.</p>
     </div>
     <div style="display:flex; gap:10px; flex-wrap: wrap;">
-        <a class="btn-premium" style="background:#111827;" href="{{ url('/ngo/hr') }}">
+        <a class="btn-ds btn-ds-ghost" href="{{ url('/ngo/hr') }}">
             <i class="fas fa-arrow-left"></i> Voltar ao RH
         </a>
-        <a class="btn-premium" style="background:#4f46e5;" href="{{ url('/ngo/hr/certificates/export') . '?' . http_build_query(request()->query()) }}">
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/hr/certificates/export') . '?' . http_build_query(request()->query()) }}">
             <i class="fas fa-file-csv"></i> Exportar CSV
         </a>
-        <button class="btn-premium" style="background:#f1f5f9; color:#0f172a;" onclick="window.print()">
+        <button class="btn-ds btn-ds-outline" onclick="window.print()">
             <i class="fas fa-print"></i> Imprimir
         </button>
     </div>
@@ -48,7 +48,7 @@
             <button class="btn-premium" type="submit">
                 <i class="fas fa-filter"></i> Filtrar
             </button>
-            <a class="btn-premium" style="background:#f1f5f9; color:#0f172a;" href="{{ url('/ngo/hr/certificates') }}">
+            <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/hr/certificates') }}">
                 Limpar
             </a>
         </div>

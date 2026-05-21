@@ -385,27 +385,27 @@
             <div class="project-table-card" style="padding: 30px;">
                 <h5 style="margin: 0 0 25px 0; font-weight: 900; color: #1e293b;">Toolkit Estratégico</h5>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <a href="{{ $basePath . '/manager/schedule' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <a href="{{ $basePath . '/manager/schedule' }}" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
                         <span><i class="fas fa-calendar-alt me-2 text-primary"></i> Agenda da Missão</span>
-                        <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
+                        <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
-                    <a href="{{ $basePath . '/manager/approvals' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <a href="{{ $basePath . '/manager/approvals' }}" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
                         <span><i class="fas fa-check-double me-2 text-success"></i> Central de Aprovações</span>
-                        <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
+                        <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
-                    <a href="{{ $basePath . '/manager/reconciliation' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <a href="{{ $basePath . '/manager/reconciliation' }}" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
                         <span><i class="fas fa-sync-alt me-2 text-info"></i> Conciliação Bancária</span>
-                        <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
+                        <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
-                    <a href="{{ $basePath . '/manager/contracts' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <a href="{{ $basePath . '/manager/contracts' }}" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
                         <span><i class="fas fa-file-signature me-2 text-indigo"></i> Contratos Digitais</span>
-                        <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
+                        <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
-                    <a href="{{ $basePath . '/smart-analysis' }}" class="btn-premium" style="background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <a href="{{ $basePath . '/smart-analysis' }}" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
                         <span><i class="fas fa-brain me-2 text-primary"></i> Smart Analysis</span>
-                        <i class="fas fa-chevron-right style='font-size: 0.7rem; opacity: 0.3;"></i>
+                        <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
-                    <button class="btn-premium mt-3" style="background: #fff1f2; color: #e11d48; border: 1px solid #fee2e2; border-radius: 12px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">
+                    <button class="btn-ds btn-ds-danger mt-3" style="font-size: 0.8rem; text-transform: uppercase;">
                         Arquivar Registro
                     </button>
                 </div>
@@ -422,10 +422,10 @@
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Gerencie o cadastro de pessoas relacionadas a este projeto.</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-premium btn-premium-shine" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px 20px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#addPersonModal">
+            <button class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#addPersonModal">
                 <i class="fas fa-user-plus me-2" style="color: #6366f1;"></i> Nova Pessoa
             </button>
-            <button class="btn-premium btn-premium-shine" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px 20px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#importPersonProjectModal">
+            <button class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#importPersonProjectModal">
                 <i class="fas fa-file-csv me-2" style="color: #f59e0b;"></i> Importar CSV
             </button>
             @if($project->people->count() > 0)

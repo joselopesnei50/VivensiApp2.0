@@ -25,7 +25,7 @@
 
         <input type="file" name="ofx_file" accept=".ofx" class="form-control-vivensi" style="padding: 10px; border: 2px dashed #cbd5e1; background: #f8fafc; cursor: pointer; margin-bottom: 20px;" required>
 
-        <button type="submit" class="btn-premium" style="width: 100%; justify-content: center; font-size: 1.1rem; padding: 15px; background: #0284c7;">
+        <button type="submit" class="btn-premium" style="width: 100%; justify-content: center; font-size: 1.1rem; padding: 15px;">
             <i class="fas fa-sync" style="margin-right: 10px;"></i> Processar Arquivo
         </button>
     </form>

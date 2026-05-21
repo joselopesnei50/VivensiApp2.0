@@ -20,7 +20,7 @@
             <i class="fas fa-magic"></i> Criar Nova Página
         </button>
     @else
-        <button onclick="alert('Limite de 05 páginas atingido. Entre em contato com o suporte para contratar novas páginas.')" class="btn-premium" style="background: #94a3b8; cursor: not-allowed;">
+        <button onclick="alert('Limite de 05 páginas atingido. Entre em contato com o suporte para contratar novas páginas.')" class="btn-ds btn-ds-outline" style="cursor: not-allowed;">
             <i class="fas fa-lock"></i> Limite Atingido
         </button>
     @endif
@@ -49,10 +49,10 @@
             <a href="{{ $basePath . '/ngo/landing-pages/builder/' . $page->id }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center;">
                 <i class="fas fa-edit"></i> Editar
             </a>
-            <a href="{{ $basePath . '/ngo/landing-pages/' . $page->id . '/leads' }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center; background: #f8fafc; color: #4f46e5; border: 1px solid #e2e8f0;">
+            <a href="{{ $basePath . '/ngo/landing-pages/' . $page->id . '/leads' }}" class="btn-ds btn-ds-outline" style="flex: 1; font-size: 0.8rem; justify-content: center;">
                 <i class="fas fa-users"></i> Leads
             </a>
-            <a href="{{ $publicBase . '/lp/' . $page->slug }}" target="_blank" rel="noopener noreferrer" class="btn-premium" style="background: #f1f5f9; color: #475569; padding: 10px; border-radius: 8px;">
+            <a href="{{ $publicBase . '/lp/' . $page->slug }}" target="_blank" rel="noopener noreferrer" class="btn-ds btn-ds-outline" style="padding: 10px; border-radius: 8px;">
                 <i class="fas fa-external-link-alt"></i>
             </a>
         </div>
@@ -60,14 +60,14 @@
         <div style="margin-top: 10px; display:flex; gap: 10px; flex-wrap: wrap;">
             <form action="{{ $basePath . '/ngo/landing-pages/' . $page->id . ($isPublished ? '/unpublish' : '/publish') }}" method="POST" style="flex:1;" onsubmit="return confirm('{{ $isPublished ? 'Despublicar esta Landing Page?' : 'Publicar esta Landing Page?' }}')">
                 @csrf
-                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: {{ $isPublished ? '#f1f5f9' : '#10b981' }}; color: {{ $isPublished ? '#0f172a' : '#ffffff' }}; border: {{ $isPublished ? '1px solid #e2e8f0' : 'none' }};">
+                <button type="submit" class="{{ $isPublished ? 'btn-ds btn-ds-outline' : 'btn-premium' }}" style="width:100%; justify-content:center; font-size: 0.8rem;">
                     <i class="fas {{ $isPublished ? 'fa-eye-slash' : 'fa-bullhorn' }}"></i> {{ $isPublished ? 'Despublicar' : 'Publicar' }}
                 </button>
             </form>
 
             <form action="{{ $basePath . '/ngo/landing-pages/' . $page->id . '/duplicate' }}" method="POST" style="flex:1;" onsubmit="return confirm('Duplicar esta Landing Page (com os mesmos blocos)?')">
                 @csrf
-                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff; color: #4f46e5; border: 1px solid #e2e8f0;">
+                <button type="submit" class="btn-ds btn-ds-outline" style="width:100%; justify-content:center; font-size: 0.8rem;">
                     <i class="fas fa-clone"></i> Duplicar
                 </button>
             </form>
@@ -75,7 +75,7 @@
             <form action="{{ $basePath . '/ngo/landing-pages/' . $page->id }}" method="POST" style="flex:1;" onsubmit="return confirm('Excluir esta Landing Page? Isso remove também os blocos e leads capturados.')">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff; color: #ef4444; border: 1px solid rgba(239,68,68,.25);">
+                <button type="submit" class="btn-ds btn-ds-outline" style="width:100%; justify-content:center; font-size: 0.8rem;">
                     <i class="fas fa-trash"></i> Excluir
                 </button>
             </form>
