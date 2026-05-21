@@ -296,7 +296,11 @@
 </style>
 
 @auth
-<aside class="sidebar{{ auth()->user()->role === 'super_admin' ? ' sidebar-sa' : '' }}">
+<aside class="sidebar{{ auth()->user()->role === 'super_admin' ? ' sidebar-sa' : '' }}" id="mainSidebar" style="position:relative;">
+    {{-- Collapse toggle --}}
+    <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Recolher menu" aria-label="Recolher menu">
+        <i class="fas fa-chevron-left collapse-icon" id="sidebarCollapseIcon"></i>
+    </button>
     <div class="sidebar-header" style="justify-content: center; flex-direction: column; height: auto; padding: 18px 24px 14px;">
         <a href="{{ url('/dashboard') }}" class="logo" style="display: block; text-align: center;">
             <x-application-logo style="max-width: 108px; height: auto;" />
@@ -774,15 +778,33 @@
             @endif
         </ul>
     </nav>
-    <div class="user-view">
-        <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
-        <div class="user-info">
-            <div class="user-name">{{ auth()->user()->name ?? 'Usuário' }}</div>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();" class="user-logout">Sair</a>
+    {{-- User Card (Linear-style) --}}
+    @php
+        $ucName    = auth()->user()->name ?? 'Usuário';
+        $ucInitials = strtoupper(implode('', array_map(fn($w) => substr($w,0,1), array_slice(explode(' ', $ucName), 0, 2))));
+        $ucRoleLabel = match(auth()->user()->role) {
+            'super_admin' => 'Admin',
+            'manager'     => 'Gestor',
+            'ngo'         => 'ONG',
+            'common'      => 'MEI',
+            default       => 'Usuário',
+        };
+    @endphp
+    <div class="sidebar-user-card" id="sucTrigger" onclick="toggleSucDropdown()">
+        <div class="suc-avatar user-avatar-wrap">{{ $ucInitials }}</div>
+        <div class="suc-info">
+            <div class="suc-name">{{ $ucName }}</div>
+            <div class="suc-role">{{ $ucRoleLabel }}</div>
         </div>
-        <a href="{{ url('/profile') }}" class="user-settings" title="Configurações">
-            <i class="fas fa-cog"></i>
-        </a>
+        <i class="fas fa-chevron-up suc-arrow"></i>
+        <div class="suc-dropdown" id="sucDropdown">
+            <a href="{{ url('/profile') }}"><i class="fas fa-user-circle"></i> Meu Perfil</a>
+            <a href="{{ url('/profile') }}#settings"><i class="fas fa-cog"></i> Configurações</a>
+            <div class="suc-divider"></div>
+            <a href="#" class="danger" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
     </div>
 </aside>
 @endauth
@@ -856,8 +878,19 @@
                 <span id="clock-time">--:--</span>
             </div>
 
+            <!-- Ctrl+K Command Palette trigger -->
+            <button onclick="openCmdPalette()"
+                    style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 7px 14px; cursor: pointer; transition: background 0.2s; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 600;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.09)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.04)'"
+                    title="Busca rápida (Ctrl+K)">
+                <i class="fas fa-search" style="font-size: 0.7rem;"></i>
+                <span class="d-none d-md-inline">Buscar</span>
+                <kbd style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 1px 5px; font-size: 0.6rem; font-family: inherit; color: rgba(255,255,255,0.3);">⌘K</kbd>
+            </button>
+
             <!-- F5: Dark Mode Toggle -->
-            <button id="theme-toggle" 
+            <button id="theme-toggle"
                     style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
                     onmouseover="this.style.background='rgba(255,255,255,0.1)'"
                     onmouseout="this.style.background='rgba(255,255,255,0.05)'"
@@ -1475,6 +1508,22 @@
     @endauth
 
     <div id="vivensi-toast-wrap" class="vivensi-toast-wrap" aria-live="polite" aria-atomic="true"></div>
+
+{{-- ── Command Palette (Ctrl+K) ──────────────────────────── --}}
+<div class="cmd-overlay" id="cmdOverlay" onclick="closeCmdPalette(event)">
+    <div class="cmd-palette" onclick="event.stopPropagation()">
+        <div class="cmd-input-wrap">
+            <i class="fas fa-search"></i>
+            <input class="cmd-input" id="cmdInput" type="text" placeholder="Buscar página, ação..." autocomplete="off">
+        </div>
+        <div class="cmd-results" id="cmdResults"></div>
+        <div class="cmd-footer">
+            <span class="cmd-key"><kbd>↑</kbd><kbd>↓</kbd> navegar</span>
+            <span class="cmd-key"><kbd>Enter</kbd> abrir</span>
+            <span class="cmd-key"><kbd>Esc</kbd> fechar</span>
+        </div>
+    </div>
+</div>
     
     
     <!-- Bootstrap 5 JS Bundle (Required for Modals, Dropdowns, Tooltips) -->
@@ -1520,6 +1569,146 @@
     @include('partials.cookie-banner')
 
     @stack('scripts')
+
+<script>
+// ── Sidebar collapse ───────────────────────────────────────────────────
+(function() {
+    const sidebar = document.getElementById('mainSidebar');
+    const main    = document.querySelector('.main-content');
+    const btn     = document.getElementById('sidebarCollapseBtn');
+    if (!sidebar || !btn) return;
+
+    const COLLAPSED_KEY = 'vivensi_sb_collapsed';
+    function applyState(collapsed) {
+        if (collapsed) {
+            sidebar.classList.add('sb-collapsed');
+            if (main) { main.classList.remove('sb-expanded'); main.classList.add('sb-collapsed'); }
+        } else {
+            sidebar.classList.remove('sb-collapsed');
+            if (main) { main.classList.add('sb-expanded'); main.classList.remove('sb-collapsed'); }
+        }
+    }
+    applyState(localStorage.getItem(COLLAPSED_KEY) === '1');
+    btn.addEventListener('click', function() {
+        const now = sidebar.classList.contains('sb-collapsed');
+        localStorage.setItem(COLLAPSED_KEY, now ? '0' : '1');
+        applyState(!now);
+    });
+
+    // Add data-tooltip to sidebar links for collapsed mode
+    document.querySelectorAll('.sidebar-menu a').forEach(function(a) {
+        const txt = a.textContent.trim().split('\n')[0].trim();
+        if (txt) a.setAttribute('data-tooltip', txt);
+    });
+})();
+
+// ── User card dropdown ─────────────────────────────────────────────────
+function toggleSucDropdown() {
+    const dropdown = document.getElementById('sucDropdown');
+    const trigger  = document.getElementById('sucTrigger');
+    if (!dropdown) return;
+    const open = dropdown.classList.toggle('open');
+    trigger.classList.toggle('open', open);
+}
+document.addEventListener('click', function(e) {
+    const trigger = document.getElementById('sucTrigger');
+    if (trigger && !trigger.contains(e.target)) {
+        document.getElementById('sucDropdown')?.classList.remove('open');
+        trigger.classList.remove('open');
+    }
+});
+
+// ── Command Palette ────────────────────────────────────────────────────
+const CMD_ITEMS = [
+    @auth
+    { label: 'Dashboard',        url: '{{ url("/dashboard") }}',               icon: 'fa-home' },
+    { label: 'Transações',       url: '{{ url("/transactions") }}',             icon: 'fa-wallet' },
+    { label: 'Nova Transação',   url: '{{ url("/transactions/create") }}',      icon: 'fa-plus-circle' },
+    { label: 'Projetos',         url: '{{ url("/projects") }}',                 icon: 'fa-folder-open' },
+    { label: 'Tarefas',          url: '{{ url("/tasks") }}',                    icon: 'fa-check-square' },
+    { label: 'WhatsApp CRM',     url: '{{ url("/whatsapp/chat") }}',            icon: 'fa-comment-dots' },
+    { label: 'Clientes',         url: '{{ url("/clients") }}',                  icon: 'fa-users' },
+    { label: 'Meu Perfil',       url: '{{ url("/profile") }}',                  icon: 'fa-user-circle' },
+    @if(auth()->user()->role === 'ngo')
+    { label: 'Beneficiários',    url: '{{ url("/ngo/beneficiaries") }}',        icon: 'fa-heart' },
+    { label: 'Doadores',         url: '{{ url("/ngo/donors") }}',               icon: 'fa-hand-holding-heart' },
+    { label: 'Editais',          url: '{{ url("/ngo/grants") }}',               icon: 'fa-file-contract' },
+    @endif
+    @if(in_array(auth()->user()->role, ['manager','ngo','common']))
+    { label: 'Marketing IA',     url: '{{ route("marketing.index") }}',         icon: 'fa-brain' },
+    { label: 'Disparo em Massa', url: '{{ route("whatsapp.broadcast.index") }}',icon: 'fa-paper-plane' },
+    @endif
+    @if(auth()->user()->role === 'super_admin')
+    { label: 'Painel Admin',     url: '{{ url("/admin") }}',                    icon: 'fa-shield-halved' },
+    { label: 'Organizações',     url: '{{ url("/admin/tenants") }}',            icon: 'fa-building' },
+    @endif
+    @endauth
+];
+
+let cmdActiveIdx = -1;
+
+function openCmdPalette() {
+    document.getElementById('cmdOverlay').classList.add('open');
+    const input = document.getElementById('cmdInput');
+    input.value = '';
+    cmdActiveIdx = -1;
+    renderCmdResults('');
+    setTimeout(() => input.focus(), 50);
+}
+function closeCmdPalette(e) {
+    if (!e || e.target === document.getElementById('cmdOverlay')) {
+        document.getElementById('cmdOverlay').classList.remove('open');
+    }
+}
+function renderCmdResults(q) {
+    const results = document.getElementById('cmdResults');
+    const filtered = q.trim()
+        ? CMD_ITEMS.filter(i => i.label.toLowerCase().includes(q.toLowerCase()))
+        : CMD_ITEMS;
+
+    if (!filtered.length) {
+        results.innerHTML = '<div class="cmd-empty">Nenhum resultado para "' + q + '"</div>';
+        return;
+    }
+    results.innerHTML = filtered.map((item, idx) =>
+        `<a href="${item.url}" class="cmd-item${idx === cmdActiveIdx ? ' active' : ''}">
+            <i class="fas ${item.icon}"></i> ${item.label}
+        </a>`
+    ).join('');
+}
+document.getElementById('cmdInput')?.addEventListener('input', function() {
+    cmdActiveIdx = -1;
+    renderCmdResults(this.value);
+});
+document.getElementById('cmdInput')?.addEventListener('keydown', function(e) {
+    const items = document.querySelectorAll('#cmdResults .cmd-item');
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        cmdActiveIdx = Math.min(cmdActiveIdx + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        cmdActiveIdx = Math.max(cmdActiveIdx - 1, 0);
+    } else if (e.key === 'Enter' && cmdActiveIdx >= 0) {
+        e.preventDefault();
+        items[cmdActiveIdx]?.click();
+        return;
+    } else if (e.key === 'Escape') {
+        closeCmdPalette();
+        return;
+    }
+    renderCmdResults(this.value);
+    items.forEach((el, i) => el.classList.toggle('active', i === cmdActiveIdx));
+    items[cmdActiveIdx]?.scrollIntoView({ block: 'nearest' });
+});
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const overlay = document.getElementById('cmdOverlay');
+        overlay.classList.contains('open') ? closeCmdPalette() : openCmdPalette();
+    }
+    if (e.key === 'Escape') closeCmdPalette();
+});
+</script>
 </body>
 </html>
 
