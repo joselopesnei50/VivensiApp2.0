@@ -729,106 +729,32 @@ class WhatsappController extends Controller
 
     public function sendMessage(Request $request)
     {
-        $user = auth()->user();
         Gate::authorize('access-whatsapp');
 
         $tenantId = auth()->user()->tenant_id;
-        $chatId = $request->input('chat_id');
-        $content = $request->input('message');
-        $isTemplate = $request->boolean('is_template');
-        
-        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
-        $config = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
-        
-        $policy = app(WhatsappOutboundPolicy::class);
-        $reason = null;
-        $code = null;
-        if (!$policy->canSend($config, $chat, $isTemplate, $reason, $code)) {
-            WhatsappAuditLog::create([
-                'tenant_id' => $tenantId,
-                'chat_id' => $chat->id,
-                'actor_user_id' => auth()->id(),
-                'actor_type' => 'user',
-                'event' => 'outbound_blocked',
-                'details' => [
-                    'code' => $code,
-                    'reason' => $reason,
-                    'is_template' => $isTemplate,
-                    'content_len' => mb_strlen((string) $content),
-                    'content_hash' => hash('sha256', (string) $content),
-                ],
-            ]);
-            return response()->json(['error' => $reason ?: 'Envio não permitido.', 'code' => $code], 422);
-        }
-        
-        $messageId = 'MANUAL_' . uniqid();
-        $tenant = Tenant::find($tenantId);
+        $chat     = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($request->input('chat_id'));
+        $config   = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
 
-        // Prioridade: Meta Cloud API (Oficial)
-        if (!empty($config->meta_phone_number_id) && !empty($config->meta_access_token)) {
-            $metaService = new \App\Services\Messaging\MetaCloudApiService($config);
-            if ($isTemplate) {
-                $templateName = $request->input('template_name');
-                $templateVars = $request->input('template_vars', []);
-                $languageCode = $request->input('language_code', 'pt_BR');
+        $isTemplate   = $request->boolean('is_template');
+        $templateData = $isTemplate ? [
+            'template_name' => $request->input('template_name'),
+            'language_code' => $request->input('language_code', 'pt_BR'),
+            'vars'          => $request->input('template_vars', []),
+        ] : [];
 
-                $res = $metaService->sendTemplateMessage($chat->wa_id, $templateName, $languageCode, $templateVars);
-                $content = "[Template: $templateName]";
-                if (!empty($templateVars)) {
-                    $content .= " Vars: " . implode(', ', $templateVars);
-                }
-            } else {
-                $res = $metaService->sendTextMessage($chat->wa_id, $content);
-            }
-            
-            if (isset($res['messages'][0]['id'])) {
-                $messageId = $res['messages'][0]['id'];
-            } elseif (isset($res['error'])) {
-                return response()->json(['error' => 'Erro na Meta API: ' . ($res['error']['message'] ?? 'Desconhecido')], 500);
-            }
-        } else {
-            // Fallback: Evolution API
-            $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
-                ->where('status', 'open')
-                ->first();
-            if (!$instance) {
-                return response()->json(['error' => 'Nenhuma instância WhatsApp conectada. Configure em Configurações.'], 422);
-            }
-            $evo = new \App\Services\EvolutionApiService($instance);
-            $res = $evo->sendMessage($chat->wa_id, $content, null, 0);
-            if (isset($res['error'])) {
-                Log::error('Evolution sendMessage falhou', ['error' => $res, 'chat' => $chat->wa_id]);
-                return response()->json(['error' => 'Falha ao enviar: ' . ($res['error'] ?? 'Erro desconhecido')], 500);
-            }
-            $messageId = $res['key']['id'] ?? ($res['messageId'] ?? $messageId);
+        try {
+            $result = app(\App\Services\WhatsAppService::class)->sendMessage(
+                $chat, $config,
+                (string) $request->input('message', ''),
+                $isTemplate, $templateData,
+                auth()->id()
+            );
+        } catch (\RuntimeException $e) {
+            $status = $e->getCode() >= 400 ? $e->getCode() : 500;
+            return response()->json(['error' => $e->getMessage()], $status);
         }
 
-        $policy->recordSend($config, $chat);
-
-        WhatsappAuditLog::create([
-            'tenant_id' => $tenantId,
-            'chat_id' => $chat->id,
-            'actor_user_id' => auth()->id(),
-            'actor_type' => 'user',
-            'event' => 'outbound_allowed',
-            'details' => [
-                'is_template' => $isTemplate,
-                'provider_message_id' => $messageId,
-                'content_len' => mb_strlen((string) $content),
-                'content_hash' => hash('sha256', (string) $content),
-            ],
-        ]);
-
-        // Save locally
-        $msg = WhatsappMessage::create([
-            'chat_id' => $chat->id,
-            'message_id' => $messageId,
-            'content' => $content,
-            'direction' => 'outbound',
-            'type' => 'text'
-        ]);
-        
-        return response()->json($msg);
+        return response()->json($result['message']);
     }
 
     public function startChat(Request $request)
@@ -836,147 +762,53 @@ class WhatsappController extends Controller
         $tenantId = auth()->user()->tenant_id;
 
         $validated = $request->validate([
-            'phone' => ['required', 'string', 'max:30'],
-            'name' => ['nullable', 'string', 'max:255'],
-            'message' => ['nullable', 'string', 'max:5000'],
-            'consent' => ['nullable'],
+            'phone'       => ['required', 'string', 'max:30'],
+            'name'        => ['nullable', 'string', 'max:255'],
+            'message'     => ['nullable', 'string', 'max:5000'],
+            'consent'     => ['nullable'],
             'is_template' => ['nullable'],
         ]);
 
-        $phoneRaw = (string) $validated['phone'];
-        $phone = preg_replace('/\D+/', '', $phoneRaw) ?? '';
-        if ($phone === '') {
-            return response()->json(['error' => 'Telefone inválido'], 422);
-        }
+        $whatsapp = app(\App\Services\WhatsAppService::class);
 
-        $name = trim((string) ($validated['name'] ?? ''));
-        if ($name === '') {
-            $name = 'Contato WhatsApp';
+        try {
+            $chat = $whatsapp->startChat(
+                $tenantId,
+                (string) $validated['phone'],
+                (string) ($validated['name'] ?? ''),
+                $request->boolean('consent')
+            );
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
         }
-
-        $chat = WhatsappChat::firstOrCreate(
-            ['tenant_id' => $tenantId, 'wa_id' => $phone],
-            [
-                'contact_name' => $name,
-                'contact_phone' => $phone,
-                'status' => 'open',
-                'last_message_at' => now(),
-            ]
-        );
-
-        // Update name/phone if blank
-        if (empty($chat->contact_name) || $chat->contact_name === 'Cliente WhatsApp') {
-            $chat->contact_name = $name;
-        }
-        if (empty($chat->contact_phone)) {
-            $chat->contact_phone = $phone;
-        }
-        $chat->last_message_at = now();
-        $chat->save();
 
         $content = trim((string) ($validated['message'] ?? ''));
-        $sent = false;
-        $reason = null;
-        $code = null;
-        $messageId = 'START_' . uniqid();
-
-        // Consent: proactive chat must have opt-in (default policy).
-        $consent = $request->boolean('consent');
-        if ($consent && !$chat->opt_in_at) {
-            $chat->opt_in_at = now();
-            $chat->save();
-        }
+        $sent    = false;
+        $reason  = null;
+        $code    = null;
 
         if ($content !== '') {
-            $config = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
-            $policy = app(WhatsappOutboundPolicy::class);
+            $config     = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
             $isTemplate = $request->boolean('is_template');
-            
-            if (!$policy->canSend($config, $chat, $isTemplate, $reason, $code)) {
-                WhatsappAuditLog::create([
-                    'tenant_id' => $tenantId,
-                    'chat_id' => $chat->id,
-                    'actor_user_id' => auth()->id(),
-                    'actor_type' => 'user',
-                    'event' => 'outbound_blocked',
-                    'details' => [
-                        'code' => $code,
-                        'reason' => $reason,
-                        'is_template' => $isTemplate,
-                        'content_len' => mb_strlen((string) $content),
-                        'content_hash' => hash('sha256', (string) $content),
-                    ],
-                ]);
-                return response()->json([
-                    'chat_id' => $chat->id,
-                    'sent' => false,
-                    'error' => $reason ?: 'Envio não permitido.',
-                    'code' => $code,
-                ], 422);
+
+            try {
+                $whatsapp->sendMessage($chat, $config, $content, $isTemplate, [
+                    'template_name' => $request->input('template_name', 'hello_world'),
+                    'language_code' => 'pt_BR',
+                    'vars'          => [],
+                ], auth()->id());
+                $sent = true;
+            } catch (\RuntimeException $e) {
+                $code   = 'send_failed';
+                $reason = $e->getMessage();
             }
-
-            // Prioridade: Meta Cloud API (Oficial)
-            if (!empty($config->meta_phone_number_id) && !empty($config->meta_access_token)) {
-                $metaService = new \App\Services\Messaging\MetaCloudApiService($config);
-                if ($isTemplate) {
-                    $res = $metaService->sendTemplateMessage($chat->wa_id, $request->input('template_name', 'hello_world'));
-                } else {
-                    $res = $metaService->sendTextMessage($chat->wa_id, $content);
-                }
-                
-                if (isset($res['messages'][0]['id'])) {
-                    $messageId = $res['messages'][0]['id'];
-                    $sent = true;
-                }
-            } else {
-                // Fallback: Evolution API
-                $instanceStart = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
-                    ->where('status', 'open')
-                    ->first();
-                if (!$instanceStart) {
-                    return response()->json([
-                        'chat_id' => $chat->id,
-                        'sent'    => false,
-                        'error'   => 'Nenhuma instância WhatsApp conectada.',
-                        'code'    => 'no_instance',
-                    ], 422);
-                }
-                $evo = new \App\Services\EvolutionApiService($instanceStart);
-                $res = $evo->sendMessage($chat->wa_id, $content, null, 0);
-                $messageId = $res['key']['id'] ?? ($res['messageId'] ?? $messageId);
-                $sent = empty($res['error']);
-            }
-
-            $policy->recordSend($config, $chat);
-
-            WhatsappAuditLog::create([
-                'tenant_id' => $tenantId,
-                'chat_id' => $chat->id,
-                'actor_user_id' => auth()->id(),
-                'actor_type' => 'user',
-                'event' => 'outbound_allowed',
-                'details' => [
-                    'is_template' => $isTemplate,
-                    'provider_message_id' => $messageId,
-                    'content_len' => mb_strlen((string) $content),
-                    'content_hash' => hash('sha256', (string) $content),
-                ],
-            ]);
-
-            WhatsappMessage::create([
-                'chat_id' => $chat->id,
-                'message_id' => $messageId,
-                'content' => $content,
-                'direction' => 'outbound',
-                'type' => 'text',
-            ]);
         }
 
         return response()->json([
             'chat_id' => $chat->id,
-            'sent' => $sent,
-            'error' => $reason,
-            'code' => $code,
+            'sent'    => $sent,
+            'error'   => $reason,
+            'code'    => $code,
         ]);
     }
 
@@ -1119,16 +951,11 @@ class WhatsappController extends Controller
     // Removemos os metodos de Conexão Evolution API (getStatus, getQrCode, getPairingCode)
     // porque agora a autenticação é o Meta Embedded Flow.
 
-    /**
-     * Enviar imagem/mídia pelo OmniChannel Chat
-     * Método de envio via Evolution API com proteção anti-ban
-     */
     public function sendMedia(Request $request, $chatId)
     {
         Gate::authorize('access-whatsapp');
         $tenantId = auth()->user()->tenant_id;
-
-        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+        $chat     = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
 
         $validated = $request->validate([
             'base64'   => ['required', 'string'],
@@ -1137,125 +964,48 @@ class WhatsappController extends Controller
         ]);
 
         $config = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
-        $policy = app(WhatsappOutboundPolicy::class);
-        $reason = null; $code = null;
-        if (!$policy->canSend($config, $chat, false, $reason, $code)) {
-            return response()->json(['error' => $reason ?: 'Envio não permitido.', 'code' => $code], 422);
-        }
 
-        $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
-            ->where('status', 'open')
-            ->first();
-
-        if (!$instance) {
-            return response()->json(['error' => 'Nenhuma instância WhatsApp conectada.'], 422);
-        }
         try {
-            $evo = new EvolutionApiService($instance);
-            \Log::info("Enviando mídia para {$chat->wa_id}", ['mime' => $validated['mimetype']]);
-
-            $res = $evo->sendMedia($chat->wa_id, $validated['base64'], $validated['caption'] ?? '', $validated['mimetype']);
-
-            if (isset($res['error']) || empty($res)) {
-                \Log::error("Erro Evolution API (Media):", ['response' => $res, 'chat' => $chat->wa_id]);
-                return response()->json(['success' => false, 'error' => $res['message'] ?? $res['error'] ?? 'Erro na Evolution API']);
-            }
-
-            // Registrar mensagem
-            $msg = WhatsappMessage::create([
-                'chat_id'    => $chat->id,
-                'message_id' => $res['key']['id'] ?? ('MEDIA_' . uniqid()),
-                'content'    => (($validated['caption'] ?? '') ? "[imagem] " . $validated['caption'] : "[imagem]"),
-                'direction'  => 'outbound',
-                'type'       => 'image',
-            ]);
-
-            $chat->update(['last_message_at' => now()]);
-            $policy->recordSend($config, $chat);
-
-            WhatsappAuditLog::create([
-                'tenant_id'     => $tenantId,
-                'chat_id'       => $chat->id,
-                'actor_user_id' => auth()->id(),
-                'actor_type'    => 'user',
-                'event'         => 'outbound_media',
-                'details'       => ['type' => 'image', 'mimetype' => $validated['mimetype'], 'provider_message_id' => $msg->message_id],
-            ]);
-
-            return response()->json(['success' => true, 'message' => $msg]);
-        } catch (\Exception $e) {
-            \Log::error("Exception no envio de mídia: " . $e->getMessage());
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            $result = app(\App\Services\WhatsAppService::class)->sendMedia(
+                $chat, $config,
+                $validated['base64'],
+                $validated['mimetype'],
+                $validated['caption'] ?? '',
+                auth()->id()
+            );
+        } catch (\RuntimeException $e) {
+            $status = $e->getCode() >= 400 ? $e->getCode() : 500;
+            return response()->json(['success' => false, 'error' => $e->getMessage()], $status);
         }
+
+        return response()->json(['success' => true, 'message' => $result['message']]);
     }
 
-    /**
-     * Enviar áudio (PTT - Push To Talk) pelo OmniChannel Chat
-     * Usa formato OGG/Opus nativo do WhatsApp para máxima furtividade anti-ban
-     */
     public function sendAudio(Request $request, $chatId)
     {
         Gate::authorize('access-whatsapp');
         $tenantId = auth()->user()->tenant_id;
-
-        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+        $chat     = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
 
         $validated = $request->validate([
             'base64'   => ['required', 'string'],
             'mimetype' => ['nullable', 'string'],
         ]);
 
-        $configAudio = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
-        $policyAudio = app(WhatsappOutboundPolicy::class);
-        $reasonAudio = null; $codeAudio = null;
-        if (!$policyAudio->canSend($configAudio, $chat, false, $reasonAudio, $codeAudio)) {
-            return response()->json(['error' => $reasonAudio ?: 'Envio não permitido.', 'code' => $codeAudio], 422);
-        }
-
-        $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
-            ->where('status', 'open')
-            ->first();
-
-        if (!$instance) {
-            return response()->json(['error' => 'Nenhuma instância WhatsApp conectada.'], 422);
-        }
+        $config = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
 
         try {
-            $evo = new EvolutionApiService($instance);
-            sleep(2);
-            $res = $evo->sendAudio($chat->wa_id, $validated['base64']);
-
-            if (isset($res['error']) || empty($res)) {
-                Log::error("Erro Evolution API (Audio):", ['response' => $res, 'chat' => $chat->wa_id]);
-                return response()->json(['success' => false, 'error' => $res['message'] ?? $res['error'] ?? 'Erro na Evolution API']);
-            }
-
-            $messageId = $res['key']['id'] ?? ('AUDIO_' . uniqid());
-            $msg = WhatsappMessage::create([
-                'chat_id'    => $chat->id,
-                'message_id' => $messageId,
-                'content'    => '🎙️ [Áudio enviado]',
-                'direction'  => 'outbound',
-                'type'       => 'audio',
-            ]);
-
-            $chat->update(['last_message_at' => now()]);
-            $policyAudio->recordSend($configAudio, $chat);
-
-            WhatsappAuditLog::create([
-                'tenant_id'     => $tenantId,
-                'chat_id'       => $chat->id,
-                'actor_user_id' => auth()->id(),
-                'actor_type'    => 'user',
-                'event'         => 'outbound_audio',
-                'details'       => ['type' => 'audio_ptt', 'provider_message_id' => $messageId],
-            ]);
-
-            return response()->json(['success' => true, 'message' => $msg]);
-        } catch (\Exception $e) {
-            Log::error("Exception no envio de áudio: " . $e->getMessage());
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            $result = app(\App\Services\WhatsAppService::class)->sendAudio(
+                $chat, $config,
+                $validated['base64'],
+                auth()->id()
+            );
+        } catch (\RuntimeException $e) {
+            $status = $e->getCode() >= 400 ? $e->getCode() : 500;
+            return response()->json(['success' => false, 'error' => $e->getMessage()], $status);
         }
+
+        return response()->json(['success' => true, 'message' => $result['message']]);
     }
 
     /**

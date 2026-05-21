@@ -21,11 +21,11 @@
             </p>
         </div>
         <div style="display: flex; gap: 12px;">
-             <a href="{{ url('/personal/reconciliation') }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
+             <a href="{{ url('/personal/reconciliation') }}" class="btn-ds btn-ds-outline">
                 <i class="fas fa-university me-2 text-primary"></i> Conciliar Banco
             </a>
-             <a href="{{ url('/transactions/create') }}" class="btn-premium" style="background: #1e293b; text-decoration: none; border: none; font-weight: 700;">
-                <i class="fas fa-plus me-2" style="color: #10b981;"></i> Nova Transação
+             <a href="{{ url('/transactions/create') }}" class="btn-premium">
+                <i class="fas fa-plus me-2"></i> Nova Transação
             </a>
         </div>
     </div>
@@ -294,7 +294,7 @@
         <div class="vivensi-card" style="padding: 35px; min-height: 520px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
                 <h4 style="margin: 0; font-size: 1.25rem; color: #1e293b; font-weight: 900; letter-spacing: -0.5px;">Atividade Recente</h4>
-                <a href="{{ url('/transactions') }}" class="btn-premium" style="font-size: 0.75rem; padding: 8px 16px; background: #f8fafc; color: var(--primary-color); border: 1px solid #e2e8f0; text-decoration: none; font-weight: 800;">VER HISTÓRICO</a>
+                <a href="{{ url('/transactions') }}" class="btn-ds btn-ds-outline" style="font-size: 0.75rem; padding: 6px 14px;">VER HISTÓRICO</a>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -368,7 +368,7 @@
                 @endforelse
             </div>
             
-            <a href="{{ url('/tasks/create') }}" class="btn-premium" style="width: 100%; margin-top: 25px; background: var(--primary-color); border: none; font-size: 0.9rem; font-weight: 700; text-align: center; display: block; text-decoration: none; padding: 14px;">
+            <a href="{{ url('/tasks/create') }}" class="btn-premium" style="width: 100%; margin-top: 25px; text-align: center; display: block;">
                 <i class="fas fa-plus-circle me-2"></i> Adicionar Tarefa
             </a>
         </div>
