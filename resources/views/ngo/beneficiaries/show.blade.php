@@ -9,7 +9,7 @@
         </span>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
-        <button type="button" class="btn-premium" style="background:#111827;" onclick="toggleEditBeneficiary()">
+        <button type="button" class="btn-premium" onclick="toggleEditBeneficiary()">
             <i class="fas fa-pen"></i> Editar
         </button>
         @php
@@ -17,24 +17,29 @@
             $bMsg = "Olá! Entrando em contato referente ao seu acompanhamento. Beneficiário: " . ($beneficiary->name ?? '');
         @endphp
         @if(!empty($bPhone))
-            <a target="_blank" rel="noopener" href="https://wa.me/{{ $bPhone }}?text={{ urlencode($bMsg) }}" class="btn-premium" style="background:#dcfce7; color:#166534;">
+            <a target="_blank" rel="noopener" href="https://wa.me/{{ $bPhone }}?text={{ urlencode($bMsg) }}"
+               class="btn-ds btn-ds-outline" style="background:#dcfce7; color:#166534; border-color:#bbf7d0;">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
         @endif
-        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/pdf') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#16a34a;">
-            <i class="fas fa-file-pdf"></i> PDF Ficha
+        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/pdf') . '?' . http_build_query(request()->query()) }}"
+           class="btn-ds btn-ds-outline" style="background:#f0fdf4; color:#16a34a; border-color:#bbf7d0;">
+            <i class="fas fa-file-pdf"></i> PDF
         </a>
-        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance/export') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#4f46e5;">
-            <i class="fas fa-file-csv"></i> CSV Atendimentos
+        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance/export') . '?' . http_build_query(request()->query()) }}"
+           class="btn-ds btn-ds-outline" style="background:var(--ds-brand-bg); color:var(--ds-brand); border-color:var(--ds-brand);">
+            <i class="fas fa-file-csv"></i> CSV
         </a>
-        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance/print') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#f1f5f9; color:#0f172a;">
+        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance/print') . '?' . http_build_query(request()->query()) }}"
+           class="btn-ds btn-ds-outline">
             <i class="fas fa-print"></i> Imprimir
         </a>
-        <a href="{{ url('/ngo/beneficiaries') }}" class="btn-premium" style="background: #f1f5f9; color: #475569;">Voltar</a>
+        <a href="{{ url('/ngo/beneficiaries') }}" class="btn-ds btn-ds-ghost">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
         <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" onsubmit="return confirm('Remover este beneficiário e todo o histórico?');" style="display:inline;">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn-premium" style="background:#fee2e2; color:#991b1b;">
+            @csrf @method('DELETE')
+            <button type="submit" class="btn-ds btn-ds-danger">
                 <i class="fas fa-trash"></i> Remover
             </button>
         </form>
@@ -48,9 +53,18 @@
         <div class="vivensi-card">
             <h4 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Dados Pessoais</h4>
             <div id="beneficiaryView">
+                @php
+                    $genderLabels = ['masculino'=>'Masculino','feminino'=>'Feminino','nao_binario'=>'Não-binário','outro'=>'Outro','prefiro_nao_informar'=>'Não informado'];
+                    $raceLabels   = ['branca'=>'Branca','preta'=>'Preta','parda'=>'Parda','amarela'=>'Amarela','indigena'=>'Indígena','prefiro_nao_informar'=>'Não informado'];
+                    $eduLabels    = ['sem_escolaridade'=>'Sem escolaridade','fundamental_incompleto'=>'Fund. incompleto','fundamental_completo'=>'Fund. completo','medio_incompleto'=>'Médio incompleto','medio_completo'=>'Médio completo','superior_incompleto'=>'Superior incompleto','superior_completo'=>'Superior completo','pos_graduacao'=>'Pós-graduação'];
+                    $idade = $beneficiary->birth_date ? \Carbon\Carbon::parse($beneficiary->birth_date)->age . ' anos' : '-';
+                @endphp
                 <ul style="list-style: none; padding: 0; font-size: 0.9rem; color: #475569;">
                     <li style="margin-bottom: 8px;"><strong>CPF:</strong> {{ $beneficiary->cpf ?? '-' }}</li>
-                    <li style="margin-bottom: 8px;"><strong>Nascimento:</strong> {{ $beneficiary->birth_date ? \Carbon\Carbon::parse($beneficiary->birth_date)->format('d/m/Y') : '-' }}</li>
+                    <li style="margin-bottom: 8px;"><strong>Nascimento:</strong> {{ $beneficiary->birth_date ? \Carbon\Carbon::parse($beneficiary->birth_date)->format('d/m/Y') : '-' }} @if($beneficiary->birth_date)<span style="color:#94a3b8; font-size:0.8rem;">({{ $idade }})</span>@endif</li>
+                    <li style="margin-bottom: 8px;"><strong>Sexo:</strong> {{ $genderLabels[$beneficiary->gender ?? ''] ?? '-' }}</li>
+                    <li style="margin-bottom: 8px;"><strong>Cor/Raça:</strong> {{ $raceLabels[$beneficiary->race_color ?? ''] ?? '-' }}</li>
+                    <li style="margin-bottom: 8px;"><strong>Escolaridade:</strong> {{ $eduLabels[$beneficiary->education ?? ''] ?? '-' }}</li>
                     <li style="margin-bottom: 8px;"><strong>Telefone:</strong> {{ $beneficiary->phone ?? '-' }}</li>
                     <li style="margin-bottom: 8px;"><strong>Status:</strong> {{ strtoupper($beneficiary->status ?? '—') }}</li>
                     <li><strong>Endereço:</strong> {{ $beneficiary->address ?? '-' }}</li>
@@ -59,12 +73,13 @@
 
             <div id="beneficiaryEdit" style="display:none;">
                 <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}">
-                    @csrf
-                    @method('PUT')
+                    @csrf @method('PUT')
+
                     <div class="form-group">
-                        <label class="form-label">Nome</label>
+                        <label class="form-label">Nome <span style="color:var(--ds-danger)">*</span></label>
                         <input type="text" name="name" class="form-control-vivensi" value="{{ $beneficiary->name }}" required>
                     </div>
+
                     <div class="grid-2" style="gap: 12px;">
                         <div class="form-group">
                             <label class="form-label">NIS</label>
@@ -75,6 +90,7 @@
                             <input type="text" name="cpf" class="form-control-vivensi" value="{{ $beneficiary->cpf }}">
                         </div>
                     </div>
+
                     <div class="grid-2" style="gap: 12px;">
                         <div class="form-group">
                             <label class="form-label">Nascimento</label>
@@ -85,21 +101,56 @@
                             <input type="text" name="phone" class="form-control-vivensi" value="{{ $beneficiary->phone }}">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-control-vivensi" required>
-                            <option value="active" @if(($beneficiary->status ?? '')==='active') selected @endif>Ativo</option>
-                            <option value="inactive" @if(($beneficiary->status ?? '')==='inactive') selected @endif>Inativo</option>
-                            <option value="graduated" @if(($beneficiary->status ?? '')==='graduated') selected @endif>Graduado</option>
-                        </select>
+
+                    <div class="grid-2" style="gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Sexo / Gênero</label>
+                            <select name="gender" class="form-control-vivensi">
+                                <option value="">Selecione...</option>
+                                @foreach(['masculino'=>'Masculino','feminino'=>'Feminino','nao_binario'=>'Não-binário','outro'=>'Outro','prefiro_nao_informar'=>'Prefiro não informar'] as $val => $lbl)
+                                    <option value="{{ $val }}" {{ $beneficiary->gender === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cor / Raça</label>
+                            <select name="race_color" class="form-control-vivensi">
+                                <option value="">Selecione...</option>
+                                @foreach(['branca'=>'Branca','preta'=>'Preta','parda'=>'Parda','amarela'=>'Amarela','indigena'=>'Indígena','prefiro_nao_informar'=>'Prefiro não informar'] as $val => $lbl)
+                                    <option value="{{ $val }}" {{ $beneficiary->race_color === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
+
+                    <div class="grid-2" style="gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Escolaridade</label>
+                            <select name="education" class="form-control-vivensi">
+                                <option value="">Selecione...</option>
+                                @foreach(['sem_escolaridade'=>'Sem escolaridade','fundamental_incompleto'=>'Fund. incompleto','fundamental_completo'=>'Fund. completo','medio_incompleto'=>'Médio incompleto','medio_completo'=>'Médio completo','superior_incompleto'=>'Superior incompleto','superior_completo'=>'Superior completo','pos_graduacao'=>'Pós-graduação'] as $val => $lbl)
+                                    <option value="{{ $val }}" {{ $beneficiary->education === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status <span style="color:var(--ds-danger)">*</span></label>
+                            <select name="status" class="form-control-vivensi" required>
+                                <option value="active"    {{ $beneficiary->status === 'active'    ? 'selected' : '' }}>Ativo</option>
+                                <option value="inactive"  {{ $beneficiary->status === 'inactive'  ? 'selected' : '' }}>Inativo</option>
+                                <option value="graduated" {{ $beneficiary->status === 'graduated' ? 'selected' : '' }}>Graduado</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label">Endereço</label>
                         <input type="text" name="address" class="form-control-vivensi" value="{{ $beneficiary->address }}">
                     </div>
-                    <div style="text-align:right; margin-top: 10px;">
-                        <button type="button" class="btn-premium" style="background:#f1f5f9; color:#0f172a;" onclick="toggleEditBeneficiary(false)">Cancelar</button>
-                        <button type="submit" class="btn-premium" style="background:#111827;"><i class="fas fa-save"></i> Salvar</button>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:12px;">
+                        <button type="button" class="btn-ds btn-ds-ghost" onclick="toggleEditBeneficiary(false)">Cancelar</button>
+                        <button type="submit" class="btn-premium"><i class="fas fa-save"></i> Salvar</button>
                     </div>
                 </form>
             </div>
@@ -134,7 +185,7 @@
             @else
                 <p style="color: #94a3b8; font-size: 0.9rem;">Nenhum familiar cadastrado.</p>
             @endif
-            <button onclick="document.getElementById('familyForm').style.display = 'block'" class="btn-premium" style="width: 100%; margin-top: 10px; font-size: 0.85rem; justify-content: center; background: #111827; color: #fff;">
+            <button onclick="document.getElementById('familyForm').style.display = 'block'" class="btn-premium" style="width: 100%; margin-top: 10px; font-size: 0.85rem; justify-content: center;">
                 <i class="fas fa-user-plus"></i> Adicionar Familiar
             </button>
 
