@@ -21,6 +21,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}">
 
     {{-- F7: Cor de marca dinâmica por tenant --}}
     @auth
@@ -972,21 +973,7 @@
 @endauth
 
 <style>
-    .btn-premium {
-        background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
-        color: white;
-        padding: 10px 24px;
-        border-radius: 30px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        font-size: 0.9rem;
-    }
-    .btn-premium:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        filter: brightness(1.2);
-        color: white;
-    }
+    /* btn-premium agora definido em design-system.css */
     .btn-premium-icon {
         background: rgba(255,255,255,0.2);
         width: 24px;
