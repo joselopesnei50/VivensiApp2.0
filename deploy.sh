@@ -102,7 +102,7 @@ $PHP_BIN $PHP_FLAGS artisan migrate --force --no-interaction
 
 # ── 6.1 Roles e Permissões (spatie/laravel-permission) ───────────────────
 echo "🔑 Sincronizando roles e permissões..."
-$PHP_BIN $PHP_FLAGS artisan db:seed --class=RolesAndPermissionsSeeder --no-interaction || true
+$PHP_BIN $PHP_FLAGS artisan db:seed --class=RolesAndPermissionsSeeder --force --no-interaction || true
 
 # ── 6.2 Sincronizar usuários legados com as novas roles spatie ────────────
 echo "👥 Sincronizando roles dos usuários existentes..."
