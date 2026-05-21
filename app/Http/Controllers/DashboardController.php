@@ -31,10 +31,10 @@ class DashboardController extends Controller
             $firstActionLink = '#';
             $firstActionLabel = 'Primeira Ação';
 
-            if ($user->role === 'manager') {
+            if ($user->isManager()) {
                 $firstActionLink = '/projects/create';
                 $firstActionLabel = 'Criar Primeiro Projeto';
-            } elseif ($user->role === 'ngo') {
+            } elseif ($user->isNgo()) {
                 $firstActionLink = '/ngo/donors/create';
                 $firstActionLabel = 'Cadastrar Doador';
             } else {

@@ -26,7 +26,7 @@ class AdminController extends Controller
 
     public function index()
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403, 'Acesso restrito ao CEO.');
         }
 
@@ -126,7 +126,7 @@ class AdminController extends Controller
 
     public function liveUsers()
     {
-        if (auth()->user()->role !== 'super_admin') abort(403);
+        if (!auth()->user()->isSuperAdmin()) abort(403);
 
         $users = User::where('last_seen_at', '>=', now()->subMinutes(10))
             ->select('id', 'name', 'role', 'tenant_id', 'last_seen_at')
@@ -148,7 +148,7 @@ class AdminController extends Controller
 
     public function serverHealth()
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -185,7 +185,7 @@ class AdminController extends Controller
 
     public function tenants()
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -197,7 +197,7 @@ class AdminController extends Controller
 
     public function showTenant($id)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -210,7 +210,7 @@ class AdminController extends Controller
 
     public function emailLogs()
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -224,7 +224,7 @@ class AdminController extends Controller
     }
     public function suspendTenant($id)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -236,7 +236,7 @@ class AdminController extends Controller
 
     public function activateTenant($id)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -248,7 +248,7 @@ class AdminController extends Controller
 
     public function destroyTenant($id)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -271,7 +271,7 @@ class AdminController extends Controller
 
     public function createTenant()
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -281,7 +281,7 @@ class AdminController extends Controller
 
     public function storeTenant(Request $request)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 

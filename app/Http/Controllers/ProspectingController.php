@@ -124,7 +124,7 @@ class ProspectingController extends Controller
 
             $user   = Auth::user();
             $tenant = $user->tenant;
-            $isNgo  = in_array($tenant?->type ?? '', ['ngo']) || $user->role === 'ngo';
+            $isNgo  = in_array($tenant?->type ?? '', ['ngo']) || $user->isNgo();
 
             $redirect = $isNgo ? '/ngo/sponsorships' : '/prospecting';
 

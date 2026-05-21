@@ -24,7 +24,7 @@ class WhatsappBroadcastController extends Controller
         $user = auth()->user();
         $tenantId = $user->tenant_id;
 
-        if (!$tenantId && $user->role !== 'super_admin') {
+        if (!$tenantId && !$user->isSuperAdmin()) {
             return redirect()->route('whatsapp.settings')
                 ->with('error', 'Configure a instância WhatsApp primeiro.');
         }
