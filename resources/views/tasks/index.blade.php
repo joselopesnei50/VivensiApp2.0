@@ -16,8 +16,8 @@
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Controle suas pendências e compromissos com precisão.</p>
         </div>
         <div style="display: flex; gap: 15px;">
-             <a href="{{ $basePath . '/tasks/calendar' }}" class="btn-premium" style="background: white; color: #64748b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
-                <i class="fas fa-calendar-days me-2"></i> Ver Calendário
+             <a href="{{ $basePath . '/tasks/calendar' }}" class="btn-ds btn-ds-outline" style="text-decoration: none;">
+                <i class="fas fa-calendar-days"></i> Ver Calendário
             </a>
             <a href="{{ $basePath . '/tasks/create' }}" class="btn-premium btn-premium-shine" style="border: none; padding: 14px 28px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
                 <i class="fas fa-plus-circle"></i> Novo Lembrete

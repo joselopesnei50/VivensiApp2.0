@@ -12,13 +12,13 @@
                 <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
             @endfor
         </select>
-        <a href="{{ url('/ngo/reports/dre/pdf?year='.$year) }}" class="btn-premium" style="background:#0ea5e9; padding: 8px 15px;">
+        <a href="{{ url('/ngo/reports/dre/pdf?year='.$year) }}" class="btn-ds btn-ds-outline" style="padding: 8px 15px;">
             <i class="fas fa-file-pdf"></i> Baixar PDF
         </a>
-        <a href="{{ url('/ngo/reports/dre/export?year='.$year) }}" class="btn-premium" style="background:#4f46e5; padding: 8px 15px;">
+        <a href="{{ url('/ngo/reports/dre/export?year='.$year) }}" class="btn-ds btn-ds-outline" style="padding: 8px 15px;">
             <i class="fas fa-file-csv"></i> Exportar CSV
         </a>
-        <button type="button" onclick="window.print()" class="btn-premium" style="background: #475569; padding: 8px 15px;">
+        <button type="button" onclick="window.print()" class="btn-premium" style="padding: 8px 15px;">
             <i class="fas fa-print"></i> Imprimir
         </button>
     </form>

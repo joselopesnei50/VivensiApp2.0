@@ -15,7 +15,7 @@
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Iniciar Novo Projeto</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Transforme sua visão em execução organizada.</p>
         </div>
-        <a href="{{ $basePath . '/projects' }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
+        <a href="{{ $basePath . '/projects' }}" class="btn-ds btn-ds-ghost" style="text-decoration: none; font-weight: 700;">
             <i class="fas fa-arrow-left me-2"></i> Voltar à Lista
         </a>
     </div>

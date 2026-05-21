@@ -237,11 +237,11 @@
                     <i class="fab fa-whatsapp"></i> Contatar
                 </a>
                 @else
-                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #f1f5f9; color: #94a3b8; padding: 5px 10px;" disabled>
+                <button type="button" class="btn-ds btn-ds-outline" style="font-size: 0.8rem; padding: 5px 10px;" disabled>
                     <i class="fab fa-whatsapp"></i> Contatar
                 </button>
                 @endif
-                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #f1f5f9; color: #64748b; padding: 5px 10px;" onclick='openCertificateModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
+                <button type="button" class="btn-ds btn-ds-outline" style="font-size: 0.8rem; padding: 5px 10px;" onclick='openCertificateModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
                     <i class="fas fa-certificate"></i> Certificado
                 </button>
                 <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fffbeb; color: #b45309; padding: 5px 10px; border: 1px solid #fde68a;" onclick='openLogHoursModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
