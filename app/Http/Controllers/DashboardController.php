@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Services\AiFinancialAdvisor;
 use App\Models\Campaign;
@@ -108,6 +109,17 @@ class DashboardController extends Controller
 
     private function managerDashboard($tenantId)
     {
+        // Cache de 5 minutos para métricas financeiras pesadas
+        $cachedStats = Cache::remember("dashboard.manager.stats.{$tenantId}", 300, function () use ($tenantId) {
+            return [
+                'monthlyIncome'    => (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount'),
+                'lastMonthIncome'  => (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)->sum('amount'),
+                'monthlyExpense'   => (float) Transaction::where('tenant_id', $tenantId)->where('type', 'expense')->where('status', 'paid')->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount'),
+                'activeProjects'   => Project::where('tenant_id', $tenantId)->where('status', 'active')->count(),
+                'overdueTasksCount'=> Task::where('tenant_id', $tenantId)->whereNotIn('status', ['done', 'completed'])->whereNotNull('due_date')->where('due_date', '<', now()->toDateString())->count(),
+            ];
+        });
+
         // ── Projetos com progresso real — sem N+1 ──
         // Busca gastos de todos os projetos em 1 query e faz join em memória
         $spentByProject = DB::table('transactions')
@@ -151,31 +163,15 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // ── Resumo financeiro do mês atual e anterior ──
-        $monthlyIncome = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'income')
-            ->where('status', 'paid')
-            ->whereMonth('date', now()->month)
-            ->whereYear('date', now()->year)
-            ->sum('amount');
-
-        $lastMonthIncome = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'income')
-            ->where('status', 'paid')
-            ->whereMonth('date', now()->subMonth()->month)
-            ->whereYear('date', now()->subMonth()->year)
-            ->sum('amount');
+        // ── Resumo financeiro — usa cache ──
+        $monthlyIncome    = $cachedStats['monthlyIncome'];
+        $lastMonthIncome  = $cachedStats['lastMonthIncome'];
+        $monthlyExpense   = $cachedStats['monthlyExpense'];
+        $overdueTasksCount = $cachedStats['overdueTasksCount'];
 
         $incomeChange = $lastMonthIncome > 0
             ? (($monthlyIncome - $lastMonthIncome) / $lastMonthIncome) * 100
             : null;
-
-        $monthlyExpense = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'expense')
-            ->where('status', 'paid')
-            ->whereMonth('date', now()->month)
-            ->whereYear('date', now()->year)
-            ->sum('amount');
 
         $overdueTasksCount = Task::where('tenant_id', $tenantId)
             ->whereNotIn('status', ['done', 'completed'])
