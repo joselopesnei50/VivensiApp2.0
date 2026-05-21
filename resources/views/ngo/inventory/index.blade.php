@@ -53,7 +53,7 @@
                     <form action="{{ url('/ngo/inventory/'.$item->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir o item?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn-premium" style="padding: 5px 10px; font-size: 0.8rem; background: #94a3b8;" title="Excluir Item">
+                        <button type="submit" class="btn-ds btn-ds-outline" style="padding: 5px 10px; font-size: 0.8rem;" title="Excluir Item">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>

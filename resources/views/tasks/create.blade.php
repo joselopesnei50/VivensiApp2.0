@@ -15,8 +15,8 @@
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Agendar Nova Tarefa</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Organize o tempo e as responsabilidades da sua equipe.</p>
         </div>
-        <a href="{{ $basePath . '/tasks' }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
-            <i class="fas fa-calendar-alt me-2 text-primary"></i> Ver Agenda Full
+        <a href="{{ $basePath . '/tasks' }}" class="btn-ds btn-ds-ghost" style="text-decoration: none;">
+            <i class="fas fa-calendar-alt"></i> Ver Agenda Full
         </a>
     </div>
 </div>
@@ -135,7 +135,7 @@
         <input type="hidden" name="status" value="todo">
 
         <div style="display: flex; gap: 20px; align-items: center; padding-top: 25px; border-top: 1px solid #f1f5f9;">
-            <button type="submit" class="btn-premium btn-premium-shine" style="flex: 2; border: none; padding: 20px; font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; background: #1e293b;">
+            <button type="submit" class="btn-premium btn-premium-shine" style="flex: 2; border: none; padding: 20px; font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px;">
                  Agendar Agora <i class="fas fa-clock"></i>
             </button>
             <a href="{{ $basePath . '/tasks' }}" style="flex: 1; text-align: center; color: #94a3b8; font-weight: 800; font-size: 0.9rem; text-decoration: none; text-transform: uppercase;">Cancelar</a>

@@ -55,7 +55,7 @@
                         <button type="button" onclick="copyReceipt('{{ route('public.receipt', $donation->public_receipt_token) }}')" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #64748b;">
                             <i class="fas fa-copy"></i> Copiar
                         </button>
-                        <button onclick="shareReceipt('{{ $donation->description }}', '{{ route('public.receipt', $donation->public_receipt_token) }}')" class="btn-premium" style="padding: 6px 12px; font-size: 0.8rem; min-width: auto; background: #25D366; border: none;">
+                        <button onclick="shareReceipt('{{ $donation->description }}', '{{ route('public.receipt', $donation->public_receipt_token) }}')" class="btn-premium" style="padding: 6px 12px; font-size: 0.8rem; min-width: auto; border: none;">
                             <i class="fab fa-whatsapp"></i> Enviar
                         </button>
                         <form action="{{ route('ngo.receipts.regenerate_link', ['id' => $donation->id]) }}" method="POST" onsubmit="return confirm('Regenerar link público? O link antigo vai parar de funcionar.')" style="display: inline;">

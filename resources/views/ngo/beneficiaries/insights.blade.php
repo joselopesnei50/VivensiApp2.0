@@ -7,10 +7,10 @@
         <p style="color: #64748b; margin: 5px 0 0 0;">Visão rápida de atendimentos, equipe e famílias (últimos 90 dias por padrão).</p>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a class="btn-premium" style="background:#111827;" href="{{ url('/ngo/beneficiaries') }}"><i class="fas fa-arrow-left"></i> Voltar</a>
-        <a class="btn-premium" style="background:#4f46e5;" href="{{ url('/ngo/beneficiaries/attendances/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV Atendimentos (lote)</a>
-        <a class="btn-premium" style="background:#16a34a;" href="{{ url('/ngo/beneficiaries/reports/annual') }}"><i class="fas fa-file-alt"></i> Relatório anual</a>
-        <button class="btn-premium" style="background:#f1f5f9; color:#0f172a;" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+        <a class="btn-ds btn-ds-ghost" href="{{ url('/ngo/beneficiaries') }}"><i class="fas fa-arrow-left"></i> Voltar</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/attendances/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV Atendimentos (lote)</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual') }}"><i class="fas fa-file-alt"></i> Relatório anual</a>
+        <button class="btn-ds btn-ds-outline" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
     </div>
 </div>
 
@@ -26,7 +26,7 @@
         </div>
         <div style="display:flex; gap: 10px;">
             <button type="submit" class="btn-premium"><i class="fas fa-filter"></i> Aplicar</button>
-            <a class="btn-premium" style="background:#f1f5f9; color:#0f172a;" href="{{ url('/ngo/beneficiaries/insights') }}">Reset</a>
+            <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/insights') }}">Reset</a>
         </div>
         <div style="color:#64748b; font-weight:800; margin-left:auto;">
             Período: {{ $fromDt->format('d/m/Y') }} → {{ $toDt->format('d/m/Y') }}
@@ -141,7 +141,7 @@
                     </td>
                     <td style="padding:10px; text-align:right;">{{ number_format((int) $r->c) }}</td>
                     <td style="padding:10px; text-align:right;">
-                        <a class="btn-premium" style="font-size:.85rem; padding: 6px 10px; background:#f1f5f9; color:#0f172a;" href="{{ url('/ngo/beneficiaries/' . $r->id) }}">
+                        <a class="btn-ds btn-ds-outline" style="font-size:.85rem; padding: 6px 10px;" href="{{ url('/ngo/beneficiaries/' . $r->id) }}">
                             <i class="fas fa-eye"></i>
                         </a>
                     </td>

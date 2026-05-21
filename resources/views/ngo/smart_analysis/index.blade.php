@@ -203,7 +203,7 @@
                 </div>
                 <h5 style="font-weight: 900; color: #cbd5e1; font-size: 1.3rem;">Relatório Não Iniciado</h5>
                 <p style="color: #cbd5e1; max-width: 320px; font-weight: 600; line-height: 1.6; margin-top: 10px;">A inteligência profunda requer uma requisição manual para garantir o uso eficiente de recursos.</p>
-                <button onclick="document.getElementById('btnDeepAnalysis').click()" class="btn-premium" style="margin-top: 25px; background: #94a3b8; box-shadow: none; border: none; padding: 12px 30px; font-weight: 800;">ATIVAR MOTOR IA</button>
+                <button onclick="document.getElementById('btnDeepAnalysis').click()" class="btn-premium" style="margin-top: 25px; box-shadow: none; border: none; padding: 12px 30px; font-weight: 800;">ATIVAR MOTOR IA</button>
             </div>
 
             <!-- Loading State -->
