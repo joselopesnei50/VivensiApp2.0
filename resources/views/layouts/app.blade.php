@@ -296,7 +296,7 @@
 </style>
 
 @auth
-<aside class="sidebar{{ auth()->user()->role === 'super_admin' ? ' sidebar-sa' : '' }}" id="mainSidebar" style="position:relative;">
+<aside class="sidebar{{ auth()->user()->role === 'super_admin' ? ' sidebar-sa' : '' }}" id="mainSidebar">
     {{-- Collapse toggle --}}
     <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Recolher menu" aria-label="Recolher menu">
         <i class="fas fa-chevron-left collapse-icon" id="sidebarCollapseIcon"></i>
