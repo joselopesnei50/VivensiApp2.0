@@ -683,20 +683,20 @@ body { font-family: var(--ds-font-sans); }
    SIDEBAR MODERNA — Phase 3.3 (Linear/ClickUp/Stripe inspired)
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Pill active state (left border instead of right) ─────────────────── */
-.sidebar-menu a {
+/* ── Pill active state — apenas sidebar normal (não super_admin) ───────── */
+.sidebar:not(.sidebar-sa) .sidebar-menu a {
     border-right: none !important;
     border-left: 3px solid transparent;
     border-radius: 0 10px 10px 0;
     margin-right: 12px;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.sidebar-menu a:hover {
+.sidebar:not(.sidebar-sa) .sidebar-menu a:hover {
     background: var(--primary-bg) !important;
     color: var(--primary-color) !important;
     border-left-color: transparent !important;
 }
-.sidebar-menu a.active {
+.sidebar:not(.sidebar-sa) .sidebar-menu a.active {
     background: var(--primary-bg) !important;
     color: var(--primary-color) !important;
     border-left-color: var(--primary-color) !important;
@@ -732,18 +732,24 @@ body { font-family: var(--ds-font-sans); }
 /* ── Sidebar collapsed mode (64px icon-only) ──────────────────────────── */
 .sidebar.sb-collapsed {
     width: 64px !important;
+    overflow: visible;      /* deixa o botão de collapse aparecer fora */
 }
+
+/* Elementos a esconder no modo recolhido */
 .sidebar.sb-collapsed .sidebar-header .logo,
 .sidebar.sb-collapsed .panel-badge,
 .sidebar.sb-collapsed .lang-switcher,
-.sidebar.sb-collapsed .user-info,
-.sidebar.sb-collapsed .sa-live-txt,
-.sidebar.sb-collapsed .sa-live-num,
-.sidebar.sb-collapsed .menu-group-header span,
-.sidebar.sb-collapsed .menu-divider {
+.sidebar.sb-collapsed .sa-live-pill,
+.sidebar.sb-collapsed .menu-divider,
+.sidebar.sb-collapsed .menu-group-items,
+.sidebar.sb-collapsed .suc-info,
+.sidebar.sb-collapsed .suc-arrow {
     display: none !important;
 }
+
+/* Links: font-size 0 esconde text nodes; ícones recuperam tamanho */
 .sidebar.sb-collapsed .sidebar-menu a {
+    font-size: 0 !important;
     padding: 12px 0 !important;
     justify-content: center !important;
     margin-right: 0 !important;
@@ -751,14 +757,18 @@ body { font-family: var(--ds-font-sans); }
     border-left: none !important;
     position: relative;
 }
-.sidebar.sb-collapsed .sidebar-menu i {
+.sidebar.sb-collapsed .sidebar-menu a i,
+.sidebar.sb-collapsed .sidebar-menu a .fas,
+.sidebar.sb-collapsed .sidebar-menu a .fab,
+.sidebar.sb-collapsed .sidebar-menu a .far,
+.sidebar.sb-collapsed .sidebar-menu a .fal {
+    font-size: 1.1rem !important;
     margin-right: 0 !important;
-    font-size: 1.1rem;
+    width: auto !important;
 }
-.sidebar.sb-collapsed .sidebar-menu a span,
-.sidebar.sb-collapsed .sidebar-menu a .sa-badge {
-    display: none !important;
-}
+.sidebar.sb-collapsed .sidebar-menu a .sa-badge { display: none !important; }
+
+/* Tooltip ao hover no modo recolhido */
 .sidebar.sb-collapsed .sidebar-menu a:hover::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -776,16 +786,25 @@ body { font-family: var(--ds-font-sans); }
     z-index: 9999;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
+
+/* Group headers no modo recolhido: esconde texto, centraliza ícone */
 .sidebar.sb-collapsed .menu-group-header {
-    padding: 10px 0;
+    font-size: 0 !important;
+    padding: 10px 0 !important;
     justify-content: center !important;
 }
-.sidebar.sb-collapsed .menu-group-items { display: none !important; }
-.sidebar.sb-collapsed .user-view {
-    justify-content: center;
-    padding: 14px 0;
+.sidebar.sb-collapsed .menu-group-header i {
+    font-size: 0.9rem !important;
+    margin-right: 0 !important;
 }
-.sidebar.sb-collapsed .user-avatar-wrap { margin: 0 auto; }
+
+/* User card recolhido: só avatar */
+.sidebar.sb-collapsed .sidebar-user-card {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+/* Ícone do botão aponta para direita quando recolhido */
 .sidebar.sb-collapsed .collapse-icon { transform: rotate(180deg); }
 
 /* Main content shift */
