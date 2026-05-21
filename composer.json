@@ -17,6 +17,7 @@
         "laravel/tinker": "^2.7",
         "open-pix/php-sdk": "*",
         "pusher/pusher-php-server": "^7.2",
+        "sentry/sentry-laravel": "^4.25",
         "spatie/laravel-permission": "^6.25"
     },
     "require-dev": {
