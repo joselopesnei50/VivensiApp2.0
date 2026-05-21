@@ -34,7 +34,7 @@ class ExportController extends Controller
             // Add BOM for Excel compatibility in UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            if ($role === 'ngo') {
+            if ($user->isNgo()) {
                 // Export Transactions for NGO
                 fputcsv($file, ['ID', 'Título', 'Tipo', 'Valor', 'Data', 'Status', 'Projeto']);
                 $transactions = Transaction::where('tenant_id', $user->tenant_id)->get();
@@ -49,7 +49,7 @@ class ExportController extends Controller
                         $t->project ? $t->project->name : 'N/A'
                     ]);
                 }
-            } elseif ($role === 'manager') {
+            } elseif ($user->isManager()) {
                 // Export Projects for Manager
                 fputcsv($file, ['ID', 'Nome', 'Status', 'Início', 'Fim', 'Orçamento']);
                 $projects = Project::where('tenant_id', $user->tenant_id)->get();

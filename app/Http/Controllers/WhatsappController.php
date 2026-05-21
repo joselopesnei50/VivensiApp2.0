@@ -1049,7 +1049,7 @@ class WhatsappController extends Controller
     private function getContextModel()
     {
         $user = auth()->user();
-        if ($user->role === 'manager' || $user->role === 'super_admin') {
+        if ($user->isManager() || $user->isSuperAdmin()) {
             return $user;
         }
         if ($user->tenant_id) {

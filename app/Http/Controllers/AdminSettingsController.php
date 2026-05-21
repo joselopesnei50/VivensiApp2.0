@@ -11,7 +11,7 @@ class AdminSettingsController extends Controller
     public function index()
     {
         // Permission check (Simple for now, can be middleware)
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             return redirect('/dashboard')->with('error', 'Acesso não autorizado.');
         }
 
@@ -136,7 +136,7 @@ class AdminSettingsController extends Controller
 
     public function store(Request $request)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 

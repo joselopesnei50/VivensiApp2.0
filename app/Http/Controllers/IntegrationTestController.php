@@ -15,7 +15,7 @@ class IntegrationTestController extends Controller
     {
         if (!app()->runningInConsole()) {
             $this->middleware(function ($request, $next) {
-                if (!auth()->check() || auth()->user()->role !== 'super_admin') {
+                if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
                     abort(403, 'Acesso restrito ao Super Admin.');
                 }
                 return $next($request);

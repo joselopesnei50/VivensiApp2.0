@@ -15,7 +15,7 @@ class AdminTeamController extends Controller
      */
     public function index()
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -35,7 +35,7 @@ class AdminTeamController extends Controller
      */
     public function store(Request $request)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -68,7 +68,7 @@ class AdminTeamController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -96,7 +96,7 @@ class AdminTeamController extends Controller
      */
     public function destroy($id)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 
@@ -116,7 +116,7 @@ class AdminTeamController extends Controller
      */
     public function profile($id)
     {
-        if (auth()->user()->role !== 'super_admin') {
+        if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 

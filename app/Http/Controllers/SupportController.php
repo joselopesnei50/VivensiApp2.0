@@ -100,7 +100,7 @@ class SupportController extends Controller
 
         $request->validate(['message' => 'required']);
 
-        $isAdmin = Auth::user()->role == 'super_admin';
+        $isAdmin = Auth::user()->isSuperAdmin();
 
         SupportMessage::create([
             'ticket_id' => $ticket->id,
@@ -212,7 +212,7 @@ class SupportController extends Controller
     // --- HELPER ---
     private function authorizeTicketAccess($ticket)
     {
-        if (Auth::user()->role == 'super_admin') return;
+        if (Auth::user()->isSuperAdmin()) return;
 
         if (Auth::user()->tenant_id) {
             if ($ticket->tenant_id != Auth::user()->tenant_id) abort(403);
