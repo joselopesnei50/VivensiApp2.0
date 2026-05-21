@@ -59,7 +59,17 @@
 
     @stack('styles')
 </head>
-<body>
+@php
+    $panelRole = auth()->check() ? auth()->user()->role : 'guest';
+    $panelAttr = match($panelRole) {
+        'ngo'         => 'ngo',
+        'manager'     => 'manager',
+        'common'      => 'mei',
+        'super_admin' => 'admin',
+        default       => 'guest',
+    };
+@endphp
+<body data-panel="{{ $panelAttr }}">
 
 <!-- Mobile Sidebar Overlay -->
 <div id="sidebarOverlay" class="sidebar-overlay" style="display: none;" onclick="toggleSidebar()"></div>
@@ -291,6 +301,23 @@
         <a href="{{ url('/dashboard') }}" class="logo" style="display: block; text-align: center;">
             <x-application-logo style="max-width: 108px; height: auto;" />
         </a>
+        {{-- Badge de Painel --}}
+        @auth
+        @php
+            $panelMeta = match(auth()->user()->role) {
+                'ngo'         => ['label' => 'Terceiro Setor', 'icon' => 'fa-heart',          'cls' => 'panel-badge-ngo'],
+                'manager'     => ['label' => 'Gestão',         'icon' => 'fa-briefcase',      'cls' => 'panel-badge-manager'],
+                'common'      => ['label' => 'MEI / Pessoal',  'icon' => 'fa-store',          'cls' => 'panel-badge-mei'],
+                'super_admin' => ['label' => 'Admin',          'icon' => 'fa-shield-halved',  'cls' => 'panel-badge-admin'],
+                default       => ['label' => 'Vivensi',        'icon' => 'fa-circle',         'cls' => 'panel-badge-admin'],
+            };
+        @endphp
+        <div class="panel-badge {{ $panelMeta['cls'] }}">
+            <i class="fas {{ $panelMeta['icon'] }}"></i>
+            <span>{{ $panelMeta['label'] }}</span>
+        </div>
+        @endauth
+
         {{-- Seletor de Idioma --}}
         <div class="lang-switcher">
             <a href="#" title="Português (Brasil)" class="lang-btn">
