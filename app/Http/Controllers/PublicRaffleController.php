@@ -132,12 +132,15 @@ class PublicRaffleController extends Controller
     {
         $ticket = RaffleTicket::findOrFail($ticketId);
 
-        // TODO [AUDIT A04]: Validar propriedade do bilhete (IDOR).
-        // Revertido temporariamente — a view de checkout precisa incluir buyer_email no form primeiro.
-        // Não aplicar sem ler a view public/raffles/checkout.blade.php.
         $request->validate([
-            'receipt' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'receipt'      => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'buyer_email'  => 'required|email',
         ]);
+
+        // Validação de ownership: email do comprador deve coincidir com o bilhete
+        if (strtolower(trim($ticket->buyer_email ?? '')) !== strtolower(trim($request->buyer_email))) {
+            abort(403, 'Acesso negado: este bilhete não pertence ao e-mail informado.');
+        }
 
         if ($ticket->status !== 'pending') {
             return back()->with('error', 'Este bilhete não está aguardando pagamento.');

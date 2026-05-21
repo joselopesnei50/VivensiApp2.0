@@ -181,7 +181,7 @@ class BudgetController extends Controller
         $plannedResult = $plannedIncome - $plannedExpense;
         $realResult = $realIncome - $realExpense;
 
-        $orgName = strtoupper(auth()->user()->tenant->name ?? 'ORGANIZAÇÃO');
+        $orgName = strtoupper(auth()->user()->tenant?->name ?? 'ORGANIZAÇÃO');
         $generatedAt = now()->format('d/m/Y H:i');
 
         $pdf = app('dompdf.wrapper');

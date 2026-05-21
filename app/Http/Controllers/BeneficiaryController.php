@@ -1250,7 +1250,7 @@ class BeneficiaryController extends Controller
                         optional($a->date)->format('Y-m-d'),
                         $a->type,
                         $a->description,
-                        $a->user->name ?? 'Sistema',
+                        $a->user?->name ?? 'Sistema',
                     ]);
                 }
             });
