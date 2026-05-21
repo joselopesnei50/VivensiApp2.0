@@ -1,10 +1,10 @@
 @props(['icon', 'title', 'description', 'action_label' => null, 'action_url' => null])
-<div style="text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; margin: 20px 0;">
-    <div style="width: 80px; height: 80px; background: rgba(99,102,241,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-        <i class="fas {{ $icon }}" style="font-size: 2.5rem; color: #818cf8; opacity: 0.8;"></i>
+<div style="text-align: center; padding: 60px 20px; background: var(--ds-bg, #f8fafc); border: 1px dashed var(--ds-border, #e2e8f0); border-radius: 16px; margin: 20px 0;">
+    <div style="width: 80px; height: 80px; background: var(--ds-brand-bg, #eef2ff); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+        <i class="fas {{ $icon }}" style="font-size: 2.5rem; color: var(--ds-brand, #6366f1); opacity: 0.8;"></i>
     </div>
-    <h5 style="color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 8px;">{{ $title }}</h5>
-    <p style="color: rgba(255,255,255,0.4); font-size: 0.9rem; max-width: 400px; margin: 0 auto 24px;">{{ $description }}</p>
+    <h5 style="color: var(--ds-text, #0f172a); font-weight: 800; font-size: 1.2rem; margin-bottom: 8px;">{{ $title }}</h5>
+    <p style="color: var(--ds-text-muted, #64748b); font-size: 0.9rem; max-width: 400px; margin: 0 auto 24px;">{{ $description }}</p>
     
     @if($action_label && $action_url)
         <a href="{{ $action_url }}" 

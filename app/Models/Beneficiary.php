@@ -17,9 +17,12 @@ class Beneficiary extends Model
         'cpf',
         'nis',
         'birth_date',
+        'gender',
+        'race_color',
+        'education',
         'phone',
         'address',
-        'status'
+        'status',
     ];
 
     protected $hidden = ['cpf', 'nis', 'birth_date'];
