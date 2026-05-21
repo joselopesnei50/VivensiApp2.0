@@ -14,8 +14,9 @@ return new class extends Migration
             $table->unique(['city_ibge_code', 'indicator_key'], 'ibge_cache_unique');
         });
 
-        // Convert year column from string to integer
-        DB::statement("ALTER TABLE ibge_indicators_cache MODIFY year INT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE ibge_indicators_cache MODIFY year INT NULL");
+        }
     }
 
     public function down()
@@ -24,6 +25,8 @@ return new class extends Migration
             $table->dropUnique('ibge_cache_unique');
         });
 
-        DB::statement("ALTER TABLE ibge_indicators_cache MODIFY year VARCHAR(255) NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE ibge_indicators_cache MODIFY year VARCHAR(255) NULL");
+        }
     }
 };

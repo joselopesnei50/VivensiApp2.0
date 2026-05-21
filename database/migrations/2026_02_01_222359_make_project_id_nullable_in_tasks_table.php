@@ -2,29 +2,21 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        DB::statement('ALTER TABLE tasks MODIFY project_id BIGINT UNSIGNED NULL');
+        Schema::table('tasks', function (Blueprint $table) {
+            $table->unsignedBigInteger('project_id')->nullable()->change();
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        // Attention: verify if there are null values before reversing
-        DB::statement('UPDATE tasks SET project_id = 0 WHERE project_id IS NULL'); 
-        DB::statement('ALTER TABLE tasks MODIFY project_id BIGINT UNSIGNED NOT NULL');
+        Schema::table('tasks', function (Blueprint $table) {
+            $table->unsignedBigInteger('project_id')->nullable(false)->change();
+        });
     }
 };
