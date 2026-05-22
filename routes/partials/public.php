@@ -1,7 +1,8 @@
 <?php
 
 // ── Healthcheck ───────────────────────────────────────────────────────────────
-Route::get('/ping', fn () => response()->json(['status' => 'ok', 'ts' => now()->toIso8601String()]))->name('health.ping');
+Route::get('/ping',   fn () => response()->json(['status' => 'ok', 'ts' => now()->toIso8601String()]))->name('health.ping');
+Route::get('/health', [App\Http\Controllers\HealthController::class, 'check'])->name('health.check');
 
 // ── Homepage & soluções ───────────────────────────────────────────────────────
 Route::get('/', [App\Http\Controllers\PublicController::class, 'welcome']);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'VIVENSI App - Gestão Financeira Inteligente' }}</title>
+    <title>{{ $title ?? config('app.name', 'Vivensi') }} — {{ __('ui.app_tagline') }}</title>
     
     <!-- SEO & Social Sharing -->
     <meta name="description" content="Vivensi App - A plataforma de gestão definitiva para ONGs, empresas e gestores. Controle financeiro, projetos e transparência com auxílio de IA.">
@@ -812,11 +812,11 @@
         </div>
         <i class="fas fa-chevron-up suc-arrow"></i>
         <div class="suc-dropdown" id="sucDropdown">
-            <a href="{{ url('/profile') }}"><i class="fas fa-user-circle"></i> Meu Perfil</a>
-            <a href="{{ url('/profile') }}#settings"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="{{ url('/profile') }}"><i class="fas fa-user-circle"></i> {{ __('ui.profile') }}</a>
+            <a href="{{ url('/profile') }}#settings"><i class="fas fa-cog"></i> {{ __('ui.settings') }}</a>
             <div class="suc-divider"></div>
             <a href="#" class="danger" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();">
-                <i class="fas fa-sign-out-alt"></i> Sair
+                <i class="fas fa-sign-out-alt"></i> {{ __('ui.logout') }}
             </a>
         </div>
     </div>
@@ -1029,6 +1029,29 @@
         @if(session('error'))
             <div class="alert alert-danger" style="background-color: #fee2e2; border: 1px solid #f87171; color: #b91c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
                 <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+            </div>
+        @endif
+
+        @if(session('warning'))
+            <div class="alert alert-warning" style="background-color: #fef9c3; border: 1px solid #fde047; color: #854d0e; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+                <i class="fas fa-triangle-exclamation me-2"></i> {{ session('warning') }}
+            </div>
+        @endif
+
+        @if(session('info'))
+            <div class="alert alert-info" style="background-color: #e0f2fe; border: 1px solid #7dd3fc; color: #0c4a6e; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+                <i class="fas fa-circle-info me-2"></i> {{ session('info') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert alert-danger" style="background-color: #fee2e2; border: 1px solid #f87171; color: #b91c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
     </div>
