@@ -65,4 +65,31 @@ class TransactionController extends Controller
 
         return new TransactionResource($transaction);
     }
+
+    public function update(Request $request, int $id)
+    {
+        $transaction = Transaction::where('tenant_id', $request->user()->tenant_id)
+            ->findOrFail($id);
+
+        $validated = $request->validate([
+            'description' => 'sometimes|string|max:255',
+            'amount'      => 'sometimes|numeric|min:0.01',
+            'date'        => 'sometimes|date',
+            'status'      => ['sometimes', Rule::in(['paid', 'pending', 'canceled'])],
+            'category_id' => 'nullable|integer',
+        ]);
+
+        $transaction->update($validated);
+
+        return new TransactionResource($transaction->fresh());
+    }
+
+    public function destroy(Request $request, int $id)
+    {
+        Transaction::where('tenant_id', $request->user()->tenant_id)
+            ->findOrFail($id)
+            ->delete();
+
+        return response()->json(['success' => true]);
+    }
 }
