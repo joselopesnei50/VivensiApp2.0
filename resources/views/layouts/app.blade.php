@@ -790,6 +790,7 @@
             @if(in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin']))
             <li><a href="{{ route('settings.branding') }}" class="{{ request()->routeIs('settings.branding') ? 'active' : '' }}"><i class="fas fa-palette"></i> Identidade Visual</a></li>
             <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->routeIs('settings.api-tokens*') ? 'active' : '' }}"><i class="fas fa-plug"></i> API &amp; Integrações</a></li>
+            <li><a href="{{ route('settings.webhooks') }}" class="{{ request()->routeIs('settings.webhooks*') ? 'active' : '' }}"><i class="fas fa-webhook"></i> Webhooks</a></li>
             @endif
         </ul>
     </nav>
