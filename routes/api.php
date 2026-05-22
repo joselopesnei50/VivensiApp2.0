@@ -74,4 +74,12 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(functi
     Route::get('/tasks/{id}',    [App\Http\Controllers\Api\V1\TaskController::class, 'show']);
     Route::patch('/tasks/{id}',  [App\Http\Controllers\Api\V1\TaskController::class, 'update']);
     Route::delete('/tasks/{id}', [App\Http\Controllers\Api\V1\TaskController::class, 'destroy']);
+
+    // NGO-specific (role: ngo | super_admin only)
+    Route::get('/ngo/summary',       [App\Http\Controllers\Api\V1\NgoController::class, 'summary']);
+    Route::get('/ngo/donors',        [App\Http\Controllers\Api\V1\NgoController::class, 'donors']);
+    Route::post('/ngo/donors',       [App\Http\Controllers\Api\V1\NgoController::class, 'createDonor']);
+    Route::get('/ngo/donors/{id}',   [App\Http\Controllers\Api\V1\NgoController::class, 'showDonor']);
+    Route::get('/ngo/grants',        [App\Http\Controllers\Api\V1\NgoController::class, 'grants']);
+    Route::get('/ngo/grants/{id}',   [App\Http\Controllers\Api\V1\NgoController::class, 'showGrant']);
 });
