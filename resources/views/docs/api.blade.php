@@ -104,6 +104,22 @@
     </a>
 </div>
 
+{{-- SDK --}}
+<div style="background:#0f172a; border-radius:20px; padding:28px; border:1px solid rgba(99,102,241,0.15); margin-bottom:24px;">
+    <h3 style="color:white; font-weight:900; font-size:1rem; margin:0 0 12px;"><i class="fab fa-js me-2" style="color:#fbbf24;"></i>JavaScript SDK</h3>
+    <p style="color:rgba(255,255,255,0.5); font-size:0.82rem; margin-bottom:14px;">Inclua o SDK no seu projeto para integrar em 3 linhas:</p>
+    <pre style="background:#020617; border-radius:10px; padding:16px; font-size:0.78rem; color:#a5b4fc; border:1px solid rgba(99,102,241,0.12); margin:0 0 12px; overflow-x:auto;">&lt;script src="{{ config('app.url') }}/js/vivensi-sdk.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const api = new VivensiSDK({ token: '&lt;seu-token&gt;' });
+  const me  = await api.me.show();
+  const txs = await api.transactions.list({ type: 'income', per_page: 50 });
+  await api.tasks.create({ title: 'Nova tarefa', priority: 'high' });
+&lt;/script&gt;</pre>
+    <a href="{{ asset('js/vivensi-sdk.js') }}" download style="display:inline-flex; align-items:center; gap:8px; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.25); color:#fbbf24; border-radius:10px; padding:10px 16px; font-size:0.8rem; font-weight:800; text-decoration:none;">
+        <i class="fas fa-download"></i> Download vivensi-sdk.js
+    </a>
+</div>
+
 {{-- Error codes --}}
 <div style="background:#0f172a; border-radius:20px; padding:28px; border:1px solid rgba(255,255,255,0.06);">
     <h3 style="color:white; font-weight:900; font-size:1rem; margin:0 0 16px;">Códigos de Resposta</h3>

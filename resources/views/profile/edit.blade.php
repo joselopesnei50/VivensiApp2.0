@@ -3,7 +3,7 @@
 @section('content')
 <div class="header-page" style="margin-bottom: 40px; position: relative;">
     <div style="background: linear-gradient(135deg, rgba(71, 85, 105, 0.1) 0%, rgba(30, 41, 59, 0.05) 100%); position: absolute; top: -30px; left: -30px; right: -30px; bottom: 0; z-index: -1;"></div>
-    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap:wrap; gap:12px;">
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                 <span style="background: #475569; width: 12px; height: 3px; border-radius: 2px;"></span>
@@ -12,6 +12,10 @@
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Centro de Perfil</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Gerencie suas credenciais e preferências de segurança.</p>
         </div>
+        <a href="{{ route('2fa.show') }}" style="display:inline-flex; align-items:center; gap:8px; background:{{ auth()->user()->hasTwoFactorEnabled() ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.08)' }}; border:1px solid {{ auth()->user()->hasTwoFactorEnabled() ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.2)' }}; color:{{ auth()->user()->hasTwoFactorEnabled() ? '#10b981' : '#dc2626' }}; border-radius:12px; padding:10px 18px; font-size:0.8rem; font-weight:800; text-decoration:none;">
+            <i class="fas fa-shield-halved me-1"></i>
+            2FA {{ auth()->user()->hasTwoFactorEnabled() ? 'Ativo' : 'Desativado' }}
+        </a>
     </div>
 </div>
 
