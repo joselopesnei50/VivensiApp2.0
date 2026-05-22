@@ -1,57 +1,57 @@
 <?php
 
-use App\Models\User;
-use App\Models\Tenant;
 use App\Models\Project;
+use App\Models\Tenant;
 use App\Models\Transaction;
+use App\Models\User;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-it('user cannot access projects from another tenant via model', function () {
-    $tenant1 = Tenant::factory()->create();
-    $tenant2 = Tenant::factory()->create();
+// ── HTTP-level isolation (the real protection) ────────────────────────────────
 
-    $user    = User::factory()->create(['tenant_id' => $tenant1->id, 'role' => 'manager']);
-    $project = Project::factory()->create(['tenant_id' => $tenant2->id]);
+it('user cannot access project from another tenant via http', function () {
+    $t1   = Tenant::factory()->create(['subscription_status' => 'active']);
+    $t2   = Tenant::factory()->create(['subscription_status' => 'active']);
+    $user = User::factory()->create(['tenant_id' => $t1->id, 'role' => 'manager']);
+    $proj = Project::factory()->create(['tenant_id' => $t2->id]);
 
-    $this->actingAs($user);
-
-    expect(Project::find($project->id))->toBeNull();
+    $this->actingAs($user)
+         ->get("/projects/{$proj->id}")
+         ->assertStatus(404); // BelongsToTenant scope hides cross-tenant records (returns 404 not 403)
 });
 
-it('user cannot access transactions from another tenant via model', function () {
-    $tenant1 = Tenant::factory()->create();
-    $tenant2 = Tenant::factory()->create();
+it('user cannot access transaction from another tenant via api', function () {
+    $t1   = Tenant::factory()->create(['subscription_status' => 'active']);
+    $t2   = Tenant::factory()->create(['subscription_status' => 'active']);
+    $user = User::factory()->create(['tenant_id' => $t1->id, 'role' => 'ngo']);
+    $tx   = Transaction::factory()->create(['tenant_id' => $t2->id, 'status' => 'paid', 'approval_status' => 'approved']);
+    $tok  = $user->createToken('test')->plainTextToken;
 
-    $user        = User::factory()->create(['tenant_id' => $tenant1->id, 'role' => 'ngo']);
-    $transaction = Transaction::factory()->create(['tenant_id' => $tenant2->id]);
-
-    $this->actingAs($user);
-
-    expect(Transaction::find($transaction->id))->toBeNull();
+    $this->withToken($tok)
+         ->getJson("/api/v1/transactions/{$tx->id}")
+         ->assertStatus(404);
 });
 
-it('super_admin can access data from any tenant', function () {
-    $tenant1 = Tenant::factory()->create();
-    $tenant2 = Tenant::factory()->create();
+it('super_admin can access data from any tenant via api', function () {
+    $t1    = Tenant::factory()->create(['subscription_status' => 'active']);
+    $t2    = Tenant::factory()->create(['subscription_status' => 'active']);
+    $admin = User::factory()->create(['tenant_id' => $t1->id, 'role' => 'super_admin']);
+    $proj  = Project::factory()->create(['tenant_id' => $t2->id]);
 
-    $admin   = User::factory()->create(['tenant_id' => $tenant1->id, 'role' => 'super_admin']);
-    $project = Project::factory()->create(['tenant_id' => $tenant2->id]);
-
+    // super_admin sees all via Eloquent (global scope disabled for super_admin)
     $this->actingAs($admin);
-
-    expect(Project::find($project->id))->not->toBeNull();
+    expect(Project::find($proj->id))->not->toBeNull();
 });
 
-it('project query only returns records from own tenant', function () {
-    $tenant1 = Tenant::factory()->create();
-    $tenant2 = Tenant::factory()->create();
+it('api v1 project list is scoped to own tenant only', function () {
+    $t1   = Tenant::factory()->create(['subscription_status' => 'active']);
+    $t2   = Tenant::factory()->create(['subscription_status' => 'active']);
+    $user = User::factory()->create(['tenant_id' => $t1->id, 'role' => 'manager']);
+    Project::factory()->count(3)->create(['tenant_id' => $t1->id]);
+    Project::factory()->count(2)->create(['tenant_id' => $t2->id]);
+    $tok  = $user->createToken('test')->plainTextToken;
 
-    $user = User::factory()->create(['tenant_id' => $tenant1->id, 'role' => 'manager']);
-    Project::factory()->count(3)->create(['tenant_id' => $tenant1->id]);
-    Project::factory()->count(2)->create(['tenant_id' => $tenant2->id]);
-
-    $this->actingAs($user);
-
-    expect(Project::count())->toBe(3);
+    $response = $this->withToken($tok)->getJson('/api/v1/projects');
+    $response->assertOk();
+    expect($response->json('meta.total'))->toBe(3);
 });
