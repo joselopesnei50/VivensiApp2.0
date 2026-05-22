@@ -296,9 +296,6 @@ class NgoGrantController extends Controller
         return Storage::disk($disk)->download($doc->file_path, $filename);
     }
 
-    // deleteDocument — tenant check added below
-    }
-
     public function deleteDocument($id, $docId)
     {
         $grant = NgoGrant::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
