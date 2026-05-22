@@ -51,6 +51,9 @@ return [
     'description'      => 'Description',
     'category'         => 'Category',
 
+    // App
+    'app_tagline'      => 'Intelligent Financial Management',
+
     // Messages
     'success_saved'    => 'Saved successfully!',
     'success_deleted'  => 'Deleted successfully!',

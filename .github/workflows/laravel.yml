@@ -74,3 +74,40 @@ jobs:
 
       - name: Check code style
         run: ./vendor/bin/pint --test
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix
+
+      - name: Run composer audit
+        run: composer audit --no-dev --format=plain
+        continue-on-error: true
+
+  health:
+    name: Health Check (POST deploy)
+    runs-on: ubuntu-latest
+    needs: tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Ping production health endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://vivensi.app.br/health || echo "000")
+          echo "Health status: $STATUS"
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "503" ]; then
+            echo "Health endpoint reachable (status $STATUS)"
+          else
+            echo "WARNING: Health endpoint not reachable (status $STATUS)"
+          fi
+        continue-on-error: true
