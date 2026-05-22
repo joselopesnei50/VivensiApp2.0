@@ -106,7 +106,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/settings/webhooks',             [App\Http\Controllers\WebhookSettingsController::class, 'store'])->name('settings.webhooks.store');
     Route::post('/settings/webhooks/{id}/toggle', [App\Http\Controllers\WebhookSettingsController::class, 'toggle'])->name('settings.webhooks.toggle');
     Route::delete('/settings/webhooks/{id}',      [App\Http\Controllers\WebhookSettingsController::class, 'destroy'])->name('settings.webhooks.destroy');
-    Route::get('/settings/webhooks/{id}/logs',    [App\Http\Controllers\WebhookSettingsController::class, 'logs'])->name('settings.webhooks.logs');
+    Route::get('/settings/webhooks/{id}/logs',         [App\Http\Controllers\WebhookSettingsController::class, 'logs'])->name('settings.webhooks.logs');
+    Route::post('/settings/webhooks/{id}/retry/{log}', [App\Http\Controllers\WebhookSettingsController::class, 'retry'])->name('settings.webhooks.retry');
 
     // ── Busca Global ──────────────────────────────────────────────────────────
     Route::get('/search', [App\Http\Controllers\GlobalSearchController::class, 'search'])->name('search.global');
