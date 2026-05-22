@@ -51,6 +51,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // ── Bruce AI Contextual (DeepSeek + memória Redis) ───────────────────────
     Route::post('/api/bruce/chat',           [App\Http\Controllers\Api\BruceAiController::class, 'chat'])->middleware('throttle:30,1');
     Route::delete('/api/bruce/chat/history', [App\Http\Controllers\Api\BruceAiController::class, 'clearHistory']);
+    Route::get('/api/bruce/insight',         [App\Http\Controllers\Api\BruceAiController::class, 'insight'])->middleware('throttle:10,1');
 
     // ── Locale switcher (Phase 6) ─────────────────────────────────────────────
     Route::post('/locale/{code}', [App\Http\Controllers\LocaleController::class, 'set'])->name('locale.set');

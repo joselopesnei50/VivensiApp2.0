@@ -33,4 +33,11 @@ class BruceAiController extends Controller
         $this->bruce->clearHistory(auth()->user()->tenant_id);
         return response()->json(['success' => true]);
     }
+
+    public function insight()
+    {
+        $user    = auth()->user();
+        $insight = $this->bruce->dailyInsight($user->tenant_id, $user->role);
+        return response()->json(['insight' => $insight]);
+    }
 }
