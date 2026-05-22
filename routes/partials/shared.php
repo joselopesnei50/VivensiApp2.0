@@ -98,6 +98,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/settings/api-tokens',         [App\Http\Controllers\ApiTokenController::class, 'store'])->name('settings.api-tokens.store');
     Route::delete('/settings/api-tokens/{id}',  [App\Http\Controllers\ApiTokenController::class, 'destroy'])->name('settings.api-tokens.destroy');
 
+    // ── Webhooks ──────────────────────────────────────────────────────────────
+    Route::get('/settings/webhooks',              [App\Http\Controllers\WebhookSettingsController::class, 'index'])->name('settings.webhooks');
+    Route::post('/settings/webhooks',             [App\Http\Controllers\WebhookSettingsController::class, 'store'])->name('settings.webhooks.store');
+    Route::post('/settings/webhooks/{id}/toggle', [App\Http\Controllers\WebhookSettingsController::class, 'toggle'])->name('settings.webhooks.toggle');
+    Route::delete('/settings/webhooks/{id}',      [App\Http\Controllers\WebhookSettingsController::class, 'destroy'])->name('settings.webhooks.destroy');
+    Route::get('/settings/webhooks/{id}/logs',    [App\Http\Controllers\WebhookSettingsController::class, 'logs'])->name('settings.webhooks.logs');
+
     // ── Busca Global ──────────────────────────────────────────────────────────
     Route::get('/search', [App\Http\Controllers\GlobalSearchController::class, 'search'])->name('search.global');
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\TransactionResource;
 use App\Models\Transaction;
+use App\Services\WebhookService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -43,6 +44,14 @@ class TransactionController extends Controller
         $validated['approval_status'] = 'approved';
 
         $transaction = Transaction::create($validated);
+
+        app(WebhookService::class)->fire($validated['tenant_id'], 'transaction.created', [
+            'id'          => $transaction->id,
+            'type'        => $transaction->type,
+            'amount'      => (float) $transaction->amount,
+            'description' => $transaction->description,
+            'date'        => $transaction->date?->toDateString(),
+        ]);
 
         return (new TransactionResource($transaction))
             ->response()

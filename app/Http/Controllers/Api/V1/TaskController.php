@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\TaskResource;
 use App\Models\Task;
+use App\Services\WebhookService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -43,6 +44,15 @@ class TaskController extends Controller
         $validated['priority']  = $validated['priority'] ?? 'medium';
 
         $task = Task::create($validated);
+
+        app(WebhookService::class)->fire($tenantId, 'task.created', [
+            'id'         => $task->id,
+            'title'      => $task->title,
+            'status'     => $task->status,
+            'priority'   => $task->priority,
+            'project_id' => $task->project_id,
+            'due_date'   => $task->due_date?->toDateString(),
+        ]);
 
         return (new TaskResource($task))
             ->response()
