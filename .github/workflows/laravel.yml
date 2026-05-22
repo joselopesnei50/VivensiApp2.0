@@ -54,7 +54,8 @@ jobs:
           CACHE_DRIVER: array
           QUEUE_CONNECTION: sync
           SESSION_DRIVER: array
-        run: php artisan test --parallel
+          APP_KEY: base64:kZ1GflhBe1nqNVSJNDZ9FWJMFG7rJ1XLuMoFBJFWjXc=
+        run: ./vendor/bin/pest --ci
 
   lint:
     name: Code Style (Pint)

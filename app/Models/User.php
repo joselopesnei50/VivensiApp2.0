@@ -87,7 +87,10 @@ class User extends Authenticatable
 
     public function isNgo(): bool
     {
-        return $this->role === 'ngo' || ($this->tenant && $this->tenant->type === 'ngo');
+        if ($this->role === 'ngo') return true;
+        // Só carrega o relacionamento se tenant_id existir (evita query em modelos não persistidos)
+        if (!$this->tenant_id) return false;
+        return optional($this->tenant)->type === 'ngo';
     }
 
     public function isManager(): bool
