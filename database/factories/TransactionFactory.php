@@ -61,7 +61,8 @@ class TransactionFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'status' => 'completed',
+                'status'          => 'paid',
+                'approval_status' => 'approved',
             ];
         });
     }

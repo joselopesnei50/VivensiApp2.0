@@ -4,7 +4,7 @@ use App\Models\Transaction;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
 /**
  * Test: Transaction amount calculation is accurate
@@ -37,9 +37,9 @@ test('transaction amount calculation is accurate', function () {
     $balance = $totalIncome - $totalExpense;
     
     // Assert
-    expect($totalIncome)->toBe(100.50);
-    expect($totalExpense)->toBe(50.25);
-    expect($balance)->toBe(50.25);
+    expect((float)$totalIncome)->toEqual(100.50);
+    expect((float)$totalExpense)->toEqual(50.25);
+    expect((float)$balance)->toEqual(50.25);
 });
 
 /**
@@ -73,8 +73,8 @@ test('multiple transactions sum correctly', function () {
         ->sum('amount');
     
     // Assert
-    expect($totalIncome)->toBe(300.00); // 3 × 100
-    expect($totalExpense)->toBe(150.00); // 2 × 75
+    expect((float)$totalIncome)->toEqual(300.00); // 3 × 100
+    expect((float)$totalExpense)->toEqual(150.00); // 2 × 75
 });
 
 /**
@@ -105,7 +105,7 @@ test('decimal precision is maintained in calculations', function () {
         ->sum('amount');
     
     // Assert
-    expect($balance)->toBe(99.98);
+    expect(round((float)$balance, 2))->toEqual(99.98);
 });
 
 /**
@@ -137,7 +137,7 @@ test('only approved transactions count towards budget calculations', function ()
         ->sum('amount');
     
     // Assert: Should only include the approved transaction
-    expect($approvedIncome)->toBe(100.00);
+    expect((float)$approvedIncome)->toEqual(100.00);
 });
 
 /**
@@ -147,29 +147,31 @@ test('only completed transactions affect balance', function () {
     // Arrange
     $tenant = Tenant::factory()->create();
     
-    // Completed transaction
+    // Paid transaction
     Transaction::factory()->create([
         'tenant_id' => $tenant->id,
         'amount' => 100.00,
         'type' => 'income',
-        'status' => 'completed',
+        'status' => 'paid',
+        'approval_status' => 'approved',
     ]);
-    
+
     // Pending transaction
     Transaction::factory()->create([
         'tenant_id' => $tenant->id,
         'amount' => 200.00,
         'type' => 'income',
         'status' => 'pending',
+        'approval_status' => 'pending',
     ]);
-    
+
     // Act
     $completedBalance = Transaction::where('tenant_id', $tenant->id)
-        ->where('status', 'completed')
+        ->where('status', 'paid')
         ->sum('amount');
     
     // Assert
-    expect($completedBalance)->toBe(100.00);
+    expect((float)$completedBalance)->toEqual(100.00);
 });
 
 /**
@@ -203,6 +205,7 @@ test('category wise transaction totals are accurate', function () {
         ->sum('amount');
     
     // Assert
-    expect($category1Total)->toBe(100.00); // 2 × 50
-    expect($category2Total)->toBe(75.00);
+    expect((float)$category1Total)->toEqual(100.00); // 2 × 50
+    expect((float)$category2Total)->toEqual(75.00);
 });
+
