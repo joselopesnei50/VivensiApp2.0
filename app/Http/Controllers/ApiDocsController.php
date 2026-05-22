@@ -55,6 +55,18 @@ class ApiDocsController extends Controller
                 ],
             ],
             [
+                'group'  => 'NGO — Terceiro Setor',
+                'color'  => '#10b981',
+                'routes' => [
+                    ['GET',  '/ngo/summary',     'Resumo: total de doadores, editais e valor captado. Exclusivo role ngo.', [], null],
+                    ['GET',  '/ngo/donors',      'Lista doadores. Filtros: type (individual|company|government), search.', [], null],
+                    ['POST', '/ngo/donors',      'Cadastra novo doador.', ['name'=>'Maria Silva','email'=>'maria@ong.org','type'=>'individual'], null],
+                    ['GET',  '/ngo/donors/{id}', 'Retorna um doador pelo ID.', [], null],
+                    ['GET',  '/ngo/grants',      'Lista editais. Filtro: status.', [], null],
+                    ['GET',  '/ngo/grants/{id}', 'Retorna um edital pelo ID.', [], null],
+                ],
+            ],
+            [
                 'group'  => 'Tarefas',
                 'color'  => '#6366f1',
                 'routes' => [
