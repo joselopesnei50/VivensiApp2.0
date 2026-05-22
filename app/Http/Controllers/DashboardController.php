@@ -511,45 +511,55 @@ class DashboardController extends Controller
     private function commonDashboard($tenantId)
     {
         $userId = Auth::id();
+        \Carbon\Carbon::setLocale('pt_BR');
 
-        // Totais financeiros do período inteiro
-        $totalIncome = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'income')
-            ->where('status', 'paid')
-            ->sum('amount');
+        // ── Financeiro: cache 5 min por tenant (não é user-specific) ──────
+        $financial = Cache::remember("dashboard.common.financial.{$tenantId}." . now()->format('Y-m'), 300, function () use ($tenantId) {
+            $totalIncome  = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->sum('amount');
+            $totalExpense = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'expense')->where('status', 'paid')->sum('amount');
 
-        $totalExpense = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'expense')
-            ->where('status', 'paid')
-            ->sum('amount');
+            $monthlyIncome  = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount');
+            $monthlyExpense = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'expense')->where('status', 'paid')->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount');
 
-        $balance = $totalIncome - $totalExpense;
+            $lastMonthIncome  = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)->sum('amount');
+            $lastMonthExpense = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'expense')->where('status', 'paid')->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)->sum('amount');
 
-        // Mês atual e anterior (para KPIs com MoM)
-        $monthlyIncome = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'income')->where('status', 'paid')
-            ->whereMonth('date', now()->month)->whereYear('date', now()->year)
-            ->sum('amount');
+            // Gráfico semestral — 1 query com GROUP BY type
+            $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
+            $monthlyData  = DB::table('transactions')
+                ->where('tenant_id', $tenantId)->where('status', 'paid')->where('date', '>=', $sixMonthsAgo)
+                ->selectRaw('YEAR(date) as y, MONTH(date) as m, type, SUM(amount) as total')
+                ->groupByRaw('YEAR(date), MONTH(date), type')
+                ->get()->groupBy(fn($r) => sprintf('%04d-%02d', $r->y, $r->m));
 
-        $monthlyExpense = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'expense')->where('status', 'paid')
-            ->whereMonth('date', now()->month)->whereYear('date', now()->year)
-            ->sum('amount');
+            $chartLabels = $chartIncome = $chartExpense = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $date           = now()->subMonths($i);
+                $rows           = $monthlyData->get($date->format('Y-m'), collect());
+                $chartLabels[]  = ucfirst($date->translatedFormat('M/Y'));
+                $chartIncome[]  = (float) ($rows->firstWhere('type', 'income')->total  ?? 0);
+                $chartExpense[] = (float) ($rows->firstWhere('type', 'expense')->total ?? 0);
+            }
 
-        $lastMonthIncome = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'income')->where('status', 'paid')
-            ->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)
-            ->sum('amount');
+            return compact('totalIncome', 'totalExpense', 'monthlyIncome', 'monthlyExpense', 'lastMonthIncome', 'lastMonthExpense', 'chartLabels', 'chartIncome', 'chartExpense');
+        });
 
-        $lastMonthExpense = (float) Transaction::where('tenant_id', $tenantId)
-            ->where('type', 'expense')->where('status', 'paid')
-            ->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)
-            ->sum('amount');
+        $totalIncome      = $financial['totalIncome'];
+        $totalExpense     = $financial['totalExpense'];
+        $balance          = $totalIncome - $totalExpense;
+        $monthlyIncome    = $financial['monthlyIncome'];
+        $monthlyExpense   = $financial['monthlyExpense'];
+        $monthlyBalance   = $monthlyIncome - $monthlyExpense;
+        $lastMonthIncome  = $financial['lastMonthIncome'];
+        $lastMonthExpense = $financial['lastMonthExpense'];
+        $chartLabels      = $financial['chartLabels'];
+        $chartIncome      = $financial['chartIncome'];
+        $chartExpense     = $financial['chartExpense'];
 
         $incomeChange  = $lastMonthIncome  > 0 ? (($monthlyIncome  - $lastMonthIncome)  / $lastMonthIncome)  * 100 : null;
         $expenseChange = $lastMonthExpense > 0 ? (($monthlyExpense - $lastMonthExpense) / $lastMonthExpense) * 100 : null;
-        $monthlyBalance = $monthlyIncome - $monthlyExpense;
 
+        // ── Dados user-specific: não cacheados ────────────────────────────
         $overdueCount = Task::where('tenant_id', $tenantId)
             ->where('assigned_to', $userId)
             ->whereNotIn('status', ['done', 'completed'])
@@ -557,74 +567,24 @@ class DashboardController extends Controller
             ->where('due_date', '<', now()->toDateString())
             ->count();
 
-        // Transações recentes
         $recentTransactions = Transaction::where('tenant_id', $tenantId)
-            ->orderBy('date', 'desc')
-            ->limit(5)
-            ->get();
+            ->orderBy('date', 'desc')->limit(5)->get();
 
-        // Tarefas pessoais pendentes do usuário
         $pendingTasks = Task::where('tenant_id', $tenantId)
             ->where('assigned_to', $userId)
             ->whereNotIn('status', ['done', 'completed'])
-            ->orderBy('due_date', 'asc')
-            ->limit(5)
-            ->get();
+            ->orderBy('due_date', 'asc')->limit(5)->get();
 
-        // Feed de Impacto: alertas financeiros pessoais
         $impactFeed = collect();
-
         foreach ($pendingTasks->take(3) as $task) {
             if ($task->due_date && \Carbon\Carbon::parse($task->due_date)->isPast()) {
-                $impactFeed->push([
-                    'icon'  => 'fa-triangle-exclamation',
-                    'color' => '#ef4444',
-                    'title' => 'Tarefa vencida: ' . $task->title,
-                    'time'  => 'Deveria estar concluída ' . \Carbon\Carbon::parse($task->due_date)->diffForHumans(),
-                ]);
+                $impactFeed->push(['icon' => 'fa-triangle-exclamation', 'color' => '#ef4444', 'title' => 'Tarefa vencida: ' . $task->title, 'time' => 'Deveria estar concluída ' . \Carbon\Carbon::parse($task->due_date)->diffForHumans()]);
             } elseif (str_contains(strtolower($task->title), 'pagar') || str_contains(strtolower($task->title), 'conta')) {
-                $impactFeed->push([
-                    'icon'  => 'fa-receipt',
-                    'color' => '#6366f1',
-                    'title' => 'Lembrete de Pagamento: ' . $task->title,
-                    'time'  => $task->due_date ? 'Para ' . \Carbon\Carbon::parse($task->due_date)->format('d/m') : 'Pendente',
-                ]);
+                $impactFeed->push(['icon' => 'fa-receipt', 'color' => '#6366f1', 'title' => 'Lembrete de Pagamento: ' . $task->title, 'time' => $task->due_date ? 'Para ' . \Carbon\Carbon::parse($task->due_date)->format('d/m') : 'Pendente']);
             }
         }
-
         if ($balance > 1000) {
-            $impactFeed->push([
-                'icon'  => 'fa-trophy',
-                'color' => '#10b981',
-                'title' => 'Meta de Reserva: Saldo acima de R$ 1.000',
-                'time'  => 'Hoje',
-            ]);
-        }
-
-        // 6 Meses de histórico para o gráfico — 2 queries em vez de 12
-        \Carbon\Carbon::setLocale('pt_BR');
-        $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
-
-        $monthlyData = DB::table('transactions')
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'paid')
-            ->where('date', '>=', $sixMonthsAgo)
-            ->selectRaw('YEAR(date) as y, MONTH(date) as m, type, SUM(amount) as total')
-            ->groupByRaw('YEAR(date), MONTH(date), type')
-            ->get()
-            ->groupBy(fn($r) => sprintf('%04d-%02d', $r->y, $r->m));
-
-        $chartLabels  = [];
-        $chartIncome  = [];
-        $chartExpense = [];
-
-        for ($i = 5; $i >= 0; $i--) {
-            $date  = now()->subMonths($i);
-            $key   = $date->format('Y-m');
-            $rows  = $monthlyData->get($key, collect());
-            $chartLabels[]  = ucfirst($date->translatedFormat('M/Y'));
-            $chartIncome[]  = (float) ($rows->firstWhere('type', 'income')->total  ?? 0);
-            $chartExpense[] = (float) ($rows->firstWhere('type', 'expense')->total ?? 0);
+            $impactFeed->push(['icon' => 'fa-trophy', 'color' => '#10b981', 'title' => 'Meta de Reserva: Saldo acima de R$ 1.000', 'time' => 'Hoje']);
         }
 
         return view('dashboards.common', compact(
