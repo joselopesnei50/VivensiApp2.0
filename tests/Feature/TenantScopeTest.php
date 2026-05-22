@@ -74,7 +74,7 @@ class TenantScopeTest extends TestCase
         ]);
 
         $this->actingAs($this->userA)
-            ->post(route('raffles.confirm_payment', $ticketB))
+            ->post(route('raffles.confirm-payment', $ticketB))
             ->assertForbidden();
 
         // Bilhete não deve ter sido marcado como pago
@@ -128,3 +128,4 @@ class TenantScopeTest extends TestCase
         $response->assertForbidden();
     }
 }
+

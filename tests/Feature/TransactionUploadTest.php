@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class TransactionUploadTest extends TestCase
 {
-    // use RefreshDatabase; // Commented out to avoid wiping existing dev DB if not configured correctly. Using manual cleanup or transaction rollback recommended for local dev.
+    use RefreshDatabase;
 
     protected function setUp(): void
     {

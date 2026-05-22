@@ -64,11 +64,12 @@ test('project creation is scoped to authenticated users tenant', function () {
     // Act
     $this->actingAs($user);
     $response = $this->post('/projects', [
-        'name' => 'New Project',
+        'name'        => 'New Project',
         'description' => 'Test project',
-        'budget' => 5000.00,
-        'start_date' => now()->format('Y-m-d'),
-        'end_date' => now()->addMonths(3)->format('Y-m-d'),
+        'budget'      => 5000.00,
+        'start_date'  => now()->format('Y-m-d'),
+        'end_date'    => now()->addMonths(3)->format('Y-m-d'),
+        'status'      => 'active',
     ]);
     
     // Assert
