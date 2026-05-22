@@ -93,6 +93,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/settings/branding',       [App\Http\Controllers\TenantBrandingController::class, 'update'])->name('settings.branding.update');
     Route::delete('/settings/branding/logo', [App\Http\Controllers\TenantBrandingController::class, 'removeLogo'])->name('settings.branding.remove-logo');
 
+    // ── API Docs ──────────────────────────────────────────────────────────────
+    Route::get('/api-docs', [App\Http\Controllers\ApiDocsController::class, 'index'])->name('api.docs');
+
     // ── API Tokens (Public API v1) ────────────────────────────────────────────
     Route::get('/settings/api-tokens',          [App\Http\Controllers\ApiTokenController::class, 'index'])->name('settings.api-tokens');
     Route::post('/settings/api-tokens',         [App\Http\Controllers\ApiTokenController::class, 'store'])->name('settings.api-tokens.store');
