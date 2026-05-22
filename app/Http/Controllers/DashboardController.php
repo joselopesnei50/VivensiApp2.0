@@ -223,22 +223,28 @@ class DashboardController extends Controller
 
         $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
 
+        $isSqliteMgr    = DB::getDriverName() === 'sqlite';
+        $yearCreatedMgr = $isSqliteMgr ? "strftime('%Y', created_at)" : 'YEAR(created_at)';
+        $monthCreatedMgr= $isSqliteMgr ? "strftime('%m', created_at)" : 'MONTH(created_at)';
+        $yearUpdatedMgr = $isSqliteMgr ? "strftime('%Y', updated_at)" : 'YEAR(updated_at)';
+        $monthUpdatedMgr= $isSqliteMgr ? "strftime('%m', updated_at)" : 'MONTH(updated_at)';
+
         $projectsByMonth = DB::table('projects')
             ->where('tenant_id', $tenantId)
             ->where('created_at', '>=', $sixMonthsAgo)
-            ->selectRaw('YEAR(created_at) as y, MONTH(created_at) as m, COUNT(*) as total')
-            ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+            ->selectRaw("{$yearCreatedMgr} as y, {$monthCreatedMgr} as m, COUNT(*) as total")
+            ->groupByRaw("{$yearCreatedMgr}, {$monthCreatedMgr}")
             ->get()
-            ->keyBy(fn($r) => sprintf('%04d-%02d', $r->y, $r->m));
+            ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
 
         $tasksByMonth = DB::table('tasks')
             ->where('tenant_id', $tenantId)
             ->whereIn('status', ['done', 'completed'])
             ->where('updated_at', '>=', $sixMonthsAgo)
-            ->selectRaw('YEAR(updated_at) as y, MONTH(updated_at) as m, COUNT(*) as total')
-            ->groupByRaw('YEAR(updated_at), MONTH(updated_at)')
+            ->selectRaw("{$yearUpdatedMgr} as y, {$monthUpdatedMgr} as m, COUNT(*) as total")
+            ->groupByRaw("{$yearUpdatedMgr}, {$monthUpdatedMgr}")
             ->get()
-            ->keyBy(fn($r) => sprintf('%04d-%02d', $r->y, $r->m));
+            ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
 
         for ($i = 5; $i >= 0; $i--) {
             $date            = now()->subMonths($i);
@@ -431,22 +437,28 @@ class DashboardController extends Controller
 
         $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
 
+        $isSqliteNgo    = DB::getDriverName() === 'sqlite';
+        $yearCreated    = $isSqliteNgo ? "strftime('%Y', created_at)" : 'YEAR(created_at)';
+        $monthCreated   = $isSqliteNgo ? "strftime('%m', created_at)" : 'MONTH(created_at)';
+        $yearDate       = $isSqliteNgo ? "strftime('%Y', date)" : 'YEAR(date)';
+        $monthDate      = $isSqliteNgo ? "strftime('%m', date)" : 'MONTH(date)';
+
         $donorsByMonth = DB::table('ngo_donors')
             ->where('tenant_id', $tenantId)
             ->where('created_at', '>=', $sixMonthsAgo)
-            ->selectRaw('YEAR(created_at) as y, MONTH(created_at) as m, COUNT(*) as total')
-            ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+            ->selectRaw("{$yearCreated} as y, {$monthCreated} as m, COUNT(*) as total")
+            ->groupByRaw("{$yearCreated}, {$monthCreated}")
             ->get()
-            ->keyBy(fn($r) => sprintf('%04d-%02d', $r->y, $r->m));
+            ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
 
         $donationsByMonth = DB::table('transactions')
             ->where('tenant_id', $tenantId)
             ->where('type', 'income')
             ->where('date', '>=', $sixMonthsAgo)
-            ->selectRaw('YEAR(date) as y, MONTH(date) as m, SUM(amount) as total')
-            ->groupByRaw('YEAR(date), MONTH(date)')
+            ->selectRaw("{$yearDate} as y, {$monthDate} as m, SUM(amount) as total")
+            ->groupByRaw("{$yearDate}, {$monthDate}")
             ->get()
-            ->keyBy(fn($r) => sprintf('%04d-%02d', $r->y, $r->m));
+            ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
 
         for ($i = 5; $i >= 0; $i--) {
             $date             = now()->subMonths($i);
@@ -486,10 +498,11 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'role']);
 
+        $today         = now()->toDateString();
         $upcomingTasks = Task::where('tenant_id', $tenantId)
             ->whereNotIn('status', ['done', 'completed'])
             ->whereNotNull('due_date')
-            ->orderByRaw("CASE WHEN due_date < CURDATE() THEN 0 ELSE 1 END")
+            ->orderByRaw("CASE WHEN due_date < ? THEN 0 ELSE 1 END", [$today])
             ->orderBy('due_date', 'asc')
             ->limit(12)
             ->with(['assignee:id,name'])
@@ -524,13 +537,16 @@ class DashboardController extends Controller
             $lastMonthIncome  = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)->sum('amount');
             $lastMonthExpense = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'expense')->where('status', 'paid')->whereMonth('date', now()->subMonth()->month)->whereYear('date', now()->subMonth()->year)->sum('amount');
 
-            // Gráfico semestral — 1 query com GROUP BY type
+            // Gráfico semestral — 1 query com GROUP BY type (SQLite/MySQL compatible)
             $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
+            $isSqlite     = DB::getDriverName() === 'sqlite';
+            $yearExpr     = $isSqlite ? "strftime('%Y', date)" : 'YEAR(date)';
+            $monthExpr    = $isSqlite ? "strftime('%m', date)" : 'MONTH(date)';
             $monthlyData  = DB::table('transactions')
                 ->where('tenant_id', $tenantId)->where('status', 'paid')->where('date', '>=', $sixMonthsAgo)
-                ->selectRaw('YEAR(date) as y, MONTH(date) as m, type, SUM(amount) as total')
-                ->groupByRaw('YEAR(date), MONTH(date), type')
-                ->get()->groupBy(fn($r) => sprintf('%04d-%02d', $r->y, $r->m));
+                ->selectRaw("{$yearExpr} as y, {$monthExpr} as m, type, SUM(amount) as total")
+                ->groupByRaw("{$yearExpr}, {$monthExpr}, type")
+                ->get()->groupBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
 
             $chartLabels = $chartIncome = $chartExpense = [];
             for ($i = 5; $i >= 0; $i--) {

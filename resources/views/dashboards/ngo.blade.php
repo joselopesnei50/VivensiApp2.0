@@ -30,6 +30,9 @@
             <p style="color: rgba(255,255,255,0.5); margin: 18px 0 0 0; font-size: 1.1rem; font-weight: 500;">Monitoramento em tempo real da sustentabilidade da organização.</p>
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="button" data-bs-toggle="modal" data-bs-target="#quickDonationModal" class="btn-premium" style="background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.3); font-weight: 800; padding: 14px 28px; border-radius: 18px; cursor: pointer;">
+                <i class="fas fa-hand-holding-heart me-2"></i> Registrar Doação
+            </button>
              <a href="{{ url('/ngo/audit') }}" class="btn-premium" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-weight: 800; padding: 14px 28px; border-radius: 18px;">
                 <i class="fas fa-eye me-2" style="color: var(--ngo-primary);"></i> Central de Auditoria
             </a>
@@ -559,12 +562,24 @@
                 <a href="{{ url('/smart-analysis') }}" class="btn-premium" style="margin-left: auto; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); font-size: 0.7rem; font-weight: 800; padding: 10px 20px;">ANÁLISE COGNITIVA</a>
             </div>
             
-            <div style="position: relative; z-index: 1; padding: 25px; border-radius: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(5px);">
-                    <p class="mb-0" style="font-size: 0.95rem; color: #e2e8f0; line-height: 1.6;">
-                        {{ $stats['ai_insight'] ?? 'Nenhum insight disponível no momento.' }}
-                    </p>
+            <div id="bruce-ngo-insight" style="position: relative; z-index: 1; padding: 25px; border-radius: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(5px);">
+                <p class="mb-0" style="font-size:0.85rem;color:rgba(255,255,255,0.4);">
+                    <i class="fas fa-circle-notch fa-spin me-2"></i> Analisando dados da sua ONG...
+                </p>
             </div>
         </div>
+        <script>
+        (async function() {
+            try {
+                const res  = await fetch('/api/bruce/insight', { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+                const data = await res.json();
+                const el   = document.getElementById('bruce-ngo-insight');
+                if (el && data.insight) {
+                    el.innerHTML = `<p class="mb-0" style="font-size:0.95rem;color:#e2e8f0;line-height:1.6;">${data.insight.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</p>`;
+                }
+            } catch(e) {}
+        })();
+        </script>
 
         <div class="vivensi-card" style="padding: 35px; border-radius: 28px; min-height: 400px; background: #0f172a; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
@@ -715,6 +730,54 @@
             </div>
         </div>
         @endif
+    </div>
+</div>
+
+{{-- ===== MODAL: Registrar Doação Rápida ===== --}}
+<div class="modal fade" id="quickDonationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+        <div class="modal-content" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; overflow: hidden;">
+            <div style="padding: 28px 32px 0;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                    <div>
+                        <h5 style="color: white; font-weight: 950; font-size: 1.2rem; margin: 0; letter-spacing: -0.5px;">Registrar Doação</h5>
+                        <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem; margin: 4px 0 0;">Lançamento rápido de receita / doação</p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+            </div>
+            <form method="POST" action="{{ url('/transactions') }}" style="padding: 0 32px 32px;">
+                @csrf
+                <input type="hidden" name="type" value="income">
+                <input type="hidden" name="status" value="paid">
+
+                <div style="margin-bottom: 16px;">
+                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Doador / Descrição</label>
+                    <input type="text" name="description" required placeholder="Ex: Doação de João Silva"
+                        style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
+                        onfocus="this.style.borderColor='rgba(16,185,129,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Valor (R$)</label>
+                        <input type="text" name="amount" required placeholder="0,00" inputmode="decimal"
+                            style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
+                            onfocus="this.style.borderColor='rgba(16,185,129,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    </div>
+                    <div>
+                        <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Data</label>
+                        <input type="date" name="date" required value="{{ now()->format('Y-m-d') }}"
+                            style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
+                            onfocus="this.style.borderColor='rgba(16,185,129,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    </div>
+                </div>
+
+                <button type="submit" style="width:100%; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.95rem; cursor:pointer; box-shadow:0 8px 24px rgba(16,185,129,0.25); transition:.2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+                    <i class="fas fa-check me-2"></i> Registrar Doação
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
