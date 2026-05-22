@@ -138,9 +138,12 @@
         border: 1px solid rgba(255,255,255,0.1);
         transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
     }
+    .lang-btn { cursor: pointer; }
     .lang-btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
     .lang-btn img { border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); display: block; }
     .lang-btn span { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.5px; }
+    .lang-btn-active { background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.3) !important; }
+    .lang-btn-active span { color: white !important; }
     /* ── Sub-menu indent items ──────────────────────────── */
     .menu-sub-item { margin-left: 10px; }
     /* ── Sidebar user-view ──────────────────────────────── */
@@ -323,15 +326,26 @@
         @endauth
 
         {{-- Seletor de Idioma --}}
+        @php $currentLocale = app()->getLocale(); @endphp
         <div class="lang-switcher">
-            <a href="#" title="Português (Brasil)" class="lang-btn">
-                <img src="https://flagcdn.com/w40/br.png" srcset="https://flagcdn.com/w80/br.png 2x" width="22" height="15" alt="Brasil">
-                <span>PT</span>
-            </a>
-            <a href="#" title="Español" class="lang-btn">
-                <img src="https://flagcdn.com/w40/es.png" srcset="https://flagcdn.com/w80/es.png 2x" width="22" height="15" alt="España">
-                <span>ES</span>
-            </a>
+            <form method="POST" action="{{ route('locale.set', 'pt_BR') }}" style="display:inline">@csrf
+                <button type="submit" title="Português (Brasil)" class="lang-btn {{ $currentLocale === 'pt_BR' ? 'lang-btn-active' : '' }}">
+                    <img src="https://flagcdn.com/w40/br.png" width="22" height="15" alt="Brasil" loading="lazy">
+                    <span>PT</span>
+                </button>
+            </form>
+            <form method="POST" action="{{ route('locale.set', 'en') }}" style="display:inline">@csrf
+                <button type="submit" title="English" class="lang-btn {{ $currentLocale === 'en' ? 'lang-btn-active' : '' }}">
+                    <img src="https://flagcdn.com/w40/us.png" width="22" height="15" alt="English" loading="lazy">
+                    <span>EN</span>
+                </button>
+            </form>
+            <form method="POST" action="{{ route('locale.set', 'es') }}" style="display:inline">@csrf
+                <button type="submit" title="Español" class="lang-btn {{ $currentLocale === 'es' ? 'lang-btn-active' : '' }}">
+                    <img src="https://flagcdn.com/w40/es.png" width="22" height="15" alt="España" loading="lazy">
+                    <span>ES</span>
+                </button>
+            </form>
         </div>
     </div>
     <nav class="sidebar-menu">

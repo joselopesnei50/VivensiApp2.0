@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'locale',
         'department',
         'is_platform_team',
         'supervisor_id',

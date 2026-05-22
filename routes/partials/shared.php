@@ -48,6 +48,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // ── Bruce AI (chat financeiro) ────────────────────────────────────────────
     Route::post('/api/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage']);
 
+    // ── Bruce AI Contextual (DeepSeek + memória Redis) ───────────────────────
+    Route::post('/api/bruce/chat',           [App\Http\Controllers\Api\BruceAiController::class, 'chat'])->middleware('throttle:30,1');
+    Route::delete('/api/bruce/chat/history', [App\Http\Controllers\Api\BruceAiController::class, 'clearHistory']);
+
+    // ── Locale switcher (Phase 6) ─────────────────────────────────────────────
+    Route::post('/locale/{code}', [App\Http\Controllers\LocaleController::class, 'set'])->name('locale.set');
+
     // ── Smart Analysis ────────────────────────────────────────────────────────
     Route::get('/smart-analysis',       [App\Http\Controllers\SmartAnalysisController::class, 'index']);
     Route::post('/smart-analysis/deep', [App\Http\Controllers\SmartAnalysisController::class, 'generateDeepAnalysis']);
