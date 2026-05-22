@@ -129,6 +129,20 @@ return [
             'timeout'            => 120,
             'nice'               => 5,
         ],
+
+        'supervisor-webhooks' => [
+            'connection'         => 'redis',
+            'queue'              => ['webhooks'],
+            'balance'            => 'auto',
+            'autoScalingStrategy'=> 'time',
+            'maxProcesses'       => 2,
+            'maxTime'            => 0,
+            'maxJobs'            => 0,
+            'memory'             => 128,
+            'tries'              => 3,
+            'timeout'            => 30,
+            'nice'               => 0,
+        ],
     ],
 
     'environments' => [
@@ -153,24 +167,20 @@ return [
             'supervisor-social' => [
                 'maxProcesses'    => 2,
             ],
+            'supervisor-webhooks' => [
+                'maxProcesses'    => 3,
+                'balanceMaxShift' => 2,
+                'balanceCooldown' => 3,
+            ],
         ],
 
         'local' => [
-            'supervisor-default' => [
-                'maxProcesses' => 1,
-            ],
-            'supervisor-whatsapp' => [
-                'maxProcesses' => 1,
-            ],
-            'supervisor-ai' => [
-                'maxProcesses' => 1,
-            ],
-            'supervisor-emails' => [
-                'maxProcesses' => 1,
-            ],
-            'supervisor-social' => [
-                'maxProcesses' => 1,
-            ],
+            'supervisor-default'  => ['maxProcesses' => 1],
+            'supervisor-whatsapp' => ['maxProcesses' => 1],
+            'supervisor-ai'       => ['maxProcesses' => 1],
+            'supervisor-emails'   => ['maxProcesses' => 1],
+            'supervisor-social'   => ['maxProcesses' => 1],
+            'supervisor-webhooks' => ['maxProcesses' => 1],
         ],
     ],
 
