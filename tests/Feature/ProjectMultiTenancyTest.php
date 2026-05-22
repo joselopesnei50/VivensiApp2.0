@@ -50,7 +50,7 @@ test('direct project access is blocked for other tenants', function () {
     $response = $this->get("/projects/{$project1->id}");
     
     // Assert: Should be forbidden
-    $response->assertStatus(404);
+    $response->assertStatus(403);
 });
 
 /**
@@ -58,8 +58,8 @@ test('direct project access is blocked for other tenants', function () {
  */
 test('project creation is scoped to authenticated users tenant', function () {
     // Arrange
-    $tenant = Tenant::factory()->create();
-    $user = User::factory()->forTenant($tenant)->create();
+    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $user = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
     
     // Act
     $this->actingAs($user);
@@ -100,10 +100,11 @@ test('project update respects tenant isolation', function () {
     ]);
     
     // Assert
-    $response->assertStatus(404);
+    $response->assertStatus(403);
     
     $this->assertDatabaseHas('projects', [
         'id' => $project1->id,
         'name' => 'Original Name',
     ]);
 });
+
