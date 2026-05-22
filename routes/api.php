@@ -75,6 +75,9 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(functi
     Route::patch('/tasks/{id}',  [App\Http\Controllers\Api\V1\TaskController::class, 'update']);
     Route::delete('/tasks/{id}', [App\Http\Controllers\Api\V1\TaskController::class, 'destroy']);
 
+    // Search across resources
+    Route::get('/search', App\Http\Controllers\Api\V1\SearchController::class);
+
     // NGO-specific (role: ngo | super_admin only)
     Route::get('/ngo/summary',       [App\Http\Controllers\Api\V1\NgoController::class, 'summary']);
     Route::get('/ngo/donors',        [App\Http\Controllers\Api\V1\NgoController::class, 'donors']);

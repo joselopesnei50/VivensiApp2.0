@@ -70,6 +70,7 @@ class Kernel extends HttpKernel
         'lp.limit' => \App\Http\Middleware\CheckLandingPageLimit::class,
         'subscription' => \App\Http\Middleware\CheckSubscription::class,
         'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+        '2fa'         => \App\Http\Middleware\RequireTwoFactor::class,
     ];
 
 }
