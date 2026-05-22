@@ -50,3 +50,24 @@ Route::post('/abacatepay/webhook',  [App\Http\Controllers\Api\AbacatePayWebhookC
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// ── Public API v1 ──────────────────────────────────────────────────────────
+Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+
+    Route::get('/me', [App\Http\Controllers\Api\V1\MeController::class, 'show']);
+
+    // Transactions
+    Route::get('/transactions',      [App\Http\Controllers\Api\V1\TransactionController::class, 'index']);
+    Route::post('/transactions',     [App\Http\Controllers\Api\V1\TransactionController::class, 'store']);
+    Route::get('/transactions/{id}', [App\Http\Controllers\Api\V1\TransactionController::class, 'show']);
+
+    // Projects
+    Route::get('/projects',              [App\Http\Controllers\Api\V1\ProjectController::class, 'index']);
+    Route::get('/projects/{id}',         [App\Http\Controllers\Api\V1\ProjectController::class, 'show']);
+    Route::get('/projects/{id}/tasks',   [App\Http\Controllers\Api\V1\ProjectController::class, 'tasks']);
+
+    // Tasks
+    Route::get('/tasks',      [App\Http\Controllers\Api\V1\TaskController::class, 'index']);
+    Route::post('/tasks',     [App\Http\Controllers\Api\V1\TaskController::class, 'store']);
+    Route::get('/tasks/{id}', [App\Http\Controllers\Api\V1\TaskController::class, 'show']);
+});
