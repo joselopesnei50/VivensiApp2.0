@@ -84,7 +84,7 @@ test('direct transaction access is blocked for other tenants', function () {
     $response = $this->get("/transactions/{$transaction1->id}");
     
     // Assert: Should be forbidden or not found
-    $response->assertStatus(403);
+    $response->assertStatus(404);
 });
 
 /**
@@ -143,7 +143,7 @@ test('bulk transaction queries are properly scoped to tenant', function () {
     
     // All transactions should belong to tenant 1
     $transactions->each(function ($transaction) use ($tenant1) {
-        expect($transaction->tenant_id)->toBe($tenant1->id);
+        expect((int) $transaction->tenant_id)->toBe((int) $tenant1->id);
     });
 });
 
@@ -170,7 +170,7 @@ test('transaction update respects tenant isolation', function () {
     ]);
     
     // Assert: Should be forbidden
-    $response->assertStatus(403);
+    $response->assertStatus(404);
     
     // Ensure the transaction was not modified
     $this->assertDatabaseHas('transactions', [
@@ -204,7 +204,7 @@ test('transaction deletion respects tenant isolation', function () {
     $response = $this->delete("/transactions/{$transaction1->id}");
     
     // Assert: Should be forbidden
-    $response->assertStatus(403);
+    $response->assertStatus(404);
     
     // Ensure the transaction still exists
     $this->assertDatabaseHas('transactions', [

@@ -66,4 +66,44 @@ class TaskController extends Controller
 
         return new TaskResource($task);
     }
+
+    public function update(Request $request, int $id)
+    {
+        $task = Task::where('tenant_id', $request->user()->tenant_id)
+            ->findOrFail($id);
+
+        $wasCompleted = in_array($task->status, ['done', 'completed'], true);
+
+        $validated = $request->validate([
+            'title'       => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'status'      => ['sometimes', Rule::in(['todo', 'doing', 'done', 'pending', 'in_progress', 'completed', 'blocked'])],
+            'priority'    => ['sometimes', Rule::in(['low', 'medium', 'high', 'critical'])],
+            'due_date'    => 'nullable|date',
+        ]);
+
+        $task->update($validated);
+
+        // Fire webhook if task just became completed
+        $nowCompleted = in_array($validated['status'] ?? '', ['done', 'completed'], true);
+        if (!$wasCompleted && $nowCompleted) {
+            app(WebhookService::class)->fire($task->tenant_id, 'task.completed', [
+                'id'       => $task->id,
+                'title'    => $task->title,
+                'status'   => $task->status,
+                'priority' => $task->priority,
+            ]);
+        }
+
+        return new TaskResource($task->fresh());
+    }
+
+    public function destroy(Request $request, int $id)
+    {
+        Task::where('tenant_id', $request->user()->tenant_id)
+            ->findOrFail($id)
+            ->delete();
+
+        return response()->json(['success' => true]);
+    }
 }

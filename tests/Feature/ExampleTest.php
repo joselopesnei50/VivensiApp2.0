@@ -14,8 +14,8 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response()
     {
-        $response = $this->get('/');
-
+        // /ping is a public health endpoint that always returns 200 without DB tables
+        $response = $this->get('/ping');
         $response->assertStatus(200);
     }
 }
