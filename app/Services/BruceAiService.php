@@ -69,6 +69,31 @@ class BruceAiService
         Cache::forget($this->historyKey($tenantId));
     }
 
+    // ── Insight proativo (usado no dashboard, cache 6h) ───────────────────────
+
+    public function dailyInsight(int $tenantId, string $role = 'common'): string
+    {
+        $cacheKey = "bruce.insight.{$tenantId}." . now()->format('Y-m-d');
+
+        return Cache::remember($cacheKey, 21600, function () use ($tenantId, $role) {
+            $ctx = $this->tenantContext($tenantId);
+
+            $prompt = "Em no máximo 2 frases diretas e profissionais, dê um insight acionável sobre a situação financeira/operacional atual. "
+                . "Sem saudação, sem emojis, sem menções a animais. "
+                . "Dados: saldo R$ {$this->fmt($ctx['balance'])}, receitas R$ {$this->fmt($ctx['income'])}, "
+                . "despesas R$ {$this->fmt($ctx['expense'])}, {$ctx['active_projects']} projetos ativos, "
+                . "{$ctx['overdue_tasks']} tarefas vencidas.";
+
+            $response = $this->deepSeek->chat([
+                ['role' => 'system', 'content' => $this->buildSystemPrompt($tenantId, $role)],
+                ['role' => 'user',   'content' => $prompt],
+            ]);
+
+            return data_get($response, 'choices.0.message.content', '')
+                ?: 'Adicione mais transações para gerar insights precisos.';
+        });
+    }
+
     // ── System prompt contextual ──────────────────────────────────────────────
 
     private function buildSystemPrompt(int $tenantId, string $role): string

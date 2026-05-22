@@ -436,27 +436,16 @@
             async function loadDashboardAi() {
                 const container = document.getElementById('dashboard-ai-tips');
                 try {
-                    const response = await fetch('{{ url("/personal/budget/ai-tips") }}');
-                    const data = await response.json();
-                    if(!data.error) {
-                        const tips = data.tips.split('\n').filter(t => t.trim() !== '').slice(0, 2); 
-                        container.innerHTML = '';
-                        tips.forEach(tip => {
-                            const parts = tip.split('|');
-                            const icon = parts[0]?.trim() || '🐶';
-                            const text = parts[1]?.trim() || tip;
-                            container.innerHTML += `
-                                <div style="display: flex; gap: 12px; margin-bottom: 15px; align-items: flex-start;">
-                                    <span style="font-size: 1.2rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));">${icon}</span>
-                                    <span style="color: #e2e8f0; font-size: 0.85rem; line-height: 1.4; font-weight: 500;">${text.split(':')[0]}</span>
-                                </div>`;
-                        });
-                        if(container.innerHTML === '') {
-                             container.innerHTML = '<p style="font-size: 0.8rem; color: #94a3b8;">Tudo limpo! Continue registrando para novos insights.</p>';
-                        }
+                    const res  = await fetch('/api/bruce/insight', { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+                    const data = await res.json();
+                    const text = data.insight || '';
+                    if (text) {
+                        container.innerHTML = `<p style="color:#e2e8f0;font-size:0.875rem;line-height:1.6;font-weight:500;margin:0;">${text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</p>`;
+                    } else {
+                        container.innerHTML = '<p style="font-size:0.8rem;color:#94a3b8;">Adicione mais transações para gerar insights.</p>';
                     }
                 } catch(e) {
-                    container.innerHTML = `<p style="font-size: 0.7rem; color: #ef4444;">Offline temporariamente.</p>`;
+                    container.innerHTML = '<p style="font-size:0.7rem;color:#94a3b8;">Insight indisponível no momento.</p>';
                 }
             }
             document.addEventListener('DOMContentLoaded', loadDashboardAi);
