@@ -1523,6 +1523,141 @@
 
     <div id="vivensi-toast-wrap" class="vivensi-toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
+{{-- ── Bruce AI Floating Chat (Phase 5) ──────────────────── --}}
+@auth
+<style>
+.bruce-fab{position:fixed;bottom:28px;right:28px;z-index:8000;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.bruce-fab-btn{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;box-shadow:0 8px 24px rgba(99,102,241,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;color:#fff;font-size:1.3rem}
+.bruce-fab-btn:hover{transform:scale(1.08);box-shadow:0 12px 30px rgba(99,102,241,0.5)}
+.bruce-fab-btn .bruce-notif{position:absolute;top:-4px;right:-4px;width:14px;height:14px;background:#10b981;border-radius:50%;border:2px solid #fff;animation:bruce-pulse 2s infinite}
+@keyframes bruce-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.bruce-panel{width:360px;max-height:520px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,0.35);display:none;flex-direction:column;overflow:hidden}
+.bruce-panel.open{display:flex}
+.bruce-panel-head{padding:16px 20px;background:linear-gradient(135deg,#1e1b4b,#1e293b);display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.bruce-panel-head img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.15)}
+.bruce-panel-head .bruce-info{flex:1}
+.bruce-panel-head .bruce-name{font-size:.9rem;font-weight:800;color:#fff}
+.bruce-panel-head .bruce-status{font-size:.65rem;color:#10b981;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.bruce-panel-head .bruce-close{background:rgba(255,255,255,0.08);border:none;border-radius:8px;width:28px;height:28px;color:rgba(255,255,255,0.5);cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+.bruce-panel-head .bruce-close:hover{background:rgba(239,68,68,0.2);color:#ef4444}
+.bruce-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;max-height:340px}
+.bruce-messages::-webkit-scrollbar{width:4px}
+.bruce-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+.bruce-msg{max-width:85%;font-size:.82rem;line-height:1.5;padding:10px 14px;border-radius:14px;animation:bruce-fadein .2s}
+@keyframes bruce-fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.bruce-msg.user{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border-radius:14px 14px 4px 14px;align-self:flex-end}
+.bruce-msg.bot{background:rgba(255,255,255,0.07);color:#e2e8f0;border-radius:14px 14px 14px 4px;align-self:flex-start}
+.bruce-msg.typing{display:flex;gap:4px;align-items:center;padding:12px 16px}
+.bruce-msg.typing span{width:6px;height:6px;background:rgba(255,255,255,0.4);border-radius:50%;animation:bruce-bounce 1.2s infinite}
+.bruce-msg.typing span:nth-child(2){animation-delay:.2s}
+.bruce-msg.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bruce-bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+.bruce-input-row{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:8px}
+.bruce-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:9px 14px;color:#fff;font-size:.82rem;font-family:inherit;outline:none;resize:none}
+.bruce-input::placeholder{color:rgba(255,255,255,0.3)}
+.bruce-input:focus{border-color:rgba(99,102,241,0.5)}
+.bruce-send{background:#6366f1;border:none;border-radius:10px;width:36px;height:36px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;transition:background .2s}
+.bruce-send:hover{background:#4f46e5}
+.bruce-send:disabled{background:rgba(255,255,255,0.1);cursor:not-allowed}
+.bruce-clear{background:none;border:none;color:rgba(255,255,255,0.25);font-size:.65rem;cursor:pointer;padding:4px 8px;border-radius:6px}
+.bruce-clear:hover{color:rgba(239,68,68,0.7)}
+</style>
+
+<div class="bruce-fab" id="bruceFab">
+    <div class="bruce-panel" id="brucePanel">
+        <div class="bruce-panel-head">
+            <img src="{{ asset('img/bruce-ai.png') }}" alt="Bruce" onerror="this.style.display='none'">
+            <div class="bruce-info">
+                <div class="bruce-name">Bruce AI</div>
+                <div class="bruce-status">● Online — DeepSeek</div>
+            </div>
+            <button class="bruce-clear" onclick="bruceClear()" title="Limpar conversa"><i class="fas fa-trash-alt"></i></button>
+            <button class="bruce-close" onclick="bruceToggle()" title="Fechar"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="bruce-messages" id="bruceMessages">
+            <div class="bruce-msg bot">Olá! Sou o Bruce, seu assistente inteligente. Posso analisar suas finanças, projetos e tarefas. Como posso ajudar?</div>
+        </div>
+        <div class="bruce-input-row">
+            <textarea class="bruce-input" id="bruceInput" placeholder="Pergunte sobre suas finanças, projetos..." rows="1" onkeydown="bruceKeydown(event)"></textarea>
+            <button class="bruce-send" id="bruceSend" onclick="bruceSend()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <button class="bruce-fab-btn" onclick="bruceToggle()" title="Bruce AI — Assistente Inteligente" style="position:relative">
+        <i class="fas fa-robot"></i>
+        <span class="bruce-notif"></span>
+    </button>
+</div>
+
+<script>
+function bruceToggle(){
+    const p=document.getElementById('brucePanel');
+    p.classList.toggle('open');
+    if(p.classList.contains('open')) document.getElementById('bruceInput').focus();
+}
+function bruceKeydown(e){
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();bruceSend();}
+}
+async function bruceSend(){
+    const input=document.getElementById('bruceInput');
+    const msg=input.value.trim();
+    if(!msg)return;
+
+    bruceAddMsg(msg,'user');
+    input.value='';
+    input.style.height='auto';
+
+    const sendBtn=document.getElementById('bruceSend');
+    sendBtn.disabled=true;
+
+    const typing=document.createElement('div');
+    typing.className='bruce-msg typing bot';
+    typing.id='bruceTyping';
+    typing.innerHTML='<span></span><span></span><span></span>';
+    document.getElementById('bruceMessages').appendChild(typing);
+    bruceScroll();
+
+    try{
+        const res=await fetch('/api/bruce/chat',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]')?.content||'','Accept':'application/json'},
+            body:JSON.stringify({message:msg})
+        });
+        const data=await res.json();
+        document.getElementById('bruceTyping')?.remove();
+        if(data.error){bruceAddMsg('⚠️ '+data.error,'bot');}
+        else{bruceAddMsg(data.reply,'bot');}
+    }catch(e){
+        document.getElementById('bruceTyping')?.remove();
+        bruceAddMsg('Erro de conexão. Tente novamente.','bot');
+    }finally{
+        sendBtn.disabled=false;
+        input.focus();
+    }
+}
+function bruceAddMsg(text,role){
+    const div=document.createElement('div');
+    div.className='bruce-msg '+role;
+    // Markdown básico: **bold** e \n → <br>
+    div.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    document.getElementById('bruceMessages').appendChild(div);
+    bruceScroll();
+}
+function bruceScroll(){
+    const m=document.getElementById('bruceMessages');
+    m.scrollTop=m.scrollHeight;
+}
+async function bruceClear(){
+    await fetch('/api/bruce/chat/history',{method:'DELETE',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]')?.content||''}});
+    document.getElementById('bruceMessages').innerHTML='<div class="bruce-msg bot">Conversa reiniciada. Como posso ajudar?</div>';
+}
+// Auto-resize textarea
+document.getElementById('bruceInput')?.addEventListener('input',function(){
+    this.style.height='auto';
+    this.style.height=Math.min(this.scrollHeight,100)+'px';
+});
+</script>
+@endauth
+
 {{-- ── Command Palette (Ctrl+K) ──────────────────────────── --}}
 <div class="cmd-overlay" id="cmdOverlay" onclick="closeCmdPalette(event)">
     <div class="cmd-palette" onclick="event.stopPropagation()">
