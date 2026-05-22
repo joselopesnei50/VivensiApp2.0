@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LgpdDataRequest;
+use App\Models\LoginActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -12,9 +13,13 @@ class ProfileController extends Controller
 {
     public function edit()
     {
-        return view('profile.edit', [
-            'user' => auth()->user()
-        ]);
+        $user           = auth()->user();
+        $loginActivities = LoginActivity::where('user_id', $user->id)
+            ->orderBy('logged_in_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('profile.edit', compact('user', 'loginActivities'));
     }
 
     public function update(Request $request)

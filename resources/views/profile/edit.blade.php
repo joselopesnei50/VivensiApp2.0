@@ -234,5 +234,48 @@
     </div>
 </div>
 
+{{-- ===== Atividade de Login ===== --}}
+@if($loginActivities->isNotEmpty())
+<div style="background: white; border-radius: 20px; padding: 32px; border: 1px solid #e2e8f0; box-shadow: 0 2px 15px rgba(0,0,0,0.06); margin-top: 28px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:22px;">
+        <div style="width:36px; height:36px; background:rgba(99,102,241,0.1); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-shield-halved" style="color:#6366f1;"></i>
+        </div>
+        <div>
+            <h4 style="margin:0; font-weight:900; font-size:1rem; color:#1e293b;">Atividade de Acesso</h4>
+            <p style="margin:0; font-size:0.75rem; color:#94a3b8;">Últimos 10 acessos à sua conta</p>
+        </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+        @foreach($loginActivities as $activity)
+        @php
+            $icons = ['Desktop'=>'fa-desktop','Mobile'=>'fa-mobile-alt','Tablet'=>'fa-tablet-alt'];
+            $icon  = $icons[$activity->device] ?? 'fa-desktop';
+            $isRecent = $activity->logged_in_at->diffInHours(now()) < 1;
+        @endphp
+        <div style="display:flex; align-items:center; gap:14px; padding:12px 16px; background:{{ $isRecent ? 'rgba(16,185,129,0.05)' : '#f8fafc' }}; border-radius:12px; border:1px solid {{ $isRecent ? 'rgba(16,185,129,0.2)' : '#e2e8f0' }};">
+            <div style="width:32px; height:32px; background:rgba(99,102,241,0.08); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas {{ $icon }}" style="color:#6366f1; font-size:0.85rem;"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-size:0.82rem; font-weight:700; color:#1e293b;">
+                    {{ $activity->browser }} em {{ $activity->platform }}
+                    @if($isRecent) <span style="color:#10b981; font-size:0.7rem; font-weight:800; margin-left:6px;">● Recente</span> @endif
+                </div>
+                <div style="font-size:0.72rem; color:#94a3b8; margin-top:2px;">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ $activity->ip_address ?? '—' }}
+                    <span style="margin:0 6px;">·</span>
+                    {{ $activity->logged_in_at->diffForHumans() }}
+                </div>
+            </div>
+            <div style="font-size:0.65rem; color:{{ $activity->success ? '#10b981' : '#ef4444' }}; font-weight:800; text-transform:uppercase; flex-shrink:0;">
+                {{ $activity->success ? 'Sucesso' : 'Falha' }}
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 @endsection
 
