@@ -1619,7 +1619,7 @@ async function bruceSend(){
     try{
         const res=await fetch('/api/bruce/chat',{
             method:'POST',
-            headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]')?.content||'','Accept':'application/json'},
+            headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}','Accept':'application/json'},
             body:JSON.stringify({message:msg})
         });
         const data=await res.json();
@@ -1647,7 +1647,7 @@ function bruceScroll(){
     m.scrollTop=m.scrollHeight;
 }
 async function bruceClear(){
-    await fetch('/api/bruce/chat/history',{method:'DELETE',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]')?.content||''}});
+    await fetch('/api/bruce/chat/history',{method:'DELETE',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}});
     document.getElementById('bruceMessages').innerHTML='<div class="bruce-msg bot">Conversa reiniciada. Como posso ajudar?</div>';
 }
 // Auto-resize textarea
