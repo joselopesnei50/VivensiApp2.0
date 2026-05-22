@@ -1575,7 +1575,7 @@
             <button class="bruce-close" onclick="bruceToggle()" title="Fechar"><i class="fas fa-times"></i></button>
         </div>
         <div class="bruce-messages" id="bruceMessages">
-            <div class="bruce-msg bot">Olá! Sou o Bruce, seu assistente inteligente. Posso analisar suas finanças, projetos e tarefas. Como posso ajudar?</div>
+            <div class="bruce-msg bot">Olá! Sou o Bruce, assistente do Vivensi. Tenho acesso aos dados da sua conta em tempo real — finanças, projetos, tarefas e muito mais. Como posso ajudar?</div>
         </div>
         <div class="bruce-input-row">
             <textarea class="bruce-input" id="bruceInput" placeholder="Pergunte sobre suas finanças, projetos..." rows="1" onkeydown="bruceKeydown(event)"></textarea>
