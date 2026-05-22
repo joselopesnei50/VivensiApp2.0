@@ -530,6 +530,45 @@ body { font-family: var(--ds-font-sans); }
     100% { background-position: -200% 0; }
 }
 
+/* Dark skeleton — para dashboards com fundo escuro (#0f172a) */
+.ds-skeleton-dark {
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.06) 75%);
+    background-size: 200% 100%;
+    animation: ds-shimmer 1.6s ease-in-out infinite;
+    border-radius: 8px;
+}
+
+/* Skeleton card preset */
+.ds-skeleton-card {
+    background: #0f172a;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 24px;
+    padding: 28px;
+}
+.ds-skeleton-card .sk-title  { height: 18px; width: 55%; margin-bottom: 16px; }
+.ds-skeleton-card .sk-line   { height: 12px; margin-bottom: 10px; border-radius: 6px; }
+.ds-skeleton-card .sk-line.w80  { width: 80%; }
+.ds-skeleton-card .sk-line.w60  { width: 60%; }
+.ds-skeleton-card .sk-line.w40  { width: 40%; }
+.ds-skeleton-card .sk-number { height: 42px; width: 35%; border-radius: 10px; margin-bottom: 8px; }
+.ds-skeleton-card .sk-badge  { height: 22px; width: 80px; border-radius: 99px; display:inline-block; }
+
+/* Page-level loading overlay */
+.ds-page-loading {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(15,23,42,0.7);
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.ds-page-loading .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(99,102,241,0.3);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: ds-spin 0.7s linear infinite;
+}
+@keyframes ds-spin { to { transform: rotate(360deg); } }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVIDADE
    ══════════════════════════════════════════════════════════════════════════ */
