@@ -35,8 +35,16 @@ class User extends Authenticatable
         'onboarding_steps',
         'onboarding_completed_at',
         'terms_accepted_at',
-        'terms_ip'
+        'terms_ip',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
+
+    public function hasTwoFactorEnabled(): bool
+    {
+        return !is_null($this->two_factor_confirmed_at);
+    }
 
     public function supervisor()
     {
@@ -55,8 +63,10 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'last_login_at' => 'datetime',
+        'email_verified_at'          => 'datetime',
+        'last_login_at'              => 'datetime',
+        'two_factor_confirmed_at'    => 'datetime',
+        'two_factor_recovery_codes'  => 'array',
         'onboarding_completed_at' => 'datetime',
         'terms_accepted_at' => 'datetime',
         'onboarding_steps' => 'array'

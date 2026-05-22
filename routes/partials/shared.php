@@ -60,6 +60,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/smart-analysis',       [App\Http\Controllers\SmartAnalysisController::class, 'index']);
     Route::post('/smart-analysis/deep', [App\Http\Controllers\SmartAnalysisController::class, 'generateDeepAnalysis']);
 
+    // ── Autenticação de Dois Fatores (2FA/TOTP) ───────────────────────────────
+    Route::get('/profile/2fa',     [App\Http\Controllers\TwoFactorController::class, 'show'])->name('2fa.show');
+    Route::post('/profile/2fa',    [App\Http\Controllers\TwoFactorController::class, 'enable'])->name('2fa.enable');
+    Route::post('/profile/2fa/confirm', [App\Http\Controllers\TwoFactorController::class, 'confirm'])->name('2fa.confirm');
+    Route::delete('/profile/2fa', [App\Http\Controllers\TwoFactorController::class, 'disable'])->name('2fa.disable');
+
     // ── Perfil do Usuário ─────────────────────────────────────────────────────
     Route::get('/profile',           [App\Http\Controllers\ProfileController::class, 'edit']);
     Route::post('/profile/update',   [App\Http\Controllers\ProfileController::class, 'update']);
