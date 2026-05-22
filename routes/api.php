@@ -57,9 +57,11 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(functi
     Route::get('/me', [App\Http\Controllers\Api\V1\MeController::class, 'show']);
 
     // Transactions
-    Route::get('/transactions',      [App\Http\Controllers\Api\V1\TransactionController::class, 'index']);
-    Route::post('/transactions',     [App\Http\Controllers\Api\V1\TransactionController::class, 'store']);
-    Route::get('/transactions/{id}', [App\Http\Controllers\Api\V1\TransactionController::class, 'show']);
+    Route::get('/transactions',         [App\Http\Controllers\Api\V1\TransactionController::class, 'index']);
+    Route::post('/transactions',        [App\Http\Controllers\Api\V1\TransactionController::class, 'store']);
+    Route::get('/transactions/{id}',    [App\Http\Controllers\Api\V1\TransactionController::class, 'show']);
+    Route::patch('/transactions/{id}',  [App\Http\Controllers\Api\V1\TransactionController::class, 'update']);
+    Route::delete('/transactions/{id}', [App\Http\Controllers\Api\V1\TransactionController::class, 'destroy']);
 
     // Projects
     Route::get('/projects',              [App\Http\Controllers\Api\V1\ProjectController::class, 'index']);
@@ -67,7 +69,9 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(functi
     Route::get('/projects/{id}/tasks',   [App\Http\Controllers\Api\V1\ProjectController::class, 'tasks']);
 
     // Tasks
-    Route::get('/tasks',      [App\Http\Controllers\Api\V1\TaskController::class, 'index']);
-    Route::post('/tasks',     [App\Http\Controllers\Api\V1\TaskController::class, 'store']);
-    Route::get('/tasks/{id}', [App\Http\Controllers\Api\V1\TaskController::class, 'show']);
+    Route::get('/tasks',         [App\Http\Controllers\Api\V1\TaskController::class, 'index']);
+    Route::post('/tasks',        [App\Http\Controllers\Api\V1\TaskController::class, 'store']);
+    Route::get('/tasks/{id}',    [App\Http\Controllers\Api\V1\TaskController::class, 'show']);
+    Route::patch('/tasks/{id}',  [App\Http\Controllers\Api\V1\TaskController::class, 'update']);
+    Route::delete('/tasks/{id}', [App\Http\Controllers\Api\V1\TaskController::class, 'destroy']);
 });

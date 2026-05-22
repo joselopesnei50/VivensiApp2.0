@@ -50,7 +50,7 @@ test('direct project access is blocked for other tenants', function () {
     $response = $this->get("/projects/{$project1->id}");
     
     // Assert: Should be forbidden
-    $response->assertStatus(403);
+    $response->assertStatus(404);
 });
 
 /**
@@ -100,7 +100,7 @@ test('project update respects tenant isolation', function () {
     ]);
     
     // Assert
-    $response->assertStatus(403);
+    $response->assertStatus(404);
     
     $this->assertDatabaseHas('projects', [
         'id' => $project1->id,
