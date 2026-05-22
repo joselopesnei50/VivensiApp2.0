@@ -122,6 +122,12 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Cache warm: pré-aquece caches de dashboard e Bruce AI para tenants ativos
+        $schedule->command('vivensi:cache-warm')
+                 ->hourly()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');
