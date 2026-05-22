@@ -12,6 +12,12 @@ Route::get('/login', function () {
 Route::post('/login',  [App\Http\Controllers\LoginController::class, 'authenticate'])->middleware('throttle:10,1');
 Route::post('/logout', [App\Http\Controllers\LoginController::class, 'logout'])->name('logout');
 
+// ── 2FA Challenge ─────────────────────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/2fa/challenge',  [App\Http\Controllers\TwoFactorChallengeController::class, 'show'])->name('2fa.challenge');
+    Route::post('/2fa/challenge', [App\Http\Controllers\TwoFactorChallengeController::class, 'verify'])->name('2fa.verify')->middleware('throttle:10,1');
+});
+
 // ── Recuperação de senha ──────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/forgot-password',       [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
