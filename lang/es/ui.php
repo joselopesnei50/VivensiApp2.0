@@ -51,6 +51,9 @@ return [
     'description'      => 'Descripción',
     'category'         => 'Categoría',
 
+    // App
+    'app_tagline'      => 'Gestión Financiera Inteligente',
+
     // Mensajes
     'success_saved'    => '¡Guardado con éxito!',
     'success_deleted'  => '¡Eliminado con éxito!',
