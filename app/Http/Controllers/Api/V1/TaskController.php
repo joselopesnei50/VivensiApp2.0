@@ -21,9 +21,14 @@ class TaskController extends Controller
             ->when($request->project_id, fn ($q) => $q->where('project_id', $request->project_id))
             ->orderBy('created_at', 'desc');
 
-        $paginated = $query->paginate(min((int) ($request->per_page ?? 20), 100));
+        $query->orderBy('id', 'desc');
+        $perPage = min((int) ($request->per_page ?? 20), 100);
 
-        return TaskResource::collection($paginated);
+        if ($request->boolean('cursor')) {
+            return TaskResource::collection($query->cursorPaginate($perPage));
+        }
+
+        return TaskResource::collection($query->paginate($perPage));
     }
 
     public function store(Request $request)

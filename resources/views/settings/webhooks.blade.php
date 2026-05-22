@@ -141,11 +141,12 @@ async function showLogs(id) {
         const logs = await res.json();
         if (!logs.length) { panel.innerHTML = 'Nenhum disparo registrado ainda.'; return; }
         panel.innerHTML = logs.map(l =>
-            `<div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
-                <span style="color:${l.success?'#34d399':'#f87171'}">${l.success?'✓':'✗'}</span>
-                <span style="color:#818cf8;">${l.event}</span>
-                <span style="color:#64748b;"> → ${l.http_status ?? 'ERR'}</span>
-                <span style="color:#475569; float:right;">${l.fired_at}</span>
+            `<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04); display:flex; align-items:center; gap:8px;">
+                <span style="color:${l.success?'#34d399':'#f87171'}; min-width:14px;">${l.success?'✓':'✗'}</span>
+                <span style="color:#818cf8; font-size:0.7rem;">${l.event}</span>
+                <span style="color:#64748b; font-size:0.7rem;">→ ${l.http_status ?? 'ERR'}</span>
+                <span style="color:#475569; font-size:0.65rem; flex:1; text-align:right;">${l.fired_at}</span>
+                ${!l.success ? `<form method="POST" action="/settings/webhooks/${id}/retry/${l.id}" style="display:inline;"><input type="hidden" name="_token" value="{{ csrf_token() }}"><button type="submit" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;border-radius:6px;padding:2px 8px;font-size:0.65rem;cursor:pointer;font-weight:800;">retry</button></form>` : ''}
              </div>`
         ).join('');
     } catch(e) { panel.innerHTML = 'Erro ao carregar logs.'; }

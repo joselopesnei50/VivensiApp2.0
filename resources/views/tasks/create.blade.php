@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 @php
@@ -10,7 +10,7 @@
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                 <span style="background: #6366f1; width: 12px; height: 3px; border-radius: 2px;"></span>
-                <h6 style="color: #6366f1; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Agenda & Colaboração</h6>
+                <h6 style="color: #6366f1; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Agenda & ColaboraÃ§Ã£o</h6>
             </div>
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Agendar Nova Tarefa</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Organize o tempo e as responsabilidades da sua equipe.</p>
@@ -41,7 +41,7 @@
         <div style="margin-bottom: 35px;">
             <h5 style="color: #1e293b; font-weight: 900; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <span style="width: 32px; height: 32px; background: #eef2ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 0.9rem;"><i class="fas fa-bullseye"></i></span>
-                Definição da Atividade
+                DefiniÃ§Ã£o da Atividade
             </h5>
 
             <div class="form-group" style="margin-bottom: 25px;">
@@ -52,12 +52,12 @@
                            style="width: 100%; padding: 18px 20px 18px 55px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 600; font-size: 1rem; color: #1e293b; transition: all 0.3s;"
                            onfocus="this.style.borderColor='#6366f1'; this.style.background='white';"
                            onblur="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc';"
-                           placeholder="Ex: Revisão de Relatório Trimestral" value="{{ old('title') }}">
+                           placeholder="Ex: RevisÃ£o de RelatÃ³rio Trimestral" value="{{ old('title') }}">
                 </div>
             </div>
 
             <div class="form-group">
-                <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Instruções ou Contexto</label>
+                <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">InstruÃ§Ãµes ou Contexto</label>
                 <textarea name="description" rows="3" 
                           style="width: 100%; padding: 18px 20px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 500; font-size: 0.95rem; color: #1e293b; resize: none; transition: all 0.3s;" 
                           onfocus="this.style.borderColor='#6366f1'; this.style.background='white';"
@@ -69,7 +69,7 @@
         <div style="margin-bottom: 35px;">
             <h5 style="color: #1e293b; font-weight: 900; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <span style="width: 32px; height: 32px; background: #f0fdf4; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 0.9rem;"><i class="fas fa-users-gear"></i></span>
-                Atribuição & Vínculo
+                AtribuiÃ§Ã£o & VÃ­nculo
             </h5>
 
             <div class="row g-4">
@@ -89,7 +89,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Responsável pela Execução</label>
+                        <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">ResponsÃ¡vel pela ExecuÃ§Ã£o</label>
                         <div style="position: relative;">
                             <select name="assigned_to" style="width: 100%; padding: 18px 20px 18px 55px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 700; color: #1e293b; appearance: none; cursor: pointer;">
                                 <option value="">Mantenha comigo</option>
@@ -107,7 +107,7 @@
         <div style="margin-bottom: 45px;">
             <h5 style="color: #1e293b; font-weight: 900; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <span style="width: 32px; height: 32px; background: #fff7ed; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 0.9rem;"><i class="fas fa-calendar-day"></i></span>
-                Prazo & Urgência
+                Prazo & UrgÃªncia
             </h5>
 
             <div class="row g-4">
@@ -121,11 +121,11 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Nível de Prioridade</label>
+                        <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">NÃ­vel de Prioridade</label>
                         <select name="priority" style="width: 100%; padding: 18px 20px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 800; color: #1e293b; appearance: none; cursor: pointer;">
-                            <option value="low">🟡 Prioridade Normal</option>
-                            <option value="medium" selected>🟠 Importante</option>
-                            <option value="high">🔴 Crítico / Urgente</option>
+                            <option value="low">ðŸŸ¡ Prioridade Normal</option>
+                            <option value="medium" selected>ðŸŸ  Importante</option>
+                            <option value="high">ðŸ”´ CrÃ­tico / Urgente</option>
                         </select>
                     </div>
                 </div>
@@ -138,8 +138,9 @@
             <button type="submit" class="btn-premium btn-premium-shine" style="flex: 2; border: none; padding: 20px; font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px;">
                  Agendar Agora <i class="fas fa-clock"></i>
             </button>
-            <a href="{{ $basePath . '/tasks' }}" style="flex: 1; text-align: center; color: #94a3b8; font-weight: 800; font-size: 0.9rem; text-decoration: none; text-transform: uppercase;">Cancelar</a>
+            <a href="{{ $basePath . '/tasks' }}" style="flex: 1; text-align: center; color: #94a3b8; font-weight: 800; font-size: 0.9rem; text-decoration: none; text-transform: uppercase;">{{ __('ui.cancel') }}</a>
         </div>
     </form>
 </div>
 @endsection
+

@@ -60,4 +60,14 @@ class WebhookSettingsController extends Controller
         $logs    = $webhook->logs()->orderBy('fired_at', 'desc')->limit(50)->get();
         return response()->json($logs);
     }
+
+    public function retry(int $id, int $logId)
+    {
+        $webhook = Webhook::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+        $log     = $webhook->logs()->findOrFail($logId);
+
+        \App\Jobs\DispatchWebhook::dispatch($webhook->id, $log->event, $log->payload);
+
+        return back()->with('success', "Webhook '{$log->event}' reenviado.");
+    }
 }
