@@ -53,6 +53,10 @@ return [
 
     // App
     'app_tagline'      => 'Intelligent Financial Management',
+    'login_activity'   => 'Login Activity',
+    'recent_logins'    => 'Last logins to your account',
+    'data_export'      => 'Export My Data',
+    'cursor_next'      => 'Next page',
 
     // Messages
     'success_saved'    => 'Saved successfully!',

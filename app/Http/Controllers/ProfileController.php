@@ -105,6 +105,12 @@ class ProfileController extends Controller
                 ->select('id', 'type', 'data', 'read_at', 'created_at')
                 ->limit(200)
                 ->get(),
+            'historico_acessos' => DB::table('login_activities')
+                ->where('user_id', $user->id)
+                ->select('ip_address', 'device', 'browser', 'platform', 'success', 'logged_in_at')
+                ->orderBy('logged_in_at', 'desc')
+                ->limit(100)
+                ->get(),
         ];
 
         $filename = 'meus_dados_vivensi_' . now()->format('Ymd_His') . '.json';

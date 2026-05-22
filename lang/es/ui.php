@@ -53,6 +53,10 @@ return [
 
     // App
     'app_tagline'      => 'Gestión Financiera Inteligente',
+    'login_activity'   => 'Actividad de Acceso',
+    'recent_logins'    => 'Últimos accesos a tu cuenta',
+    'data_export'      => 'Exportar Mis Datos',
+    'cursor_next'      => 'Siguiente página',
 
     // Mensajes
     'success_saved'    => '¡Guardado con éxito!',

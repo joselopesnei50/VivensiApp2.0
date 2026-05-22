@@ -20,9 +20,17 @@ class TransactionController extends Controller
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->from,   fn ($q) => $q->whereDate('date', '>=', $request->from))
             ->when($request->to,     fn ($q) => $q->whereDate('date', '<=', $request->to))
-            ->orderBy('date', 'desc');
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc');
 
-        $paginated = $query->paginate(min((int) ($request->per_page ?? 20), 100));
+        $perPage = min((int) ($request->per_page ?? 20), 100);
+
+        // Cursor pagination for large datasets (?cursor=xxx)
+        if ($request->boolean('cursor')) {
+            return TransactionResource::collection($query->cursorPaginate($perPage));
+        }
+
+        $paginated = $query->paginate($perPage);
 
         return TransactionResource::collection($paginated);
     }
