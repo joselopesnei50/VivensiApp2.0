@@ -436,6 +436,24 @@
         </div>
         @endif
 
+        {{-- Bruce AI Insight --}}
+        <div style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border-radius: 28px; padding: 30px; border: 1px solid rgba(99,102,241,0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                <div style="width: 36px; height: 36px; background: rgba(99,102,241,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-brain" style="color: #818cf8; font-size: 1rem;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 900; color: white; font-size: 0.9rem;">Bruce AI</div>
+                    <div style="font-size: 0.65rem; color: #818cf8; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Insight Gerencial</div>
+                </div>
+            </div>
+            <div id="bruce-manager-insight">
+                <p class="mb-0" style="font-size:0.8rem;color:rgba(255,255,255,0.4);">
+                    <i class="fas fa-circle-notch fa-spin me-2"></i> Analisando dados operacionais...
+                </p>
+            </div>
+        </div>
+
         <div style="background: #0f172a; border-radius: 28px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
             <h4 style="font-weight: 950; color: white; margin-bottom: 22px; font-size:1.1rem;">⚡ Comando Rápido</h4>
             <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -451,6 +469,10 @@
                     <span><i class="fas fa-user-friends me-2" style="color: #fbbf24;"></i> Gestão de Equipe</span>
                     <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                 </a>
+                <button type="button" data-bs-toggle="modal" data-bs-target="#quickTaskModal" class="btn-action-pro" style="background: rgba(99,102,241,0.08); color: #c7d2fe; border: 1px solid rgba(99,102,241,0.2); justify-content: space-between; padding:12px 18px; width:100%; text-align:left;">
+                    <span><i class="fas fa-circle-plus me-2" style="color: #818cf8;"></i> Criar Tarefa Rápida</span>
+                    <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
+                </button>
                 <a href="{{ url('/smart-analysis') }}" class="btn-action-pro" style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); color: white; justify-content: space-between; padding:12px 18px; margin-top:4px;">
                     <span><i class="fas fa-brain me-2" style="color: #818cf8;"></i> Smart AI Analysis</span>
                     <i class="fas fa-bolt" style="color: #f59e0b; font-size: 0.7rem;"></i>
@@ -461,6 +483,18 @@
 </div>
 
 @push('scripts')
+<script>
+(async function() {
+    try {
+        const res  = await fetch('/api/bruce/insight', { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+        const data = await res.json();
+        const el   = document.getElementById('bruce-manager-insight');
+        if (el && data.insight) {
+            el.innerHTML = `<p class="mb-0" style="font-size:0.85rem;color:#e2e8f0;line-height:1.6;">${data.insight.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</p>`;
+        }
+    } catch(e) {}
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -710,5 +744,120 @@
         </div>
     </div>
 </div>
+
+{{-- ===== MODAL: Criar Tarefa Rápida ===== --}}
+<div class="modal fade" id="quickTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+        <div class="modal-content" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; overflow: hidden;">
+            <div style="padding: 28px 32px 0;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                    <div>
+                        <h5 style="color: white; font-weight: 950; font-size: 1.2rem; margin: 0; letter-spacing: -0.5px;">Nova Tarefa</h5>
+                        <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem; margin: 4px 0 0;">Criação rápida sem sair do painel</p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+            </div>
+            <div style="padding: 0 32px 32px;">
+                <div id="quickTaskFeedback" style="display:none; margin-bottom:12px;"></div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Título da Tarefa</label>
+                    <input type="text" id="qtTitle" placeholder="Ex: Revisar relatório mensal" maxlength="255"
+                        style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
+                        onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Projeto</label>
+                        <select id="qtProject" style="width:100%; background:#1e293b; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.85rem; outline:none;">
+                            <option value="">— Sem projeto</option>
+                            @foreach($projects as $proj)
+                                <option value="{{ $proj->id }}">{{ \Illuminate\Support\Str::limit($proj->name, 28) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Prioridade</label>
+                        <select id="qtPriority" style="width:100%; background:#1e293b; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.85rem; outline:none;">
+                            <option value="low">Baixa</option>
+                            <option value="medium" selected>Média</option>
+                            <option value="high">Alta</option>
+                            <option value="critical">Crítica</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Prazo (opcional)</label>
+                    <input type="date" id="qtDueDate"
+                        style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
+                        onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                </div>
+
+                <button type="button" id="qtSubmit" onclick="submitQuickTask()" style="width:100%; background:linear-gradient(135deg,#6366f1,#4f46e5); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.95rem; cursor:pointer; box-shadow:0 8px 24px rgba(99,102,241,0.25); transition:.2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+                    <i class="fas fa-plus me-2"></i> Criar Tarefa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+async function submitQuickTask() {
+    const title = document.getElementById('qtTitle').value.trim();
+    if (!title) {
+        document.getElementById('qtTitle').style.borderColor = 'rgba(239,68,68,0.6)';
+        return;
+    }
+
+    const btn = document.getElementById('qtSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i> Criando...';
+
+    const payload = {
+        title,
+        status: 'todo',
+        priority: document.getElementById('qtPriority').value,
+        project_id: document.getElementById('qtProject').value || null,
+        due_date: document.getElementById('qtDueDate').value || null,
+    };
+
+    try {
+        const res = await fetch('/api/tasks/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        const fb = document.getElementById('quickTaskFeedback');
+        if (data.success) {
+            fb.style.display = 'block';
+            fb.innerHTML = '<div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:10px 14px;color:#34d399;font-size:0.8rem;font-weight:800;"><i class="fas fa-check me-2"></i> Tarefa criada com sucesso!</div>';
+            document.getElementById('qtTitle').value = '';
+            document.getElementById('qtDueDate').value = '';
+            setTimeout(() => { bootstrap.Modal.getInstance(document.getElementById('quickTaskModal')).hide(); fb.style.display='none'; }, 1800);
+        } else {
+            fb.style.display = 'block';
+            fb.innerHTML = '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 14px;color:#f87171;font-size:0.8rem;font-weight:800;"><i class="fas fa-xmark me-2"></i> Erro ao criar tarefa.</div>';
+        }
+    } catch(e) {
+        const fb = document.getElementById('quickTaskFeedback');
+        fb.style.display = 'block';
+        fb.innerHTML = '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 14px;color:#f87171;font-size:0.8rem;">Erro de conexão. Tente novamente.</div>';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus me-2"></i> Criar Tarefa';
+    }
+}
+</script>
+@endpush
 
 @endsection

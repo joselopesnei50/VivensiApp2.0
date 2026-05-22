@@ -76,10 +76,9 @@ class AdminController extends Controller
 
         // 4. Adoção de Features (Lego Builder vs Doações)
         $totalBlocks = LandingPageSection::count();
-        // $totalDonations = Transaction::where('category_id', function($query) {
-        //      $query->select('id')->from('financial_categories')->where('name', 'LIKE', '%Doação%')->limit(1);
-        // })->count();
-        $totalDonations = 0; // TODO: Corrigir referência à tabela de categorias que ainda não foi migrada/padronizada
+        $totalDonations = Transaction::where('type', 'income')
+                                     ->where('description', 'LIKE', '%doação%')
+                                     ->count();
 
         // 5. Origem dos Leads (Atribuição que criamos)
         $leadSourceData = LandingPageMetric::select('page_key', DB::raw('SUM(registrations) as count'))
