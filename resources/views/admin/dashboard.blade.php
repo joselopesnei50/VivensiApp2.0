@@ -575,6 +575,151 @@
 .funnel-bar-fill { height:100%;background:linear-gradient(90deg,#6366f1,#818cf8);border-radius:6px;transition:width .6s ease; }
 .funnel-meta { font-size:.7rem;color:#94a3b8;font-weight:500; }
 </style>
+<style>
+body {
+    background:
+        radial-gradient(circle at top left, rgba(79, 70, 229, .12), transparent 28%),
+        radial-gradient(circle at top right, rgba(16, 185, 129, .08), transparent 24%),
+        #0b1220;
+}
+
+.dash-header {
+    padding: 28px 30px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(148,163,184,.16);
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(15,23,42,.96), rgba(15,23,42,.84));
+    box-shadow: 0 24px 60px rgba(2,6,23,.28);
+}
+.dash-eyebrow {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    color:#93c5fd;
+    letter-spacing:1.7px;
+}
+.dash-eyebrow::before {
+    content:'';
+    width:7px;height:7px;border-radius:50%;
+    background:#60a5fa;
+    box-shadow:0 0 0 4px rgba(96,165,250,.12);
+}
+.dash-title { color:#f8fafc; font-size: clamp(2rem, 2.8vw, 2.65rem); letter-spacing:-1.8px; }
+.dash-title-accent { color:#7c3aed; }
+.dash-sub { color:#cbd5e1; max-width:820px; }
+
+.dash-btn-ghost,
+.dash-btn-primary {
+    border-radius:12px;
+    font-weight:800;
+    padding:10px 18px;
+}
+.dash-btn-ghost {
+    border:1px solid rgba(148,163,184,.22);
+    background: rgba(15,23,42,.68);
+    color:#e2e8f0;
+}
+.dash-btn-ghost:hover {
+    background: rgba(30,41,59,.95);
+    border-color: rgba(148,163,184,.36);
+    color:#fff;
+}
+.dash-btn-primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    box-shadow: 0 14px 30px rgba(79,70,229,.25);
+}
+.dash-btn-primary:hover {
+    transform:translateY(-1px);
+    box-shadow: 0 18px 36px rgba(79,70,229,.3);
+}
+
+.kpi-card,
+.exec-card {
+    background: linear-gradient(180deg, rgba(15,23,42,.96), rgba(15,23,42,.88));
+    border:1px solid rgba(148,163,184,.16);
+    box-shadow: 0 18px 42px rgba(2,6,23,.18);
+}
+.kpi-card:hover,
+.exec-card:hover {
+    border-color: rgba(99,102,241,.32);
+}
+.kpi-value,
+.cell-bold,
+.exec-card-title {
+    color:#f8fafc;
+}
+.kpi-sub,
+.exec-card-sub,
+.cell-muted,
+.funnel-meta {
+    color:#94a3b8 !important;
+}
+
+.kpi-indigo .kpi-icon,
+.kpi-blue .kpi-icon,
+.kpi-green .kpi-icon,
+.kpi-amber .kpi-icon,
+.kpi-emerald .kpi-icon {
+    color:#fff;
+}
+
+.badge-indigo { background: rgba(99,102,241,.14); color:#c7d2fe; border:1px solid rgba(99,102,241,.22); }
+.badge-green  { background: rgba(34,197,94,.14); color:#bbf7d0; border:1px solid rgba(34,197,94,.22); }
+.badge-amber  { background: rgba(245,158,11,.14); color:#fde68a; border:1px solid rgba(245,158,11,.22); }
+.badge-gray   { background: rgba(148,163,184,.14); color:#cbd5e1; border:1px solid rgba(148,163,184,.18); }
+.badge-red    { background: rgba(239,68,68,.14); color:#fecaca; border:1px solid rgba(239,68,68,.22); }
+.badge-danger { background:#dc2626;color:white; }
+
+.dash-table thead th {
+    color:#94a3b8;
+    border-bottom:1px solid rgba(148,163,184,.14);
+    background: rgba(15,23,42,.3);
+}
+.dash-table tbody td {
+    color:#cbd5e1;
+    border-bottom:1px solid rgba(148,163,184,.1);
+}
+.dash-table tbody tr:hover td { background: rgba(30,41,59,.5); }
+
+.t-av-red  { background: linear-gradient(135deg,#7f1d1d,#ef4444); color:#fff; }
+.t-av-blue { background: linear-gradient(135deg,#1d4ed8,#60a5fa); color:#fff; }
+
+.risk-critical { background: rgba(239,68,68,.14); color:#fecaca; border-color: rgba(239,68,68,.2); }
+.risk-high     { background: rgba(245,158,11,.14); color:#fde68a; border-color: rgba(245,158,11,.2); }
+
+.action-notify {
+    background: rgba(99,102,241,.14);
+    color:#c7d2fe;
+    border: 1px solid rgba(99,102,241,.18);
+}
+.action-notify:hover { background:#6366f1;color:white; }
+.action-view {
+    background: rgba(148,163,184,.12);
+    color:#e2e8f0;
+}
+.action-view:hover { background:#1e293b;color:#fff; }
+
+.funnel-bar-bg {
+    height:8px;
+    background: rgba(148,163,184,.14);
+    border-radius:999px;
+}
+.funnel-bar-fill {
+    background: linear-gradient(90deg,#6366f1,#8b5cf6);
+    box-shadow: 0 0 18px rgba(99,102,241,.25);
+}
+
+@media (max-width: 991.98px) {
+    .dash-header { padding: 22px; }
+    .exec-card { padding: 20px; }
+}
+
+@media (max-width: 767.98px) {
+    .dash-actions { width:100%; flex-wrap:wrap; }
+    .dash-btn-ghost, .dash-btn-primary { width:100%; justify-content:center; }
+    .exec-card-head { flex-direction:column; }
+}
+</style>
 @endpush
 
 <script>
