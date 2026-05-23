@@ -32,9 +32,10 @@ $ARTISAN config:cache
 $ARTISAN route:cache
 $ARTISAN view:cache
 
-echo "==> [6/8] Reiniciando workers (Horizon)"
-$ARTISAN horizon:terminate
-supervisorctl restart vivensi-horizon
+echo "==> [6/8] Reiniciando queue workers"
+# Horizon (se ativo): php artisan horizon:terminate && supervisorctl restart vivensi-horizon
+# Sem Horizon — reinicia workers via queue:restart signal
+$ARTISAN queue:restart
 
 echo "==> [7/8] Verificação de saúde"
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/ping)
