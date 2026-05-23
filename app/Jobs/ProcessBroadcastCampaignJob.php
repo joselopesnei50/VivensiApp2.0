@@ -21,7 +21,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $campaignId;
-    public $timeout = 3600;
+    public $timeout = 7200; // 2h — campanhas grandes precisam de mais tempo
     public $tries   = 1;
 
     public function __construct($campaignId)
@@ -135,19 +135,20 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             // ── Anti-ban: verifica janela de horário e limite diário ──────────
             if (!$antiBan->canSendMessage($instance)) {
                 $instance->refresh();
-                // Fora da janela horária: aguarda 30 min e tenta novamente
                 if (!$instance->isWithinSafeWindow()) {
-                    Log::info("Broadcast pausado: fora da janela horária — aguardando 30 min", ['campaign_id' => $campaign->id]);
-                    sleep(1800);
-                    if (!$antiBan->canSendMessage($instance)) {
-                        $campaign->update(['status' => 'failed', 'completed_at' => now()]);
-                        Log::error("Broadcast encerrado: janela de horário expirou", ['campaign_id' => $campaign->id]);
-                        return;
-                    }
+                    // Fora da janela horária — salva progresso e encerra
+                    // O operador deve reagendar dentro da janela configurada
+                    $campaign->update([
+                        'status'       => 'paused',
+                        'completed_at' => now(),
+                        'total_sent'   => $sentCount,
+                        'total_failed' => $failedCount,
+                    ]);
+                    Log::info("Broadcast pausado: fora da janela horária — reagende dentro da janela", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
+                    return;
                 } else {
-                    // Limite diário atingido: encerra campanha
-                    $campaign->update(['status' => 'failed', 'completed_at' => now()]);
-                    Log::error("Broadcast encerrado: limite diário atingido", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
+                    $campaign->update(['status' => 'paused', 'completed_at' => now(), 'total_sent' => $sentCount, 'total_failed' => $failedCount]);
+                    Log::info("Broadcast pausado: limite diário/horário atingido", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
                     return;
                 }
             }
@@ -171,14 +172,21 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     $waId = $jidMap[$normalized];
                 }
 
+                // ── Anti-ban: bloqueia URL encurtada antes de enviar ────────────
+                if ($antiBan->containsBlockedShortener($campaign->message)) {
+                    $campaign->update(['status' => 'failed', 'completed_at' => now(), 'total_sent' => $sentCount, 'total_failed' => $failedCount]);
+                    Log::error("Broadcast bloqueado: mensagem contém URL encurtada (risco de ban)", ['campaign_id' => $campaign->id]);
+                    return;
+                }
+
                 // ── Anti-ban: simula digitação antes do envio (apenas individuais) ──
                 if (!$isGroupChatMode) {
-                    $antiBan->simulateHumanTyping($instance, $waId);
+                    $antiBan->simulateHumanTyping($instance, $waId, $campaign->message);
                 }
 
                 $res = $mediaToSend
                     ? $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime)
-                    : $evo->sendMessage($waId, $campaign->message, null, rand(1, 3));
+                    : $evo->sendMessage($waId, $campaign->message, null, rand(2, 5));
 
                 if (!isset($res['error']) && !empty($res)) {
                     if (isset($recipient->id)) {
@@ -200,21 +208,21 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     $consecutiveErrors++;
 
                     // ── Circuit breaker: detecta sinal de ban / rate limit ────────
-                    $details = strtolower(json_encode($res));
-                    $isBanSignal = str_contains($details, '429')
-                        || str_contains($details, 'rate')
-                        || str_contains($details, 'banned')
-                        || str_contains($details, 'suspended')
-                        || str_contains($details, 'blocked');
-
-                    if ($isBanSignal) {
-                        Log::critical("Broadcast: sinal de ban/rate-limit detectado — campanha pausada 30 min", [
+                    if ($antiBan->isBanSignal($res)) {
+                        Log::critical("Broadcast: sinal de ban detectado — instância restrita por 24h, campanha encerrada", [
                             'campaign_id' => $campaign->id,
                             'sent'        => $sentCount,
-                            'details'     => substr($details, 0, 300),
+                            'response'    => substr(json_encode($res), 0, 300),
                         ]);
-                        sleep(1800); // 30 min de pausa automática
-                        $consecutiveErrors = 0;
+                        // Marca instância como restrita por 24h — NÃO dormimos no worker
+                        $antiBan->markAsRestricted($instance, 24);
+                        $campaign->update([
+                            'status'       => 'failed',
+                            'completed_at' => now(),
+                            'total_sent'   => $sentCount,
+                            'total_failed' => $failedCount,
+                        ]);
+                        return;
                     }
 
                     // 5 erros consecutivos sem sinal de ban → parar campanha
@@ -235,14 +243,15 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                 'total_failed' => $failedCount,
             ]);
 
-            // ── Anti-ban: delay aleatório (cadência + 0 a 5s extra) ──────────
-            $minDelay = max(2, $campaign->cadence ?: 3);
-            sleep(rand($minDelay, $minDelay + 5));
+            // ── Anti-ban: delay entre mensagens (mínimo 5s, orgânico) ───────
+            $minDelay = max(5, $campaign->cadence ?: 5);
+            sleep(rand($minDelay, $minDelay + 10));
 
-            // ── Anti-ban: pausa longa a cada 50 mensagens enviadas ───────────
-            if ($sentCount > 0 && $sentCount % 50 === 0) {
-                Log::info("Broadcast: pausa anti-ban a cada 50 msgs", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
-                sleep(rand(25, 45));
+            // ── Anti-ban: pausa de 3-5 min a cada 30 mensagens ──────────────
+            if ($sentCount > 0 && $sentCount % 30 === 0) {
+                $pause = rand(180, 300);
+                Log::info("Broadcast: pausa anti-ban ({$pause}s) após 30 msgs", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
+                sleep($pause);
             }
         }
 

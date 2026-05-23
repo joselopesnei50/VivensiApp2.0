@@ -13,6 +13,7 @@ use App\Models\WhatsappBlacklist;
 use App\Models\WhatsappConfig;
 use App\Services\EvolutionApiService;
 use App\Models\Tenant;
+use App\Services\Messaging\AntiBanManager;
 use Illuminate\Support\Facades\Log;
 
 class SendCampaignMessageJob implements ShouldQueue
@@ -21,11 +22,9 @@ class SendCampaignMessageJob implements ShouldQueue
 
     public $messageId;
     
-    // Allow up to 3 tries per job
-    public $tries = 3;
-    
-    // Tell Laravel to wait before retrying
-    public $backoff = 30;
+    public $tries  = 3;
+    // Backoff exponencial: 1min → 5min → 15min
+    public $backoff = [60, 300, 900];
 
     /**
      * Create a new job instance.
@@ -89,13 +88,12 @@ class SendCampaignMessageJob implements ShouldQueue
             // Note: EvolutionApiService applySpintax will handle the {{contact_name}} variables and the Spintax itself.
             $rawMessage = $campaign->message_template;
             
-            // Anti-ban: Block known shorteners usually flagged as spam by WhatsApp
-            $blockedShorteners = ['bit.ly', 'cutt.ly', 't.ly', 'tinyurl.com', 'is.gd', 'rebrand.ly'];
-            foreach ($blockedShorteners as $shortener) {
+            // Anti-ban: bloqueia URLs encurtadas sinalizadas como spam pela Meta
+            foreach (AntiBanManager::BLOCKED_SHORTENERS as $shortener) {
                 if (stripos($rawMessage, $shortener) !== false) {
                     $message->update([
-                        'status' => 'failed',
-                        'error_message' => 'Bloqueado por conter link encurtador (Anti-Ban).'
+                        'status'        => 'failed',
+                        'error_message' => 'Bloqueado: contém URL encurtada (Anti-Ban).',
                     ]);
                     return;
                 }
@@ -106,9 +104,9 @@ class SendCampaignMessageJob implements ShouldQueue
                  $rawMessage = str_replace(['{{nome}}', '{{contato}}', '{{name}}', '{{contact_name}}'], $message->contact_name, $rawMessage);
             }
 
-            // We apply a delay between 3 and 10 seconds per message to simulate human typing
-            $delay = rand(3, 10);
-            
+            // Delay entre 5-15s para simular comportamento humano
+            $delay = rand(5, 15);
+
             $result = $evo->sendMessage($message->contact_phone, $rawMessage, $delay);
             
             if (isset($result['key'])) {
