@@ -69,6 +69,12 @@
 .inst-action-btn.indigo:hover { background:#dbeafe; }
 .inst-action-btn.red { background:#fef2f2; color:#dc2626; padding:9px 14px; flex:0; }
 .inst-action-btn.red:hover { background:#fee2e2; }
+.inst-action-btn.amber { background:#fffbeb; color:#d97706; padding:9px 14px; flex:0; }
+.inst-action-btn.amber:hover { background:#fef3c7; }
+
+.proxy-badge { display:inline-flex; align-items:center; gap:4px; font-size:.68rem; font-weight:700; padding:3px 8px; border-radius:20px; }
+.proxy-badge.on  { background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; }
+.proxy-badge.off { background:#f8fafc; color:#94a3b8; border:1px solid #e2e8f0; }
 
 /* Empty state */
 .inst-empty {
@@ -126,8 +132,9 @@
     <div class="row g-4">
         @foreach($instances as $instance)
         @php
-            $pct   = $instance->daily_limit > 0 ? min(100, intval(($instance->messages_sent_today / $instance->daily_limit) * 100)) : 0;
-            $color = $pct > 80 ? '#ef4444' : ($pct > 50 ? '#f59e0b' : '#10b981');
+            $pct        = $instance->daily_limit > 0 ? min(100, intval(($instance->messages_sent_today / $instance->daily_limit) * 100)) : 0;
+            $color      = $pct > 80 ? '#ef4444' : ($pct > 50 ? '#f59e0b' : '#10b981');
+            $hasProxy   = !empty(($instance->settings ?? [])['proxy_url']);
         @endphp
         <div class="col-md-6 col-xl-4">
             <div class="inst-card">
@@ -158,8 +165,12 @@
                     </div>
 
                     <div class="inst-meta">
-                        <span><i class="fas fa-clock me-1"></i>Delay 1.5–4s</span>
+                        <span><i class="fas fa-clock me-1"></i>Delay 2.5–6s</span>
                         <span><i class="fas fa-calendar me-1"></i>{{ $instance->created_at->format('d/m/Y') }}</span>
+                        <span class="proxy-badge {{ $hasProxy ? 'on' : 'off' }}">
+                            <i class="fas fa-{{ $hasProxy ? 'shield-alt' : 'minus' }}"></i>
+                            {{ $hasProxy ? 'Proxy ON' : 'Sem Proxy' }}
+                        </span>
                     </div>
 
                     <div class="inst-actions">
@@ -172,6 +183,10 @@
                                 <i class="fas fa-paper-plane"></i> Usar Instância
                             </a>
                         @endif
+                        <button onclick="openProxyModal('{{ $instance->id }}', {{ $hasProxy ? 'true' : 'false' }})"
+                                class="inst-action-btn amber" title="Configurar Proxy">
+                            <i class="fas fa-shield-alt"></i>
+                        </button>
                         <button onclick="confirmDelete('{{ $instance->id }}')" class="inst-action-btn red" title="Excluir instância">
                             <i class="fas fa-trash-alt"></i>
                         </button>
@@ -183,7 +198,41 @@
     </div>
 @endif
 
-{{-- MODAL --}}
+{{-- MODAL PROXY --}}
+<div class="modal fade" id="proxyModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+        <div class="modal-content" style="border-radius:20px; border:1px solid #f1f5f9; box-shadow:0 25px 60px rgba(0,0,0,.15);">
+            <div style="padding:24px 28px 0; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h5 style="font-weight:900; color:#1e293b; font-size:1.1rem; margin:0;">
+                        <i class="fas fa-shield-alt me-2" style="color:#d97706;"></i>Configurar Proxy
+                    </h5>
+                    <p style="color:#64748b; font-size:.8rem; margin:4px 0 0;">Roteia a instância por um IP residencial ou datacenter diferente.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="inst-modal-body">
+                <label class="inst-field-label">URL do Proxy <span style="color:#94a3b8; font-weight:500;">(opcional)</span></label>
+                <input type="text" id="proxyUrlInput" class="inst-field"
+                       placeholder="socks5://user:pass@host:port">
+                <p style="color:#94a3b8; font-size:.73rem; margin:8px 0 20px; line-height:1.6;">
+                    Formatos aceitos: <code>http://</code>, <code>https://</code>, <code>socks5://</code>, <code>socks5h://</code><br>
+                    Deixe em branco para <strong>remover</strong> o proxy desta instância.
+                </p>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="saveProxy()" class="inst-btn-primary" style="flex:1; justify-content:center; padding:12px;">
+                        <i class="fas fa-save me-2"></i><span id="proxyBtnLabel">Salvar Proxy</span>
+                    </button>
+                    <button type="button" class="inst-btn-ghost" data-bs-dismiss="modal" style="padding:12px 18px;">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL NOVA INSTÂNCIA --}}
 <div class="modal fade" id="newInstanceModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
         <div class="modal-content" style="border-radius:20px; border:1px solid #f1f5f9; box-shadow:0 25px 60px rgba(0,0,0,.15);">
@@ -301,6 +350,48 @@ function checkStatus(id) {
     document.getElementById('qr-code-image').src = '';
     new bootstrap.Modal(document.getElementById('newInstanceModal')).show();
     fetchQrCode(); pollInterval = setInterval(fetchQrCode, 5000);
+}
+
+// ── Proxy ────────────────────────────────────────────────────────────────────
+let proxyInstanceId = null;
+
+function openProxyModal(id, hasProxy) {
+    proxyInstanceId = id;
+    document.getElementById('proxyUrlInput').value = '';
+    document.getElementById('proxyBtnLabel').textContent = hasProxy ? 'Atualizar Proxy' : 'Salvar Proxy';
+    new bootstrap.Modal(document.getElementById('proxyModal')).show();
+}
+
+async function saveProxy() {
+    if (!proxyInstanceId) return;
+    const url   = document.getElementById('proxyUrlInput').value.trim();
+    const btn   = document.querySelector('#proxyModal .inst-btn-primary');
+    const label = document.getElementById('proxyBtnLabel');
+    const orig  = label.textContent;
+
+    btn.disabled = true;
+    label.textContent = 'Salvando...';
+
+    try {
+        const r = await fetch(`/whatsapp/instances/${proxyInstanceId}/proxy`, {
+            method: 'PATCH',
+            headers: webHeaders,
+            body: JSON.stringify({ proxy_url: url }),
+        });
+        const d = await r.json();
+        if (r.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('proxyModal')).hide();
+            window.location.reload();
+        } else {
+            alert('Erro: ' + (d.error || d.message || r.status));
+            btn.disabled = false;
+            label.textContent = orig;
+        }
+    } catch(e) {
+        alert('Falha de comunicação com o servidor.');
+        btn.disabled = false;
+        label.textContent = orig;
+    }
 }
 </script>
 @endsection

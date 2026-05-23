@@ -225,6 +225,41 @@ class WhatsappInstanceController extends Controller
     }
 
     /**
+     * Salva (ou remove) o proxy desta instância.
+     * Aceita http://, https://, socks5://, socks5h:// — ou string vazia para remover.
+     */
+    public function updateProxy(Request $request, int $id)
+    {
+        $instance = $this->findForTenant($id);
+
+        $proxyUrl = trim($request->input('proxy_url', ''));
+
+        if ($proxyUrl !== '') {
+            if (!preg_match('#^(https?|socks5h?)://.+#i', $proxyUrl)) {
+                return response()->json(['error' => 'Formato inválido. Use http://, https://, socks5:// ou socks5h://.'], 422);
+            }
+            if (strlen($proxyUrl) > 512) {
+                return response()->json(['error' => 'URL do proxy muito longa (máx 512 chars).'], 422);
+            }
+        }
+
+        $settings = $instance->settings ?? [];
+
+        if ($proxyUrl === '') {
+            unset($settings['proxy_url']);
+        } else {
+            $settings['proxy_url'] = $proxyUrl;
+        }
+
+        $instance->update(['settings' => $settings]);
+
+        return response()->json([
+            'message'    => $proxyUrl === '' ? 'Proxy removido.' : 'Proxy salvo.',
+            'proxy_set'  => $proxyUrl !== '',
+        ]);
+    }
+
+    /**
      * Deleta (desconecta e remove) a instância.
      */
     public function destroy(int $id)
