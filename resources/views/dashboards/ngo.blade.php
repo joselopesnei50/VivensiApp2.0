@@ -18,7 +18,41 @@
 @endpush
 
 @include('partials.onboarding')
-<div class="header-page" style="margin-bottom: 32px; position: relative; background: linear-gradient(135deg, #0f172a 0%, #1a2540 100%); border-radius: 32px; padding: 48px 56px 44px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.35);">
+
+<style>
+@media (max-width: 768px) {
+    .ngo-header-card {
+        padding: 24px 20px 20px !important;
+        border-radius: 20px !important;
+        margin-bottom: 20px !important;
+    }
+    .ngo-header-title {
+        font-size: 2rem !important;
+        letter-spacing: -1px !important;
+    }
+    .ngo-header-subtitle {
+        font-size: 0.85rem !important;
+        margin-top: 10px !important;
+    }
+    .ngo-header-actions {
+        width: 100%;
+        gap: 8px !important;
+    }
+    .ngo-header-actions .btn-premium {
+        padding: 10px 14px !important;
+        font-size: 0.78rem !important;
+        border-radius: 12px !important;
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+    }
+}
+@media (max-width: 480px) {
+    .ngo-header-actions .btn-premium.btn-audit { display: none !important; }
+}
+</style>
+
+<div class="ngo-header-card header-page" style="margin-bottom: 32px; position: relative; background: linear-gradient(135deg, #0f172a 0%, #1a2540 100%); border-radius: 32px; padding: 48px 56px 44px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.35);">
     <div style="background: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%), radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.1) 0%, transparent 40%); position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;"></div>
     <div style="display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 2; flex-wrap: wrap; gap: 20px;">
         <div>
@@ -26,17 +60,17 @@
                 <span style="background: var(--ngo-primary); width: 12px; height: 3px; border-radius: 2px; box-shadow: 0 0 10px var(--ngo-primary);"></span>
                 <h6 style="color: var(--ngo-primary); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Dashboard Terceiro Setor</h6>
             </div>
-            <h2 style="margin: 0; color: white; font-weight: 950; font-size: 3.4rem; letter-spacing: -2.5px; line-height: 0.95;">Impacto & Gestão</h2>
-            <p style="color: rgba(255,255,255,0.5); margin: 18px 0 0 0; font-size: 1.1rem; font-weight: 500;">Monitoramento em tempo real da sustentabilidade da organização.</p>
+            <h2 class="ngo-header-title" style="margin: 0; color: white; font-weight: 950; font-size: 3.4rem; letter-spacing: -2.5px; line-height: 0.95;">Impacto & Gestão</h2>
+            <p class="ngo-header-subtitle" style="color: rgba(255,255,255,0.5); margin: 18px 0 0 0; font-size: 1.1rem; font-weight: 500;">Monitoramento em tempo real da sustentabilidade da organização.</p>
         </div>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <div class="ngo-header-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
             <button type="button" data-bs-toggle="modal" data-bs-target="#quickDonationModal" class="btn-premium" style="background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.3); font-weight: 800; padding: 14px 28px; border-radius: 18px; cursor: pointer;">
                 <i class="fas fa-hand-holding-heart me-2"></i> Registrar Doação
             </button>
-             <a href="{{ url('/ngo/audit') }}" class="btn-premium" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-weight: 800; padding: 14px 28px; border-radius: 18px;">
+            <a href="{{ url('/ngo/audit') }}" class="btn-premium btn-audit" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-weight: 800; padding: 14px 28px; border-radius: 18px;">
                 <i class="fas fa-eye me-2" style="color: var(--ngo-primary);"></i> Central de Auditoria
             </a>
-             <a href="{{ url('/ngo/grants/create') }}" class="btn-premium" style="background: white; color: #0f172a; text-decoration: none; border: none; font-weight: 800; padding: 14px 28px; border-radius: 18px; box-shadow: 0 10px 30px rgba(255,255,255,0.1);">
+            <a href="{{ url('/ngo/grants/create') }}" class="btn-premium" style="background: white; color: #0f172a; text-decoration: none; border: none; font-weight: 800; padding: 14px 28px; border-radius: 18px; box-shadow: 0 10px 30px rgba(255,255,255,0.1);">
                 <i class="fas fa-plus me-2" style="color: var(--ngo-primary);"></i> Novo Edital
             </a>
         </div>

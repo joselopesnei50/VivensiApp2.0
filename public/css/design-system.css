@@ -1169,6 +1169,40 @@ body { font-family: var(--ds-font-sans); }
     transform: translateX(4px);
 }
 
+/* ── Responsividade mobile para dashboards escuros ──────────────────────── */
+@media (max-width: 768px) {
+    .command-center-hero {
+        padding: 24px 20px 20px !important;
+        border-radius: 20px !important;
+        margin-bottom: 20px !important;
+    }
+    .command-center-hero h1 {
+        font-size: 2rem !important;
+        letter-spacing: -1px !important;
+        line-height: 1 !important;
+    }
+    .command-center-hero p {
+        font-size: 0.85rem !important;
+        margin-top: 10px !important;
+    }
+    .hero-glass-pill {
+        padding: 6px 14px !important;
+        font-size: 0.65rem !important;
+        margin-bottom: 16px !important;
+    }
+    .cmd-stat-card {
+        min-height: 120px !important;
+        padding: 16px !important;
+        border-radius: 18px !important;
+    }
+    .btn-action-pro {
+        padding: 10px 14px !important;
+        font-size: 0.78rem !important;
+        border-radius: 12px !important;
+        gap: 6px !important;
+    }
+}
+
 /* ── Mini progress bar (projetos / tasks) ───────────────────────────────── */
 .progress-mini {
     height: 6px;
