@@ -1169,6 +1169,34 @@ body { font-family: var(--ds-font-sans); }
     transform: translateX(4px);
 }
 
+/* ── Mobile: cancela estado de colapso JS (sb-collapsed/sb-expanded) ───── */
+/* O JS lê localStorage e aplica margin-left: 64px !important no mobile,   */
+/* causando campo branco na esquerda. Este bloco neutraliza isso.           */
+@media (max-width: 768px) {
+    /* Main content: sempre margem 0 no mobile, independente do estado JS */
+    .main-content.sb-collapsed,
+    .main-content.sb-expanded {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Sidebar: sempre off-screen no mobile quando não está aberto */
+    .sidebar.sb-collapsed {
+        width: var(--sidebar-width, 260px) !important;
+        transform: translateX(-100%) !important;
+    }
+
+    /* Quando aberto via toggleSidebar() mobile */
+    .sidebar.sb-collapsed.mobile-open {
+        transform: translateX(0) !important;
+    }
+
+    /* Botão de recolher: esconde no mobile (não faz sentido) */
+    .sidebar-collapse-btn {
+        display: none !important;
+    }
+}
+
 /* ── Responsividade mobile para dashboards escuros ──────────────────────── */
 @media (max-width: 768px) {
     .command-center-hero {
