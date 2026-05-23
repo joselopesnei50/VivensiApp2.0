@@ -16,6 +16,7 @@ class EvolutionApiService
     protected $globalApiKey;
     protected $baseUrl;
     protected $contextModel;
+    protected ?string $proxyUrl = null; // ex: http://user:pass@proxy-host:port
 
     /**
      * @param \Illuminate\Database\Eloquent\Model|null $contextModel (WhatsappInstance, Tenant ou User)
@@ -31,6 +32,10 @@ class EvolutionApiService
             $this->apiKey = !empty($contextModel->evolution_instance_token)
                 ? $contextModel->evolution_instance_token
                 : $this->globalApiKey;
+
+            // Suporte a proxy por instância (settings JSON) ou global (.env)
+            $instanceProxy = $contextModel->settings['proxy_url'] ?? null;
+            $this->proxyUrl = $instanceProxy ?: env('WHATSAPP_PROXY_URL');
         }
     }
 
@@ -527,8 +532,8 @@ class EvolutionApiService
     }
 
     /**
-     * Retorna cliente HTTP com SSL configurado corretamente.
-     * Laravel 9 usa withoutVerifying() — não existe withSslVerification().
+     * Retorna cliente HTTP com SSL e proxy configurados.
+     * Proxy residencial por instância reduz risco de detecção de datacenter.
      */
     protected function http(): \Illuminate\Http\Client\PendingRequest
     {
@@ -536,8 +541,14 @@ class EvolutionApiService
             && !str_contains($this->baseUrl, 'localhost')
             && !str_contains($this->baseUrl, '127.0.0.1');
 
-        return $shouldVerify
-            ? \Illuminate\Support\Facades\Http::withOptions(['verify' => true])
-            : \Illuminate\Support\Facades\Http::withoutVerifying();
+        $options = ['verify' => $shouldVerify];
+
+        // Proxy por instância (settings['proxy_url']) ou global (WHATSAPP_PROXY_URL)
+        // Formato: http://user:pass@host:port ou socks5://user:pass@host:port
+        if ($this->proxyUrl) {
+            $options['proxy'] = $this->proxyUrl;
+        }
+
+        return \Illuminate\Support\Facades\Http::withOptions($options);
     }
 }
