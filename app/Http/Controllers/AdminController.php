@@ -233,7 +233,7 @@ class AdminController extends Controller
             ['label' => 'E-mail (Brevo)',         'desc' => 'Chave Brevo no painel admin',         'ok' => $emailOk],
             ['label' => 'Pagamento configurado', 'desc' => 'AbacatePay ou PagSeguro ativo',       'ok' => $pagamentoOk],
             ['label' => 'Meta WhatsApp',         'desc' => 'App Secret da Meta configurado',      'ok' => $metaOk],
-            ['label' => 'Redis conectado',       'desc' => 'Cache e filas operacionais',          'ok' => $redisOk],
+            ['label' => 'Redis conectado',       'desc' => 'Cache operacional',                   'ok' => $redisOk],
             ['label' => 'Falhas de login 24h',   'desc' => $loginFails . ' tentativa(s)',         'ok' => $loginFails < 50],
         ];
 
