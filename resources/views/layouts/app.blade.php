@@ -829,7 +829,7 @@
 <main class="main-content" style="{{ !auth()->check() ? 'margin-left: 0; width: 100%;' : '' }}">
     
     <!-- ══ COMMAND TOPBAR ══════════════════════════════════════════════ -->
-    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 36px; height: 68px; background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 900; margin: -32px -32px 32px -32px;">
+    <div id="topbar" style="display: flex; align-items: center; justify-content: space-between; padding: 0 36px; height: 68px; background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 900; margin: -32px -32px 32px -32px;">
 
         <!-- Esquerda: Menu mobile + Identidade do painel -->
         <div style="display: flex; align-items: center; gap: 20px;">
@@ -843,11 +843,35 @@
                 @media (max-width: 768px) {
                     .mobile-logout-btn { display: block !important; }
                     .mobile-menu-btn { display: block !important; }
+                    /* Topbar: padding e margin compensam o padding do main-content mobile (20px) */
+                    #topbar {
+                        padding: 0 16px !important;
+                        margin: -20px -20px 20px -20px !important;
+                    }
+                    /* Esconde título "Central de Comando" — libera espaço na topbar */
+                    #topbar-title { display: none !important; }
+                    /* Esconde relógio ao vivo — irrelevante em mobile */
+                    #live-clock { display: none !important; }
+                    /* Esconde botão de busca duplicado (cmd palette) — mantém só global-search-trigger */
+                    #topbar-search-cmd { display: none !important; }
+                    /* Trial warning ocupa espaço demais em telas pequenas */
+                    #topbar-trial { display: none !important; }
+                    /* Dropdown de notificações: posição fixa em mobile para não sair da tela */
+                    #notif-dropdown {
+                        position: fixed !important;
+                        top: 70px !important;
+                        left: 12px !important;
+                        right: 12px !important;
+                        width: auto !important;
+                    }
+                }
+                @media (max-width: 480px) {
+                    #topbar { padding: 0 12px !important; }
                 }
             </style>
 
             <!-- Linha vertical accent + texto do painel -->
-            <div style="display: flex; align-items: center; gap: 16px;">
+            <div id="topbar-title" style="display: flex; align-items: center; gap: 16px;">
                 <div style="width: 3px; height: 32px; background: var(--primary-color, #4f46e5); border-radius: 2px;"></div>
                 <div>
                     @php $role = auth()->user()?->role; @endphp
@@ -873,6 +897,7 @@
         @auth
             @php $tenant = auth()->user()->tenant; @endphp
             @if($tenant && $tenant->subscription_status === 'trialing' && $tenant->trial_ends_at)
+            <div id="topbar-trial">
                 @php $daysLeft = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($tenant->trial_ends_at), false); @endphp
                 <div style="display: flex; align-items: center; gap: 12px; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); padding: 8px 16px; border-radius: 10px;">
                     <i class="fas fa-clock" style="color: #fbbf24; font-size: 0.85rem;"></i>
@@ -883,6 +908,7 @@
                         <a href="{{ route('checkout.index', ['plan_id' => $tenant->plan_id]) }}" style="background: #fbbf24; color: #0f172a; font-size: 0.7rem; font-weight: 900; padding: 4px 12px; border-radius: 8px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;">Ativar</a>
                     @endif
                 </div>
+            </div>
             @endif
         @endauth
 
@@ -896,7 +922,7 @@
             </div>
 
             <!-- Ctrl+K Command Palette trigger -->
-            <button onclick="openCmdPalette()"
+            <button id="topbar-search-cmd" onclick="openCmdPalette()"
                     style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 7px 14px; cursor: pointer; transition: background 0.2s; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 600;"
                     onmouseover="this.style.background='rgba(255,255,255,0.09)'"
                     onmouseout="this.style.background='rgba(255,255,255,0.04)'"
@@ -940,7 +966,7 @@
                 </div>
 
                 <!-- Dropdown Notificações -->
-                <div id="notif-dropdown" style="display: none; position: absolute; top: 50px; right: 0; width: 340px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); z-index: 1000; border: 1px solid rgba(255,255,255,0.08); overflow: hidden;">
+                <div id="notif-dropdown" style="display: none; position: absolute; top: 50px; right: 0; width: 340px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); z-index: 1060; border: 1px solid rgba(255,255,255,0.08); overflow: hidden;">
                     <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;">
                         <strong style="color: white; font-size: 0.9rem; font-weight: 800;">Notificações</strong>
                         <button onclick="markAllRead()" style="background: none; border: none; color: #818cf8; font-size: 0.72rem; cursor: pointer; font-weight: 700;">Marcar todas como lidas</button>
