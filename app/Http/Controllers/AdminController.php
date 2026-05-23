@@ -151,35 +151,104 @@ class AdminController extends Controller
             abort(403);
         }
 
-        $load = 'N/A';
-        $memory = 'N/A';
-        $disk = 'N/A';
-        $uptime = 'N/A';
+        $isLinux = strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN';
 
-        if (function_exists('sys_getloadavg')) {
-            $loadavg = sys_getloadavg();
-            if ($loadavg) $load = implode(' ', $loadavg);
-        }
+        // ── Load Average ──────────────────────────────────────────────────────
+        $loadRaw = function_exists('sys_getloadavg') ? (sys_getloadavg() ?: [0, 0, 0]) : [0, 0, 0];
+        $load = [
+            '1m'  => number_format($loadRaw[0], 2),
+            '5m'  => number_format($loadRaw[1], 2),
+            '15m' => number_format($loadRaw[2], 2),
+        ];
 
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $memory = 'Windows Server - Check Task Manager';
-            $disk = disk_free_space("C:") / 1024 / 1024 / 1024;
-            $disk = number_format($disk, 2) . ' GB Free';
-        } else {
-            $free = shell_exec('free -m');
-            $free = (string)trim($free);
-            $free_arr = explode("\n", $free);
-            if (isset($free_arr[1])) {
-                $mem = array_filter(explode(" ", $free_arr[1]));
-                $mem = array_merge($mem);
-                $memory = $mem[2] . 'MB / ' . $mem[1] . 'MB Used';
+        // ── Memory (Linux) ────────────────────────────────────────────────────
+        $memTotal = $memUsed = $memFree = $memPct = 0;
+        if ($isLinux) {
+            $freeOut = shell_exec('free -m 2>/dev/null');
+            if ($freeOut) {
+                $parts = array_values(array_filter(explode(' ', explode("\n", trim($freeOut))[1] ?? '')));
+                $memTotal = (int)($parts[1] ?? 0);
+                $memUsed  = (int)($parts[2] ?? 0);
+                $memFree  = (int)($parts[3] ?? 0);
+                $memPct   = $memTotal > 0 ? round($memUsed / $memTotal * 100) : 0;
             }
-            $disk = shell_exec("df -h | grep '/$' | awk '{print $4}'");
-            $disk = trim($disk) . ' Free';
-            $uptime = shell_exec('uptime -p');
         }
 
-        return view('admin.health', compact('load', 'memory', 'disk', 'uptime'));
+        // ── Disk ──────────────────────────────────────────────────────────────
+        $diskTotal = $diskUsed = $diskFree = $diskPct = 0;
+        if ($isLinux) {
+            $dfLine = shell_exec("df -BM / 2>/dev/null | tail -1");
+            if ($dfLine) {
+                $parts = array_values(array_filter(explode(' ', trim($dfLine))));
+                $diskTotal = (int)str_replace('M', '', $parts[1] ?? 0);
+                $diskUsed  = (int)str_replace('M', '', $parts[2] ?? 0);
+                $diskFree  = (int)str_replace('M', '', $parts[3] ?? 0);
+                $diskPct   = (int)str_replace('%', '', $parts[4] ?? 0);
+            }
+        } else {
+            $diskFree  = (int)round(disk_free_space("C:") / 1024 / 1024);
+            $diskTotal = (int)round(disk_total_space("C:") / 1024 / 1024);
+            $diskUsed  = $diskTotal - $diskFree;
+            $diskPct   = $diskTotal > 0 ? round($diskUsed / $diskTotal * 100) : 0;
+        }
+
+        // ── Uptime ────────────────────────────────────────────────────────────
+        $uptime = 'N/A';
+        if ($isLinux) {
+            $uptime = str_replace('up ', '', trim(shell_exec('uptime -p 2>/dev/null') ?? 'N/A'));
+        }
+
+        // ── DB Version ────────────────────────────────────────────────────────
+        $dbVersion = 'N/A';
+        try { $dbVersion = DB::select('SELECT VERSION() as v')[0]->v ?? 'N/A'; } catch (\Throwable $e) {}
+
+        // ── Redis ─────────────────────────────────────────────────────────────
+        $redisOk = false;
+        try {
+            \Illuminate\Support\Facades\Cache::store('redis')->put('_sa_health', 1, 5);
+            $redisOk = \Illuminate\Support\Facades\Cache::store('redis')->get('_sa_health') === 1;
+            \Illuminate\Support\Facades\Cache::store('redis')->forget('_sa_health');
+        } catch (\Throwable $e) {}
+
+        // ── Security Checks ───────────────────────────────────────────────────
+        $loginFails = 0;
+        try {
+            $loginFails = DB::table('login_activities')
+                ->where('logged_in_at', '>=', now()->subDay())
+                ->where('success', false)->count();
+        } catch (\Throwable $e) {}
+
+        $checks = [
+            ['label' => 'HTTPS ativo',          'desc' => 'Conexão protegida',                   'ok' => str_starts_with(config('app.url', ''), 'https')],
+            ['label' => 'Debug desligado',       'desc' => 'Erros não exibidos publicamente',     'ok' => !config('app.debug')],
+            ['label' => 'APP_KEY configurada',   'desc' => 'Chave de criptografia presente',      'ok' => strlen(config('app.key', '')) > 10],
+            ['label' => 'IA configurada',        'desc' => 'DeepSeek ou Gemini ativo',            'ok' => strlen(config('services.deepseek.key', '') ?: config('services.gemini.key', '')) > 5],
+            ['label' => 'E-mail configurado',    'desc' => 'Servidor SMTP presente',              'ok' => strlen(config('mail.mailers.smtp.host', '')) > 3],
+            ['label' => 'Redis conectado',       'desc' => 'Cache e filas operacionais',          'ok' => $redisOk],
+            ['label' => 'Falhas de login 24h',   'desc' => $loginFails . ' tentativa(s)',         'ok' => $loginFails < 50],
+        ];
+
+        $securityScore = count(array_filter(array_column($checks, 'ok')));
+        $securityTotal = count($checks);
+        $securityPct   = $securityTotal > 0 ? round($securityScore / $securityTotal * 100) : 0;
+
+        // ── Stats ─────────────────────────────────────────────────────────────
+        $tenantCount = $userCount = $openTickets = $pendingUsers = 0;
+        try {
+            $tenantCount  = \App\Models\Tenant::count();
+            $userCount    = \App\Models\User::count();
+            $openTickets  = DB::table('support_tickets')->where('status', 'open')->count();
+            $pendingUsers = \App\Models\User::where('subscription_status', 'pending')->count();
+        } catch (\Throwable $e) {}
+
+        return view('admin.health', compact(
+            'isLinux', 'load',
+            'memTotal', 'memUsed', 'memFree', 'memPct',
+            'diskTotal', 'diskUsed', 'diskFree', 'diskPct',
+            'uptime', 'dbVersion', 'redisOk',
+            'checks', 'securityScore', 'securityTotal', 'securityPct',
+            'tenantCount', 'userCount', 'openTickets', 'pendingUsers'
+        ));
     }
 
     public function tenants()
