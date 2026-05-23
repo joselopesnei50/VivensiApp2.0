@@ -201,13 +201,25 @@
 .stat-card.green  .stat-icon-wrap { background: #dcfce7; color: #16a34a; }
 .stat-card.yellow .stat-icon-wrap { background: #fef9c3; color: #ca8a04; }
 .stat-card.red    .stat-icon-wrap { background: #fee2e2; color: #dc2626; }
-.stat-kicker { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; }
-.stat-desc   { font-size: 0.72rem; color: #64748b; margin: 2px 0 10px; }
-.stat-number { font-size: 2.2rem; font-weight: 900; color: #0f172a; line-height: 1; margin-bottom: 10px; }
+.stat-kicker {
+    font-size: 0.6rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #94a3b8;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.stat-desc {
+    font-size: 0.72rem; color: #64748b; margin: 2px 0 10px;
+    line-height: 1.4; word-break: break-word;
+}
+.stat-number {
+    font-size: 2rem; font-weight: 900; color: #0f172a;
+    line-height: 1; margin-bottom: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .stat-badge  {
     display: inline-flex; align-items: center; gap: 5px;
     font-size: 0.62rem; font-weight: 800; padding: 3px 8px;
     border-radius: 20px; text-transform: uppercase; letter-spacing: .5px;
+    white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
 }
 .stat-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
 .stat-badge.base   { background: #f1f5f9; color: #475569; }
