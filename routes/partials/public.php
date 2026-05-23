@@ -58,13 +58,13 @@ Route::get('/transparencia/{slug}/docs/{id}',     [App\Http\Controllers\Transpar
 Route::get('/transparencia/{slug}/dados.csv',     [App\Http\Controllers\TransparencyController::class, 'openDataCsv'])->middleware('throttle:60,1')->name('transparency.opendata');
 Route::get('/transparencia/{slug}/relatorio.pdf', [App\Http\Controllers\TransparencyController::class, 'publicReportPdf'])->middleware('throttle:30,1')->name('transparency.report_pdf');
 Route::get('/transparencia/{slug}',               [App\Http\Controllers\TransparencyController::class, 'renderPortal'])->name('transparency.portal');
-Route::get('/t/{tenant_id}',                      [App\Http\Controllers\TransparencyController::class, 'publicView'])->where('tenant_id', '[0-9]+')->middleware('throttle:10,1');
+Route::get('/t/{slug}',                           [App\Http\Controllers\TransparencyController::class, 'publicView'])->where('slug', '[a-z0-9\-]+')->middleware('throttle:10,1');
 
 // ── Recibos & Certificados públicos ──────────────────────────────────────────
 Route::get('/r/{token}',               [App\Http\Controllers\ReceiptController::class, 'show'])->name('public.receipt');
 Route::get('/validar-recibo',          [App\Http\Controllers\ReceiptController::class, 'validateForm'])->name('public.receipt.validate');
 Route::post('/validar-recibo',         [App\Http\Controllers\ReceiptController::class, 'validateSubmit'])->middleware('throttle:5,1');
-Route::get('/validar-certificado/{id}', [App\Http\Controllers\HumanResourcesController::class, 'publicValidateVolunteerCertificate'])->middleware('throttle:5,1')->name('public.volunteer_certificate.validate');
+Route::get('/validar-certificado/{uuid}', [App\Http\Controllers\HumanResourcesController::class, 'publicValidateVolunteerCertificate'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')->middleware('throttle:5,1')->name('public.volunteer_certificate.validate');
 
 // ── Assinatura de contratos pública ──────────────────────────────────────────
 Route::get('/sign/{token}',  [App\Http\Controllers\ContractController::class, 'showPublic'])->name('public.contract');

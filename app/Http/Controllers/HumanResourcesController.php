@@ -398,6 +398,7 @@ class HumanResourcesController extends Controller
 
         $cert = VolunteerCertificate::create([
             'volunteer_id' => $volunteer->id,
+            'uuid' => (string) Str::uuid(),
             'activity_description' => $validated['activity_description'],
             'hours' => (int) $validated['hours'],
             'issued_at' => $issuedAt,
@@ -646,13 +647,12 @@ class HumanResourcesController extends Controller
         ]);
     }
 
-    public function publicValidateVolunteerCertificate(Request $request, $id)
+    public function publicValidateVolunteerCertificate(Request $request, string $uuid)
     {
         $codeRaw = (string) $request->get('code', '');
         $code = strtoupper(trim($codeRaw));
         $code = preg_replace('/[^A-Z0-9]/', '', $code) ?? '';
 
-        // Rejeita sem tocar no banco se não vier código — impede enumeração por ID
         if (strlen($code) < 6) {
             return view('public.volunteer_certificate_validate', [
                 'cert'         => null,
@@ -663,10 +663,9 @@ class HumanResourcesController extends Controller
             ]);
         }
 
-        // Busca pelo código primeiro para não revelar existência por ID
         $certRow = VolunteerCertificate::query()
             ->join('volunteers as v', 'v.id', '=', 'volunteer_certificates.volunteer_id')
-            ->where('volunteer_certificates.id', (int) $id)
+            ->where('volunteer_certificates.uuid', $uuid)
             ->select([
                 'volunteer_certificates.*',
                 'v.tenant_id as tenant_id',
