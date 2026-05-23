@@ -61,7 +61,7 @@
             <div><strong>Código de autenticidade:</strong> <span class="code">{{ $authCode }}</span></div>
             <div>
                 <strong>Validar:</strong>
-                <span class="code">{{ url('/validar-certificado/' . (int) $cert->id) }}?code={{ $authCode }}</span>
+                <span class="code">{{ url('/validar-certificado/' . $cert->uuid) }}?code={{ $authCode }}</span>
             </div>
             <div><strong>Gerado em:</strong> {{ $generatedAt }} · <strong>Emitido por:</strong> {{ auth()->user()->name ?? '—' }}</div>
         </div>

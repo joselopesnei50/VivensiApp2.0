@@ -11,6 +11,7 @@ class VolunteerCertificate extends Model
 
     protected $fillable = [
         'volunteer_id',
+        'uuid',
         'activity_description',
         'hours',
         'issued_at',

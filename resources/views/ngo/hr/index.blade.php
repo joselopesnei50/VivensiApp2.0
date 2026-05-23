@@ -207,7 +207,7 @@
                                     @if(!empty($volunteer->phone) && !empty(($certCodes[(int) $c->id] ?? null)))
                                         @php
                                             $code = $certCodes[(int) $c->id] ?? '';
-                                            $validateUrl = url('/validar-certificado/' . (int) $c->id) . '?code=' . $code;
+                                            $validateUrl = url('/validar-certificado/' . $c->uuid) . '?code=' . $code;
                                             $msg = "Olá ".$volunteer->name."! Segue o link para validar seu Certificado de Voluntariado: ".$validateUrl;
                                             $phone = preg_replace('/\\D+/', '', (string) $volunteer->phone);
                                         @endphp
