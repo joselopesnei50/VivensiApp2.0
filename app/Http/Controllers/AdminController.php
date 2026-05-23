@@ -210,7 +210,7 @@ class AdminController extends Controller
             \Illuminate\Support\Facades\Cache::store('redis')->forget('_sa_health');
         } catch (\Throwable $e) {}
 
-        // ── Security Checks ───────────────────────────────────────────────────
+        // ── Security Checks (APIs via SystemSetting — não via .env) ──────────
         $loginFails = 0;
         try {
             $loginFails = DB::table('login_activities')
@@ -218,12 +218,21 @@ class AdminController extends Controller
                 ->where('success', false)->count();
         } catch (\Throwable $e) {}
 
+        $iaOk       = (bool) \App\Models\SystemSetting::getValue('deepseek_api_key')
+                   || (bool) \App\Models\SystemSetting::getValue('gemini_api_key');
+        $emailOk    = (bool) \App\Models\SystemSetting::getValue('brevo_api_key');
+        $pagamentoOk= (bool) \App\Models\SystemSetting::getValue('abacatepay_api_key')
+                   || (bool) \App\Models\SystemSetting::getValue('pagseguro_token');
+        $metaOk     = (bool) \App\Models\SystemSetting::getValue('meta_app_secret');
+
         $checks = [
-            ['label' => 'HTTPS ativo',          'desc' => 'Conexão protegida',                   'ok' => str_starts_with(config('app.url', ''), 'https')],
+            ['label' => 'HTTPS ativo',          'desc' => 'Conexão criptografada SSL/TLS',       'ok' => str_starts_with(config('app.url', ''), 'https')],
             ['label' => 'Debug desligado',       'desc' => 'Erros não exibidos publicamente',     'ok' => !config('app.debug')],
             ['label' => 'APP_KEY configurada',   'desc' => 'Chave de criptografia presente',      'ok' => strlen(config('app.key', '')) > 10],
-            ['label' => 'IA configurada',        'desc' => 'DeepSeek ou Gemini ativo',            'ok' => strlen(config('services.deepseek.key', '') ?: config('services.gemini.key', '')) > 5],
-            ['label' => 'E-mail configurado',    'desc' => 'Servidor SMTP presente',              'ok' => strlen(config('mail.mailers.smtp.host', '')) > 3],
+            ['label' => 'IA configurada',        'desc' => 'DeepSeek ou Gemini no painel admin',  'ok' => $iaOk],
+            ['label' => 'E-mail (Brevo)',         'desc' => 'Chave Brevo no painel admin',         'ok' => $emailOk],
+            ['label' => 'Pagamento configurado', 'desc' => 'AbacatePay ou PagSeguro ativo',       'ok' => $pagamentoOk],
+            ['label' => 'Meta WhatsApp',         'desc' => 'App Secret da Meta configurado',      'ok' => $metaOk],
             ['label' => 'Redis conectado',       'desc' => 'Cache e filas operacionais',          'ok' => $redisOk],
             ['label' => 'Falhas de login 24h',   'desc' => $loginFails . ' tentativa(s)',         'ok' => $loginFails < 50],
         ];
@@ -232,13 +241,16 @@ class AdminController extends Controller
         $securityTotal = count($checks);
         $securityPct   = $securityTotal > 0 ? round($securityScore / $securityTotal * 100) : 0;
 
-        // ── Stats ─────────────────────────────────────────────────────────────
-        $tenantCount = $userCount = $openTickets = $pendingUsers = 0;
+        // ── Stats reais da plataforma ─────────────────────────────────────────
+        $statTenants = $statUsers = $statTransactions = 0;
+        $statWppMsgs = $statBeneficiaries = $statOpenTickets = 0;
         try {
-            $tenantCount  = \App\Models\Tenant::count();
-            $userCount    = \App\Models\User::count();
-            $openTickets  = DB::table('support_tickets')->where('status', 'open')->count();
-            $pendingUsers = \App\Models\User::where('subscription_status', 'pending')->count();
+            $statTenants       = DB::table('tenants')->count();
+            $statUsers         = DB::table('users')->count();
+            $statTransactions  = DB::table('transactions')->count();
+            $statWppMsgs       = DB::table('whatsapp_messages')->count();
+            $statBeneficiaries = DB::table('beneficiaries')->count();
+            $statOpenTickets   = DB::table('support_tickets')->where('status', 'open')->count();
         } catch (\Throwable $e) {}
 
         return view('admin.health', compact(
@@ -247,7 +259,8 @@ class AdminController extends Controller
             'diskTotal', 'diskUsed', 'diskFree', 'diskPct',
             'uptime', 'dbVersion', 'redisOk',
             'checks', 'securityScore', 'securityTotal', 'securityPct',
-            'tenantCount', 'userCount', 'openTickets', 'pendingUsers'
+            'statTenants', 'statUsers', 'statTransactions',
+            'statWppMsgs', 'statBeneficiaries', 'statOpenTickets'
         ));
     }
 
