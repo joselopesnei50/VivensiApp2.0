@@ -1,4 +1,4 @@
-<div style="position: relative; border-radius: 24px; overflow: hidden; background: #0f172a; margin-bottom: 32px; border: 1px solid rgba(99,102,241,0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+<div class="onboarding-outer" style="position: relative; border-radius: 24px; overflow: hidden; background: #0f172a; margin-bottom: 32px; border: 1px solid rgba(99,102,241,0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
 
     {{-- Glow bg --}}
     <div style="position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; background: rgba(99,102,241,0.1); border-radius: 50%; filter: blur(80px); pointer-events: none;"></div>
@@ -7,26 +7,26 @@
     {{-- Grid dot pattern --}}
     <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none;"></div>
 
-    <div style="position: relative; z-index: 1; padding: 36px 44px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;">
+    <div class="onboarding-inner" style="position: relative; z-index: 1; padding: 36px 44px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;">
 
         {{-- Conteúdo --}}
-        <div style="flex: 1; min-width: 280px;">
+        <div class="onboarding-content" style="flex: 1; min-width: 280px;">
             {{-- Badge de status --}}
             <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 20px; padding: 5px 14px; margin-bottom: 18px;">
                 <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #10b981; animation: pulse-dot 2s infinite;"></span>
                 <span style="font-size: 0.62rem; font-weight: 900; color: #34d399; text-transform: uppercase; letter-spacing: 1.8px;">Sistemas Operacionais</span>
             </div>
 
-            <h3 style="margin: 0 0 10px; font-size: 2rem; font-weight: 950; color: white; letter-spacing: -1.5px; line-height: 1.05;">
+            <h3 class="onboarding-title" style="margin: 0 0 10px; font-size: 2rem; font-weight: 950; color: white; letter-spacing: -1.5px; line-height: 1.05;">
                 Bem-vindo, <span style="background: linear-gradient(90deg, #818cf8, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ explode(' ', auth()->user()->name)[0] }}</span>!
             </h3>
 
-            <p style="margin: 0; color: rgba(255,255,255,0.45); font-size: 0.95rem; line-height: 1.7; max-width: 560px;">
+            <p class="onboarding-desc" style="margin: 0; color: rgba(255,255,255,0.45); font-size: 0.95rem; line-height: 1.7; max-width: 560px;">
                 Sua Central de Comando está ativa. Monitore indicadores em tempo real, gerencie projetos e conte com o Bruce AI para antecipar decisões estratégicas.
             </p>
 
             {{-- Métricas inline --}}
-            <div style="display: flex; gap: 24px; margin-top: 22px; flex-wrap: wrap;">
+            <div class="onboarding-badges" style="display: flex; gap: 24px; margin-top: 22px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;">
                     <i class="fas fa-shield-alt" style="color: #818cf8; font-size: 0.8rem;"></i>
                     <span style="font-size: 0.75rem; color: rgba(255,255,255,0.6); font-weight: 700;">Acesso Seguro</span>
@@ -56,7 +56,7 @@
 
     {{-- Checklist de onboarding (só aparece enquanto não completou tudo) --}}
     @if(!$onboarding['completed'] && count($onboarding['steps']) > 0)
-    <div style="border-top:1px solid rgba(255,255,255,0.06);padding:20px 44px 28px;position:relative;z-index:1;">
+    <div class="onboarding-checklist" style="border-top:1px solid rgba(255,255,255,0.06);padding:20px 44px 28px;position:relative;z-index:1;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
             <span style="font-size:.7rem;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;">
                 <i class="fas fa-rocket me-1"></i> Guia de Início Rápido
@@ -104,6 +104,39 @@
     @keyframes spin-slow {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
+    }
+    @media (max-width: 768px) {
+        .onboarding-outer {
+            border-radius: 16px !important;
+            margin-bottom: 20px !important;
+        }
+        .onboarding-inner {
+            padding: 22px 20px !important;
+            gap: 16px !important;
+        }
+        .onboarding-content {
+            min-width: 0 !important;
+            width: 100% !important;
+        }
+        .onboarding-title {
+            font-size: 1.45rem !important;
+            letter-spacing: -0.5px !important;
+            line-height: 1.15 !important;
+        }
+        .onboarding-desc {
+            font-size: 0.8rem !important;
+            line-height: 1.5 !important;
+        }
+        .onboarding-badges {
+            gap: 8px !important;
+            margin-top: 14px !important;
+        }
+        .onboarding-badges > div {
+            padding: 6px 10px !important;
+        }
+        .onboarding-checklist {
+            padding: 16px 20px 20px !important;
+        }
     }
     </style>
 </div>

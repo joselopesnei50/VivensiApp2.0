@@ -845,28 +845,29 @@
                     .mobile-menu-btn { display: block !important; }
                     /* Topbar: padding e margin compensam o padding do main-content mobile (20px) */
                     #topbar {
-                        padding: 0 16px !important;
+                        padding: 0 14px !important;
                         margin: -20px -20px 20px -20px !important;
+                        height: 60px !important;
                     }
-                    /* Esconde título "Central de Comando" — libera espaço na topbar */
+                    /* Esconde elementos que ocupam espaço desnecessário na topbar mobile */
                     #topbar-title { display: none !important; }
-                    /* Esconde relógio ao vivo — irrelevante em mobile */
                     #live-clock { display: none !important; }
-                    /* Esconde botão de busca duplicado (cmd palette) — mantém só global-search-trigger */
                     #topbar-search-cmd { display: none !important; }
-                    /* Trial warning ocupa espaço demais em telas pequenas */
+                    #global-search-trigger { display: none !important; }
                     #topbar-trial { display: none !important; }
+                    #export-container { display: none !important; }
+                    #user-profile-trigger { display: none !important; }
                     /* Dropdown de notificações: posição fixa em mobile para não sair da tela */
                     #notif-dropdown {
                         position: fixed !important;
-                        top: 70px !important;
-                        left: 12px !important;
-                        right: 12px !important;
+                        top: 62px !important;
+                        left: 8px !important;
+                        right: 8px !important;
                         width: auto !important;
                     }
                 }
                 @media (max-width: 480px) {
-                    #topbar { padding: 0 12px !important; }
+                    #topbar { padding: 0 10px !important; }
                 }
             </style>
 
