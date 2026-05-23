@@ -176,7 +176,7 @@
 
 /* ── Stats Block ─────────────────────────────────────────────────── */
 .stats-block {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
     margin-bottom: 20px;
 }
 .stat-card {
@@ -241,8 +241,11 @@
     .controls-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 540px) {
-    .stats-block { grid-template-columns: 1fr; }
+    .stats-block { grid-template-columns: 1fr 1fr; }
     .load-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 400px) {
+    .stats-block { grid-template-columns: 1fr; }
 }
 </style>
 @endpush
@@ -458,43 +461,60 @@
         </div>
     </div>
 
-    {{-- ── STATS ───────────────────────────────────────────────────────────── --}}
-    <div class="section-label">Plataforma</div>
+    {{-- ── STATS REAIS DA PLATAFORMA ─────────────────────────────────────── --}}
+    <div class="section-label">Dados da Plataforma</div>
     <div class="stats-block">
 
         <div class="stat-card blue">
-            <div class="stat-icon-wrap"><i class="fas fa-building-columns"></i></div>
-            <div class="stat-kicker">Conselhos</div>
-            <div class="stat-desc">Unidades cadastradas no micro SaaS</div>
-            <div class="stat-number">{{ $tenantCount }}</div>
-            <span class="stat-badge base"><span class="dot"></span> BASE</span>
+            <div class="stat-icon-wrap"><i class="fas fa-building-ngo"></i></div>
+            <div class="stat-kicker">ONGs</div>
+            <div class="stat-desc">Organizações cadastradas no SaaS</div>
+            <div class="stat-number">{{ number_format($statTenants) }}</div>
+            <span class="stat-badge base"><span class="dot"></span> TOTAL</span>
         </div>
 
         <div class="stat-card green">
             <div class="stat-icon-wrap"><i class="fas fa-users"></i></div>
             <div class="stat-kicker">Usuários</div>
-            <div class="stat-desc">Contas ativas na plataforma</div>
-            <div class="stat-number">{{ $userCount }}</div>
-            <span class="stat-badge live"><span class="dot"></span> AO VIVO</span>
+            <div class="stat-desc">Contas criadas na plataforma</div>
+            <div class="stat-number">{{ number_format($statUsers) }}</div>
+            <span class="stat-badge live"><span class="dot"></span> TOTAL</span>
+        </div>
+
+        <div class="stat-card blue" style="--accent:#0ea5e9;">
+            <div class="stat-icon-wrap" style="background:#e0f2fe;color:#0284c7;"><i class="fas fa-arrow-right-arrow-left"></i></div>
+            <div class="stat-kicker">Transações</div>
+            <div class="stat-desc">Registros financeiros no sistema</div>
+            <div class="stat-number">{{ number_format($statTransactions) }}</div>
+            <span class="stat-badge base"><span class="dot"></span> ACUMULADO</span>
+        </div>
+
+        <div class="stat-card green" style="--accent:#25d366;">
+            <div class="stat-icon-wrap" style="background:#dcfce7;color:#16a34a;"><i class="fab fa-whatsapp"></i></div>
+            <div class="stat-kicker">Mensagens WhatsApp</div>
+            <div class="stat-desc">Total de mensagens processadas</div>
+            <div class="stat-number">{{ number_format($statWppMsgs) }}</div>
+            <span class="stat-badge live"><span class="dot"></span> ACUMULADO</span>
         </div>
 
         <div class="stat-card yellow">
-            <div class="stat-icon-wrap"><i class="fas fa-user-clock"></i></div>
-            <div class="stat-kicker">Pendentes</div>
-            <div class="stat-desc">Cadastros aguardando curadoria</div>
-            <div class="stat-number">{{ $pendingUsers }}</div>
-            <span class="stat-badge warn"><span class="dot"></span> FILA</span>
+            <div class="stat-icon-wrap"><i class="fas fa-heart-pulse"></i></div>
+            <div class="stat-kicker">Beneficiários</div>
+            <div class="stat-desc">Pessoas assistidas pelas ONGs</div>
+            <div class="stat-number">{{ number_format($statBeneficiaries) }}</div>
+            <span class="stat-badge warn"><span class="dot"></span> CADASTRADOS</span>
         </div>
 
         <div class="stat-card red">
             <div class="stat-icon-wrap"><i class="fas fa-headset"></i></div>
             <div class="stat-kicker">Suporte</div>
             <div class="stat-desc">Chamados abertos pelos usuários</div>
-            <div class="stat-number">{{ $openTickets }}</div>
-            <span class="stat-badge {{ $openTickets > 0 ? 'danger' : 'base' }}">
-                <span class="dot"></span> {{ $openTickets > 0 ? 'ABERTO' : 'SLA OK' }}
+            <div class="stat-number">{{ $statOpenTickets }}</div>
+            <span class="stat-badge {{ $statOpenTickets > 0 ? 'danger' : 'base' }}">
+                <span class="dot"></span> {{ $statOpenTickets > 0 ? 'PENDENTE' : 'SLA OK' }}
             </span>
         </div>
+
     </div>
 
 </div>
