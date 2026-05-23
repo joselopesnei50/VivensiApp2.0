@@ -269,14 +269,10 @@ class TransparencyController extends Controller
         return back()->with('success', 'Parceria registrada!');
     }
 
-    /**
-     * Backward compatible public view by tenant_id.
-     * Redirects to slug portal if published.
-     */
-    public function publicView($tenant_id)
+    public function publicView(string $slug)
     {
-        $portal = TransparencyPortal::where('tenant_id', (int) $tenant_id)->where('is_published', true)->firstOrFail();
-        return redirect()->route('transparency.portal', ['slug' => $portal->slug]);
+        TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        return redirect()->route('transparency.portal', ['slug' => $slug], 301);
     }
 
     public function downloadDocument($slug, $id)
