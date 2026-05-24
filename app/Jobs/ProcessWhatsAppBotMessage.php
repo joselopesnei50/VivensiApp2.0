@@ -339,7 +339,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         $lines = ["🔍 *Resultado para \"{$query}\":*\n"];
         foreach ($results as $b) {
-            $cpf    = $b->cpf ? " | CPF: {$b->cpf}" : '';
+            $cpf    = $b->cpf ? ' | CPF: ' . preg_replace('/^(\d{3})\.\d{3}\.\d{3}-(\d{2})$/', '$1.***.***-$2', $b->cpf) : '';
             $status = $b->status ? " [{$b->status}]" : '';
             $lines[] = "• *{$b->name}*{$cpf}{$status}";
         }
