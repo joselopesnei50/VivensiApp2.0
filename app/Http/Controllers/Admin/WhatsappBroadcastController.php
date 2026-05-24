@@ -242,7 +242,19 @@ class WhatsappBroadcastController extends Controller
         $imagePath = null;
         $hasImage  = false;
         if ($request->hasFile('broadcast_image')) {
-            $imagePath = $request->file('broadcast_image')->store('broadcasts', 'public');
+            $file     = $request->file('broadcast_image');
+            $realMime = $file->getMimeType(); // finfo — lê bytes reais, não header do cliente
+            $mimeMap  = [
+                'image/jpeg' => 'jpg',
+                'image/png'  => 'png',
+                'image/gif'  => 'gif',
+                'image/webp' => 'webp',
+            ];
+            if (!isset($mimeMap[$realMime])) {
+                return redirect()->back()->with('error', 'Tipo de arquivo inválido. Use apenas imagens JPG, PNG, GIF ou WebP.');
+            }
+            $ext       = $mimeMap[$realMime];
+            $imagePath = $file->storeAs('broadcasts', 'broadcast_' . uniqid() . '.' . $ext, 'public');
             $hasImage  = true;
         }
 

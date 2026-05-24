@@ -9,8 +9,11 @@ return [
     'sandbox_enabled' => (bool) env('WHATSAPP_SANDBOX_ENABLED', false),
 
     // Evolution API v2 connection settings
-    'evolution_api_url'    => env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br'),
-    'evolution_global_key' => env('EVOLUTION_GLOBAL_KEY'),
+    'evolution_api_url'      => env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br'),
+    'evolution_global_key'   => env('EVOLUTION_GLOBAL_KEY'),
+    // Segredo HMAC opcional para validar assinatura dos webhooks da Evolution API.
+    // Se definido, rejeita payloads sem header x-webhook-hmac válido.
+    'evolution_webhook_secret' => env('EVOLUTION_WEBHOOK_SECRET'),
 
     // Bot de Gestão Interna (Vivensi Command Bot)
     // Nome da instância na Evolution API dedicada ao bot de comandos
