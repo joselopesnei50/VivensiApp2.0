@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\NgoGrant;
 use App\Models\NgoGrantDocument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\AuditLog;
 use App\Models\Project;
@@ -249,7 +250,7 @@ class NgoGrantController extends Controller
             'type' => $validated['type'],
             'file_path' => $path,
             'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getClientMimeType(),
+            'mime_type' => $file->getMimeType(),
             'size' => $file->getSize(),
             'uploaded_by' => auth()->id(),
         ]);
@@ -292,7 +293,7 @@ class NgoGrantController extends Controller
             // Keep flow stable.
         }
 
-        $filename = $doc->original_name ?: basename($doc->file_path);
+        $filename = basename($doc->original_name ?: $doc->file_path);
         return Storage::disk($disk)->download($doc->file_path, $filename);
     }
 
@@ -352,7 +353,8 @@ class NgoGrantController extends Controller
             return view('ngo.grants.create', ['analyzed_data' => $mapped]);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Erro ao processar resposta da IA: ' . $e->getMessage());
+            Log::error('NgoGrant analyze error', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Erro ao processar resposta da IA. Tente novamente.');
         }
     }
 
