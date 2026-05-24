@@ -84,7 +84,7 @@ return [
             'maxJobs'            => 0,
             'memory'             => 128,
             'tries'              => 2,
-            'timeout'            => 3600,  // broadcast pode durar horas
+            'timeout'            => 7500,  // ProcessBroadcastCampaignJob tem $timeout=7200; margem de 5min para teardown
             'nice'               => 0,
         ],
 

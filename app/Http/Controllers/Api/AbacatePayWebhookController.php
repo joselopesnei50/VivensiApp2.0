@@ -13,17 +13,18 @@ use Illuminate\Support\Facades\Log;
  *
  * Recebe eventos da AbacatePay via POST e despacha para fila com retry automático.
  * Segurança dupla:
- *   1. webhookSecret na query string
+ *   1. webhookSecret no header X-Webhook-Secret (preferido) ou query string (legado)
  *   2. Assinatura HMAC no header X-Webhook-Signature
  *
- * Webhook URL: POST /api/abacatepay/webhook?webhookSecret=SEU_SECRET
+ * Webhook URL: POST /api/abacatepay/webhook
+ * Header:      X-Webhook-Secret: SEU_SECRET
  */
 class AbacatePayWebhookController extends Controller
 {
     public function handle(Request $request, AbacatePayService $abacate)
     {
-        // ── 1. Verificar secret na URL ────────────────────────────────────────
-        $secret = $request->query('webhookSecret', '');
+        // ── 1. Verificar secret — header tem prioridade sobre query string ────
+        $secret = $request->header('X-Webhook-Secret') ?? $request->query('webhookSecret', '');
         if (!$abacate->verifyWebhookSecret($secret)) {
             Log::warning('AbacatePay Webhook: secret inválido', ['ip' => $request->ip()]);
             return response()->json(['message' => 'Unauthorized'], 401);

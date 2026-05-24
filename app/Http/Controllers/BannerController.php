@@ -287,7 +287,8 @@ class BannerController extends Controller
         Gate::authorize('update', $banner);
 
         $request->validate(['image' => 'required|image|max:10240']);
-        $path = $request->file('image')->store('banners/uploads', 'public');
+        $tenantId = auth()->user()->tenant_id;
+        $path = $request->file('image')->store("tenants/{$tenantId}/banners/uploads", 'public');
         return response()->json(['ok' => true, 'url' => Storage::disk('public')->url($path)]);
     }
 
