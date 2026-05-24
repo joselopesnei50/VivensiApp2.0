@@ -38,7 +38,7 @@ class SendScheduledWhatsappMessages extends Command
         if ($dueCampaigns->isNotEmpty()) {
             $this->info("Iniciando {$dueCampaigns->count()} campanhas de disparo em massa agendadas...");
             foreach ($dueCampaigns as $campaign) {
-                \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id);
+                \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id, $campaign->tenant_id);
                 $campaign->update(['status' => 'processing']);
             }
         }

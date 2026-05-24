@@ -277,7 +277,7 @@ class WhatsappBroadcastController extends Controller
         ]);
 
         if (!$scheduledAt) {
-            \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id);
+            \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id, $campaign->tenant_id);
             return redirect()->back()->with('success', 'Disparo iniciado em segundo plano!');
         }
 

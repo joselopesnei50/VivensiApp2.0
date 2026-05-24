@@ -727,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Growth Area Chart ──────────────────────────────────────
     new ApexCharts(document.querySelector('#growthChart'), {
-        series: [{ name: 'MRR (R$)', data: {!! json_encode($growthValues) !!} }],
+        series: [{ name: 'MRR (R$)', data: {!! json_encode($growthValues, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!} }],
         chart: {
             type: 'area', height: 300,
             fontFamily: 'Inter, sans-serif',
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         },
         xaxis: {
-            categories: {!! json_encode($growthLabels) !!},
+            categories: {!! json_encode($growthLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
             labels: { style: { colors: '#94a3b8', fontWeight: 600, fontSize: '11px' } },
             axisBorder: { show: false }, axisTicks: { show: false }
         },
@@ -769,9 +769,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Plan Distribution Donut ────────────────────────────────
     new ApexCharts(document.querySelector('#plansChart'), {
-        series: {!! json_encode(array_map('intval', $planDistribution->pluck('count')->toArray())) !!},
+        series: {!! json_encode(array_map('intval', $planDistribution->pluck('count')->toArray()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
         chart: { type: 'donut', height: 300, fontFamily: 'Inter, sans-serif' },
-        labels: {!! json_encode($planDistribution->pluck('name')->toArray()) !!},
+        labels: {!! json_encode($planDistribution->pluck('name')->toArray(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
         colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
         stroke: { show: false },
         plotOptions: { pie: { donut: { size: '74%', labels: {
@@ -793,9 +793,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Acquisition Source Donut ───────────────────────────────
     @if($leadSourceData->count())
     new ApexCharts(document.querySelector('#sourceChart'), {
-        series: {!! json_encode(array_map('intval', $leadSourceData->pluck('count')->toArray())) !!},
+        series: {!! json_encode(array_map('intval', $leadSourceData->pluck('count')->toArray()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
         chart: { type: 'donut', height: 300, fontFamily: 'Inter, sans-serif' },
-        labels: {!! json_encode($leadSourceData->pluck('page_key')->toArray()) !!},
+        labels: {!! json_encode($leadSourceData->pluck('page_key')->toArray(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
         colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899'],
         stroke: { show: false },
         plotOptions: { pie: { donut: { size: '74%', labels: {

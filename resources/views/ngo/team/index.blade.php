@@ -50,7 +50,7 @@
     @foreach($users as $user)
     <div class="vivensi-card team-card" data-q="{{ strtolower(($user->name ?? '').' '.($user->email ?? '').' '.($user->role ?? '').' '.($user->status ?? '')) }}" style="text-align: center; position: relative;">
         <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 8px;">
-            <button onclick="editUser({{ json_encode($user) }})" style="background: none; border: none; color: #4f46e5; cursor: pointer; font-size: 1rem;"><i class="fas fa-edit"></i></button>
+            <button class="btn-edit-user" data-user="{{ json_encode($user) }}" style="background: none; border: none; color: #4f46e5; cursor: pointer; font-size: 1rem;"><i class="fas fa-edit"></i></button>
             @if($user->id != auth()->id())
             <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover este usuário?');">
                 @csrf
@@ -172,6 +172,12 @@
         const modal = document.getElementById('editTeamModal');
         modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
     }
+
+    document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            editUser(JSON.parse(this.getAttribute('data-user')));
+        });
+    });
 
     function editUser(user) {
         document.getElementById('editUserForm').action = "{{ url('/ngo/team') }}/" + user.id;

@@ -198,11 +198,11 @@
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($chartLabels) !!},
+                labels: {!! json_encode($chartLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
                 datasets: [
                     {
                         label: 'Receitas',
-                        data: {!! json_encode($chartIncome) !!},
+                        data: {!! json_encode($chartIncome, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
                         borderColor: '#10b981',
                         backgroundColor: gradientIncome,
                         borderWidth: 4,
@@ -216,7 +216,7 @@
                     },
                     {
                         label: 'Despesas',
-                        data: {!! json_encode($chartExpense) !!},
+                        data: {!! json_encode($chartExpense, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
                         borderColor: '#ef4444',
                         backgroundColor: gradientExpense,
                         borderWidth: 4,

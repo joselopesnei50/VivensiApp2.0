@@ -413,11 +413,11 @@
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($chartLabels) !!},
+                labels: {!! json_encode($chartLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
                 datasets: [
                     {
                         label: 'Receita (R$)',
-                        data: {!! json_encode($chartDonations) !!},
+                        data: {!! json_encode($chartDonations, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
                         backgroundColor: gradientDonations,
                         borderColor: '#10b981',
                         borderWidth: 2,
@@ -427,7 +427,7 @@
                     },
                     {
                         label: 'Novos Doadores',
-                        data: {!! json_encode($chartDonors) !!},
+                        data: {!! json_encode($chartDonors, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
                         backgroundColor: gradientDonors,
                         borderColor: '#8B5CF6',
                         borderWidth: 2,

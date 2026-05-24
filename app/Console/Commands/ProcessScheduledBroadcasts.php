@@ -36,7 +36,7 @@ class ProcessScheduledBroadcasts extends Command
                 continue;
             }
 
-            ProcessBroadcastCampaignJob::dispatch($campaign->id);
+            ProcessBroadcastCampaignJob::dispatch($campaign->id, $campaign->tenant_id);
             Log::info("Broadcast agendado disparado: campanha #{$campaign->id} (tenant {$campaign->tenant_id})");
             $this->info("Campanha #{$campaign->id} despachada.");
         }

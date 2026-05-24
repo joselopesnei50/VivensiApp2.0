@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ApexCharts Configuration
     const options = {
-        series: [{ name: 'Patrimônio Projetado', data: {!! json_encode($prediction['values'] ?? []) !!} }],
+        series: [{ name: 'Patrimônio Projetado', data: {!! json_encode($prediction['values'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!} }],
         chart: { 
             type: 'area', 
             height: 400, 
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
         stroke: { curve: 'smooth', width: 4, lineCap: 'round' },
         markers: { size: 0, hover: { size: 6, strokeWidth: 3 } },
         xaxis: { 
-            categories: {!! json_encode($prediction['labels'] ?? []) !!}, 
+            categories: {!! json_encode($prediction['labels'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
             axisBorder: { show: false }, 
             axisTicks: { show: false },
             labels: { style: { colors: '#94a3b8', fontSize: '11px', fontWeight: 700 } }
@@ -370,11 +370,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const monthlyLabels = {!! json_encode($monthly['labels'] ?? []) !!};
-    const monthlyIncome = {!! json_encode($monthly['income'] ?? []) !!};
-    const monthlyExpense = {!! json_encode($monthly['expense'] ?? []) !!};
-    const catLabels = {!! json_encode($categories['labels'] ?? []) !!};
-    const catValues = {!! json_encode($categories['values'] ?? []) !!};
+    const monthlyLabels = {!! json_encode($monthly['labels'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
+    const monthlyIncome = {!! json_encode($monthly['income'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
+    const monthlyExpense = {!! json_encode($monthly['expense'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
+    const catLabels = {!! json_encode($categories['labels'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
+    const catValues = {!! json_encode($categories['values'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
 
     const monthlyCfg = {
         series: [
