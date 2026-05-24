@@ -82,7 +82,8 @@ class BotController extends Controller
                 $evo            = $this->makeEvolutionService($instanceName);
                 $instanceStatus = $evo->getConnectionState();
             } catch (\Throwable $e) {
-                $instanceStatus = ['error' => $e->getMessage()];
+                Log::error('BotController: getConnectionState failed', ['error' => $e->getMessage()]);
+                $instanceStatus = ['error' => 'Falha ao obter status da instância.'];
             }
         }
 
@@ -232,7 +233,7 @@ class BotController extends Controller
 
         } catch (\Throwable $e) {
             Log::error('Bot Admin: createInstance failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Falha ao criar instância. Tente novamente.'], 500);
         }
     }
 
@@ -249,7 +250,8 @@ class BotController extends Controller
             $result = $evo->fetchConnectionCode($instanceName);
             return response()->json($result);
         } catch (\Throwable $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('BotController: fetchConnectionCode failed', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Falha ao obter QR Code. Tente novamente.'], 500);
         }
     }
 
@@ -266,7 +268,8 @@ class BotController extends Controller
             $result = $evo->getConnectionState();
             return response()->json($result);
         } catch (\Throwable $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('BotController: getInstanceStatus failed', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Falha ao obter status. Tente novamente.'], 500);
         }
     }
 
