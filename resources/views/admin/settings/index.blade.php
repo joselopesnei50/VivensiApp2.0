@@ -765,6 +765,43 @@
 
         </div>
 
+        <!-- Dev Portal Password -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-box bg-dark text-white rounded-3 me-3">
+                        <i class="fas fa-terminal"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Dev Portal</h5>
+                        <p class="text-muted small mb-0">Senha de acesso à página de documentação técnica do sistema.</p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-600 text-dark">
+                        Senha do Dev Portal
+                        @if($dev_page_password_configured)
+                            <span class="badge bg-success ms-2">Configurada</span>
+                        @else
+                            <span class="badge bg-warning text-dark ms-2">Não definida</span>
+                        @endif
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock text-muted"></i></span>
+                        <input type="password" name="dev_page_password" value=""
+                               class="form-control border-start-0 ps-0 form-control-lg"
+                               placeholder="Mínimo 8 caracteres — deixe em branco para manter" autocomplete="new-password">
+                    </div>
+                    <div class="form-text">Armazenada como hash bcrypt. Nunca em texto puro. Expira automaticamente em 30 min de sessão.</div>
+                </div>
+                @if($dev_page_password_configured)
+                <a href="{{ route('admin.dev.gate') }}" class="btn btn-outline-dark btn-sm" target="_blank">
+                    <i class="fas fa-external-link-alt me-1"></i>Abrir Dev Portal
+                </a>
+                @endif
+            </div>
+        </div>
+
         <!-- Sticky Footer for Save -->
         <div class="fixed-bottom p-3 bg-white border-top shadow-lg" style="left: var(--sidebar-width, 250px); transition: 0.3s;">
             <div class="container-fluid d-flex justify-content-between align-items-center">

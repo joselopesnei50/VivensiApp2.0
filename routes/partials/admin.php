@@ -108,6 +108,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::patch('/bookings/{booking}/status',   [App\Http\Controllers\Admin\MeetingBookingController::class, 'updateStatus'])->name('admin.bookings.status');
         Route::patch('/bookings/{booking}/link',     [App\Http\Controllers\Admin\MeetingBookingController::class, 'updateLink'])->name('admin.bookings.link');
 
+        // Dev Portal (senha separada — middleware dev_auth)
+        Route::get('/dev/gate',        [App\Http\Controllers\Admin\DevController::class, 'gate'])->name('admin.dev.gate');
+        Route::post('/dev/gate',       [App\Http\Controllers\Admin\DevController::class, 'authenticate'])->name('admin.dev.authenticate')->middleware('throttle:10,1');
+        Route::post('/dev/logout',     [App\Http\Controllers\Admin\DevController::class, 'logout'])->name('admin.dev.logout');
+        Route::get('/dev',             [App\Http\Controllers\Admin\DevController::class, 'dashboard'])->name('admin.dev.dashboard')->middleware('dev_auth');
+
         // E-mail Marketing (Brevo Campaigns)
         Route::get('/email-campaigns',               [App\Http\Controllers\Admin\EmailCampaignController::class, 'index'])->name('admin.email_campaigns.index');
         Route::get('/email-campaigns/create',        [App\Http\Controllers\Admin\EmailCampaignController::class, 'create'])->name('admin.email_campaigns.create');
