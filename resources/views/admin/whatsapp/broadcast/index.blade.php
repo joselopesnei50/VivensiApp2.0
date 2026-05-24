@@ -771,8 +771,10 @@
             $audColors  = ['all'=>['bg'=>'rgba(99,102,241,.1)','c'=>'#4338ca'],'selected'=>['bg'=>'rgba(16,185,129,.1)','c'=>'#166534'],'groups'=>['bg'=>'rgba(245,158,11,.1)','c'=>'#92400e']];
             $aud = $audColors[$campaign->audience_type] ?? $audColors['all'];
             $sMap = ['scheduled'=>['bg'=>'rgba(99,102,241,.1)','c'=>'#4f46e5','icon'=>'clock','lbl'=>'Agendado'],
+                     'queued'   =>['bg'=>'rgba(99,102,241,.1)', 'c'=>'#4f46e5','icon'=>'hourglass-half','lbl'=>'Na Fila'],
                      'processing'=>['bg'=>'rgba(245,158,11,.1)','c'=>'#d97706','icon'=>'spinner','lbl'=>'Processando'],
                      'completed' =>['bg'=>'rgba(16,185,129,.1)', 'c'=>'#059669','icon'=>'circle-check','lbl'=>'Concluído'],
+                     'paused'   =>['bg'=>'rgba(148,163,184,.1)','c'=>'#64748b','icon'=>'pause','lbl'=>'Pausado'],
                      'failed'    =>['bg'=>'rgba(239,68,68,.1)',  'c'=>'#dc2626','icon'=>'circle-xmark','lbl'=>'Falhou']];
             $s = $sMap[$campaign->status] ?? ['bg'=>'rgba(100,116,139,.1)','c'=>'#475569','icon'=>'circle','lbl'=>$campaign->status];
             $isMembers = $campaign->audience_type === 'groups' && $campaign->group_send_mode === 'members';

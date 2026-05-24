@@ -29,8 +29,8 @@ class ProcessEvolutionWebhook implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int    $tries   = 3;
-    public int    $timeout = 30;
-    public array  $backoff = [10, 30];
+    public int    $timeout = 60;
+    public array  $backoff = [10, 30, 60];
 
     public function __construct(
         protected int    $instanceId,
@@ -117,26 +117,18 @@ class ProcessEvolutionWebhook implements ShouldQueue
             return;
         }
 
-        // 2. Localizar ou criar conversa
-        $chat = WhatsappChat::firstOrCreate(
+        // 2. Localizar ou criar conversa — updateOrCreate evita duplicate key em concorrência
+        $chat = WhatsappChat::updateOrCreate(
             ['tenant_id' => $tenantId, 'wa_id' => $phone],
             [
-                'contact_name'  => $senderName,
-                'contact_phone' => $phone,
-                'status'        => 'open',
-                'opt_in_at'     => now(),
+                'contact_name'   => $senderName,
+                'contact_phone'  => $phone,
+                'status'         => 'open',
+                'opt_in_at'      => now(),
+                'last_message_at' => now(),
+                'last_inbound_at' => now(),
             ]
         );
-
-        $chat->update([
-            'last_message_at' => now(),
-            'last_inbound_at' => now(),
-        ]);
-
-        // Garantir opt-in implícito (mensagem inbound = consentimento para resposta)
-        if (!$chat->opt_in_at) {
-            $chat->update(['opt_in_at' => now()]);
-        }
 
         // 3. Verificar palavras de opt-out (STOP compliance)
         $normalized   = mb_strtolower(trim($content));
@@ -151,7 +143,7 @@ class ProcessEvolutionWebhook implements ShouldQueue
                     'status'         => 'closed',
                 ]);
 
-                WhatsappBlacklist::firstOrCreate(
+                WhatsappBlacklist::updateOrCreate(
                     ['tenant_id' => $tenantId, 'phone' => $phone],
                     ['reason' => "Opt-out via keyword: {$kw}"]
                 );
@@ -194,6 +186,15 @@ class ProcessEvolutionWebhook implements ShouldQueue
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content, $base64Audio)
                 ->onQueue('whatsapp');
         }
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error("ProcessEvolutionWebhook falhou definitivamente", [
+            'instance_id' => $this->instanceId,
+            'event'       => $this->event,
+            'error'       => $exception->getMessage(),
+        ]);
     }
 
     private function handleConnectionUpdate(WhatsappInstance $instance): void

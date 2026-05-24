@@ -9,6 +9,7 @@ use App\Models\WhatsappMessage;
 use App\Services\EvolutionApiService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 
 class SendScheduledWhatsappMessages extends Command
@@ -30,18 +31,8 @@ class SendScheduledWhatsappMessages extends Command
             $this->processIndividualMessages($dueMessages);
         }
 
-        // 2. Broadcast Campaigns
-        $dueCampaigns = \App\Models\BroadcastCampaign::where('status', 'scheduled')
-            ->where('scheduled_at', '<=', Carbon::now())
-            ->get();
-
-        if ($dueCampaigns->isNotEmpty()) {
-            $this->info("Iniciando {$dueCampaigns->count()} campanhas de disparo em massa agendadas...");
-            foreach ($dueCampaigns as $campaign) {
-                \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id, $campaign->tenant_id);
-                $campaign->update(['status' => 'processing']);
-            }
-        }
+        // 2. Broadcast Campaigns — delegado ao ProcessScheduledBroadcasts (tem lock atômico)
+        \Illuminate\Support\Facades\Artisan::call('broadcast:process-scheduled');
 
         $this->info('Processamento concluído.');
     }
