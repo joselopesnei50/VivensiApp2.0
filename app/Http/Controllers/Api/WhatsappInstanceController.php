@@ -235,11 +235,15 @@ class WhatsappInstanceController extends Controller
         $proxyUrl = trim($request->input('proxy_url', ''));
 
         if ($proxyUrl !== '') {
-            if (!preg_match('#^(https?|socks5h?)://.+#i', $proxyUrl)) {
+            if (!preg_match('#^(https?|socks5h?)://\S+#i', $proxyUrl)) {
                 return response()->json(['error' => 'Formato inválido. Use http://, https://, socks5:// ou socks5h://.'], 422);
             }
             if (strlen($proxyUrl) > 512) {
                 return response()->json(['error' => 'URL do proxy muito longa (máx 512 chars).'], 422);
+            }
+            // SSRF guard: bloqueia IPs privados, loopback e metadata endpoints
+            if ($this->isPrivateOrMetadataHost($proxyUrl)) {
+                return response()->json(['error' => 'O proxy não pode apontar para redes internas ou endpoints de metadata.'], 422);
             }
         }
 
@@ -257,6 +261,49 @@ class WhatsappInstanceController extends Controller
             'message'    => $proxyUrl === '' ? 'Proxy removido.' : 'Proxy salvo.',
             'proxy_set'  => $proxyUrl !== '',
         ]);
+    }
+
+    private function isPrivateOrMetadataHost(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!$host) return true;
+
+        // Remove brackets IPv6 (e.g. [::1])
+        $host = trim($host, '[]');
+
+        // Resolve hostname para IP (recusa se não resolver)
+        $ip = @gethostbyname($host);
+        if ($ip === $host && !filter_var($host, FILTER_VALIDATE_IP)) {
+            // Não resolveu e não é IP literal — recusa por segurança
+            return true;
+        }
+
+        // Valida que é um IP válido
+        if (!filter_var($ip, FILTER_VALIDATE_IP)) return true;
+
+        // Bloqueia ranges privados, loopback e link-local (incl. AWS metadata)
+        $blockedRanges = [
+            '10.0.0.0/8',
+            '172.16.0.0/12',
+            '192.168.0.0/16',
+            '127.0.0.0/8',
+            '169.254.0.0/16', // link-local + AWS instance metadata
+            '100.64.0.0/10',  // Carrier-grade NAT
+            '0.0.0.0/8',
+        ];
+
+        $ipLong = ip2long($ip);
+        if ($ipLong === false) return true;
+
+        foreach ($blockedRanges as $range) {
+            [$subnet, $bits] = explode('/', $range);
+            $mask = -1 << (32 - (int) $bits);
+            if (($ipLong & $mask) === (ip2long($subnet) & $mask)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
