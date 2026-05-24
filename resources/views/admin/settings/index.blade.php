@@ -840,36 +840,4 @@
         .fixed-bottom { left: 0 !important; }
     }
 </style>
-<style>
-    .container-fluid.py-4 { background: linear-gradient(180deg, #020617 0%, #0f172a 100%); }
-    .form-control, .form-select, .input-group-text, .card, .alert {
-        background: rgba(15,23,42,.92) !important;
-        border-color: rgba(148,163,184,.16) !important;
-        color: #e2e8f0 !important;
-    }
-    .card-header, .vivensi-card, .bg-white, .bg-light {
-        background: rgba(15,23,42,.92) !important;
-        color: #e2e8f0 !important;
-    }
-    .text-dark, .text-muted, .fw-bold, .fw-600, .form-label, h1, h5 { color: #f8fafc !important; }
-    .badge.bg-light { background: rgba(148,163,184,.14) !important; color: #cbd5e1 !important; border: 1px solid rgba(148,163,184,.18) !important; }
-    .badge.bg-success { background: rgba(34,197,94,.18) !important; color: #bbf7d0 !important; }
-    .btn-light, .btn-outline-primary {
-        background: rgba(148,163,184,.14) !important;
-        color: #e2e8f0 !important;
-        border-color: rgba(148,163,184,.18) !important;
-    }
-    .btn-primary, .btn-dark {
-        background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
-        border: none !important;
-        color: #fff !important;
-    }
-    .card-radio:hover { background: rgba(30,41,59,.7) !important; }
-    .card-radio:has(input:checked) { background: rgba(79,70,229,.22) !important; border-color: #818cf8 !important; color: #e0e7ff !important; }
-    .fixed-bottom { background: rgba(2,6,23,.9) !important; border-top: 1px solid rgba(148,163,184,.16) !important; }
-    .booking-day-chip { background: rgba(148,163,184,.12) !important; border-color: rgba(148,163,184,.16) !important; color: #cbd5e1 !important; }
-    .booking-day-chip.active { background: #4f46e5 !important; border-color: #4f46e5 !important; color: #fff !important; }
-    .table, .table-light, thead, tbody, tr, td, th { border-color: rgba(148,163,184,.12) !important; color: #e2e8f0 !important; }
-    .form-control::placeholder { color: #94a3b8 !important; }
-</style>
 @endsection
