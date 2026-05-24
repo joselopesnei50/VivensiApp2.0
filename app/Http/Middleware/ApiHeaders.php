@@ -12,7 +12,7 @@ class ApiHeaders
         $response = $next($request);
 
         $response->headers->set('X-API-Version', 'v1');
-        $response->headers->set('X-Powered-By', 'Vivensi');
+        $response->headers->remove('X-Powered-By');
 
         return $response;
     }

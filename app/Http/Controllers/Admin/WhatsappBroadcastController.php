@@ -62,30 +62,52 @@ class WhatsappBroadcastController extends Controller
             'csv_file' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
-        $tenantId = auth()->user()->tenant_id;
-        $data = array_map('str_getcsv', file($request->file('csv_file')->getRealPath()));
+        $tenantId  = auth()->user()->tenant_id;
+        $maxLines  = 5000;
+        $imported  = 0;
+        $lineCount = 0;
+        $handle    = fopen($request->file('csv_file')->getRealPath(), 'r');
 
-        if (count($data) > 0 && strtolower($data[0][0]) === 'nome') {
-            array_shift($data);
+        // Pular cabeçalho se existir
+        $firstRow = fgetcsv($handle);
+        if ($firstRow && strtolower(trim($firstRow[0] ?? '')) !== 'nome') {
+            // Não é cabeçalho — processa como dado
+            if (count($firstRow) >= 2) {
+                $phone = \App\Services\EvolutionApiService::normalizeBrazilianPhone($firstRow[1]);
+                if ($phone && strlen($phone) >= 12) {
+                    WhatsappChat::firstOrCreate(
+                        ['tenant_id' => $tenantId, 'wa_id' => $phone],
+                        ['contact_name' => trim($firstRow[0]), 'contact_phone' => $phone, 'status' => 'open', 'opt_in_at' => now()]
+                    );
+                    $imported++;
+                }
+            }
+            $lineCount++;
         }
 
-        $imported = 0;
-        foreach ($data as $row) {
+        while (($row = fgetcsv($handle)) !== false && $lineCount < $maxLines) {
+            $lineCount++;
             if (count($row) >= 2) {
                 $name  = trim($row[0]);
                 $phone = \App\Services\EvolutionApiService::normalizeBrazilianPhone($row[1]);
                 if ($phone && strlen($phone) >= 12) {
                     WhatsappChat::firstOrCreate(
                         ['tenant_id' => $tenantId, 'wa_id' => $phone],
-                        ['contact_name' => $name, 'contact_phone' => $phone,
-                         'status' => 'open', 'opt_in_at' => now()]
+                        ['contact_name' => $name, 'contact_phone' => $phone, 'status' => 'open', 'opt_in_at' => now()]
                     );
                     $imported++;
                 }
             }
         }
 
-        return redirect()->back()->with('success', "{$imported} contatos importados com sucesso!");
+        fclose($handle);
+
+        $msg = "{$imported} contatos importados com sucesso!";
+        if ($lineCount >= $maxLines) {
+            $msg .= " (limite de {$maxLines} linhas por importação atingido)";
+        }
+
+        return redirect()->back()->with('success', $msg);
     }
 
     public function getGroups()

@@ -25,8 +25,18 @@ class SecurityHeaders
             $response->header('X-Content-Type-Options', 'nosniff'); // Previne o navegador de tentar adivinhar o MIME type e executar vírus disfarçado
             $response->header('Referrer-Policy', 'strict-origin-when-cross-origin'); // Mantém os dados da URL seguros ao sair do seu site
             $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-            $response->header('Content-Security-Policy', "frame-ancestors 'self'; upgrade-insecure-requests;");
-            $response->header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+            $response->header('Content-Security-Policy',
+                "default-src 'self'; " .
+                "script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com 'unsafe-inline'; " .
+                "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'; " .
+                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " .
+                "img-src 'self' data: https:; " .
+                "connect-src 'self'; " .
+                "frame-ancestors 'self'; " .
+                "base-uri 'self'; " .
+                "form-action 'self';"
+            );
+            $response->header('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
         }
 
         return $response;

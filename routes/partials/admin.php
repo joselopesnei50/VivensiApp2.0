@@ -34,7 +34,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
         // Configurações do sistema
         Route::get('/settings',  [App\Http\Controllers\AdminSettingsController::class, 'index']);
-        Route::post('/settings', [App\Http\Controllers\AdminSettingsController::class, 'store']);
+        Route::post('/settings', [App\Http\Controllers\AdminSettingsController::class, 'store'])->middleware('throttle:20,1');
 
         // Logs & Suporte
         Route::get('/email-logs', [App\Http\Controllers\AdminController::class, 'emailLogs'])->name('admin.email_logs');
@@ -46,7 +46,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/bot/settings',         [App\Http\Controllers\Admin\BotController::class, 'save'])->name('admin.bot.save');
         Route::post('/bot/atendimento',      [App\Http\Controllers\Admin\BotController::class, 'saveAtendimento'])->name('admin.bot.atendimento.save');
         Route::post('/bot/users/{id}/phone', [App\Http\Controllers\Admin\BotController::class, 'updateUserPhone'])->name('admin.bot.user.phone');
-        Route::post('/bot/instance/create',  [App\Http\Controllers\Admin\BotController::class, 'createInstance'])->name('admin.bot.instance.create');
+        Route::post('/bot/instance/create',  [App\Http\Controllers\Admin\BotController::class, 'createInstance'])->name('admin.bot.instance.create')->middleware('throttle:5,1');
         Route::get('/bot/instance/qr',       [App\Http\Controllers\Admin\BotController::class, 'getQrCode'])->name('admin.bot.instance.qr');
         Route::get('/bot/instance/status',   [App\Http\Controllers\Admin\BotController::class, 'getInstanceStatus'])->name('admin.bot.instance.status');
 
