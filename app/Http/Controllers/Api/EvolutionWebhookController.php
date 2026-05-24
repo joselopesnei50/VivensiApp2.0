@@ -25,18 +25,45 @@ class EvolutionWebhookController extends Controller
         $instance = WhatsappInstance::where('instance_token', $token)->first();
 
         if (!$instance) {
-            // Loga mas retorna 200 para não causar retry loops na Evolution API
             Log::warning("Evolution Webhook: token inválido recebido", [
                 'token_prefix' => substr($token, 0, 8) . '...',
                 'ip'           => $request->ip(),
             ]);
+            // Retorna 200 para não causar retry loops na Evolution API
             return response()->json(['status' => 'ignored'], 200);
+        }
+
+        // 2. Validação HMAC opcional — ativa quando EVOLUTION_WEBHOOK_SECRET está configurado
+        $webhookSecret = config('whatsapp.evolution_webhook_secret');
+        if ($webhookSecret) {
+            $signature = $request->header('x-webhook-hmac')
+                ?: $request->header('x-hub-signature-256')
+                ?: $request->header('x-signature');
+
+            if (!$signature) {
+                Log::warning("Evolution Webhook: assinatura ausente com secret configurado", [
+                    'instance_id' => $instance->id,
+                    'ip'          => $request->ip(),
+                ]);
+                return response()->json(['status' => 'unauthorized'], 401);
+            }
+
+            $rawBody  = $request->getContent();
+            $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $webhookSecret);
+
+            if (!hash_equals($expected, $signature)) {
+                Log::warning("Evolution Webhook: assinatura HMAC inválida", [
+                    'instance_id' => $instance->id,
+                    'ip'          => $request->ip(),
+                ]);
+                return response()->json(['status' => 'unauthorized'], 401);
+            }
         }
 
         $payload = $request->all();
         $event   = $payload['event'] ?? ($payload['type'] ?? 'unknown');
 
-        // 2. Despacha para a fila — obrigatório retornar 200 rápido
+        // 3. Despacha para a fila — obrigatório retornar 200 rápido
         ProcessEvolutionWebhook::dispatch($instance->id, $event, $payload)
             ->onQueue('whatsapp');
 

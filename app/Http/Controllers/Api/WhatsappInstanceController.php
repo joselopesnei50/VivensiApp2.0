@@ -91,8 +91,7 @@ class WhatsappInstanceController extends Controller
                     'details'   => $result['details'] ?? null,
                 ]);
                 return response()->json([
-                    'error'   => 'Evolution API recusou a criação: ' . $result['error'],
-                    'details' => $result['details'] ?? null,
+                    'error' => 'Falha ao provisionar instância. Tente novamente em alguns minutos.',
                 ], 422);
             }
 
@@ -104,8 +103,7 @@ class WhatsappInstanceController extends Controller
                     'result'    => $result,
                 ]);
                 return response()->json([
-                    'error'   => 'Resposta inesperada da Evolution API.',
-                    'details' => json_encode($result),
+                    'error' => 'Falha ao conectar com o serviço. Contate o suporte se o problema persistir.',
                 ], 422);
             }
 
@@ -138,8 +136,7 @@ class WhatsappInstanceController extends Controller
                 'line'      => $e->getLine(),
             ]);
             return response()->json([
-                'error'   => 'Erro interno ao criar instância.',
-                'details' => config('app.debug') ? $e->getMessage() : 'Verifique os logs do servidor.',
+                'error' => 'Erro interno ao criar instância. Verifique os logs do servidor.',
             ], 500);
         }
     }

@@ -168,9 +168,7 @@ return [
     |
     */
 
-    // TODO [AUDIT A05]: Confirmar que HTTPS está 100% ativo em produção antes de mudar para true.
-    // Mudar no .env de produção diretamente: SESSION_SECURE_COOKIE=true
-    'secure' => env('SESSION_SECURE_COOKIE', false),
+    'secure' => env('SESSION_SECURE_COOKIE', app()->isProduction()),
 
     /*
     |--------------------------------------------------------------------------
