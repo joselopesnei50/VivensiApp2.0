@@ -38,7 +38,7 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 3700, // maior que o $timeout=3600 do ProcessBroadcastCampaignJob
+            'retry_after' => 7500, // maior que o $timeout=7200 do ProcessBroadcastCampaignJob
             'after_commit' => false,
         ],
 
@@ -66,7 +66,7 @@ return [
             'driver'       => 'redis',
             'connection'   => 'default',
             'queue'        => env('REDIS_QUEUE', 'default'),
-            'retry_after'  => 3700,   // maior que timeout do broadcast (3600s)
+            'retry_after'  => 7500,   // maior que $timeout=7200 do ProcessBroadcastCampaignJob
             'block_for'    => null,
             'after_commit' => false,
         ],

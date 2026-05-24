@@ -192,7 +192,7 @@
 <div class="row g-3">
     <div class="col-lg-8">
         <div class="exec-card p-0">
-            <div class="exec-card-head px-4 py-3 border-bottom">
+            <div class="exec-card-head px-4 py-3" style="border-bottom:1px solid rgba(148,163,184,.14);">
                 <div>
                     <div class="exec-card-title">Novos Entrantes</div>
                     <div class="exec-card-sub">Últimas 5 organizações cadastradas</div>
@@ -294,7 +294,7 @@
 <div class="row g-3 mb-4" style="margin-top: 32px !important;">
     <div class="col-12">
         <div class="exec-card p-0">
-            <div class="exec-card-head px-4 py-3" style="border-bottom:1px solid #f1f5f9;">
+            <div class="exec-card-head px-4 py-3" style="border-bottom:1px solid rgba(148,163,184,.14);">
                 <div>
                     <div class="exec-card-title"><i class="fas fa-bullhorn me-2" style="color:#6366f1;"></i>Últimas Campanhas de E-mail</div>
                     <div class="exec-card-sub">Performance de entregabilidade · Brevo Campaign API</div>
@@ -684,8 +684,8 @@ body {
 .t-av-red  { background: linear-gradient(135deg,#7f1d1d,#ef4444); color:#fff; }
 .t-av-blue { background: linear-gradient(135deg,#1d4ed8,#60a5fa); color:#fff; }
 
-.risk-critical { background: rgba(239,68,68,.14); color:#fecaca; border-color: rgba(239,68,68,.2); }
-.risk-high     { background: rgba(245,158,11,.14); color:#fde68a; border-color: rgba(245,158,11,.2); }
+.risk-critical { background: rgba(239,68,68,.14); color:#fecaca; border:1px solid rgba(239,68,68,.2); }
+.risk-high     { background: rgba(245,158,11,.14); color:#fde68a; border:1px solid rgba(245,158,11,.2); }
 
 .action-notify {
     background: rgba(99,102,241,.14);
@@ -698,6 +698,12 @@ body {
     color:#e2e8f0;
 }
 .action-view:hover { background:#1e293b;color:#fff; }
+
+.exec-head-danger {
+    background: rgba(220,38,38,.12);
+    border-bottom: 1px solid rgba(220,38,38,.2);
+}
+.exec-head-danger .exec-card-title { color:#fca5a5 !important; }
 
 .funnel-bar-bg {
     height:8px;
@@ -758,11 +764,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 formatter: function (val) { return 'R$ ' + Number(val).toLocaleString('pt-BR'); }
             }
         },
-        grid: { borderColor: '#f1f5f9', strokeDashArray: 5, padding: { left: 10, right: 10 } },
+        grid: { borderColor: 'rgba(148,163,184,.12)', strokeDashArray: 5, padding: { left: 10, right: 10 } },
         colors: ['#6366f1'],
-        markers: { size: 5, colors: ['#fff'], strokeColors: '#6366f1', strokeWidth: 2 },
+        markers: { size: 5, colors: ['#1e293b'], strokeColors: '#6366f1', strokeWidth: 2 },
         tooltip: {
-            theme: 'light',
+            theme: 'dark',
             y: { formatter: function (val) { return 'R$ ' + Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2 }); } }
         }
     }).render();
@@ -784,10 +790,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } } } },
         legend: {
             position: 'bottom', fontSize: '12px', fontWeight: 700,
-            labels: { colors: '#64748b' },
+            labels: { colors: '#94a3b8' },
             markers: { radius: 4, width: 10, height: 10 }
         },
-        tooltip: { theme: 'light', y: { formatter: function (val) { return val + ' tenant(s)'; } } }
+        tooltip: { theme: 'dark', y: { formatter: function (val) { return val + ' tenant(s)'; } } }
     }).render();
 
     // ── Acquisition Source Donut ───────────────────────────────
@@ -804,10 +810,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } } } },
         legend: {
             position: 'bottom', fontSize: '12px', fontWeight: 700,
-            labels: { colors: '#64748b' },
+            labels: { colors: '#94a3b8' },
             markers: { radius: 4, width: 10, height: 10 }
         },
-        tooltip: { theme: 'light' }
+        tooltip: { theme: 'dark' }
     }).render();
     @else
     document.querySelector('#sourceChart').innerHTML = '<div style="text-align:center;padding:60px 20px;color:#94a3b8;font-size:.85rem;"><i class="fas fa-chart-pie" style="font-size:2rem;display:block;margin-bottom:10px;opacity:.3;"></i>Sem dados de leads ainda</div>';
