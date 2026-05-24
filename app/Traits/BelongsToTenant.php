@@ -12,8 +12,13 @@ trait BelongsToTenant
     {
         // 1. Aplicar filtro global de tenant_id em todas as consultas (SELECT)
         static::addGlobalScope('tenant', function (Builder $builder) {
-            // No console ou filas, o filtro costuma ser ignorado ou tratado via ID direto
             if (app()->runningInConsole()) {
+                // Scope ignorado intencionalmente em console/queue — commands devem filtrar
+                // por tenant_id explicitamente. Log em debug para detectar usos acidentais.
+                \Illuminate\Support\Facades\Log::debug(
+                    'BelongsToTenant scope bypassed in console for ' . get_class($builder->getModel()),
+                    ['trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4)]
+                );
                 return;
             }
 
