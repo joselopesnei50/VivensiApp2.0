@@ -260,6 +260,26 @@
     .stats-block { grid-template-columns: 1fr; }
 }
 </style>
+<style>
+    .health-page { background: linear-gradient(180deg, #020617 0%, #0f172a 100%); }
+    .health-header-title, .health-main-title, .gauge-title, .security-controls-title,
+    .server-card-title, .section-label { color: #f8fafc !important; }
+    .health-subtitle, .gauge-desc, .control-text-desc, .stack-key, .resource-note p,
+    .resource-meta-label, .resource-meta-value, .stack-val, .load-period, .cell-muted {
+        color: #94a3b8 !important;
+    }
+    .health-timestamp, .security-block, .server-card, .load-card, .stat-card, .control-item, .resource-note {
+        background: rgba(15,23,42,.92) !important;
+        border-color: rgba(148,163,184,.16) !important;
+        color: #e2e8f0 !important;
+    }
+    .security-gauge-panel { background: linear-gradient(145deg, rgba(30,41,59,.95), rgba(15,23,42,.95)) !important; }
+    .control-item.fail { background: rgba(127,29,29,.18) !important; }
+    .resource-bar-track, .stack-val, .load-item { background: rgba(148,163,184,.14) !important; }
+    .health-timestamp { border-color: rgba(148,163,184,.2) !important; }
+    .btn-refresh { background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 14px 30px rgba(79,70,229,.22); }
+    .section-label::after { background: rgba(148,163,184,.18) !important; }
+</style>
 @endpush
 
 @section('content')
