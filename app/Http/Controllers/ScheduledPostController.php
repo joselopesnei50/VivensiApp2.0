@@ -45,7 +45,8 @@ class ScheduledPostController extends Controller
         $mediaType = 'none';
 
         if ($request->hasFile('media')) {
-            $path     = $request->file('media')->store('social-media', 'public');
+            $tenantId = auth()->user()->tenant_id;
+            $path     = $request->file('media')->store("tenants/{$tenantId}/social-media", 'public');
             $mediaUrl = Storage::url($path);
             $mediaType = str_starts_with($request->file('media')->getMimeType(), 'video') ? 'video' : 'image';
         } elseif (!empty($data['media_url_external'])) {

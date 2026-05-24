@@ -21,6 +21,8 @@ class Client extends Model
         'relationship_notes'
     ];
 
+    protected $hidden = ['document'];
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);

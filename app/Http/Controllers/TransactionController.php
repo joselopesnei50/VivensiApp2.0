@@ -96,7 +96,8 @@ class TransactionController extends Controller
         $transaction->approval_status = $needsApproval ? 'pending' : 'approved';
 
         if ($request->hasFile('attachment')) {
-            $path = $request->file('attachment')->store('attachments', 'public');
+            $tenantId = auth()->user()->tenant_id;
+            $path = $request->file('attachment')->store("tenants/{$tenantId}/attachments", 'public');
             $transaction->attachment_path = $path;
             // compat: algumas telas usam receipt_path para mostrar o anexo
             if ($isExpense && empty($transaction->receipt_path)) {

@@ -34,7 +34,7 @@ class ProjectTimelineController extends Controller
         $data['date'] = $validated['date'] ?? now();
 
         if ($request->hasFile('media')) {
-            $path = $request->file('media')->store('projects/timeline', 'public');
+            $path = $request->file('media')->store("tenants/{$tenantId}/projects/timeline", 'public');
             $data['media_path'] = $path;
         }
 

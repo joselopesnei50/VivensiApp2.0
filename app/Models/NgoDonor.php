@@ -29,6 +29,8 @@ class NgoDonor extends Model
         'longitude',
     ];
 
+    protected $hidden = ['document'];
+
     /**
      * Boot function from Laravel.
      */

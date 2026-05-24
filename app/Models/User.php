@@ -9,11 +9,12 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use App\Services\BrevoService;
+use App\Traits\BelongsToTenant;
 use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, BelongsToTenant;
 
     // Conectando à tabela existente do sistema atual
     protected $table = 'users';
