@@ -21,18 +21,23 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $campaignId;
+    public $tenantId;
     public $timeout = 7200; // 2h — campanhas grandes precisam de mais tempo
     public $tries   = 1;
 
-    public function __construct($campaignId)
+    public function __construct($campaignId, $tenantId)
     {
         $this->campaignId = $campaignId;
+        $this->tenantId   = $tenantId;
         $this->onQueue('whatsapp');
     }
 
     public function handle()
     {
-        $campaign = BroadcastCampaign::find($this->campaignId);
+        $campaign = BroadcastCampaign::where('id', $this->campaignId)
+            ->where('tenant_id', $this->tenantId)
+            ->first();
+
         if (!$campaign || $campaign->status === 'completed') {
             return;
         }

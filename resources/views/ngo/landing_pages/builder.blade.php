@@ -122,7 +122,11 @@
 
             <div class="active-list" id="active-blocks">
                 @foreach($sections as $section)
-                    <div class="block-item" onclick="openEditor({{ $section->id }}, '{{ $section->type }}', {{ json_encode($section->content) }})">
+                    <div class="block-item"
+                         data-editor-id="{{ $section->id }}"
+                         data-editor-type="{{ $section->type }}"
+                         data-editor-content="{{ json_encode($section->content) }}"
+                         onclick="openEditor(this.dataset.editorId, this.dataset.editorType, JSON.parse(this.getAttribute('data-editor-content')))">
                         <div class="info">
                             <i class="fas fa-grip-lines drag"></i>
                             <span>
