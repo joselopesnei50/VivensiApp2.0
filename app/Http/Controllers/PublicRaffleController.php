@@ -121,7 +121,7 @@ class PublicRaffleController extends Controller
         } catch (\Exception $e) {
             if (DB::transactionLevel() > 0) DB::rollBack();
             \Illuminate\Support\Facades\Log::error("Erro crítico na reserva da rifa ($slug): " . $e->getMessage());
-            return back()->with('error', 'Desculpe, ocorreu um erro ao processar sua reserva: ' . $e->getMessage());
+            return back()->with('error', 'Desculpe, ocorreu um erro ao processar sua reserva. Tente novamente ou entre em contato com a organização.');
         }
     }
 

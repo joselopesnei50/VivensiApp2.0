@@ -9,6 +9,7 @@ use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Support\AuditDownload;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request as RequestFacade;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -996,7 +997,8 @@ class BeneficiaryController extends Controller
                 }
             } catch (\Exception $e) {
                 $errorCount++;
-                $errors[] = "Erro na linha do beneficiário '$name': " . $e->getMessage();
+                Log::error("Import beneficiary error for '{$name}'", ['error' => $e->getMessage()]);
+                $errors[] = "Erro na linha do beneficiário '{$name}': verifique os dados e tente novamente.";
             }
         }
 
