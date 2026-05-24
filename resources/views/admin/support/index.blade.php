@@ -298,4 +298,33 @@
         </div>
     </div>
 </div>
+<style>
+    .container.py-4 { background: linear-gradient(180deg, #020617 0%, #0f172a 100%); }
+    .saas-header-bg,
+    .stat-card-modern,
+    .ticket-card-item,
+    .illustration-card,
+    .search-input-modern,
+    .filter-select {
+        background: rgba(15,23,42,.92) !important;
+        border-color: rgba(148,163,184,.16) !important;
+        color: #e2e8f0 !important;
+    }
+    .saas-header-bg { box-shadow: 0 24px 60px rgba(2,6,23,.28) !important; }
+    .ticket-card-item:hover {
+        border-color: rgba(99,102,241,.35) !important;
+        box-shadow: 0 18px 32px rgba(2,6,23,.22) !important;
+    }
+    .status-badge-modern.badge-yellow,
+    .status-badge-modern.badge-green,
+    .status-badge-modern.badge-red {
+        background: rgba(99,102,241,.14) !important;
+        color: #c7d2fe !important;
+    }
+    .text-dark, .fw-bold, h4, h6 { color: #f8fafc !important; }
+    .text-muted { color: #94a3b8 !important; }
+    .btn-light { background: rgba(148,163,184,.14) !important; color: #e2e8f0 !important; border-color: rgba(148,163,184,.18) !important; }
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #4f46e5) !important; border: none !important; }
+    .search-input-modern::placeholder { color: #94a3b8 !important; }
+</style>
 @endsection
