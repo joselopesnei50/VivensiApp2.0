@@ -24,6 +24,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
     public $tenantId;
     public $timeout = 7200; // 2h — campanhas grandes precisam de mais tempo
     public $tries   = 1;
+    public $failOnTimeout = true;
 
     public function __construct($campaignId, $tenantId)
     {
@@ -59,6 +60,13 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
 
         if ($recipients->isEmpty()) {
             $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
+            return;
+        }
+
+        // Rejeitar campanha antes de iniciar se contiver URL encurtada
+        if ($antiBan->containsBlockedShortener($campaign->message ?? '')) {
+            $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+            Log::error("Broadcast bloqueado: mensagem contém URL encurtada (risco de ban)", ['campaign_id' => $campaign->id]);
             return;
         }
 
@@ -177,13 +185,6 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
                     $waId = $jidMap[$normalized];
                 }
 
-                // ── Anti-ban: bloqueia URL encurtada antes de enviar ────────────
-                if ($antiBan->containsBlockedShortener($campaign->message)) {
-                    $campaign->update(['status' => 'failed', 'completed_at' => now(), 'total_sent' => $sentCount, 'total_failed' => $failedCount]);
-                    Log::error("Broadcast bloqueado: mensagem contém URL encurtada (risco de ban)", ['campaign_id' => $campaign->id]);
-                    return;
-                }
-
                 // ── Anti-ban: simula digitação antes do envio (apenas individuais) ──
                 if (!$isGroupChatMode) {
                     $antiBan->simulateHumanTyping($instance, $waId, $campaign->message);
@@ -261,6 +262,25 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
         }
 
         $campaign->update(['status' => 'completed', 'completed_at' => now()]);
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error("ProcessBroadcastCampaignJob falhou definitivamente", [
+            'campaign_id' => $this->campaignId,
+            'error'       => $exception->getMessage(),
+        ]);
+
+        $campaign = BroadcastCampaign::where('id', $this->campaignId)
+            ->where('tenant_id', $this->tenantId)
+            ->first();
+
+        if ($campaign && in_array($campaign->status, ['queued', 'processing'])) {
+            $campaign->update([
+                'status'       => 'failed',
+                'completed_at' => now(),
+            ]);
+        }
     }
 
     protected function getRecipients($campaign, EvolutionApiService $evo = null)

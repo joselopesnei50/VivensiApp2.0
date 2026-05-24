@@ -5,9 +5,11 @@
 @php
     $statusMap = [
         'scheduled'  => ['bg' => 'rgba(99,102,241,.12)',  'color' => '#4f46e5', 'border' => '#c7d2fe', 'label' => 'Agendado',    'icon' => 'clock'],
+        'queued'     => ['bg' => 'rgba(99,102,241,.12)',  'color' => '#4f46e5', 'border' => '#c7d2fe', 'label' => 'Na Fila',     'icon' => 'hourglass-half'],
         'processing' => ['bg' => 'rgba(245,158,11,.12)',  'color' => '#d97706', 'border' => '#fde68a', 'label' => 'Processando', 'icon' => 'spinner'],
         'completed'  => ['bg' => 'rgba(16,185,129,.12)',  'color' => '#059669', 'border' => '#a7f3d0', 'label' => 'Concluído',   'icon' => 'circle-check'],
         'failed'     => ['bg' => 'rgba(239,68,68,.12)',   'color' => '#dc2626', 'border' => '#fecaca', 'label' => 'Falhou',      'icon' => 'circle-xmark'],
+        'paused'     => ['bg' => 'rgba(148,163,184,.12)', 'color' => '#64748b', 'border' => '#e2e8f0', 'label' => 'Pausado',     'icon' => 'pause'],
     ];
     $audienceLabels = ['all' => 'Todos os Contatos', 'selected' => 'Números Específicos', 'groups' => 'Grupos'];
     $audienceIcons  = ['all' => 'users', 'selected' => 'list-check', 'groups' => 'people-group'];
@@ -81,7 +83,7 @@
                 <label class="bc-filter-lbl">Status</label>
                 <select name="status" class="bc-select">
                     <option value="">Todos</option>
-                    @foreach(['completed'=>'Concluído','processing'=>'Processando','scheduled'=>'Agendado','failed'=>'Falhou'] as $val => $lbl)
+                    @foreach(['completed'=>'Concluído','processing'=>'Processando','queued'=>'Na Fila','scheduled'=>'Agendado','paused'=>'Pausado','failed'=>'Falhou'] as $val => $lbl)
                         <option value="{{ $val }}" {{ request('status') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
                     @endforeach
                 </select>

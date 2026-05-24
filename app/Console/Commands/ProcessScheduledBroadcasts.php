@@ -29,7 +29,7 @@ class ProcessScheduledBroadcasts extends Command
             $updated = BroadcastCampaign::withoutGlobalScopes()
                 ->where('id', $campaign->id)
                 ->where('status', 'scheduled')
-                ->update(['status' => 'processing']);
+                ->update(['status' => 'queued']);
 
             if ($updated === 0) {
                 Log::info("Broadcast #{$campaign->id} já foi disparado por outro processo. Skipping.");

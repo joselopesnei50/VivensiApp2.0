@@ -271,7 +271,7 @@ class WhatsappBroadcastController extends Controller
             'audience_type'   => $audience,
             'cadence'         => $cadenceSeconds,
             'scheduled_at'    => $scheduledAt,
-            'status'          => $scheduledAt ? 'scheduled' : 'processing',
+            'status'          => $scheduledAt ? 'scheduled' : 'queued',
             'group_ids'       => $audience === 'groups' ? $request->input('group_ids', []) : null,
             'group_send_mode' => $groupSendMode,
             'phones'          => $audience === 'selected' ? $request->input('phones') : null,
