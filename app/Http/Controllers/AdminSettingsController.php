@@ -29,6 +29,7 @@ class AdminSettingsController extends Controller
         $openpix_configured = (bool) SystemSetting::getValue('openpix_app_id');
         $abacatepay_configured = (bool) SystemSetting::getValue('abacatepay_api_key');
         $together_ai_configured = (bool) SystemSetting::getValue('together_ai_api_key');
+        $dev_page_password_configured = (bool) SystemSetting::getValue('dev_page_password');
 
         $deepseek_key = null;
         $gemini_key = null;
@@ -129,7 +130,8 @@ class AdminSettingsController extends Controller
             'abacatepay_configured',
             'abacatepay_env',
             'abacatepay_webhook_secret',
-            'together_ai_configured'
+            'together_ai_configured',
+            'dev_page_password_configured'
         ));
 
     }
@@ -183,6 +185,7 @@ class AdminSettingsController extends Controller
             'abacatepay_webhook_secret' => 'nullable|string|max:5000',
             'abacatepay_environment'    => 'nullable|in:sandbox,production',
             'together_ai_api_key'       => 'nullable|string|max:5000',
+            'dev_page_password'         => 'nullable|string|min:8|max:255',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -290,6 +293,12 @@ class AdminSettingsController extends Controller
                     \App\Models\SystemSetting::where('key', $field)->delete();
                 }
             }
+        }
+
+        // Dev page password — stored as bcrypt hash, never as plain text
+        $rawDevPw = trim((string) ($validated['dev_page_password'] ?? ''));
+        if ($rawDevPw !== '') {
+            SystemSetting::setValue('dev_page_password', \Illuminate\Support\Facades\Hash::make($rawDevPw), 'security');
         }
 
         return redirect()->back()->with('success', 'Configurações de API atualizadas com sucesso!');

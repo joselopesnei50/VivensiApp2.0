@@ -71,6 +71,7 @@ class Kernel extends HttpKernel
         'subscription' => \App\Http\Middleware\CheckSubscription::class,
         'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         '2fa'         => \App\Http\Middleware\RequireTwoFactor::class,
+        'dev_auth'    => \App\Http\Middleware\DevPageAuth::class,
     ];
 
 }
