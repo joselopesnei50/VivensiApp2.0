@@ -36,19 +36,19 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
     // Broadcast (Disparo em Massa)
     Route::get('/whatsapp/broadcast',                 [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'index'])->name('whatsapp.broadcast.index');
-    Route::post('/whatsapp/broadcast',                [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'sendBroadcast'])->name('whatsapp.broadcast.send');
-    Route::post('/whatsapp/broadcast/import',         [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'importContacts'])->name('whatsapp.broadcast.import');
+    Route::post('/whatsapp/broadcast',                [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'sendBroadcast'])->name('whatsapp.broadcast.send')->middleware('throttle:10,1');
+    Route::post('/whatsapp/broadcast/import',         [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'importContacts'])->name('whatsapp.broadcast.import')->middleware('throttle:5,1');
     Route::get('/whatsapp/broadcast/groups',          [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'getGroups'])->name('whatsapp.broadcast.groups');
     Route::get('/whatsapp/broadcast/campaigns',       [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'campaigns'])->name('whatsapp.broadcast.campaigns');
     Route::delete('/whatsapp/broadcast/{id}/cancel',  [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'cancelScheduled'])->name('whatsapp.broadcast.cancel');
 
     // Instâncias
     Route::get('/whatsapp/instances',                 [App\Http\Controllers\WhatsappController::class, 'instances'])->name('whatsapp.instances');
-    Route::post('/whatsapp/instances',                [App\Http\Controllers\Api\WhatsappInstanceController::class, 'store'])->name('whatsapp.instances.store');
+    Route::post('/whatsapp/instances',                [App\Http\Controllers\Api\WhatsappInstanceController::class, 'store'])->name('whatsapp.instances.store')->middleware('throttle:5,1');
     Route::get('/whatsapp/instances/{id}/status',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'status'])->name('whatsapp.instances.status');
-    Route::post('/whatsapp/instances/{id}/connect',   [App\Http\Controllers\Api\WhatsappInstanceController::class, 'connect'])->name('whatsapp.instances.connect');
-    Route::delete('/whatsapp/instances/{id}',         [App\Http\Controllers\Api\WhatsappInstanceController::class, 'destroy'])->name('whatsapp.instances.destroy');
-    Route::patch('/whatsapp/instances/{id}/proxy',    [App\Http\Controllers\Api\WhatsappInstanceController::class, 'updateProxy'])->name('whatsapp.instances.proxy');
+    Route::post('/whatsapp/instances/{id}/connect',   [App\Http\Controllers\Api\WhatsappInstanceController::class, 'connect'])->name('whatsapp.instances.connect')->middleware('throttle:20,1');
+    Route::delete('/whatsapp/instances/{id}',         [App\Http\Controllers\Api\WhatsappInstanceController::class, 'destroy'])->name('whatsapp.instances.destroy')->middleware('throttle:10,1');
+    Route::patch('/whatsapp/instances/{id}/proxy',    [App\Http\Controllers\Api\WhatsappInstanceController::class, 'updateProxy'])->name('whatsapp.instances.proxy')->middleware('throttle:10,1');
 
     // Automações
     Route::get('/whatsapp/automations',                    [App\Http\Controllers\WhatsappAutomationController::class, 'index'])->name('whatsapp.automations.index');

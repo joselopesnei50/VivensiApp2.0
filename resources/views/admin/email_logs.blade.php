@@ -56,7 +56,7 @@
                     </td>
                     <td style="padding: 15px 25px; text-align: right;">
                         @if($log->response)
-                        <button onclick="viewResponse({{ json_encode($log->response) }})" class="btn-outline" style="padding: 6px 12px; border-radius: 6px; font-size: 0.75rem;">
+                        <button class="btn-view-response btn-outline" data-response="{{ json_encode($log->response) }}" style="padding: 6px 12px; border-radius: 6px; font-size: 0.75rem;">
                             Ver Resposta
                         </button>
                         @endif
@@ -108,9 +108,13 @@
         } catch (e) {
             document.getElementById('responseBody').innerText = response;
         }
-        
         const myModal = new bootstrap.Modal(document.getElementById('responseModal'));
         myModal.show();
     }
+    document.querySelectorAll('.btn-view-response').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            viewResponse(this.getAttribute('data-response'));
+        });
+    });
 </script>
 @endsection

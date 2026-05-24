@@ -767,7 +767,7 @@ function formatDatePT(dateStr) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 // Active booking days from admin settings (ISO day numbers: Mon=1...Sun=0)
-const ACTIVE_DAYS = {!! json_encode(array_map('intval', explode(',', \App\Models\SystemSetting::getValue('booking_days', '1,2,3,4,5')))) !!};
+const ACTIVE_DAYS = {!! json_encode(array_map('intval', explode(',', \App\Models\SystemSetting::getValue('booking_days', '1,2,3,4,5'))), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
 
 renderCalendar();
 </script>

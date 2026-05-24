@@ -299,10 +299,10 @@
             new Chart(ctxGrowth, {
                 type: 'line',
                 data: {
-                    labels: {!! json_encode($growthLabels) !!},
+                    labels: {!! json_encode($growthLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
                     datasets: [{
                         label: 'MRR (R$)',
-                        data: {!! json_encode($growthValues) !!},
+                        data: {!! json_encode($growthValues, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
                         borderColor: '#6366f1',
                         backgroundColor: (context) => {
                             const ctx = context.chart.ctx;
@@ -361,8 +361,8 @@
         // Gráfico de Planos (Plans Chart)
         const ctxPlans = document.getElementById('plansChart')?.getContext('2d');
         if (ctxPlans) {
-            const planLabels = {!! json_encode($planDistribution->pluck('name')) !!};
-            const planData = {!! json_encode($planDistribution->pluck('count')) !!};
+            const planLabels = {!! json_encode($planDistribution->pluck('name'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
+            const planData = {!! json_encode($planDistribution->pluck('count'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
 
             new Chart(ctxPlans, {
                 type: 'doughnut',
