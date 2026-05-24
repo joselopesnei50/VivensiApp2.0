@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -16,7 +17,7 @@ use App\Services\Messaging\AntiBanManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class ProcessBroadcastCampaignJob implements ShouldQueue
+class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -31,6 +32,11 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
         $this->campaignId = $campaignId;
         $this->tenantId   = $tenantId;
         $this->onQueue('whatsapp');
+    }
+
+    public function uniqueId(): string
+    {
+        return (string) $this->campaignId;
     }
 
     public function handle()
@@ -56,11 +62,30 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
 
         $evo     = new EvolutionApiService($instance);
         $antiBan = new AntiBanManager($evo);
-        $recipients = $this->getRecipients($campaign, $evo);
 
-        if ($recipients->isEmpty()) {
-            $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
-            return;
+        // Para 'all': 3 queries leves (count, wa_ids, cursor) evitam carregar
+        // milhares de contatos na memória de uma vez com get().
+        if ($campaign->audience_type === 'all') {
+            $baseQuery = WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                ->whereNull('opt_out_at')->whereNull('blocked_at');
+
+            $recipientCount = (clone $baseQuery)->count();
+            if ($recipientCount === 0) {
+                $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
+                return;
+            }
+
+            $waIdsAll           = (clone $baseQuery)->pluck('wa_id')->all();
+            $recipientsIterable = (clone $baseQuery)->select(['id', 'wa_id'])->cursor();
+        } else {
+            $collection = $this->getRecipients($campaign, $evo);
+            if ($collection->isEmpty()) {
+                $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
+                return;
+            }
+            $recipientCount     = $collection->count();
+            $waIdsAll           = $collection->pluck('wa_id')->all();
+            $recipientsIterable = $collection;
         }
 
         // Rejeitar campanha antes de iniciar se contiver URL encurtada
@@ -70,7 +95,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             return;
         }
 
-        $campaign->update(['actual_recipients' => $recipients->count()]);
+        $campaign->update(['actual_recipients' => $recipientCount]);
 
         $sentCount        = 0;
         $failedCount      = 0;
@@ -100,8 +125,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
 
         $jidMap = [];
         if (!$isGroupChatMode) {
-            $normalizedNumbers = $recipients
-                ->pluck('wa_id')
+            $normalizedNumbers = collect($waIdsAll)
                 ->map(fn($n) => EvolutionApiService::normalizeBrazilianPhone((string) $n))
                 ->filter()
                 ->unique()
@@ -141,7 +165,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue
             }
         }
 
-        foreach ($recipients as $recipient) {
+        foreach ($recipientsIterable as $recipient) {
             $campaign->refresh();
             if ($campaign->status !== 'processing') break;
 
