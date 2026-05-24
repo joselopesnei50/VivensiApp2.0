@@ -129,7 +129,10 @@ class DevController extends Controller
                     'uri'        => '/' . ltrim($route->uri(), '/'),
                     'name'       => $route->getName() ?? '—',
                     'controller' => $controller,
-                    'middleware' => implode(', ', $route->gatherMiddleware()),
+                    'middleware' => implode(', ', array_map(
+                        fn($m) => is_string($m) ? $m : '[Closure]',
+                        $route->gatherMiddleware()
+                    )),
                 ];
             }
         }
