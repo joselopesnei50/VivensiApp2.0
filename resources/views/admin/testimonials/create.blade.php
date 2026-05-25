@@ -13,21 +13,21 @@
         @csrf
         <div class="row">
             <div class="col-md-6 mb-4">
-                <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Nome do Autor</label>
-                <input type="text" name="name" class="form-control" placeholder="Ex: Maria Helena" required>
+                <label for="name" style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Nome do Autor</label>
+                <input type="text" name="name" class="form-control" placeholder="Ex: Maria Helena" required id="name">
             </div>
             <div class="col-md-6 mb-4">
-                <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Cargo / Instituição</label>
-                <input type="text" name="role" class="form-control" placeholder="Ex: Diretora da ONG Abraço Solidário">
+                <label for="role" style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Cargo / Instituição</label>
+                <input type="text" name="role" class="form-control" placeholder="Ex: Diretora da ONG Abraço Solidário" id="role">
             </div>
             <div class="col-md-12 mb-4">
-                <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">URL da Foto (Avatar)</label>
-                <input type="url" name="photo" class="form-control" placeholder="https://i.pravatar.cc/100?u=maria">
+                <label for="photo" style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">URL da Foto (Avatar)</label>
+                <input type="url" name="photo" class="form-control" placeholder="https://i.pravatar.cc/100?u=maria" id="photo">
                 <small class="text-muted">Use links de imagens ou serviços de avatar como o Pravatar.</small>
             </div>
             <div class="col-md-12 mb-4">
-                <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Depoimento</label>
-                <textarea name="content" class="form-control" style="height: 150px;" placeholder="O que o cliente disse sobre o Vivensi..." required></textarea>
+                <label for="content" style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Depoimento</label>
+                <textarea name="content" class="form-control" style="height: 150px;" placeholder="O que o cliente disse sobre o Vivensi..." required id="content"></textarea>
             </div>
         </div>
 

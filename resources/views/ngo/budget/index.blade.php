@@ -8,7 +8,7 @@
     </div>
     <div style="display: flex; gap: 10px;">
         <form action="{{ url('/ngo/budget') }}" method="GET" style="display: flex; gap: 5px;">
-            <select name="year" class="form-control-vivensi" onchange="this.form.submit()" style="padding: 8px; border-radius: 8px;">
+            <select name="year" class="form-control-vivensi" onchange="this.form.submit()" style="padding: 8px; border-radius: 8px;" id="year">
                 @for($i = date('Y')-2; $i <= date('Y')+2; $i++)
                     <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>{{ $i }}</option>
                 @endfor

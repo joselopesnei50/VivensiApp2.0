@@ -21,15 +21,15 @@
             <form method="POST" action="{{ route('settings.webhooks.store') }}">
                 @csrf
                 <div style="margin-bottom: 16px;">
-                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Nome</label>
+                    <label for="name" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Nome</label>
                     <input type="text" name="name" required placeholder="Ex: Integração ERP" maxlength="100"
-                        style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;">
+                        style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;" id="name">
                 </div>
 
                 <div style="margin-bottom: 16px;">
-                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">URL de Destino</label>
+                    <label for="url" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">URL de Destino</label>
                     <input type="url" name="url" required placeholder="https://meusite.com/webhook"
-                        style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none; font-family:monospace;">
+                        style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none; font-family:monospace;" id="url">
                 </div>
 
                 <div style="margin-bottom: 20px;">

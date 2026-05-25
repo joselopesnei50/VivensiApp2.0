@@ -272,13 +272,13 @@
                 <input type="hidden" name="status" value="todo">
 
                 <div class="mb-3">
-                    <label style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Título</label>
-                    <input name="title" class="form-control" required maxlength="255" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;">
+                    <label for="title" style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Título</label>
+                    <input name="title" class="form-control" required maxlength="255" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;" id="title">
                 </div>
 
                 <div class="mb-3">
-                    <label style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Responsável</label>
-                    <select name="assigned_to" class="form-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;">
+                    <label for="assigned_to" style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Responsável</label>
+                    <select name="assigned_to" class="form-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;" id="assigned_to">
                         <option value="">Sem responsável</option>
                         @foreach($teamUsers as $u)
                             <option value="{{ $u->id }}">{{ $u->name }}</option>
@@ -288,12 +288,12 @@
 
                 <div class="row g-2 mb-3">
                     <div class="col-6">
-                        <label style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Prazo</label>
-                        <input type="date" name="due_date" class="form-control" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;">
+                        <label for="due_date" style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Prazo</label>
+                        <input type="date" name="due_date" class="form-control" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;" id="due_date">
                     </div>
                     <div class="col-6">
-                        <label style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Prioridade</label>
-                        <select name="priority" class="form-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;">
+                        <label for="priority" style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Prioridade</label>
+                        <select name="priority" class="form-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;" id="priority">
                             <option value="medium" selected>Média</option>
                             <option value="low">Baixa</option>
                             <option value="high">Alta</option>
@@ -303,8 +303,8 @@
                 </div>
 
                 <div class="mb-3">
-                    <label style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Descrição</label>
-                    <textarea name="description" rows="3" class="form-control" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;"></textarea>
+                    <label for="description" style="display:block; margin-bottom:8px; color: rgba(255,255,255,0.7); font-weight: 800; font-size: .8rem;">Descrição</label>
+                    <textarea name="description" rows="3" class="form-control" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 14px; padding: 12px 14px;" id="description"></textarea>
                 </div>
 
                 <button type="submit" class="btn-premium w-100" style="background: var(--ngo-primary); border: none; color: white; font-weight: 900; padding: 12px 18px; border-radius: 16px;">
@@ -786,22 +786,22 @@
                 <input type="hidden" name="status" value="paid">
 
                 <div style="margin-bottom: 16px;">
-                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Doador / Descrição</label>
+                    <label for="description" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Doador / Descrição</label>
                     <input type="text" name="description" required placeholder="Ex: Doação de João Silva"
                         style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
-                        onfocus="this.style.borderColor='rgba(16,185,129,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                        onfocus="this.style.borderColor='rgba(16,185,129,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" id="description">
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                     <div>
-                        <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Valor (R$)</label>
+                        <label for="amount" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Valor (R$)</label>
                         <input type="text" name="amount" required placeholder="0,00" inputmode="decimal"
                             style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
-                            onfocus="this.style.borderColor='rgba(16,185,129,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                            onfocus="this.style.borderColor='rgba(16,185,129,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" id="amount">
                     </div>
                     <div>
-                        <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Data</label>
-                        <input type="date" name="date" required value="{{ now()->format('Y-m-d') }}"
+                        <label for="date" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Data</label>
+                        <input type="date" name="date" required value="{{ now()- id="date">format('Y-m-d') }}"
                             style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
                             onfocus="this.style.borderColor='rgba(16,185,129,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                     </div>

@@ -450,7 +450,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">
+                        <label for="termInput" class="form-label fw-bold small">
                             O que você procura? <span class="text-danger">*</span>
                         </label>
                         <input type="text" name="term" class="form-control form-control-lg rounded-3"
@@ -460,11 +460,11 @@
                     </div>
 
                     <div id="locationField" class="mb-0">
-                        <label class="form-label fw-bold small">
+                        <label for="location" class="form-label fw-bold small">
                             Onde? <span class="text-danger">*</span>
                         </label>
                         <input type="text" name="location" class="form-control form-control-lg rounded-3"
-                               placeholder="Ex: Araraquara SP, São Paulo capital...">
+                               placeholder="Ex: Araraquara SP, São Paulo capital..." id="location">
                         <div class="form-text">Cidade e estado para refinar a busca.</div>
                     </div>
                 </div>
@@ -640,7 +640,7 @@
                 <input type="hidden" name="prospect_ids_raw" id="broadcastIdsInput" value="">
                 <div class="p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Mensagem</label>
+                        <label for="broadcastMsg" class="form-label fw-bold small text-muted text-uppercase">Mensagem</label>
                         <textarea id="broadcastMsg" name="message" rows="6"
                             class="form-control rounded-3"
                             placeholder="Digite a mensagem ou use o pitch gerado pela IA..."
