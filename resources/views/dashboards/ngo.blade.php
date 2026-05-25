@@ -397,172 +397,21 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('ngoPerformanceChart').getContext('2d');
-        
-        const gradientDonations = ctx.createLinearGradient(0, 0, 0, 320);
-        gradientDonations.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
-        gradientDonations.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
-
-        const gradientDonors = ctx.createLinearGradient(0, 0, 0, 320);
-        gradientDonors.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
-        gradientDonors.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
-
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: {!! json_encode($chartLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                datasets: [
-                    {
-                        label: 'Receita (R$)',
-                        data: {!! json_encode($chartDonations, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                        backgroundColor: gradientDonations,
-                        borderColor: '#10b981',
-                        borderWidth: 2,
-                        borderRadius: 8,
-                        barPercentage: 0.6,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Novos Doadores',
-                        data: {!! json_encode($chartDonors, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
-                        backgroundColor: gradientDonors,
-                        borderColor: '#8B5CF6',
-                        borderWidth: 2,
-                        borderRadius: 8,
-                        barPercentage: 0.6,
-                        type: 'line',
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#0f172a',
-                        pointBorderColor: '#8B5CF6',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#e2e8f0',
-                        borderColor: 'rgba(255,255,255,0.1)',
-                        borderWidth: 1,
-                        padding: 12
-                    }
-                },
-                scales: {
-                    x: { grid: { display: false, drawBorder: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 12, family: "'Outfit', sans-serif" } } },
-                    y: { 
-                        type: 'linear', display: true, position: 'left',
-                        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
-                        ticks: { color: 'rgba(255,255,255,0.4)' },
-                        beginAtZero: true 
-                    },
-                    y1: {
-                        type: 'linear', display: true, position: 'right',
-                        grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)' },
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Radar Chart Configuration
-        const ctxRadar = document.getElementById('ngoHealthRadarChart').getContext('2d');
-        new Chart(ctxRadar, {
-            type: 'radar',
-            data: {
-                labels: @json($radarData['labels']),
-                datasets: [{
-                    label: 'Saúde Institucional',
-                    data: @json($radarData['scores']),
-                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                    borderColor: '#6366f1',
-                    pointBackgroundColor: '#6366f1',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: '#6366f1',
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                scales: {
-                    r: {
-                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        pointLabels: {
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            font: { size: 10, weight: '700', family: 'Inter' }
-                        },
-                        ticks: { display: false, stepSize: 20 },
-                        suggestedMin: 0,
-                        suggestedMax: 100
-                    }
-                },
-                plugins: {
-                    legend: { display: false }
-                },
-                maintainAspectRatio: true
-            }
-        });
-
-        // Impact Map Configuration
-        const mapData = @json($mapMarkers);
-        const map = L.map('impactMap', {
-            center: [-15.7801, -47.9292], // Brasília center
-            zoom: 4,
-            zoomControl: false
-        });
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; Vivensi Intelligence'
-        }).addTo(map);
-
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-        if (mapData.length > 0) {
-            const markers = [];
-            mapData.forEach(marker => {
-                const iconColor = marker.type === 'beneficiary' ? '#6366f1' : '#10b981';
-                const m = L.circleMarker([marker.lat, marker.lng], {
-                    radius: 8,
-                    fillColor: iconColor,
-                    color: "#fff",
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.8
-                }).addTo(map).bindPopup(`<strong style="color:#1e293b">${marker.label}</strong><br><span style="color:#64748b; font-size:11px">${marker.type === 'beneficiary' ? 'Beneficiário' : 'Doador'}</span>`);
-                markers.push([marker.lat, marker.lng]);
-            });
-            
-            if(markers.length > 1) {
-                map.fitBounds(markers, { padding: [50, 50] });
-            } else if (markers.length === 1) {
-                map.setView(markers[0], 12);
-            }
-        }
-    });
-</script>
 
 {{-- ===== MAPA DE IMPACTO GEOSOCIAL ===== --}}
+@php
+    $totalDonors       = (int) ($stats['total_donors'] ?? 0);
+    $totalBeneficiaries = (int) ($stats['beneficiary_count'] ?? 0);
+    $hasGeoData        = count($mapMarkers) > 0;
+@endphp
 <div style="background: #0f172a; border-radius: 28px; padding: 36px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 30px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px;">
         <div>
             <h3 style="color: white; font-weight: 950; font-size: 1.5rem; letter-spacing: -1px; margin: 0;">Rede de Impacto Global</h3>
             <p style="color: rgba(255,255,255,0.5); font-size:.85rem; margin:4px 0 0 0;">Doadores e Beneficiários em sincronismo geográfico</p>
         </div>
-        <div style="display: flex; gap: 20px;">
-             <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="width: 10px; height: 10px; background: #6366f1; border-radius: 50%; box-shadow: 0 0 8px #6366f1;"></span>
                 <span style="font-size: 0.75rem; color: white; font-weight: 800;">Beneficiários</span>
             </div>
@@ -572,9 +421,167 @@
             </div>
         </div>
     </div>
-    
+
+    @if(!$hasGeoData)
+    <div style="height: 450px; border-radius: 20px; background: #0d1526; border: 1px dashed rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 40px;">
+        <div style="width: 64px; height: 64px; background: rgba(99,102,241,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-map-marked-alt" style="font-size: 1.6rem; color: #6366f1;"></i>
+        </div>
+        <div>
+            <p style="color: white; font-weight: 800; font-size: 1.1rem; margin: 0 0 8px 0;">Mapa aguardando coordenadas</p>
+            <p style="color: rgba(255,255,255,0.45); font-size: 0.85rem; margin: 0; max-width: 420px; line-height: 1.6;">
+                Você tem <strong style="color:#6366f1;">{{ number_format($totalBeneficiaries) }} beneficiário{{ $totalBeneficiaries !== 1 ? 's' : '' }}</strong>
+                e <strong style="color:#10b981;">{{ number_format($totalDonors) }} doador{{ $totalDonors !== 1 ? 'es' : '' }}</strong> cadastrados.
+                Para visualizá-los aqui, adicione o <strong style="color:rgba(255,255,255,0.7);">endereço completo</strong> nos cadastros
+                — o sistema posicionará cada um no mapa automaticamente.
+            </p>
+        </div>
+    </div>
+    @else
     <div id="impactMap"></div>
+    @endif
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Charts — isolated so errors here não quebram o mapa
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            const ctx = document.getElementById('ngoPerformanceChart').getContext('2d');
+            const gradientDonations = ctx.createLinearGradient(0, 0, 0, 320);
+            gradientDonations.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+            gradientDonations.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+            const gradientDonors = ctx.createLinearGradient(0, 0, 0, 320);
+            gradientDonors.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
+            gradientDonors.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($chartLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                    datasets: [
+                        {
+                            label: 'Receita (R$)',
+                            data: {!! json_encode($chartDonations, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                            backgroundColor: gradientDonations,
+                            borderColor: '#10b981',
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            barPercentage: 0.6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Novos Doadores',
+                            data: {!! json_encode($chartDonors, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!},
+                            backgroundColor: gradientDonors,
+                            borderColor: '#8B5CF6',
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            barPercentage: 0.6,
+                            type: 'line',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#0f172a',
+                            pointBorderColor: '#8B5CF6',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index', intersect: false,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#ffffff', bodyColor: '#e2e8f0',
+                            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 12
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false, drawBorder: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 12, family: "'Outfit', sans-serif" } } },
+                        y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, ticks: { color: 'rgba(255,255,255,0.4)' }, beginAtZero: true },
+                        y1: { type: 'linear', display: true, position: 'right', grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)' }, beginAtZero: true }
+                    }
+                }
+            });
+        } catch(e) { console.warn('NGO chart init error:', e); }
+
+        try {
+            const ctxRadar = document.getElementById('ngoHealthRadarChart').getContext('2d');
+            new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: @json($radarData['labels']),
+                    datasets: [{
+                        label: 'Saúde Institucional',
+                        data: @json($radarData['scores']),
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: '#6366f1',
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#6366f1',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: 'rgba(255, 255, 255, 0.7)', font: { size: 10, weight: '700', family: 'Inter' } },
+                            ticks: { display: false, stepSize: 20 },
+                            suggestedMin: 0, suggestedMax: 100
+                        }
+                    },
+                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: true
+                }
+            });
+        } catch(e) { console.warn('NGO radar chart init error:', e); }
+    });
+
+    // Mapa — listener separado para nunca ser afetado por erros dos gráficos
+    document.addEventListener('DOMContentLoaded', function() {
+        const mapEl = document.getElementById('impactMap');
+        if (!mapEl || typeof L === 'undefined') return;
+
+        try {
+            const mapData = @json($mapMarkers);
+            const map = L.map('impactMap', {
+                center: [-15.7801, -47.9292],
+                zoom: 4,
+                zoomControl: false
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; Vivensi Intelligence'
+            }).addTo(map);
+
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            if (mapData.length > 0) {
+                const bounds = [];
+                mapData.forEach(function(marker) {
+                    const iconColor = marker.type === 'beneficiary' ? '#6366f1' : '#10b981';
+                    L.circleMarker([marker.lat, marker.lng], {
+                        radius: 8, fillColor: iconColor, color: '#fff',
+                        weight: 2, opacity: 1, fillOpacity: 0.8
+                    }).addTo(map).bindPopup(
+                        '<strong style="color:#1e293b">' + marker.label + '</strong><br>' +
+                        '<span style="color:#64748b;font-size:11px">' + (marker.type === 'beneficiary' ? 'Beneficiário' : 'Doador') + '</span>'
+                    );
+                    bounds.push([marker.lat, marker.lng]);
+                });
+                if (bounds.length > 1) map.fitBounds(bounds, { padding: [50, 50] });
+                else map.setView(bounds[0], 12);
+            }
+        } catch(e) { console.warn('Impact map init error:', e); }
+    });
+</script>
 
 <div class="row g-4">
     <div class="col-md-8">

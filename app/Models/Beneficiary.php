@@ -22,6 +22,8 @@ class Beneficiary extends Model
         'education',
         'phone',
         'address',
+        'latitude',
+        'longitude',
         'status',
     ];
 
