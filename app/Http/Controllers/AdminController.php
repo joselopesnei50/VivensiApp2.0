@@ -112,6 +112,9 @@ class AdminController extends Controller
             ->limit(5)
             ->get();
 
+        // 7. Jobs falhados
+        $failedJobsCount = DB::table('failed_jobs')->count();
+
         return view('admin.dashboard', compact(
             'mrr', 'newClientsMonth', 'churnRate',
             'growthLabels', 'growthValues',
@@ -119,7 +122,8 @@ class AdminController extends Controller
             'totalBlocks', 'totalDonations',
             'leadSourceData',
             'totalTenants', 'totalUsers', 'onlineUsers', 'recentTenants', 'lpMetrics', 'planDistribution',
-            'latestCampaigns'
+            'latestCampaigns',
+            'failedJobsCount'
         ));
     }
 
