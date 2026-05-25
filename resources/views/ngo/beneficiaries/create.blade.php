@@ -33,38 +33,38 @@
 
             {{-- Identificação --}}
             <div class="form-group">
-                <label class="form-label">Nome Completo (Titular) <span style="color:var(--ds-danger)">*</span></label>
-                <input type="text" name="name" class="form-control-vivensi" value="{{ old('name') }}" required>
+                <label class="form-label" for="name">Nome Completo (Titular) <span style="color:var(--ds-danger)" aria-hidden="true">*</span></label>
+                <input type="text" id="name" name="name" class="form-control-vivensi" value="{{ old('name') }}" required aria-required="true">
             </div>
 
             <div class="grid-2" style="gap: 20px;">
                 <div class="form-group">
-                    <label class="form-label">NIS (Número de Identificação Social)</label>
-                    <input type="text" name="nis" class="form-control-vivensi" value="{{ old('nis') }}">
+                    <label class="form-label" for="nis">NIS (Número de Identificação Social)</label>
+                    <input type="text" id="nis" name="nis" class="form-control-vivensi" value="{{ old('nis') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">CPF</label>
-                    <input type="text" name="cpf" class="form-control-vivensi" value="{{ old('cpf') }}">
+                    <label class="form-label" for="cpf">CPF</label>
+                    <input type="text" id="cpf" name="cpf" class="form-control-vivensi" value="{{ old('cpf') }}">
                 </div>
             </div>
 
             {{-- Dados pessoais com novos campos --}}
             <div class="grid-2" style="gap: 20px;">
                 <div class="form-group">
-                    <label class="form-label">Data de Nascimento</label>
-                    <input type="date" name="birth_date" class="form-control-vivensi" value="{{ old('birth_date') }}">
+                    <label class="form-label" for="birth_date">Data de Nascimento</label>
+                    <input type="date" id="birth_date" name="birth_date" class="form-control-vivensi" value="{{ old('birth_date') }}">
                     <small style="color:var(--ds-text-muted); font-size:0.78rem;">Idade calculada automaticamente.</small>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Telefone</label>
-                    <input type="text" name="phone" class="form-control-vivensi" value="{{ old('phone') }}">
+                    <label class="form-label" for="phone">Telefone</label>
+                    <input type="text" id="phone" name="phone" class="form-control-vivensi" value="{{ old('phone') }}">
                 </div>
             </div>
 
             <div class="grid-2" style="gap: 20px;">
                 <div class="form-group">
-                    <label class="form-label">Sexo / Gênero</label>
-                    <select name="gender" class="form-control-vivensi">
+                    <label class="form-label" for="gender">Sexo / Gênero</label>
+                    <select id="gender" name="gender" class="form-control-vivensi">
                         <option value="">Selecione...</option>
                         <option value="masculino"           {{ old('gender') === 'masculino'              ? 'selected' : '' }}>Masculino</option>
                         <option value="feminino"            {{ old('gender') === 'feminino'               ? 'selected' : '' }}>Feminino</option>
@@ -74,8 +74,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Cor / Raça <span style="font-size:0.75rem; color:var(--ds-text-muted)">(IBGE)</span></label>
-                    <select name="race_color" class="form-control-vivensi">
+                    <label class="form-label" for="race_color">Cor / Raça <span style="font-size:0.75rem; color:var(--ds-text-muted)">(IBGE)</span></label>
+                    <select id="race_color" name="race_color" class="form-control-vivensi">
                         <option value="">Selecione...</option>
                         <option value="branca"              {{ old('race_color') === 'branca'             ? 'selected' : '' }}>Branca</option>
                         <option value="preta"               {{ old('race_color') === 'preta'              ? 'selected' : '' }}>Preta</option>
@@ -89,8 +89,8 @@
 
             <div class="grid-2" style="gap: 20px;">
                 <div class="form-group">
-                    <label class="form-label">Escolaridade</label>
-                    <select name="education" class="form-control-vivensi">
+                    <label class="form-label" for="education">Escolaridade</label>
+                    <select id="education" name="education" class="form-control-vivensi">
                         <option value="">Selecione...</option>
                         <option value="sem_escolaridade"        {{ old('education') === 'sem_escolaridade'        ? 'selected' : '' }}>Sem escolaridade</option>
                         <option value="fundamental_incompleto"  {{ old('education') === 'fundamental_incompleto'  ? 'selected' : '' }}>Fundamental incompleto</option>
@@ -103,8 +103,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-control-vivensi">
+                    <label class="form-label" for="status">Status</label>
+                    <select id="status" name="status" class="form-control-vivensi">
                         <option value="active"    {{ old('status', 'active') === 'active'    ? 'selected' : '' }}>Ativo</option>
                         <option value="inactive"  {{ old('status') === 'inactive'  ? 'selected' : '' }}>Inativo</option>
                         <option value="graduated" {{ old('status') === 'graduated' ? 'selected' : '' }}>Graduado</option>
@@ -114,8 +114,8 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Endereço Completo</label>
-                <input type="text" name="address" class="form-control-vivensi" value="{{ old('address') }}">
+                <label class="form-label" for="address">Endereço Completo</label>
+                <input type="text" id="address" name="address" class="form-control-vivensi" value="{{ old('address') }}">
             </div>
 
             <div class="ds-divider"></div>

@@ -53,10 +53,10 @@
         <form action="{{ route('password.email') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label>E-mail</label>
+                <label for="email">E-mail</label>
                 <div class="input-group">
-                    <i class="far fa-envelope"></i>
-                    <input type="email" name="email" class="form-control" required value="{{ old('email') }}" placeholder="voce@empresa.com">
+                    <i class="far fa-envelope" aria-hidden="true"></i>
+                    <input type="email" id="email" name="email" class="form-control" required value="{{ old('email') }}" placeholder="voce@empresa.com" autocomplete="email">
                 </div>
             </div>
             <button type="submit" class="btn-primary">Enviar link de redefinição</button>

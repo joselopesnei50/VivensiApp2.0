@@ -61,7 +61,7 @@
         <table class="main" width="100%">
             <tr>
                 <td class="header">
-                    <img src="{{ config('app.url') }}/novalogo.png" alt="Vivensi" style="width: 150px; height: auto;">
+                    <img loading="lazy" src="{{ config('app.url') }}/novalogo.png" alt="Vivensi" style="width: 150px; height: auto;">
                 </td>
             </tr>
             <tr>
