@@ -131,8 +131,14 @@
             @endforeach
             @if($beneficiaries->count() === 0)
                 <tr>
-                    <td colspan="6" style="padding: 30px; text-align: center; color: #94a3b8;">
-                        Nenhum beneficiário encontrado para os filtros selecionados.
+                    <td colspan="6" style="padding: 0; border: none;">
+                        <x-empty-state
+                            icon="fa-people-roof"
+                            title="Nenhum beneficiário encontrado"
+                            description="Ajuste os filtros ou cadastre novos beneficiários para começar a registrar atendimentos."
+                            action_label="Cadastrar Beneficiário"
+                            action_url="{{ url('/ngo/beneficiaries/create') }}"
+                        />
                     </td>
                 </tr>
             @endif
