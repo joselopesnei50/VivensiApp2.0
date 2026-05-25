@@ -1912,6 +1912,49 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeCmdPalette();
 });
 
+// Focus trap for custom modal-overlay elements (canvas, kanban)
+// Bootstrap modals already handle their own focus trap natively.
+(function () {
+    const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+    let trapped = null, keyHandler = null;
+
+    function trap(modal) {
+        if (trapped === modal) return;
+        release();
+        trapped = modal;
+        const nodes = Array.from(modal.querySelectorAll(FOCUSABLE)).filter(
+            n => getComputedStyle(n).display !== 'none' && !n.closest('[hidden]')
+        );
+        if (!nodes.length) return;
+        const first = nodes[0], last = nodes[nodes.length - 1];
+        first.focus();
+        keyHandler = function (e) {
+            if (e.key !== 'Tab') return;
+            if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+            else            { if (document.activeElement === last)  { e.preventDefault(); first.focus(); } }
+        };
+        modal.addEventListener('keydown', keyHandler);
+    }
+
+    function release() {
+        if (trapped && keyHandler) trapped.removeEventListener('keydown', keyHandler);
+        trapped = null; keyHandler = null;
+    }
+
+    function visible(el) {
+        return el.classList.contains('open') || (el.style.display !== '' && el.style.display !== 'none');
+    }
+
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            const el = m.target;
+            if (!el.classList || !el.classList.contains('modal-overlay')) return;
+            visible(el) ? trap(el) : (trapped === el && release());
+        });
+    }).observe(document.body, { attributes: true, attributeFilter: ['style', 'class'], subtree: true });
+})();
+
 // Prevent double-submit: disable submit buttons on form submission
 document.addEventListener('submit', function(e) {
     const form = e.target;
