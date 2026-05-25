@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GeocodeAddressJob;
 use App\Models\Beneficiary;
 use App\Models\Attendance;
 use App\Models\FamilyMember;
@@ -1098,6 +1099,10 @@ class BeneficiaryController extends Controller
         $beneficiary->tenant_id = $tenantId;
         $beneficiary->save();
 
+        if (!empty($beneficiary->address)) {
+            GeocodeAddressJob::dispatch($beneficiary)->delay(now()->addSeconds(3));
+        }
+
         return redirect('/ngo/beneficiaries')->with('success', 'Beneficiário cadastrado com sucesso!');
     }
 
@@ -1160,8 +1165,14 @@ class BeneficiaryController extends Controller
             'status'      => 'required|in:active,inactive,graduated',
         ])->validate();
 
+        $oldAddress = $beneficiary->address;
         $beneficiary->fill($validated);
         $beneficiary->save();
+
+        if (!empty($beneficiary->address) && $beneficiary->address !== $oldAddress) {
+            $beneficiary->update(['latitude' => null, 'longitude' => null]);
+            GeocodeAddressJob::dispatch($beneficiary->fresh())->delay(now()->addSeconds(3));
+        }
 
         return redirect()->back()->with('success', 'Cadastro atualizado.');
     }
