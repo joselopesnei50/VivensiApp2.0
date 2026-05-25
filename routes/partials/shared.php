@@ -3,7 +3,7 @@
 // ── Dashboard & Onboarding ────────────────────────────────────────────────────
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'subscription'])->name('dashboard');
 Route::post('/onboarding/complete/{step_id}', [App\Http\Controllers\DashboardController::class, 'completeOnboardingStep'])->middleware('auth')->name('onboarding.complete');
-Route::get('/export/csv', [App\Http\Controllers\ExportController::class, 'csv'])->middleware('auth')->name('export.csv');
+Route::get('/export/csv', [App\Http\Controllers\ExportController::class, 'csv'])->middleware(['auth', 'throttle:web_export'])->name('export.csv');
 
 Route::middleware(['auth', 'subscription'])->group(function () {
 
@@ -21,17 +21,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::middleware('can:access-manager')->group(function () {
         Route::get('/marketing',                    [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');
         Route::get('/marketing/create',             [App\Http\Controllers\MarketingStrategyController::class, 'create'])->name('marketing.create');
-        Route::post('/marketing',                   [App\Http\Controllers\MarketingStrategyController::class, 'store'])->name('marketing.store');
+        Route::post('/marketing',                   [App\Http\Controllers\MarketingStrategyController::class, 'store'])->name('marketing.store')->middleware('throttle:web_ai');
         Route::get('/marketing/{marketing}',        [App\Http\Controllers\MarketingStrategyController::class, 'show'])->name('marketing.show');
         Route::get('/marketing/{marketing}/status', [App\Http\Controllers\MarketingStrategyController::class, 'status'])->name('marketing.status');
         Route::delete('/marketing/{marketing}',     [App\Http\Controllers\MarketingStrategyController::class, 'destroy'])->name('marketing.destroy');
 
         Route::get('/prospecting',                  [App\Http\Controllers\ProspectingController::class, 'index'])->name('prospecting.index');
-        Route::post('/prospecting/search',          [App\Http\Controllers\ProspectingController::class, 'search'])->name('prospecting.search');
-        Route::post('/prospecting/analyze-all',     [App\Http\Controllers\ProspectingController::class, 'analyzeAll'])->name('prospecting.analyze-all');
-        Route::post('/prospecting/broadcast',       [App\Http\Controllers\ProspectingController::class, 'broadcastWhatsapp'])->name('prospecting.broadcast');
+        Route::post('/prospecting/search',          [App\Http\Controllers\ProspectingController::class, 'search'])->name('prospecting.search')->middleware('throttle:web_ai');
+        Route::post('/prospecting/analyze-all',     [App\Http\Controllers\ProspectingController::class, 'analyzeAll'])->name('prospecting.analyze-all')->middleware('throttle:web_ai_bulk');
+        Route::post('/prospecting/broadcast',       [App\Http\Controllers\ProspectingController::class, 'broadcastWhatsapp'])->name('prospecting.broadcast')->middleware('throttle:web_ai_bulk');
         Route::delete('/prospecting/bulk-delete',   [App\Http\Controllers\ProspectingController::class, 'bulkDestroy'])->name('prospecting.bulk-delete');
-        Route::post('/prospecting/{id}/analyze',    [App\Http\Controllers\ProspectingController::class, 'analyze'])->name('prospecting.analyze');
+        Route::post('/prospecting/{id}/analyze',    [App\Http\Controllers\ProspectingController::class, 'analyze'])->name('prospecting.analyze')->middleware('throttle:web_ai');
         Route::post('/prospecting/{id}/convert',    [App\Http\Controllers\ProspectingController::class, 'convertToDeal'])->name('prospecting.convert');
         Route::delete('/prospecting/{id}',          [App\Http\Controllers\ProspectingController::class, 'destroy'])->name('prospecting.destroy');
     });
@@ -58,7 +58,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
     // ── Smart Analysis ────────────────────────────────────────────────────────
     Route::get('/smart-analysis',       [App\Http\Controllers\SmartAnalysisController::class, 'index']);
-    Route::post('/smart-analysis/deep', [App\Http\Controllers\SmartAnalysisController::class, 'generateDeepAnalysis']);
+    Route::post('/smart-analysis/deep', [App\Http\Controllers\SmartAnalysisController::class, 'generateDeepAnalysis'])->middleware('throttle:web_ai');
 
     // ── Autenticação de Dois Fatores (2FA/TOTP) ───────────────────────────────
     Route::get('/profile/2fa',     [App\Http\Controllers\TwoFactorController::class, 'show'])->name('2fa.show');
@@ -119,7 +119,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/search', [App\Http\Controllers\GlobalSearchController::class, 'search'])->name('search.global');
 
     // ── Magic Landing Page ────────────────────────────────────────────────────
-    Route::post('/marketing/magic-page', [App\Http\Controllers\LandingPageController::class, 'createMagic'])->name('ngo.landing-pages.create_magic');
+    Route::post('/marketing/magic-page', [App\Http\Controllers\LandingPageController::class, 'createMagic'])->name('ngo.landing-pages.create_magic')->middleware('throttle:web_ai_bulk');
 });
 
 // ── Academy (LMS) — auth sem subscription ────────────────────────────────────

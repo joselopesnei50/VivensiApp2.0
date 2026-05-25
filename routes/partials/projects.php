@@ -5,7 +5,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // Projetos
     Route::get('/projects',              [App\Http\Controllers\ProjectController::class, 'index']);
     Route::get('/projects/create',       [App\Http\Controllers\ProjectController::class, 'create']);
-    Route::post('/projects',             [App\Http\Controllers\ProjectController::class, 'store']);
+    Route::post('/projects',             [App\Http\Controllers\ProjectController::class, 'store'])->middleware('throttle:web_write');
     Route::get('/projects/details/{id}', [App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
     Route::get('/projects/{id}',         [App\Http\Controllers\ProjectController::class, 'show']);
     Route::get('/projects/{id}/edit',    [App\Http\Controllers\ProjectController::class, 'edit']);
@@ -19,7 +19,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::delete('/projects/{id}/people/{personId}', [App\Http\Controllers\ProjectController::class, 'destroyPerson'])->name('projects.people.destroy');
     Route::post('/projects/{id}/broadcast',           [App\Http\Controllers\ProjectController::class, 'createBroadcastList'])->name('projects.broadcast.create');
     Route::get('/projects/{id}/kanban',               [App\Http\Controllers\TaskController::class, 'kanban']);
-    Route::get('/projects/{id}/export-pdf',           [App\Http\Controllers\ProjectController::class, 'exportPdf'])->name('projects.export.pdf');
+    Route::get('/projects/{id}/export-pdf',           [App\Http\Controllers\ProjectController::class, 'exportPdf'])->name('projects.export.pdf')->middleware('throttle:web_export');
 
     // Timeline
     Route::post('/projects/{id}/timeline',              [App\Http\Controllers\ProjectTimelineController::class, 'store'])->name('projects.timeline.store');
@@ -28,13 +28,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // Diário de Evolução (Logs)
     Route::post('/projects/{id}/logs',            [App\Http\Controllers\ProjectLogController::class, 'store'])->name('projects.logs.store');
     Route::delete('/projects/{id}/logs/{logId}',  [App\Http\Controllers\ProjectLogController::class, 'destroy'])->name('projects.logs.destroy');
-    Route::post('/projects/{id}/logs/summary',    [App\Http\Controllers\ProjectLogController::class, 'generateSummary'])->name('projects.logs.summary');
+    Route::post('/projects/{id}/logs/summary',    [App\Http\Controllers\ProjectLogController::class, 'generateSummary'])->name('projects.logs.summary')->middleware('throttle:web_ai');
 
     // Tarefas
     Route::get('/tasks',             [App\Http\Controllers\TaskController::class, 'index']);
     Route::get('/tasks/calendar',    [App\Http\Controllers\TaskController::class, 'calendar'])->name('tasks.calendar');
     Route::get('/tasks/create',      [App\Http\Controllers\TaskController::class, 'create']);
-    Route::post('/tasks',            [App\Http\Controllers\TaskController::class, 'store']);
+    Route::post('/tasks',            [App\Http\Controllers\TaskController::class, 'store'])->middleware('throttle:web_write');
     Route::post('/api/tasks/update-status', [App\Http\Controllers\TaskController::class, 'updateStatus']);
     Route::post('/api/tasks/update',        [App\Http\Controllers\TaskController::class, 'updateTask']);
     Route::post('/api/tasks/create',        [App\Http\Controllers\TaskController::class, 'createApi']);
@@ -43,12 +43,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::prefix('transactions')->group(function () {
         Route::get('/',              [App\Http\Controllers\TransactionController::class, 'index']);
         Route::get('/create',        [App\Http\Controllers\TransactionController::class, 'create']);
-        Route::post('/',             [App\Http\Controllers\TransactionController::class, 'store']);
+        Route::post('/',             [App\Http\Controllers\TransactionController::class, 'store'])->middleware('throttle:web_write');
         Route::get('/{id}',          [App\Http\Controllers\TransactionController::class, 'show']);
-        Route::put('/{id}',          [App\Http\Controllers\TransactionController::class, 'update']);
-        Route::post('/{id}/approve', [App\Http\Controllers\TransactionController::class, 'approve'])->name('transactions.approve');
-        Route::post('/{id}/reject',  [App\Http\Controllers\TransactionController::class, 'reject'])->name('transactions.reject');
-        Route::get('/export',        [App\Http\Controllers\TransactionController::class, 'export']);
-        Route::delete('/{id}',       [App\Http\Controllers\TransactionController::class, 'destroy']);
+        Route::put('/{id}',          [App\Http\Controllers\TransactionController::class, 'update'])->middleware('throttle:web_write');
+        Route::post('/{id}/approve', [App\Http\Controllers\TransactionController::class, 'approve'])->name('transactions.approve')->middleware('throttle:web_write');
+        Route::post('/{id}/reject',  [App\Http\Controllers\TransactionController::class, 'reject'])->name('transactions.reject')->middleware('throttle:web_write');
+        Route::get('/export',        [App\Http\Controllers\TransactionController::class, 'export'])->middleware('throttle:web_export');
+        Route::delete('/{id}',       [App\Http\Controllers\TransactionController::class, 'destroy'])->middleware('throttle:web_write');
     });
 });
