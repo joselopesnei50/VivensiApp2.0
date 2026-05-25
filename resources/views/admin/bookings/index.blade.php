@@ -216,7 +216,7 @@
         <form id="linkForm" method="POST">
             @csrf @method('PATCH')
             <div style="margin-bottom:18px;">
-                <label for="modalLink" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">
+                <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">
                     Link da reunião (Google Meet, Zoom, etc.)
                 </label>
                 <input type="url" name="meeting_link" id="modalLink"
@@ -225,7 +225,7 @@
                        onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#f1f5f9'">
             </div>
             <div style="margin-bottom:18px;">
-                <label for="modalNotify" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Notas internas</label>
+                <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Notas internas</label>
                 <input type="text" name="admin_notes" id="modalNotes"
                        placeholder="Ex: Cliente interessado no plano NGO"
                        style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;"

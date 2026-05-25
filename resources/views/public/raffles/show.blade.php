@@ -252,18 +252,18 @@
                                 <div id="selectedTicketsContainer"></div>
                                 
                                 <div class="mb-3">
-                                    <label for="buyer_name" class="form-label small fw-800 text-muted text-uppercase">Seu Nome</label>
-                                    <input type="text" name="buyer_name" class="form-control form-vivensi" placeholder="Nome completo" required id="buyer_name">
+                                    <label class="form-label small fw-800 text-muted text-uppercase">Seu Nome</label>
+                                    <input type="text" name="buyer_name" class="form-control form-vivensi" placeholder="Nome completo" required>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="phone" class="form-label small fw-800 text-muted text-uppercase">WhatsApp</label>
+                                    <label class="form-label small fw-800 text-muted text-uppercase">WhatsApp</label>
                                     <input type="tel" name="buyer_phone" class="form-control form-vivensi" placeholder="(00) 00000-0000" id="phone" required>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label for="buyer_email" class="form-label small fw-800 text-muted text-uppercase">E-mail</label>
-                                    <input type="email" name="buyer_email" class="form-control form-vivensi" placeholder="seu@email.com" required id="buyer_email">
+                                    <label class="form-label small fw-800 text-muted text-uppercase">E-mail</label>
+                                    <input type="email" name="buyer_email" class="form-control form-vivensi" placeholder="seu@email.com" required>
                                 </div>
 
                                 <div id="selectionSummary" class="mb-4 d-none">

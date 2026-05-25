@@ -536,11 +536,11 @@ textarea.modal-input{resize:vertical;min-height:88px}
     <div class="modal-box">
         <div class="modal-title"><i class="fas fa-wand-magic-sparkles" style="color:#818cf8;margin-right:8px"></i>Gerador de Copy com IA</div>
         <div class="modal-row">
-            <label for="ai-prompt" class="modal-label">Descreva o que a IA deve escrever</label>
+            <label class="modal-label">Descreva o que a IA deve escrever</label>
             <textarea id="ai-prompt" class="modal-input" rows="3" placeholder="Ex: Título impactante para campanha de doação de agasalhos..."></textarea>
         </div>
         <div class="modal-row">
-            <label for="ai-field" class="modal-label">Tipo de texto</label>
+            <label class="modal-label">Tipo de texto</label>
             <select id="ai-field" class="modal-input">
                 <option value="title">Título (Curto)</option>
                 <option value="subtitle">Subtítulo (Médio)</option>
@@ -571,7 +571,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
         </div>
         @else
         <div class="modal-row">
-            <label for="sched-account" class="modal-label">Conta</label>
+            <label class="modal-label">Conta</label>
             <select id="sched-account" class="modal-input">
                 @foreach($socialAccounts as $acc)
                 <option value="{{ $acc->id }}" data-platform="{{ $acc->platform }}">{{ $acc->page_name }} ({{ ucfirst($acc->platform) }})</option>
@@ -579,11 +579,11 @@ textarea.modal-input{resize:vertical;min-height:88px}
             </select>
         </div>
         <div class="modal-row">
-            <label for="sched-caption" class="modal-label">Legenda</label>
+            <label class="modal-label">Legenda</label>
             <textarea id="sched-caption" class="modal-input" rows="4" placeholder="Texto do post..."></textarea>
         </div>
         <div class="modal-row">
-            <label for="sched-datetime" class="modal-label">Data e hora</label>
+            <label class="modal-label">Data e hora</label>
             <input type="datetime-local" id="sched-datetime" class="modal-input">
         </div>
         <div class="modal-actions">

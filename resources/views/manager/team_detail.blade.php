@@ -205,8 +205,8 @@
 
                 <div class="modal-body px-4 py-3">
                     <div class="mb-3">
-                        <label for="assigned_to" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Atribuir para</label>
-                        <select name="assigned_to" class="form-select rounded-3" required id="assigned_to">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Atribuir para</label>
+                        <select name="assigned_to" class="form-select rounded-3" required>
                             @foreach($teamMembers as $member)
                                 <option value="{{ $member->id }}" {{ $member->id == $employee->id ? 'selected' : '' }}>
                                     {{ $member->name }}
@@ -215,16 +215,16 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="title" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Assunto / Título</label>
-                        <input type="text" name="title" class="form-control rounded-3" required placeholder="Ex: Revisar planilha de custos" id="title">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Assunto / Título</label>
+                        <input type="text" name="title" class="form-control rounded-3" required placeholder="Ex: Revisar planilha de custos">
                     </div>
                     <div class="mb-3">
-                        <label for="description" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Instrução Detalhada</label>
-                        <textarea name="description" class="form-control rounded-3" rows="3" placeholder="Descreva o que o colaborador precisa fazer..." id="description"></textarea>
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Instrução Detalhada</label>
+                        <textarea name="description" class="form-control rounded-3" rows="3" placeholder="Descreva o que o colaborador precisa fazer..."></textarea>
                     </div>
                     <div class="mb-0">
-                        <label for="project_id" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Projeto Relacionado (Opcional)</label>
-                        <select name="project_id" class="form-select rounded-3" id="project_id">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Projeto Relacionado (Opcional)</label>
+                        <select name="project_id" class="form-select rounded-3">
                             <option value="">Nenhum específico</option>
                             @foreach($allProjects as $p)
                                 <option value="{{ $p->id }}">{{ $p->name }}</option>

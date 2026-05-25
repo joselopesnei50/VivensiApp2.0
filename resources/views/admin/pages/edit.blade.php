@@ -29,8 +29,8 @@
                 @endif
 
                 <div class="mb-4">
-                    <label for="title" class="form-label fw-bold text-dark">Título da Página</label>
-                    <input type="text" name="title" value="{{ old('title', $page- id="title">title) }}" class="form-control form-control-lg border-0 bg-light rounded-4" placeholder="Ex: Termos de Uso" required>
+                    <label class="form-label fw-bold text-dark">Título da Página</label>
+                    <input type="text" name="title" value="{{ old('title', $page->title) }}" class="form-control form-control-lg border-0 bg-light rounded-4" placeholder="Ex: Termos de Uso" required>
                 </div>
 
                 <div class="mb-4">
@@ -51,7 +51,7 @@
                     <label class="form-label fw-bold small text-muted text-uppercase">Slug / URL</label>
                     <div class="input-group">
                         <span class="input-group-text border-0 bg-light rounded-start-4">/pagina/</span>
-                        <input type="text" name="slug" value="{{ old('slug', $page- id="slug">slug) }}" class="form-control border-0 bg-light rounded-end-4" required>
+                        <input type="text" name="slug" value="{{ old('slug', $page->slug) }}" class="form-control border-0 bg-light rounded-end-4" required>
                     </div>
                 </div>
 

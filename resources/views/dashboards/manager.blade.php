@@ -667,8 +667,8 @@
                 @csrf
                 <div class="modal-body p-5">
                     <div class="mb-4">
-                        <label for="project_id" class="fw-800 text-uppercase mb-2 small text-muted">Projeto Destino</label>
-                        <select name="project_id" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 fw-700" required id="project_id">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Projeto Destino</label>
+                        <select name="project_id" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 fw-700" required>
                             <option value="">Selecione um projeto...</option>
                             @foreach($projects as $proj)
                                 <option value="{{ $proj->id }}">{{ $proj->name }}</option>
@@ -676,20 +676,20 @@
                         </select>
                     </div>
                     <div class="mb-4">
-                        <label for="name" class="fw-800 text-uppercase mb-2 small text-muted">Nome Completo</label>
-                        <input name="name" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" required id="name">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Nome Completo</label>
+                        <input name="name" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" required>
                     </div>
                     <div class="mb-4">
-                        <label for="phone" class="fw-800 text-uppercase mb-2 small text-muted">WhatsApp (com DDD)</label>
-                        <input name="phone" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="Ex: 11999999999" id="phone">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">WhatsApp (com DDD)</label>
+                        <input name="phone" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="Ex: 11999999999">
                     </div>
                     <div class="mb-4">
-                        <label for="address" class="fw-800 text-uppercase mb-2 small text-muted">Endereço</label>
-                        <input name="address" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700" id="address">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Endereço</label>
+                        <input name="address" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
                     </div>
                     <div class="mb-0">
-                        <label for="city" class="fw-800 text-uppercase mb-2 small text-muted">Cidade</label>
-                        <input name="city" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700" id="city">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Cidade</label>
+                        <input name="city" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
                     </div>
                 </div>
                 <div class="p-5 pt-0">
@@ -715,8 +715,8 @@
                 @csrf
                 <div class="modal-body p-5">
                     <div class="mb-4">
-                        <label for="project_id" class="fw-800 text-uppercase mb-2 small text-muted">Projeto Destino</label>
-                        <select name="project_id" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 fw-700" required id="project_id">
+                        <label class="fw-800 text-uppercase mb-2 small text-muted">Projeto Destino</label>
+                        <select name="project_id" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 fw-700" required>
                             <option value="">Selecione um projeto...</option>
                             @foreach($projects as $proj)
                                 <option value="{{ $proj->id }}">{{ $proj->name }}</option>
@@ -732,7 +732,7 @@
                                 <p class="small text-muted mb-0">Use as colunas: <strong>Nome, Telefone, Endereço, Cidade</strong></p>
                             </div>
                         </div>
-                        <input type="file" name="csv_file" class="form-control bg-white border-0 py-2" accept=".csv, .txt" required id="csv_file">
+                        <input type="file" name="csv_file" class="form-control bg-white border-0 py-2" accept=".csv, .txt" required>
                     </div>
                 </div>
                 <div class="p-5 pt-0">
@@ -762,7 +762,7 @@
                 <div id="quickTaskFeedback" style="display:none; margin-bottom:12px;"></div>
 
                 <div style="margin-bottom: 16px;">
-                    <label for="qtTitle" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Título da Tarefa</label>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Título da Tarefa</label>
                     <input type="text" id="qtTitle" placeholder="Ex: Revisar relatório mensal" maxlength="255"
                         style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
                         onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
@@ -770,7 +770,7 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                     <div>
-                        <label for="qtProject" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Projeto</label>
+                        <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Projeto</label>
                         <select id="qtProject" style="width:100%; background:#1e293b; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.85rem; outline:none;">
                             <option value="">— Sem projeto</option>
                             @foreach($projects as $proj)
@@ -779,7 +779,7 @@
                         </select>
                     </div>
                     <div>
-                        <label for="qtPriority" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Prioridade</label>
+                        <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Prioridade</label>
                         <select id="qtPriority" style="width:100%; background:#1e293b; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.85rem; outline:none;">
                             <option value="low">Baixa</option>
                             <option value="medium" selected>Média</option>
@@ -790,7 +790,7 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="qtDueDate" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Prazo (opcional)</label>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Prazo (opcional)</label>
                     <input type="date" id="qtDueDate"
                         style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;"
                         onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">

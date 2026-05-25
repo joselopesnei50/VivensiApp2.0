@@ -108,17 +108,17 @@
                 @csrf
                 <div class="modal-body p-4 pt-0">
                     <div class="mb-3">
-                        <label for="name" class="form-label small font-weight-bold">Nome Completo</label>
-                        <input type="text" name="name" class="form-control rounded-3" required id="name">
+                        <label class="form-label small font-weight-bold">Nome Completo</label>
+                        <input type="text" name="name" class="form-control rounded-3" required>
                     </div>
                     <div class="mb-3">
-                        <label for="email" class="form-label small font-weight-bold">E-mail Corporativo</label>
-                        <input type="email" name="email" class="form-control rounded-3" required id="email">
+                        <label class="form-label small font-weight-bold">E-mail Corporativo</label>
+                        <input type="email" name="email" class="form-control rounded-3" required>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="department" class="form-label small font-weight-bold">Setor</label>
-                            <select name="department" class="form-select rounded-3" required id="department">
+                            <label class="form-label small font-weight-bold">Setor</label>
+                            <select name="department" class="form-select rounded-3" required>
                                 <option value="tecnico">Técnico / Dev</option>
                                 <option value="suporte">Suporte</option>
                                 <option value="vendas">Vendas / Growth</option>
@@ -127,8 +127,8 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="supervisor_id" class="form-label small font-weight-bold">Hierarquia (Líder)</label>
-                            <select name="supervisor_id" class="form-select rounded-3" id="supervisor_id">
+                            <label class="form-label small font-weight-bold">Hierarquia (Líder)</label>
+                            <select name="supervisor_id" class="form-select rounded-3">
                                 <option value="">Nenhum (Diretoria)</option>
                                 @foreach($supervisors as $s)
                                     <option value="{{ $s->id }}">{{ $s->name }}</option>
@@ -137,12 +137,12 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="role" class="form-label small font-weight-bold">Cargo/Role</label>
-                        <input type="text" name="role" class="form-control rounded-3" placeholder="Ex: Senior Dev, Head of Sales" required id="role">
+                        <label class="form-label small font-weight-bold">Cargo/Role</label>
+                        <input type="text" name="role" class="form-control rounded-3" placeholder="Ex: Senior Dev, Head of Sales" required>
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label small font-weight-bold">Senha de Acesso</label>
-                        <input type="password" name="password" class="form-control rounded-3" required id="password">
+                        <label class="form-label small font-weight-bold">Senha de Acesso</label>
+                        <input type="password" name="password" class="form-control rounded-3" required>
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">

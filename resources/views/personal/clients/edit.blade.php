@@ -19,12 +19,12 @@
                 
                 <div class="row mb-4">
                     <div class="col-md-8">
-                        <label for="name" class="form-label" style="font-weight: 700; color: #475569;">Nome Completo / Razão Social</label>
-                        <input type="text" name="name" class="form-control" required value="{{ old('name', $client- id="name">name) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label class="form-label" style="font-weight: 700; color: #475569;">Nome Completo / Razão Social</label>
+                        <input type="text" name="name" class="form-control" required value="{{ old('name', $client->name) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
                     </div>
                     <div class="col-md-4">
-                        <label for="type" class="form-label" style="font-weight: 700; color: #475569;">Tipo de Pessoa</label>
-                        <select name="type" class="form-select" required style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="type">
+                        <label class="form-label" style="font-weight: 700; color: #475569;">Tipo de Pessoa</label>
+                        <select name="type" class="form-select" required style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
                             <option value="individual" {{ $client->type == 'individual' ? 'selected' : '' }}>Pessoa Física (CPF)</option>
                             <option value="company" {{ $client->type == 'company' ? 'selected' : '' }}>Pessoa Jurídica (CNPJ)</option>
                         </select>
@@ -33,27 +33,27 @@
 
                 <div class="row mb-4">
                     <div class="col-md-4">
-                        <label for="document" class="form-label" style="font-weight: 700; color: #475569;">Documento</label>
-                        <input type="text" name="document" class="form-control" placeholder="CPF ou CNPJ" value="{{ old('document', $client- id="document">document) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label class="form-label" style="font-weight: 700; color: #475569;">Documento</label>
+                        <input type="text" name="document" class="form-control" placeholder="CPF ou CNPJ" value="{{ old('document', $client->document) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
                     </div>
                     <div class="col-md-4">
-                        <label for="email" class="form-label" style="font-weight: 700; color: #475569;">E-mail</label>
-                        <input type="email" name="email" class="form-control" placeholder="contato@email.com" value="{{ old('email', $client- id="email">email) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label class="form-label" style="font-weight: 700; color: #475569;">E-mail</label>
+                        <input type="email" name="email" class="form-control" placeholder="contato@email.com" value="{{ old('email', $client->email) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
                     </div>
                     <div class="col-md-4">
-                        <label for="phone" class="form-label" style="font-weight: 700; color: #475569;">WhatsApp</label>
-                        <input type="text" name="phone" class="form-control" placeholder="(00) 00000-0000" value="{{ old('phone', $client- id="phone">phone) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label class="form-label" style="font-weight: 700; color: #475569;">WhatsApp</label>
+                        <input type="text" name="phone" class="form-control" placeholder="(00) 00000-0000" value="{{ old('phone', $client->phone) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label for="purchase_history" class="form-label" style="font-weight: 700; color: #475569;">Histórico de Compras (Anotações)</label>
-                    <textarea name="purchase_history" class="form-control" rows="3" placeholder="Registre aqui os produtos/serviços que este cliente já comprou..." style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="purchase_history">{{ old('purchase_history', $client->purchase_history) }}</textarea>
+                    <label class="form-label" style="font-weight: 700; color: #475569;">Histórico de Compras (Anotações)</label>
+                    <textarea name="purchase_history" class="form-control" rows="3" placeholder="Registre aqui os produtos/serviços que este cliente já comprou..." style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">{{ old('purchase_history', $client->purchase_history) }}</textarea>
                 </div>
 
                 <div class="mb-5">
-                    <label for="relationship_notes" class="form-label" style="font-weight: 700; color: #475569;">Anotações de Relacionamento (CRM)</label>
-                    <textarea name="relationship_notes" class="form-control" rows="3" placeholder="Informações relevantes para o próximo contato, dores do cliente, etc..." style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="relationship_notes">{{ old('relationship_notes', $client->relationship_notes) }}</textarea>
+                    <label class="form-label" style="font-weight: 700; color: #475569;">Anotações de Relacionamento (CRM)</label>
+                    <textarea name="relationship_notes" class="form-control" rows="3" placeholder="Informações relevantes para o próximo contato, dores do cliente, etc..." style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">{{ old('relationship_notes', $client->relationship_notes) }}</textarea>
                 </div>
 
                 <div class="text-end">

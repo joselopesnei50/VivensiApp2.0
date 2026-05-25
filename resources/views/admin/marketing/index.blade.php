@@ -21,13 +21,13 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="goal" class="form-label fw-bold">Objetivo da Campanha</label>
-                    <textarea name="goal" class="form-control form-control-lg bg-light border-0" rows="3" placeholder="Ex: Arrecadar fundos para reformar a quadra da escola..." required id="goal"></textarea>
+                    <label class="form-label fw-bold">Objetivo da Campanha</label>
+                    <textarea name="goal" class="form-control form-control-lg bg-light border-0" rows="3" placeholder="Ex: Arrecadar fundos para reformar a quadra da escola..." required></textarea>
                 </div>
 
                 <div class="mb-4">
-                    <label for="audience" class="form-label fw-bold">Público-Alvo</label>
-                    <input type="text" name="audience" class="form-control form-control-lg bg-light border-0" placeholder="Ex: Empresários locais, pais de alunos..." required id="audience">
+                    <label class="form-label fw-bold">Público-Alvo</label>
+                    <input type="text" name="audience" class="form-control form-control-lg bg-light border-0" placeholder="Ex: Empresários locais, pais de alunos..." required>
                 </div>
 
                 <div class="d-grid">

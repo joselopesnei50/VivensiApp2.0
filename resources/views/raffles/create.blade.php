@@ -30,18 +30,18 @@
                             </h5>
 
                             <div class="mb-3">
-                                <label for="title" class="form-label small fw-700 text-muted text-uppercase">Título da Campanha</label>
-                                <input type="text" name="title" class="form-control form-control-vivensi" placeholder="Ex: Rifa de Natal - iPhone 15 Pro" required id="title">
+                                <label class="form-label small fw-700 text-muted text-uppercase">Título da Campanha</label>
+                                <input type="text" name="title" class="form-control form-control-vivensi" placeholder="Ex: Rifa de Natal - iPhone 15 Pro" required>
                             </div>
 
                             <div class="mb-4">
-                                <label for="description" class="form-label small fw-700 text-muted text-uppercase">Descrição e Prêmios</label>
-                                <textarea name="description" rows="3" class="form-control form-control-vivensi" placeholder="O que será sorteado? Detalhe os prêmios aqui..." required id="description"></textarea>
+                                <label class="form-label small fw-700 text-muted text-uppercase">Descrição e Prêmios</label>
+                                <textarea name="description" rows="3" class="form-control form-control-vivensi" placeholder="O que será sorteado? Detalhe os prêmios aqui..." required></textarea>
                             </div>
 
                             <div class="mb-4">
-                                <label for="rules" class="form-label small fw-700 text-muted text-uppercase">Regras e Termos</label>
-                                <textarea name="rules" rows="3" class="form-control form-control-vivensi" placeholder="Quais as regras do sorteio? Data da entrega, frete por conta de quem, etc..." id="rules"></textarea>
+                                <label class="form-label small fw-700 text-muted text-uppercase">Regras e Termos</label>
+                                <textarea name="rules" rows="3" class="form-control form-control-vivensi" placeholder="Quais as regras do sorteio? Data da entrega, frete por conta de quem, etc..."></textarea>
                             </div>
                         </div>
 
@@ -65,18 +65,18 @@
 
                             <div class="row g-3">
                                 <div class="col-6">
-                                    <label for="ticket_price" class="form-label small fw-700 text-muted text-uppercase">Preço (R$)</label>
-                                    <input type="number" name="ticket_price" step="0.01" class="form-control form-control-vivensi" placeholder="0,00" required id="ticket_price">
+                                    <label class="form-label small fw-700 text-muted text-uppercase">Preço (R$)</label>
+                                    <input type="number" name="ticket_price" step="0.01" class="form-control form-control-vivensi" placeholder="0,00" required>
                                 </div>
                                 <div class="col-6">
-                                    <label for="total_tickets" class="form-label small fw-700 text-muted text-uppercase">Qtd. Bilhetes</label>
-                                    <input type="number" name="total_tickets" class="form-control form-control-vivensi" placeholder="100" required id="total_tickets">
+                                    <label class="form-label small fw-700 text-muted text-uppercase">Qtd. Bilhetes</label>
+                                    <input type="number" name="total_tickets" class="form-control form-control-vivensi" placeholder="100" required>
                                 </div>
                             </div>
 
                             <div class="mt-3">
-                                <label for="draw_date" class="form-label small fw-700 text-muted text-uppercase">Data do Sorteio</label>
-                                <input type="datetime-local" name="draw_date" class="form-control form-control-vivensi" required id="draw_date">
+                                <label class="form-label small fw-700 text-muted text-uppercase">Data do Sorteio</label>
+                                <input type="datetime-local" name="draw_date" class="form-control form-control-vivensi" required>
                             </div>
                         </div>
 

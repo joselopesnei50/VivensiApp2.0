@@ -275,11 +275,11 @@
         </div>
         <form action="{{ url('/ngo/hr/employees') }}" method="POST">
             @csrf
-            <div class="form-group"><label for="name">Nome Completo</label><input type="text" name="name" class="form-control-vivensi" required id="name"></div>
+            <div class="form-group"><label>Nome Completo</label><input type="text" name="name" class="form-control-vivensi" required></div>
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label for="position">Cargo/Função</label><input type="text" name="position" class="form-control-vivensi" required id="position"></div>
-                <div class="form-group"><label for="contract_type">Tipo Contrato</label>
-                    <select name="contract_type" class="form-control-vivensi" id="contract_type">
+                <div class="form-group"><label>Cargo/Função</label><input type="text" name="position" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Tipo Contrato</label>
+                    <select name="contract_type" class="form-control-vivensi">
                         <option value="clt">CLT (Efetivo)</option>
                         <option value="pj">PJ (Prestador)</option>
                         <option value="trainee">Estagiário</option>
@@ -288,14 +288,14 @@
                 </div>
             </div>
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label for="salary">Salário (R$)</label><input type="text" name="salary" class="form-control-vivensi" placeholder="0,00" required id="salary"></div>
-                <div class="form-group"><label for="work_hours_weekly">Carga Horária (Ex: 40h)</label><input type="text" name="work_hours_weekly" class="form-control-vivensi" value="40h Semanais" required id="work_hours_weekly"></div>
+                <div class="form-group"><label>Salário (R$)</label><input type="text" name="salary" class="form-control-vivensi" placeholder="0,00" required></div>
+                <div class="form-group"><label>Carga Horária (Ex: 40h)</label><input type="text" name="work_hours_weekly" class="form-control-vivensi" value="40h Semanais" required></div>
             </div>
-            <div class="form-group"><label for="hired_at">Data de Admissão</label><input type="date" name="hired_at" class="form-control-vivensi" required id="hired_at"></div>
+            <div class="form-group"><label>Data de Admissão</label><input type="date" name="hired_at" class="form-control-vivensi" required></div>
 
             <div class="form-group">
-                <label for="project_id">Vincular a um Projeto (opcional)</label>
-                <select name="project_id" class="form-control-vivensi" id="project_id">
+                <label>Vincular a um Projeto (opcional)</label>
+                <select name="project_id" class="form-control-vivensi">
                     <option value="">— Nenhum —</option>
                     @foreach($projects as $p)
                         <option value="{{ $p->id }}">{{ $p->name ?? ('Projeto #'.$p->id) }}</option>
@@ -317,12 +317,12 @@
         </div>
         <form action="{{ url('/ngo/hr/volunteers') }}" method="POST">
             @csrf
-            <div class="form-group"><label for="name">Nome</label><input type="text" name="name" class="form-control-vivensi" required id="name"></div>
-            <div class="form-group"><label for="email">Email</label><input type="email" name="email" class="form-control-vivensi" id="email"></div>
-            <div class="form-group"><label for="phone">Telefone / WhatsApp</label><input type="text" name="phone" class="form-control-vivensi" id="phone"></div>
-            <div class="form-group"><label for="skills">Habilidades (Tags)</label><input type="text" name="skills" class="form-control-vivensi" placeholder="Ex: Fotografia, Cozinha, Eventos" id="skills"></div>
-            <div class="form-group"><label for="availability">Disponibilidade</label>
-                <select name="availability" class="form-control-vivensi" id="availability">
+            <div class="form-group"><label>Nome</label><input type="text" name="name" class="form-control-vivensi" required></div>
+            <div class="form-group"><label>Email</label><input type="email" name="email" class="form-control-vivensi"></div>
+            <div class="form-group"><label>Telefone / WhatsApp</label><input type="text" name="phone" class="form-control-vivensi"></div>
+            <div class="form-group"><label>Habilidades (Tags)</label><input type="text" name="skills" class="form-control-vivensi" placeholder="Ex: Fotografia, Cozinha, Eventos"></div>
+            <div class="form-group"><label>Disponibilidade</label>
+                <select name="availability" class="form-control-vivensi">
                     <option value="">Selecione...</option>
                     <option value="morning">Manhã</option>
                     <option value="afternoon">Tarde</option>
@@ -351,17 +351,17 @@
         <form id="certificateForm" method="POST" action="#">
             @csrf
             <div class="form-group">
-                <label for="activity_description">Atividade / Descrição</label>
-                <input type="text" name="activity_description" class="form-control-vivensi" required placeholder="Ex: Apoio em eventos, distribuição de alimentos..." id="activity_description">
+                <label>Atividade / Descrição</label>
+                <input type="text" name="activity_description" class="form-control-vivensi" required placeholder="Ex: Apoio em eventos, distribuição de alimentos...">
             </div>
             <div class="grid-2" style="gap: 15px;">
                 <div class="form-group">
-                    <label for="hours">Horas</label>
-                    <input type="number" name="hours" class="form-control-vivensi" required min="1" max="1000" value="4" id="hours">
+                    <label>Horas</label>
+                    <input type="number" name="hours" class="form-control-vivensi" required min="1" max="1000" value="4">
                 </div>
                 <div class="form-group">
-                    <label for="issued_at">Data de Emissão</label>
-                    <input type="date" name="issued_at" class="form-control-vivensi" value="{{ date('Y-m-d') }}" id="issued_at">
+                    <label>Data de Emissão</label>
+                    <input type="date" name="issued_at" class="form-control-vivensi" value="{{ date('Y-m-d') }}">
                 </div>
             </div>
 
@@ -381,10 +381,10 @@
         </div>
         <form id="editEmployeeForm" method="POST" action="#">
             @csrf @method('PUT')
-            <div class="form-group"><label for="editEmpName">Nome Completo</label><input type="text" id="editEmpName" name="name" class="form-control-vivensi" required></div>
+            <div class="form-group"><label>Nome Completo</label><input type="text" id="editEmpName" name="name" class="form-control-vivensi" required></div>
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label for="editEmpPosition">Cargo/Função</label><input type="text" id="editEmpPosition" name="position" class="form-control-vivensi" required></div>
-                <div class="form-group"><label for="editEmpContractType">Tipo Contrato</label>
+                <div class="form-group"><label>Cargo/Função</label><input type="text" id="editEmpPosition" name="position" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Tipo Contrato</label>
                     <select id="editEmpContractType" name="contract_type" class="form-control-vivensi">
                         <option value="clt">CLT (Efetivo)</option>
                         <option value="pj">PJ (Prestador)</option>
@@ -394,12 +394,12 @@
                 </div>
             </div>
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label for="editEmpSalary">Salário (R$)</label><input type="text" id="editEmpSalary" name="salary" class="form-control-vivensi" required></div>
-                <div class="form-group"><label for="editEmpHours">Carga Horária</label><input type="text" id="editEmpHours" name="work_hours_weekly" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Salário (R$)</label><input type="text" id="editEmpSalary" name="salary" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Carga Horária</label><input type="text" id="editEmpHours" name="work_hours_weekly" class="form-control-vivensi" required></div>
             </div>
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label for="editEmpHiredAt">Data de Admissão</label><input type="date" id="editEmpHiredAt" name="hired_at" class="form-control-vivensi" required></div>
-                <div class="form-group"><label for="editEmpStatus">Status</label>
+                <div class="form-group"><label>Data de Admissão</label><input type="date" id="editEmpHiredAt" name="hired_at" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Status</label>
                     <select id="editEmpStatus" name="status" class="form-control-vivensi">
                         <option value="active">Ativo</option>
                         <option value="vacation">Férias</option>
@@ -408,7 +408,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label for="editEmpProject">Projeto (opcional)</label>
+                <label>Projeto (opcional)</label>
                 <select id="editEmpProject" name="project_id" class="form-control-vivensi">
                     <option value="">— Nenhum —</option>
                     @foreach($projects as $p)
@@ -430,11 +430,11 @@
         </div>
         <form id="editVolunteerForm" method="POST" action="#">
             @csrf @method('PUT')
-            <div class="form-group"><label for="editVolName">Nome</label><input type="text" id="editVolName" name="name" class="form-control-vivensi" required></div>
-            <div class="form-group"><label for="editVolEmail">Email</label><input type="email" id="editVolEmail" name="email" class="form-control-vivensi"></div>
-            <div class="form-group"><label for="editVolPhone">Telefone / WhatsApp</label><input type="text" id="editVolPhone" name="phone" class="form-control-vivensi"></div>
-            <div class="form-group"><label for="editVolSkills">Habilidades</label><input type="text" id="editVolSkills" name="skills" class="form-control-vivensi"></div>
-            <div class="form-group"><label for="editVolAvailability">Disponibilidade</label>
+            <div class="form-group"><label>Nome</label><input type="text" id="editVolName" name="name" class="form-control-vivensi" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="editVolEmail" name="email" class="form-control-vivensi"></div>
+            <div class="form-group"><label>Telefone / WhatsApp</label><input type="text" id="editVolPhone" name="phone" class="form-control-vivensi"></div>
+            <div class="form-group"><label>Habilidades</label><input type="text" id="editVolSkills" name="skills" class="form-control-vivensi"></div>
+            <div class="form-group"><label>Disponibilidade</label>
                 <select id="editVolAvailability" name="availability" class="form-control-vivensi">
                     <option value="">Selecione...</option>
                     <option value="morning">Manhã</option>
@@ -469,12 +469,12 @@
 
             <div class="grid-2" style="gap: 15px;">
                 <div class="form-group">
-                    <label for="hours">Horas doadas</label>
-                    <input type="number" name="hours" class="form-control-vivensi" min="1" required placeholder="Ex: 5" id="hours">
+                    <label>Horas doadas</label>
+                    <input type="number" name="hours" class="form-control-vivensi" min="1" required placeholder="Ex: 5">
                 </div>
                 <div class="form-group">
-                    <label for="description">Descrição Opcional</label>
-                    <input type="text" name="description" class="form-control-vivensi" placeholder="Ex: Sopa solidária..." id="description">
+                    <label>Descrição Opcional</label>
+                    <input type="text" name="description" class="form-control-vivensi" placeholder="Ex: Sopa solidária...">
                 </div>
             </div>
             <button type="submit" class="btn-premium" style="width: 100%; justify-content: center; background: #f59e0b; color: white;">Registrar Horas e Pontos</button>

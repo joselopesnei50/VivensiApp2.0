@@ -219,27 +219,27 @@
                 <input type="hidden" name="access_level" value="viewer">
                 <div class="modal-body px-4 py-3">
                     <div class="mb-3">
-                        <label for="name" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Nome Completo</label>
-                        <input type="text" name="name" class="form-control rounded-3" required placeholder="Ex: Maria Souza" id="name">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Nome Completo</label>
+                        <input type="text" name="name" class="form-control rounded-3" required placeholder="Ex: Maria Souza">
                     </div>
                     <div class="mb-3">
-                        <label for="email" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">E-mail Profissional</label>
-                        <input type="email" name="email" class="form-control rounded-3" required placeholder="maria@empresa.com" id="email">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">E-mail Profissional</label>
+                        <input type="email" name="email" class="form-control rounded-3" required placeholder="maria@empresa.com">
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Senha Temporária</label>
-                        <input type="password" name="password" class="form-control rounded-3" required placeholder="Defina uma senha" id="password">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Senha Temporária</label>
+                        <input type="password" name="password" class="form-control rounded-3" required placeholder="Defina uma senha">
                     </div>
                     <div class="mb-3">
-                        <label for="role" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Função</label>
-                        <select name="role" class="form-select rounded-3" required id="role">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Função</label>
+                        <select name="role" class="form-select rounded-3" required>
                             <option value="employee">Funcionário (Operacional)</option>
                             <option value="manager">Gestor de Equipe</option>
                         </select>
                     </div>
                     <div class="mb-0">
-                        <label for="project_id" class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Vincular a Projeto (Opcional)</label>
-                        <select name="project_id" class="form-select rounded-3" id="project_id">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="letter-spacing:.05em;">Vincular a Projeto (Opcional)</label>
+                        <select name="project_id" class="form-select rounded-3">
                             <option value="">Sem vínculo inicial</option>
                             @foreach(($projects ?? []) as $p)
                                 <option value="{{ $p->id }}">{{ $p->name }}</option>
