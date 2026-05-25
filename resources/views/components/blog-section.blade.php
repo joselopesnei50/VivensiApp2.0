@@ -13,7 +13,7 @@
             <div class="blog-card aos" style="background: #111; border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column;">
                 <div class="blog-img" style="height: 200px; overflow: hidden; position: relative;">
                     @if($post->image)
-                        <img src="{{ $post->image }}" alt="{{ $post->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
+                        <img loading="lazy" src="{{ $post->image }}" alt="{{ $post->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
                     @else
                         <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #1e293b, #0f172a); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1);">
                             <i class="fas fa-image fa-3x"></i>

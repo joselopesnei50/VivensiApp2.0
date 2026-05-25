@@ -14,7 +14,7 @@
         @foreach($posts as $post)
         <div class="blog-card" style="background: white; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; transition: all 0.3s ease; display: flex; flex-direction: column;">
             <div style="height: 240px; background: #e2e8f0; position: relative; overflow: hidden;">
-                <img src="{{ $post->image ?: asset('images/blog-placeholder.jpg') }}" alt="{{ $post->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
+                <img loading="lazy" src="{{ $post->image ?: asset('images/blog-placeholder.jpg') }}" alt="{{ $post->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
             </div>
             <div style="padding: 30px; flex-grow: 1; display: flex; flex-direction: column;">
                 <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-bottom: 15px; text-transform: uppercase;">

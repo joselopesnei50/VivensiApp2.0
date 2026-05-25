@@ -477,7 +477,7 @@
 
             if (imgWrap) {
                 if (og) {
-                    imgWrap.innerHTML = '<img src="' + og.replace(/"/g, '') + '" alt="OG Image" style="width:100%; height:100%; object-fit: cover; display:block;">';
+                    imgWrap.innerHTML = '<img loading="lazy" src="' + og.replace(/"/g, '') + '" alt="OG Image" style="width:100%; height:100%; object-fit: cover; display:block;">';
                 } else {
                     imgWrap.innerHTML = '<span style="font-weight:900; color:#94a3b8;">OG Image</span>';
                 }

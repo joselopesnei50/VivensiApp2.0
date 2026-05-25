@@ -160,7 +160,7 @@
         @if($section->type == 'header_nav')
             <nav style="background: {{ \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#ffffff') }}; padding: 20px 0; border-bottom: 1px solid rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);">
                 <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-                    <img src="{{ \App\Support\LandingPageSanitizer::url($section->content['logo_url'] ?? null, '') }}" alt="Logo" style="height: 40px;">
+                    <img loading="lazy" src="{{ \App\Support\LandingPageSanitizer::url($section->content['logo_url'] ?? null, '') }}" alt="Logo" style="height: 40px;">
                     <div style="display: flex; gap: 30px;">
                         @foreach($section->content['links'] ?? [] as $link)
                             <a href="{{ \App\Support\LandingPageSanitizer::url($link['url'] ?? null, '#') }}" style="text-decoration: none; color: {{ \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#1e293b') }}; font-weight: 600; font-size: 0.9rem; transition: color 0.3s;">{{ $link['label'] ?? 'Link' }}</a>
@@ -174,7 +174,7 @@
             <section style="padding: 100px 0; background: {{ \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#f8fafc') }};">
                 <div class="container" style="display: flex; align-items: center; gap: 60px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 300px; border-radius: 30px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.1);">
-                        <img src="{{ \App\Support\LandingPageSanitizer::url($section->content['image_url'] ?? null, '') }}" style="width: 100%; display: block;">
+                        <img loading="lazy" src="{{ \App\Support\LandingPageSanitizer::url($section->content['image_url'] ?? null, '') }}" style="width: 100%; display: block;">
                     </div>
                     <div style="flex: 1; min-width: 300px;">
                         <span style="color: var(--primary); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; font-size: 0.8rem;">Saiba Mais</span>
@@ -193,7 +193,7 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px;">
                         @foreach($section->content['items'] ?? [] as $service)
                             <div class="feature-card" style="padding: 0; text-align: left; overflow: hidden;">
-                                <img src="{{ \App\Support\LandingPageSanitizer::url($service['image'] ?? null, '') }}" style="width: 100%; height: 220px; object-fit: cover;">
+                                <img loading="lazy" src="{{ \App\Support\LandingPageSanitizer::url($service['image'] ?? null, '') }}" style="width: 100%; height: 220px; object-fit: cover;">
                                 <div style="padding: 30px;">
                                     <h3 style="margin-top: 0; margin-bottom: 15px;">{{ $service['title'] ?? 'Serviço' }}</h3>
                                     <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">{{ $service['desc'] ?? '' }}</p>
@@ -272,7 +272,7 @@
                                        data-cap="{{ $img['caption'] ?? '' }}"
                                        onclick="return window.vivensiLpOpenLightbox ? window.vivensiLpOpenLightbox(event, this) : true;"
                                        style="display:block; cursor: zoom-in;">
-                                        <img src="{{ $src }}" alt="{{ $img['caption'] ?? 'Foto' }}" style="width: 100%; height: 190px; object-fit: cover; display:block;">
+                                        <img loading="lazy" src="{{ $src }}" alt="{{ $img['caption'] ?? 'Foto' }}" style="width: 100%; height: 190px; object-fit: cover; display:block;">
                                     </a>
                                 @else
                                     <div style="width: 100%; height: 190px; display:flex; align-items:center; justify-content:center; background:#f8fafc; color:#94a3b8;">
@@ -306,7 +306,7 @@
                             @endphp
                             <a href="{{ $plink }}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; justify-content:center; padding: 14px 18px; border:1px solid #e2e8f0; border-radius: 18px; background:#fff; text-decoration:none; color:inherit;">
                                 @if($plogo !== '')
-                                    <img src="{{ $plogo }}" alt="{{ $logo['name'] ?? 'Parceiro' }}" style="max-height: 34px; max-width: 180px;">
+                                    <img loading="lazy" src="{{ $plogo }}" alt="{{ $logo['name'] ?? 'Parceiro' }}" style="max-height: 34px; max-width: 180px;">
                                 @else
                                     <span style="color:#94a3b8; font-weight:900;">{{ $logo['name'] ?? 'Parceiro' }}</span>
                                 @endif
@@ -376,7 +376,7 @@
 
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px;">
                         <div style="border: 1px solid #e2e8f0; border-radius: 24px; overflow:hidden; background:#fff; box-shadow: 0 24px 60px rgba(15,23,42,.06);">
-                            <img src="{{ \App\Support\LandingPageSanitizer::url($section->content['left_image_url'] ?? null, '') }}" alt="{{ $section->content['left_title'] ?? 'Antes' }}" style="width: 100%; height: 240px; object-fit: cover; display:block;">
+                            <img loading="lazy" src="{{ \App\Support\LandingPageSanitizer::url($section->content['left_image_url'] ?? null, '') }}" alt="{{ $section->content['left_title'] ?? 'Antes' }}" style="width: 100%; height: 240px; object-fit: cover; display:block;">
                             <div style="padding: 22px;">
                                 <div style="display:inline-flex; gap:8px; align-items:center; padding:6px 12px; border-radius:999px; background:#f1f5f9; color:#0f172a; font-weight:900; font-size:.8rem; letter-spacing:.04em; text-transform:uppercase;">
                                     {{ $section->content['left_title'] ?? 'Antes' }}
@@ -387,7 +387,7 @@
                             </div>
                         </div>
                         <div style="border: 1px solid #e2e8f0; border-radius: 24px; overflow:hidden; background:#fff; box-shadow: 0 24px 60px rgba(15,23,42,.06);">
-                            <img src="{{ \App\Support\LandingPageSanitizer::url($section->content['right_image_url'] ?? null, '') }}" alt="{{ $section->content['right_title'] ?? 'Depois' }}" style="width: 100%; height: 240px; object-fit: cover; display:block;">
+                            <img loading="lazy" src="{{ \App\Support\LandingPageSanitizer::url($section->content['right_image_url'] ?? null, '') }}" alt="{{ $section->content['right_title'] ?? 'Depois' }}" style="width: 100%; height: 240px; object-fit: cover; display:block;">
                             <div style="padding: 22px;">
                                 <div style="display:inline-flex; gap:8px; align-items:center; padding:6px 12px; border-radius:999px; background:rgba(99,102,241,.12); color: var(--primary); font-weight:900; font-size:.8rem; letter-spacing:.04em; text-transform:uppercase;">
                                     {{ $section->content['right_title'] ?? 'Depois' }}
@@ -487,7 +487,7 @@
                                 <i class="fas fa-qrcode me-1"></i> QR Code
                             </div>
                             @if($qr !== '')
-                                <img src="{{ $qr }}" alt="QR Code PIX" style="width: 220px; height: 220px; object-fit: cover; border-radius: 18px; border: 1px solid #e2e8f0;">
+                                <img loading="lazy" src="{{ $qr }}" alt="QR Code PIX" style="width: 220px; height: 220px; object-fit: cover; border-radius: 18px; border: 1px solid #e2e8f0;">
                             @else
                                 <div style="width: 220px; height: 220px; margin: 0 auto; border-radius: 18px; border: 1px dashed #cbd5e1; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
                                     Sem QR
@@ -680,7 +680,7 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px;">
                         @foreach($section->content['items'] ?? [] as $item)
                         <div class="feature-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-                            <img src="{{ \App\Support\LandingPageSanitizer::url($item['image'] ?? null, 'https://via.placeholder.com/300x200') }}" style="width: 100%; height: 200px; object-fit: cover;">
+                            <img loading="lazy" src="{{ \App\Support\LandingPageSanitizer::url($item['image'] ?? null, 'https://via.placeholder.com/300x200') }}" style="width: 100%; height: 200px; object-fit: cover;">
                             <div style="padding: 25px;">
                                 <h3 style="margin-top: 0; font-size: 1.25rem;">{{ $item['name'] ?? 'Produto' }}</h3>
                                 <p style="color: var(--primary); font-weight: 800; font-size: 1.1rem; margin: 10px 0;">{{ $item['price'] ?? 'Sob consulta' }}</p>
@@ -736,7 +736,7 @@
             <section style="padding: 80px 0; background: {{ $bioBg }}; min-height: 100vh; display: flex; align-items: center;">
                 <div class="container" style="max-width: 500px; text-align: center; color: white;">
                     @if($bioImg !== '')
-                        <img src="{{ $bioImg }}" alt="Perfil" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); object-fit: cover;">
+                        <img loading="lazy" src="{{ $bioImg }}" alt="Perfil" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); object-fit: cover;">
                     @endif
                     <h1 style="font-size: 1.8rem; margin-bottom: 10px;">{{ $section->content['name'] ?? 'Nome do Perfil' }}</h1>
                     <p style="opacity: 0.8; margin-bottom: 40px;">{{ $section->content['bio'] ?? 'Sua biografia aqui.' }}</p>
@@ -766,7 +766,7 @@
                             </div>
                         </div>
                         <div class="about-image" style="border-radius: 30px;">
-                            <img src="{{ \App\Support\LandingPageSanitizer::url($section->content['image_url'] ?? null, 'https://via.placeholder.com/600x400') }}" alt="Sobre nós">
+                            <img loading="lazy" src="{{ \App\Support\LandingPageSanitizer::url($section->content['image_url'] ?? null, 'https://via.placeholder.com/600x400') }}" alt="Sobre nós">
                         </div>
                     </div>
                 </div>
@@ -870,7 +870,7 @@
                             @endphp
                             <div style="background:#fff; border: 1px solid #e2e8f0; border-radius: 22px; padding: 20px; box-shadow: 0 24px 60px rgba(15,23,42,.06); text-align:center;">
                                 @if($photo !== '')
-                                    <img src="{{ $photo }}" alt="{{ $it['name'] ?? 'Pessoa' }}" style="width: 92px; height: 92px; border-radius: 28px; object-fit: cover; border: 1px solid #e2e8f0;">
+                                    <img loading="lazy" src="{{ $photo }}" alt="{{ $it['name'] ?? 'Pessoa' }}" style="width: 92px; height: 92px; border-radius: 28px; object-fit: cover; border: 1px solid #e2e8f0;">
                                 @else
                                     <div style="width: 92px; height: 92px; border-radius: 28px; margin: 0 auto; background:#f1f5f9; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
                                         <i class="fas fa-user"></i>
@@ -1093,7 +1093,7 @@
                         </div>
                         @if($tcImg)
                         <div style="flex: 1; min-width: 280px;">
-                            <img src="{{ $tcImg }}" alt="{{ $section->content['title'] ?? '' }}" style="width: 100%; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.1); display: block;">
+                            <img loading="lazy" src="{{ $tcImg }}" alt="{{ $section->content['title'] ?? '' }}" style="width: 100%; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.1); display: block;">
                         </div>
                         @endif
                     </div>
@@ -1241,7 +1241,7 @@
                 </button>
             </div>
             <div style="flex:1; display:flex; align-items:center; justify-content:center; border-radius: 22px; overflow:hidden; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06);">
-                <img id="lpLightboxImg" src="" alt="Imagem" style="max-width: 100%; max-height: 82vh; object-fit: contain; display:block;">
+                <img loading="lazy" id="lpLightboxImg" src="" alt="Imagem" style="max-width: 100%; max-height: 82vh; object-fit: contain; display:block;">
             </div>
         </div>
     </div>

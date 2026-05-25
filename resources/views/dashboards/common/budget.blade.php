@@ -67,7 +67,7 @@
             <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: #6366f1; filter: blur(60px); opacity: 0.4;"></div>
             
             <div style="display: flex; align-items: center; margin-bottom: 25px; position: relative;">
-                <img src="{{ asset('img/bruce-ai.png') }}" alt="Bruce AI" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #3b82f6; padding: 2px; object-fit: cover; margin-right: 12px;" title="Atendimento via Bruce AI 🐶">
+                <img loading="lazy" src="{{ asset('img/bruce-ai.png') }}" alt="Bruce AI" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #3b82f6; padding: 2px; object-fit: cover; margin-right: 12px;" title="Atendimento via Bruce AI 🐶">
                 <h4 style="margin: 0; font-weight: 800; font-size: 1rem; letter-spacing: 0.5px; color: #ffffff;">PULSO FINANCEIRO IA</h4>
                 <div class="ai-pulse" style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-left: 10px; box-shadow: 0 0 10px #10b981;"></div>
             </div>

@@ -104,7 +104,7 @@
                                    id="mediaInput" onchange="previewMedia(this)">
                             <div class="form-text">JPG, PNG, GIF ou MP4. Máx 50 MB.</div>
                             <div id="mediaPreview" class="mt-2" style="display:none;">
-                                <img id="imgPreview" src="" alt="" class="rounded" style="max-height:200px;max-width:100%;object-fit:cover;display:none;">
+                                <img loading="lazy" id="imgPreview" src="" alt="" class="rounded" style="max-height:200px;max-width:100%;object-fit:cover;display:none;">
                                 <video id="vidPreview" controls class="rounded" style="max-height:200px;max-width:100%;display:none;"></video>
                             </div>
                         </div>
@@ -148,7 +148,7 @@
                     </div>
                     <p class="mb-2" style="font-size:.88rem;white-space:pre-wrap;" id="previewCaption">A legenda aparecerá aqui...</p>
                     <div id="previewImg" style="display:none;">
-                        <img src="" alt="" class="rounded w-100" style="max-height:200px;object-fit:cover;" id="previewImgEl">
+                        <img loading="lazy" src="" alt="" class="rounded w-100" style="max-height:200px;object-fit:cover;" id="previewImgEl">
                     </div>
                 </div>
             </div>

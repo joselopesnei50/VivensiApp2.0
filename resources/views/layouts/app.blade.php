@@ -330,19 +330,19 @@
         <div class="lang-switcher">
             <form method="POST" action="{{ route('locale.set', 'pt_BR') }}" style="display:inline">@csrf
                 <button type="submit" title="Português (Brasil)" class="lang-btn {{ $currentLocale === 'pt_BR' ? 'lang-btn-active' : '' }}">
-                    <img loading="lazy" src="https://flagcdn.com/w40/br.png" width="22" height="15" alt="Brasil" loading="lazy">
+                    <img loading="lazy" src="https://flagcdn.com/w40/br.png" width="22" height="15" alt="Brasil">
                     <span>PT</span>
                 </button>
             </form>
             <form method="POST" action="{{ route('locale.set', 'en') }}" style="display:inline">@csrf
                 <button type="submit" title="English" class="lang-btn {{ $currentLocale === 'en' ? 'lang-btn-active' : '' }}">
-                    <img loading="lazy" src="https://flagcdn.com/w40/us.png" width="22" height="15" alt="English" loading="lazy">
+                    <img loading="lazy" src="https://flagcdn.com/w40/us.png" width="22" height="15" alt="English">
                     <span>EN</span>
                 </button>
             </form>
             <form method="POST" action="{{ route('locale.set', 'es') }}" style="display:inline">@csrf
                 <button type="submit" title="Español" class="lang-btn {{ $currentLocale === 'es' ? 'lang-btn-active' : '' }}">
-                    <img loading="lazy" src="https://flagcdn.com/w40/es.png" width="22" height="15" alt="España" loading="lazy">
+                    <img loading="lazy" src="https://flagcdn.com/w40/es.png" width="22" height="15" alt="España">
                     <span>ES</span>
                 </button>
             </form>
@@ -556,7 +556,7 @@
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mgr_ai_active ? '150px' : '0' }};">
                         <ul>
-                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                         </ul>
                     </div>
                 </div>
@@ -718,7 +718,7 @@
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_ai_active ? '150px' : '0' }};">
                         <ul>
-                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                         </ul>
                     </div>
                 </div>
@@ -1619,7 +1619,7 @@
 <div class="bruce-fab" id="bruceFab">
     <div class="bruce-panel" id="brucePanel">
         <div class="bruce-panel-head">
-            <img src="{{ asset('img/bruce-ai.png') }}" alt="Bruce" onerror="this.style.display='none'">
+            <img loading="lazy" src="{{ asset('img/bruce-ai.png') }}" alt="Bruce" onerror="this.style.display='none'">
             <div class="bruce-info">
                 <div class="bruce-name">Bruce AI</div>
                 <div class="bruce-status">● Online — DeepSeek</div>

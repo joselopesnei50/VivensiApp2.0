@@ -58,7 +58,7 @@
                                     <i class="bi bi-image fs-1 opacity-25"></i>
                                     <span class="small mt-2 text-muted">Clique para enviar imagem</span>
                                     <input type="file" name="image" id="raffleImage" class="d-none" accept="image/*" onchange="previewImage(this)">
-                                    <img id="imagePreview" class="preview-img d-none">
+                                    <img loading="lazy" id="imagePreview" class="preview-img d-none">
                                 </div>
                                 <small class="text-muted mt-2 d-block">Recomendado: 800x400px (Máx 2MB)</small>
                             </div>

@@ -328,7 +328,7 @@ footer{background:#060606;border-top:1px solid var(--border);padding:60px 5% 28p
 <!-- NAV -->
 <nav class="nav" id="mainNav">
     <a href="{{ url('/') }}" class="nav-logo">
-        <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi">
+        <img loading="lazy" src="{{ asset('img/novalogo.png') }}" alt="Vivensi">
     </a>
     <ul class="nav-links">
         <li><a href="{{ route('solutions.ngo') }}">Terceiro Setor</a></li>
@@ -781,7 +781,7 @@ footer{background:#060606;border-top:1px solid var(--border);padding:60px 5% 28p
 <footer>
     <div class="footer-row">
         <div class="footer-brand">
-            <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:28px;filter:brightness(0) invert(1);opacity:.6">
+            <img loading="lazy" src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:28px;filter:brightness(0) invert(1);opacity:.6">
             <p>Performance e inteligência para gestores e equipes de projeto.</p>
         </div>
         <div class="footer-col">

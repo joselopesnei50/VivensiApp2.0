@@ -92,7 +92,7 @@
         <div class="card border-0 shadow-sm h-100 overflow-hidden" style="border-radius: 20px;">
             @if($raffle->image_path)
             <div class="position-relative" style="height: 160px;">
-                <img src="{{ Storage::url($raffle->image_path) }}" class="w-100 h-100 object-fit-cover">
+                <img loading="lazy" src="{{ Storage::url($raffle->image_path) }}" class="w-100 h-100 object-fit-cover">
                 <div class="position-absolute top-0 end-0 m-3">
                     <span class="badge {{ $raffle->status == 'active' ? 'bg-success' : 'bg-secondary' }} rounded-pill px-3 py-2 shadow-sm fw-bold">
                         {{ $raffle->status == 'active' ? 'ATIVA' : 'INATIVA' }}

@@ -29,7 +29,7 @@
                 <td style="padding: 20px 25px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         @if($testimonial->photo)
-                            <img src="{{ $testimonial->photo }}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                            <img loading="lazy" src="{{ $testimonial->photo }}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
                         @endif
                         <div style="font-weight: 700; color: #1e293b;">{{ $testimonial->name }}</div>
                     </div>

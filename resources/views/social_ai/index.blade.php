@@ -832,9 +832,9 @@
                 @else
                     <div class="sai-card-img">
                         @if($post->image_path)
-                            <img src="{{ Storage::disk('public')->url($post->image_path) }}" alt="{{ $post->title_theme }}" loading="lazy">
+                            <img loading="lazy" src="{{ Storage::disk('public')->url($post->image_path) }}" alt="{{ $post->title_theme }}" loading="lazy">
                         @else
-                            <img src="https://placehold.co/600x600/111827/374151?text=Sem+Imagem" alt="Sem imagem">
+                            <img loading="lazy" src="https://placehold.co/600x600/111827/374151?text=Sem+Imagem" alt="Sem imagem">
                         @endif
                         <div class="img-overlay"></div>
                         <div class="sai-img-actions">
@@ -967,7 +967,7 @@
 <div class="sai-modal-backdrop" id="postModal" onclick="if(event.target===this) closeModal()">
     <div class="sai-modal">
         <button class="sai-modal-close" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
-        <img id="modalImg" src="" alt="" style="display:none">
+        <img loading="lazy" id="modalImg" src="" alt="" style="display:none">
         <h4 id="modalTheme"></h4>
         <div class="sai-modal-caption" id="modalCaption"></div>
         <div class="sai-modal-actions">
