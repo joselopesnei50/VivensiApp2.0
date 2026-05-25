@@ -319,26 +319,35 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .seg-title em{font-style:normal;color:rgba(255,255,255,.28)}
 .seg-hdr-right{max-width:260px;font-size:.85rem;color:rgba(255,255,255,.35);line-height:1.65}
 
-/* Grid */
-.seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;max-width:1240px;margin:0 auto;position:relative;z-index:1;border:1px solid rgba(255,255,255,.07);border-radius:20px;overflow:hidden}
+/* Grid — NGO hero à esquerda, Gestão+Profissional empilhadas à direita */
+.seg-grid{display:grid;grid-template-columns:1.65fr 1fr;gap:0;max-width:1240px;margin:0 auto;position:relative;z-index:1;border:1px solid rgba(255,255,255,.07);border-radius:20px;overflow:hidden}
 
-/* Card */
-.seg-card{background:#111;padding:40px 36px 36px;text-decoration:none;color:#fff;display:flex;flex-direction:column;gap:0;position:relative;transition:background .25s;border-right:1px solid rgba(255,255,255,.07)}
-.seg-card:last-child{border-right:none}
+/* Card base */
+.seg-card{background:#111;padding:40px 36px 36px;text-decoration:none;color:#fff;display:flex;flex-direction:column;gap:0;position:relative;transition:background .25s}
 .seg-card:hover{background:#161616}
 
 /* Accent top bar */
 .seg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;transition:opacity .25s}
-.seg-ngo::before{background:#ef4444}
+.seg-ngo::before{background:linear-gradient(90deg,#ef4444,#f97316);height:3px}
 .seg-mgr::before{background:#4F6EF7}
 .seg-ppl::before{background:#8B5CF6}
 
+/* NGO hero card — ocupa as 2 linhas da coluna esquerda */
+.seg-ngo{grid-row:1/3;border-right:1px solid rgba(255,255,255,.09);padding:52px 48px 48px;background:linear-gradient(160deg,#141010 0%,#111 55%)}
+.seg-ngo:hover{background:linear-gradient(160deg,#1a1010 0%,#161616 55%)}
+
+/* Cartão principal badge */
+.seg-principal-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.28);color:#ef4444;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:5px 12px;border-radius:100px;margin-bottom:28px}
+.seg-principal-badge i{font-size:.6rem}
+
 /* Number watermark */
 .seg-num{font-size:4.5rem;font-weight:900;letter-spacing:-.05em;color:rgba(255,255,255,.05);line-height:1;margin-bottom:20px;font-variant-numeric:tabular-nums}
+.seg-ngo .seg-num{font-size:7rem;color:rgba(239,68,68,.06)}
 
 /* Icon row */
 .seg-icon-row{display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .seg-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.seg-ngo .seg-icon{width:56px;height:56px;border-radius:16px;font-size:1.3rem}
 .si-rose{background:rgba(239,68,68,.12);color:#ef4444}
 .si-blue{background:rgba(79,110,247,.14);color:#6B8BFF}
 .si-purple{background:rgba(139,92,246,.14);color:#a78bfa}
@@ -347,18 +356,40 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .sb-blue{background:rgba(79,110,247,.12);color:#6B8BFF;border:1px solid rgba(79,110,247,.22)}
 .sb-purple{background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.22)}
 
-/* Content */
+/* Títulos */
 .seg-card h3{font-size:1.2rem;font-weight:800;letter-spacing:-.02em;color:#fff;margin-bottom:10px;line-height:1.2}
+.seg-ngo h3{font-size:1.75rem;letter-spacing:-.03em;margin-bottom:14px}
 .seg-card p{font-size:.82rem;color:rgba(255,255,255,.38);line-height:1.7;margin-bottom:22px}
+.seg-ngo p{font-size:.9rem;color:rgba(255,255,255,.5);line-height:1.75;margin-bottom:26px}
 
 /* Feature chips */
 .seg-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:28px}
 .seg-chip{font-size:.65rem;font-weight:600;color:rgba(255,255,255,.4);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:3px 9px}
+.seg-ngo .seg-chip{color:rgba(239,68,68,.8);background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.15);font-size:.68rem;padding:4px 11px}
+
+/* Lista de funcionalidades no hero */
+.seg-feat-list{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-bottom:28px}
+.seg-feat-item{display:flex;align-items:center;gap:8px;font-size:.78rem;color:rgba(255,255,255,.5)}
+.seg-feat-item i{color:#ef4444;font-size:.6rem;flex-shrink:0}
 
 /* Stat */
 .seg-stat{margin-bottom:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)}
 .seg-stat-val{font-size:1.5rem;font-weight:900;letter-spacing:-.03em;color:#fff;line-height:1}
 .seg-stat-lbl{font-size:.7rem;color:rgba(255,255,255,.28);font-weight:500;margin-top:3px}
+.seg-ngo .seg-stat{display:flex;gap:32px;align-items:flex-start}
+.seg-ngo .seg-stat-val{font-size:2rem}
+
+/* Divisor entre Gestão e Profissional */
+.seg-mgr{border-bottom:1px solid rgba(255,255,255,.07)}
+.seg-ppl{}
+.seg-compact{padding:32px 30px 28px}
+.seg-compact .seg-num{font-size:3rem;margin-bottom:14px}
+.seg-compact h3{font-size:1.05rem}
+.seg-compact p{font-size:.79rem;margin-bottom:16px}
+.seg-compact .seg-chips{gap:4px;margin-bottom:18px}
+.seg-compact .seg-chip{font-size:.6rem;padding:2px 7px}
+.seg-compact .seg-stat{padding-top:14px;margin-bottom:18px}
+.seg-compact .seg-stat-val{font-size:1.25rem}
 
 /* CTA link */
 .seg-link{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;text-decoration:none;margin-top:auto;transition:gap .2s}
@@ -369,8 +400,15 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .seg-card:hover .seg-link-arrow{transform:translateX(3px)}
 
 /* Responsive */
-@media(max-width:860px){.seg-grid{grid-template-columns:1fr;border-radius:16px}.seg-card{border-right:none;border-bottom:1px solid rgba(255,255,255,.07)}.seg-card:last-child{border-bottom:none}}
-@media(max-width:600px){.seg-header{flex-direction:column;align-items:flex-start}.seg-hdr-right{max-width:100%}}
+@media(max-width:900px){
+    .seg-grid{grid-template-columns:1fr;border-radius:16px}
+    .seg-ngo{grid-row:auto;border-right:none;border-bottom:1px solid rgba(255,255,255,.07);padding:40px 28px 36px}
+    .seg-mgr,.seg-ppl{border-right:none}
+    .seg-mgr{border-bottom:1px solid rgba(255,255,255,.07)}
+    .seg-feat-list{grid-template-columns:1fr}
+    .seg-ngo .seg-stat{gap:20px}
+}
+@media(max-width:600px){.seg-header{flex-direction:column;align-items:flex-start}.seg-hdr-right{max-width:100%}.seg-compact{padding:28px 22px 24px}}
 
 /* ══ FEATURES BENTO ══════════════════════════════════════════════ */
 .features{padding:120px 6%;background:#090909;position:relative;overflow:hidden}
@@ -769,6 +807,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 @media(max-width:1024px){.bento-grid{grid-template-columns:repeat(2,1fr)}.bc-2w,.bc-2h{grid-column:span 2;grid-row:span 1}.impact-inner{grid-template-columns:1fr}.au-container{grid-template-columns:1fr;gap:60px}}
 @media(max-width:768px){
     .seg-grid{grid-template-columns:1fr}
+    .seg-ngo{grid-row:auto;border-right:none}
     .bento-grid{grid-template-columns:1fr}
     .bc-2w{grid-column:span 1}
     .counter-grid{grid-template-columns:1fr 1fr}
@@ -1174,8 +1213,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 <i class="fas fa-layer-group" style="font-size:.65rem"></i> Soluções
             </div>
             <h2 class="seg-title">
-                Uma plataforma,<br>
-                <em>três verticais.</em>
+                Feito para o<br>
+                <em>terceiro setor.</em>
             </h2>
         </div>
         <div class="seg-hdr-right">
@@ -1194,40 +1233,62 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
     <div class="seg-grid">
 
-        {{-- ── ONGs & Terceiro Setor ──────────────────────────────────── --}}
+        {{-- ══ HERO: ONGs & Terceiro Setor ════════════════════════════════ --}}
         <a href="{{ route('solutions.ngo') }}" class="seg-card seg-ngo aos">
+
+            <div class="seg-principal-badge">
+                <i class="fas fa-star"></i> Solução Principal · Terceiro Setor
+            </div>
+
             <div class="seg-num">01</div>
 
             <div class="seg-icon-row">
                 <div class="seg-icon si-rose"><i class="fas fa-hand-holding-heart"></i></div>
-                <span class="seg-badge sb-rose">Terceiro Setor</span>
+                <span class="seg-badge sb-rose">Terceiro Setor / ONGs</span>
             </div>
 
             <h3>ONGs &amp; Entidades Sociais</h3>
-            <p>Do controle de doadores ao portal de transparência — tudo que uma organização social precisa para operar com profissionalismo e prestar contas.</p>
+            <p>O Vivensi foi construído do zero para o terceiro setor. Do controle de beneficiários ao portal de transparência pública — tudo que sua organização precisa para operar com profissionalismo, captar recursos e prestar contas com clareza.</p>
 
             <div class="seg-chips">
                 <span class="seg-chip">Portal do Doador</span>
                 <span class="seg-chip">Prestação de Contas</span>
-                <span class="seg-chip">Almoxarifado</span>
-                <span class="seg-chip">Editais via IA</span>
+                <span class="seg-chip">Beneficiários & Atendimentos</span>
+                <span class="seg-chip">Captação de Editais via IA</span>
                 <span class="seg-chip">Transparência Pública</span>
-                <span class="seg-chip">Voluntários</span>
+                <span class="seg-chip">Gestão de Voluntários</span>
+                <span class="seg-chip">Almoxarifado</span>
+                <span class="seg-chip">Patrocínios & Doações</span>
+            </div>
+
+            <div class="seg-feat-list">
+                <div class="seg-feat-item"><i class="fas fa-check"></i> Mapa Territorial de Impacto</div>
+                <div class="seg-feat-item"><i class="fas fa-check"></i> Boletim de Acompanhamento</div>
+                <div class="seg-feat-item"><i class="fas fa-check"></i> Relatórios para Editais</div>
+                <div class="seg-feat-item"><i class="fas fa-check"></i> Controle de Projetos Sociais</div>
+                <div class="seg-feat-item"><i class="fas fa-check"></i> CRM de Doadores</div>
+                <div class="seg-feat-item"><i class="fas fa-check"></i> WhatsApp para Captação</div>
             </div>
 
             <div class="seg-stat">
-                <div class="seg-stat-val">{{ $siteStats['orgs_count'] }}+</div>
-                <div class="seg-stat-lbl">{{ $siteStats['orgs_label'] }}</div>
+                <div>
+                    <div class="seg-stat-val">{{ $siteStats['orgs_count'] }}+</div>
+                    <div class="seg-stat-lbl">{{ $siteStats['orgs_label'] }}</div>
+                </div>
+                <div>
+                    <div class="seg-stat-val" style="color:#ef4444">100%</div>
+                    <div class="seg-stat-lbl">focado no terceiro setor</div>
+                </div>
             </div>
 
             <span class="seg-link sl-rose">
-                Ver solução completa
+                Ver solução completa para ONGs
                 <span class="seg-link-arrow sla-rose"><i class="fas fa-arrow-right"></i></span>
             </span>
         </a>
 
-        {{-- ── Gestores & Projetos ────────────────────────────────────── --}}
-        <a href="{{ route('solutions.manager') }}" class="seg-card seg-mgr aos">
+        {{-- ── Gestores & Projetos (compacto) ─────────────────────────── --}}
+        <a href="{{ route('solutions.manager') }}" class="seg-card seg-mgr seg-compact aos">
             <div class="seg-num">02</div>
 
             <div class="seg-icon-row">
@@ -1236,15 +1297,15 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
 
             <h3>Gestores &amp; Equipes de Projeto</h3>
-            <p>Kanban, cronogramas, financeiro e CRM integrados. Visibilidade total sobre cada projeto — do planejamento à entrega.</p>
+            <p>Kanban, financeiro e CRM integrados — visibilidade total do planejamento à entrega.</p>
 
             <div class="seg-chips">
-                <span class="seg-chip">Kanban de Projetos</span>
-                <span class="seg-chip">CRM de Clientes</span>
-                <span class="seg-chip">Controle Financeiro</span>
-                <span class="seg-chip">Reuniões & Agenda</span>
-                <span class="seg-chip">Relatórios Exec.</span>
-                <span class="seg-chip">Whatsapp IA</span>
+                <span class="seg-chip">Kanban</span>
+                <span class="seg-chip">CRM</span>
+                <span class="seg-chip">Financeiro</span>
+                <span class="seg-chip">Agenda</span>
+                <span class="seg-chip">Relatórios</span>
+                <span class="seg-chip">WhatsApp IA</span>
             </div>
 
             <div class="seg-stat">
@@ -1253,13 +1314,13 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
 
             <span class="seg-link sl-blue">
-                Ver solução completa
+                Ver solução
                 <span class="seg-link-arrow sla-blue"><i class="fas fa-arrow-right"></i></span>
             </span>
         </a>
 
-        {{-- ── Uso Pessoal & Profissional ─────────────────────────────── --}}
-        <a href="{{ route('solutions.common') }}" class="seg-card seg-ppl aos">
+        {{-- ── Uso Pessoal & Profissional (compacto) ──────────────────── --}}
+        <a href="{{ route('solutions.common') }}" class="seg-card seg-ppl seg-compact aos">
             <div class="seg-num">03</div>
 
             <div class="seg-icon-row">
@@ -1268,14 +1329,14 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
 
             <h3>Uso Pessoal &amp; Profissional</h3>
-            <p>Para freelancers, consultores e autônomos que precisam de controle financeiro, contratos e comunicação com clientes em um só lugar.</p>
+            <p>Para freelancers e autônomos: finanças, contratos e comunicação com clientes em um só lugar.</p>
 
             <div class="seg-chips">
-                <span class="seg-chip">Finanças Pessoais</span>
+                <span class="seg-chip">Finanças</span>
                 <span class="seg-chip">Contratos Digitais</span>
                 <span class="seg-chip">Landing Pages</span>
-                <span class="seg-chip">Rifas & Eventos</span>
-                <span class="seg-chip">Whatsapp Integrado</span>
+                <span class="seg-chip">Rifas</span>
+                <span class="seg-chip">WhatsApp</span>
                 <span class="seg-chip">Agenda</span>
             </div>
 
@@ -1285,7 +1346,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
 
             <span class="seg-link sl-purple">
-                Ver solução completa
+                Ver solução
                 <span class="seg-link-arrow sla-purple"><i class="fas fa-arrow-right"></i></span>
             </span>
         </a>
