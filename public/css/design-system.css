@@ -89,6 +89,33 @@
     --ds-text-faint:   #94a3b8;
 }
 
+/* Light mode — topbar & sidebar adaptations */
+html:not([data-theme="dark"]) #topbar {
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+html:not([data-theme="dark"]) #topbar i,
+html:not([data-theme="dark"]) #topbar span:not(.ds-badge):not(.notification-dot),
+html:not([data-theme="dark"]) #topbar .mobile-menu-btn {
+    color: #475569 !important;
+}
+html:not([data-theme="dark"]) #topbar button,
+html:not([data-theme="dark"]) #topbar #topbar-search-cmd,
+html:not([data-theme="dark"]) #topbar #global-search-trigger {
+    background: rgba(0,0,0,0.04) !important;
+    border-color: rgba(0,0,0,0.08) !important;
+}
+html:not([data-theme="dark"]) #topbar button:hover,
+html:not([data-theme="dark"]) #topbar #global-search-trigger:hover {
+    background: rgba(0,0,0,0.08) !important;
+}
+html:not([data-theme="dark"]) #topbar kbd {
+    background: rgba(0,0,0,0.05) !important;
+    border-color: rgba(0,0,0,0.12) !important;
+    color: #64748b !important;
+}
+html:not([data-theme="dark"]) #topbar #theme-toggle i { color: #f59e0b !important; }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    RESET GLOBAL LEVE
    ══════════════════════════════════════════════════════════════════════════ */

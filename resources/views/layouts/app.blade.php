@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('vivensi-theme')||'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
     <title>{{ $title ?? config('app.name', 'Vivensi') }} — {{ __('ui.app_tagline') }}</title>
     
     <!-- SEO & Social Sharing -->
@@ -939,7 +940,7 @@
                     onmouseover="this.style.background='rgba(255,255,255,0.1)'"
                     onmouseout="this.style.background='rgba(255,255,255,0.05)'"
                     title="Alternar Tema (Dark/Light)">
-                <i id="theme-icon" class="fas fa-moon" style="font-size: 1rem; color: rgba(255,255,255,0.5);"></i>
+                <i id="theme-icon" class="fas fa-sun" style="font-size: 1rem; color: #fbbf24;"></i>
             </button>
 
             <!-- Busca Global Ctrl+K -->
