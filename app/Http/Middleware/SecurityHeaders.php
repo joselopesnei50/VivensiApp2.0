@@ -18,27 +18,40 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        // Somente aplica os headers se a resposta for do tipo aplicável (evita quebrar downloads binários, etc se não for tratado)
         if (method_exists($response, 'header')) {
-            $response->header('X-Frame-Options', 'SAMEORIGIN'); // Impede Clickjacking (site ser carregado num iframe de outro domínio)
-            $response->header('X-XSS-Protection', '1; mode=block'); // Proteção extra para navegadores mais antigos contra XSS
-            $response->header('X-Content-Type-Options', 'nosniff'); // Previne o navegador de tentar adivinhar o MIME type e executar vírus disfarçado
-            $response->header('Referrer-Policy', 'strict-origin-when-cross-origin'); // Mantém os dados da URL seguros ao sair do seu site
+            $response->header('X-Frame-Options', 'SAMEORIGIN');
+            $response->header('X-XSS-Protection', '1; mode=block');
+            $response->header('X-Content-Type-Options', 'nosniff');
+            $response->header('Referrer-Policy', 'strict-origin-when-cross-origin');
             $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-            $response->header('Content-Security-Policy',
-                "default-src 'self'; " .
-                "script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com 'unsafe-inline'; " .
-                "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'; " .
-                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " .
-                "img-src 'self' data: https:; " .
-                "connect-src 'self'; " .
-                "frame-ancestors 'self'; " .
-                "base-uri 'self'; " .
-                "form-action 'self';"
-            );
+            $response->header('Content-Security-Policy', $this->buildCsp());
             $response->header('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
         }
 
         return $response;
+    }
+
+    private function buildCsp(): string
+    {
+        // Build WebSocket origin from broadcasting config (Soketi/Reverb self-hosted)
+        $wsHost   = config('broadcasting.connections.pusher.options.host', '127.0.0.1');
+        $wsPort   = config('broadcasting.connections.pusher.options.port', 6001);
+        $wsScheme = (config('broadcasting.connections.pusher.options.scheme', 'http') === 'https') ? 'wss' : 'ws';
+        $wsOrigin = "{$wsScheme}://{$wsHost}:{$wsPort}";
+
+        $directives = [
+            "default-src 'self'",
+            "script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'",
+            "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'",
+            "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+            "img-src 'self' data: blob: https:",
+            "connect-src 'self' {$wsOrigin}",
+            "object-src 'none'",
+            "frame-ancestors 'self'",
+            "base-uri 'self'",
+            "form-action 'self'",
+        ];
+
+        return implode('; ', $directives) . ';';
     }
 }
