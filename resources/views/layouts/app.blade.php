@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('vivensi-theme')||'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
     <title>{{ $title ?? config('app.name', 'Vivensi') }} — {{ __('ui.app_tagline') }}</title>
     
