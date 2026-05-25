@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\AuditLog;
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
 use App\Models\Transaction;
@@ -87,18 +88,39 @@ class ProcessAbacatePayWebhook implements ShouldQueue
                 ->first();
 
             if ($transaction && $transaction->status !== 'paid') {
+                $oldStatus = $transaction->status;
                 $transaction->update([
                     'status'          => 'paid',
                     'approval_status' => 'approved',
                     'paid_at'         => now(),
                 ]);
+                AuditLog::create([
+                    'tenant_id'      => $tenant->id,
+                    'user_id'        => null,
+                    'event'          => 'payment.status_changed',
+                    'auditable_type' => Transaction::class,
+                    'auditable_id'   => $transaction->id,
+                    'old_values'     => ['status' => $oldStatus],
+                    'new_values'     => ['status' => 'paid', 'gateway' => 'abacatepay', 'external_id' => $externalId],
+                ]);
             }
 
+            $oldSubStatus = $tenant->subscription_status;
             $tenant->subscription_status = 'active';
             if ($planId && SubscriptionPlan::find($planId)) {
                 $tenant->plan_id = $planId;
             }
             $tenant->save();
+
+            AuditLog::create([
+                'tenant_id'      => $tenant->id,
+                'user_id'        => null,
+                'event'          => 'subscription.activated',
+                'auditable_type' => Tenant::class,
+                'auditable_id'   => $tenant->id,
+                'old_values'     => ['subscription_status' => $oldSubStatus],
+                'new_values'     => ['subscription_status' => 'active', 'gateway' => 'abacatepay', 'plan_id' => $planId],
+            ]);
         });
 
         Log::info('AbacatePay: checkout.completed processado', [
@@ -123,8 +145,18 @@ class ProcessAbacatePayWebhook implements ShouldQueue
 
         $tenant = $this->findTenantByExternalId($externalId);
         if ($tenant) {
+            $oldSubStatus = $tenant->subscription_status;
             $tenant->subscription_status = 'canceled';
             $tenant->save();
+            AuditLog::create([
+                'tenant_id'      => $tenant->id,
+                'user_id'        => null,
+                'event'          => 'subscription.cancelled',
+                'auditable_type' => Tenant::class,
+                'auditable_id'   => $tenant->id,
+                'old_values'     => ['subscription_status' => $oldSubStatus],
+                'new_values'     => ['subscription_status' => 'canceled', 'gateway' => 'abacatepay', 'reason' => 'refund'],
+            ]);
         }
 
         Log::info('AbacatePay: checkout.refunded', ['externalId' => $externalId]);
@@ -154,8 +186,18 @@ class ProcessAbacatePayWebhook implements ShouldQueue
         $tenant = Tenant::whereHas('owner', fn($q) => $q->where('email', $customer['email']))->first();
 
         if ($tenant) {
+            $oldSubStatus = $tenant->subscription_status;
             $tenant->subscription_status = 'canceled';
             $tenant->save();
+            AuditLog::create([
+                'tenant_id'      => $tenant->id,
+                'user_id'        => null,
+                'event'          => 'subscription.cancelled',
+                'auditable_type' => Tenant::class,
+                'auditable_id'   => $tenant->id,
+                'old_values'     => ['subscription_status' => $oldSubStatus],
+                'new_values'     => ['subscription_status' => 'canceled', 'gateway' => 'abacatepay', 'reason' => 'subscription.cancelled'],
+            ]);
             Log::info('AbacatePay: subscription cancelada', ['tenant' => $tenant->id]);
         }
     }

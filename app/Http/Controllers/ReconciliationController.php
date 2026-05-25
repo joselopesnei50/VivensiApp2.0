@@ -19,7 +19,7 @@ class ReconciliationController extends Controller
     public function upload(Request $request, OfxParserService $parser)
     {
         $request->validate([
-            'ofx_file' => 'required|file|max:2048', // 2MB
+            'ofx_file' => 'required|file|max:2048|mimetypes:text/plain,application/xml,text/xml,application/octet-stream,application/x-ofx',
         ]);
 
         $file = $request->file('ofx_file');
