@@ -124,6 +124,46 @@ html:not([data-theme="dark"]) #topbar-title > div:last-child > div:last-child {
     color: #0f172a !important;
 }
 
+/* Bell wrapper, settings link e user trigger — fundos rgba branco viram cinza claro */
+html:not([data-theme="dark"]) #notification-bell-btn,
+html:not([data-theme="dark"]) #topbar-settings,
+html:not([data-theme="dark"]) #user-profile-trigger {
+    background: rgba(0,0,0,0.04) !important;
+    border-color: rgba(0,0,0,0.08) !important;
+}
+html:not([data-theme="dark"]) #notification-bell-btn:hover,
+html:not([data-theme="dark"]) #topbar-settings:hover,
+html:not([data-theme="dark"]) #user-profile-trigger:hover {
+    background: rgba(0,0,0,0.08) !important;
+}
+
+/* Nome do usuário e link "Sair" no topbar */
+html:not([data-theme="dark"]) #user-profile-trigger > div:last-child > div {
+    color: #0f172a !important;
+}
+html:not([data-theme="dark"]) #user-profile-trigger > div:last-child > a {
+    color: #64748b !important;
+}
+
+/* Lang switcher — texto e fundo em light mode */
+html:not([data-theme="dark"]) .lang-btn {
+    background: rgba(0,0,0,0.04) !important;
+    border-color: rgba(0,0,0,0.1) !important;
+}
+html:not([data-theme="dark"]) .lang-btn span,
+html:not([data-theme="dark"]) .lang-btn-active span {
+    color: #475569 !important;
+}
+html:not([data-theme="dark"]) .lang-btn:hover {
+    background: rgba(0,0,0,0.08) !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+}
+
+/* Badge de notificação — borda escura adapta ao fundo branco */
+html:not([data-theme="dark"]) #notif-badge {
+    border-color: #ffffff !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    RESET GLOBAL LEVE
    ══════════════════════════════════════════════════════════════════════════ */
