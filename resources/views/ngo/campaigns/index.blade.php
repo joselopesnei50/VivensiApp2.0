@@ -18,7 +18,7 @@
 @endif
 
 <div class="metrics-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
-    @foreach($campaigns as $campaign)
+    @forelse($campaigns as $campaign)
     <div class="vivensi-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
         <div style="padding: 20px; flex: 1;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
@@ -50,6 +50,16 @@
             </a>
         </div>
     </div>
-    @endforeach
+    @empty
+    <div style="grid-column: 1 / -1;">
+        <x-empty-state
+            icon="fa-bullhorn"
+            title="Nenhuma campanha criada"
+            description="Crie sua primeira campanha de arrecadação e gere uma Landing Page para captar recursos diretamente pelo sistema."
+            action_label="Nova Campanha"
+            action_url="{{ url('/ngo/campaigns/create') }}"
+        />
+    </div>
+    @endforelse
 </div>
 @endsection

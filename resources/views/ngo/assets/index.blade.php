@@ -124,8 +124,12 @@
             @endforeach
             @if($assets->isEmpty())
                 <tr>
-                    <td colspan="6" style="padding: 40px; text-align: center; color: #94a3b8;">
-                        Nenhum item encontrado com os filtros atuais.
+                    <td colspan="6" style="padding: 0; border: none;">
+                        <x-empty-state
+                            icon="fa-boxes-stacked"
+                            title="Nenhum patrimônio encontrado"
+                            description="Nenhum item corresponde aos filtros selecionados. Ajuste a busca ou registre novos bens no botão acima."
+                        />
                     </td>
                 </tr>
             @endif
