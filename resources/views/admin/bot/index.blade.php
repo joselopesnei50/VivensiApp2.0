@@ -464,13 +464,13 @@
 </div>
 
 {{-- ── MODAL: Phone ── --}}
-<div class="modal fade" id="phoneModal" tabindex="-1">
+<div class="modal fade" id="phoneModal" role="dialog" aria-modal="true" aria-labelledby="phoneModalLabel" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form method="POST" id="phoneForm">
             @csrf
             <div class="modal-content" style="border-radius:20px;border:1px solid #f1f5f9;">
                 <div class="modal-header" style="border-bottom:1px solid #f1f5f9;padding:20px 24px;">
-                    <h5 class="modal-title" style="font-weight:800;font-size:1rem;color:#0f172a;">
+                    <h5 class="modal-title" id="phoneModalLabel" style="font-weight:800;font-size:1rem;color:#0f172a;">
                         <i class="fas fa-mobile-screen me-2 text-primary"></i>Editar Telefone
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

@@ -187,12 +187,12 @@
 </div>
 
 {{-- Modal Nova Tarefa --}}
-<div class="modal fade" id="addReminderModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="addReminderModal" role="dialog" aria-modal="true" aria-labelledby="addReminderModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
             <div class="modal-header border-0 pb-0 px-4 pt-4">
                 <div>
-                    <h5 class="modal-title fw-bold mb-0" style="color:#0f172a;">Nova Tarefa para {{ $employee->name }}</h5>
+                    <h5 class="modal-title fw-bold mb-0" id="addReminderModalLabel" style="color:#0f172a;">Nova Tarefa para {{ $employee->name }}</h5>
                     <p class="text-muted mb-0" style="font-size:.8rem;">A tarefa será atribuída diretamente ao colaborador.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

@@ -97,11 +97,11 @@
 </div>
 
 <!-- Modal Adicionar Membro -->
-<div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="addMemberModal" role="dialog" aria-modal="true" aria-labelledby="addMemberModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 20px 50px rgba(0,0,0,0.1);">
             <div class="modal-header border-0 p-4">
-                <h5 class="modal-title font-weight-bold">Novo Membro Vivensi</h5>
+                <h5 class="modal-title font-weight-bold" id="addMemberModalLabel">Novo Membro Vivensi</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ route('admin.team.store') }}" method="POST">

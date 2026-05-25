@@ -187,7 +187,7 @@ $sectionCount = $banner->sections->count();
 </div>{{-- /editor --}}
 
 {{-- ── Confirm modal para templates ── --}}
-<div class="modal fade" id="tplModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="tplModal" role="dialog" aria-modal="true" aria-labelledby="tplModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content" style="background:#242731;border:1px solid rgba(255,255,255,.08);border-radius:14px;">
             <div class="modal-body p-4 text-center">
