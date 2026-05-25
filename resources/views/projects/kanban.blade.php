@@ -259,7 +259,7 @@
 </div>
 
 <!-- Premium Task Modal -->
-<div id="newTaskModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); justify-content: center; align-items: flex-start; z-index: 50000; overflow-y: auto; padding: 22px 16px;">
+<div id="newTaskModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="newTaskModalTitle" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); justify-content: center; align-items: flex-start; z-index: 50000; overflow-y: auto; padding: 22px 16px;">
     <div class="vivensi-card" style="position: relative; background: white; padding: 46px 40px; border-radius: 32px; width: min(550px, 94vw); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 50px 100px rgba(0,0,0,0.3); margin: 0 auto; max-height: calc(100vh - 44px); overflow: auto;">
         <div style="position: sticky; top: 0; display: flex; justify-content: flex-end; background: white; padding-top: 6px; margin-top: -6px; z-index: 5;">
             <button type="button" onclick="closeNewTaskModal()" aria-label="Fechar" title="Fechar" style="border:none; background: #0f172a; color:#fff; width: 38px; height: 38px; border-radius: 14px; font-weight: 900; cursor:pointer; box-shadow: 0 10px 25px rgba(15,23,42,.25);">×</button>
@@ -268,7 +268,7 @@
             <div style="width: 70px; height: 70px; background: #eef2ff; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 1.8rem; margin: 0 auto 20px;">
                 <i class="fas fa-tasks"></i>
             </div>
-            <h3 style="margin: 0; color: #1e293b; font-weight: 900; letter-spacing: -1px;">Nova Atividade</h3>
+            <h3 id="newTaskModalTitle" style="margin: 0; color: #1e293b; font-weight: 900; letter-spacing: -1px;">Nova Atividade</h3>
             <p style="color: #64748b; font-weight: 500; margin-top: 5px;">Adicione uma nova meta ao projeto.</p>
         </div>
         
