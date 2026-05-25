@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>Editor â?? {{ $banner->title }}</title>
+<title>Editor ï¿½?? {{ $banner->title }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800&family=Montserrat:wght@700;800;900&family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Oswald:wght@600;700&family=Raleway:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -350,7 +350,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
     <a href="{{ route('banners.index') }}" class="tb-back"><i class="fas fa-arrow-left"></i> Studio</a>
     <div class="tb-divider"></div>
     <input id="title-input" type="text" value="{{ $banner->title }}" maxlength="120" autocomplete="off">
-    <span id="format-badge">{{ strtoupper(str_replace('_',' ',$banner->format)) }} · {{ $banner->width }}×{{ $banner->height }}px</span>
+    <span id="format-badge">{{ strtoupper(str_replace('_',' ',$banner->format)) }} ï¿½ {{ $banner->width }}ï¿½{{ $banner->height }}px</span>
     <div class="tb-spacer"></div>
     <span id="save-status"><i class="fas fa-circle-check" style="font-size:9px"></i> Salvo</span>
     <div class="tb-divider"></div>
@@ -378,7 +378,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
     <div id="left-panel">
         <div class="lp-tabs">
             <div class="lp-tab active" data-tab="templates" onclick="switchTab(this)">Templates</div>
-            <div class="lp-tab" data-tab="icones" onclick="switchTab(this)">Ícones</div>
+            <div class="lp-tab" data-tab="icones" onclick="switchTab(this)">ï¿½cones</div>
             <div class="lp-tab" data-tab="elementos" onclick="switchTab(this)">Formas</div>
             <div class="lp-tab" data-tab="imagens" onclick="switchTab(this)">Imagens</div>
             <div class="lp-tab" data-tab="camadas" onclick="switchTab(this)">Camadas</div>
@@ -394,11 +394,11 @@ textarea.modal-input{resize:vertical;min-height:88px}
             </div>
             <div class=?sec-title?>? Black Friday</div>
             <div class=?tpl-grid? id=?tpl-bf?></div>
-            <div class=?sec-title?>? Marketing & Agência</div>
+            <div class=?sec-title?>? Marketing & Agï¿½ncia</div>
             <div class=?tpl-grid? id=?tpl-agency?></div>
             <div class=?sec-title?>? Com Foto</div>
             <div class=?tpl-grid? id=?tpl-photo?></div>
-            <div class=?sec-title?>? Design Gráfico</div>
+            <div class=?sec-title?>? Design Grï¿½fico</div>
             <div class=?tpl-grid? id=?tpl-graphic?></div>
             <div class=?sec-title?>?? Viagem & Eventos</div>
             <div class=?tpl-grid? id=?tpl-travel?></div>
@@ -408,21 +408,21 @@ textarea.modal-input{resize:vertical;min-height:88px}
             <div class=?tpl-grid? id=?tpl-ngo?></div>
         </div>
 
-        <!-- ÍCONES -->
+        <!-- ï¿½CONES -->
         <div id=?tab-icones? class=?lp-content?>
             <div style=?position:relative;padding:8px 0 6px?>
                 <i class=?fas fa-magnifying-glass? style=?position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#334155;font-size:11px;pointer-events:none?></i>
-                <input type=?text? id=?ico-search? placeholder=?Buscar ícone...? oninput=?filterIcons(this.value)?
+                <input type=?text? id=?ico-search? placeholder=?Buscar ï¿½cone...? oninput=?filterIcons(this.value)?
                     style=?width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:#e2e8f0;font-size:11px;padding:6px 10px 6px 30px;outline:none;transition:border-color .15s?
                     onfocus=?this.style.borderColor=?#6366f1?? onblur=?this.style.borderColor=?rgba(255,255,255,.09)??>
             </div>
-            <div class="sec-title">Negócios</div>
+            <div class="sec-title">Negï¿½cios</div>
             <div class="ico-grid" id="ico-negocios"></div>
-            <div class="sec-title" style="margin-top:14px">Social & Comunicação</div>
+            <div class="sec-title" style="margin-top:14px">Social & Comunicaï¿½ï¿½o</div>
             <div class="ico-grid" id="ico-social"></div>
             <div class="sec-title" style="margin-top:14px">E-commerce & Vendas</div>
             <div class="ico-grid" id="ico-ecomm"></div>
-            <div class="sec-title" style="margin-top:14px">Símbolos & Decorativos</div>
+            <div class="sec-title" style="margin-top:14px">Sï¿½mbolos & Decorativos</div>
             <div class="ico-grid" id="ico-deco"></div>
         </div>
 
@@ -518,7 +518,7 @@ textarea.modal-input{resize:vertical;min-height:88px}
             <div class="cs-row">
                 <span class="cs-label">Cor de fundo</span>
                 <input type="color" class="prop-color" id="bg-color-input" value="#ffffff" onchange="updateBg(this.value)">
-                <span style="font-size:11px;color:#475569;margin-left:auto">{{ $banner->width }}Ã?{{ $banner->height }}</span>
+                <span style="font-size:11px;color:#475569;margin-left:auto">{{ $banner->width }}ï¿½?{{ $banner->height }}</span>
             </div>
             <div class="cs-row">
                 <span class="cs-label">Fonte matriz</span>
@@ -532,9 +532,9 @@ textarea.modal-input{resize:vertical;min-height:88px}
 </div>
 
 <!-- MODALS -->
-<div id="ai-modal" class="modal-overlay">
+<div id="ai-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
     <div class="modal-box">
-        <div class="modal-title"><i class="fas fa-wand-magic-sparkles" style="color:#818cf8;margin-right:8px"></i>Gerador de Copy com IA</div>
+        <div class="modal-title" id="ai-modal-title"><i class="fas fa-wand-magic-sparkles" style="color:#818cf8;margin-right:8px"></i>Gerador de Copy com IA</div>
         <div class="modal-row">
             <label for="ai-prompt" class="modal-label">Descreva o que a IA deve escrever</label>
             <textarea id="ai-prompt" class="modal-input" rows="3" placeholder="Ex: TÃ­tulo impactante para campanha de doaÃ§Ã£o de agasalhos..."></textarea>
@@ -560,9 +560,9 @@ textarea.modal-input{resize:vertical;min-height:88px}
     </div>
 </div>
 
-<div id="schedule-modal" class="modal-overlay">
+<div id="schedule-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title">
     <div class="modal-box">
-        <div class="modal-title"><i class="fas fa-calendar-plus" style="color:#34d399;margin-right:8px"></i>Agendar PublicaÃ§Ã£o</div>
+        <div class="modal-title" id="schedule-modal-title"><i class="fas fa-calendar-plus" style="color:#34d399;margin-right:8px"></i>Agendar PublicaÃ§Ã£o</div>
         @if($socialAccounts->isEmpty())
         <div style="text-align:center;padding:24px;color:#64748b">
             <i class="fas fa-link-slash" style="font-size:32px;margin-bottom:12px;display:block"></i>
@@ -595,10 +595,10 @@ textarea.modal-input{resize:vertical;min-height:88px}
 </div>
 
 <!-- Template Confirm Modal -->
-<div id="tpl-confirm-modal" class="modal-overlay">
+<div id="tpl-confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tpl-confirm-modal-title">
     <div class="modal-box" style="width:380px">
-        <div class="modal-title" style="font-size:15px"><i class="fas fa-paint-brush" style="color:#818cf8;margin-right:8px"></i>Aplicar Template</div>
-        <p style="color:#94a3b8;font-size:13px;line-height:1.6">Deseja aplicar o template <strong id="tpl-confirm-name" style="color:#e2e8f0"></strong>? O canvas atual será substituído.</p>
+        <div class="modal-title" id="tpl-confirm-modal-title" style="font-size:15px"><i class="fas fa-paint-brush" style="color:#818cf8;margin-right:8px"></i>Aplicar Template</div>
+        <p style="color:#94a3b8;font-size:13px;line-height:1.6">Deseja aplicar o template <strong id="tpl-confirm-name" style="color:#e2e8f0"></strong>? O canvas atual serï¿½ substituï¿½do.</p>
         <div class="modal-actions">
                 <button class="modal-btn modal-btn-cancel" onclick="closeModal('tpl-confirm-modal')">Cancelar</button>
                 <button class="modal-btn modal-btn-primary" onclick="applyPendingTpl()"><i class="fas fa-check"></i> Aplicar Template</button>
@@ -622,9 +622,9 @@ const SCHED_URL  = '{{ route('banners.schedule-from-canvas', $banner) }}';
 const AI_URL     = '{{ route('banners.generate-ai-text', $banner) }}';
 const CSRF       = document.querySelector('meta[name=csrf-token]').content;
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // FABRIC INIT
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 const canvas = new fabric.Canvas('fabric-canvas', {
     width: BANNER_W,
     height: BANNER_H,
@@ -635,9 +635,9 @@ const canvas = new fabric.Canvas('fabric-canvas', {
     stateful: false,
 });
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
-// SNAPPING â?? uses a separate overlay canvas (not fabric contextTop)
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
+// SNAPPING ï¿½?? uses a separate overlay canvas (not fabric contextTop)
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 const snapEl = document.getElementById('snap-canvas');
 const snapCtx = snapEl.getContext('2d');
 let snapLines = { v: [], h: [] };
@@ -804,7 +804,7 @@ const TEMPLATES = {
     ],
     agency: [
         { label: 'Business Orange',    previewCss: 'linear-gradient(135deg,#ea580c,#d97706)',       build: tplBusinessOrange },
-        { label: 'Agência Square',     previewCss: 'linear-gradient(135deg,#0d1117,#00d4ff)',       build: tplAgenciaSquare },
+        { label: 'Agï¿½ncia Square',     previewCss: 'linear-gradient(135deg,#0d1117,#00d4ff)',       build: tplAgenciaSquare },
         { label: 'Marketing Teal',     previewCss: 'linear-gradient(135deg,#162d40,#0d9488)',       build: tplGraphicAgency },
         { label: 'Creative Red',       previewCss: 'linear-gradient(135deg,#7f1d1d,#e5e7eb)',       build: tplAgencyCreativeRed },
         { label: 'Marketing Blue',     previewCss: 'linear-gradient(135deg,#1e3a8a,#f8fafc)',       build: tplAgencyBlue },
@@ -812,7 +812,7 @@ const TEMPLATES = {
     ],
     photo: [
         { label: 'Viagem Explore',     preview: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=280&q=70', build: tplTravelExplorer },
-        { label: 'Arrecadação (Foto)', preview: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=280&q=70', build: tplPhotoNgo },
+        { label: 'Arrecadaï¿½ï¿½o (Foto)', preview: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=280&q=70', build: tplPhotoNgo },
         { label: 'Tech Dark (Foto)',   preview: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=280&q=70',    build: tplPhotoTech },
     ],
     graphic: [
@@ -830,14 +830,14 @@ const TEMPLATES = {
     ],
     corp: [
         { label: 'KPI Report Dark',    previewCss: 'linear-gradient(135deg,#0f172a,#1e293b)',       build: tplKpiReport },
-        { label: 'Lançamento SaaS',    previewCss: 'linear-gradient(135deg,#1e1b4b,#312e81)',       build: tplLancamentoSaas },
+        { label: 'Lanï¿½amento SaaS',    previewCss: 'linear-gradient(135deg,#1e1b4b,#312e81)',       build: tplLancamentoSaas },
         { label: 'Webinar Executivo',  previewCss: 'linear-gradient(135deg,#0c1428,#0ea5e9)',       build: tplWebinarCard },
         { label: 'Digital Mktg Dark',  previewCss: 'linear-gradient(135deg,#0d1d2b,#1a3a52)',       build: tplDigitalMktg },
     ],
     ngo: [
         { label: 'Solidariedade Neon', previewCss: 'linear-gradient(135deg,#030312,#6366f1)',       build: tplNgoNeon },
         { label: 'Impacto Social',     previewCss: 'linear-gradient(135deg,#052e16,#10b981)',       build: tplSocialImpact },
-        { label: 'Campanha Doação',    previewCss: 'linear-gradient(180deg,#ffffff,#ef4444)',       build: tplCampanhaDoacao },
+        { label: 'Campanha Doaï¿½ï¿½o',    previewCss: 'linear-gradient(180deg,#ffffff,#ef4444)',       build: tplCampanhaDoacao },
         { label: 'Voluntariado Pop',   previewCss: 'linear-gradient(135deg,#1a0a2e,#a855f7)',       build: tplVoluntariado },
     ],
 };
@@ -885,9 +885,9 @@ function applyPendingTpl() {
     if (_pendingTplBuild) { _pendingTplBuild(); _pendingTplBuild = null; }
 }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // ICONS
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 const ICONS = {
     negocios: [
         { label:'Sucesso', svg:'<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>' },
@@ -981,7 +981,7 @@ function addIconToCanvas(svgContent, label) {
     });
 }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // Helpers
 function gf() { return document.getElementById('global-font').value || 'Inter'; }
 function mkTxt(text, opts = {}) {
@@ -1035,8 +1035,8 @@ function finishTpl() {
     pushHistory();
 }
 
-// â??â??â?? PHOTO TEMPLATES â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
-// Helper: load image without blocking â?? template always renders even if image fails
+// ï¿½??ï¿½??ï¿½?? PHOTO TEMPLATES ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
+// Helper: load image without blocking ï¿½?? template always renders even if image fails
 function asyncImg(url, cb) {
     fabric.Image.fromURL(url, function(img) {
         if (img && img.width > 0) { cb(img); pushHistory(); }
@@ -1047,12 +1047,12 @@ function tplPhotoNgo() {
     startTpl('#1c1917');
     // Render all content immediately (no image dependency)
     canvas.add(mkCircle({ x:W-100, y:-80, r:260, fill:'#1e3a5f', op:.6 }));
-    canvas.add(mkTxt('ARRECADAÃ?Ã?O\nSOLIDÃRIA', { sz: Math.round(H*.13), fw:'900', y:90, lh:1.05, shadow: new fabric.Shadow({color:'rgba(0,0,0,.6)',blur:20}) }));
+    canvas.add(mkTxt('ARRECADAï¿½?ï¿½?O\nSOLIDÃRIA', { sz: Math.round(H*.13), fw:'900', y:90, lh:1.05, shadow: new fabric.Shadow({color:'rgba(0,0,0,.6)',blur:20}) }));
     canvas.add(mkTxt('Cada gesto vale uma vida. Doe e transforme.', { sz: Math.round(H*.036), y: Math.round(H*.65), lh: 1.6, fill:'#e2e8f0' }));
     canvas.add(mkRect({ x:60, y: Math.round(H*.8), w:190, h:48, fill:'#e11d48', rx:8, shadow: new fabric.Shadow({color:'rgba(225,29,72,.4)',blur:14,offsetY:6}) }));
     canvas.add(mkTxt('Contribuir Agora', { sz:14, fw:'700', x:60, y: Math.round(H*.8)+14, w:190, fill:'#fff', align:'center' }));
     finishTpl();
-    // Enhance with photo async â?? if fails, template still looks good
+    // Enhance with photo async ï¿½?? if fails, template still looks good
     asyncImg('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1080&q=80', img => {
         img.set({ scaleX: W/img.width, scaleY: H/img.height, left:0, top:0, opacity:0.35, name:'bg-img' });
         img.filters.push(new fabric.Image.filters.Brightness({ brightness: -0.2 })); img.applyFilters();
@@ -1078,7 +1078,7 @@ function tplPhotoTech() {
     });
 }
 
-// â??â??â?? GRAPHICAL TEMPLATES (sem fotos) â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½?? GRAPHICAL TEMPLATES (sem fotos) ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 function tplGraphicNeonNgo() {
     startTpl('#1e1b4b');
     // BG shapes
@@ -1111,7 +1111,7 @@ function tplGraphicImpact() {
         canvas.add(mkTxt(s.n, { sz: Math.round(H*.05), fw:'900', x: bx, y: Math.round(H*.55)+2, w: Math.round((W-120)/3)-8, align:'center', fill:'#6ee7b7', name:'pn'+i }));
         canvas.add(mkTxt(s.l, { sz:11, fw:'600', x: bx, y: Math.round(H*.55)+Math.round(H*.05)+6, w: Math.round((W-120)/3)-8, align:'center', fill:'rgba(255,255,255,.7)', name:'pl'+i }));
     });
-    canvas.add(mkTxt('â?» RELATÃ?RIO DE IMPACTO 2025', { sz:11, fw:'800', y:58, fill:'#6ee7b7', name:'tag' }));
+    canvas.add(mkTxt('ï¿½?ï¿½ RELATï¿½?RIO DE IMPACTO 2025', { sz:11, fw:'800', y:58, fill:'#6ee7b7', name:'tag' }));
     canvas.add(mkTxt('Nosso Impacto\nFala por Si.', { sz: Math.round(H*.12), fw:'900', y:95, lh:1.1, name:'title' }));
     canvas.add(mkTxt('Obrigado a cada voluntÃ¡rio, doador e parceiro.', { sz: Math.round(H*.033), y: Math.round(H*.73), lh:1.5, fill:'rgba(255,255,255,.8)', name:'sub' }));
     finishTpl();
@@ -1123,7 +1123,7 @@ function tplGraphicAwareness() {
     canvas.add(mkCircle({ x:-60, y: H, r:220, fill:'#ec4899', op:.08, name:'c2' }));
     // Horizontal accent
     canvas.add(mkRect({ x:0, y: Math.round(H*.48), w: W, h:2, fill:'rgba(236,72,153,.25)', name:'hr' }));
-    canvas.add(mkTxt('#CONSCIENTIZAÃ?Ã?O', { sz:11, fw:'800', y:58, fill:'#e879f9', name:'tag' }));
+    canvas.add(mkTxt('#CONSCIENTIZAï¿½?ï¿½?O', { sz:11, fw:'800', y:58, fill:'#e879f9', name:'tag' }));
     canvas.add(mkTxt('A MudanÃ§a\nComeÃ§a\nem VocÃª.', { sz: Math.round(H*.13), fw:'900', y:95, lh:1.05, shadow: new fabric.Shadow({color:'rgba(236,72,153,.3)',blur:20}), name:'title' }));
     canvas.add(mkTxt('Sua voz tem o poder de transformar realidades. Use-a.', { sz: Math.round(H*.034), y: Math.round(H*.7), lh:1.6, fill:'rgba(255,255,255,.85)', name:'sub' }));
     finishTpl();
@@ -1153,7 +1153,7 @@ function tplGraphicSplit() {
     const tri = new fabric.Triangle({ left: Math.round(W*.44), top:0, width: Math.round(W*.15), height:H, fill:'#6366f1', angle:0, selectable:true, name:'divider' });
     canvas.add(tri);
     // Left side content
-    canvas.add(mkTxt('NOVO\nLANÃ?AMENTO', { sz: Math.round(H*.1), fw:'900', x:40, y:80, w: Math.round(W*.42), fill:'#f8fafc', lh:1.1, name:'title' }));
+    canvas.add(mkTxt('NOVO\nLANï¿½?AMENTO', { sz: Math.round(H*.1), fw:'900', x:40, y:80, w: Math.round(W*.42), fill:'#f8fafc', lh:1.1, name:'title' }));
     canvas.add(mkTxt('O produto que sua equipe esperava chegou.', { sz: Math.round(H*.033), x:40, y: Math.round(H*.62), w: Math.round(W*.42), fill:'#94a3b8', lh:1.6, name:'sub' }));
     canvas.add(mkRect({ x:40, y: Math.round(H*.8), w:160, h:44, fill:'#fff', rx:8, name:'btn-bg' }));
     canvas.add(mkTxt('Acessar', { sz:14, fw:'700', x:40, y: Math.round(H*.8)+13, w:160, fill:'#6366f1', align:'center', name:'btn-txt' }));
@@ -1168,7 +1168,7 @@ function tplGraphicDuotone() {
     canvas.add(mkCircle({ x: W-100, y: H, r:220, fill:'#ef4444', op:.12, name:'c2' }));
     // Horizontal line accent
     canvas.add(mkRect({ x:60, y: Math.round(H*.5), w: Math.round(W*.35), h:3, fill:'#fb923c', rx:2, name:'accent' }));
-    canvas.add(mkTxt('ð?? CONQUISTA 2025', { sz:13, fw:'800', y:55, fill:'#fb923c', name:'tag' }));
+    canvas.add(mkTxt('ï¿½?ï¿½? CONQUISTA 2025', { sz:13, fw:'800', y:55, fill:'#fb923c', name:'tag' }));
     canvas.add(mkTxt('PrÃªmio\nde ExcelÃªncia\nEmpresarial.', { sz: Math.round(H*.12), fw:'900', y:95, lh:1.05, shadow: new fabric.Shadow({color:'rgba(251,146,60,.25)',blur:18}), name:'title' }));
     canvas.add(mkTxt('Reconhecimento pela inovaÃ§Ã£o e impacto social gerado em 2025.', { sz: Math.round(H*.033), y: Math.round(H*.72), lh:1.6, fill:'rgba(255,255,255,.85)', name:'sub' }));
     finishTpl();
@@ -1190,7 +1190,7 @@ function tplGraphicAgency() {
     canvas.add(mkCircle({ x:W*.05, y:H*.7, r:60, fill:'#ef4444', op:1, shadow: new fabric.Shadow({color:'rgba(239,68,68,0.6)',blur:20}) }));
     canvas.add(mkCircle({ x:W*.85, y:H*.65, r:45, fill:'#ef4444', op:0.9 }));
 
-    canvas.add(mkTxt('â?¤ VIVENSI LOGO', { sz:20, fw:'900', x:40, y:40, fill:'#fef08a' }));
+    canvas.add(mkTxt('ï¿½?ï¿½ VIVENSI LOGO', { sz:20, fw:'900', x:40, y:40, fill:'#fef08a' }));
     canvas.add(mkTxt('SUA TAGLINE AQUI', { sz:10, fw:'700', x:42, y:65, fill:'#94a3b8' }));
 
     // Dark bar background for the main text
@@ -1225,11 +1225,11 @@ function tplGraphicBlackFriday() {
     canvas.add(badge);
     canvas.add(mkTxt('BLACK FRIDAY 2025', { sz:15, fw:'900', y:94, fill:'#fff', align:'center', w:W }));
 
-    canvas.add(mkTxt('ATÃ?', { sz: Math.round(H*.04), fw:'800', x: W*.2, y: Math.round(H*.35), fill:'#f43f5e' }));
+    canvas.add(mkTxt('ATï¿½?', { sz: Math.round(H*.04), fw:'800', x: W*.2, y: Math.round(H*.35), fill:'#f43f5e' }));
     canvas.add(mkTxt('70%', { sz: Math.round(H*.22), fw:'900', x: W*.2, y: Math.round(H*.35)+Math.round(H*.01), fill:'#ffffff', shadow: new fabric.Shadow({color:'rgba(0,0,0,.8)',blur:20}) }));
     canvas.add(mkTxt('DE DESCONTO', { sz: Math.round(H*.05), fw:'800', x: W*.2, y: Math.round(H*.35)+Math.round(H*.24), fill:'#f43f5e' }));
     
-    canvas.add(mkTxt('NÃ?O PERCA A MAIOR QUEIMA DE ESTOQUE DO ANO', { sz: Math.round(H*.025), fw:'600', x: W*.2, y: Math.round(H*.68), fill:'#a1a1aa' }));
+    canvas.add(mkTxt('Nï¿½?O PERCA A MAIOR QUEIMA DE ESTOQUE DO ANO', { sz: Math.round(H*.025), fw:'600', x: W*.2, y: Math.round(H*.68), fill:'#a1a1aa' }));
     
     canvas.add(mkRect({ x:W*.2, y: Math.round(H*.78), w:220, h:54, fill:'#ffffff', rx:8, shadow: new fabric.Shadow({color:'rgba(255,255,255,.3)',blur:15,offsetY:5}) }));
     canvas.add(mkTxt('COMPRAR AGORA', { sz:16, fw:'900', x:W*.2, y: Math.round(H*.78)+17, w:220, fill:'#000000', align:'center' }));
@@ -1240,8 +1240,8 @@ function tplAgencySquare() {
     startTpl('#fafaf9');
     canvas.add(mkRect({x:0, y:0, w:W*.65, h:H*.6, fill:'#78716c', rx:40}));
     canvas.add(mkTxt('We Are\nDigital\nMarketing\nAgency', {sz:Math.round(H*.09), fw:'900', x:40, y:80, lh:1.1, fill:'#ffffff'}));
-    canvas.add(mkTxt('â?¢ Business Analysis\nâ?¢ Market Research', {sz:16, fw:'600', x:40, y:H*.65, fill:'#57534e', lh:1.8}));
-    canvas.add(mkTxt('â?¢ SEO Service\nâ?¢ Brand Build', {sz:16, fw:'600', x:W*.32, y:H*.65, fill:'#57534e', lh:1.8}));
+    canvas.add(mkTxt('ï¿½?ï¿½ Business Analysis\nï¿½?ï¿½ Market Research', {sz:16, fw:'600', x:40, y:H*.65, fill:'#57534e', lh:1.8}));
+    canvas.add(mkTxt('ï¿½?ï¿½ SEO Service\nï¿½?ï¿½ Brand Build', {sz:16, fw:'600', x:W*.32, y:H*.65, fill:'#57534e', lh:1.8}));
     // Floating accent squares
     canvas.add(mkRect({x:W*.48, y:180, w:50, h:50, fill:'#f43f5e', rx:12, shadow:new fabric.Shadow({color:'rgba(0,0,0,0.2)',blur:10})}));
     canvas.add(mkRect({x:W*.45, y:260, w:55, h:55, fill:'#3b82f6', rx:12, shadow:new fabric.Shadow({color:'rgba(0,0,0,0.2)',blur:10})}));
@@ -1259,7 +1259,7 @@ function tplAgencySquare() {
     });
 }
 
-// â??â??â?? NEW TEMPLATES (Black Friday, Agency, Fashion, Travel) â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½?? NEW TEMPLATES (Black Friday, Agency, Fashion, Travel) ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 
 function tplBfCameraDark() {
     startTpl('#1a0a00');
@@ -1291,7 +1291,7 @@ function tplBfWatchOrange() {
     canvas.add(mkRect({ x:W*.62, y:Math.round(H*.48), w:150, h:54, fill:'rgba(0,0,0,.35)', rx:4, name:'disc-bg' }));
     canvas.add(mkTxt('Get Upto\n45% Discount', { sz:16, fw:'800', x:W*.62, y:Math.round(H*.49), w:150, fill:'#fff', align:'center', lh:1.3 }));
     canvas.add(mkRect({ x:W*.5-80, y:Math.round(H*.8), w:160, h:42, fill:'#000', rx:21, name:'btn' }));
-    canvas.add(mkTxt('ORDER NOW â??', { sz:13, fw:'800', x:W*.5-80, y:Math.round(H*.8)+13, w:160, fill:'#fff', align:'center' }));
+    canvas.add(mkTxt('ORDER NOW ï¿½??', { sz:13, fw:'800', x:W*.5-80, y:Math.round(H*.8)+13, w:160, fill:'#fff', align:'center' }));
     canvas.add(mkTxt('323-543-4145\nINCLUDEHEREYOURWEBSITE', { sz:11, fw:'600', y:Math.round(H*.9), fill:'rgba(255,255,255,.7)', align:'center', w:W, lh:1.6 }));
     finishTpl();
 }
@@ -1302,10 +1302,10 @@ function tplBfHeadphone() {
     canvas.add(mkTxt('Friday', { sz:Math.round(H*.16), fw:'900', y:60+Math.round(H*.15), fill:'#eab308', align:'center', w:W, shadow:new fabric.Shadow({color:'rgba(234,179,8,.4)',blur:16}) }));
     canvas.add(mkTxt('Limited Offer', { sz:Math.round(H*.035), fw:'700', y:60+Math.round(H*.31), fill:'rgba(255,255,255,.75)', align:'center', w:W }));
     canvas.add(mkRect({ x:W*.35, y:Math.round(H*.55), w:W*.3, h:2, fill:'rgba(234,179,8,.4)', name:'hr' }));
-    canvas.add(mkTxt('Get up To\n50% OFF\nDiscount â?º', { sz:Math.round(H*.05), fw:'900', x:W*.65, y:Math.round(H*.57), w:W*.3, fill:'#eab308', lh:1.2, align:'right' }));
+    canvas.add(mkTxt('Get up To\n50% OFF\nDiscount ï¿½?ï¿½', { sz:Math.round(H*.05), fw:'900', x:W*.65, y:Math.round(H*.57), w:W*.3, fill:'#eab308', lh:1.2, align:'right' }));
     canvas.add(mkTxt('205-741-8365\nwww.yourwebsite.com', { sz:12, fw:'600', x:40, y:Math.round(H*.88), fill:'#eab308', lh:1.5 }));
     canvas.add(mkRect({ x:W*.62, y:Math.round(H*.86), w:150, h:42, fill:'#eab308', rx:21, name:'btn' }));
-    canvas.add(mkTxt('â?? SHOP NOW', { sz:13, fw:'800', x:W*.62, y:Math.round(H*.86)+13, w:150, fill:'#111', align:'center' }));
+    canvas.add(mkTxt('ï¿½?? SHOP NOW', { sz:13, fw:'800', x:W*.62, y:Math.round(H*.86)+13, w:150, fill:'#111', align:'center' }));
     finishTpl();
 }
 
@@ -1315,7 +1315,7 @@ function tplAgencyCreativeRed() {
     canvas.add(mkRect({ x:0, y:H*.85, w:W, h:3, fill:'#b91c1c', name:'footer-line' }));
     // Photo placeholder (replaced when image loads)
     canvas.add(mkRect({ x:W*.45, y:0, w:W*.55, h:H*.85, fill:'#e5e7eb', name:'img-placeholder' }));
-    // Red accent shapes â?? always visible
+    // Red accent shapes ï¿½?? always visible
     canvas.add(mkRect({ x:W*.2, y:0, w:W*.28, h:H*.5, fill:'#dc2626', rx:0, name:'red-block' }));
     canvas.add(mkTxt('WE ARE\nCREATIVE\nBUSINESS\nSOLUTIONS\nAGENCY', { sz:Math.round(H*.07), fw:'900', x:20, y:50, w:W*.35, fill:'#111827', lh:1.1, name:'title' }));
     canvas.add(mkTxt('WE ARE\nCREATIVE', { sz:Math.round(H*.08), fw:'900', x:W*.21, y:H*.08, w:W*.27, fill:'#fff', lh:1.1, align:'center', name:'title-red' }));
@@ -1347,7 +1347,7 @@ function tplAgencyBlue() {
     canvas.add(mkTxt('MARKETING\nAGENCY', { sz:Math.round(H*.1), fw:'900', x:W*.12, y:145, w:W*.6, fill:'#0f172a', lh:1.05 }));
     canvas.add(mkTxt('join online\nTRAINING SESSION', { sz:Math.round(H*.04), fw:'700', x:W*.12, y:H*.52, fill:'#0ea5e9', lh:1.3 }));
     const pts = ['Digital Marketing','Brand Build Strategies','SEO Campaign Strategies'];
-    pts.forEach((p,i) => canvas.add(mkTxt(`â?¢ ${p}`, { sz:13, fw:'600', x:W*.12, y:H*.65+i*22, fill:'#374151' })));
+    pts.forEach((p,i) => canvas.add(mkTxt(`ï¿½?ï¿½ ${p}`, { sz:13, fw:'600', x:W*.12, y:H*.65+i*22, fill:'#374151' })));
     canvas.add(mkRect({ x:W*.12, y:H*.84, w:180, h:42, fill:'#1d4ed8', rx:21, name:'btn' }));
     canvas.add(mkTxt('CONTATO', { sz:14, fw:'800', x:W*.12, y:H*.84+13, w:180, fill:'#fff', align:'center' }));
     canvas.add(mkTxt('000 123 456 789', { sz:13, fw:'600', x:W*.58, y:H*.87, fill:'#0f172a' }));
@@ -1361,9 +1361,9 @@ function tplCleaningRed() {
     canvas.add(mkCircle({ x:W*.35, y:-80, r:180, fill:'#ffffff', op:1, name:'circle-deco' }));
     canvas.add(mkTxt('Cleaning\nService', { sz:Math.round(H*.07), fw:'900', x:30, y:60, w:W*.4, fill:'#ffffff', lh:1.2, name:'title' }));
     const pts2 = ['Roof & Window cleaning','Furniture cleaning','Floor Carpet cleaning','Hotel & Office cleaning'];
-    pts2.forEach((p,i) => canvas.add(mkTxt(`â? ${p}`, { sz:12, fw:'600', x:30, y:H*.55+i*26, fill:'#fff', name:'item'+i })));
+    pts2.forEach((p,i) => canvas.add(mkTxt(`ï¿½?ï¿½ ${p}`, { sz:12, fw:'600', x:30, y:H*.55+i*26, fill:'#fff', name:'item'+i })));
     canvas.add(mkRect({ x:30, y:H*.84, w:140, h:40, fill:'#fff', rx:20, name:'btn-bg' }));
-    canvas.add(mkTxt('â?? CALL NOW', { sz:12, fw:'800', x:30, y:H*.84+13, w:140, fill:'#dc2626', align:'center' }));
+    canvas.add(mkTxt('ï¿½?? CALL NOW', { sz:12, fw:'800', x:30, y:H*.84+13, w:140, fill:'#dc2626', align:'center' }));
     // Right side with images placeholder
     canvas.add(mkRect({ x:W*.48, y:H*.04, w:W*.48, h:H*.45, fill:'#fee2e2', rx:16, name:'img1-bg' }));
     canvas.add(mkRect({ x:W*.48, y:H*.52, w:W*.48, h:H*.42, fill:'#fecaca', rx:16, name:'img2-bg' }));
@@ -1401,7 +1401,7 @@ function tplSwipeUpStory() {
     for(let i=0;i<5;i++) for(let j=0;j<4;j++) canvas.add(mkCircle({ x:W*.65+i*16, y:H*.05+j*16, r:2, fill:'#fff', op:.3 }));
     for(let i=0;i<5;i++) for(let j=0;j<4;j++) canvas.add(mkCircle({ x:W*.65+i*16, y:H*.78+j*16, r:2, fill:'#fff', op:.3 }));
     canvas.add(mkRect({ x:W*.5-80, y:H*.89, w:160, h:42, fill:'#fbbf24', rx:21, name:'btn' }));
-    canvas.add(mkTxt('â?² Swipe Up', { sz:14, fw:'800', x:W*.5-80, y:H*.89+13, w:160, fill:'#1e1b4b', align:'center' }));
+    canvas.add(mkTxt('ï¿½?ï¿½ Swipe Up', { sz:14, fw:'800', x:W*.5-80, y:H*.89+13, w:160, fill:'#1e1b4b', align:'center' }));
     finishTpl();
 }
 
@@ -1410,7 +1410,7 @@ function tplDigitalMktgDark() {
     canvas.add(mkRect({ x:W*.45, y:0, w:W*.55, h:H, fill:'#0a1520', name:'right-bg' }));
     canvas.add(mkCircle({ x:W*.5, y:H*.2, r:120, fill:'#0ea5e9', op:.06, name:'glow' }));
     canvas.add(mkTxt('LOGO\nTAGLINE HERE', { sz:12, fw:'800', x:20, y:30, fill:'rgba(255,255,255,.6)', lh:1.2 }));
-    canvas.add(mkTxt('f  â??  Ã?  â?¶', { sz:14, fw:'700', x:W*.7, y:34, w:W*.25, fill:'rgba(255,255,255,.5)', align:'right' }));
+    canvas.add(mkTxt('f  ï¿½??  ï¿½?  ï¿½?ï¿½', { sz:14, fw:'700', x:W*.7, y:34, w:W*.25, fill:'rgba(255,255,255,.5)', align:'right' }));
     canvas.add(mkTxt('Digital', { sz:Math.round(H*.075), fw:'300', x:W*.5, y:80, w:W*.48, fill:'#ffffff', align:'center', font:'Inter' }));
     canvas.add(mkTxt('MARKETING\nAGENCY', { sz:Math.round(H*.09), fw:'900', x:W*.5, y:80+Math.round(H*.07), w:W*.48, fill:'#fbbf24', align:'center', lh:1.0 }));
     canvas.add(mkRect({ x:W*.5, y:H*.38, w:W*.48, h:1, fill:'rgba(255,255,255,.1)', name:'hr' }));
@@ -1423,10 +1423,10 @@ function tplDigitalMktgDark() {
     finishTpl();
 }
 
-// â??â??â?? PROMO TEMPLATES â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½?? PROMO TEMPLATES ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 
 function tplPromoMegaSale() {
-    // â??â?? MEGA SALE BLACK FRIDAY (Blue Lightning) â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+    // ï¿½??ï¿½?? MEGA SALE BLACK FRIDAY (Blue Lightning) ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
     // Fundo + radial glow no centro superior
     startTpl('#0a1a3d');
     // Deep radial glow
@@ -1447,12 +1447,12 @@ function tplPromoMegaSale() {
     // Logo / Marca topo-esq
     canvas.add(mkTxt('LOGO HERE', {sz:11,fw:'800',x:20,y:20,fill:'rgba(255,255,255,.7)'}));
     // Redes topo-dir
-    canvas.add(mkTxt('f  â?¦  @', {sz:14,fw:'700',x:W-110,y:20,w:100,fill:'rgba(255,255,255,.55)',align:'right'}));
+    canvas.add(mkTxt('f  ï¿½?ï¿½  @', {sz:14,fw:'700',x:W-110,y:20,w:100,fill:'rgba(255,255,255,.55)',align:'right'}));
 
     // Tag
     canvas.add(mkTxt('MEGA SALE', {sz:Math.round(H*.04),fw:'900',y:Math.round(H*.08),fill:'#ffffff',align:'center',w:W}));
 
-    // Textos principais â?? BLACK + FRIDAY centralizados
+    // Textos principais ï¿½?? BLACK + FRIDAY centralizados
     const tBLACK = Math.round(H*.19);
     const szBig  = Math.round(H*.195);
     canvas.add(mkTxt('BLACK', {
@@ -1500,11 +1500,11 @@ function tplPromoMegaSale() {
 
     // BotÃ£o CTA
     canvas.add(mkRect({x:W*.5-110,y:H-62,w:220,h:44,fill:'#fcdc00',rx:22,shadow:new fabric.Shadow({color:'rgba(252,220,0,.4)',blur:14,offsetY:4})}));
-    canvas.add(mkTxt('SHOP NOW CLICK HERE â??', {sz:13,fw:'900',x:W*.5-110,y:H-48,w:220,fill:'#0a1a3d',align:'center'}));
+    canvas.add(mkTxt('SHOP NOW CLICK HERE ï¿½??', {sz:13,fw:'900',x:W*.5-110,y:H-48,w:220,fill:'#0a1a3d',align:'center'}));
     canvas.add(mkTxt('your website goes here', {sz:11,fw:'500',y:H-14,fill:'rgba(255,255,255,.4)',align:'center',w:W}));
 
     finishTpl();
-    // Produto de fundo â?? vai para trÃ¡s de tudo
+    // Produto de fundo ï¿½?? vai para trÃ¡s de tudo
     asyncImg('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1080&q=80', img => {
         const s = Math.max(W/img.width, H*.55/img.height);
         img.set({ scaleX:s, scaleY:s, left:W*.12, top:Math.round(H*.28),
@@ -1520,7 +1520,7 @@ function tplPromoMegaSale() {
 }
 
 function tplPromoWeekend() {
-    // â??â?? WEEKEND OFFER (White + Blue Organic curves) â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+    // ï¿½??ï¿½?? WEEKEND OFFER (White + Blue Organic curves) ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
     startTpl('#f1f5f9');
 
     // Grande mancha azul Ã  direita (curva orgÃ¢nica superior)
@@ -1532,14 +1532,14 @@ function tplPromoWeekend() {
     // Logo top-left
     canvas.add(mkTxt('LOGO\nTACGLINE', {sz:11,fw:'800',x:22,y:22,fill:'#1e3a8a',lh:1.3}));
     // Social icons top-right
-    canvas.add(mkTxt('Follow Us Now\nf  â?¦  â??  â??', {sz:11,fw:'600',x:W-130,y:22,w:120,fill:'rgba(255,255,255,.85)',align:'right',lh:1.5}));
+    canvas.add(mkTxt('Follow Us Now\nf  ï¿½?ï¿½  ï¿½??  ï¿½??', {sz:11,fw:'600',x:W-130,y:22,w:120,fill:'rgba(255,255,255,.85)',align:'right',lh:1.5}));
 
-    // Data â?? left side
+    // Data ï¿½?? left side
     canvas.add(mkTxt('29', {sz:Math.round(H*.12),fw:'900',x:22,y:Math.round(H*.32),fill:'#0284c7',shadow:new fabric.Shadow({color:'rgba(0,0,0,.1)',blur:6})}));
     canvas.add(mkTxt('NOVEMBER', {sz:Math.round(H*.038),fw:'900',x:22,y:Math.round(H*.43),fill:'#1e3a8a'}));
     canvas.add(mkTxt('2 0 2 5', {sz:Math.round(H*.025),fw:'600',x:22,y:Math.round(H*.46)+4,fill:'#64748b',letterSpacing:6}));
 
-    // TÃ­tulos sobre a mancha azul â?? lado direito
+    // TÃ­tulos sobre a mancha azul ï¿½?? lado direito
     const txR = Math.round(W*.38);
     canvas.add(mkTxt('Limited TIME Offer', {sz:Math.round(H*.038),fw:'500',x:txR,y:Math.round(H*.07),w:W*.6,fill:'rgba(255,255,255,.9)',font:'Playfair Display'}));
     canvas.add(mkTxt('BLACK', {sz:Math.round(H*.155),fw:'900',x:txR,y:Math.round(H*.11),w:W*.6,fill:'#ffffff',shadow:new fabric.Shadow({color:'rgba(0,0,0,.3)',blur:14,offsetY:6})}));
@@ -1549,7 +1549,7 @@ function tplPromoWeekend() {
     canvas.add(mkTxt('FRIDAY', {sz:Math.round(H*.155),fw:'900',x:txR,y:Math.round(H*.31),w:W*.6,fill:'#0f172a',shadow:new fabric.Shadow({color:'rgba(0,0,0,.15)',blur:10,offsetY:5})}));
     canvas.add(mkTxt('THIS WEEKEND ONLY', {sz:Math.round(H*.03),fw:'700',x:txR,y:Math.round(H*.47),w:W*.6,fill:'rgba(15,23,42,.65)',letterSpacing:3}));
 
-    // Desconto badge â?? canto inferior direito
+    // Desconto badge ï¿½?? canto inferior direito
     const discX = Math.round(W*.65), discY = Math.round(H*.6);
     canvas.add(mkRect({x:discX,y:discY,w:190,h:70,fill:'rgba(255,255,255,.9)',rx:8,shadow:new fabric.Shadow({color:'rgba(0,0,0,.12)',blur:12})}));
     canvas.add(mkTxt('Save UP To', {sz:12,fw:'600',x:discX+8,y:discY+8,fill:'#64748b'}));
@@ -1559,12 +1559,12 @@ function tplPromoWeekend() {
     // RodapÃ©
     canvas.add(mkRect({x:0,y:H-70,w:W,h:70,fill:'#0284c7',name:'footer',rx:0}));
     canvas.add(mkRect({x:28,y:H-56,w:140,h:38,fill:'rgba(255,255,255,.15)',rx:19,name:'btn-bg'}));
-    canvas.add(mkTxt('â??  ORDER NOW', {sz:13,fw:'800',x:28,y:H-43,w:140,fill:'#ffffff',align:'center'}));
+    canvas.add(mkTxt('ï¿½??  ORDER NOW', {sz:13,fw:'800',x:28,y:H-43,w:140,fill:'#ffffff',align:'center'}));
     canvas.add(mkTxt('323-517-4946', {sz:16,fw:'700',x:W*.45,y:H-50,fill:'#ffffff'}));
     canvas.add(mkTxt('www.yourwebsite.com', {sz:11,fw:'500',x:W*.45,y:H-30,fill:'rgba(255,255,255,.7)'}));
 
     finishTpl();
-    // Produto/instrumento async â?? entra na camada correta
+    // Produto/instrumento async ï¿½?? entra na camada correta
     asyncImg('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1080&q=80', img => {
         const scale = (H*.52)/img.height;
         img.set({ scaleX:scale, scaleY:scale,
@@ -1574,7 +1574,7 @@ function tplPromoWeekend() {
             name:'product-img'
         });
         canvas.add(img);
-        // Manda o produto para baixo dos textos â?? logo acima das manchas azuis
+        // Manda o produto para baixo dos textos ï¿½?? logo acima das manchas azuis
         const blobBottom = canvas.getObjects().find(o=>o.name==='blue-blob-bottom');
         if(blobBottom) canvas.moveObjectTo(img, canvas.getObjects().indexOf(blobBottom)+1);
         canvas.requestRenderAll();
@@ -1582,7 +1582,7 @@ function tplPromoWeekend() {
 }
 
 function tplPromoTravel() {
-    // â??â?? TRAVEL EXPLORER (Blue + Yellow, diagonal slash) â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+    // ï¿½??ï¿½?? TRAVEL EXPLORER (Blue + Yellow, diagonal slash) ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
     startTpl('#1d6fa8');
 
     // Slash branca diagonal dominante (elemento de design)
@@ -1593,11 +1593,11 @@ function tplPromoTravel() {
     canvas.add(mkRect({x:W*.08,y:-H*.12,w:18,h:H*1.3,fill:'#eab308',angle:22,name:'yellow-line'}));
 
     // Logo top-left
-    canvas.add(mkTxt('â?? LOGO', {sz:14,fw:'900',x:22,y:20,fill:'#fde047'}));
+    canvas.add(mkTxt('ï¿½?? LOGO', {sz:14,fw:'900',x:22,y:20,fill:'#fde047'}));
     canvas.add(mkTxt('HERE', {sz:10,fw:'600',x:22,y:37,fill:'rgba(255,255,255,.7)'}));
     // Social top-right
     canvas.add(mkTxt('FOLLOW US NOW', {sz:9,fw:'700',x:W-112,y:22,w:100,fill:'rgba(255,255,255,.6)',align:'right'}));
-    canvas.add(mkTxt('f  â?¦  â??  â??', {sz:13,fw:'600',x:W-112,y:33,w:100,fill:'rgba(255,255,255,.85)',align:'right'}));
+    canvas.add(mkTxt('f  ï¿½?ï¿½  ï¿½??  ï¿½??', {sz:13,fw:'600',x:W-112,y:33,w:100,fill:'rgba(255,255,255,.85)',align:'right'}));
 
     // Tagline + TÃ­tulo hierarquizado
     const txY = Math.round(H*.14);
@@ -1627,7 +1627,7 @@ function tplPromoTravel() {
 
     // BotÃ£o CTA
     canvas.add(mkRect({x:W*.5-110,y:H-72,w:220,h:44,fill:'rgba(255,255,255,.2)',rx:22,stroke:'#ffffff',strokeWidth:1.5,name:'btn'}));
-    canvas.add(mkTxt('â??  BOOK NOW', {sz:16,fw:'800',x:W*.5-110,y:H-56,w:220,fill:'#ffffff',align:'center'}));
+    canvas.add(mkTxt('ï¿½??  BOOK NOW', {sz:16,fw:'800',x:W*.5-110,y:H-56,w:220,fill:'#ffffff',align:'center'}));
 
     // RodapÃ©
     canvas.add(mkTxt('609-791-3583', {sz:20,fw:'900',y:H-24,fill:'#ffffff',align:'center',w:W}));
@@ -1660,17 +1660,17 @@ function tplPromoTravel() {
     });
 }
 
-// â??â??â?? CORPORATE TEMPLATES â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½?? CORPORATE TEMPLATES ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 function tplCorpKpi() {
     startTpl('#0f172a');
     // Grid decoration
     for (let i=1; i<4; i++) canvas.add(new fabric.Line([W*i/4,0,W*i/4,H],{stroke:'rgba(255,255,255,.025)',selectable:false,name:'grid'+i}));
-    canvas.add(mkTxt('RELATÃ?RIO DE DESEMPENHO Q1 2025', { sz:11, fw:'800', y:50, fill:'#475569', name:'tag' }));
+    canvas.add(mkTxt('RELATï¿½?RIO DE DESEMPENHO Q1 2025', { sz:11, fw:'800', y:50, fill:'#475569', name:'tag' }));
     canvas.add(mkTxt('Resultados\ndo Trimestre.', { sz: Math.round(H*.12), fw:'900', y:85, lh:1.1, fill:'#e2e8f0', name:'title' }));
     // Divider
     canvas.add(mkRect({ x:60, y: Math.round(H*.53), w: W-120, h:1, fill:'rgba(255,255,255,.1)', name:'div' }));
     // KPI row
-    const kpis = [{v:'â?? 34%', l:'Crescimento'},{v:'98%', l:'SatisfaÃ§Ã£o'},{v:'120', l:'Projetos'}];
+    const kpis = [{v:'ï¿½?? 34%', l:'Crescimento'},{v:'98%', l:'SatisfaÃ§Ã£o'},{v:'120', l:'Projetos'}];
     kpis.forEach((k, i) => {
         const bx = 60 + i * Math.round((W-120)/3);
         const bw = Math.round((W-120)/3) - 8;
@@ -1699,17 +1699,17 @@ function tplCorpWebinar() {
     canvas.add(mkCircle({ x:80, y: H*.85, r:170, fill:'#6366f1', op:.07 }));
     // Live badge
     canvas.add(mkRect({ x:60, y:60, w:80, h:28, fill:'#ef4444', rx:14, name:'live-bg' }));
-    canvas.add(mkTxt('â? AO VIVO', { sz:10, fw:'800', x:60, y:67, w:80, fill:'#fff', align:'center', name:'live' }));
+    canvas.add(mkTxt('ï¿½?ï¿½ AO VIVO', { sz:10, fw:'800', x:60, y:67, w:80, fill:'#fff', align:'center', name:'live' }));
     canvas.add(mkTxt('NOSSA EQUIPE', { sz:11, fw:'800', x:60, y:58, fill:'transparent', name:'hidden-space' }));
     canvas.add(mkTxt('Webinar\nExecutivo:', { sz: Math.round(H*.11), fw:'900', y:110, lh:1.1, fill:'#f8fafc', name:'title' }));
     canvas.add(mkTxt('GestÃ£o de Alto Impacto em 2025', { sz: Math.round(H*.048), fw:'700', y: Math.round(H*.48), fill:'#38bdf8', name:'sub1' }));
-    canvas.add(mkTxt('ð???  15 de Agosto  â?¢  19h00  â?¢  Online e Gratuito', { sz:14, fw:'500', y: Math.round(H*.62), fill:'#94a3b8', name:'info' }));
+    canvas.add(mkTxt('ï¿½???  15 de Agosto  ï¿½?ï¿½  19h00  ï¿½?ï¿½  Online e Gratuito', { sz:14, fw:'500', y: Math.round(H*.62), fill:'#94a3b8', name:'info' }));
     canvas.add(mkRect({ x:60, y: Math.round(H*.78), w:200, h:48, fill:'#0ea5e9', rx:24, shadow: new fabric.Shadow({color:'rgba(14,165,233,.45)',blur:16,offsetY:6}), name:'btn-bg' }));
     canvas.add(mkTxt('Garantir Minha Vaga', { sz:14, fw:'700', x:60, y: Math.round(H*.78)+14, w:200, fill:'#fff', align:'center', name:'btn-txt' }));
     finishTpl();
 }
 
-/* â??â?? NEW PREMIUM TEMPLATES â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â?? */
+/* ï¿½??ï¿½?? NEW PREMIUM TEMPLATES ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½?? */
 
 function tplMegaSaleBlue() { tplPromoMegaSale(); }
 function tplBfWeekend() { tplPromoWeekend(); }
@@ -1723,13 +1723,13 @@ function tplBfCamera() {
     startTpl('linear-gradient(160deg,#1a0a00 0%,#4a1c00 60%,#1a0a00 100%)');
     canvas.add(mkCircle({ x:W*.6, y:H*.4, r:W*.35, fill: new fabric.Gradient({ type:'radial', coords:{x1:W*.5,y1:H*.5,x2:W*.5,y2:H*.5,r1:0,r2:W*.35}, colorStops:[{offset:0,color:'rgba(217,119,6,.3)'},{offset:1,color:'transparent'}]}) }));
     canvas.add(mkTxt('BLACK FRIDAY', { sz:12, fw:'700', x:25, y:40, fill:'#d97706', charSpacing:400 }));
-    canvas.add(mkTxt('CÃ?MERAS &\nFOTOGRAFIA', { sz:Math.round(H*.08), fw:'800', x:25, y:65, fill:'rgba(255,255,255,.5)', lh:1.1 }));
+    canvas.add(mkTxt('Cï¿½?MERAS &\nFOTOGRAFIA', { sz:Math.round(H*.08), fw:'800', x:25, y:65, fill:'rgba(255,255,255,.5)', lh:1.1 }));
     canvas.add(mkTxt('-60%', { sz:Math.round(H*.22), fw:'900', x:25, y:120, fill:'#fbbf24', shadow:'0 10px 20px rgba(0,0,0,.5)' }));
     canvas.add(mkTxt('DE DESCONTO', { sz:14, fw:'700', x:25, y:120+Math.round(H*.18), fill:'rgba(255,255,255,.4)' }));
     
     // Icon decoration
     canvas.add(mkCircle({ x:60, y:H-140, r:40, fill:'rgba(255,255,255,.05)', stroke:'#d97706', strokeWidth:2 }));
-    canvas.add(mkTxt('ð??·', { sz:32, x:38, y:H-144 }));
+    canvas.add(mkTxt('ï¿½??ï¿½', { sz:32, x:38, y:H-144 }));
     
     canvas.add(mkRect({ x:25, y:H-80, w:W-50, h:50, fill:'transparent', rx:8, stroke:'#d97706', strokeWidth:2 }));
     canvas.add(mkTxt('APROVEITE A OFERTA AGORA', { sz:14, fw:'800', x:25, y:H-64, w:W-50, align:'center', fill:'#d97706' }));
@@ -1739,7 +1739,7 @@ function tplBfCamera() {
 function tplBusinessOrange() {
     startTpl('linear-gradient(135deg,#ea580c 0%,#d97706 100%)');
     canvas.add(mkTxt('OFERTA ESPECIAL', { sz:12, fw:'800', x:30, y:H*.3, fill:'rgba(255,255,255,.6)', charSpacing:300 }));
-    canvas.add(mkTxt('Transforme\nseu Negócio', { sz:Math.round(H*.15), fw:'900', x:30, y:H*.34, fill:'#fff', lh:1.0 }));
+    canvas.add(mkTxt('Transforme\nseu Negï¿½cio', { sz:Math.round(H*.15), fw:'900', x:30, y:H*.34, fill:'#fff', lh:1.0 }));
     canvas.add(mkRect({ x:30, y:H*.58, w:100, h:4, fill:'rgba(255,255,255,.4)' }));
     canvas.add(mkTxt('Consultoria completa com especialistas\npara alavancar seus resultados em 2025.', { sz:16, fw:'400', x:30, y:H*.62, fill:'rgba(255,255,255,.8)', lh:1.5 }));
     canvas.add(mkRect({ x:30, y:H*.78, w:220, h:54, fill:'#fff', rx:10 }));
@@ -1756,7 +1756,7 @@ function tplBfFone() {
     canvas.add(mkTxt('OFF', { sz:28, fw:'900', x:Math.round(W*.65), y:210, fill:'rgba(255,255,255,.5)' }));
     
     canvas.add(mkCircle({ x:W/2, y:H/2+40, r:80, fill:'rgba(255,255,255,.03)', stroke:'rgba(234,179,8,.3)', strokeWidth:1 }));
-    canvas.add(mkTxt('ð??§', { sz:70, x:W/2-35, y:H/2 }));
+    canvas.add(mkTxt('ï¿½??ï¿½', { sz:70, x:W/2-35, y:H/2 }));
 
     canvas.add(mkRect({ x:25, y:H-90, w:W-50, h:54, fill:'#eab308', rx:10 }));
     canvas.add(mkTxt('COMPRAR AGORA', { sz:16, fw:'900', x:25, y:H-72, w:W-50, align:'center', fill:'#000' }));
@@ -1769,9 +1769,9 @@ function tplStartupTalkshow() {
     canvas.add(mkTxt('STARTUP TALK', { sz:12, fw:'700', y:60, fill:'#d4af37', align:'center', w:W, charSpacing:400 }));
     canvas.add(mkTxt('InovaÃ§Ã£o &\nNegÃ³cios', { sz:Math.round(H*.14), fw:'900', y:90, fill:'#fff', align:'center', w:W, lh:1.1 }));
     canvas.add(mkCircle({ x:W/2, y:H/2+20, r:45, fill:'rgba(212,175,55,.1)', stroke:'rgba(212,175,55,.3)', strokeWidth:1.5 }));
-    canvas.add(mkTxt('ð???ï¸', { sz:40, x:W/2-20, y:H/2-5 }));
+    canvas.add(mkTxt('ï¿½???ï¸', { sz:40, x:W/2-20, y:H/2-5 }));
     canvas.add(mkRect({ x:60, y:H-100, w:W-120, h:45, fill:'rgba(212,175,55,.15)', stroke:'rgba(212,175,55,.3)', rx:10 }));
-    canvas.add(mkTxt('EPISÃ?DIO AO VIVO', { sz:14, fw:'700', y:H-85, fill:'#d4af37', align:'center', w:W }));
+    canvas.add(mkTxt('EPISï¿½?DIO AO VIVO', { sz:14, fw:'700', y:H-85, fill:'#d4af37', align:'center', w:W }));
     finishTpl();
 }
 
@@ -1788,7 +1788,7 @@ function tplHeadlineDark() {
     // Horizontal rule
     canvas.add(mkRect({ x:50, y:Math.round(H*.52), w:W-100, h:1, fill:'rgba(255,255,255,.12)' }));
     // Body text
-    canvas.add(mkTxt('Subtítulo descritivo ou chamada de ação. Personalize este texto para o seu banner.', { sz:Math.round(H*.033), x:50, y:Math.round(H*.55), w:W*.7, fill:'rgba(255,255,255,.5)', lh:1.7 }));
+    canvas.add(mkTxt('Subtï¿½tulo descritivo ou chamada de aï¿½ï¿½o. Personalize este texto para o seu banner.', { sz:Math.round(H*.033), x:50, y:Math.round(H*.55), w:W*.7, fill:'rgba(255,255,255,.5)', lh:1.7 }));
     // CTA button ? ghost style
     canvas.add(mkRect({ x:50, y:Math.round(H*.8), w:180, h:48, fill:'transparent', rx:4, stroke:'rgba(255,255,255,.4)', strokeWidth:1.5 }));
     canvas.add(mkTxt('SAIBA MAIS', { sz:13, fw:'700', x:50, y:Math.round(H*.8)+16, w:180, fill:'rgba(255,255,255,.8)', align:'center', charSpacing:300 }));
@@ -1816,7 +1816,7 @@ function tplTravelWorld() {
     // Horizontal separator
     canvas.add(mkRect({ x:40, y:Math.round(H*.52), w:120, h:2, fill:'#d4a574', rx:1 }));
     // Destinations row
-    const dests = ['Paris', 'Tóquio', 'Cairo', 'Lisboa'];
+    const dests = ['Paris', 'Tï¿½quio', 'Cairo', 'Lisboa'];
     dests.forEach((d, i) => {
         canvas.add(mkTxt(d, { sz:11, fw:'600', x:40+i*Math.round((W-80)/4), y:Math.round(H*.55), fill:'rgba(255,255,255,.55)' }));
     });
@@ -1839,7 +1839,7 @@ function tplFashionPop() {
     canvas.add(mkTxt('POP', { sz:Math.round(H*.18), fw:'900', y:80+Math.round(H*.15), fill:'#f9a8d4', align:'center', w:W }));
     canvas.add(mkTxt('SUMMER ? SPRING', { sz:12, fw:'500', y:280, fill:'rgba(255,255,255,.4)', align:'center', w:W, charSpacing:300 }));
     canvas.add(mkRect({ x:W/2-100, y:H-90, w:200, h:50, fill:'#ec4899', rx:10 }));
-    canvas.add(mkTxt('EXPLORAR COLEÇÃO', { sz:14, fw:'800', y:H-72, fill:'#fff', align:'center', w:W }));
+    canvas.add(mkTxt('EXPLORAR COLEï¿½ï¿½O', { sz:14, fw:'800', y:H-72, fill:'#fff', align:'center', w:W }));
     finishTpl();
 }
 
@@ -1847,10 +1847,10 @@ function tplSplitGeo() {
     startTpl('#fff');
     canvas.add(mkRect({ x:0, y:0, w:W*.5, h:H, fill:'#1e1b4b' }));
     canvas.add(new fabric.Polygon([{x:W*.45,y:0},{x:W*.7,y:0},{x:W*.6,y:H},{x:W*.35,y:H}], { fill:'#4f46e5', selectable:false }));
-    canvas.add(mkTxt('SERVIÇOS', { sz:10, fw:'700', x:30, y:H*.3, fill:'#a5b4fc', charSpacing:400 }));
+    canvas.add(mkTxt('SERVIï¿½OS', { sz:10, fw:'700', x:30, y:H*.3, fill:'#a5b4fc', charSpacing:400 }));
     canvas.add(mkTxt('Design\nPremium', { sz:Math.round(H*.14), fw:'900', x:30, y:H*.34, fill:'#fff', lh:1.0 }));
     canvas.add(mkRect({ x:30, y:H*.55, w:50, h:4, fill:'#7c5cff' }));
-    canvas.add(mkTxt('Sua marca com\nexcelência visual.', { sz:14, color:'rgba(255,255,255,.6)', x:30, y:H*.58, lh:1.5 }));
+    canvas.add(mkTxt('Sua marca com\nexcelï¿½ncia visual.', { sz:14, color:'rgba(255,255,255,.6)', x:30, y:H*.58, lh:1.5 }));
     
     const services = ['Social Media', 'Branding', 'Web Design', 'Ads Graphics'];
     services.forEach((s,i) => {
@@ -1880,7 +1880,7 @@ function tplAgenciaSquare() {
     canvas.add(mkRect({ x:0, y:0, w:5, h:H, fill: new fabric.Gradient({ type:'linear', coords:{x1:0,y1:0,x2:0,y2:H}, colorStops:[{offset:0,color:'#00d4ff'},{offset:1,color:'#7c5cff'}]}) }));
     canvas.add(mkTxt('MARKETING DIGITAL', { sz:10, fw:'700', x:30, y:40, fill:'#00d4ff', charSpacing:400 }));
     canvas.add(mkTxt('Sua marca\nno ', { sz:Math.round(H*.12), fw:'900', x:30, y:70, fill:'#fff', lh:1.1 }));
-    canvas.add(mkTxt('próximo\nnível', { sz:Math.round(H*.12), fw:'900', x:30, y:70+Math.round(H*.12), fill:'#00d4ff', lh:1.1 }));
+    canvas.add(mkTxt('prï¿½ximo\nnï¿½vel', { sz:Math.round(H*.12), fw:'900', x:30, y:70+Math.round(H*.12), fill:'#00d4ff', lh:1.1 }));
     canvas.add(mkRect({ x:30, y:280, w:100, h:2, fill:'rgba(0,212,255,.3)' }));
     canvas.add(mkTxt('Strategy ? Creative ? Performance', { sz:11, fw:'600', x:30, y:295, fill:'rgba(255,255,255,.4)', charSpacing:100 }));
     
@@ -1910,13 +1910,13 @@ function tplNgoNeon() {
 function tplSocialImpact() {
     startTpl('linear-gradient(135deg,#052e16 0%,#064e3b 100%)');
     canvas.add(mkCircle({ x:50, y:50, r:22, fill:'rgba(16,185,129,.1)', stroke:'rgba(16,185,129,.4)', strokeWidth:1.5 }));
-    canvas.add(mkTxt('ð??¿', { sz:20, x:40, y:40 }));
+    canvas.add(mkTxt('ï¿½??ï¿½', { sz:20, x:40, y:40 }));
     canvas.add(mkTxt('IMPACTO SOCIAL', { sz:11, fw:'700', x:85, y:45, fill:'#34d399', charSpacing:300 }));
     
-    canvas.add(mkTxt('Cada ação\ntransforma\nvidas', { sz:Math.round(H*.14), fw:'900', x:40, y:120, fill:'#fff', lh:1.1 }));
+    canvas.add(mkTxt('Cada aï¿½ï¿½o\ntransforma\nvidas', { sz:Math.round(H*.14), fw:'900', x:40, y:120, fill:'#fff', lh:1.1 }));
     canvas.add(mkTxt('vidas', { sz:Math.round(H*.14), fw:'900', x:40, y:120+Math.round(H*.22), fill:'#6ee7b7', lh:1.1 }));
     
-    canvas.add(mkTxt('Sua participação faz a diferença real\nna vida de quem mais precisa.', { sz:16, fw:'400', x:40, y:H*.6, fill:'rgba(255,255,255,.4)', lh:1.5 }));
+    canvas.add(mkTxt('Sua participaï¿½ï¿½o faz a diferenï¿½a real\nna vida de quem mais precisa.', { sz:16, fw:'400', x:40, y:H*.6, fill:'rgba(255,255,255,.4)', lh:1.5 }));
     canvas.add(mkRect({ x:40, y:H-100, w:180, h:50, fill:'#10b981', rx:8 }));
     canvas.add(mkTxt('APOIE AGORA', { sz:16, fw:'800', x:40, y:H-82, w:180, align:'center', fill:'#fff' }));
     finishTpl();
@@ -1947,7 +1947,7 @@ function tplVoluntariado() {
     startTpl('linear-gradient(160deg,#1a0a2e 0%,#3b1f5e 50%,#1a0a2e 100%)');
     canvas.add(mkTxt('SEJA VOLUNTÃRIO', { sz:12, fw:'700', y:60, fill:'#a855f7', align:'center', w:W, charSpacing:400 }));
     
-    const users = ['ð??¤','ð??¤','ð??¤'];
+    const users = ['ï¿½??ï¿½','ï¿½??ï¿½','ï¿½??ï¿½'];
     users.forEach((u,i) => {
         canvas.add(mkCircle({ x:W/2 - 40 + i*40, y:120, r:25, fill:'rgba(168,85,247,.1)', stroke:'rgba(168,85,247,.4)', strokeWidth:1 }));
         canvas.add(mkTxt(u, { sz:18, x:W/2 - 40 + i*40 - 9, y:110 }));
@@ -1961,9 +1961,9 @@ function tplVoluntariado() {
     finishTpl();
 }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // ADD ELEMENTS
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 function addText(type) {
     const cfgs = {
         heading: { text:'TÃ­tulo Principal', sz: Math.round(H*.09), fw:'800', fill:'#111827' },
@@ -2002,7 +2002,7 @@ function addShape(type) {
     else if (type === 'badge_pill') {
         const group = new fabric.Group([
             new fabric.Rect({ width:200, height:46, fill:'#ef4444', rx:23, left:-100, top:-23 }),
-            new fabric.Text('PROMOÃ?Ã?O', { fontSize:16, fontWeight:'800', fill:'#fff', left:-100, top:-10, width:200, textAlign:'center', fontFamily:'Inter' }),
+            new fabric.Text('PROMOï¿½?ï¿½?O', { fontSize:16, fontWeight:'800', fill:'#fff', left:-100, top:-10, width:200, textAlign:'center', fontFamily:'Inter' }),
         ], { left:cx-100, top:cy-23, selectable:true, name:'badge_pill' });
         canvas.add(group); canvas.setActiveObject(group); canvas.requestRenderAll(); return;
     }
@@ -2053,9 +2053,9 @@ function updateGlobalFont(f) {
     canvas.requestRenderAll(); pushHistory();
 }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // IMAGES
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 const STOCK = [
     'https://images.unsplash.com/photo-1542838132-92c53300491e?w=280&q=70',
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=280&q=70',
@@ -2114,9 +2114,9 @@ function handleUpload(input) {
     input.value = '';
 }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // LAYERS
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 function refreshLayers() {
     const list = document.getElementById('layers-list');
     if (!list) return;
@@ -2199,9 +2199,9 @@ function toggleLock(idx) {
 function toggleVis(idx) { const o = canvas.item(idx); if(o){ o.set('visible', !o.visible); canvas.requestRenderAll(); refreshLayers(); } }
 function delLayer(idx) { const o = canvas.item(idx); if(o){ canvas.remove(o); canvas.requestRenderAll(); refreshLayers(); } }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // PROPERTIES PANEL
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 canvas.on('selection:created', () => { updateProps(); refreshLayers(); });
 canvas.on('selection:updated', () => { updateProps(); refreshLayers(); });
 canvas.on('selection:cleared', () => { showNoSel(); refreshLayers(); });
@@ -2351,9 +2351,9 @@ function setShadow(p, v) { const o=canvas.getActiveObject(); if(!o||!o.shadow)re
 function applyFilter(t) { const o=canvas.getActiveObject(); if(!o||o.type!=='image')return; o.filters=[]; if(t==='grayscale')o.filters.push(new fabric.Image.filters.Grayscale()); else if(t==='sepia')o.filters.push(new fabric.Image.filters.Sepia()); else if(t==='blur')o.filters.push(new fabric.Image.filters.Blur({blur:.3})); else if(t==='bright')o.filters.push(new fabric.Image.filters.Brightness({brightness:.2})); else if(t==='dark')o.filters.push(new fabric.Image.filters.Brightness({brightness:-.3})); o.applyFilters(); canvas.requestRenderAll(); saveHistory(); }
 function c2hex(c) { if(!c||typeof c!=='string')return '#000000'; if(c.startsWith('#')){ let h=c.replace('#',''); if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; if(h.length>6)h=h.slice(0,6); return '#'+h; } if(c.startsWith('rgb')){ const m=c.match(/\d+/g); if(m&&m.length>=3)return '#'+[m[0],m[1],m[2]].map(n=>parseInt(n).toString(16).padStart(2,'0')).join(''); } return '#000000'; }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // KEYBOARD
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 document.addEventListener('keydown', e => {
     if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
     if (e.key==='Delete'||e.key==='Backspace') { e.preventDefault(); delActive(); }
@@ -2376,9 +2376,9 @@ document.addEventListener('keydown', e => {
     }
 });
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // SAVE / AUTO-SAVE
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 let saveTimer = null;
 function setSaveStatus(s) {
     const el = document.getElementById('save-status');
@@ -2425,9 +2425,9 @@ function exportPng() {
     }, 50);
 }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // AI + SCHEDULE MODALS
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 function openAiModal() { openModal('ai-modal'); document.getElementById('ai-result').style.display='none'; }
 function runAi() {
     const prompt = document.getElementById('ai-prompt').value.trim();
@@ -2474,9 +2474,9 @@ function showNotif(msg, type='') {
     clearTimeout(nTimer); nTimer=setTimeout(()=>el.classList.remove('show'),3500);
 }
 
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 // INIT
-// â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
+// ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??ï¿½??
 document.addEventListener('DOMContentLoaded', () => {
     renderTemplateGrids();
     renderIconGrids();
