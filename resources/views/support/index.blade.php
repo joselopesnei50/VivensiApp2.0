@@ -274,7 +274,7 @@
                 <input type="text" name="search" value="{{ request('search') }}" class="search-input" placeholder="Buscar chamados...">
             </div>
             <div class="d-flex align-items-center gap-2">
-                <select name="status" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                <select name="status" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()" id="status">
                     <option value="">Todos os Status</option>
                     <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Abertos</option>
                     <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Fechados</option>
@@ -351,13 +351,13 @@
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Assunto</label>
-                    <input type="text" name="subject" class="form-control" required placeholder="Resumo do problema">
+                    <label for="subject" class="form-label fw-bold small text-muted text-uppercase">Assunto</label>
+                    <input type="text" name="subject" class="form-control" required placeholder="Resumo do problema" id="subject">
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Categoria</label>
-                        <select name="category" class="form-select">
+                        <label for="category" class="form-label fw-bold small text-muted text-uppercase">Categoria</label>
+                        <select name="category" class="form-select" id="category">
                             <option value="tech">Problema Técnico</option>
                             <option value="billing">Financeiro</option>
                             <option value="feature">Sugestão</option>
@@ -365,8 +365,8 @@
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Prioridade</label>
-                        <select name="priority" class="form-select">
+                        <label for="priority" class="form-label fw-bold small text-muted text-uppercase">Prioridade</label>
+                        <select name="priority" class="form-select" id="priority">
                             <option value="low">Baixa</option>
                             <option value="medium" selected>Média</option>
                             <option value="high">Alta</option>
@@ -374,8 +374,8 @@
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Mensagem</label>
-                    <textarea name="message" class="form-control" rows="6" required placeholder="Descreva detalhadamente sua solicitação..."></textarea>
+                    <label for="message" class="form-label fw-bold small text-muted text-uppercase">Mensagem</label>
+                    <textarea name="message" class="form-control" rows="6" required placeholder="Descreva detalhadamente sua solicitação..." id="message"></textarea>
                 </div>
             </div>
             <div class="modal-footer px-4 py-3 border-top bg-light">

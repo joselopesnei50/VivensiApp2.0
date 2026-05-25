@@ -896,7 +896,7 @@
                 <input type="hidden" name="template_key" id="tpl-key-input" value="">
                 <div class="modal-body px-4">
                     <div class="mb-4">
-                        <label class="form-label">Nome do Design *</label>
+                        <label for="modal-title-input" class="form-label">Nome do Design *</label>
                         <input type="text" name="title" class="form-control form-control-lg"
                                placeholder="Ex: Campanha Black Friday — Novembro" required id="modal-title-input">
                     </div>
@@ -918,12 +918,12 @@
                         </div>
                         <div id="customDims" style="display:none" class="row g-2 mt-2">
                             <div class="col-6">
-                                <label class="form-label">Largura (px)</label>
-                                <input type="number" name="custom_width" class="form-control" value="1200" min="100" max="4000">
+                                <label for="custom_width" class="form-label">Largura (px)</label>
+                                <input type="number" name="custom_width" class="form-control" value="1200" min="100" max="4000" id="custom_width">
                             </div>
                             <div class="col-6">
-                                <label class="form-label">Altura (px)</label>
-                                <input type="number" name="custom_height" class="form-control" value="628" min="100" max="4000">
+                                <label for="custom_height" class="form-label">Altura (px)</label>
+                                <input type="number" name="custom_height" class="form-control" value="628" min="100" max="4000" id="custom_height">
                             </div>
                         </div>
                     </div>

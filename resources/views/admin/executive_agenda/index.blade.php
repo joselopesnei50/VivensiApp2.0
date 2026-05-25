@@ -282,7 +282,7 @@
             </div>
             <div class="row g-3" style="margin-bottom:18px;">
                 <div class="col-6">
-                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Responsável</label>
+                    <label for="modalAssignedTo" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Responsável</label>
                     <select name="assigned_to" id="modalAssignedTo"
                             style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; background:white; box-sizing:border-box;">
                         <option value="">Sem responsável</option>
@@ -343,7 +343,7 @@
         <div id="editTaskTitle" style="font-weight:800; color:#1e293b; font-size:0.95rem; padding:14px 16px; background:#f8fafc; border-radius:12px; margin-bottom:20px;"></div>
         <div class="row g-3" style="margin-bottom:18px;">
             <div class="col-6">
-                <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Status</label>
+                <label for="editStatus" style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Status</label>
                 <select id="editStatus" style="width:100%; padding:11px 14px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.85rem; background:white; box-sizing:border-box;">
                     <option value="todo">A Fazer</option>
                     <option value="doing">Em Progresso</option>
@@ -352,7 +352,7 @@
                 </select>
             </div>
             <div class="col-6">
-                <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Prioridade</label>
+                <label for="editPriority" style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Prioridade</label>
                 <select id="editPriority" style="width:100%; padding:11px 14px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.85rem; background:white; box-sizing:border-box;">
                     <option value="low">Baixa</option>
                     <option value="medium">Média</option>
@@ -363,7 +363,7 @@
         </div>
         <div class="row g-3" style="margin-bottom:24px;">
             <div class="col-6">
-                <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Responsável</label>
+                <label for="editAssigned" style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Responsável</label>
                 <select id="editAssigned" style="width:100%; padding:11px 14px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.85rem; background:white; box-sizing:border-box;">
                     <option value="">Sem responsável</option>
                     @foreach($team as $m)
@@ -372,7 +372,7 @@
                 </select>
             </div>
             <div class="col-6">
-                <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Prazo</label>
+                <label for="editDueDate" style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Prazo</label>
                 <input type="date" id="editDueDate" style="width:100%; padding:11px 14px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.85rem; box-sizing:border-box;">
             </div>
         </div>
