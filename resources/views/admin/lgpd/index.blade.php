@@ -112,13 +112,13 @@
                 @csrf
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
                     <div style="grid-column: 1/-1;">
-                        <label for="title" style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Título do Incidente *</label>
+                        <label style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Título do Incidente *</label>
                         <input type="text" name="title" required placeholder="Ex: Acesso não autorizado à base de dados"
-                               style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;" id="title">
+                               style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;">
                     </div>
                     <div>
-                        <label for="severity" style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Severidade *</label>
-                        <select name="severity" required style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; background:white; box-sizing:border-box;" id="severity">
+                        <label style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Severidade *</label>
+                        <select name="severity" required style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; background:white; box-sizing:border-box;">
                             <option value="low">Baixa</option>
                             <option value="medium" selected>Média</option>
                             <option value="high">Alta</option>
@@ -126,28 +126,28 @@
                         </select>
                     </div>
                     <div>
-                        <label for="occurred_at" style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Data de ocorrência</label>
+                        <label style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Data de ocorrência</label>
                         <input type="datetime-local" name="occurred_at"
-                               style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;" id="occurred_at">
+                               style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;">
                     </div>
                     <div style="grid-column: 1/-1;">
-                        <label for="description" style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Descrição *</label>
+                        <label style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Descrição *</label>
                         <textarea name="description" required rows="3" placeholder="Descreva o que ocorreu, dados afetados e ações imediatas tomadas..."
-                                  style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; resize:vertical; box-sizing:border-box;" id="description"></textarea>
+                                  style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; resize:vertical; box-sizing:border-box;"></textarea>
                     </div>
                     <div>
-                        <label for="affected_data_types" style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Tipos de dados afetados</label>
+                        <label style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Tipos de dados afetados</label>
                         <input type="text" name="affected_data_types" placeholder="Ex: nome, email, CPF"
-                               style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;" id="affected_data_types">
+                               style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;">
                     </div>
                     <div>
-                        <label for="anpd_required" style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">N.º estimado de titulares</label>
+                        <label style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">N.º estimado de titulares</label>
                         <input type="number" name="estimated_affected_count" min="0" placeholder="0"
-                               style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;" id="estimated_affected_count">
+                               style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;">
                     </div>
                     <div style="grid-column: 1/-1;">
                         <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; font-size:0.88rem; color:#1e293b;">
-                            <input type="checkbox" name="anpd_required" value="1" style="width:18px; height:18px;" id="anpd_required">
+                            <input type="checkbox" name="anpd_required" value="1" style="width:18px; height:18px;">
                             Requer notificação à ANPD (Art. 48 LGPD)
                         </label>
                     </div>
@@ -184,7 +184,7 @@
                         <span style="color: #64748b; font-size: 0.75rem;">{{ $stLabels[$breach->status] ?? $breach->status }}</span>
                         <form action="{{ route('admin.lgpd.breach.status', $breach) }}" method="POST" style="margin-left:auto; display:flex; gap:6px; align-items:center;">
                             @csrf @method('PATCH')
-                            <select name="status" style="padding:5px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.75rem; background:white;" id="status">
+                            <select name="status" style="padding:5px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.75rem; background:white;">
                                 <option value="identified" {{ $breach->status=='identified'?'selected':'' }}>Identificado</option>
                                 <option value="contained" {{ $breach->status=='contained'?'selected':'' }}>Contido</option>
                                 <option value="notified_anpd" {{ $breach->status=='notified_anpd'?'selected':'' }}>ANPD Notificada</option>

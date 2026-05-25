@@ -19,12 +19,12 @@
             <form action="{{ route('admin.academy.modules.store', $course->id) }}" method="POST">
                 @csrf
                 <div class="mb-3">
-                    <label for="title" class="form-label" style="font-weight: 600;">Título do Módulo</label>
-                    <input type="text" name="title" class="form-control" required placeholder="Ex: Módulo 1 - Introdução" id="title">
+                    <label class="form-label" style="font-weight: 600;">Título do Módulo</label>
+                    <input type="text" name="title" class="form-control" required placeholder="Ex: Módulo 1 - Introdução">
                 </div>
                 <div class="mb-3">
-                    <label for="order" class="form-label" style="font-weight: 600;">Ordem</label>
-                    <input type="number" name="order" class="form-control" value="0" id="order">
+                    <label class="form-label" style="font-weight: 600;">Ordem</label>
+                    <input type="number" name="order" class="form-control" value="0">
                 </div>
                 <button type="submit" class="btn btn-dark w-100">
                     <i class="fas fa-plus me-2"></i> Adicionar Módulo
@@ -111,13 +111,13 @@
                                     @csrf
                                     <div class="row">
                                         <div class="col-md-8 mb-2">
-                                            <input type="text" name="title" class="form-control form-control-sm" placeholder="Título da Aula" required id="title">
+                                            <input type="text" name="title" class="form-control form-control-sm" placeholder="Título da Aula" required>
                                         </div>
                                         <div class="col-md-2 mb-2">
-                                            <input type="number" name="order" class="form-control form-control-sm" placeholder="Ord." value="{{ $module- id="order">lessons->count() + 1 }}">
+                                            <input type="number" name="order" class="form-control form-control-sm" placeholder="Ord." value="{{ $module->lessons->count() + 1 }}">
                                         </div>
                                         <div class="col-md-2 mb-2">
-                                            <select name="type" class="form-select form-select-sm lesson-type-selector" data-module="{{ $module- id="type">id }}">
+                                            <select name="type" class="form-select form-select-sm lesson-type-selector" data-module="{{ $module->id }}">
                                                 <option value="video">Vídeo</option>
                                                 <option value="ebook">E-book</option>
                                             </select>
@@ -125,17 +125,17 @@
                                         
                                         <!-- Video Fields -->
                                         <div class="col-md-8 mb-2 video-fields-{{ $module->id }}">
-                                            <input type="url" name="video_url" class="form-control form-control-sm" placeholder="URL do Vídeo (YouTube/Vimeo)" id="video_url">
+                                            <input type="url" name="video_url" class="form-control form-control-sm" placeholder="URL do Vídeo (YouTube/Vimeo)">
                                         </div>
                                         
                                         <!-- Ebook Fields -->
                                         <div class="col-md-8 mb-2 ebook-fields-{{ $module->id }}" style="display: none;">
-                                            <input type="file" name="document" class="form-control form-control-sm" accept=".pdf" id="document">
+                                            <input type="file" name="document" class="form-control form-control-sm" accept=".pdf">
                                             <small class="text-muted">Arquivo PDF (máx. 50MB)</small>
                                         </div>
                                         
                                         <div class="col-md-2 mb-2">
-                                            <input type="number" name="duration_minutes" class="form-control form-control-sm" placeholder="Min." id="duration_minutes">
+                                            <input type="number" name="duration_minutes" class="form-control form-control-sm" placeholder="Min.">
                                         </div>
                                         <div class="col-md-2 mb-2">
                                             <button type="submit" class="btn btn-sm btn-primary w-100">Adicionar</button>

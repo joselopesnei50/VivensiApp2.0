@@ -206,15 +206,15 @@
                     <div id="kbEditBox" style="display:none; margin-top: 14px;">
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label for="kbTitleInput" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Título</label>
+                                <label style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Título</label>
                                 <input id="kbTitleInput" type="text" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 800;">
                             </div>
                             <div class="col-md-12">
-                                <label for="kbDescInput" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Descrição</label>
+                                <label style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Descrição</label>
                                 <textarea id="kbDescInput" rows="4" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 700;"></textarea>
                             </div>
                             <div class="col-md-6">
-                                <label for="kbPriority" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Prioridade</label>
+                                <label style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Prioridade</label>
                                 <select id="kbPriority" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 900;">
                                     <option value="low">🟢 Normal</option>
                                     <option value="medium">🟠 Importante</option>
@@ -223,12 +223,12 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label for="kbDue" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Prazo</label>
+                                <label style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Prazo</label>
                                 <input id="kbDue" type="date" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 900;">
                             </div>
                             @if(($canManageAll ?? false) && isset($users))
                                 <div class="col-md-12">
-                                    <label for="kbAssignee" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Responsável</label>
+                                    <label style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Responsável</label>
                                     <select id="kbAssignee" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 900;">
                                         <option value="">Sem responsável</option>
                                         @foreach($users as $u)
@@ -278,23 +278,23 @@
             <input type="hidden" name="status" value="todo">
             
             <div style="margin-bottom: 25px;">
-                <label for="title" style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Título da Atividade</label>
+                <label style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Título da Atividade</label>
                 <input type="text" name="title" class="form-control-vivensi" required 
                        style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 700; color: #1e293b;" 
-                       placeholder="Ex: Definir plano de marketing" id="title">
+                       placeholder="Ex: Definir plano de marketing">
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label for="description" style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Descrição (opcional)</label>
+                <label style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Descrição (opcional)</label>
                 <textarea name="description" rows="3" class="form-control-vivensi"
                           style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 600; color: #1e293b; resize: vertical;"
-                          placeholder="Contexto, checklist, links..." id="description"></textarea>
+                          placeholder="Contexto, checklist, links..."></textarea>
             </div>
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label for="priority" style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Prioridade</label>
-                    <select name="priority" class="form-control-vivensi" style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;" id="priority">
+                    <label style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Prioridade</label>
+                    <select name="priority" class="form-control-vivensi" style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;">
                         <option value="low">🟢 Normal</option>
                         <option value="medium" selected>🟠 Importante</option>
                         <option value="high">🔴 Crítica</option>
@@ -302,16 +302,16 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="due_date" style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Prazo</label>
+                    <label style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Prazo</label>
                     <input type="date" name="due_date" class="form-control-vivensi"
-                           style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;" id="due_date">
+                           style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;">
                 </div>
             </div>
 
             @if(($canManageAll ?? false) && isset($users))
                 <div style="margin-top: 18px;">
-                    <label for="assigned_to" style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Responsável</label>
-                    <select name="assigned_to" class="form-control-vivensi" style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;" id="assigned_to">
+                    <label style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Responsável</label>
+                    <select name="assigned_to" class="form-control-vivensi" style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;">
                         <option value="">Mantenha comigo</option>
                         @foreach($users as $u)
                             <option value="{{ $u->id }}">{{ $u->name }}</option>
