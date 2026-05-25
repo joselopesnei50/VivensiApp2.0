@@ -17,46 +17,46 @@
         @csrf
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Título do Documento</label>
-            <input type="text" name="title" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Contrato de Prestação de Serviços - Consultoria">
+            <label class="form-label" for="title" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Título do Documento</label>
+            <input type="text" name="title" id="title" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Contrato de Prestação de Serviços - Consultoria">
         </div>
 
         <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Nome do Signatário</label>
-                <input type="text" name="signer_name" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Nome Completo">
+                <label class="form-label" for="signer_name" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Nome do Signatário</label>
+                <input type="text" name="signer_name" id="signer_name" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Nome Completo">
             </div>
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Email (Opcional)</label>
-                <input type="email" name="signer_email" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="email@exemplo.com">
+                <label class="form-label" for="signer_email" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Email (Opcional)</label>
+                <input type="email" name="signer_email" id="signer_email" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="email@exemplo.com">
             </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Endereço de quem irá assinar</label>
-            <input type="text" name="signer_address" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Rua, Número, Bairro, Cidade - UF">
+            <label class="form-label" for="signer_address" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Endereço de quem irá assinar</label>
+            <input type="text" name="signer_address" id="signer_address" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Rua, Número, Bairro, Cidade - UF">
         </div>
 
         <div class="grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">WhatsApp / Telefone</label>
-                <input type="text" name="signer_phone" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="(00) 00000-0000">
+                <label class="form-label" for="signer_phone" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">WhatsApp / Telefone</label>
+                <input type="text" name="signer_phone" id="signer_phone" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="(00) 00000-0000">
             </div>
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">CPF</label>
-                <input type="text" name="signer_cpf" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="000.000.000-00">
+                <label class="form-label" for="signer_cpf" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">CPF</label>
+                <input type="text" name="signer_cpf" id="signer_cpf" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="000.000.000-00">
             </div>
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">RG</label>
-                <input type="text" name="signer_rg" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="0.000.000">
+                <label class="form-label" for="signer_rg" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">RG</label>
+                <input type="text" name="signer_rg" id="signer_rg" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="0.000.000">
             </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 30px;">
             <div style="display:flex; justify-content:space-between; align-items:end; gap: 15px; flex-wrap:wrap;">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Termos do Contrato</label>
+                <label class="form-label" for="contentInput" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Termos do Contrato</label>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <label style="color:#64748b; font-size:0.9rem;">Modelo:</label>
+                    <label for="templateSelect" style="color:#64748b; font-size:0.9rem;">Modelo:</label>
                     <select id="templateSelect" class="form-control-vivensi" style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px;">
                         <option value="">— Selecionar —</option>
                         <option value="service">Prestação de Serviços (simples)</option>
