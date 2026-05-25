@@ -257,7 +257,7 @@
                         <small class="text-muted"><i class="far fa-clock"></i> {{ $ticket->created_at->format('d M, H:i') }}</small>
                         
                         <div class="d-flex align-items-center gap-2">
-                             <img src="https://ui-avatars.com/api/?name={{ urlencode($ticket->user->name) }}&background=random" class="rounded-circle" width="24" height="24">
+                             <img loading="lazy" src="https://ui-avatars.com/api/?name={{ urlencode($ticket->user->name) }}&background=random" class="rounded-circle" width="24" height="24">
                              <small class="fw-bold" style="font-size: 0.8rem;">{{ explode(' ', $ticket->user->name)[0] }}</small>
                         </div>
                     </div>

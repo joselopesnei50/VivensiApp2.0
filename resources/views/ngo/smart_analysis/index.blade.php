@@ -134,7 +134,7 @@
             <div class="vivensi-card" style="background: #1e293b; border-radius: 28px; padding: 35px; flex-grow: 1; position: relative; overflow: hidden;">
                 <div class="bruce-glass-premium">
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-                        <img src="{{ asset('img/bruce-ai.png') }}" alt="Bruce" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+                        <img loading="lazy" src="{{ asset('img/bruce-ai.png') }}" alt="Bruce" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
                         <div>
                             <h6 style="margin: 0; color: white; font-weight: 900; font-size: 1rem; letter-spacing: 0.5px;">Bruce AI Advisor</h6>
                             <span style="font-size: 0.65rem; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Online & Analisando</span>

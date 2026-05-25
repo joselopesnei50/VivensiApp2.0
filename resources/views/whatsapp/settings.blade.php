@@ -570,7 +570,7 @@
             }
             if(data.qrcode) {
                 const qrWindow = window.open('', 'QR Code Evolution', 'width=400,height=500');
-                qrWindow.document.write('<html><head><title>QR Code Evolution API</title></head><body style="text-align:center;padding:20px;"><h3>Escaneie este QR Code</h3><img src="' + data.qrcode + '" style="max-width:300px;"/><p>Abra o WhatsApp no celular > Configurações > WhatsApp Web > Escanear código QR</p></body></html>');
+                qrWindow.document.write('<html><head><title>QR Code Evolution API</title></head><body style="text-align:center;padding:20px;"><h3>Escaneie este QR Code</h3><img loading="lazy" src="' + data.qrcode + '" style="max-width:300px;"/><p>Abra o WhatsApp no celular > Configurações > WhatsApp Web > Escanear código QR</p></body></html>');
             } else {
                 alert('QR Code não disponível. Verifique a configuração da instância.');
             }
@@ -688,7 +688,7 @@
                         <p style="color: #475569; font-size: 0.9rem; margin-bottom: 15px; font-weight: 600;">Abra o WhatsApp no celular e escaneie o código abaixo:</p>
                         
                         <div style="background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; display: inline-block; margin-bottom: 20px; min-width: 250px; min-height: 250px; display: flex; align-items: center; justify-content: center;">
-                            <img id="qr-code-image" src="" alt="QR Code" style="width: 220px; height: 220px; display: none;">
+                            <img loading="lazy" id="qr-code-image" src="" alt="QR Code" style="width: 220px; height: 220px; display: none;">
                             <div id="qr-code-loading" style="color: #64748b;">
                                 <i class="fas fa-spinner fa-spin fa-2x mb-2"></i><br>Gerando código...
                             </div>

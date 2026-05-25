@@ -43,7 +43,7 @@
                         @php $featured = $courses->first(); @endphp
                         <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 24px; padding: 25px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
                             <div style="position: relative; border-radius: 16px; overflow: hidden; margin-bottom: 20px;">
-                                <img src="{{ $featured->thumbnail_url }}" alt="{{ $featured->title }}" style="width: 100%; height: 250px; object-fit: cover;">
+                                <img loading="lazy" src="{{ $featured->thumbnail_url }}" alt="{{ $featured->title }}" style="width: 100%; height: 250px; object-fit: cover;">
                                 <div style="position: absolute; top: 15px; left: 15px; background: rgba(99, 102, 241, 0.9); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 20px; font-weight: 700; color: white; font-size: 0.8rem;">
                                     <i class="fas fa-star"></i> EM DESTAQUE
                                 </div>
@@ -83,7 +83,7 @@
                             <!-- Thumbnail -->
                             <div style="position: relative; padding-top: 56.25%; background: #0f172a;">
                                 @if($course->thumbnail_url)
-                                    <img src="{{ $course->thumbnail_url }}" alt="{{ $course->title }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                                    <img loading="lazy" src="{{ $course->thumbnail_url }}" alt="{{ $course->title }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                                 @else
                                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(45deg, #1e1b4b, #312e81);">
                                         <i class="fas fa-graduation-cap fa-3x" style="color: #6366f1; opacity: 0.5;"></i>

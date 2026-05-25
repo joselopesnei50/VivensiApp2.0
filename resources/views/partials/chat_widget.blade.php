@@ -34,7 +34,7 @@
         <!-- AI Assistant -->
         <div class="dock-item" style="display: flex; align-items: center; gap: 10px;">
             <span class="dock-label" style="background: #1e293b; color: white; padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; opacity: 0; transition: opacity 0.2s;">Bruce AI</span>
-            <img onclick="toggleChat()" src="{{ asset('img/bruce-ai.png') }}" alt="Bruce AI" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #6366f1; padding: 2px; object-fit: cover; cursor: pointer; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);" title="Atendimento via Bruce AI 🐶">
+            <img loading="lazy" onclick="toggleChat()" src="{{ asset('img/bruce-ai.png') }}" alt="Bruce AI" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #6366f1; padding: 2px; object-fit: cover; cursor: pointer; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);" title="Atendimento via Bruce AI 🐶">
         </div>
 
         <!-- Reconciliation Shortcut -->
@@ -52,7 +52,7 @@
     <div id="chat-window" style="display: none; position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; z-index: 10000;">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #6366f1, #4f46e5); padding: 15px 20px; color: white; display: flex; align-items: center; gap: 10px;">
-            <img src="{{ asset('img/bruce-ai.png') }}" alt="Bruce AI" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; padding: 1px; object-fit: cover;" title="Atendimento via Bruce AI 🐶">
+            <img loading="lazy" src="{{ asset('img/bruce-ai.png') }}" alt="Bruce AI" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; padding: 1px; object-fit: cover;" title="Atendimento via Bruce AI 🐶">
             <div>
                 <h4 style="margin: 0; font-size: 1rem;">Bruce AI 🐶</h4>
                 <span style="font-size: 0.75rem; opacity: 0.9;">Cão-sultor Financeiro</span>

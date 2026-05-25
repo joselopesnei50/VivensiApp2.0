@@ -266,7 +266,7 @@
 
             <div id="step3" style="display: none;">
                 <h3 style="color: #1e293b;">Escaneie o QR Code</h3>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-426614174000520400005303986540510.005802BR5913Vivensi Social6008Brasilia62070503***63041D3D" style="width: 200px; margin-bottom: 20px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px;">
+                <img loading="lazy" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-426614174000520400005303986540510.005802BR5913Vivensi Social6008Brasilia62070503***63041D3D" style="width: 200px; margin-bottom: 20px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px;">
                 <p style="font-size: 0.9rem; color: #64748b;">Aguardando pagamento...</p>
                 <div style="font-size: 0.8rem; background: #f0fdf4; color: #16a34a; padding: 5px 10px; border-radius: 20px; display: inline-block;">
                     <i class="fas fa-shield-alt"></i> Ambiente Seguro

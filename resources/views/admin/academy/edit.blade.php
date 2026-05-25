@@ -36,7 +36,7 @@
                 <div class="mb-4">
                     <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Capa (Thumbnail)</label>
                     @if($course->thumbnail_url)
-                        <img src="{{ $course->thumbnail_url }}" alt="Thumbnail" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; display: block;">
+                        <img loading="lazy" src="{{ $course->thumbnail_url }}" alt="Thumbnail" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; display: block;">
                     @endif
                     <input type="file" name="thumbnail" class="form-control" accept="image/*">
                 </div>

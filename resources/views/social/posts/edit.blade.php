@@ -91,7 +91,7 @@
                             @if($post->media_type === 'video')
                                 <video controls class="rounded d-block" style="max-height:160px;max-width:100%;"></video>
                             @else
-                                <img src="{{ $post->media_url }}" alt="" class="rounded" style="max-height:160px;max-width:100%;object-fit:cover;">
+                                <img loading="lazy" src="{{ $post->media_url }}" alt="" class="rounded" style="max-height:160px;max-width:100%;object-fit:cover;">
                             @endif
                             <div class="form-text text-muted">A mídia não pode ser alterada na edição.</div>
                         </div>
@@ -125,7 +125,7 @@
                     </div>
                     <p class="mb-2" style="font-size:.88rem;white-space:pre-wrap;" id="previewCaption">{{ $post->caption }}</p>
                     @if($post->media_url && $post->media_type === 'image')
-                    <img src="{{ $post->media_url }}" alt="" class="rounded w-100" style="max-height:200px;object-fit:cover;">
+                    <img loading="lazy" src="{{ $post->media_url }}" alt="" class="rounded w-100" style="max-height:200px;object-fit:cover;">
                     @endif
                 </div>
             </div>

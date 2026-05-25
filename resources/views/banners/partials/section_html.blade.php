@@ -29,7 +29,7 @@ $hasBtn = !empty($c['button_text']);
 @elseif($type === 'image_overlay')
 @php $op = ($c['overlay_opacity'] ?? 55) / 100; @endphp
 <div style="position:relative;width:100%;height:100%;overflow:hidden;">
-    <img src="{{ $c['image_url'] ?? '' }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
+    <img loading="lazy" src="{{ $c['image_url'] ?? '' }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
     <div style="position:absolute;inset:0;background:{{ $c['overlay_color'] ?? '#000' }};opacity:{{ $op }};"></div>
     <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:{{ $flexAl }};justify-content:center;padding:60px 48px;text-align:{{ $align }};box-sizing:border-box;">
         <h1 style="font-size:{{ $c['title_size'] ?? 56 }}px;color:{{ $c['title_color'] ?? '#fff' }};font-family:'{{ $font }}',sans-serif;font-weight:800;margin:0 0 18px;line-height:1.08;letter-spacing:-1px;">{{ $c['title'] ?? 'Título' }}</h1>
@@ -61,7 +61,7 @@ $hasBtn = !empty($c['button_text']);
 @php $imgLeft = ($c['image_side'] ?? 'left') === 'left'; @endphp
 <div style="display:flex;flex-direction:{{ $imgLeft ? 'row' : 'row-reverse' }};width:100%;height:100%;">
     <div style="flex:1;overflow:hidden;position:relative;">
-        <img src="{{ $c['image_url'] ?? '' }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
+        <img loading="lazy" src="{{ $c['image_url'] ?? '' }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
     </div>
     <div style="flex:1;background:{{ $c['bg_color'] ?? '#fff' }};padding:48px 44px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;">
         @if(!empty($c['tag']))
@@ -97,7 +97,7 @@ $hasBtn = !empty($c['button_text']);
     <div style="position:absolute;bottom:-40px;left:80px;width:200px;height:200px;border-radius:50%;background:{{ $c['accent_color'] ?? '#6366f1' }};opacity:.08;pointer-events:none;"></div>
     <div style="position:relative;z-index:1;">
         @if(!empty($c['logo_url']))
-        <img src="{{ $c['logo_url'] }}" alt="" style="height:52px;margin-bottom:28px;display:block;">
+        <img loading="lazy" src="{{ $c['logo_url'] }}" alt="" style="height:52px;margin-bottom:28px;display:block;">
         @endif
         @if(!empty($c['tag']))
         <span style="display:inline-block;background:{{ $c['accent_color'] ?? '#6366f1' }};color:#fff;font-size:11px;font-weight:700;padding:3px 18px;border-radius:99px;letter-spacing:2.5px;margin-bottom:22px;font-family:'{{ $font }}',sans-serif;">{{ $c['tag'] }}</span>

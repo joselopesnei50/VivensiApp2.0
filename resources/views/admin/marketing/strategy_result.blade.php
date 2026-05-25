@@ -21,7 +21,7 @@
                     <div class="carousel-inner">
                         @foreach($post['images'] as $key => $img)
                             <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
-                                <img src="{{ $img['url_regular'] }}" class="d-block w-100" style="height: 250px; object-fit: cover;" alt="Unsplash Image">
+                                <img loading="lazy" src="{{ $img['url_regular'] }}" class="d-block w-100" style="height: 250px; object-fit: cover;" alt="Unsplash Image">
                                 <div class="carousel-caption d-none d-md-block p-1" style="background: rgba(0,0,0,0.5); bottom: 0;">
                                     <small>Foto por <a href="{{ $img['photographer_url'] }}" target="_blank" class="text-white">{{ $img['photographer'] }}</a> no Unsplash</small>
                                 </div>
@@ -144,7 +144,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-600 small text-muted">IMAGEM SELECIONADA</label>
                             <div id="sm_img_preview_wrap" class="rounded overflow-hidden mb-2" style="height:160px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;">
-                                <img id="sm_img_preview" src="" alt="" class="w-100 h-100" style="object-fit:cover;display:none;">
+                                <img loading="lazy" id="sm_img_preview" src="" alt="" class="w-100 h-100" style="object-fit:cover;display:none;">
                                 <i id="sm_img_placeholder" class="fas fa-image fa-2x text-muted"></i>
                             </div>
                             <div id="sm_img_selector" class="d-flex gap-1 flex-wrap"></div>

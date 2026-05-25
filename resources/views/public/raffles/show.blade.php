@@ -179,7 +179,7 @@
     <div class="raffle-container">
         <div class="raffle-card">
             @if($raffle->image_path)
-                <img src="{{ Storage::url($raffle->image_path) }}" class="raffle-banner" alt="{{ $raffle->title }}">
+                <img loading="lazy" src="{{ Storage::url($raffle->image_path) }}" class="raffle-banner" alt="{{ $raffle->title }}">
             @endif
 
             <div class="raffle-header">

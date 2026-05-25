@@ -760,7 +760,7 @@
                     <div class="input-box">
                         <!-- Image Preview Area (hidden by default) -->
                         <div id="imagePreviewArea" style="display:none; margin-bottom: 8px; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1; position: relative;">
-                            <img id="imagePreviewEl" src="" style="max-height:120px; max-width:100%; border-radius:8px; display:block; margin-bottom:6px;">
+                            <img loading="lazy" id="imagePreviewEl" src="" style="max-height:120px; max-width:100%; border-radius:8px; display:block; margin-bottom:6px;">
                             <input type="text" id="imageCaptionInput" placeholder="Legenda (opcional)..." style="width:100%; border:none; background:transparent; font-size:0.85rem; outline:none; color:#334155;">
                             <button onclick="cancelImage()" style="position:absolute; top:6px; right:6px; background:#ef4444; color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:0.8rem; cursor:pointer; line-height:1;">✕</button>
                         </div>
@@ -1869,7 +1869,7 @@
                         $('#chat-messages-area').append(`
                             <div class="message-row message-out">
                                 <div class="bubble out">
-                                    <img src="${preview}" style="max-width:200px; max-height:160px; border-radius:8px; display:block;">
+                                    <img loading="lazy" src="${preview}" style="max-width:200px; max-height:160px; border-radius:8px; display:block;">
                                     ${captionHtml}
                                     <div class="meta">Agora <i class="fas fa-check-double text-light"></i></div>
                                 </div>

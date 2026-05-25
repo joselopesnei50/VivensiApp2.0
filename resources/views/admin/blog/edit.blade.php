@@ -256,7 +256,7 @@
                             <div class="fw-bold" style="color:#0f172a;font-size:.9rem;">Clique para alterar</div>
                         </div>
                         <div id="preview-container" class="img-preview-wrap {{ $post->image ? '' : 'd-none' }}">
-                            <img id="image-preview" src="{{ $post->image ?? '#' }}" alt="Preview">
+                            <img loading="lazy" id="image-preview" src="{{ $post->image ?? '#' }}" alt="Preview">
                             <button type="button" id="btn-remove" class="img-remove-btn">
                                 <i class="fas fa-times"></i>
                             </button>

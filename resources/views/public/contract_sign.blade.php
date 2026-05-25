@@ -83,7 +83,7 @@
         <div style="margin-top: 50px; text-align: center;">
             <p style="margin-bottom: 20px;">Assinado digitalmente por <strong>{{ $contract->signer_name }}</strong></p>
             <div style="margin-bottom: 10px;">
-                <img src="{{ $contract->signature_image }}" style="max-width: 300px; border-bottom: 1px solid #000;">
+                <img loading="lazy" src="{{ $contract->signature_image }}" style="max-width: 300px; border-bottom: 1px solid #000;">
             </div>
             <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">
                 Data/Hora: {{ $contract->signed_at->format('d/m/Y H:i:s') }}<br>
