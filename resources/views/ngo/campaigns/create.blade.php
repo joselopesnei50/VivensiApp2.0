@@ -11,23 +11,23 @@
         @csrf
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Título da Campanha</label>
-            <input type="text" name="title" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Reforma da Biblioteca Comunitária">
+            <label for="title" class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Título da Campanha</label>
+            <input type="text" name="title" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Reforma da Biblioteca Comunitária" id="title">
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Descrição / História</label>
-            <textarea name="description" class="form-control-vivensi" required rows="5" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Conte a história do projeto e por que ele precisa de apoio..."></textarea>
+            <label for="description" class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Descrição / História</label>
+            <textarea name="description" class="form-control-vivensi" required rows="5" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Conte a história do projeto e por que ele precisa de apoio..." id="description"></textarea>
         </div>
 
         <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Meta de Captação (R$)</label>
-                <input type="number" step="0.01" name="target_amount" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="0.00">
+                <label for="target_amount" class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Meta de Captação (R$)</label>
+                <input type="number" step="0.01" name="target_amount" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="0.00" id="target_amount">
             </div>
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Link Vídeo (YouTube/Vimeo) - Opcional</label>
-                <input type="url" name="video_url" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="https://...">
+                <label for="video_url" class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Link Vídeo (YouTube/Vimeo) - Opcional</label>
+                <input type="url" name="video_url" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="https://..." id="video_url">
             </div>
         </div>
 

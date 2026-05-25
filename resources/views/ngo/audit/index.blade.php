@@ -23,8 +23,8 @@
             <input type="text" name="q" value="{{ request('q') }}" class="form-control-vivensi" placeholder="Tipo, evento, IP, URL...">
         </div>
         <div style="min-width: 160px;">
-            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Evento</label>
-            <select name="event" class="form-control-vivensi">
+            <label for="event" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Evento</label>
+            <select name="event" class="form-control-vivensi" id="event">
                 <option value="">Todos</option>
                 @foreach(($events ?? []) as $ev)
                     <option value="{{ $ev }}" {{ request('event') === $ev ? 'selected' : '' }}>{{ strtoupper($ev) }}</option>
@@ -32,8 +32,8 @@
             </select>
         </div>
         <div style="min-width: 200px;">
-            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Usuário</label>
-            <select name="user_id" class="form-control-vivensi">
+            <label for="user_id" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Usuário</label>
+            <select name="user_id" class="form-control-vivensi" id="user_id">
                 <option value="">Todos</option>
                 @foreach(($users ?? []) as $u)
                     <option value="{{ $u->id }}" {{ (string)request('user_id') === (string)$u->id ? 'selected' : '' }}>{{ $u->name }}</option>

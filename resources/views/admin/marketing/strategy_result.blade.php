@@ -80,7 +80,7 @@
 
         <div class="vivensi-card">
             <div class="mb-3">
-                <label class="form-label small text-muted fw-bold">HERO HEADLINE (H1)</label>
+                <label for="lp_headline" class="form-label small text-muted fw-bold">HERO HEADLINE (H1)</label>
                 <div class="input-group">
                     <input type="text" class="form-control" value="{{ $strategy['landing_page']['hero_headline'] }}" id="lp_headline" readonly>
                     <button class="btn btn-outline-secondary" onclick="copyInput('lp_headline')"><i class="fas fa-copy"></i></button>
@@ -88,12 +88,12 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label small text-muted fw-bold">HERO SUBHEADLINE (H2)</label>
+                <label for="lp_subheadline" class="form-label small text-muted fw-bold">HERO SUBHEADLINE (H2)</label>
                 <textarea class="form-control" rows="2" id="lp_subheadline" readonly>{{ $strategy['landing_page']['hero_subheadline'] }}</textarea>
             </div>
 
             <div class="mb-3">
-                <label class="form-label small text-muted fw-bold">CTA BUTTON</label>
+                <label for="lp_cta" class="form-label small text-muted fw-bold">CTA BUTTON</label>
                 <input type="text" class="form-control" value="{{ $strategy['landing_page']['cta_button'] }}" id="lp_cta" readonly>
             </div>
 
@@ -153,8 +153,8 @@
                         <!-- Campos do formulário -->
                         <div class="col-md-8">
                             <div class="mb-3">
-                                <label class="form-label fw-600 small text-muted">CONTA</label>
-                                <select name="social_account_id" class="form-select" required>
+                                <label for="social_account_id" class="form-label fw-600 small text-muted">CONTA</label>
+                                <select name="social_account_id" class="form-select" required id="social_account_id">
                                     <option value="">Selecione...</option>
                                     @foreach($socialAccounts as $account)
                                         <option value="{{ $account->id }}">
@@ -166,18 +166,18 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-600 small text-muted">PUBLICAR EM</label>
+                                <label for="platform" class="form-label fw-600 small text-muted">PUBLICAR EM</label>
                                 <div class="d-flex gap-2">
                                     <label class="platform-chip active" data-val="facebook">
-                                        <input type="radio" name="platform" value="facebook" checked class="d-none">
+                                        <input type="radio" name="platform" value="facebook" checked class="d-none" id="platform">
                                         <i class="fab fa-facebook me-1"></i> Facebook
                                     </label>
-                                    <label class="platform-chip" data-val="instagram">
-                                        <input type="radio" name="platform" value="instagram" class="d-none">
+                                    <label for="platform" class="platform-chip" data-val="instagram">
+                                        <input type="radio" name="platform" value="instagram" class="d-none" id="platform">
                                         <i class="fab fa-instagram me-1"></i> Instagram
                                     </label>
                                     <label class="platform-chip" data-val="both">
-                                        <input type="radio" name="platform" value="both" class="d-none">
+                                        <input type="radio" name="platform" value="both" class="d-none" id="platform">
                                         <i class="fas fa-share-nodes me-1"></i> Ambos
                                     </label>
                                 </div>
@@ -192,7 +192,7 @@
 
                         <!-- Legenda -->
                         <div class="col-12">
-                            <label class="form-label fw-600 small text-muted d-flex justify-content-between">
+                            <label for="sm_caption" class="form-label fw-600 small text-muted d-flex justify-content-between">
                                 <span>LEGENDA</span>
                                 <span id="sm_char_count" class="text-muted" style="font-size:.7rem;font-weight:400;">0 / 2200</span>
                             </label>

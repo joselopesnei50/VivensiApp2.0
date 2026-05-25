@@ -275,7 +275,7 @@
                     </div>
 
                     <div class="field mb-4">
-                        <label class="field-label">
+                        <label for="webhookUrlInput" class="field-label">
                             <i class="fas fa-link me-1 text-primary"></i> URL do Webhook
                         </label>
                         <div class="copy-row">
@@ -478,7 +478,7 @@
                 <div class="modal-body" style="padding:20px 24px;">
                     <p class="field-hint mb-3">Usuário: <strong id="modalUserName" style="color:#0f172a;"></strong></p>
                     <div class="field">
-                        <label class="field-label">Número de WhatsApp</label>
+                        <label for="modalPhone" class="field-label">Número de WhatsApp</label>
                         <input type="text" name="phone" id="modalPhone" class="field-input" placeholder="5516997618695">
                         <div class="field-hint">Somente números (55 + DDD + número). Deixe vazio para remover o acesso.</div>
                     </div>

@@ -879,7 +879,7 @@
                     </div>
                     <div class="crm-body collapse show" id="crm-ai-brain">
                         <div class="mb-2">
-                            <label class="label">Instruções de Personalidade</label>
+                            <label for="aiTrainingArea" class="label">Instruções de Personalidade</label>
                             <textarea id="aiTrainingArea" class="form-control form-control-sm" rows="4" style="font-size: 0.8rem; background: #fffbeb;" placeholder="Ex: Você é um vendedor focado em..."></textarea>
                         </div>
                         <button type="button" class="btn btn-sm btn-info text-white w-100 py-1" onclick="updateAiTraining()" style="font-weight: 700; font-size: 0.75rem;">
@@ -901,7 +901,7 @@
                     <div class="crm-body collapse" id="crm-kanban">
                         @if($isManager)
                             <div class="mb-2">
-                                <label class="label mb-1">Selecionar Projeto</label>
+                                <label for="kanbanProjectSelect" class="label mb-1">Selecionar Projeto</label>
                                 <select id="kanbanProjectSelect" class="form-select form-select-sm" style="border-radius:8px;font-size:0.82rem;">
                                     <option value="">— escolha um projeto —</option>
                                     @foreach($projects as $proj)
@@ -919,7 +919,7 @@
                             </button>
                         @elseif($isNgo)
                             <div class="mb-2">
-                                <label class="label mb-1">Nome da Empresa / Patrocinador</label>
+                                <label for="sponsorCompanyName" class="label mb-1">Nome da Empresa / Patrocinador</label>
                                 <input type="text" id="sponsorCompanyName" class="form-control form-control-sm" placeholder="Ex: Empresa ABC Ltda" style="border-radius:8px;font-size:0.82rem;">
                                 <div class="small text-muted mt-1" style="font-size:0.75rem;">
                                     <i class="fas fa-sticky-note me-1" style="color:#f59e0b;"></i>
@@ -1059,11 +1059,11 @@
                 <div class="modal-body p-4">
                     <p class="text-muted small mb-3">A mensagem será enviada automaticamente na data e hora selecionadas (com delay de ±5 min para segurança anti-ban).</p>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small text-muted text-uppercase" style="letter-spacing:.5px;">Mensagem</label>
+                        <label for="scheduleMsgContent" class="form-label fw-semibold small text-muted text-uppercase" style="letter-spacing:.5px;">Mensagem</label>
                         <textarea id="scheduleMsgContent" class="form-control" rows="4" placeholder="Digite a mensagem que será enviada..."></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small text-muted text-uppercase" style="letter-spacing:.5px;">Data e Hora do Envio</label>
+                        <label for="scheduleDatetime" class="form-label fw-semibold small text-muted text-uppercase" style="letter-spacing:.5px;">Data e Hora do Envio</label>
                         <input type="datetime-local" id="scheduleDatetime" class="form-control" style="border-radius:10px;">
                     </div>
                     <div id="scheduleResult" style="display:none;" class="alert alert-success py-2 small fw-semibold"></div>

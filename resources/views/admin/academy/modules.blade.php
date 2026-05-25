@@ -19,12 +19,12 @@
             <form action="{{ route('admin.academy.modules.store', $course->id) }}" method="POST">
                 @csrf
                 <div class="mb-3">
-                    <label class="form-label" style="font-weight: 600;">Título do Módulo</label>
-                    <input type="text" name="title" class="form-control" required placeholder="Ex: Módulo 1 - Introdução">
+                    <label for="title" class="form-label" style="font-weight: 600;">Título do Módulo</label>
+                    <input type="text" name="title" class="form-control" required placeholder="Ex: Módulo 1 - Introdução" id="title">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" style="font-weight: 600;">Ordem</label>
-                    <input type="number" name="order" class="form-control" value="0">
+                    <label for="order" class="form-label" style="font-weight: 600;">Ordem</label>
+                    <input type="number" name="order" class="form-control" value="0" id="order">
                 </div>
                 <button type="submit" class="btn btn-dark w-100">
                     <i class="fas fa-plus me-2"></i> Adicionar Módulo
@@ -111,7 +111,7 @@
                                     @csrf
                                     <div class="row">
                                         <div class="col-md-8 mb-2">
-                                            <input type="text" name="title" class="form-control form-control-sm" placeholder="Título da Aula" required>
+                                            <input type="text" name="title" class="form-control form-control-sm" placeholder="Título da Aula" required id="title">
                                         </div>
                                         <div class="col-md-2 mb-2">
                                             <input type="number" name="order" class="form-control form-control-sm" placeholder="Ord." value="{{ $module->lessons->count() + 1 }}">
@@ -125,17 +125,17 @@
                                         
                                         <!-- Video Fields -->
                                         <div class="col-md-8 mb-2 video-fields-{{ $module->id }}">
-                                            <input type="url" name="video_url" class="form-control form-control-sm" placeholder="URL do Vídeo (YouTube/Vimeo)">
+                                            <input type="url" name="video_url" class="form-control form-control-sm" placeholder="URL do Vídeo (YouTube/Vimeo)" id="video_url">
                                         </div>
                                         
                                         <!-- Ebook Fields -->
                                         <div class="col-md-8 mb-2 ebook-fields-{{ $module->id }}" style="display: none;">
-                                            <input type="file" name="document" class="form-control form-control-sm" accept=".pdf">
+                                            <input type="file" name="document" class="form-control form-control-sm" accept=".pdf" id="document">
                                             <small class="text-muted">Arquivo PDF (máx. 50MB)</small>
                                         </div>
                                         
                                         <div class="col-md-2 mb-2">
-                                            <input type="number" name="duration_minutes" class="form-control form-control-sm" placeholder="Min.">
+                                            <input type="number" name="duration_minutes" class="form-control form-control-sm" placeholder="Min." id="duration_minutes">
                                         </div>
                                         <div class="col-md-2 mb-2">
                                             <button type="submit" class="btn btn-sm btn-primary w-100">Adicionar</button>

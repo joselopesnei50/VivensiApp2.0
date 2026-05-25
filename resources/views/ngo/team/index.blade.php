@@ -97,24 +97,24 @@
         <form action="{{ url('/ngo/team') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label class="form-label">Nome Completo</label>
-                <input type="text" name="name" class="form-control-vivensi" required>
+                <label for="name" class="form-label">Nome Completo</label>
+                <input type="text" name="name" class="form-control-vivensi" required id="name">
             </div>
             <div class="form-group">
-                <label class="form-label">Email de Acesso</label>
-                <input type="email" name="email" class="form-control-vivensi" required>
+                <label for="email" class="form-label">Email de Acesso</label>
+                <input type="email" name="email" class="form-control-vivensi" required id="email">
             </div>
             <div class="form-group">
-                <label class="form-label">Função / Permissão</label>
-                <select name="role" class="form-control-vivensi">
+                <label for="role" class="form-label">Função / Permissão</label>
+                <select name="role" class="form-control-vivensi" id="role">
                     <option value="ngo">Administrador (Acesso Total)</option>
                     <option value="manager">Gestor de Projetos</option>
                     <option value="employee">Colaborador (Restrito)</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Senha Inicial</label>
-                <input type="password" name="password" class="form-control-vivensi" required minlength="6">
+                <label for="password" class="form-label">Senha Inicial</label>
+                <input type="password" name="password" class="form-control-vivensi" required minlength="6" id="password">
             </div>
 
             <button type="submit" class="btn-premium" style="width: 100%; justify-content: center;">Criar Usuário</button>
@@ -134,15 +134,15 @@
             @csrf
             @method('PUT')
             <div class="form-group">
-                <label class="form-label">Nome Completo</label>
+                <label for="edit_name" class="form-label">Nome Completo</label>
                 <input type="text" name="name" id="edit_name" class="form-control-vivensi" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Email (Não editável)</label>
+                <label for="edit_email" class="form-label">Email (Não editável)</label>
                 <input type="email" id="edit_email" class="form-control-vivensi" readonly style="background: #f1f5f9;">
             </div>
             <div class="form-group">
-                <label class="form-label">Função / Permissão</label>
+                <label for="edit_role" class="form-label">Função / Permissão</label>
                 <select name="role" id="edit_role" class="form-control-vivensi">
                     <option value="ngo">Administrador (Acesso Total)</option>
                     <option value="manager">Gestor de Projetos</option>
@@ -150,7 +150,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Status</label>
+                <label for="edit_status" class="form-label">Status</label>
                 <select name="status" id="edit_status" class="form-control-vivensi">
                     <option value="active">Ativo</option>
                     <option value="suspended">Suspenso</option>

@@ -171,13 +171,13 @@
         <form action="{{ $basePath . '/ngo/landing-pages' }}" method="POST">
             @csrf
             <div class="form-group">
-                <label>
+                <label for="title">
                     {{ ($context ?? 'ngo') === 'manager'
                         ? 'Título da Página (Ex: Projeto Alpha - Captação)'
                         : 'Título da Página (Ex: Campanha de Natal)'
                     }}
                 </label>
-                <input type="text" name="title" class="form-control-vivensi" required placeholder="Digite o nome...">
+                <input type="text" name="title" class="form-control-vivensi" required placeholder="Digite o nome..." id="title">
             </div>
             <div style="margin-top: 20px; display: flex; gap: 10px;">
                 <button type="button" onclick="document.getElementById('newPageModal').style.display='none'" style="flex: 1; border: none; background: #f1f5f9; cursor: pointer; border-radius: 8px;">Cancelar</button>

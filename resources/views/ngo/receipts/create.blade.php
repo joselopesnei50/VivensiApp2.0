@@ -11,8 +11,8 @@
         @csrf
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Doador (opcional)</label>
-            <select name="ngo_donor_id" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" onchange="fillDonorName(this)">
+            <label for="ngo_donor_id" class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Doador (opcional)</label>
+            <select name="ngo_donor_id" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" onchange="fillDonorName(this)" id="ngo_donor_id">
                 <option value="">— Selecionar doador cadastrado —</option>
                 @foreach($donors as $donor)
                     <option value="{{ $donor->id }}">{{ $donor->name }}</option>
@@ -22,13 +22,13 @@
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Nome do Doador / Empresa</label>
+            <label for="donor_name" class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Nome do Doador / Empresa</label>
             <input type="text" name="description" id="donor_name" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Digite o nome do doador...">
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Valor da Doação (R$)</label>
-            <input type="text" name="amount" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 1.2rem; font-weight: 700; color: #16a34a;" placeholder="0,00">
+            <label for="amount" class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Valor da Doação (R$)</label>
+            <input type="text" name="amount" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 1.2rem; font-weight: 700; color: #16a34a;" placeholder="0,00" id="amount">
         </div>
 
         <div class="form-group" style="margin-bottom: 30px;">

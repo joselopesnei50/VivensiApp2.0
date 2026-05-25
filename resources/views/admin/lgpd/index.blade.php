@@ -117,8 +117,8 @@
                                style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; box-sizing:border-box;">
                     </div>
                     <div>
-                        <label style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Severidade *</label>
-                        <select name="severity" required style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; background:white; box-sizing:border-box;">
+                        <label for="severity" style="display:block; font-weight:700; font-size:0.82rem; margin-bottom:6px; color:#1e293b;">Severidade *</label>
+                        <select name="severity" required style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.88rem; background:white; box-sizing:border-box;" id="severity">
                             <option value="low">Baixa</option>
                             <option value="medium" selected>Média</option>
                             <option value="high">Alta</option>
@@ -147,7 +147,7 @@
                     </div>
                     <div style="grid-column: 1/-1;">
                         <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; font-size:0.88rem; color:#1e293b;">
-                            <input type="checkbox" name="anpd_required" value="1" style="width:18px; height:18px;">
+                            <input type="checkbox" name="anpd_required" value="1" style="width:18px; height:18px;" id="anpd_required">
                             Requer notificação à ANPD (Art. 48 LGPD)
                         </label>
                     </div>
@@ -184,7 +184,7 @@
                         <span style="color: #64748b; font-size: 0.75rem;">{{ $stLabels[$breach->status] ?? $breach->status }}</span>
                         <form action="{{ route('admin.lgpd.breach.status', $breach) }}" method="POST" style="margin-left:auto; display:flex; gap:6px; align-items:center;">
                             @csrf @method('PATCH')
-                            <select name="status" style="padding:5px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.75rem; background:white;">
+                            <select name="status" style="padding:5px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.75rem; background:white;" id="status">
                                 <option value="identified" {{ $breach->status=='identified'?'selected':'' }}>Identificado</option>
                                 <option value="contained" {{ $breach->status=='contained'?'selected':'' }}>Contido</option>
                                 <option value="notified_anpd" {{ $breach->status=='notified_anpd'?'selected':'' }}>ANPD Notificada</option>
