@@ -32,7 +32,7 @@
 
         <!-- Logo -->
         <div class="header">
-            <img src="{{ config('app.url') }}/novalogo.png" alt="Vivensi">
+            <img loading="lazy" src="{{ config('app.url') }}/novalogo.png" alt="Vivensi">
         </div>
 
         <!-- Alert Banner -->

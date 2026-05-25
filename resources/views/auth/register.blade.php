@@ -117,28 +117,28 @@
         @endif
 
         <div class="form-group">
-            <label>Nome da Organização / Empresa</label>
-            <input type="text" name="organization_name" class="form-control" placeholder="Ex: Minha ONG ou Minha Empresa" required value="{{ old('organization_name') }}">
+            <label for="organization_name">Nome da Organização / Empresa</label>
+            <input type="text" id="organization_name" name="organization_name" class="form-control" placeholder="Ex: Minha ONG ou Minha Empresa" required value="{{ old('organization_name') }}" autocomplete="organization">
         </div>
 
         <div class="form-group">
-            <label>Seu Nome Completo (Gestor)</label>
-            <input type="text" name="name" class="form-control" placeholder="Seu nome" required value="{{ old('name') }}">
+            <label for="name">Seu Nome Completo (Gestor)</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="Seu nome" required value="{{ old('name') }}" autocomplete="name">
         </div>
 
         <div class="form-group">
-            <label>E-mail de Acesso</label>
-            <input type="email" name="email" class="form-control" placeholder="voce@email.com" required value="{{ old('email') }}">
+            <label for="email">E-mail de Acesso</label>
+            <input type="email" id="email" name="email" class="form-control" placeholder="voce@email.com" required value="{{ old('email') }}" autocomplete="email">
         </div>
 
         <div class="row" style="display: flex; gap: 15px;">
             <div class="form-group" style="flex: 1;">
-                <label>Senha</label>
-                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
             </div>
             <div class="form-group" style="flex: 1;">
-                <label>Confirmar Senha</label>
-                <input type="password" name="password_confirmation" class="form-control" placeholder="••••••••" required>
+                <label for="password_confirmation">Confirmar Senha</label>
+                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="••••••••" required autocomplete="new-password">
             </div>
         </div>
 
