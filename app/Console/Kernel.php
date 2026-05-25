@@ -128,6 +128,11 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Queue: alerta de jobs falhados a cada 15 minutos
+        $schedule->command('queue:alert-failed')
+                 ->everyFifteenMinutes()
+                 ->withoutOverlapping();
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');

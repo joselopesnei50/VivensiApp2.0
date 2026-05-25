@@ -80,6 +80,24 @@
             </div>
         </div>
     </div>
+    <div class="col-6 col-xl">
+        <a href="{{ route('admin.failed-jobs.index') }}" style="text-decoration: none;">
+            <div class="kpi-card {{ $failedJobsCount > 0 ? 'kpi-red' : 'kpi-emerald' }}">
+                <div class="kpi-icon"><i class="fas fa-circle-exclamation"></i></div>
+                <div class="kpi-body">
+                    <div class="kpi-label">Jobs Falhados</div>
+                    <div class="kpi-value">{{ $failedJobsCount }}</div>
+                    <div class="kpi-sub">
+                        @if($failedJobsCount > 0)
+                            <i class="fas fa-triangle-exclamation me-1"></i>Requer atenção
+                        @else
+                            <i class="fas fa-check me-1"></i>Tudo normal
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
 </div>
 
 {{-- ── CHARTS ROW 1 ── --}}
@@ -493,6 +511,12 @@
 .kpi-emerald .kpi-value { color:#047857; }
 .kpi-emerald .kpi-sub { color:#34d399; }
 
+.kpi-red { background:#fef2f2;border-color:#fecaca; }
+.kpi-red .kpi-icon { background:#ef4444;color:white; }
+.kpi-red .kpi-label { color:#dc2626; }
+.kpi-red .kpi-value { color:#991b1b; }
+.kpi-red .kpi-sub { color:#f87171; }
+
 .pulse-dot {
     display:inline-block;width:7px;height:7px;
     background:#10b981;border-radius:50%;margin-right:4px;
@@ -659,7 +683,8 @@ body {
 .kpi-blue .kpi-icon,
 .kpi-green .kpi-icon,
 .kpi-amber .kpi-icon,
-.kpi-emerald .kpi-icon {
+.kpi-emerald .kpi-icon,
+.kpi-red .kpi-icon {
     color:#fff;
 }
 

@@ -108,6 +108,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::patch('/bookings/{booking}/status',   [App\Http\Controllers\Admin\MeetingBookingController::class, 'updateStatus'])->name('admin.bookings.status');
         Route::patch('/bookings/{booking}/link',     [App\Http\Controllers\Admin\MeetingBookingController::class, 'updateLink'])->name('admin.bookings.link');
 
+        // Jobs Falhados
+        Route::get('/failed-jobs',                       [App\Http\Controllers\Admin\FailedJobsController::class, 'index'])->name('admin.failed-jobs.index');
+        Route::post('/failed-jobs/{uuid}/retry',         [App\Http\Controllers\Admin\FailedJobsController::class, 'retry'])->name('admin.failed-jobs.retry');
+        Route::post('/failed-jobs/retry-all',            [App\Http\Controllers\Admin\FailedJobsController::class, 'retryAll'])->name('admin.failed-jobs.retry-all');
+        Route::delete('/failed-jobs/{uuid}',             [App\Http\Controllers\Admin\FailedJobsController::class, 'destroy'])->name('admin.failed-jobs.destroy');
+        Route::delete('/failed-jobs',                    [App\Http\Controllers\Admin\FailedJobsController::class, 'flush'])->name('admin.failed-jobs.flush');
+
         // Dev Portal (senha separada — middleware dev_auth)
         Route::get('/dev/gate',        [App\Http\Controllers\Admin\DevController::class, 'gate'])->name('admin.dev.gate');
         Route::post('/dev/gate',       [App\Http\Controllers\Admin\DevController::class, 'authenticate'])->name('admin.dev.authenticate')->middleware('throttle:10,1');
