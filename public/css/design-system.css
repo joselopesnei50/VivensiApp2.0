@@ -5,6 +5,27 @@
  * Nunca editar style.css diretamente; expandir aqui.
  */
 
+/* Skip link — visível apenas no foco (teclado), WCAG 2.1 AA */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 16px;
+    z-index: 99999;
+    padding: 10px 20px;
+    background: var(--ds-brand, #2563eb);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 0 0 10px 10px;
+    text-decoration: none;
+    transition: top 0.15s ease;
+}
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid #fbbf24;
+    outline-offset: 2px;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    TOKENS — Design Tokens (CSS Custom Properties)
    Complementam as variáveis já definidas em style.css
