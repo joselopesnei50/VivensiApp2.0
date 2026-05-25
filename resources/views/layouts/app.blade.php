@@ -1911,6 +1911,30 @@ document.addEventListener('keydown', function(e) {
     }
     if (e.key === 'Escape') closeCmdPalette();
 });
+
+// Prevent double-submit: disable submit buttons on form submission
+document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (form.dataset.noDoubleSubmit === 'false') return;
+
+    const btns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+    btns.forEach(function(btn) {
+        btn.disabled = true;
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = 'fas fa-spinner fa-spin';
+        }
+        if (btn.dataset.loadingText) {
+            btn.dataset.originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + btn.dataset.loadingText;
+        }
+    });
+
+    // Re-enable after 15s as fallback (e.g. server-side validation error reloads page)
+    setTimeout(function() {
+        btns.forEach(function(btn) { btn.disabled = false; });
+    }, 15000);
+}, true);
 </script>
 </body>
 </html>
