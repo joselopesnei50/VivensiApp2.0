@@ -28,34 +28,40 @@ class GeocodeBackfill extends Command
      */
     public function handle()
     {
-        $this->info("Starting geocoding backfill...");
+        $this->info('Iniciando geocodificação retroativa...');
 
         $beneficiaries = Beneficiary::whereNotNull('address')
             ->where('address', '!=', '')
             ->whereNull('latitude')
-            ->get();
-
-        $beneficiaryCount = $beneficiaries->count();
-        $this->info("Found {$beneficiaryCount} beneficiaries to geocode.");
-
-        foreach ($beneficiaries as $beneficiary) {
-            GeocodeAddressJob::dispatch($beneficiary);
-        }
+            ->get(['id', 'address', 'tenant_id']);
 
         $donors = NgoDonor::whereNotNull('address')
             ->where('address', '!=', '')
             ->whereNull('latitude')
-            ->get();
+            ->get(['id', 'address', 'tenant_id']);
 
-        $donorCount = $donors->count();
-        $this->info("Found {$donorCount} donors to geocode.");
+        $total = $beneficiaries->count() + $donors->count();
+        $this->info("Registros encontrados: {$beneficiaries->count()} beneficiários, {$donors->count()} doadores. Total: {$total}");
 
-        foreach ($donors as $donor) {
-            GeocodeAddressJob::dispatch($donor);
+        if ($total === 0) {
+            $this->info('Nenhum registro para geocodificar.');
+            return Command::SUCCESS;
         }
 
-        $this->info("Backfill complete. " . ($beneficiaryCount + $donorCount) . " jobs dispatched to the queue.");
-        
+        // Espaçar jobs de 3 em 3 segundos para respeitar o rate limit do Nominatim (1 req/s)
+        $delay = 5;
+        foreach ($beneficiaries as $b) {
+            GeocodeAddressJob::dispatch($b)->delay(now()->addSeconds($delay));
+            $delay += 3;
+        }
+        foreach ($donors as $d) {
+            GeocodeAddressJob::dispatch($d)->delay(now()->addSeconds($delay));
+            $delay += 3;
+        }
+
+        $eta = round($delay / 60, 1);
+        $this->info("{$total} jobs enfileirados com escalonamento. Tempo estimado: ~{$eta} minutos.");
+
         return Command::SUCCESS;
     }
 }
