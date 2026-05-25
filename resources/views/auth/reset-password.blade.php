@@ -50,26 +50,26 @@
             <input type="hidden" name="token" value="{{ $token }}">
 
             <div class="form-group">
-                <label>E-mail</label>
+                <label for="email">E-mail</label>
                 <div class="input-group">
-                    <i class="far fa-envelope"></i>
-                    <input type="email" name="email" class="form-control" required value="{{ old('email', $email) }}" placeholder="voce@empresa.com">
+                    <i class="far fa-envelope" aria-hidden="true"></i>
+                    <input type="email" id="email" name="email" class="form-control" required value="{{ old('email', $email) }}" placeholder="voce@empresa.com" autocomplete="email">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>Nova senha</label>
+                <label for="password">Nova senha</label>
                 <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" name="password" class="form-control" required placeholder="••••••••">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••" autocomplete="new-password">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>Confirmar nova senha</label>
+                <label for="password_confirmation">Confirmar nova senha</label>
                 <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" name="password_confirmation" class="form-control" required placeholder="••••••••">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required placeholder="••••••••" autocomplete="new-password">
                 </div>
             </div>
 

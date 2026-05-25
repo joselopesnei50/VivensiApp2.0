@@ -102,7 +102,7 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        color: #475569;
+        color: #94a3b8;
         cursor: pointer;
         user-select: none;
         border-radius: 8px;
@@ -330,19 +330,19 @@
         <div class="lang-switcher">
             <form method="POST" action="{{ route('locale.set', 'pt_BR') }}" style="display:inline">@csrf
                 <button type="submit" title="Português (Brasil)" class="lang-btn {{ $currentLocale === 'pt_BR' ? 'lang-btn-active' : '' }}">
-                    <img src="https://flagcdn.com/w40/br.png" width="22" height="15" alt="Brasil" loading="lazy">
+                    <img loading="lazy" src="https://flagcdn.com/w40/br.png" width="22" height="15" alt="Brasil" loading="lazy">
                     <span>PT</span>
                 </button>
             </form>
             <form method="POST" action="{{ route('locale.set', 'en') }}" style="display:inline">@csrf
                 <button type="submit" title="English" class="lang-btn {{ $currentLocale === 'en' ? 'lang-btn-active' : '' }}">
-                    <img src="https://flagcdn.com/w40/us.png" width="22" height="15" alt="English" loading="lazy">
+                    <img loading="lazy" src="https://flagcdn.com/w40/us.png" width="22" height="15" alt="English" loading="lazy">
                     <span>EN</span>
                 </button>
             </form>
             <form method="POST" action="{{ route('locale.set', 'es') }}" style="display:inline">@csrf
                 <button type="submit" title="Español" class="lang-btn {{ $currentLocale === 'es' ? 'lang-btn-active' : '' }}">
-                    <img src="https://flagcdn.com/w40/es.png" width="22" height="15" alt="España" loading="lazy">
+                    <img loading="lazy" src="https://flagcdn.com/w40/es.png" width="22" height="15" alt="España" loading="lazy">
                     <span>ES</span>
                 </button>
             </form>
