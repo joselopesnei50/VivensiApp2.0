@@ -527,7 +527,7 @@
                         </div>
                         <input type="file" id="broadcastImageInput" name="broadcast_image" accept=".jpg,.jpeg,.png,.gif,.webp" class="d-none" onchange="handleImageSelect(this)">
                         <div id="imagePreviewWrap" class="d-none mt-2" style="position:relative;display:inline-block;">
-                            <img id="imagePreviewThumb" src="" alt="preview" style="max-height:120px;max-width:100%;border-radius:10px;border:1px solid #e2e8f0;">
+                            <img loading="lazy" id="imagePreviewThumb" src="" alt="preview" style="max-height:120px;max-width:100%;border-radius:10px;border:1px solid #e2e8f0;">
                             <button type="button" onclick="removeImage()" style="position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="fas fa-times"></i></button>
                         </div>
                         @error('broadcast_image')
@@ -990,7 +990,7 @@
         const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         const rendered = hasText ? applySpintaxPreview(escapeHtml(msg)) : '';
         const imgHtml  = hasImage
-            ? `<img src="${previewImageSrc}" style="width:100%;border-radius:6px;margin-bottom:${hasText?'6px':'0'};">`
+            ? `<img loading="lazy" src="${previewImageSrc}" style="width:100%;border-radius:6px;margin-bottom:${hasText?'6px':'0'};">`
             : '';
         preview.innerHTML = `
             <div class="wa-bubble">

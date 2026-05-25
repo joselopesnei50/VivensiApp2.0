@@ -334,7 +334,7 @@
                     <div style="display: flex; gap: 20px; align-items: center;">
                         <div style="width: 80px; height: 80px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                             @if($member->photo_url)
-                                <img src="{{ $member->photo_url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                <img loading="lazy" src="{{ $member->photo_url }}" style="width: 100%; height: 100%; object-fit: cover;">
                             @else
                                 <i class="fas fa-user text-muted fa-2x"></i>
                             @endif

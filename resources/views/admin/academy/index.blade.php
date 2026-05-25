@@ -28,7 +28,7 @@
                 <td style="padding: 20px 25px;">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         @if($course->thumbnail_url)
-                            <img src="{{ $course->thumbnail_url }}" alt="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+                            <img loading="lazy" src="{{ $course->thumbnail_url }}" alt="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
                         @else
                             <div style="width: 50px; height: 50px; background: #e0e7ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #4338ca;">
                                 <i class="fas fa-graduation-cap"></i>

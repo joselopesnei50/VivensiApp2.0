@@ -734,7 +734,7 @@ async function refreshQr() {
         const res  = await fetch('{{ route("admin.bot.instance.qr") }}?instance=' + encodeURIComponent(name));
         const data = await res.json();
         if (data.qrcode) {
-            document.getElementById('qrCodeContainer').innerHTML = '<img src="' + data.qrcode + '" alt="QR Code">';
+            document.getElementById('qrCodeContainer').innerHTML = '<img loading="lazy" src="' + data.qrcode + '" alt="QR Code">';
         } else {
             document.getElementById('qrCodeContainer').innerHTML = '<p class="text-muted small p-3">QR ainda não disponível. Aguarde e tente novamente.</p>';
         }

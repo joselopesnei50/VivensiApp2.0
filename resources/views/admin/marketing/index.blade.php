@@ -15,7 +15,7 @@
             <form action="{{ route('marketing.generate') }}" method="POST">
                 @csrf
                 <div class="mb-4 text-center">
-                    <img src="{{ asset('img/bruce-ai.png') }}" alt="Bruce AI" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #e0e7ff;">
+                    <img loading="lazy" src="{{ asset('img/bruce-ai.png') }}" alt="Bruce AI" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #e0e7ff;">
                     <h3 class="mt-3" style="font-weight: 700;">Bruce AI da Vivensi</h3>
                     <p class="text-muted">Descreva seu objetivo e eu crio toda a estratégia para você.</p>
                 </div>

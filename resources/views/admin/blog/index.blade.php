@@ -110,7 +110,7 @@
                             <td class="px-4 py-3">
                                 <div class="d-flex align-items-center gap-3">
                                     @if($post->image)
-                                        <img src="{{ $post->image }}" alt=""
+                                        <img loading="lazy" src="{{ $post->image }}" alt=""
                                              style="width:52px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;">
                                     @else
                                         <div style="width:52px;height:40px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">

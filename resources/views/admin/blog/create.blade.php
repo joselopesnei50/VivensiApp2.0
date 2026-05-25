@@ -318,7 +318,7 @@
                             <div style="font-size:.78rem;color:#94a3b8;margin-top:4px;">Recomendado: 1200×600px (JPG, PNG)</div>
                         </div>
                         <div id="preview-container" class="img-preview-wrap d-none">
-                            <img id="image-preview" src="#" alt="Preview">
+                            <img loading="lazy" id="image-preview" src="#" alt="Preview">
                             <button type="button" id="btn-remove" class="img-remove-btn">
                                 <i class="fas fa-times"></i>
                             </button>

@@ -35,9 +35,9 @@
                         {{-- Preview atual --}}
                         <div id="logo-preview-box" style="width: 140px; height: 70px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; padding: 10px;">
                             @if($tenant->brand_logo)
-                                <img id="logo-preview" src="{{ Storage::url($tenant->brand_logo) }}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <img loading="lazy" id="logo-preview" src="{{ Storage::url($tenant->brand_logo) }}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                             @else
-                                <img id="logo-preview" src="{{ asset('img/novalogo.png') }}" alt="Logo padrão" style="max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0.3;">
+                                <img loading="lazy" id="logo-preview" src="{{ asset('img/novalogo.png') }}" alt="Logo padrão" style="max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0.3;">
                             @endif
                         </div>
 
@@ -194,7 +194,7 @@
                     {{-- Logo area preview --}}
                     <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06);">
                         <div style="height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-                            <img id="sidebar-preview-logo" src="{{ $tenant->brand_logo ? Storage::url($tenant->brand_logo) : asset('img/novalogo.png') }}"
+                            <img loading="lazy" id="sidebar-preview-logo" src="{{ $tenant->brand_logo ? Storage::url($tenant->brand_logo) : asset('img/novalogo.png') }}"
                                  alt="Preview" style="max-width: 108px; max-height: 48px; object-fit: contain; {{ !$tenant->brand_logo ? 'opacity:0.4' : '' }}">
                         </div>
                         @if($tenant->brand_name)

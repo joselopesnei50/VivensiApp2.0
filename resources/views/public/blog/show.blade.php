@@ -23,7 +23,7 @@
     <!-- Featured Image -->
     <div style="max-width: 1000px; margin: 0 auto 60px; padding: 0 5%;">
         <div style="width: 100%; height: 500px; border-radius: 30px; overflow: hidden; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.15);">
-            <img src="{{ $post->image ?: asset('images/blog-placeholder.jpg') }}" alt="{{ $post->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            <img loading="lazy" src="{{ $post->image ?: asset('images/blog-placeholder.jpg') }}" alt="{{ $post->title }}" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
     </div>
 

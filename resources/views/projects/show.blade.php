@@ -532,7 +532,7 @@
 
                     @if($record->media_path)
                         <div class="timeline-media">
-                            <img src="{{ asset('storage/' . $record->media_path) }}" alt="Impacto" style="width: 100%; max-height: 400px; object-fit: cover;">
+                            <img loading="lazy" src="{{ asset('storage/' . $record->media_path) }}" alt="Impacto" style="width: 100%; max-height: 400px; object-fit: cover;">
                         </div>
                     @endif
 

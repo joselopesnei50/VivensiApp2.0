@@ -827,7 +827,7 @@
                 <div class="ds-bn-card" data-name="{{ strtolower($banner->title) }}">
                     <div class="ds-bn-thumb" style="{{ $banner->png_path ? '' : 'background:'.$grad }}">
                         @if($banner->png_path)
-                            <img src="{{ Storage::disk('public')->url($banner->png_path) }}" alt="{{ $banner->title }}" loading="lazy">
+                            <img loading="lazy" src="{{ Storage::disk('public')->url($banner->png_path) }}" alt="{{ $banner->title }}" loading="lazy">
                         @else
                             <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:14px;gap:5px">
                                 <div style="height:7px;border-radius:4px;background:rgba(255,255,255,.7);width:65%"></div>

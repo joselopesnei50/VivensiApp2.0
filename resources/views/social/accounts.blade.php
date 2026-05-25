@@ -57,7 +57,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body d-flex align-items-start gap-3 p-4">
                     @if($account->page_picture)
-                        <img src="{{ $account->page_picture }}" alt="" class="rounded-circle" style="width:48px;height:48px;object-fit:cover;flex-shrink:0;">
+                        <img loading="lazy" src="{{ $account->page_picture }}" alt="" class="rounded-circle" style="width:48px;height:48px;object-fit:cover;flex-shrink:0;">
                     @else
                         <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;flex-shrink:0;">
                             <i class="fab fa-facebook text-primary"></i>
