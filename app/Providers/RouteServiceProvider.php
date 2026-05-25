@@ -59,5 +59,10 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Per-token limit: each Evolution API instance has its own 300 req/min bucket
+        RateLimiter::for('evo_webhook', function (Request $request) {
+            return Limit::perMinute(300)->by($request->route('token'));
+        });
     }
 }
