@@ -973,11 +973,11 @@
 
     <!-- Modals -->
     <!-- Add Note Modal -->
-    <div class="modal fade" id="addNoteModal" tabindex="-1">
+    <div class="modal fade" id="addNoteModal" role="dialog" aria-modal="true" aria-labelledby="addNoteModalLabel" tabindex="-1">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fs-6">Nova Nota Interna</h5>
+                    <h5 class="modal-title fs-6" id="addNoteModalLabel">Nova Nota Interna</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -991,7 +991,7 @@
     </div>
 
     <!-- Canned Responses Modal -->
-    <div class="modal fade" id="cannedModal" tabindex="-1">
+    <div class="modal fade" id="cannedModal" role="dialog" aria-modal="true" aria-labelledby="cannedModalLabel" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1013,7 +1013,7 @@
     </div>
 
     <!-- Meta Templates Modal -->
-    <div class="modal fade" id="templateModal" tabindex="-1">
+    <div class="modal fade" id="templateModal" role="dialog" aria-modal="true" aria-labelledby="templateModalLabel" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 20px 50px rgba(0,0,0,0.15);">
                 <div class="modal-header border-0 pb-0">
@@ -1049,7 +1049,7 @@
     </div>
 
     <!-- Schedule Message Modal -->
-    <div class="modal fade" id="scheduleModal" tabindex="-1">
+    <div class="modal fade" id="scheduleModal" role="dialog" aria-modal="true" aria-labelledby="scheduleModalLabel" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 20px 50px rgba(0,0,0,0.15);">
                 <div class="modal-header border-0">

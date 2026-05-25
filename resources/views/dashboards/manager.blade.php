@@ -653,12 +653,12 @@
 @endpush
 
 <!-- Add Person Global Modal -->
-<div class="modal fade" id="addPersonGlobalModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+<div class="modal fade" id="addPersonGlobalModal" role="dialog" aria-modal="true" aria-labelledby="addPersonGlobalModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
             <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">
                 <div>
-                    <h4 class="modal-title fw-900 mb-1">Cadastrar Nova Pessoa</h4>
+                    <h4 class="modal-title fw-900 mb-1" id="addPersonGlobalModalLabel">Cadastrar Nova Pessoa</h4>
                     <p class="m-0 opacity-50 small fw-bold text-uppercase">Vincular contato a um projeto</p>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -701,7 +701,7 @@
 </div>
 
 <!-- Import Person Global Modal -->
-<div class="modal fade" id="importPersonGlobalModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+<div class="modal fade" id="importPersonGlobalModal" role="dialog" aria-modal="true" aria-labelledby="importPersonGlobalModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
             <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">
@@ -746,7 +746,7 @@
 </div>
 
 {{-- ===== MODAL: Criar Tarefa Rápida ===== --}}
-<div class="modal fade" id="quickTaskModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="quickTaskModal" role="dialog" aria-modal="true" aria-labelledby="quickTaskModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
         <div class="modal-content" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; overflow: hidden;">
             <div style="padding: 28px 32px 0;">

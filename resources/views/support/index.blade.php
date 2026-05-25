@@ -341,12 +341,12 @@
 </div>
 
 <!-- Modal Create Ticket -->
-<div class="modal fade" id="newTicketModal" tabindex="-1">
+<div class="modal fade" id="newTicketModal" role="dialog" aria-modal="true" aria-labelledby="newTicketModalLabel" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <form action="{{ route('support.store') }}" method="POST" class="modal-content">
             @csrf
             <div class="modal-header px-4 py-3 border-bottom">
-                <h5 class="modal-title fw-bold">Novo Chamado</h5>
+                <h5 class="modal-title fw-bold" id="newTicketModalLabel">Novo Chamado</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">

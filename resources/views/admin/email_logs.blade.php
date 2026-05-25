@@ -81,11 +81,11 @@
 </div>
 
 <!-- Modal com Design Premium -->
-<div class="modal fade" id="responseModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="responseModal" role="dialog" aria-modal="true" aria-labelledby="responseModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
             <div class="modal-header border-0 bg-light p-4">
-                <h5 class="modal-title font-weight-bold" style="color: #1e293b;">Resposta da API Brevo</h5>
+                <h5 class="modal-title font-weight-bold" id="responseModalLabel" style="color: #1e293b;">Resposta da API Brevo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">

@@ -407,11 +407,11 @@
 </form>
 
 <!-- Modal de Ajuda Meta -->
-<div class="modal fade" id="metaHelpModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="metaHelpModal" role="dialog" aria-modal="true" aria-labelledby="metaHelpModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
             <div class="modal-header" style="background: #1877f2; color: white; padding: 25px; border: none;">
-                <h5 class="modal-title fw-800"><i class="fab fa-whatsapp me-2"></i> Passo a Passo: Conectar WhatsApp Oficial</h5>
+                <h5 class="modal-title fw-800" id="metaHelpModalLabel"><i class="fab fa-whatsapp me-2"></i> Passo a Passo: Conectar WhatsApp Oficial</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="padding: 30px; background: #fff;">
@@ -645,7 +645,7 @@
     }
 </script>
 <!-- Modal Criar/Escanear Instância -->
-<div class="modal fade" id="newInstanceModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+<div class="modal fade" id="newInstanceModal" role="dialog" aria-modal="true" aria-labelledby="newInstanceModalLabel" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
         <div class="modal-content" style="background: #fff; border: none; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.1);">
             <div class="modal-header" style="border-bottom: 1px solid #f8fafc; padding: 20px 24px;">

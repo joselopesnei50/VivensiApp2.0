@@ -448,11 +448,11 @@
 </div>
 
 {{-- MODAL EDITAR CONVÊNIO --}}
-<div class="modal fade" id="editGrantModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="editGrantModal" role="dialog" aria-modal="true" aria-labelledby="editGrantModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 25px 50px rgba(0,0,0,0.15);">
             <div class="modal-header" style="padding: 24px 28px; border-bottom: 1px solid #f1f5f9;">
-                <h5 class="modal-title fw-bold" style="color: #0f172a;"><i class="fas fa-pen me-2 text-primary"></i>Editar Convênio / Edital</h5>
+                <h5 class="modal-title fw-bold" id="editGrantModalLabel" style="color: #0f172a;"><i class="fas fa-pen me-2 text-primary"></i>Editar Convênio / Edital</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" style="padding: 28px;">
@@ -511,7 +511,7 @@
 </div>
 
 {{-- MODAL COPILOT IA --}}
-<div class="modal fade" id="aiProposalModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="aiProposalModal" role="dialog" aria-modal="true" aria-labelledby="aiProposalModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius: 28px; border: none; background: #0f172a; color: white; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,0.5);">
             <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding: 30px 40px;">
