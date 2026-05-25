@@ -7,7 +7,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // Doadores
         Route::get('/donors',                  [App\Http\Controllers\NgoDonorController::class, 'index']);
         Route::get('/donors/create',           [App\Http\Controllers\NgoDonorController::class, 'create']);
-        Route::post('/donors',                 [App\Http\Controllers\NgoDonorController::class, 'store']);
+        Route::post('/donors',                 [App\Http\Controllers\NgoDonorController::class, 'store'])->middleware('throttle:web_write');
         Route::get('/donors/{id}/edit',        [App\Http\Controllers\NgoDonorController::class, 'edit']);
         Route::put('/donors/{id}',             [App\Http\Controllers\NgoDonorController::class, 'update']);
         Route::delete('/donors/{id}',          [App\Http\Controllers\NgoDonorController::class, 'destroy']);
@@ -20,9 +20,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
         // Orçamento
         Route::get('/budget',                  [App\Http\Controllers\BudgetController::class, 'index']);
-        Route::get('/budget/export',           [App\Http\Controllers\BudgetController::class, 'exportCsv']);
-        Route::get('/budget/pdf',              [App\Http\Controllers\BudgetController::class, 'pdf']);
-        Route::post('/budget',                 [App\Http\Controllers\BudgetController::class, 'store']);
+        Route::get('/budget/export',           [App\Http\Controllers\BudgetController::class, 'exportCsv'])->middleware('throttle:web_export');
+        Route::get('/budget/pdf',              [App\Http\Controllers\BudgetController::class, 'pdf'])->middleware('throttle:web_export');
+        Route::post('/budget',                 [App\Http\Controllers\BudgetController::class, 'store'])->middleware('throttle:web_write');
 
         // Equipe
         Route::get('/team',                    [App\Http\Controllers\TeamController::class, 'index']);
@@ -57,9 +57,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/grants',                  [App\Http\Controllers\NgoGrantController::class, 'index']);
         Route::get('/grants/create',           [App\Http\Controllers\NgoGrantController::class, 'create']);
         Route::get('/grants/create-ai',        [App\Http\Controllers\NgoGrantController::class, 'createFromAi']);
-        Route::post('/grants/analyze',         [App\Http\Controllers\NgoGrantController::class, 'analyze']);
-        Route::post('/grants',                 [App\Http\Controllers\NgoGrantController::class, 'store']);
-        Route::get('/grants/{id}/generate-proposal', [App\Http\Controllers\NgoGrantController::class, 'generateProposal'])->name('ngo.grants.generate-proposal');
+        Route::post('/grants/analyze',         [App\Http\Controllers\NgoGrantController::class, 'analyze'])->middleware('throttle:web_ai');
+        Route::post('/grants',                 [App\Http\Controllers\NgoGrantController::class, 'store'])->middleware('throttle:web_write');
+        Route::get('/grants/{id}/generate-proposal', [App\Http\Controllers\NgoGrantController::class, 'generateProposal'])->name('ngo.grants.generate-proposal')->middleware('throttle:web_ai');
         Route::get('/grants/{id}',             [App\Http\Controllers\NgoGrantController::class, 'show'])->name('ngo.grants.show');
         Route::put('/grants/{id}',             [App\Http\Controllers\NgoGrantController::class, 'update'])->name('ngo.grants.update');
         Route::delete('/grants/{id}',          [App\Http\Controllers\NgoGrantController::class, 'destroy'])->name('ngo.grants.destroy');
@@ -73,13 +73,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
         // RH & Voluntários
         Route::get('/hr',                      [App\Http\Controllers\HumanResourcesController::class, 'index']);
-        Route::get('/hr/employees/export',     [App\Http\Controllers\HumanResourcesController::class, 'exportEmployeesCsv']);
-        Route::get('/hr/volunteers/export',    [App\Http\Controllers\HumanResourcesController::class, 'exportVolunteersCsv']);
-        Route::get('/hr/payroll/pdf',          [App\Http\Controllers\HumanResourcesController::class, 'payrollPdf']);
-        Route::post('/hr/volunteers/{id}/certificate', [App\Http\Controllers\HumanResourcesController::class, 'issueVolunteerCertificate']);
+        Route::get('/hr/employees/export',     [App\Http\Controllers\HumanResourcesController::class, 'exportEmployeesCsv'])->middleware('throttle:web_export');
+        Route::get('/hr/volunteers/export',    [App\Http\Controllers\HumanResourcesController::class, 'exportVolunteersCsv'])->middleware('throttle:web_export');
+        Route::get('/hr/payroll/pdf',          [App\Http\Controllers\HumanResourcesController::class, 'payrollPdf'])->middleware('throttle:web_export');
+        Route::post('/hr/volunteers/{id}/certificate', [App\Http\Controllers\HumanResourcesController::class, 'issueVolunteerCertificate'])->middleware('throttle:web_export');
         Route::get('/hr/certificates',         [App\Http\Controllers\HumanResourcesController::class, 'certificatesIndex']);
-        Route::get('/hr/certificates/export',  [App\Http\Controllers\HumanResourcesController::class, 'exportCertificatesCsv']);
-        Route::get('/hr/certificates/{id}/download', [App\Http\Controllers\HumanResourcesController::class, 'downloadVolunteerCertificate']);
+        Route::get('/hr/certificates/export',  [App\Http\Controllers\HumanResourcesController::class, 'exportCertificatesCsv'])->middleware('throttle:web_export');
+        Route::get('/hr/certificates/{id}/download', [App\Http\Controllers\HumanResourcesController::class, 'downloadVolunteerCertificate'])->middleware('throttle:web_export');
         Route::post('/hr/employees',           [App\Http\Controllers\HumanResourcesController::class, 'storeEmployee']);
         Route::put('/hr/employees/{id}',       [App\Http\Controllers\HumanResourcesController::class, 'updateEmployee'])->name('ngo.hr.employees.update');
         Route::delete('/hr/employees/{id}',    [App\Http\Controllers\HumanResourcesController::class, 'destroyEmployee'])->name('ngo.hr.employees.destroy');
@@ -91,30 +91,30 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // Beneficiários
         Route::get('/beneficiaries',           [App\Http\Controllers\BeneficiaryController::class, 'index']);
         Route::get('/beneficiaries/insights',  [App\Http\Controllers\BeneficiaryController::class, 'insights']);
-        Route::get('/beneficiaries/attendances/export', [App\Http\Controllers\BeneficiaryController::class, 'exportAllAttendancesCsv']);
+        Route::get('/beneficiaries/attendances/export', [App\Http\Controllers\BeneficiaryController::class, 'exportAllAttendancesCsv'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/reports/annual',              [App\Http\Controllers\BeneficiaryController::class, 'annualReport']);
-        Route::get('/beneficiaries/reports/annual/pdf',          [App\Http\Controllers\BeneficiaryController::class, 'annualReportPdf']);
-        Route::get('/beneficiaries/reports/annual/pdf-appendix', [App\Http\Controllers\BeneficiaryController::class, 'annualReportPdfAppendix']);
-        Route::get('/beneficiaries/reports/annual/export',       [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportCsv']);
-        Route::get('/beneficiaries/reports/annual/export-grouped',        [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportGroupedCsv']);
-        Route::get('/beneficiaries/reports/annual/export-grouped-simple', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportGroupedSimpleCsv']);
-        Route::get('/beneficiaries/reports/annual/export-pivot-type',     [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotTypeCsv']);
-        Route::get('/beneficiaries/reports/annual/export-pivot-user',     [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotUserCsv']);
+        Route::get('/beneficiaries/reports/annual/pdf',          [App\Http\Controllers\BeneficiaryController::class, 'annualReportPdf'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/pdf-appendix', [App\Http\Controllers\BeneficiaryController::class, 'annualReportPdfAppendix'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export',       [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export-grouped',        [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportGroupedCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export-grouped-simple', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportGroupedSimpleCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export-pivot-type',     [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotTypeCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export-pivot-user',     [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotUserCsv'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/create',    [App\Http\Controllers\BeneficiaryController::class, 'create']);
         Route::get('/beneficiaries/import/template', [App\Http\Controllers\BeneficiaryController::class, 'downloadImportTemplate']);
-        Route::post('/beneficiaries/import',   [App\Http\Controllers\BeneficiaryController::class, 'import']);
-        Route::get('/beneficiaries/export',    [App\Http\Controllers\BeneficiaryController::class, 'exportCsv']);
+        Route::post('/beneficiaries/import',   [App\Http\Controllers\BeneficiaryController::class, 'import'])->middleware('throttle:web_ai_bulk');
+        Route::get('/beneficiaries/export',    [App\Http\Controllers\BeneficiaryController::class, 'exportCsv'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/print',     [App\Http\Controllers\BeneficiaryController::class, 'print']);
-        Route::post('/beneficiaries',          [App\Http\Controllers\BeneficiaryController::class, 'store']);
+        Route::post('/beneficiaries',          [App\Http\Controllers\BeneficiaryController::class, 'store'])->middleware('throttle:web_write');
         Route::get('/beneficiaries/{id}',      [App\Http\Controllers\BeneficiaryController::class, 'show']);
         Route::delete('/beneficiaries/{id}',   [App\Http\Controllers\BeneficiaryController::class, 'destroy']);
         Route::put('/beneficiaries/{id}',      [App\Http\Controllers\BeneficiaryController::class, 'update']);
         Route::post('/beneficiaries/{id}/attendance',                 [App\Http\Controllers\BeneficiaryController::class, 'storeAttendance']);
         Route::put('/beneficiaries/{id}/attendance/{attendanceId}',   [App\Http\Controllers\BeneficiaryController::class, 'updateAttendance']);
         Route::delete('/beneficiaries/{id}/attendance/{attendanceId}', [App\Http\Controllers\BeneficiaryController::class, 'destroyAttendance']);
-        Route::get('/beneficiaries/{id}/attendance/export',           [App\Http\Controllers\BeneficiaryController::class, 'exportAttendanceCsv']);
+        Route::get('/beneficiaries/{id}/attendance/export',           [App\Http\Controllers\BeneficiaryController::class, 'exportAttendanceCsv'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/{id}/attendance/print',            [App\Http\Controllers\BeneficiaryController::class, 'printAttendance']);
-        Route::get('/beneficiaries/{id}/pdf',                         [App\Http\Controllers\BeneficiaryController::class, 'pdf']);
+        Route::get('/beneficiaries/{id}/pdf',                         [App\Http\Controllers\BeneficiaryController::class, 'pdf'])->middleware('throttle:web_export');
         Route::post('/beneficiaries/{id}/family-members',             [App\Http\Controllers\BeneficiaryController::class, 'storeFamilyMember']);
         Route::delete('/beneficiaries/{id}/family-members/{memberId}', [App\Http\Controllers\BeneficiaryController::class, 'destroyFamilyMember']);
 
@@ -135,17 +135,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
         // Conciliação Bancária
         Route::get('/reconciliation',          [App\Http\Controllers\ReconciliationController::class, 'index']);
-        Route::post('/reconciliation/upload',  [App\Http\Controllers\ReconciliationController::class, 'upload']);
-        Route::post('/reconciliation/store',   [App\Http\Controllers\ReconciliationController::class, 'store']);
+        Route::post('/reconciliation/upload',  [App\Http\Controllers\ReconciliationController::class, 'upload'])->middleware('throttle:web_ai_bulk');
+        Route::post('/reconciliation/store',   [App\Http\Controllers\ReconciliationController::class, 'store'])->middleware('throttle:web_write');
 
         // Relatórios (DRE)
         Route::get('/reports/dre',             [App\Http\Controllers\ReportController::class, 'dre']);
-        Route::get('/reports/dre/export',      [App\Http\Controllers\ReportController::class, 'exportDreCsv']);
-        Route::get('/reports/dre/pdf',         [App\Http\Controllers\ReportController::class, 'drePdf']);
+        Route::get('/reports/dre/export',      [App\Http\Controllers\ReportController::class, 'exportDreCsv'])->middleware('throttle:web_export');
+        Route::get('/reports/dre/pdf',         [App\Http\Controllers\ReportController::class, 'drePdf'])->middleware('throttle:web_export');
 
         // Trilha de Auditoria
         Route::get('/audit',                   [App\Http\Controllers\AuditController::class, 'index']);
-        Route::get('/audit/export',            [App\Http\Controllers\AuditController::class, 'exportCsv']);
+        Route::get('/audit/export',            [App\Http\Controllers\AuditController::class, 'exportCsv'])->middleware('throttle:web_export');
         Route::get('/audit/{id}',              [App\Http\Controllers\AuditController::class, 'show']);
     }); // end prefix('ngo')
 

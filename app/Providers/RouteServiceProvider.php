@@ -64,5 +64,22 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('evo_webhook', function (Request $request) {
             return Limit::perMinute(300)->by($request->route('token'));
         });
+
+        // Web authenticated routes — keyed by user ID (not IP, to avoid shared-IP false positives)
+        RateLimiter::for('web_write', function (Request $request) {
+            return Limit::perMinute(60)->by('write|' . ($request->user()?->id ?: $request->ip()));
+        });
+
+        RateLimiter::for('web_ai', function (Request $request) {
+            return Limit::perMinute(10)->by('ai|' . ($request->user()?->id ?: $request->ip()));
+        });
+
+        RateLimiter::for('web_ai_bulk', function (Request $request) {
+            return Limit::perMinute(3)->by('ai_bulk|' . ($request->user()?->id ?: $request->ip()));
+        });
+
+        RateLimiter::for('web_export', function (Request $request) {
+            return Limit::perMinute(15)->by('export|' . ($request->user()?->id ?: $request->ip()));
+        });
     }
 }
