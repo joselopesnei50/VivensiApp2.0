@@ -669,14 +669,21 @@ class WhatsappController extends Controller
         $tenantId = auth()->user()->tenant_id;
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
         
-        $query = WhatsappMessage::where('chat_id', $chat->id)->orderBy('created_at', 'asc');
-
-        // Incremental polling: only return messages after given ID
+        // Incremental polling: return only new messages since last known ID
         if ($request->filled('after') && is_numeric($request->query('after'))) {
-            $query->where('id', '>', (int) $request->query('after'));
+            $messages = WhatsappMessage::where('chat_id', $chat->id)
+                ->where('id', '>', (int) $request->query('after'))
+                ->orderBy('created_at', 'asc')
+                ->get();
+        } else {
+            // Initial load: last 150 messages to avoid loading full history
+            $messages = WhatsappMessage::where('chat_id', $chat->id)
+                ->orderBy('created_at', 'desc')
+                ->limit(150)
+                ->get()
+                ->reverse()
+                ->values();
         }
-
-        $messages = $query->get();
 
         $notes = WhatsappNote::where('chat_id', $chat->id)
                              ->with('user')

@@ -9,7 +9,7 @@ class ClientController extends Controller
     public function index()
     {
         $tenantId = auth()->user()->tenant_id;
-        $clients = \App\Models\Client::where('tenant_id', $tenantId)->latest()->get();
+        $clients = \App\Models\Client::where('tenant_id', $tenantId)->latest()->paginate(25);
         return view('personal.clients.index', compact('clients'));
     }
 
