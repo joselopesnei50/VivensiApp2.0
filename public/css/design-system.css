@@ -116,6 +116,14 @@ html:not([data-theme="dark"]) #topbar kbd {
 }
 html:not([data-theme="dark"]) #topbar #theme-toggle i { color: #f59e0b !important; }
 
+/* Título do painel no topbar (subtítulo + título, ambos hardcoded branco) */
+html:not([data-theme="dark"]) #topbar-title > div:last-child > div:first-child {
+    color: #64748b !important;
+}
+html:not([data-theme="dark"]) #topbar-title > div:last-child > div:last-child {
+    color: #0f172a !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    RESET GLOBAL LEVE
    ══════════════════════════════════════════════════════════════════════════ */
