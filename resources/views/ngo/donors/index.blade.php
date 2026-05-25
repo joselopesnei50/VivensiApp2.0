@@ -205,9 +205,14 @@
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="text-center py-5">
-                    <div class="opacity-30 mb-3"><i class="fas fa-users fa-3x"></i></div>
-                    <p class="text-muted fw-bold">Nenhum doador encontrado.</p>
+                <td colspan="4" style="padding: 0; border: none;">
+                    <x-empty-state
+                        icon="fa-hand-holding-heart"
+                        title="Nenhum doador cadastrado"
+                        description="Comece a construir sua rede de apoiadores. Cadastre o primeiro doador e acompanhe todo o histórico de contribuições."
+                        action_label="Cadastrar Doador"
+                        action_url="{{ url('/ngo/donors/create') }}"
+                    />
                 </td>
             </tr>
             @endforelse

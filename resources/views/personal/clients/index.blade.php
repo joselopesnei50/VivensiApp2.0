@@ -71,10 +71,14 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center py-5" style="border: none;">
-                                <div style="font-size: 3rem; color: #e2e8f0; margin-bottom: 15px;"><i class="fas fa-users-slash"></i></div>
-                                <h5 style="color: #64748b; font-weight: 800;">Nenhum cliente cadastrado.</h5>
-                                <p style="color: #94a3b8; font-size: 0.9rem;">Comece adicionando o seu primeiro cliente e crie relacionamentos!</p>
+                            <td colspan="5" style="padding: 0; border: none;">
+                                <x-empty-state
+                                    icon="fa-address-card"
+                                    title="Nenhum cliente cadastrado"
+                                    description="Adicione seu primeiro cliente para começar a gerir relacionamentos, emitir recibos e acompanhar o histórico."
+                                    action_label="Adicionar Cliente"
+                                    action_url="{{ url('/personal/clients/create') }}"
+                                />
                             </td>
                         </tr>
                         @endforelse
