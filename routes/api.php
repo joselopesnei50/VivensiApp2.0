@@ -11,8 +11,9 @@ Route::match(['get', 'post'], '/whatsapp/webhook', [App\Http\Controllers\Whatsap
 
 // Evolution API (Nossa Infra) — URL segura por token por instância
 // POST /api/evo/webhook/{instance_token}
+// Throttle por token (não por IP) — cada instância tem limite independente
 Route::post('/evo/webhook/{token}', [App\Http\Controllers\Api\EvolutionWebhookController::class, 'handle'])
-    ->middleware('throttle:500,1');
+    ->middleware('throttle:evo_webhook');
 
 // ── Bot de Gestão Interna (Vivensi Command Bot) ───────────────────────────
 // Recebe mensagens do número do bot (5516997618695) via Evolution API
