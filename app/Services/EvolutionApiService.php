@@ -108,7 +108,6 @@ class EvolutionApiService
                 Log::info('EVO fetchConnectionCode response', [
                     'instance' => $instanceName,
                     'keys'     => is_array($data) ? array_keys($data) : 'not-array',
-                    'data'     => $data,
                 ]);
 
                 // Tenta todas as estruturas conhecidas da Evolution API
