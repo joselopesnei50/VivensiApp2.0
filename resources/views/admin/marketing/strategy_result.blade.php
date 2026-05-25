@@ -128,11 +128,11 @@
 </form>
 
 <!-- Modal: Agendar Post Social -->
-<div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="scheduleModal" role="dialog" aria-modal="true" aria-labelledby="scheduleModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="modal-title fw-bold"><i class="fas fa-calendar-plus me-2 text-primary"></i>Agendar Post nas Redes Sociais</h5>
+                <h5 class="modal-title fw-bold" id="scheduleModalLabel"><i class="fas fa-calendar-plus me-2 text-primary"></i>Agendar Post nas Redes Sociais</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('social.posts.store') }}" method="POST" id="scheduleForm">

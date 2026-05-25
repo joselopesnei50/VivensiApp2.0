@@ -284,12 +284,12 @@
                         </tr>
 
                         {{-- Modal Detalhes / Pitch ─────────────────────────────────── --}}
-                        <div class="modal fade" id="detailModal{{ $prospect->id }}" tabindex="-1">
+                        <div class="modal fade" id="detailModal{{ $prospect->id }}" role="dialog" aria-modal="true" aria-labelledby="detailModal{{ $prospect->id }}Label" tabindex="-1">
                             <div class="modal-dialog modal-dialog-centered modal-lg">
                                 <div class="modal-content border-0 rounded-4 overflow-hidden shadow-lg">
                                     <div class="modal-header p-4" style="background:linear-gradient(135deg,#1e293b,#0f172a);">
                                         <div>
-                                            <h5 class="modal-title fw-bold text-white mb-1">
+                                            <h5 class="modal-title fw-bold text-white mb-1" id="detailModal{{ $prospect->id }}Label">
                                                 {{ $prospect->company_name }}
                                             </h5>
                                             <span class="badge bg-white bg-opacity-10 text-white fw-normal">
@@ -411,12 +411,12 @@
 </div>
 
 {{-- ── MODAL NOVA BUSCA ─────────────────────────────────────────────────── --}}
-<div class="modal fade" id="searchModal" tabindex="-1">
+<div class="modal fade" id="searchModal" role="dialog" aria-modal="true" aria-labelledby="searchModalLabel" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
         <div class="modal-content border-0 rounded-4 shadow-lg">
             <div class="modal-header border-0 pb-0 px-4 pt-4">
                 <div>
-                    <h5 class="modal-title fw-bold">Nova Prospecção Inteligente</h5>
+                    <h5 class="modal-title fw-bold" id="searchModalLabel">Nova Prospecção Inteligente</h5>
                     <p class="text-muted small mb-0">Bruce AI analisa e gera o pitch automaticamente após a busca.</p>
                 </div>
                 <button type="button" class="btn-close ms-3" data-bs-dismiss="modal"></button>
@@ -628,7 +628,7 @@
 </script>
 
 {{-- Modal Disparo WhatsApp --}}
-<div class="modal fade" id="modalBroadcast" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalBroadcast" role="dialog" aria-modal="true" aria-labelledby="modalBroadcastLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:500px;">
         <div class="modal-content border-0 rounded-4 overflow-hidden shadow-lg">
             <div style="background:linear-gradient(135deg,#25d366,#128c7e);padding:24px 28px 18px;">

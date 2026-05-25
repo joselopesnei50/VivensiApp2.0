@@ -469,7 +469,7 @@
 </div>
 
 <!-- Premium Modals -->
-<div class="modal fade" id="modalDoc" tabindex="-1">
+<div class="modal fade" id="modalDoc" role="dialog" aria-modal="true" aria-labelledby="modalDocLabel" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form action="{{ url('/ngo/transparencia/documents') }}" method="POST" enctype="multipart/form-data" class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             @csrf
@@ -509,7 +509,7 @@
 </div>
 
 <!-- Modal Board -->
-<div class="modal fade" id="modalBoard" tabindex="-1">
+<div class="modal fade" id="modalBoard" role="dialog" aria-modal="true" aria-labelledby="modalBoardLabel" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form action="{{ url('/ngo/transparencia/board') }}" method="POST" class="modal-content border-0 shadow-lg rounded-4">
             @csrf
@@ -530,7 +530,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalPartnership" tabindex="-1">
+<div class="modal fade" id="modalPartnership" role="dialog" aria-modal="true" aria-labelledby="modalPartnershipLabel" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form action="{{ url('/ngo/transparencia/partnerships') }}" method="POST" class="modal-content border-0 shadow-lg rounded-4">
             @csrf
@@ -550,7 +550,7 @@
 </div>
 
 {{-- MODAL EDITAR DIRETOR --}}
-<div class="modal fade" id="editBoardModal" tabindex="-1">
+<div class="modal fade" id="editBoardModal" role="dialog" aria-modal="true" aria-labelledby="editBoardModalLabel" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form id="editBoardForm" method="POST" class="modal-content border-0 shadow-lg rounded-4">
             @csrf
@@ -573,7 +573,7 @@
 </div>
 
 {{-- MODAL EDITAR PARCERIA --}}
-<div class="modal fade" id="editPartnershipModal" tabindex="-1">
+<div class="modal fade" id="editPartnershipModal" role="dialog" aria-modal="true" aria-labelledby="editPartnershipModalLabel" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form id="editPartnershipForm" method="POST" class="modal-content border-0 shadow-lg rounded-4">
             @csrf

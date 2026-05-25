@@ -204,12 +204,12 @@
 </div>
 
 {{-- Modal --}}
-<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="addEmployeeModal" role="dialog" aria-modal="true" aria-labelledby="addEmployeeModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
             <div class="modal-header border-0 pb-0 px-4 pt-4">
                 <div>
-                    <h5 class="modal-title fw-bold mb-0" style="color:#0f172a;">Novo Colaborador</h5>
+                    <h5 class="modal-title fw-bold mb-0" id="addEmployeeModalLabel" style="color:#0f172a;">Novo Colaborador</h5>
                     <p class="text-muted mb-0" style="font-size:.8rem;">Preencha os dados para criar o acesso.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

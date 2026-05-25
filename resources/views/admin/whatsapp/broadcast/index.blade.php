@@ -839,7 +839,7 @@
 </div>
 
 {{-- Modal de Confirmação de Disparo --}}
-<div class="modal fade" id="modalConfirmarDisparo" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalConfirmarDisparo" role="dialog" aria-modal="true" aria-labelledby="modalConfirmarDisparoLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
         <div class="modal-content" style="border-radius:20px;border:none;overflow:hidden;">
             <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:28px 28px 20px;text-align:center;">

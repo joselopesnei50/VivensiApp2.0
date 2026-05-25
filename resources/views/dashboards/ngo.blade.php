@@ -768,7 +768,7 @@
 </div>
 
 {{-- ===== MODAL: Registrar Doação Rápida ===== --}}
-<div class="modal fade" id="quickDonationModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="quickDonationModal" role="dialog" aria-modal="true" aria-labelledby="quickDonationModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
         <div class="modal-content" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; overflow: hidden;">
             <div style="padding: 28px 32px 0;">

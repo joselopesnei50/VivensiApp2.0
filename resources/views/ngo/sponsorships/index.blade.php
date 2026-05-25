@@ -320,12 +320,12 @@
 </div>
 
 {{-- ── MODAL: Novo Patrocínio ── --}}
-<div class="modal fade" id="dealModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="dealModal" role="dialog" aria-modal="true" aria-labelledby="dealModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:540px;">
         <div class="modal-content" style="border-radius:22px; border:none; box-shadow:0 25px 60px rgba(0,0,0,0.15); overflow:hidden;">
             <div class="modal-header" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); padding:24px 28px; border:none;">
                 <div>
-                    <h5 class="modal-title fw-bold text-white mb-0" style="font-size:1.05rem;">
+                    <h5 class="modal-title fw-bold text-white mb-0" id="dealModalLabel" style="font-size:1.05rem;">
                         <i class="fas fa-handshake me-2"></i> Novo Patrocínio
                     </h5>
                     <p style="color:rgba(255,255,255,.65); font-size:.78rem; margin:3px 0 0;">Adicione uma empresa ao funil de captação.</p>
@@ -385,7 +385,7 @@
 </div>
 
 {{-- ── MODAL: Detalhes do Deal ── --}}
-<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
         <div class="modal-content" style="border-radius:22px; border:none; box-shadow:0 25px 60px rgba(0,0,0,0.15); overflow:hidden;">
             <div class="modal-header" style="padding:22px 26px; border-bottom:1px solid #f1f5f9;">

@@ -712,12 +712,12 @@ async function generateAiSummary() {
 
 <!-- Timeline Modal -->
 @if($isManager)
-<div class="modal fade" id="addTimelineModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+<div class="modal fade" id="addTimelineModal" role="dialog" aria-modal="true" aria-labelledby="addTimelineModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
             <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">
                 <div>
-                    <h4 class="modal-title fw-900 mb-1">Registrar Impacto</h4>
+                    <h4 class="modal-title fw-900 mb-1" id="addTimelineModalLabel">Registrar Impacto</h4>
                     <p class="m-0 opacity-50 small fw-bold text-uppercase">Evidências para o Dossiê</p>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -771,7 +771,7 @@ async function generateAiSummary() {
 
 <!-- Team Modal Refined -->
 @if($isManager)
-<div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+<div class="modal fade" id="addMemberModal" role="dialog" aria-modal="true" aria-labelledby="addMemberModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
             <div class="modal-header border-0 py-5 px-5 text-white" style="background: #1e293b;">
@@ -926,7 +926,7 @@ async function generateAiSummary() {
 
 <!-- Add Person Modal -->
 @if($isManager)
-<div class="modal fade" id="addPersonModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+<div class="modal fade" id="addPersonModal" role="dialog" aria-modal="true" aria-labelledby="addPersonModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
             <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">
@@ -964,7 +964,7 @@ async function generateAiSummary() {
     </div>
 </div>
 <!-- Import Person Project Modal -->
-<div class="modal fade" id="importPersonProjectModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+<div class="modal fade" id="importPersonProjectModal" role="dialog" aria-modal="true" aria-labelledby="importPersonProjectModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
             <div class="modal-header border-0 py-4 px-5 text-white" style="background: #1e293b;">

@@ -199,7 +199,7 @@
 @endif
 
 {{-- MODAL PROXY --}}
-<div class="modal fade" id="proxyModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+<div class="modal fade" id="proxyModal" role="dialog" aria-modal="true" aria-labelledby="proxyModalLabel" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
         <div class="modal-content" style="border-radius:20px; border:1px solid #f1f5f9; box-shadow:0 25px 60px rgba(0,0,0,.15);">
             <div style="padding:24px 28px 0; display:flex; justify-content:space-between; align-items:center;">
@@ -233,7 +233,7 @@
 </div>
 
 {{-- MODAL NOVA INSTÂNCIA --}}
-<div class="modal fade" id="newInstanceModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+<div class="modal fade" id="newInstanceModal" role="dialog" aria-modal="true" aria-labelledby="newInstanceModalLabel" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
         <div class="modal-content" style="border-radius:20px; border:1px solid #f1f5f9; box-shadow:0 25px 60px rgba(0,0,0,.15);">
             <div style="padding:24px 28px 0; display:flex; justify-content:space-between; align-items:center;">
