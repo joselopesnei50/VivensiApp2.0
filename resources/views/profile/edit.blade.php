@@ -41,9 +41,9 @@
                 @csrf
                 
                 <div class="form-group" style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Nome Completo</label>
+                    <label for="name" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Nome Completo</label>
                     <div style="position: relative;">
-                        <input type="text" name="name" value="{{ old('name', $user->name) }}" required 
+                        <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
                                style="width: 100%; padding: 15px 20px 15px 50px; border: 2px solid #f1f5f9; border-radius: 14px; background: #f8fafc; font-weight: 700; color: #1e293b; transition: all 0.3s;"
                                onfocus="this.style.borderColor='var(--primary-color)'; this.style.background='white';">
                         <i class="fas fa-user" style="position: absolute; left: 20px; top: 18px; color: #cbd5e1; font-size: 0.9rem;"></i>
@@ -51,9 +51,9 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Endereço de E-mail</label>
+                    <label for="email" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Endereço de E-mail</label>
                     <div style="position: relative;">
-                        <input type="email" name="email" value="{{ old('email', $user->email) }}" required 
+                        <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
                                style="width: 100%; padding: 15px 20px 15px 50px; border: 2px solid #f1f5f9; border-radius: 14px; background: #f8fafc; font-weight: 700; color: #1e293b; transition: all 0.3s;"
                                onfocus="this.style.borderColor='var(--primary-color)'; this.style.background='white';">
                         <i class="fas fa-envelope" style="position: absolute; left: 20px; top: 18px; color: #cbd5e1; font-size: 0.9rem;"></i>
@@ -61,12 +61,12 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 35px;">
-                    <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">
+                    <label for="phone" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">
                         WhatsApp / Telefone
                         <span style="font-weight: 500; color: #94a3b8; font-size: 0.78rem; margin-left: 6px;">usado para notificações automáticas</span>
                     </label>
                     <div style="position: relative;">
-                        <input type="text" name="phone" value="{{ old('phone', $user->phone) }}"
+                        <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}"
                                placeholder="Ex: 5511999998888 (com DDI)"
                                style="width: 100%; padding: 15px 20px 15px 50px; border: 2px solid #f1f5f9; border-radius: 14px; background: #f8fafc; font-weight: 700; color: #1e293b; transition: all 0.3s;"
                                onfocus="this.style.borderColor='#25d366'; this.style.background='white';">
@@ -95,22 +95,22 @@
                 @csrf
                 
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; font-size: 0.85rem;">Senha Vigente</label>
-                    <input type="password" name="current_password" required 
+                    <label for="current_password" style="display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; font-size: 0.85rem;">Senha Vigente</label>
+                    <input type="password" name="current_password" id="current_password" required
                            style="width: 100%; padding: 14px 20px; border: 2px solid #f1f5f9; border-radius: 14px; background: #f8fafc; font-weight: 700; color: #1e293b;">
                     @error('current_password') <span style="color: #ef4444; font-size: 0.75rem; font-weight: 700; margin-top: 5px; display: block;">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; font-size: 0.85rem;">Nova Chave de Acesso</label>
-                    <input type="password" name="password" required 
+                    <label for="password" style="display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; font-size: 0.85rem;">Nova Chave de Acesso</label>
+                    <input type="password" name="password" id="password" required
                            style="width: 100%; padding: 14px 20px; border: 2px solid #f1f5f9; border-radius: 14px; background: #f8fafc; font-weight: 700; color: #1e293b;">
                     @error('password') <span style="color: #ef4444; font-size: 0.75rem; font-weight: 700; margin-top: 5px; display: block;">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group" style="margin-bottom: 30px;">
-                    <label style="display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; font-size: 0.85rem;">Ratificar Nova Senha</label>
-                    <input type="password" name="password_confirmation" required 
+                    <label for="password_confirmation" style="display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; font-size: 0.85rem;">Ratificar Nova Senha</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" required
                            style="width: 100%; padding: 14px 20px; border: 2px solid #f1f5f9; border-radius: 14px; background: #f8fafc; font-weight: 700; color: #1e293b;">
                 </div>
                 
@@ -210,18 +210,18 @@
         <form action="{{ route('profile.delete') }}" method="POST">
             @csrf
             <div style="margin-bottom:20px;">
-                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:#1e293b;">
+                <label for="confirm_phrase" style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:#1e293b;">
                     Digite exatamente: <code style="background:#fef2f2; color:#ef4444; padding:2px 6px; border-radius:4px;">EXCLUIR MINHA CONTA</code>
                 </label>
-                <input type="text" name="confirm_phrase" required autocomplete="off"
+                <input type="text" name="confirm_phrase" id="confirm_phrase" required autocomplete="off"
                        placeholder="EXCLUIR MINHA CONTA"
                        style="width:100%; padding:14px 18px; border:2px solid #fee2e2; border-radius:12px; font-size:0.9rem; font-weight:700; color:#1e293b; box-sizing:border-box;"
                        onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#fee2e2'">
                 @error('confirm_phrase')<span style="color:#ef4444;font-size:0.75rem;font-weight:700;display:block;margin-top:5px;">{{ $message }}</span>@enderror
             </div>
             <div style="margin-bottom:24px;">
-                <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:#1e293b;">Motivo (opcional)</label>
-                <textarea name="reason" rows="2" placeholder="Ex: Não utilizo mais a plataforma."
+                <label for="reason" style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:#1e293b;">Motivo (opcional)</label>
+                <textarea name="reason" id="reason" rows="2" placeholder="Ex: Não utilizo mais a plataforma."
                           style="width:100%; padding:12px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.85rem; resize:vertical; box-sizing:border-box;"></textarea>
             </div>
             <div style="display:flex; gap:12px;">

@@ -45,10 +45,10 @@
             </h5>
 
             <div class="form-group" style="margin-bottom: 25px;">
-                <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">O que deve ser feito?</label>
+                <label for="title" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">O que deve ser feito?</label>
                 <div style="position: relative;">
                     <i class="fas fa-check-to-slot" style="position: absolute; left: 20px; top: 18px; color: #cbd5e1; font-size: 1.1rem;"></i>
-                    <input type="text" name="title" required 
+                    <input type="text" name="title" id="title" required 
                            style="width: 100%; padding: 18px 20px 18px 55px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 600; font-size: 1rem; color: #1e293b; transition: all 0.3s;"
                            onfocus="this.style.borderColor='#6366f1'; this.style.background='white';"
                            onblur="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc';"
@@ -57,8 +57,8 @@
             </div>
 
             <div class="form-group">
-                <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">InstruÃ§Ãµes ou Contexto</label>
-                <textarea name="description" rows="3" 
+                <label for="description" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">InstruÃ§Ãµes ou Contexto</label>
+                <textarea name="description" id="description" rows="3" 
                           style="width: 100%; padding: 18px 20px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 500; font-size: 0.95rem; color: #1e293b; resize: none; transition: all 0.3s;" 
                           onfocus="this.style.borderColor='#6366f1'; this.style.background='white';"
                           onblur="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc';"
@@ -75,9 +75,9 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Projeto Relacionado</label>
+                        <label for="project_id" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Projeto Relacionado</label>
                         <div style="position: relative;">
-                            <select name="project_id" style="width: 100%; padding: 18px 20px 18px 55px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 700; color: #1e293b; appearance: none; cursor: pointer;">
+                            <select name="project_id" id="project_id" style="width: 100%; padding: 18px 20px 18px 55px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 700; color: #1e293b; appearance: none; cursor: pointer;">
                                 <option value="">Atividade Geral / Sem projeto</option>
                                 @foreach($projects as $project)
                                     <option value="{{ $project->id }}" {{ old('project_id') == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
@@ -89,9 +89,9 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">ResponsÃ¡vel pela ExecuÃ§Ã£o</label>
+                        <label for="assigned_to" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">ResponsÃ¡vel pela ExecuÃ§Ã£o</label>
                         <div style="position: relative;">
-                            <select name="assigned_to" style="width: 100%; padding: 18px 20px 18px 55px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 700; color: #1e293b; appearance: none; cursor: pointer;">
+                            <select name="assigned_to" id="assigned_to" style="width: 100%; padding: 18px 20px 18px 55px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 700; color: #1e293b; appearance: none; cursor: pointer;">
                                 <option value="">Mantenha comigo</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -113,16 +113,16 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Data Limite</label>
-                        <input type="date" name="due_date" required 
+                        <label for="due_date" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Data Limite</label>
+                        <input type="date" name="due_date" id="due_date" required 
                                style="width: 100%; padding: 18px 20px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 700; color: #1e293b; font-size: 1rem;" 
                                value="{{ old('due_date', request('date', date('Y-m-d'))) }}">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">NÃ­vel de Prioridade</label>
-                        <select name="priority" style="width: 100%; padding: 18px 20px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 800; color: #1e293b; appearance: none; cursor: pointer;">
+                        <label for="priority" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">NÃ­vel de Prioridade</label>
+                        <select name="priority" id="priority" style="width: 100%; padding: 18px 20px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 800; color: #1e293b; appearance: none; cursor: pointer;">
                             <option value="low">ðŸŸ¡ Prioridade Normal</option>
                             <option value="medium" selected>ðŸŸ  Importante</option>
                             <option value="high">ðŸ”´ CrÃ­tico / Urgente</option>

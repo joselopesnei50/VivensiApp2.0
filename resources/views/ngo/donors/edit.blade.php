@@ -71,35 +71,35 @@
                 @csrf
                 @method('PUT')
 
-                <label class="form-label-premium">Nome / Razão Social</label>
-                <input type="text" name="name" class="form-input-premium" value="{{ $donor->name }}" required>
+                <label class="form-label-premium" for="name">Nome / Razão Social</label>
+                <input type="text" name="name" id="name" class="form-input-premium" value="{{ $donor->name }}" required>
 
-                <label class="form-label-premium">Endereço Completo</label>
-                <input type="text" name="address" class="form-input-premium" value="{{ $donor->address }}">
+                <label class="form-label-premium" for="address">Endereço Completo</label>
+                <input type="text" name="address" id="address" class="form-input-premium" value="{{ $donor->address }}">
 
                 <div class="row">
                     <div class="col-md-6">
-                        <label class="form-label-premium">Tipo</label>
-                        <select name="type" class="form-input-premium" required>
+                        <label class="form-label-premium" for="type">Tipo</label>
+                        <select name="type" id="type" class="form-input-premium" required>
                             <option value="individual" {{ $donor->type == 'individual' ? 'selected' : '' }}>Pessoa Física</option>
                             <option value="company" {{ $donor->type == 'company' ? 'selected' : '' }}>Empresa (PJ)</option>
                             <option value="government" {{ $donor->type == 'government' ? 'selected' : '' }}>Governo</option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label-premium">CPF / CNPJ</label>
-                        <input type="text" name="document" class="form-input-premium" value="{{ $donor->document }}">
+                        <label class="form-label-premium" for="document">CPF / CNPJ</label>
+                        <input type="text" name="document" id="document" class="form-input-premium" value="{{ $donor->document }}">
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <label class="form-label-premium">E-mail</label>
-                        <input type="email" name="email" class="form-input-premium" value="{{ $donor->email }}">
+                        <label class="form-label-premium" for="email">E-mail</label>
+                        <input type="email" name="email" id="email" class="form-input-premium" value="{{ $donor->email }}">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label-premium">Telefone / WhatsApp</label>
-                        <input type="text" name="phone" class="form-input-premium" value="{{ $donor->phone }}">
+                        <label class="form-label-premium" for="phone">Telefone / WhatsApp</label>
+                        <input type="text" name="phone" id="phone" class="form-input-premium" value="{{ $donor->phone }}">
                     </div>
                 </div>
 

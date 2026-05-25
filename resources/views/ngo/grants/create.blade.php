@@ -30,41 +30,41 @@
         @csrf
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Título / Objeto do Convênio</label>
-            <input type="text" name="title" class="form-control-vivensi" required value="{{ old('title', $analyzed_data['title'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Termo de Fomento 001/2026 - Cultura Viva">
+            <label class="form-label" for="title" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Título / Objeto do Convênio</label>
+            <input type="text" name="title" id="title" class="form-control-vivensi" required value="{{ old('title', $analyzed_data['title'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Termo de Fomento 001/2026 - Cultura Viva">
         </div>
 
         <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Concedente (Orgão/Empresa)</label>
-                <input type="text" name="grantor_name" class="form-control-vivensi" required value="{{ old('grantor_name', $analyzed_data['grantor_name'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Secretaria de Cultura">
+                <label class="form-label" for="grantor_name" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Concedente (Orgão/Empresa)</label>
+                <input type="text" name="grantor_name" id="grantor_name" class="form-control-vivensi" required value="{{ old('grantor_name', $analyzed_data['grantor_name'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Secretaria de Cultura">
             </div>
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Número do Processo/Contrato</label>
-                <input type="text" name="contract_number" class="form-control-vivensi" value="{{ old('contract_number', $analyzed_data['contract_number'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: 231.422.11/2026">
+                <label class="form-label" for="contract_number" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Número do Processo/Contrato</label>
+                <input type="text" name="contract_number" id="contract_number" class="form-control-vivensi" value="{{ old('contract_number', $analyzed_data['contract_number'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: 231.422.11/2026">
             </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Valor Global (R$)</label>
+            <label class="form-label" for="total_amount" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Valor Global (R$)</label>
             <input type="text" name="total_amount" id="total_amount" inputmode="numeric" class="form-control-vivensi" required value="{{ old('total_amount', $analyzed_data['total_amount'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 1.2rem; font-weight: 700; color: #4f46e5;" placeholder="Ex: 50.000,00">
             <div class="text-muted small" style="margin-top: 8px;">Digite apenas números; o sistema formata automaticamente.</div>
         </div>
 
         <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Início da Vigência</label>
-                <input type="date" name="start_date" class="form-control-vivensi" value="{{ old('start_date', $analyzed_data['start_date'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                <label class="form-label" for="start_date" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Início da Vigência</label>
+                <input type="date" name="start_date" id="start_date" class="form-control-vivensi" value="{{ old('start_date', $analyzed_data['start_date'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
             </div>
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Fim da Vigência</label>
-                <input type="date" name="end_date" class="form-control-vivensi" required value="{{ old('end_date', $analyzed_data['end_date'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                <label class="form-label" for="end_date" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Fim da Vigência</label>
+                <input type="date" name="end_date" id="end_date" class="form-control-vivensi" required value="{{ old('end_date', $analyzed_data['end_date'] ?? '') }}" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
             </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 30px;">
-            <label class="form-label" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Observações / Requisitos</label>
-            <textarea name="notes" class="form-control-vivensi" rows="5" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Cole aqui requisitos, objeto, itens de prestação de contas, etc.">{{ old('notes', $analyzed_data['notes'] ?? '') }}</textarea>
+            <label class="form-label" for="notes" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Observações / Requisitos</label>
+            <textarea name="notes" id="notes" class="form-control-vivensi" rows="5" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Cole aqui requisitos, objeto, itens de prestação de contas, etc.">{{ old('notes', $analyzed_data['notes'] ?? '') }}</textarea>
             <div class="text-muted small" style="margin-top: 8px;">Dica: quando você importar com IA, colocamos aqui “Objeto” e “Requisitos” encontrados no edital.</div>
         </div>
 
