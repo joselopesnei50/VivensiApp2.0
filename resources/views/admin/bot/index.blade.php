@@ -94,42 +94,42 @@
                         </div>
                         <label class="switch">
                             <input type="checkbox" name="atend_enabled" value="1"
-                                {{ ($atendSettings['atend_enabled'] ?? '0') === '1' ? 'checked' : '' }} id="atend_enabled">
+                                {{ ($atendSettings['atend_enabled'] ?? '0') === '1' ? 'checked' : '' }}>
                             <span class="slider"></span>
                         </label>
                     </div>
 
                     {{-- Mensagem de boas-vindas --}}
                     <div class="field mb-3">
-                        <label for="atend_welcome_msg" class="field-label">
+                        <label class="field-label">
                             <i class="fas fa-hand-wave me-1 text-primary"></i> Mensagem de Boas-vindas
                         </label>
                         <textarea name="atend_welcome_msg" class="field-input" rows="3"
-                            placeholder="Olá! Como posso ajudar?" id="atend_welcome_msg">{{ $atendSettings['atend_welcome_msg'] ?? '' }}</textarea>
+                            placeholder="Olá! Como posso ajudar?">{{ $atendSettings['atend_welcome_msg'] ?? '' }}</textarea>
                         <div class="field-hint">Enviada na primeira interação do contato.</div>
                     </div>
 
                     {{-- Horário de Atendimento --}}
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <label for="atend_work_start" class="field-label"><i class="fas fa-clock me-1 text-primary"></i> Início do Atendimento</label>
+                            <label class="field-label"><i class="fas fa-clock me-1 text-primary"></i> Início do Atendimento</label>
                             <input type="time" name="atend_work_start" class="field-input"
-                                value="{{ $atendSettings['atend_work_start'] ?? '08:00' }}" id="atend_work_start">
+                                value="{{ $atendSettings['atend_work_start'] ?? '08:00' }}">
                         </div>
                         <div class="col-6">
-                            <label for="atend_work_end" class="field-label"><i class="fas fa-clock me-1 text-primary"></i> Fim do Atendimento</label>
+                            <label class="field-label"><i class="fas fa-clock me-1 text-primary"></i> Fim do Atendimento</label>
                             <input type="time" name="atend_work_end" class="field-input"
-                                value="{{ $atendSettings['atend_work_end'] ?? '18:00' }}" id="atend_work_end">
+                                value="{{ $atendSettings['atend_work_end'] ?? '18:00' }}">
                         </div>
                     </div>
 
                     {{-- Mensagem fora do horário --}}
                     <div class="field mb-4">
-                        <label for="atend_off_hours_msg" class="field-label">
+                        <label class="field-label">
                             <i class="fas fa-moon me-1 text-warning"></i> Mensagem Fora do Horário
                         </label>
                         <textarea name="atend_off_hours_msg" class="field-input" rows="2"
-                            placeholder="Nosso atendimento funciona das 08h às 18h..." id="atend_off_hours_msg">{{ $atendSettings['atend_off_hours_msg'] ?? '' }}</textarea>
+                            placeholder="Nosso atendimento funciona das 08h às 18h...">{{ $atendSettings['atend_off_hours_msg'] ?? '' }}</textarea>
                         <div class="field-hint">Enviada quando o contato escreve fora do horário configurado.</div>
                     </div>
 
@@ -156,7 +156,7 @@
                         </div>
                         <label class="switch">
                             <input type="checkbox" name="ai_enabled" value="1"
-                                {{ ($waConfig && $waConfig- id="ai_enabled">ai_enabled) ? 'checked' : '' }}>
+                                {{ ($waConfig && $waConfig->ai_enabled) ? 'checked' : '' }}>
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -164,9 +164,9 @@
                     <input type="hidden" name="ai_provider" value="deepseek">
 
                     <div class="field mb-0">
-                        <label for="ai_training" class="field-label">Treinamento / Contexto da IA</label>
+                        <label class="field-label">Treinamento / Contexto da IA</label>
                         <textarea name="ai_training" class="field-input" rows="6"
-                            placeholder="Você é um assistente da [Nome da organização]. Responda apenas sobre nossos serviços..." id="ai_training">{{ $waConfig->ai_training ?? '' }}</textarea>
+                            placeholder="Você é um assistente da [Nome da organização]. Responda apenas sobre nossos serviços...">{{ $waConfig->ai_training ?? '' }}</textarea>
                         <div class="field-hint">Descreva o comportamento da IA — quem ela é, o que pode e não pode responder.</div>
                     </div>
                 </div>
@@ -250,32 +250,32 @@
                             <div class="toggle-sub">Quando desativado, o bot ignora todas as mensagens recebidas</div>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" name="bot_enabled" value="1" {{ $isEnabled ? 'checked' : '' }} id="bot_enabled">
+                            <input type="checkbox" name="bot_enabled" value="1" {{ $isEnabled ? 'checked' : '' }}>
                             <span class="slider"></span>
                         </label>
                     </div>
 
                     <div class="field mb-3">
-                        <label for="bot_phone" class="field-label">
+                        <label class="field-label">
                             <i class="fas fa-mobile-screen me-1 text-primary"></i> Número do Bot (E.164)
                         </label>
                         <input type="text" name="bot_phone" class="field-input"
                                placeholder="5516997618695"
-                               value="{{ $settings['bot_phone'] ?? '' }}" id="bot_phone">
+                               value="{{ $settings['bot_phone'] ?? '' }}">
                         <div class="field-hint">Somente números, incluindo código do país (55) e DDD.</div>
                     </div>
 
                     <div class="field mb-3">
-                        <label for="bot_instance_name" class="field-label">
+                        <label class="field-label">
                             <i class="fas fa-plug me-1 text-primary"></i> Nome da Instância (Evolution API)
                         </label>
                         <input type="text" name="bot_instance_name" class="field-input"
                                placeholder="vivensi-bot"
-                               value="{{ $settings['bot_instance_name'] ?? '' }}" id="bot_instance_name">
+                               value="{{ $settings['bot_instance_name'] ?? '' }}">
                     </div>
 
                     <div class="field mb-4">
-                        <label for="webhookUrlInput" class="field-label">
+                        <label class="field-label">
                             <i class="fas fa-link me-1 text-primary"></i> URL do Webhook
                         </label>
                         <div class="copy-row">
@@ -445,10 +445,10 @@
                 @endphp
                 <div class="col-md-6">
                     <div class="field">
-                        <label for="{{ $key }}" class="field-label">{{ $mLabel }}</label>
+                        <label class="field-label">{{ $mLabel }}</label>
                         <textarea name="{{ $key }}" class="field-input font-monospace"
                                   rows="6"
-                                  placeholder="Deixe em branco para usar o padrão." id="{{ $key }}">{{ $settings[$key] ?? '' }}</textarea>
+                                  placeholder="Deixe em branco para usar o padrão.">{{ $settings[$key] ?? '' }}</textarea>
                         <div class="field-hint">{{ $mHelp }}</div>
                     </div>
                 </div>
@@ -478,7 +478,7 @@
                 <div class="modal-body" style="padding:20px 24px;">
                     <p class="field-hint mb-3">Usuário: <strong id="modalUserName" style="color:#0f172a;"></strong></p>
                     <div class="field">
-                        <label for="modalPhone" class="field-label">Número de WhatsApp</label>
+                        <label class="field-label">Número de WhatsApp</label>
                         <input type="text" name="phone" id="modalPhone" class="field-input" placeholder="5516997618695">
                         <div class="field-hint">Somente números (55 + DDD + número). Deixe vazio para remover o acesso.</div>
                     </div>

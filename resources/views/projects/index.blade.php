@@ -34,15 +34,15 @@
         <div style="display:flex; gap: 12px; align-items:end; justify-content: space-between; flex-wrap: wrap;">
             <div style="display:flex; gap: 10px; align-items:end; flex: 1; min-width: 280px; flex-wrap: wrap;">
                 <div style="position: relative; flex: 1; min-width: 260px;">
-                    <label for="q" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Busca</label>
+                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Busca</label>
                     <i class="fas fa-search" style="position:absolute; left: 14px; top: 38px; color:#94a3b8;"></i>
                     <input name="q" value="{{ $q ?? '' }}" type="text" placeholder="Buscar por nome ou descrição..."
-                           style="width: 100%; padding: 10px 12px 10px 38px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 700; color:#0f172a;" id="q">
+                           style="width: 100%; padding: 10px 12px 10px 38px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 700; color:#0f172a;">
                 </div>
 
                 <div style="min-width: 180px;">
-                    <label for="status" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Status</label>
-                    <select name="status" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="status">
+                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Status</label>
+                    <select name="status" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;">
                         <option value="all" {{ ($status ?? 'all') === 'all' ? 'selected' : '' }}>Todos</option>
                         <option value="active" {{ ($status ?? 'all') === 'active' ? 'selected' : '' }}>Em Execução</option>
                         <option value="paused" {{ ($status ?? 'all') === 'paused' ? 'selected' : '' }}>Pausados</option>
@@ -53,8 +53,8 @@
 
                 @if(!empty($teamUsers))
                     <div style="min-width: 220px;">
-                        <label for="member" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Membro</label>
-                        <select name="member" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="member">
+                        <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Membro</label>
+                        <select name="member" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;">
                             <option value="">Todos</option>
                             @foreach($teamUsers as $u)
                                 <option value="{{ $u->id }}" {{ (string)($memberId ?? '') === (string)$u->id ? 'selected' : '' }}>{{ $u->name }}</option>
@@ -66,8 +66,8 @@
 
             <div style="display:flex; gap: 10px; flex-wrap: wrap; align-items:end;">
                 <div style="min-width: 220px;">
-                    <label for="sort" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Ordem</label>
-                    <select name="sort" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="sort">
+                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Ordem</label>
+                    <select name="sort" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;">
                         <option value="recent" {{ ($sort ?? 'recent') === 'recent' ? 'selected' : '' }}>Mais recentes</option>
                         <option value="deadline" {{ ($sort ?? 'recent') === 'deadline' ? 'selected' : '' }}>Deadline</option>
                         <option value="budget" {{ ($sort ?? 'recent') === 'budget' ? 'selected' : '' }}>Uso do budget</option>
@@ -76,9 +76,9 @@
                 </div>
 
                 <div style="min-width: 170px;">
-                    <label for="flag" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Flags</label>
+                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Flags</label>
                     <label style="display:flex; gap:10px; align-items:center; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;">
-                        <input type="checkbox" name="flag" value="over_budget" {{ ($flag ?? '') === 'over_budget' ? 'checked' : '' }} id="flag">
+                        <input type="checkbox" name="flag" value="over_budget" {{ ($flag ?? '') === 'over_budget' ? 'checked' : '' }}>
                         Budget estourado
                     </label>
                 </div>

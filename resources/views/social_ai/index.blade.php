@@ -935,16 +935,16 @@
 
         <span class="sai-modal-label">Plataforma</span>
         <div class="sai-platform-btns">
-            <label for="sch_platform" class="sai-platform-btn">
-                <input type="radio" name="sch_platform" value="facebook" checked id="sch_platform">
+            <label class="sai-platform-btn">
+                <input type="radio" name="sch_platform" value="facebook" checked>
                 <i class="fab fa-facebook-f"></i> Facebook
             </label>
             <label class="sai-platform-btn">
-                <input type="radio" name="sch_platform" value="instagram" id="sch_platform">
+                <input type="radio" name="sch_platform" value="instagram">
                 <i class="fab fa-instagram"></i> Instagram
             </label>
             <label class="sai-platform-btn">
-                <input type="radio" name="sch_platform" value="both" id="sch_platform">
+                <input type="radio" name="sch_platform" value="both">
                 <i class="fas fa-layer-group"></i> Ambas
             </label>
         </div>

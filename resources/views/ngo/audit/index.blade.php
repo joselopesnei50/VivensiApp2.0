@@ -19,12 +19,12 @@
 <div class="vivensi-card" style="margin-bottom: 14px;">
     <form method="GET" action="{{ url('/ngo/audit') }}" style="display:flex; gap: 10px; flex-wrap: wrap; align-items:end;">
         <div style="flex: 1; min-width: 220px;">
-            <label for="q" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Busca</label>
-            <input type="text" name="q" value="{{ request('q') }}" class="form-control-vivensi" placeholder="Tipo, evento, IP, URL..." id="q">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Busca</label>
+            <input type="text" name="q" value="{{ request('q') }}" class="form-control-vivensi" placeholder="Tipo, evento, IP, URL...">
         </div>
         <div style="min-width: 160px;">
-            <label for="event" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Evento</label>
-            <select name="event" class="form-control-vivensi" id="event">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Evento</label>
+            <select name="event" class="form-control-vivensi">
                 <option value="">Todos</option>
                 @foreach(($events ?? []) as $ev)
                     <option value="{{ $ev }}" {{ request('event') === $ev ? 'selected' : '' }}>{{ strtoupper($ev) }}</option>
@@ -32,8 +32,8 @@
             </select>
         </div>
         <div style="min-width: 200px;">
-            <label for="user_id" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Usuário</label>
-            <select name="user_id" class="form-control-vivensi" id="user_id">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Usuário</label>
+            <select name="user_id" class="form-control-vivensi">
                 <option value="">Todos</option>
                 @foreach(($users ?? []) as $u)
                     <option value="{{ $u->id }}" {{ (string)request('user_id') === (string)$u->id ? 'selected' : '' }}>{{ $u->name }}</option>
@@ -41,12 +41,12 @@
             </select>
         </div>
         <div style="min-width: 150px;">
-            <label for="from" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">De</label>
-            <input type="date" name="from" value="{{ request('from') }}" class="form-control-vivensi" id="from">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">De</label>
+            <input type="date" name="from" value="{{ request('from') }}" class="form-control-vivensi">
         </div>
         <div style="min-width: 150px;">
-            <label for="to" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Até</label>
-            <input type="date" name="to" value="{{ request('to') }}" class="form-control-vivensi" id="to">
+            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Até</label>
+            <input type="date" name="to" value="{{ request('to') }}" class="form-control-vivensi">
         </div>
         <div style="display:flex; gap: 10px;">
             <button type="submit" class="btn-premium" style="justify-content:center;">

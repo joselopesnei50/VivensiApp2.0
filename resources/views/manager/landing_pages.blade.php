@@ -162,8 +162,8 @@
         <form action="{{ url('/ngo/landing-pages') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label for="title">Título da Página (Ex: Campanha de Vendas)</label>
-                <input type="text" name="title" class="form-control-vivensi" required placeholder="Digite o nome..." id="title">
+                <label>Título da Página (Ex: Campanha de Vendas)</label>
+                <input type="text" name="title" class="form-control-vivensi" required placeholder="Digite o nome...">
             </div>
             <div style="margin-top: 20px; display: flex; gap: 10px;">
                 <button type="button" onclick="document.getElementById('newPageModal').style.display='none'" style="flex: 1; border: none; background: #f1f5f9; cursor: pointer; border-radius: 8px;">Cancelar</button>

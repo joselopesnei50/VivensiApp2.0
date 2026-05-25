@@ -212,7 +212,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="inst-modal-body">
-                <label for="proxyUrlInput" class="inst-field-label">URL do Proxy <span style="color:#94a3b8; font-weight:500;">(opcional)</span></label>
+                <label class="inst-field-label">URL do Proxy <span style="color:#94a3b8; font-weight:500;">(opcional)</span></label>
                 <input type="text" id="proxyUrlInput" class="inst-field"
                        placeholder="socks5://user:pass@host:port">
                 <p style="color:#94a3b8; font-size:.73rem; margin:8px 0 20px; line-height:1.6;">
@@ -249,7 +249,7 @@
             <div class="inst-modal-body">
                 {{-- Form --}}
                 <div id="create-instance-form">
-                    <label for="instanceName" class="inst-field-label">Nome da instância</label>
+                    <label class="inst-field-label">Nome da instância</label>
                     <input type="text" id="instanceName" class="inst-field" placeholder="Ex: Vendas — Principal">
                     <p style="color:#94a3b8; font-size:.75rem; margin:8px 0 20px;">Apenas para identificação interna no sistema.</p>
                     <button onclick="createInstance()" class="inst-btn-primary" style="width:100%; justify-content:center; padding:14px; font-size:.9rem;">

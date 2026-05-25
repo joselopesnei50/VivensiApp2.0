@@ -62,10 +62,10 @@
         <form method="POST" action="{{ route('2fa.confirm') }}">
             @csrf
             <div style="margin-bottom:14px;">
-                <label for="code" style="display:block; margin-bottom:8px; color:#475569; font-weight:700; font-size:0.85rem;">Código de verificação</label>
+                <label style="display:block; margin-bottom:8px; color:#475569; font-weight:700; font-size:0.85rem;">Código de verificação</label>
                 <input type="text" name="code" required placeholder="000 000" maxlength="7" inputmode="numeric" autocomplete="one-time-code"
                     style="width:100%; padding:14px 18px; border:2px solid #e2e8f0; border-radius:14px; font-size:1.4rem; font-weight:900; text-align:center; letter-spacing:6px; color:#1e293b;"
-                    onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'" id="code">
+                    onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
             </div>
             <button type="submit" style="width:100%; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.95rem; cursor:pointer;">
                 <i class="fas fa-check me-2"></i> Confirmar e Ativar
@@ -95,7 +95,7 @@
             @csrf @method('DELETE')
             <input type="password" name="password" required placeholder="Senha atual"
                 style="width:100%; padding:12px 16px; border:2px solid #e2e8f0; border-radius:12px; font-size:0.9rem; margin-bottom:12px; color:#1e293b;"
-                onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#e2e8f0'" id="password">
+                onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#e2e8f0'">
             <button type="submit" style="width:100%; background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:12px; font-weight:900; cursor:pointer;">
                 <i class="fas fa-shield-xmark me-2"></i> Desativar 2FA
             </button>

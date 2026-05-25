@@ -36,16 +36,16 @@
                             <label class="form-label fw-600">Publicar em <span class="text-danger">*</span></label>
                             <div class="d-flex gap-2" id="platformOptions">
                                 <label class="platform-chip {{ $post->platform === 'facebook' ? 'active' : '' }}" data-val="facebook">
-                                    <input type="radio" name="platform" value="facebook" {{ $post- id="platform">platform === 'facebook' ? 'checked' : '' }} class="d-none">
+                                    <input type="radio" name="platform" value="facebook" {{ $post->platform === 'facebook' ? 'checked' : '' }} class="d-none">
                                     <i class="fab fa-facebook me-1"></i> Facebook
                                 </label>
                                 @if($post->account?->instagram_business_id)
                                 <label class="platform-chip {{ $post->platform === 'instagram' ? 'active' : '' }}" data-val="instagram">
-                                    <input type="radio" name="platform" value="instagram" {{ $post- id="platform">platform === 'instagram' ? 'checked' : '' }} class="d-none">
+                                    <input type="radio" name="platform" value="instagram" {{ $post->platform === 'instagram' ? 'checked' : '' }} class="d-none">
                                     <i class="fab fa-instagram me-1"></i> Instagram
                                 </label>
                                 <label class="platform-chip {{ $post->platform === 'both' ? 'active' : '' }}" data-val="both">
-                                    <input type="radio" name="platform" value="both" {{ $post- id="platform">platform === 'both' ? 'checked' : '' }} class="d-none">
+                                    <input type="radio" name="platform" value="both" {{ $post->platform === 'both' ? 'checked' : '' }} class="d-none">
                                     <i class="fas fa-share-nodes me-1"></i> Ambos
                                 </label>
                                 @endif
@@ -78,9 +78,9 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="scheduled_at" class="form-label fw-600">Data e hora de publicação <span class="text-danger">*</span></label>
+                            <label class="form-label fw-600">Data e hora de publicação <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="scheduled_at" class="form-control form-control-lg"
-                                   value="{{ old('scheduled_at', $post- id="scheduled_at">scheduled_at->format('Y-m-d\TH:i')) }}" required
+                                   value="{{ old('scheduled_at', $post->scheduled_at->format('Y-m-d\TH:i')) }}" required
                                    min="{{ now()->addMinutes(5)->format('Y-m-d\TH:i') }}">
                             @error('scheduled_at') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
