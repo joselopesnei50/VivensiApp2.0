@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GeocodeAddressJob;
 use App\Mail\DonorPortalMail;
 use App\Models\NgoDonor;
 use App\Models\Tenant;
@@ -39,6 +40,10 @@ class NgoDonorController extends Controller
         $donor->tenant_id = auth()->user()->tenant_id;
         $donor->save();
 
+        if (!empty($donor->address)) {
+            GeocodeAddressJob::dispatch($donor)->delay(now()->addSeconds(3));
+        }
+
         return redirect('/ngo/donors')->with('success', 'Doador cadastrado com sucesso!');
     }
 
@@ -66,7 +71,13 @@ class NgoDonorController extends Controller
             'address' => 'nullable|string|max:255'
         ]);
 
+        $oldAddress = $donor->address;
         $donor->update($validated);
+
+        if (!empty($donor->address) && $donor->address !== $oldAddress) {
+            $donor->update(['latitude' => null, 'longitude' => null]);
+            GeocodeAddressJob::dispatch($donor->fresh())->delay(now()->addSeconds(3));
+        }
 
         return redirect('/ngo/donors')->with('success', 'Doador atualizado com sucesso!');
     }
