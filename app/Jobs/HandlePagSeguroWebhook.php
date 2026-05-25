@@ -9,12 +9,17 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use App\Models\AuditLog;
 use App\Models\Transaction;
 use App\Models\Tenant;
 
 class HandlePagSeguroWebhook implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int   $tries   = 3;
+    public int   $timeout = 45;
+    public array $backoff  = [30, 60, 120];
 
     protected $notificationCode;
     protected $notificationType;
@@ -95,18 +100,38 @@ class HandlePagSeguroWebhook implements ShouldQueue
         }
 
         if ($newStatus !== $transaction->status) {
-             $transaction->update(['status' => $newStatus]);
-             Log::info("Transaction {$transaction->id} updated to {$newStatus}");
-             
-             // Activate Tenant Subscription if Income
-             if ($newStatus === 'paid' && $transaction->type === 'income' && $transaction->tenant_id) {
-                 $tenant = Tenant::find($transaction->tenant_id);
-                 if ($tenant) {
-                     // Extend subscription logic here...
-                     // For example:
-                     $tenant->update(['subscription_status' => 'active', 'trial_ends_at' => now()->addMonth()]);
-                 }
-             }
+            $oldStatus = $transaction->status;
+            $transaction->update(['status' => $newStatus]);
+            Log::info("Transaction {$transaction->id} updated to {$newStatus}");
+
+            AuditLog::create([
+                'tenant_id'      => $transaction->tenant_id,
+                'user_id'        => null,
+                'event'          => 'payment.status_changed',
+                'auditable_type' => Transaction::class,
+                'auditable_id'   => $transaction->id,
+                'old_values'     => ['status' => $oldStatus],
+                'new_values'     => ['status' => $newStatus, 'gateway' => 'pagseguro', 'code' => $code],
+            ]);
+
+            // Activate Tenant Subscription if Income
+            if ($newStatus === 'paid' && $transaction->type === 'income' && $transaction->tenant_id) {
+                $tenant = Tenant::find($transaction->tenant_id);
+                if ($tenant) {
+                    $oldSubStatus = $tenant->subscription_status;
+                    $tenant->update(['subscription_status' => 'active', 'trial_ends_at' => now()->addMonth()]);
+
+                    AuditLog::create([
+                        'tenant_id'      => $tenant->id,
+                        'user_id'        => null,
+                        'event'          => 'subscription.activated',
+                        'auditable_type' => Tenant::class,
+                        'auditable_id'   => $tenant->id,
+                        'old_values'     => ['subscription_status' => $oldSubStatus],
+                        'new_values'     => ['subscription_status' => 'active', 'gateway' => 'pagseguro'],
+                    ]);
+                }
+            }
         }
     }
 }
