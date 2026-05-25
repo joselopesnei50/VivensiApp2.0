@@ -18,12 +18,12 @@
                 
                 <div class="row mb-4">
                     <div class="col-md-8">
-                        <label class="form-label" style="font-weight: 700; color: #475569;">Nome Completo / Razão Social</label>
-                        <input type="text" name="name" class="form-control" required style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label for="name" class="form-label" style="font-weight: 700; color: #475569;">Nome Completo / Razão Social</label>
+                        <input type="text" name="name" class="form-control" required style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="name">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label" style="font-weight: 700; color: #475569;">Tipo de Pessoa</label>
-                        <select name="type" class="form-select" required style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label for="type" class="form-label" style="font-weight: 700; color: #475569;">Tipo de Pessoa</label>
+                        <select name="type" class="form-select" required style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="type">
                             <option value="individual">Pessoa Física (CPF)</option>
                             <option value="company">Pessoa Jurídica (CNPJ)</option>
                         </select>
@@ -32,27 +32,27 @@
 
                 <div class="row mb-4">
                     <div class="col-md-4">
-                        <label class="form-label" style="font-weight: 700; color: #475569;">Documento</label>
-                        <input type="text" name="document" class="form-control" placeholder="CPF ou CNPJ" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label for="document" class="form-label" style="font-weight: 700; color: #475569;">Documento</label>
+                        <input type="text" name="document" class="form-control" placeholder="CPF ou CNPJ" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="document">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label" style="font-weight: 700; color: #475569;">E-mail</label>
-                        <input type="email" name="email" class="form-control" placeholder="contato@email.com" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label for="email" class="form-label" style="font-weight: 700; color: #475569;">E-mail</label>
+                        <input type="email" name="email" class="form-control" placeholder="contato@email.com" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="email">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label" style="font-weight: 700; color: #475569;">WhatsApp</label>
-                        <input type="text" name="phone" class="form-control" placeholder="(00) 00000-0000" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
+                        <label for="phone" class="form-label" style="font-weight: 700; color: #475569;">WhatsApp</label>
+                        <input type="text" name="phone" class="form-control" placeholder="(00) 00000-0000" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="phone">
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label" style="font-weight: 700; color: #475569;">Histórico de Compras (Anotações)</label>
-                    <textarea name="purchase_history" class="form-control" rows="3" placeholder="Registre aqui os produtos/serviços que este cliente já comprou..." style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;"></textarea>
+                    <label for="purchase_history" class="form-label" style="font-weight: 700; color: #475569;">Histórico de Compras (Anotações)</label>
+                    <textarea name="purchase_history" class="form-control" rows="3" placeholder="Registre aqui os produtos/serviços que este cliente já comprou..." style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="purchase_history"></textarea>
                 </div>
 
                 <div class="mb-5">
-                    <label class="form-label" style="font-weight: 700; color: #475569;">Anotações de Relacionamento (CRM)</label>
-                    <textarea name="relationship_notes" class="form-control" rows="3" placeholder="Informações relevantes para o próximo contato, dores do cliente, etc..." style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;"></textarea>
+                    <label for="relationship_notes" class="form-label" style="font-weight: 700; color: #475569;">Anotações de Relacionamento (CRM)</label>
+                    <textarea name="relationship_notes" class="form-control" rows="3" placeholder="Informações relevantes para o próximo contato, dores do cliente, etc..." style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="relationship_notes"></textarea>
                 </div>
 
                 <div class="text-end">

@@ -26,8 +26,8 @@
             <input class="form-control-vivensi" type="text" name="q" value="{{ $q ?? '' }}" placeholder="Voluntário, e-mail ou atividade">
         </div>
         <div class="form-group" style="min-width: 240px; margin:0;">
-            <label>Voluntário</label>
-            <select class="form-control-vivensi" name="volunteer_id">
+            <label for="volunteer_id">Voluntário</label>
+            <select class="form-control-vivensi" name="volunteer_id" id="volunteer_id">
                 <option value="">Todos</option>
                 @foreach($volunteers as $v)
                     <option value="{{ (int) $v->id }}" @if(!empty($volunteerId) && (int) $volunteerId === (int) $v->id) selected @endif>

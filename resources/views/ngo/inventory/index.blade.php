@@ -127,13 +127,13 @@
         </div>
         <form action="{{ url('/ngo/inventory') }}" method="POST">
             @csrf
-            <div class="form-group"><label>Nome do Item</label><input type="text" name="name" class="form-control-vivensi" required placeholder="Ex: Cesta Básica, Cobertor"></div>
-            <div class="form-group"><label>Descrição / Especificação</label><input type="text" name="description" class="form-control-vivensi"></div>
+            <div class="form-group"><label for="name">Nome do Item</label><input type="text" name="name" class="form-control-vivensi" required placeholder="Ex: Cesta Básica, Cobertor" id="name"></div>
+            <div class="form-group"><label for="description">Descrição / Especificação</label><input type="text" name="description" class="form-control-vivensi" id="description"></div>
             
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label>SKU (Código)</label><input type="text" name="sku" class="form-control-vivensi"></div>
-                <div class="form-group"><label>Unidade de Medida</label>
-                    <select name="unit" class="form-control-vivensi" required>
+                <div class="form-group"><label for="sku">SKU (Código)</label><input type="text" name="sku" class="form-control-vivensi" id="sku"></div>
+                <div class="form-group"><label for="unit">Unidade de Medida</label>
+                    <select name="unit" class="form-control-vivensi" required id="unit">
                         <option value="Unidade">Unidade</option>
                         <option value="Caixa">Caixa</option>
                         <option value="Kg">Quilo (Kg)</option>
@@ -143,8 +143,8 @@
                 </div>
             </div>
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label>Estoque Mínimo de Alerta</label><input type="number" step="0.01" name="minimum_stock" class="form-control-vivensi" value="0" required></div>
-                <div class="form-group"><label>Valor Estimado (R$ / opcional)</label><input type="number" step="0.01" name="value_per_unit" class="form-control-vivensi"></div>
+                <div class="form-group"><label for="minimum_stock">Estoque Mínimo de Alerta</label><input type="number" step="0.01" name="minimum_stock" class="form-control-vivensi" value="0" required id="minimum_stock"></div>
+                <div class="form-group"><label for="value_per_unit">Valor Estimado (R$ / opcional)</label><input type="number" step="0.01" name="value_per_unit" class="form-control-vivensi" id="value_per_unit"></div>
             </div>
             
             <button type="submit" class="btn-premium" style="width: 100%; justify-content: center;">Salvar Item</button>
@@ -169,8 +169,8 @@
 
             <div class="grid-2" style="gap: 15px;">
                 <div class="form-group">
-                    <label>Quantidade</label>
-                    <input type="number" step="0.01" name="quantity" class="form-control-vivensi" required min="0.01">
+                    <label for="quantity">Quantidade</label>
+                    <input type="number" step="0.01" name="quantity" class="form-control-vivensi" required min="0.01" id="quantity">
                 </div>
                 <div class="form-group">
                     <label>Data</label>
@@ -179,14 +179,14 @@
             </div>
 
             <div class="form-group">
-                <label>Descrição / Origem / Motivo</label>
-                <input type="text" name="description" class="form-control-vivensi" placeholder="Ex: Doação Recebida da Empresa X, Entrega para a Família Y...">
+                <label for="description">Descrição / Origem / Motivo</label>
+                <input type="text" name="description" class="form-control-vivensi" placeholder="Ex: Doação Recebida da Empresa X, Entrega para a Família Y..." id="description">
             </div>
 
             <div id="outFields" style="display:none;">
                 <div class="form-group">
-                    <label>Vincular a Beneficiário (Opcional)</label>
-                    <select name="beneficiary_id" class="form-control-vivensi">
+                    <label for="beneficiary_id">Vincular a Beneficiário (Opcional)</label>
+                    <select name="beneficiary_id" class="form-control-vivensi" id="beneficiary_id">
                         <option value="">— Selecione —</option>
                         @php $bens = \App\Models\Beneficiary::where('tenant_id', auth()->user()->tenant_id)->get(); @endphp
                         @foreach($bens as $b)
@@ -196,8 +196,8 @@
                 </div>
                 <!-- Vínculo com projeto (opcional) -->
                 <div class="form-group">
-                    <label>Vincular a Projeto (Opcional)</label>
-                    <select name="project_id" class="form-control-vivensi">
+                    <label for="project_id">Vincular a Projeto (Opcional)</label>
+                    <select name="project_id" class="form-control-vivensi" id="project_id">
                         <option value="">— Selecione —</option>
                         @php $projs = \App\Models\Project::where('tenant_id', auth()->user()->tenant_id)->get(); @endphp
                         @foreach($projs as $p)

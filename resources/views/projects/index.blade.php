@@ -41,8 +41,8 @@
                 </div>
 
                 <div style="min-width: 180px;">
-                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Status</label>
-                    <select name="status" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;">
+                    <label for="status" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Status</label>
+                    <select name="status" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="status">
                         <option value="all" {{ ($status ?? 'all') === 'all' ? 'selected' : '' }}>Todos</option>
                         <option value="active" {{ ($status ?? 'all') === 'active' ? 'selected' : '' }}>Em Execução</option>
                         <option value="paused" {{ ($status ?? 'all') === 'paused' ? 'selected' : '' }}>Pausados</option>
@@ -53,8 +53,8 @@
 
                 @if(!empty($teamUsers))
                     <div style="min-width: 220px;">
-                        <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Membro</label>
-                        <select name="member" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;">
+                        <label for="member" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Membro</label>
+                        <select name="member" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="member">
                             <option value="">Todos</option>
                             @foreach($teamUsers as $u)
                                 <option value="{{ $u->id }}" {{ (string)($memberId ?? '') === (string)$u->id ? 'selected' : '' }}>{{ $u->name }}</option>
@@ -66,8 +66,8 @@
 
             <div style="display:flex; gap: 10px; flex-wrap: wrap; align-items:end;">
                 <div style="min-width: 220px;">
-                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Ordem</label>
-                    <select name="sort" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;">
+                    <label for="sort" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Ordem</label>
+                    <select name="sort" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="sort">
                         <option value="recent" {{ ($sort ?? 'recent') === 'recent' ? 'selected' : '' }}>Mais recentes</option>
                         <option value="deadline" {{ ($sort ?? 'recent') === 'deadline' ? 'selected' : '' }}>Deadline</option>
                         <option value="budget" {{ ($sort ?? 'recent') === 'budget' ? 'selected' : '' }}>Uso do budget</option>
