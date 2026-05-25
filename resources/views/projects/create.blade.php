@@ -45,10 +45,10 @@
             </h5>
             
             <div class="form-group" style="margin-bottom: 25px;">
-                <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Escolha um Nome Impactante</label>
+                <label class="form-label" for="name" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Escolha um Nome Impactante</label>
                 <div style="position: relative;">
                     <i class="fas fa-rocket" style="position: absolute; left: 20px; top: 18px; color: #94a3b8; font-size: 1rem;"></i>
-                    <input type="text" name="name" class="form-control-vivensi" required 
+                    <input type="text" name="name" id="name" class="form-control-vivensi" required 
                            style="width: 100%; padding: 16px 20px 16px 50px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 600; font-size: 1rem; transition: all 0.3s;" 
                            onfocus="this.style.borderColor='var(--primary-color)'; this.style.background='white'; this.style.boxShadow='0 10px 20px rgba(79, 70, 229, 0.05)';"
                            onblur="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc'; this.style.boxShadow='none';"
@@ -57,8 +57,8 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">MissÃ£o & Objetivos</label>
-                <textarea name="description" class="form-control-vivensi" rows="4" 
+                <label class="form-label" for="description" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">MissÃ£o & Objetivos</label>
+                <textarea name="description" id="description" class="form-control-vivensi" rows="4" 
                           style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 500; font-size: 0.95rem; resize: none; transition: all 0.3s;" 
                           onfocus="this.style.borderColor='var(--primary-color)'; this.style.background='white';"
                           onblur="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc';"
@@ -75,10 +75,10 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Investimento Planejado</label>
+                        <label class="form-label" for="budget" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Investimento Planejado</label>
                         <div style="position: relative;">
                              <span style="position: absolute; left: 20px; top: 16px; color: #10b981; font-weight: 800; font-size: 1rem;">R$</span>
-                             <input type="text" name="budget" class="form-control-vivensi" placeholder="0,00" required 
+                             <input type="text" name="budget" id="budget" class="form-control-vivensi" placeholder="0,00" required 
                                     style="width: 100%; padding: 16px 20px 16px 55px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 700; font-size: 1.1rem;" 
                                     value="{{ old('budget') }}">
                         </div>
@@ -86,8 +86,8 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Status da MissÃ£o</label>
-                        <select name="status" class="form-control-vivensi" 
+                        <label class="form-label" for="status" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Status da MissÃ£o</label>
+                        <select name="status" id="status" class="form-control-vivensi" 
                                 style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 700; color: #1e293b; appearance: none; cursor: pointer;">
                             <option value="active" selected>ðŸš€ Em ExecuÃ§Ã£o</option>
                             <option value="paused">â¸ï¸ Pausado</option>
@@ -108,16 +108,16 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Data de Decolagem</label>
-                        <input type="date" name="start_date" class="form-control-vivensi" required 
+                        <label class="form-label" for="start_date" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Data de Decolagem</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control-vivensi" required 
                                style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 600; color: #1e293b;" 
                                value="{{ old('start_date', date('Y-m-d')) }}">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Pouso Previsto (Opcional)</label>
-                        <input type="date" name="end_date" class="form-control-vivensi" 
+                        <label class="form-label" for="end_date" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Pouso Previsto (Opcional)</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control-vivensi" 
                                style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 600; color: #1e293b;" 
                                value="{{ old('end_date') }}">
                     </div>

@@ -37,8 +37,8 @@
             <form method="POST" action="{{ route('settings.api-tokens.store') }}">
                 @csrf
                 <div style="margin-bottom: 16px;">
-                    <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Nome do Token</label>
-                    <input type="text" name="name" required placeholder="Ex: Integração Zapier" maxlength="100"
+                    <label for="token_name" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Nome do Token</label>
+                    <input type="text" name="name" id="token_name" required placeholder="Ex: Integração Zapier" maxlength="100"
                         style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; color:white; font-size:0.9rem; outline:none;">
                 </div>
 

@@ -34,18 +34,18 @@
             </h5>
             
             <div class="form-group" style="margin-bottom: 25px;">
-                <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Nome Principal</label>
+                <label class="form-label" for="name" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Nome Principal</label>
                 <div style="position: relative;">
                     <i class="fas fa-rocket" style="position: absolute; left: 20px; top: 18px; color: #94a3b8; font-size: 1rem;"></i>
-                    <input type="text" name="name" class="form-control-vivensi" required 
+                    <input type="text" name="name" id="name" class="form-control-vivensi" required 
                            style="width: 100%; padding: 16px 20px 16px 50px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 600; font-size: 1rem; transition: all 0.3s;" 
                            placeholder="Ex: Expansão Nacional 2026" value="{{ $project->name }}">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Memorando de Escopo</label>
-                <textarea name="description" class="form-control-vivensi" rows="4" 
+                <label class="form-label" for="description" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Memorando de Escopo</label>
+                <textarea name="description" id="description" class="form-control-vivensi" rows="4" 
                           style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 500; font-size: 0.95rem; resize: none; transition: all 0.3s;" 
                           placeholder="Quais serão os entregáveis e o impacto deste projeto?">{{ $project->description }}</textarea>
             </div>
@@ -60,10 +60,10 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Investimento Planejado (R$)</label>
+                        <label class="form-label" for="budget" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Investimento Planejado (R$)</label>
                         <div style="position: relative;">
                              <span style="position: absolute; left: 20px; top: 16px; color: #10b981; font-weight: 800; font-size: 1rem;">R$</span>
-                             <input type="number" step="0.01" name="budget" class="form-control-vivensi" required 
+                             <input type="number" step="0.01" name="budget" id="budget" class="form-control-vivensi" required 
                                     style="width: 100%; padding: 16px 20px 16px 55px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 700; font-size: 1.1rem;" 
                                     value="{{ $project->budget }}">
                         </div>
@@ -71,8 +71,8 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Fase Atual</label>
-                        <select name="status" class="form-control-vivensi" 
+                        <label class="form-label" for="status" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Fase Atual</label>
+                        <select name="status" id="status" class="form-control-vivensi" 
                                 style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 700; color: #1e293b; appearance: none; cursor: pointer;">
                             <option value="active" {{ $project->status == 'active' ? 'selected' : '' }}>🚀 Em Execução</option>
                             <option value="paused" {{ $project->status == 'paused' ? 'selected' : '' }}>⏸️ Pausado</option>
@@ -93,16 +93,16 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Data de Início</label>
-                        <input type="date" name="start_date" class="form-control-vivensi" required 
+                        <label class="form-label" for="start_date" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Data de Início</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control-vivensi" required 
                                style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 600; color: #1e293b;" 
                                value="{{ $project->start_date ? $project->start_date->format('Y-m-d') : '' }}">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label class="form-label" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Pouso Previsto (Opcional)</label>
-                        <input type="date" name="end_date" class="form-control-vivensi" 
+                        <label class="form-label" for="end_date" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Pouso Previsto (Opcional)</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control-vivensi" 
                                style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 600; color: #1e293b;" 
                                value="{{ $project->end_date ? $project->end_date->format('Y-m-d') : '' }}">
                     </div>
