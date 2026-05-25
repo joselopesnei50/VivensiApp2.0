@@ -52,12 +52,12 @@
 <div class="vivensi-card" style="margin-bottom: 14px;">
     <form method="GET" action="{{ url('/ngo/assets') }}" style="display:flex; gap: 10px; flex-wrap: wrap; align-items:end;">
         <div style="flex: 1; min-width: 220px;">
-            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Busca</label>
-            <input type="text" name="q" value="{{ request('q') }}" class="form-control-vivensi" placeholder="Nome, código, local, responsável...">
+            <label for="q" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Busca</label>
+            <input type="text" name="q" value="{{ request('q') }}" class="form-control-vivensi" placeholder="Nome, código, local, responsável..." id="q">
         </div>
         <div style="min-width: 180px;">
-            <label style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Status</label>
-            <select name="status" class="form-control-vivensi">
+            <label for="status" style="display:block; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin-bottom: 6px;">Status</label>
+            <select name="status" class="form-control-vivensi" id="status">
                 <option value="">Todos</option>
                 <option value="active" {{ request('status')==='active'?'selected':'' }}>Ativo</option>
                 <option value="maintenance" {{ request('status')==='maintenance'?'selected':'' }}>Manutenção</option>
@@ -147,23 +147,23 @@
             @csrf
             
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label>Nome do Bem</label><input type="text" name="name" class="form-control-vivensi" required></div>
-                <div class="form-group"><label>Cód. Patrimônio</label><input type="text" name="code" class="form-control-vivensi"></div>
+                <div class="form-group"><label for="name">Nome do Bem</label><input type="text" name="name" class="form-control-vivensi" required id="name"></div>
+                <div class="form-group"><label for="code">Cód. Patrimônio</label><input type="text" name="code" class="form-control-vivensi" id="code"></div>
             </div>
 
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label>Data Aquisição</label><input type="date" name="acquisition_date" class="form-control-vivensi" required></div>
-                <div class="form-group"><label>Valor de Compra (R$)</label><input type="text" name="value" class="form-control-vivensi" placeholder="0,00" required></div>
+                <div class="form-group"><label for="acquisition_date">Data Aquisição</label><input type="date" name="acquisition_date" class="form-control-vivensi" required id="acquisition_date"></div>
+                <div class="form-group"><label for="value">Valor de Compra (R$)</label><input type="text" name="value" class="form-control-vivensi" placeholder="0,00" required id="value"></div>
             </div>
 
             <div class="grid-2" style="gap: 15px;">
-                <div class="form-group"><label>Localização</label><input type="text" name="location" class="form-control-vivensi" placeholder="Ex: Sala 01"></div>
-                <div class="form-group"><label>Responsável</label><input type="text" name="responsible" class="form-control-vivensi"></div>
+                <div class="form-group"><label for="location">Localização</label><input type="text" name="location" class="form-control-vivensi" placeholder="Ex: Sala 01" id="location"></div>
+                <div class="form-group"><label for="responsible">Responsável</label><input type="text" name="responsible" class="form-control-vivensi" id="responsible"></div>
             </div>
 
             <div class="form-group">
-                <label>Status Atual</label>
-                <select name="status" class="form-control-vivensi">
+                <label for="status">Status Atual</label>
+                <select name="status" class="form-control-vivensi" id="status">
                     <option value="active">Ativo / Em uso</option>
                     <option value="maintenance">Em Manutenção</option>
                     <option value="disposed">Descartado / Doado</option>

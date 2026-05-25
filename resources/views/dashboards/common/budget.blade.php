@@ -21,7 +21,7 @@
                         <label class="form-label fw-bold">Meta de Receita Anual</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white">R$</span>
-                            <input type="number" step="0.01" name="target_income" class="form-control" value="{{ $budget->target_income ?? 0 }}">
+                            <input type="number" step="0.01" name="target_income" class="form-control" value="{{ $budget- id="target_income">target_income ?? 0 }}">
                         </div>
                     </div>
                     
@@ -29,7 +29,7 @@
                         <label class="form-label fw-bold">Teto de Gastos Anual</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white">R$</span>
-                            <input type="number" step="0.01" name="max_expense" class="form-control" value="{{ $budget->max_expense ?? 0 }}">
+                            <input type="number" step="0.01" name="max_expense" class="form-control" value="{{ $budget- id="max_expense">max_expense ?? 0 }}">
                         </div>
                     </div>
 
@@ -50,8 +50,8 @@
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label fw-bold">Notas e Observações</label>
-                        <textarea name="notes" class="form-control" rows="4" placeholder="Ex: Economizar para viagem de férias...">{{ $budget->notes ?? '' }}</textarea>
+                        <label for="notes" class="form-label fw-bold">Notas e Observações</label>
+                        <textarea name="notes" class="form-control" rows="4" placeholder="Ex: Economizar para viagem de férias..." id="notes">{{ $budget->notes ?? '' }}</textarea>
                     </div>
 
                     <div class="col-12">

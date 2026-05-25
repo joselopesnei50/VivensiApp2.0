@@ -53,18 +53,18 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-600">Publicar em <span class="text-danger">*</span></label>
+                            <label for="platform" class="form-label fw-600">Publicar em <span class="text-danger">*</span></label>
                             <div class="d-flex gap-2" id="platformOptions">
                                 <label class="platform-chip active" data-val="facebook">
-                                    <input type="radio" name="platform" value="facebook" checked class="d-none">
+                                    <input type="radio" name="platform" value="facebook" checked class="d-none" id="platform">
                                     <i class="fab fa-facebook me-1"></i> Facebook
                                 </label>
-                                <label class="platform-chip" data-val="instagram" id="igOption" style="display:none;">
-                                    <input type="radio" name="platform" value="instagram" class="d-none">
+                                <label for="platform" class="platform-chip" data-val="instagram" id="igOption" style="display:none;">
+                                    <input type="radio" name="platform" value="instagram" class="d-none" id="platform">
                                     <i class="fab fa-instagram me-1"></i> Instagram
                                 </label>
                                 <label class="platform-chip" data-val="both" id="bothOption" style="display:none;">
-                                    <input type="radio" name="platform" value="both" class="d-none">
+                                    <input type="radio" name="platform" value="both" class="d-none" id="platform">
                                     <i class="fas fa-share-nodes me-1"></i> Ambos
                                 </label>
                             </div>
@@ -99,7 +99,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-600">Mídia (opcional)</label>
+                            <label for="mediaInput" class="form-label fw-600">Mídia (opcional)</label>
                             <input type="file" name="media" class="form-control" accept="image/*,video/mp4"
                                    id="mediaInput" onchange="previewMedia(this)">
                             <div class="form-text">JPG, PNG, GIF ou MP4. Máx 50 MB.</div>
@@ -110,10 +110,10 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-600">Data e hora de publicação <span class="text-danger">*</span></label>
+                            <label for="scheduled_at" class="form-label fw-600">Data e hora de publicação <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="scheduled_at" class="form-control form-control-lg"
                                    value="{{ old('scheduled_at') }}" required
-                                   min="{{ now()->addMinutes(5)->format('Y-m-d\TH:i') }}">
+                                   min="{{ now()- id="scheduled_at">addMinutes(5)->format('Y-m-d\TH:i') }}">
                             @error('scheduled_at') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 

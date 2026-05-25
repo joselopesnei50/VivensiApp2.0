@@ -116,12 +116,12 @@
 <div class="vivensi-card" style="padding: 18px 20px; margin-bottom: 16px;">
     <form method="GET" action="{{ url('/ngo/grants') }}" style="display:flex; gap: 12px; flex-wrap: wrap; align-items: end;">
         <div style="flex: 1; min-width: 220px;">
-            <label class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Buscar</label>
-            <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Título, concedente, nº processo..." style="border-radius: 14px;">
+            <label for="q" class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Buscar</label>
+            <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Título, concedente, nº processo..." style="border-radius: 14px;" id="q">
         </div>
         <div style="min-width: 200px;">
-            <label class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Status</label>
-            <select name="status" class="form-select" style="border-radius: 14px;">
+            <label for="status" class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Status</label>
+            <select name="status" class="form-select" style="border-radius: 14px;" id="status">
                 <option value="">Todos</option>
                 <option value="open" {{ request('status') === 'open' ? 'selected' : '' }}>Ativo</option>
                 <option value="reporting" {{ request('status') === 'reporting' ? 'selected' : '' }}>Prestação de Contas</option>
@@ -146,8 +146,8 @@
             </summary>
             <div style="margin-top: 12px; display:flex; gap: 12px; flex-wrap: wrap; align-items:end;">
                 <div style="min-width: 220px;">
-                    <label class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Prazo</label>
-                    <select name="deadline" class="form-select" style="border-radius: 14px;">
+                    <label for="deadline" class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Prazo</label>
+                    <select name="deadline" class="form-select" style="border-radius: 14px;" id="deadline">
                         <option value="">Todos</option>
                         <option value="soon" {{ request('deadline') === 'soon' ? 'selected' : '' }}>Próximos 30 dias</option>
                         <option value="expired" {{ request('deadline') === 'expired' ? 'selected' : '' }}>Vencidos</option>
@@ -155,8 +155,8 @@
                     </select>
                 </div>
                 <div style="min-width: 180px;">
-                    <label class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Documentos</label>
-                    <select name="has_docs" class="form-select" style="border-radius: 14px;">
+                    <label for="has_docs" class="form-label small text-muted" style="font-weight:800; margin-bottom: 6px;">Documentos</label>
+                    <select name="has_docs" class="form-select" style="border-radius: 14px;" id="has_docs">
                         <option value="">Todos</option>
                         <option value="1" {{ request('has_docs') === '1' ? 'selected' : '' }}>Com documentos</option>
                     </select>

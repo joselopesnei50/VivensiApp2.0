@@ -111,7 +111,7 @@ $sectionCount = $banner->sections->count();
                 </select>
             </div>
             <div class="cfg-section">
-                <label class="cfg-label">Cor de Fundo</label>
+                <label for="cfgBgText" class="cfg-label">Cor de Fundo</label>
                 <div class="cfg-color-row">
                     <input type="color" class="cfg-color-swatch"
                            value="{{ $bgColor }}"

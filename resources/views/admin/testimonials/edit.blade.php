@@ -14,20 +14,20 @@
         @method('PUT')
         <div class="row">
             <div class="col-md-6 mb-4">
-                <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Nome do Autor</label>
-                <input type="text" name="name" value="{{ old('name', $testimonial->name) }}" class="form-control" required>
+                <label for="name" style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Nome do Autor</label>
+                <input type="text" name="name" value="{{ old('name', $testimonial- id="name">name) }}" class="form-control" required>
             </div>
             <div class="col-md-6 mb-4">
-                <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Cargo / Instituição</label>
-                <input type="text" name="role" value="{{ old('role', $testimonial->role) }}" class="form-control">
+                <label for="role" style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Cargo / Instituição</label>
+                <input type="text" name="role" value="{{ old('role', $testimonial- id="role">role) }}" class="form-control">
             </div>
             <div class="col-md-12 mb-4">
-                <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">URL da Foto (Avatar)</label>
-                <input type="url" name="photo" value="{{ old('photo', $testimonial->photo) }}" class="form-control">
+                <label for="photo" style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">URL da Foto (Avatar)</label>
+                <input type="url" name="photo" value="{{ old('photo', $testimonial- id="photo">photo) }}" class="form-control">
             </div>
             <div class="col-md-12 mb-4">
-                <label style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Depoimento</label>
-                <textarea name="content" class="form-control" style="height: 150px;" required>{{ old('content', $testimonial->content) }}</textarea>
+                <label for="content" style="display: block; font-weight: 700; color: #334155; margin-bottom: 8px;">Depoimento</label>
+                <textarea name="content" class="form-control" style="height: 150px;" required id="content">{{ old('content', $testimonial->content) }}</textarea>
             </div>
         </div>
 

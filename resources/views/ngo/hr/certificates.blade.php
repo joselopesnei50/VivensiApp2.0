@@ -22,12 +22,12 @@
 <div class="vivensi-card" style="margin-bottom: 14px;">
     <form method="GET" action="{{ url('/ngo/hr/certificates') }}" style="display:flex; flex-wrap: wrap; gap: 10px; align-items: end;">
         <div class="form-group" style="min-width: 240px; margin:0;">
-            <label>Busca</label>
-            <input class="form-control-vivensi" type="text" name="q" value="{{ $q ?? '' }}" placeholder="Voluntário, e-mail ou atividade">
+            <label for="q">Busca</label>
+            <input class="form-control-vivensi" type="text" name="q" value="{{ $q ?? '' }}" placeholder="Voluntário, e-mail ou atividade" id="q">
         </div>
         <div class="form-group" style="min-width: 240px; margin:0;">
-            <label>Voluntário</label>
-            <select class="form-control-vivensi" name="volunteer_id">
+            <label for="volunteer_id">Voluntário</label>
+            <select class="form-control-vivensi" name="volunteer_id" id="volunteer_id">
                 <option value="">Todos</option>
                 @foreach($volunteers as $v)
                     <option value="{{ (int) $v->id }}" @if(!empty($volunteerId) && (int) $volunteerId === (int) $v->id) selected @endif>
@@ -37,12 +37,12 @@
             </select>
         </div>
         <div class="form-group" style="margin:0;">
-            <label>De</label>
-            <input class="form-control-vivensi" type="date" name="from" value="{{ $from ?? '' }}">
+            <label for="from">De</label>
+            <input class="form-control-vivensi" type="date" name="from" value="{{ $from ?? '' }}" id="from">
         </div>
         <div class="form-group" style="margin:0;">
-            <label>Até</label>
-            <input class="form-control-vivensi" type="date" name="to" value="{{ $to ?? '' }}">
+            <label for="to">Até</label>
+            <input class="form-control-vivensi" type="date" name="to" value="{{ $to ?? '' }}" id="to">
         </div>
         <div style="display:flex; gap:10px;">
             <button class="btn-premium" type="submit">

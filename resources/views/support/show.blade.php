@@ -150,8 +150,8 @@
         <form action="{{ route('support.reply', $ticket->id) }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label class="form-label fw-bold text-dark small text-uppercase">Adicionar Resposta</label>
-                <textarea name="message" class="form-control bg-light border-0 p-3" rows="4" placeholder="Digite sua resposta aqui..." style="border-radius: 12px; resize: none;" required></textarea>
+                <label for="message" class="form-label fw-bold text-dark small text-uppercase">Adicionar Resposta</label>
+                <textarea name="message" class="form-control bg-light border-0 p-3" rows="4" placeholder="Digite sua resposta aqui..." style="border-radius: 12px; resize: none;" required id="message"></textarea>
             </div>
             <div class="d-flex justify-content-between align-items-center">
                 <div class="text-muted small">

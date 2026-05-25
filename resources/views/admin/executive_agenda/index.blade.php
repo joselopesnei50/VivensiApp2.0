@@ -270,19 +270,19 @@
         <form action="{{ route('admin.executive.task.store') }}" method="POST">
             @csrf
             <div style="margin-bottom:18px;">
-                <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Título *</label>
+                <label for="title" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Título *</label>
                 <input type="text" name="title" required placeholder="Descreva a tarefa..."
                        style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;"
-                       onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#f1f5f9'">
+                       onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#f1f5f9'" id="title">
             </div>
             <div style="margin-bottom:18px;">
-                <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Descrição</label>
+                <label for="description" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Descrição</label>
                 <textarea name="description" rows="3" placeholder="Detalhes, contexto, links..."
-                          style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; resize:vertical; box-sizing:border-box;"></textarea>
+                          style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; resize:vertical; box-sizing:border-box;" id="description"></textarea>
             </div>
             <div class="row g-3" style="margin-bottom:18px;">
                 <div class="col-6">
-                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Responsável</label>
+                    <label for="modalAssignedTo" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Responsável</label>
                     <select name="assigned_to" id="modalAssignedTo"
                             style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; background:white; box-sizing:border-box;">
                         <option value="">Sem responsável</option>
@@ -292,9 +292,9 @@
                     </select>
                 </div>
                 <div class="col-6">
-                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Prioridade</label>
+                    <label for="priority" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Prioridade</label>
                     <select name="priority"
-                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; background:white; box-sizing:border-box;">
+                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; background:white; box-sizing:border-box;" id="priority">
                         <option value="medium">Média</option>
                         <option value="high">Alta</option>
                         <option value="critical">Crítica</option>
@@ -304,14 +304,14 @@
             </div>
             <div class="row g-3" style="margin-bottom:24px;">
                 <div class="col-6">
-                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Prazo</label>
+                    <label for="due_date" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Prazo</label>
                     <input type="date" name="due_date"
-                           style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; box-sizing:border-box;">
+                           style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; box-sizing:border-box;" id="due_date">
                 </div>
                 <div class="col-6">
-                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Status inicial</label>
+                    <label for="status" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Status inicial</label>
                     <select name="status"
-                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; background:white; box-sizing:border-box;">
+                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.88rem; background:white; box-sizing:border-box;" id="status">
                         <option value="todo">A Fazer</option>
                         <option value="doing">Em Progresso</option>
                     </select>
@@ -343,7 +343,7 @@
         <div id="editTaskTitle" style="font-weight:800; color:#1e293b; font-size:0.95rem; padding:14px 16px; background:#f8fafc; border-radius:12px; margin-bottom:20px;"></div>
         <div class="row g-3" style="margin-bottom:18px;">
             <div class="col-6">
-                <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Status</label>
+                <label for="editStatus" style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Status</label>
                 <select id="editStatus" style="width:100%; padding:11px 14px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.85rem; background:white; box-sizing:border-box;">
                     <option value="todo">A Fazer</option>
                     <option value="doing">Em Progresso</option>
@@ -352,7 +352,7 @@
                 </select>
             </div>
             <div class="col-6">
-                <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Prioridade</label>
+                <label for="editPriority" style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Prioridade</label>
                 <select id="editPriority" style="width:100%; padding:11px 14px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.85rem; background:white; box-sizing:border-box;">
                     <option value="low">Baixa</option>
                     <option value="medium">Média</option>
@@ -363,7 +363,7 @@
         </div>
         <div class="row g-3" style="margin-bottom:24px;">
             <div class="col-6">
-                <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Responsável</label>
+                <label for="editAssigned" style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Responsável</label>
                 <select id="editAssigned" style="width:100%; padding:11px 14px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.85rem; background:white; box-sizing:border-box;">
                     <option value="">Sem responsável</option>
                     @foreach($team as $m)
@@ -372,7 +372,7 @@
                 </select>
             </div>
             <div class="col-6">
-                <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Prazo</label>
+                <label for="editDueDate" style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Prazo</label>
                 <input type="date" id="editDueDate" style="width:100%; padding:11px 14px; border:2px solid #f1f5f9; border-radius:10px; font-size:0.85rem; box-sizing:border-box;">
             </div>
         </div>
