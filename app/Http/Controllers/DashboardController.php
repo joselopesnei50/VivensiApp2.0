@@ -164,20 +164,14 @@ class DashboardController extends Controller
             ->get();
 
         // ── Resumo financeiro — usa cache ──
-        $monthlyIncome    = $cachedStats['monthlyIncome'];
-        $lastMonthIncome  = $cachedStats['lastMonthIncome'];
-        $monthlyExpense   = $cachedStats['monthlyExpense'];
+        $monthlyIncome     = $cachedStats['monthlyIncome'];
+        $lastMonthIncome   = $cachedStats['lastMonthIncome'];
+        $monthlyExpense    = $cachedStats['monthlyExpense'];
         $overdueTasksCount = $cachedStats['overdueTasksCount'];
 
         $incomeChange = $lastMonthIncome > 0
             ? (($monthlyIncome - $lastMonthIncome) / $lastMonthIncome) * 100
             : null;
-
-        $overdueTasksCount = Task::where('tenant_id', $tenantId)
-            ->whereNotIn('status', ['done', 'completed'])
-            ->whereNotNull('due_date')
-            ->where('due_date', '<', now()->toDateString())
-            ->count();
 
         // ── Aprovações de despesas pendentes ──
         $pendingApprovals = Transaction::where('tenant_id', $tenantId)
@@ -216,35 +210,41 @@ class DashboardController extends Controller
             'pending_approvals' => $pendingApprovals->count(),
         ];
 
-        // ── Gráfico de Uso do Sistema (Últimos 6 Meses) — 2 queries em vez de 12 ──
+        // ── Gráfico de Uso do Sistema (Últimos 6 Meses) — cached 5 min ──
+        [$projectsByMonth, $tasksByMonth] = Cache::remember(
+            "dashboard.manager.chart.{$tenantId}." . now()->format('Y-m'),
+            300,
+            function () use ($tenantId) {
+                $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
+                $isSqlite     = DB::getDriverName() === 'sqlite';
+                $yearCreated  = $isSqlite ? "strftime('%Y', created_at)" : 'YEAR(created_at)';
+                $monthCreated = $isSqlite ? "strftime('%m', created_at)" : 'MONTH(created_at)';
+                $yearUpdated  = $isSqlite ? "strftime('%Y', updated_at)" : 'YEAR(updated_at)';
+                $monthUpdated = $isSqlite ? "strftime('%m', updated_at)" : 'MONTH(updated_at)';
+
+                return [
+                    DB::table('projects')
+                        ->where('tenant_id', $tenantId)
+                        ->where('created_at', '>=', $sixMonthsAgo)
+                        ->selectRaw("{$yearCreated} as y, {$monthCreated} as m, COUNT(*) as total")
+                        ->groupByRaw("{$yearCreated}, {$monthCreated}")
+                        ->get()
+                        ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m)),
+                    DB::table('tasks')
+                        ->where('tenant_id', $tenantId)
+                        ->whereIn('status', ['done', 'completed'])
+                        ->where('updated_at', '>=', $sixMonthsAgo)
+                        ->selectRaw("{$yearUpdated} as y, {$monthUpdated} as m, COUNT(*) as total")
+                        ->groupByRaw("{$yearUpdated}, {$monthUpdated}")
+                        ->get()
+                        ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m)),
+                ];
+            }
+        );
+
         $chartLabels   = [];
         $chartProjects = [];
         $chartTasks    = [];
-
-        $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
-
-        $isSqliteMgr    = DB::getDriverName() === 'sqlite';
-        $yearCreatedMgr = $isSqliteMgr ? "strftime('%Y', created_at)" : 'YEAR(created_at)';
-        $monthCreatedMgr= $isSqliteMgr ? "strftime('%m', created_at)" : 'MONTH(created_at)';
-        $yearUpdatedMgr = $isSqliteMgr ? "strftime('%Y', updated_at)" : 'YEAR(updated_at)';
-        $monthUpdatedMgr= $isSqliteMgr ? "strftime('%m', updated_at)" : 'MONTH(updated_at)';
-
-        $projectsByMonth = DB::table('projects')
-            ->where('tenant_id', $tenantId)
-            ->where('created_at', '>=', $sixMonthsAgo)
-            ->selectRaw("{$yearCreatedMgr} as y, {$monthCreatedMgr} as m, COUNT(*) as total")
-            ->groupByRaw("{$yearCreatedMgr}, {$monthCreatedMgr}")
-            ->get()
-            ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
-
-        $tasksByMonth = DB::table('tasks')
-            ->where('tenant_id', $tenantId)
-            ->whereIn('status', ['done', 'completed'])
-            ->where('updated_at', '>=', $sixMonthsAgo)
-            ->selectRaw("{$yearUpdatedMgr} as y, {$monthUpdatedMgr} as m, COUNT(*) as total")
-            ->groupByRaw("{$yearUpdatedMgr}, {$monthUpdatedMgr}")
-            ->get()
-            ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
 
         for ($i = 5; $i >= 0; $i--) {
             $date            = now()->subMonths($i);
@@ -266,49 +266,58 @@ class DashboardController extends Controller
             'scores' => [$financialScore, $executionScore, $teamScore, $complianceScore, $fundingScore]
         ];
 
-        // ── Marcadores do Mapa de Impacto ──
-        $mapMarkers = Beneficiary::where('tenant_id', $tenantId)
-            ->whereNotNull('latitude')
-            ->get(['name', 'latitude', 'longitude', 'status'])
-            ->map(fn($b) => [
-                'lat'   => (float)$b->latitude,
-                'lng'   => (float)$b->longitude,
-                'label' => $b->name,
-                'type'  => 'beneficiary'
-            ])->toArray();
+        // ── Marcadores do Mapa de Impacto — cached 10 min ──
+        $mapMarkers = Cache::remember("dashboard.manager.map.{$tenantId}", 600, function () use ($tenantId) {
+            return Beneficiary::where('tenant_id', $tenantId)
+                ->whereNotNull('latitude')
+                ->get(['name', 'latitude', 'longitude', 'status'])
+                ->map(fn($b) => [
+                    'lat'   => (float)$b->latitude,
+                    'lng'   => (float)$b->longitude,
+                    'label' => $b->name,
+                    'type'  => 'beneficiary',
+                ])->toArray();
+        });
 
-        // ── Máquina de Engajamento (WhatsApp) — 2 queries em vez de 21 ──
-        $waStats = DB::table('whatsapp_messages')
-            ->join('whatsapp_chats', 'whatsapp_messages.chat_id', '=', 'whatsapp_chats.id')
-            ->where('whatsapp_chats.tenant_id', $tenantId)
-            ->select(
-                'whatsapp_messages.direction',
-                DB::raw("SUM(CASE WHEN whatsapp_messages.status IN ('delivered','read') AND whatsapp_messages.direction='outbound' THEN 1 ELSE 0 END) as delivered"),
-                DB::raw('COUNT(*) as total')
-            )
-            ->groupBy('whatsapp_messages.direction')
-            ->get()
-            ->keyBy('direction');
+        // ── Máquina de Engajamento (WhatsApp) — cached 5 min ──
+        $waCache = Cache::remember("dashboard.manager.wa.{$tenantId}", 300, function () use ($tenantId) {
+            $waStats = DB::table('whatsapp_messages')
+                ->join('whatsapp_chats', 'whatsapp_messages.chat_id', '=', 'whatsapp_chats.id')
+                ->where('whatsapp_chats.tenant_id', $tenantId)
+                ->select(
+                    'whatsapp_messages.direction',
+                    DB::raw("SUM(CASE WHEN whatsapp_messages.status IN ('delivered','read') AND whatsapp_messages.direction='outbound' THEN 1 ELSE 0 END) as delivered"),
+                    DB::raw('COUNT(*) as total')
+                )
+                ->groupBy('whatsapp_messages.direction')
+                ->get()
+                ->keyBy('direction');
 
-        $whatsappStats = [
-            'total_sent'      => (int) ($waStats['outbound']->total ?? 0),
-            'total_delivered' => (int) ($waStats['outbound']->delivered ?? 0),
-            'total_replies'   => (int) ($waStats['inbound']->total ?? 0),
-        ];
+            $sevenDaysAgo = now()->subDays(6)->startOfDay();
+            $waDailyRaw = DB::table('whatsapp_messages')
+                ->join('whatsapp_chats', 'whatsapp_messages.chat_id', '=', 'whatsapp_chats.id')
+                ->where('whatsapp_chats.tenant_id', $tenantId)
+                ->where('whatsapp_messages.created_at', '>=', $sevenDaysAgo)
+                ->selectRaw("DATE(whatsapp_messages.created_at) as day, whatsapp_messages.direction, COUNT(*) as total")
+                ->groupByRaw("DATE(whatsapp_messages.created_at), whatsapp_messages.direction")
+                ->get()
+                ->groupBy('day');
 
-        // Daily volume (last 7 days) — 1 query com GROUP BY
-        $sevenDaysAgo = now()->subDays(6)->startOfDay();
-        $waDailyRaw = DB::table('whatsapp_messages')
-            ->join('whatsapp_chats', 'whatsapp_messages.chat_id', '=', 'whatsapp_chats.id')
-            ->where('whatsapp_chats.tenant_id', $tenantId)
-            ->where('whatsapp_messages.created_at', '>=', $sevenDaysAgo)
-            ->selectRaw("DATE(whatsapp_messages.created_at) as day, whatsapp_messages.direction, COUNT(*) as total")
-            ->groupByRaw("DATE(whatsapp_messages.created_at), whatsapp_messages.direction")
-            ->get()
-            ->groupBy('day');
+            return [
+                'stats'    => [
+                    'total_sent'      => (int) ($waStats['outbound']->total ?? 0),
+                    'total_delivered' => (int) ($waStats['outbound']->delivered ?? 0),
+                    'total_replies'   => (int) ($waStats['inbound']->total ?? 0),
+                ],
+                'dailyRaw' => $waDailyRaw,
+            ];
+        });
 
-        $waDailyLabels = [];
-        $waDailySent   = [];
+        $whatsappStats = $waCache['stats'];
+        $waDailyRaw    = $waCache['dailyRaw'];
+
+        $waDailyLabels   = [];
+        $waDailySent     = [];
         $waDailyReceived = [];
 
         for ($i = 6; $i >= 0; $i--) {
@@ -318,9 +327,6 @@ class DashboardController extends Controller
             $waDailySent[]     = (int) ($dayData->firstWhere('direction', 'outbound')->total ?? 0);
             $waDailyReceived[] = (int) ($dayData->firstWhere('direction', 'inbound')->total ?? 0);
         }
-
-        // Cache das métricas pesadas por 5 minutos
-        \Cache::put("manager_wa_stats_{$tenantId}", $whatsappStats, 300);
 
         return view('dashboards.manager', compact(
             'activeProjects', 'impactFeed', 'stats',
@@ -430,35 +436,41 @@ class DashboardController extends Controller
 
         $stats['impactFeed'] = $impactFeed;
 
-        // ── Gráfico de Captação (Últimos 6 Meses) — 2 queries em vez de 12 ──
+        // ── Gráfico de Captação (Últimos 6 Meses) — cached 5 min ──
+        [$donorsByMonth, $donationsByMonth] = Cache::remember(
+            "dashboard.ngo.chart.{$tenantId}." . now()->format('Y-m'),
+            300,
+            function () use ($tenantId) {
+                $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
+                $isSqlite     = DB::getDriverName() === 'sqlite';
+                $yearCreated  = $isSqlite ? "strftime('%Y', created_at)" : 'YEAR(created_at)';
+                $monthCreated = $isSqlite ? "strftime('%m', created_at)" : 'MONTH(created_at)';
+                $yearDate     = $isSqlite ? "strftime('%Y', date)" : 'YEAR(date)';
+                $monthDate    = $isSqlite ? "strftime('%m', date)" : 'MONTH(date)';
+
+                return [
+                    DB::table('ngo_donors')
+                        ->where('tenant_id', $tenantId)
+                        ->where('created_at', '>=', $sixMonthsAgo)
+                        ->selectRaw("{$yearCreated} as y, {$monthCreated} as m, COUNT(*) as total")
+                        ->groupByRaw("{$yearCreated}, {$monthCreated}")
+                        ->get()
+                        ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m)),
+                    DB::table('transactions')
+                        ->where('tenant_id', $tenantId)
+                        ->where('type', 'income')
+                        ->where('date', '>=', $sixMonthsAgo)
+                        ->selectRaw("{$yearDate} as y, {$monthDate} as m, SUM(amount) as total")
+                        ->groupByRaw("{$yearDate}, {$monthDate}")
+                        ->get()
+                        ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m)),
+                ];
+            }
+        );
+
         $chartLabels    = [];
         $chartDonors    = [];
         $chartDonations = [];
-
-        $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
-
-        $isSqliteNgo    = DB::getDriverName() === 'sqlite';
-        $yearCreated    = $isSqliteNgo ? "strftime('%Y', created_at)" : 'YEAR(created_at)';
-        $monthCreated   = $isSqliteNgo ? "strftime('%m', created_at)" : 'MONTH(created_at)';
-        $yearDate       = $isSqliteNgo ? "strftime('%Y', date)" : 'YEAR(date)';
-        $monthDate      = $isSqliteNgo ? "strftime('%m', date)" : 'MONTH(date)';
-
-        $donorsByMonth = DB::table('ngo_donors')
-            ->where('tenant_id', $tenantId)
-            ->where('created_at', '>=', $sixMonthsAgo)
-            ->selectRaw("{$yearCreated} as y, {$monthCreated} as m, COUNT(*) as total")
-            ->groupByRaw("{$yearCreated}, {$monthCreated}")
-            ->get()
-            ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
-
-        $donationsByMonth = DB::table('transactions')
-            ->where('tenant_id', $tenantId)
-            ->where('type', 'income')
-            ->where('date', '>=', $sixMonthsAgo)
-            ->selectRaw("{$yearDate} as y, {$monthDate} as m, SUM(amount) as total")
-            ->groupByRaw("{$yearDate}, {$monthDate}")
-            ->get()
-            ->keyBy(fn($r) => sprintf('%04d-%02d', (int)$r->y, (int)$r->m));
 
         for ($i = 5; $i >= 0; $i--) {
             $date             = now()->subMonths($i);
@@ -480,23 +492,28 @@ class DashboardController extends Controller
             'scores' => [$financialScore, $executionScore, $teamScore, $complianceScore, $fundingScore]
         ];
 
-        // ── Marcadores do Mapa de Impacto ──
-        $beneficiaries = Beneficiary::where('tenant_id', $tenantId)
-            ->whereNotNull('latitude')
-            ->get(['name', 'latitude', 'longitude'])
-            ->map(fn($b) => ['lat' => (float)$b->latitude, 'lng' => (float)$b->longitude, 'label' => $b->name, 'type' => 'beneficiary']);
+        // ── Marcadores do Mapa de Impacto — cached 10 min ──
+        $mapMarkers = Cache::remember("dashboard.ngo.map.{$tenantId}", 600, function () use ($tenantId) {
+            $beneficiaries = Beneficiary::where('tenant_id', $tenantId)
+                ->whereNotNull('latitude')
+                ->get(['name', 'latitude', 'longitude'])
+                ->map(fn($b) => ['lat' => (float)$b->latitude, 'lng' => (float)$b->longitude, 'label' => $b->name, 'type' => 'beneficiary']);
 
-        $donors = NgoDonor::where('tenant_id', $tenantId)
-            ->whereNotNull('latitude')
-            ->get(['name', 'latitude', 'longitude'])
-            ->map(fn($d) => ['lat' => (float)$d->latitude, 'lng' => (float)$d->longitude, 'label' => $d->name, 'type' => 'donor']);
+            $donors = NgoDonor::where('tenant_id', $tenantId)
+                ->whereNotNull('latitude')
+                ->get(['name', 'latitude', 'longitude'])
+                ->map(fn($d) => ['lat' => (float)$d->latitude, 'lng' => (float)$d->longitude, 'label' => $d->name, 'type' => 'donor']);
 
-        $mapMarkers = $beneficiaries->concat($donors)->toArray();
+            return $beneficiaries->concat($donors)->toArray();
+        });
 
-        $teamUsers = User::where('tenant_id', $tenantId)
-            ->whereNotIn('role', ['super_admin'])
-            ->orderBy('name')
-            ->get(['id', 'name', 'role']);
+        // ── Equipe — cached 10 min (muda raramente) ──
+        $teamUsers = Cache::remember("dashboard.ngo.team.{$tenantId}", 600, function () use ($tenantId) {
+            return User::where('tenant_id', $tenantId)
+                ->whereNotIn('role', ['super_admin'])
+                ->orderBy('name')
+                ->get(['id', 'name', 'role']);
+        });
 
         $today         = now()->toDateString();
         $upcomingTasks = Task::where('tenant_id', $tenantId)
