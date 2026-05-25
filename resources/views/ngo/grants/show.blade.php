@@ -111,7 +111,7 @@
                 </div>
                 <form action="{{ route('ngo.grants.status', $grant->id) }}" method="POST" style="margin-top: 12px; display:flex; gap:10px; align-items:center;">
                     @csrf
-                    <select name="status" class="form-select form-select-sm" style="max-width: 220px; border-radius: 12px;">
+                    <select name="status" class="form-select form-select-sm" style="max-width: 220px; border-radius: 12px;" id="status">
                         <option value="open" {{ ($grant->status ?? 'open') === 'open' ? 'selected' : '' }}>Ativo</option>
                         <option value="reporting" {{ ($grant->status ?? 'open') === 'reporting' ? 'selected' : '' }}>Prestação de Contas</option>
                         <option value="closed" {{ ($grant->status ?? 'open') === 'closed' ? 'selected' : '' }}>Encerrado</option>
@@ -143,12 +143,12 @@
             <form action="{{ route('ngo.grants.documents.upload', $grant->id) }}" method="POST" enctype="multipart/form-data" style="display:grid; grid-template-columns: 1.3fr .8fr 1.2fr; gap: 12px; align-items:end;">
                 @csrf
                 <div>
-                    <label class="form-label small text-muted" style="font-weight:800;">Título</label>
-                    <input type="text" name="title" class="form-control" placeholder="Ex: Edital completo" required style="border-radius: 12px;">
+                    <label for="title" class="form-label small text-muted" style="font-weight:800;">Título</label>
+                    <input type="text" name="title" class="form-control" placeholder="Ex: Edital completo" required style="border-radius: 12px;" id="title">
                 </div>
                 <div>
-                    <label class="form-label small text-muted" style="font-weight:800;">Tipo</label>
-                    <select name="type" class="form-select" style="border-radius: 12px;">
+                    <label for="type" class="form-label small text-muted" style="font-weight:800;">Tipo</label>
+                    <select name="type" class="form-select" style="border-radius: 12px;" id="type">
                         <option value="edital">Edital</option>
                         <option value="plano_trabalho">Plano de trabalho</option>
                         <option value="comprovante">Comprovante</option>
@@ -157,8 +157,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label small text-muted" style="font-weight:800;">Arquivo</label>
-                    <input type="file" name="file" class="form-control" required style="border-radius: 12px;">
+                    <label for="file" class="form-label small text-muted" style="font-weight:800;">Arquivo</label>
+                    <input type="file" name="file" class="form-control" required style="border-radius: 12px;" id="file">
                 </div>
                 <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end;">
                     <button type="submit" class="btn btn-primary" style="border-radius: 14px; background:#4f46e5; border:none; font-weight:800;">
@@ -461,41 +461,41 @@
                     @method('PUT')
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Título / Objeto</label>
-                        <input type="text" name="title" class="form-control" value="{{ $grant->title }}" required style="border-radius: 10px;">
+                        <label for="title" class="form-label fw-bold small text-muted">Título / Objeto</label>
+                        <input type="text" name="title" class="form-control" value="{{ $grant- id="title">title }}" required style="border-radius: 10px;">
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-7">
-                            <label class="form-label fw-bold small text-muted">Concedente (Órgão/Empresa)</label>
-                            <input type="text" name="grantor_name" class="form-control" value="{{ $grant->agency }}" required style="border-radius: 10px;">
+                            <label for="grantor_name" class="form-label fw-bold small text-muted">Concedente (Órgão/Empresa)</label>
+                            <input type="text" name="grantor_name" class="form-control" value="{{ $grant- id="grantor_name">agency }}" required style="border-radius: 10px;">
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label fw-bold small text-muted">Número do Processo/Contrato</label>
-                            <input type="text" name="contract_number" class="form-control" value="{{ $grant->contract_number }}" style="border-radius: 10px;" placeholder="Opcional">
+                            <label for="contract_number" class="form-label fw-bold small text-muted">Número do Processo/Contrato</label>
+                            <input type="text" name="contract_number" class="form-control" value="{{ $grant- id="contract_number">contract_number }}" style="border-radius: 10px;" placeholder="Opcional">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Valor Global (R$)</label>
+                        <label for="edit_total_amount" class="form-label fw-bold small text-muted">Valor Global (R$)</label>
                         <input type="text" name="total_amount" id="edit_total_amount" class="form-control"
                                value="{{ number_format($grant->value, 2, ',', '.') }}" required style="border-radius: 10px; font-weight: 700; color: #4f46e5;">
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted">Início da Vigência</label>
-                            <input type="date" name="start_date" class="form-control" value="{{ $grant->start_date?->format('Y-m-d') }}" style="border-radius: 10px;">
+                            <label for="start_date" class="form-label fw-bold small text-muted">Início da Vigência</label>
+                            <input type="date" name="start_date" class="form-control" value="{{ $grant- id="start_date">start_date?->format('Y-m-d') }}" style="border-radius: 10px;">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted">Fim da Vigência</label>
-                            <input type="date" name="end_date" class="form-control" value="{{ $grant->deadline?->format('Y-m-d') }}" required style="border-radius: 10px;">
+                            <label for="end_date" class="form-label fw-bold small text-muted">Fim da Vigência</label>
+                            <input type="date" name="end_date" class="form-control" value="{{ $grant- id="end_date">deadline?->format('Y-m-d') }}" required style="border-radius: 10px;">
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted">Observações / Requisitos</label>
-                        <textarea name="notes" class="form-control" rows="4" style="border-radius: 10px;" placeholder="Cole aqui requisitos, objeto, itens de prestação de contas, etc.">{{ $grant->notes }}</textarea>
+                        <label for="notes" class="form-label fw-bold small text-muted">Observações / Requisitos</label>
+                        <textarea name="notes" class="form-control" rows="4" style="border-radius: 10px;" placeholder="Cole aqui requisitos, objeto, itens de prestação de contas, etc." id="notes">{{ $grant->notes }}</textarea>
                     </div>
 
                     <div class="d-flex gap-2 justify-content-end">

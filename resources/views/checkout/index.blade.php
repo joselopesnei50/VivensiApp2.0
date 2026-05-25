@@ -68,22 +68,22 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-muted text-uppercase">CPF ou CNPJ para Faturamento</label>
+                            <label for="document" class="form-label small fw-bold text-muted text-uppercase">CPF ou CNPJ para Faturamento</label>
                             <input type="text" name="document" class="form-control border-0 bg-light py-3 rounded-4"
-                                   value="{{ $tenant->document }}" placeholder="000.000.000-00" required>
+                                   value="{{ $tenant- id="document">document }}" placeholder="000.000.000-00" required>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Forma de Pagamento</label>
+                            <label for="payment_method" class="form-label small fw-bold text-muted text-uppercase">Forma de Pagamento</label>
                             <div class="d-flex gap-3">
                                 <label class="payment-method-card flex-fill text-center p-3 border rounded-3 cursor-pointer" id="label-pix">
-                                    <input type="radio" name="payment_method" value="PIX" class="d-none" checked>
+                                    <input type="radio" name="payment_method" value="PIX" class="d-none" checked id="payment_method">
                                     <i class="fas fa-qrcode fs-4 text-success d-block mb-1"></i>
                                     <span class="fw-bold small">PIX</span>
                                     <div class="text-muted" style="font-size:.7rem;">Instantâneo</div>
                                 </label>
                                 <label class="payment-method-card flex-fill text-center p-3 border rounded-3 cursor-pointer" id="label-card">
-                                    <input type="radio" name="payment_method" value="CARD" class="d-none">
+                                    <input type="radio" name="payment_method" value="CARD" class="d-none" id="payment_method">
                                     <i class="fas fa-credit-card fs-4 text-primary d-block mb-1"></i>
                                     <span class="fw-bold small">Cartão</span>
                                     <div class="text-muted" style="font-size:.7rem;">Crédito/Débito</div>

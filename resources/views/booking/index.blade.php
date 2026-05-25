@@ -445,21 +445,21 @@
             <h3 class="step-heading">Insira seus dados</h3>
             <form class="booking-form" id="bookingForm" onsubmit="submitBooking(event)">
                 <div class="form-group">
-                    <label class="form-label">Nome <span>*</span></label>
+                    <label for="inputName" class="form-label">Nome <span>*</span></label>
                     <input type="text" class="form-input" id="inputName" placeholder="Seu nome completo" required>
                     <span class="form-error" id="errName"></span>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">E-mail <span>*</span></label>
+                    <label for="inputEmail" class="form-label">E-mail <span>*</span></label>
                     <input type="email" class="form-input" id="inputEmail" placeholder="seu@email.com" required>
                     <span class="form-error" id="errEmail"></span>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">WhatsApp</label>
+                    <label for="inputPhone" class="form-label">WhatsApp</label>
                     <input type="tel" class="form-input" id="inputPhone" placeholder="(11) 99999-9999">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Sobre o que você quer conversar?</label>
+                    <label for="inputNotes" class="form-label">Sobre o que você quer conversar?</label>
                     <textarea class="form-textarea" id="inputNotes" placeholder="Descreva brevemente o objetivo da reunião..."></textarea>
                 </div>
                 <div>

@@ -80,8 +80,8 @@
     <div class="bc-filter-card">
         <form method="GET" action="{{ route('whatsapp.broadcast.campaigns') }}" class="bc-filter-form">
             <div class="bc-filter-group">
-                <label class="bc-filter-lbl">Status</label>
-                <select name="status" class="bc-select">
+                <label for="status" class="bc-filter-lbl">Status</label>
+                <select name="status" class="bc-select" id="status">
                     <option value="">Todos</option>
                     @foreach(['completed'=>'Concluído','processing'=>'Processando','queued'=>'Na Fila','scheduled'=>'Agendado','paused'=>'Pausado','failed'=>'Falhou'] as $val => $lbl)
                         <option value="{{ $val }}" {{ request('status') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
@@ -89,8 +89,8 @@
                 </select>
             </div>
             <div class="bc-filter-group">
-                <label class="bc-filter-lbl">Público</label>
-                <select name="audience" class="bc-select">
+                <label for="audience" class="bc-filter-lbl">Público</label>
+                <select name="audience" class="bc-select" id="audience">
                     <option value="">Todos</option>
                     <option value="all"      {{ request('audience')==='all'      ? 'selected':'' }}>Todos os Contatos</option>
                     <option value="selected" {{ request('audience')==='selected' ? 'selected':'' }}>Números Específicos</option>
@@ -98,12 +98,12 @@
                 </select>
             </div>
             <div class="bc-filter-group">
-                <label class="bc-filter-lbl">De</label>
-                <input type="date" name="from" value="{{ request('from') }}" class="bc-select">
+                <label for="from" class="bc-filter-lbl">De</label>
+                <input type="date" name="from" value="{{ request('from') }}" class="bc-select" id="from">
             </div>
             <div class="bc-filter-group">
-                <label class="bc-filter-lbl">Até</label>
-                <input type="date" name="to" value="{{ request('to') }}" class="bc-select">
+                <label for="to" class="bc-filter-lbl">Até</label>
+                <input type="date" name="to" value="{{ request('to') }}" class="bc-select" id="to">
             </div>
             <div class="bc-filter-actions">
                 <button type="submit" class="bc-btn-filter">

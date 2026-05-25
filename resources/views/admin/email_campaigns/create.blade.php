@@ -35,19 +35,19 @@
                 <i class="fas fa-tag me-2" style="color:#6366f1;"></i>Identificação
             </h4>
             <div style="margin-bottom:20px;">
-                <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Nome interno da campanha *</label>
+                <label for="name" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Nome interno da campanha *</label>
                 <input type="text" name="name" value="{{ old('name') }}" required
                        placeholder="Ex: Newsletter Maio 2026 — Clientes NGO"
                        style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box; transition:border-color 0.2s;"
-                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'">
+                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'" id="name">
                 <p style="color:#94a3b8; font-size:0.75rem; margin:6px 0 0;">Aparece só no painel, não é enviado.</p>
             </div>
             <div>
-                <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Assunto do e-mail *</label>
+                <label for="subject" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Assunto do e-mail *</label>
                 <input type="text" name="subject" value="{{ old('subject') }}" required
                        placeholder="Ex: 🚀 Novidades Vivensi — Maio 2026"
                        style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box; transition:border-color 0.2s;"
-                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'">
+                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'" id="subject">
                 <p style="color:#94a3b8; font-size:0.75rem; margin:6px 0 0;">Linha de assunto que o destinatário vê na caixa de entrada.</p>
             </div>
         </div>
@@ -60,16 +60,16 @@
             <p style="color:#64748b; font-size:0.82rem; margin:0 0 20px;">Deixe em branco para usar o remetente padrão configurado nas configurações globais.</p>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Nome do remetente</label>
+                    <label for="sender_name" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Nome do remetente</label>
                     <input type="text" name="sender_name" value="{{ old('sender_name') }}"
                            placeholder="Vivensi"
-                           style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
+                           style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;" id="sender_name">
                 </div>
                 <div class="col-md-6">
-                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">E-mail do remetente</label>
+                    <label for="sender_email" style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">E-mail do remetente</label>
                     <input type="email" name="sender_email" value="{{ old('sender_email') }}"
                            placeholder="contato@vivensi.com.br"
-                           style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
+                           style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;" id="sender_email">
                 </div>
             </div>
         </div>
@@ -124,7 +124,7 @@
             <label style="display:flex; align-items:flex-start; gap:12px; padding:14px; border-radius:12px; border:2px solid {{ old('audience_type') == $val ? '#6366f1' : '#f1f5f9' }}; margin-bottom:10px; cursor:pointer; transition:border-color 0.2s;"
                    onclick="selectAudience(this, '{{ $val }}')">
                 <input type="radio" name="audience_type" value="{{ $val }}" {{ old('audience_type') == $val ? 'checked' : ($val == 'tenant_admins' && !old('audience_type') ? 'checked' : '') }}
-                       style="margin-top:3px; accent-color:#6366f1;">
+                       style="margin-top:3px; accent-color:#6366f1;" id="audience_type">
                 <div>
                     <div style="font-weight:800; color:#1e293b; font-size:0.88rem; margin-bottom:3px;">
                         <i class="fas {{ $aud['icon'] }} me-1" style="color:#6366f1;"></i>{{ $aud['label'] }}

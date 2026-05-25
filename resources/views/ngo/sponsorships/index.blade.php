@@ -336,44 +336,44 @@
                 <form action="{{ url('/ngo/sponsorships') }}" method="POST">
                     @csrf
                     <div class="form-field">
-                        <label>Empresa ou Organização</label>
-                        <input type="text" name="company_name" required placeholder="Ex: Itaú BBA S.A.">
+                        <label for="company_name">Empresa ou Organização</label>
+                        <input type="text" name="company_name" required placeholder="Ex: Itaú BBA S.A." id="company_name">
                     </div>
                     <div class="row g-3">
                         <div class="col-7">
                             <div class="form-field mb-0">
-                                <label>Pessoa de Contato</label>
-                                <input type="text" name="contact_person" placeholder="Ex: Maria Souza">
+                                <label for="contact_person">Pessoa de Contato</label>
+                                <input type="text" name="contact_person" placeholder="Ex: Maria Souza" id="contact_person">
                             </div>
                         </div>
                         <div class="col-5">
                             <div class="form-field mb-0">
-                                <label>Telefone / WhatsApp</label>
-                                <input type="text" name="phone" placeholder="(11) 99999-0000">
+                                <label for="phone">Telefone / WhatsApp</label>
+                                <input type="text" name="phone" placeholder="(11) 99999-0000" id="phone">
                             </div>
                         </div>
                     </div>
                     <div class="form-field mt-3">
-                        <label>E-mail Corporativo</label>
-                        <input type="email" name="email" placeholder="contato@empresa.com.br">
+                        <label for="email">E-mail Corporativo</label>
+                        <input type="email" name="email" placeholder="contato@empresa.com.br" id="email">
                     </div>
                     <div class="row g-3">
                         <div class="col-7">
                             <div class="form-field mb-0">
-                                <label>Valor Esperado (R$)</label>
+                                <label for="new_value">Valor Esperado (R$)</label>
                                 <input type="text" name="expected_value" id="new_value" inputmode="numeric" placeholder="Ex: 50.000,00" required>
                             </div>
                         </div>
                         <div class="col-5">
                             <div class="form-field mb-0">
-                                <label>Data da Reunião</label>
-                                <input type="date" name="contact_date">
+                                <label for="contact_date">Data da Reunião</label>
+                                <input type="date" name="contact_date" id="contact_date">
                             </div>
                         </div>
                     </div>
                     <div class="form-field mt-3">
-                        <label>Observações</label>
-                        <textarea name="notes" rows="3" placeholder="Contexto, histórico, próximos passos..."></textarea>
+                        <label for="notes">Observações</label>
+                        <textarea name="notes" rows="3" placeholder="Contexto, histórico, próximos passos..." id="notes"></textarea>
                     </div>
                     <button type="submit" class="btn-premium w-100 mt-1" style="justify-content:center;">
                         <i class="fas fa-plus me-2"></i> Adicionar ao Funil
