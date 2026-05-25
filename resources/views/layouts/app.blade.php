@@ -959,7 +959,7 @@
 
             <!-- Notificações -->
             <div style="position: relative; cursor: pointer;" id="notification-bell" onclick="toggleNotifications()">
-                <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer;"
+                <div id="notification-bell-btn" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer;"
                      onmouseover="this.style.background='rgba(255,255,255,0.1)'"
                      onmouseout="this.style.background='rgba(255,255,255,0.05)'">
                     @php $unreadCount = auth()->check() ? \App\Models\Notification::where('user_id', auth()->id())->unread()->count() : 0; @endphp
@@ -1006,7 +1006,7 @@
 
             <!-- Configurações -->
             @auth
-            <a href="{{ url('/profile') }}" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;"
+            <a id="topbar-settings" href="{{ url('/profile') }}" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;"
                onmouseover="this.style.background='rgba(255,255,255,0.1)'"
                onmouseout="this.style.background='rgba(255,255,255,0.05)'">
                 <i class="fas fa-cog" style="color: rgba(255,255,255,0.5); font-size: 1rem;"></i>
