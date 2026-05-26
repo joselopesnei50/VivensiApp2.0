@@ -143,10 +143,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Endereço</label>
-                        <input type="text" name="address" class="form-control-vivensi" value="{{ $beneficiary->address }}">
-                    </div>
+                    <x-address-fields :model="$beneficiary" />
 
                     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:12px;">
                         <button type="button" class="btn-ds btn-ds-ghost" onclick="toggleEditBeneficiary(false)">Cancelar</button>

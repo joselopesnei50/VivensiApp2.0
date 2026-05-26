@@ -74,8 +74,7 @@
                 <label class="form-label-premium" for="name">Nome / Razão Social</label>
                 <input type="text" name="name" id="name" class="form-input-premium" value="{{ $donor->name }}" required>
 
-                <label class="form-label-premium" for="address">Endereço Completo</label>
-                <input type="text" name="address" id="address" class="form-input-premium" value="{{ $donor->address }}">
+                <x-address-fields :model="$donor" input-class="form-input-premium" />
 
                 <div class="row">
                     <div class="col-md-6">
