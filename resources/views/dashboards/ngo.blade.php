@@ -2,19 +2,6 @@
 
 @section('content')
 @push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<style>
-    #impactMap {
-        height: 450px;
-        width: 100%;
-        border-radius: 28px;
-        z-index: 1;
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-    .leaflet-container {
-        background: #0f172a !important;
-    }
-</style>
 @endpush
 
 @include('partials.onboarding')
@@ -398,51 +385,87 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-{{-- ===== MAPA DE IMPACTO GEOSOCIAL ===== --}}
+{{-- ===== DISTRIBUIÇÃO GEOGRÁFICA ===== --}}
 @php
-    $totalDonors       = (int) ($stats['total_donors'] ?? 0);
+    $totalDonors        = (int) ($stats['total_donors'] ?? 0);
     $totalBeneficiaries = (int) ($stats['beneficiary_count'] ?? 0);
-    $hasGeoData        = count($mapMarkers) > 0;
+    $statesCount        = count($geoByState);
+    $citiesCount        = count($geoByCity);
 @endphp
 <div style="background: #0f172a; border-radius: 28px; padding: 36px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 30px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; flex-wrap: wrap; gap: 12px;">
         <div>
-            <h3 style="color: white; font-weight: 950; font-size: 1.5rem; letter-spacing: -1px; margin: 0;">Rede de Impacto Global</h3>
-            <p style="color: rgba(255,255,255,0.5); font-size:.85rem; margin:4px 0 0 0;">Doadores e Beneficiários em sincronismo geográfico</p>
+            <h3 style="color: white; font-weight: 950; font-size: 1.5rem; letter-spacing: -1px; margin: 0;">Alcance Territorial</h3>
+            <p style="color: rgba(255,255,255,0.5); font-size:.85rem; margin:4px 0 0 0;">Distribuição geográfica dos beneficiários cadastrados</p>
         </div>
-        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="width: 10px; height: 10px; background: #6366f1; border-radius: 50%; box-shadow: 0 0 8px #6366f1;"></span>
-                <span style="font-size: 0.75rem; color: white; font-weight: 800;">Beneficiários</span>
+        <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+            <div style="text-align:center;">
+                <div style="font-size:1.6rem; font-weight:900; color:#6366f1;">{{ $statesCount }}</div>
+                <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:.06em;">Estado{{ $statesCount !== 1 ? 's' : '' }}</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981;"></span>
-                <span style="font-size: 0.75rem; color: white; font-weight: 800;">Doadores</span>
+            <div style="text-align:center;">
+                <div style="font-size:1.6rem; font-weight:900; color:#10b981;">{{ $citiesCount }}</div>
+                <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:.06em;">Município{{ $citiesCount !== 1 ? 's' : '' }}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:1.6rem; font-weight:900; color:#f59e0b;">{{ $geoTotal }}</div>
+                <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:.06em;">Com endereço</div>
             </div>
         </div>
     </div>
 
-    @if(!$hasGeoData)
-    <div style="height: 450px; border-radius: 20px; background: #0d1526; border: 1px dashed rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 40px;">
-        <div style="width: 64px; height: 64px; background: rgba(99,102,241,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <i class="fas fa-map-marked-alt" style="font-size: 1.6rem; color: #6366f1;"></i>
+    @if($geoTotal === 0)
+    {{-- Empty state --}}
+    <div style="height: 280px; border-radius: 20px; background: #0d1526; border: 1px dashed rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 40px;">
+        <div style="width: 56px; height: 56px; background: rgba(99,102,241,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-map-pin" style="font-size: 1.4rem; color: #6366f1;"></i>
         </div>
         <div>
-            <p style="color: white; font-weight: 800; font-size: 1.1rem; margin: 0 0 8px 0;">Mapa aguardando coordenadas</p>
-            <p style="color: rgba(255,255,255,0.45); font-size: 0.85rem; margin: 0; max-width: 420px; line-height: 1.6;">
-                Você tem <strong style="color:#6366f1;">{{ number_format($totalBeneficiaries) }} beneficiário{{ $totalBeneficiaries !== 1 ? 's' : '' }}</strong>
-                e <strong style="color:#10b981;">{{ number_format($totalDonors) }} doador{{ $totalDonors !== 1 ? 'es' : '' }}</strong> cadastrados.
-                Para visualizá-los aqui, adicione o <strong style="color:rgba(255,255,255,0.7);">endereço completo</strong> nos cadastros
-                — o sistema posicionará cada um no mapa automaticamente.
+            <p style="color: white; font-weight: 800; font-size: 1rem; margin: 0 0 6px 0;">Nenhum endereço cadastrado ainda</p>
+            <p style="color: rgba(255,255,255,0.4); font-size: 0.82rem; margin: 0; max-width: 380px; line-height: 1.6;">
+                Adicione cidade e estado nos cadastros de beneficiários para visualizar a distribuição territorial.
             </p>
         </div>
     </div>
     @else
-    <div id="impactMap"></div>
+    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px; align-items: start;">
+
+        {{-- Donut chart por estado --}}
+        <div style="position:relative;">
+            <canvas id="geoStateChart" height="260"></canvas>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none;">
+                <div style="font-size:1.8rem; font-weight:900; color:white; line-height:1;">{{ $totalBeneficiaries }}</div>
+                <div style="font-size:0.65rem; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:.06em;">beneficiários</div>
+            </div>
+        </div>
+
+        {{-- Ranking de cidades --}}
+        <div>
+            <p style="color:rgba(255,255,255,0.35); font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin:0 0 16px 0;">Top municípios</p>
+            @php
+                $maxCity = (int) ($geoByCity[0]['total'] ?? 1);
+                $palette = ['#6366f1','#8b5cf6','#10b981','#f59e0b','#3b82f6','#ec4899','#14b8a6','#f97316'];
+            @endphp
+            @foreach($geoByCity as $i => $row)
+            @php $pct = $maxCity > 0 ? round(($row['total'] / $maxCity) * 100) : 0; @endphp
+            <div style="margin-bottom: 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="width:8px; height:8px; border-radius:50%; background:{{ $palette[$i % count($palette)] }}; flex-shrink:0;"></span>
+                        <span style="color:white; font-size:0.85rem; font-weight:700;">{{ $row['city'] }}</span>
+                        @if(!empty($row['state']))<span style="color:rgba(255,255,255,0.3); font-size:0.75rem;">– {{ $row['state'] }}</span>@endif
+                    </div>
+                    <span style="color:rgba(255,255,255,0.6); font-size:0.8rem; font-weight:800;">{{ $row['total'] }}</span>
+                </div>
+                <div style="height:4px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden;">
+                    <div style="height:100%; width:{{ $pct }}%; background:{{ $palette[$i % count($palette)] }}; border-radius:4px; transition:width .6s ease;"></div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
     @endif
 </div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     // Charts — isolated so errors here não quebram o mapa
     document.addEventListener('DOMContentLoaded', function() {
@@ -544,42 +567,47 @@
         } catch(e) { console.warn('NGO radar chart init error:', e); }
     });
 
-    // Mapa — listener separado para nunca ser afetado por erros dos gráficos
+    // Gráfico de distribuição por estado
     document.addEventListener('DOMContentLoaded', function() {
-        const mapEl = document.getElementById('impactMap');
-        if (!mapEl || typeof L === 'undefined') return;
-
+        const el = document.getElementById('geoStateChart');
+        if (!el) return;
         try {
-            const mapData = @json($mapMarkers);
-            const map = L.map('impactMap', {
-                center: [-15.7801, -47.9292],
-                zoom: 4,
-                zoomControl: false
+            const stateData = @json($geoByState);
+            const labels = Object.keys(stateData);
+            const values = Object.values(stateData);
+            const palette = ['#6366f1','#8b5cf6','#10b981','#f59e0b','#3b82f6','#ec4899','#14b8a6','#f97316'];
+            new Chart(el.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: palette.slice(0, labels.length),
+                        borderColor: '#0f172a',
+                        borderWidth: 3,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15,23,42,0.95)',
+                            titleColor: '#fff',
+                            bodyColor: '#e2e8f0',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: ctx => ' ' + ctx.label + ': ' + ctx.parsed + ' beneficiários'
+                            }
+                        }
+                    }
+                }
             });
-
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; Vivensi Intelligence'
-            }).addTo(map);
-
-            L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-            if (mapData.length > 0) {
-                const bounds = [];
-                mapData.forEach(function(marker) {
-                    const iconColor = marker.type === 'beneficiary' ? '#6366f1' : '#10b981';
-                    L.circleMarker([marker.lat, marker.lng], {
-                        radius: 8, fillColor: iconColor, color: '#fff',
-                        weight: 2, opacity: 1, fillOpacity: 0.8
-                    }).addTo(map).bindPopup(
-                        '<strong style="color:#1e293b">' + marker.label + '</strong><br>' +
-                        '<span style="color:#64748b;font-size:11px">' + (marker.type === 'beneficiary' ? 'Beneficiário' : 'Doador') + '</span>'
-                    );
-                    bounds.push([marker.lat, marker.lng]);
-                });
-                if (bounds.length > 1) map.fitBounds(bounds, { padding: [50, 50] });
-                else map.setView(bounds[0], 12);
-            }
-        } catch(e) { console.warn('Impact map init error:', e); }
+        } catch(e) { console.warn('Geo state chart error:', e); }
     });
 </script>
 
