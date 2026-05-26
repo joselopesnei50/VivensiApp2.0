@@ -492,20 +492,18 @@ class DashboardController extends Controller
             'scores' => [$financialScore, $executionScore, $teamScore, $complianceScore, $fundingScore]
         ];
 
-        // ── Marcadores do Mapa de Impacto — cached 10 min ──
-        $mapMarkers = Cache::remember("dashboard.ngo.map.{$tenantId}", 600, function () use ($tenantId) {
-            $beneficiaries = Beneficiary::where('tenant_id', $tenantId)
-                ->whereNotNull('latitude')
-                ->get(['name', 'latitude', 'longitude'])
-                ->map(fn($b) => ['lat' => (float)$b->latitude, 'lng' => (float)$b->longitude, 'label' => $b->name, 'type' => 'beneficiary']);
+        // ── Marcadores do Mapa de Impacto — sem cache (query rápida em coluna indexada) ──
+        $beneficiaries = Beneficiary::where('tenant_id', $tenantId)
+            ->whereNotNull('latitude')
+            ->get(['name', 'latitude', 'longitude'])
+            ->map(fn($b) => ['lat' => (float)$b->latitude, 'lng' => (float)$b->longitude, 'label' => $b->name, 'type' => 'beneficiary']);
 
-            $donors = NgoDonor::where('tenant_id', $tenantId)
-                ->whereNotNull('latitude')
-                ->get(['name', 'latitude', 'longitude'])
-                ->map(fn($d) => ['lat' => (float)$d->latitude, 'lng' => (float)$d->longitude, 'label' => $d->name, 'type' => 'donor']);
+        $donors = NgoDonor::where('tenant_id', $tenantId)
+            ->whereNotNull('latitude')
+            ->get(['name', 'latitude', 'longitude'])
+            ->map(fn($d) => ['lat' => (float)$d->latitude, 'lng' => (float)$d->longitude, 'label' => $d->name, 'type' => 'donor']);
 
-            return $beneficiaries->concat($donors)->toArray();
-        });
+        $mapMarkers = $beneficiaries->concat($donors)->toArray();
 
         // ── Equipe — cached 10 min (muda raramente) ──
         $teamUsers = Cache::remember("dashboard.ngo.team.{$tenantId}", 600, function () use ($tenantId) {
