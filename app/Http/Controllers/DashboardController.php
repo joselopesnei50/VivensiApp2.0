@@ -492,18 +492,28 @@ class DashboardController extends Controller
             'scores' => [$financialScore, $executionScore, $teamScore, $complianceScore, $fundingScore]
         ];
 
-        // ── Marcadores do Mapa de Impacto — sem cache (query rápida em coluna indexada) ──
-        $beneficiaries = Beneficiary::where('tenant_id', $tenantId)
-            ->whereNotNull('latitude')
-            ->get(['name', 'latitude', 'longitude'])
-            ->map(fn($b) => ['lat' => (float)$b->latitude, 'lng' => (float)$b->longitude, 'label' => $b->name, 'type' => 'beneficiary']);
+        // ── Distribuição Geográfica — por estado e cidade ──
+        $geoByState = Beneficiary::where('tenant_id', $tenantId)
+            ->whereNotNull('address_state')->where('address_state', '!=', '')
+            ->selectRaw('address_state as state, COUNT(*) as total')
+            ->groupBy('address_state')
+            ->orderByDesc('total')
+            ->limit(8)
+            ->pluck('total', 'state')
+            ->toArray();
 
-        $donors = NgoDonor::where('tenant_id', $tenantId)
-            ->whereNotNull('latitude')
-            ->get(['name', 'latitude', 'longitude'])
-            ->map(fn($d) => ['lat' => (float)$d->latitude, 'lng' => (float)$d->longitude, 'label' => $d->name, 'type' => 'donor']);
+        $geoByCity = Beneficiary::where('tenant_id', $tenantId)
+            ->whereNotNull('address_city')->where('address_city', '!=', '')
+            ->selectRaw('address_city as city, address_state as state, COUNT(*) as total')
+            ->groupBy('address_city', 'address_state')
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get(['city', 'state', 'total'])
+            ->toArray();
 
-        $mapMarkers = $beneficiaries->concat($donors)->toArray();
+        $geoTotal = Beneficiary::where('tenant_id', $tenantId)
+            ->whereNotNull('address_city')->where('address_city', '!=', '')
+            ->count();
 
         // ── Equipe — cached 10 min (muda raramente) ──
         $teamUsers = Cache::remember("dashboard.ngo.team.{$tenantId}", 600, function () use ($tenantId) {
@@ -529,7 +539,9 @@ class DashboardController extends Controller
             'chartDonors',
             'chartDonations',
             'radarData',
-            'mapMarkers',
+            'geoByState',
+            'geoByCity',
+            'geoTotal',
             'teamUsers',
             'upcomingTasks',
             'projects'
