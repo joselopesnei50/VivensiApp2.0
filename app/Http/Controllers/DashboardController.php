@@ -492,28 +492,50 @@ class DashboardController extends Controller
             'scores' => [$financialScore, $executionScore, $teamScore, $complianceScore, $fundingScore]
         ];
 
-        // ── Distribuição Geográfica — por estado e cidade ──
-        $geoByState = Beneficiary::where('tenant_id', $tenantId)
+        // ── Distribuição Geográfica — beneficiários + doadores por estado e cidade ──
+        $benefByState = Beneficiary::where('tenant_id', $tenantId)
             ->whereNotNull('address_state')->where('address_state', '!=', '')
             ->selectRaw('address_state as state, COUNT(*) as total')
-            ->groupBy('address_state')
-            ->orderByDesc('total')
-            ->limit(8)
-            ->pluck('total', 'state')
-            ->toArray();
+            ->groupBy('address_state')->pluck('total', 'state')->toArray();
 
-        $geoByCity = Beneficiary::where('tenant_id', $tenantId)
+        $donorsByState = NgoDonor::where('tenant_id', $tenantId)
+            ->whereNotNull('address_state')->where('address_state', '!=', '')
+            ->selectRaw('address_state as state, COUNT(*) as total')
+            ->groupBy('address_state')->pluck('total', 'state')->toArray();
+
+        // Merge states, sum counts
+        $geoByState = [];
+        foreach (array_unique(array_merge(array_keys($benefByState), array_keys($donorsByState))) as $st) {
+            $geoByState[$st] = ($benefByState[$st] ?? 0) + ($donorsByState[$st] ?? 0);
+        }
+        arsort($geoByState);
+        $geoByState = array_slice($geoByState, 0, 8, true);
+
+        $benefByCity = Beneficiary::where('tenant_id', $tenantId)
             ->whereNotNull('address_city')->where('address_city', '!=', '')
             ->selectRaw('address_city as city, address_state as state, COUNT(*) as total')
-            ->groupBy('address_city', 'address_state')
-            ->orderByDesc('total')
-            ->limit(8)
-            ->get(['city', 'state', 'total'])
-            ->toArray();
+            ->groupBy('address_city', 'address_state')->get()->keyBy('city')->toArray();
 
-        $geoTotal = Beneficiary::where('tenant_id', $tenantId)
+        $donorsByCity = NgoDonor::where('tenant_id', $tenantId)
             ->whereNotNull('address_city')->where('address_city', '!=', '')
-            ->count();
+            ->selectRaw('address_city as city, address_state as state, COUNT(*) as total')
+            ->groupBy('address_city', 'address_state')->get()->keyBy('city')->toArray();
+
+        // Merge cities
+        $mergedCities = [];
+        foreach (array_unique(array_merge(array_keys($benefByCity), array_keys($donorsByCity))) as $city) {
+            $mergedCities[$city] = [
+                'city'   => $city,
+                'state'  => ($benefByCity[$city]['state'] ?? $donorsByCity[$city]['state'] ?? ''),
+                'benef'  => (int) ($benefByCity[$city]['total']  ?? 0),
+                'donors' => (int) ($donorsByCity[$city]['total'] ?? 0),
+                'total'  => (int) ($benefByCity[$city]['total']  ?? 0) + (int) ($donorsByCity[$city]['total'] ?? 0),
+            ];
+        }
+        usort($mergedCities, fn($a, $b) => $b['total'] - $a['total']);
+        $geoByCity = array_slice($mergedCities, 0, 8);
+
+        $geoTotal = array_sum(array_column($geoByCity, 'total'));
 
         // ── Equipe — cached 10 min (muda raramente) ──
         $teamUsers = Cache::remember("dashboard.ngo.team.{$tenantId}", 600, function () use ($tenantId) {
