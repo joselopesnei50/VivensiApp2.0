@@ -106,14 +106,14 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        color: #94a3b8;
+        color: #cbd5e1;
         cursor: pointer;
         user-select: none;
         border-radius: 8px;
         transition: background 0.2s, color 0.2s;
         margin: 2px 6px 0 6px;
     }
-    .menu-group-header:hover { background: rgba(255,255,255,0.05); color: #cbd5e1; }
+    .menu-group-header:hover { background: rgba(255,255,255,0.05); color: #f1f5f9; }
     .menu-group-header.group-active { color: var(--primary-color, #4f46e5); }
     .menu-group-header .group-icon { width: 16px; text-align: center; font-size: 0.75rem; }
     .menu-group-header .group-arrow {
