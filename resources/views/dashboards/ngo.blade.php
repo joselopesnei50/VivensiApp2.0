@@ -441,24 +441,38 @@
 
         {{-- Ranking de cidades --}}
         <div>
-            <p style="color:rgba(255,255,255,0.35); font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin:0 0 16px 0;">Top municípios</p>
-            @php
-                $maxCity = (int) ($geoByCity[0]['total'] ?? 1);
-                $palette = ['#6366f1','#8b5cf6','#10b981','#f59e0b','#3b82f6','#ec4899','#14b8a6','#f97316'];
-            @endphp
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <p style="color:rgba(255,255,255,0.35); font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin:0;">Top municípios</p>
+                <div style="display:flex; gap:14px;">
+                    <span style="font-size:0.7rem; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#6366f1;"></span> Benef.
+                    </span>
+                    <span style="font-size:0.7rem; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;"></span> Doador
+                    </span>
+                </div>
+            </div>
+            @php $maxCity = (int) ($geoByCity[0]['total'] ?? 1); @endphp
             @foreach($geoByCity as $i => $row)
             @php $pct = $maxCity > 0 ? round(($row['total'] / $maxCity) * 100) : 0; @endphp
             <div style="margin-bottom: 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="width:8px; height:8px; border-radius:50%; background:{{ $palette[$i % count($palette)] }}; flex-shrink:0;"></span>
                         <span style="color:white; font-size:0.85rem; font-weight:700;">{{ $row['city'] }}</span>
                         @if(!empty($row['state']))<span style="color:rgba(255,255,255,0.3); font-size:0.75rem;">– {{ $row['state'] }}</span>@endif
                     </div>
-                    <span style="color:rgba(255,255,255,0.6); font-size:0.8rem; font-weight:800;">{{ $row['total'] }}</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        @if($row['benef'] > 0)<span style="font-size:0.75rem; color:#6366f1; font-weight:800;">{{ $row['benef'] }}b</span>@endif
+                        @if($row['donors'] > 0)<span style="font-size:0.75rem; color:#10b981; font-weight:800;">{{ $row['donors'] }}d</span>@endif
+                    </div>
                 </div>
-                <div style="height:4px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden;">
-                    <div style="height:100%; width:{{ $pct }}%; background:{{ $palette[$i % count($palette)] }}; border-radius:4px; transition:width .6s ease;"></div>
+                <div style="height:5px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; display:flex; gap:1px;">
+                    @if($row['benef'] > 0)
+                    <div style="height:100%; width:{{ $maxCity > 0 ? round(($row['benef']/$maxCity)*100) : 0 }}%; background:#6366f1; border-radius:4px; transition:width .6s ease;"></div>
+                    @endif
+                    @if($row['donors'] > 0)
+                    <div style="height:100%; width:{{ $maxCity > 0 ? round(($row['donors']/$maxCity)*100) : 0 }}%; background:#10b981; border-radius:4px; transition:width .6s ease;"></div>
+                    @endif
                 </div>
             </div>
             @endforeach
