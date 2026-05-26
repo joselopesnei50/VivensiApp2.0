@@ -628,7 +628,7 @@
 <div class="row g-4">
     <div class="col-md-8">
         <!-- AI Insight Box (Premium Glassmorphism Dark) -->
-        <div class="vivensi-card" style="padding: 35px; background: #0f172a; color: white; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative; overflow: hidden; border-radius: 28px; margin-bottom: 30px;">
+        <div style="padding: 35px; background: #0f172a; color: white; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative; overflow: hidden; border-radius: 28px; margin-bottom: 30px;">
              <!-- Decorative Glows -->
              <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: var(--ngo-primary); filter: blur(60px); opacity: 0.4;"></div>
              <div style="position: absolute; bottom: -30px; left: -30px; width: 100px; height: 100px; background: var(--ngo-success); filter: blur(50px); opacity: 0.2;"></div>
@@ -664,7 +664,7 @@
         })();
         </script>
 
-        <div class="vivensi-card" style="padding: 35px; border-radius: 28px; min-height: 400px; background: #0f172a; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 30px;">
+        <div style="padding: 35px; border-radius: 28px; min-height: 400px; background: #0f172a; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <h4 style="margin: 0; font-size: 1.25rem; color: white; font-weight: 950; letter-spacing: -0.5px;">Linha do Tempo de Impacto</h4>
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -752,7 +752,7 @@
     </div>
 
     <div class="col-md-4">
-        <div class="vivensi-card" style="padding: 35px; border-radius: 28px; background: #0f172a; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+        <div style="padding: 35px; border-radius: 28px; background: #0f172a; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <h4 style="margin: 0; font-size: 1.25rem; color: white; font-weight: 950; letter-spacing: -0.5px;">Campanhas Alpha</h4>
                 <a href="{{ url('/ngo/campaigns') }}" style="font-size: 0.75rem; font-weight: 900; color: #818cf8; text-decoration: none;">HISTÓRICO</a>
