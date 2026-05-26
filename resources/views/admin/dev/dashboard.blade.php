@@ -148,6 +148,10 @@
             <i class="fas fa-sitemap"></i> Arquitetura
         </a>
 
+        <a href="#" onclick="showTab('whatsapp');return false" id="nav-whatsapp">
+            <i class="fab fa-whatsapp"></i> WhatsApp & Anti-Ban
+        </a>
+
         <span class="sidebar-section" style="margin-top:1.5rem">Links rápidos</span>
         <a href="{{ route('admin.dashboard') }}" target="_blank">
             <i class="fas fa-gauge"></i> Painel Admin
@@ -504,6 +508,330 @@
                 </div>
             </div>
         </div>
+
+        {{-- ── WHATSAPP & ANTI-BAN TAB ── --}}
+        <div class="tab-panel" id="tab-whatsapp">
+            <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:.3rem">
+                <i class="fab fa-whatsapp me-2" style="color:#25D366"></i>Mensageria WhatsApp & Anti-Ban
+            </h2>
+            <p style="color:var(--muted);font-size:.88rem;margin-bottom:1.5rem">
+                Arquitetura completa de disparo em massa via Evolution API (Baileys) com camada de proteção anti-ban.
+            </p>
+
+            {{-- ── KPIs ── --}}
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="label">Máx mensagens/hora</div>
+                    <div class="value" style="color:var(--yellow)">55</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Período warming</div>
+                    <div class="value" style="color:var(--accent)">14 dias</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Restrição ban padrão</div>
+                    <div class="value" style="color:var(--red)">24 h</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Pausa a cada 30 msgs</div>
+                    <div class="value" style="color:var(--blue)">3–5 min</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Delay entre mensagens</div>
+                    <div class="value" style="color:var(--green)">≥ 5 s</div>
+                </div>
+            </div>
+
+            {{-- ── Fluxo de disparo em massa ── --}}
+            <div class="card" style="margin-bottom:1.2rem">
+                <div class="card-header" onclick="toggleCard(this)" class="open">
+                    <h3><i class="fas fa-paper-plane" style="color:#25D366;font-size:.85rem"></i> Fluxo de Disparo em Massa <span class="count">ProcessBroadcastCampaignJob</span></h3>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </div>
+                <div class="card-body" style="padding:1.2rem">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Fila & Controle</div>
+                            <div class="kv"><span class="k">Queue</span><span class="v"><code>whatsapp</code></span></div>
+                            <div class="kv"><span class="k">Timeout</span><span class="v">7200 s (2h) — campanhas grandes</span></div>
+                            <div class="kv"><span class="k">Tries</span><span class="v">1 — sem retry; falha encerra campanha</span></div>
+                            <div class="kv"><span class="k">ShouldBeUnique</span><span class="v">por <code>campaign_id</code> — evita disparo duplo</span></div>
+                        </div>
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Tipos de Audiência</div>
+                            <div class="kv"><span class="k"><code>all</code></span><span class="v">Cursor iterator — sem carregar tudo em memória</span></div>
+                            <div class="kv"><span class="k"><code>groups</code> (group)</span><span class="v">Uma mensagem para o chat do grupo</span></div>
+                            <div class="kv"><span class="k"><code>groups</code> (members)</span><span class="v">Expande membros via API — mensagem individual</span></div>
+                            <div class="kv"><span class="k"><code>selected</code></span><span class="v">Lista de números manual ou CSV (máx 5 000)</span></div>
+                        </div>
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Validação de Números</div>
+                            <div class="kv"><span class="k">Normalização</span><span class="v"><code>normalizeBrazilianPhone()</code> — resolve 9º dígito BR</span></div>
+                            <div class="kv"><span class="k">Validação</span><span class="v"><code>checkWhatsappNumbers()</code> — verifica JIDs na API antes do envio</span></div>
+                            <div class="kv"><span class="k">Cache JIDs</span><span class="v"><code>wa_jid</code> + <code>whatsapp_validated_at</code> salvos no chat</span></div>
+                            <div class="kv"><span class="k">Inválidos</span><span class="v">Pulados com <code>total_failed++</code> — não suspendem campanha</span></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+                        <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Circuit Breakers</div>
+                        <table>
+                            <thead><tr><th>Gatilho</th><th>Ação</th><th>Resultado</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td>Sinal de ban detectado (<code>isBanSignal()</code>)</td>
+                                    <td><code>markAsRestricted($instance, 24)</code></td>
+                                    <td><span class="badge badge-delete">campanha failed</span> instância restrita 24h</td>
+                                </tr>
+                                <tr>
+                                    <td>5 erros consecutivos sem ban</td>
+                                    <td>Encerra loop imediatamente</td>
+                                    <td><span class="badge badge-delete">campanha failed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Fora da janela horária</td>
+                                    <td>Salva progresso atual</td>
+                                    <td><span class="badge badge-put">campanha paused</span> operador reagenda</td>
+                                </tr>
+                                <tr>
+                                    <td>Limite diário/horário atingido</td>
+                                    <td>Salva progresso atual</td>
+                                    <td><span class="badge badge-put">campanha paused</span></td>
+                                </tr>
+                                <tr>
+                                    <td>URL encurtada na mensagem</td>
+                                    <td>Rejeita antes de iniciar</td>
+                                    <td><span class="badge badge-delete">campanha failed</span> nunca envia</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ── AntiBanManager ── --}}
+            <div class="card" style="margin-bottom:1.2rem">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h3><i class="fas fa-shield-halved" style="color:var(--red);font-size:.85rem"></i> AntiBanManager — Camada de Proteção <span class="count">App\Services\Messaging</span></h3>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </div>
+                <div class="card-body collapsed" style="padding:1.2rem">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-bottom:1rem">
+
+                        {{-- Verificação canSendMessage() --}}
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">canSendMessage() — Ordem de verificação</div>
+                            <div style="display:flex;flex-direction:column;gap:6px">
+                                @foreach([
+                                    ['1', 'Janela horária', 'isWithinSafeWindow()', 'var(--blue)'],
+                                    ['2', 'Restrição ban ativa', 'isInstanceRestricted()', 'var(--red)'],
+                                    ['3', 'Limite diário', 'hasReachedDailyLimit()', 'var(--yellow)'],
+                                    ['4', 'Limite warming', 'getWarmingDailyLimit()', 'var(--accent)'],
+                                    ['5', 'Limite horário', 'hasReachedHourlyLimit() via RateLimiter', 'var(--green)'],
+                                ] as [$n, $label, $fn, $color])
+                                <div style="display:flex;align-items:center;gap:8px;font-size:.83rem">
+                                    <span style="width:18px;height:18px;min-width:18px;border-radius:50%;background:{{ $color }};color:#0d1117;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;">{{ $n }}</span>
+                                    <span style="color:var(--text)">{{ $label }}</span>
+                                    <code style="color:var(--muted);font-size:.72rem">{{ $fn }}</code>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- Simulação humana --}}
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">simulateHumanTyping()</div>
+                            <div class="kv"><span class="k">Passo 1</span><span class="v">Envia presence <code>composing</code> (digitando)</span></div>
+                            <div class="kv"><span class="k">Passo 2</span><span class="v">Sleep proporcional: <code>strlen / 12</code> chars/s (~digitação humana)</span></div>
+                            <div class="kv"><span class="k">Passo 3</span><span class="v">Envia presence <code>paused</code> (pausou — mais orgânico)</span></div>
+                            <div class="kv"><span class="k">Passo 4</span><span class="v">Sleep 1–3s antes do envio real</span></div>
+                            <div class="kv"><span class="k">Delay payload</span><span class="v"><code>getRandomDelayMs()</code> → rand(2500, 6000) ms</span></div>
+                            <div class="kv"><span class="k">Escopo</span><span class="v">Apenas mensagens individuais — não aplica em grupos</span></div>
+                        </div>
+
+                        {{-- Restrição --}}
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Gerenciamento de Restrição</div>
+                            <div class="kv"><span class="k">Storage</span><span class="v">Campo <code>settings</code> JSON no model — sem migration</span></div>
+                            <div class="kv"><span class="k">Chaves salvas</span><span class="v"><code>restricted_until</code>, <code>restricted_reason</code>, <code>restricted_at</code></span></div>
+                            <div class="kv"><span class="k">Auto-remoção</span><span class="v"><code>isInstanceRestricted()</code> remove flag quando expirar</span></div>
+                            <div class="kv"><span class="k">Log level</span><span class="v"><code>Log::critical</code> ao marcar, <code>Log::info</code> ao liberar</span></div>
+                        </div>
+                    </div>
+
+                    {{-- Warming --}}
+                    <div style="margin-top:.5rem;padding-top:1rem;border-top:1px solid var(--border)">
+                        <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">
+                            Perfil de Warming Progressivo — 14 dias (~30% crescimento/dia)
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px">
+                            @foreach([1=>20,2=>30,3=>40,4=>55,5=>70,6=>90,7=>115,8=>140,9=>170,10=>205,11=>245,12=>290,13=>340,14=>370] as $day => $limit)
+                            <div style="text-align:center;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:6px 10px;min-width:52px">
+                                <div style="font-size:.65rem;color:var(--muted);font-weight:600">Dia {{ $day }}</div>
+                                <div style="font-size:.92rem;font-weight:700;color:var(--accent)">{{ $limit }}</div>
+                            </div>
+                            @endforeach
+                        </div>
+                        <div class="kv" style="margin-top:.75rem"><span class="k">Após dia 14</span><span class="v">Modo warming desativado automaticamente — usa <code>daily_limit</code> normal</span></div>
+                        <div class="kv"><span class="k">Ativação</span><span class="v"><code>startWarming($instance)</code> — chamar ao criar instância nova</span></div>
+                        <div class="kv"><span class="k">Status</span><span class="v"><code>getInstanceStatus($instance)</code> retorna resumo completo para painel</span></div>
+                    </div>
+
+                    {{-- Detecção de riscos --}}
+                    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+                        <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">Detecção de Riscos</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                            <div>
+                                <div style="font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:.5rem">URLs Encurtadas Bloqueadas <code style="font-size:.72rem">(BLOCKED_SHORTENERS)</code></div>
+                                <div style="display:flex;flex-wrap:wrap;gap:4px">
+                                    @foreach(['bit.ly','cutt.ly','t.ly','tinyurl.com','is.gd','rebrand.ly','ow.ly','buff.ly','dlvr.it','soo.gd','clk.im','shorte.st','adf.ly','bc.vc','tiny.cc','mcaf.ee'] as $s)
+                                    <code style="font-size:.72rem;background:rgba(248,81,73,.1);color:var(--red)">{{ $s }}</code>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:.5rem">Keywords Opt-Out <code style="font-size:.72rem">(PT-BR + EN)</code></div>
+                                <div style="display:flex;flex-wrap:wrap;gap:4px">
+                                    @foreach(['parar','pare','para','stop','sair','cancelar','remover','descadastrar','não quero','desinscrever','bloquear','sai','remove','unsubscribe','descadastro','não me mande','chega'] as $kw)
+                                    <code style="font-size:.72rem;background:rgba(56,211,159,.08);color:var(--green)">{{ $kw }}</code>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:.75rem">
+                            <div style="font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:.5rem">Sinais de Ban detectados por <code>isBanSignal()</code></div>
+                            <div style="display:flex;flex-wrap:wrap;gap:4px">
+                                @foreach(['429','rate limit','rate_limit','banned','suspended','blocked','spam','unauthorized'] as $sig)
+                                <code style="font-size:.72rem;background:rgba(248,81,73,.1);color:var(--red)">{{ $sig }}</code>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ── Outbound Policy ── --}}
+            <div class="card" style="margin-bottom:1.2rem">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h3><i class="fas fa-gavel" style="color:var(--blue);font-size:.85rem"></i> WhatsappOutboundPolicy — Compliance de Envio</h3>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </div>
+                <div class="card-body collapsed" style="padding:1.2rem">
+                    <table>
+                        <thead><tr><th>Regra</th><th>Código de Retorno</th><th>Bypasses</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>Envio global desativado (<code>outbound_enabled = false</code>)</td>
+                                <td><code>OUTBOUND_DISABLED</code></td>
+                                <td>IA (<code>isAi = true</code>) ignora esta regra</td>
+                            </tr>
+                            <tr>
+                                <td>Contato com <code>blocked_at</code> preenchido</td>
+                                <td><code>CONTACT_BLOCKED</code></td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Contato com <code>opt_out_at</code> preenchido</td>
+                                <td><code>CONTACT_OPTOUT</code></td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Número na blacklist global SaaS</td>
+                                <td><code>CONTACT_BLACKLISTED</code></td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Sem opt-in registrado (<code>require_opt_in = true</code>)</td>
+                                <td><code>OPTIN_REQUIRED</code></td>
+                                <td>Configurável por tenant</td>
+                            </tr>
+                            <tr>
+                                <td>Fora da janela 24h (último inbound > 24h)</td>
+                                <td><code>WINDOW_CLOSED</code></td>
+                                <td>Templates (<code>isTemplate = true</code>) e IA ignoram</td>
+                            </tr>
+                            <tr>
+                                <td>Rate limit por tenant (<code>wa:tenant:{id}</code>)</td>
+                                <td><code>RATE_LIMITED</code></td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Cadência mínima por chat (<code>min_cadence_seconds</code>)</td>
+                                <td><code>CADENCE_WAIT</code></td>
+                                <td>—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="kv" style="margin-top:.75rem">
+                        <span class="k">Auditoria</span>
+                        <span class="v">Mensagens bloqueadas pela policy são logadas via <code>AuditLog::create()</code> com <code>reason</code> e <code>code</code></span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ── Webhook ── --}}
+            <div class="card" style="margin-bottom:1.2rem">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h3><i class="fas fa-webhook" style="color:var(--green);font-size:.85rem"></i> Webhooks Evolution API</h3>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </div>
+                <div class="card-body collapsed" style="padding:1.2rem">
+                    <div class="kv"><span class="k">Endpoint</span><span class="v"><code>POST /api/evo/webhook/{token}</code> — token por instância, sem auth global</span></div>
+                    <div class="kv"><span class="k">HMAC</span><span class="v">Validação opcional via header <code>x-webhook-hmac</code> — configurável por instância</span></div>
+                    <div class="kv"><span class="k">Resposta</span><span class="v">Retorna <code>200</code> imediatamente — processa em fila <code>ProcessEvolutionWebhook</code></span></div>
+                    <div class="kv"><span class="k">Multi-tenant</span><span class="v">Isolamento por <code>instance_token</code> — nunca vaza dados entre tenants</span></div>
+                    <div style="margin-top:.75rem">
+                        <table>
+                            <thead><tr><th>Evento</th><th>Ação</th></tr></thead>
+                            <tbody>
+                                <tr><td><code>MESSAGES_UPSERT</code></td><td>Cria/atualiza chat e mensagem no banco; detecta opt-out; desativa bot se <code>fromMe</code></td></tr>
+                                <tr><td><code>CONNECTION_UPDATE</code></td><td>Atualiza <code>status</code> da instância (<code>open</code>, <code>close</code>, <code>connecting</code>)</td></tr>
+                                <tr><td><code>QRCODE_UPDATED</code></td><td>Armazena novo QR code para exibição no painel</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ── Arquitetura de serviços ── --}}
+            <div class="card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h3><i class="fas fa-diagram-project" style="color:var(--accent);font-size:.85rem"></i> Mapa de Serviços & Jobs</h3>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </div>
+                <div class="card-body collapsed" style="padding:1.2rem">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Services</div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">EvolutionApiService</code></span><span class="v" style="font-size:.82rem">Integração direta Evolution API v2 (Baileys): instâncias, QR, sendMessage, sendMedia, presence, checkNumbers</span></div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">AntiBanManager</code></span><span class="v" style="font-size:.82rem">Camada de proteção: janela horária, warming, limites, simulação humana, detecção ban</span></div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">WhatsAppService</code></span><span class="v" style="font-size:.82rem">High-level: dual-channel (Meta Cloud API ou Evolution), auditoria, policy enforcement</span></div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">WhatsappOutboundPolicy</code></span><span class="v" style="font-size:.82rem">Compliance: opt-out, blacklist, 24h window, rate limit, cadência</span></div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">MetaCloudApiService</code></span><span class="v" style="font-size:.82rem">Mensagens oficiais via Meta (templates WABA) — fallback para Evolution</span></div>
+                        </div>
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Jobs (queue: whatsapp)</div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">ProcessBroadcastCampaignJob</code></span><span class="v" style="font-size:.82rem">Orquestrador do disparo em massa — timeout 2h, ShouldBeUnique por campaign_id</span></div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">SendWhatsAppCampaignMessage</code></span><span class="v" style="font-size:.82rem">Envio individual em campanha — 3 tries, backoff 1m/5m/15m</span></div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">ProcessEvolutionWebhook</code></span><span class="v" style="font-size:.82rem">Processa eventos inbound da Evolution API de forma assíncrona</span></div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">ProcessWhatsappAutomations</code></span><span class="v" style="font-size:.82rem">Dispara automações agendadas e fluxos de resposta automática</span></div>
+                            <div class="kv"><span class="k"><code style="font-size:.72rem">SendProspectWhatsapp</code></span><span class="v" style="font-size:.82rem">Prospecção/outreach — respeita policy e anti-ban</span></div>
+                        </div>
+                        <div>
+                            <div style="color:var(--muted);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Limites por Instância (WhatsappInstance)</div>
+                            <div class="kv"><span class="k">Limite tenant</span><span class="v">Máx 3 instâncias por tenant</span></div>
+                            <div class="kv"><span class="k"><code>safe_window_start</code></span><span class="v">Horário início envio (configurável — ex: 08:00)</span></div>
+                            <div class="kv"><span class="k"><code>safe_window_end</code></span><span class="v">Horário fim envio (configurável — ex: 22:00)</span></div>
+                            <div class="kv"><span class="k"><code>daily_limit</code></span><span class="v">Limite diário pós-warming</span></div>
+                            <div class="kv"><span class="k"><code>messages_sent_today</code></span><span class="v">Contador com reset automático à meia-noite</span></div>
+                            <div class="kv"><span class="k">RateLimiter key</span><span class="v"><code>wa:hourly:{instance_id}</code> — janela 3600s, max 55 hits</span></div>
+                            <div class="kv"><span class="k"><code>settings</code> JSON</span><span class="v">restricted_until · restricted_reason · warming_mode · warming_started_at</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>{{-- /tab-whatsapp --}}
 
     </div>{{-- /main --}}
 </div>{{-- /shell --}}
