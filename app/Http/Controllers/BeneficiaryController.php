@@ -1186,9 +1186,13 @@ class BeneficiaryController extends Controller
         $beneficiary->fill($validated);
         $beneficiary->save();
 
-        if (!empty($beneficiary->address) && $beneficiary->address !== $oldAddress) {
-            $beneficiary->update(['latitude' => null, 'longitude' => null]);
-            GeocodeAddressJob::dispatch($beneficiary->fresh())->delay(now()->addSeconds(3));
+        try {
+            if (!empty($beneficiary->address) && $beneficiary->address !== $oldAddress) {
+                $beneficiary->update(['latitude' => null, 'longitude' => null]);
+                GeocodeAddressJob::dispatch($beneficiary->fresh())->delay(now()->addSeconds(3));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Geocode dispatch failed on beneficiary update: ' . $e->getMessage(), ['id' => $beneficiary->id]);
         }
 
         return redirect()->back()->with('success', 'Cadastro atualizado.');
