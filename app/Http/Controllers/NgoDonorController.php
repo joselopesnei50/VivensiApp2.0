@@ -16,7 +16,7 @@ class NgoDonorController extends Controller
         $donors = NgoDonor::where('tenant_id', auth()->user()->tenant_id)
                           ->orderBy('created_at', 'desc')
                           ->paginate(15);
-                          
+
         return view('ngo.donors.index', compact('donors'));
     }
 
@@ -28,13 +28,21 @@ class NgoDonorController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string',
-            'type' => 'required|in:individual,company,government',
-            'document' => 'nullable|string',
-            'address' => 'nullable|string|max:255'
+            'name'                 => 'required|string|max:255',
+            'email'                => 'nullable|email',
+            'phone'                => 'nullable|string',
+            'type'                 => 'required|in:individual,company,government',
+            'document'             => 'nullable|string',
+            'address_zip'          => 'nullable|string|max:10',
+            'address_street'       => 'nullable|string|max:255',
+            'address_number'       => 'nullable|string|max:20',
+            'address_complement'   => 'nullable|string|max:100',
+            'address_neighborhood' => 'nullable|string|max:255',
+            'address_city'         => 'nullable|string|max:255',
+            'address_state'        => 'nullable|string|max:2',
         ]);
+
+        $validated['address'] = $this->composeAddress($validated);
 
         $donor = new NgoDonor($validated);
         $donor->tenant_id = auth()->user()->tenant_id;
@@ -52,7 +60,7 @@ class NgoDonorController extends Controller
         $donor = NgoDonor::where('id', $id)
                          ->where('tenant_id', auth()->user()->tenant_id)
                          ->firstOrFail();
-                         
+
         return view('ngo.donors.edit', compact('donor'));
     }
 
@@ -63,15 +71,22 @@ class NgoDonorController extends Controller
                          ->firstOrFail();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string',
-            'type' => 'required|in:individual,company,government',
-            'document' => 'nullable|string',
-            'address' => 'nullable|string|max:255'
+            'name'                 => 'required|string|max:255',
+            'email'                => 'nullable|email',
+            'phone'                => 'nullable|string',
+            'type'                 => 'required|in:individual,company,government',
+            'document'             => 'nullable|string',
+            'address_zip'          => 'nullable|string|max:10',
+            'address_street'       => 'nullable|string|max:255',
+            'address_number'       => 'nullable|string|max:20',
+            'address_complement'   => 'nullable|string|max:100',
+            'address_neighborhood' => 'nullable|string|max:255',
+            'address_city'         => 'nullable|string|max:255',
+            'address_state'        => 'nullable|string|max:2',
         ]);
 
         $oldAddress = $donor->address;
+        $validated['address'] = $this->composeAddress($validated);
         $donor->update($validated);
 
         if (!empty($donor->address) && $donor->address !== $oldAddress) {
@@ -103,9 +118,36 @@ class NgoDonorController extends Controller
         }
 
         $tenant = Tenant::find($tenantId);
-
         Mail::to($donor->email)->send(new DonorPortalMail($donor, $tenant));
 
         return back()->with('success', "Portal VIP enviado para {$donor->email} com sucesso!");
+    }
+
+    private function composeAddress(array $data): ?string
+    {
+        $parts = array_filter([
+            trim($data['address_street'] ?? ''),
+            trim($data['address_number'] ?? ''),
+            trim($data['address_complement'] ?? ''),
+            trim($data['address_neighborhood'] ?? ''),
+            trim($data['address_city'] ?? ''),
+            trim($data['address_state'] ?? ''),
+            trim($data['address_zip'] ?? ''),
+        ]);
+
+        if (empty($parts)) return null;
+
+        $street = trim(($data['address_street'] ?? '') . ', ' . ($data['address_number'] ?? ''), ', ');
+        $complement = trim($data['address_complement'] ?? '');
+        $neighborhood = trim($data['address_neighborhood'] ?? '');
+        $city = trim($data['address_city'] ?? '');
+        $state = trim($data['address_state'] ?? '');
+        $zip = trim($data['address_zip'] ?? '');
+
+        $line1 = implode(', ', array_filter([$street, $complement, $neighborhood]));
+        $line2 = implode(' - ', array_filter([$city, $state]));
+        $full  = implode(', ', array_filter([$line1, $line2, $zip, 'Brasil']));
+
+        return $full ?: null;
     }
 }
