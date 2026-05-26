@@ -45,7 +45,7 @@ class SecurityHeaders
             "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'",
             "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com",
             "img-src 'self' data: blob: https:",
-            "connect-src 'self' {$wsOrigin}",
+            "connect-src 'self' {$wsOrigin} https://viacep.com.br",
             "object-src 'none'",
             "frame-ancestors 'self'",
             "base-uri 'self'",
