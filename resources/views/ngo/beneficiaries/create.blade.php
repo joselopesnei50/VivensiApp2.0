@@ -113,10 +113,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="address">Endereço Completo</label>
-                <input type="text" id="address" name="address" class="form-control-vivensi" value="{{ old('address') }}">
-            </div>
+            <x-address-fields />
 
             <div class="ds-divider"></div>
 

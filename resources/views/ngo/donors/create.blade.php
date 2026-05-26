@@ -25,10 +25,7 @@
             <input type="text" name="name" id="name" class="form-control-vivensi" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Instituto Ayrton Senna" value="{{ old('name') }}">
         </div>
 
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" for="address" style="display: block; margin-bottom: 8px; color: #64748b; font-weight: 500;">Endereço Completo</label>
-            <input type="text" name="address" id="address" class="form-control-vivensi" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;" placeholder="Ex: Av. Paulista, 1000 - Bela Vista, São Paulo - SP" value="{{ old('address') }}">
-        </div>
+        <x-address-fields />
 
         <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             <div class="form-group">

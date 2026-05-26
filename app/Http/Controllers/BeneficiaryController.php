@@ -1090,10 +1090,19 @@ class BeneficiaryController extends Controller
             'gender'      => 'nullable|in:masculino,feminino,nao_binario,outro,prefiro_nao_informar',
             'race_color'  => 'nullable|in:branca,preta,parda,amarela,indigena,prefiro_nao_informar',
             'education'   => 'nullable|in:sem_escolaridade,fundamental_incompleto,fundamental_completo,medio_incompleto,medio_completo,superior_incompleto,superior_completo,pos_graduacao',
-            'phone'       => 'nullable|string|max:60',
-            'address'     => 'nullable|string|max:255',
-            'status'      => 'nullable|in:active,inactive,graduated',
+            'phone'                => 'nullable|string|max:60',
+            'address'              => 'nullable|string|max:255',
+            'address_zip'          => 'nullable|string|max:10',
+            'address_street'       => 'nullable|string|max:255',
+            'address_number'       => 'nullable|string|max:20',
+            'address_complement'   => 'nullable|string|max:100',
+            'address_neighborhood' => 'nullable|string|max:255',
+            'address_city'         => 'nullable|string|max:255',
+            'address_state'        => 'nullable|string|max:2',
+            'status'               => 'nullable|in:active,inactive,graduated',
         ])->validate();
+
+        $validated['address'] = $this->composeAddress($validated);
 
         $beneficiary = new Beneficiary($validated);
         $beneficiary->tenant_id = $tenantId;
@@ -1160,12 +1169,20 @@ class BeneficiaryController extends Controller
             'gender'      => 'nullable|in:masculino,feminino,nao_binario,outro,prefiro_nao_informar',
             'race_color'  => 'nullable|in:branca,preta,parda,amarela,indigena,prefiro_nao_informar',
             'education'   => 'nullable|in:sem_escolaridade,fundamental_incompleto,fundamental_completo,medio_incompleto,medio_completo,superior_incompleto,superior_completo,pos_graduacao',
-            'phone'       => 'nullable|string|max:60',
-            'address'     => 'nullable|string|max:255',
-            'status'      => 'required|in:active,inactive,graduated',
+            'phone'                => 'nullable|string|max:60',
+            'address'              => 'nullable|string|max:255',
+            'address_zip'          => 'nullable|string|max:10',
+            'address_street'       => 'nullable|string|max:255',
+            'address_number'       => 'nullable|string|max:20',
+            'address_complement'   => 'nullable|string|max:100',
+            'address_neighborhood' => 'nullable|string|max:255',
+            'address_city'         => 'nullable|string|max:255',
+            'address_state'        => 'nullable|string|max:2',
+            'status'               => 'required|in:active,inactive,graduated',
         ])->validate();
 
         $oldAddress = $beneficiary->address;
+        $validated['address'] = $this->composeAddress($validated);
         $beneficiary->fill($validated);
         $beneficiary->save();
 
@@ -1535,5 +1552,21 @@ class BeneficiaryController extends Controller
         $generatedAt = now()->format('d/m/Y H:i');
 
         return view('ngo.beneficiaries.print', compact('beneficiaries', 'orgName', 'generatedAt', 'q', 'status'));
+    }
+
+    private function composeAddress(array $data): ?string
+    {
+        $street       = trim(($data['address_street'] ?? '') . ', ' . ($data['address_number'] ?? ''), ', ');
+        $complement   = trim($data['address_complement'] ?? '');
+        $neighborhood = trim($data['address_neighborhood'] ?? '');
+        $city         = trim($data['address_city'] ?? '');
+        $state        = trim($data['address_state'] ?? '');
+        $zip          = trim($data['address_zip'] ?? '');
+
+        $line1 = implode(', ', array_filter([$street, $complement, $neighborhood]));
+        $line2 = implode(' - ', array_filter([$city, $state]));
+        $full  = implode(', ', array_filter([$line1, $line2, $zip, 'Brasil']));
+
+        return $full ?: null;
     }
 }
