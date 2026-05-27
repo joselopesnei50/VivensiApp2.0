@@ -61,13 +61,16 @@ class ProcessWhatsappAiResponse implements ShouldQueue
             return;
         }
 
-        // Se o chat está em modo humano ou resolvido, não responder automaticamente
-        if (in_array($chat->mode ?? 'bot', ['human', 'queue', 'resolved'])) {
+        // Não responder automaticamente se: bot desativado, agente atribuído ou chat encerrado
+        if (!$chat->is_bot_active) {
             return;
         }
 
-        // If a human agent is assigned and chat is not open, don't auto-reply
-        if ($chat->assigned_to && $chat->status !== 'open') {
+        if ($chat->assigned_to !== null) {
+            return;
+        }
+
+        if (in_array($chat->status, ['closed', 'resolved'])) {
             return;
         }
 
@@ -152,7 +155,20 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         }
 
         if ($replyText === '') {
-            $replyText = "Entendi. Vou encaminhar sua solicitação para um especialista. Aguarde um momento.";
+            // Ambos provedores falharam: desativa bot e sinaliza para atendimento humano
+            $chat->update(['is_bot_active' => false]);
+            WhatsappAuditLog::create([
+                'tenant_id'  => (int) $tenantId,
+                'chat_id'    => (int) $chat->id,
+                'actor_type' => 'ai',
+                'event'      => 'ai_escalated_to_human',
+                'details'    => ['reason' => 'Todos os provedores de IA falharam'],
+            ]);
+            Log::error('ProcessWhatsappAiResponse: todos os provedores falharam, chat escalado para humano', [
+                'tenant_id' => $tenantId,
+                'chat_id'   => $chat->id,
+            ]);
+            $replyText = "Olá! No momento estou com dificuldades técnicas. Um de nossos atendentes irá responder em breve. Pedimos desculpas! 🙏";
         }
 
         // Send via Meta Cloud API or Evolution API
