@@ -59,4 +59,14 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::delete('/whatsapp/automations/{automation}',    [App\Http\Controllers\WhatsappAutomationController::class, 'destroy'])->name('whatsapp.automations.destroy');
     Route::patch('/whatsapp/automations/{automation}/toggle', [App\Http\Controllers\WhatsappAutomationController::class, 'toggle'])->name('whatsapp.automations.toggle');
     Route::get('/whatsapp/automations/{automation}/logs',  [App\Http\Controllers\WhatsappAutomationController::class, 'logs'])->name('whatsapp.automations.logs');
+
+    // Opt-in & Campanhas
+    Route::get('/whatsapp/optin',                           [App\Http\Controllers\Admin\ContatoWhatsappController::class, 'index'])->name('whatsapp.optin.index');
+    Route::post('/whatsapp/optin/registrar',                [App\Http\Controllers\Admin\ContatoWhatsappController::class, 'registrarManual'])->name('whatsapp.optin.registrar')->middleware('throttle:20,1');
+    Route::patch('/whatsapp/optin/{contato}/remover',       [App\Http\Controllers\Admin\ContatoWhatsappController::class, 'removerOptIn'])->name('whatsapp.optin.remover');
+    Route::get('/whatsapp/optin/campanhas',                 [App\Http\Controllers\Admin\CampanhaController::class, 'index'])->name('whatsapp.optin.campanhas');
+    Route::post('/whatsapp/optin/campanhas',                [App\Http\Controllers\Admin\CampanhaController::class, 'store'])->name('whatsapp.optin.campanhas.store');
+    Route::post('/whatsapp/optin/campanhas/{campanha}/disparar', [App\Http\Controllers\Admin\CampanhaController::class, 'disparar'])->name('whatsapp.optin.campanhas.disparar')->middleware('throttle:5,1');
+    Route::patch('/whatsapp/optin/campanhas/{campanha}/cancelar', [App\Http\Controllers\Admin\CampanhaController::class, 'cancelar'])->name('whatsapp.optin.campanhas.cancelar');
+    Route::get('/whatsapp/optin/campanhas/{campanha}/status',    [App\Http\Controllers\Admin\CampanhaController::class, 'status'])->name('whatsapp.optin.campanhas.status');
 });

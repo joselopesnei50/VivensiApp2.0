@@ -9,6 +9,8 @@ use App\Models\WhatsappConfig;
 use App\Models\WhatsappInstance;
 use App\Models\WhatsappMessage;
 use App\Models\WhatsappAuditLog;
+use App\Services\ContatoOptInService;
+use App\Services\EvolutionApiService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -110,6 +112,19 @@ class ProcessEvolutionWebhook implements ShouldQueue
         }
         
         $senderName = $messageData['pushName'] ?? 'WhatsApp';
+
+        // 0. Fluxo de opt-in explícito — intercede antes de qualquer outro processamento
+        if (!$isAudio && $content) {
+            $respostaOptIn = app(ContatoOptInService::class)->handle($phone, $content, $tenantId);
+            if ($respostaOptIn !== null) {
+                try {
+                    (new EvolutionApiService($instance))->sendMessage($phone, $respostaOptIn);
+                } catch (\Throwable $e) {
+                    Log::warning("ProcessEvolutionWebhook: falha ao enviar resposta opt-in para {$phone}: " . $e->getMessage());
+                }
+                return;
+            }
+        }
 
         // 1. Verificar blacklist
         if (WhatsappBlacklist::where('tenant_id', $tenantId)->where('phone', $phone)->exists()) {
