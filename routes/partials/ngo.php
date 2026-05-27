@@ -60,6 +60,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/grants/analyze',         [App\Http\Controllers\NgoGrantController::class, 'analyze'])->middleware('throttle:web_ai');
         Route::post('/grants',                 [App\Http\Controllers\NgoGrantController::class, 'store'])->middleware('throttle:web_write');
         Route::get('/grants/{id}/generate-proposal', [App\Http\Controllers\NgoGrantController::class, 'generateProposal'])->name('ngo.grants.generate-proposal')->middleware('throttle:web_ai');
+        Route::get('/grants/{id}/ai-analyze',        [App\Http\Controllers\NgoGrantController::class, 'aiAnalyze'])->name('ngo.grants.ai-analyze')->middleware('throttle:web_ai');
         Route::get('/grants/{id}',             [App\Http\Controllers\NgoGrantController::class, 'show'])->name('ngo.grants.show');
         Route::put('/grants/{id}',             [App\Http\Controllers\NgoGrantController::class, 'update'])->name('ngo.grants.update');
         Route::delete('/grants/{id}',          [App\Http\Controllers\NgoGrantController::class, 'destroy'])->name('ngo.grants.destroy');
