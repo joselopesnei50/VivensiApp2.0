@@ -22,6 +22,9 @@
             <button type="button" id="btnGenerateAiProposal" class="btn btn-premium" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 12px; font-weight: 800; padding: 10px 20px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
                 <i class="fas fa-sparkles me-2"></i> Copilot Pro IA
             </button>
+            <button type="button" id="btnAiAnalysis" class="btn" style="background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%); color: white; border: none; border-radius: 12px; font-weight: 800; padding: 10px 20px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
+                <i class="fas fa-chart-line me-2"></i> Análise IA
+            </button>
             <button type="button" data-bs-toggle="modal" data-bs-target="#editGrantModal" class="btn btn-outline-primary" style="border-radius: 12px; font-weight: 700;">
                 <i class="fas fa-pen me-1"></i> Editar
             </button>
@@ -549,6 +552,50 @@
     </div>
 </div>
 
+{{-- MODAL ANÁLISE IA --}}
+<div class="modal fade" id="aiAnalysisModal" role="dialog" aria-modal="true" aria-labelledby="aiAnalysisModalLabel" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 28px; border: none; background: #0f172a; color: white; overflow: hidden; box-shadow: 0 25px 70px rgba(0,0,0,0.5);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding: 30px 40px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(16, 185, 129, 0.3);">
+                        <i class="fas fa-chart-line" style="color: #10b981; font-size: 1.2rem;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" id="aiAnalysisModalLabel" style="font-weight: 950; letter-spacing: -0.5px;">Análise de Viabilidade</h5>
+                        <p style="margin:0; font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Riscos · Cronograma · Ações Prioritárias</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 40px; max-height: 60vh; overflow-y: auto;">
+                <div id="aiAnalysisLoading" class="text-center py-5" style="display:none;">
+                    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: #10b981;"></div>
+                    <p class="mt-4" style="color: rgba(255,255,255,0.6); font-weight: 600;">Bruce está analisando o edital, situação financeira e tarefas...</p>
+                </div>
+                @if($grant->ai_analysis)
+                <div id="aiAnalysisSavedBanner" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="font-size: 0.82rem; color: #6ee7b7;"><i class="fas fa-history me-2"></i>Análise salva disponível. Clique em <strong>Carregar Salva</strong> ou regenere.</div>
+                    <button type="button" id="btnLoadSavedAnalysis" class="btn btn-sm" style="background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; font-weight: 700; white-space: nowrap;">Carregar Salva</button>
+                </div>
+                @endif
+                <div id="aiAnalysisContent" style="display: none; line-height: 1.8; color: #e2e8f0; font-size: 0.95rem;"></div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.05); padding: 25px 40px; display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" id="btnRegenAnalysis" class="btn btn-sm" style="background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; font-weight: 700;">
+                    <i class="fas fa-rotate-right me-1"></i> Regerar análise
+                </button>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" style="border-radius: 12px; font-weight: 800;">Fechar</button>
+                    <button type="button" id="btnCopyAnalysis" class="btn" style="background: #10b981; border: none; border-radius: 12px; font-weight: 800; padding: 12px 25px;">
+                        <i class="fas fa-copy me-2"></i> Copiar Análise
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
@@ -602,8 +649,6 @@
         });
 
         btnCopy.addEventListener('click', function() {
-            // Remove markdown format for clipboard or keep it? NGO might use markdown. 
-            // We copy original.
             navigator.clipboard.writeText(currentProposal).then(() => {
                 const originalText = btnCopy.innerHTML;
                 btnCopy.innerHTML = '<i class="fas fa-check me-2"></i> Copiado!';
@@ -614,6 +659,74 @@
                 }, 2000);
             });
         });
+
+        // ── Análise IA ────────────────────────────────────────────────
+        const btnAnalysis    = document.getElementById('btnAiAnalysis');
+        const analysisModal  = new bootstrap.Modal(document.getElementById('aiAnalysisModal'));
+        const analysisLoading = document.getElementById('aiAnalysisLoading');
+        const analysisContent = document.getElementById('aiAnalysisContent');
+        const btnCopyAnalysis = document.getElementById('btnCopyAnalysis');
+        const btnRegen        = document.getElementById('btnRegenAnalysis');
+        let currentAnalysis   = '';
+
+        @if($grant->ai_analysis)
+        const savedAnalysis = @json($grant->ai_analysis);
+        const btnLoadSaved  = document.getElementById('btnLoadSavedAnalysis');
+        if (btnLoadSaved) {
+            btnLoadSaved.addEventListener('click', function () {
+                showAnalysis(savedAnalysis);
+            });
+        }
+        @endif
+
+        function fetchAnalysis() {
+            analysisLoading.style.display = 'block';
+            analysisContent.style.display = 'none';
+
+            fetch("{{ route('ngo.grants.ai-analyze', $grant->id) }}", {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(function (data) {
+                if (data.error) { alert(data.error); analysisModal.hide(); return; }
+                showAnalysis(data.analysis);
+            })
+            .catch(function () {
+                alert('Erro ao conectar com Bruce AI. Verifique sua conexão.');
+                analysisModal.hide();
+            });
+        }
+
+        function showAnalysis(text) {
+            currentAnalysis = text;
+            analysisContent.innerHTML = marked.parse(text);
+            analysisLoading.style.display = 'none';
+            analysisContent.style.display = 'block';
+        }
+
+        btnAnalysis.addEventListener('click', function () {
+            analysisModal.show();
+            @if($grant->ai_analysis)
+                // show saved immediately; user can regen
+                showAnalysis(@json($grant->ai_analysis));
+            @else
+                fetchAnalysis();
+            @endif
+        });
+
+        if (btnRegen) {
+            btnRegen.addEventListener('click', fetchAnalysis);
+        }
+
+        if (btnCopyAnalysis) {
+            btnCopyAnalysis.addEventListener('click', function () {
+                navigator.clipboard.writeText(currentAnalysis).then(() => {
+                    const orig = btnCopyAnalysis.innerHTML;
+                    btnCopyAnalysis.innerHTML = '<i class="fas fa-check me-2"></i> Copiado!';
+                    setTimeout(() => { btnCopyAnalysis.innerHTML = orig; }, 2000);
+                });
+            });
+        }
     });
 </script>
 @endpush
