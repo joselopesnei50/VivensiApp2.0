@@ -272,6 +272,42 @@ class WhatsAppService
         return $instance;
     }
 
+    /**
+     * Tenta enviar por todas as instâncias ativas do tenant até obter sucesso.
+     * Garante fallover automático se a instância principal falhar.
+     */
+    public function sendWithFallover(int $tenantId, string $waId, string $content): array
+    {
+        $instances = WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('status', 'open')
+            ->orderBy('created_at')
+            ->get();
+
+        if ($instances->isEmpty()) {
+            throw new \RuntimeException('Nenhuma instância WhatsApp conectada.', 422);
+        }
+
+        $lastError = null;
+        foreach ($instances as $instance) {
+            try {
+                $evo = new EvolutionApiService($instance);
+                $res = $evo->sendMessage($waId, $content, null, 0);
+
+                if (!isset($res['error'])) {
+                    return ['result' => $res, 'instance_id' => $instance->id];
+                }
+
+                $lastError = $res['error'] ?? 'Erro desconhecido';
+                Log::warning("WhatsApp fallover: instância {$instance->id} falhou, tentando próxima.", ['error' => $lastError]);
+            } catch (\Throwable $e) {
+                $lastError = $e->getMessage();
+                Log::warning("WhatsApp fallover: instância {$instance->id} exception.", ['error' => $lastError]);
+            }
+        }
+
+        throw new \RuntimeException("Todas as instâncias falharam. Último erro: {$lastError}", 500);
+    }
+
     private function auditLog(WhatsappChat $chat, ?int $actorUserId, string $event, array $details): void
     {
         try {
