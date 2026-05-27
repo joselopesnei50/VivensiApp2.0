@@ -76,14 +76,9 @@
         <h2 class="fw-bold text-dark m-0">Base de Doadores</h2>
         <p class="text-muted mt-1">Gestão inteligente de parceiros e investidores sociais.</p>
     </div>
-    <div class="d-flex gap-3">
-        <a href="#" class="btn btn-light rounded-pill px-4 fw-bold border">
-            <i class="fas fa-filter me-2 text-muted"></i> Filtrar
-        </a>
-        <a href="{{ url('/ngo/donors/create') }}" class="btn-premium">
-            <i class="fas fa-plus me-2"></i> Novo Doador
-        </a>
-    </div>
+    <a href="{{ url('/ngo/donors/create') }}" class="btn-premium">
+        <i class="fas fa-plus me-2"></i> Novo Doador
+    </a>
 </div>
 
 @if(session('success'))
@@ -93,12 +88,38 @@
 @endif
 
 <div class="crm-card">
-    <div class="crm-header">
-        <div style="position: relative; width: 300px;">
-            <i class="fas fa-search" style="position: absolute; left: 15px; top: 12px; color: #94a3b8;"></i>
-            <input type="text" placeholder="Buscar doador..." style="width:100%; padding: 10px 15px 10px 40px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.9rem;">
-        </div>
-        <div class="text-muted small fw-bold">
+    <div class="crm-header" style="flex-wrap:wrap; gap:12px;">
+        <form method="GET" action="{{ url('/ngo/donors') }}" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; flex:1;">
+            <div style="position: relative; min-width:220px; flex:1; max-width:320px;">
+                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform:translateY(-50%); color: #94a3b8; pointer-events:none;"></i>
+                <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Buscar por nome, e-mail, doc…"
+                    style="width:100%; padding: 10px 15px 10px 40px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.9rem; outline:none;"
+                    autocomplete="off">
+                @if(!empty($type))<input type="hidden" name="type" value="{{ $type }}">@endif
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                @php
+                    $typeFilters = ['' => 'Todos', 'individual' => 'Pessoa Física', 'company' => 'Empresa (PJ)', 'government' => 'Governo'];
+                    $typeColors  = ['' => '#0f172a', 'individual' => '#166534', 'company' => '#1e40af', 'government' => '#854d0e'];
+                @endphp
+                @foreach($typeFilters as $val => $label)
+                    @php $isActive = ($type ?? '') === $val; @endphp
+                    <a href="{{ url('/ngo/donors') }}?{{ http_build_query(array_filter(['q' => $q ?? '', 'type' => $val], fn($v) => $v !== '')) }}"
+                       style="padding:6px 14px; border-radius:99px; font-size:.75rem; font-weight:700; text-decoration:none; white-space:nowrap;
+                              border: 1.5px solid {{ $isActive ? 'transparent' : '#e2e8f0' }};
+                              background: {{ $isActive ? $typeColors[$val] : '#fff' }};
+                              color: {{ $isActive ? '#fff' : '#64748b' }};">
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
+            @if(!empty($q))
+                <a href="{{ url('/ngo/donors') }}" style="font-size:.8rem; color:#94a3b8; white-space:nowrap; text-decoration:none;">
+                    <i class="fas fa-times"></i> Limpar
+                </a>
+            @endif
+        </form>
+        <div class="text-muted small fw-bold" style="white-space:nowrap;">
             Mostrando {{ $donors->count() }} de {{ $donors->total() }} registros
         </div>
     </div>
@@ -182,7 +203,7 @@
                             <a href="{{ $waUrl }}" target="_blank"
                                class="action-circle" style="background:#eef2ff;color:#6366f1;"
                                title="Enviar Portal VIP via WhatsApp">
-                                <i class="fas fa-magic"></i>
+                                <i class="fas fa-paper-plane"></i>
                             </a>
                             <a href="https://wa.me/{{ preg_replace('/\D/', '', $d->phone) }}" target="_blank"
                                class="action-circle text-success"
@@ -190,6 +211,17 @@
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                         @endif
+
+                        {{-- Regenerar token do portal --}}
+                        <form action="{{ route('ngo.donors.regenerate-token', $d->id) }}" method="POST" style="display:inline;"
+                              onsubmit="return confirm('Regenerar o link do portal de {{ addslashes($d->name) }}? O link atual deixará de funcionar.')">
+                            @csrf
+                            <button type="submit" class="action-circle border-0"
+                                style="background:#fff7ed;color:#c2410c;cursor:pointer;"
+                                title="Regenerar link do Portal VIP">
+                                <i class="fas fa-rotate-right"></i>
+                            </button>
+                        </form>
 
                         <a href="{{ url('/ngo/donors/'.$d->id.'/edit') }}" class="action-circle" title="Editar">
                             <i class="fas fa-edit"></i>
