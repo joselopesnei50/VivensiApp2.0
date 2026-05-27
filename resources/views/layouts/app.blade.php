@@ -364,8 +364,9 @@
                     $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
-                    $sa_mkt_active   = request()->routeIs('admin.email_logs') || request()->routeIs('whatsapp.broadcast.*') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.optin.*');
-                    $sa_infra_active = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
+                    $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings');
+                    $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*');
+                    $sa_infra_active  = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
                     // Badges de notificação
                     try {
                         $sa_badge_bookings = \App\Models\MeetingBooking::where('status','confirmed')->where('meeting_date','>=',today())->count();
@@ -443,15 +444,14 @@
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- ── Comunicação & Growth ─────────────────────────────── --}}
+                {{-- ── WhatsApp ──────────────────────────────────────────── --}}
                 <div class="menu-group">
-                    <div class="menu-group-header {{ $sa_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-rocket group-icon"></i> Comunicação &amp; Growth
+                    <div class="menu-group-header {{ $sa_wa_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fab fa-whatsapp group-icon" style="color:#25d366;"></i> WhatsApp
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '500px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_wa_active ? '380px' : '0' }};">
                         <ul>
-                            {{-- WhatsApp Omnichannel --}}
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->routeIs('whatsapp.broadcast.*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
@@ -459,7 +459,19 @@
                             <li><a href="{{ route('whatsapp.settings') }}" class="{{ request()->routeIs('whatsapp.settings') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
                             <li><a href="{{ route('whatsapp.templates') }}" class="{{ request()->routeIs('whatsapp.templates') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->routeIs('whatsapp.automations.*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
-                            {{-- E-mail & Growth --}}
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- ── Marketing & Growth ───────────────────────────────── --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $sa_growth_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-rocket group-icon"></i> Marketing &amp; Growth
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $sa_growth_active ? '200px' : '0' }};">
+                        <ul>
                             <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Campanhas de E-mail</a></li>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
@@ -491,7 +503,8 @@
                 @php
                     $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*');
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
-                    $mgr_mkt_active  = request()->is('manager/landing-pages*','marketing*','prospecting*','whatsapp*','raffles*','social/accounts*','social-ai*','banners*');
+                    $mgr_wa_active   = request()->is('whatsapp*');
+                    $mgr_mkt_active  = request()->is('manager/landing-pages*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
                     $mgr_ai_active   = request()->is('smart-analysis*');
                     $mgr_acad_active = request()->is('academy*');
                 @endphp
@@ -528,25 +541,38 @@
                 </div>
                 <div class="menu-divider"></div>
 
+                {{-- Grupo: WhatsApp --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mgr_wa_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fab fa-whatsapp group-icon" style="color:#25d366;"></i> WhatsApp
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mgr_wa_active ? '320px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
+                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
+                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
+                            <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
                 {{-- Grupo: Marketing & Comunicação --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mgr_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mgr_mkt_active ? '600px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mgr_mkt_active ? '380px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
                             <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
                             <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
-                            <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Mensageria WhatsApp</a></li>
-                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
-                            <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Modelos (Templates)</a></li>
-                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
-                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
-                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                         </ul>
@@ -584,7 +610,8 @@
                 {{-- ═══ MENU TERCEIRO SETOR (ONG) — Agrupado ═══ --}}
                 @php
                     $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*');
-                    $ngo_mkt_active    = request()->is('ngo/landing-pages*','marketing*','prospecting*','whatsapp*','raffles*','social/accounts*','social-ai*','banners*');
+                    $ngo_wa_active     = request()->is('whatsapp*');
+                    $ngo_mkt_active    = request()->is('ngo/landing-pages*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
                     $ngo_fin_active    = request()->is('transactions*','ngo/budget*','ngo/reconciliation*');
                     $ngo_people_active = request()->is('ngo/team*','ngo/hr*','ngo/beneficiaries*');
                     $ngo_pat_active    = request()->is('ngo/inventory*','ngo/assets*');
@@ -611,25 +638,38 @@
                 </div>
                 <div class="menu-divider"></div>
 
+                {{-- Grupo: WhatsApp --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $ngo_wa_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fab fa-whatsapp group-icon" style="color:#25d366;"></i> WhatsApp
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $ngo_wa_active ? '320px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
+                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
+                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
+                            <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
                 {{-- Grupo: Marketing & Comunicação --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '600px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '380px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/ngo/landing-pages') }}" class="{{ request()->is('ngo/landing-pages*') ? 'active' : '' }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
                             <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
                             <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
-                            <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Mensageria WhatsApp</a></li>
-                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
-                            <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Modelos (Templates)</a></li>
-                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
-                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
-                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                         </ul>
@@ -733,7 +773,8 @@
                 <!-- Menu Comum / MEI / Empresa -->
                 @php
                     $mei_fin_active  = request()->is('personal/reconciliation*','personal/budget*','transactions*');
-                    $mei_mkt_active  = request()->is('marketing*','prospecting*','whatsapp*','social/accounts*','social-ai*','manager/landing-pages*');
+                    $mei_wa_active   = request()->is('whatsapp*');
+                    $mei_mkt_active  = request()->is('marketing*','prospecting*','social/accounts*','social-ai*','manager/landing-pages*');
                     $mei_crm_active  = request()->is('personal/clients*');
                 @endphp
 
@@ -752,23 +793,36 @@
                 </div>
                 <div class="menu-divider"></div>
 
+                {{-- Grupo: WhatsApp --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_wa_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fab fa-whatsapp group-icon" style="color:#25d366;"></i> WhatsApp
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_wa_active ? '300px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
+                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
+                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
+                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
                 {{-- Grupo: Marketing & Comunicação --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mei_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mei_mkt_active ? '560px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mei_mkt_active ? '300px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
                             <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
-                            <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Mensageria WhatsApp</a></li>
-                            <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
-                            <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
-                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
-                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                         </ul>
                     </div>
