@@ -364,7 +364,7 @@
                     $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
-                    $sa_mkt_active   = request()->routeIs('admin.email_logs') || request()->routeIs('whatsapp.broadcast.*') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings');
+                    $sa_mkt_active   = request()->routeIs('admin.email_logs') || request()->routeIs('whatsapp.broadcast.*') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.optin.*');
                     $sa_infra_active = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
                     // Badges de notificação
                     try {
@@ -454,6 +454,7 @@
                             {{-- WhatsApp Omnichannel --}}
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->routeIs('whatsapp.broadcast.*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ route('whatsapp.instances') }}" class="{{ request()->routeIs('whatsapp.instances') ? 'active' : '' }}"><i class="fas fa-plug"></i> Instâncias WA</a></li>
                             <li><a href="{{ route('whatsapp.settings') }}" class="{{ request()->routeIs('whatsapp.settings') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
                             <li><a href="{{ route('whatsapp.templates') }}" class="{{ request()->routeIs('whatsapp.templates') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
@@ -544,6 +545,7 @@
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
                             <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Modelos (Templates)</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
@@ -626,6 +628,7 @@
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
                             <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Modelos (Templates)</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
@@ -764,6 +767,7 @@
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Mensageria WhatsApp</a></li>
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-cogs"></i> Configuração Omnichannel</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-robot" style="color:#a78bfa;"></i> Automações</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                         </ul>
