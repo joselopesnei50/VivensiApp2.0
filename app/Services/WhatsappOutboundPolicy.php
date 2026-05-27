@@ -103,7 +103,6 @@ class WhatsappOutboundPolicy
 
     public function recordSend(WhatsappConfig $config, WhatsappChat $chat): void
     {
-        $perMinute = max(1, (int) ($config->max_outbound_per_minute ?? 12));
         RateLimiter::hit('wa:out:tenant:' . (int) $config->tenant_id, 60);
         RateLimiter::hit('wa:out:to:' . (int) $config->tenant_id . ':' . (string) $chat->wa_id, 60);
 

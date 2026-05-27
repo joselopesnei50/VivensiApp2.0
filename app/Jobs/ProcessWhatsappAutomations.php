@@ -45,6 +45,7 @@ class ProcessWhatsappAutomations implements ShouldQueue
             $tenant    = Tenant::find($automation->tenant_id);
             $orgName   = $tenant?->name ?? 'nossa organização';
             $contacts  = $this->resolveContacts($automation);
+            $evo       = new EvolutionApiService($instance);
 
             foreach ($contacts as $contact) {
                 $phone = preg_replace('/\D/', '', $contact['phone'] ?? '');
@@ -61,7 +62,6 @@ class ProcessWhatsappAutomations implements ShouldQueue
                 $message = $automation->renderMessage($contact['name'] ?? 'Olá', $orgName);
 
                 try {
-                    $evo = new EvolutionApiService($instance);
                     $evo->sendMessage($phone, $message, null, rand(2, 5));
 
                     WhatsappAutomationLog::create([
