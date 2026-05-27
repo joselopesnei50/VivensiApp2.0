@@ -198,8 +198,7 @@ class ProcessEvolutionWebhook implements ShouldQueue
         if ($config?->ai_enabled && $isBotAllowed && !$chat->opt_out_at && !$chat->blocked_at) {
             $base64Audio = $msg['audioMessage']['base64'] ?? null;
             
-            ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content, $base64Audio)
-                ->onQueue('whatsapp');
+            ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content, $base64Audio);
         }
     }
 

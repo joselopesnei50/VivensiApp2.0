@@ -6,10 +6,26 @@ use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
-        $clients = \App\Models\Client::where('tenant_id', $tenantId)->latest()->paginate(25);
+
+        $query = \App\Models\Client::where('tenant_id', $tenantId)->latest();
+
+        if ($q = $request->input('q')) {
+            $query->where(function ($q2) use ($q) {
+                $q2->where('name', 'like', "%{$q}%")
+                   ->orWhere('email', 'like', "%{$q}%")
+                   ->orWhere('phone', 'like', "%{$q}%");
+            });
+        }
+
+        if ($type = $request->input('type')) {
+            $query->where('type', $type);
+        }
+
+        $clients = $query->paginate(25)->withQueryString();
+
         return view('personal.clients.index', compact('clients'));
     }
 
@@ -25,9 +41,9 @@ class ClientController extends Controller
             'type' => 'required|in:individual,company',
         ]);
 
-        $data = $request->all();
+        $data = $request->only(['name', 'type', 'document', 'email', 'phone', 'purchase_history', 'relationship_notes']);
         $data['tenant_id'] = auth()->user()->tenant_id;
-        
+
         \App\Models\Client::create($data);
 
         return redirect()->route('clients.index')->with('success', 'Cliente cadastrado com sucesso!');
@@ -60,7 +76,7 @@ class ClientController extends Controller
             'type' => 'required|in:individual,company',
         ]);
 
-        $client->update($request->all());
+        $client->update($request->only(['name', 'type', 'document', 'email', 'phone', 'purchase_history', 'relationship_notes']));
 
         return redirect()->route('clients.index')->with('success', 'Cliente atualizado com sucesso!');
     }
