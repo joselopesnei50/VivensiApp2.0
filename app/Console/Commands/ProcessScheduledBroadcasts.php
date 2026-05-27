@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\BroadcastCampaign;
+use App\Jobs\EnviarMensagemCampanhaJob;
 use App\Jobs\ProcessBroadcastCampaignJob;
+use App\Models\BroadcastCampaign;
+use App\Models\Campanha;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -42,7 +44,42 @@ class ProcessScheduledBroadcasts extends Command
         }
 
         if ($campaigns->isNotEmpty()) {
-            $this->info("{$campaigns->count()} campanha(s) verificada(s).");
+            $this->info("{$campaigns->count()} broadcast(s) verificado(s).");
+        }
+
+        // Campanhas opt-in agendadas (model Campanha)
+        $optin = DB::transaction(function () {
+            return Campanha::withoutGlobalScopes()
+                ->where('status', 'agendada')
+                ->where('agendada_para', '<=', now())
+                ->lockForUpdate()
+                ->get();
+        });
+
+        foreach ($optin as $campanha) {
+            $updated = Campanha::withoutGlobalScopes()
+                ->where('id', $campanha->id)
+                ->where('status', 'agendada')
+                ->update(['status' => 'processando', 'total_enviados' => 0, 'total_falhas' => 0]);
+
+            if ($updated === 0) {
+                Log::info("Campanha opt-in #{$campanha->id} já processada por outro worker. Skipping.");
+                continue;
+            }
+
+            $total = \App\Models\ContatoWhatsapp::withoutGlobalScopes()
+                ->where('tenant_id', $campanha->tenant_id)
+                ->where('opt_in', true)
+                ->where('opt_out', false)
+                ->count();
+
+            Campanha::withoutGlobalScopes()
+                ->where('id', $campanha->id)
+                ->update(['total_contatos' => $total]);
+
+            EnviarMensagemCampanhaJob::dispatch($campanha->id)->onQueue('whatsapp');
+            Log::info("Campanha opt-in agendada disparada: #{$campanha->id} (tenant {$campanha->tenant_id})");
+            $this->info("Campanha opt-in #{$campanha->id} despachada.");
         }
     }
 }
