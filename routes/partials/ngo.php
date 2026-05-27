@@ -88,7 +88,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/hr/volunteers',          [App\Http\Controllers\HumanResourcesController::class, 'storeVolunteer']);
         Route::put('/hr/volunteers/{id}',      [App\Http\Controllers\HumanResourcesController::class, 'updateVolunteer'])->name('ngo.hr.volunteers.update');
         Route::delete('/hr/volunteers/{id}',   [App\Http\Controllers\HumanResourcesController::class, 'destroyVolunteer'])->name('ngo.hr.volunteers.destroy');
-        Route::post('/hr/volunteers/{id}/log-hours', [App\Http\Controllers\HumanResourcesController::class, 'logHours']);
+        Route::post('/hr/volunteers/{id}/log-hours',    [App\Http\Controllers\HumanResourcesController::class, 'logHours']);
+        Route::get('/hr/volunteers/{id}/hour-logs',     [App\Http\Controllers\HumanResourcesController::class, 'hourLogs']);
+        Route::patch('/hr/volunteers/{id}/toggle-status', [App\Http\Controllers\HumanResourcesController::class, 'toggleStatus']);
 
         // Beneficiários
         Route::get('/beneficiaries',           [App\Http\Controllers\BeneficiaryController::class, 'index']);

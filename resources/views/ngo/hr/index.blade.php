@@ -139,10 +139,12 @@
 <div id="tab-volunteers" class="tab-content" style="display: none;">
     <div class="vivensi-card" style="margin-bottom: 14px;">
         <div style="display:flex; gap: 10px; flex-wrap: wrap; align-items:center; justify-content: space-between;">
-            <div style="color:#64748b; font-weight:800;">
-                Dica: busque por nome, e-mail ou habilidades.
+            <div style="display:flex; gap: 8px; flex-wrap: wrap; align-items:center;">
+                <button class="vol-status-pill active" data-filter="all" style="padding:5px 14px; border-radius:99px; font-size:.78rem; font-weight:700; border:1.5px solid #e2e8f0; background:#0f172a; color:#fff; cursor:pointer;">Todos</button>
+                <button class="vol-status-pill" data-filter="active" style="padding:5px 14px; border-radius:99px; font-size:.78rem; font-weight:700; border:1.5px solid #e2e8f0; background:#fff; color:#64748b; cursor:pointer;">Ativos</button>
+                <button class="vol-status-pill" data-filter="inactive" style="padding:5px 14px; border-radius:99px; font-size:.78rem; font-weight:700; border:1.5px solid #e2e8f0; background:#fff; color:#64748b; cursor:pointer;">Inativos</button>
             </div>
-            <input id="hrVolunteerSearch" type="text" placeholder="Buscar voluntário..." class="form-control-vivensi" style="max-width: 320px;">
+            <input id="hrVolunteerSearch" type="text" placeholder="Buscar voluntário..." class="form-control-vivensi" style="max-width: 280px;">
         </div>
     </div>
     <div class="grid-3">
@@ -152,7 +154,10 @@
             $vCertCount = (int) $vCerts->count();
             $vCertRecent = $vCerts->take(3);
         @endphp
-        <div class="vivensi-card hr-volunteer-card" data-q="{{ strtolower(($volunteer->name ?? '').' '.($volunteer->email ?? '').' '.($volunteer->skills ?? '')) }}" style="position: relative;">
+        <div class="vivensi-card hr-volunteer-card"
+             data-q="{{ strtolower(($volunteer->name ?? '').' '.($volunteer->email ?? '').' '.($volunteer->skills ?? '')) }}"
+             data-status="{{ $volunteer->status ?? 'active' }}"
+             style="position: relative; {{ ($volunteer->status ?? 'active') === 'inactive' ? 'opacity:.6;' : '' }}">
             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                 <div style="width: 50px; height: 50px; background: #e0e7ff; color: #4338ca; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; position: relative;">
                     {{ $volunteer->name[0] }}
@@ -166,11 +171,14 @@
                         <div style="position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; background: #b9f2ff; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px #0ea5e9;" title="Nível Diamante"></div>
                     @endif
                 </div>
-                <div>
-                    <h4 style="margin: 0; font-size: 1rem;">
+                <div style="flex:1; min-width:0;">
+                    <h4 style="margin: 0; font-size: 1rem; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                         {{ $volunteer->name }}
-                        @if($volunteer->level_badge !== 'bronze')
-                            <span style="font-size: 0.65rem; background: #fef08a; color: #854d0e; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px;">{{ $volunteer->level_badge }}</span>
+                        @if(($volunteer->status ?? 'active') === 'inactive')
+                            <span style="font-size:.65rem; background:#f1f5f9; color:#64748b; padding:2px 7px; border-radius:4px; text-transform:uppercase; font-weight:700;">Inativo</span>
+                        @endif
+                        @if($volunteer->level_badge && $volunteer->level_badge !== 'bronze')
+                            <span style="font-size: 0.65rem; background: #fef08a; color: #854d0e; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">{{ $volunteer->level_badge }}</span>
                         @endif
                     </h4>
                     <span style="font-size: 0.8rem; color: #64748b;">{{ $volunteer->email }}</span>
@@ -230,7 +238,7 @@
                 @endif
             </div>
 
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top:4px;">
                 @if(!empty($volunteer->phone))
                 @php $vphone = preg_replace('/\D+/', '', (string) $volunteer->phone); @endphp
                 <a class="btn-premium" href="https://wa.me/{{ $vphone }}" target="_blank" rel="noopener" style="font-size: 0.8rem; background: #dcfce7; color: #166534; padding: 5px 10px;">
@@ -247,16 +255,31 @@
                 <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fffbeb; color: #b45309; padding: 5px 10px; border: 1px solid #fde68a;" onclick='openLogHoursModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
                     <i class="fas fa-plus"></i> Horas
                 </button>
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #f0fdf4; color: #166534; padding: 5px 10px; border: 1px solid #bbf7d0;" onclick='openHourLogs({{ (int) $volunteer->id }}, @json($volunteer->name))'>
+                    <i class="fas fa-history"></i> Histórico
+                </button>
                 <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #eef2ff; color: #4338ca; padding: 5px 10px;"
                     onclick='openEditVolunteer({{ (int) $volunteer->id }}, @json($volunteer->name), @json($volunteer->email ?? ""), @json($volunteer->phone ?? ""), @json($volunteer->skills ?? ""), @json($volunteer->availability ?? ""))'>
                     <i class="fas fa-pen"></i> Editar
                 </button>
-                <form method="POST" action="{{ url('/ngo/hr/volunteers/'.$volunteer->id) }}" style="display:inline;" onsubmit="return confirm('Remover voluntário {{ addslashes($volunteer->name) }}?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn-premium" style="font-size: 0.8rem; background: #fee2e2; color: #dc2626; padding: 5px 10px;">
-                        <i class="fas fa-trash"></i>
+                {{-- Toggle status --}}
+                <form method="POST" action="{{ url('/ngo/hr/volunteers/'.$volunteer->id.'/toggle-status') }}" style="display:inline;">
+                    @csrf @method('PATCH')
+                    @if(($volunteer->status ?? 'active') === 'active')
+                    <button type="submit" class="btn-premium" style="font-size: 0.8rem; background: #f1f5f9; color: #475569; padding: 5px 10px;" title="Desativar voluntário">
+                        <i class="fas fa-user-slash"></i>
                     </button>
+                    @else
+                    <button type="submit" class="btn-premium" style="font-size: 0.8rem; background: #dcfce7; color: #16a34a; padding: 5px 10px;" title="Reativar voluntário">
+                        <i class="fas fa-user-check"></i>
+                    </button>
+                    @endif
                 </form>
+                {{-- Delete with cert-count warning --}}
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fee2e2; color: #dc2626; padding: 5px 10px;"
+                    onclick='confirmDeleteVolunteer({{ (int) $volunteer->id }}, @json($volunteer->name), {{ $vCertCount }})'>
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
         @endforeach
@@ -448,6 +471,65 @@
     </div>
 </div>
 
+<!-- Modal Hour Logs History -->
+<div id="hourLogsModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000; overflow-y: auto; pointer-events: auto !important; -webkit-overflow-scrolling: touch;">
+    <div class="vivensi-card" style="width: 95%; max-width: 560px; margin: 40px auto; pointer-events: auto !important; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+                <h3 style="margin:0;">Histórico de Horas</h3>
+                <div style="color:#64748b; font-size:.9rem; margin-top:4px;">Voluntário: <strong id="hourLogsVolName">—</strong></div>
+            </div>
+            <button onclick="closeModal('hourLogsModal')" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <div id="hourLogsLoading" style="text-align:center; padding:30px; color:#94a3b8;">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+        </div>
+        <div id="hourLogsEmpty" style="display:none; text-align:center; padding:30px; color:#94a3b8;">
+            <i class="fas fa-clock fa-2x" style="margin-bottom:8px; display:block; opacity:.3;"></i>
+            Nenhuma hora registrada ainda.
+        </div>
+        <div id="hourLogsTable" style="display:none;">
+            <table style="width:100%; border-collapse:collapse; font-size:.88rem;">
+                <thead>
+                    <tr style="background:#f8fafc; text-transform:uppercase; font-size:.72rem; color:#64748b; letter-spacing:.05em;">
+                        <th style="padding:10px 12px; text-align:left;">Data</th>
+                        <th style="padding:10px 12px; text-align:center;">Horas</th>
+                        <th style="padding:10px 12px; text-align:left;">Descrição</th>
+                        <th style="padding:10px 12px; text-align:left;">Registrado por</th>
+                    </tr>
+                </thead>
+                <tbody id="hourLogsTbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Volunteer Confirm -->
+<div id="deleteVolunteerModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000; overflow-y: auto; pointer-events: auto !important; -webkit-overflow-scrolling: touch;">
+    <div class="vivensi-card" style="width: 95%; max-width: 460px; margin: 120px auto; pointer-events: auto !important; position: relative;">
+        <div style="text-align:center; margin-bottom:20px;">
+            <div style="width:56px; height:56px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+                <i class="fas fa-triangle-exclamation" style="color:#dc2626; font-size:1.4rem;"></i>
+            </div>
+            <h3 style="margin:0; color:#0f172a;">Excluir Voluntário</h3>
+            <p id="deleteVolMsg" style="color:#64748b; margin:10px 0 0; font-size:.92rem; line-height:1.5;"></p>
+        </div>
+        <div id="deleteVolCertWarning" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:12px 16px; margin-bottom:18px; font-size:.85rem; color:#b91c1c;">
+            <i class="fas fa-triangle-exclamation me-1"></i>
+            <strong id="deleteVolCertCount"></strong> certificado(s) emitido(s) para este voluntário também serão <strong>excluídos permanentemente</strong>.
+        </div>
+        <form id="deleteVolForm" method="POST" action="#">
+            @csrf @method('DELETE')
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" onclick="closeModal('deleteVolunteerModal')" class="btn-ds btn-ds-outline" style="padding:9px 20px;">Cancelar</button>
+                <button type="submit" style="background:#dc2626; color:#fff; border:none; border-radius:8px; padding:9px 20px; font-weight:700; cursor:pointer;">
+                    <i class="fas fa-trash me-1"></i> Excluir mesmo assim
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal Log Hours -->
 <div id="logHoursModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000; overflow-y: auto; pointer-events: auto !important; -webkit-overflow-scrolling: touch;">
     <div class="vivensi-card" style="width: 95%; max-width: 450px; margin: 40px auto; pointer-events: auto !important; position: relative;">
@@ -569,7 +651,97 @@
         if (form) form.action = "{{ url('/ngo/hr/volunteers') }}/" + volunteerId + "/log-hours";
         openModal('logHoursModal');
     }
-    
+
+    function openHourLogs(volunteerId, volunteerName) {
+        document.getElementById('hourLogsVolName').textContent = volunteerName || '—';
+        document.getElementById('hourLogsLoading').style.display = 'block';
+        document.getElementById('hourLogsEmpty').style.display = 'none';
+        document.getElementById('hourLogsTable').style.display = 'none';
+        openModal('hourLogsModal');
+
+        fetch("{{ url('/ngo/hr/volunteers') }}/" + volunteerId + "/hour-logs", {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(function(logs) {
+            document.getElementById('hourLogsLoading').style.display = 'none';
+            if (!logs.length) {
+                document.getElementById('hourLogsEmpty').style.display = 'block';
+                return;
+            }
+            const tbody = document.getElementById('hourLogsTbody');
+            tbody.innerHTML = '';
+            logs.forEach(function(l) {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #f1f5f9';
+                tr.innerHTML = `
+                    <td style="padding:9px 12px; color:#64748b; white-space:nowrap;">${l.created_at}</td>
+                    <td style="padding:9px 12px; text-align:center; font-weight:800; color:#b45309;">${l.hours}h</td>
+                    <td style="padding:9px 12px; color:#334155;">${l.description}</td>
+                    <td style="padding:9px 12px; color:#64748b; font-size:.82rem;">${l.logged_by}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('hourLogsTable').style.display = 'block';
+        })
+        .catch(function() {
+            document.getElementById('hourLogsLoading').style.display = 'none';
+            document.getElementById('hourLogsEmpty').style.display = 'block';
+        });
+    }
+
+    function confirmDeleteVolunteer(volunteerId, volunteerName, certCount) {
+        document.getElementById('deleteVolMsg').textContent =
+            'Tem certeza que deseja excluir o voluntário "' + volunteerName + '"? Esta ação não pode ser desfeita.';
+        const warn = document.getElementById('deleteVolCertWarning');
+        if (certCount > 0) {
+            document.getElementById('deleteVolCertCount').textContent = certCount;
+            warn.style.display = 'block';
+        } else {
+            warn.style.display = 'none';
+        }
+        const form = document.getElementById('deleteVolForm');
+        if (form) form.action = "{{ url('/ngo/hr/volunteers') }}/" + volunteerId;
+        openModal('deleteVolunteerModal');
+    }
+
+    // Status filter pills
+    (function() {
+        const pills = document.querySelectorAll('.vol-status-pill');
+        pills.forEach(function(pill) {
+            pill.addEventListener('click', function() {
+                pills.forEach(p => {
+                    p.style.background = '#fff';
+                    p.style.color = '#64748b';
+                    p.classList.remove('active');
+                });
+                pill.style.background = '#0f172a';
+                pill.style.color = '#fff';
+                pill.classList.add('active');
+
+                const filter = pill.dataset.filter;
+                const search = (document.getElementById('hrVolunteerSearch')?.value || '').toLowerCase().trim();
+                applyVolFilter(filter, search);
+            });
+        });
+
+        function applyVolFilter(statusFilter, searchQuery) {
+            document.querySelectorAll('.hr-volunteer-card').forEach(function(card) {
+                const statusMatch = statusFilter === 'all' || card.dataset.status === statusFilter;
+                const searchMatch = !searchQuery || (card.getAttribute('data-q') || '').includes(searchQuery);
+                card.style.display = (statusMatch && searchMatch) ? '' : 'none';
+            });
+        }
+
+        const vol = document.getElementById('hrVolunteerSearch');
+        if (vol) {
+            vol.addEventListener('input', function() {
+                const activeFilter = document.querySelector('.vol-status-pill.active')?.dataset.filter || 'all';
+                applyVolFilter(activeFilter, vol.value.toLowerCase().trim());
+            });
+        }
+    })();
+
     function showTab(tabName) {
         document.getElementById('tab-employees').style.display = 'none';
         document.getElementById('tab-volunteers').style.display = 'none';
@@ -596,16 +768,6 @@
             });
         }
 
-        const vol = document.getElementById('hrVolunteerSearch');
-        if (vol) {
-            vol.addEventListener('input', function() {
-                const q = (vol.value || '').toLowerCase().trim();
-                document.querySelectorAll('.hr-volunteer-card').forEach(function(card) {
-                    const hay = (card.getAttribute('data-q') || '');
-                    card.style.display = (!q || hay.includes(q)) ? '' : 'none';
-                });
-            });
-        }
     })();
 </script>
 @endsection
