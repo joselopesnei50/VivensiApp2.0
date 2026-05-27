@@ -534,7 +534,7 @@
                         <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mgr_mkt_active ? '400px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mgr_mkt_active ? '600px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
                             <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
@@ -617,7 +617,7 @@
                         <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '400px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '600px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/ngo/landing-pages') }}" class="{{ request()->is('ngo/landing-pages*') ? 'active' : '' }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
                             <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
@@ -758,7 +758,7 @@
                         <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mei_mkt_active ? '400px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mei_mkt_active ? '560px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
