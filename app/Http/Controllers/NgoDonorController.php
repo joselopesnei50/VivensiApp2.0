@@ -8,16 +8,34 @@ use App\Models\NgoDonor;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class NgoDonorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $donors = NgoDonor::where('tenant_id', auth()->user()->tenant_id)
-                          ->orderBy('created_at', 'desc')
-                          ->paginate(15);
+        $tenantId = auth()->user()->tenant_id;
+        $q        = trim((string) $request->get('q', ''));
+        $type     = $request->get('type', '');
 
-        return view('ngo.donors.index', compact('donors'));
+        $query = NgoDonor::where('tenant_id', $tenantId)->orderBy('created_at', 'desc');
+
+        if ($q !== '') {
+            $query->where(function ($w) use ($q) {
+                $w->where('name',     'like', '%'.$q.'%')
+                  ->orWhere('email',    'like', '%'.$q.'%')
+                  ->orWhere('document', 'like', '%'.$q.'%')
+                  ->orWhere('phone',    'like', '%'.$q.'%');
+            });
+        }
+
+        if (in_array($type, ['individual', 'company', 'government'])) {
+            $query->where('type', $type);
+        }
+
+        $donors = $query->paginate(15)->appends($request->only(['q', 'type']));
+
+        return view('ngo.donors.index', compact('donors', 'q', 'type'));
     }
 
     public function create()
@@ -106,6 +124,18 @@ class NgoDonorController extends Controller
         $donor->delete();
 
         return redirect('/ngo/donors')->with('success', 'Doador excluído com sucesso!');
+    }
+
+    public function regenerateToken($id)
+    {
+        $donor = NgoDonor::where('id', $id)
+                         ->where('tenant_id', auth()->user()->tenant_id)
+                         ->firstOrFail();
+
+        $donor->portal_token = (string) Str::uuid();
+        $donor->save();
+
+        return back()->with('success', "Link do Portal de {$donor->name} regenerado. O link anterior não funcionará mais.");
     }
 
     public function sendPortalEmail($id)

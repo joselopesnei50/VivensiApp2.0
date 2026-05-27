@@ -225,7 +225,13 @@
                     <div style="margin-bottom: 15px;">
                         <input type="text" name="name" value="{{ $donor->name }}" placeholder="Seu Nome" style="width:100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 10px;">
                         <input type="text" name="phone" value="{{ $donor->phone }}" placeholder="Seu Telefone" style="width:100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 10px;">
-                        <input type="email" name="email" value="{{ $donor->email }}" placeholder="Seu E-mail" style="width:100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                        @if($donor->email)
+                        <div style="padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.45); font-size: 0.85rem; display:flex; align-items:center; gap:8px;">
+                            <i class="fas fa-lock" style="font-size:.75rem;"></i>
+                            {{ $donor->email }}
+                            <span style="font-size:.7rem; opacity:.7;">— Para alterar o e-mail, contate a organização.</span>
+                        </div>
+                        @endif
                     </div>
                     <button type="submit" class="btn-action" style="width: 100%; justify-content: center; padding: 10px; font-size: 0.9rem;">
                         <i class="fas fa-save"></i> Atualizar Dados
