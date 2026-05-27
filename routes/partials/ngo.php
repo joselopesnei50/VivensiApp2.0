@@ -48,10 +48,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/contracts/{id}/revoke-link',     [App\Http\Controllers\ContractController::class, 'revokeLink'])->name('ngo.contracts.revoke_link');
 
         // CRM Patrocínios
-        Route::get('/sponsorships',            [App\Http\Controllers\SponsorshipDealController::class, 'index']);
-        Route::post('/sponsorships',           [App\Http\Controllers\SponsorshipDealController::class, 'store']);
+        Route::get('/sponsorships',              [App\Http\Controllers\SponsorshipDealController::class, 'index']);
+        Route::post('/sponsorships',             [App\Http\Controllers\SponsorshipDealController::class, 'store']);
         Route::patch('/sponsorships/{id}/stage', [App\Http\Controllers\SponsorshipDealController::class, 'updateStage']);
-        Route::delete('/sponsorships/{id}',    [App\Http\Controllers\SponsorshipDealController::class, 'destroy']);
+        Route::patch('/sponsorships/{id}',       [App\Http\Controllers\SponsorshipDealController::class, 'update']);
+        Route::delete('/sponsorships/{id}',      [App\Http\Controllers\SponsorshipDealController::class, 'destroy']);
 
         // Editais (Grants)
         Route::get('/grants',                  [App\Http\Controllers\NgoGrantController::class, 'index']);
