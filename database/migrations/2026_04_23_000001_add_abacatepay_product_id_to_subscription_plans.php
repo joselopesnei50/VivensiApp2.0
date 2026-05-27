@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('subscription_plans', function (Blueprint $table) {
             // ID do produto na AbacatePay (ex: prod_abc123xyz)
-            $table->string('abacatepay_product_id')->nullable()->after('pagseguro_plan_id_yearly');
+            $table->string('abacatepay_product_id')->nullable()->after('asaas_id');
         });
     }
 
