@@ -15,9 +15,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // Horizon: snapshot de métricas a cada 5 minutos (alimenta gráficos do painel)
-        $schedule->command('horizon:snapshot')->everyFiveMinutes();
-
         // Trials: lembrete de vencimento — todo dia às 09:00
         $schedule->command('trials:remind')->dailyAt('09:00');
 
@@ -109,11 +106,6 @@ class Kernel extends ConsoleKernel
         // Financeiro: revoga tokens de recibos públicos expirados — todo dia às 04:00
         $schedule->command('receipts:cleanup-expired-tokens')
                  ->dailyAt('04:00')
-                 ->withoutOverlapping();
-
-        // Limpeza de sessões antigas (evita disco cheio por acúmulo de SESSION_DRIVER=file)
-        $schedule->command('session:gc')
-                 ->hourly()
                  ->withoutOverlapping();
 
         // IBGE: re-sincroniza indicadores de municípios já pesquisados (toda madrugada às 02:30)

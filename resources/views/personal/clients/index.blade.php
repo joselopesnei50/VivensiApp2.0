@@ -61,6 +61,7 @@
                                 {{ $client->updated_at->format('d/m/Y H:i') }}
                             </td>
                             <td style="border: none; border-radius: 0 12px 12px 0; text-align: right; padding: 15px 20px;">
+                                <a href="{{ route('clients.show', $client) }}" class="btn btn-sm btn-light" style="border-radius: 8px; color: #475569; font-weight: 700;" title="Ver detalhes"><i class="fas fa-eye"></i></a>
                                 <a href="{{ route('clients.edit', $client) }}" class="btn btn-sm btn-light" style="border-radius: 8px; color: #4f46e5; font-weight: 700;"><i class="fas fa-edit"></i></a>
                                 <form action="{{ route('clients.destroy', $client) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Deseja realmente excluir este cliente?');">
                                     @csrf
@@ -77,7 +78,7 @@
                                     title="Nenhum cliente cadastrado"
                                     description="Adicione seu primeiro cliente para começar a gerir relacionamentos, emitir recibos e acompanhar o histórico."
                                     action_label="Adicionar Cliente"
-                                    action_url="{{ url('/personal/clients/create') }}"
+                                    action_url="{{ route('clients.create') }}"
                                 />
                             </td>
                         </tr>
