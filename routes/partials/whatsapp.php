@@ -66,7 +66,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::patch('/whatsapp/optin/{contato}/remover',       [App\Http\Controllers\Admin\ContatoWhatsappController::class, 'removerOptIn'])->name('whatsapp.optin.remover');
     Route::get('/whatsapp/optin/campanhas',                 [App\Http\Controllers\Admin\CampanhaController::class, 'index'])->name('whatsapp.optin.campanhas');
     Route::post('/whatsapp/optin/campanhas',                [App\Http\Controllers\Admin\CampanhaController::class, 'store'])->name('whatsapp.optin.campanhas.store');
-    Route::post('/whatsapp/optin/campanhas/{campanha}/disparar', [App\Http\Controllers\Admin\CampanhaController::class, 'disparar'])->name('whatsapp.optin.campanhas.disparar')->middleware('throttle:5,1');
-    Route::patch('/whatsapp/optin/campanhas/{campanha}/cancelar', [App\Http\Controllers\Admin\CampanhaController::class, 'cancelar'])->name('whatsapp.optin.campanhas.cancelar');
-    Route::get('/whatsapp/optin/campanhas/{campanha}/status',    [App\Http\Controllers\Admin\CampanhaController::class, 'status'])->name('whatsapp.optin.campanhas.status');
+    Route::post('/whatsapp/optin/campanhas/{campanha}/disparar',   [App\Http\Controllers\Admin\CampanhaController::class, 'disparar'])->name('whatsapp.optin.campanhas.disparar')->middleware('throttle:5,1');
+    Route::patch('/whatsapp/optin/campanhas/{campanha}/cancelar',  [App\Http\Controllers\Admin\CampanhaController::class, 'cancelar'])->name('whatsapp.optin.campanhas.cancelar');
+    Route::get('/whatsapp/optin/campanhas/{campanha}/status',      [App\Http\Controllers\Admin\CampanhaController::class, 'status'])->name('whatsapp.optin.campanhas.status');
+    Route::get('/whatsapp/optin/campanhas/{campanha}/editar',      [App\Http\Controllers\Admin\CampanhaController::class, 'edit'])->name('whatsapp.optin.campanhas.edit');
+    Route::patch('/whatsapp/optin/campanhas/{campanha}',           [App\Http\Controllers\Admin\CampanhaController::class, 'update'])->name('whatsapp.optin.campanhas.update');
+    Route::post('/whatsapp/optin/campanhas/{campanha}/duplicar',   [App\Http\Controllers\Admin\CampanhaController::class, 'duplicate'])->name('whatsapp.optin.campanhas.duplicate');
+    Route::delete('/whatsapp/optin/campanhas/{campanha}',          [App\Http\Controllers\Admin\CampanhaController::class, 'destroy'])->name('whatsapp.optin.campanhas.destroy');
 });
