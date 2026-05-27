@@ -28,4 +28,9 @@ class Volunteer extends Model
     {
         return $this->hasMany(VolunteerCertificate::class);
     }
+
+    public function hourLogs()
+    {
+        return $this->hasMany(VolunteerHourLog::class);
+    }
 }

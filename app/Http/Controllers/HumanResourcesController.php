@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Volunteer;
+use App\Models\VolunteerHourLog;
 use App\Models\Project;
 use App\Models\VolunteerCertificate;
 use Illuminate\Http\Request;
@@ -727,29 +728,70 @@ class HumanResourcesController extends Controller
         $volunteer = Volunteer::where('tenant_id', $tenantId)->findOrFail($id);
 
         $request->validate([
-            'hours' => 'required|integer|min:1',
+            'hours'       => 'required|integer|min:1',
             'description' => 'nullable|string|max:255',
         ]);
 
-        $hours = (int) $request->hours;
+        $hours  = (int) $request->hours;
         $points = $hours * 10;
 
-        $volunteer->hours_logged += $hours;
-        $volunteer->points += $points;
+        DB::transaction(function () use ($volunteer, $hours, $points, $tenantId, $request) {
+            $volunteer->hours_logged += $hours;
+            $volunteer->points += $points;
 
-        // Gamification Levels
-        if ($volunteer->points >= 1000) {
-            $volunteer->level_badge = 'diamante';
-        } elseif ($volunteer->points >= 500) {
-            $volunteer->level_badge = 'ouro';
-        } elseif ($volunteer->points >= 100) {
-            $volunteer->level_badge = 'prata';
-        } else {
-            $volunteer->level_badge = 'bronze';
-        }
-        
+            if ($volunteer->points >= 1000) {
+                $volunteer->level_badge = 'diamante';
+            } elseif ($volunteer->points >= 500) {
+                $volunteer->level_badge = 'ouro';
+            } elseif ($volunteer->points >= 100) {
+                $volunteer->level_badge = 'prata';
+            } else {
+                $volunteer->level_badge = 'bronze';
+            }
+
+            $volunteer->save();
+
+            VolunteerHourLog::create([
+                'tenant_id'    => $tenantId,
+                'volunteer_id' => $volunteer->id,
+                'hours'        => $hours,
+                'description'  => $request->description,
+                'logged_by'    => auth()->id(),
+            ]);
+        });
+
+        return redirect()->back()->with('success', "{$hours} horas registradas! {$volunteer->name} ganhou {$points} pontos.");
+    }
+
+    public function hourLogs($id)
+    {
+        $tenantId  = auth()->user()->tenant_id;
+        $volunteer = Volunteer::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $logs = VolunteerHourLog::where('volunteer_id', $volunteer->id)
+            ->with('loggedBy:id,name')
+            ->orderByDesc('created_at')
+            ->limit(100)
+            ->get();
+
+        return response()->json($logs->map(fn($l) => [
+            'id'          => $l->id,
+            'hours'       => $l->hours,
+            'description' => $l->description ?: '—',
+            'logged_by'   => $l->loggedBy?->name ?? '—',
+            'created_at'  => $l->created_at->format('d/m/Y H:i'),
+        ]));
+    }
+
+    public function toggleStatus($id)
+    {
+        $tenantId  = auth()->user()->tenant_id;
+        $volunteer = Volunteer::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $volunteer->status = $volunteer->status === 'active' ? 'inactive' : 'active';
         $volunteer->save();
 
-        return redirect()->back()->with('success', "{$hours} horas registradas! O voluntário {$volunteer->name} ganhou {$points} pontos.");
+        $label = $volunteer->status === 'active' ? 'Ativo' : 'Inativo';
+        return redirect()->back()->with('success', "Status de {$volunteer->name} atualizado para {$label}.");
     }
 }
