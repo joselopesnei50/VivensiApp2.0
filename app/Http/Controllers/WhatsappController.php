@@ -634,19 +634,30 @@ class WhatsappController extends Controller
         return response()->json(['success' => true, 'deal' => $deal]);
     }
 
-    public function chatList()
+    public function chatList(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
+        $search   = trim((string) $request->query('q', ''));
 
         // Subquery correlated: busca última mensagem em query única (sem N+1)
-        $chats = WhatsappChat::where('tenant_id', $tenantId)
+        $query = WhatsappChat::where('tenant_id', $tenantId)
             ->addSelect([
                 'last_message_preview' => WhatsappMessage::select('content')
                     ->whereColumn('chat_id', 'whatsapp_chats.id')
                     ->latest()
                     ->limit(1),
-            ])
-            ->orderBy('last_message_at', 'desc')
+            ]);
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('contact_name', 'like', '%' . $search . '%')
+                  ->orWhere('contact_phone', 'like', '%' . $search . '%')
+                  ->orWhere('wa_id', 'like', '%' . $search . '%');
+            });
+        }
+
+        $chats = $query->orderBy('last_message_at', 'desc')
+            ->limit($search !== '' ? 50 : 200)
             ->get()
             ->map(function ($chat) {
                 return [
@@ -696,7 +707,14 @@ class WhatsappController extends Controller
 
         return response()->json([
             'chat'             => $chat,
-            'messages'         => $messages,
+            'messages'         => $messages->map(fn($m) => [
+                'id'         => $m->id,
+                'content'    => $m->content,
+                'direction'  => $m->direction,
+                'type'       => $m->type,
+                'status'     => $m->status,
+                'created_at' => $m->created_at,
+            ]),
             'notes'            => $notes,
             'canned_responses' => $canned,
             'ai_training'      => $config?->ai_training ?? '',
@@ -1003,18 +1021,15 @@ class WhatsappController extends Controller
 
         $config = WhatsappConfig::where('tenant_id', $tenantId)->firstOrCreate(['tenant_id' => $tenantId]);
 
-        try {
-            $result = app(\App\Services\WhatsAppService::class)->sendAudio(
-                $chat, $config,
-                $validated['base64'],
-                auth()->id()
-            );
-        } catch (\RuntimeException $e) {
-            $status = $e->getCode() >= 400 ? $e->getCode() : 500;
-            return response()->json(['success' => false, 'error' => $e->getMessage()], $status);
-        }
+        // Dispatch assíncrono — remove sleep(2) bloqueante da requisição HTTP
+        \App\Jobs\SendWhatsAppAudioJob::dispatch(
+            $chat->id,
+            $config->id,
+            $validated['base64'],
+            auth()->id()
+        );
 
-        return response()->json(['success' => true, 'message' => $result['message']]);
+        return response()->json(['success' => true, 'queued' => true]);
     }
 
     /**
