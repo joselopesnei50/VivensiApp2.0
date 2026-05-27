@@ -11,7 +11,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/donors/{id}/edit',        [App\Http\Controllers\NgoDonorController::class, 'edit']);
         Route::put('/donors/{id}',             [App\Http\Controllers\NgoDonorController::class, 'update']);
         Route::delete('/donors/{id}',          [App\Http\Controllers\NgoDonorController::class, 'destroy']);
-        Route::post('/donors/{id}/send-portal-email', [App\Http\Controllers\NgoDonorController::class, 'sendPortalEmail'])->name('ngo.donors.send-portal-email');
+        Route::post('/donors/{id}/send-portal-email',  [App\Http\Controllers\NgoDonorController::class, 'sendPortalEmail'])->name('ngo.donors.send-portal-email');
+        Route::post('/donors/{id}/regenerate-token',   [App\Http\Controllers\NgoDonorController::class, 'regenerateToken'])->name('ngo.donors.regenerate-token')->middleware('throttle:web_write');
 
         // Campanhas
         Route::get('/campaigns',               [App\Http\Controllers\CampaignController::class, 'index']);
