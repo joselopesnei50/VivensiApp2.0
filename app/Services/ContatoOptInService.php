@@ -54,7 +54,7 @@ class ContatoOptInService
                 return $this->mensagemConfirmacaoOptIn();
             }
 
-            return "Por favor, responda *SIM* para confirmar ou *NÃO* para não receber mensagens.";
+            return "Não consegui entender sua resposta. 😅\n\nDigite *SIM* para ativar ou *NÃO* para não receber mensagens.";
         }
 
         return null;
@@ -84,20 +84,27 @@ class ContatoOptInService
 
     private function mensagemBoasVindas(string $nomeOrg): string
     {
-        return "Olá! 👋 Sou o assistente da *{$nomeOrg}*.\n\n"
-            . "Deseja receber nossas novidades e comunicados por aqui?\n\n"
-            . "Responda *SIM* para confirmar ou *NÃO* para não receber.";
+        return "Olá! Tudo bem? 😊\n\n"
+            . "Sou o assistente virtual da *{$nomeOrg}*. Estou aqui para te ajudar com informações, "
+            . "novidades e suporte direto pelo WhatsApp.\n\n"
+            . "Para continuar, preciso da sua autorização para enviar mensagens por aqui:\n\n"
+            . "✅ *SIM* — quero receber conteúdos e comunicados\n"
+            . "❌ *NÃO* — prefiro não receber\n\n"
+            . "_Você pode cancelar a qualquer momento enviando *SAIR*._";
     }
 
     private function mensagemConfirmacaoOptIn(): string
     {
-        return "Ótimo! ✅ Você está cadastrado para receber nossas novidades.\n\n"
-            . "Para cancelar a qualquer momento, envie *SAIR*.";
+        return "Perfeito, obrigado! 🎉\n\n"
+            . "Você está cadastrado e agora pode receber nossas mensagens por aqui.\n\n"
+            . "Em breve entraremos em contato. Se precisar de algo antes, é só chamar! 💬\n\n"
+            . "_Para cancelar a qualquer momento, envie *SAIR*._";
     }
 
     private function mensagemOptOut(string $nomeOrg): string
     {
-        return "Tudo bem! Você não receberá mais mensagens da *{$nomeOrg}*.\n\n"
-            . "Se mudar de ideia, é só nos enviar uma mensagem. 😊";
+        return "Entendido! ✅\n\n"
+            . "Você foi removido da nossa lista de contatos da *{$nomeOrg}* e não receberá mais mensagens.\n\n"
+            . "Se mudar de ideia ou precisar de ajuda, basta nos enviar uma mensagem. Estamos sempre por aqui. 😊";
     }
 }
