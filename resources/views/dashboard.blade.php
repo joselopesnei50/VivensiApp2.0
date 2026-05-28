@@ -909,7 +909,7 @@
         <!-- AI Health Score (Mockup for now, could be dynamic later) -->
         <div class="metric-card">
             <div class="icon-box success" style="padding: 0; overflow: hidden;">
-                <img loading="lazy" src="{{ asset('img/bruce-ai.png') }}" alt="AI" style="width: 100%; height: 100%; object-fit: cover;">
+                <img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="AI" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div class="meta">Saúde Financeira</div>
             <div class="value">A</div>
