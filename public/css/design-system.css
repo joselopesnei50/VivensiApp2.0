@@ -97,6 +97,10 @@
 
     /* Transições */
     --ds-transition: 0.18s ease;
+
+    /* Topbar (light default) */
+    --topbar-bg:     #ffffff;
+    --topbar-border: #e2e8f0;
 }
 
 /* Dark mode tokens */
@@ -108,6 +112,8 @@
     --ds-text:         #f1f5f9;
     --ds-text-muted:   #cbd5e1;
     --ds-text-faint:   #94a3b8;
+    --topbar-bg:       #0f172a;
+    --topbar-border:   rgba(255,255,255,0.06);
 }
 
 /* Light mode — topbar & sidebar adaptations */
