@@ -129,6 +129,12 @@
 </div>
 
 <script>
+const _AUDIT_URL  = '{{ route("admin.audit.run") }}';
+const _AUDIT_CSRF = '{{ csrf_token() }}';
+</script>
+
+@verbatim
+<script>
 // ── Data ──────────────────────────────────────────────────────────────────────
 const AUDIT_MODULES = [
   { id:'security',    label:'Segurança',      icon:'🔒', color:'#ef4444', checks:[
@@ -223,11 +229,11 @@ function isRunning()      { return S.running !== null || S.queue.length > 0; }
 
 // ── API call ──────────────────────────────────────────────────────────────────
 async function apiRunCheck(prompt) {
-    const resp = await fetch('{{ route("admin.audit.run") }}', {
+    const resp = await fetch(_AUDIT_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-CSRF-TOKEN': _AUDIT_CSRF,
         },
         body: JSON.stringify({ prompt, context: S.contextInfo }),
     });
@@ -508,5 +514,6 @@ function escHtml(str) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 render();
 </script>
+@endverbatim
 
 @endsection
