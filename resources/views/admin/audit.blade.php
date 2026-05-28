@@ -84,8 +84,8 @@
     ::-webkit-scrollbar-track { background: #0a0e1a; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
 
-    @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
-    @keyframes spin  { from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+    @@keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
+    @@keyframes spin  { from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
     .anim-pulse { animation: pulse .8s ease-in-out infinite; }
     .anim-spin  { animation: spin 1s linear infinite; }
 </style>
