@@ -33,7 +33,7 @@ class PublicRaffleController extends Controller
     public function reserve(Request $request, $slug)
     {
         try {
-            \Illuminate\Support\Facades\Log::info("Iniciando reserva para rifa: $slug", $request->all());
+            \Illuminate\Support\Facades\Log::info("Iniciando reserva para rifa: $slug");
         } catch (\Exception $e) {}
         $raffle = Raffle::where('slug', $slug)->firstOrFail();
         $tenant = $raffle->tenant;

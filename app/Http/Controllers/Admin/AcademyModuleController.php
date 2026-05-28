@@ -49,7 +49,7 @@ class AcademyModuleController extends Controller
 
     public function storeLesson(Request $request, $moduleId)
     {
-        \Illuminate\Support\Facades\Log::info('Store Lesson Request:', $request->all());
+        \Illuminate\Support\Facades\Log::info('Store Lesson Request: ' . $request->input('title', '(sem título)'));
         if ($request->hasFile('document')) {
             \Illuminate\Support\Facades\Log::info('Document File:', [
                 'name' => $request->file('document')->getClientOriginalName(),
