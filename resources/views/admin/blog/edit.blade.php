@@ -5,7 +5,7 @@
 
 {{-- Quill.js CDN --}}
 @push('styles')
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
 <style>
 .fw-800  { font-weight: 800; }
 .flex-1  { flex: 1; }
@@ -333,7 +333,7 @@
     </div>
 </form>
 
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var quill = new Quill('#quill-editor', {
