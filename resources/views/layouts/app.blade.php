@@ -891,7 +891,7 @@
 <main id="main-content" class="main-content" style="{{ !auth()->check() ? 'margin-left: 0; width: 100%;' : '' }}">
     
     <!-- ══ COMMAND TOPBAR ══════════════════════════════════════════════ -->
-    <div id="topbar" style="display: flex; align-items: center; justify-content: space-between; padding: 0 36px; height: 68px; background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 900; margin: -32px -32px 32px -32px;">
+    <div id="topbar" style="display: flex; align-items: center; justify-content: space-between; padding: 0 36px; height: 68px; background: var(--topbar-bg, #0f172a); border-bottom: 1px solid var(--topbar-border, rgba(255,255,255,0.06)); position: sticky; top: 0; z-index: 900; margin: -32px -32px 32px -32px;">
 
         <!-- Esquerda: Menu mobile + Identidade do painel -->
         <div style="display: flex; align-items: center; gap: 20px;">
