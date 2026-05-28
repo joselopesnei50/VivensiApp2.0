@@ -43,6 +43,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/broadcast/groups',          [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'getGroups'])->name('whatsapp.broadcast.groups');
     Route::get('/whatsapp/broadcast/campaigns',       [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'campaigns'])->name('whatsapp.broadcast.campaigns');
     Route::delete('/whatsapp/broadcast/{id}/cancel',  [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'cancelScheduled'])->name('whatsapp.broadcast.cancel');
+    Route::post('/whatsapp/broadcast/{id}/resume',   [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'resumeCampaign'])->name('whatsapp.broadcast.resume')->middleware('throttle:5,1');
 
     // Instâncias
     Route::get('/whatsapp/instances',                 [App\Http\Controllers\WhatsappController::class, 'instances'])->name('whatsapp.instances');

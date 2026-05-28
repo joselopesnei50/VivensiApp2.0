@@ -255,6 +255,18 @@
                 </div>
                 @endif
 
+                @if($campaign->status === 'paused')
+                <div class="bc-card-actions">
+                    <form method="POST" action="{{ route('whatsapp.broadcast.resume', $campaign->id) }}"
+                          onsubmit="return confirm('Retomar campanha pausada? O disparo será enviado apenas para contatos com opt-in, dentro da janela de horário permitida.')">
+                        @csrf
+                        <button type="submit" class="bc-btn-resume">
+                            <i class="fas fa-play"></i> Retomar campanha
+                        </button>
+                    </form>
+                </div>
+                @endif
+
             </div>
             @endforeach
         </div>
@@ -445,6 +457,17 @@
 }
 .bc-empty-title { font-size:1rem; font-weight:700; color:#1e293b; margin-bottom:6px; }
 .bc-empty-sub   { font-size:.82rem; color:#94a3b8; max-width:280px; margin:0 auto 20px; }
+
+/* Resume action */
+.bc-card-actions { margin-top:12px; padding-top:12px; border-top:1px solid #f1f5f9; }
+.bc-btn-resume {
+    display:inline-flex; align-items:center; gap:7px;
+    background:rgba(99,102,241,.1); color:#4f46e5;
+    border:1.5px solid #c7d2fe; border-radius:10px;
+    padding:7px 16px; font-size:.78rem; font-weight:700;
+    cursor:pointer; transition:.15s;
+}
+.bc-btn-resume:hover { background:#4f46e5; color:#fff; border-color:#4f46e5; }
 
 /* Pagination */
 .bc-pagination { margin-top:20px; display:flex; justify-content:center; }
