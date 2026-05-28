@@ -548,6 +548,16 @@ class WhatsappController extends Controller
         Gate::authorize('access-whatsapp');
 
         $chats = WhatsappChat::where('tenant_id', auth()->user()->tenant_id)
+                             ->addSelect([
+                                 'last_msg_content' => WhatsappMessage::select('content')
+                                     ->whereColumn('chat_id', 'whatsapp_chats.id')
+                                     ->latest('created_at')
+                                     ->limit(1),
+                                 'last_msg_direction' => WhatsappMessage::select('direction')
+                                     ->whereColumn('chat_id', 'whatsapp_chats.id')
+                                     ->latest('created_at')
+                                     ->limit(1),
+                             ])
                              ->orderBy('last_message_at', 'desc')
                              ->get();
                              
