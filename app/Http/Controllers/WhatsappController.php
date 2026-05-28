@@ -73,6 +73,29 @@ class WhatsappController extends Controller
         return response()->json(['success' => true, 'chat' => $chat]);
     }
 
+    public function markRead(Request $request, $chatId)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+        $chat->update(['last_read_at' => now()]);
+        return response()->json(['success' => true]);
+    }
+
+    public function updateLabels(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+        $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $request->validate([
+            'labels' => 'nullable|array',
+            'labels.*' => 'string|max:30',
+        ]);
+
+        $chat->update(['labels' => $request->labels ?? []]);
+        return response()->json(['success' => true, 'labels' => $chat->labels]);
+    }
+
     public function toggleBot(Request $request, $chatId)
     {
         Gate::authorize('access-whatsapp');

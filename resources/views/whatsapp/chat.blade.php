@@ -513,6 +513,32 @@
         .pill-waiting { background: #fef3c7; color: #d97706; }
         .pill-closed  { background: #f1f5f9; color: #94a3b8; }
 
+        /* ── Contact labels ── */
+        .contact-labels { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+        .clabel {
+            font-size: .58rem; font-weight: 700; padding: 1px 6px;
+            border-radius: 8px; text-transform: uppercase; letter-spacing: .04em;
+        }
+        .clabel-novo-lead    { background: #dbeafe; color: #1d4ed8; }
+        .clabel-suporte      { background: #ffedd5; color: #c2410c; }
+        .clabel-venda        { background: #dcfce7; color: #15803d; }
+        .clabel-urgente      { background: #fee2e2; color: #b91c1c; }
+        .clabel-vip          { background: #f3e8ff; color: #7e22ce; }
+        .clabel-concluido    { background: #f1f5f9; color: #64748b; }
+        .clabel-agendado     { background: #cffafe; color: #0e7490; }
+        /* fallback */
+        .clabel              { background: #f0f2f5; color: #475569; }
+
+        /* ── Label picker panel ── */
+        .label-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .label-opt {
+            font-size: .72rem; font-weight: 600; padding: 4px 10px;
+            border-radius: 12px; cursor: pointer; border: 1.5px solid transparent;
+            transition: all .15s; user-select: none;
+        }
+        .label-opt.selected { border-color: currentColor; opacity: 1; }
+        .label-opt:not(.selected) { opacity: .55; }
+
         /* ── Improved input toolbar ── */
         .tool-btn {
             background: transparent; border: none;
@@ -654,7 +680,7 @@
                 @php
                     $isUnread  = $chat->status !== 'closed'
                         && $chat->last_inbound_at
-                        && (!$chat->last_outbound_at || $chat->last_inbound_at > $chat->last_outbound_at);
+                        && (!$chat->last_read_at || $chat->last_inbound_at > $chat->last_read_at);
                     $isWaiting = $chat->status === 'waiting';
                     $statusClass = $chat->status === 'waiting' ? 'waiting' : ($chat->status === 'closed' ? 'closed' : 'open');
                     $avatarColors = ['#4F46E5','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899'];
@@ -696,6 +722,13 @@
                                 @endif
                             </div>
                         </div>
+                        @if(!empty($chat->labels))
+                        <div class="contact-labels">
+                            @foreach(array_slice($chat->labels, 0, 3) as $lbl)
+                                <span class="clabel clabel-{{ Str::slug($lbl) }}">{{ $lbl }}</span>
+                            @endforeach
+                        </div>
+                        @endif
                     </div>
                 </div>
                 @endforeach
@@ -843,6 +876,37 @@
 
             <div class="crm-content">
                 <!-- Accordion 1 -->
+                <!-- Etiquetas -->
+                <div class="crm-section">
+                    <div class="crm-header" data-bs-toggle="collapse" data-bs-target="#crm-labels" aria-expanded="true">
+                        <span><i class="fas fa-tags me-2 text-muted"></i> Etiquetas</span>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
+                    </div>
+                    <div class="crm-body collapse show" id="crm-labels">
+                        <div class="label-picker" id="label-picker">
+                            @php
+                            $allLabels = [
+                                ['name'=>'Novo Lead',  'slug'=>'novo-lead',  'bg'=>'#dbeafe','color'=>'#1d4ed8'],
+                                ['name'=>'Suporte',    'slug'=>'suporte',    'bg'=>'#ffedd5','color'=>'#c2410c'],
+                                ['name'=>'Venda',      'slug'=>'venda',      'bg'=>'#dcfce7','color'=>'#15803d'],
+                                ['name'=>'Urgente',    'slug'=>'urgente',    'bg'=>'#fee2e2','color'=>'#b91c1c'],
+                                ['name'=>'VIP',        'slug'=>'vip',        'bg'=>'#f3e8ff','color'=>'#7e22ce'],
+                                ['name'=>'Agendado',   'slug'=>'agendado',   'bg'=>'#cffafe','color'=>'#0e7490'],
+                                ['name'=>'Concluído',  'slug'=>'concluido',  'bg'=>'#f1f5f9','color'=>'#64748b'],
+                            ];
+                            @endphp
+                            @foreach($allLabels as $lbl)
+                            <span class="label-opt clabel-{{ $lbl['slug'] }}"
+                                  data-label="{{ $lbl['name'] }}"
+                                  style="background:{{ $lbl['bg'] }};color:{{ $lbl['color'] }};"
+                                  onclick="toggleLabel(this)">
+                                {{ $lbl['name'] }}
+                            </span>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
                 <div class="crm-section">
                     <div class="crm-header" data-bs-toggle="collapse" data-bs-target="#crm-contact-info" aria-expanded="true">
                         <span><i class="far fa-id-card me-2 text-muted"></i> Dados de Contato</span>
@@ -1168,10 +1232,44 @@
             });
         });
 
+        function toggleLabel(el) {
+            if (!currentChatId) return;
+            $(el).toggleClass('selected');
+            const labels = [];
+            $('#label-picker .label-opt.selected').each(function() {
+                labels.push($(this).data('label'));
+            });
+            $.ajax({
+                url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/labels',
+                method: 'PATCH',
+                headers: { 'X-CSRF-TOKEN': csrfToken },
+                contentType: 'application/json',
+                data: JSON.stringify({ labels }),
+                success: function() {
+                    // Update sidebar label pills for this chat
+                    const item = $('.contact-item[data-id="' + currentChatId + '"]');
+                    let html = '';
+                    labels.slice(0, 3).forEach(function(l) {
+                        const slug = l.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+                        html += '<span class="clabel clabel-' + slug + '">' + l + '</span>';
+                    });
+                    item.find('.contact-labels').html(html);
+                    if (!item.find('.contact-labels').length && html) {
+                        item.find('.contact-info').append('<div class="contact-labels">' + html + '</div>');
+                    }
+                }
+            });
+        }
+
         function selectChat(el, id) {
             currentChatId = id;
             $('.contact-item').removeClass('active');
             $(el).addClass('active');
+            // Mark as read visually
+            $(el).attr('data-unread', 'false');
+            $(el).find('.badge-unread').hide();
+            // Persist to server (fire-and-forget)
+            $.post('{{ url("/whatsapp/chat") }}/' + id + '/read', { _token: csrfToken });
             loadChatData(id);
         }
 
@@ -1357,6 +1455,13 @@
             }
 
             renderCompliance(chat);
+
+            // Sync label picker with chat's current labels
+            const chatLabels = chat.labels || [];
+            $('#label-picker .label-opt').each(function() {
+                const isActive = chatLabels.includes($(this).data('label'));
+                $(this).toggleClass('selected', isActive);
+            });
         }
 
         function renderCompliance(chat) {
