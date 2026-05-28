@@ -58,13 +58,15 @@ class WhatsappAutomationController extends Controller
     {
         return $request->validate([
             'name'              => 'required|string|max:120',
-            'trigger'           => 'required|in:no_contact_days,open_conversation_days,donor_inactive_days,sponsorship_stale_days',
-            'trigger_days'      => 'required|integer|min:1|max:365',
+            'trigger'           => 'required|in:no_contact_days,open_conversation_days,donor_inactive_days,sponsorship_stale_days,after_opt_in_days,keyword_received',
+            'trigger_days'      => 'nullable|integer|min:1|max:365|required_unless:trigger,keyword_received',
+            'keyword'           => 'nullable|string|max:100|required_if:trigger,keyword_received',
             'message_template'  => 'required|string|max:2000',
             'audience'          => 'required|in:all,donors,sponsors,contacts',
             'send_window_start' => 'required|date_format:H:i',
             'send_window_end'   => 'required|date_format:H:i|after:send_window_start',
             'is_active'         => 'required|boolean',
+            'send_once'         => 'boolean',
         ]);
     }
 }

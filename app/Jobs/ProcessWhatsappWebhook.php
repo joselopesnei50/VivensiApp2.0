@@ -151,11 +151,17 @@ class ProcessWhatsappWebhook implements ShouldQueue
                 'details' => ['message_id' => $messageId, 'type' => $type]
             ]);
 
-            // 4. Bot de Atendimento: FAQ + off-hours + AI
+            // 4. Automações por palavra-chave (tempo real)
+            $keywordFired = false;
+            if ($type === 'text' && $content) {
+                $keywordFired = $this->processKeywordAutomations($tenantId, $chat, $content);
+            }
+
+            // 5. Bot de Atendimento: FAQ + off-hours + AI
             $atendEnabled = SystemSetting::getValue('atend_enabled', '0') === '1';
             $canAutoReply = !$chat->assigned_to || $chat->status === 'open';
 
-            if ($atendEnabled && $canAutoReply && !$chat->opt_out_at && !$chat->blocked_at) {
+            if (!$keywordFired && $atendEnabled && $canAutoReply && !$chat->opt_out_at && !$chat->blocked_at) {
                 // 4a. Verificar horário de atendimento
                 $workStart = SystemSetting::getValue('atend_work_start', '00:00');
                 $workEnd   = SystemSetting::getValue('atend_work_end',   '23:59');
@@ -215,12 +221,82 @@ class ProcessWhatsappWebhook implements ShouldQueue
                             ->onQueue('whatsapp');
                     }
                 }
-            } elseif ($config->ai_enabled && $canAutoReply && !$chat->opt_out_at && !$chat->blocked_at) {
+            } elseif (!$keywordFired && $config->ai_enabled && $canAutoReply && !$chat->opt_out_at && !$chat->blocked_at) {
                 // Bot de atendimento desligado mas AI ativada na config do tenant
                 ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
                     ->onQueue('whatsapp');
             }
         }
+    }
+
+    private function processKeywordAutomations(int $tenantId, WhatsappChat $chat, string $content): bool
+    {
+        $automations = \App\Models\WhatsappAutomation::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('trigger', 'keyword_received')
+            ->where('is_active', true)
+            ->get();
+
+        $fired = false;
+
+        foreach ($automations as $automation) {
+            if (!$automation->isWithinSendWindow()) continue;
+            if (!$automation->keyword) continue;
+
+            $keyword = mb_strtolower(trim($automation->keyword));
+            if (!str_contains(mb_strtolower($content), $keyword)) continue;
+
+            $alreadySent = $automation->send_once
+                ? \App\Models\WhatsappAutomationLog::where('automation_id', $automation->id)
+                    ->where('contact_phone', $chat->wa_id)
+                    ->where('status', 'sent')
+                    ->exists()
+                : \App\Models\WhatsappAutomationLog::where('automation_id', $automation->id)
+                    ->where('contact_phone', $chat->wa_id)
+                    ->where('sent_at', '>=', now()->subHours(24))
+                    ->exists();
+
+            if ($alreadySent) continue;
+
+            $orgName = \App\Models\Tenant::find($tenantId)?->name ?? 'nossa organização';
+            $message = $automation->renderMessage($chat->contact_name ?? 'Olá', $orgName);
+
+            $instance = \App\Models\WhatsappInstance::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'open')
+                ->first();
+
+            if (!$instance) continue;
+
+            try {
+                (new \App\Services\EvolutionApiService($instance))->sendMessage($chat->wa_id, $message, null, rand(1, 3));
+
+                \App\Models\WhatsappAutomationLog::create([
+                    'automation_id' => $automation->id,
+                    'tenant_id'     => $tenantId,
+                    'contact_phone' => $chat->wa_id,
+                    'contact_name'  => $chat->contact_name,
+                    'message_sent'  => $message,
+                    'status'        => 'sent',
+                    'sent_at'       => now(),
+                ]);
+
+                $fired = true;
+            } catch (\Throwable $e) {
+                \App\Models\WhatsappAutomationLog::create([
+                    'automation_id' => $automation->id,
+                    'tenant_id'     => $tenantId,
+                    'contact_phone' => $chat->wa_id,
+                    'contact_name'  => $chat->contact_name,
+                    'message_sent'  => $message,
+                    'status'        => 'failed',
+                    'error_message' => $e->getMessage(),
+                    'sent_at'       => now(),
+                ]);
+            }
+        }
+
+        return $fired;
     }
 
     protected function handleStatusUpdate($config, $value)
