@@ -121,6 +121,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/dev/logout',     [App\Http\Controllers\Admin\DevController::class, 'logout'])->name('admin.dev.logout');
         Route::get('/dev',             [App\Http\Controllers\Admin\DevController::class, 'dashboard'])->name('admin.dev.dashboard')->middleware('dev_auth');
 
+        // Audit Agent
+        Route::get('/audit',      [App\Http\Controllers\Admin\AuditController::class, 'index'])->name('admin.audit');
+        Route::post('/audit/run', [App\Http\Controllers\Admin\AuditController::class, 'runCheck'])->name('admin.audit.run')->middleware('throttle:40,1');
+
         // E-mail Marketing (Brevo Campaigns)
         Route::get('/email-campaigns',               [App\Http\Controllers\Admin\EmailCampaignController::class, 'index'])->name('admin.email_campaigns.index');
         Route::get('/email-campaigns/create',        [App\Http\Controllers\Admin\EmailCampaignController::class, 'create'])->name('admin.email_campaigns.create');
