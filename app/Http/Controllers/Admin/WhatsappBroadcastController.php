@@ -205,6 +205,33 @@ class WhatsappBroadcastController extends Controller
         return redirect()->back()->with('success', 'Campanha agendada cancelada com sucesso.');
     }
 
+    public function resumeCampaign(int $id)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $campaign = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
+            ->where('id', $id)
+            ->where('status', 'paused')
+            ->firstOrFail();
+
+        $instance = WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('status', 'open')->first();
+
+        if (!$instance) {
+            return redirect()->back()->with('error', 'Nenhuma instância WhatsApp conectada. Conecte o WhatsApp antes de retomar.');
+        }
+
+        $campaign->update([
+            'status'       => 'queued',
+            'completed_at' => null,
+        ]);
+
+        \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id, $campaign->tenant_id);
+
+        return redirect()->back()->with('success', 'Campanha retomada! O disparo continuará em segundo plano dentro da janela permitida.');
+    }
+
     public function sendBroadcast(Request $request)
     {
         Gate::authorize('access-whatsapp');

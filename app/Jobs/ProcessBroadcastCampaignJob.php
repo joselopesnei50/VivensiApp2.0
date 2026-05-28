@@ -67,6 +67,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         // milhares de contatos na memória de uma vez com get().
         if ($campaign->audience_type === 'all') {
             $baseQuery = WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                ->whereNotNull('opt_in_at')
                 ->whereNull('opt_out_at')->whereNull('blocked_at');
 
             $recipientCount = (clone $baseQuery)->count();
