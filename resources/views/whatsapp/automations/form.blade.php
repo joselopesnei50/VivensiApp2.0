@@ -65,13 +65,15 @@
                                 <label class="form-label fw-600 small">Evento disparador <span class="text-danger">*</span></label>
                                 @php
                                     $triggers = [
-                                        'donor_inactive_days'    => ['label' => 'Doador sem doação',             'icon' => '💚'],
-                                        'sponsorship_stale_days' => ['label' => 'Patrocínio parado em proposta', 'icon' => '🤝'],
                                         'no_contact_days'        => ['label' => 'Contato sem interação',         'icon' => '📱'],
                                         'open_conversation_days' => ['label' => 'Conversa sem resposta',         'icon' => '💬'],
+                                        'after_opt_in_days'      => ['label' => 'X dias após opt-in',           'icon' => '✅'],
+                                        'donor_inactive_days'    => ['label' => 'Doador sem doação',             'icon' => '💚'],
+                                        'sponsorship_stale_days' => ['label' => 'Patrocínio parado em proposta', 'icon' => '🤝'],
+                                        'keyword_received'       => ['label' => 'Palavra-chave recebida',        'icon' => '🔑'],
                                     ];
                                 @endphp
-                                <select name="trigger" class="form-select rounded-3 @error('trigger') is-invalid @enderror" required>
+                                <select name="trigger" id="triggerSelect" class="form-select rounded-3 @error('trigger') is-invalid @enderror" required>
                                     <option value="">Selecione o evento...</option>
                                     @foreach($triggers as $val => $t)
                                         <option value="{{ $val }}" {{ old('trigger', $automation?->trigger) === $val ? 'selected' : '' }}>
@@ -81,16 +83,26 @@
                                 </select>
                                 @error('trigger') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-5" id="triggerDaysGroup">
                                 <label class="form-label fw-600 small">Após quantos dias? <span class="text-danger">*</span></label>
                                 <div class="input-group rounded-3">
-                                    <input type="number" name="trigger_days"
+                                    <input type="number" name="trigger_days" id="triggerDays"
                                            class="form-control rounded-start-3 @error('trigger_days') is-invalid @enderror"
                                            min="1" max="365" placeholder="Ex: 30"
-                                           value="{{ old('trigger_days', $automation?->trigger_days) }}" required>
+                                           value="{{ old('trigger_days', $automation?->trigger_days) }}">
                                     <span class="input-group-text rounded-end-3" style="font-size:.82rem;">dias</span>
                                 </div>
                                 @error('trigger_days') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-5 d-none" id="keywordGroup">
+                                <label class="form-label fw-600 small">Palavra-chave gatilho <span class="text-danger">*</span></label>
+                                <input type="text" name="keyword" id="keywordInput"
+                                       class="form-control rounded-3 @error('keyword') is-invalid @enderror"
+                                       placeholder="Ex: preço, ajuda, quero..."
+                                       maxlength="100"
+                                       value="{{ old('keyword', $automation?->keyword) }}">
+                                <div class="form-text">Dispara quando a mensagem contiver este termo (não diferencia maiúsculas).</div>
+                                @error('keyword') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
                         </div>
 
@@ -129,13 +141,19 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="d-flex gap-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
                                 <button type="button" class="var-chip" onclick="insertVar('{nome}')">
                                     <i class="fas fa-at" style="font-size:.65rem;"></i> {nome}
                                 </button>
                                 <button type="button" class="var-chip" onclick="insertVar('{organizacao}')">
                                     <i class="fas fa-building" style="font-size:.65rem;"></i> {organizacao}
+                                </button>
+                                <button type="button" class="var-chip" onclick="insertVar('{data}')">
+                                    <i class="fas fa-calendar" style="font-size:.65rem;"></i> {data}
+                                </button>
+                                <button type="button" class="var-chip var-chip--days" onclick="insertVar('{dias_sem_contato}')" title="Disponível em gatilhos por tempo">
+                                    <i class="fas fa-clock" style="font-size:.65rem;"></i> {dias_sem_contato}
                                 </button>
                             </div>
                             <span id="charCount" style="font-size:.7rem;color:#94a3b8;">0 / 2000</span>
@@ -175,6 +193,21 @@
                             </div>
                         </div>
                         <div class="form-text mb-4">Mensagens só são enviadas dentro deste intervalo, respeitando o horário do contato.</div>
+
+                        {{-- send_once toggle --}}
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                            <div>
+                                <div class="fw-600 small text-dark">Enviar somente uma vez por contato</div>
+                                <div class="text-muted" style="font-size:.75rem;">Cada contato recebe a mensagem apenas 1 vez, para sempre. Desligado = 1x por dia.</div>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input type="hidden" name="send_once" value="0">
+                                <input class="form-check-input" type="checkbox" name="send_once" value="1"
+                                       id="sendOnceSwitch"
+                                       style="width:2.6em;height:1.35em;cursor:pointer;"
+                                       {{ old('send_once', $automation?->send_once ?? false) ? 'checked' : '' }}>
+                            </div>
+                        </div>
 
                         {{-- is_active toggle --}}
                         <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
@@ -235,7 +268,12 @@
                             Variáveis disponíveis
                         </h6>
                         <div class="d-flex flex-column gap-2 mb-4">
-                            @foreach(['{nome}' => 'Nome do contato', '{organizacao}' => 'Nome da organização'] as $var => $desc)
+                            @foreach([
+                                '{nome}'              => 'Nome do contato',
+                                '{organizacao}'       => 'Nome da organização',
+                                '{data}'              => 'Data atual (dd/mm/aaaa)',
+                                '{dias_sem_contato}'  => 'Dias sem interação *',
+                            ] as $var => $desc)
                                 <div class="d-flex justify-content-between align-items-center p-2 rounded-3"
                                      style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);">
                                     <code style="color:#34d399;font-size:.78rem;">{{ $var }}</code>
@@ -243,6 +281,7 @@
                                 </div>
                             @endforeach
                         </div>
+                        <p style="font-size:.68rem;color:rgba(255,255,255,.3);margin:0 0 12px;">* {dias_sem_contato} retorna 0 no gatilho por palavra-chave.</p>
 
                         <div class="p-3 rounded-3" style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.15);">
                             <p style="font-size:.72rem;color:#fbbf24;margin:0;line-height:1.6;">
@@ -286,6 +325,24 @@ document.querySelectorAll('.audience-pill').forEach(pill => {
         pill.classList.add('selected');
     });
 });
+
+// Gatilho: mostrar/esconder campos conforme seleção
+const triggerSelect   = document.getElementById('triggerSelect');
+const triggerDaysGrp  = document.getElementById('triggerDaysGroup');
+const triggerDaysInput = document.getElementById('triggerDays');
+const keywordGrp      = document.getElementById('keywordGroup');
+const keywordInput    = document.getElementById('keywordInput');
+
+function applyTriggerUI() {
+    const isKeyword = triggerSelect.value === 'keyword_received';
+    triggerDaysGrp.classList.toggle('d-none', isKeyword);
+    keywordGrp.classList.toggle('d-none', !isKeyword);
+    triggerDaysInput.required = !isKeyword;
+    keywordInput.required     = isKeyword;
+}
+
+triggerSelect.addEventListener('change', applyTriggerUI);
+applyTriggerUI(); // estado inicial
 </script>
 
 <style>
@@ -317,6 +374,8 @@ document.querySelectorAll('.audience-pill').forEach(pill => {
     transition: background .15s;
 }
 .var-chip:hover { background: rgba(99,102,241,.15); }
+.var-chip--days { background: rgba(245,158,11,.08); color: #d97706; border-color: rgba(245,158,11,.25); }
+.var-chip--days:hover { background: rgba(245,158,11,.18); }
 
 .audience-pill {
     display: inline-flex; align-items: center; gap: 6px;
