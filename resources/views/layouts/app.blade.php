@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('vivensi-theme')||'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
+    <script>try{var _adm={{ (auth()->check()&&auth()->user()->role==='super_admin')?'true':'false' }};var _k=_adm?'vivensi-admin-theme':'vivensi-theme';var _df=_adm?'light':'dark';document.documentElement.setAttribute('data-theme',localStorage.getItem(_k)||_df);}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
     <title>{{ $title ?? config('app.name', 'Vivensi') }} — {{ __('ui.app_tagline') }}</title>
     
     <!-- SEO & Social Sharing -->
@@ -1802,10 +1802,13 @@ document.getElementById('bruceInput')?.addEventListener('input',function(){
             const toggleBtn = document.getElementById('theme-toggle');
             const themeIcon = document.getElementById('theme-icon');
             const htmlModel = document.documentElement;
-            
+            const isAdmin = document.body.getAttribute('data-panel') === 'admin';
+            const storageKey = isAdmin ? 'vivensi-admin-theme' : 'vivensi-theme';
+            const defaultTheme = isAdmin ? 'light' : 'dark';
+
             function setTheme(theme) {
                 htmlModel.setAttribute('data-theme', theme);
-                localStorage.setItem('vivensi-theme', theme);
+                localStorage.setItem(storageKey, theme);
                 if (theme === 'dark') {
                     themeIcon.className = 'fas fa-sun';
                     themeIcon.style.color = '#fbbf24';
@@ -1814,11 +1817,10 @@ document.getElementById('bruceInput')?.addEventListener('input',function(){
                     themeIcon.style.color = 'rgba(255,255,255,0.5)';
                 }
             }
-            
-            // Init theme
-            const savedTheme = localStorage.getItem('vivensi-theme') || 'dark';
+
+            const savedTheme = localStorage.getItem(storageKey) || defaultTheme;
             setTheme(savedTheme);
-            
+
             toggleBtn.addEventListener('click', () => {
                 const currentTheme = htmlModel.getAttribute('data-theme');
                 setTheme(currentTheme === 'dark' ? 'light' : 'dark');
