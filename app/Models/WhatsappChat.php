@@ -12,29 +12,33 @@ class WhatsappChat extends Model
     use HasFactory, BelongsToTenant;
 
     protected $casts = [
-        'last_message_at' => 'datetime',
-        'last_inbound_at' => 'datetime',
+        'last_message_at'  => 'datetime',
+        'last_inbound_at'  => 'datetime',
         'last_outbound_at' => 'datetime',
-        'opt_in_at' => 'datetime',
-        'opt_out_at' => 'datetime',
-        'blocked_at' => 'datetime',
+        'last_read_at'     => 'datetime',
+        'opt_in_at'        => 'datetime',
+        'opt_out_at'       => 'datetime',
+        'blocked_at'       => 'datetime',
+        'labels'           => 'array',
     ];
 
     protected $fillable = [
         'tenant_id',
-        'wa_id', // ex: 558199999999@c.us
+        'wa_id',
         'contact_name',
         'contact_phone',
         'status',
+        'labels',
         'assigned_to',
         'last_message_at',
         'last_inbound_at',
+        'last_outbound_at',
+        'last_read_at',
         'opt_in_at',
         'opt_out_at',
         'blocked_at',
         'blocked_reason',
         'is_bot_active',
-        'last_outbound_at',
     ];
 
     public function messages() {
