@@ -7,6 +7,7 @@ use App\Models\SponsorshipDeal;
 use App\Models\Tenant;
 use App\Models\WhatsappAutomation;
 use App\Models\WhatsappAutomationLog;
+use App\Models\WhatsappChat;
 use App\Models\WhatsappInstance;
 use App\Services\EvolutionApiService;
 use Illuminate\Bus\Queueable;
@@ -51,15 +52,24 @@ class ProcessWhatsappAutomations implements ShouldQueue
                 $phone = preg_replace('/\D/', '', $contact['phone'] ?? '');
                 if (!$phone || strlen($phone) < 10) continue;
 
-                // Evitar reenvio: se já enviou esta automação para este contato nas últimas 24h
-                $alreadySent = WhatsappAutomationLog::where('automation_id', $automation->id)
-                    ->where('contact_phone', $phone)
-                    ->where('sent_at', '>=', now()->subHours(24))
-                    ->exists();
+                // Anti-spam: send_once = nunca reenvia; padrão = 1x por 24h
+                $alreadySent = $automation->send_once
+                    ? WhatsappAutomationLog::where('automation_id', $automation->id)
+                        ->where('contact_phone', $phone)
+                        ->where('status', 'sent')
+                        ->exists()
+                    : WhatsappAutomationLog::where('automation_id', $automation->id)
+                        ->where('contact_phone', $phone)
+                        ->where('sent_at', '>=', now()->subHours(24))
+                        ->exists();
 
                 if ($alreadySent) continue;
 
-                $message = $automation->renderMessage($contact['name'] ?? 'Olá', $orgName);
+                $message = $automation->renderMessage(
+                    $contact['name'] ?? 'Olá',
+                    $orgName,
+                    $contact['days'] ?? 0
+                );
 
                 try {
                     $evo->sendMessage($phone, $message, null, rand(2, 5));
@@ -109,7 +119,44 @@ class ProcessWhatsappAutomations implements ShouldQueue
 
         return match ($automation->trigger) {
 
-            // Doadores sem interação há X dias
+            // Contatos WhatsApp sem mensagem há X dias
+            'no_contact_days' => WhatsappChat::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->whereNotNull('opt_in_at')
+                ->whereNull('opt_out_at')
+                ->whereNull('blocked_at')
+                ->where(function ($q) use ($cutoff) {
+                    $q->where('last_inbound_at', '<=', $cutoff)
+                      ->orWhereNull('last_inbound_at');
+                })
+                ->get()
+                ->map(fn($c) => [
+                    'name'  => $c->contact_name ?? 'Olá',
+                    'phone' => $c->contact_phone ?: $c->wa_id,
+                    'days'  => $c->last_inbound_at ? (int) now()->diffInDays($c->last_inbound_at) : $days,
+                ])
+                ->toArray(),
+
+            // Conversas abertas sem resposta há X dias
+            'open_conversation_days' => WhatsappChat::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'open')
+                ->whereNotNull('opt_in_at')
+                ->whereNull('opt_out_at')
+                ->whereNull('blocked_at')
+                ->where(function ($q) use ($cutoff) {
+                    $q->where('last_inbound_at', '<=', $cutoff)
+                      ->orWhereNull('last_inbound_at');
+                })
+                ->get()
+                ->map(fn($c) => [
+                    'name'  => $c->contact_name ?? 'Olá',
+                    'phone' => $c->contact_phone ?: $c->wa_id,
+                    'days'  => $c->last_inbound_at ? (int) now()->diffInDays($c->last_inbound_at) : $days,
+                ])
+                ->toArray(),
+
+            // Doadores sem doação há X dias
             'donor_inactive_days' => NgoDonor::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->whereNotNull('phone')
@@ -118,7 +165,11 @@ class ProcessWhatsappAutomations implements ShouldQueue
                       ->orWhereNull('last_donation_at');
                 })
                 ->get()
-                ->map(fn($d) => ['name' => $d->name, 'phone' => $d->phone])
+                ->map(fn($d) => [
+                    'name'  => $d->name,
+                    'phone' => $d->phone,
+                    'days'  => $d->last_donation_at ? (int) now()->diffInDays($d->last_donation_at) : $days,
+                ])
                 ->toArray(),
 
             // Patrocínios parados na fase de proposta há X dias
@@ -128,9 +179,29 @@ class ProcessWhatsappAutomations implements ShouldQueue
                 ->whereNotNull('contact_phone')
                 ->where('updated_at', '<=', $cutoff)
                 ->get()
-                ->map(fn($s) => ['name' => $s->contact_name, 'phone' => $s->contact_phone])
+                ->map(fn($s) => [
+                    'name'  => $s->contact_name,
+                    'phone' => $s->contact_phone,
+                    'days'  => (int) now()->diffInDays($s->updated_at),
+                ])
                 ->toArray(),
 
+            // Contatos N dias após confirmar opt-in
+            'after_opt_in_days' => WhatsappChat::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->whereNotNull('opt_in_at')
+                ->whereNull('opt_out_at')
+                ->whereNull('blocked_at')
+                ->whereDate('opt_in_at', '<=', $cutoff)
+                ->get()
+                ->map(fn($c) => [
+                    'name'  => $c->contact_name ?? 'Olá',
+                    'phone' => $c->contact_phone ?: $c->wa_id,
+                    'days'  => (int) now()->diffInDays($c->opt_in_at),
+                ])
+                ->toArray(),
+
+            // keyword_received é processado em tempo real pelo webhook — não no batch diário
             default => [],
         };
     }

@@ -191,15 +191,86 @@ class ProcessEvolutionWebhook implements ShouldQueue
             'details'    => ['message_id' => $messageId, 'content_len' => mb_strlen($content)],
         ]);
 
-        // 5. Disparar resposta da IA se habilitada
+        // 5. Automações por palavra-chave (tempo real)
+        $keywordFired = false;
+        if (!$isAudio && $content && !$chat->opt_out_at && !$chat->blocked_at) {
+            $keywordFired = $this->processKeywordAutomations($tenantId, $chat, $content, $instance);
+        }
+
+        // 6. Disparar resposta da IA se habilitada e nenhuma automação de keyword disparou
         $config = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
         $isBotAllowed = $chat->is_bot_active && is_null($chat->assigned_to);
 
-        if ($config?->ai_enabled && $isBotAllowed && !$chat->opt_out_at && !$chat->blocked_at) {
+        if (!$keywordFired && $config?->ai_enabled && $isBotAllowed && !$chat->opt_out_at && !$chat->blocked_at) {
             $base64Audio = $msg['audioMessage']['base64'] ?? null;
-            
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content, $base64Audio);
         }
+    }
+
+    private function processKeywordAutomations(int $tenantId, \App\Models\WhatsappChat $chat, string $content, WhatsappInstance $instance): bool
+    {
+        $automations = \App\Models\WhatsappAutomation::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('trigger', 'keyword_received')
+            ->where('is_active', true)
+            ->get();
+
+        $fired = false;
+
+        foreach ($automations as $automation) {
+            if (!$automation->isWithinSendWindow()) continue;
+            if (!$automation->keyword) continue;
+
+            $keyword = mb_strtolower(trim($automation->keyword));
+            if (!str_contains(mb_strtolower($content), $keyword)) continue;
+
+            // Anti-spam
+            $alreadySent = $automation->send_once
+                ? \App\Models\WhatsappAutomationLog::where('automation_id', $automation->id)
+                    ->where('contact_phone', $chat->wa_id)
+                    ->where('status', 'sent')
+                    ->exists()
+                : \App\Models\WhatsappAutomationLog::where('automation_id', $automation->id)
+                    ->where('contact_phone', $chat->wa_id)
+                    ->where('sent_at', '>=', now()->subHours(24))
+                    ->exists();
+
+            if ($alreadySent) continue;
+
+            $orgName = \App\Models\Tenant::find($tenantId)?->name ?? 'nossa organização';
+            $message = $automation->renderMessage($chat->contact_name ?? 'Olá', $orgName);
+
+            try {
+                (new EvolutionApiService($instance))->sendMessage($chat->wa_id, $message, null, rand(1, 3));
+
+                \App\Models\WhatsappAutomationLog::create([
+                    'automation_id' => $automation->id,
+                    'tenant_id'     => $tenantId,
+                    'contact_phone' => $chat->wa_id,
+                    'contact_name'  => $chat->contact_name,
+                    'message_sent'  => $message,
+                    'status'        => 'sent',
+                    'sent_at'       => now(),
+                ]);
+
+                $fired = true;
+                Log::info("Keyword automation [{$automation->id}] disparada para {$chat->wa_id} (keyword: {$keyword})");
+            } catch (\Throwable $e) {
+                \App\Models\WhatsappAutomationLog::create([
+                    'automation_id' => $automation->id,
+                    'tenant_id'     => $tenantId,
+                    'contact_phone' => $chat->wa_id,
+                    'contact_name'  => $chat->contact_name,
+                    'message_sent'  => $message,
+                    'status'        => 'failed',
+                    'error_message' => $e->getMessage(),
+                    'sent_at'       => now(),
+                ]);
+                Log::error("Keyword automation [{$automation->id}] falhou para {$chat->wa_id}: " . $e->getMessage());
+            }
+        }
+
+        return $fired;
     }
 
     public function failed(\Throwable $exception): void
