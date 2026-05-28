@@ -652,12 +652,15 @@
             <div class="contact-list" id="chatList">
                 @foreach($chats as $chat)
                 @php
-                    $isUnread  = $loop->index == 1;
-                    $isWaiting = $chat->status === 'waiting' || $loop->index == 2;
+                    $isUnread  = $chat->status !== 'closed'
+                        && $chat->last_inbound_at
+                        && (!$chat->last_outbound_at || $chat->last_inbound_at > $chat->last_outbound_at);
+                    $isWaiting = $chat->status === 'waiting';
                     $statusClass = $chat->status === 'waiting' ? 'waiting' : ($chat->status === 'closed' ? 'closed' : 'open');
                     $avatarColors = ['#4F46E5','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899'];
                     $avatarColor  = $avatarColors[$chat->id % 6];
-                    $lastMsg = $chat->messages()->latest()->first();
+                    $lastMsgContent   = $chat->last_msg_content ?? null;
+                    $lastMsgDirection = $chat->last_msg_direction ?? null;
                     $lastTime = $chat->last_message_at
                         ? (\Carbon\Carbon::parse($chat->last_message_at)->isToday()
                             ? \Carbon\Carbon::parse($chat->last_message_at)->format('H:i')
@@ -681,10 +684,10 @@
                         </div>
                         <div class="contact-bottom">
                             <span class="last-message">
-                                @if($lastMsg && $lastMsg->direction == 'outbound')
+                                @if($lastMsgDirection === 'outbound')
                                     <i class="fas fa-check-double" style="color:var(--primary-color);font-size:.7rem;"></i>
                                 @endif
-                                {{ $lastMsg?->content ?? 'Iniciar conversa' }}
+                                {{ $lastMsgContent ?? 'Iniciar conversa' }}
                             </span>
                             <div class="d-flex align-items-center gap-1">
                                 @if($isUnread) <span class="badge-unread">1</span> @endif
@@ -1125,7 +1128,7 @@
                             if (item.length) {
                                 item.find('.contact-name').text(chat.contact_name || 'Sem Nome');
                                 item.find('.contact-time').text(chat.last_message_at_formatted || '');
-                                item.find('.last-msg').text(chat.last_message_preview || '');
+                                item.find('.last-message').text(chat.last_message_preview || '');
                             } else {
                                 location.reload();
                             }
@@ -1183,19 +1186,18 @@
                 renderMessages(data.messages);
                 renderNotes(data.notes);
                 renderHistory(data.messages);
-                // Track last message id
                 if (data.messages && data.messages.length > 0) {
                     lastMessageId = data.messages[data.messages.length - 1].id;
                 }
-                // Store canned responses globally or update list
                 if(data.canned_responses) {
                     cannedResponses = data.canned_responses;
                     renderCannedList();
                 }
-                // AI Training
                 if(data.ai_training !== undefined) {
                     $('#aiTrainingArea').val(data.ai_training);
                 }
+            }).fail(function(xhr) {
+                $('#chat-messages-area').html('<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%;color:#94a3b8;gap:8px;"><i class="fas fa-exclamation-circle fa-2x"></i><span style="font-size:.9rem;">Erro ao carregar mensagens. Tente novamente.</span></div>');
             });
         }
 
