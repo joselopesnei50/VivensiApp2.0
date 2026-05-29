@@ -347,51 +347,90 @@ class BrevoService
     }
 
     /**
-     * Adiciona contatos a uma lista de forma síncrona (POST /contacts por lote).
-     * Diferente do import bulk (assíncrono), este método garante que os contatos
-     * estejam na lista antes da campanha ser criada.
-     * $contacts = [['email' => '...', 'name' => '...'], ...]
+     * Importa contatos na lista usando chamadas individuais síncronas.
+     * O endpoint /contacts/batch pode ser assíncrono no Brevo, causando race condition
+     * onde a campanha é enviada antes dos contatos estarem na lista.
+     * Usando POST /contacts individualmente garantimos que cada contato está na lista
+     * antes de prosseguir.
+     *
+     * Retorna o número de contatos adicionados com sucesso.
      */
-    public function importContacts(int $listId, array $contacts): bool
+    public function importContacts(int $listId, array $contacts): int
     {
-        if (empty($contacts)) return false;
+        if (empty($contacts)) return 0;
 
-        $chunks = array_chunk($contacts, 150);
+        $added  = 0;
         $errors = 0;
 
-        foreach ($chunks as $chunk) {
-            $payload = array_map(fn($c) => [
-                'email'      => $c['email'],
-                'listIds'    => [$listId],
-                'attributes' => ['FIRSTNAME' => $c['name'] ?? ''],
-                'updateEnabled' => true,
-            ], $chunk);
-
+        foreach ($contacts as $c) {
             $response = Http::withHeaders($this->apiHeaders())
-                ->post("{$this->baseApiUrl}/contacts/batch", ['contacts' => $payload]);
+                ->post("{$this->baseApiUrl}/contacts", [
+                    'email'         => $c['email'],
+                    'listIds'       => [$listId],
+                    'attributes'    => ['FIRSTNAME' => $c['name'] ?? ''],
+                    'updateEnabled' => true,
+                ]);
 
-            if (!$response->successful()) {
-                // Tenta um a um se o batch falhar
-                foreach ($chunk as $c) {
-                    $r = Http::withHeaders($this->apiHeaders())
-                        ->post("{$this->baseApiUrl}/contacts", [
-                            'email'         => $c['email'],
-                            'listIds'       => [$listId],
-                            'attributes'    => ['FIRSTNAME' => $c['name'] ?? ''],
-                            'updateEnabled' => true,
-                        ]);
-                    if (!$r->successful() && $r->status() !== 400) {
-                        $errors++;
-                    }
+            // 201 = criado, 204 = atualizado, 400 c/ "Contact already exist" = já existe (conta como ok)
+            if ($response->successful()) {
+                $added++;
+            } elseif ($response->status() === 400) {
+                $body = $response->json('message') ?? '';
+                if (str_contains(strtolower($body), 'already exist') || str_contains(strtolower($body), 'duplicate')) {
+                    // Contato já existe no Brevo — garante que está na lista
+                    $this->addContactToList($c['email'], $listId);
+                    $added++;
+                } else {
+                    $errors++;
+                    Log::warning('Brevo importContacts: contato rejeitado', ['email' => $c['email'], 'msg' => $body]);
                 }
+            } else {
+                $errors++;
+                Log::warning('Brevo importContacts: erro ao adicionar contato', [
+                    'email'  => $c['email'],
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
             }
         }
 
-        if ($errors > 0) {
-            Log::warning('Brevo importContacts: alguns contatos falharam', ['errors' => $errors, 'listId' => $listId]);
-        }
+        Log::info('Brevo importContacts concluído', [
+            'listId' => $listId,
+            'total'  => count($contacts),
+            'added'  => $added,
+            'errors' => $errors,
+        ]);
 
-        return true;
+        return $added;
+    }
+
+    /**
+     * Adiciona um contato existente a uma lista específica.
+     */
+    protected function addContactToList(string $email, int $listId): void
+    {
+        Http::withHeaders($this->apiHeaders())
+            ->post("{$this->baseApiUrl}/contacts/lists/{$listId}/contacts/add", [
+                'emails' => [$email],
+            ]);
+    }
+
+    /**
+     * Retorna o número de contatos em uma lista Brevo.
+     */
+    public function getListContactCount(int $listId): int
+    {
+        try {
+            $response = Http::withHeaders($this->apiHeaders())
+                ->get("{$this->baseApiUrl}/contacts/lists/{$listId}");
+
+            if ($response->successful()) {
+                return (int) ($response->json('uniqueSubscribers') ?? $response->json('totalSubscribers') ?? 0);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Brevo getListContactCount failed: ' . $e->getMessage());
+        }
+        return 0;
     }
 
     /**
@@ -447,9 +486,12 @@ class BrevoService
 
     /**
      * Dispara uma campanha imediatamente.
+     * O Brevo enfileira o envio — a entrega real ocorre em segundos a alguns minutos.
      */
     public function sendBrevoEmailCampaign(int $campaignId): bool
     {
+        $this->resolveConfig(); // garante API key carregada
+
         $response = Http::withHeaders($this->apiHeaders())
             ->post("{$this->baseApiUrl}/emailCampaigns/{$campaignId}/sendNow");
 
@@ -462,6 +504,7 @@ class BrevoService
             return false;
         }
 
+        Log::info('Brevo sendBrevoEmailCampaign: campanha enfileirada', ['campaignId' => $campaignId]);
         return true;
     }
 
