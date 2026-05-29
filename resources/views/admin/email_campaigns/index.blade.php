@@ -108,18 +108,18 @@
                                 <i class="fas fa-eye"></i>
                             </a>
                             @if($c->status === 'draft')
-                                <form action="{{ route('admin.email_campaigns.send', $c) }}" method="POST"
-                                      onsubmit="return confirm('Disparar campanha para {{ $c->audienceLabel() }}?')">
+                                <form id="formEnviar{{ $c->id }}" action="{{ route('admin.email_campaigns.send', $c) }}" method="POST">
                                     @csrf
-                                    <button type="submit"
+                                    <button type="button"
+                                            onclick="abrirModalDisparar({{ $c->id }}, '{{ addslashes($c->name) }}', '{{ $c->audienceLabel() }}', {{ $c->recipient_count ?: 'null' }})"
                                             style="padding:7px 14px; border-radius:8px; background:#6366f1; color:white; font-size:0.78rem; font-weight:800; border:none; cursor:pointer;">
                                         <i class="fas fa-paper-plane me-1"></i>Disparar
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.email_campaigns.destroy', $c) }}" method="POST"
-                                      onsubmit="return confirm('Excluir campanha?')">
+                                <form id="formExcluir{{ $c->id }}" action="{{ route('admin.email_campaigns.destroy', $c) }}" method="POST">
                                     @csrf @method('DELETE')
-                                    <button type="submit"
+                                    <button type="button"
+                                            onclick="abrirModalExcluir({{ $c->id }}, '{{ addslashes($c->name) }}')"
                                             style="padding:7px 10px; border-radius:8px; background:#fef2f2; color:#dc2626; font-size:0.78rem; border:none; cursor:pointer;">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -147,4 +147,114 @@
         @endif
     @endif
 </div>
+{{-- Modal: Confirmar disparo --}}
+<div id="modalDisparar" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center;">
+    <div onclick="fecharModalDisparar()" style="position:absolute; inset:0; background:rgba(15,23,42,0.55); backdrop-filter:blur(4px);"></div>
+    <div style="position:relative; background:#fff; border-radius:24px; padding:40px; max-width:460px; width:90%; box-shadow:0 25px 50px rgba(0,0,0,0.15); border:1px solid #e2e8f0;">
+        <div style="width:64px; height:64px; background:#fef3c7; border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:1.6rem;">
+            <i class="fas fa-paper-plane" style="color:#d97706;"></i>
+        </div>
+        <h3 style="text-align:center; margin:0 0 8px; font-size:1.25rem; font-weight:900; color:#0f172a;">Confirmar disparo</h3>
+        <p style="text-align:center; color:#64748b; font-size:0.88rem; margin:0 0 28px; line-height:1.6;">
+            Esta ação é <strong>irreversível</strong>. O e-mail será enviado imediatamente a todos os destinatários.
+        </p>
+        <div style="background:#f8fafc; border-radius:14px; padding:16px 20px; margin-bottom:28px; border:1px solid #e2e8f0;">
+            <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:0.83rem;">
+                <span style="color:#64748b; font-weight:600;">Campanha</span>
+                <span id="dNome" style="color:#1e293b; font-weight:800; text-align:right; max-width:60%;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:0.83rem;">
+                <span style="color:#64748b; font-weight:600;">Público</span>
+                <span id="dPublico" style="color:#1e293b; font-weight:800;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:0.83rem;">
+                <span style="color:#64748b; font-weight:600;">Destinatários est.</span>
+                <span id="dDestinatarios" style="color:#6366f1; font-weight:800;"></span>
+            </div>
+        </div>
+        <div style="display:flex; gap:12px;">
+            <button onclick="fecharModalDisparar()"
+                    style="flex:1; padding:14px; border:2px solid #e2e8f0; border-radius:12px; background:white; color:#64748b; font-weight:800; font-size:0.9rem; cursor:pointer;">
+                Cancelar
+            </button>
+            <button id="btnConfirmarDisparar" onclick="confirmarDisparar()"
+                    style="flex:1; padding:14px; border:none; border-radius:12px; background:#6366f1; color:white; font-weight:800; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <i class="fas fa-paper-plane"></i> Disparar agora
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: Confirmar exclusão --}}
+<div id="modalExcluir" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center;">
+    <div onclick="fecharModalExcluir()" style="position:absolute; inset:0; background:rgba(15,23,42,0.55); backdrop-filter:blur(4px);"></div>
+    <div style="position:relative; background:#fff; border-radius:24px; padding:40px; max-width:420px; width:90%; box-shadow:0 25px 50px rgba(0,0,0,0.15); border:1px solid #e2e8f0;">
+        <div style="width:64px; height:64px; background:#fef2f2; border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:1.6rem;">
+            <i class="fas fa-trash" style="color:#dc2626;"></i>
+        </div>
+        <h3 style="text-align:center; margin:0 0 8px; font-size:1.2rem; font-weight:900; color:#0f172a;">Excluir campanha?</h3>
+        <p style="text-align:center; color:#64748b; font-size:0.88rem; margin:0 0 6px;">
+            A campanha <strong id="eNome" style="color:#1e293b;"></strong> será removida permanentemente.
+        </p>
+        <p style="text-align:center; color:#94a3b8; font-size:0.8rem; margin:0 0 28px;">Esta ação não pode ser desfeita.</p>
+        <div style="display:flex; gap:12px;">
+            <button onclick="fecharModalExcluir()"
+                    style="flex:1; padding:14px; border:2px solid #e2e8f0; border-radius:12px; background:white; color:#64748b; font-weight:800; font-size:0.9rem; cursor:pointer;">
+                Cancelar
+            </button>
+            <button id="btnConfirmarExcluir" onclick="confirmarExcluir()"
+                    style="flex:1; padding:14px; border:none; border-radius:12px; background:#dc2626; color:white; font-weight:800; font-size:0.9rem; cursor:pointer;">
+                <i class="fas fa-trash me-1"></i> Excluir
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let _formDisparar = null;
+let _formExcluir  = null;
+
+function abrirModalDisparar(id, nome, publico, destinatarios) {
+    _formDisparar = document.getElementById('formEnviar' + id);
+    document.getElementById('dNome').textContent        = nome;
+    document.getElementById('dPublico').textContent     = publico;
+    document.getElementById('dDestinatarios').textContent = destinatarios ? destinatarios.toLocaleString('pt-BR') + ' contatos' : 'a calcular no envio';
+    const btn = document.getElementById('btnConfirmarDisparar');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Disparar agora';
+    document.getElementById('modalDisparar').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function fecharModalDisparar() {
+    document.getElementById('modalDisparar').style.display = 'none';
+    document.body.style.overflow = '';
+}
+function confirmarDisparar() {
+    const btn = document.getElementById('btnConfirmarDisparar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    _formDisparar.submit();
+}
+
+function abrirModalExcluir(id, nome) {
+    _formExcluir = document.getElementById('formExcluir' + id);
+    document.getElementById('eNome').textContent = nome;
+    document.getElementById('modalExcluir').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function fecharModalExcluir() {
+    document.getElementById('modalExcluir').style.display = 'none';
+    document.body.style.overflow = '';
+}
+function confirmarExcluir() {
+    const btn = document.getElementById('btnConfirmarExcluir');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+    _formExcluir.submit();
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { fecharModalDisparar(); fecharModalExcluir(); }
+});
+</script>
 @endsection
