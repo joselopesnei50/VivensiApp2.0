@@ -480,31 +480,54 @@ class BrevoService
         $data     = $response->json();
         $rawStats = $data['statistics'] ?? null;
 
-        // Log completo para diagnóstico (reduz ruído em prod logando apenas 1x/hora)
         Log::info('Brevo campaign stats full', [
             'campaignId'  => $campaignId,
             'brevoStatus' => $data['status'] ?? null,
             'statistics'  => $rawStats,
         ]);
 
-        // Brevo v3 pode retornar globalStats ou as stats diretamente em statistics
-        $stats = [];
-        if (is_array($rawStats)) {
-            $stats = $rawStats['globalStats'] ?? $rawStats;
+        if (!is_array($rawStats)) {
+            return ['_no_data' => true];
+        }
+
+        // Brevo coloca os totais em globalStats, mas às vezes os zera e coloca
+        // os dados reais por lista em campaignStats. Agregamos campaignStats quando
+        // globalStats.delivered = 0 mas há entregues reais em campaignStats.
+        $global = $rawStats['globalStats'] ?? [];
+        $campaignStats = $rawStats['campaignStats'] ?? [];
+
+        $stats = $global;
+
+        if ((int)($global['delivered'] ?? 0) === 0 && !empty($campaignStats)) {
+            $agg = [
+                'delivered'       => 0,
+                'uniqueViews'     => 0,
+                'uniqueClicks'    => 0,
+                'clickers'        => 0,
+                'softBounces'     => 0,
+                'hardBounces'     => 0,
+                'unsubscriptions' => 0,
+                'complaints'      => 0,
+            ];
+            foreach ($campaignStats as $cs) {
+                foreach (array_keys($agg) as $key) {
+                    $agg[$key] += (int)($cs[$key] ?? 0);
+                }
+            }
+            // Usa o agregado se tiver pelo menos 1 entregue
+            if ($agg['delivered'] > 0) {
+                $stats = array_merge($global, $agg);
+            }
         }
 
         if (empty($stats)) {
             return ['_no_data' => true];
         }
 
-        // A API Brevo não é consistente entre versões/planos:
-        // uniqueViews / viewed / views  →  aberturas únicas
-        // uniqueClicks / clickers       →  cliques únicos
-        $opens  = $stats['uniqueViews']  ?? $stats['viewed']   ?? $stats['views']    ?? $stats['opens']   ?? null;
-        $clicks = $stats['uniqueClicks'] ?? $stats['clickers'] ?? $stats['clicks']   ?? null;
-
-        // Normaliza para inteiro (evita string "0" vs null)
         $toInt = fn($v) => $v !== null ? (int) $v : null;
+
+        $opens  = $stats['uniqueViews']  ?? $stats['viewed']   ?? $stats['opens']   ?? null;
+        $clicks = $stats['uniqueClicks'] ?? $stats['clickers'] ?? $stats['clicks']   ?? null;
 
         return [
             'delivered'    => $toInt($stats['delivered']       ?? null),
