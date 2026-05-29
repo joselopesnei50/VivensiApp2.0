@@ -99,6 +99,8 @@
             @php
                 $details = [
                     ['label'=>'Status', 'value'=> ucfirst($campaign->status)],
+                    ['label'=>'Remetente', 'value'=> $campaign->sender_email ?: 'Padrão do sistema'],
+                    ['label'=>'Reply-To', 'value'=> $campaign->reply_to_email ?: '—'],
                     ['label'=>'Público', 'value'=> $campaign->audienceLabel()],
                     ['label'=>'Criada por', 'value'=> $campaign->creator->name ?? '—'],
                     ['label'=>'Criada em', 'value'=> $campaign->created_at->format('d/m/Y H:i')],
