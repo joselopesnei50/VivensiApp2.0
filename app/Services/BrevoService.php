@@ -466,21 +466,38 @@ class BrevoService
             Log::warning('Brevo getBrevoEmailCampaignStats failed', [
                 'campaignId' => $campaignId,
                 'status'     => $response->status(),
+                'body'       => $response->body(),
             ]);
             return [];
         }
 
-        $data   = $response->json();
-        $stats  = $data['statistics']['globalStats'] ?? $data['statistics'] ?? [];
+        $data = $response->json();
+
+        // Brevo v3: estatísticas podem estar em globalStats (campanhas com histórico)
+        // ou diretamente no objeto statistics. Logamos para diagnóstico.
+        $rawStats = $data['statistics'] ?? null;
+        Log::info('Brevo campaign stats raw', [
+            'campaignId'    => $campaignId,
+            'status'        => $data['status'] ?? null,
+            'statsKeys'     => is_array($rawStats) ? array_keys($rawStats) : null,
+            'globalStats'   => $rawStats['globalStats'] ?? null,
+        ]);
+
+        $stats = $rawStats['globalStats'] ?? (is_array($rawStats) ? $rawStats : []);
+
+        // Se não há delivered, as métricas não estão disponíveis ainda
+        if (empty($stats) || !array_key_exists('delivered', $stats)) {
+            return [];
+        }
 
         return [
-            'delivered'    => $stats['delivered']    ?? $stats['clickers'] ?? null,
-            'opens'        => $stats['uniqueViews']  ?? $stats['opens']    ?? null,
-            'clicks'       => $stats['uniqueClicks'] ?? $stats['clicks']   ?? null,
-            'bounces'      => ($stats['softBounces'] ?? 0) + ($stats['hardBounces'] ?? 0),
+            'delivered'    => $stats['delivered']      ?? null,
+            'opens'        => $stats['uniqueViews']    ?? $stats['opens']   ?? null,
+            'clicks'       => $stats['uniqueClicks']   ?? $stats['clicks']  ?? null,
+            'bounces'      => ($stats['softBounces']   ?? 0) + ($stats['hardBounces'] ?? 0),
             'unsubscribes' => $stats['unsubscriptions'] ?? null,
-            'spam'         => $stats['complaints']   ?? null,
-            'status'       => $data['status']        ?? null,
+            'spam'         => $stats['complaints']     ?? null,
+            'status'       => $data['status']          ?? null,
         ];
     }
 
