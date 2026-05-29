@@ -26,27 +26,29 @@ class EmailCampaignController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'          => ['required', 'string', 'max:255'],
-            'subject'       => ['required', 'string', 'max:255'],
-            'html_content'  => ['required', 'string'],
-            'sender_name'   => ['nullable', 'string', 'max:100'],
-            'sender_email'  => ['nullable', 'email', 'max:150'],
-            'audience_type' => ['required', 'in:tenant_admins,all_users,leads,all,manual,none'],
+            'name'           => ['required', 'string', 'max:255'],
+            'subject'        => ['required', 'string', 'max:255'],
+            'html_content'   => ['required', 'string'],
+            'sender_name'    => ['nullable', 'string', 'max:100'],
+            'sender_email'   => ['nullable', 'email', 'max:150'],
+            'reply_to_email' => ['nullable', 'email', 'max:150'],
+            'audience_type'  => ['required', 'in:tenant_admins,all_users,leads,all,manual,none'],
             'manual_emails_raw' => ['nullable', 'string'],
         ]);
 
         $manualEmails = $this->parseManualEmailsInput($request->input('manual_emails_raw', ''));
 
         $campaign = EmailCampaign::create([
-            'created_by'    => auth()->id(),
-            'name'          => $validated['name'],
-            'subject'       => $validated['subject'],
-            'html_content'  => $validated['html_content'],
-            'sender_name'   => $validated['sender_name'] ?? null,
-            'sender_email'  => $validated['sender_email'] ?? null,
-            'audience_type' => $validated['audience_type'],
-            'manual_emails' => !empty($manualEmails) ? json_encode($manualEmails) : null,
-            'status'        => 'draft',
+            'created_by'     => auth()->id(),
+            'name'           => $validated['name'],
+            'subject'        => $validated['subject'],
+            'html_content'   => $validated['html_content'],
+            'sender_name'    => $validated['sender_name'] ?? null,
+            'sender_email'   => $validated['sender_email'] ?? null,
+            'reply_to_email' => $validated['reply_to_email'] ?? null,
+            'audience_type'  => $validated['audience_type'],
+            'manual_emails'  => !empty($manualEmails) ? json_encode($manualEmails) : null,
+            'status'         => 'draft',
         ]);
 
         return redirect()->route('admin.email_campaigns.index')
@@ -55,6 +57,28 @@ class EmailCampaignController extends Controller
 
     public function show(EmailCampaign $emailCampaign)
     {
+        // Auto-busca métricas se enviada e ainda não foram carregadas (ou faz +30min)
+        if ($emailCampaign->status === 'sent' && $emailCampaign->brevo_campaign_id) {
+            $stale = $emailCampaign->stats_fetched_at === null
+                || $emailCampaign->stats_fetched_at->lt(now()->subMinutes(30));
+
+            if ($stale) {
+                $stats = app(BrevoService::class)->getBrevoEmailCampaignStats($emailCampaign->brevo_campaign_id);
+                if (!empty($stats)) {
+                    $emailCampaign->update([
+                        'stat_delivered'    => $stats['delivered'],
+                        'stat_opens'        => $stats['opens'],
+                        'stat_clicks'       => $stats['clicks'],
+                        'stat_bounces'      => $stats['bounces'],
+                        'stat_unsubscribes' => $stats['unsubscribes'],
+                        'stat_spam'         => $stats['spam'],
+                        'stats_fetched_at'  => now(),
+                    ]);
+                    $emailCampaign->refresh();
+                }
+            }
+        }
+
         return view('admin.email_campaigns.show', ['campaign' => $emailCampaign]);
     }
 
@@ -107,12 +131,13 @@ class EmailCampaignController extends Controller
 
             // 4. Cria campanha no Brevo
             $campaignId = $brevo->createBrevoEmailCampaign([
-                'name'          => $emailCampaign->name,
-                'subject'       => $emailCampaign->subject,
-                'html_content'  => $emailCampaign->html_content,
-                'sender_name'   => $emailCampaign->sender_name,
-                'sender_email'  => $emailCampaign->sender_email,
-                'brevo_list_id' => $listId,
+                'name'           => $emailCampaign->name,
+                'subject'        => $emailCampaign->subject,
+                'html_content'   => $emailCampaign->html_content,
+                'sender_name'    => $emailCampaign->sender_name,
+                'sender_email'   => $emailCampaign->sender_email,
+                'reply_to_email' => $emailCampaign->reply_to_email,
+                'brevo_list_id'  => $listId,
             ]);
 
             if (!$campaignId) {

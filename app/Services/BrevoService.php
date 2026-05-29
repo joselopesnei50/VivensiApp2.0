@@ -412,6 +412,10 @@ class BrevoService
             'recipients'  => ['listIds' => [(int) $data['brevo_list_id']]],
         ];
 
+        if (!empty($data['reply_to_email'])) {
+            $payload['replyTo'] = ['email' => $data['reply_to_email'], 'name' => $senderName];
+        }
+
         Log::info('Brevo createBrevoEmailCampaign payload', [
             'name'     => $payload['name'],
             'subject'  => $payload['subject'],
