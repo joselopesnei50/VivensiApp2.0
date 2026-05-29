@@ -29,19 +29,21 @@ class EmailCampaign extends Model
 
     public function openRate(): ?float
     {
-        if (!$this->stat_delivered || !$this->stat_opens) return null;
+        if ($this->stat_delivered === null || $this->stat_opens === null) return null;
+        if ($this->stat_delivered == 0) return null;
         return round(($this->stat_opens / $this->stat_delivered) * 100, 1);
     }
 
     public function clickRate(): ?float
     {
-        if (!$this->stat_delivered || !$this->stat_clicks) return null;
+        if ($this->stat_delivered === null || $this->stat_clicks === null) return null;
+        if ($this->stat_delivered == 0) return null;
         return round(($this->stat_clicks / $this->stat_delivered) * 100, 1);
     }
 
     public function bounceRate(): ?float
     {
-        if (!$this->recipient_count || !$this->stat_bounces) return null;
+        if (!$this->recipient_count || $this->stat_bounces === null) return null;
         return round(($this->stat_bounces / $this->recipient_count) * 100, 1);
     }
 

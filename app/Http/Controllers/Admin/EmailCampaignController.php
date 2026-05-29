@@ -164,7 +164,7 @@ class EmailCampaignController extends Controller
         $stats = app(BrevoService::class)->getBrevoEmailCampaignStats($emailCampaign->brevo_campaign_id);
 
         if (empty($stats)) {
-            return back()->with('error', 'Não foi possível buscar métricas no momento.');
+            return back()->with('error', 'Métricas ainda não disponíveis. O Brevo pode levar alguns minutos para processar após o envio. Tente novamente em instantes.');
         }
 
         $emailCampaign->update([
