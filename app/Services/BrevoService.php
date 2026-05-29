@@ -13,6 +13,7 @@ class BrevoService
     protected ?string $senderEmail = null;
     protected ?string $senderName = null;
     protected string $baseUrl = 'https://api.brevo.com/v3/smtp/email';
+    public ?string $lastBrevoError = null;
 
     public function __construct()
     {
@@ -412,15 +413,17 @@ class BrevoService
             'recipients'  => ['listIds' => [(int) $data['brevo_list_id']]],
         ];
 
+        // replyTo na API de campanhas Brevo aceita apenas string (e-mail), não objeto
         if (!empty($data['reply_to_email'])) {
-            $payload['replyTo'] = ['email' => $data['reply_to_email'], 'name' => $senderName];
+            $payload['replyTo'] = $data['reply_to_email'];
         }
 
         Log::info('Brevo createBrevoEmailCampaign payload', [
-            'name'     => $payload['name'],
-            'subject'  => $payload['subject'],
-            'sender'   => $payload['sender'],
-            'listId'   => $data['brevo_list_id'],
+            'name'    => $payload['name'],
+            'subject' => $payload['subject'],
+            'sender'  => $payload['sender'],
+            'replyTo' => $payload['replyTo'] ?? null,
+            'listId'  => $data['brevo_list_id'],
         ]);
 
         $response = Http::withHeaders($this->apiHeaders())
@@ -430,11 +433,15 @@ class BrevoService
             return $response->json('id');
         }
 
+        $brevoError = $response->json('message') ?? $response->body();
         Log::error('Brevo createBrevoEmailCampaign failed', [
-            'status'  => $response->status(),
-            'body'    => $response->body(),
-            'payload' => array_merge($payload, ['htmlContent' => '[omitted]']),
+            'status'      => $response->status(),
+            'brevoMessage'=> $brevoError,
+            'payload'     => array_merge($payload, ['htmlContent' => '[omitted]']),
         ]);
+
+        // Armazena o erro real para ser exibido no controller
+        $this->lastBrevoError = $brevoError;
         return null;
     }
 
