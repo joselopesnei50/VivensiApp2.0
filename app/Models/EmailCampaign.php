@@ -8,7 +8,7 @@ class EmailCampaign extends Model
 {
     protected $fillable = [
         'created_by', 'name', 'subject', 'html_content',
-        'sender_name', 'sender_email', 'audience_type', 'manual_emails',
+        'sender_name', 'sender_email', 'reply_to_email', 'audience_type', 'manual_emails',
         'recipient_count', 'brevo_list_id', 'brevo_campaign_id',
         'status', 'scheduled_at', 'sent_at', 'error_message',
         'stat_delivered', 'stat_opens', 'stat_clicks',

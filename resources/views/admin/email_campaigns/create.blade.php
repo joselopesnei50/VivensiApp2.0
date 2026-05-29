@@ -71,6 +71,16 @@
                            placeholder="contato@vivensi.com.br"
                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
                 </div>
+                <div class="col-md-12">
+                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">
+                        E-mail de resposta (Reply-To)
+                        <span style="font-weight:400; color:#94a3b8; font-size:0.78rem; margin-left:6px;">— e-mail institucional que aparece quando o destinatário clica em "Responder"</span>
+                    </label>
+                    <input type="email" name="reply_to_email" value="{{ old('reply_to_email') }}"
+                           placeholder="contato@suaorganizacao.org.br"
+                           style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
+                    <p style="color:#94a3b8; font-size:0.75rem; margin:6px 0 0;">Deixe em branco para que as respostas vão para o e-mail do remetente.</p>
+                </div>
             </div>
         </div>
 
