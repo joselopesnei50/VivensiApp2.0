@@ -13,13 +13,13 @@
             <p style="color:#64748b; margin:6px 0 0; font-size:0.9rem;">{{ $campaign->subject }}</p>
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
-            @if($campaign->status === 'draft')
+            @if(in_array($campaign->status, ['draft', 'error']))
                 <form id="formDispararCampanha" action="{{ route('admin.email_campaigns.send', $campaign) }}" method="POST">
                     @csrf
                     <button type="button"
                             onclick="abrirModalDisparar('{{ addslashes($campaign->name) }}', '{{ $campaign->audienceLabel() }}', {{ $campaign->recipient_count ?: 'null' }})"
                             style="padding:14px 24px; border:none; border-radius:14px; background:#6366f1; color:white; font-weight:800; font-size:0.9rem; cursor:pointer;">
-                        <i class="fas fa-paper-plane me-2"></i>Disparar Agora
+                        <i class="fas fa-paper-plane me-2"></i>{{ $campaign->status === 'error' ? 'Tentar novamente' : 'Disparar Agora' }}
                     </button>
                 </form>
             @endif
