@@ -88,7 +88,7 @@
                 <i class="fas fa-eye" style="color:#6366f1;"></i>
                 <strong style="font-size:0.9rem; color:#1e293b;">Preview do E-mail</strong>
             </div>
-            <iframe srcdoc="{{ htmlspecialchars($campaign->html_content) }}"
+            <iframe srcdoc="{{ $campaign->html_content }}"
                     style="width:100%; height:600px; border:none;"></iframe>
         </div>
     </div>
