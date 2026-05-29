@@ -136,8 +136,15 @@ class EmailCampaignController extends Controller
                 return back()->with('error', 'Falha ao criar lista no Brevo. Verifique a chave API nas configurações.');
             }
 
-            // 3. Importa contatos
-            $brevo->importContacts($listId, $contacts);
+            // 3. Importa contatos (síncrono — aguarda confirmação por contato)
+            $imported = $brevo->importContacts($listId, $contacts);
+
+            if ($imported === 0) {
+                $emailCampaign->update(['status' => 'error', 'error_message' => 'Nenhum contato foi adicionado à lista no Brevo. Verifique se os e-mails são válidos e não estão bloqueados.']);
+                return back()->with('error', 'Falha ao importar contatos para o Brevo. Nenhum destinatário adicionado.');
+            }
+
+            Log::info('EmailCampaign: contatos importados', ['imported' => $imported, 'total' => count($contacts)]);
 
             // 4. Cria campanha no Brevo
             $campaignId = $brevo->createBrevoEmailCampaign([
@@ -174,8 +181,8 @@ class EmailCampaignController extends Controller
             ]);
 
             if ($sent) {
-                Log::info('EmailCampaign sent', ['id' => $emailCampaign->id, 'recipients' => count($contacts)]);
-                return back()->with('success', "Campanha disparada para " . count($contacts) . " destinatários!");
+                Log::info('EmailCampaign sent', ['id' => $emailCampaign->id, 'recipients' => count($contacts), 'imported' => $imported]);
+                return back()->with('success', "Campanha enfileirada para {$imported} destinatário(s). O Brevo processa e entrega em alguns minutos — atualize as métricas em instantes.");
             }
 
             return back()->with('error', 'A campanha foi criada no Brevo mas não foi possível disparar. Tente novamente.');
