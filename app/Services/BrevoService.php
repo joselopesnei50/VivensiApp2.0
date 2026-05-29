@@ -460,6 +460,8 @@ class BrevoService
 
     /**
      * Busca estatísticas de uma campanha enviada.
+     * Retorna array com chaves normalizadas, ou [] se a API falhar.
+     * Retorna ['_no_data' => true] se a API respondeu mas ainda sem métricas.
      */
     public function getBrevoEmailCampaignStats(int $campaignId): array
     {
@@ -475,33 +477,58 @@ class BrevoService
             return [];
         }
 
-        $data = $response->json();
-
-        // Brevo v3: estatísticas podem estar em globalStats (campanhas com histórico)
-        // ou diretamente no objeto statistics. Logamos para diagnóstico.
+        $data     = $response->json();
         $rawStats = $data['statistics'] ?? null;
-        Log::info('Brevo campaign stats raw', [
-            'campaignId'    => $campaignId,
-            'status'        => $data['status'] ?? null,
-            'statsKeys'     => is_array($rawStats) ? array_keys($rawStats) : null,
-            'globalStats'   => $rawStats['globalStats'] ?? null,
+
+        // Log completo para diagnóstico (reduz ruído em prod logando apenas 1x/hora)
+        Log::info('Brevo campaign stats full', [
+            'campaignId'  => $campaignId,
+            'brevoStatus' => $data['status'] ?? null,
+            'statistics'  => $rawStats,
         ]);
 
-        $stats = $rawStats['globalStats'] ?? (is_array($rawStats) ? $rawStats : []);
-
-        // Se não há delivered, as métricas não estão disponíveis ainda
-        if (empty($stats) || !array_key_exists('delivered', $stats)) {
-            return [];
+        // Brevo v3 pode retornar globalStats ou as stats diretamente em statistics
+        $stats = [];
+        if (is_array($rawStats)) {
+            $stats = $rawStats['globalStats'] ?? $rawStats;
         }
 
+        if (empty($stats)) {
+            return ['_no_data' => true];
+        }
+
+        // A API Brevo não é consistente entre versões/planos:
+        // uniqueViews / viewed / views  →  aberturas únicas
+        // uniqueClicks / clickers       →  cliques únicos
+        $opens  = $stats['uniqueViews']  ?? $stats['viewed']   ?? $stats['views']    ?? $stats['opens']   ?? null;
+        $clicks = $stats['uniqueClicks'] ?? $stats['clickers'] ?? $stats['clicks']   ?? null;
+
+        // Normaliza para inteiro (evita string "0" vs null)
+        $toInt = fn($v) => $v !== null ? (int) $v : null;
+
         return [
-            'delivered'    => $stats['delivered']      ?? null,
-            'opens'        => $stats['uniqueViews']    ?? $stats['opens']   ?? null,
-            'clicks'       => $stats['uniqueClicks']   ?? $stats['clicks']  ?? null,
-            'bounces'      => ($stats['softBounces']   ?? 0) + ($stats['hardBounces'] ?? 0),
-            'unsubscribes' => $stats['unsubscriptions'] ?? null,
-            'spam'         => $stats['complaints']     ?? null,
-            'status'       => $data['status']          ?? null,
+            'delivered'    => $toInt($stats['delivered']       ?? null),
+            'opens'        => $toInt($opens),
+            'clicks'       => $toInt($clicks),
+            'bounces'      => $toInt(($stats['softBounces'] ?? 0) + ($stats['hardBounces'] ?? 0)),
+            'unsubscribes' => $toInt($stats['unsubscriptions'] ?? $stats['unsubscribes'] ?? null),
+            'spam'         => $toInt($stats['complaints']      ?? $stats['spam']         ?? null),
+            'status'       => $data['status'] ?? null,
+        ];
+    }
+
+    /**
+     * Retorna o JSON bruto da API do Brevo para uma campanha — apenas para debug admin.
+     */
+    public function getRawBrevoResponse(int $campaignId): array
+    {
+        $this->resolveConfig();
+        $response = Http::withHeaders($this->apiHeaders())
+            ->get("{$this->baseApiUrl}/emailCampaigns/{$campaignId}");
+
+        return [
+            'http_status' => $response->status(),
+            'body'        => $response->json() ?? $response->body(),
         ];
     }
 
