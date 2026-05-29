@@ -57,14 +57,16 @@ class EmailCampaignController extends Controller
 
     public function show(EmailCampaign $emailCampaign)
     {
-        // Auto-busca métricas se enviada e ainda não foram carregadas (ou faz +30min)
+        // Auto-busca métricas se enviada e dados têm +30min (ou nunca foram buscados)
         if ($emailCampaign->status === 'sent' && $emailCampaign->brevo_campaign_id) {
             $stale = $emailCampaign->stats_fetched_at === null
                 || $emailCampaign->stats_fetched_at->lt(now()->subMinutes(30));
 
             if ($stale) {
                 $stats = app(BrevoService::class)->getBrevoEmailCampaignStats($emailCampaign->brevo_campaign_id);
-                if (!empty($stats)) {
+
+                if (!empty($stats) && !isset($stats['_no_data'])) {
+                    // Brevo retornou métricas reais — salva tudo
                     $emailCampaign->update([
                         'stat_delivered'    => $stats['delivered'],
                         'stat_opens'        => $stats['opens'],
@@ -75,7 +77,11 @@ class EmailCampaignController extends Controller
                         'stats_fetched_at'  => now(),
                     ]);
                     $emailCampaign->refresh();
+                } elseif (isset($stats['_no_data'])) {
+                    // API respondeu mas ainda sem dados — marca como tentado para não repetir em cada request
+                    $emailCampaign->update(['stats_fetched_at' => now()]);
                 }
+                // Se $stats vazio (falha na API) não atualiza nada — tenta novamente na próxima vez
             }
         }
 
@@ -203,6 +209,31 @@ class EmailCampaignController extends Controller
         ]);
 
         return back()->with('success', 'Métricas atualizadas com sucesso!');
+    }
+
+    /**
+     * Dump do JSON bruto do Brevo para diagnóstico — apenas super admin.
+     */
+    public function debugStats(EmailCampaign $emailCampaign)
+    {
+        if (!$emailCampaign->brevo_campaign_id) {
+            return response()->json(['error' => 'Campanha sem brevo_campaign_id'], 400);
+        }
+
+        $raw = app(BrevoService::class)->getRawBrevoResponse($emailCampaign->brevo_campaign_id);
+
+        return response()->json([
+            'campaign_id'       => $emailCampaign->id,
+            'brevo_campaign_id' => $emailCampaign->brevo_campaign_id,
+            'db_stats' => [
+                'stat_delivered'    => $emailCampaign->stat_delivered,
+                'stat_opens'        => $emailCampaign->stat_opens,
+                'stat_clicks'       => $emailCampaign->stat_clicks,
+                'stat_bounces'      => $emailCampaign->stat_bounces,
+                'stats_fetched_at'  => $emailCampaign->stats_fetched_at,
+            ],
+            'brevo_raw' => $raw,
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

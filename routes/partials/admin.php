@@ -128,6 +128,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/email-campaigns/{emailCampaign}',        [App\Http\Controllers\Admin\EmailCampaignController::class, 'show'])->name('admin.email_campaigns.show');
         Route::post('/email-campaigns/{emailCampaign}/send',  [App\Http\Controllers\Admin\EmailCampaignController::class, 'send'])->name('admin.email_campaigns.send');
         Route::post('/email-campaigns/{emailCampaign}/stats', [App\Http\Controllers\Admin\EmailCampaignController::class, 'refreshStats'])->name('admin.email_campaigns.stats');
+        Route::get('/email-campaigns/{emailCampaign}/debug-stats', [App\Http\Controllers\Admin\EmailCampaignController::class, 'debugStats'])->name('admin.email_campaigns.debug_stats');
         Route::delete('/email-campaigns/{emailCampaign}',     [App\Http\Controllers\Admin\EmailCampaignController::class, 'destroy'])->name('admin.email_campaigns.destroy');
     });
 });
