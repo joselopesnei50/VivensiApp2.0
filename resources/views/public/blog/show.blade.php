@@ -29,7 +29,7 @@
 
     <!-- Article Content -->
     <div class="article-content" style="max-width: 800px; margin: 0 auto; padding: 0 5%;">
-        {!! $post->content_html !!}
+        {!! sanitize_user_html($post->content_html) !!}
     </div>
 
     <!-- Back to Blog -->
