@@ -17,6 +17,15 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/manager/reconciliation',  [App\Http\Controllers\ManagerController::class, 'reconciliation'])->name('manager.reconciliation');
     Route::get('/manager/schedule',        [App\Http\Controllers\ManagerController::class, 'schedule'])->name('manager.schedule');
 
+    // E-mail Marketing (CRM)
+    Route::get('/manager/email-campaigns',                        [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'index'])->name('manager.email_campaigns.index');
+    Route::get('/manager/email-campaigns/create',                 [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'create'])->name('manager.email_campaigns.create');
+    Route::post('/manager/email-campaigns',                       [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'store'])->name('manager.email_campaigns.store');
+    Route::get('/manager/email-campaigns/{emailCampaign}',        [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'show'])->name('manager.email_campaigns.show');
+    Route::post('/manager/email-campaigns/{emailCampaign}/send',  [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'send'])->name('manager.email_campaigns.send');
+    Route::post('/manager/email-campaigns/{emailCampaign}/stats', [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'refreshStats'])->name('manager.email_campaigns.stats');
+    Route::delete('/manager/email-campaigns/{emailCampaign}',     [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'destroy'])->name('manager.email_campaigns.destroy');
+
     // ── Marketing & Prospecção ────────────────────────────────────────────────
     Route::middleware('can:access-manager')->group(function () {
         Route::get('/marketing',                    [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');
