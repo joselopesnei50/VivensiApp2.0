@@ -374,55 +374,61 @@
 
         /* ── Input Area ── */
         .input-area {
-            background: #f0f2f5;
-            padding: 12px 20px;
-            border-top: 1px solid var(--border-color);
+            background: #ffffff;
+            padding: 12px 16px;
+            border-top: 1px solid var(--divider);
             flex-shrink: 0;
         }
         .input-container {
             display: flex;
             align-items: flex-end;
-            gap: 10px;
+            gap: 8px;
         }
         .input-box {
             flex: 1;
-            background: white;
-            border-radius: 10px;
-            border: none;
-            padding: 10px 16px;
-            box-shadow: var(--shadow-sm);
+            background: var(--divider);
+            border-radius: 14px;
+            border: 1px solid transparent;
+            padding: 10px 14px;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .input-box:focus-within {
+            background: #ffffff;
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(37,211,102,.10);
         }
         .input-toolbar {
             display: flex;
-            gap: 4px;
+            gap: 2px;
             padding-bottom: 8px;
-            border-bottom: 1px solid #f0f2f5;
+            border-bottom: 1px solid var(--divider);
             margin-bottom: 6px;
+            flex-wrap: wrap;
         }
         .tool-btn {
             background: transparent; border: none;
-            color: var(--text-muted);
-            font-size: 1rem;
             cursor: pointer;
-            padding: 5px 8px;
-            border-radius: 6px;
+            padding: 4px 9px;
+            border-radius: 8px;
             transition: all 0.15s;
-            display: flex; align-items: center; gap: 5px;
-            font-size: 0.82rem; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 0.75rem; font-weight: 600;
+            white-space: nowrap;
         }
-        .tool-btn:hover { color: var(--primary-color); background: var(--primary-light); }
-        .tool-btn i { font-size: 0.95rem; }
+        .tool-btn:hover { opacity: .9; }
+        .tool-btn i { font-size: 0.82rem; }
 
         .message-input {
             border: none; background: transparent;
             width: 100%; outline: none;
-            font-size: 0.92rem;
-            min-height: 24px; max-height: 120px;
+            font-size: 0.875rem;
+            min-height: 22px; max-height: 120px;
             resize: none;
-            color: var(--text-heading);
-            line-height: 1.5;
+            color: var(--text-primary);
+            line-height: 1.55;
             font-family: inherit;
         }
+        .message-input::placeholder { color: var(--text-ter); }
 
         .input-footer {
             display: flex;
@@ -432,18 +438,18 @@
         }
 
         .send-btn {
-            background: var(--primary-color);
+            background: var(--brand);
             color: white; border: none;
             border-radius: 50%;
-            width: 46px; height: 46px;
-            font-size: 1.1rem;
+            width: 44px; height: 44px;
+            font-size: 1rem;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: transform 0.15s, box-shadow 0.15s;
             flex-shrink: 0;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-mid);
         }
-        .send-btn:hover { background: var(--primary-hover); transform: scale(1.05); }
+        .send-btn:hover { transform: scale(1.07); box-shadow: 0 6px 18px rgba(37,211,102,.35); }
 
         /* ── Right Panel ── */
         .intelligence-panel {
@@ -593,27 +599,17 @@
         .label-opt.selected { border-color: currentColor; opacity: 1; }
         .label-opt:not(.selected) { opacity: .55; }
 
-        /* ── Improved input toolbar ── */
-        .tool-btn {
-            background: transparent; border: none;
-            font-size: 0.78rem; font-weight: 600;
-            cursor: pointer; padding: 4px 10px;
-            border-radius: 20px;
-            transition: all 0.15s;
-            display: inline-flex; align-items: center; gap: 5px;
-            white-space: nowrap;
-        }
-        .tool-btn:hover { opacity: .85; }
-        .tool-btn.tb-rapid    { color: #d97706; background: rgba(245,158,11,.1); }
-        .tool-btn.tb-rapid:hover { background: rgba(245,158,11,.18); }
-        .tool-btn.tb-template { color: #16a34a; background: rgba(16,185,129,.1); }
-        .tool-btn.tb-template:hover { background: rgba(16,185,129,.18); }
-        .tool-btn.tb-image    { color: #6366f1; background: rgba(99,102,241,.1); }
-        .tool-btn.tb-image:hover { background: rgba(99,102,241,.18); }
-        .tool-btn.tb-audio    { color: #ef4444; background: rgba(239,68,68,.1); }
-        .tool-btn.tb-audio:hover { background: rgba(239,68,68,.18); }
-        .tool-btn.tb-schedule { color: #0ea5e9; background: rgba(14,165,233,.1); }
-        .tool-btn.tb-schedule:hover { background: rgba(14,165,233,.18); }
+        /* ── Composer toolbar button variants ── */
+        .tool-btn.tb-rapid    { color: #d97706; background: rgba(245,158,11,.08); }
+        .tool-btn.tb-rapid:hover { background: rgba(245,158,11,.16); }
+        .tool-btn.tb-template { color: #16a34a; background: rgba(16,185,129,.08); }
+        .tool-btn.tb-template:hover { background: rgba(16,185,129,.16); }
+        .tool-btn.tb-image    { color: #6366f1; background: rgba(99,102,241,.08); }
+        .tool-btn.tb-image:hover { background: rgba(99,102,241,.16); }
+        .tool-btn.tb-audio    { color: #ef4444; background: rgba(239,68,68,.08); }
+        .tool-btn.tb-audio:hover { background: rgba(239,68,68,.16); }
+        .tool-btn.tb-schedule { color: #0ea5e9; background: rgba(14,165,233,.08); }
+        .tool-btn.tb-schedule:hover { background: rgba(14,165,233,.16); }
 
         /* ── Compact right panel hero ── */
         .panel-hero-compact {
@@ -722,7 +718,7 @@
             margin-bottom: 20px;
         }
         .new-chat-btn {
-            background: var(--primary-color);
+            background: var(--brand-deeper);
             color: white; border: none;
             border-radius: 12px;
             padding: 12px 28px;
@@ -896,8 +892,8 @@
                 <!-- Loaded via JS -->
             </div>
 
-            <!-- Warning Toast (Example) -->
-            <div id="window-warning" style="display: none; background: #fffbeb; border: 1px solid #fbbf24; color: #92400e; padding: 10px 20px; border-radius: 8px; margin: 0 20px 10px; font-size: 0.9rem; align-items: center; gap: 10px;">
+            <!-- Warning Toast -->
+            <div id="window-warning" style="display:none; background:#fffbeb; border:1px solid #fde68a; color:#92400e; padding:8px 16px; border-radius:var(--radius); margin:0 16px 8px; font-size:0.8rem; align-items:center; gap:8px;">
                 <i class="fas fa-exclamation-triangle"></i> Janela de 24h fechada. Use um <strong>Template</strong>.
             </div>
 
@@ -908,24 +904,24 @@
 
                     <div class="input-box">
                         <!-- Image Preview Area (hidden by default) -->
-                        <div id="imagePreviewArea" style="display:none; margin-bottom: 8px; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1; position: relative;">
-                            <img loading="lazy" id="imagePreviewEl" src="" style="max-height:120px; max-width:100%; border-radius:8px; display:block; margin-bottom:6px;">
-                            <input type="text" id="imageCaptionInput" placeholder="Legenda (opcional)..." style="width:100%; border:none; background:transparent; font-size:0.85rem; outline:none; color:#334155;">
-                            <button onclick="cancelImage()" style="position:absolute; top:6px; right:6px; background:#ef4444; color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:0.8rem; cursor:pointer; line-height:1;">✕</button>
+                        <div id="imagePreviewArea" style="display:none; margin-bottom:8px; padding:10px; background:var(--divider); border-radius:var(--radius); border:1px dashed #cbd5e1; position:relative;">
+                            <img loading="lazy" id="imagePreviewEl" src="" style="max-height:120px; max-width:100%; border-radius:10px; display:block; margin-bottom:6px;">
+                            <input type="text" id="imageCaptionInput" placeholder="Legenda (opcional)..." style="width:100%; border:none; background:transparent; font-size:0.84rem; outline:none; color:var(--text-primary);">
+                            <button onclick="cancelImage()" style="position:absolute; top:6px; right:6px; background:#ef4444; color:white; border:none; border-radius:50%; width:22px; height:22px; font-size:0.75rem; cursor:pointer; line-height:1;">✕</button>
                         </div>
 
                         <!-- Audio Recording Area (hidden by default) -->
-                        <div id="audioRecordArea" style="display:none; margin-bottom: 8px; padding: 10px; background: #fef2f2; border-radius: 10px; border: 1px solid #fecaca; align-items:center; gap:10px;">
-                            <span id="audioRecordStatus" style="font-size:0.82rem; color:#ef4444; font-weight:700;">● Gravando... <span id="audioTimer">0:00</span></span>
+                        <div id="audioRecordArea" style="display:none; margin-bottom:8px; padding:10px 12px; background:#fef2f2; border-radius:var(--radius); border:1px solid #fecaca; align-items:center; gap:8px;">
+                            <span id="audioRecordStatus" style="font-size:0.8rem; color:#ef4444; font-weight:700;">● Gravando... <span id="audioTimer">0:00</span></span>
                             <audio id="audioPlayback" controls style="display:none; height:32px; flex:1;"></audio>
                             <div style="display:flex; gap:6px; margin-top:6px;">
-                                <button id="stopRecordBtn" onclick="stopRecording()" style="background:#ef4444; color:white; border:none; border-radius:8px; padding:5px 14px; font-size:0.8rem; font-weight:700; cursor:pointer;">⏹ Parar</button>
-                                <button id="sendAudioBtn" onclick="sendAudio()" style="display:none; background:#25d366; color:white; border:none; border-radius:8px; padding:5px 14px; font-size:0.8rem; font-weight:700; cursor:pointer;"><i class="fas fa-paper-plane"></i> Enviar Áudio</button>
-                                <button onclick="cancelAudio()" style="background:#f1f5f9; color:#64748b; border:none; border-radius:8px; padding:5px 14px; font-size:0.8rem; font-weight:600; cursor:pointer;">✕ Descartar</button>
+                                <button id="stopRecordBtn" onclick="stopRecording()" style="background:#ef4444; color:white; border:none; border-radius:999px; padding:4px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">⏹ Parar</button>
+                                <button id="sendAudioBtn" onclick="sendAudio()" style="display:none; background:var(--brand); color:white; border:none; border-radius:999px; padding:4px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;"><i class="fas fa-paper-plane"></i> Enviar</button>
+                                <button onclick="cancelAudio()" style="background:var(--divider); color:var(--text-sec); border:none; border-radius:999px; padding:4px 14px; font-size:0.78rem; font-weight:600; cursor:pointer;">✕ Descartar</button>
                             </div>
                         </div>
 
-                        <div class="input-toolbar" style="flex-wrap:wrap;">
+                        <div class="input-toolbar">
                             <button class="tool-btn tb-rapid" title="Respostas Rápidas" onclick="openCannedModal()">
                                 <i class="fas fa-bolt"></i> Rápidas
                             </button>
@@ -945,10 +941,8 @@
                         <textarea class="message-input" id="msgInput" rows="1" placeholder="Escreva uma mensagem..."></textarea>
                         <div class="input-footer">
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size:0.72rem; color:#94a3b8;">Enter para enviar · Shift+Enter nova linha</span>
-                                <span id="templateModeBadge" style="display:none; font-size:.72rem; font-weight:700; padding:2px 10px; border-radius:999px; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;">
-                                    TEMPLATE
-                                </span>
+                                <span style="font-size:0.69rem; color:var(--text-ter);">Enter envia · Shift+Enter nova linha</span>
+                                <span id="templateModeBadge" style="display:none; font-size:.69rem; font-weight:700; padding:2px 10px; border-radius:999px; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;">TEMPLATE</span>
                             </div>
                         </div>
                     </div>
