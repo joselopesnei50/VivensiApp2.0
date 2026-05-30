@@ -90,15 +90,15 @@
 
         .sidebar-header {
             padding: 0;
-            background: #f0f2f5;
-            border-bottom: 1px solid var(--border-color);
+            background: #ffffff;
+            border-bottom: 1px solid var(--divider);
         }
 
         .header-top-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 20px;
+            padding: 14px 16px;
         }
 
         .app-title {
@@ -122,58 +122,57 @@
             gap: 5px;
             transition: color 0.15s;
         }
-        .back-link:hover { color: var(--primary-color); }
+        .back-link:hover { color: var(--brand-dark); }
 
         .search-area {
             position: relative;
-            padding: 8px 14px 14px;
+            padding: 8px 16px 12px;
         }
         .search-input {
             width: 100%;
-            padding: 9px 14px 9px 38px;
-            border-radius: 8px;
-            border: none;
-            background: #ffffff;
-            color: var(--text-body);
-            font-size: 0.88rem;
+            padding: 9px 14px 9px 36px;
+            border-radius: 10px;
+            border: 1px solid var(--divider);
+            background: var(--divider);
+            color: var(--text-primary);
+            font-size: 0.84rem;
             outline: none;
-            box-shadow: var(--shadow-sm);
+            transition: border-color 0.15s, background 0.15s;
         }
-        .search-input:focus { box-shadow: 0 0 0 2px var(--accent); }
+        .search-input:focus { background: #fff; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,211,102,.12); }
         .search-icon {
             position: absolute;
-            left: 26px; top: 50%;
+            left: 28px; top: 50%;
             transform: translateY(-30%);
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            color: var(--text-ter);
+            font-size: 0.8rem;
         }
 
         .filter-tabs {
-            padding: 8px 14px;
+            padding: 8px 16px;
             display: flex;
             gap: 6px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--divider);
             background: #ffffff;
             overflow-x: auto;
         }
-        .filter-tabs::-webkit-scrollbar { height: 3px; }
-        .filter-tabs::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .filter-tabs::-webkit-scrollbar { height: 0; }
 
         .filter-tab {
-            background: #f0f2f5;
+            background: var(--divider);
             border: none;
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 0.78rem;
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 0.75rem;
             font-weight: 600;
-            color: var(--text-muted);
+            color: var(--text-sec);
             white-space: nowrap;
             cursor: pointer;
             transition: all 0.15s;
         }
-        .filter-tab:hover { background: #e9edef; color: var(--text-body); }
+        .filter-tab:hover { background: #e2e8f0; color: var(--text-primary); }
         .filter-tab.active {
-            background: var(--primary-color);
+            background: var(--brand);
             color: #fff;
         }
 
@@ -182,32 +181,33 @@
             overflow-y: auto;
             overflow-x: hidden;
         }
-        .contact-list::-webkit-scrollbar { width: 5px; }
-        .contact-list::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .contact-list::-webkit-scrollbar { width: 4px; }
+        .contact-list::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 10px; }
+        .contact-list::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 
         .contact-item {
-            padding: 13px 20px;
-            border-bottom: 1px solid #f0f2f5;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--divider);
             cursor: pointer;
             display: flex;
-            gap: 13px;
+            gap: 12px;
             align-items: center;
-            transition: background 0.12s;
+            transition: background 0.15s;
             border-left: 3px solid transparent;
         }
-        .contact-item:hover { background: #f5f6f6; }
+        .contact-item:hover { background: rgba(0,0,0,.02); }
         .contact-item.active {
-            background: #f0f2f5;
-            border-left-color: var(--accent);
+            background: rgba(37,211,102,.05);
+            border-left-color: var(--brand);
         }
 
         .avatar {
-            width: 46px; height: 46px;
+            width: 44px; height: 44px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: white;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             flex-shrink: 0;
             position: relative;
         }
@@ -223,21 +223,22 @@
         .contact-info { flex: 1; min-width: 0; overflow: hidden; }
         .contact-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; gap: 6px; }
         .contact-name {
-            font-weight: 600; color: var(--text-heading); font-size: 0.92rem;
+            font-weight: 600; color: var(--text-primary); font-size: 0.875rem;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             min-width: 0; flex: 1;
         }
-        .contact-time { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-        .contact-bottom { display: flex; justify-content: space-between; align-items: center; }
+        .contact-time { font-size: 0.69rem; color: var(--text-ter); white-space: nowrap; flex-shrink: 0; }
+        .contact-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
         .last-message {
-            font-size: 0.82rem; color: var(--text-muted);
+            font-size: 0.78rem; color: var(--text-ter);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             max-width: 200px;
         }
         .badge-unread {
-            background: var(--accent); color: white;
-            font-size: 0.68rem; padding: 2px 6px;
-            border-radius: 10px; font-weight: 700; min-width: 18px; text-align: center;
+            background: var(--brand); color: white;
+            font-size: 0.66rem; padding: 2px 6px;
+            border-radius: 999px; font-weight: 700; min-width: 18px; text-align: center;
+            line-height: 1.4;
         }
 
         .compliance-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
@@ -251,8 +252,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background-color: var(--chat-bg);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            background: var(--chat-bg);
             position: relative;
         }
 
@@ -507,8 +507,8 @@
 
         /* ── Sidebar accent bar ── */
         .sidebar-accent {
-            height: 3px;
-            background: linear-gradient(90deg, #25d366, #128c7e, #075e54);
+            height: 2px;
+            background: linear-gradient(90deg, var(--brand), var(--brand-dark), var(--brand-deeper));
         }
 
         /* ── Status dots on avatars ── */
@@ -530,9 +530,9 @@
 
         /* ── Contact status pill ── */
         .contact-status-pill {
-            font-size: .6rem; font-weight: 700;
-            padding: 1px 6px; border-radius: 10px;
-            text-transform: uppercase; letter-spacing: .04em;
+            font-size: .63rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 6px;
+            letter-spacing: .03em;
             flex-shrink: 0;
         }
         .pill-open    { background: #dcfce7; color: #16a34a; }
@@ -542,8 +542,8 @@
         /* ── Contact labels ── */
         .contact-labels { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
         .clabel {
-            font-size: .58rem; font-weight: 700; padding: 1px 6px;
-            border-radius: 8px; text-transform: uppercase; letter-spacing: .04em;
+            font-size: .65rem; font-weight: 600; padding: 2px 8px;
+            border-radius: 6px; letter-spacing: .02em;
         }
         .clabel-novo-lead    { background: #dbeafe; color: #1d4ed8; }
         .clabel-suporte      { background: #ffedd5; color: #c2410c; }
@@ -553,7 +553,7 @@
         .clabel-concluido    { background: #f1f5f9; color: #64748b; }
         .clabel-agendado     { background: #cffafe; color: #0e7490; }
         /* fallback */
-        .clabel              { background: #f0f2f5; color: #475569; }
+        .clabel              { background: var(--divider); color: var(--text-sec); }
 
         /* ── Label picker panel ── */
         .label-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
