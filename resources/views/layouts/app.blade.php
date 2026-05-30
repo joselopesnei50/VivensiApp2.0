@@ -504,7 +504,7 @@
                     $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*');
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
                     $mgr_wa_active   = request()->is('whatsapp*');
-                    $mgr_mkt_active  = request()->is('manager/landing-pages*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
+                    $mgr_mkt_active  = request()->is('manager/landing-pages*','manager/email-campaigns*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
                     $mgr_ai_active   = request()->is('smart-analysis*');
                     $mgr_acad_active = request()->is('academy*');
                 @endphp
@@ -566,8 +566,9 @@
                         <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mgr_mkt_active ? '380px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mgr_mkt_active ? '440px' : '0' }};">
                         <ul>
+                            <li><a href="{{ route('manager.email_campaigns.index') }}" class="{{ request()->is('manager/email-campaigns*') ? 'active' : '' }}"><i class="fas fa-envelope" style="color:#6366f1;"></i> E-mail Marketing</a></li>
                             <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
                             <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
