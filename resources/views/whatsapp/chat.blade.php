@@ -13,27 +13,53 @@
 
     <style>
         :root {
-            --wa-green: #25d366;
-            --wa-green-dark: #128c7e;
+            /* ── Marca ── */
+            --brand:        #25d366;
+            --brand-dark:   #128c7e;
+            --brand-deeper: #075e54;
+            --brand-hover:  #054c44;
+            --brand-light:  #dcf8c6;
+            --brand-subtle: rgba(37,211,102,.08);
+
+            /* ── Legados (mantidos para compatibilidade com JS/templates) ── */
+            --wa-green:       #25d366;
+            --wa-green-dark:  #128c7e;
             --wa-green-light: #dcf8c6;
-            --primary-color: #075e54;
-            --primary-hover: #054c44;
-            --primary-light: rgba(7, 94, 84, 0.08);
-            --accent: #25d366;
+            --primary-color:  #075e54;
+            --primary-hover:  #054c44;
+            --primary-light:  rgba(7,94,84,.08);
+            --accent:         #25d366;
+
+            /* ── Tipografia ── */
+            --text-primary:   #0f172a;
+            --text-sec:       #64748b;
+            --text-ter:       #94a3b8;
+            --text-heading:   #111b21;
+            --text-body:      #3b4a54;
+            --text-muted:     #8696a0;
+
+            /* ── Superfícies ── */
+            --sidebar-bg:   #ffffff;
+            --chat-bg:      #f7f8fa;
+            --border-color: #e9edef;
+            --divider:      #f1f5f9;
+
+            /* ── Espaçamento / Forma ── */
+            --sidebar-width:              360px;
+            --intelligence-panel-width:   340px;
+            --radius:   12px;
+
+            /* ── Sombras ── */
+            --shadow-low: 0 1px 2px rgba(0,0,0,.04);
+            --shadow-mid: 0 4px 12px rgba(0,0,0,.06);
+            --shadow-sm:  0 1px 3px rgba(0,0,0,.08);
+            --shadow-md:  0 4px 12px rgba(0,0,0,.10);
+            --shadow-lg:  0 8px 24px rgba(0,0,0,.12);
+
+            /* ── Estado ── */
             --success-color: #25d366;
             --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --text-heading: #111b21;
-            --text-body: #3b4a54;
-            --text-muted: #8696a0;
-            --border-color: #e9edef;
-            --sidebar-bg: #ffffff;
-            --chat-bg: #efeae2;
-            --sidebar-width: 360px;
-            --intelligence-panel-width: 340px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            --danger-color:  #ef4444;
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -231,30 +257,30 @@
         }
 
         .chat-header {
-            height: 80px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--divider);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
+            padding: 0 20px;
             flex-shrink: 0;
             z-index: 10;
+            gap: 12px;
         }
 
-        .chat-user-profile { display: flex; align-items: center; gap: 16px; min-width: 0; overflow: hidden; flex: 1; }
+        .chat-user-profile { display: flex; align-items: center; gap: 12px; min-width: 0; overflow: hidden; flex: 1; }
         .header-avatar {
-            width: 48px; height: 48px;
+            width: 40px; height: 40px;
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
             color: white; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            font-weight: 700; font-size: 1rem;
+            box-shadow: var(--shadow-low);
         }
-        .header-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow: hidden; }
-        .header-info h4 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .header-info #header-status { font-size: 0.8rem; color: #64748b; display: flex; align-items: center; gap: 5px; }
+        .header-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; overflow: hidden; }
+        .header-info h4 { margin: 0; font-size: 0.94rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.3; }
+        .header-info #header-status { font-size: 0.73rem; color: var(--text-sec); display: flex; align-items: center; gap: 5px; line-height: 1; }
         
         .compliance-badges { display: flex; gap: 6px; margin-top: 4px; }
         .c-badge {
@@ -586,13 +612,52 @@
         .crm-header[aria-expanded="true"] .crm-chevron { transform: rotate(180deg); }
         .crm-chevron { transition: transform .2s; }
 
-        /* ── Better chat header avatar ── */
+        /* ── Chat header avatar ── */
         .header-avatar-dynamic {
-            width: 44px; height: 44px;
+            width: 40px; height: 40px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 1.1rem; color: white;
+            font-weight: 700; font-size: 1rem; color: white;
             flex-shrink: 0;
+            box-shadow: var(--shadow-low);
+        }
+
+        /* ── Chat header action buttons ── */
+        .chat-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+        .btn-header-icon {
+            width: 34px; height: 34px; padding: 0;
+            border: none; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; cursor: pointer;
+            transition: background 0.15s, transform 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-header-icon:hover { transform: scale(1.08); }
+        .btn-icon-green   { color: var(--brand); background: rgba(37,211,102,.1); }
+        .btn-icon-green:hover { background: rgba(37,211,102,.18); }
+        .btn-icon-neutral { color: var(--text-sec); background: var(--divider); }
+        .btn-icon-neutral:hover { background: #e2e8f0; }
+
+        .btn-header-action {
+            height: 32px; padding: 0 14px;
+            border: none; border-radius: 999px;
+            font-size: 0.75rem; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 6px;
+            cursor: pointer; transition: background 0.15s, transform 0.15s;
+            white-space: nowrap;
+        }
+        .btn-header-action:hover { transform: translateY(-1px); }
+        .btn-assume { background: var(--brand-dark); color: #fff; }
+        .btn-assume:hover { background: var(--brand-deeper); }
+
+        .btn-header-bot {
+            height: 32px; padding: 0 14px;
+            border: none; border-radius: 999px;
+            font-size: 0.75rem; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 6px;
+            cursor: pointer; transition: all 0.15s;
+            white-space: nowrap;
         }
 
         /* ── Window warning banner ── */
@@ -774,25 +839,25 @@
                                     $statusTxt = 'Há ' . $days . ' dia' . ($days > 1 ? 's' : '');
                                 }
                             @endphp
-                            <i class="fas fa-circle" style="font-size:6px;color:{{ $dotColor }};"></i>
+                            <i class="fas fa-circle" style="font-size:8px;color:{{ $dotColor }};"></i>
                             {{ $statusTxt }}
                         </span>
                         <div class="compliance-badges" id="waComplianceBadges" style="margin-top:2px;"></div>
                     </div>
                 </div>
-                <div class="chat-actions d-flex align-items-center gap-2">
+                <div class="chat-actions">
                     <div id="bot-status-container" style="display:none;">
-                        <button class="tool-btn" id="btn-toggle-bot" onclick="toggleBotStatus()" style="font-size: 0.75rem; border-radius: 12px; padding: 6px 12px;">
-                            <i class="fas fa-robot me-1"></i> <span id="bot-status-text">Bot: Ativo</span>
+                        <button class="btn-header-bot" id="btn-toggle-bot" onclick="toggleBotStatus()">
+                            <i class="fas fa-robot"></i> <span id="bot-status-text">Bot: Ativo</span>
                         </button>
                     </div>
-                    <button class="btn btn-primary" id="btn-assign-chat" onclick="assignChatToMe()" style="display:none; font-size: 0.75rem; border-radius: 12px; font-weight: 700; padding: 6px 12px; background: var(--wa-green-dark); border: none;">
-                        <i class="fas fa-handshake me-1"></i> Assumir
+                    <button class="btn-header-action btn-assume" id="btn-assign-chat" onclick="assignChatToMe()" style="display:none;">
+                        <i class="fas fa-handshake"></i> Assumir
                     </button>
-                    <button class="tool-btn" title="Nova Conversa" onclick="startNewChat()" style="color:#25d366;background:rgba(37,211,102,.1); width: 36px; height: 36px; padding: 0; justify-content: center;">
+                    <button class="btn-header-icon btn-icon-green" title="Nova Conversa" onclick="startNewChat()">
                         <i class="fas fa-user-plus"></i>
                     </button>
-                    <button class="tool-btn" title="Configurações" onclick="location.href='{{ url('/whatsapp/settings') }}'" style="color:#64748b;background:#f1f5f9; width: 36px; height: 36px; padding: 0; justify-content: center;">
+                    <button class="btn-header-icon btn-icon-neutral" title="Configurações" onclick="location.href='{{ url('/whatsapp/settings') }}'">
                         <i class="fas fa-cog"></i>
                     </button>
                 </div>
@@ -1463,7 +1528,7 @@
 
             const ls = chatLastSeenLabel(chat.last_inbound_at);
             $('#header-status').html(
-                '<i class="fas fa-circle" style="font-size:6px;color:' + ls.color + ';"></i> ' +
+                '<i class="fas fa-circle" style="font-size:8px;color:' + ls.color + ';"></i> ' +
                 escapeHtml(ls.text)
             );
             
