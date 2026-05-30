@@ -456,62 +456,69 @@
             overflow-y: auto;
         }
         .intelligence-panel::-webkit-scrollbar { width: 4px; }
-        .intelligence-panel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .intelligence-panel::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 10px; }
 
-        .panel-hero {
-            padding: 28px 20px 20px;
-            text-align: center;
-            background: #f0f2f5;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .hero-avatar {
-            width: 72px; height: 72px;
-            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; color: white;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(37,211,102,0.3);
-        }
-        .panel-hero h3 { color: #111b21; font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
-        .panel-hero span { color: #667781; font-size: 0.8rem; }
-
-        .tag-badge { background: #e9edef; color: #3b4a54; padding: 3px 10px; border-radius: 6px; font-size: 0.73rem; font-weight: 600; }
+        .tag-badge { background: var(--divider); color: var(--text-sec); padding: 3px 10px; border-radius: 6px; font-size: 0.73rem; font-weight: 600; }
         .tag-badge.hot { background: #fef2f2; color: #991b1b; }
 
-        .crm-section { border-bottom: 1px solid #f0f2f5; }
+        .crm-section { border-bottom: 1px solid var(--divider); }
         .crm-header {
-            padding: 14px 18px;
+            padding: 13px 16px;
             display: flex; justify-content: space-between; align-items: center;
-            font-weight: 600; font-size: 0.88rem; color: var(--text-heading);
+            font-weight: 700; font-size: 0.69rem;
+            color: var(--text-ter);
+            text-transform: uppercase; letter-spacing: .06em;
             cursor: pointer; text-decoration: none;
-            transition: background 0.12s;
+            transition: background 0.15s;
             background: transparent;
         }
-        .crm-header:hover { background: #f9fafb; }
+        .crm-header:hover { background: rgba(0,0,0,.018); }
+        .crm-header i { font-size: 0.8rem; opacity: .7; }
 
-        .crm-body { padding: 0 18px 16px; }
+        .crm-body { padding: 0 16px 16px; }
 
-        .info-row { margin-bottom: 12px; }
-        .label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px; letter-spacing: 0.5px; }
-        .value { color: var(--text-heading); font-size: 0.88rem; font-weight: 500; }
+        .info-row { margin-bottom: 10px; }
+        .label { font-size: 0.67rem; color: var(--text-ter); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 3px; letter-spacing: .05em; }
+        .value { color: var(--text-primary); font-size: 0.84rem; font-weight: 500; }
 
         .timeline-item {
-            position: relative; padding-left: 18px; margin-bottom: 14px;
-            border-left: 2px solid #e9edef;
+            position: relative; padding-left: 16px; margin-bottom: 12px;
+            border-left: 2px solid var(--divider);
         }
         .timeline-item::before {
-            content: ''; position: absolute; left: -5px; top: 5px;
+            content: ''; position: absolute; left: -5px; top: 6px;
             width: 8px; height: 8px; border-radius: 50%;
-            background: var(--accent); border: 2px solid white;
+            background: var(--brand); border: 2px solid white;
+            box-shadow: var(--shadow-low);
         }
         .timeline-content {
-            font-size: 0.82rem; color: var(--text-body);
-            background: #f9fafb; padding: 10px 12px;
-            border-radius: 8px; border: 1px solid #e9edef;
+            font-size: 0.81rem; color: var(--text-primary);
+            background: var(--divider); padding: 10px 12px;
+            border-radius: var(--radius); border: none;
+            line-height: 1.5;
         }
-        .timeline-date { font-size: 0.67rem; color: var(--text-muted); display: block; margin-top: 4px; text-align: right; }
+        .timeline-date { font-size: 0.66rem; color: var(--text-ter); display: block; margin-top: 6px; text-align: right; }
+
+        /* ── Notes empty state ── */
+        .notes-empty {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 24px 16px; text-align: center; gap: 8px;
+        }
+        .notes-empty-icon {
+            width: 44px; height: 44px;
+            background: #fffbeb; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: #f59e0b;
+            margin-bottom: 4px;
+        }
+        .notes-empty p { font-size: 0.8rem; color: var(--text-ter); margin: 0; line-height: 1.4; }
+        .notes-empty-btn {
+            margin-top: 4px; font-size: 0.75rem; font-weight: 600;
+            padding: 6px 16px; border-radius: 999px;
+            border: 1.5px dashed var(--brand); color: var(--brand-dark);
+            background: transparent; cursor: pointer; transition: all .15s;
+        }
+        .notes-empty-btn:hover { background: rgba(37,211,102,.08); }
 
         .empty-state {
             flex: 1; display: flex; flex-direction: column;
@@ -610,24 +617,24 @@
 
         /* ── Compact right panel hero ── */
         .panel-hero-compact {
-            padding: 16px 18px 14px;
-            background: #f0f2f5;
-            border-bottom: 1px solid var(--border-color);
+            padding: 20px 16px 16px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--divider);
         }
         .panel-hero-top {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
         }
         .hero-avatar-sm {
-            width: 46px; height: 46px;
-            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
-            border-radius: 50%; flex-shrink: 0;
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+            border-radius: 14px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; color: white; font-weight: 700;
-            box-shadow: 0 3px 8px rgba(37,211,102,.3);
+            font-size: 1.3rem; color: white; font-weight: 700;
+            box-shadow: var(--shadow-mid);
         }
         .hero-info { flex: 1; min-width: 0; }
-        .hero-info h3 { color: #111b21; font-size: .95rem; font-weight: 700; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .hero-info span { color: #667781; font-size: .75rem; font-family: monospace; }
+        .hero-info h3 { color: var(--text-primary); font-size: 1rem; font-weight: 600; margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hero-info span { color: var(--text-sec); font-size: .78rem; font-family: inherit; }
 
         /* ── Section header with chevron animation ── */
         .crm-header[aria-expanded="true"] .crm-chevron { transform: rotate(180deg); }
@@ -959,7 +966,25 @@
                     <div class="hero-avatar-sm" id="crm-avatar">{{ strtoupper(substr($chats[0]->contact_name, 0, 1)) }}</div>
                     <div class="hero-info">
                         <h3 id="crm-name">{{ $chats[0]->contact_name }}</h3>
-                        <span id="crm-phone">{{ $chats[0]->contact_phone }}</span>
+                        @php
+                            $rawPhone = $chats[0]->contact_phone ?? '';
+                            if (empty($rawPhone) || str_contains($rawPhone, '@')) {
+                                $displayPhone = '—';
+                            } else {
+                                $digits = preg_replace('/\D/', '', $rawPhone);
+                                if (str_starts_with($digits, '55') && strlen($digits) >= 12) {
+                                    $ddd  = substr($digits, 2, 2);
+                                    $num  = substr($digits, 4);
+                                    $fmt  = strlen($num) === 9
+                                        ? substr($num, 0, 5) . '-' . substr($num, 5)
+                                        : substr($num, 0, 4) . '-' . substr($num, 4);
+                                    $displayPhone = '+55 (' . $ddd . ') ' . $fmt;
+                                } else {
+                                    $displayPhone = $rawPhone;
+                                }
+                            }
+                        @endphp
+                        <span id="crm-phone">{{ $displayPhone }}</span>
                     </div>
                     @if($isManager)
                     <div class="dropdown ms-auto">
@@ -1037,10 +1062,7 @@
                         <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
                     </div>
                     <div class="crm-body collapse show" id="crm-notes">
-                        <div class="mb-3 text-end"><button class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.75rem;" onclick="openNoteModal()">+ Criar Nota</button></div>
-                        <div id="crm-notes-container">
-                            <div class="text-center text-muted small py-3">Nenhuma nota.</div>
-                        </div>
+                        <div id="crm-notes-container"></div>
                     </div>
                 </div>
 
@@ -1528,6 +1550,20 @@
             return el.scrollHeight - el.scrollTop - el.clientHeight < 60;
         }
 
+        function formatPhone(phone) {
+            if (!phone || phone.includes('@')) return '—';
+            const d = phone.replace(/\D/g, '');
+            if (d.startsWith('55') && d.length >= 12) {
+                const ddd = d.slice(2, 4);
+                const num = d.slice(4);
+                const fmt = num.length === 9
+                    ? num.slice(0, 5) + '-' + num.slice(5)
+                    : num.slice(0, 4) + '-' + num.slice(4);
+                return '+55 (' + ddd + ') ' + fmt;
+            }
+            return phone || '—';
+        }
+
         function chatLastSeenLabel(lastInboundAt) {
             if (!lastInboundAt) return { color: '#94a3b8', text: 'Sem mensagens' };
             const d    = new Date(lastInboundAt);
@@ -1543,9 +1579,9 @@
         function updateUI(chat) {
             $('#header-name, #crm-name').text(chat.contact_name);
             $('#crm-avatar, #header-avatar').text(chat.contact_name.charAt(0));
-            $('#crm-phone').text(chat.contact_phone || '--');
+            $('#crm-phone').text(formatPhone(chat.contact_phone));
             $('#crm-info-name').text(chat.contact_name || '—');
-            $('#crm-info-phone').text(chat.contact_phone || '—');
+            $('#crm-info-phone').text(formatPhone(chat.contact_phone));
 
             const ls = chatLastSeenLabel(chat.last_inbound_at);
             $('#header-status').html(
@@ -1681,21 +1717,34 @@
         function renderNotes(notes) {
             const container = $('#crm-notes-container');
             let html = '';
-            
-            if(!notes || notes.length === 0) {
-                html = '<div class="text-center text-muted small py-3">Nenhuma nota.</div>';
+
+            if (!notes || notes.length === 0) {
+                html = `<div class="notes-empty">
+                    <div class="notes-empty-icon"><i class="far fa-sticky-note"></i></div>
+                    <p>Nenhuma nota ainda.<br>Registre informações importantes sobre este contato.</p>
+                    <button class="notes-empty-btn" onclick="openNoteModal()">+ Criar primeira nota</button>
+                </div>`;
             } else {
+                html += `<div class="mb-2 text-end">
+                    <button class="btn btn-sm py-0 px-3"
+                        style="font-size:.73rem;font-weight:600;border-radius:999px;border:1.5px solid var(--brand);color:var(--brand-dark);background:transparent;"
+                        onclick="openNoteModal()">+ Nova nota</button>
+                </div>`;
                 notes.forEach(note => {
-                    let icon = note.type === 'ai_insight' ? '<i class="fas fa-dog text-warning"></i>' : '<i class="fas fa-user text-muted"></i>';
-                    let bg = note.type === 'ai_insight' ? '#fffbeb' : '#f8fafc';
-                    html += `
-                        <div class="timeline-item">
-                            <div class="timeline-content" style="background: ${bg}; border: 1px solid #e2e8f0;">
-                                ${icon} ${escapeHtml(note.content)}
-                                <span class="timeline-date">${new Date(note.created_at).toLocaleDateString()} • ${escapeHtml(note.user ? note.user.name : 'Sistema')}</span>
+                    const isAi  = note.type === 'ai_insight';
+                    const icon  = isAi ? '<i class="fas fa-robot" style="color:#f59e0b;"></i>' : '<i class="far fa-user-circle" style="color:var(--text-ter);"></i>';
+                    const bg    = isAi ? '#fffbeb' : 'var(--divider)';
+                    const date  = new Date(note.created_at).toLocaleDateString('pt-BR', {day:'2-digit',month:'short'});
+                    const author = escapeHtml(note.user ? note.user.name.split(' ')[0] : 'Sistema');
+                    html += `<div class="timeline-item">
+                        <div class="timeline-content" style="background:${bg};">
+                            <div style="display:flex;align-items:flex-start;gap:7px;">
+                                <span style="flex-shrink:0;margin-top:1px;">${icon}</span>
+                                <span>${escapeHtml(note.content)}</span>
                             </div>
+                            <span class="timeline-date">${date} · ${author}</span>
                         </div>
-                    `;
+                    </div>`;
                 });
             }
             container.html(html);
