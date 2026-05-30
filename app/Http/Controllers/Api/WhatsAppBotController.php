@@ -89,12 +89,39 @@ class WhatsAppBotController extends Controller
 
     private function findUserByPhone(string $phone): ?User
     {
-        return User::where('status', 'active')
-            ->where(function ($q) use ($phone) {
-                $q->whereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') = ?", [$phone])
-                  ->orWhereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", ['%' . substr($phone, -8)]);
-            })
-            ->first();
+        // 1. Match EXATO do telefone normalizado (caminho seguro e preferencial).
+        $exact = User::where('status', 'active')
+            ->whereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') = ?", [$phone])
+            ->get();
+
+        if ($exact->count() === 1) {
+            return $exact->first();
+        }
+        if ($exact->count() > 1) {
+            // Telefones idênticos em mais de um usuário: não arriscar autenticar o tenant errado.
+            Log::warning('WhatsApp Bot: telefone exato ambíguo entre múltiplos usuários', [
+                'phone_suffix' => substr($phone, -4),
+            ]);
+            return null;
+        }
+
+        // 2. Fallback por sufixo (últimos 8 dígitos) — SÓ se houver UM único candidato.
+        //    Antes o LIKE retornava o primeiro match, o que podia confundir usuários de
+        //    tenants diferentes com final de número igual. Agora, se for ambíguo, recusamos.
+        $candidates = User::where('status', 'active')
+            ->whereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", ['%' . substr($phone, -8)])
+            ->get();
+
+        if ($candidates->count() === 1) {
+            return $candidates->first();
+        }
+        if ($candidates->count() > 1) {
+            Log::warning('WhatsApp Bot: sufixo de telefone ambíguo entre múltiplos usuários', [
+                'phone_suffix' => substr($phone, -4),
+            ]);
+        }
+
+        return null;
     }
 
     private function sendDirect(string $waId, string $text): void
