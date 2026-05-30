@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class EmailCampaign extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = [
-        'created_by', 'name', 'subject', 'html_content',
+        'tenant_id', 'created_by', 'name', 'subject', 'html_content',
         'sender_name', 'sender_email', 'reply_to_email', 'audience_type', 'manual_emails',
         'recipient_count', 'brevo_list_id', 'brevo_campaign_id',
         'status', 'scheduled_at', 'sent_at', 'error_message',
@@ -50,13 +53,15 @@ class EmailCampaign extends Model
     public function audienceLabel(): string
     {
         return match($this->audience_type) {
-            'tenant_admins' => 'Administradores de Clientes',
-            'all_users'     => 'Todos os Usuários',
-            'leads'         => 'Leads (Landing Pages)',
-            'all'           => 'Todos (Usuários + Leads)',
-            'manual'        => 'E-mails Manuais',
-            'none'          => 'Somente E-mails Adicionais',
-            default         => $this->audience_type,
+            'tenant_admins'  => 'Administradores de Clientes',
+            'all_users'      => 'Todos os Usuários',
+            'leads'          => 'Leads (Landing Pages)',
+            'all'            => 'Todos (Usuários + Leads)',
+            'manual'         => 'E-mails Manuais',
+            'none'           => 'Somente E-mails Adicionais',
+            'donors'         => 'Todos os Doadores',
+            'donors_optins'  => 'Doadores com Opt-in',
+            default          => $this->audience_type,
         };
     }
 
