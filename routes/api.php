@@ -40,8 +40,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // ── Outros Webhooks ────────────────────────────────────────────────────────
 Route::post('/pagseguro/checkout', [App\Http\Controllers\Api\PagSeguroController::class, 'checkout'])->middleware(['auth:sanctum', 'throttle:20,1']);
-Route::post('/webhooks/pagseguro', [App\Http\Controllers\Api\PagSeguroWebhookController::class, 'handle'])->middleware('throttle:200,1');
-Route::post('/webhooks/asaas',     [App\Http\Controllers\Api\AsaasWebhookController::class, 'handle'])->middleware('throttle:200,1');
+// Webhooks de pagamento: o grupo "api" já aplica throttle:api (60/min por IP).
+// Como os provedores podem enviar rajadas legítimas acima disso, removemos o
+// limitador global nestas rotas e aplicamos um limite dedicado de 200/min.
+Route::post('/webhooks/pagseguro', [App\Http\Controllers\Api\PagSeguroWebhookController::class, 'handle'])
+    ->withoutMiddleware('throttle:api')->middleware('throttle:200,1');
+Route::post('/webhooks/asaas', [App\Http\Controllers\Api\AsaasWebhookController::class, 'handle'])
+    ->withoutMiddleware('throttle:api')->middleware('throttle:200,1');
 
 // ── AbacatePay ────────────────────────────────────────────────────────────────
 Route::post('/abacatepay/checkout', [App\Http\Controllers\Api\AbacatePayCheckoutController::class, 'checkout'])->middleware(['auth:sanctum', 'throttle:20,1']);
