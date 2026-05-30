@@ -43,23 +43,47 @@ class ProcessWhatsappAutomations implements ShouldQueue
                 continue;
             }
 
-            $tenant    = Tenant::find($automation->tenant_id);
-            $orgName   = $tenant?->name ?? 'nossa organização';
-            $contacts  = $this->resolveContacts($automation);
-            $evo       = new EvolutionApiService($instance);
+            $tenant   = Tenant::find($automation->tenant_id);
+            $orgName  = $tenant?->name ?? 'nossa organização';
+            $contacts = $this->resolveContacts($automation);
+            $evo      = new EvolutionApiService($instance);
+
+            // Resolve JIDs corretos via WhatsApp (corrige 9º dígito brasileiro)
+            $normalizedPhones = [];
+            foreach ($contacts as $c) {
+                $n = EvolutionApiService::normalizeBrazilianPhone($c['phone'] ?? '');
+                if ($n) $normalizedPhones[] = $n;
+            }
+
+            $jidMap             = [];
+            $fallbackNormalized = false;
+            if (!empty($normalizedPhones)) {
+                try {
+                    $jidMap = $evo->checkWhatsappNumbers($normalizedPhones);
+                } catch (\Throwable $e) {
+                    Log::warning("WhatsappAutomation [{$automation->id}]: checkWhatsappNumbers falhou, usando fallback — {$e->getMessage()}");
+                    $fallbackNormalized = true;
+                }
+            }
 
             foreach ($contacts as $contact) {
-                $phone = preg_replace('/\D/', '', $contact['phone'] ?? '');
-                if (!$phone || strlen($phone) < 10) continue;
+                $normalized = EvolutionApiService::normalizeBrazilianPhone($contact['phone'] ?? '');
+                if (!$normalized) continue;
 
-                // Anti-spam: send_once = nunca reenvia; padrão = 1x por 24h
+                $sendTo = $jidMap[$normalized] ?? ($fallbackNormalized ? $normalized : null);
+                if ($sendTo === null) {
+                    Log::info("WhatsappAutomation [{$automation->id}]: {$normalized} não encontrado no WhatsApp — pulando.");
+                    continue;
+                }
+
+                // Anti-spam usa número normalizado (chave estável no banco)
                 $alreadySent = $automation->send_once
                     ? WhatsappAutomationLog::where('automation_id', $automation->id)
-                        ->where('contact_phone', $phone)
+                        ->where('contact_phone', $normalized)
                         ->where('status', 'sent')
                         ->exists()
                     : WhatsappAutomationLog::where('automation_id', $automation->id)
-                        ->where('contact_phone', $phone)
+                        ->where('contact_phone', $normalized)
                         ->where('sent_at', '>=', now()->subHours(24))
                         ->exists();
 
@@ -72,19 +96,19 @@ class ProcessWhatsappAutomations implements ShouldQueue
                 );
 
                 try {
-                    $evo->sendMessage($phone, $message, null, rand(2, 5));
+                    $evo->sendMessage($sendTo, $message, null, rand(2, 5));
 
                     WhatsappAutomationLog::create([
                         'automation_id' => $automation->id,
                         'tenant_id'     => $automation->tenant_id,
-                        'contact_phone' => $phone,
+                        'contact_phone' => $normalized,
                         'contact_name'  => $contact['name'] ?? null,
                         'message_sent'  => $message,
                         'status'        => 'sent',
                         'sent_at'       => now(),
                     ]);
 
-                    Log::info("WhatsappAutomation [{$automation->id}]: mensagem enviada para {$phone}.");
+                    Log::info("WhatsappAutomation [{$automation->id}]: mensagem enviada para {$sendTo} (normalizado: {$normalized}).");
 
                     // Delay entre envios para comportamento orgânico
                     sleep(rand(3, 8));
@@ -93,7 +117,7 @@ class ProcessWhatsappAutomations implements ShouldQueue
                     WhatsappAutomationLog::create([
                         'automation_id' => $automation->id,
                         'tenant_id'     => $automation->tenant_id,
-                        'contact_phone' => $phone,
+                        'contact_phone' => $normalized,
                         'contact_name'  => $contact['name'] ?? null,
                         'message_sent'  => $message,
                         'status'        => 'failed',
@@ -101,7 +125,7 @@ class ProcessWhatsappAutomations implements ShouldQueue
                         'sent_at'       => now(),
                     ]);
 
-                    Log::error("WhatsappAutomation [{$automation->id}]: falha ao enviar para {$phone} — {$e->getMessage()}");
+                    Log::error("WhatsappAutomation [{$automation->id}]: falha ao enviar para {$sendTo} — {$e->getMessage()}");
                 }
             }
         }
