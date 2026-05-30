@@ -44,7 +44,9 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Tokens de API expiram por padrão em 30 dias (43200 min). Ajustável via .env.
+    // Definir SANCTUM_TOKEN_EXPIRATION=0 desabilita a expiração (não recomendado).
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 43200) ?: null,
 
     /*
     |--------------------------------------------------------------------------
