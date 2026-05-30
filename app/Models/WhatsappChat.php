@@ -35,6 +35,7 @@ class WhatsappChat extends Model
         'last_outbound_at',
         'last_read_at',
         'opt_in_at',
+        'opt_in_source',
         'opt_out_at',
         'blocked_at',
         'blocked_reason',

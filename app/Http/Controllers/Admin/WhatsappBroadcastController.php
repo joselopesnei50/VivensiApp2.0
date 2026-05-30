@@ -75,9 +75,11 @@ class WhatsappBroadcastController extends Controller
             if (count($firstRow) >= 2) {
                 $phone = \App\Services\EvolutionApiService::normalizeBrazilianPhone($firstRow[1]);
                 if ($phone && strlen($phone) >= 12) {
+                    [$optInAt, $optInSource] = $this->parseConsentDate($firstRow[2] ?? null);
                     WhatsappChat::firstOrCreate(
                         ['tenant_id' => $tenantId, 'wa_id' => $phone],
-                        ['contact_name' => trim($firstRow[0]), 'contact_phone' => $phone, 'status' => 'open', 'opt_in_at' => now()]
+                        ['contact_name' => trim($firstRow[0]), 'contact_phone' => $phone, 'status' => 'open',
+                         'opt_in_at' => $optInAt, 'opt_in_source' => $optInSource]
                     );
                     $imported++;
                 }
@@ -91,9 +93,11 @@ class WhatsappBroadcastController extends Controller
                 $name  = trim($row[0]);
                 $phone = \App\Services\EvolutionApiService::normalizeBrazilianPhone($row[1]);
                 if ($phone && strlen($phone) >= 12) {
+                    [$optInAt, $optInSource] = $this->parseConsentDate($row[2] ?? null);
                     WhatsappChat::firstOrCreate(
                         ['tenant_id' => $tenantId, 'wa_id' => $phone],
-                        ['contact_name' => $name, 'contact_phone' => $phone, 'status' => 'open', 'opt_in_at' => now()]
+                        ['contact_name' => $name, 'contact_phone' => $phone, 'status' => 'open',
+                         'opt_in_at' => $optInAt, 'opt_in_source' => $optInSource]
                     );
                     $imported++;
                 }
@@ -108,6 +112,25 @@ class WhatsappBroadcastController extends Controller
         }
 
         return redirect()->back()->with('success', $msg);
+    }
+
+    /**
+     * Interpreta a coluna opcional de data de consentimento do CSV.
+     * Retorna [opt_in_at, opt_in_source] ou [null, null] se ausente/inválida.
+     * Padrão seguro: sem data = sem opt-in (LGPD).
+     */
+    private function parseConsentDate(?string $raw): array
+    {
+        if ($raw === null || trim($raw) === '') {
+            return [null, null];
+        }
+
+        $ts = strtotime(trim($raw));
+        if ($ts === false || $ts > time()) {
+            return [null, null]; // data futura ou inválida — descarta
+        }
+
+        return [\Carbon\Carbon::createFromTimestamp($ts)->startOfDay(), 'csv_import'];
     }
 
     public function getGroups()

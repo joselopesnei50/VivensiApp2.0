@@ -169,6 +169,57 @@ it('blocks when minimum delay between sends has not passed', function () {
         ->and($code)->toBe('MIN_DELAY');
 });
 
+// ── complianceStatus() — fonte única de verdade (chat + broadcast) ────────────
+
+it('[complianceStatus] returns CONTACT_BLOCKED when blocked_at is set', function () {
+    expect((new WhatsappOutboundPolicy())->complianceStatus(false, null, null, now(), false))
+        ->toBe('CONTACT_BLOCKED');
+});
+
+it('[complianceStatus] returns CONTACT_OPTOUT when opt_out_at is set', function () {
+    expect((new WhatsappOutboundPolicy())->complianceStatus(false, null, now(), null, false))
+        ->toBe('CONTACT_OPTOUT');
+});
+
+it('[complianceStatus] returns CONTACT_BLACKLISTED when isBlacklisted=true', function () {
+    expect((new WhatsappOutboundPolicy())->complianceStatus(false, null, null, null, true))
+        ->toBe('CONTACT_BLACKLISTED');
+});
+
+it('[complianceStatus] returns OPTIN_REQUIRED when require_opt_in=true and opt_in_at=null', function () {
+    expect((new WhatsappOutboundPolicy())->complianceStatus(true, null, null, null, false))
+        ->toBe('OPTIN_REQUIRED');
+});
+
+it('[complianceStatus] returns null when all conditions pass', function () {
+    expect((new WhatsappOutboundPolicy())->complianceStatus(true, now()->subDay(), null, null, false))
+        ->toBeNull();
+});
+
+it('[complianceStatus] CONTACT_BLOCKED takes priority over CONTACT_OPTOUT', function () {
+    expect((new WhatsappOutboundPolicy())->complianceStatus(false, null, now(), now(), false))
+        ->toBe('CONTACT_BLOCKED');
+});
+
+it('[complianceStatus] canSend delegates blocked_at to complianceStatus', function () {
+    $chat   = makeChat(['blocked_at' => now()]);
+    $config = makeConfig($chat, ['enforce_24h_window' => false]);
+
+    $result = (new WhatsappOutboundPolicy())->canSend($config, $chat, false, $reason, $code);
+
+    expect($result)->toBeFalse()->and($code)->toBe('CONTACT_BLOCKED');
+});
+
+it('[complianceStatus] canSend delegates blacklist to complianceStatus', function () {
+    $chat   = makeChat();
+    $config = makeConfig($chat);
+    WhatsappBlacklist::create(['tenant_id' => $chat->tenant_id, 'phone' => $chat->wa_id, 'reason' => 'test']);
+
+    $result = (new WhatsappOutboundPolicy())->canSend($config, $chat, false, $reason, $code);
+
+    expect($result)->toBeFalse()->and($code)->toBe('CONTACT_BLACKLISTED');
+});
+
 // ── recordSend updates last_outbound_at ───────────────────────────────────────
 
 it('recordSend updates last_outbound_at on the chat', function () {
