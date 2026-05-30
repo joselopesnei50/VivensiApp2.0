@@ -13,6 +13,31 @@ não falhas estruturais. Dá para lançar com uma lista curta de ajustes.
 
 ---
 
+## 📦 Status de implementação (branch `claude/beautiful-johnson-6V2ep`)
+
+**✅ Aplicado e enviado (2 commits de correção):**
+- P0 — `throttle:200,1` nos webhooks Asaas e PagSeguro (`routes/api.php`)
+- P1 — expiração de tokens Sanctum: 30 dias via `SANCTUM_TOKEN_EXPIRATION` (`config/sanctum.php`)
+- P1 — política de senha unificada (`Password::min(12)->mixedCase()->numbers()`) em registro, reset e perfil
+- P1 — `findUserByPhone` com match exato; recusa sufixo ambíguo entre tenants (`WhatsAppBotController`)
+- P2 — `sanitize_user_html()` (remove `on*=`, `javascript:/data:`, `style` inline) nas views públicas de páginas/blog
+- P2 — `hash_equals` no `bot_token` (`WhatsAppBotController`)
+- P2 — `supervisord.conf` alinhado para `redis` (era `database`) + worker de e-mails + `tries=3 --backoff`
+- Higiene — `composer.json` sem wildcard; remoção de zip/screenshots/PDF/dumps do versionamento + `.gitignore`
+
+**🔶 NÃO aplicado de propósito (exige desenho próprio + testes — não é one-liner seguro):**
+- **`BelongsToTenant` no `User`** — o trait chama `Auth::check()` no global scope; aplicá-lo ao model de
+  autenticação causaria **recursão infinita** ao resolver o usuário logado (login quebrado). Precisa de um
+  scope de tenant que não dependa de `Auth` durante `retrieveById`. O vetor explorável real (bot por telefone)
+  já foi fechado.
+- **Uploads sensíveis → disco privado** — trocar só o disco quebra upload/download. Precisa de rotas de
+  download autenticadas (`raffle_receipts`, `ngo_grants`) + atualização das views. Docs de transparência
+  são públicos de propósito e já têm controller de download.
+- **SSRF DNS-rebinding no proxy WhatsApp** — exige fixar o IP resolvido (`CURLOPT_RESOLVE`) no momento do
+  envio. O guard atual já bloqueia o vetor principal no save; rebinding é edge-case (tenant autenticado malicioso).
+
+---
+
 ## ✅ Já está pronto (validado contra o código atual)
 - `.env` fora do Git; `APP_DEBUG=false`, `SESSION_SECURE_COOKIE=true` no `.env.example`
 - HMAC AbacatePay vem de config (não hardcoded) — `AbacatePayService.php:123`
