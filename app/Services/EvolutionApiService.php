@@ -338,14 +338,30 @@ class EvolutionApiService
 
         if (strlen($digits) < 10) return null;
 
-        // Já tem DDI 55 e tamanho correto (12 = sem 9 / 13 = com 9)
-        if (str_starts_with($digits, '55') && in_array(strlen($digits), [12, 13])) {
+        // Já tem DDI 55 — 13 dígitos (DDD+9+local): completo
+        if (str_starts_with($digits, '55') && strlen($digits) === 13) {
             return $digits;
         }
 
-        // Sem DDI: 10 dígitos (DDD+8) ou 11 dígitos (DDD+9+8)
-        if (in_array(strlen($digits), [10, 11])) {
+        // Já tem DDI 55 — 12 dígitos (DDD+local sem 9º dígito): insere 9 se for celular
+        if (str_starts_with($digits, '55') && strlen($digits) === 12) {
+            $local = substr($digits, 4);
+            return in_array($local[0], ['6', '7', '8', '9'])
+                ? substr($digits, 0, 4) . '9' . $local
+                : $digits;
+        }
+
+        // Sem DDI — 11 dígitos (DDD+9+local): já correto
+        if (strlen($digits) === 11) {
             return '55' . $digits;
+        }
+
+        // Sem DDI — 10 dígitos (DDD+local sem 9º dígito): insere 9 se for celular
+        if (strlen($digits) === 10) {
+            $local = substr($digits, 2);
+            return in_array($local[0], ['6', '7', '8', '9'])
+                ? '55' . substr($digits, 0, 2) . '9' . $local
+                : '55' . $digits;
         }
 
         // Formatos esquisitos — retorna como está para a Evolution decidir
