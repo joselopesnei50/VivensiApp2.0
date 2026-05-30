@@ -3,6 +3,17 @@
 /public/storage
 /storage/*.key
 /vendor
+
+# Artefatos pesados / dados sensíveis na RAIZ do projeto (não versionar).
+# Ancorado em "/" para não afetar assets legítimos em public/ e resources/.
+/*.zip
+/*.jpeg
+/*.jpg
+/*.pdf
+/cookies.txt
+/local_files.txt
+/remote_files.txt
+/create_settings.sql
 /bootstrap/cache/*.php
 .env
 .env.backup
