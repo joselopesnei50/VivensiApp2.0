@@ -43,7 +43,7 @@ class WhatsAppBotController extends Controller
         $secret = config('services.whatsapp.bot_secret');
         if ($secret) {
             $provided = $request->query('bot_token') ?? $request->header('X-Bot-Secret');
-            if ($provided !== $secret) {
+            if (!is_string($provided) || !hash_equals((string) $secret, $provided)) {
                 Log::warning('WhatsApp Bot: token inválido', ['ip' => $request->ip()]);
                 return response()->json(['status' => 'unauthorized'], 401);
             }
