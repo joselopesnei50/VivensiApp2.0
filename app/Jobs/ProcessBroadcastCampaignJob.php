@@ -63,6 +63,18 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         $evo     = new EvolutionApiService($instance);
         $antiBan = new AntiBanManager($evo);
 
+        // ── Pré-carrega dados de compliance LGPD (1 query cada, evita N+1 no loop) ──
+        $config       = \App\Models\WhatsappConfig::where('tenant_id', $campaign->tenant_id)->first();
+        $requireOptIn = (bool) ($config?->require_opt_in ?? false);
+
+        // Blacklist como Set [phone => true] para lookup O(1)
+        $blacklistSet = \App\Models\WhatsappBlacklist::where('tenant_id', $campaign->tenant_id)
+            ->pluck('phone')
+            ->mapWithKeys(fn ($p) => [(string) $p => true])
+            ->all();
+
+        $policy = app(\App\Services\WhatsappOutboundPolicy::class);
+
         // Para 'all': 3 queries leves (count, wa_ids, cursor) evitam carregar
         // milhares de contatos na memória de uma vez com get().
         if ($campaign->audience_type === 'all') {
@@ -77,7 +89,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             }
 
             $waIdsAll           = (clone $baseQuery)->pluck('wa_id')->all();
-            $recipientsIterable = (clone $baseQuery)->select(['id', 'wa_id'])->cursor();
+            $recipientsIterable = (clone $baseQuery)->select(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])->cursor();
         } else {
             $collection = $this->getRecipients($campaign, $evo);
             if ($collection->isEmpty()) {
@@ -98,8 +110,9 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
         $campaign->update(['actual_recipients' => $recipientCount]);
 
-        $sentCount        = 0;
-        $failedCount      = 0;
+        $sentCount         = 0;
+        $failedCount       = 0;
+        $skippedCount      = 0;
         $consecutiveErrors = 0;
 
         $mediaToSend = null;
@@ -208,6 +221,37 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                         continue;
                     }
                     $waId = $jidMap[$normalized];
+
+                    // ── Compliance LGPD — usa complianceStatus() (mesma regra do chat individual) ──
+                    $blockCode = $policy->complianceStatus(
+                        $requireOptIn,
+                        $recipient->opt_in_at ?? null,
+                        $recipient->opt_out_at ?? null,
+                        $recipient->blocked_at ?? null,
+                        isset($blacklistSet[$normalized]) || isset($blacklistSet[$waId])
+                    );
+
+                    if ($blockCode) {
+                        Log::info('Broadcast: contato bloqueado por compliance — pulando', [
+                            'campaign_id' => $campaign->id,
+                            'wa_id'       => substr($waId, 0, -4) . '****',
+                            'reason'      => $blockCode,
+                        ]);
+                        if (!empty($recipient->id)) {
+                            try {
+                                \App\Models\WhatsappAuditLog::create([
+                                    'tenant_id'  => $campaign->tenant_id,
+                                    'chat_id'    => $recipient->id,
+                                    'actor_type' => 'system',
+                                    'event'      => 'broadcast_skipped',
+                                    'details'    => ['reason' => $blockCode, 'campaign_id' => $campaign->id],
+                                ]);
+                            } catch (\Throwable) {}
+                        }
+                        $skippedCount++;
+                        $campaign->update(['total_skipped' => $skippedCount, 'total_sent' => $sentCount, 'total_failed' => $failedCount]);
+                        continue;
+                    }
                 }
 
                 // ── Anti-ban: simula digitação antes do envio (apenas individuais) ──
@@ -286,7 +330,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             }
         }
 
-        $campaign->update(['status' => 'completed', 'completed_at' => now()]);
+        $campaign->update(['status' => 'completed', 'completed_at' => now(), 'total_skipped' => $skippedCount]);
     }
 
     public function failed(\Throwable $exception): void
@@ -348,15 +392,17 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 $allPhones = array_unique($allPhones);
                 $chatsMap = WhatsappChat::where('tenant_id', $campaign->tenant_id)
                     ->whereIn('wa_id', $allPhones)
-                    ->get()
+                    ->get(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])
                     ->keyBy('wa_id');
 
                 foreach ($allPhones as $phone) {
                     $chat = $chatsMap->get($phone);
-                    if ($chat && ($chat->opt_out_at || $chat->blocked_at)) continue;
                     $members->push((object)[
-                        'wa_id' => $phone,
-                        'id'    => $chat?->id,
+                        'wa_id'      => $phone,
+                        'id'         => $chat?->id,
+                        'opt_in_at'  => $chat?->opt_in_at,
+                        'opt_out_at' => $chat?->opt_out_at,
+                        'blocked_at' => $chat?->blocked_at,
                     ]);
                 }
 
@@ -387,21 +433,24 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
             $existingChats = WhatsappChat::where('tenant_id', $campaign->tenant_id)
                 ->whereIn('wa_id', $phones)
-                ->get()
+                ->get(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])
                 ->keyBy('wa_id');
 
+            // Compliance (opt_out, blocked, opt_in, blacklist) é verificado no loop principal
             return collect($phones)->map(function ($phone) use ($existingChats) {
-                if ($existingChats->has($phone)) {
-                    $chat = $existingChats->get($phone);
-                    if ($chat->opt_out_at || $chat->blocked_at) return null;
-                    return (object)['wa_id' => $phone, 'id' => $chat->id];
-                }
-                return (object)['wa_id' => $phone, 'id' => null];
-            })->filter()->values();
+                $chat = $existingChats->get($phone);
+                return (object)[
+                    'wa_id'      => $phone,
+                    'id'         => $chat?->id,
+                    'opt_in_at'  => $chat?->opt_in_at,
+                    'opt_out_at' => $chat?->opt_out_at,
+                    'blocked_at' => $chat?->blocked_at,
+                ];
+            })->values();
         }
 
         return WhatsappChat::where('tenant_id', $campaign->tenant_id)
             ->whereNull('opt_out_at')->whereNull('blocked_at')
-            ->get();
+            ->get(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at']);
     }
 }

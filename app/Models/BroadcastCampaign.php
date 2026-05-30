@@ -12,7 +12,7 @@ class BroadcastCampaign extends Model
         'tenant_id', 'created_by', 'name', 'message', 'has_image', 'image_path',
         'audience_type', 'status', 'scheduled_at', 'cadence',
         'group_ids', 'group_send_mode', 'phones',
-        'total_sent', 'total_failed', 'actual_recipients',
+        'total_sent', 'total_failed', 'total_skipped', 'actual_recipients',
         'started_at', 'completed_at',
     ];
 
