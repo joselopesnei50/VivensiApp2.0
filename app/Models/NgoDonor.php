@@ -34,6 +34,7 @@ class NgoDonor extends Model
         'address_state',
         'latitude',
         'longitude',
+        'email_marketing_opt_in',
     ];
 
     protected $hidden = ['document'];

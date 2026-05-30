@@ -152,6 +152,15 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/audit',                   [App\Http\Controllers\AuditController::class, 'index']);
         Route::get('/audit/export',            [App\Http\Controllers\AuditController::class, 'exportCsv'])->middleware('throttle:web_export');
         Route::get('/audit/{id}',              [App\Http\Controllers\AuditController::class, 'show']);
+
+        // E-mail Marketing (CRM)
+        Route::get('/email-campaigns',                          [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'index'])->name('ngo.email_campaigns.index');
+        Route::get('/email-campaigns/create',                   [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'create'])->name('ngo.email_campaigns.create');
+        Route::post('/email-campaigns',                         [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'store'])->name('ngo.email_campaigns.store');
+        Route::get('/email-campaigns/{emailCampaign}',          [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'show'])->name('ngo.email_campaigns.show');
+        Route::post('/email-campaigns/{emailCampaign}/send',    [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'send'])->name('ngo.email_campaigns.send');
+        Route::post('/email-campaigns/{emailCampaign}/stats',   [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'refreshStats'])->name('ngo.email_campaigns.stats');
+        Route::delete('/email-campaigns/{emailCampaign}',       [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'destroy'])->name('ngo.email_campaigns.destroy');
     }); // end prefix('ngo')
 
     // ── Landing Pages NGO (fora do prefix ngo para manter URLs originais) ────

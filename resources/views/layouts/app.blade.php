@@ -611,7 +611,7 @@
                 @php
                     $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*');
                     $ngo_wa_active     = request()->is('whatsapp*');
-                    $ngo_mkt_active    = request()->is('ngo/landing-pages*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
+                    $ngo_mkt_active    = request()->is('ngo/landing-pages*','ngo/email-campaigns*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
                     $ngo_fin_active    = request()->is('transactions*','ngo/budget*','ngo/reconciliation*');
                     $ngo_people_active = request()->is('ngo/team*','ngo/hr*','ngo/beneficiaries*');
                     $ngo_pat_active    = request()->is('ngo/inventory*','ngo/assets*');
@@ -663,8 +663,9 @@
                         <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '380px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '440px' : '0' }};">
                         <ul>
+                            <li><a href="{{ route('ngo.email_campaigns.index') }}" class="{{ request()->is('ngo/email-campaigns*') ? 'active' : '' }}"><i class="fas fa-envelope" style="color:#6366f1;"></i> E-mail Marketing</a></li>
                             <li><a href="{{ url('/ngo/landing-pages') }}" class="{{ request()->is('ngo/landing-pages*') ? 'active' : '' }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
                             <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
