@@ -311,45 +311,66 @@
         .messages-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 60px;
+            padding: 16px 24px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 0;
         }
-        .messages-container::-webkit-scrollbar { width: 5px; }
-        .messages-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .messages-container::-webkit-scrollbar { width: 4px; }
+        .messages-container::-webkit-scrollbar-thumb { background: #dde1e7; border-radius: 10px; }
 
-        .message-row { display: flex; width: 100%; margin-bottom: 2px; }
+        .message-row { display: flex; width: 100%; margin-top: 4px; }
+        .message-row:first-child { margin-top: 0; }
+        .message-row.sender-change { margin-top: 16px; }
         .message-in  { justify-content: flex-start; }
         .message-out { justify-content: flex-end; }
 
         .bubble {
-            max-width: 62%;
-            padding: 8px 12px 6px;
-            border-radius: 8px;
+            max-width: 65%;
+            padding: 8px 12px;
+            border-radius: 14px;
             position: relative;
-            font-size: 0.92rem;
-            line-height: 1.5;
+            font-size: 0.875rem;
+            line-height: 1.55;
             word-break: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+            box-shadow: var(--shadow-low);
         }
         .bubble.in {
             background: #ffffff;
-            color: var(--text-heading);
-            border-top-left-radius: 2px;
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
         }
         .bubble.out {
-            background: var(--wa-green-light);
-            color: #1a1a1a;
-            border-top-right-radius: 2px;
+            background: #e7f8ee;
+            color: var(--text-primary);
+            border-bottom-right-radius: 4px;
         }
         .bubble .meta {
-            font-size: 0.68rem;
+            font-size: 0.69rem;
             display: flex; align-items: center; gap: 4px;
-            margin-top: 3px; justify-content: flex-end;
-            color: var(--text-muted);
+            margin-top: 4px; justify-content: flex-end;
+            color: #9aa5b1;
         }
-        .bubble.out .meta { color: #6b8f71; }
+        .bubble.out .meta { color: #6b9e72; }
+
+        /* ── Day divider ── */
+        .day-divider {
+            display: flex; align-items: center;
+            gap: 12px; margin: 16px 0 12px;
+            color: var(--text-ter); font-size: 0.72rem; font-weight: 500;
+        }
+        .day-divider::before,
+        .day-divider::after {
+            content: ''; flex: 1;
+            height: 1px; background: var(--divider);
+        }
+        .day-divider span {
+            background: var(--chat-bg);
+            padding: 2px 12px;
+            border: 1px solid var(--divider);
+            border-radius: 999px;
+            white-space: nowrap;
+        }
 
         /* ── Input Area ── */
         .input-area {
@@ -1589,23 +1610,49 @@
         }
 
         function renderMessages(messages) {
-             let html = '';
-             messages.forEach(msg => {
-                let isOut = msg.direction === 'outbound';
+            let html     = '';
+            let lastDate = null;
+            let lastDir  = null;
+
+            const todayStr     = new Date().toDateString();
+            const yesterdayStr = new Date(Date.now() - 86400000).toDateString();
+
+            messages.forEach(msg => {
+                const isOut   = msg.direction === 'outbound';
+                const d       = new Date(msg.created_at);
+                const dateKey = d.toDateString();
+
+                // ── Day divider ──
+                if (dateKey !== lastDate) {
+                    let label = dateKey === todayStr     ? 'Hoje'
+                              : dateKey === yesterdayStr ? 'Ontem'
+                              : d.toLocaleDateString('pt-BR', {
+                                    day: '2-digit', month: 'short',
+                                    year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+                                });
+                    html    += `<div class="day-divider"><span>${label}</span></div>`;
+                    lastDate = dateKey;
+                    lastDir  = null;
+                }
+
+                // ── Sender-change gap ──
+                const extraClass = (lastDir !== null && lastDir !== msg.direction) ? ' sender-change' : '';
+                lastDir = msg.direction;
+
                 html += `
-                    <div class="message-row ${isOut ? 'message-out' : 'message-in'}">
+                    <div class="message-row ${isOut ? 'message-out' : 'message-in'}${extraClass}">
                         <div class="bubble ${isOut ? 'out' : 'in'}">
                             ${escapeHtml(msg.content)}
                             <div class="meta">
-                                ${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                ${isOut ? '<i class="fas fa-check-double text-light"></i>' : ''}
+                                ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                ${isOut ? '<i class="fas fa-check-double"></i>' : ''}
                             </div>
                         </div>
-                    </div>
-                `;
-             });
-             $('#chat-messages-area').html(html);
-             scrollToBottom();
+                    </div>`;
+            });
+
+            $('#chat-messages-area').html(html);
+            scrollToBottom();
         }
 
         function renderHistory(messages) {
