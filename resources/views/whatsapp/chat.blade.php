@@ -243,7 +243,7 @@
             z-index: 10;
         }
 
-        .chat-user-profile { display: flex; align-items: center; gap: 16px; }
+        .chat-user-profile { display: flex; align-items: center; gap: 16px; min-width: 0; overflow: hidden; flex: 1; }
         .header-avatar {
             width: 48px; height: 48px;
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
@@ -252,8 +252,8 @@
             font-weight: 700; font-size: 1.2rem;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
         }
-        .header-info { display: flex; flex-direction: column; gap: 2px; }
-        .header-info h4 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+        .header-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow: hidden; }
+        .header-info h4 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
         .header-info #header-status { font-size: 0.8rem; color: #64748b; display: flex; align-items: center; gap: 5px; }
         
         .compliance-badges { display: flex; gap: 6px; margin-top: 4px; }
@@ -1661,22 +1661,39 @@
 
         // Notes Logic
         function openNoteModal() {
-            $('#addNoteModal').modal('show');
+            const modalEl = document.getElementById('addNoteModal');
+            const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            bsModal.show();
         }
 
         function saveNote() {
-            const content = $('#newNoteContent').val();
-            if(!content) return;
+            const content = $('#newNoteContent').val().trim();
+            if (!content) { alert('Escreva o conteúdo da nota antes de salvar.'); return; }
+            if (!currentChatId) { alert('Nenhuma conversa selecionada.'); return; }
 
-            $.post('{{ url("/whatsapp/notes") }}', {
-                _token: csrfToken,
-                chat_id: currentChatId,
-                content: content
-            }, function(newNote) {
-                $('#addNoteModal').modal('hide');
-                $('#newNoteContent').val('');
-                // Refresh data
-                loadChatData(currentChatId);
+            const $btn = $('#addNoteModal .btn-primary');
+            $btn.prop('disabled', true).text('Salvando…');
+
+            $.ajax({
+                url:  '{{ url("/whatsapp/notes") }}',
+                type: 'POST',
+                data: { _token: csrfToken, chat_id: currentChatId, content: content },
+                dataType: 'json',
+                success: function() {
+                    // Bootstrap 5: fecha via instância nativa para garantir compatibilidade
+                    const modalEl = document.getElementById('addNoteModal');
+                    const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    bsModal.hide();
+                    $('#newNoteContent').val('');
+                    loadChatData(currentChatId);
+                },
+                error: function(xhr) {
+                    const msg = xhr.responseJSON?.message || ('Erro ' + xhr.status + ': não foi possível salvar a nota.');
+                    alert(msg);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Salvar Nota');
+                }
             });
         }
 
