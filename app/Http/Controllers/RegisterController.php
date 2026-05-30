@@ -37,7 +37,7 @@ class RegisterController extends Controller
             'organization_name' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', 'confirmed', \Illuminate\Validation\Rules\Password::min(12)->mixedCase()->numbers()],
             'plan_id' => 'nullable|exists:subscription_plans,id',
             'account_type' => 'required|in:project_manager,ngo_admin,client',
             'terms' => 'required|accepted',
