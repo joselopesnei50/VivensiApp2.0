@@ -754,8 +754,28 @@
                     <div class="header-info">
                         <h4 id="header-name">{{ count($chats) > 0 ? $chats[0]->contact_name : 'Nenhum chat' }}</h4>
                         <span id="header-status">
-                            <i class="fas fa-circle" style="font-size:6px;color:#25d366;"></i>
-                            Online agora
+                            @php
+                                $li = count($chats) > 0 ? $chats[0]->last_inbound_at : null;
+                                if (!$li) {
+                                    $dotColor  = '#94a3b8';
+                                    $statusTxt = 'Sem mensagens';
+                                } elseif ($li->diffInMinutes(now()) < 60) {
+                                    $dotColor  = '#25d366';
+                                    $statusTxt = 'Ativo recentemente';
+                                } elseif ($li->isToday()) {
+                                    $dotColor  = '#25d366';
+                                    $statusTxt = 'Ativo hoje';
+                                } elseif ($li->isYesterday()) {
+                                    $dotColor  = '#f59e0b';
+                                    $statusTxt = 'Ativo ontem';
+                                } else {
+                                    $days = (int) $li->diffInDays(now());
+                                    $dotColor  = '#94a3b8';
+                                    $statusTxt = 'Há ' . $days . ' dia' . ($days > 1 ? 's' : '');
+                                }
+                            @endphp
+                            <i class="fas fa-circle" style="font-size:6px;color:{{ $dotColor }};"></i>
+                            {{ $statusTxt }}
                         </span>
                         <div class="compliance-badges" id="waComplianceBadges" style="margin-top:2px;"></div>
                     </div>
@@ -1422,12 +1442,30 @@
             return el.scrollHeight - el.scrollTop - el.clientHeight < 60;
         }
 
+        function chatLastSeenLabel(lastInboundAt) {
+            if (!lastInboundAt) return { color: '#94a3b8', text: 'Sem mensagens' };
+            const d    = new Date(lastInboundAt);
+            const now  = new Date();
+            const mins = Math.floor((now - d) / 60000);
+            const days = Math.floor((now - d) / 86400000);
+            if (mins  <  60) return { color: '#25d366', text: 'Ativo recentemente' };
+            if (days  ===  0) return { color: '#25d366', text: 'Ativo hoje' };
+            if (days  ===  1) return { color: '#f59e0b', text: 'Ativo ontem' };
+            return { color: '#94a3b8', text: 'Há ' + days + ' dia' + (days > 1 ? 's' : '') };
+        }
+
         function updateUI(chat) {
             $('#header-name, #crm-name').text(chat.contact_name);
             $('#crm-avatar, #header-avatar').text(chat.contact_name.charAt(0));
             $('#crm-phone').text(chat.contact_phone || '--');
             $('#crm-info-name').text(chat.contact_name || '—');
             $('#crm-info-phone').text(chat.contact_phone || '—');
+
+            const ls = chatLastSeenLabel(chat.last_inbound_at);
+            $('#header-status').html(
+                '<i class="fas fa-circle" style="font-size:6px;color:' + ls.color + ';"></i> ' +
+                escapeHtml(ls.text)
+            );
             
             // Bot/Assignment UI
             const botContainer = document.getElementById('bot-status-container');
