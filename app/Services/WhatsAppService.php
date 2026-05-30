@@ -223,18 +223,31 @@ class WhatsAppService
         string $name = '',
         bool   $consent = false
     ): WhatsappChat {
-        $phone = preg_replace('/\D+/', '', $phone);
-        if ($phone === '') {
+        $normalized = EvolutionApiService::normalizeBrazilianPhone($phone);
+        if ($normalized === null) {
             throw new \InvalidArgumentException('Telefone inválido');
         }
 
         $name = trim($name) ?: 'Contato WhatsApp';
 
+        // Resolve JID correto (9º dígito) quando há instância ativa disponível
+        $waId = $normalized;
+        try {
+            $instance = $this->requireInstance($tenantId);
+            $evo      = new EvolutionApiService($instance);
+            $jidMap   = $evo->checkWhatsappNumbers([$normalized]);
+            if (isset($jidMap[$normalized])) {
+                $waId = $jidMap[$normalized];
+            }
+        } catch (\Throwable) {
+            // Sem instância ativa ou falha na verificação — usa normalizado
+        }
+
         $chat = WhatsappChat::firstOrCreate(
-            ['tenant_id' => $tenantId, 'wa_id' => $phone],
+            ['tenant_id' => $tenantId, 'wa_id' => $waId],
             [
                 'contact_name'   => $name,
-                'contact_phone'  => $phone,
+                'contact_phone'  => $normalized,
                 'status'         => 'open',
                 'last_message_at'=> now(),
             ]
@@ -244,7 +257,7 @@ class WhatsAppService
             $chat->contact_name = $name;
         }
         if (empty($chat->contact_phone)) {
-            $chat->contact_phone = $phone;
+            $chat->contact_phone = $normalized;
         }
 
         if ($consent && !$chat->opt_in_at) {

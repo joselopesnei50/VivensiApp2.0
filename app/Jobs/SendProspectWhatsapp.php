@@ -38,29 +38,32 @@ class SendProspectWhatsapp implements ShouldQueue
         $prospect = \App\Models\Prospect::find($this->prospectId);
         if (!$prospect || empty($prospect->phone)) return;
 
-        $phone = preg_replace('/\D/', '', $prospect->phone);
-        if (strlen($phone) < 10) return;
+        $normalized = EvolutionApiService::normalizeBrazilianPhone($prospect->phone);
+        if ($normalized === null) return;
 
-        // Garante código do país 55 (Brasil)
-        if (strlen($phone) <= 11 && !str_starts_with($phone, '55')) {
-            $phone = '55' . $phone;
+        $evo    = new EvolutionApiService($instance);
+        $jidMap = [];
+        try {
+            $jidMap = $evo->checkWhatsappNumbers([$normalized]);
+        } catch (\Throwable $e) {
+            Log::warning("SendProspectWhatsapp: checkWhatsappNumbers falhou para {$normalized} — {$e->getMessage()}");
         }
 
+        $sendTo = $jidMap[$normalized] ?? $normalized;
 
-        $evo = new EvolutionApiService($instance);
-        $res = $evo->sendMessage($phone, $this->message, null, 2);
+        $res = $evo->sendMessage($sendTo, $this->message, null, 2);
 
         if (isset($res['error'])) {
-            Log::error("SendProspectWhatsapp failed for {$phone}: " . ($res['error'] ?? ''));
+            Log::error("SendProspectWhatsapp failed for {$sendTo}: " . ($res['error'] ?? ''));
             return;
         }
 
         // Registra no chat para aparecer no histórico
         $chat = WhatsappChat::firstOrCreate(
-            ['tenant_id' => $this->tenantId, 'wa_id' => $phone],
+            ['tenant_id' => $this->tenantId, 'wa_id' => $sendTo],
             [
                 'contact_name'  => $prospect->company_name,
-                'contact_phone' => $phone,
+                'contact_phone' => $normalized,
                 'status'        => 'open',
                 'opt_in_at'     => now(),
             ]
