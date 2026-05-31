@@ -130,5 +130,16 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/email-campaigns/{emailCampaign}/stats', [App\Http\Controllers\Admin\EmailCampaignController::class, 'refreshStats'])->name('admin.email_campaigns.stats');
         Route::get('/email-campaigns/{emailCampaign}/debug-stats', [App\Http\Controllers\Admin\EmailCampaignController::class, 'debugStats'])->name('admin.email_campaigns.debug_stats');
         Route::delete('/email-campaigns/{emailCampaign}',     [App\Http\Controllers\Admin\EmailCampaignController::class, 'destroy'])->name('admin.email_campaigns.destroy');
+
+        // Funil Comercial (dados da plataforma — sem tenant_id)
+        Route::get('/sales',                              [App\Http\Controllers\Admin\SalesPipelineController::class, 'board'])->name('admin.sales.board');
+        Route::post('/sales/leads',                       [App\Http\Controllers\Admin\SalesPipelineController::class, 'store'])->name('admin.sales.leads.store');
+        Route::get('/sales/leads/{lead}',                 [App\Http\Controllers\Admin\SalesPipelineController::class, 'show'])->name('admin.sales.leads.show');
+        Route::put('/sales/leads/{lead}',                 [App\Http\Controllers\Admin\SalesPipelineController::class, 'update'])->name('admin.sales.leads.update');
+        Route::delete('/sales/leads/{lead}',              [App\Http\Controllers\Admin\SalesPipelineController::class, 'destroy'])->name('admin.sales.leads.destroy');
+        Route::post('/sales/leads/{lead}/move',           [App\Http\Controllers\Admin\SalesPipelineController::class, 'move'])->name('admin.sales.leads.move');
+        Route::post('/sales/leads/{lead}/convert',        [App\Http\Controllers\Admin\SalesPipelineController::class, 'convert'])->name('admin.sales.leads.convert');
+        Route::post('/sales/leads/{lead}/note',           [App\Http\Controllers\Admin\SalesPipelineController::class, 'addNote'])->name('admin.sales.leads.note');
+        Route::post('/sales/import/bookings',             [App\Http\Controllers\Admin\SalesPipelineController::class, 'importBookings'])->name('admin.sales.import.bookings');
     });
 });
