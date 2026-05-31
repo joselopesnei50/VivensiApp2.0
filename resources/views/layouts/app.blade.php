@@ -1,22 +1,30 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    @php
+        $__gtmId  = \App\Models\SystemSetting::getValue('gtm_container_id');
+        $__ga4Id  = \App\Models\SystemSetting::getValue('ga4_measurement_id');
+    @endphp
+    @if($__gtmId)
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-TTWCCXZ5');</script>
+    })(window,document,'script','dataLayer','{{ $__gtmId }}');</script>
     <!-- End Google Tag Manager -->
+    @endif
+    @if($__ga4Id)
     <!-- Google Analytics GA4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W3581PV1MW"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $__ga4Id }}"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-W3581PV1MW');
+        gtag('config', '{{ $__ga4Id }}');
     </script>
     <!-- End Google Analytics -->
+    @endif
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -88,10 +96,12 @@
     };
 @endphp
 <body data-panel="{{ $panelAttr }}">
+@if($__gtmId)
 <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TTWCCXZ5"
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $__gtmId }}"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
+@endif
 
 <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
 

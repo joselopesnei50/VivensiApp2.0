@@ -31,6 +31,10 @@ class AdminSettingsController extends Controller
         $together_ai_configured = (bool) SystemSetting::getValue('together_ai_api_key');
         $dev_page_password_configured = (bool) SystemSetting::getValue('dev_page_password');
 
+        // Analytics — IDs não são segredos, exibidos em texto puro
+        $ga4_measurement_id = SystemSetting::getValue('ga4_measurement_id');
+        $gtm_container_id   = SystemSetting::getValue('gtm_container_id');
+
         $deepseek_key = null;
         $gemini_key = null;
         $brevo_key = null;
@@ -131,7 +135,9 @@ class AdminSettingsController extends Controller
             'abacatepay_env',
             'abacatepay_webhook_secret',
             'together_ai_configured',
-            'dev_page_password_configured'
+            'dev_page_password_configured',
+            'ga4_measurement_id',
+            'gtm_container_id'
         ));
 
     }
@@ -186,6 +192,8 @@ class AdminSettingsController extends Controller
             'abacatepay_environment'    => 'nullable|in:sandbox,production',
             'together_ai_api_key'       => 'nullable|string|max:5000',
             'dev_page_password'         => 'nullable|string|min:8|max:255',
+            'ga4_measurement_id'        => 'nullable|string|max:50|regex:/^G-[A-Z0-9]+$/',
+            'gtm_container_id'          => 'nullable|string|max:50|regex:/^GTM-[A-Z0-9]+$/',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -299,6 +307,21 @@ class AdminSettingsController extends Controller
         $rawDevPw = trim((string) ($validated['dev_page_password'] ?? ''));
         if ($rawDevPw !== '') {
             SystemSetting::setValue('dev_page_password', \Illuminate\Support\Facades\Hash::make($rawDevPw), 'security');
+        }
+
+        // Analytics — IDs são públicos, podem ser limpos (campo vazio = remove tag)
+        $ga4 = trim((string) ($validated['ga4_measurement_id'] ?? ''));
+        if ($ga4 !== '') {
+            SystemSetting::setValue('ga4_measurement_id', $ga4, 'analytics');
+        } else {
+            \App\Models\SystemSetting::where('key', 'ga4_measurement_id')->delete();
+        }
+
+        $gtm = trim((string) ($validated['gtm_container_id'] ?? ''));
+        if ($gtm !== '') {
+            SystemSetting::setValue('gtm_container_id', $gtm, 'analytics');
+        } else {
+            \App\Models\SystemSetting::where('key', 'gtm_container_id')->delete();
         }
 
         return redirect()->back()->with('success', 'Configurações de API atualizadas com sucesso!');
