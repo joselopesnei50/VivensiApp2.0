@@ -258,6 +258,8 @@
 
         .chat-header {
             height: 64px;
+            min-height: 64px;
+            max-height: 64px;
             background: #ffffff;
             border-bottom: 1px solid var(--divider);
             display: flex;
@@ -265,6 +267,7 @@
             justify-content: space-between;
             padding: 0 20px;
             flex-shrink: 0;
+            overflow: hidden;
             z-index: 10;
             gap: 12px;
         }
@@ -459,10 +462,15 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow: hidden;
         }
-        .intelligence-panel::-webkit-scrollbar { width: 4px; }
-        .intelligence-panel::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 10px; }
+        .crm-content {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+        .crm-content::-webkit-scrollbar { width: 4px; }
+        .crm-content::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 10px; }
 
         .tag-badge { background: var(--divider); color: var(--text-sec); padding: 3px 10px; border-radius: 6px; font-size: 0.73rem; font-weight: 600; }
         .tag-badge.hot { background: #fef2f2; color: #991b1b; }
@@ -676,13 +684,15 @@
         .btn-assume:hover { background: var(--brand-deeper); }
 
         .btn-header-bot {
-            height: 32px; padding: 0 14px;
+            height: 32px; padding: 0 12px;
             border: none; border-radius: 999px;
-            font-size: 0.75rem; font-weight: 700;
-            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.73rem; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 5px;
             cursor: pointer; transition: all 0.15s;
             white-space: nowrap;
+            max-width: 160px; overflow: hidden;
         }
+        .btn-header-bot span { overflow: hidden; text-overflow: ellipsis; }
 
         /* ── Window warning banner ── */
         #window-warning {
@@ -866,7 +876,6 @@
                             <i class="fas fa-circle" style="font-size:8px;color:{{ $dotColor }};"></i>
                             {{ $statusTxt }}
                         </span>
-                        <div class="compliance-badges" id="waComplianceBadges" style="margin-top:2px;"></div>
                     </div>
                 </div>
                 <div class="chat-actions">
@@ -1591,20 +1600,21 @@
 
             if (chat) {
                 botContainer.style.display = 'block';
-                if (chat.is_bot_active) {
-                    botBtn.className = 'tool-btn bg-success text-white';
+                if (chat.assigned_to) {
+                    botText.innerText = 'Atendimento Humano';
+                    botBtn.style.background = '#3b82f6';
+                    botBtn.style.color = '#fff';
+                    assignBtn.style.display = 'none';
+                } else if (chat.is_bot_active) {
                     botText.innerText = 'Bot: Ativo';
+                    botBtn.style.background = '#22c55e';
+                    botBtn.style.color = '#fff';
                     assignBtn.style.display = 'block';
                 } else {
-                    botBtn.className = 'tool-btn bg-secondary text-white';
                     botText.innerText = 'Bot: Pausado';
-                    assignBtn.style.display = chat.assigned_to ? 'none' : 'block';
-                }
-
-                if (chat.assigned_to) {
-                    assignBtn.style.display = 'none';
-                    botText.innerText = 'Atendimento Humano';
-                    botBtn.className = 'tool-btn bg-primary text-white';
+                    botBtn.style.background = '#6b7280';
+                    botBtn.style.color = '#fff';
+                    assignBtn.style.display = 'block';
                 }
             }
 
@@ -1635,7 +1645,6 @@
                 badges.push('<span class="c-badge c-warn"><i class="fas fa-clock me-1"></i> Último envio ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + '</span>');
             }
 
-            $('#waComplianceBadges').html(badges.join(''));
             $('#crmComplianceBadges').html(badges.join(''));
         }
 
