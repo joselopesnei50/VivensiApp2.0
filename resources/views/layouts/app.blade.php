@@ -365,8 +365,9 @@
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
                     $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings');
-                    $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*');
+                    $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*');
                     $sa_infra_active  = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
+                    $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*');
                     // Badges de notificação
                     try {
                         $sa_badge_bookings = \App\Models\MeetingBooking::where('status','confirmed')->where('meeting_date','>=',today())->count();
@@ -463,11 +464,12 @@
                         <i class="fas fa-rocket group-icon"></i> Marketing &amp; Growth
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_growth_active ? '200px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_growth_active ? '260px' : '0' }};">
                         <ul>
+                            <li><a href="{{ route('admin.sales.board') }}" class="{{ request()->is('admin/sales*') ? 'active' : '' }}"><i class="fas fa-funnel-dollar"></i> Funil Comercial</a></li>
+                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
                             <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Campanhas de E-mail</a></li>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
-                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
                         </ul>
                     </div>
                 </div>
@@ -483,7 +485,7 @@
                         <ul>
                             <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
                             <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurações Globais</a></li>
-                            <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Command Bot Interno</a></li>
+                            <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fas fa-robot"></i> Bot de Atendimento</a></li>
                             <li><a href="{{ route('admin.lgpd.index') }}" class="{{ request()->routeIs('admin.lgpd.*') ? 'active' : '' }}">
                                 <i class="fas fa-scale-balanced"></i> Painel LGPD / DPO
                                 @if($sa_badge_lgpd > 0)<span class="sa-badge sa-amber">{{ $sa_badge_lgpd }}</span>@endif
@@ -491,6 +493,23 @@
                         </ul>
                     </div>
                 </div>
+                <div class="menu-divider"></div>
+
+                {{-- ── API & Dev ────────────────────────────────────────── --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $sa_api_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-code group-icon"></i> API &amp; Dev
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $sa_api_active ? '220px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ route('api.docs') }}" class="{{ request()->is('api-docs*') ? 'active' : '' }}"><i class="fas fa-book"></i> Documentação API</a></li>
+                            <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->is('settings/api-tokens*') ? 'active' : '' }}"><i class="fas fa-key"></i> API &amp; Integrações</a></li>
+                            <li><a href="{{ route('settings.webhooks') }}" class="{{ request()->is('settings/webhooks*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Webhooks</a></li>
+                        </ul>
+                    </div>
+                </div>
+
             @elseif (auth()->user()->role == 'manager')
                 {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
                 @php
