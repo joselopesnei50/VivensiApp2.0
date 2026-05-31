@@ -765,6 +765,63 @@
 
         </div>
 
+        <!-- ANALYTICS & RASTREAMENTO -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box rounded-3 p-3 me-3" style="background:#fff8e1;">
+                        <i class="fab fa-google fa-lg" style="color:#e37400;"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1">Analytics &amp; Rastreamento</h5>
+                        <p class="text-muted small mb-0">IDs do Google Analytics 4 e Google Tag Manager injetados automaticamente em todas as páginas.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-600 text-dark">
+                            Google Analytics 4 — Measurement ID
+                            @if(!empty($ga4_measurement_id))
+                                <span class="badge bg-success ms-2">Ativo</span>
+                            @endif
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fab fa-google text-muted"></i></span>
+                            <input type="text" name="ga4_measurement_id"
+                                   value="{{ $ga4_measurement_id }}"
+                                   class="form-control border-start-0 ps-0 form-control-lg"
+                                   placeholder="Ex: G-XXXXXXXXXX">
+                        </div>
+                        <div class="form-text">Encontrado em Analytics → Admin → Fluxos de dados. Deixe em branco para desativar.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-600 text-dark">
+                            Google Tag Manager — Container ID
+                            @if(!empty($gtm_container_id))
+                                <span class="badge bg-success ms-2">Ativo</span>
+                            @endif
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-tags text-muted"></i></span>
+                            <input type="text" name="gtm_container_id"
+                                   value="{{ $gtm_container_id }}"
+                                   class="form-control border-start-0 ps-0 form-control-lg"
+                                   placeholder="Ex: GTM-XXXXXXX">
+                        </div>
+                        <div class="form-text">Opcional. Se configurado, o GTM carrega junto ao GA4. Deixe em branco para desativar.</div>
+                    </div>
+                </div>
+                <div class="alert alert-light border border-warning border-opacity-50 d-flex align-items-start mt-4 mb-0 p-3 rounded-3">
+                    <i class="fas fa-lightbulb text-warning me-3 mt-1 fs-5"></i>
+                    <div class="small text-muted">
+                        Após salvar, as tags são injetadas automaticamente em todas as páginas (painel admin e tenant). Nenhum deploy necessário.
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Dev Portal Password -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
