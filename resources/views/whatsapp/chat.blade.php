@@ -1134,6 +1134,38 @@
                 </div>
                 @endif
 
+                {{-- Funil Comercial (super_admin only) --}}
+                @if(auth()->user()->role === 'super_admin')
+                <div class="crm-section">
+                    <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-sales-funnel" aria-expanded="false">
+                        <span>
+                            <i class="fas fa-funnel-dollar me-2" style="color:#22c55e;"></i>
+                            Enviar p/ Funil Comercial
+                        </span>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
+                    </div>
+                    <div class="crm-body collapse" id="crm-sales-funnel">
+                        <div class="mb-2">
+                            <label class="label mb-1">Estágio inicial</label>
+                            <select id="salesFunnelStageSelect" class="form-select form-select-sm" style="border-radius:8px;font-size:0.82rem;">
+                                @foreach($salesStages as $stage)
+                                <option value="{{ $stage->id }}">{{ $stage->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="small text-muted mb-2" style="font-size:0.75rem;">
+                            <i class="fas fa-sticky-note me-1" style="color:#f59e0b;"></i>
+                            Nome, telefone e notas do chat serão incluídos no lead.
+                        </div>
+                        <button class="btn btn-sm w-100 fw-700" onclick="sendChatToSalesFunnel()"
+                            style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:8px;font-size:0.82rem;padding:7px;">
+                            <i class="fas fa-funnel-dollar me-1"></i> Criar Lead no Funil
+                        </button>
+                        <div id="salesFunnelResult" class="mt-2 d-none small fw-600 text-success text-center"></div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Accordion 4 -->
                 <div class="crm-section">
                     <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-history" aria-expanded="false">
@@ -1485,6 +1517,38 @@
                 },
                 error: function(xhr) {
                     alert('Erro: ' + (xhr.responseJSON?.message || 'Falha ao criar deal.'));
+                },
+                complete: function() {
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                }
+            });
+        }
+
+        function sendChatToSalesFunnel() {
+            if (!currentChatId) { alert('Selecione uma conversa primeiro.'); return; }
+            const stageId = document.getElementById('salesFunnelStageSelect')?.value;
+            if (!stageId) { alert('Selecione um estágio.'); return; }
+
+            const btn = document.querySelector('#crm-sales-funnel .btn');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enviando...';
+
+            $.ajax({
+                url: '{{ url("/whatsapp/chat") }}/' + currentChatId + '/sales',
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken },
+                contentType: 'application/json',
+                data: JSON.stringify({ stage_id: stageId }),
+                success: function(res) {
+                    const el = document.getElementById('salesFunnelResult');
+                    el.innerHTML = '<i class="fas fa-check-circle me-1"></i> Lead criado no Funil Comercial!';
+                    el.classList.remove('d-none');
+                    setTimeout(() => el.classList.add('d-none'), 4000);
+                },
+                error: function(xhr) {
+                    alert('Erro: ' + (xhr.responseJSON?.message || 'Falha ao criar lead.'));
                 },
                 complete: function() {
                     btn.disabled = false;
