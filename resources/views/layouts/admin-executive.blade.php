@@ -44,6 +44,11 @@
             <span>Organizações</span>
         </a>
         
+        <a href="{{ route('admin.sales.board') }}" class="nav-item {{ request()->is('admin/sales*') ? 'active' : '' }}">
+            <i class="fas fa-funnel-dollar"></i>
+            <span>Funil Comercial</span>
+        </a>
+
         <a href="{{ route('admin.plans.index') }}" class="nav-item {{ request()->is('admin/plans*') ? 'active' : '' }}">
             <i class="fas fa-tags"></i>
             <span>Planos</span>
