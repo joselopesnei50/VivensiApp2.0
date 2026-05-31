@@ -17,12 +17,11 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id')->nullable()->after('id')->index();
         });
 
-        // Preenche tenant_id a partir do chat relacionado
+        // Preenche tenant_id a partir do chat relacionado (subquery — compatível com MySQL e SQLite)
         DB::statement('
-            UPDATE whatsapp_notes wn
-            JOIN whatsapp_chats wc ON wn.chat_id = wc.id
-            SET wn.tenant_id = wc.tenant_id
-            WHERE wn.tenant_id IS NULL
+            UPDATE whatsapp_notes
+            SET tenant_id = (SELECT tenant_id FROM whatsapp_chats WHERE id = whatsapp_notes.chat_id)
+            WHERE tenant_id IS NULL
         ');
     }
 

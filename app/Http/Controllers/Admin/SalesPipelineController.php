@@ -38,11 +38,8 @@ class SalesPipelineController extends Controller
         $totalFunnel = SalesLead::whereHas('stage', fn ($q) => $q->where('is_won', false)->where('is_lost', false))
             ->sum('estimated_value');
 
-        $pendingBookings = MeetingBooking::whereNull(function ($q) {
-            $q->select('id')->from('sales_leads')
-              ->whereColumn('sales_leads.meeting_booking_id', 'meeting_bookings.id')
-              ->limit(1);
-        })->count();
+        $linkedIds       = SalesLead::whereNotNull('meeting_booking_id')->pluck('meeting_booking_id');
+        $pendingBookings = MeetingBooking::whereNotIn('id', $linkedIds)->count();
 
         return view('admin.sales.board', compact(
             'stages', 'plans', 'admins', 'tenants', 'totalFunnel', 'pendingBookings'
@@ -225,11 +222,8 @@ class SalesPipelineController extends Controller
         $imported  = 0;
         $skipped   = 0;
 
-        MeetingBooking::whereNull(function ($q) {
-            $q->select('id')->from('sales_leads')
-              ->whereColumn('sales_leads.meeting_booking_id', 'meeting_bookings.id')
-              ->limit(1);
-        })->each(function (MeetingBooking $booking) use ($demoStage, &$imported, &$skipped) {
+        $linkedIds = SalesLead::whereNotNull('meeting_booking_id')->pluck('meeting_booking_id');
+        MeetingBooking::whereNotIn('id', $linkedIds)->each(function (MeetingBooking $booking) use ($demoStage, &$imported, &$skipped) {
             // Dedupe por e-mail
             if ($booking->email && SalesLead::where('email', $booking->email)->exists()) {
                 $skipped++;
