@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Transaction;
 use App\Models\Task;
 use App\Models\Project;
+use App\Models\Tenant;
+use App\Models\Transaction;
+use App\Models\WhatsappConfig;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -17,8 +19,8 @@ use Illuminate\Support\Facades\Log;
  */
 class BruceAiService
 {
-    const HISTORY_TTL = 1800; // 30 minutos
-    const MAX_HISTORY = 10;   // mensagens mantidas por tenant
+    const HISTORY_TTL = 3600; // 1 hora
+    const MAX_HISTORY = 20;   // mensagens mantidas por tenant
 
     public function __construct(
         private DeepSeekService $deepSeek
@@ -101,9 +103,10 @@ class BruceAiService
         $ctx = $this->tenantContext($tenantId);
 
         $roleContext = match ($role) {
-            'ngo'     => "O usuário gerencia uma ONG/OSC. Use termos do terceiro setor: doadores, editais, captação, beneficiários, voluntários, prestação de contas, transparência. Jamais use termos de SaaS, startup, MRR ou ARR.",
-            'manager' => "O usuário é gestor de projetos e equipes. Foque em: projetos, tarefas, produtividade, aprovações de despesas, fluxo de caixa e desempenho da equipe.",
-            default   => "O usuário gerencia suas finanças e tarefas pessoais/empresariais. Foque em: saldo, receitas, despesas, fluxo de caixa, tarefas pendentes e metas financeiras.",
+            'ngo'         => "O usuário gerencia uma ONG/OSC. Use termos do terceiro setor: doadores, editais, captação, beneficiários, voluntários, prestação de contas, transparência. Jamais use termos de SaaS, startup, MRR ou ARR.",
+            'manager'     => "O usuário é gestor de projetos e equipes. Foque em: projetos, tarefas, produtividade, aprovações de despesas, fluxo de caixa e desempenho da equipe.",
+            'super_admin' => "O usuário é o administrador da plataforma Vivensi. Ele gerencia todos os clientes (tenants), planos de assinatura, saúde do sistema e pipeline comercial. Forneça visão estratégica de plataforma: MRR, churn, conversão de leads, crescimento de clientes ativos, saúde da infraestrutura.",
+            default       => "O usuário gerencia suas finanças e tarefas pessoais/empresariais. Foque em: saldo, receitas, despesas, fluxo de caixa, tarefas pendentes e metas financeiras.",
         };
 
         $systemCapabilities = <<<CAP
@@ -120,6 +123,14 @@ class BruceAiService
 - **Configurações**: integrações (WhatsApp, pagamentos), dados da organização, personalização de marca.
 CAP;
 
+        $orgBlock      = $ctx['org_name']
+            ? "## ORGANIZAÇÃO\nVocê está respondendo para **{$ctx['org_name']}**" . ($ctx['org_type'] ? " ({$ctx['org_type']})" : '') . ".\n"
+            : '';
+
+        $trainingBlock = $ctx['ai_training']
+            ? "## INSTRUÇÕES ESPECÍFICAS DA ORGANIZAÇÃO\n{$ctx['ai_training']}\n"
+            : '';
+
         return <<<PROMPT
 Você é Bruce, assistente de inteligência artificial do sistema Vivensi.
 
@@ -132,9 +143,11 @@ Você é Bruce, assistente de inteligência artificial do sistema Vivensi.
 - Respostas curtas para perguntas simples. Use Markdown (negrito, listas) quando organiza melhor a informação.
 - Idioma: português do Brasil.
 
+{$orgBlock}
 ## PAPEL
 {$roleContext}
 
+{$trainingBlock}
 {$systemCapabilities}
 
 ## DADOS ATUAIS DA CONTA (em tempo real)
@@ -168,6 +181,9 @@ PROMPT;
             $income  = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->month)->sum('amount');
             $expense = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'expense')->where('status', 'paid')->whereMonth('date', now()->month)->sum('amount');
 
+            $tenant    = Tenant::find($tenantId);
+            $waConfig  = WhatsappConfig::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
+
             return [
                 'income'          => $income,
                 'expense'         => $expense,
@@ -175,6 +191,9 @@ PROMPT;
                 'active_projects' => Project::where('tenant_id', $tenantId)->where('status', 'active')->count(),
                 'open_tasks'      => Task::where('tenant_id', $tenantId)->whereNotIn('status', ['done', 'completed'])->count(),
                 'overdue_tasks'   => Task::where('tenant_id', $tenantId)->whereNotIn('status', ['done', 'completed'])->whereNotNull('due_date')->where('due_date', '<', now()->toDateString())->count(),
+                'org_name'        => $tenant?->brand_name ?: $tenant?->name,
+                'org_type'        => $tenant?->type,
+                'ai_training'     => $waConfig?->ai_training,
             ];
         });
     }
