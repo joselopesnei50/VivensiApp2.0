@@ -377,13 +377,6 @@
                     }
                 @endphp
 
-                {{-- ── Widget: Usuários ao vivo ────────────────────────── --}}
-                <div class="sa-live-pill">
-                    <span class="sa-pulse"></span>
-                    <span class="sa-live-txt">Online agora</span>
-                    <span class="sa-live-num" id="saLiveNum">—</span>
-                </div>
-
                 {{-- ── SaaS & Métricas ──────────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_saas_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
@@ -1566,24 +1559,6 @@
         }
     });
 
-    // ── Live Users Widget (Super Admin Only) ─────────────────────
-    @if(auth()->check() && auth()->user()->role === 'super_admin')
-    (function() {
-        const el = document.getElementById('saLiveNum');
-        if (!el) return;
-        function fetchLive() {
-            fetch('/admin/live-users', {
-                credentials: 'same-origin',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
-            })
-            .then(r => r.ok ? r.json() : Promise.reject(r.status))
-            .then(d => { el.textContent = d.count; })
-            .catch(() => { el.textContent = '0'; });
-        }
-        fetchLive();
-        setInterval(fetchLive, 30000);
-    })();
-    @endif
 
     // ── Accordion Sidebar Groups ────────────────────────────────
     function toggleGroup(header) {
