@@ -16,6 +16,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/chat/start',               [App\Http\Controllers\WhatsappController::class, 'startChat'])->name('whatsapp.chat.start');
     Route::post('/whatsapp/chat/{id}/kanban',         [App\Http\Controllers\WhatsappController::class, 'sendToKanban']);
     Route::post('/whatsapp/chat/{id}/kanban-sponsorship', [App\Http\Controllers\WhatsappController::class, 'sendToSponsorshipKanban']);
+    Route::post('/whatsapp/chat/{id}/sales',          [App\Http\Controllers\WhatsappController::class, 'sendToSalesPipeline']);
     Route::post('/whatsapp/chat/{id}/read',           [App\Http\Controllers\WhatsappController::class, 'markRead']);
     Route::patch('/whatsapp/chat/{id}/labels',        [App\Http\Controllers\WhatsappController::class, 'updateLabels']);
     Route::post('/whatsapp/chat/{id}/compliance',     [App\Http\Controllers\WhatsappController::class, 'updateCompliance']);

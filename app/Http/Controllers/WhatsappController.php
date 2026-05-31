@@ -588,7 +588,11 @@ class WhatsappController extends Controller
                                        ->where('status', 'active')
                                        ->get();
 
-        return view('whatsapp.chat', compact('chats', 'projects'));
+        $salesStages = $user->role === 'super_admin'
+            ? \App\Models\SalesStage::ordered()->get()
+            : collect();
+
+        return view('whatsapp.chat', compact('chats', 'projects', 'salesStages'));
     }
 
     public function sendToKanban(Request $request, $chatId)
@@ -665,6 +669,46 @@ class WhatsappController extends Controller
         ]);
 
         return response()->json(['success' => true, 'deal' => $deal]);
+    }
+
+    public function sendToSalesPipeline(Request $request, $chatId)
+    {
+        if (auth()->user()->role !== 'super_admin') {
+            abort(403);
+        }
+
+        $chat = WhatsappChat::findOrFail($chatId);
+
+        $validated = $request->validate([
+            'stage_id' => 'required|exists:sales_stages,id',
+        ]);
+
+        $stage    = \App\Models\SalesStage::findOrFail($validated['stage_id']);
+        $position = \App\Models\SalesLead::where('stage_id', $stage->id)->max('position') + 1;
+
+        $notes = \App\Models\WhatsappNote::where('chat_id', $chat->id)
+            ->orderBy('created_at')->get();
+        $notesText = $notes->isNotEmpty()
+            ? "Notas do atendimento:\n" . $notes->map(fn($n) => "• {$n->content}")->join("\n")
+            : null;
+
+        $lead = \App\Models\SalesLead::create([
+            'name'     => $chat->contact_name ?: 'Contato WhatsApp',
+            'phone'    => $chat->contact_phone,
+            'origin'   => 'manual',
+            'stage_id' => $stage->id,
+            'position' => $position,
+            'notes'    => $notesText,
+        ]);
+
+        \App\Models\SalesLeadActivity::create([
+            'lead_id' => $lead->id,
+            'user_id' => auth()->id(),
+            'type'    => 'created',
+            'content' => "Lead criado a partir da conversa WhatsApp com {$chat->contact_name}.",
+        ]);
+
+        return response()->json(['success' => true, 'lead_id' => $lead->id]);
     }
 
     public function chatList(Request $request)
