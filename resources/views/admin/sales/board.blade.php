@@ -574,7 +574,7 @@ function drop(ev, stageId) {
 
     fetch(`${boardBaseUrl}/leads/${leadId}/move`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        headers: jsonHeaders(),
         body: JSON.stringify({ stage_id: stageId, position: position }),
     })
     .then(r => r.json())
@@ -642,18 +642,26 @@ function openNewLead(stageId = null) {
     openModal('modalNewLead');
 }
 
+function formData(form) {
+    return Object.fromEntries([...new FormData(form)].filter(([, v]) => v !== ''));
+}
+
+function jsonHeaders() {
+    return { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken };
+}
+
 function saveLead(ev) {
     ev.preventDefault();
     const btn  = document.getElementById('btnSaveLead');
     const form = document.getElementById('formNewLead');
-    const data = Object.fromEntries(new FormData(form));
+    const data = formData(form);
 
     btn.disabled    = true;
     btn.textContent = 'Salvando…';
 
     fetch(`${boardBaseUrl}/leads`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        headers: jsonHeaders(),
         body: JSON.stringify(data),
     })
     .then(r => r.json())
@@ -729,11 +737,11 @@ function updateLead(ev) {
     ev.preventDefault();
     const id   = document.getElementById('editLeadId').value;
     const form = document.getElementById('formEditLead');
-    const data = Object.fromEntries(new FormData(form));
+    const data = formData(form);
 
     fetch(`${boardBaseUrl}/leads/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        headers: jsonHeaders(),
         body: JSON.stringify(data),
     })
     .then(r => r.json())
@@ -749,7 +757,7 @@ function deleteLead() {
     const id = document.getElementById('editLeadId').value;
     fetch(`${boardBaseUrl}/leads/${id}`, {
         method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': csrfToken },
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
     })
     .then(r => r.json())
     .then(res => {
@@ -764,7 +772,7 @@ function addNote() {
 
     fetch(`${boardBaseUrl}/leads/${id}/note`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        headers: jsonHeaders(),
         body: JSON.stringify({ content }),
     })
     .then(r => r.json())
@@ -799,7 +807,7 @@ function convertLead() {
     const tenantId = document.getElementById('convertTenantSelect').value || null;
     fetch(`${boardBaseUrl}/leads/${pendingConvertId}/convert`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        headers: jsonHeaders(),
         body: JSON.stringify({ tenant_id: tenantId }),
     })
     .then(r => r.json())
@@ -823,7 +831,7 @@ function importBookings() {
     if (!confirm('Importar demos pendentes da agenda como leads no funil?')) return;
     fetch('{{ route("admin.sales.import.bookings") }}', {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': csrfToken },
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
     })
     .then(r => r.json())
     .then(res => {
