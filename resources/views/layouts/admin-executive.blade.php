@@ -38,53 +38,82 @@
             <i class="fas fa-chart-line"></i>
             <span>Overview</span>
         </a>
-        
+
         <a href="{{ url('/admin/tenants') }}" class="nav-item {{ request()->is('admin/tenants*') ? 'active' : '' }}">
             <i class="fas fa-building"></i>
             <span>Organizações</span>
-        </a>
-        
-        <a href="{{ route('admin.sales.board') }}" class="nav-item {{ request()->is('admin/sales*') ? 'active' : '' }}">
-            <i class="fas fa-funnel-dollar"></i>
-            <span>Funil Comercial</span>
         </a>
 
         <a href="{{ route('admin.plans.index') }}" class="nav-item {{ request()->is('admin/plans*') ? 'active' : '' }}">
             <i class="fas fa-tags"></i>
             <span>Planos</span>
         </a>
-        
-        <a href="{{ route('admin.academy.index') }}" class="nav-item {{ request()->is('admin/academy*') ? 'active' : '' }}">
-            <i class="fas fa-graduation-cap"></i>
-            <span>Academy</span>
-        </a>
-        
-        <a href="{{ route('admin.blog.index') }}" class="nav-item {{ request()->is('admin/blog*') ? 'active' : '' }}">
-            <i class="fas fa-blog"></i>
-            <span>Blog</span>
-        </a>
-        
-        <a href="{{ route('prospecting.index') }}" class="nav-item {{ request()->is('prospecting*') ? 'active' : '' }}">
-            <i class="fas fa-wand-magic-sparkles"></i>
-            <span>Prospecção Global</span>
-        </a>
-        
+
         <a href="{{ route('admin.team.index') }}" class="nav-item {{ request()->is('admin/team*') ? 'active' : '' }}">
             <i class="fas fa-users-cog"></i>
             <span>Time</span>
         </a>
-        
+
+        <a href="{{ route('admin.bot') }}" class="nav-item {{ request()->is('admin/bot*') ? 'active' : '' }}">
+            <i class="fas fa-robot"></i>
+            <span>Bot de Atendimento</span>
+        </a>
+
         <a href="{{ route('admin.health') }}" class="nav-item {{ request()->is('admin/health*') ? 'active' : '' }}">
             <i class="fas fa-server"></i>
             <span>Sistema</span>
         </a>
 
-        <div class="nav-divider"></div>
+        {{-- ── Marketing & Growth ── --}}
+        <div class="nav-divider" style="font-size:.6rem;color:#94a3b8;letter-spacing:.08em;padding:6px 16px 2px;text-transform:uppercase;">Marketing &amp; Growth</div>
 
-        <a href="{{ route('admin.bot') }}" class="nav-item {{ request()->is('admin/bot*') ? 'active' : '' }}">
-            <i class="fas fa-robot"></i>
-            <span>Bot Interno</span>
+        <a href="{{ route('admin.sales.board') }}" class="nav-item {{ request()->is('admin/sales*') ? 'active' : '' }}">
+            <i class="fas fa-funnel-dollar"></i>
+            <span>Funil Comercial</span>
         </a>
+
+        <a href="{{ route('prospecting.index') }}" class="nav-item {{ request()->is('prospecting*') ? 'active' : '' }}">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            <span>Prospecção Global</span>
+        </a>
+
+        <a href="{{ route('admin.blog.index') }}" class="nav-item {{ request()->is('admin/blog*') ? 'active' : '' }}">
+            <i class="fas fa-blog"></i>
+            <span>Blog</span>
+        </a>
+
+        <a href="{{ route('admin.academy.index') }}" class="nav-item {{ request()->is('admin/academy*') ? 'active' : '' }}">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Academy</span>
+        </a>
+
+        {{-- ── API & Integrações (dropdown) ── --}}
+        @php
+            $apiActive = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*');
+        @endphp
+        <div class="nav-divider" style="font-size:.6rem;color:#94a3b8;letter-spacing:.08em;padding:6px 16px 2px;text-transform:uppercase;">Developers</div>
+
+        <button class="nav-item w-100 border-0 bg-transparent text-start {{ $apiActive ? 'active' : '' }}"
+                data-bs-toggle="collapse" data-bs-target="#navApiGroup" aria-expanded="{{ $apiActive ? 'true' : 'false' }}"
+                style="cursor:pointer;">
+            <i class="fas fa-code"></i>
+            <span>API &amp; Integrações</span>
+            <i class="fas fa-chevron-down ms-auto" style="font-size:.65rem;opacity:.5;transition:transform .2s;" id="navApiArrow"></i>
+        </button>
+        <div class="collapse {{ $apiActive ? 'show' : '' }}" id="navApiGroup">
+            <a href="{{ route('api.docs') }}" class="nav-item ps-4 {{ request()->is('api-docs*') ? 'active' : '' }}" style="font-size:.82rem;">
+                <i class="fas fa-book" style="font-size:.75rem;"></i>
+                <span>Documentação API</span>
+            </a>
+            <a href="{{ route('settings.api-tokens') }}" class="nav-item ps-4 {{ request()->is('settings/api-tokens*') ? 'active' : '' }}" style="font-size:.82rem;">
+                <i class="fas fa-key" style="font-size:.75rem;"></i>
+                <span>API &amp; Tokens</span>
+            </a>
+            <a href="{{ route('settings.webhooks') }}" class="nav-item ps-4 {{ request()->is('settings/webhooks*') ? 'active' : '' }}" style="font-size:.82rem;">
+                <i class="fas fa-webhook" style="font-size:.75rem;"></i>
+                <span>Webhooks</span>
+            </a>
+        </div>
 
         <div class="nav-divider"></div>
 
