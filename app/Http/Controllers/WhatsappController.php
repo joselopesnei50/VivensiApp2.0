@@ -17,6 +17,7 @@ use App\Services\GeminiService;
 use App\Services\DeepSeekService;
 use App\Models\Tenant;
 use App\Services\Messaging\MetaCloudApiService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
@@ -435,10 +436,12 @@ class WhatsappController extends Controller
 
         // Update PIX info on Tenant if applicable
         if (auth()->user()->tenant) {
-            auth()->user()->tenant->update([
+            $waTenant = auth()->user()->tenant;
+            $waTenant->update([
                 'pix_key' => $validated['pix_key'] ?? null,
                 'pix_key_type' => $validated['pix_key_type'] ?? null,
             ]);
+            Cache::forget("tenant.{$waTenant->id}");
         }
 
         // Se campos estruturados foram enviados, monta o prompt automaticamente
