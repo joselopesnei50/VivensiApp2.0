@@ -15,48 +15,10 @@ class ReportController extends Controller
     {
         $tenant_id = auth()->user()->tenant_id;
         $year = $request->input('year', date('Y'));
-        
-        // 1. Receitas Operacionais Brutas
-        $incomeCategories = FinancialCategory::where('type', 'income')->get();
-        $incomes = [];
-        $totalIncome = 0;
 
-        foreach ($incomeCategories as $cat) {
-            $val = Transaction::where('tenant_id', $tenant_id)
-                ->where('category_id', $cat->id)
-                ->whereYear('date', $year)
-                ->where('status', 'paid')
-                ->sum('amount');
-            
-            if ($val > 0) {
-                $incomes[] = ['name' => $cat->name, 'value' => $val];
-                $totalIncome += $val;
-            }
-        }
+        [$incomes, $totalIncome, $expenses, $totalExpense] = $this->buildDreData($tenant_id, $year);
 
-        // 2. Custos e Despesas Operacionais
-        $expenseCategories = FinancialCategory::where('type', 'expense')->get();
-        $expenses = [];
-        $totalExpense = 0;
-        
-        // Agrupar despesas por grupos macro (opcional, aqui simplificado por categoria)
-        foreach ($expenseCategories as $cat) {
-            $val = Transaction::where('tenant_id', $tenant_id)
-                ->where('category_id', $cat->id)
-                ->whereYear('date', $year)
-                ->where('status', 'paid')
-                ->sum('amount');
-
-            if ($val > 0) {
-                $expenses[] = ['name' => $cat->name, 'value' => $val];
-                $totalExpense += $val;
-            }
-        }
-
-        // 3. Resultado do Exercício
-        $result = $totalIncome - $totalExpense;
-
-        // Dados mensais para gráfico (opcional)
+        $result    = $totalIncome - $totalExpense;
         $chartData = $this->getMonthlyResult($tenant_id, $year);
 
         return view('ngo.reports.dre', compact('year', 'incomes', 'totalIncome', 'expenses', 'totalExpense', 'result', 'chartData'));
@@ -72,45 +34,13 @@ class ReportController extends Controller
             'year' => $year,
         ]);
 
-        $incomeCategories = FinancialCategory::where('type', 'income')->get();
-        $incomes = [];
-        $totalIncome = 0;
-
-        foreach ($incomeCategories as $cat) {
-            $val = Transaction::where('tenant_id', $tenant_id)
-                ->where('category_id', $cat->id)
-                ->whereYear('date', $year)
-                ->where('status', 'paid')
-                ->sum('amount');
-
-            if ($val > 0) {
-                $incomes[] = ['name' => $cat->name, 'value' => $val];
-                $totalIncome += $val;
-            }
-        }
-
-        $expenseCategories = FinancialCategory::where('type', 'expense')->get();
-        $expenses = [];
-        $totalExpense = 0;
-
-        foreach ($expenseCategories as $cat) {
-            $val = Transaction::where('tenant_id', $tenant_id)
-                ->where('category_id', $cat->id)
-                ->whereYear('date', $year)
-                ->where('status', 'paid')
-                ->sum('amount');
-
-            if ($val > 0) {
-                $expenses[] = ['name' => $cat->name, 'value' => $val];
-                $totalExpense += $val;
-            }
-        }
+        [$incomes, $totalIncome, $expenses, $totalExpense] = $this->buildDreData($tenant_id, $year);
 
         $result = $totalIncome - $totalExpense;
 
-        $orgName = (auth()->user()->tenant_id == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
-        $periodLabel = '01/01/' . $year . ' a 31/12/' . $year;
-        $generatedAt = now()->format('d/m/Y H:i');
+        $orgName      = (auth()->user()->tenant_id == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $periodLabel  = '01/01/' . $year . ' a 31/12/' . $year;
+        $generatedAt  = now()->format('d/m/Y H:i');
 
         $pdf = app('dompdf.wrapper');
         $pdf->setPaper('a4', 'portrait');
@@ -140,41 +70,9 @@ class ReportController extends Controller
             'year' => $year,
         ]);
 
-        $incomeCategories = FinancialCategory::where('type', 'income')->get();
-        $incomes = [];
-        $totalIncome = 0;
+        [$incomes, $totalIncome, $expenses, $totalExpense] = $this->buildDreData($tenant_id, $year);
 
-        foreach ($incomeCategories as $cat) {
-            $val = Transaction::where('tenant_id', $tenant_id)
-                ->where('category_id', $cat->id)
-                ->whereYear('date', $year)
-                ->where('status', 'paid')
-                ->sum('amount');
-
-            if ($val > 0) {
-                $incomes[] = ['name' => $cat->name, 'value' => $val];
-                $totalIncome += $val;
-            }
-        }
-
-        $expenseCategories = FinancialCategory::where('type', 'expense')->get();
-        $expenses = [];
-        $totalExpense = 0;
-
-        foreach ($expenseCategories as $cat) {
-            $val = Transaction::where('tenant_id', $tenant_id)
-                ->where('category_id', $cat->id)
-                ->whereYear('date', $year)
-                ->where('status', 'paid')
-                ->sum('amount');
-
-            if ($val > 0) {
-                $expenses[] = ['name' => $cat->name, 'value' => $val];
-                $totalExpense += $val;
-            }
-        }
-
-        $result = $totalIncome - $totalExpense;
+        $result    = $totalIncome - $totalExpense;
         $chartData = $this->getMonthlyResult($tenant_id, $year);
 
         $filename = 'dre-' . $year . '-' . date('Y-m-d_His') . '.csv';
@@ -220,25 +118,65 @@ class ReportController extends Controller
         ]);
     }
 
-    private function getMonthlyResult($tenant_id, $year)
+    /**
+     * Build DRE arrays using a single GROUP BY query instead of one query per category.
+     * Returns [$incomes, $totalIncome, $expenses, $totalExpense].
+     */
+    private function buildDreData($tenant_id, $year): array
     {
+        // 1 query: all paid sums for the year, keyed by category_id
+        $sumsByCat = Transaction::where('tenant_id', $tenant_id)
+            ->whereYear('date', $year)
+            ->where('status', 'paid')
+            ->select('category_id', DB::raw('SUM(amount) as total'))
+            ->groupBy('category_id')
+            ->pluck('total', 'category_id');
+
+        $incomeCategories = FinancialCategory::where('type', 'income')->get();
+        $incomes      = [];
+        $totalIncome  = 0;
+        foreach ($incomeCategories as $cat) {
+            $val = (float) ($sumsByCat[$cat->id] ?? 0);
+            if ($val > 0) {
+                $incomes[] = ['name' => $cat->name, 'value' => $val];
+                $totalIncome += $val;
+            }
+        }
+
+        $expenseCategories = FinancialCategory::where('type', 'expense')->get();
+        $expenses     = [];
+        $totalExpense = 0;
+        foreach ($expenseCategories as $cat) {
+            $val = (float) ($sumsByCat[$cat->id] ?? 0);
+            if ($val > 0) {
+                $expenses[] = ['name' => $cat->name, 'value' => $val];
+                $totalExpense += $val;
+            }
+        }
+
+        return [$incomes, $totalIncome, $expenses, $totalExpense];
+    }
+
+    /**
+     * Monthly income vs expense result using a single GROUP BY instead of 24 queries.
+     */
+    private function getMonthlyResult($tenant_id, $year): array
+    {
+        $rows = Transaction::where('tenant_id', $tenant_id)
+            ->whereYear('date', $year)
+            ->where('status', 'paid')
+            ->selectRaw('MONTH(date) as month, type, SUM(amount) as total')
+            ->groupBy(DB::raw('MONTH(date)'), 'type')
+            ->get();
+
+        $byMonthType = [];
+        foreach ($rows as $row) {
+            $byMonthType[(int) $row->month][$row->type] = (float) $row->total;
+        }
+
         $data = [];
         for ($m = 1; $m <= 12; $m++) {
-            $inc = Transaction::where('tenant_id', $tenant_id)
-                ->whereYear('date', $year)
-                ->whereMonth('date', $m)
-                ->where('type', 'income')
-                ->where('status', 'paid')
-                ->sum('amount');
-                
-            $exp = Transaction::where('tenant_id', $tenant_id)
-                ->whereYear('date', $year)
-                ->whereMonth('date', $m)
-                ->where('type', 'expense')
-                ->where('status', 'paid')
-                ->sum('amount');
-
-            $data[$m] = $inc - $exp;
+            $data[$m] = ($byMonthType[$m]['income'] ?? 0) - ($byMonthType[$m]['expense'] ?? 0);
         }
         return $data;
     }
