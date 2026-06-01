@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use App\Services\AbacatePayService;
 use App\Services\BrevoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -55,6 +56,7 @@ class CheckoutController extends Controller
             if ($request->filled('document')) {
                 $tenant->document = preg_replace('/\D/', '', $request->document);
                 $tenant->save();
+                Cache::forget("tenant.{$tenant->id}");
             }
 
             if (!$tenant->document) {

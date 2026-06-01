@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class TenantBrandingController extends Controller
@@ -61,6 +62,7 @@ class TenantBrandingController extends Controller
         }
 
         $tenant->update($data);
+        Cache::forget("tenant.{$tenant->id}");
 
         return back()->with('success', 'Identidade visual atualizada com sucesso!');
     }

@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -111,6 +112,7 @@ class ProcessAbacatePayWebhook implements ShouldQueue
                 $tenant->plan_id = $planId;
             }
             $tenant->save();
+            Cache::forget("tenant.{$tenant->id}");
 
             AuditLog::create([
                 'tenant_id'      => $tenant->id,

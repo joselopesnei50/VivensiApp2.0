@@ -12,6 +12,7 @@ use App\Models\LandingPageSection;
 use App\Models\Transaction;
 use App\Models\SubscriptionPlan;
 use App\Services\BrevoService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
@@ -314,6 +315,7 @@ class AdminController extends Controller
 
         $tenant = Tenant::findOrFail($id);
         $tenant->update(['subscription_status' => 'suspended']);
+        Cache::forget("tenant.{$tenant->id}");
 
         return back()->with('success', 'Organização suspensa com sucesso. O acesso foi bloqueado.');
     }
@@ -326,6 +328,7 @@ class AdminController extends Controller
 
         $tenant = Tenant::findOrFail($id);
         $tenant->update(['subscription_status' => 'active']);
+        Cache::forget("tenant.{$tenant->id}");
 
         return back()->with('success', 'Organização reativada com sucesso. O acesso foi liberado.');
     }

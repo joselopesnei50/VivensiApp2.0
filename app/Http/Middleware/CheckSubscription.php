@@ -2,8 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Tenant;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class CheckSubscription
 {
@@ -24,8 +27,8 @@ class CheckSubscription
             return $next($request);
         }
 
-        // 3. Check Tenant Subscription
-        $tenant = $user->tenant;
+        // 3. Check Tenant Subscription (cached 5 min)
+        $tenant = Cache::remember("tenant.{$user->tenant_id}", 300, fn () => Tenant::find($user->tenant_id));
         
         if (!$tenant) {
             return $next($request); // Should not happen based on app logic
@@ -45,6 +48,7 @@ class CheckSubscription
 
         // 5. Check if suspended
         if ($tenant->subscription_status === 'suspended') {
+            Cache::forget("tenant.{$user->tenant_id}");
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
