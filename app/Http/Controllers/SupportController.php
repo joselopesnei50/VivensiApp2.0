@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendSupportEmailJob;
 use App\Models\SupportTicket;
 use App\Models\SupportMessage;
 use Illuminate\Http\Request;
@@ -68,17 +69,7 @@ class SupportController extends Controller
             'is_admin_reply' => false
         ]);
 
-        // 📧 Notify Admin via Brevo
-        $adminEmail = \App\Models\SystemSetting::getValue('email_from');
-        if ($adminEmail) {
-            app(\App\Services\BrevoService::class)->sendNewTicketToAdmin(
-                $adminEmail, 
-                Auth::user()->name, 
-                $ticket->subject, 
-                $ticket->id, 
-                Auth::user()->tenant_id
-            );
-        }
+        SendSupportEmailJob::dispatch($ticket->id, false, Auth::user()->name);
 
         return redirect()->route('support.index')->with('success', 'Ticket criado com sucesso!');
     }
@@ -112,28 +103,11 @@ class SupportController extends Controller
         // Update ticket status
         if ($isAdmin) {
             $ticket->update(['status' => 'answered_by_admin']);
-            
-            // 📧 Notify User via Brevo
-            app(\App\Services\BrevoService::class)->sendTicketReplyToUser(
-                $ticket->user, 
-                $ticket->id, 
-                $ticket->tenant_id
-            );
         } else {
             $ticket->update(['status' => 'open']);
-            
-            // 📧 Notify Admin via Brevo
-            $adminEmail = \App\Models\SystemSetting::getValue('email_from');
-            if ($adminEmail) {
-                app(\App\Services\BrevoService::class)->sendNewTicketToAdmin(
-                    $adminEmail, 
-                    Auth::user()->name, 
-                    "Resposta no chamado #" . $ticket->id, 
-                    $ticket->id, 
-                    Auth::user()->tenant_id
-                );
-            }
         }
+
+        SendSupportEmailJob::dispatch($ticket->id, $isAdmin, Auth::user()->name);
 
         return back()->with('success', 'Resposta enviada!');
     }
