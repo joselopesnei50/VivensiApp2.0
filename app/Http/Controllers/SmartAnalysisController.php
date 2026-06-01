@@ -95,22 +95,28 @@ class SmartAnalysisController extends Controller
         }
 
         try {
+            // 1 GROUP BY query instead of 24 individual sum() calls
+            $startDate = \Carbon\Carbon::now()->subMonths(11)->startOfMonth();
+            $rows = \App\Models\Transaction::where('tenant_id', $tenantId)
+                ->where('date', '>=', $startDate)
+                ->selectRaw('YEAR(date) as yr, MONTH(date) as mo, type, SUM(amount) as total')
+                ->groupBy(\Illuminate\Support\Facades\DB::raw('YEAR(date)'), \Illuminate\Support\Facades\DB::raw('MONTH(date)'), 'type')
+                ->get();
+
+            $byYearMonth = [];
+            foreach ($rows as $row) {
+                $byYearMonth["{$row->yr}-{$row->mo}"][$row->type] = (float) $row->total;
+            }
+
             $labels = [];
             $incomeSeries = [];
             $expenseSeries = [];
             for ($i = 11; $i >= 0; $i--) {
                 $date = \Carbon\Carbon::now()->subMonths($i);
+                $key = "{$date->year}-{$date->month}";
                 $labels[] = ucfirst($date->translatedFormat('M/y'));
-                $incomeSeries[] = (float) \App\Models\Transaction::where('tenant_id', $tenantId)
-                    ->where('type', 'income')
-                    ->whereMonth('date', $date->month)
-                    ->whereYear('date', $date->year)
-                    ->sum('amount');
-                $expenseSeries[] = (float) \App\Models\Transaction::where('tenant_id', $tenantId)
-                    ->where('type', 'expense')
-                    ->whereMonth('date', $date->month)
-                    ->whereYear('date', $date->year)
-                    ->sum('amount');
+                $incomeSeries[]  = $byYearMonth[$key]['income']  ?? 0.0;
+                $expenseSeries[] = $byYearMonth[$key]['expense'] ?? 0.0;
             }
             $monthly = ['labels' => $labels, 'income' => $incomeSeries, 'expense' => $expenseSeries];
         } catch (\Throwable $e) {
