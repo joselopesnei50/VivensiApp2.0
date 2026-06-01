@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateGrantAnalysisJob;
+use App\Jobs\GenerateGrantProposalJob;
 use App\Models\NgoGrant;
 use App\Models\NgoGrantDocument;
 use Illuminate\Http\Request;
@@ -190,152 +192,47 @@ class NgoGrantController extends Controller
 
     public function generateProposal($id)
     {
-        $grant = NgoGrant::findOrFail($id);
-        $tenant = auth()->user()->tenant;
+        $tenantId = auth()->user()->tenant_id;
+        $grant    = NgoGrant::where('tenant_id', $tenantId)->findOrFail($id);
 
-        $prompt = "Aja como um consultor sênior em captação de recursos para o Terceiro Setor. 
-        Crie um rascunho estruturado de proposta de projeto para o edital abaixo:
-        
-        Título do Edital: {$grant->title}
-        Órgão Concessor: {$grant->agency}
-        Valor solicitado: R$ " . number_format($grant->value, 2, ',', '.') . "
-        Notas/Requisitos: {$grant->notes}
-        
-        Nome da ONG: " . ($tenant->corpo_name ?? 'Nossa Organização') . "
-        
-        Estruture a proposta com:
-        1. Resumo Executivo
-        2. Justificativa e Impacto Social
-        3. Objetivos Gerais e Específicos
-        4. Metodologia de Execução
-        5. Plano de Sustentabilidade
-        
-        Use um tom profissional, persuasivo e focado em resultados sociais mensuráveis. Formate em Markdown.";
-
-        $ds     = new \App\Services\DeepSeekService();
-        $result = $ds->chat([['role' => 'user', 'content' => $prompt]]);
-        $proposal = $result['choices'][0]['message']['content'] ?? null;
-
-        if (!$proposal) {
-            return response()->json(['error' => 'Não foi possível gerar a proposta no momento. Verifique a chave DeepSeek no painel admin.'], 500);
+        // If already done, return cached result immediately
+        if ($grant->ai_proposal_status === 'done' && $grant->ai_proposal) {
+            return response()->json(['proposal' => $grant->ai_proposal]);
         }
 
-        // Persist so the user can retrieve it without regenerating
-        $grant->ai_proposal = $proposal;
-        $grant->save();
+        $grant->update(['ai_proposal_status' => 'processing', 'ai_proposal' => null]);
+        GenerateGrantProposalJob::dispatch($grant->id, $tenantId)->onQueue('ai');
 
-        return response()->json(['proposal' => $proposal]);
+        return response()->json(['status' => 'processing']);
+    }
+
+    public function aiStatus($id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $grant    = NgoGrant::where('tenant_id', $tenantId)->findOrFail($id);
+
+        return response()->json([
+            'proposal_status'  => $grant->ai_proposal_status,
+            'proposal'         => $grant->ai_proposal,
+            'analysis_status'  => $grant->ai_analysis_status,
+            'analysis'         => $grant->ai_analysis,
+        ]);
     }
 
     public function aiAnalyze($id)
     {
         $tenantId = auth()->user()->tenant_id;
-        $grant    = NgoGrant::where('tenant_id', $tenantId)->with([
-            'project.transactions',
-            'project.tasks',
-        ])->findOrFail($id);
+        $grant    = NgoGrant::where('tenant_id', $tenantId)->findOrFail($id);
 
-        $tenant  = auth()->user()->tenant;
-        $orgName = $tenant->corpo_name ?? $tenant->name ?? 'Nossa Organização';
-
-        $deadline    = $grant->deadline?->format('d/m/Y') ?? 'Não informado';
-        $daysLeft    = $grant->deadline ? now()->diffInDays($grant->deadline, false) : null;
-        $prazoInfo   = $daysLeft !== null
-            ? ($daysLeft >= 0 ? "{$deadline} ({$daysLeft} dias restantes)" : "{$deadline} (vencido há " . abs((int)$daysLeft) . " dias)")
-            : 'Não informado';
-
-        $valor       = 'R$ ' . number_format((float) $grant->value, 2, ',', '.');
-        $statusLabel = ['open' => 'Ativo', 'reporting' => 'Prestação de Contas', 'closed' => 'Encerrado'][$grant->status] ?? $grant->status;
-
-        $project      = $grant->project;
-        $transactions = $project?->transactions ?? collect();
-        $tasks        = $project?->tasks ?? collect();
-        $totalIncome  = $transactions->where('type', 'income')->sum('amount');
-        $totalExpense = $transactions->where('type', 'expense')->sum('amount');
-        $tasksDone    = $tasks->where('status', 'done')->count();
-        $tasksTotal   = $tasks->count();
-        $budget       = (float) ($project?->budget ?? $grant->value ?? 0);
-        $usedPercent  = $budget > 0 ? min(100, round(($totalExpense / $budget) * 100)) : 0;
-
-        $contextFinanceiro = $project
-            ? "Captado: {$totalIncome} | Gasto: {$totalExpense} | Orçamento utilizado: {$usedPercent}% | Tarefas: {$tasksDone}/{$tasksTotal} concluídas"
-            : 'Nenhum projeto associado ainda.';
-
-        $isReporting = $grant->status === 'reporting';
-
-        $prompt = <<<PROMPT
-Você é um especialista em gestão de convênios e editais para o Terceiro Setor brasileiro.
-Analise o seguinte edital/convênio e gere uma análise técnica detalhada.
-
-## DADOS DO EDITAL
-- **Organização:** {$orgName}
-- **Título:** {$grant->title}
-- **Concedente:** {$grant->agency}
-- **Valor:** {$valor}
-- **Prazo:** {$prazoInfo}
-- **Status atual:** {$statusLabel}
-- **Requisitos/Observações:** {$grant->notes}
-- **Progresso financeiro e operacional:** {$contextFinanceiro}
-
-## ANÁLISE SOLICITADA
-Gere uma análise estruturada em Markdown com EXATAMENTE estas seções:
-
-### 🎯 Viabilidade
-Avalie a viabilidade de executar/captar este edital com uma pontuação de 1 a 10 e justificativa objetiva em 2-3 linhas.
-
-### ✅ Checklist de Requisitos
-Liste em checkboxes (`- [ ]`) os principais requisitos que precisam ser atendidos ou verificados, baseados nas informações disponíveis.
-
-### ⚠️ Riscos Identificados
-Liste os 3-5 principais riscos com nível (🔴 Alto / 🟡 Médio / 🟢 Baixo) e breve descrição.
-
-### 📋 Próximas Ações
-Liste 3-5 ações concretas e prioritárias com prazo sugerido (ex: "nos próximos 7 dias", "até 30 dias antes do deadline").
-
-### 📅 Cronograma Sugerido
-Sugira 4-6 marcos/milestones com estimativa de prazo relativo ao deadline do edital.
-PROMPT;
-
-        if ($isReporting) {
-            $prompt .= <<<REPORTING
-
-### 📊 Análise de Prestação de Contas
-Com base no progresso financeiro ({$usedPercent}% do orçamento utilizado, {$tasksDone}/{$tasksTotal} tarefas concluídas), avalie:
-- Conformidade com o planejado
-- Pontos de atenção para o relatório final
-- Documentos essenciais a providenciar
-REPORTING;
+        // Return cached result if available
+        if ($grant->ai_analysis_status === 'done' && $grant->ai_analysis) {
+            return response()->json(['analysis' => $grant->ai_analysis]);
         }
 
-        $prompt .= "\n\nResponda APENAS em Português brasileiro. Seja direto, objetivo e prático.";
+        $grant->update(['ai_analysis_status' => 'processing', 'ai_analysis' => null]);
+        GenerateGrantAnalysisJob::dispatch($grant->id, $tenantId)->onQueue('ai');
 
-        $ds     = new \App\Services\DeepSeekService();
-        $result = $ds->chat([
-            ['role' => 'system', 'content' => 'Você é um especialista em captação de recursos e gestão de convênios para ONGs brasileiras. Suas análises são diretas, técnicas e acionáveis.'],
-            ['role' => 'user',   'content' => $prompt],
-        ]);
-
-        $analysis = trim($result['choices'][0]['message']['content'] ?? '');
-
-        if (empty($analysis)) {
-            // Fallback para Gemini se DeepSeek falhar
-            try {
-                $gemini   = new \App\Services\GeminiService();
-                $gRes     = $gemini->generateText($prompt);
-                $analysis = trim($gRes['candidates'][0]['content']['parts'][0]['text'] ?? '');
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('aiAnalyze: Gemini fallback também falhou — ' . $e->getMessage());
-            }
-        }
-
-        if (empty($analysis)) {
-            return response()->json(['error' => 'Não foi possível gerar a análise. Verifique as chaves de API no painel admin.'], 500);
-        }
-
-        $grant->ai_analysis = $analysis;
-        $grant->save();
-
-        return response()->json(['analysis' => $analysis]);
+        return response()->json(['status' => 'processing']);
     }
 
     public function uploadDocument(Request $request, $id)

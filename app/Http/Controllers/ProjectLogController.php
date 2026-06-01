@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateProjectLogSummaryJob;
 use App\Models\Project;
 use App\Models\ProjectLog;
-use App\Services\DeepSeekService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -65,66 +65,28 @@ class ProjectLogController extends Controller
     public function generateSummary(int $projectId)
     {
         $tenantId = auth()->user()->tenant_id;
+        $project  = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
 
-        $project = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
-
-        $logs = ProjectLog::where('project_id', $project->id)
-            ->where('tenant_id', $tenantId)
-            ->orderBy('created_at', 'asc')
-            ->with('user:id,name')
-            ->get();
-
-        if ($logs->count() < 3) {
+        $logCount = ProjectLog::where('project_id', $project->id)->where('tenant_id', $tenantId)->count();
+        if ($logCount < 3) {
             return response()->json(['error' => 'Mínimo de 3 entradas para gerar o relatório.'], 422);
         }
 
-        $logText = $logs->map(function ($l) {
-            $author = $l->user?->name ?? 'Equipe';
-            $date   = $l->created_at->format('d/m/Y H:i');
-            return "[{$date} — {$author}]\n{$l->body}";
-        })->implode("\n\n---\n\n");
+        $project->update(['ai_summary_status' => 'processing', 'ai_summary' => null, 'ai_summary_at' => null]);
+        GenerateProjectLogSummaryJob::dispatch($project->id, $tenantId)->onQueue('ai');
 
-        $prompt = "Você é um assistente de gestão de projetos. Com base nas entradas de diário abaixo, produza um **Relatório de Evolução** estruturado e profissional em português.
-
-PROJETO: {$project->name}
-DESCRIÇÃO: {$project->description}
-
-ENTRADAS DO DIÁRIO:
-{$logText}
-
-INSTRUÇÕES:
-- Use markdown com headers (##)
-- Inclua: Resumo Executivo, Principais Avanços, Pontos de Atenção, Próximos Passos sugeridos
-- Seja objetivo, direto e profissional
-- Máximo 500 palavras";
-
-        $summary = $this->callDeepSeek($prompt);
-
-        if (!$summary) {
-            return response()->json(['error' => 'Não foi possível gerar o relatório. Tente novamente.'], 500);
-        }
-
-        $project->update([
-            'ai_summary'    => $summary,
-            'ai_summary_at' => now(),
-        ]);
-
-        return response()->json([
-            'summary'    => $summary,
-            'summary_at' => now()->format('d/m/Y H:i'),
-        ]);
+        return response()->json(['status' => 'processing']);
     }
 
-    private function callDeepSeek(string $prompt): ?string
+    public function summaryStatus(int $projectId)
     {
-        try {
-            $ds     = new DeepSeekService();
-            $result = $ds->chat([['role' => 'user', 'content' => $prompt]]);
-            $text   = $result['choices'][0]['message']['content'] ?? null;
-            return $text ? trim($text) : null;
-        } catch (\Exception $e) {
-            Log::warning("ProjectLog DeepSeek: " . $e->getMessage());
-            return null;
-        }
+        $tenantId = auth()->user()->tenant_id;
+        $project  = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
+
+        return response()->json([
+            'status'     => $project->ai_summary_status,
+            'summary'    => $project->ai_summary,
+            'summary_at' => $project->ai_summary_at?->format('d/m/Y H:i'),
+        ]);
     }
 }

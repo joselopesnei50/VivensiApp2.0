@@ -25,6 +25,7 @@ class Project extends Model
         'longitude',
         'ai_summary',
         'ai_summary_at',
+        'ai_summary_status',
     ];
 
     protected $casts = [

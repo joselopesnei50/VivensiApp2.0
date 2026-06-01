@@ -621,6 +621,27 @@
         }
         @endif
 
+        const aiStatusUrl = "{{ route('ngo.grants.ai-status', $grant->id) }}";
+
+        function pollGrantAiStatus(field, onDone, attempts) {
+            attempts = attempts || 0;
+            if (attempts > 36) { alert('A IA demorou demais. Tente novamente.'); return; }
+            fetch(aiStatusUrl)
+                .then(r => r.json())
+                .then(function(data) {
+                    if (data[field + '_status'] === 'done') {
+                        onDone(data[field]);
+                    } else if (data[field + '_status'] === 'failed') {
+                        alert('A IA encontrou um erro. Verifique as chaves de API e tente novamente.');
+                    } else {
+                        setTimeout(function() { pollGrantAiStatus(field, onDone, attempts + 1); }, 5000);
+                    }
+                })
+                .catch(function() {
+                    setTimeout(function() { pollGrantAiStatus(field, onDone, attempts + 1); }, 8000);
+                });
+        }
+
         btnGenerate.addEventListener('click', async function() {
             modal.show();
             loading.style.display = 'block';
@@ -631,17 +652,25 @@
                 const response = await fetch("{{ route('ngo.grants.generate-proposal', $grant->id) }}");
                 const data = await response.json();
 
-                if (data.error) {
-                    alert(data.error);
-                    modal.hide();
-                    return;
-                }
+                if (data.error) { alert(data.error); modal.hide(); return; }
 
-                currentProposal = data.proposal;
-                content.innerHTML = marked.parse(currentProposal);
-                loading.style.display = 'none';
-                content.style.display = 'block';
-                btnCopy.style.display = 'block';
+                if (data.proposal) {
+                    // Returned cached result immediately
+                    currentProposal = data.proposal;
+                    content.innerHTML = marked.parse(currentProposal);
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                    btnCopy.style.display = 'block';
+                } else {
+                    // Job dispatched — poll for completion
+                    pollGrantAiStatus('proposal', function(proposal) {
+                        currentProposal = proposal;
+                        content.innerHTML = marked.parse(proposal);
+                        loading.style.display = 'none';
+                        content.style.display = 'block';
+                        btnCopy.style.display = 'block';
+                    });
+                }
             } catch (error) {
                 alert('Erro ao conectar com Bruce AI. Verifique sua conexão.');
                 modal.hide();
@@ -689,7 +718,12 @@
             .then(r => r.json())
             .then(function (data) {
                 if (data.error) { alert(data.error); analysisModal.hide(); return; }
-                showAnalysis(data.analysis);
+                if (data.analysis) {
+                    showAnalysis(data.analysis);
+                } else {
+                    // Job dispatched — poll
+                    pollGrantAiStatus('analysis', showAnalysis);
+                }
             })
             .catch(function () {
                 alert('Erro ao conectar com Bruce AI. Verifique sua conexão.');
