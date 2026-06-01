@@ -108,11 +108,13 @@ $PHP_BIN $PHP_FLAGS artisan db:seed --class=RolesAndPermissionsSeeder --force --
 echo "👥 Sincronizando roles dos usuários existentes..."
 $PHP_BIN $PHP_FLAGS artisan vivensi:sync-roles --no-interaction || true
 
-# ── 7. Cache de config/rotas/views ───────────────────────────────────────
+# ── 7. Cache de config/rotas/views/eventos ───────────────────────────────
 echo "⚡ Otimizando cache Laravel..."
 $PHP_BIN $PHP_FLAGS artisan config:cache --no-interaction
 $PHP_BIN $PHP_FLAGS artisan route:cache --no-interaction
 $PHP_BIN $PHP_FLAGS artisan view:cache --no-interaction
+$PHP_BIN $PHP_FLAGS artisan event:cache --no-interaction
+$PHP_BIN $PHP_FLAGS artisan opcache:clear 2>/dev/null || true
 
 # ── 8. Permissões finais ──────────────────────────────────────────────────
 echo "🔐 Ajustando permissões finais..."
