@@ -17,13 +17,17 @@ class LogPageVisit
         $response = $next($request);
 
         if ($this->shouldLog($request)) {
-            $user = Auth::user();
-            PageVisit::create([
-                'tenant_id'  => $user?->tenant_id,
-                'user_id'    => $user?->id,
-                'path'       => substr($request->path(), 0, 500),
-                'created_at' => now(),
-            ]);
+            try {
+                $user = Auth::user();
+                PageVisit::create([
+                    'tenant_id'  => $user?->tenant_id,
+                    'user_id'    => $user?->id,
+                    'path'       => substr($request->path(), 0, 500),
+                    'created_at' => now(),
+                ]);
+            } catch (\Throwable $e) {
+                // Tabela não existe ainda — não interrompe a requisição
+            }
         }
 
         return $response;
