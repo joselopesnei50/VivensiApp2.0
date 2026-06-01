@@ -396,7 +396,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
                     $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings');
                     $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*');
-                    $sa_infra_active  = request()->routeIs('admin.health') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
+                    $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
                     $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*');
                     // Badges de notificação
                     try {
@@ -513,6 +513,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '350px' : '0' }};">
                         <ul>
+                            <li><a href="{{ route('admin.analytics') }}" class="{{ request()->routeIs('admin.analytics') ? 'active' : '' }}"><i class="fas fa-chart-bar"></i> Analytics</a></li>
                             <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
                             <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurações Globais</a></li>
                             <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fas fa-robot"></i> Bot de Atendimento</a></li>
