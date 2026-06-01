@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\GeocodeAddressJob;
+use App\Jobs\GeneratePdfJob;
 use App\Models\Beneficiary;
 use App\Models\Attendance;
+use App\Models\GeneratedReport;
 use App\Models\FamilyMember;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
@@ -109,194 +111,46 @@ class BeneficiaryController extends Controller
 
     public function annualReportPdf(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id;
-        $year = (int) $request->get('year', (int) date('Y'));
+        $tenantId    = auth()->user()->tenant_id;
+        $year        = (int) $request->get('year', (int) date('Y'));
         if ($year < 2000 || $year > ((int) date('Y') + 2)) $year = (int) date('Y');
-
         $benefStatus = trim((string) $request->get('benef_status', ''));
-        $type = trim((string) $request->get('type', ''));
+        $type        = trim((string) $request->get('type', ''));
 
-        AuditDownload::log('Beneficiaries:AnnualReport', null, [
-            'format' => 'pdf',
-            'year' => $year,
-            'benef_status' => $benefStatus,
-            'type' => $type,
+        AuditDownload::log('Beneficiaries:AnnualReport', null, ['format' => 'pdf', 'year' => $year, 'benef_status' => $benefStatus, 'type' => $type]);
+
+        $report = GeneratedReport::create([
+            'tenant_id' => $tenantId,
+            'user_id'   => auth()->id(),
+            'type'      => 'annual_report',
+            'params'    => ['tenant_id' => $tenantId, 'year' => $year, 'benef_status' => $benefStatus, 'type' => $type, 'org_name' => ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL', 'emitter' => auth()->user()->name ?? '—'],
         ]);
 
-        // Reuse annualReport calculations by calling method logic (inline for simplicity)
-        $from = Carbon::create($year, 1, 1)->toDateString();
-        $to = Carbon::create($year, 12, 31)->toDateString();
+        GeneratePdfJob::dispatch($report->id);
 
-        $base = DB::table('attendances as a')
-            ->join('beneficiaries as b', 'b.id', '=', 'a.beneficiary_id')
-            ->leftJoin('users as u', 'u.id', '=', 'a.user_id')
-            ->where('a.tenant_id', $tenantId)
-            ->where('b.tenant_id', $tenantId)
-            ->whereBetween('a.date', [$from, $to]);
-        if ($benefStatus !== '') $base->where('b.status', $benefStatus);
-        if ($type !== '') $base->where('a.type', $type);
-
-        $totalAttendances = (int) (clone $base)->count();
-        $uniqueFamilies = (int) (clone $base)->distinct('a.beneficiary_id')->count('a.beneficiary_id');
-
-        $monthlyRows = (clone $base)
-            ->select(DB::raw('MONTH(a.date) as m'), DB::raw('COUNT(*) as c'))
-            ->groupBy(DB::raw('MONTH(a.date)'))
-            ->orderBy('m')
-            ->get();
-        $monthly = array_fill(1, 12, 0);
-        foreach ($monthlyRows as $r) $monthly[(int) $r->m] = (int) $r->c;
-
-        $byType = (clone $base)
-            ->select('a.type', DB::raw('COUNT(*) as c'))
-            ->groupBy('a.type')
-            ->orderByDesc('c')
-            ->limit(15)
-            ->get();
-
-        $byUser = (clone $base)
-            ->select(DB::raw("COALESCE(u.name, 'Sistema') as name"), DB::raw('COUNT(*) as c'))
-            ->groupBy(DB::raw("COALESCE(u.name, 'Sistema')"))
-            ->orderByDesc('c')
-            ->limit(15)
-            ->get();
-
-        $topFamilies = (clone $base)
-            ->select('b.id', 'b.name', 'b.status', DB::raw('COUNT(*) as c'))
-            ->groupBy('b.id', 'b.name', 'b.status')
-            ->orderByDesc('c')
-            ->limit(15)
-            ->get();
-
-        $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
-        $generatedAt = now()->format('d/m/Y H:i');
-        $emitter = auth()->user()->name ?? '—';
-
-        $pdf = app('dompdf.wrapper');
-        $pdf->setPaper('a4', 'portrait');
-        $pdf->loadView('ngo.beneficiaries.annual_report_pdf', compact(
-            'year',
-            'from',
-            'to',
-            'benefStatus',
-            'type',
-            'totalAttendances',
-            'uniqueFamilies',
-            'monthly',
-            'byType',
-            'byUser',
-            'topFamilies',
-            'orgName',
-            'generatedAt',
-            'emitter'
-        ));
-
-        $filename = 'relatorio-social-' . $year . '-' . date('Y-m-d_His') . '.pdf';
-        return $pdf->download($filename);
+        return response()->json(['report_id' => $report->id, 'status_url' => route('reports.status', $report->id)]);
     }
 
     public function annualReportPdfAppendix(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id;
-        $year = (int) $request->get('year', (int) date('Y'));
+        $tenantId    = auth()->user()->tenant_id;
+        $year        = (int) $request->get('year', (int) date('Y'));
         if ($year < 2000 || $year > ((int) date('Y') + 2)) $year = (int) date('Y');
-
         $benefStatus = trim((string) $request->get('benef_status', ''));
-        $type = trim((string) $request->get('type', ''));
+        $type        = trim((string) $request->get('type', ''));
 
-        AuditDownload::log('Beneficiaries:AnnualReport', null, [
-            'format' => 'pdf',
-            'variant' => 'appendix',
-            'year' => $year,
-            'benef_status' => $benefStatus,
-            'type' => $type,
+        AuditDownload::log('Beneficiaries:AnnualReport', null, ['format' => 'pdf', 'variant' => 'appendix', 'year' => $year, 'benef_status' => $benefStatus, 'type' => $type]);
+
+        $report = GeneratedReport::create([
+            'tenant_id' => $tenantId,
+            'user_id'   => auth()->id(),
+            'type'      => 'annual_report_appendix',
+            'params'    => ['tenant_id' => $tenantId, 'year' => $year, 'benef_status' => $benefStatus, 'type' => $type, 'org_name' => ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL', 'emitter' => auth()->user()->name ?? '—'],
         ]);
 
-        $from = Carbon::create($year, 1, 1)->toDateString();
-        $to = Carbon::create($year, 12, 31)->toDateString();
+        GeneratePdfJob::dispatch($report->id);
 
-        $base = DB::table('attendances as a')
-            ->join('beneficiaries as b', 'b.id', '=', 'a.beneficiary_id')
-            ->leftJoin('users as u', 'u.id', '=', 'a.user_id')
-            ->where('a.tenant_id', $tenantId)
-            ->where('b.tenant_id', $tenantId)
-            ->whereBetween('a.date', [$from, $to]);
-
-        if ($benefStatus !== '') $base->where('b.status', $benefStatus);
-        if ($type !== '') $base->where('a.type', $type);
-
-        $totalAttendances = (int) (clone $base)->count();
-        $uniqueFamilies = (int) (clone $base)->distinct('a.beneficiary_id')->count('a.beneficiary_id');
-
-        $monthlyRows = (clone $base)
-            ->select(DB::raw('MONTH(a.date) as m'), DB::raw('COUNT(*) as c'))
-            ->groupBy(DB::raw('MONTH(a.date)'))
-            ->orderBy('m')
-            ->get();
-        $monthly = array_fill(1, 12, 0);
-        foreach ($monthlyRows as $r) $monthly[(int) $r->m] = (int) $r->c;
-
-        $byType = (clone $base)
-            ->select('a.type', DB::raw('COUNT(*) as c'))
-            ->groupBy('a.type')
-            ->orderByDesc('c')
-            ->limit(15)
-            ->get();
-
-        $byUser = (clone $base)
-            ->select(DB::raw("COALESCE(u.name, 'Sistema') as name"), DB::raw('COUNT(*) as c'))
-            ->groupBy(DB::raw("COALESCE(u.name, 'Sistema')"))
-            ->orderByDesc('c')
-            ->limit(15)
-            ->get();
-
-        $topFamilies = (clone $base)
-            ->select('b.id', 'b.name', 'b.status', DB::raw('COUNT(*) as c'))
-            ->groupBy('b.id', 'b.name', 'b.status')
-            ->orderByDesc('c')
-            ->limit(15)
-            ->get();
-
-        $details = (clone $base)
-            ->select([
-                'a.date',
-                'a.type',
-                'a.description',
-                'b.name as beneficiary_name',
-                'b.status as beneficiary_status',
-                DB::raw("COALESCE(u.name, 'Sistema') as user_name"),
-            ])
-            ->orderByDesc('a.date')
-            ->orderByDesc('a.id')
-            ->limit(200)
-            ->get();
-
-        $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
-        $generatedAt = now()->format('d/m/Y H:i');
-        $emitter = auth()->user()->name ?? '—';
-
-        $pdf = app('dompdf.wrapper');
-        $pdf->setPaper('a4', 'portrait');
-        $pdf->loadView('ngo.beneficiaries.annual_report_pdf_appendix', compact(
-            'year',
-            'from',
-            'to',
-            'benefStatus',
-            'type',
-            'totalAttendances',
-            'uniqueFamilies',
-            'monthly',
-            'byType',
-            'byUser',
-            'topFamilies',
-            'details',
-            'orgName',
-            'generatedAt',
-            'emitter'
-        ));
-
-        $filename = 'relatorio-social-' . $year . '-com-anexos-' . date('Y-m-d_His') . '.pdf';
-        return $pdf->download($filename);
+        return response()->json(['report_id' => $report->id, 'status_url' => route('reports.status', $report->id)]);
     }
 
     public function annualReportExportCsv(Request $request)
@@ -1346,70 +1200,37 @@ class BeneficiaryController extends Controller
 
     public function pdf(Request $request, $id)
     {
-        $tenantId = auth()->user()->tenant_id;
-        $beneficiary = Beneficiary::where('tenant_id', $tenantId)
-            ->where('id', $id)
-            ->with('familyMembers')
-            ->firstOrFail();
+        $tenantId    = auth()->user()->tenant_id;
+        $beneficiary = Beneficiary::where('tenant_id', $tenantId)->where('id', $id)->firstOrFail();
 
         $from = $request->get('from');
-        $to = $request->get('to');
+        $to   = $request->get('to');
         $type = trim((string) $request->get('type', ''));
-        $q = trim((string) $request->get('q', ''));
-
-        $attQ = Attendance::where('tenant_id', $tenantId)
-            ->where('beneficiary_id', $beneficiary->id)
-            ->with('user')
-            ->orderBy('date', 'desc')
-            ->orderBy('id', 'desc');
-
-        if (!empty($from)) $attQ->whereDate('date', '>=', $from);
-        if (!empty($to)) $attQ->whereDate('date', '<=', $to);
-        if ($type !== '') $attQ->where('type', $type);
-        if ($q !== '') {
-            $attQ->where(function ($w) use ($q) {
-                $w->where('description', 'like', '%' . $q . '%')
-                  ->orWhere('type', 'like', '%' . $q . '%');
-            });
-        }
-
-        // Keep PDF lightweight (MVP): last 100 records
-        $attendances = $attQ->limit(100)->get();
-
-        $stats = [
-            'attendances_total' => (int) Attendance::where('tenant_id', $tenantId)->where('beneficiary_id', $beneficiary->id)->count(),
-            'last_attendance_at' => Attendance::where('tenant_id', $tenantId)->where('beneficiary_id', $beneficiary->id)->max('date'),
-        ];
-
-        $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
-        $generatedAt = now()->format('d/m/Y H:i');
-        $emitter = auth()->user()->name ?? '—';
+        $q    = trim((string) $request->get('q', ''));
 
         AuditDownload::log('Beneficiaries:Term', (int) $beneficiary->id, [
-            'format' => 'pdf',
-            'from' => $from,
-            'to' => $to,
-            'type' => $type,
-            'q' => $q,
+            'format' => 'pdf', 'from' => $from, 'to' => $to, 'type' => $type, 'q' => $q,
         ]);
 
-        $pdf = app('dompdf.wrapper');
-        $pdf->setPaper('a4', 'portrait');
-        $pdf->loadView('ngo.beneficiaries.term_pdf', compact(
-            'beneficiary',
-            'attendances',
-            'stats',
-            'orgName',
-            'generatedAt',
-            'emitter',
-            'from',
-            'to',
-            'type',
-            'q'
-        ));
+        $report = GeneratedReport::create([
+            'tenant_id' => $tenantId,
+            'user_id'   => auth()->id(),
+            'type'      => 'beneficiary_term',
+            'params'    => [
+                'tenant_id'      => $tenantId,
+                'beneficiary_id' => (int) $beneficiary->id,
+                'from'           => $from,
+                'to'             => $to,
+                'type'           => $type,
+                'q'              => $q,
+                'org_name'       => ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL',
+                'emitter'        => auth()->user()->name ?? '—',
+            ],
+        ]);
 
-        $filename = 'ficha-beneficiario-' . Str::slug($beneficiary->name) . '-' . date('Y-m-d_His') . '.pdf';
-        return $pdf->download($filename);
+        GeneratePdfJob::dispatch($report->id);
+
+        return response()->json(['report_id' => $report->id, 'status_url' => route('reports.status', $report->id)]);
     }
 
     public function storeFamilyMember(Request $request, $id)
@@ -1550,12 +1371,13 @@ class BeneficiaryController extends Controller
         }
         if ($status !== '') $beneficiariesQ->where('status', $status);
 
-        $beneficiaries = $beneficiariesQ->get();
+        $beneficiaries = $beneficiariesQ->limit(500)->get();
+        $truncated     = $beneficiaries->count() === 500;
 
         $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
         $generatedAt = now()->format('d/m/Y H:i');
 
-        return view('ngo.beneficiaries.print', compact('beneficiaries', 'orgName', 'generatedAt', 'q', 'status'));
+        return view('ngo.beneficiaries.print', compact('beneficiaries', 'truncated', 'orgName', 'generatedAt', 'q', 'status'));
     }
 
     private function composeAddress(array $data): ?string

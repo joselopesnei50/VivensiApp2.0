@@ -118,7 +118,7 @@
                 </div>
             </div>
         </div>
-        @elseif($raffle->status === 'active' && $raffle->tickets->where('status', 'paid')->count() > 0)
+        @elseif($raffle->status === 'active' && $paidCount > 0)
         <div class="card border-0 shadow-sm mb-4 bg-primary text-white" style="border-radius: 20px; background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%) !important;">
             <div class="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
@@ -155,8 +155,8 @@
             <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0">Controle de Bilhetes</h5>
                 <div class="d-flex gap-2">
-                    <span class="badge bg-success-soft text-success px-3 py-2 rounded-pill small fw-bold">PAGOS: {{ $raffle->tickets->where('status', 'paid')->count() }}</span>
-                    <span class="badge bg-warning-soft text-warning px-3 py-2 rounded-pill small fw-bold">RESERVADOS: {{ $raffle->tickets->where('status', 'pending')->count() }}</span>
+                    <span class="badge bg-success-soft text-success px-3 py-2 rounded-pill small fw-bold">PAGOS: {{ $paidCount }}</span>
+                    <span class="badge bg-warning-soft text-warning px-3 py-2 rounded-pill small fw-bold">RESERVADOS: {{ $pendingCount }}</span>
                 </div>
             </div>
             
@@ -172,7 +172,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($tickets->whereIn('status', ['pending', 'paid'])->sortByDesc(function($t) { return $t->updated_at?->timestamp ?? 0; }) as $ticket)
+                        @forelse($tickets as $ticket)
                         <tr>
                             <td class="ps-4">
                                 <span class="fw-800 text-primary">#{{ str_pad($ticket->number, 3, '0', STR_PAD_LEFT) }}</span>

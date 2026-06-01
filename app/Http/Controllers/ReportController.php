@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GeneratePdfJob;
+use App\Models\GeneratedReport;
 use App\Models\Transaction;
 use App\Models\FinancialCategory;
 use Illuminate\Http\Request;
@@ -26,38 +28,25 @@ class ReportController extends Controller
 
     public function drePdf(Request $request)
     {
-        $tenant_id = auth()->user()->tenant_id;
-        $year = (int) $request->input('year', date('Y'));
+        $tenantId = auth()->user()->tenant_id;
+        $year     = (int) $request->input('year', date('Y'));
 
-        AuditDownload::log('Report:DRE', null, [
-            'format' => 'pdf',
-            'year' => $year,
+        AuditDownload::log('Report:DRE', null, ['format' => 'pdf', 'year' => $year]);
+
+        $report = GeneratedReport::create([
+            'tenant_id' => $tenantId,
+            'user_id'   => auth()->id(),
+            'type'      => 'dre_pdf',
+            'params'    => [
+                'tenant_id' => $tenantId,
+                'year'      => $year,
+                'org_name'  => ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL',
+            ],
         ]);
 
-        [$incomes, $totalIncome, $expenses, $totalExpense] = $this->buildDreData($tenant_id, $year);
+        GeneratePdfJob::dispatch($report->id);
 
-        $result = $totalIncome - $totalExpense;
-
-        $orgName      = (auth()->user()->tenant_id == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
-        $periodLabel  = '01/01/' . $year . ' a 31/12/' . $year;
-        $generatedAt  = now()->format('d/m/Y H:i');
-
-        $pdf = app('dompdf.wrapper');
-        $pdf->setPaper('a4', 'portrait');
-        $pdf->loadView('ngo.reports.dre_pdf', compact(
-            'year',
-            'incomes',
-            'totalIncome',
-            'expenses',
-            'totalExpense',
-            'result',
-            'orgName',
-            'periodLabel',
-            'generatedAt'
-        ));
-
-        $filename = 'dre-' . $year . '-' . date('Y-m-d_His') . '.pdf';
-        return $pdf->download($filename);
+        return response()->json(['report_id' => $report->id, 'status_url' => route('reports.status', $report->id)]);
     }
 
     public function exportDreCsv(Request $request)

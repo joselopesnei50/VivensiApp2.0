@@ -22,10 +22,10 @@
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
         @endif
-        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/pdf') . '?' . http_build_query(request()->query()) }}"
+        <button id="btn-term-pdf" onclick="generateTermPdf(this)"
            class="btn-ds btn-ds-outline" style="background:#f0fdf4; color:#16a34a; border-color:#bbf7d0;">
             <i class="fas fa-file-pdf"></i> PDF
-        </a>
+        </button>
         <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance/export') . '?' . http_build_query(request()->query()) }}"
            class="btn-ds btn-ds-outline" style="background:var(--ds-brand-bg); color:var(--ds-brand); border-color:var(--ds-brand);">
             <i class="fas fa-file-csv"></i> CSV
@@ -405,4 +405,58 @@
         box.style.display = 'none';
     }
 </script>
+
+@push('scripts')
+<script>
+const _termPdfUrl = '{{ url("/ngo/beneficiaries/".$beneficiary->id."/pdf") }}';
+const _termPdfQuery = '{{ http_build_query(request()->query()) }}';
+let _termPdfPollStatusUrl = null;
+let _termPdfPollBtn = null;
+let _termPdfPollOrig = null;
+
+function pollTermPdf(attempts) {
+    attempts = attempts || 0;
+    if (attempts > 36) {
+        alert('A geração do PDF demorou demais. Tente novamente.');
+        if (_termPdfPollBtn) { _termPdfPollBtn.innerHTML = _termPdfPollOrig; _termPdfPollBtn.disabled = false; }
+        return;
+    }
+    fetch(_termPdfPollStatusUrl).then(r => r.json()).then(function(data) {
+        if (data.status === 'done' && data.download_url) {
+            window.location.href = data.download_url;
+            if (_termPdfPollBtn) { _termPdfPollBtn.innerHTML = _termPdfPollOrig; _termPdfPollBtn.disabled = false; }
+        } else if (data.status === 'failed') {
+            alert('Falha ao gerar o PDF. Tente novamente.');
+            if (_termPdfPollBtn) { _termPdfPollBtn.innerHTML = _termPdfPollOrig; _termPdfPollBtn.disabled = false; }
+        } else {
+            setTimeout(function() { pollTermPdf(attempts + 1); }, 5000);
+        }
+    }).catch(function() {
+        setTimeout(function() { pollTermPdf(attempts + 1); }, 8000);
+    });
+}
+
+async function generateTermPdf(btn) {
+    _termPdfPollOrig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+    btn.disabled = true;
+    _termPdfPollBtn = btn;
+    const url = _termPdfUrl + (_termPdfQuery ? '?' + _termPdfQuery : '');
+    try {
+        const resp = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}});
+        const data = await resp.json();
+        if (data.status_url) {
+            _termPdfPollStatusUrl = data.status_url;
+            pollTermPdf(0);
+        } else {
+            alert('Erro ao iniciar geração do PDF.');
+            btn.innerHTML = _termPdfPollOrig; btn.disabled = false;
+        }
+    } catch(e) {
+        alert('Falha na comunicação com o servidor.');
+        btn.innerHTML = _termPdfPollOrig; btn.disabled = false;
+    }
+}
+</script>
+@endpush
 @endsection
