@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendMeetingEmailsJob;
 use App\Models\MeetingBooking;
 use App\Models\Notification;
 use App\Models\User;
-use App\Services\BrevoService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -53,13 +53,10 @@ class MeetingBookingController extends Controller
             ->locale('pt_BR')
             ->isoFormat('dddd, D [de] MMMM [de] YYYY');
 
-        // Envia e-mail de confirmação para o visitante
-        app(BrevoService::class)->sendMeetingConfirmationEmail($booking, $formattedDate);
+        // E-mails enviados em background (não bloqueiam o worker)
+        SendMeetingEmailsJob::dispatch($booking->id);
 
-        // Alerta a equipe Vivensi por e-mail
-        $this->alertTeamByEmail($booking, $formattedDate);
-
-        // Notifica todos os super_admins no painel
+        // Notificações no painel (DB write rápido — síncrono)
         $this->notifyAdmins($booking);
 
         return response()->json([
@@ -84,57 +81,6 @@ class MeetingBookingController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    private function alertTeamByEmail(MeetingBooking $booking, string $formattedDate): void
-    {
-        try {
-            $teamEmail = \App\Models\SystemSetting::getValue('email_from');
-            $teamName  = \App\Models\SystemSetting::getValue('email_from_name', 'Vivensi');
-
-            if (!$teamEmail) return;
-
-            $adminUrl = url('/admin/settings'); // redireciona para bookings
-            $phone    = $booking->phone ? "<p style='margin:5px 0;'><strong>Telefone:</strong> {$booking->phone}</p>" : '';
-            $notes    = $booking->notes ? "<p style='margin:5px 0;'><strong>Observações:</strong> {$booking->notes}</p>" : '';
-
-            $html = "<!doctype html><html lang='pt-br'><head><meta charset='utf-8'></head>
-<body style='margin:0;padding:0;background:#f8fafc;font-family:Inter,Segoe UI,Arial,sans-serif;'>
-<div style='max-width:600px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;'>
-  <div style='background:linear-gradient(135deg,#4f46e5,#3730a3);padding:32px;text-align:center;'>
-    <h1 style='color:#fff;margin:0;font-size:22px;font-weight:800;'>📅 Novo Agendamento</h1>
-  </div>
-  <div style='padding:32px;'>
-    <p style='color:#475569;font-size:15px;margin:0 0 20px;'>Um visitante acabou de agendar uma reunião pela página pública.</p>
-    <div style='background:#f8fafc;border-radius:12px;padding:20px;border:1px solid #e2e8f0;margin-bottom:24px;'>
-      <p style='margin:5px 0;'><strong>Nome:</strong> {$booking->name}</p>
-      <p style='margin:5px 0;'><strong>E-mail:</strong> {$booking->email}</p>
-      {$phone}
-      <p style='margin:5px 0;'><strong>Data:</strong> {$formattedDate}</p>
-      <p style='margin:5px 0;'><strong>Horário:</strong> {$booking->meeting_time}</p>
-      {$notes}
-    </div>
-    <div style='text-align:center;'>
-      <a href='" . url('/admin/bookings') . "' style='background:#4f46e5;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block;'>
-        Ver na Agenda do Painel
-      </a>
-    </div>
-  </div>
-  <div style='background:#f1f5f9;padding:20px;text-align:center;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0;'>
-    Notificação automática — Vivensi
-  </div>
-</div>
-</body></html>";
-
-            app(BrevoService::class)->sendEmail(
-                $teamEmail,
-                $teamName,
-                "📅 Novo agendamento: {$booking->name} — {$formattedDate} às {$booking->meeting_time}",
-                $html
-            );
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('alertTeamByEmail failed: ' . $e->getMessage());
-        }
-    }
-
     private function notifyAdmins(MeetingBooking $booking): void
     {
         $admins = User::where('role', 'super_admin')->pluck('id');
