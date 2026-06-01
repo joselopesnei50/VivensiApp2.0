@@ -669,20 +669,57 @@
 </div>
 
 <script>
+const _summaryStatusUrl = '{{ route("projects.logs.summary-status", $project->id) }}';
+let _summaryPollBtn = null;
+let _summaryPollOrig = null;
+
+function pollProjectSummary(attempts) {
+    attempts = attempts || 0;
+    if (attempts > 36) {
+        alert('A IA demorou demais. Tente novamente.');
+        if (_summaryPollBtn) { _summaryPollBtn.innerHTML = _summaryPollOrig; _summaryPollBtn.disabled = false; }
+        return;
+    }
+    fetch(_summaryStatusUrl, { headers: { 'Accept': 'application/json' } })
+        .then(r => r.json())
+        .then(function(data) {
+            if (data.status === 'done') {
+                const box = document.getElementById('ai-summary-box');
+                document.getElementById('ai-summary-content').textContent = data.summary;
+                if (document.getElementById('ai-summary-date')) {
+                    document.getElementById('ai-summary-date').textContent = data.summary_at;
+                }
+                box.style.display = 'block';
+                box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (_summaryPollBtn) {
+                    _summaryPollBtn.innerHTML = '<i class="fas fa-check me-2"></i> Relatório Gerado';
+                    setTimeout(() => { _summaryPollBtn.innerHTML = _summaryPollOrig; _summaryPollBtn.disabled = false; }, 3000);
+                }
+            } else if (data.status === 'failed') {
+                alert('A IA encontrou um erro. Verifique as chaves de API e tente novamente.');
+                if (_summaryPollBtn) { _summaryPollBtn.innerHTML = _summaryPollOrig; _summaryPollBtn.disabled = false; }
+            } else {
+                setTimeout(function() { pollProjectSummary(attempts + 1); }, 5000);
+            }
+        })
+        .catch(function() {
+            setTimeout(function() { pollProjectSummary(attempts + 1); }, 8000);
+        });
+}
+
 async function generateAiSummary() {
     const btn = document.getElementById('btn-generate-summary');
     if (!btn) return;
     const orig = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Gerando...';
     btn.disabled = true;
+    _summaryPollBtn = btn;
+    _summaryPollOrig = orig;
 
     try {
         const res = await fetch('{{ route("projects.logs.summary", $project->id) }}', {
             method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         });
         const data = await res.json();
 
@@ -693,15 +730,17 @@ async function generateAiSummary() {
             return;
         }
 
-        const box = document.getElementById('ai-summary-box');
-        document.getElementById('ai-summary-content').textContent = data.summary;
-        if (document.getElementById('ai-summary-date')) {
-            document.getElementById('ai-summary-date').textContent = data.summary_at;
+        if (data.status === 'processing') {
+            // Job dispatched — start polling
+            pollProjectSummary(0);
+        } else if (data.summary) {
+            // Synchronous fallback (shouldn't happen but safe)
+            const box = document.getElementById('ai-summary-box');
+            document.getElementById('ai-summary-content').textContent = data.summary;
+            box.style.display = 'block';
+            btn.innerHTML = '<i class="fas fa-check me-2"></i> Relatório Gerado';
+            setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 3000);
         }
-        box.style.display = 'block';
-        box.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        btn.innerHTML = '<i class="fas fa-check me-2"></i> Relatório Gerado';
-        setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 3000);
     } catch (e) {
         alert('Falha na comunicação com o servidor.');
         btn.innerHTML = orig;

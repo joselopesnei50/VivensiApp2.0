@@ -29,6 +29,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/projects/{id}/logs',            [App\Http\Controllers\ProjectLogController::class, 'store'])->name('projects.logs.store');
     Route::delete('/projects/{id}/logs/{logId}',  [App\Http\Controllers\ProjectLogController::class, 'destroy'])->name('projects.logs.destroy');
     Route::post('/projects/{id}/logs/summary',    [App\Http\Controllers\ProjectLogController::class, 'generateSummary'])->name('projects.logs.summary')->middleware('throttle:web_ai');
+    Route::get('/projects/{id}/logs/summary-status', [App\Http\Controllers\ProjectLogController::class, 'summaryStatus'])->name('projects.logs.summary-status');
 
     // Tarefas
     Route::get('/tasks',             [App\Http\Controllers\TaskController::class, 'index']);
