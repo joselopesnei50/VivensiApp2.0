@@ -5,6 +5,12 @@ Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'inde
 Route::post('/onboarding/complete/{step_id}', [App\Http\Controllers\DashboardController::class, 'completeOnboardingStep'])->middleware('auth')->name('onboarding.complete');
 Route::get('/export/csv', [App\Http\Controllers\ExportController::class, 'csv'])->middleware(['auth', 'throttle:web_export'])->name('export.csv');
 
+// ── PDF Reports (async) ───────────────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/reports/{id}/status',   [App\Http\Controllers\GeneratedReportController::class, 'status'])->name('reports.status');
+    Route::get('/reports/{id}/download', [App\Http\Controllers\GeneratedReportController::class, 'download'])->name('reports.download');
+});
+
 Route::middleware(['auth', 'subscription'])->group(function () {
 
     // ── Manager ───────────────────────────────────────────────────────────────

@@ -74,9 +74,16 @@ class RaffleController extends Controller
     public function show(Raffle $raffle)
     {
         $this->authorizeTenant($raffle);
-        $tickets = $raffle->tickets()->with('transaction')->get();
-        
-        return view('raffles.show', compact('raffle', 'tickets'));
+
+        $paidCount    = $raffle->tickets()->where('status', 'paid')->count();
+        $pendingCount = $raffle->tickets()->where('status', 'pending')->count();
+        $tickets      = $raffle->tickets()
+                            ->with('transaction')
+                            ->whereIn('status', ['pending', 'paid'])
+                            ->orderByDesc('updated_at')
+                            ->get();
+
+        return view('raffles.show', compact('raffle', 'tickets', 'paidCount', 'pendingCount'));
     }
 
     public function confirmPayment(RaffleTicket $ticket)

@@ -30,6 +30,11 @@
         <button onclick="window.print()" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#111827; color:#fff; font-weight:800; cursor:pointer;">Imprimir</button>
         <a href="{{ url('/ngo/beneficiaries') }}" style="margin-left:10px; color:#4f46e5; font-weight:800; text-decoration:none;">Voltar</a>
     </div>
+    @if(!empty($truncated))
+    <div style="background:#fef9c3; color:#713f12; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; margin-bottom:10px; font-size:12px; font-weight:700;">
+        Exibindo os primeiros 500 resultados. Use o CSV para exportar todos.
+    </div>
+    @endif
 
     <div class="header">
         <div>

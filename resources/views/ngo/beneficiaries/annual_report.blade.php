@@ -8,8 +8,8 @@
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
         <a class="btn-ds btn-ds-ghost" href="{{ url('/ngo/beneficiaries') }}"><i class="fas fa-arrow-left"></i> Voltar</a>
-        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/pdf') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-pdf"></i> Baixar PDF</a>
-        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/pdf-appendix') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-pdf"></i> PDF + anexos</a>
+        <button id="btn-pdf" class="btn-ds btn-ds-outline" onclick="generateAnnualPdf('annual')"><i class="fas fa-file-pdf"></i> Baixar PDF</button>
+        <button id="btn-pdf-appendix" class="btn-ds btn-ds-outline" onclick="generateAnnualPdf('appendix')"><i class="fas fa-file-pdf"></i> PDF + anexos</button>
         <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV detalhado</a>
         <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-grouped') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV agrupado (técnico)</a>
         <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-grouped-simple') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV agrupado</a>
@@ -168,4 +168,62 @@
     </table>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+const _annualPdfQuery = '{{ http_build_query(request()->query()) }}';
+const _annualPdfBaseUrl  = '{{ url("/ngo/beneficiaries/reports/annual/pdf") }}';
+const _annualPdfAppendixUrl = '{{ url("/ngo/beneficiaries/reports/annual/pdf-appendix") }}';
+let _annualPdfPollBtn = null;
+let _annualPdfPollOrig = null;
+let _annualPdfStatusUrl = null;
+
+function pollAnnualPdf(attempts) {
+    attempts = attempts || 0;
+    if (attempts > 36) {
+        alert('A geração do PDF demorou demais. Tente novamente.');
+        if (_annualPdfPollBtn) { _annualPdfPollBtn.innerHTML = _annualPdfPollOrig; _annualPdfPollBtn.disabled = false; }
+        return;
+    }
+    fetch(_annualPdfStatusUrl).then(r => r.json()).then(function(data) {
+        if (data.status === 'done' && data.download_url) {
+            window.location.href = data.download_url;
+            if (_annualPdfPollBtn) { _annualPdfPollBtn.innerHTML = _annualPdfPollOrig; _annualPdfPollBtn.disabled = false; }
+        } else if (data.status === 'failed') {
+            alert('Falha ao gerar o PDF. Tente novamente.');
+            if (_annualPdfPollBtn) { _annualPdfPollBtn.innerHTML = _annualPdfPollOrig; _annualPdfPollBtn.disabled = false; }
+        } else {
+            setTimeout(function() { pollAnnualPdf(attempts + 1); }, 5000);
+        }
+    }).catch(function() {
+        setTimeout(function() { pollAnnualPdf(attempts + 1); }, 8000);
+    });
+}
+
+async function generateAnnualPdf(variant) {
+    const btnId = variant === 'appendix' ? 'btn-pdf-appendix' : 'btn-pdf';
+    const btn = document.getElementById(btnId);
+    _annualPdfPollOrig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+    btn.disabled = true;
+    _annualPdfPollBtn = btn;
+    const baseUrl = variant === 'appendix' ? _annualPdfAppendixUrl : _annualPdfBaseUrl;
+    const url = baseUrl + (_annualPdfQuery ? '?' + _annualPdfQuery : '');
+    try {
+        const resp = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}});
+        const data = await resp.json();
+        if (data.status_url) {
+            _annualPdfStatusUrl = data.status_url;
+            pollAnnualPdf(0);
+        } else {
+            alert('Erro ao iniciar geração do PDF.');
+            btn.innerHTML = _annualPdfPollOrig; btn.disabled = false;
+        }
+    } catch(e) {
+        alert('Falha na comunicação com o servidor.');
+        btn.innerHTML = _annualPdfPollOrig; btn.disabled = false;
+    }
+}
+</script>
+@endpush
 

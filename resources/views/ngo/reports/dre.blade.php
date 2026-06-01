@@ -12,9 +12,9 @@
                 <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
             @endfor
         </select>
-        <a href="{{ url('/ngo/reports/dre/pdf?year='.$year) }}" class="btn-ds btn-ds-outline" style="padding: 8px 15px;">
+        <button id="btn-dre-pdf" class="btn-ds btn-ds-outline" style="padding: 8px 15px;" onclick="generateDrePdf(this)">
             <i class="fas fa-file-pdf"></i> Baixar PDF
-        </a>
+        </button>
         <a href="{{ url('/ngo/reports/dre/export?year='.$year) }}" class="btn-ds btn-ds-outline" style="padding: 8px 15px;">
             <i class="fas fa-file-csv"></i> Exportar CSV
         </a>
@@ -136,3 +136,56 @@
 }
 </style>
 @endsection
+
+@push('scripts')
+<script>
+let _drePdfPollBtn = null;
+let _drePdfPollOrig = null;
+let _drePdfStatusUrl = null;
+
+function pollDrePdf(attempts) {
+    attempts = attempts || 0;
+    if (attempts > 36) {
+        alert('A geração do PDF demorou demais. Tente novamente.');
+        if (_drePdfPollBtn) { _drePdfPollBtn.innerHTML = _drePdfPollOrig; _drePdfPollBtn.disabled = false; }
+        return;
+    }
+    fetch(_drePdfStatusUrl).then(r => r.json()).then(function(data) {
+        if (data.status === 'done' && data.download_url) {
+            window.location.href = data.download_url;
+            if (_drePdfPollBtn) { _drePdfPollBtn.innerHTML = _drePdfPollOrig; _drePdfPollBtn.disabled = false; }
+        } else if (data.status === 'failed') {
+            alert('Falha ao gerar o PDF. Tente novamente.');
+            if (_drePdfPollBtn) { _drePdfPollBtn.innerHTML = _drePdfPollOrig; _drePdfPollBtn.disabled = false; }
+        } else {
+            setTimeout(function() { pollDrePdf(attempts + 1); }, 5000);
+        }
+    }).catch(function() {
+        setTimeout(function() { pollDrePdf(attempts + 1); }, 8000);
+    });
+}
+
+async function generateDrePdf(btn) {
+    _drePdfPollOrig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+    btn.disabled = true;
+    _drePdfPollBtn = btn;
+    try {
+        const resp = await fetch('{{ url("/ngo/reports/dre/pdf") }}?year={{ $year }}', {
+            headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}
+        });
+        const data = await resp.json();
+        if (data.status_url) {
+            _drePdfStatusUrl = data.status_url;
+            pollDrePdf(0);
+        } else {
+            alert('Erro ao iniciar geração do PDF.');
+            btn.innerHTML = _drePdfPollOrig; btn.disabled = false;
+        }
+    } catch(e) {
+        alert('Falha na comunicação com o servidor.');
+        btn.innerHTML = _drePdfPollOrig; btn.disabled = false;
+    }
+}
+</script>
+@endpush

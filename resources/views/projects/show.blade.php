@@ -223,9 +223,9 @@
                     <a href="{{ $basePath . '/projects/'.$project->id.'/edit' }}" class="btn-action-pro" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
                         <i class="fas fa-cog" style="color: #94a3b8;"></i> Ajustes
                     </a>
-                    <a href="{{ url('/projects/'.$project->id.'/export-pdf') }}" target="_blank" class="btn-action-pro" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: white;" title="Exportar Relatório PDF">
+                    <button id="btn-project-pdf" onclick="generateProjectPdf(this)" class="btn-action-pro" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: white;" title="Exportar Relatório PDF">
                         <i class="fas fa-file-pdf" style="color: #f87171;"></i> Relatório PDF
-                    </a>
+                    </button>
                 @endif
                 <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
                     <i class="fas fa-tasks" style="color: #6366f1;"></i> Quadros Kanban
@@ -745,6 +745,55 @@ async function generateAiSummary() {
         alert('Falha na comunicação com o servidor.');
         btn.innerHTML = orig;
         btn.disabled = false;
+    }
+}
+
+let _pdfPollBtn = null;
+let _pdfPollOrig = null;
+let _pdfStatusUrl = null;
+
+function pollProjectPdf(attempts) {
+    attempts = attempts || 0;
+    if (attempts > 36) {
+        alert('A geração do PDF demorou demais. Tente novamente.');
+        if (_pdfPollBtn) { _pdfPollBtn.innerHTML = _pdfPollOrig; _pdfPollBtn.disabled = false; }
+        return;
+    }
+    fetch(_pdfStatusUrl).then(r => r.json()).then(function(data) {
+        if (data.status === 'done' && data.download_url) {
+            window.location.href = data.download_url;
+            if (_pdfPollBtn) { _pdfPollBtn.innerHTML = _pdfPollOrig; _pdfPollBtn.disabled = false; }
+        } else if (data.status === 'failed') {
+            alert('Falha ao gerar o PDF. Tente novamente.');
+            if (_pdfPollBtn) { _pdfPollBtn.innerHTML = _pdfPollOrig; _pdfPollBtn.disabled = false; }
+        } else {
+            setTimeout(function() { pollProjectPdf(attempts + 1); }, 5000);
+        }
+    }).catch(function() {
+        setTimeout(function() { pollProjectPdf(attempts + 1); }, 8000);
+    });
+}
+
+async function generateProjectPdf(btn) {
+    _pdfPollOrig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#f87171;"></i> Gerando...';
+    btn.disabled = true;
+    _pdfPollBtn = btn;
+    try {
+        const resp = await fetch('{{ url("/projects/".$project->id."/export-pdf") }}', {
+            method: 'GET', headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}
+        });
+        const data = await resp.json();
+        if (data.status_url) {
+            _pdfStatusUrl = data.status_url;
+            pollProjectPdf(0);
+        } else {
+            alert('Erro ao iniciar geração do PDF.');
+            btn.innerHTML = _pdfPollOrig; btn.disabled = false;
+        }
+    } catch(e) {
+        alert('Falha na comunicação com o servidor.');
+        btn.innerHTML = _pdfPollOrig; btn.disabled = false;
     }
 }
 </script>
