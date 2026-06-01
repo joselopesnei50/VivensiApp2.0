@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class AdminSettingsController extends Controller
 {
@@ -299,6 +300,7 @@ class AdminSettingsController extends Controller
                 } else {
                     // Se deixou em branco, remove para usar o fallback do banco
                     \App\Models\SystemSetting::where('key', $field)->delete();
+                    Cache::forget("system_setting.{$field}");
                 }
             }
         }
