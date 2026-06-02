@@ -15,8 +15,22 @@ class TotpService
 
     public function generateSecret(): string
     {
-        $bytes = random_bytes(20);
-        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
+        $bytes    = random_bytes(20);
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        $secret   = '';
+        $buffer   = 0;
+        $bits     = 0;
+
+        for ($i = 0; $i < 20; $i++) {
+            $buffer = ($buffer << 8) | ord($bytes[$i]);
+            $bits  += 8;
+            while ($bits >= 5) {
+                $bits  -= 5;
+                $secret .= $alphabet[($buffer >> $bits) & 0x1F];
+            }
+        }
+
+        return $secret;
     }
 
     public function getQrCodeUrl(string $label, string $secret, string $issuer = 'Vivensi'): string
