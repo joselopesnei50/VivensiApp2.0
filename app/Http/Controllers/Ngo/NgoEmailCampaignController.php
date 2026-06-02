@@ -13,7 +13,10 @@ class NgoEmailCampaignController extends Controller
 {
     public function index()
     {
-        $campaigns = EmailCampaign::with('creator')->latest()->paginate(20);
+        $campaigns = EmailCampaign::with('creator')
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->latest()
+            ->paginate(20);
         return view('ngo.email_campaigns.index', compact('campaigns'));
     }
 
@@ -38,6 +41,7 @@ class NgoEmailCampaignController extends Controller
         $manualEmails = $this->parseManualEmailsInput($request->input('manual_emails_raw', ''));
 
         $campaign = EmailCampaign::create([
+            'tenant_id'      => auth()->user()->tenant_id,
             'created_by'     => auth()->id(),
             'name'           => $validated['name'],
             'subject'        => $validated['subject'],
@@ -56,6 +60,8 @@ class NgoEmailCampaignController extends Controller
 
     public function show(EmailCampaign $emailCampaign)
     {
+        $this->authorizeForTenant($emailCampaign);
+
         if ($emailCampaign->status === 'sent' && $emailCampaign->brevo_campaign_id) {
             $stale = $emailCampaign->stats_fetched_at === null
                 || $emailCampaign->stats_fetched_at->lt(now()->subMinutes(30));
@@ -85,6 +91,8 @@ class NgoEmailCampaignController extends Controller
 
     public function destroy(EmailCampaign $emailCampaign)
     {
+        $this->authorizeForTenant($emailCampaign);
+
         if ($emailCampaign->status === 'sent') {
             return back()->with('error', 'Não é possível excluir uma campanha já enviada.');
         }
@@ -94,6 +102,8 @@ class NgoEmailCampaignController extends Controller
 
     public function send(EmailCampaign $emailCampaign)
     {
+        $this->authorizeForTenant($emailCampaign);
+
         if ($emailCampaign->status === 'sent') {
             return back()->with('error', 'Esta campanha já foi enviada.');
         }
@@ -200,6 +210,8 @@ class NgoEmailCampaignController extends Controller
 
     public function refreshStats(EmailCampaign $emailCampaign)
     {
+        $this->authorizeForTenant($emailCampaign);
+
         if (!$emailCampaign->brevo_campaign_id) {
             return back()->with('error', 'Campanha ainda não enviada pelo Brevo.');
         }
@@ -274,6 +286,13 @@ class NgoEmailCampaignController extends Controller
             ->filter(fn($c) => filter_var($c['email'], FILTER_VALIDATE_EMAIL))
             ->values()
             ->toArray();
+    }
+
+    private function authorizeForTenant(EmailCampaign $campaign): void
+    {
+        if ($campaign->tenant_id !== auth()->user()->tenant_id) {
+            abort(403);
+        }
     }
 
     private function parseManualEmailsInput(string $raw): array
