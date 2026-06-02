@@ -39,7 +39,7 @@ class NgoDonor extends Model
         'email_marketing_opt_in',
     ];
 
-    protected $hidden = ['document', 'portal_token_bidx'];
+    protected $hidden = ['document', 'document_bidx', 'portal_token_bidx'];
 
     /**
      * Boot function from Laravel.
@@ -56,6 +56,23 @@ class NgoDonor extends Model
     }
 
     // ── Encryption accessors/mutators ────────────────────────────────────────
+
+    public function getDocumentAttribute(?string $value): ?string
+    {
+        if ($value === null || $value === '') return $value;
+        try { return Crypt::decryptString($value); } catch (DecryptException) { return $value; }
+    }
+
+    public function setDocumentAttribute(?string $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->attributes['document'] = $value;
+            $this->attributes['document_bidx'] = null;
+            return;
+        }
+        $this->attributes['document'] = Crypt::encryptString($value);
+        $this->attributes['document_bidx'] = hash_hmac('sha256', $value, config('app.key'));
+    }
 
     public function getPortalTokenAttribute(?string $value): ?string
     {
