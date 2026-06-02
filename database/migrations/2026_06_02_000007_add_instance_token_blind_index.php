@@ -10,12 +10,16 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Drop the unique index on instance_token before converting to TEXT
+        // (MySQL forbids TEXT columns in key specifications without a key length)
+        DB::statement('ALTER TABLE whatsapp_instances DROP INDEX whatsapp_instances_instance_token_unique');
+
+        DB::statement('ALTER TABLE whatsapp_instances MODIFY instance_token TEXT NULL');
+
         Schema::table('whatsapp_instances', function (Blueprint $table) {
             $table->string('instance_token_bidx', 64)->nullable()->after('instance_token');
             $table->index('instance_token_bidx');
         });
-
-        DB::statement('ALTER TABLE whatsapp_instances MODIFY instance_token TEXT NULL');
 
         DB::table('whatsapp_instances')->orderBy('id')->chunk(200, function ($rows) {
             foreach ($rows as $row) {
@@ -64,11 +68,12 @@ return new class extends Migration
             }
         });
 
-        DB::statement('ALTER TABLE whatsapp_instances MODIFY instance_token VARCHAR(255) NULL');
-
         Schema::table('whatsapp_instances', function (Blueprint $table) {
             $table->dropIndex(['instance_token_bidx']);
             $table->dropColumn('instance_token_bidx');
         });
+
+        DB::statement('ALTER TABLE whatsapp_instances MODIFY instance_token VARCHAR(64) NOT NULL');
+        DB::statement('ALTER TABLE whatsapp_instances ADD UNIQUE INDEX whatsapp_instances_instance_token_unique (instance_token)');
     }
 };
