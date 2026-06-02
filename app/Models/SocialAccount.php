@@ -17,6 +17,7 @@ class SocialAccount extends Model
     protected $casts = [
         'token_expires_at' => 'datetime',
         'is_active'        => 'boolean',
+        'access_token'     => 'encrypted',
     ];
 
     public function tenant()      { return $this->belongsTo(Tenant::class); }

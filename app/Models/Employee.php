@@ -26,8 +26,8 @@ class Employee extends Model
 
     protected $casts = [
         'hired_at' => 'date',
-        'salary' => 'decimal:2',
-        'bonus' => 'decimal:2',
+        'salary'   => 'encrypted',
+        'bonus'    => 'encrypted',
     ];
 
     // Relação com Projeto (opcional)

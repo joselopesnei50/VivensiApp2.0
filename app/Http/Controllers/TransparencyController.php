@@ -519,14 +519,13 @@ class TransparencyController extends Controller
         $assetsCount = (int) Asset::query()->where('tenant_id', $tenant_id)->count();
         $assetsTotalValue = (float) Asset::query()->where('tenant_id', $tenant_id)->sum('value');
 
-        $hrRow = Employee::query()
-            ->where('tenant_id', $tenant_id)
+        $hrEmployees = Employee::where('tenant_id', $tenant_id)
             ->where('status', 'active')
-            ->selectRaw('COUNT(*) as employees_count, COALESCE(SUM(salary),0) as payroll_total, COALESCE(SUM(bonus),0) as bonus_total')
-            ->first();
-        $employeesCount = (int) ($hrRow->employees_count ?? 0);
-        $payrollTotal = (float) ($hrRow->payroll_total ?? 0);
-        $bonusTotal = (float) ($hrRow->bonus_total ?? 0);
+            ->select(['id', 'salary', 'bonus'])
+            ->get();
+        $employeesCount = $hrEmployees->count();
+        $payrollTotal   = (float) $hrEmployees->sum('salary');
+        $bonusTotal     = (float) $hrEmployees->sum('bonus');
 
         $updatedAts = [
             DB::table('transactions')->where('tenant_id', $tenant_id)->where('status', 'paid')->whereBetween('date', [$yearStart, $yearEnd])->max('updated_at'),
@@ -789,14 +788,13 @@ class TransparencyController extends Controller
                 ->get();
 
             // HR: aggregated only (LGPD - do not load names).
-            $hrRow = Employee::query()
-                ->where('tenant_id', $tenant_id)
+            $hrEmployees = Employee::where('tenant_id', $tenant_id)
                 ->where('status', 'active')
-                ->selectRaw('COUNT(*) as employees_count, COALESCE(SUM(salary),0) as payroll_total, COALESCE(SUM(bonus),0) as bonus_total')
-                ->first();
-            $employeesCount = (int) ($hrRow->employees_count ?? 0);
-            $payrollTotal = (float) ($hrRow->payroll_total ?? 0);
-            $bonusTotal = (float) ($hrRow->bonus_total ?? 0);
+                ->select(['id', 'salary', 'bonus'])
+                ->get();
+            $employeesCount = $hrEmployees->count();
+            $payrollTotal   = (float) $hrEmployees->sum('salary');
+            $bonusTotal     = (float) $hrEmployees->sum('bonus');
 
             // Public data "last updated" timestamp (for auditability / LAI good practice)
             $updatedAts = [

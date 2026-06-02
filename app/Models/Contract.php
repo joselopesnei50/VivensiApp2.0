@@ -33,8 +33,13 @@ class Contract extends Model
     ];
 
     protected $casts = [
-        'signed_at' => 'datetime',
+        'signed_at'              => 'datetime',
         'public_sign_expires_at' => 'datetime',
-        'public_viewed_at' => 'datetime',
+        'public_viewed_at'       => 'datetime',
+        'signer_name'            => 'encrypted',
+        'signer_email'           => 'encrypted',
+        'signer_phone'           => 'encrypted',
+        'signer_cpf'             => 'encrypted',
+        'signer_rg'              => 'encrypted',
     ];
 }
