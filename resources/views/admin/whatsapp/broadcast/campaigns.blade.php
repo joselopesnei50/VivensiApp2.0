@@ -231,6 +231,15 @@
                         <div class="bc-metric-lbl">falhas</div>
                     </div>
 
+                    @if($campaign->total_skipped > 0)
+                    <div class="bc-metric">
+                        <div class="bc-metric-val" style="color:#f59e0b;">
+                            {{ number_format($campaign->total_skipped) }}
+                        </div>
+                        <div class="bc-metric-lbl">ignorados</div>
+                    </div>
+                    @endif
+
                     @if($campaign->duration)
                     <div class="bc-metric">
                         <div class="bc-metric-val" style="color:#475569;">{{ $campaign->duration }}</div>

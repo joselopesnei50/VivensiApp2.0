@@ -2,7 +2,7 @@
 
 // ── Painel Super Admin ────────────────────────────────────────────────────────
 Route::middleware(['auth', 'subscription'])->group(function () {
-    Route::prefix('admin')->middleware('super_admin')->group(function () {
+    Route::prefix('admin')->middleware(['super_admin', '2fa'])->group(function () {
 
         Route::get('/',           [App\Http\Controllers\AdminController::class, 'index'])->name('admin.dashboard');
         Route::get('/health',     [App\Http\Controllers\AdminController::class, 'serverHealth'])->name('admin.health');

@@ -7,19 +7,35 @@ use Illuminate\Http\Request;
 
 class RequireTwoFactor
 {
+    // Routes excluded from 2FA enforcement to prevent redirect loops
+    private const EXEMPT_ROUTES = [
+        '2fa.challenge', '2fa.verify',
+        '2fa.show', '2fa.enable', '2fa.confirm', '2fa.disable',
+        'logout',
+    ];
+
     public function handle(Request $request, Closure $next)
     {
         $user = auth()->user();
 
         if (!$user) return $next($request);
 
-        // Only enforce for users who have confirmed 2FA
+        // Never block 2FA setup/challenge routes
+        if (in_array($request->route()?->getName(), self::EXEMPT_ROUTES, true)) {
+            return $next($request);
+        }
+
+        // Super admins must configure 2FA before accessing any protected route
+        if ($user->isSuperAdmin() && !$user->hasTwoFactorEnabled()) {
+            return redirect()->route('2fa.show')
+                ->with('warning', 'Por segurança, administradores precisam ativar o 2FA antes de continuar.');
+        }
+
+        // For users with 2FA configured: enforce session verification
         if (!$user->hasTwoFactorEnabled()) return $next($request);
 
-        // Already verified in this session
         if ($request->session()->get('2fa_verified')) return $next($request);
 
-        // API requests: require X-2FA-Code header
         if ($request->expectsJson()) {
             return response()->json([
                 'error'   => 'two_factor_required',
@@ -27,7 +43,6 @@ class RequireTwoFactor
             ], 423);
         }
 
-        // Web: redirect to challenge page
         $request->session()->put('2fa_redirect', $request->url());
         return redirect()->route('2fa.challenge');
     }
