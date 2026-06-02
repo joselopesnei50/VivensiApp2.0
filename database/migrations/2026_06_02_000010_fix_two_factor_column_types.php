@@ -34,6 +34,7 @@ return new class extends Migration
                 $q->whereNotNull('two_factor_secret')
                   ->orWhereNotNull('two_factor_recovery_codes');
             })
+            ->orderBy('id')
             ->chunk(100, function ($rows) {
                 foreach ($rows as $row) {
                     $this->fixUserRow($row);
