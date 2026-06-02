@@ -49,25 +49,36 @@ class GeneratePdfJob implements ShouldQueue
 
     private function renderDrePdf(GeneratedReport $report): void
     {
-        ['tenant_id' => $tenantId, 'year' => $year, 'org_name' => $orgName] = $report->params;
+        $p        = $report->params;
+        $tenantId = $p['tenant_id'];
+        $year     = (int) $p['year'];
+        $orgName  = $p['org_name'];
+        $from     = $p['from'] ?? "$year-01-01";
+        $to       = $p['to']   ?? "$year-12-31";
+        $categoryId = $p['category_id'] ?? null;
 
-        $sumsByCat = \App\Models\Transaction::where('tenant_id', $tenantId)
-            ->whereYear('date', $year)
+        $q = \App\Models\Transaction::where('tenant_id', $tenantId)
+            ->whereBetween('date', [$from, $to])
             ->where('status', 'paid')
             ->select('category_id', DB::raw('SUM(amount) as total'))
-            ->groupBy('category_id')
-            ->pluck('total', 'category_id');
+            ->groupBy('category_id');
 
-        $incomeCategories = \App\Models\FinancialCategory::where('tenant_id', $tenantId)->where('type', 'income')->get();
+        if ($categoryId) {
+            $q->where('category_id', $categoryId);
+        }
+
+        $sumsByCat = $q->pluck('total', 'category_id');
+
+        $incomeCategories  = \App\Models\FinancialCategory::where('tenant_id', $tenantId)->where('type', 'income')->get();
         $expenseCategories = \App\Models\FinancialCategory::where('tenant_id', $tenantId)->where('type', 'expense')->get();
 
-        $incomes = $totalIncome = 0;
-        $incomesArr = [];
+        $totalIncome = 0;
+        $incomesArr  = [];
         foreach ($incomeCategories as $cat) {
             $val = (float) ($sumsByCat[$cat->id] ?? 0);
             if ($val > 0) { $incomesArr[] = ['name' => $cat->name, 'value' => $val]; $totalIncome += $val; }
         }
-        $expensesArr = [];
+        $expensesArr  = [];
         $totalExpense = 0;
         foreach ($expenseCategories as $cat) {
             $val = (float) ($sumsByCat[$cat->id] ?? 0);
@@ -75,7 +86,7 @@ class GeneratePdfJob implements ShouldQueue
         }
 
         $result      = $totalIncome - $totalExpense;
-        $periodLabel = '01/01/' . $year . ' a 31/12/' . $year;
+        $periodLabel = Carbon::parse($from)->format('d/m/Y') . ' a ' . Carbon::parse($to)->format('d/m/Y');
         $generatedAt = now()->format('d/m/Y H:i');
 
         $pdf = app('dompdf.wrapper');

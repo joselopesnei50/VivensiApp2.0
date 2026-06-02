@@ -130,6 +130,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::put('/inventory/{id}',          [App\Http\Controllers\InventoryController::class, 'update'])->name('ngo.inventory.update');
         Route::delete('/inventory/{id}',       [App\Http\Controllers\InventoryController::class, 'destroy'])->name('ngo.inventory.destroy');
         Route::post('/inventory/{id}/movement', [App\Http\Controllers\InventoryController::class, 'movement'])->name('ngo.inventory.movement');
+        Route::get('/inventory/export',        [App\Http\Controllers\InventoryController::class, 'exportCsv'])->name('ngo.inventory.export');
+        Route::get('/inventory/movements/export', [App\Http\Controllers\InventoryController::class, 'exportMovementsCsv'])->name('ngo.inventory.movements.export');
 
         // Patrimônio (Assets)
         Route::get('/assets',                  [App\Http\Controllers\AssetController::class, 'index']);
@@ -181,6 +183,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::delete('/ngo/landing-pages/{id}',             [App\Http\Controllers\LandingPageController::class, 'destroy']);
     Route::get('/ngo/landing-pages/{id}/leads',          [App\Http\Controllers\LandingPageLeadController::class, 'index']);
     Route::get('/ngo/landing-pages/{id}/leads/export',   [App\Http\Controllers\LandingPageLeadController::class, 'exportCsv']);
+
+    // ── SIC — Serviço de Informação ao Cidadão (gestão interna) ─────────────
+    Route::get('/ngo/sic',                [App\Http\Controllers\SicController::class, 'index'])->name('sic.index');
+    Route::get('/ngo/sic/{id}',           [App\Http\Controllers\SicController::class, 'show'])->name('sic.show');
+    Route::post('/ngo/sic/{id}/respond',  [App\Http\Controllers\SicController::class, 'respond'])->name('sic.respond')->middleware('throttle:web_write');
+    Route::patch('/ngo/sic/{id}/status',  [App\Http\Controllers\SicController::class, 'updateStatus'])->name('sic.status');
 
     // ── Portal de Transparência (gestão interna) ──────────────────────────────
     Route::get('/ngo/transparencia',                    [App\Http\Controllers\TransparencyController::class, 'index'])->name('transparency.index');
