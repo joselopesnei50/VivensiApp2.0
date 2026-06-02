@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\WebhookService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\ProjectMember;
@@ -15,9 +16,13 @@ class TaskController extends Controller
     public function index()
     {
         $tenantId = auth()->user()->tenant_id;
-        
+        $userId   = auth()->id();
+
         $tasks = Task::where('tenant_id', $tenantId)
-                     ->where('assigned_to', auth()->id())
+                     ->where(function ($q) use ($userId) {
+                         $q->where('assigned_to', $userId)
+                           ->orWhere('created_by', $userId);
+                     })
                      ->orderBy('due_date', 'asc')
                      ->paginate(20);
 
@@ -27,17 +32,15 @@ class TaskController extends Controller
     public function create()
     {
         $user = auth()->user();
-        
-        // Se for usuário comum (Pessoal), não vê projetos de empresa nem outros usuários
+
         if (!in_array($user->role, ['manager', 'ngo', 'super_admin'])) {
-            $projects = collect(); // Coleção vazia
-            $users = collect([$user]); // Apenas ele mesmo
+            $projects = collect();
+            $users    = collect([$user]);
         } else {
             $projects = Project::where('tenant_id', $user->tenant_id)
                 ->orderBy('name')
                 ->get();
 
-            // Evita "vazamento" de perfis de outros módulos no seletor de responsável
             $usersQ = User::where('tenant_id', $user->tenant_id);
 
             if ($user->isManager()) {
@@ -48,21 +51,19 @@ class TaskController extends Controller
 
             $users = $usersQ->orderBy('name')->get();
         }
-        
+
         return view('tasks.create', compact('projects', 'users'));
     }
 
-
     public function kanban($projectId)
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
         $project = Project::where('id', $projectId)
                           ->where('tenant_id', $tenantId)
                           ->firstOrFail();
 
-        // Security: employee can only access projects they belong to.
         $canManageAll = in_array($user->role, ['manager', 'super_admin'], true);
         if (!$canManageAll) {
             $isMember = ProjectMember::where('tenant_id', $tenantId)
@@ -75,21 +76,18 @@ class TaskController extends Controller
 
         $tasks = Task::where('project_id', $projectId)
                      ->where('tenant_id', $tenantId)
-                     ->with('assignee:id,name') // Eager loading
-                     // Premium ordering: critical/high first, then medium, then low
+                     ->with('assignee:id,name')
                      ->orderByRaw("FIELD(priority,'critical','high','medium','low')")
                      ->orderBy('due_date')
                      ->orderBy('created_at', 'desc')
                      ->get();
 
         $kanban = [
-            // Normalize other statuses into the classic kanban lanes
-            'todo' => $tasks->whereIn('status', ['todo', 'pending', 'blocked']),
+            'todo'  => $tasks->whereIn('status', ['todo', 'pending', 'blocked']),
             'doing' => $tasks->whereIn('status', ['doing', 'in_progress']),
-            'done' => $tasks->whereIn('status', ['done', 'completed']),
+            'done'  => $tasks->whereIn('status', ['done', 'completed']),
         ];
 
-        // Se precisarmos de usuários para atribuir tarefas
         $users = User::where('tenant_id', $tenantId)
             ->whereIn('role', ['employee', 'manager'])
             ->orderBy('name')
@@ -101,18 +99,17 @@ class TaskController extends Controller
     public function updateStatus(Request $request)
     {
         $validated = $request->validate([
-            'id' => 'required',
-            'status' => 'required|in:todo,doing,done'
+            'id'     => 'required',
+            'status' => 'required|in:todo,doing,done',
         ]);
 
-        $user = auth()->user();
+        $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
         $task = Task::where('id', $validated['id'])
                     ->where('tenant_id', $tenantId)
                     ->firstOrFail();
 
-        // Hardening: colaboradores só podem alterar suas próprias tarefas (ou as que criaram).
         $canManageAll = in_array($user->role, ['manager', 'super_admin'], true);
         if (!$canManageAll) {
             abort_unless(
@@ -121,27 +118,36 @@ class TaskController extends Controller
             );
         }
 
+        $wasCompleted = in_array($task->status, ['done', 'completed'], true);
+
         $task->status = $validated['status'];
         $task->save();
+
+        if (!$wasCompleted && $validated['status'] === 'done') {
+            app(WebhookService::class)->fire($tenantId, 'task.completed', [
+                'id'       => $task->id,
+                'title'    => $task->title,
+                'status'   => $task->status,
+                'priority' => $task->priority,
+            ]);
+        }
 
         return response()->json(['success' => true]);
     }
 
     public function updateTask(Request $request)
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
         $canManageAll = in_array($user->role, ['manager', 'super_admin'], true);
 
-        $data = $request->all();
-
-        $validator = Validator::make($data, [
-            'id' => ['required', 'integer'],
-            'title' => ['nullable', 'string', 'max:255'],
+        $validator = Validator::make($request->all(), [
+            'id'          => ['required', 'integer'],
+            'title'       => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'priority' => ['nullable', Rule::in(['low', 'medium', 'high', 'critical'])],
-            'due_date' => ['nullable', 'date'],
+            'priority'    => ['nullable', Rule::in(['low', 'medium', 'high', 'critical'])],
+            'due_date'    => ['nullable', 'date'],
             'assigned_to' => ['nullable', 'integer'],
         ]);
 
@@ -163,7 +169,6 @@ class TaskController extends Controller
             );
         }
 
-        // Employee: cannot reassign tasks; only managers can.
         if (!$canManageAll) {
             unset($validated['assigned_to']);
         }
@@ -173,7 +178,7 @@ class TaskController extends Controller
                 $task->assigned_to = null;
             } else {
                 $assigneeOk = User::where('tenant_id', $tenantId)
-                    ->whereIn('role', ['employee', 'manager'])
+                    ->whereIn('role', ['employee', 'manager', 'ngo'])
                     ->where('id', (int) $validated['assigned_to'])
                     ->exists();
 
@@ -202,15 +207,15 @@ class TaskController extends Controller
 
         return response()->json([
             'success' => true,
-            'task' => [
-                'id' => (int) $task->id,
-                'title' => (string) $task->title,
-                'description' => (string) ($task->description ?? ''),
-                'priority' => (string) ($task->priority ?? 'medium'),
-                'due_date' => $task->due_date ? $task->due_date->format('Y-m-d') : null,
-                'due_label' => $task->due_date ? $task->due_date->format('d/m') : 'S/P',
-                'assigned_to' => $task->assigned_to ? (int) $task->assigned_to : null,
-                'assignee_name' => $task->assignee?->name,
+            'task'    => [
+                'id'               => (int) $task->id,
+                'title'            => (string) $task->title,
+                'description'      => (string) ($task->description ?? ''),
+                'priority'         => (string) ($task->priority ?? 'medium'),
+                'due_date'         => $task->due_date ? $task->due_date->format('Y-m-d') : null,
+                'due_label'        => $task->due_date ? $task->due_date->format('d/m') : 'S/P',
+                'assigned_to'      => $task->assigned_to ? (int) $task->assigned_to : null,
+                'assignee_name'    => $task->assignee?->name,
                 'assignee_initial' => $task->assignee?->name ? mb_substr($task->assignee->name, 0, 1) : null,
             ],
         ]);
@@ -218,74 +223,49 @@ class TaskController extends Controller
 
     public function createApi(Request $request)
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
-        $statusAllowed = ['todo', 'doing', 'done', 'pending', 'in_progress', 'completed', 'blocked'];
-        $priorityAllowed = ['low', 'medium', 'high', 'critical'];
+        ['rules' => $rules, 'isPrivileged' => $isPrivileged] = $this->taskValidationRules($user, $tenantId);
 
-        $projectExistsRule = Rule::exists('projects', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId));
-        $assigneeExistsRule = Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId));
-
-        if ($user->isManager()) {
-            $assigneeExistsRule = $assigneeExistsRule->whereIn('role', ['employee', 'manager']);
-        }
-        if ($user->isNgo() || (($user->tenant?->type ?? null) === 'ngo')) {
-            $assigneeExistsRule = $assigneeExistsRule->whereNotIn('role', ['super_admin']);
-        }
-
-        $isPrivileged = in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
-
-        $validator = Validator::make($request->all(), [
-            'project_id' => $isPrivileged ? ['nullable', 'integer', $projectExistsRule] : ['nullable'],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'status' => ['required', Rule::in($statusAllowed)],
-            'assigned_to' => $isPrivileged ? ['nullable', 'integer', $assigneeExistsRule] : ['nullable'],
-            'priority' => ['nullable', Rule::in($priorityAllowed)],
-            'due_date' => ['nullable', 'date'],
-        ]);
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(['message' => 'Validação falhou.', 'errors' => $validator->errors()], 422);
         }
 
-        $validated = $validator->validated();
-
-        $task = new Task();
-        $task->tenant_id = $tenantId;
-        $task->project_id = $isPrivileged ? ($validated['project_id'] ?? null) : null;
-        $task->title = $validated['title'];
-        $task->description = $validated['description'] ?? null;
-        $task->status = $validated['status'];
-        $task->assigned_to = $isPrivileged ? ($validated['assigned_to'] ?? null) : (int) $user->id;
-        $task->priority = $validated['priority'] ?? 'medium';
-        $task->due_date = $validated['due_date'] ?? null;
-        $task->created_by = (int) $user->id;
-        $task->save();
-
+        $task = $this->makeTask($validator->validated(), $isPrivileged, $tenantId, (int) $user->id);
         $task->load('assignee:id,name');
 
-        $lane = match($task->status ?? 'todo') {
+        app(WebhookService::class)->fire($tenantId, 'task.created', [
+            'id'         => $task->id,
+            'title'      => $task->title,
+            'status'     => $task->status,
+            'priority'   => $task->priority,
+            'project_id' => $task->project_id,
+            'due_date'   => $task->due_date?->toDateString(),
+        ]);
+
+        $lane = match($task->status) {
             'pending', 'blocked', 'todo' => 'todo',
-            'in_progress', 'doing' => 'doing',
-            'completed', 'done' => 'done',
-            default => 'todo',
+            'in_progress', 'doing'       => 'doing',
+            'completed', 'done'          => 'done',
+            default                      => 'todo',
         };
 
         return response()->json([
             'success' => true,
-            'lane' => (string) $lane,
-            'task' => [
-                'id' => (int) $task->id,
-                'title' => (string) $task->title,
-                'description' => (string) ($task->description ?? ''),
-                'status' => (string) ($task->status ?? 'todo'),
-                'priority' => (string) ($task->priority ?? 'medium'),
-                'due_date' => $task->due_date ? $task->due_date->format('Y-m-d') : null,
-                'due_label' => $task->due_date ? $task->due_date->format('d/m') : 'S/P',
-                'assigned_to' => $task->assigned_to ? (int) $task->assigned_to : null,
-                'assignee_name' => $task->assignee?->name,
+            'lane'    => $lane,
+            'task'    => [
+                'id'               => (int) $task->id,
+                'title'            => (string) $task->title,
+                'description'      => (string) ($task->description ?? ''),
+                'status'           => (string) $task->status,
+                'priority'         => (string) $task->priority,
+                'due_date'         => $task->due_date?->format('Y-m-d'),
+                'due_label'        => $task->due_date ? $task->due_date->format('d/m') : 'S/P',
+                'assigned_to'      => $task->assigned_to ? (int) $task->assigned_to : null,
+                'assignee_name'    => $task->assignee?->name,
                 'assignee_initial' => $task->assignee?->name ? mb_substr($task->assignee->name, 0, 1) : null,
             ],
             'html' => view('projects.partials.task_card', ['task' => $task])->render(),
@@ -294,54 +274,16 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
-        $statusAllowed = ['todo', 'doing', 'done', 'pending', 'in_progress', 'completed', 'blocked'];
-        $priorityAllowed = ['low', 'medium', 'high', 'critical'];
+        ['rules' => $rules, 'isPrivileged' => $isPrivileged] = $this->taskValidationRules($user, $tenantId);
 
-        $projectExistsRule = Rule::exists('projects', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId));
-        $assigneeExistsRule = Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId));
+        $validated = $request->validate($rules);
 
-        // Manager: pode atribuir a funcionários/gestores do mesmo tenant
-        if ($user->isManager()) {
-            $assigneeExistsRule = $assigneeExistsRule->whereIn('role', ['employee', 'manager']);
-        }
+        $this->makeTask($validated, $isPrivileged, $tenantId, (int) $user->id);
 
-        // NGO: pode atribuir a usuários do tenant (exceto super_admin)
-        if ($user->isNgo() || (($user->tenant?->type ?? null) === 'ngo')) {
-            $assigneeExistsRule = $assigneeExistsRule->whereNotIn('role', ['super_admin']);
-        }
-
-        // Usuário comum: nunca pode atribuir para terceiros nem vincular a projetos
-        $isPrivileged = in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
-
-        $validated = $request->validate([
-            'project_id' => $isPrivileged ? ['nullable', 'integer', $projectExistsRule] : ['nullable'],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'status' => ['required', Rule::in($statusAllowed)],
-            'assigned_to' => $isPrivileged ? ['nullable', 'integer', $assigneeExistsRule] : ['nullable'],
-            'priority' => ['nullable', Rule::in($priorityAllowed)],
-            'due_date' => ['nullable', 'date'],
-        ]);
-
-        
-        $task = new Task();
-        $task->tenant_id = $tenantId;
-        $task->project_id = $isPrivileged ? ($validated['project_id'] ?? null) : null;
-        $task->title = $validated['title'];
-        $task->description = $validated['description'] ?? null;
-        $task->status = $validated['status'];
-        $task->assigned_to = $isPrivileged ? ($validated['assigned_to'] ?? null) : auth()->id();
-        $task->priority = $validated['priority'] ?? 'medium';
-        $task->due_date = $validated['due_date'] ?? null;
-        $task->created_by = auth()->id();
-        $task->save();
-        
         if ($request->has('redirect_to_schedule')) {
-            // Se for usuário comum, vai para o seu calendário pessoal
-            $user = auth()->user();
             if (!in_array($user->role, ['manager', 'ngo', 'super_admin'])) {
                 return redirect('/tasks/calendar')->with('success', 'Evento/Lembrete criado com sucesso!');
             }
@@ -353,11 +295,11 @@ class TaskController extends Controller
 
     public function calendar(Request $request)
     {
-        \Carbon\Carbon::setLocale('pt_BR');
+        $request->validate(['date' => 'nullable|date']);
 
-        $date = $request->has('date')
-            ? \Carbon\Carbon::parse($request->date)
-            : \Carbon\Carbon::now();
+        $date = $request->filled('date')
+            ? \Carbon\Carbon::parse($request->date)->locale('pt_BR')
+            : \Carbon\Carbon::now()->locale('pt_BR');
 
         $startOfMonth = $date->copy()->startOfMonth();
         $endOfMonth   = $date->copy()->endOfMonth();
@@ -386,5 +328,52 @@ class TaskController extends Controller
                     ->get();
 
         return view('tasks.calendar', compact('date', 'tasks', 'overdueTasks'));
+    }
+
+    private function taskValidationRules(User $user, int $tenantId): array
+    {
+        $projectExistsRule = Rule::exists('projects', 'id')
+            ->where(fn ($q) => $q->where('tenant_id', $tenantId));
+
+        $assigneeExistsRule = Rule::exists('users', 'id')
+            ->where(fn ($q) => $q->where('tenant_id', $tenantId));
+
+        if ($user->isManager()) {
+            $assigneeExistsRule = $assigneeExistsRule->whereIn('role', ['employee', 'manager']);
+        } elseif ($user->isNgo() || (($user->tenant?->type ?? null) === 'ngo')) {
+            $assigneeExistsRule = $assigneeExistsRule->whereNotIn('role', ['super_admin']);
+        }
+
+        $isPrivileged = in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
+
+        return [
+            'rules' => [
+                'project_id'  => $isPrivileged ? ['nullable', 'integer', $projectExistsRule] : ['nullable'],
+                'title'       => ['required', 'string', 'max:255'],
+                'description' => ['nullable', 'string'],
+                'status'      => ['required', Rule::in(['todo', 'doing', 'done', 'pending', 'in_progress', 'completed', 'blocked'])],
+                'assigned_to' => $isPrivileged ? ['nullable', 'integer', $assigneeExistsRule] : ['nullable'],
+                'priority'    => ['nullable', Rule::in(['low', 'medium', 'high', 'critical'])],
+                'due_date'    => ['nullable', 'date'],
+            ],
+            'isPrivileged' => $isPrivileged,
+        ];
+    }
+
+    private function makeTask(array $validated, bool $isPrivileged, int $tenantId, int $userId): Task
+    {
+        $task              = new Task();
+        $task->tenant_id   = $tenantId;
+        $task->project_id  = $isPrivileged ? ($validated['project_id'] ?? null) : null;
+        $task->title       = $validated['title'];
+        $task->description = $validated['description'] ?? null;
+        $task->status      = $validated['status'];
+        $task->assigned_to = $isPrivileged ? ($validated['assigned_to'] ?? null) : $userId;
+        $task->priority    = $validated['priority'] ?? 'medium';
+        $task->due_date    = $validated['due_date'] ?? null;
+        $task->created_by  = $userId;
+        $task->save();
+
+        return $task;
     }
 }
