@@ -13,7 +13,7 @@ class DonorPortalController extends Controller
     public function show($token)
     {
         // Find donor matching the token, ignore tenant scope since this is public
-        $donor = NgoDonor::withoutGlobalScopes()->where('portal_token', $token)->firstOrFail();
+        $donor = NgoDonor::withoutGlobalScopes()->where('portal_token_bidx', hash_hmac('sha256', $token, config('app.key')))->firstOrFail();
 
         // Get their donation history across the tenant
         $donations = Transaction::withoutGlobalScopes()
@@ -33,7 +33,7 @@ class DonorPortalController extends Controller
 
     public function downloadIrPdf(Request $request, $token)
     {
-        $donor = NgoDonor::withoutGlobalScopes()->where('portal_token', $token)->firstOrFail();
+        $donor = NgoDonor::withoutGlobalScopes()->where('portal_token_bidx', hash_hmac('sha256', $token, config('app.key')))->firstOrFail();
         
         $year = $request->query('year', date('Y') - 1); // Default to last year
 
@@ -69,7 +69,7 @@ class DonorPortalController extends Controller
 
     public function update(Request $request, $token)
     {
-        $donor = NgoDonor::withoutGlobalScopes()->where('portal_token', $token)->firstOrFail();
+        $donor = NgoDonor::withoutGlobalScopes()->where('portal_token_bidx', hash_hmac('sha256', $token, config('app.key')))->firstOrFail();
 
         // Email removido das atualizações públicas: alteração de email via link
         // público poderia permitir sequestro de comunicações futuras do doador.
