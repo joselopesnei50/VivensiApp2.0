@@ -10,12 +10,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('ngo_donors', function (Blueprint $table) {
-            $table->string('portal_token_bidx', 64)->nullable()->after('portal_token');
-            $table->index('portal_token_bidx');
-        });
+        try {
+            DB::statement('ALTER TABLE ngo_donors DROP INDEX ngo_donors_portal_token_unique');
+        } catch (\Throwable) {}
 
         DB::statement('ALTER TABLE ngo_donors MODIFY portal_token TEXT NULL');
+
+        if (!Schema::hasColumn('ngo_donors', 'portal_token_bidx')) {
+            Schema::table('ngo_donors', function (Blueprint $table) {
+                $table->string('portal_token_bidx', 64)->nullable()->after('portal_token');
+                $table->index('portal_token_bidx');
+            });
+        }
 
         DB::table('ngo_donors')->orderBy('id')->chunk(500, function ($rows) {
             foreach ($rows as $row) {
