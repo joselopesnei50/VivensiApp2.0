@@ -22,9 +22,11 @@ return new class extends Migration
             $table->index('document_bidx');
         });
 
-        DB::statement('ALTER TABLE beneficiaries MODIFY cpf TEXT NULL');
-        DB::statement('ALTER TABLE beneficiaries MODIFY nis TEXT NULL');
-        DB::statement('ALTER TABLE ngo_donors MODIFY document TEXT NULL');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE beneficiaries MODIFY cpf TEXT NULL');
+            DB::statement('ALTER TABLE beneficiaries MODIFY nis TEXT NULL');
+            DB::statement('ALTER TABLE ngo_donors MODIFY document TEXT NULL');
+        }
 
         DB::table('beneficiaries')->orderBy('id')->chunk(500, function ($rows) {
             foreach ($rows as $row) {
@@ -107,9 +109,11 @@ return new class extends Migration
             }
         });
 
-        DB::statement('ALTER TABLE beneficiaries MODIFY cpf VARCHAR(255) NULL');
-        DB::statement('ALTER TABLE beneficiaries MODIFY nis VARCHAR(255) NULL');
-        DB::statement('ALTER TABLE ngo_donors MODIFY document VARCHAR(255) NULL');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE beneficiaries MODIFY cpf VARCHAR(255) NULL');
+            DB::statement('ALTER TABLE beneficiaries MODIFY nis VARCHAR(255) NULL');
+            DB::statement('ALTER TABLE ngo_donors MODIFY document VARCHAR(255) NULL');
+        }
 
         Schema::table('beneficiaries', function (Blueprint $table) {
             $table->dropIndex(['cpf_bidx']);

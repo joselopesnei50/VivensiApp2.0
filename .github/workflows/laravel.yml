@@ -55,7 +55,7 @@ jobs:
           QUEUE_CONNECTION: sync
           SESSION_DRIVER: array
           APP_KEY: base64:kZ1GflhBe1nqNVSJNDZ9FWJMFG7rJ1XLuMoFBJFWjXc=
-        run: ./vendor/bin/pest --ci
+        run: ./vendor/bin/pest
 
   lint:
     name: Code Style (Pint)

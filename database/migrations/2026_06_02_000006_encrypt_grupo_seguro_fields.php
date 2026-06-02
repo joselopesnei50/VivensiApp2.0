@@ -8,12 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Salary/bonus must change from decimal to text to store encrypted strings.
-        DB::statement('ALTER TABLE employees MODIFY salary TEXT NULL');
-        DB::statement('ALTER TABLE employees MODIFY bonus TEXT NULL');
+        // Column-type changes are MySQL-only — SQLite has flexible typing, no MODIFY COLUMN.
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            // Salary/bonus must change from decimal to text to store encrypted strings.
+            DB::statement('ALTER TABLE employees MODIFY salary TEXT NULL');
+            DB::statement('ALTER TABLE employees MODIFY bonus TEXT NULL');
 
-        // birth_date must change from date to text.
-        DB::statement('ALTER TABLE family_members MODIFY birth_date TEXT NULL');
+            // birth_date must change from date to text.
+            DB::statement('ALTER TABLE family_members MODIFY birth_date TEXT NULL');
+        }
 
         // Encrypt existing data in all GRUPO SEGURO tables.
         $this->encryptTable('users',           ['two_factor_secret', 'two_factor_recovery_codes']);
@@ -36,9 +39,11 @@ return new class extends Migration
         $this->decryptTable('webhooks',        ['secret']);
         $this->decryptTable('family_members',  ['birth_date']);
 
-        DB::statement('ALTER TABLE employees MODIFY salary DECIMAL(15,2) NULL');
-        DB::statement('ALTER TABLE employees MODIFY bonus DECIMAL(15,2) NULL');
-        DB::statement('ALTER TABLE family_members MODIFY birth_date DATE NULL');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE employees MODIFY salary DECIMAL(15,2) NULL');
+            DB::statement('ALTER TABLE employees MODIFY bonus DECIMAL(15,2) NULL');
+            DB::statement('ALTER TABLE family_members MODIFY birth_date DATE NULL');
+        }
     }
 
     // Laravel encrypted values are always base64-encoded JSON starting with "eyJ".
