@@ -21,8 +21,8 @@ class EvolutionWebhookController extends Controller
 {
     public function handle(Request $request, string $token)
     {
-        // 1. Identificar a instância pelo token secreto da URL
-        $instance = WhatsappInstance::where('instance_token', $token)->first();
+        // 1. Identificar a instância pelo blind index (token cifrado no DB, bidx indexado)
+        $instance = WhatsappInstance::where('instance_token_bidx', hash_hmac('sha256', $token, config('app.key')))->first();
 
         if (!$instance) {
             Log::warning("Evolution Webhook: token inválido recebido", [
