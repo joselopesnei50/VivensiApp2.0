@@ -10,11 +10,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        try {
-            DB::statement('ALTER TABLE ngo_donors DROP INDEX ngo_donors_portal_token_unique');
-        } catch (\Throwable) {}
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            try {
+                DB::statement('ALTER TABLE ngo_donors DROP INDEX ngo_donors_portal_token_unique');
+            } catch (\Throwable) {}
 
-        DB::statement('ALTER TABLE ngo_donors MODIFY portal_token TEXT NULL');
+            DB::statement('ALTER TABLE ngo_donors MODIFY portal_token TEXT NULL');
+        }
 
         if (!Schema::hasColumn('ngo_donors', 'portal_token_bidx')) {
             Schema::table('ngo_donors', function (Blueprint $table) {
@@ -70,7 +72,9 @@ return new class extends Migration
             }
         });
 
-        DB::statement('ALTER TABLE ngo_donors MODIFY portal_token VARCHAR(36) NULL');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE ngo_donors MODIFY portal_token VARCHAR(36) NULL');
+        }
 
         Schema::table('ngo_donors', function (Blueprint $table) {
             $table->dropIndex(['portal_token_bidx']);

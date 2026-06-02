@@ -10,12 +10,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Drop unique index if it still exists (idempotent — may have been dropped in a partial run)
-        try {
-            DB::statement('ALTER TABLE whatsapp_instances DROP INDEX whatsapp_instances_instance_token_unique');
-        } catch (\Throwable) {}
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            // Drop unique index if it still exists (idempotent — may have been dropped in a partial run)
+            try {
+                DB::statement('ALTER TABLE whatsapp_instances DROP INDEX whatsapp_instances_instance_token_unique');
+            } catch (\Throwable) {}
 
-        DB::statement('ALTER TABLE whatsapp_instances MODIFY instance_token TEXT NULL');
+            DB::statement('ALTER TABLE whatsapp_instances MODIFY instance_token TEXT NULL');
+        }
 
         if (!Schema::hasColumn('whatsapp_instances', 'instance_token_bidx')) {
             Schema::table('whatsapp_instances', function (Blueprint $table) {
@@ -76,7 +78,9 @@ return new class extends Migration
             $table->dropColumn('instance_token_bidx');
         });
 
-        DB::statement('ALTER TABLE whatsapp_instances MODIFY instance_token VARCHAR(64) NOT NULL');
-        DB::statement('ALTER TABLE whatsapp_instances ADD UNIQUE INDEX whatsapp_instances_instance_token_unique (instance_token)');
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE whatsapp_instances MODIFY instance_token VARCHAR(64) NOT NULL');
+            DB::statement('ALTER TABLE whatsapp_instances ADD UNIQUE INDEX whatsapp_instances_instance_token_unique (instance_token)');
+        }
     }
 };
