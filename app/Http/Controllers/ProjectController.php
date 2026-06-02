@@ -10,12 +10,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Models\ProjectMember;
+use App\Services\ProjectService;
 
 class ProjectController extends Controller
 {
+    public function __construct(private ProjectService $projectService) {}
+
     public function index(Request $request)
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin', 'ngo'], true), 403);
@@ -168,92 +170,31 @@ class ProjectController extends Controller
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
-        // Sanitização de Moeda Brasileira (R$ 1.000,00 -> 1000.00)
-        $data = $request->all();
-        if (isset($data['budget'])) {
-            $data['budget'] = str_replace('.', '', (string) $data['budget']);
-            $data['budget'] = str_replace(',', '.', (string) $data['budget']);
-        }
+        $this->projectService->create($request->all(), (int) auth()->user()->tenant_id);
 
-        $validator = Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'budget' => ['required', 'numeric', 'min:0'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'status' => ['required', Rule::in(['active', 'paused', 'completed', 'canceled'])],
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $validated = $validator->validated();
-
-        $project = new Project($validated);
-        $project->tenant_id = auth()->user()->tenant_id;
-        $project->save();
-
-        return redirect('/projects')->with('success', 'Projeto criado com sucesso (Via Laravel)!');
+        return redirect('/projects')->with('success', 'Projeto criado com sucesso!');
     }
 
     public function show($id)
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin', 'ngo'], true), 403);
 
-        $user = auth()->user();
+        $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
-        $project = Project::where('id', $id)
-                          ->where('tenant_id', $tenantId)
-                          ->firstOrFail();
+        $data = $this->projectService->getWithDetails((int) $id, $tenantId);
 
         if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
-            $isMember = ProjectMember::where('tenant_id', $tenantId)
-                ->where('project_id', $project->id)
-                ->where('user_id', $user->id)
-                ->exists();
-
-            abort_unless($isMember, 403);
+            abort_unless(
+                ProjectMember::where('tenant_id', $tenantId)
+                    ->where('project_id', (int) $id)
+                    ->where('user_id', $user->id)
+                    ->exists(),
+                403
+            );
         }
 
-        // Financials
-        $totalSpent = \App\Models\Transaction::where('tenant_id', $tenantId)
-                        ->where('project_id', $project->id)
-                        ->where('type', 'expense')
-                        ->where('status', 'paid')
-                        ->sum('amount');
-        
-        $percentUsed = ($project->budget > 0) ? ($totalSpent / $project->budget) * 100 : 0;
-
-        // Recent Transactions
-        $transactions = \App\Models\Transaction::where('tenant_id', $tenantId)
-                        ->where('project_id', $project->id)
-                        ->orderBy('date', 'desc')
-                        ->limit(10)
-                        ->get();
-
-        // Project Members
-        $members = \App\Models\ProjectMember::where('tenant_id', $tenantId)
-                        ->where('project_id', $project->id)
-                        ->with('user')
-                        ->get();
-
-        // Available Users to Add (Users in tenant not already in project)
-        $memberIds = $members->pluck('user_id')->toArray();
-        $availableUsers = User::where('tenant_id', $tenantId)
-            ->whereIn('role', ['employee', 'manager', 'ngo'])
-            ->whereNotIn('id', $memberIds)
-            ->orderBy('name')
-            ->get(['id', 'name', 'email']);
-
-        $logs = \App\Models\ProjectLog::where('project_id', $project->id)
-            ->where('tenant_id', $tenantId)
-            ->with('user:id,name')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('projects.show', compact('project', 'totalSpent', 'transactions', 'percentUsed', 'members', 'availableUsers', 'logs'));
+        return view('projects.show', $data);
     }
 
     public function exportPdf($id)
@@ -299,6 +240,8 @@ class ProjectController extends Controller
             'user_id' => $validated['user_id'],
             'access_level' => $validated['access_level']
         ]);
+
+        $this->projectService->flushCache((int) auth()->user()->tenant_id, (int) $id);
 
         return back()->with('success', 'Membro adicionado ao projeto!');
     }
@@ -355,6 +298,8 @@ class ProjectController extends Controller
             // ignore; fail-safe
         }
 
+        $this->projectService->flushCache((int) $tenantId, (int) $project->id);
+
         $resp = back()->with('success', 'Credencial criada e membro vinculado ao projeto. Um link para definir a senha foi enviado ao e-mail informado.');
         if ($inviteUrl) {
             $resp->with('invite_link', $inviteUrl)->with('invite_email', $newUser->email);
@@ -372,6 +317,8 @@ class ProjectController extends Controller
                         ->firstOrFail();
         
         $member->delete();
+
+        $this->projectService->flushCache((int) auth()->user()->tenant_id, (int) $projectId);
 
         return back()->with('success', 'Membro removido do projeto.');
     }
@@ -395,29 +342,7 @@ class ProjectController extends Controller
                           ->where('tenant_id', auth()->user()->tenant_id)
                           ->firstOrFail();
 
-        // Sanitização de Moeda Brasileira (R$ 1.000,00 -> 1000.00)
-        $data = $request->all();
-        if (isset($data['budget'])) {
-            $data['budget'] = str_replace('.', '', (string) $data['budget']);
-            $data['budget'] = str_replace(',', '.', (string) $data['budget']);
-        }
-
-        $validator = Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'budget' => ['required', 'numeric', 'min:0'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'status' => ['required', Rule::in(['active', 'paused', 'completed', 'canceled'])],
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $validated = $validator->validated();
-
-        $project->update($validated);
+        $this->projectService->update($project, $request->all());
 
         return redirect('/projects/details/'.$id)->with('success', 'Projeto atualizado com sucesso!');
     }
@@ -487,6 +412,10 @@ class ProjectController extends Controller
         // check if header exists
         if (count($data) > 0 && strtolower(trim($data[0][0])) === 'nome') {
             array_shift($data);
+        }
+
+        if (count($data) > 500) {
+            return back()->withErrors(['csv_file' => 'O CSV pode ter no máximo 500 linhas por importação.']);
         }
 
         $imported = 0;
