@@ -36,7 +36,7 @@ class ProjectService
 
         $project->update($validated);
 
-        $this->flushCache($project->tenant_id);
+        $this->flushCache($project->tenant_id, $project->id);
 
         return $project;
     }
@@ -106,10 +106,13 @@ class ProjectService
         return $query->orderBy('created_at', 'desc')->paginate(12);
     }
 
-    public function flushCache(int $tenantId): void
+    public function flushCache(int $tenantId, ?int $projectId = null): void
     {
         Cache::forget("dashboard.stats.{$tenantId}");
         Cache::forget("projects.list.{$tenantId}");
+        if ($projectId !== null) {
+            Cache::forget("project.details.{$tenantId}.{$projectId}");
+        }
     }
 
     private function sanitizeBudget(array $data): array

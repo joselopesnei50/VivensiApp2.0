@@ -7,6 +7,7 @@ use App\Models\ProjectHealthHistory;
 use App\Models\Transaction;
 use App\Models\Task;
 use App\Models\ProjectMember;
+use App\Models\User;
 use App\Mail\HealthRadarAlertMail;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
@@ -50,6 +51,7 @@ class ProjectHealthService
     private function calculateFinancialScore(Project $project)
     {
         $totalSpent = Transaction::where('project_id', $project->id)
+            ->where('tenant_id', $project->tenant_id)
             ->where('type', 'expense')
             ->sum('amount');
 
@@ -72,7 +74,7 @@ class ProjectHealthService
         if ($totalTasks === 0) return 100;
 
         $completedTasks = Task::where('project_id', $project->id)
-            ->where('status', 'completed')
+            ->whereIn('status', ['completed', 'done'])
             ->count();
 
         return (int) (($completedTasks / $totalTasks) * 100);
@@ -88,8 +90,9 @@ class ProjectHealthService
 
     private function sendAlert(Project $project, $currentScore, $previousScore)
     {
-        // Get project manager(s) or tenant owner
-        $recipients = $project->tenant->users()->whereIn('role', ['manager', 'admin'])->get();
+        $recipients = User::where('tenant_id', $project->tenant_id)
+            ->whereIn('role', ['manager', 'ngo'])
+            ->get();
 
         foreach ($recipients as $recipient) {
             Mail::to($recipient->email)->send(new HealthRadarAlertMail($project, $currentScore, $previousScore));
