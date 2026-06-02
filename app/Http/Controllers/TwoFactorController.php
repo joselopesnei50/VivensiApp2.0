@@ -14,13 +14,14 @@ class TwoFactorController extends Controller
     {
         $user = auth()->user();
 
+        $hasUnconfirmedSecret = $user->two_factor_secret && is_null($user->two_factor_confirmed_at);
+
         return view('profile.two-factor', [
-            'enabled'       => !is_null($user->two_factor_confirmed_at),
-            'confirmed'     => !is_null($user->two_factor_confirmed_at),
-            'setupSecret'   => $user->two_factor_secret && is_null($user->two_factor_confirmed_at)
-                ? $user->two_factor_secret : null,
-            'qrCodeUrl'     => $user->two_factor_secret && is_null($user->two_factor_confirmed_at)
-                ? $this->totp->getQrCodeUrl($user->email, $user->two_factor_secret)
+            'enabled'      => !is_null($user->two_factor_confirmed_at),
+            'confirmed'    => !is_null($user->two_factor_confirmed_at),
+            'setupSecret'  => $hasUnconfirmedSecret ? $user->two_factor_secret : null,
+            'otpauthUri'   => $hasUnconfirmedSecret
+                ? $this->totp->getOtpauthUri($user->email, $user->two_factor_secret)
                 : null,
         ]);
     }

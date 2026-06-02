@@ -33,20 +33,24 @@ class TotpService
         return $secret;
     }
 
-    public function getQrCodeUrl(string $label, string $secret, string $issuer = 'Vivensi'): string
+    public function getOtpauthUri(string $label, string $secret, string $issuer = 'Vivensi'): string
     {
         $label  = rawurlencode($issuer . ':' . $label);
         $params = http_build_query([
-            'secret' => $secret,
-            'issuer' => $issuer,
+            'secret'    => $secret,
+            'issuer'    => $issuer,
             'algorithm' => 'SHA1',
-            'digits' => self::DIGITS,
-            'period' => self::PERIOD,
+            'digits'    => self::DIGITS,
+            'period'    => self::PERIOD,
         ]);
 
-        $otpauth = "otpauth://totp/{$label}?{$params}";
+        return "otpauth://totp/{$label}?{$params}";
+    }
 
-        return 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . rawurlencode($otpauth);
+    public function getQrCodeUrl(string $label, string $secret, string $issuer = 'Vivensi'): string
+    {
+        return 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='
+            . rawurlencode($this->getOtpauthUri($label, $secret, $issuer));
     }
 
     public function verify(string $secret, string $code): bool

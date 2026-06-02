@@ -53,8 +53,21 @@
         <h4 style="font-weight:900; color:#1e293b; margin:0 0 16px;"><i class="fas fa-qrcode me-2" style="color:#6366f1;"></i>Escaneie o QR Code</h4>
         <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px;">Abra seu app autenticador e escaneie o código abaixo:</p>
         <div style="text-align:center; margin-bottom:20px;">
-            <img loading="lazy" src="{{ $qrCodeUrl }}" alt="QR Code 2FA" style="border-radius:12px; border:3px solid #e2e8f0; width:180px; height:180px;">
+            <canvas id="qrCanvas" style="border-radius:12px; border:3px solid #e2e8f0;"></canvas>
         </div>
+        <script>
+        (function(){
+            var uri = @json($otpauthUri);
+            var s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+            s.onload = function(){
+                QRCode.toCanvas(document.getElementById('qrCanvas'), uri, {width:180,margin:1}, function(err){
+                    if(err) console.error(err);
+                });
+            };
+            document.head.appendChild(s);
+        })();
+        </script>
         <div style="background:#f8fafc; border-radius:12px; padding:14px; margin-bottom:20px; text-align:center;">
             <div style="font-size:0.7rem; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Chave manual</div>
             <code style="font-size:0.85rem; color:#1e293b; font-weight:800; letter-spacing:2px;">{{ $setupSecret }}</code>
