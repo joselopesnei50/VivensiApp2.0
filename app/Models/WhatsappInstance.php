@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 /**
@@ -13,8 +15,11 @@ use Illuminate\Support\Str;
  *
  * ISOLAMENTO MULTI-TENANT: este model usa BelongsToTenant (global scope por Auth) +
  * scopeForTenant() (scope explícito para webhooks e jobs onde Auth não está ativo).
- * Em webhooks sempre use WhatsappInstance::where('instance_token', $token)->first()
+ * Em webhooks use WhatsappInstance::where('instance_token_bidx', hash_hmac(..., $token))->first()
  * ou WhatsappInstance::forTenant($id) — nunca ::find() diretamente.
+ *
+ * instance_token é armazenado cifrado (AES-256). instance_token_bidx é o HMAC-SHA256
+ * do token em plaintext — usado como índice para lookup sem expor o valor real.
  */
 class WhatsappInstance extends Model
 {
@@ -37,7 +42,8 @@ class WhatsappInstance extends Model
     ];
 
     protected $hidden = [
-        'instance_token', // Nunca expor o token de autenticação da Evolution API em JSON
+        'instance_token',
+        'instance_token_bidx',
     ];
 
     protected $casts = [
@@ -73,19 +79,38 @@ class WhatsappInstance extends Model
 
     // ── Métodos de Negócio ──────────────────────────────────────────────────
 
+    // ── Encryption accessors/mutators ────────────────────────────────────────
+
+    public function getInstanceTokenAttribute(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+        try {
+            return Crypt::decryptString($value);
+        } catch (DecryptException) {
+            return $value; // Plaintext legacy row — return as-is
+        }
+    }
+
+    public function setInstanceTokenAttribute(?string $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->attributes['instance_token']      = $value;
+            $this->attributes['instance_token_bidx'] = null;
+            return;
+        }
+        $this->attributes['instance_token']      = Crypt::encryptString($value);
+        $this->attributes['instance_token_bidx'] = hash_hmac('sha256', $value, config('app.key'));
+    }
+
     // ── Accessors para compatibilidade com EvolutionApiService ─────────────
 
-    /**
-     * Mapeia instance_name para o atributo esperado pelo EvolutionApiService.
-     */
     public function getEvolutionInstanceNameAttribute(): string
     {
         return $this->instance_name ?? '';
     }
 
-    /**
-     * Mapeia instance_token para o atributo esperado pelo EvolutionApiService.
-     */
     public function getEvolutionInstanceTokenAttribute(): ?string
     {
         return $this->instance_token;
