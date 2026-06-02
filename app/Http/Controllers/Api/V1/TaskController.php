@@ -19,9 +19,8 @@ class TaskController extends Controller
             ->when($request->status,     fn ($q) => $q->where('status', $request->status))
             ->when($request->priority,   fn ($q) => $q->where('priority', $request->priority))
             ->when($request->project_id, fn ($q) => $q->where('project_id', $request->project_id))
-            ->orderBy('created_at', 'desc');
-
-        $query->orderBy('id', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
         $perPage = min((int) ($request->per_page ?? 20), 100);
 
         if ($request->boolean('cursor')) {
@@ -44,9 +43,10 @@ class TaskController extends Controller
             'due_date'    => 'nullable|date',
         ]);
 
-        $validated['tenant_id'] = $tenantId;
-        $validated['status']    = $validated['status']   ?? 'todo';
-        $validated['priority']  = $validated['priority'] ?? 'medium';
+        $validated['tenant_id']  = $tenantId;
+        $validated['created_by'] = $request->user()->id;
+        $validated['status']     = $validated['status']   ?? 'todo';
+        $validated['priority']   = $validated['priority'] ?? 'medium';
 
         $task = Task::create($validated);
 
