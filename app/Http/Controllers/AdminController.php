@@ -13,6 +13,7 @@ use App\Models\Transaction;
 use App\Models\SubscriptionPlan;
 use App\Services\BrevoService;
 use Illuminate\Support\Facades\Cache;
+use App\Models\AdminAuditLog;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
@@ -293,6 +294,19 @@ class AdminController extends Controller
         return view('admin.tenants.show', compact('tenant', 'user', 'plan'));
     }
 
+    public function auditLogs()
+    {
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403);
+        }
+
+        $logs = \App\Models\AdminAuditLog::with('admin')
+            ->latest()
+            ->paginate(50);
+
+        return view('admin.audit_logs', compact('logs'));
+    }
+
     public function emailLogs()
     {
         if (!auth()->user()->isSuperAdmin()) {
@@ -314,8 +328,16 @@ class AdminController extends Controller
         }
 
         $tenant = Tenant::findOrFail($id);
+        $previousStatus = $tenant->subscription_status;
         $tenant->update(['subscription_status' => 'suspended']);
         Cache::forget("tenant.{$tenant->id}");
+
+        AdminAuditLog::record('tenant.suspend', [
+            'target_id'      => $tenant->id,
+            'target_name'    => $tenant->name,
+            'previous_status'=> $previousStatus,
+            'new_status'     => 'suspended',
+        ]);
 
         return back()->with('success', 'Organização suspensa com sucesso. O acesso foi bloqueado.');
     }
@@ -327,8 +349,16 @@ class AdminController extends Controller
         }
 
         $tenant = Tenant::findOrFail($id);
+        $previousStatus = $tenant->subscription_status;
         $tenant->update(['subscription_status' => 'active']);
         Cache::forget("tenant.{$tenant->id}");
+
+        AdminAuditLog::record('tenant.activate', [
+            'target_id'      => $tenant->id,
+            'target_name'    => $tenant->name,
+            'previous_status'=> $previousStatus,
+            'new_status'     => 'active',
+        ]);
 
         return back()->with('success', 'Organização reativada com sucesso. O acesso foi liberado.');
     }
@@ -346,7 +376,17 @@ class AdminController extends Controller
             return back()->with('error', 'Não é possível deletar uma conta ativa. Suspenda-a primeiro.');
         }
 
-        $tenantName = $tenant->name;
+        $tenantName  = $tenant->name;
+        $tenantEmail = User::where('tenant_id', $tenant->id)->value('email');
+        $userCount   = User::where('tenant_id', $tenant->id)->count();
+
+        AdminAuditLog::record('tenant.delete', [
+            'target_id'    => $tenant->id,
+            'target_name'  => $tenantName,
+            'tenant_email' => $tenantEmail,
+            'user_count'   => $userCount,
+            'status_at_deletion' => $tenant->subscription_status,
+        ]);
 
         // Remove usuários e o tenant
         User::where('tenant_id', $tenant->id)->delete();
@@ -430,6 +470,16 @@ class AdminController extends Controller
             ]);
 
             DB::commit();
+
+            AdminAuditLog::record('tenant.create', [
+                'target_id'    => $tenant->id,
+                'target_name'  => $tenant->name,
+                'tenant_email' => $user->email,
+                'account_type' => $request->account_type,
+                'billing_mode' => $request->billing_mode,
+                'plan_id'      => $plan->id,
+                'plan_name'    => $plan->name,
+            ]);
 
             // 4. Send Welcome Email via Brevo
             try {

@@ -38,7 +38,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/settings', [App\Http\Controllers\AdminSettingsController::class, 'store'])->middleware('throttle:20,1');
 
         // Logs & Suporte
-        Route::get('/email-logs', [App\Http\Controllers\AdminController::class, 'emailLogs'])->name('admin.email_logs');
+        Route::get('/email-logs',  [App\Http\Controllers\AdminController::class, 'emailLogs'])->name('admin.email_logs');
+        Route::get('/audit-logs',  [App\Http\Controllers\AdminController::class, 'auditLogs'])->name('admin.audit_logs');
         Route::get('/chat',       [App\Http\Controllers\InternalChatController::class, 'index'])->name('admin.chat');
         Route::get('/support',    [App\Http\Controllers\SupportController::class, 'adminIndex'])->name('admin.support.index');
 
