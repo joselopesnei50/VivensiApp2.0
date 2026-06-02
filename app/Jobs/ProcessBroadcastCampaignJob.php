@@ -21,6 +21,8 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    const MAX_RECIPIENTS = 500;
+
     public $campaignId;
     public $tenantId;
     public $timeout = 7200; // 2h — campanhas grandes precisam de mais tempo
@@ -82,16 +84,16 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 ->whereNotNull('opt_in_at')
                 ->whereNull('opt_out_at')->whereNull('blocked_at');
 
-            $recipientCount = (clone $baseQuery)->count();
+            $recipientCount = min((clone $baseQuery)->count(), self::MAX_RECIPIENTS);
             if ($recipientCount === 0) {
                 $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
                 return;
             }
 
-            $waIdsAll           = (clone $baseQuery)->pluck('wa_id')->all();
-            $recipientsIterable = (clone $baseQuery)->select(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])->cursor();
+            $waIdsAll           = (clone $baseQuery)->limit(self::MAX_RECIPIENTS)->pluck('wa_id')->all();
+            $recipientsIterable = (clone $baseQuery)->select(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])->limit(self::MAX_RECIPIENTS)->cursor();
         } else {
-            $collection = $this->getRecipients($campaign, $evo);
+            $collection = $this->getRecipients($campaign, $evo)->take(self::MAX_RECIPIENTS);
             if ($collection->isEmpty()) {
                 $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
                 return;
