@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
+use App\Support\AuditDownload;
 
 class InventoryController extends Controller
 {
@@ -71,6 +72,85 @@ class InventoryController extends Controller
         $item->delete();
 
         return redirect()->back()->with('success', 'Item removido do estoque.');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+
+        AuditDownload::log('Inventory', null, ['format' => 'csv']);
+
+        return response()->streamDownload(function () use ($tenantId) {
+            $out = fopen('php://output', 'w');
+            if ($out === false) return;
+
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['SKU', 'Nome', 'Unidade', 'Quantidade', 'Estoque Mínimo', 'Valor Unit.', 'Validade', 'Descrição']);
+
+            InventoryItem::where('tenant_id', $tenantId)
+                ->orderBy('name')
+                ->chunk(500, function ($rows) use ($out) {
+                    foreach ($rows as $item) {
+                        fputcsv($out, [
+                            $item->sku,
+                            $item->name,
+                            $item->unit,
+                            $item->quantity,
+                            $item->minimum_stock,
+                            $item->value_per_unit,
+                            $item->expires_at?->format('d/m/Y'),
+                            $item->description,
+                        ]);
+                    }
+                });
+
+            fclose($out);
+        }, 'estoque-' . date('Y-m-d_His') . '.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    public function exportMovementsCsv(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $from = $request->get('from');
+        $to   = $request->get('to');
+
+        AuditDownload::log('InventoryMovements', null, ['format' => 'csv', 'from' => $from, 'to' => $to]);
+
+        return response()->streamDownload(function () use ($tenantId, $from, $to) {
+            $out = fopen('php://output', 'w');
+            if ($out === false) return;
+
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['Data', 'Item', 'Tipo', 'Quantidade', 'Beneficiário', 'Projeto', 'Descrição', 'Registrado por']);
+
+            $q = InventoryMovement::with(['item', 'beneficiary', 'project', 'creator'])
+                ->where('tenant_id', $tenantId)
+                ->orderBy('date', 'desc');
+
+            if ($from) $q->whereDate('date', '>=', $from);
+            if ($to)   $q->whereDate('date', '<=', $to);
+
+            $q->chunk(500, function ($rows) use ($out) {
+                foreach ($rows as $mov) {
+                    fputcsv($out, [
+                        $mov->date,
+                        optional($mov->item)->name,
+                        $mov->type === 'in' ? 'Entrada' : 'Saída',
+                        $mov->quantity,
+                        optional($mov->beneficiary)->name,
+                        optional($mov->project)->name,
+                        $mov->description,
+                        optional($mov->creator)->name,
+                    ]);
+                }
+            });
+
+            fclose($out);
+        }, 'movimentacoes-' . date('Y-m-d_His') . '.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     public function movement(Request $request, $id)

@@ -83,7 +83,8 @@
                 <th style="padding: 15px; text-align: left; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Plaqueta / Código</th>
                 <th style="padding: 15px; text-align: left; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Descrição do Bem</th>
                 <th style="padding: 15px; text-align: left; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Localização</th>
-                <th style="padding: 15px; text-align: right; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Valor (R$)</th>
+                <th style="padding: 15px; text-align: right; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Valor Orig.</th>
+                <th style="padding: 15px; text-align: right; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Valor Contábil</th>
                 <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Status</th>
                 <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Ações</th>
             </tr>
@@ -104,6 +105,20 @@
                 <td style="padding: 15px; text-align: right; font-weight: 600; color: #334155;">
                     R$ {{ number_format($asset->value, 2, ',', '.') }}
                 </td>
+                <td style="padding: 15px; text-align: right;">
+                    @php $dep = $asset->depreciation; @endphp
+                    @if($dep['book_value'] !== null)
+                        <span style="font-weight:700; color:{{ $dep['percent'] >= 100 ? '#dc2626' : ($dep['percent'] >= 75 ? '#ca8a04' : '#16a34a') }};">
+                            R$ {{ number_format($dep['book_value'], 2, ',', '.') }}
+                        </span>
+                        <div style="font-size:.72rem; color:#94a3b8;">{{ $dep['percent'] }}% depreciado</div>
+                        <div style="background:#e2e8f0; border-radius:4px; height:4px; margin-top:3px; overflow:hidden;">
+                            <div style="background:{{ $dep['percent'] >= 100 ? '#dc2626' : ($dep['percent'] >= 75 ? '#ca8a04' : '#4f46e5') }}; width:{{ $dep['percent'] }}%; height:100%;"></div>
+                        </div>
+                    @else
+                        <span style="color:#94a3b8; font-size:.85rem;">—</span>
+                    @endif
+                </td>
                 <td style="padding: 15px; text-align: center;">
                     @if($asset->status == 'active')
                         <span style="background: #dcfce7; color: #16a34a; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem;">ATIVO</span>
@@ -113,11 +128,12 @@
                         <span style="background: #fecaca; color: #dc2626; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem;">BAIXADO</span>
                     @endif
                 </td>
-                <td style="padding: 15px; text-align: center;">
-                    <form action="{{ url('/ngo/assets/'.$asset->id) }}" method="POST" onsubmit="return confirm('Excluir este item?');">
+                <td style="padding: 15px; text-align: center; white-space: nowrap;">
+                    <button onclick="openAssetEdit({{ json_encode($asset) }})" style="background:none; border:none; color:#4f46e5; cursor:pointer; padding:0 6px;" title="Editar"><i class="fas fa-edit"></i></button>
+                    <form action="{{ url('/ngo/assets/'.$asset->id) }}" method="POST" onsubmit="return confirm('Excluir este item?');" style="display:inline;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                        <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; padding:0 6px;" title="Excluir"><i class="fas fa-trash"></i></button>
                     </form>
                 </td>
             </tr>
@@ -174,8 +190,72 @@
                     <option value="lost">Extraviado / Roubado</option>
                 </select>
             </div>
-            
+
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+                <p style="font-size:.8rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin:0 0 10px;">Depreciação (opcional)</p>
+                <div class="grid-2" style="gap: 15px;">
+                    <div class="form-group">
+                        <label>Vida Útil (anos)</label>
+                        <input type="number" name="useful_life_years" class="form-control-vivensi" min="1" max="100" placeholder="Ex: 5">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Residual (R$)</label>
+                        <input type="text" name="residual_value" class="form-control-vivensi" placeholder="0,00">
+                    </div>
+                </div>
+            </div>
+
             <button type="submit" class="btn-premium" style="width: 100%; justify-content: center; margin-top: 10px;">Salvar Item</button>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="assetEditModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+    <div class="vivensi-card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>Editar Bem Patrimonial</h3>
+            <button onclick="document.getElementById('assetEditModal').style.display='none'" style="border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form id="assetEditForm" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="grid-2" style="gap: 15px;">
+                <div class="form-group"><label>Nome do Bem</label><input type="text" name="name" id="edit_name" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Cód. Patrimônio</label><input type="text" name="code" id="edit_code" class="form-control-vivensi"></div>
+            </div>
+            <div class="grid-2" style="gap: 15px;">
+                <div class="form-group"><label>Data Aquisição</label><input type="date" name="acquisition_date" id="edit_acquisition_date" class="form-control-vivensi" required></div>
+                <div class="form-group"><label>Valor de Compra (R$)</label><input type="text" name="value" id="edit_value" class="form-control-vivensi" required></div>
+            </div>
+            <div class="grid-2" style="gap: 15px;">
+                <div class="form-group"><label>Localização</label><input type="text" name="location" id="edit_location" class="form-control-vivensi"></div>
+                <div class="form-group"><label>Responsável</label><input type="text" name="responsible" id="edit_responsible" class="form-control-vivensi"></div>
+            </div>
+            <div class="form-group">
+                <label>Status Atual</label>
+                <select name="status" id="edit_status" class="form-control-vivensi">
+                    <option value="active">Ativo / Em uso</option>
+                    <option value="maintenance">Em Manutenção</option>
+                    <option value="disposed">Descartado / Doado</option>
+                    <option value="lost">Extraviado / Roubado</option>
+                </select>
+            </div>
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+                <p style="font-size:.8rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b; margin:0 0 10px;">Depreciação (opcional)</p>
+                <div class="grid-2" style="gap: 15px;">
+                    <div class="form-group">
+                        <label>Vida Útil (anos)</label>
+                        <input type="number" name="useful_life_years" id="edit_useful_life_years" class="form-control-vivensi" min="1" max="100" placeholder="Ex: 5">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Residual (R$)</label>
+                        <input type="text" name="residual_value" id="edit_residual_value" class="form-control-vivensi" placeholder="0,00">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group"><label>Descrição</label><textarea name="description" id="edit_description" class="form-control-vivensi" rows="2"></textarea></div>
+            <button type="submit" class="btn-premium" style="width: 100%; justify-content: center; margin-top: 10px;">Atualizar Item</button>
         </form>
     </div>
 </div>
@@ -188,3 +268,22 @@
 }
 </style>
 @endsection
+
+@push('scripts')
+<script>
+function openAssetEdit(asset) {
+    document.getElementById('assetEditForm').action = '/ngo/assets/' + asset.id;
+    document.getElementById('edit_name').value             = asset.name || '';
+    document.getElementById('edit_code').value             = asset.code || '';
+    document.getElementById('edit_acquisition_date').value = asset.acquisition_date ? asset.acquisition_date.substring(0, 10) : '';
+    document.getElementById('edit_value').value            = asset.value || '';
+    document.getElementById('edit_location').value         = asset.location || '';
+    document.getElementById('edit_responsible').value      = asset.responsible || '';
+    document.getElementById('edit_status').value           = asset.status || 'active';
+    document.getElementById('edit_useful_life_years').value = asset.useful_life_years || '';
+    document.getElementById('edit_residual_value').value   = asset.residual_value || '';
+    document.getElementById('edit_description').value      = asset.description || '';
+    document.getElementById('assetEditModal').style.display = 'flex';
+}
+</script>
+@endpush

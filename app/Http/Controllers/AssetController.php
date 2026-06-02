@@ -141,14 +141,21 @@ class AssetController extends Controller
              $data['value'] = str_replace(',', '.', $data['value']);
         }
 
+        if (isset($data['residual_value']) && $data['residual_value'] !== '') {
+            $data['residual_value'] = str_replace('.', '', $data['residual_value']);
+            $data['residual_value'] = str_replace(',', '.', $data['residual_value']);
+        }
+
         $validated = \Illuminate\Support\Facades\Validator::make($data, [
-            'name' => 'required|string',
-            'code' => 'nullable|string',
-            'acquisition_date' => 'required|date',
-            'value' => 'required|numeric',
-            'location' => 'nullable|string',
-            'responsible' => 'nullable|string',
-            'status' => 'required|in:active,maintenance,disposed,lost'
+            'name'               => 'required|string',
+            'code'               => 'nullable|string',
+            'acquisition_date'   => 'required|date',
+            'value'              => 'required|numeric',
+            'useful_life_years'  => 'nullable|integer|min:1|max:100',
+            'residual_value'     => 'nullable|numeric|min:0',
+            'location'           => 'nullable|string',
+            'responsible'        => 'nullable|string',
+            'status'             => 'required|in:active,maintenance,disposed,lost',
         ])->validate();
 
         $asset = new Asset($validated);
@@ -168,15 +175,22 @@ class AssetController extends Controller
             $data['value'] = str_replace(',', '.', $data['value']);
         }
 
+        if (isset($data['residual_value']) && $data['residual_value'] !== '') {
+            $data['residual_value'] = str_replace('.', '', $data['residual_value']);
+            $data['residual_value'] = str_replace(',', '.', $data['residual_value']);
+        }
+
         $validated = \Illuminate\Support\Facades\Validator::make($data, [
-            'name'             => 'required|string|max:255',
-            'code'             => 'nullable|string|max:50',
-            'description'      => 'nullable|string|max:2000',
-            'acquisition_date' => 'required|date|before_or_equal:today',
-            'value'            => 'required|numeric|min:0',
-            'location'         => 'nullable|string|max:255',
-            'responsible'      => 'nullable|string|max:255',
-            'status'           => 'required|in:active,maintenance,disposed,lost',
+            'name'               => 'required|string|max:255',
+            'code'               => 'nullable|string|max:50',
+            'description'        => 'nullable|string|max:2000',
+            'acquisition_date'   => 'required|date|before_or_equal:today',
+            'value'              => 'required|numeric|min:0',
+            'useful_life_years'  => 'nullable|integer|min:1|max:100',
+            'residual_value'     => 'nullable|numeric|min:0',
+            'location'           => 'nullable|string|max:255',
+            'responsible'        => 'nullable|string|max:255',
+            'status'             => 'required|in:active,maintenance,disposed,lost',
         ])->validate();
 
         $asset->update($validated);

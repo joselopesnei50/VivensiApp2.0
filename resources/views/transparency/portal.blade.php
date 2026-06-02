@@ -624,12 +624,15 @@
         <div class="container footer-grid">
             <div>
                 <h4 class="footer-title">Fale Conosco (SIC)</h4>
-                <p style="opacity: 0.7; margin-bottom: 20px;">Canal oficial de Serviço de Informação ao Cidadão.</p>
+                <p style="opacity: 0.7; margin-bottom: 16px;">Canal oficial de Serviço de Informação ao Cidadão.</p>
                 <p><strong>Email:</strong> {{ $portal->sic_email ?? 'transparencia@vivensi.org' }}</p>
                 @if($portal->sic_phone) <p><strong>Telefone:</strong> {{ $portal->sic_phone }}</p> @endif
-                <p style="opacity: 0.7; line-height: 1.8; margin-top: 18px;">
-                    Solicitações de acesso à informação (LAI) devem ser feitas por este canal, informando o máximo de detalhes possível (tema, período e formato desejado).
+                <p style="opacity: 0.7; line-height: 1.8; margin-top: 16px;">
+                    Solicite informações sobre as atividades desta organização. Respondemos em até 20 dias úteis (LAI).
                 </p>
+                <a href="{{ route('sic.public.form', $portal->slug) }}" style="display:inline-block; margin-top:12px; padding:10px 20px; background:#3b82f6; color:#fff; border-radius:8px; font-weight:700; font-size:.9rem; text-decoration:none;">
+                    📋 Fazer Solicitação (SIC)
+                </a>
             </div>
             <div>
                 <h4 class="footer-title">Privacidade e LAI</h4>

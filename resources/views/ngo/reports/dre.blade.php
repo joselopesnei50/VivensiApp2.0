@@ -4,19 +4,39 @@
 <div class="header-page" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
     <div>
         <h2 style="margin: 0; color: #2c3e50;">Demonstrativo do Resultado do Exercício (D.R.E.)</h2>
-        <p style="color: #64748b; margin: 5px 0 0 0;">Relatório contábil gerencial - Ano Base {{ $year }}</p>
+        <p style="color: #64748b; margin: 5px 0 0 0;">
+            Relatório contábil gerencial —
+            {{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} a {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }}
+        </p>
     </div>
-    <form action="{{ url('/ngo/reports/dre') }}" method="GET" style="display: flex; gap: 10px;">
-        <select name="year" class="form-control-vivensi" style="padding: 8px;" onchange="this.form.submit()">
+    <form action="{{ url('/ngo/reports/dre') }}" method="GET" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <select name="year" id="dre-year-select" class="form-control-vivensi" style="padding: 8px; width: 90px;" onchange="dreYearChanged(this.value)">
             @for($y = date('Y'); $y >= date('Y')-4; $y--)
                 <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
             @endfor
         </select>
-        <button id="btn-dre-pdf" class="btn-ds btn-ds-outline" style="padding: 8px 15px;" onclick="generateDrePdf(this)">
-            <i class="fas fa-file-pdf"></i> Baixar PDF
+        <input type="date" name="from" id="dre-from" value="{{ $from }}" class="form-control-vivensi" style="padding: 8px;">
+        <span style="color:#64748b; font-weight:700; font-size:.85rem;">até</span>
+        <input type="date" name="to" id="dre-to" value="{{ $to }}" class="form-control-vivensi" style="padding: 8px;">
+        <select name="category_id" id="dre-category" class="form-control-vivensi" style="padding: 8px; min-width: 160px;">
+            <option value="">Todas as categorias</option>
+            <optgroup label="Receitas">
+                @foreach($categories->where('type', 'income') as $cat)
+                    <option value="{{ $cat->id }}" {{ $categoryId == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                @endforeach
+            </optgroup>
+            <optgroup label="Despesas">
+                @foreach($categories->where('type', 'expense') as $cat)
+                    <option value="{{ $cat->id }}" {{ $categoryId == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                @endforeach
+            </optgroup>
+        </select>
+        <button type="submit" class="btn-ds btn-ds-outline" style="padding: 8px 14px;">Filtrar</button>
+        <button id="btn-dre-pdf" class="btn-ds btn-ds-outline" style="padding: 8px 15px;" onclick="generateDrePdf(this); return false;">
+            <i class="fas fa-file-pdf"></i> PDF
         </button>
-        <a href="{{ url('/ngo/reports/dre/export?year='.$year) }}" class="btn-ds btn-ds-outline" style="padding: 8px 15px;">
-            <i class="fas fa-file-csv"></i> Exportar CSV
+        <a id="btn-dre-csv" href="{{ url('/ngo/reports/dre/export') }}?from={{ $from }}&to={{ $to }}{{ $categoryId ? '&category_id='.$categoryId : '' }}" class="btn-ds btn-ds-outline" style="padding: 8px 15px;">
+            <i class="fas fa-file-csv"></i> CSV
         </a>
         <button type="button" onclick="window.print()" class="btn-premium" style="padding: 8px 15px;">
             <i class="fas fa-print"></i> Imprimir
@@ -77,8 +97,8 @@
 
 <div class="vivensi-card" style="max-width: 900px; margin: 0 auto; padding: 40px; font-family: 'Courier New', Courier, monospace;">
     <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 20px;">
-        <h3 style="margin: 0; text-transform: uppercase;">{{ auth()->user()->tenant_id == 1 ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL' }}</h3>
-        <p style="margin: 5px 0 0; font-size: 0.9rem;">D.R.E. - Período: 01/01/{{ $year }} a 31/12/{{ $year }}</p>
+        <h3 style="margin: 0; text-transform: uppercase;">{{ auth()->user()->tenant->brand_name ?? 'ORGANIZAÇÃO SOCIAL' }}</h3>
+        <p style="margin: 5px 0 0; font-size: 0.9rem;">D.R.E. - Período: {{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} a {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }}</p>
     </div>
 
     <table style="width: 100%; border-collapse: collapse;">
@@ -143,6 +163,12 @@ let _drePdfPollBtn = null;
 let _drePdfPollOrig = null;
 let _drePdfStatusUrl = null;
 
+function dreYearChanged(year) {
+    document.getElementById('dre-from').value = year + '-01-01';
+    document.getElementById('dre-to').value   = year + '-12-31';
+    document.getElementById('dre-from').closest('form').submit();
+}
+
 function pollDrePdf(attempts) {
     attempts = attempts || 0;
     if (attempts > 36) {
@@ -170,8 +196,13 @@ async function generateDrePdf(btn) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
     btn.disabled = true;
     _drePdfPollBtn = btn;
+    const from     = document.getElementById('dre-from').value;
+    const to       = document.getElementById('dre-to').value;
+    const catId    = document.getElementById('dre-category').value;
+    const year     = document.getElementById('dre-year-select').value;
+    const params   = new URLSearchParams({ year, from, to, ...(catId ? { category_id: catId } : {}) });
     try {
-        const resp = await fetch('{{ url("/ngo/reports/dre/pdf") }}?year={{ $year }}', {
+        const resp = await fetch('{{ url("/ngo/reports/dre/pdf") }}?' + params.toString(), {
             headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}
         });
         const data = await resp.json();

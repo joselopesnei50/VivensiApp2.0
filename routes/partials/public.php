@@ -60,6 +60,11 @@ Route::get('/transparencia/{slug}/docs/{id}',     [App\Http\Controllers\Transpar
 Route::get('/transparencia/{slug}/dados.csv',     [App\Http\Controllers\TransparencyController::class, 'openDataCsv'])->middleware('throttle:60,1')->name('transparency.opendata');
 Route::get('/transparencia/{slug}/relatorio.pdf', [App\Http\Controllers\TransparencyController::class, 'publicReportPdf'])->middleware('throttle:30,1')->name('transparency.report_pdf');
 Route::get('/transparencia/{slug}',               [App\Http\Controllers\TransparencyController::class, 'renderPortal'])->name('transparency.portal');
+
+// ── SIC — Serviço de Informação ao Cidadão ───────────────────────────────────
+Route::get('/transparencia/{slug}/sic',                          [App\Http\Controllers\SicController::class, 'publicForm'])->name('sic.public.form');
+Route::post('/transparencia/{slug}/sic',                         [App\Http\Controllers\SicController::class, 'publicStore'])->middleware('throttle:5,1')->name('sic.public.store');
+Route::get('/transparencia/{slug}/sic/{protocol}',               [App\Http\Controllers\SicController::class, 'publicStatus'])->name('sic.public.status');
 Route::get('/t/{slug}',                           [App\Http\Controllers\TransparencyController::class, 'publicView'])->where('slug', '[a-z0-9\-]+')->middleware('throttle:10,1');
 
 // ── Recibos & Certificados públicos ──────────────────────────────────────────

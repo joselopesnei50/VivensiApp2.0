@@ -12,6 +12,9 @@ class TransactionObserver
     {
         if ($transaction->tenant_id) {
             Cache::forget("ngo_stats_{$transaction->tenant_id}");
+            $year = now()->year;
+            Cache::forget("transparency_portal_{$transaction->tenant_id}_{$year}");
+            Cache::forget("transparency_portal_{$transaction->tenant_id}_" . ($year - 1));
         }
     }
 

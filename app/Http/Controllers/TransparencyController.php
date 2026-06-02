@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class TransparencyController extends Controller
 {
@@ -625,233 +626,250 @@ class TransparencyController extends Controller
         $yearStart = Carbon::create($year, 1, 1)->toDateString();
         $yearEnd = Carbon::create($year, 12, 31)->toDateString();
 
-        // Metadata
-        $board = BoardMember::where('tenant_id', $tenant_id)->get();
-        $docs = TransparencyDocument::where('tenant_id', $tenant_id)->get()->groupBy('type');
-        $partnerships = PublicPartnership::where('tenant_id', $tenant_id)->get();
+        $cached = Cache::remember("transparency_portal_{$tenant_id}_{$year}", 3600, function () use ($tenant_id, $year, $yearStart, $yearEnd, $portal) {
+            // Metadata
+            $board = BoardMember::where('tenant_id', $tenant_id)->get();
+            $docs = TransparencyDocument::where('tenant_id', $tenant_id)->get()->groupBy('type');
+            $partnerships = PublicPartnership::where('tenant_id', $tenant_id)->get();
 
-        // Financial Data (Aggregated from Transactions)
-        $totalIn = Transaction::where('tenant_id', $tenant_id)
-            ->where('type', 'income')
-            ->where('status', 'paid')
-            ->whereBetween('date', [$yearStart, $yearEnd])
-            ->sum('amount');
-        $totalOut = Transaction::where('tenant_id', $tenant_id)
-            ->where('type', 'expense')
-            ->where('status', 'paid')
-            ->whereBetween('date', [$yearStart, $yearEnd])
-            ->sum('amount');
-        $projectOut = Transaction::where('tenant_id', $tenant_id)
-            ->where('type', 'expense')
-            ->where('status', 'paid')
-            ->whereBetween('date', [$yearStart, $yearEnd])
-            ->whereNotNull('project_id')
-            ->sum('amount');
+            // Financial Data (Aggregated from Transactions)
+            $totalIn = Transaction::where('tenant_id', $tenant_id)
+                ->where('type', 'income')
+                ->where('status', 'paid')
+                ->whereBetween('date', [$yearStart, $yearEnd])
+                ->sum('amount');
+            $totalOut = Transaction::where('tenant_id', $tenant_id)
+                ->where('type', 'expense')
+                ->where('status', 'paid')
+                ->whereBetween('date', [$yearStart, $yearEnd])
+                ->sum('amount');
+            $projectOut = Transaction::where('tenant_id', $tenant_id)
+                ->where('type', 'expense')
+                ->where('status', 'paid')
+                ->whereBetween('date', [$yearStart, $yearEnd])
+                ->whereNotNull('project_id')
+                ->sum('amount');
 
-        // Prefer expenses linked to projects; fallback to total expenses when not categorized.
-        $investmentSocial = ((float) $projectOut) > 0 ? $projectOut : $totalOut;
-        $investmentNote = ((float) $projectOut) > 0
-            ? 'Despesas pagas alocadas a projetos'
-            : 'Sem rateio por projeto: exibindo despesas totais pagas';
-        $balance = $totalIn - $totalOut;
+            // Prefer expenses linked to projects; fallback to total expenses when not categorized.
+            $investmentSocial = ((float) $projectOut) > 0 ? $projectOut : $totalOut;
+            $investmentNote = ((float) $projectOut) > 0
+                ? 'Despesas pagas alocadas a projetos'
+                : 'Sem rateio por projeto: exibindo despesas totais pagas';
+            $balance = $totalIn - $totalOut;
 
-        // Minimize fields to reduce risk of PII exposure (no description, no attachments).
-        $lastExpenses = Transaction::query()
-            ->select(['id', 'tenant_id', 'category_id', 'amount', 'date'])
-            ->where('tenant_id', $tenant_id)
-            ->where('type', 'expense')
-            ->where('status', 'paid')
-            ->whereBetween('date', [$yearStart, $yearEnd])
-            ->orderBy('date', 'desc')
-            ->limit(10)
-            ->with(['category:id,tenant_id,name'])
-            ->get();
+            // Minimize fields to reduce risk of PII exposure (no description, no attachments).
+            $lastExpenses = Transaction::query()
+                ->select(['id', 'tenant_id', 'category_id', 'amount', 'date'])
+                ->where('tenant_id', $tenant_id)
+                ->where('type', 'expense')
+                ->where('status', 'paid')
+                ->whereBetween('date', [$yearStart, $yearEnd])
+                ->orderBy('date', 'desc')
+                ->limit(10)
+                ->with(['category:id,tenant_id,name'])
+                ->get();
 
-        // Expense distribution (by category)
-        $expenseRows = Transaction::query()
-            ->leftJoin('financial_categories as c', function ($j) {
-                $j->on('c.id', '=', 'transactions.category_id');
-                $j->on('c.tenant_id', '=', 'transactions.tenant_id');
-            })
-            ->where('transactions.tenant_id', $tenant_id)
-            ->where('transactions.type', 'expense')
-            ->where('transactions.status', 'paid')
-            ->whereBetween('transactions.date', [$yearStart, $yearEnd])
-            ->select(DB::raw("COALESCE(c.name, 'Sem categoria') as name"), DB::raw('SUM(transactions.amount) as total'))
-            ->groupBy(DB::raw("COALESCE(c.name, 'Sem categoria')"))
-            ->orderByDesc('total')
-            ->get();
+            // Expense distribution (by category)
+            $expenseRows = Transaction::query()
+                ->leftJoin('financial_categories as c', function ($j) {
+                    $j->on('c.id', '=', 'transactions.category_id');
+                    $j->on('c.tenant_id', '=', 'transactions.tenant_id');
+                })
+                ->where('transactions.tenant_id', $tenant_id)
+                ->where('transactions.type', 'expense')
+                ->where('transactions.status', 'paid')
+                ->whereBetween('transactions.date', [$yearStart, $yearEnd])
+                ->select(DB::raw("COALESCE(c.name, 'Sem categoria') as name"), DB::raw('SUM(transactions.amount) as total'))
+                ->groupBy(DB::raw("COALESCE(c.name, 'Sem categoria')"))
+                ->orderByDesc('total')
+                ->get();
 
-        $expenseChartLabels = [];
-        $expenseChartData = [];
-        $other = 0.0;
-        foreach ($expenseRows as $idx => $r) {
-            $val = (float) ($r->total ?? 0);
-            if ($idx < 4) {
-                $expenseChartLabels[] = (string) $r->name;
-                $expenseChartData[] = $val;
-            } else {
-                $other += $val;
+            $expenseChartLabels = [];
+            $expenseChartData = [];
+            $other = 0.0;
+            foreach ($expenseRows as $idx => $r) {
+                $val = (float) ($r->total ?? 0);
+                if ($idx < 4) {
+                    $expenseChartLabels[] = (string) $r->name;
+                    $expenseChartData[] = $val;
+                } else {
+                    $other += $val;
+                }
             }
-        }
-        if ($other > 0) {
-            $expenseChartLabels[] = 'Outros';
-            $expenseChartData[] = $other;
-        }
-        $expenseChart = ['labels' => $expenseChartLabels, 'data' => $expenseChartData];
+            if ($other > 0) {
+                $expenseChartLabels[] = 'Outros';
+                $expenseChartData[] = $other;
+            }
+            $expenseChart = ['labels' => $expenseChartLabels, 'data' => $expenseChartData];
 
-        // Open data preview (aggregated)
-        $monthlyRows = DB::table('transactions')
-            ->where('tenant_id', $tenant_id)
-            ->where('status', 'paid')
-            ->whereBetween('date', [$yearStart, $yearEnd])
-            ->select(DB::raw('MONTH(date) as m'), DB::raw('type as type'), DB::raw('SUM(amount) as total'))
-            ->groupBy(DB::raw('MONTH(date)'), DB::raw('type'))
-            ->orderBy(DB::raw('MONTH(date)'))
-            ->get();
+            // Open data preview (aggregated)
+            $monthlyRows = DB::table('transactions')
+                ->where('tenant_id', $tenant_id)
+                ->where('status', 'paid')
+                ->whereBetween('date', [$yearStart, $yearEnd])
+                ->select(DB::raw('MONTH(date) as m'), DB::raw('type as type'), DB::raw('SUM(amount) as total'))
+                ->groupBy(DB::raw('MONTH(date)'), DB::raw('type'))
+                ->orderBy(DB::raw('MONTH(date)'))
+                ->get();
 
-        $monthlyMap = [];
-        foreach ($monthlyRows as $r) {
-            $m = (int) ($r->m ?? 0);
-            if ($m < 1 || $m > 12) continue;
-            $type = (string) ($r->type ?? '');
-            $monthlyMap[$m] ??= ['income' => 0.0, 'expense' => 0.0];
-            $monthlyMap[$m][$type] = (float) ($r->total ?? 0);
-        }
+            $monthlyMap = [];
+            foreach ($monthlyRows as $r) {
+                $m = (int) ($r->m ?? 0);
+                if ($m < 1 || $m > 12) continue;
+                $type = (string) ($r->type ?? '');
+                $monthlyMap[$m] ??= ['income' => 0.0, 'expense' => 0.0];
+                $monthlyMap[$m][$type] = (float) ($r->total ?? 0);
+            }
 
-        $openDataMonthly = collect(range(1, 12))->map(function (int $m) use ($monthlyMap, $year) {
-            $income = (float) ($monthlyMap[$m]['income'] ?? 0.0);
-            $expense = (float) ($monthlyMap[$m]['expense'] ?? 0.0);
-            $date = Carbon::create($year, $m, 1);
-            return [
-                'month' => $m,
-                'label' => $date->locale('pt_BR')->translatedFormat('M'),
-                'income' => $income,
-                'expense' => $expense,
-                'balance' => $income - $expense,
+            $openDataMonthly = collect(range(1, 12))->map(function (int $m) use ($monthlyMap, $year) {
+                $income = (float) ($monthlyMap[$m]['income'] ?? 0.0);
+                $expense = (float) ($monthlyMap[$m]['expense'] ?? 0.0);
+                $date = Carbon::create($year, $m, 1);
+                return [
+                    'month' => $m,
+                    'label' => $date->locale('pt_BR')->translatedFormat('M'),
+                    'income' => $income,
+                    'expense' => $expense,
+                    'balance' => $income - $expense,
+                ];
+            });
+
+            $openDataExpenseByCategory = $expenseRows
+                ->map(fn ($r) => [
+                    'category' => (string) ($r->name ?? 'Sem categoria'),
+                    'total' => (float) ($r->total ?? 0),
+                ])
+                ->take(10)
+                ->values();
+
+            // Social Impact (Aggregated)
+            $familiesCount = Beneficiary::where('tenant_id', $tenant_id)->count();
+            $familyMembersCount = (int) DB::table('family_members as fm')
+                ->join('beneficiaries as b', 'b.id', '=', 'fm.beneficiary_id')
+                ->where('b.tenant_id', $tenant_id)
+                ->count();
+            $peopleCount = $familiesCount + $familyMembersCount;
+            $attendancesCount = (int) DB::table('attendances')
+                ->where('tenant_id', $tenant_id)
+                ->whereYear('date', now()->year)
+                ->whereMonth('date', now()->month)
+                ->count();
+
+            // Attendances evolution (last 6 months)
+            $start = now()->startOfMonth()->subMonths(5);
+            $end = now()->endOfMonth();
+            $impactRows = DB::table('attendances')
+                ->where('tenant_id', $tenant_id)
+                ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+                ->select(DB::raw('YEAR(date) as y'), DB::raw('MONTH(date) as m'), DB::raw('COUNT(*) as c'))
+                ->groupBy(DB::raw('YEAR(date)'), DB::raw('MONTH(date)'))
+                ->orderBy('y')->orderBy('m')
+                ->get();
+            $impactLabels = [];
+            $impactData = [];
+            $cursor = $start->copy();
+            $map = [];
+            foreach ($impactRows as $r) {
+                $key = sprintf('%04d-%02d', (int) $r->y, (int) $r->m);
+                $map[$key] = (int) $r->c;
+            }
+            while ($cursor <= $end) {
+                $key = $cursor->format('Y-m');
+                $impactLabels[] = $cursor->locale('pt_BR')->translatedFormat('M');
+                $impactData[] = (int) ($map[$key] ?? 0);
+                $cursor->addMonth();
+            }
+            $impactChart = ['labels' => $impactLabels, 'data' => $impactData];
+
+            // Minimize asset fields exposed/processed in public view.
+            $assets = Asset::query()
+                ->select(['id', 'tenant_id', 'name', 'code', 'acquisition_date', 'value', 'status'])
+                ->where('tenant_id', $tenant_id)
+                ->orderBy('acquisition_date', 'desc')
+                ->get();
+
+            // HR: aggregated only (LGPD - do not load names).
+            $hrRow = Employee::query()
+                ->where('tenant_id', $tenant_id)
+                ->where('status', 'active')
+                ->selectRaw('COUNT(*) as employees_count, COALESCE(SUM(salary),0) as payroll_total, COALESCE(SUM(bonus),0) as bonus_total')
+                ->first();
+            $employeesCount = (int) ($hrRow->employees_count ?? 0);
+            $payrollTotal = (float) ($hrRow->payroll_total ?? 0);
+            $bonusTotal = (float) ($hrRow->bonus_total ?? 0);
+
+            // Public data "last updated" timestamp (for auditability / LAI good practice)
+            $updatedAts = [
+                DB::table('transactions')->where('tenant_id', $tenant_id)->where('status', 'paid')->whereBetween('date', [$yearStart, $yearEnd])->max('updated_at'),
+                DB::table('attendances')->where('tenant_id', $tenant_id)->max('updated_at'),
+                DB::table('assets')->where('tenant_id', $tenant_id)->max('updated_at'),
+                DB::table('employees')->where('tenant_id', $tenant_id)->max('updated_at'),
+                DB::table('transparency_documents')->where('tenant_id', $tenant_id)->max('updated_at'),
+                DB::table('public_partnerships')->where('tenant_id', $tenant_id)->max('updated_at'),
+                DB::table('transparency_board')->where('tenant_id', $tenant_id)->max('updated_at'),
+                $portal->updated_at ?? null,
             ];
+            $publicDataUpdatedAt = collect($updatedAts)
+                ->filter()
+                ->map(fn ($v) => Carbon::parse($v))
+                ->sortDesc()
+                ->first();
+
+            // Public audit (aggregated counts) - last 6 months
+            $auditStart = now()->startOfMonth()->subMonths(5);
+            $auditEnd = now()->endOfMonth();
+            $auditRows = DB::table('audit_logs')
+                ->where('tenant_id', $tenant_id)
+                ->whereBetween('created_at', [$auditStart->toDateTimeString(), $auditEnd->toDateTimeString()])
+                ->where(function ($q) {
+                    $q->where(function ($q2) {
+                        $q2->where('event', 'download')
+                            ->where('auditable_type', TransparencyDocument::class);
+                    })->orWhere('event', 'download_opendata');
+                })
+                ->select(DB::raw('YEAR(created_at) as y'), DB::raw('MONTH(created_at) as m'), DB::raw('event as event'), DB::raw('COUNT(*) as c'))
+                ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'), DB::raw('event'))
+                ->orderBy('y')->orderBy('m')
+                ->get();
+
+            $auditMap = [];
+            foreach ($auditRows as $r) {
+                $key = sprintf('%04d-%02d', (int) $r->y, (int) $r->m);
+                $auditMap[$key] ??= ['docs' => 0, 'opendata' => 0];
+                if (($r->event ?? '') === 'download') $auditMap[$key]['docs'] = (int) ($r->c ?? 0);
+                if (($r->event ?? '') === 'download_opendata') $auditMap[$key]['opendata'] = (int) ($r->c ?? 0);
+            }
+
+            $publicAuditDownloads = [];
+            $cursor2 = $auditStart->copy();
+            while ($cursor2 <= $auditEnd) {
+                $key = $cursor2->format('Y-m');
+                $publicAuditDownloads[] = [
+                    'label' => $cursor2->locale('pt_BR')->translatedFormat('M'),
+                    'docs' => (int) (($auditMap[$key]['docs'] ?? 0)),
+                    'opendata' => (int) (($auditMap[$key]['opendata'] ?? 0)),
+                ];
+                $cursor2->addMonth();
+            }
+
+            return compact(
+                'board', 'docs', 'partnerships',
+                'totalIn', 'totalOut', 'investmentSocial', 'balance', 'lastExpenses',
+                'familiesCount', 'peopleCount', 'attendancesCount', 'assets',
+                'expenseChart', 'impactChart',
+                'employeesCount', 'payrollTotal', 'bonusTotal',
+                'investmentNote',
+                'publicDataUpdatedAt',
+                'openDataMonthly',
+                'openDataExpenseByCategory',
+                'publicAuditDownloads'
+            );
         });
 
-        $openDataExpenseByCategory = $expenseRows
-            ->map(fn ($r) => [
-                'category' => (string) ($r->name ?? 'Sem categoria'),
-                'total' => (float) ($r->total ?? 0),
-            ])
-            ->take(10)
-            ->values();
-
-        // Social Impact (Aggregated)
-        $familiesCount = Beneficiary::where('tenant_id', $tenant_id)->count();
-        $familyMembersCount = (int) DB::table('family_members as fm')
-            ->join('beneficiaries as b', 'b.id', '=', 'fm.beneficiary_id')
-            ->where('b.tenant_id', $tenant_id)
-            ->count();
-        $peopleCount = $familiesCount + $familyMembersCount;
-        $attendancesCount = (int) DB::table('attendances')
-            ->where('tenant_id', $tenant_id)
-            ->whereYear('date', now()->year)
-            ->whereMonth('date', now()->month)
-            ->count();
-
-        // Attendances evolution (last 6 months)
-        $start = now()->startOfMonth()->subMonths(5);
-        $end = now()->endOfMonth();
-        $impactRows = DB::table('attendances')
-            ->where('tenant_id', $tenant_id)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-            ->select(DB::raw('YEAR(date) as y'), DB::raw('MONTH(date) as m'), DB::raw('COUNT(*) as c'))
-            ->groupBy(DB::raw('YEAR(date)'), DB::raw('MONTH(date)'))
-            ->orderBy('y')->orderBy('m')
-            ->get();
-        $impactLabels = [];
-        $impactData = [];
-        $cursor = $start->copy();
-        $map = [];
-        foreach ($impactRows as $r) {
-            $key = sprintf('%04d-%02d', (int) $r->y, (int) $r->m);
-            $map[$key] = (int) $r->c;
-        }
-        while ($cursor <= $end) {
-            $key = $cursor->format('Y-m');
-            $impactLabels[] = $cursor->locale('pt_BR')->translatedFormat('M');
-            $impactData[] = (int) ($map[$key] ?? 0);
-            $cursor->addMonth();
-        }
-        $impactChart = ['labels' => $impactLabels, 'data' => $impactData];
-        
-        // Minimize asset fields exposed/processed in public view.
-        $assets = Asset::query()
-            ->select(['id', 'tenant_id', 'name', 'code', 'acquisition_date', 'value', 'status'])
-            ->where('tenant_id', $tenant_id)
-            ->orderBy('acquisition_date', 'desc')
-            ->get();
-        
-        // HR: aggregated only (LGPD - do not load names).
-        $hrRow = Employee::query()
-            ->where('tenant_id', $tenant_id)
-            ->where('status', 'active')
-            ->selectRaw('COUNT(*) as employees_count, COALESCE(SUM(salary),0) as payroll_total, COALESCE(SUM(bonus),0) as bonus_total')
-            ->first();
-        $employeesCount = (int) ($hrRow->employees_count ?? 0);
-        $payrollTotal = (float) ($hrRow->payroll_total ?? 0);
-        $bonusTotal = (float) ($hrRow->bonus_total ?? 0);
-
-        // Public data "last updated" timestamp (for auditability / LAI good practice)
-        $updatedAts = [
-            DB::table('transactions')->where('tenant_id', $tenant_id)->where('status', 'paid')->whereBetween('date', [$yearStart, $yearEnd])->max('updated_at'),
-            DB::table('attendances')->where('tenant_id', $tenant_id)->max('updated_at'),
-            DB::table('assets')->where('tenant_id', $tenant_id)->max('updated_at'),
-            DB::table('employees')->where('tenant_id', $tenant_id)->max('updated_at'),
-            DB::table('transparency_documents')->where('tenant_id', $tenant_id)->max('updated_at'),
-            DB::table('public_partnerships')->where('tenant_id', $tenant_id)->max('updated_at'),
-            DB::table('transparency_board')->where('tenant_id', $tenant_id)->max('updated_at'),
-            $portal->updated_at ?? null,
-        ];
-        $publicDataUpdatedAt = collect($updatedAts)
-            ->filter()
-            ->map(fn ($v) => Carbon::parse($v))
-            ->sortDesc()
-            ->first();
-
-        // Public audit (aggregated counts) - last 6 months
-        $auditStart = now()->startOfMonth()->subMonths(5);
-        $auditEnd = now()->endOfMonth();
-        $auditRows = DB::table('audit_logs')
-            ->where('tenant_id', $tenant_id)
-            ->whereBetween('created_at', [$auditStart->toDateTimeString(), $auditEnd->toDateTimeString()])
-            ->where(function ($q) {
-                $q->where(function ($q2) {
-                    $q2->where('event', 'download')
-                        ->where('auditable_type', TransparencyDocument::class);
-                })->orWhere('event', 'download_opendata');
-            })
-            ->select(DB::raw('YEAR(created_at) as y'), DB::raw('MONTH(created_at) as m'), DB::raw('event as event'), DB::raw('COUNT(*) as c'))
-            ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'), DB::raw('event'))
-            ->orderBy('y')->orderBy('m')
-            ->get();
-
-        $auditMap = [];
-        foreach ($auditRows as $r) {
-            $key = sprintf('%04d-%02d', (int) $r->y, (int) $r->m);
-            $auditMap[$key] ??= ['docs' => 0, 'opendata' => 0];
-            if (($r->event ?? '') === 'download') $auditMap[$key]['docs'] = (int) ($r->c ?? 0);
-            if (($r->event ?? '') === 'download_opendata') $auditMap[$key]['opendata'] = (int) ($r->c ?? 0);
-        }
-
-        $publicAuditDownloads = [];
-        $cursor2 = $auditStart->copy();
-        while ($cursor2 <= $auditEnd) {
-            $key = $cursor2->format('Y-m');
-            $publicAuditDownloads[] = [
-                'label' => $cursor2->locale('pt_BR')->translatedFormat('M'),
-                'docs' => (int) (($auditMap[$key]['docs'] ?? 0)),
-                'opendata' => (int) (($auditMap[$key]['opendata'] ?? 0)),
-            ];
-            $cursor2->addMonth();
-        }
+        extract($cached);
 
         return view('transparency.portal', compact(
-            'portal', 'board', 'docs', 'partnerships', 
+            'portal', 'board', 'docs', 'partnerships',
             'totalIn', 'totalOut', 'investmentSocial', 'balance', 'lastExpenses',
             'familiesCount', 'peopleCount', 'attendancesCount', 'assets',
             'year', 'expenseChart', 'impactChart',
