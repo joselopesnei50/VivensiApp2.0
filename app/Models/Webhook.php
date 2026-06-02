@@ -17,6 +17,7 @@ class Webhook extends Model
         'events'            => 'array',
         'active'            => 'boolean',
         'last_triggered_at' => 'datetime',
+        'secret'            => 'encrypted',
     ];
 
     public function logs()

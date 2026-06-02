@@ -40,6 +40,9 @@ class Tenant extends Model
     protected $casts = [
         'trial_ends_at'           => 'date',
         'weekly_report_enabled'   => 'boolean',
+        'pix_key'                 => 'encrypted',
+        'pix_key_type'            => 'encrypted',
+        'openpix_app_id'          => 'encrypted',
     ];
 
     public function plan()

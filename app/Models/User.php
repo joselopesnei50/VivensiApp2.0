@@ -66,10 +66,11 @@ class User extends Authenticatable
         'email_verified_at'          => 'datetime',
         'last_login_at'              => 'datetime',
         'two_factor_confirmed_at'    => 'datetime',
-        'two_factor_recovery_codes'  => 'array',
-        'onboarding_completed_at' => 'datetime',
-        'terms_accepted_at' => 'datetime',
-        'onboarding_steps' => 'array'
+        'two_factor_secret'          => 'encrypted',
+        'two_factor_recovery_codes'  => 'encrypted:array',
+        'onboarding_completed_at'    => 'datetime',
+        'terms_accepted_at'          => 'datetime',
+        'onboarding_steps'           => 'array',
     ];
 
     public function tenant()
