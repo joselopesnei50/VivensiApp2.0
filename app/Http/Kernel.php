@@ -41,6 +41,7 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\TrackUserActivity::class,
             \App\Http\Middleware\LogPageVisit::class,
+            \App\Http\Middleware\RequireTwoFactor::class,
         ],
 
         'api' => [
