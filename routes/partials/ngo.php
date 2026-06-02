@@ -137,6 +137,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/assets/term/pdf',         [App\Http\Controllers\AssetController::class, 'termPdf']);
         Route::get('/assets/export',           [App\Http\Controllers\AssetController::class, 'exportCsv']);
         Route::post('/assets',                 [App\Http\Controllers\AssetController::class, 'store']);
+        Route::put('/assets/{id}',             [App\Http\Controllers\AssetController::class, 'update']);
         Route::delete('/assets/{id}',          [App\Http\Controllers\AssetController::class, 'destroy']);
 
         // Conciliação Bancária

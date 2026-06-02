@@ -3,50 +3,66 @@
 namespace App\Observers;
 
 use App\Models\Transaction;
+use App\Models\AuditLog;
 use Illuminate\Support\Facades\Cache;
 
 class TransactionObserver
 {
-    /**
-     * Clear the dashboard stats cache for the tenant.
-     */
-    private function clearTenantCache(Transaction $transaction)
+    private function clearTenantCache(Transaction $transaction): void
     {
         if ($transaction->tenant_id) {
             Cache::forget("ngo_stats_{$transaction->tenant_id}");
         }
     }
 
-    /**
-     * Handle the Transaction "saved" event.
-     * (Triggered on created and updated)
-     */
-    public function saved(Transaction $transaction): void
+    public function created(Transaction $transaction): void
     {
         $this->clearTenantCache($transaction);
+        $this->log('created', $transaction, null, $transaction->getAttributes());
     }
 
-    /**
-     * Handle the Transaction "deleted" event.
-     */
+    public function updated(Transaction $transaction): void
+    {
+        $this->clearTenantCache($transaction);
+        $dirty = $transaction->getDirty();
+        if (empty($dirty)) return;
+        $this->log('updated', $transaction, $transaction->getOriginal(), $dirty);
+    }
+
     public function deleted(Transaction $transaction): void
     {
         $this->clearTenantCache($transaction);
+        $this->log('deleted', $transaction, $transaction->getAttributes(), null);
     }
 
-    /**
-     * Handle the Transaction "restored" event.
-     */
     public function restored(Transaction $transaction): void
     {
         $this->clearTenantCache($transaction);
+        $this->log('restored', $transaction, null, $transaction->getAttributes());
     }
 
-    /**
-     * Handle the Transaction "force deleted" event.
-     */
     public function forceDeleted(Transaction $transaction): void
     {
         $this->clearTenantCache($transaction);
+        $this->log('force_deleted', $transaction, $transaction->getAttributes(), null);
+    }
+
+    private function log(string $event, Transaction $transaction, ?array $old, ?array $new): void
+    {
+        try {
+            AuditLog::create([
+                'tenant_id'      => $transaction->tenant_id,
+                'user_id'        => auth()->id(),
+                'event'          => $event,
+                'auditable_type' => Transaction::class,
+                'auditable_id'   => $transaction->id,
+                'old_values'     => $old,
+                'new_values'     => $new,
+                'ip_address'     => optional(request())->ip(),
+                'url'            => optional(request())->fullUrl(),
+            ]);
+        } catch (\Throwable) {
+            // não deixar falha de audit derrubar a operação principal
+        }
     }
 }
