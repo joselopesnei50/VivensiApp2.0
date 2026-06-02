@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 
@@ -27,17 +29,18 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'sku' => 'nullable|string|max:100',
-            'unit' => 'required|string|max:20',
-            'minimum_stock' => 'required|numeric|min:0',
+            'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string|max:2000',
+            'sku'            => 'nullable|string|max:100',
+            'unit'           => 'required|string|max:20',
+            'minimum_stock'  => 'required|numeric|min:0',
             'value_per_unit' => 'nullable|numeric|min:0',
+            'expires_at'     => 'nullable|date|after:today',
         ]);
 
         $item = new InventoryItem($request->validated());
         $item->tenant_id = auth()->user()->tenant_id;
-        $item->quantity = 0; // Starts at 0
+        $item->quantity = 0;
         $item->save();
 
         return redirect()->back()->with('success', 'Item adicionado ao estoque com sucesso!');
@@ -48,12 +51,13 @@ class InventoryController extends Controller
         $item = InventoryItem::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
         
         $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'sku' => 'nullable|string|max:100',
-            'unit' => 'required|string|max:20',
-            'minimum_stock' => 'required|numeric|min:0',
+            'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string|max:2000',
+            'sku'            => 'nullable|string|max:100',
+            'unit'           => 'required|string|max:20',
+            'minimum_stock'  => 'required|numeric|min:0',
             'value_per_unit' => 'nullable|numeric|min:0',
+            'expires_at'     => 'nullable|date',
         ]);
 
         $item->update($request->validated());
@@ -78,34 +82,46 @@ class InventoryController extends Controller
             'quantity' => 'required|numeric|min:0.01',
             'date' => 'required|date',
             'description' => 'nullable|string',
-            'beneficiary_id' => 'nullable|exists:beneficiaries,id',
-            'project_id' => 'nullable|exists:projects,id',
+            'beneficiary_id' => [
+                'nullable',
+                Rule::exists('beneficiaries', 'id')->where('tenant_id', auth()->user()->tenant_id),
+            ],
+            'project_id' => [
+                'nullable',
+                Rule::exists('projects', 'id')->where('tenant_id', auth()->user()->tenant_id),
+            ],
         ]);
 
-        if ($request->type === 'out' && $item->quantity < $request->quantity) {
-            return redirect()->back()->with('error', 'Quantidade insuficiente em estoque!');
-        }
+        try { DB::transaction(function () use ($request, $item) {
+            $item = InventoryItem::where('tenant_id', auth()->user()->tenant_id)
+                ->lockForUpdate()
+                ->findOrFail($item->id);
 
-        // Adjust quantity
-        if ($request->type === 'in') {
-            $item->quantity += $request->quantity;
-        } else {
-            $item->quantity -= $request->quantity;
-        }
-        $item->save();
+            if ($request->type === 'out' && $item->quantity < $request->quantity) {
+                throw new \RuntimeException('Quantidade insuficiente em estoque!');
+            }
 
-        // Register movement
-        InventoryMovement::create([
-            'tenant_id' => auth()->user()->tenant_id,
-            'inventory_item_id' => $item->id,
-            'type' => $request->type,
-            'quantity' => $request->quantity,
-            'date' => $request->date,
-            'description' => $request->description,
-            'beneficiary_id' => $request->beneficiary_id,
-            'project_id' => $request->project_id,
-            'created_by' => auth()->id(),
-        ]);
+            if ($request->type === 'in') {
+                $item->quantity += $request->quantity;
+            } else {
+                $item->quantity -= $request->quantity;
+            }
+            $item->save();
+
+            InventoryMovement::create([
+                'tenant_id'          => auth()->user()->tenant_id,
+                'inventory_item_id'  => $item->id,
+                'type'               => $request->type,
+                'quantity'           => $request->quantity,
+                'date'               => $request->date,
+                'description'        => $request->description,
+                'beneficiary_id'     => $request->beneficiary_id,
+                'project_id'         => $request->project_id,
+                'created_by'         => auth()->id(),
+            ]);
+        }); } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
         return redirect()->back()->with('success', 'Movimentação de estoque registrada com sucesso!');
     }

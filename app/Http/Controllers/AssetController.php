@@ -83,7 +83,7 @@ class AssetController extends Controller
             'assets' => $assets,
             'totals' => $totals,
             'generatedAt' => now()->format('d/m/Y H:i'),
-            'orgName' => (auth()->user()->tenant_id == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL',
+            'orgName' => auth()->user()->tenant->brand_name ?? 'ORGANIZAÇÃO SOCIAL',
             'emitter' => auth()->user()->name,
         ]);
 
@@ -156,6 +156,32 @@ class AssetController extends Controller
         $asset->save();
 
         return redirect()->back()->with('success', 'Patrimônio registrado com sucesso!');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $asset = Asset::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+
+        $data = $request->all();
+        if (isset($data['value'])) {
+            $data['value'] = str_replace('.', '', $data['value']);
+            $data['value'] = str_replace(',', '.', $data['value']);
+        }
+
+        $validated = \Illuminate\Support\Facades\Validator::make($data, [
+            'name'             => 'required|string|max:255',
+            'code'             => 'nullable|string|max:50',
+            'description'      => 'nullable|string|max:2000',
+            'acquisition_date' => 'required|date|before_or_equal:today',
+            'value'            => 'required|numeric|min:0',
+            'location'         => 'nullable|string|max:255',
+            'responsible'      => 'nullable|string|max:255',
+            'status'           => 'required|in:active,maintenance,disposed,lost',
+        ])->validate();
+
+        $asset->update($validated);
+
+        return redirect()->back()->with('success', 'Patrimônio atualizado com sucesso!');
     }
 
     public function destroy($id)

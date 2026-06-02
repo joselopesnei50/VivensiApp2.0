@@ -40,7 +40,7 @@ class ReportController extends Controller
             'params'    => [
                 'tenant_id' => $tenantId,
                 'year'      => $year,
-                'org_name'  => ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL',
+                'org_name'  => auth()->user()->tenant->brand_name ?? 'ORGANIZAÇÃO SOCIAL',
             ],
         ]);
 
@@ -121,7 +121,7 @@ class ReportController extends Controller
             ->groupBy('category_id')
             ->pluck('total', 'category_id');
 
-        $incomeCategories = FinancialCategory::where('type', 'income')->get();
+        $incomeCategories = FinancialCategory::where('tenant_id', $tenant_id)->where('type', 'income')->get();
         $incomes      = [];
         $totalIncome  = 0;
         foreach ($incomeCategories as $cat) {
@@ -132,7 +132,7 @@ class ReportController extends Controller
             }
         }
 
-        $expenseCategories = FinancialCategory::where('type', 'expense')->get();
+        $expenseCategories = FinancialCategory::where('tenant_id', $tenant_id)->where('type', 'expense')->get();
         $expenses     = [];
         $totalExpense = 0;
         foreach ($expenseCategories as $cat) {

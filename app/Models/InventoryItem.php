@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\BelongsToTenant;
 
 class InventoryItem extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use HasFactory, SoftDeletes, BelongsToTenant;
 
     protected $fillable = [
         'tenant_id',
@@ -19,6 +20,11 @@ class InventoryItem extends Model
         'quantity',
         'minimum_stock',
         'value_per_unit',
+        'expires_at',
+    ];
+
+    protected $casts = [
+        'expires_at' => 'date',
     ];
 
     public function movements()

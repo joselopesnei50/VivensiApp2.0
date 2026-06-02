@@ -58,8 +58,8 @@ class GeneratePdfJob implements ShouldQueue
             ->groupBy('category_id')
             ->pluck('total', 'category_id');
 
-        $incomeCategories = \App\Models\FinancialCategory::where('type', 'income')->get();
-        $expenseCategories = \App\Models\FinancialCategory::where('type', 'expense')->get();
+        $incomeCategories = \App\Models\FinancialCategory::where('tenant_id', $tenantId)->where('type', 'income')->get();
+        $expenseCategories = \App\Models\FinancialCategory::where('tenant_id', $tenantId)->where('type', 'expense')->get();
 
         $incomes = $totalIncome = 0;
         $incomesArr = [];

@@ -9,8 +9,16 @@ use App\Support\AuditDownload;
 
 class AuditController extends Controller
 {
+    private function authorizeAccess(): void
+    {
+        if (!in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin'], true)) {
+            abort(403);
+        }
+    }
+
     public function index(Request $request)
     {
+        $this->authorizeAccess();
         $tenantId = auth()->user()->tenant_id;
 
         $q = trim((string) $request->get('q', ''));
@@ -59,6 +67,7 @@ class AuditController extends Controller
 
     public function show($id)
     {
+        $this->authorizeAccess();
         $log = AuditLog::where('tenant_id', auth()->user()->tenant_id)
                         ->where('id', $id)
                         ->with('user')
@@ -69,6 +78,7 @@ class AuditController extends Controller
 
     public function exportCsv(Request $request)
     {
+        $this->authorizeAccess();
         $tenantId = auth()->user()->tenant_id;
 
         $q = trim((string) $request->get('q', ''));
