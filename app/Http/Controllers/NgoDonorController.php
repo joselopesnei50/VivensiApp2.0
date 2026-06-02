@@ -22,10 +22,9 @@ class NgoDonorController extends Controller
 
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
-                $w->where('name',     'like', '%'.$q.'%')
-                  ->orWhere('email',    'like', '%'.$q.'%')
-                  ->orWhere('document', 'like', '%'.$q.'%')
-                  ->orWhere('phone',    'like', '%'.$q.'%');
+                $w->where('name',  'like', '%'.$q.'%')
+                  ->orWhere('email', 'like', '%'.$q.'%')
+                  ->orWhere('phone', 'like', '%'.$q.'%');
             });
         }
 

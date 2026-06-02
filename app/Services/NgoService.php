@@ -19,7 +19,6 @@ class NgoService
             $query->where(fn($q) => $q
                 ->where('name', 'like', "%{$s}%")
                 ->orWhere('email', 'like', "%{$s}%")
-                ->orWhere('document', 'like', "%{$s}%")
             );
         }
 

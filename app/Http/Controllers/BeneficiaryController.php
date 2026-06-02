@@ -15,7 +15,6 @@ use App\Support\AuditDownload;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request as RequestFacade;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class BeneficiaryController extends Controller
@@ -209,9 +208,7 @@ class BeneficiaryController extends Controller
                 $baseQ->where(function ($w) use ($q) {
                     $w->where('a.description', 'like', '%' . $q . '%')
                       ->orWhere('a.type', 'like', '%' . $q . '%')
-                      ->orWhere('b.name', 'like', '%' . $q . '%')
-                      ->orWhere('b.nis', 'like', '%' . $q . '%')
-                      ->orWhere('b.cpf', 'like', '%' . $q . '%');
+                      ->orWhere('b.name', 'like', '%' . $q . '%');
                 });
             }
 
@@ -687,9 +684,7 @@ class BeneficiaryController extends Controller
                 $baseQ->where(function ($w) use ($q) {
                     $w->where('a.description', 'like', '%' . $q . '%')
                       ->orWhere('a.type', 'like', '%' . $q . '%')
-                      ->orWhere('b.name', 'like', '%' . $q . '%')
-                      ->orWhere('b.nis', 'like', '%' . $q . '%')
-                      ->orWhere('b.cpf', 'like', '%' . $q . '%');
+                      ->orWhere('b.name', 'like', '%' . $q . '%');
                 });
             }
 
@@ -728,8 +723,6 @@ class BeneficiaryController extends Controller
         if ($q !== '') {
             $beneficiariesQ->where(function ($w) use ($q) {
                 $w->where('name', 'like', '%' . $q . '%')
-                  ->orWhere('cpf', 'like', '%' . $q . '%')
-                  ->orWhere('nis', 'like', '%' . $q . '%')
                   ->orWhere('phone', 'like', '%' . $q . '%');
             });
         }
@@ -826,10 +819,10 @@ class BeneficiaryController extends Controller
                 // Duplicate detection logic: Search by CPF or NIS within the same tenant
                 $existing = null;
                 if (!empty($cpf)) {
-                    $existing = Beneficiary::where('tenant_id', $tenantId)->where('cpf', $cpf)->first();
+                    $existing = Beneficiary::where('tenant_id', $tenantId)->where('cpf_bidx', hash_hmac('sha256', $cpf, config('app.key')))->first();
                 }
                 if (!$existing && !empty($nis)) {
-                    $existing = Beneficiary::where('tenant_id', $tenantId)->where('nis', $nis)->first();
+                    $existing = Beneficiary::where('tenant_id', $tenantId)->where('nis_bidx', hash_hmac('sha256', $nis, config('app.key')))->first();
                 }
 
                 $beneficiaryData = [
@@ -929,16 +922,20 @@ class BeneficiaryController extends Controller
         $validated = \Illuminate\Support\Facades\Validator::make($data, [
             'name' => 'required|string|max:255',
             'cpf' => [
-                'nullable',
-                'string',
-                'max:20',
-                Rule::unique('beneficiaries', 'cpf')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+                'nullable', 'string', 'max:20',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    if (!empty($value) && Beneficiary::where('tenant_id', $tenantId)->where('cpf_bidx', hash_hmac('sha256', $value, config('app.key')))->exists()) {
+                        $fail('Este CPF já está cadastrado para outro beneficiário.');
+                    }
+                },
             ],
             'nis' => [
-                'nullable',
-                'string',
-                'max:30',
-                Rule::unique('beneficiaries', 'nis')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+                'nullable', 'string', 'max:30',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    if (!empty($value) && Beneficiary::where('tenant_id', $tenantId)->where('nis_bidx', hash_hmac('sha256', $value, config('app.key')))->exists()) {
+                        $fail('Este NIS já está cadastrado para outro beneficiário.');
+                    }
+                },
             ],
             'birth_date'  => 'nullable|date',
             'gender'      => 'nullable|in:masculino,feminino,nao_binario,outro,prefiro_nao_informar',
@@ -1004,20 +1001,20 @@ class BeneficiaryController extends Controller
         $validated = \Illuminate\Support\Facades\Validator::make($data, [
             'name' => 'required|string|max:255',
             'cpf' => [
-                'nullable',
-                'string',
-                'max:20',
-                Rule::unique('beneficiaries', 'cpf')
-                    ->where(fn ($q) => $q->where('tenant_id', $tenantId))
-                    ->ignore($beneficiary->id),
+                'nullable', 'string', 'max:20',
+                function ($attribute, $value, $fail) use ($tenantId, $beneficiary) {
+                    if (!empty($value) && Beneficiary::where('tenant_id', $tenantId)->where('cpf_bidx', hash_hmac('sha256', $value, config('app.key')))->where('id', '!=', $beneficiary->id)->exists()) {
+                        $fail('Este CPF já está cadastrado para outro beneficiário.');
+                    }
+                },
             ],
             'nis' => [
-                'nullable',
-                'string',
-                'max:30',
-                Rule::unique('beneficiaries', 'nis')
-                    ->where(fn ($q) => $q->where('tenant_id', $tenantId))
-                    ->ignore($beneficiary->id),
+                'nullable', 'string', 'max:30',
+                function ($attribute, $value, $fail) use ($tenantId, $beneficiary) {
+                    if (!empty($value) && Beneficiary::where('tenant_id', $tenantId)->where('nis_bidx', hash_hmac('sha256', $value, config('app.key')))->where('id', '!=', $beneficiary->id)->exists()) {
+                        $fail('Este NIS já está cadastrado para outro beneficiário.');
+                    }
+                },
             ],
             'birth_date'  => 'nullable|date',
             'gender'      => 'nullable|in:masculino,feminino,nao_binario,outro,prefiro_nao_informar',
@@ -1364,8 +1361,6 @@ class BeneficiaryController extends Controller
         if ($q !== '') {
             $beneficiariesQ->where(function ($w) use ($q) {
                 $w->where('name', 'like', '%' . $q . '%')
-                  ->orWhere('cpf', 'like', '%' . $q . '%')
-                  ->orWhere('nis', 'like', '%' . $q . '%')
                   ->orWhere('phone', 'like', '%' . $q . '%');
             });
         }
