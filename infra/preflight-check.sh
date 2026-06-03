@@ -6,7 +6,9 @@
 set -u
 
 APP_DIR="${APP_DIR:-/var/www/vivensi}"
+ENV_FILE="$APP_DIR/.env"
 cd "$APP_DIR" || { echo "❌ APP_DIR=$APP_DIR não existe"; exit 1; }
+[ -f "$ENV_FILE" ] || { echo "❌ $ENV_FILE não encontrado"; exit 1; }
 
 red()    { printf '\033[31m%s\033[0m\n' "$*"; }
 green()  { printf '\033[32m%s\033[0m\n' "$*"; }
@@ -27,22 +29,39 @@ fi
 
 echo ""
 echo "── 2. APP_ENV / APP_DEBUG / APP_URL / SESSION_SECURE_COOKIE ─────────"
-about=$(php artisan about --only=environment 2>/dev/null)
-echo "$about"
+php artisan about --only=environment 2>/dev/null
 
-env=$(php -r "echo trim((string) env('APP_ENV'));")
-debug=$(php -r "echo trim((string) (env('APP_DEBUG') ? 'true' : 'false'));")
-url=$(php -r "echo trim((string) env('APP_URL'));")
-secure=$(php -r "echo trim((string) (env('SESSION_SECURE_COOKIE') ? 'true' : 'false'));")
-queue=$(php -r "echo trim((string) env('QUEUE_CONNECTION'));")
+# Lê valor direto do .env (env() do Laravel não funciona em php -r puro,
+# e config:cache pode estar usando valores diferentes do .env vigente).
+# Normaliza: tira aspas, espaços e comentários inline.
+read_env() {
+  grep -E "^${1}=" "$ENV_FILE" 2>/dev/null \
+    | head -1 \
+    | sed -E "s/^${1}=//; s/[[:space:]]*#.*$//; s/^['\"](.*)['\"]$/\1/; s/[[:space:]]+$//"
+}
 
-[ "$env"    = "production" ] && green "✅ APP_ENV=production"            || { red "❌ APP_ENV=$env (esperado: production)"; fail=1; }
-[ "$debug"  = "false"      ] && green "✅ APP_DEBUG=false"               || { red "❌ APP_DEBUG=$debug (esperado: false)"; fail=1; }
-[ "$secure" = "true"       ] && green "✅ SESSION_SECURE_COOKIE=true"    || { red "❌ SESSION_SECURE_COOKIE=$secure (esperado: true)"; fail=1; }
-[ "$queue"  = "redis"      ] && green "✅ QUEUE_CONNECTION=redis"        || { red "❌ QUEUE_CONNECTION=$queue (esperado: redis)"; fail=1; }
-case "$url" in
-  https://*) green "✅ APP_URL=$url" ;;
-  *)         red "❌ APP_URL=$url (deve começar com https://)"; fail=1 ;;
+is_truthy() {
+  case "$(echo "$1" | tr '[:upper:]' '[:lower:]')" in
+    true|1|yes|on) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+app_env=$(read_env APP_ENV)
+app_debug=$(read_env APP_DEBUG)
+app_url=$(read_env APP_URL)
+session_secure=$(read_env SESSION_SECURE_COOKIE)
+queue_conn=$(read_env QUEUE_CONNECTION)
+
+[ "$app_env" = "production" ]      && green "✅ APP_ENV=production"          || { red "❌ APP_ENV='$app_env' (esperado: production)"; fail=1; }
+is_truthy "$app_debug"             && { red "❌ APP_DEBUG='$app_debug' (esperado: false)"; fail=1; } \
+                                   || green "✅ APP_DEBUG=$app_debug"
+is_truthy "$session_secure"        && green "✅ SESSION_SECURE_COOKIE=$session_secure" \
+                                   || { red "❌ SESSION_SECURE_COOKIE='$session_secure' (esperado: true)"; fail=1; }
+[ "$queue_conn" = "redis" ]        && green "✅ QUEUE_CONNECTION=redis"      || { red "❌ QUEUE_CONNECTION='$queue_conn' (esperado: redis)"; fail=1; }
+case "$app_url" in
+  https://*) green "✅ APP_URL=$app_url" ;;
+  *)         red "❌ APP_URL='$app_url' (deve começar com https://)"; fail=1 ;;
 esac
 
 echo ""
@@ -83,9 +102,9 @@ echo "── 6. Caches de produção ──────────────�
 
 echo ""
 echo "── 7. Sentry recebendo eventos ──────────────────────────────────────"
-dsn=$(php -r "echo (string) env('SENTRY_LARAVEL_DSN');")
+dsn=$(read_env SENTRY_LARAVEL_DSN)
 if [ -n "$dsn" ]; then
-  green "✅ SENTRY_LARAVEL_DSN configurado"
+  green "✅ SENTRY_LARAVEL_DSN configurado (${dsn:0:32}...)"
 else
   red "❌ SENTRY_LARAVEL_DSN vazio"; fail=1
 fi
