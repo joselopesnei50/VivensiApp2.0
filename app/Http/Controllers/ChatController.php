@@ -17,8 +17,10 @@ class ChatController extends Controller
     public function sendMessage(Request $request)
     {
         $request->validate([
-            'message' => 'required|string',
-            'history' => 'array' // Optional: pass previous context
+            'message'        => 'required|string|max:5000',
+            'history'        => 'array',
+            'history.*.role' => 'required|in:user,assistant',
+            'history.*.content' => 'required|string|max:5000',
         ]);
 
         $userMessage = $request->input('message');

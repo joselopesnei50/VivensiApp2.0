@@ -61,7 +61,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/api/notifications/read-all',    [App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
 
     // ── Bruce AI (chat financeiro) ────────────────────────────────────────────
-    Route::post('/api/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage']);
+    Route::post('/api/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->middleware('throttle:30,1');
 
     // ── Bruce AI Contextual (DeepSeek + memória Redis) ───────────────────────
     Route::post('/api/bruce/chat',           [App\Http\Controllers\Api\BruceAiController::class, 'chat'])->middleware('throttle:30,1');

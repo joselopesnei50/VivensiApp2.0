@@ -116,8 +116,7 @@ REPORTING;
 
             if (empty($analysis)) {
                 $gemini   = new GeminiService();
-                $gRes     = $gemini->generateText($prompt);
-                $analysis = trim($gRes['candidates'][0]['content']['parts'][0]['text'] ?? '');
+                $analysis = trim($gemini->generateText($prompt) ?? '');
             }
 
             if (empty($analysis)) {
