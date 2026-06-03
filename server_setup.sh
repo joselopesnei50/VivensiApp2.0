@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# ── Variáveis OBRIGATÓRIAS (passar via env antes de rodar) ─────────────────
+# Ex.: DB_PASSWORD='...' EVOLUTION_GLOBAL_KEY='...' APP_URL='https://...' bash server_setup.sh
+: "${DB_PASSWORD:?DB_PASSWORD não definida — gere com: openssl rand -hex 24}"
+: "${EVOLUTION_GLOBAL_KEY:?EVOLUTION_GLOBAL_KEY não definida — gere no painel Evolution}"
+: "${APP_URL:?APP_URL não definida — ex.: https://vivensi.app.br}"
+
 echo "=== 1. Atualizando sistema ==="
 sudo apt-get update -y && sudo apt-get upgrade -y
 
@@ -15,7 +21,7 @@ curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/loca
 
 echo "=== 4. Configurando MySQL ==="
 sudo mysql -e "CREATE DATABASE IF NOT EXISTS vivensi CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mysql -e "CREATE USER IF NOT EXISTS 'vivensi_user'@'localhost' IDENTIFIED BY 'Viv3nsi@2026';"
+sudo mysql -e "CREATE USER IF NOT EXISTS 'vivensi_user'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';"
 sudo mysql -e "GRANT ALL PRIVILEGES ON vivensi.* TO 'vivensi_user'@'localhost';"
 sudo mysql -e "FLUSH PRIVILEGES;"
 
@@ -25,14 +31,15 @@ sudo git clone https://github.com/joselopesnei50/VivensiApp2.0.git /var/www/vive
 sudo chown -R ubuntu:ubuntu /var/www/vivensi
 
 echo "=== 6. Configurando .env ==="
-sudo cat > /var/www/vivensi/.env << 'ENVEOF'
+# Heredoc SEM aspas no delimitador para interpolar as variáveis exportadas no shell
+sudo tee /var/www/vivensi/.env > /dev/null <<ENVEOF
 APP_NAME=Vivensi
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
-APP_URL=http://34.193.132.112
+APP_URL=${APP_URL}
 
-LOG_CHANNEL=stack
+LOG_CHANNEL=daily
 LOG_LEVEL=error
 
 DB_CONNECTION=mysql
@@ -40,19 +47,21 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=vivensi
 DB_USERNAME=vivensi_user
-DB_PASSWORD=Viv3nsi@2026
+DB_PASSWORD=${DB_PASSWORD}
 
 BROADCAST_DRIVER=log
-CACHE_DRIVER=file
+CACHE_DRIVER=redis
 FILESYSTEM_DISK=local
-QUEUE_CONNECTION=database
-SESSION_DRIVER=database
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
 SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=true
+SESSION_HTTP_ONLY=true
 
-EVOLUTION_API_URL=https://evo.vivensi.app.br
-EVOLUTION_GLOBAL_KEY=e838f5d5b86ea0fe27492c283c27498ffe0b250085896f1eaa8093baf0a3309e
-SESSION_SECURE_COOKIE=false
+EVOLUTION_API_URL=${EVOLUTION_API_URL:-https://evo.vivensi.app.br}
+EVOLUTION_GLOBAL_KEY=${EVOLUTION_GLOBAL_KEY}
 ENVEOF
+sudo chmod 640 /var/www/vivensi/.env
 
 echo "=== 7. Instalando dependências PHP ==="
 cd /var/www/vivensi

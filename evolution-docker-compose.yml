@@ -8,11 +8,11 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SERVER_URL=http://localhost:8080
-      - AUTHENTICATION_API_KEY=SenhaForteVivensi2026@!
+      - SERVER_URL=${EVOLUTION_API_URL:-http://localhost:8080}
+      - AUTHENTICATION_API_KEY=${EVOLUTION_GLOBAL_KEY:?defina EVOLUTION_GLOBAL_KEY no .env}
       - CONFIG_SESSION_PHONE_CLIENT=VivensiApp
       - DATABASE_PROVIDER=postgresql
-      - DATABASE_CONNECTION_URI=postgresql://user:password@postgres:5432/evolution?schema=public
+      - DATABASE_CONNECTION_URI=postgresql://evolution:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@postgres:5432/evolution?schema=public
     volumes:
       - ./instances:/evolution/instances
     depends_on:
@@ -23,8 +23,8 @@ services:
     container_name: evolution-postgres
     restart: always
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=evolution
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
       - POSTGRES_DB=evolution
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
