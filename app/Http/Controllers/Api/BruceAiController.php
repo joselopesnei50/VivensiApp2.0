@@ -18,7 +18,8 @@ class BruceAiController extends Controller
         $response = $this->bruce->chat(
             $request->input('message'),
             $user->tenant_id,
-            $user->role
+            $user->role,
+            $user->id
         );
 
         if (isset($response['error'])) {
@@ -30,7 +31,8 @@ class BruceAiController extends Controller
 
     public function clearHistory()
     {
-        $this->bruce->clearHistory(auth()->user()->tenant_id);
+        $user = auth()->user();
+        $this->bruce->clearHistory($user->tenant_id, $user->id);
         return response()->json(['success' => true]);
     }
 

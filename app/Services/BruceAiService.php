@@ -28,9 +28,9 @@ class BruceAiService
 
     // ── Chat ─────────────────────────────────────────────────────────────────
 
-    public function chat(string $userMessage, int $tenantId, string $role = 'common'): array
+    public function chat(string $userMessage, int $tenantId, string $role = 'common', int $userId = 0): array
     {
-        $history = $this->getHistory($tenantId);
+        $history = $this->getHistory($tenantId, $userId);
 
         $messages = array_merge(
             [['role' => 'system', 'content' => $this->buildSystemPrompt($tenantId, $role)]],
@@ -57,7 +57,7 @@ class BruceAiService
             $newHistory = array_slice($newHistory, -self::MAX_HISTORY);
         }
 
-        $this->saveHistory($tenantId, $newHistory);
+        $this->saveHistory($tenantId, $userId, $newHistory);
 
         return [
             'reply'     => $reply,
@@ -66,9 +66,9 @@ class BruceAiService
         ];
     }
 
-    public function clearHistory(int $tenantId): void
+    public function clearHistory(int $tenantId, int $userId = 0): void
     {
-        Cache::forget($this->historyKey($tenantId));
+        Cache::forget($this->historyKey($tenantId, $userId));
     }
 
     // ── Insight proativo (usado no dashboard, cache 6h) ───────────────────────
@@ -200,18 +200,18 @@ PROMPT;
 
     // ── Redis history helpers ─────────────────────────────────────────────────
 
-    private function historyKey(int $tenantId): string
+    private function historyKey(int $tenantId, int $userId): string
     {
-        return "bruce.history.{$tenantId}";
+        return "bruce.history.{$tenantId}.{$userId}";
     }
 
-    private function getHistory(int $tenantId): array
+    private function getHistory(int $tenantId, int $userId): array
     {
-        return Cache::get($this->historyKey($tenantId), []);
+        return Cache::get($this->historyKey($tenantId, $userId), []);
     }
 
-    private function saveHistory(int $tenantId, array $messages): void
+    private function saveHistory(int $tenantId, int $userId, array $messages): void
     {
-        Cache::put($this->historyKey($tenantId), $messages, self::HISTORY_TTL);
+        Cache::put($this->historyKey($tenantId, $userId), $messages, self::HISTORY_TTL);
     }
 }

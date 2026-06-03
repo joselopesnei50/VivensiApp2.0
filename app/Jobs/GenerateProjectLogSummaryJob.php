@@ -38,7 +38,7 @@ class GenerateProjectLogSummaryJob implements ShouldQueue
                 ->get();
 
             if ($logs->count() < 3) {
-                $project->update(['ai_summary_status' => 'failed']);
+                $project->update(['ai_summary_status' => 'insufficient_data']);
                 return;
             }
 
