@@ -79,14 +79,4 @@
         </div>
     </div>
 </div>
-
-<style>
-    .task-card-prem:hover {
-        transform: translateY(-5px);
-        border-color: #6366f1;
-        box-shadow: 0 20px 40px rgba(99, 102, 241, 0.08);
-    }
-    .task-card-prem:active {
-        cursor: grabbing;
-    }
-</style>
+{{-- Estilos do .task-card-prem agora vivem em public/css/kanban.css --}}

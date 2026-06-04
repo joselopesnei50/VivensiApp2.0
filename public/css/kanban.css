@@ -1,0 +1,118 @@
+/*
+ * Kanban — Vivensi Design System
+ * Carregado via @push('styles') em resources/views/projects/kanban.blade.php.
+ * Cores cruas substituidas por tokens (--ds-*) para respeitar [data-panel]
+ * (painel ONG troca --ds-brand de indigo para verde esmeralda).
+ */
+
+.kanban-wrapper {
+    margin-top: var(--ds-space-5);
+    height: calc(100vh - 250px);
+    min-height: 600px;
+}
+
+.kanban-board-scroll {
+    display: flex;
+    gap: var(--ds-space-8);
+    padding-bottom: var(--ds-space-5);
+    height: 100%;
+    overflow-x: auto;
+}
+
+.kanban-column-prem {
+    flex: 0 0 380px;
+    background: var(--ds-bg);
+    border-radius: var(--ds-radius-xl);
+    border: 1px solid var(--ds-border-light);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: background var(--ds-transition), border-color var(--ds-transition);
+}
+
+.kanban-column-prem:hover {
+    border-color: var(--ds-border);
+}
+
+.column-header-prem {
+    padding: var(--ds-space-6) var(--ds-space-8);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.column-title-prem {
+    font-weight: 800;
+    font-size: var(--ds-text-sm);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+}
+
+.column-count-badge {
+    background: var(--ds-surface);
+    color: var(--ds-text-muted);
+    padding: 4px 12px;
+    border-radius: var(--ds-radius-full);
+    font-size: 0.75rem;
+    font-weight: 800;
+    border: 1px solid var(--ds-border-light);
+}
+
+.column-body-prem {
+    flex: 1;
+    padding: 0 var(--ds-space-5) var(--ds-space-6);
+    overflow-y: auto;
+}
+
+.column-body-prem::-webkit-scrollbar {
+    width: 6px;
+}
+
+.column-body-prem::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.column-body-prem::-webkit-scrollbar-thumb {
+    background: var(--ds-border);
+    border-radius: 10px;
+}
+
+.column-body-prem.drag-over {
+    background: var(--ds-brand-bg);
+    border-radius: 0 0 var(--ds-radius-xl) var(--ds-radius-xl);
+}
+
+.add-task-btn-prem {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ds-radius-sm);
+    border: 1px solid var(--ds-border);
+    background: var(--ds-surface);
+    color: var(--ds-text-faint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--ds-transition), color var(--ds-transition), border-color var(--ds-transition), transform var(--ds-transition);
+}
+
+.add-task-btn-prem:hover {
+    background: var(--ds-brand);
+    color: #ffffff;
+    border-color: var(--ds-brand);
+    transform: rotate(90deg);
+}
+
+/* Cartao da tarefa — extraido de projects/partials/task_card.blade.php */
+.task-card-prem:hover {
+    transform: translateY(-5px);
+    border-color: var(--ds-brand);
+    box-shadow: 0 20px 40px var(--ds-brand-shadow);
+}
+
+.task-card-prem:active {
+    cursor: grabbing;
+}

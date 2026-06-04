@@ -1,99 +1,13 @@
 @extends('layouts.app')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/kanban.css') }}">
+@endpush
+
 @section('content')
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
 @endphp
-<style>
-    .kanban-wrapper {
-        margin-top: 20px;
-        height: calc(100vh - 250px);
-        min-height: 600px;
-    }
-    .kanban-board-scroll {
-        display: flex;
-        gap: 30px;
-        padding-bottom: 20px;
-        height: 100%;
-        overflow-x: auto;
-    }
-    .kanban-column-prem {
-        flex: 0 0 380px;
-        background: rgba(248, 250, 252, 0.5);
-        border-radius: 28px;
-        border: 1px solid #f1f5f9;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        transition: all 0.3s;
-    }
-    .kanban-column-prem:hover {
-        background: #f8fafc;
-        border-color: #e2e8f0;
-    }
-    .column-header-prem {
-        padding: 25px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .column-title-prem {
-        font-weight: 800;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .column-count-badge {
-        background: white;
-        color: #64748b;
-        padding: 4px 12px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        border: 1px solid #f1f5f9;
-    }
-    .column-body-prem {
-        flex: 1;
-        padding: 0 20px 25px;
-        overflow-y: auto;
-    }
-    .column-body-prem::-webkit-scrollbar {
-        width: 6px;
-    }
-    .column-body-prem::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .column-body-prem::-webkit-scrollbar-thumb {
-        background: #e2e8f0;
-        border-radius: 10px;
-    }
-    .column-body-prem.drag-over {
-        background: rgba(99, 102, 241, 0.05);
-        border-radius: 0 0 28px 28px;
-    }
-    .add-task-btn-prem {
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-        background: white;
-        color: #94a3b8;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .add-task-btn-prem:hover {
-        background: #6366f1;
-        color: white;
-        border-color: #6366f1;
-        transform: rotate(90deg);
-    }
-</style>
 
 <div class="header-page" style="margin-bottom: 40px; position: relative;">
     <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%); position: absolute; top: -30px; left: -30px; right: -30px; bottom: 0; z-index: -1;"></div>
@@ -110,7 +24,7 @@
             <a href="{{ $basePath . '/projects/details/'.$project->id }}" class="btn-ds btn-ds-outline" style="font-weight: 700;">
                 <i class="fas fa-arrow-left me-2"></i> Dashboard
             </a>
-            <button type="button" onclick="openNewTaskModal()" class="btn-premium btn-premium-shine" style="border: none;">
+            <button type="button" onclick="openNewTaskModal()" class="btn-premium btn-premium-shine">
                 <i class="fas fa-plus me-2"></i> Criar Atividade
             </button>
         </div>
