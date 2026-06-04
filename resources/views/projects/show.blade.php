@@ -290,16 +290,21 @@
     <!-- Operations Column -->
     <div class="col-lg-8">
         <div class="project-table-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 12px;">
                 <div>
                     <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">Dossiê Financeiro</h4>
                     <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Últimas movimentações vinculadas a este registro.</p>
                 </div>
-                @if($isManager)
-                    <a href="{{ $basePath . '/transactions/create?project_id='.$project->id }}" class="btn-premium btn-premium-shine" style="border: none; padding: 12px 25px; font-weight: 800; font-size: 0.85rem;">
-                        <i class="fas fa-plus me-2"></i> Lançar Movimentação
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <a href="{{ url('/transactions?project_id=' . $project->id) }}" class="btn-ds btn-ds-outline" style="padding: 10px 16px; font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-filter"></i> Ver todas com filtros
                     </a>
-                @endif
+                    @if($isManager)
+                        <a href="{{ $basePath . '/transactions/create?project_id='.$project->id }}" class="btn-premium btn-premium-shine" style="border: none; padding: 12px 25px; font-weight: 800; font-size: 0.85rem;">
+                            <i class="fas fa-plus me-2"></i> Lançar Movimentação
+                        </a>
+                    @endif
+                </div>
             </div>
 
             <div class="table-responsive">

@@ -13,7 +13,7 @@
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Monitoramento de receitas e auditoria de caixa.</p>
         </div>
         <div style="display: flex; gap: 15px;">
-            <a href="{{ url('/transactions/export') }}" class="btn-ds btn-ds-outline" style="text-decoration: none; font-weight: 700;">
+            <a href="{{ url('/transactions/export') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn-ds btn-ds-outline" style="text-decoration: none; font-weight: 700;">
                 <i class="fas fa-file-export me-2"></i> Exportar
             </a>
             <a href="{{ url('/transactions/create') }}" class="btn-premium btn-premium-shine" style="border: none; padding: 14px 28px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
@@ -72,6 +72,88 @@
         <i class="fas fa-circle-check" style="font-size: 1.2rem;"></i> {{ session('success') }}
     </div>
 @endif
+
+{{-- Filtros do Extrato Financeiro --}}
+@php
+    $f = $filters ?? ['type'=>'','status'=>'','category_id'=>'','project_id'=>'','date_from'=>'','date_to'=>'','q'=>''];
+    $hasActiveFilters = collect($f)->filter(fn($v) => $v !== '' && $v !== null)->isNotEmpty();
+@endphp
+<div class="vivensi-card mb-4" style="padding: 18px 20px; border-radius: 20px;">
+    <form method="GET" action="{{ url('/transactions') }}">
+        <div style="display:flex; gap: 12px; align-items:end; flex-wrap: wrap;">
+            <div style="position: relative; flex: 1; min-width: 240px;">
+                <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Busca</label>
+                <i class="fas fa-search" style="position:absolute; left: 14px; top: 38px; color:#94a3b8;"></i>
+                <input name="q" value="{{ $f['q'] }}" type="text" placeholder="Buscar na descrição..."
+                       style="width: 100%; padding: 10px 12px 10px 38px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 700; color:#0f172a;">
+            </div>
+
+            <div style="min-width: 140px;">
+                <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Tipo</label>
+                <select name="type" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 800; color:#0f172a;">
+                    <option value="">Todos</option>
+                    <option value="income"  {{ $f['type']==='income'  ? 'selected':'' }}>Entrada</option>
+                    <option value="expense" {{ $f['type']==='expense' ? 'selected':'' }}>Saída</option>
+                </select>
+            </div>
+
+            <div style="min-width: 160px;">
+                <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Status</label>
+                <select name="status" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 800; color:#0f172a;">
+                    <option value="">Todos</option>
+                    <option value="pending"  {{ $f['status']==='pending'  ? 'selected':'' }}>Pendente</option>
+                    <option value="paid"     {{ $f['status']==='paid'     ? 'selected':'' }}>Pago</option>
+                    <option value="rejected" {{ $f['status']==='rejected' ? 'selected':'' }}>Rejeitado</option>
+                    <option value="canceled" {{ $f['status']==='canceled' ? 'selected':'' }}>Cancelado</option>
+                </select>
+            </div>
+
+            @if(!empty($categories) && count($categories) > 0)
+                <div style="min-width: 180px;">
+                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Categoria</label>
+                    <select name="category_id" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 800; color:#0f172a;">
+                        <option value="">Todas</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" {{ (string)$f['category_id'] === (string)$cat->id ? 'selected':'' }}>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+
+            @if(!empty($projects) && count($projects) > 0)
+                <div style="min-width: 200px;">
+                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Projeto</label>
+                    <select name="project_id" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 800; color:#0f172a;">
+                        <option value="">Todos</option>
+                        @foreach($projects as $proj)
+                            <option value="{{ $proj->id }}" {{ (string)$f['project_id'] === (string)$proj->id ? 'selected':'' }}>{{ $proj->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+
+            <div style="min-width: 150px;">
+                <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">De</label>
+                <input type="date" name="date_from" value="{{ $f['date_from'] }}" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 800; color:#0f172a;">
+            </div>
+            <div style="min-width: 150px;">
+                <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Até</label>
+                <input type="date" name="date_to" value="{{ $f['date_to'] }}" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 800; color:#0f172a;">
+            </div>
+
+            <div style="display:flex; gap: 8px; align-items:end;">
+                <button type="submit" class="btn-premium" style="padding: 10px 18px !important; font-size: 0.85rem !important; background:#10b981 !important; color:#fff !important;">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                @if($hasActiveFilters)
+                    <a href="{{ url('/transactions') }}" class="btn-premium" style="padding: 10px 18px !important; font-size: 0.85rem !important; background:#475569 !important; color:#fff !important; box-shadow: none !important;">
+                        <i class="fas fa-times"></i> Limpar
+                    </a>
+                @endif
+            </div>
+        </div>
+    </form>
+</div>
 
 <div class="vivensi-card" style="padding: 0; border-radius: 28px; background: white; border: 1px solid #f1f5f9; box-shadow: 0 15px 45px rgba(0,0,0,0.02); overflow: hidden;">
     <div style="overflow-x: auto;">

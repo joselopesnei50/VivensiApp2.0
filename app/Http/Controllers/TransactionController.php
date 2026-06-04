@@ -13,28 +13,98 @@ use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
 {
-    public function index()
+    /**
+     * Aplica filtros vindos da querystring numa query de transactions.
+     * Usado por index() e export() para garantir que o CSV reflita exatamente
+     * o que o usuário está vendo na tela.
+     */
+    private function applyTransactionFilters($query, Request $request): void
+    {
+        $type = $request->query('type');
+        if (in_array($type, ['income', 'expense'], true)) {
+            $query->where('transactions.type', $type);
+        }
+
+        $status = $request->query('status');
+        if (in_array($status, ['pending', 'paid', 'rejected', 'canceled'], true)) {
+            $query->where('transactions.status', $status);
+        }
+
+        if ($categoryId = $request->query('category_id')) {
+            $query->where('transactions.category_id', (int) $categoryId);
+        }
+
+        if ($projectId = $request->query('project_id')) {
+            $query->where('transactions.project_id', (int) $projectId);
+        }
+
+        if ($dateFrom = $request->query('date_from')) {
+            $query->whereDate('transactions.date', '>=', $dateFrom);
+        }
+        if ($dateTo = $request->query('date_to')) {
+            $query->whereDate('transactions.date', '<=', $dateTo);
+        }
+
+        $q = trim((string) $request->query('q', ''));
+        if ($q !== '') {
+            $query->where('transactions.description', 'like', '%' . $q . '%');
+        }
+    }
+
+    public function index(Request $request)
     {
         $tenant_id = auth()->user()->tenant_id;
-        
-        $transactions = Transaction::where('tenant_id', $tenant_id)
-                                   ->with(['category', 'project'])
-                                   ->orderBy('date', 'desc')
-                                   ->paginate(20);
+
+        // Lista paginada com TODOS os filtros aplicados
+        $listQuery = Transaction::where('tenant_id', $tenant_id);
+        $this->applyTransactionFilters($listQuery, $request);
+
+        $transactions = $listQuery
+            ->with(['category', 'project'])
+            ->orderBy('date', 'desc')
+            ->paginate(20)
+            ->withQueryString();
+
+        // Stats: aplica só filtros "de contexto" (data, projeto, categoria) e
+        // ignora tipo/status/busca para que receita/despesa façam sentido mesmo
+        // quando o usuário filtra "status=pending" na listagem.
+        $statsBase = Transaction::where('tenant_id', $tenant_id);
+        foreach (['category_id', 'project_id'] as $filter) {
+            if ($v = $request->query($filter)) {
+                $statsBase->where($filter, (int) $v);
+            }
+        }
+        if ($df = $request->query('date_from')) { $statsBase->whereDate('date', '>=', $df); }
+        if ($dt = $request->query('date_to'))   { $statsBase->whereDate('date', '<=', $dt); }
 
         $stats = [
-            'income' => Transaction::where('tenant_id', $tenant_id)
-                                   ->where('type', 'income')
-                                   ->where('status', 'paid')
-                                   ->sum('amount'),
-            'expense' => Transaction::where('tenant_id', $tenant_id)
-                                   ->where('type', 'expense')
-                                   ->where('status', 'paid')
-                                   ->sum('amount')
+            'income'  => (clone $statsBase)->where('type', 'income')->where('status', 'paid')->sum('amount'),
+            'expense' => (clone $statsBase)->where('type', 'expense')->where('status', 'paid')->sum('amount'),
         ];
         $stats['balance'] = $stats['income'] - $stats['expense'];
 
-        return view('transactions.index', compact('transactions', 'stats'));
+        // Selects de filtro
+        $categories = DB::table('financial_categories')
+            ->where('tenant_id', $tenant_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $projects = Project::where('tenant_id', $tenant_id)
+            ->active()
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $filters = [
+            'type'        => $request->query('type', ''),
+            'status'      => $request->query('status', ''),
+            'category_id' => $request->query('category_id', ''),
+            'project_id'  => $request->query('project_id', ''),
+            'date_from'   => $request->query('date_from', ''),
+            'date_to'     => $request->query('date_to', ''),
+            'q'           => trim((string) $request->query('q', '')),
+        ];
+
+        return view('transactions.index', compact('transactions', 'stats', 'categories', 'projects', 'filters'));
     }
 
     public function create()
@@ -136,12 +206,14 @@ class TransactionController extends Controller
         return redirect('/transactions')->with('success', 'Lançamento registrado com sucesso!');
     }
 
-    public function export()
+    public function export(Request $request)
     {
         $fileName = 'transacoes-' . date('Y-m-d') . '.csv';
-        $transactions = Transaction::where('tenant_id', auth()->user()->tenant_id)
-                                    ->orderBy('date', 'desc')
-                                    ->get();
+
+        $query = Transaction::where('tenant_id', auth()->user()->tenant_id);
+        $this->applyTransactionFilters($query, $request);
+
+        $transactions = $query->orderBy('date', 'desc')->get();
 
         $headers = array(
             "Content-type"        => "text/csv",
