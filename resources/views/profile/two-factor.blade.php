@@ -3,7 +3,7 @@
 @section('content')
 <div style="max-width: 540px; margin: 0 auto;">
     <div style="margin-bottom: 28px;">
-        <a href="{{ url('/profile') }}" style="color:#6366f1; font-size:0.8rem; font-weight:700; text-decoration:none;">
+        <a href="{{ url('/profile') }}" style="color:var(--ds-brand); font-size:0.8rem; font-weight:700; text-decoration:none;">
             <i class="fas fa-arrow-left me-1"></i> Voltar ao Perfil
         </a>
         <h2 style="margin:12px 0 4px; font-weight:950; font-size:1.8rem; letter-spacing:-1px;">
@@ -41,7 +41,7 @@
         </ol>
         <form method="POST" action="{{ route('2fa.enable') }}">
             @csrf
-            <button type="submit" style="width:100%; background:linear-gradient(135deg,#6366f1,#4f46e5); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.95rem; cursor:pointer; box-shadow:0 8px 24px rgba(99,102,241,0.2);">
+            <button type="submit" style="width:100%; background:linear-gradient(135deg,var(--ds-brand),#4f46e5); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.95rem; cursor:pointer; box-shadow:0 8px 24px rgba(99,102,241,0.2);">
                 <i class="fas fa-shield-plus me-2"></i> Ativar 2FA
             </button>
         </form>
@@ -50,7 +50,7 @@
     @elseif(!$confirmed && $setupSecret)
     {{-- QR Code setup --}}
     <div style="background:white; border-radius:20px; padding:28px; border:1px solid #e2e8f0; box-shadow:0 2px 15px rgba(0,0,0,0.05); margin-bottom:20px;">
-        <h4 style="font-weight:900; color:#1e293b; margin:0 0 16px;"><i class="fas fa-qrcode me-2" style="color:#6366f1;"></i>Escaneie o QR Code</h4>
+        <h4 style="font-weight:900; color:#1e293b; margin:0 0 16px;"><i class="fas fa-qrcode me-2" style="color:var(--ds-brand);"></i>Escaneie o QR Code</h4>
         <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px;">Abra seu app autenticador e escaneie o código abaixo:</p>
         <div style="text-align:center; margin-bottom:20px;">
             <canvas id="qrCanvas" style="border-radius:12px; border:3px solid #e2e8f0;"></canvas>
@@ -78,7 +78,7 @@
                 <label style="display:block; margin-bottom:8px; color:#475569; font-weight:700; font-size:0.85rem;">Código de verificação</label>
                 <input type="text" name="code" required placeholder="000 000" maxlength="7" inputmode="numeric" autocomplete="one-time-code"
                     style="width:100%; padding:14px 18px; border:2px solid #e2e8f0; border-radius:14px; font-size:1.4rem; font-weight:900; text-align:center; letter-spacing:6px; color:#1e293b;"
-                    onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                    onfocus="this.style.borderColor='var(--ds-brand)'" onblur="this.style.borderColor='#e2e8f0'">
             </div>
             <button type="submit" style="width:100%; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.95rem; cursor:pointer;">
                 <i class="fas fa-check me-2"></i> Confirmar e Ativar

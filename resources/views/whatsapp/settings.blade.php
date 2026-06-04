@@ -80,7 +80,7 @@
                 <!-- Seção 2: Organização -->
                 <div class="training-section">
                     <div class="training-section-header" onclick="toggleSection('org')">
-                        <span><i class="fas fa-building me-2" style="color: #6366f1;"></i> Organização</span>
+                        <span><i class="fas fa-building me-2" style="color: var(--ds-brand);"></i> Organização</span>
                         <i class="fas fa-chevron-down training-chevron" id="chevron-org"></i>
                     </div>
                     <div id="section-org" class="training-section-body">
@@ -476,7 +476,7 @@
     color: #334155;
 }
 .form-control-vivensi:focus {
-    border-color: #6366f1;
+    border-color: var(--ds-brand);
     background: white;
     box-shadow: 0 0 0 3px rgba(99,102,241,.12);
     outline: none;

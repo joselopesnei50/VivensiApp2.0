@@ -11,7 +11,7 @@
                 <div style="width:34px;height:34px;border-radius:10px;background:rgba(37,211,102,.12);display:inline-flex;align-items:center;justify-content:center;">
                     <i class="fab fa-whatsapp" style="color:#25d366;font-size:1rem;"></i>
                 </div>
-                <span style="color:#6366f1;font-weight:700;text-transform:uppercase;font-size:.68rem;letter-spacing:1.8px;">WhatsApp / Automações</span>
+                <span style="color:var(--ds-brand);font-weight:700;text-transform:uppercase;font-size:.68rem;letter-spacing:1.8px;">WhatsApp / Automações</span>
             </div>
             <h2 class="fw-800 mb-1" style="font-size:1.85rem;color:#0f172a;line-height:1.2;">Automações de Reativação</h2>
             <p class="text-muted mb-0" style="font-size:.88rem;">Regras que enviam mensagens automáticas para contatos inativos no momento certo.</p>

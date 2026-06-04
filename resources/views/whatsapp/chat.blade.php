@@ -275,7 +275,7 @@
         .chat-user-profile { display: flex; align-items: center; gap: 12px; min-width: 0; overflow: hidden; flex: 1; }
         .header-avatar {
             width: 40px; height: 40px;
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            background: linear-gradient(135deg, var(--ds-brand, #6366f1) 0%, #a855f7 100%);
             color: white; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 1rem;
@@ -612,7 +612,7 @@
         .tool-btn.tb-rapid:hover { background: rgba(245,158,11,.16); }
         .tool-btn.tb-template { color: #16a34a; background: rgba(16,185,129,.08); }
         .tool-btn.tb-template:hover { background: rgba(16,185,129,.16); }
-        .tool-btn.tb-image    { color: #6366f1; background: rgba(99,102,241,.08); }
+        .tool-btn.tb-image    { color: var(--ds-brand, #6366f1); background: rgba(99,102,241,.08); }
         .tool-btn.tb-image:hover { background: rgba(99,102,241,.16); }
         .tool-btn.tb-audio    { color: #ef4444; background: rgba(239,68,68,.08); }
         .tool-btn.tb-audio:hover { background: rgba(239,68,68,.16); }
@@ -1091,7 +1091,7 @@
                 <div class="crm-section">
                     <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-kanban" aria-expanded="false">
                         <span>
-                            <i class="fas fa-columns me-2" style="color:#6366f1;"></i>
+                            <i class="fas fa-columns me-2" style="color:var(--ds-brand, #6366f1);"></i>
                             @if($isNgo) Enviar p/ Kanban de Patrocínios @else Enviar p/ Kanban de Projeto @endif
                         </span>
                         <i class="fas fa-chevron-down text-muted small crm-chevron"></i>

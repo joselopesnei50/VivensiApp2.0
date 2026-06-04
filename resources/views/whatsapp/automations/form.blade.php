@@ -355,7 +355,7 @@ applyTriggerUI(); // estado inicial
     width: 28px; height: 28px;
     border-radius: 8px;
     background: rgba(99,102,241,.1);
-    color: #6366f1;
+    color: var(--ds-brand);
     font-size: .78rem;
     font-weight: 800;
     display: flex; align-items: center; justify-content: center;
@@ -389,7 +389,7 @@ applyTriggerUI(); // estado inicial
     transition: all .15s;
     user-select: none;
 }
-.audience-pill:hover { border-color: #6366f1; color: #4f46e5; background: rgba(99,102,241,.05); }
-.audience-pill.selected { background: rgba(99,102,241,.1); color: #4f46e5; border-color: #6366f1; }
+.audience-pill:hover { border-color: var(--ds-brand); color: #4f46e5; background: rgba(99,102,241,.05); }
+.audience-pill.selected { background: rgba(99,102,241,.1); color: #4f46e5; border-color: var(--ds-brand); }
 </style>
 @endsection
