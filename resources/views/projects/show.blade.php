@@ -99,7 +99,7 @@
     }
     .stakeholder-card:hover {
         background: white;
-        border-color: #6366f1;
+        border-color: var(--ds-brand);
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
     }
     .avatar-placeholder {
@@ -140,7 +140,7 @@
         height: 24px;
         border-radius: 50%;
         background: white;
-        border: 4px solid #6366f1;
+        border: 4px solid var(--ds-brand);
         z-index: 1;
     }
     .timeline-content-card {
@@ -153,7 +153,7 @@
     }
     .timeline-content-card:hover {
         transform: translateX(10px);
-        border-color: #6366f1;
+        border-color: var(--ds-brand);
     }
     .timeline-media {
         border-radius: 16px;
@@ -191,18 +191,18 @@
         background: #f5f3ff;
     }
     .role-card.role-card-active {
-        border-color: #6366f1;
+        border-color: var(--ds-brand);
         background: #eef2ff;
         box-shadow: 0 0 0 3px rgba(99,102,241,.15);
     }
     .role-card.role-card-active .fw-900 { color: #4f46e5; }
-    .role-card.role-card-active i { color: #6366f1 !important; }
+    .role-card.role-card-active i { color: var(--ds-brand) !important; }
 </style>
 
 <div class="project-hero-premium">
     <div style="position: relative; z-index: 10;">
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
-             <span style="background: #6366f1; color: white; padding: 6px 18px; border-radius: 50px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px;">
+             <span style="background: var(--ds-brand); color: white; padding: 6px 18px; border-radius: 50px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px;">
                 <i class="fas fa-rocket me-2"></i>
                 {{ $project->status == 'active'
                     ? 'Em Missão'
@@ -231,7 +231,7 @@
                     </button>
                 @endif
                 <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
-                    <i class="fas fa-tasks" style="color: #6366f1;"></i> Quadros Kanban
+                    <i class="fas fa-tasks" style="color: var(--ds-brand);"></i> Quadros Kanban
                 </a>
             </div>
         </div>
@@ -267,7 +267,7 @@
                 <div class="stat-pill-premium">
                     <div>
                         <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">Saldo em Caixa</span>
-                        <div style="font-size: 1.8rem; font-weight: 950; color: #6366f1; letter-spacing: -1px;">R$ {{ number_format($project->budget - $totalSpent, 0, ',', '.') }}</div>
+                        <div style="font-size: 1.8rem; font-weight: 950; color: var(--ds-brand); letter-spacing: -1px;">R$ {{ number_format($project->budget - $totalSpent, 0, ',', '.') }}</div>
                     </div>
                     <div style="margin-top: 20px; font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4);">
                          {{ number_format(100 - $percentUsed, 1) }}% disponível
@@ -323,7 +323,7 @@
                     <tbody>
                         @forelse($transactions as $t)
                         <tr style="border-bottom: 1px solid #f8fafc;">
-                            <td style="padding: 20px 15px; font-weight: 800; color: #6366f1;">#{{ str_pad($t->id, 4, '0', STR_PAD_LEFT) }}</td>
+                            <td style="padding: 20px 15px; font-weight: 800; color: var(--ds-brand);">#{{ str_pad($t->id, 4, '0', STR_PAD_LEFT) }}</td>
                             <td style="padding: 20px 15px;">
                                 <div style="font-weight: 800; color: #1e293b; font-size: 0.95rem;">{{ $t->description }}</div>
                                 <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">{{ $t->category->name ?? 'Geral' }}</div>
@@ -452,7 +452,7 @@
         </div>
         <div style="display: flex; gap: 10px;">
             <button type="button" id="btn-open-add-person" onclick="openProjectModal('addPersonModal')" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
-                <i class="fas fa-user-plus me-2" style="color: #6366f1;"></i> Nova Pessoa
+                <i class="fas fa-user-plus me-2" style="color: var(--ds-brand);"></i> Nova Pessoa
             </button>
             <button type="button" id="btn-open-import-person" onclick="openProjectModal('importPersonProjectModal')" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
                 <i class="fas fa-file-csv me-2" style="color: #f59e0b;"></i> Importar CSV
@@ -537,7 +537,7 @@
     <div class="impact-timeline">
         @forelse($project->timelineRecords as $record)
             <div class="timeline-item">
-                <div class="timeline-dot" style="border-color: {{ $record->type == 'milestone' ? '#10b981' : ($record->type == 'photo' ? '#6366f1' : '#f59e0b') }}"></div>
+                <div class="timeline-dot" style="border-color: {{ $record->type == 'milestone' ? '#10b981' : ($record->type == 'photo' ? 'var(--ds-brand)' : '#f59e0b') }}"></div>
                 <div class="timeline-content-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
@@ -592,7 +592,7 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:28px; flex-wrap:wrap; gap:12px;">
         <div>
             <h4 style="margin:0; font-weight:900; color:#1e293b; letter-spacing:-0.5px;">
-                <i class="fas fa-book-open me-2" style="color:#6366f1;"></i> Diário de Evolução
+                <i class="fas fa-book-open me-2" style="color:var(--ds-brand);"></i> Diário de Evolução
             </h4>
             <p style="margin:5px 0 0; color:#94a3b8; font-weight:600; font-size:.85rem;">
                 Atualizações diárias da equipe · {{ $logs->count() }} entr{{ $logs->count() === 1 ? 'ada' : 'adas' }}
@@ -602,7 +602,7 @@
             @if($logs->count() >= 3)
             <button id="btn-generate-summary" onclick="generateAiSummary()"
                 class="btn btn-sm fw-bold"
-                style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:12px;padding:10px 20px;">
+                style="background:linear-gradient(135deg,var(--ds-brand),#8b5cf6);color:#fff;border:none;border-radius:12px;padding:10px 20px;">
                 <i class="fas fa-wand-magic-sparkles me-2"></i> Gerar Relatório IA
             </button>
             @endif
@@ -649,10 +649,10 @@
             <textarea name="body" rows="3" required maxlength="3000"
                 placeholder="Descreva o que foi feito hoje, dificuldades encontradas, próximas ações..."
                 style="width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:.88rem;resize:vertical;outline:none;line-height:1.6;"
-                onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+                onfocus="this.style.borderColor='var(--ds-brand)'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
             <div style="display:flex;justify-content:flex-end;margin-top:10px;">
                 <button type="submit"
-                    style="background:#6366f1;color:#fff;border:none;border-radius:12px;padding:10px 24px;font-weight:700;font-size:.85rem;cursor:pointer;">
+                    style="background:var(--ds-brand);color:#fff;border:none;border-radius:12px;padding:10px 24px;font-weight:700;font-size:.85rem;cursor:pointer;">
                     <i class="fas fa-plus me-2"></i> Registrar
                 </button>
             </div>
@@ -671,7 +671,7 @@
             <div style="background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:18px 20px;position:relative;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.8rem;flex-shrink:0;">
+                        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--ds-brand),#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.8rem;flex-shrink:0;">
                             {{ strtoupper(substr($log->user?->name ?? 'U', 0, 1)) }}
                         </div>
                         <div>
@@ -932,7 +932,7 @@ async function generateProjectPdf(btn) {
                                 <div class="col-md-4">
                                     <label for="rE" class="role-card role-card-active w-100" id="card-rE">
                                         <input type="radio" name="access_level" id="rE" value="editor" class="d-none" checked onchange="highlightRoleCard('r',this.id)">
-                                        <i class="fas fa-pen-to-square mb-2" style="font-size:1.3rem;color:#6366f1;"></i>
+                                        <i class="fas fa-pen-to-square mb-2" style="font-size:1.3rem;color:var(--ds-brand);"></i>
                                         <div class="fw-900 mb-1">Editor</div>
                                         <div class="small fw-bold" style="color:#94a3b8;">Operacional</div>
                                     </label>
@@ -990,7 +990,7 @@ async function generateProjectPdf(btn) {
                                 <div class="col-md-4">
                                     <label for="nrE" class="role-card role-card-active w-100" id="card-nrE">
                                         <input type="radio" name="access_level" id="nrE" value="editor" class="d-none" checked onchange="highlightRoleCard('nr',this.id)">
-                                        <i class="fas fa-pen-to-square mb-2" style="font-size:1.3rem;color:#6366f1;"></i>
+                                        <i class="fas fa-pen-to-square mb-2" style="font-size:1.3rem;color:var(--ds-brand);"></i>
                                         <div class="fw-900 mb-1">Editor</div>
                                         <div class="small fw-bold" style="color:#94a3b8;">Operacional</div>
                                     </label>
@@ -1024,7 +1024,7 @@ async function generateProjectPdf(btn) {
             const isSelected = (id === selectedId);
             card.classList.toggle('role-card-active', isSelected);
             const icon = card.querySelector('i');
-            if (icon) icon.style.color = isSelected ? '#6366f1' : '#64748b';
+            if (icon) icon.style.color = isSelected ? 'var(--ds-brand)' : '#64748b';
         });
     }
 

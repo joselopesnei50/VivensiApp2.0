@@ -328,11 +328,11 @@
                     $statusColors = [
                         'active'    => ['#10b981', 'rgba(16,185,129,0.1)', 'Ativo'],
                         'paused'    => ['#f59e0b', 'rgba(245,158,11,0.1)', 'Pausado'],
-                        'completed' => ['#6366f1', 'rgba(99,102,241,0.1)', 'Concluído'],
+                        'completed' => ['var(--ds-brand)', 'rgba(99,102,241,0.1)', 'Concluído'],
                         'canceled'  => ['#94a3b8', 'rgba(255,255,255,0.05)', 'Cancelado'],
                     ];
                     $sc = $statusColors[$proj->status] ?? ['white','rgba(255,255,255,0.05)','—'];
-                    $barColor = $proj->progress >= 100 ? '#10b981' : ($proj->progress >= 60 ? '#6366f1' : '#f59e0b');
+                    $barColor = $proj->progress >= 100 ? '#10b981' : ($proj->progress >= 60 ? 'var(--ds-brand)' : '#f59e0b');
                 @endphp
                 <div style="padding: 18px 20px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); border-radius: 18px; transition:.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'; this.style.transform=''">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
@@ -400,7 +400,7 @@
         </div>
         <div style="display: flex; gap: 24px; flex-wrap: wrap;">
             <div style="text-align:center;">
-                <div style="font-size:1.6rem; font-weight:900; color:#6366f1;">{{ $statesCount }}</div>
+                <div style="font-size:1.6rem; font-weight:900; color:var(--ds-brand);">{{ $statesCount }}</div>
                 <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:.06em;">Estado{{ $statesCount !== 1 ? 's' : '' }}</div>
             </div>
             <div style="text-align:center;">
@@ -418,7 +418,7 @@
     {{-- Empty state --}}
     <div style="height: 280px; border-radius: 20px; background: #0d1526; border: 1px dashed rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 40px;">
         <div style="width: 56px; height: 56px; background: rgba(99,102,241,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <i class="fas fa-map-pin" style="font-size: 1.4rem; color: #6366f1;"></i>
+            <i class="fas fa-map-pin" style="font-size: 1.4rem; color: var(--ds-brand);"></i>
         </div>
         <div>
             <p style="color: white; font-weight: 800; font-size: 1rem; margin: 0 0 6px 0;">Nenhum endereço cadastrado ainda</p>
@@ -445,7 +445,7 @@
                 <p style="color:rgba(255,255,255,0.35); font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin:0;">Top municípios</p>
                 <div style="display:flex; gap:14px;">
                     <span style="font-size:0.7rem; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
-                        <span style="width:8px;height:8px;border-radius:50%;background:#6366f1;"></span> Benef.
+                        <span style="width:8px;height:8px;border-radius:50%;background:var(--ds-brand);"></span> Benef.
                     </span>
                     <span style="font-size:0.7rem; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
                         <span style="width:8px;height:8px;border-radius:50%;background:#10b981;"></span> Doador
@@ -462,13 +462,13 @@
                         @if(!empty($row['state']))<span style="color:rgba(255,255,255,0.3); font-size:0.75rem;">– {{ $row['state'] }}</span>@endif
                     </div>
                     <div style="display:flex; align-items:center; gap:10px;">
-                        @if($row['benef'] > 0)<span style="font-size:0.75rem; color:#6366f1; font-weight:800;">{{ $row['benef'] }}b</span>@endif
+                        @if($row['benef'] > 0)<span style="font-size:0.75rem; color:var(--ds-brand); font-weight:800;">{{ $row['benef'] }}b</span>@endif
                         @if($row['donors'] > 0)<span style="font-size:0.75rem; color:#10b981; font-weight:800;">{{ $row['donors'] }}d</span>@endif
                     </div>
                 </div>
                 <div style="height:5px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; display:flex; gap:1px;">
                     @if($row['benef'] > 0)
-                    <div style="height:100%; width:{{ $maxCity > 0 ? round(($row['benef']/$maxCity)*100) : 0 }}%; background:#6366f1; border-radius:4px; transition:width .6s ease;"></div>
+                    <div style="height:100%; width:{{ $maxCity > 0 ? round(($row['benef']/$maxCity)*100) : 0 }}%; background:var(--ds-brand); border-radius:4px; transition:width .6s ease;"></div>
                     @endif
                     @if($row['donors'] > 0)
                     <div style="height:100%; width:{{ $maxCity > 0 ? round(($row['donors']/$maxCity)*100) : 0 }}%; background:#10b981; border-radius:4px; transition:width .6s ease;"></div>

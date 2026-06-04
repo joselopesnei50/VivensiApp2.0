@@ -65,7 +65,7 @@
     }
     .insight-card-premium:hover {
         transform: translateX(10px);
-        border-color: #6366f1;
+        border-color: var(--ds-brand);
         box-shadow: 0 10px 30px rgba(99, 102, 241, 0.05);
     }
 </style>
@@ -75,10 +75,10 @@
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                <span style="background: #6366f1; width: 12px; height: 3px; border-radius: 2px;"></span>
-                <h6 style="color: #6366f1; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Laboratório Cognitivo</h6>
+                <span style="background: var(--ds-brand); width: 12px; height: 3px; border-radius: 2px;"></span>
+                <h6 style="color: var(--ds-brand); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Laboratório Cognitivo</h6>
             </div>
-            <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Smart Analysis <span class="vivensi-gradient-text" style="background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI</span></h2>
+            <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Smart Analysis <span class="vivensi-gradient-text" style="background: linear-gradient(135deg, var(--ds-brand) 0%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI</span></h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Previsão de fluxo e inteligência de CFO Virtual para sua entidade.</p>
         </div>
         <button id="btnDeepAnalysis" class="btn-premium btn-premium-shine ai-pulse-glow" style="border: none; padding: 16px 32px; font-weight: 800; display: flex; align-items: center; gap: 12px;">
@@ -97,7 +97,7 @@
                     <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Algoritmo Beta-Predict v.2.0 • Histórico de 365 dias</p>
                 </div>
                 <div style="display: flex; background: #f8fafc; padding: 5px; border-radius: 12px; border: 1px solid #f1f5f9;">
-                    <div style="padding: 6px 15px; background: white; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: #6366f1; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">PRÓXIMOS 6 MESES</div>
+                    <div style="padding: 6px 15px; background: white; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: var(--ds-brand); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">PRÓXIMOS 6 MESES</div>
                 </div>
             </div>
             
@@ -208,7 +208,7 @@
 
             <!-- Loading State -->
             <div id="aiLoading" class="d-none" style="padding: 60px 40px; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <div class="ai-pulse-glow" style="width: 80px; height: 80px; background: #6366f1; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; color: white; font-size: 2rem;">
+                <div class="ai-pulse-glow" style="width: 80px; height: 80px; background: var(--ds-brand); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; color: white; font-size: 2rem;">
                     <i class="fas fa-atom fa-spin"></i>
                 </div>
                 <h5 style="font-weight: 900; color: #1e293b; font-size: 1.5rem;">Processando Neurônios...</h5>
@@ -218,7 +218,7 @@
             <!-- Content State -->
             <div id="aiContent" class="d-none" style="padding: 45px;">
                 <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 35px; padding-bottom: 25px; border-bottom: 1px solid #f1f5f9;">
-                    <div style="padding: 10px; background: #eef2ff; border-radius: 12px; color: #6366f1; font-size: 1.5rem;"><i class="fas fa-file-contract"></i></div>
+                    <div style="padding: 10px; background: #eef2ff; border-radius: 12px; color: var(--ds-brand); font-size: 1.5rem;"><i class="fas fa-file-contract"></i></div>
                     <div>
                         <h5 style="margin: 0; font-weight: 900; color: #1e293b; font-size: 1.2rem;">Relatório de Alta Performance</h5>
                         <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Sincronizado via Webhook • {{ date('d/m/Y H:i') }}</span>

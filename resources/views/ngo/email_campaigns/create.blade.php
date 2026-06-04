@@ -4,7 +4,7 @@
 @section('content')
 <div style="margin-bottom:32px;">
     <a href="{{ route('ngo.email_campaigns.index') }}"
-       style="display:inline-flex; align-items:center; gap:6px; color:#6366f1; font-weight:700; font-size:0.85rem; text-decoration:none; margin-bottom:14px;">
+       style="display:inline-flex; align-items:center; gap:6px; color:var(--ds-brand); font-weight:700; font-size:0.85rem; text-decoration:none; margin-bottom:14px;">
         <i class="fas fa-arrow-left"></i> Voltar às campanhas
     </a>
     <h2 style="margin:0; color:#1e293b; font-weight:900; font-size:1.8rem; letter-spacing:-0.5px;">Nova Campanha de E-mail</h2>
@@ -30,14 +30,14 @@
         {{-- Identificação --}}
         <div class="vivensi-card" style="padding:32px; border-radius:20px; margin-bottom:24px;">
             <h4 style="margin:0 0 24px; font-weight:900; color:#1e293b; font-size:1rem;">
-                <i class="fas fa-tag me-2" style="color:#6366f1;"></i>Identificação
+                <i class="fas fa-tag me-2" style="color:var(--ds-brand);"></i>Identificação
             </h4>
             <div style="margin-bottom:20px;">
                 <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Nome interno da campanha *</label>
                 <input type="text" name="name" value="{{ old('name') }}" required
                        placeholder="Ex: Newsletter Junho 2026 — Doadores"
                        style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;"
-                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'">
+                       onfocus="this.style.borderColor='var(--ds-brand)'" onblur="this.style.borderColor='#f1f5f9'">
                 <p style="color:#94a3b8; font-size:0.75rem; margin:6px 0 0;">Aparece só no painel, não é enviado.</p>
             </div>
             <div>
@@ -45,7 +45,7 @@
                 <input type="text" name="subject" value="{{ old('subject') }}" required
                        placeholder="Ex: 💙 Novidades da nossa organização — Junho 2026"
                        style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;"
-                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'">
+                       onfocus="this.style.borderColor='var(--ds-brand)'" onblur="this.style.borderColor='#f1f5f9'">
                 <p style="color:#94a3b8; font-size:0.75rem; margin:6px 0 0;">Linha de assunto que o destinatário vê na caixa de entrada.</p>
             </div>
         </div>
@@ -53,7 +53,7 @@
         {{-- Remetente --}}
         <div class="vivensi-card" style="padding:32px; border-radius:20px; margin-bottom:24px;">
             <h4 style="margin:0 0 8px; font-weight:900; color:#1e293b; font-size:1rem;">
-                <i class="fas fa-user-tie me-2" style="color:#6366f1;"></i>Remetente
+                <i class="fas fa-user-tie me-2" style="color:var(--ds-brand);"></i>Remetente
             </h4>
             <p style="color:#64748b; font-size:0.82rem; margin:0 0 20px;">Deixe em branco para usar o remetente padrão do sistema.</p>
             <div class="row g-3">
@@ -85,7 +85,7 @@
         <div class="vivensi-card" style="padding:32px; border-radius:20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
                 <h4 style="margin:0; font-weight:900; color:#1e293b; font-size:1rem;">
-                    <i class="fas fa-code me-2" style="color:#6366f1;"></i>Conteúdo HTML
+                    <i class="fas fa-code me-2" style="color:var(--ds-brand);"></i>Conteúdo HTML
                 </h4>
                 <div style="display:flex; gap:8px;">
                     <button type="button" onclick="togglePreview()"
@@ -93,7 +93,7 @@
                         <i class="fas fa-eye me-1"></i>Preview
                     </button>
                     <button type="button" onclick="insertTemplate()"
-                            style="padding:8px 16px; border-radius:10px; border:none; background:#6366f1; color:white; font-weight:700; font-size:0.8rem; cursor:pointer;">
+                            style="padding:8px 16px; border-radius:10px; border:none; background:var(--ds-brand); color:white; font-weight:700; font-size:0.8rem; cursor:pointer;">
                         <i class="fas fa-magic me-1"></i>Inserir template
                     </button>
                 </div>
@@ -117,7 +117,7 @@
         {{-- Público --}}
         <div class="vivensi-card" style="padding:28px; border-radius:20px; margin-bottom:20px;">
             <h4 style="margin:0 0 6px; font-weight:900; color:#1e293b; font-size:1rem;">
-                <i class="fas fa-users me-2" style="color:#6366f1;"></i>Público-alvo *
+                <i class="fas fa-users me-2" style="color:var(--ds-brand);"></i>Público-alvo *
             </h4>
             <p style="color:#64748b; font-size:0.78rem; margin:0 0 18px;">Selecione quem receberá este e-mail.</p>
 
@@ -134,7 +134,7 @@
                         'icon'  => 'fa-shield-check',
                         'label' => 'Doadores com Opt-in',
                         'desc'  => 'Somente quem autorizou receber e-mails (LGPD)',
-                        'color' => '#6366f1',
+                        'color' => 'var(--ds-brand)',
                         'bg'    => '#eff6ff',
                     ],
                     'leads' => [
@@ -157,10 +157,10 @@
             @foreach($audiences as $val => $aud)
             @php $isSelected = old('audience_type', 'donors_optins') === $val; @endphp
             <label id="lbl_{{ $val }}"
-                   style="display:flex; align-items:flex-start; gap:12px; padding:14px; border-radius:12px; border:2px solid {{ $isSelected ? '#6366f1' : '#f1f5f9' }}; margin-bottom:10px; cursor:pointer; transition:border-color 0.2s;"
+                   style="display:flex; align-items:flex-start; gap:12px; padding:14px; border-radius:12px; border:2px solid {{ $isSelected ? 'var(--ds-brand)' : '#f1f5f9' }}; margin-bottom:10px; cursor:pointer; transition:border-color 0.2s;"
                    onclick="selectAudience(this, '{{ $val }}')">
                 <input type="radio" name="audience_type" value="{{ $val }}" {{ $isSelected ? 'checked' : '' }}
-                       style="margin-top:3px; accent-color:#6366f1;">
+                       style="margin-top:3px; accent-color:var(--ds-brand);">
                 <div>
                     <div style="font-weight:800; color:#1e293b; font-size:0.88rem; margin-bottom:3px;">
                         <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:{{ $aud['bg'] }}; border-radius:6px; margin-right:6px; color:{{ $aud['color'] }};">
@@ -187,7 +187,7 @@
         {{-- Como funciona --}}
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:18px 20px; margin-bottom:20px;">
             <div style="font-weight:800; color:#1e293b; font-size:0.83rem; margin-bottom:10px;">
-                <i class="fas fa-circle-info me-2" style="color:#6366f1;"></i>Como funciona
+                <i class="fas fa-circle-info me-2" style="color:var(--ds-brand);"></i>Como funciona
             </div>
             <ol style="color:#475569; font-size:0.78rem; line-height:1.9; margin:0; padding-left:16px;">
                 <li>Salve o rascunho</li>
@@ -201,7 +201,7 @@
         {{-- E-mails manuais --}}
         <div class="vivensi-card" style="padding:28px; border-radius:20px; margin-bottom:20px;">
             <h4 style="margin:0 0 6px; font-weight:900; color:#1e293b; font-size:1rem;">
-                <i class="fas fa-at me-2" style="color:#6366f1;"></i>E-mails avulsos
+                <i class="fas fa-at me-2" style="color:var(--ds-brand);"></i>E-mails avulsos
             </h4>
             <p style="color:#64748b; font-size:0.78rem; margin:0 0 14px; line-height:1.6;">
                 Adicione endereços extras além do público selecionado. Um por linha, vírgula ou ponto-e-vírgula.<br>
@@ -211,7 +211,7 @@
             <textarea name="manual_emails_raw" rows="5"
                       placeholder="joao@email.com&#10;Maria Silva <maria@email.com>"
                       style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.82rem; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;"
-                      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'"
+                      onfocus="this.style.borderColor='var(--ds-brand)'" onblur="this.style.borderColor='#f1f5f9'"
                       oninput="countEmails(this)">{{ old('manual_emails_raw') }}</textarea>
             <div id="emailCount" style="color:#94a3b8; font-size:0.72rem; margin-top:6px; text-align:right;"></div>
         </div>
@@ -219,7 +219,7 @@
         {{-- Ações --}}
         <div class="vivensi-card" style="padding:24px; border-radius:20px;">
             <button type="submit"
-                    style="width:100%; padding:16px; border:none; border-radius:12px; background:#6366f1; color:white; font-weight:800; font-size:0.95rem; cursor:pointer; margin-bottom:12px;">
+                    style="width:100%; padding:16px; border:none; border-radius:12px; background:var(--ds-brand); color:white; font-weight:800; font-size:0.95rem; cursor:pointer; margin-bottom:12px;">
                 <i class="fas fa-save me-2"></i>Salvar Rascunho
             </button>
             <a href="{{ route('ngo.email_campaigns.index') }}"
@@ -235,7 +235,7 @@
 <script>
 function selectAudience(label, val) {
     document.querySelectorAll('[id^="lbl_"]').forEach(l => l.style.borderColor = '#f1f5f9');
-    label.style.borderColor = '#6366f1';
+    label.style.borderColor = 'var(--ds-brand)';
 }
 
 function togglePreview() {
