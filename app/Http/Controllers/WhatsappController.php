@@ -139,6 +139,24 @@ class WhatsappController extends Controller
         return response()->json(['success' => true, 'chat' => $chat]);
     }
 
+    /**
+     * Webhook Meta Cloud API (e legacy Z-API montado na mesma rota).
+     *
+     * Rotas: GET|POST /api/whatsapp/webhook (Meta) e POST /api/webhooks/zapi
+     * (Z-API legado, sera migrado). Publicas, sem Auth.
+     * Auth: HMAC SHA256 com META_APP_SECRET (X-Hub-Signature-256).
+     *
+     * ISOLAMENTO MULTI-TENANT:
+     * - Rota publica nao aciona o filtro global de BelongsToTenant — outros
+     *   metodos deste controller (que rodam autenticados) dependem do scope;
+     *   aqui no webhook todas as queries Model::where(...) veem todos os
+     *   tenants.
+     * - O tenant e resolvido via WhatsappConfig::where('meta_phone_number_id',
+     *   $phoneNumberId) usando o phone_number_id da Meta, que e unico por
+     *   conta WABA. tenant_id e lido de $config->tenant_id e propagado para
+     *   o job ProcessWhatsappWebhook (que apenas recebe $config->id).
+     * - Nunca confiar em tenant_id vindo dentro do payload.
+     */
     public function webhook(Request $request)
     {
         // 1. Validação de Handshake da Meta (GET)

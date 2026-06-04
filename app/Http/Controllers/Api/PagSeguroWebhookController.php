@@ -8,6 +8,20 @@ use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * PagSeguroWebhookController
+ *
+ * Rota: POST /api/webhooks/pagseguro (publica, sem Auth).
+ * Auth: token compartilhado em header x-pagseguro-token (hash_equals).
+ *
+ * ISOLAMENTO MULTI-TENANT:
+ * - Esta rota nao tem usuario autenticado, entao a trait BelongsToTenant
+ *   NAO aplica filtro global (vide BelongsToTenant.php:30-37). Qualquer
+ *   query Model::where(...) aqui retornaria linhas de TODOS os tenants.
+ * - O tenant e descoberto via $transaction->tenant_id no HandlePagSeguroWebhook
+ *   apos buscar a Transaction pelo external_id retornado pela gateway
+ *   (unico por transacao). Nunca confiar em tenant_id vindo do payload.
+ */
 class PagSeguroWebhookController extends Controller
 {
     /**

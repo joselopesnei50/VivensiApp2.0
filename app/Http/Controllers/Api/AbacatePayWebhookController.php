@@ -18,6 +18,14 @@ use Illuminate\Support\Facades\Log;
  *
  * Webhook URL: POST /api/abacatepay/webhook
  * Header:      X-Webhook-Secret: SEU_SECRET
+ *
+ * ISOLAMENTO MULTI-TENANT:
+ * - Rota publica nao aciona o filtro global de BelongsToTenant — queries
+ *   Model::where(...) aqui veem todos os tenants.
+ * - O tenant e resolvido no ProcessAbacatePayWebhook via
+ *   findTenantByExternalId() parseando o padrao "tenant_X" do externalId
+ *   enviado por nos na criacao da cobranca. tenant_id no payload bruto
+ *   nao deve ser tratado como autoridade.
  */
 class AbacatePayWebhookController extends Controller
 {
