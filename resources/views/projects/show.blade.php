@@ -411,7 +411,7 @@
                         <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
                     @if(config('bruce.context_project_enabled'))
-                        <button type="button" onclick="openBruceProjectChat({{ $project->id }}, @json($project->name))" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg,#f0f9ff,#e0f2fe); border: 1px solid #bae6fd;">
+                        <button type="button" data-bruce-project-id="{{ $project->id }}" data-bruce-project-name="{{ $project->name }}" id="btn-open-bruce-project" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg,#f0f9ff,#e0f2fe); border: 1px solid #bae6fd;">
                             <span><i class="fas fa-robot me-2" style="color:#0369a1;"></i> Perguntar ao Bruce sobre este projeto</span>
                             <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                         </button>
@@ -1160,6 +1160,20 @@ async function generateProjectPdf(btn) {
     let bpcProjectId = null;
     let bpcProjectName = '';
     let bpcSending = false;
+
+    // Liga o botão do Toolkit ao modal via addEventListener
+    // (evita aspas inline no onclick, que quebravam o JS da página)
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('btn-open-bruce-project');
+        if (btn) {
+            btn.addEventListener('click', function() {
+                openBruceProjectChat(
+                    parseInt(this.dataset.bruceProjectId, 10),
+                    this.dataset.bruceProjectName || ''
+                );
+            });
+        }
+    });
 
     window.openBruceProjectChat = function(projectId, projectName) {
         bpcProjectId   = projectId;
