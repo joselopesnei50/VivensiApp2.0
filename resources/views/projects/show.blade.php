@@ -1039,7 +1039,8 @@ async function generateProjectPdf(btn) {
 </script>
 
 <!-- Add Person Modal -->
-@if($isManager)
+{{-- Modal precisa renderizar para qualquer um que possa ver o botao Nova Pessoa
+     (storePerson permite manager/employee/super_admin/ngo). --}}
 <div class="modal fade" id="addPersonModal" role="dialog" aria-modal="true" aria-labelledby="addPersonModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
@@ -1112,7 +1113,6 @@ async function generateProjectPdf(btn) {
         </div>
     </div>
 </div>
-@endif
 
 @if(config('bruce.context_project_enabled'))
 {{-- ════════════════════════════════════════════════════════════════
@@ -1181,17 +1181,8 @@ async function generateProjectPdf(btn) {
     // script da pagina engolir o data-bs-toggle ou quebrar o objeto
     // `bootstrap` global.
     window.openProjectModal = function(modalId) {
-        // DEBUG temporario para diagnostico do botao Nova Pessoa / Importar CSV
-        // Se o alerta abaixo nao aparecer ao clicar, o onclick NAO esta
-        // disparando (problema fora desta funcao). Se aparecer + modal
-        // nao abrir, problema esta no resto desta funcao.
-        alert('Bruce diag: clique recebido para modal "' + modalId + '". Vou tentar abrir agora.');
-
         const el = document.getElementById(modalId);
-        if (!el) {
-            alert('Bruce diag: modal "' + modalId + '" NAO encontrado no DOM. View precisa ser limpa: php artisan view:clear');
-            return;
-        }
+        if (!el) { console.warn('openProjectModal: modal nao encontrado:', modalId); return; }
 
         // Tentativa 1: Bootstrap nativo
         if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
