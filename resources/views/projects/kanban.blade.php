@@ -107,7 +107,7 @@
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Orquestração de tarefas e fluxo operacional em tempo real.</p>
         </div>
         <div style="display: flex; gap: 15px;">
-             <a href="{{ $basePath . '/projects/details/'.$project->id }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
+            <a href="{{ $basePath . '/projects/details/'.$project->id }}" class="btn-ds btn-ds-outline" style="font-weight: 700;">
                 <i class="fas fa-arrow-left me-2"></i> Dashboard
             </a>
             <button type="button" onclick="openNewTaskModal()" class="btn-premium btn-premium-shine" style="border: none;">
@@ -243,14 +243,14 @@
             </div>
             <div style="padding: 14px 20px; background:#f8fafc; border-top:1px solid #f1f5f9; display:flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
                 <div style="display:flex; gap: 8px; flex-wrap: wrap;">
-                    <button type="button" id="kbMoveTodo" onclick="kbMove('todo')" class="btn-outline" style="padding: 10px 12px; border-radius: 12px; font-weight: 900;">Pipeline</button>
-                    <button type="button" id="kbMoveDoing" onclick="kbMove('doing')" class="btn-outline" style="padding: 10px 12px; border-radius: 12px; font-weight: 900;">Execução</button>
-                    <button type="button" id="kbMoveDone" onclick="kbMove('done')" class="btn-outline" style="padding: 10px 12px; border-radius: 12px; font-weight: 900;">Concluir</button>
+                    <button type="button" id="kbMoveTodo" onclick="kbMove('todo')" class="btn-ds btn-ds-outline" style="padding: 10px 12px; font-weight: 800;">Pipeline</button>
+                    <button type="button" id="kbMoveDoing" onclick="kbMove('doing')" class="btn-ds btn-ds-outline" style="padding: 10px 12px; font-weight: 800;">Execução</button>
+                    <button type="button" id="kbMoveDone" onclick="kbMove('done')" class="btn-ds btn-ds-outline" style="padding: 10px 12px; font-weight: 800;">Concluir</button>
                 </div>
                 @if(($canManageAll ?? false))
                     <div style="display:flex; gap: 8px; flex-wrap: wrap;">
-                        <button type="button" id="kbEditToggle" onclick="toggleKbEdit()" class="btn-outline" style="padding: 10px 12px; border-radius: 12px; font-weight: 900;">Editar</button>
-                        <button type="button" id="kbSaveBtn" onclick="kbSave()" class="btn-outline" style="padding: 10px 12px; border-radius: 12px; font-weight: 900; background:#0f172a; color:#fff; border-color:#0f172a;">Salvar</button>
+                        <button type="button" id="kbEditToggle" onclick="toggleKbEdit()" class="btn-ds btn-ds-outline" style="padding: 10px 12px; font-weight: 800;">Editar</button>
+                        <button type="button" id="kbSaveBtn" onclick="kbSave()" class="btn-ds btn-ds-outline" style="padding: 10px 12px; font-weight: 800; background:#0f172a; color:#fff; border-color:#0f172a;">Salvar</button>
                     </div>
                 @endif
             </div>
@@ -844,8 +844,10 @@
     // ESC closes task modal
     document.addEventListener('keydown', function(ev) {
         if (ev.key !== 'Escape') return;
+        // Modal abre com display:flex (linha ~666). Comparar com 'block' nunca casava,
+        // entao ESC nao fechava o modal de tarefa. Usar !== 'none' cobre flex/block/grid.
         const kb = document.getElementById('kbTaskOverlay');
-        if (kb && kb.style.display === 'block') {
+        if (kb && kb.style.display && kb.style.display !== 'none') {
             closeKanbanTaskModal();
             return;
         }
