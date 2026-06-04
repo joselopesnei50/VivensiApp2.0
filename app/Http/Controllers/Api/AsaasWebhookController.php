@@ -8,6 +8,19 @@ use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * AsaasWebhookController
+ *
+ * Rota: POST /api/webhooks/asaas (publica, sem Auth).
+ * Auth: token compartilhado em header asaas-access-token (hash_equals).
+ *
+ * ISOLAMENTO MULTI-TENANT:
+ * - Rota publica nao aciona o filtro global de BelongsToTenant — queries
+ *   Model::where(...) aqui veem todos os tenants.
+ * - O tenant e resolvido no HandleAsaasWebhook via
+ *   Tenant::where('asaas_customer_id', $customerId), unico por conta
+ *   ASAAS. tenant_id do payload nao deve ser usado como autoridade.
+ */
 class AsaasWebhookController extends Controller
 {
     public function handle(Request $request)

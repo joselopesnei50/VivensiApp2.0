@@ -11,6 +11,36 @@ use App\Mail\RaffleTicketPaid;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * OpenPixWebhookController
+ *
+ * Rota: POST /openpix/webhook (publica, sem Auth).
+ * Auth: HMAC validado pelo SDK oficial (OpenPix\PhpSdk\Client::webhooks).
+ *
+ * ESTADO ATUAL DA INTEGRACAO (auditoria 2026-06):
+ * - Nenhum fluxo no codigo atual cria charges OpenPix (nao ha chamada
+ *   ao SDK $openpix->charges em controllers/services/jobs). Portanto a
+ *   integracao esta INCOMPLETA: este webhook nunca recebe eventos de
+ *   verdade. O lookup RaffleTicket::where('transaction_id', $correlationID)
+ *   nao casa hoje porque RaffleController::confirmPayment seta
+ *   transaction_id = $transaction->id (PK auto-increment global),
+ *   nao o correlationID UUID que a OpenPix devolveria.
+ * - Se a integracao for ativada no futuro, sera necessario:
+ *     1. Adicionar coluna semantica em raffle_tickets (ex.:
+ *        openpix_correlation_id) ou prefixar/sobrescrever transaction_id
+ *        com o correlationID retornado pela charge create.
+ *     2. Trocar o lookup na linha ~68 desta classe para usar a nova
+ *        coluna E adicionar where('tenant_id', $ticket_tenant_id) como
+ *        defense-in-depth.
+ *
+ * ISOLAMENTO MULTI-TENANT:
+ * - Rota publica nao aciona o filtro global de BelongsToTenant.
+ * - Hoje o lookup RaffleTicket::where('transaction_id', ...) e seguro
+ *   por colisao acidental porque correlationID nunca coincidira com
+ *   um Transaction->id (formatos diferentes), mas isso e seguranca
+ *   por desenho frouxo — depende do correlationID ser UUID-ish e nao
+ *   numerico. Validar no momento de ativar.
+ */
 class OpenPixWebhookController extends Controller
 {
     const SIGNATURE_HEADER = "x-webhook-signature";
