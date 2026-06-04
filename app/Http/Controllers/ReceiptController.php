@@ -156,7 +156,10 @@ class ReceiptController extends Controller
     public function show($token)
     {
         // Public route: do not apply tenant scopes (even if someone is logged in).
-        $transaction = Transaction::withoutGlobalScopes()->where('public_receipt_token', $token)
+        // Lookup pelo blind index (HMAC) — coluna plaintext ja nao existe
+        // (Crypt::encryptString ofusca; bidx e o que casa).
+        $tokenBidx = hash_hmac('sha256', (string) $token, config('app.key'));
+        $transaction = Transaction::withoutGlobalScopes()->where('public_receipt_token_bidx', $tokenBidx)
             ->where('type', 'income')
             ->where('status', 'paid')
             ->firstOrFail();
@@ -208,10 +211,15 @@ class ReceiptController extends Controller
 
         try {
             // Public validation: ignore tenant scopes to validate across organizations.
+            // Lookup do token via bidx (HMAC) — auth_code segue plaintext porque
+            // e mostrado ao usuario para digitacao manual.
             $q = Transaction::withoutGlobalScopes()->where('type', 'income')->where('status', 'paid');
-            $transaction = $token
-                ? $q->where('public_receipt_token', $token)->first()
-                : $q->where('receipt_auth_code', $code)->first();
+            if ($token) {
+                $tokenBidx = hash_hmac('sha256', (string) $token, config('app.key'));
+                $transaction = $q->where('public_receipt_token_bidx', $tokenBidx)->first();
+            } else {
+                $transaction = $q->where('receipt_auth_code', $code)->first();
+            }
 
             if (!$transaction) {
                 $result['status'] = 'invalid';

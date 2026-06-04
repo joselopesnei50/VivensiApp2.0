@@ -13,12 +13,16 @@ class CleanupExpiredReceiptTokens extends Command
 
     public function handle(): int
     {
+        // Builder::update nao chama mutators — entao alem de zerar o token
+        // plaintext (encriptado), zeramos tambem o bidx para o lookup nao
+        // continuar achando o registro expirado.
         $count = Transaction::withoutGlobalScopes()
             ->whereNotNull('public_receipt_token')
             ->whereNotNull('public_receipt_expires_at')
             ->where('public_receipt_expires_at', '<', now())
             ->update([
                 'public_receipt_token'      => null,
+                'public_receipt_token_bidx' => null,
                 'receipt_auth_code'         => null,
                 'public_receipt_expires_at' => null,
             ]);
