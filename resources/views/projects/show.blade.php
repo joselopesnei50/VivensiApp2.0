@@ -230,6 +230,11 @@
                         <i class="fas fa-file-pdf" style="color: #f87171;"></i> Relatório PDF
                     </button>
                 @endif
+                @if(config('planning.enabled'))
+                    <a href="{{ route('projects.planning.show', $project->id) }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                        <i class="fas fa-bullseye" style="color: var(--ds-brand);"></i> Planejamento
+                    </a>
+                @endif
                 <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
                     <i class="fas fa-tasks" style="color: var(--ds-brand);"></i> Quadros Kanban
                 </a>

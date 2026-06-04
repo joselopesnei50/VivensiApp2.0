@@ -34,6 +34,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/projects/{id}/logs/summary',    [App\Http\Controllers\ProjectLogController::class, 'generateSummary'])->name('projects.logs.summary')->middleware('throttle:web_ai');
     Route::get('/projects/{id}/logs/summary-status', [App\Http\Controllers\ProjectLogController::class, 'summaryStatus'])->name('projects.logs.summary-status');
 
+    // Planejamento estrategico (Fase 1 — atras de feature flag
+    // PROJECT_PLANNING_ENABLED, controlado em config/planning.php)
+    Route::get('/projects/{id}/planning',                            [App\Http\Controllers\ProjectPlanningController::class, 'show'])->name('projects.planning.show');
+    Route::put('/projects/{id}/planning',                            [App\Http\Controllers\ProjectPlanningController::class, 'updateOverview'])->name('projects.planning.update')->middleware('throttle:web_write');
+    Route::post('/projects/{id}/planning/goals',                     [App\Http\Controllers\ProjectPlanningController::class, 'storeGoal'])->name('projects.planning.goals.store')->middleware('throttle:web_write');
+    Route::put('/projects/{id}/planning/goals/{goalId}',             [App\Http\Controllers\ProjectPlanningController::class, 'updateGoal'])->name('projects.planning.goals.update')->middleware('throttle:web_write');
+    Route::delete('/projects/{id}/planning/goals/{goalId}',          [App\Http\Controllers\ProjectPlanningController::class, 'destroyGoal'])->name('projects.planning.goals.destroy')->middleware('throttle:web_write');
+    Route::post('/projects/{id}/planning/milestones',                [App\Http\Controllers\ProjectPlanningController::class, 'storeMilestone'])->name('projects.planning.milestones.store')->middleware('throttle:web_write');
+    Route::put('/projects/{id}/planning/milestones/{milestoneId}',   [App\Http\Controllers\ProjectPlanningController::class, 'updateMilestone'])->name('projects.planning.milestones.update')->middleware('throttle:web_write');
+    Route::delete('/projects/{id}/planning/milestones/{milestoneId}',[App\Http\Controllers\ProjectPlanningController::class, 'destroyMilestone'])->name('projects.planning.milestones.destroy')->middleware('throttle:web_write');
+
     // Tarefas
     Route::get('/tasks',             [App\Http\Controllers\TaskController::class, 'index']);
     Route::get('/tasks/calendar',    [App\Http\Controllers\TaskController::class, 'calendar'])->name('tasks.calendar');

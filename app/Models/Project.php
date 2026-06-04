@@ -28,14 +28,22 @@ class Project extends Model
         'ai_summary_status',
         'archived_at',
         'archived_by',
+        // ── Planejamento estrategico (Fase 1) ──
+        'presentation',
+        'justification',
+        'context',
+        'target_audience',
+        'general_objective',
+        'specific_objectives',
     ];
 
     protected $casts = [
-        'start_date'    => 'date',
-        'end_date'      => 'date',
-        'budget'        => 'decimal:2',
-        'ai_summary_at' => 'datetime',
-        'archived_at'   => 'datetime',
+        'start_date'          => 'date',
+        'end_date'            => 'date',
+        'budget'              => 'decimal:2',
+        'ai_summary_at'       => 'datetime',
+        'archived_at'         => 'datetime',
+        'specific_objectives' => 'array',
     ];
 
     // Desativa a coluna updated_at que não existe no banco legado
@@ -100,5 +108,15 @@ class Project extends Model
     public function logs()
     {
         return $this->hasMany(ProjectLog::class)->orderBy('created_at', 'desc');
+    }
+
+    public function goals()
+    {
+        return $this->hasMany(ProjectGoal::class)->orderBy('created_at', 'desc');
+    }
+
+    public function milestones()
+    {
+        return $this->hasMany(ProjectMilestone::class)->orderBy('target_date');
     }
 }
