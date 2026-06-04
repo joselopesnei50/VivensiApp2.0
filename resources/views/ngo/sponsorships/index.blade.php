@@ -77,7 +77,7 @@
 }
 .kanban-drop-zone.drag-over {
     background: #e0e7ff;
-    border: 2px dashed #6366f1;
+    border: 2px dashed var(--ds-brand);
     border-radius: 12px;
 }
 
@@ -101,7 +101,7 @@
 .k-card-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
 .k-avatar {
     width: 36px; height: 36px; border-radius: 10px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--ds-brand), #8b5cf6);
     color: #fff; font-weight: 900; font-size: 0.85rem;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -171,7 +171,7 @@
     transition: border-color .15s, box-shadow .15s;
 }
 .sp-search-input:focus {
-    border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1);
+    border-color: var(--ds-brand); box-shadow: 0 0 0 3px rgba(99,102,241,.1);
 }
 .sp-stage-pills { display: flex; gap: 6px; flex-wrap: wrap; }
 .sp-pill {
@@ -181,7 +181,7 @@
 }
 .sp-pill.active, .sp-pill:hover { color: #fff; border-color: transparent; }
 .sp-pill[data-stage="all"].active      { background: #0f172a; }
-.sp-pill[data-stage="prospecting"].active       { background: #6366f1; }
+.sp-pill[data-stage="prospecting"].active       { background: var(--ds-brand); }
 .sp-pill[data-stage="meeting_scheduled"].active  { background: #f59e0b; }
 .sp-pill[data-stage="negotiating"].active        { background: #3b82f6; }
 .sp-pill[data-stage="won"].active                { background: #10b981; }
@@ -198,7 +198,7 @@
     outline: none;
 }
 .form-field input:focus, .form-field textarea:focus, .form-field select:focus {
-    border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1);
+    border-color: var(--ds-brand); box-shadow: 0 0 0 3px rgba(99,102,241,.1);
     background: #fff;
 }
 </style>
@@ -214,7 +214,7 @@
     $convRate      = $totalCount > 0 ? round(($wonCount / $totalCount) * 100) : 0;
 
     $cols = [
-        'prospecting'       => ['label' => 'Prospecção',      'color' => '#6366f1', 'icon' => 'fa-search'],
+        'prospecting'       => ['label' => 'Prospecção',      'color' => 'var(--ds-brand)', 'icon' => 'fa-search'],
         'meeting_scheduled' => ['label' => 'Reunião Marcada', 'color' => '#f59e0b', 'icon' => 'fa-calendar-check'],
         'negotiating'       => ['label' => 'Em Negociação',   'color' => '#3b82f6', 'icon' => 'fa-handshake'],
         'won'               => ['label' => 'Conquistado',     'color' => '#10b981', 'icon' => 'fa-trophy'],
@@ -225,7 +225,7 @@
 {{-- Header --}}
 <div class="sp-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
     <div>
-        <h6 style="color:#6366f1; font-weight:700; text-transform:uppercase; margin:0 0 4px; letter-spacing:1px; font-size:.75rem;">Terceiro Setor</h6>
+        <h6 style="color:var(--ds-brand); font-weight:700; text-transform:uppercase; margin:0 0 4px; letter-spacing:1px; font-size:.75rem;">Terceiro Setor</h6>
         <h2 style="margin:0; color:#0f172a; font-weight:900; font-size:1.75rem;">CRM de Patrocínios</h2>
         <p style="color:#64748b; margin:4px 0 0; font-size:.85rem;">Pipeline visual de empresas parceiras e captação B2B.</p>
     </div>
@@ -237,7 +237,7 @@
 {{-- KPIs --}}
 <div class="sp-kpis">
     <div class="sp-kpi">
-        <div class="sp-kpi-icon" style="background:#eef2ff; color:#6366f1;"><i class="fas fa-funnel-dollar"></i></div>
+        <div class="sp-kpi-icon" style="background:#eef2ff; color:var(--ds-brand);"><i class="fas fa-funnel-dollar"></i></div>
         <div>
             <div class="sp-kpi-label">Pipeline Ativo</div>
             <div class="sp-kpi-value">R$ {{ number_format($totalPipeline, 0, ',', '.') }}</div>
@@ -392,7 +392,7 @@
 <div class="modal fade" id="dealModal" role="dialog" aria-modal="true" aria-labelledby="dealModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:540px;">
         <div class="modal-content" style="border-radius:22px; border:none; box-shadow:0 25px 60px rgba(0,0,0,0.15); overflow:hidden;">
-            <div class="modal-header" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); padding:24px 28px; border:none;">
+            <div class="modal-header" style="background:linear-gradient(135deg,var(--ds-brand),#8b5cf6); padding:24px 28px; border:none;">
                 <div>
                     <h5 class="modal-title fw-bold text-white mb-0" id="dealModalLabel" style="font-size:1.05rem;">
                         <i class="fas fa-handshake me-2"></i> Novo Patrocínio
@@ -501,7 +501,7 @@
             </div>
             <div class="modal-footer" style="padding:16px 26px; border-top:1px solid #f1f5f9; justify-content:space-between;">
                 <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:8px;">Fechar</button>
-                <button type="button" id="btnOpenEditFromDetail" class="btn btn-sm" style="background:#6366f1; color:#fff; border:none; border-radius:8px; font-weight:700;">
+                <button type="button" id="btnOpenEditFromDetail" class="btn btn-sm" style="background:var(--ds-brand); color:#fff; border:none; border-radius:8px; font-weight:700;">
                     <i class="fas fa-pen me-1"></i> Editar
                 </button>
             </div>
@@ -513,7 +513,7 @@
 <div class="modal fade" id="editDealModal" role="dialog" aria-modal="true" aria-labelledby="editDealModalLabel" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:540px;">
         <div class="modal-content" style="border-radius:22px; border:none; box-shadow:0 25px 60px rgba(0,0,0,0.15); overflow:hidden;">
-            <div class="modal-header" style="background:linear-gradient(135deg,#0ea5e9,#6366f1); padding:24px 28px; border:none;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#0ea5e9,var(--ds-brand)); padding:24px 28px; border:none;">
                 <div>
                     <h5 class="modal-title fw-bold text-white mb-0" id="editDealModalLabel" style="font-size:1.05rem;">
                         <i class="fas fa-pen me-2"></i> Editar Patrocínio
