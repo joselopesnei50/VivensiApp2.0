@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Models\Task;
 use App\Models\Project;
+use App\Models\ProjectLog;
+use App\Models\ProjectMember;
+use App\Models\ProjectTimelineRecord;
 use App\Models\Tenant;
 use App\Models\Transaction;
 use App\Models\WhatsappConfig;
@@ -28,12 +31,18 @@ class BruceAiService
 
     // ── Chat ─────────────────────────────────────────────────────────────────
 
-    public function chat(string $userMessage, int $tenantId, string $role = 'common', int $userId = 0): array
-    {
-        $history = $this->getHistory($tenantId, $userId);
+    public function chat(
+        string $userMessage,
+        int $tenantId,
+        string $role = 'common',
+        int $userId = 0,
+        ?string $contextType = null,
+        ?int $contextId = null
+    ): array {
+        $history = $this->getHistory($tenantId, $userId, $contextType, $contextId);
 
         $messages = array_merge(
-            [['role' => 'system', 'content' => $this->buildSystemPrompt($tenantId, $role)]],
+            [['role' => 'system', 'content' => $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId)]],
             $history,
             [['role' => 'user', 'content' => $userMessage]]
         );
@@ -46,7 +55,7 @@ class BruceAiService
 
         $reply = data_get($response, 'choices.0.message.content', 'Não consegui processar sua mensagem.');
 
-        // Persistir histórico (user + assistant)
+        // Persistir histórico (user + assistant) — chave isolada por contexto
         $newHistory = array_merge($history, [
             ['role' => 'user',      'content' => $userMessage],
             ['role' => 'assistant', 'content' => $reply],
@@ -57,18 +66,19 @@ class BruceAiService
             $newHistory = array_slice($newHistory, -self::MAX_HISTORY);
         }
 
-        $this->saveHistory($tenantId, $userId, $newHistory);
+        $this->saveHistory($tenantId, $userId, $newHistory, $contextType, $contextId);
 
         return [
             'reply'     => $reply,
             'tokens'    => data_get($response, 'usage.total_tokens', 0),
             'timestamp' => now()->toIso8601String(),
+            'context'   => $contextType ? ['type' => $contextType, 'id' => $contextId] : null,
         ];
     }
 
-    public function clearHistory(int $tenantId, int $userId = 0): void
+    public function clearHistory(int $tenantId, int $userId = 0, ?string $contextType = null, ?int $contextId = null): void
     {
-        Cache::forget($this->historyKey($tenantId, $userId));
+        Cache::forget($this->historyKey($tenantId, $userId, $contextType, $contextId));
     }
 
     // ── Insight proativo (usado no dashboard, cache 6h) ───────────────────────
@@ -98,7 +108,7 @@ class BruceAiService
 
     // ── System prompt contextual ──────────────────────────────────────────────
 
-    private function buildSystemPrompt(int $tenantId, string $role): string
+    private function buildSystemPrompt(int $tenantId, string $role, ?string $contextType = null, ?int $contextId = null): string
     {
         $ctx = $this->tenantContext($tenantId);
 
@@ -131,6 +141,11 @@ CAP;
             ? "## INSTRUÇÕES ESPECÍFICAS DA ORGANIZAÇÃO\n{$ctx['ai_training']}\n"
             : '';
 
+        $contextBlock = '';
+        if ($contextType === 'project' && $contextId && config('bruce.context_project_enabled', false)) {
+            $contextBlock = $this->projectContext($contextId, $tenantId);
+        }
+
         return <<<PROMPT
 Você é Bruce, assistente de inteligência artificial do sistema Vivensi.
 
@@ -160,7 +175,103 @@ Você é Bruce, assistente de inteligência artificial do sistema Vivensi.
 - Data: {$this->today()}
 
 Use esses dados para responder perguntas sobre finanças, projetos e tarefas sem pedir que o usuário os forneça novamente.
+
+{$contextBlock}
 PROMPT;
+    }
+
+    /**
+     * Bloco de contexto específico de um projeto. Injetado no system prompt
+     * quando context_type=project. Cacheado 5 min por projeto.
+     * Quando o feature flag bruce.context_project_enabled está off, retorna ''.
+     */
+    private function projectContext(int $projectId, int $tenantId): string
+    {
+        $cacheKey = "bruce.proj_ctx.{$tenantId}.{$projectId}";
+
+        return Cache::remember($cacheKey, 300, function () use ($projectId, $tenantId) {
+            $project = Project::where('tenant_id', $tenantId)
+                ->where('id', $projectId)
+                ->first();
+
+            if (!$project) {
+                return '';
+            }
+
+            // KPIs operacionais (sem expor valores brutos — agregados)
+            $openTasks    = Task::where('tenant_id', $tenantId)->where('project_id', $projectId)
+                ->whereNotIn('status', ['done', 'completed'])->count();
+            $doneTasks    = Task::where('tenant_id', $tenantId)->where('project_id', $projectId)
+                ->whereIn('status', ['done', 'completed'])->count();
+            $overdueTasks = Task::where('tenant_id', $tenantId)->where('project_id', $projectId)
+                ->whereNotIn('status', ['done', 'completed'])
+                ->whereNotNull('due_date')->where('due_date', '<', now()->toDateString())->count();
+
+            $totalSpent = (float) Transaction::where('tenant_id', $tenantId)
+                ->where('project_id', $projectId)
+                ->where('type', 'expense')
+                ->where('status', 'paid')
+                ->sum('amount');
+
+            $memberCount = ProjectMember::where('tenant_id', $tenantId)
+                ->where('project_id', $projectId)
+                ->count();
+
+            // Últimos 3 logs do diário (resumo curto)
+            $lastLogs = ProjectLog::where('project_id', $projectId)
+                ->orderBy('created_at', 'desc')
+                ->limit(3)
+                ->get(['created_at', 'body'])
+                ->map(fn ($l) => '- ' . $l->created_at->format('d/m') . ': ' . \Illuminate\Support\Str::limit((string) $l->body, 140))
+                ->implode("\n");
+
+            // Próximo marco da timeline
+            $nextMilestone = ProjectTimelineRecord::where('project_id', $projectId)
+                ->whereDate('date', '>=', now())
+                ->orderBy('date', 'asc')
+                ->first(['title', 'date', 'type']);
+
+            $statusLabel = match ($project->status) {
+                'active'      => 'em execução',
+                'paused'      => 'pausado',
+                'completed'   => 'concluído',
+                'canceled'    => 'cancelado',
+                'in_progress' => 'em execução',
+                default       => $project->status ?? 'sem status',
+            };
+
+            $budget = $project->budget ? 'R$ ' . $this->fmt((float) $project->budget) : 'sem orçamento definido';
+            $usedPct = ($project->budget && $project->budget > 0) ? round(($totalSpent / $project->budget) * 100) : null;
+            $budgetLine = $usedPct !== null
+                ? "Orçamento: {$budget} (usado: {$usedPct}%)"
+                : "Orçamento: {$budget}";
+
+            $milestoneLine = $nextMilestone
+                ? "Próximo marco: \"{$nextMilestone->title}\" em " . \Carbon\Carbon::parse($nextMilestone->date)->format('d/m/Y')
+                : 'Próximo marco: nenhum agendado';
+
+            $logsBlock = $lastLogs ? "\n## Últimas entradas no diário\n{$lastLogs}" : '';
+
+            return <<<PCTX
+
+## CONTEXTO DO PROJETO ATUAL
+Você está respondendo perguntas sobre o projeto **{$project->name}** (ID #{$project->id}).
+O usuário quer falar sobre ESTE projeto especificamente.
+
+### Estado atual
+- Status: {$statusLabel}
+- {$budgetLine}
+- Tarefas: {$doneTasks} concluídas / {$openTasks} abertas / {$overdueTasks} vencidas
+- Equipe: {$memberCount} membros vinculados
+- {$milestoneLine}
+{$logsBlock}
+
+### Regras para este contexto
+- Foque suas respostas neste projeto, salvo quando o usuário pedir comparação.
+- Quando sugerir ações, prefira coisas que podem ser feitas dentro da tela do projeto (criar tarefa, registrar marco, escrever no diário, lançar transação, contatar membro).
+- Não invente dados que não estão no estado acima. Se faltar info, diga que precisa ser registrada.
+PCTX;
+        });
     }
 
     private function fmt(float $value): string
@@ -200,18 +311,22 @@ PROMPT;
 
     // ── Redis history helpers ─────────────────────────────────────────────────
 
-    private function historyKey(int $tenantId, int $userId): string
+    private function historyKey(int $tenantId, int $userId, ?string $contextType = null, ?int $contextId = null): string
     {
-        return "bruce.history.{$tenantId}.{$userId}";
+        $base = "bruce.history.{$tenantId}.{$userId}";
+        if ($contextType && $contextId) {
+            return "{$base}.{$contextType}.{$contextId}";
+        }
+        return $base;
     }
 
-    private function getHistory(int $tenantId, int $userId): array
+    private function getHistory(int $tenantId, int $userId, ?string $contextType = null, ?int $contextId = null): array
     {
-        return Cache::get($this->historyKey($tenantId, $userId), []);
+        return Cache::get($this->historyKey($tenantId, $userId, $contextType, $contextId), []);
     }
 
-    private function saveHistory(int $tenantId, int $userId, array $messages): void
+    private function saveHistory(int $tenantId, int $userId, array $messages, ?string $contextType = null, ?int $contextId = null): void
     {
-        Cache::put($this->historyKey($tenantId, $userId), $messages, self::HISTORY_TTL);
+        Cache::put($this->historyKey($tenantId, $userId, $contextType, $contextId), $messages, self::HISTORY_TTL);
     }
 }

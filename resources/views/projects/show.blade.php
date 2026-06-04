@@ -410,6 +410,12 @@
                         <span><i class="fas fa-brain me-2 text-primary"></i> Smart Analysis</span>
                         <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
+                    @if(config('bruce.context_project_enabled'))
+                        <button type="button" onclick="openBruceProjectChat({{ $project->id }}, @json($project->name))" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg,#f0f9ff,#e0f2fe); border: 1px solid #bae6fd;">
+                            <span><i class="fas fa-robot me-2" style="color:#0369a1;"></i> Perguntar ao Bruce sobre este projeto</span>
+                            <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
+                        </button>
+                    @endif
                     @php
                         $isArchived = !empty($project) && method_exists($project, 'isArchived') && $project->isArchived();
                     @endphp
@@ -1106,6 +1112,171 @@ async function generateProjectPdf(btn) {
         </div>
     </div>
 </div>
+@endif
+
+@if(config('bruce.context_project_enabled'))
+{{-- ════════════════════════════════════════════════════════════════
+     Modal: Bruce contextual (feature flag bruce.context_project_enabled)
+     ──────────────────────────────────────────────────────────────── --}}
+<div class="modal fade" id="bruceProjectChatModal" tabindex="-1" aria-labelledby="bruceProjectChatModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 640px;">
+        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg,#0369a1,#0c4a6e); color:#fff; border-bottom: none; padding: 20px 24px;">
+                <h5 class="modal-title" id="bruceProjectChatModalLabel" style="font-weight: 900; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-robot"></i>
+                    <span>Bruce</span>
+                    <span id="bpc_project_badge" style="background: rgba(255,255,255,0.18); padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div id="bpc_messages" style="padding: 20px 24px; height: 380px; overflow-y: auto; background: #f8fafc;">
+                    <div id="bpc_empty" style="text-align: center; color: #94a3b8; padding: 60px 20px;">
+                        <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p style="margin: 0; font-weight: 700; color: #475569;">Pergunte algo sobre este projeto</p>
+                        <p style="margin: 8px 0 0 0; font-size: 0.85rem;">Ex: <em>"como está o orçamento?"</em>, <em>"o que devo priorizar essa semana?"</em>, <em>"resuma o diário dos últimos dias"</em></p>
+                    </div>
+                </div>
+                <div style="padding: 16px 20px; background: #fff; border-top: 1px solid #f1f5f9;">
+                    <form id="bpc_form" onsubmit="return bruceProjectSend(event);" style="display: flex; gap: 8px;">
+                        <input type="text" id="bpc_input" class="form-control" placeholder="Digite sua pergunta sobre este projeto..." autocomplete="off"
+                               style="flex:1; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #0f172a;">
+                        <button type="submit" id="bpc_send" class="btn-premium" style="padding: 12px 18px !important; font-size: 0.85rem !important; background: #0369a1 !important; color: #fff !important;">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f5f9; padding: 12px 24px; justify-content: space-between;">
+                <button type="button" id="bpc_clear" onclick="bruceProjectClear()" class="btn btn-light" style="font-weight: 700; font-size: 0.8rem;"><i class="fas fa-trash-alt me-1"></i> Limpar conversa</button>
+                <small style="color: #94a3b8;">As respostas são geradas por IA e podem conter imprecisões.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let bpcProjectId = null;
+    let bpcProjectName = '';
+    let bpcSending = false;
+
+    window.openBruceProjectChat = function(projectId, projectName) {
+        bpcProjectId   = projectId;
+        bpcProjectName = projectName || ('Projeto #' + projectId);
+        document.getElementById('bpc_project_badge').textContent = bpcProjectName;
+        document.getElementById('bpc_input').value = '';
+        document.getElementById('bpc_messages').innerHTML = `
+            <div id="bpc_empty" style="text-align: center; color: #94a3b8; padding: 60px 20px;">
+                <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.5;"></i>
+                <p style="margin: 0; font-weight: 700; color: #475569;">Pergunte algo sobre <strong>${bpcProjectName}</strong></p>
+                <p style="margin: 8px 0 0 0; font-size: 0.85rem;">Ex: <em>"como está o orçamento?"</em>, <em>"o que devo priorizar essa semana?"</em></p>
+            </div>`;
+        const modal = new bootstrap.Modal(document.getElementById('bruceProjectChatModal'));
+        modal.show();
+        setTimeout(() => document.getElementById('bpc_input').focus(), 250);
+    };
+
+    function bpcAppend(role, text) {
+        const empty = document.getElementById('bpc_empty');
+        if (empty) empty.remove();
+        const box   = document.getElementById('bpc_messages');
+        const isUser = role === 'user';
+        const html  = `
+            <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-direction: ${isUser ? 'row-reverse' : 'row'};">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: ${isUser ? '#0369a1' : '#10b981'}; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">
+                    <i class="fas fa-${isUser ? 'user' : 'robot'}"></i>
+                </div>
+                <div style="background: ${isUser ? '#0369a1' : '#fff'}; color: ${isUser ? '#fff' : '#0f172a'}; padding: 12px 16px; border-radius: 16px; max-width: 78%; font-size: 0.9rem; line-height: 1.5; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid ${isUser ? 'transparent' : '#e2e8f0'};">
+                    ${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
+                </div>
+            </div>`;
+        box.insertAdjacentHTML('beforeend', html);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function bpcTyping(on) {
+        let el = document.getElementById('bpc_typing');
+        if (on && !el) {
+            const box = document.getElementById('bpc_messages');
+            box.insertAdjacentHTML('beforeend', `
+                <div id="bpc_typing" style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;"><i class="fas fa-robot"></i></div>
+                    <div style="background: #fff; color: #475569; padding: 12px 16px; border-radius: 16px; font-size: 0.85rem; border: 1px solid #e2e8f0;"><i class="fas fa-circle-notch fa-spin me-2"></i> Pensando...</div>
+                </div>`);
+            box.scrollTop = box.scrollHeight;
+        } else if (!on && el) {
+            el.remove();
+        }
+    }
+
+    window.bruceProjectSend = async function(ev) {
+        ev.preventDefault();
+        if (bpcSending || !bpcProjectId) return false;
+
+        const input = document.getElementById('bpc_input');
+        const msg = input.value.trim();
+        if (!msg) return false;
+
+        bpcSending = true;
+        document.getElementById('bpc_send').disabled = true;
+        bpcAppend('user', msg);
+        input.value = '';
+        bpcTyping(true);
+
+        try {
+            const r = await fetch('{{ url("/api/bruce/chat") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type':     'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN':     document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Accept':           'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    message:      msg,
+                    context_type: 'project',
+                    context_id:   bpcProjectId,
+                }),
+            });
+            const data = await r.json();
+            bpcTyping(false);
+            if (data.reply) {
+                bpcAppend('assistant', data.reply);
+            } else {
+                bpcAppend('assistant', '⚠️ ' + (data.error || 'Não consegui responder agora. Tenta de novo em instantes.'));
+            }
+        } catch (e) {
+            bpcTyping(false);
+            bpcAppend('assistant', '⚠️ Falha de conexão. Verifique sua internet e tente novamente.');
+        } finally {
+            bpcSending = false;
+            document.getElementById('bpc_send').disabled = false;
+            input.focus();
+        }
+        return false;
+    };
+
+    window.bruceProjectClear = async function() {
+        if (!confirm('Limpar a conversa atual sobre este projeto?')) return;
+        try {
+            await fetch('{{ url("/api/bruce/chat/history") }}', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type':     'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN':     document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Accept':           'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ context_type: 'project', context_id: bpcProjectId }),
+            });
+        } catch (e) { /* silencioso */ }
+        openBruceProjectChat(bpcProjectId, bpcProjectName);
+    };
+})();
+</script>
 @endif
 
 @endsection
