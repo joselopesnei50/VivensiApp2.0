@@ -264,12 +264,8 @@ class TransactionController extends Controller
 
     /**
      * Stream do anexo financeiro com checagem de tenant.
-     *
-     * Substitui o acesso direto via /storage/... (disco publico). Arquivos novos
-     * vivem em storage/app/private/tenants/{id}/attachments/, fora do storage:link.
-     * Para compatibilidade durante a migracao, tambem serve arquivos legacy que
-     * ainda estao no disco 'public' — apos rodar transactions:migrate-attachments
-     * esse branch fica inativo.
+     * Arquivos vivem em storage/app/private/tenants/{id}/attachments/,
+     * fora do storage:link. PDFs/imagens vao inline; demais como download.
      */
     public function downloadAttachment($id)
     {
@@ -281,18 +277,16 @@ class TransactionController extends Controller
 
         $path = $transaction->attachment_path ?: $transaction->receipt_path;
         abort_unless($path, 404);
+        abort_unless(Storage::disk('local')->exists($path), 404);
 
-        $disk = str_starts_with($path, 'private/') ? 'local' : 'public';
-        abort_unless(Storage::disk($disk)->exists($path), 404);
-
-        $mime = Storage::disk($disk)->mimeType($path) ?: 'application/octet-stream';
+        $mime = Storage::disk('local')->mimeType($path) ?: 'application/octet-stream';
         $filename = basename($path);
         $inlineMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
         $headers = ['X-Content-Type-Options' => 'nosniff'];
 
         return in_array($mime, $inlineMimes, true)
-            ? Storage::disk($disk)->response($path, $filename, $headers)
-            : Storage::disk($disk)->download($path, $filename, $headers);
+            ? Storage::disk('local')->response($path, $filename, $headers)
+            : Storage::disk('local')->download($path, $filename, $headers);
     }
 
     public function update(Request $request, $id)
