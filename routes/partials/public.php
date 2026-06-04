@@ -68,13 +68,13 @@ Route::get('/transparencia/{slug}/sic/{protocol}',               [App\Http\Contr
 Route::get('/t/{slug}',                           [App\Http\Controllers\TransparencyController::class, 'publicView'])->where('slug', '[a-z0-9\-]+')->middleware('throttle:10,1');
 
 // ── Recibos & Certificados públicos ──────────────────────────────────────────
-Route::get('/r/{token}',               [App\Http\Controllers\ReceiptController::class, 'show'])->name('public.receipt');
+Route::get('/r/{token}',               [App\Http\Controllers\ReceiptController::class, 'show'])->middleware('throttle:30,1')->name('public.receipt');
 Route::get('/validar-recibo',          [App\Http\Controllers\ReceiptController::class, 'validateForm'])->name('public.receipt.validate');
 Route::post('/validar-recibo',         [App\Http\Controllers\ReceiptController::class, 'validateSubmit'])->middleware('throttle:5,1');
 Route::get('/validar-certificado/{uuid}', [App\Http\Controllers\HumanResourcesController::class, 'publicValidateVolunteerCertificate'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')->middleware('throttle:5,1')->name('public.volunteer_certificate.validate');
 
 // ── Assinatura de contratos pública ──────────────────────────────────────────
-Route::get('/sign/{token}',  [App\Http\Controllers\ContractController::class, 'showPublic'])->name('public.contract');
+Route::get('/sign/{token}',  [App\Http\Controllers\ContractController::class, 'showPublic'])->middleware('throttle:30,1')->name('public.contract');
 Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign'])->middleware('throttle:10,1');
 
 // ── Rifas públicas ────────────────────────────────────────────────────────────
