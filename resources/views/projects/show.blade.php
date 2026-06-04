@@ -448,10 +448,10 @@
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Gerencie o cadastro de pessoas relacionadas a este projeto.</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <button class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#addPersonModal">
+            <button type="button" id="btn-open-add-person" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
                 <i class="fas fa-user-plus me-2" style="color: #6366f1;"></i> Nova Pessoa
             </button>
-            <button class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#importPersonProjectModal">
+            <button type="button" id="btn-open-import-person" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
                 <i class="fas fa-file-csv me-2" style="color: #f59e0b;"></i> Importar CSV
             </button>
             @if($project->people->count() > 0)
@@ -1173,6 +1173,27 @@ async function generateProjectPdf(btn) {
                 );
             });
         }
+    });
+
+    // Failsafe para os botões Nova Pessoa e Importar CSV — abrimos via
+    // bootstrap.Modal explicitamente em vez de data-bs-toggle (caso algum
+    // outro JS na pagina engula o event do data-attribute).
+    document.addEventListener('DOMContentLoaded', function() {
+        const tryOpen = (btnId, modalId) => {
+            const b = document.getElementById(btnId);
+            if (!b) return;
+            b.addEventListener('click', function() {
+                const el = document.getElementById(modalId);
+                if (!el) { console.warn('Modal nao encontrado:', modalId); return; }
+                if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+                    console.warn('Bootstrap Modal indisponivel');
+                    return;
+                }
+                bootstrap.Modal.getOrCreateInstance(el).show();
+            });
+        };
+        tryOpen('btn-open-add-person',    'addPersonModal');
+        tryOpen('btn-open-import-person', 'importPersonProjectModal');
     });
 
     window.openBruceProjectChat = function(projectId, projectName) {
