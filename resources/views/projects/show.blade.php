@@ -448,10 +448,10 @@
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Gerencie o cadastro de pessoas relacionadas a este projeto.</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <button type="button" id="btn-open-add-person" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
+            <button type="button" id="btn-open-add-person" onclick="openProjectModal('addPersonModal')" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
                 <i class="fas fa-user-plus me-2" style="color: #6366f1;"></i> Nova Pessoa
             </button>
-            <button type="button" id="btn-open-import-person" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
+            <button type="button" id="btn-open-import-person" onclick="openProjectModal('importPersonProjectModal')" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
                 <i class="fas fa-file-csv me-2" style="color: #f59e0b;"></i> Importar CSV
             </button>
             @if($project->people->count() > 0)
@@ -1175,26 +1175,79 @@ async function generateProjectPdf(btn) {
         }
     });
 
-    // Failsafe para os botões Nova Pessoa e Importar CSV — abrimos via
-    // bootstrap.Modal explicitamente em vez de data-bs-toggle (caso algum
-    // outro JS na pagina engula o event do data-attribute).
-    document.addEventListener('DOMContentLoaded', function() {
-        const tryOpen = (btnId, modalId) => {
-            const b = document.getElementById(btnId);
-            if (!b) return;
-            b.addEventListener('click', function() {
-                const el = document.getElementById(modalId);
-                if (!el) { console.warn('Modal nao encontrado:', modalId); return; }
-                if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
-                    console.warn('Bootstrap Modal indisponivel');
-                    return;
-                }
+    // openProjectModal — abre qualquer modal por id, com fallback caso o
+    // Bootstrap JS nao esteja disponivel. Garante que os botoes Nova
+    // Pessoa, Importar CSV e similares funcionem mesmo se algum outro
+    // script da pagina engolir o data-bs-toggle ou quebrar o objeto
+    // `bootstrap` global.
+    window.openProjectModal = function(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) { console.warn('openProjectModal: modal nao encontrado:', modalId); return; }
+
+        // Tentativa 1: Bootstrap nativo
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            try {
                 bootstrap.Modal.getOrCreateInstance(el).show();
-            });
-        };
-        tryOpen('btn-open-add-person',    'addPersonModal');
-        tryOpen('btn-open-import-person', 'importPersonProjectModal');
-    });
+                return;
+            } catch (e) {
+                console.warn('openProjectModal: Bootstrap falhou, usando fallback', e);
+            }
+        }
+
+        // Tentativa 2: fallback puro CSS/JS — abre o modal manualmente
+        ensureProjectModalFallbackStyles();
+        document.body.classList.add('proj-modal-open');
+        el.classList.add('proj-modal-shown');
+        el.style.display    = 'block';
+        el.style.zIndex     = '100000';
+        el.setAttribute('aria-hidden', 'false');
+
+        // Backdrop manual
+        let bd = document.getElementById('proj-modal-backdrop');
+        if (!bd) {
+            bd = document.createElement('div');
+            bd.id = 'proj-modal-backdrop';
+            bd.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;';
+            document.body.appendChild(bd);
+        }
+        const close = () => closeProjectModal(modalId);
+        bd.onclick = close;
+
+        // Botoes [data-bs-dismiss] dentro do modal tambem fecham
+        el.querySelectorAll('[data-bs-dismiss="modal"]').forEach(b => { b.onclick = close; });
+    };
+
+    window.closeProjectModal = function(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const inst = bootstrap.Modal.getInstance(el);
+            if (inst) { try { inst.hide(); return; } catch (e) { /* fallthrough */ } }
+        }
+        el.classList.remove('proj-modal-shown');
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('proj-modal-open');
+        const bd = document.getElementById('proj-modal-backdrop');
+        if (bd) bd.remove();
+    };
+
+    function ensureProjectModalFallbackStyles() {
+        if (document.getElementById('proj-modal-fallback-styles')) return;
+        const s = document.createElement('style');
+        s.id = 'proj-modal-fallback-styles';
+        s.textContent = `
+            body.proj-modal-open { overflow: hidden; }
+            .modal.proj-modal-shown {
+                position: fixed; inset: 0; overflow-y: auto;
+                padding: 40px 16px; box-sizing: border-box;
+            }
+            .modal.proj-modal-shown .modal-dialog {
+                margin: 0 auto; max-width: 600px;
+            }
+        `;
+        document.head.appendChild(s);
+    }
 
     window.openBruceProjectChat = function(projectId, projectName) {
         bpcProjectId   = projectId;
