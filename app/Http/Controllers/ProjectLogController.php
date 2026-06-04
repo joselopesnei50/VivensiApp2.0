@@ -73,6 +73,12 @@ class ProjectLogController extends Controller
     public function generateSummary(int $projectId)
     {
         $tenantId = auth()->user()->tenant_id;
+        $user     = auth()->user();
+
+        // Disparar um job de IA tem custo. Manter na mesma regra das outras ações
+        // operacionais do projeto (manager/super_admin/ngo).
+        abort_unless(in_array($user->role, ['manager', 'super_admin', 'ngo'], true), 403);
+
         $project  = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
 
         $logCount = ProjectLog::where('project_id', $project->id)->where('tenant_id', $tenantId)->count();
