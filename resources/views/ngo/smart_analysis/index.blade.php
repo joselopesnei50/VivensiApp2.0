@@ -272,17 +272,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const basePath = @json($basePath);
     const deepEndpoint = (basePath || '') + '/smart-analysis/deep';
 
+    // ApexCharts le strings literais para colors — nao resolve var(--ds-brand).
+    // Pegamos a cor da marca uma vez do <html>.
+    const brand = getComputedStyle(document.documentElement).getPropertyValue('--ds-brand').trim() || '#6366f1';
+
     // ApexCharts Configuration
     const options = {
         series: [{ name: 'Patrimônio Projetado', data: {!! json_encode($prediction['values'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!} }],
-        chart: { 
-            type: 'area', 
-            height: 400, 
+        chart: {
+            type: 'area',
+            height: 400,
             fontFamily: 'Outfit, sans-serif',
-            toolbar: { show: false }, 
-            zoom: { enabled: false } 
+            toolbar: { show: false },
+            zoom: { enabled: false }
         },
-        colors: ['#6366f1'],
+        colors: [brand],
         fill: { 
             type: 'gradient', 
             gradient: { 
@@ -291,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 opacityTo: 0.05, 
                 stops: [0, 95, 100],
                 colorStops: [
-                    { offset: 0, color: "#6366f1", opacity: 0.6 },
+                    { offset: 0, color: brand, opacity: 0.6 },
                     { offset: 100, color: "#a855f7", opacity: 0.1 }
                 ]
             } 
@@ -370,6 +374,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Mesmo helper do bloco anterior — escopo de IIFE separado, redeclaracao OK.
+    const brand = getComputedStyle(document.documentElement).getPropertyValue('--ds-brand').trim() || '#6366f1';
+
     const monthlyLabels = {!! json_encode($monthly['labels'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
     const monthlyIncome = {!! json_encode($monthly['income'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
     const monthlyExpense = {!! json_encode($monthly['expense'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
@@ -398,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
         series: catValues,
         labels: catLabels,
         chart: { type: 'donut', height: 280, fontFamily: 'Outfit, sans-serif' },
-        colors: ['#6366f1','#a855f7','#06b6d4','#f59e0b','#10b981','#ef4444','#22c55e','#e11d48'],
+        colors: [brand,'#a855f7','#06b6d4','#f59e0b','#10b981','#ef4444','#22c55e','#e11d48'],
         legend: { show: false },
         dataLabels: { enabled: true },
         stroke: { width: 1, colors: ['#fff'] }

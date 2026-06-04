@@ -482,6 +482,10 @@
 </div>
 <script>
     // Charts — isolated so errors here não quebram o mapa
+    // Chart.js le strings literais para colors — nao resolve var(--ds-brand)
+    // em runtime. Pegamos a cor da marca uma vez no <html> e reutilizamos.
+    const brand = getComputedStyle(document.documentElement).getPropertyValue('--ds-brand').trim() || '#6366f1';
+
     document.addEventListener('DOMContentLoaded', function() {
         try {
             const ctx = document.getElementById('ngoPerformanceChart').getContext('2d');
@@ -556,11 +560,11 @@
                         label: 'Saúde Institucional',
                         data: @json($radarData['scores']),
                         backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                        borderColor: '#6366f1',
-                        pointBackgroundColor: '#6366f1',
+                        borderColor: brand,
+                        pointBackgroundColor: brand,
                         pointBorderColor: '#fff',
                         pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#6366f1',
+                        pointHoverBorderColor: brand,
                         borderWidth: 3
                     }]
                 },
@@ -589,7 +593,7 @@
             const stateData = @json($geoByState);
             const labels = Object.keys(stateData);
             const values = Object.values(stateData);
-            const palette = ['#6366f1','#8b5cf6','#10b981','#f59e0b','#3b82f6','#ec4899','#14b8a6','#f97316'];
+            const palette = [brand,'#8b5cf6','#10b981','#f59e0b','#3b82f6','#ec4899','#14b8a6','#f97316'];
             new Chart(el.getContext('2d'), {
                 type: 'doughnut',
                 data: {
