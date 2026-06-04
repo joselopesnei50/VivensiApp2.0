@@ -75,7 +75,7 @@
         <div class="col-6 col-sm-3">
             <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
                 <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.1);display:inline-flex;align-items:center;justify-content:center;margin:0 auto 8px;">
-                    <i class="fas fa-paper-plane" style="color:#6366f1;font-size:.85rem;"></i>
+                    <i class="fas fa-paper-plane" style="color:var(--ds-brand);font-size:.85rem;"></i>
                 </div>
                 <div class="fw-800" style="font-size:1.6rem;color:#4f46e5;line-height:1.1;">{{ number_format($totalLogs) }}</div>
                 <div style="font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">total enviados</div>
@@ -102,7 +102,7 @@
         <div class="col-6 col-sm-3">
             <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
                 <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.1);display:inline-flex;align-items:center;justify-content:center;margin:0 auto 8px;">
-                    <i class="fas fa-chart-pie" style="color:#6366f1;font-size:.85rem;"></i>
+                    <i class="fas fa-chart-pie" style="color:var(--ds-brand);font-size:.85rem;"></i>
                 </div>
                 <div class="fw-800" style="font-size:1.6rem;line-height:1.1;color:{{ $successRate >= 80 ? '#059669' : ($successRate >= 50 ? '#d97706' : '#dc2626') }};">
                     {{ $successRate }}%
@@ -254,7 +254,7 @@
 .contact-avatar {
     width: 34px; height: 34px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--ds-brand), #8b5cf6);
     color: #fff;
     font-size: .78rem;
     font-weight: 700;

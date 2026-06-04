@@ -3,7 +3,7 @@
 @section('content')
 <div class="header-page" style="margin-bottom: 30px;">
     <div>
-        <h6 style="color: #6366f1; font-weight: 700; text-transform: uppercase; margin: 0 0 5px 0; letter-spacing: 1px;">Omnichannel Oficial</h6>
+        <h6 style="color: var(--ds-brand); font-weight: 700; text-transform: uppercase; margin: 0 0 5px 0; letter-spacing: 1px;">Omnichannel Oficial</h6>
         <h2 style="margin: 0; color: #111827; font-weight: 800; font-size: 2rem;">Modelos de Mensagem (Templates)</h2>
         <p style="color: #6b7280; margin: 5px 0 0 0;">Visualize os modelos aprovados pela Meta para campanhas ativas e disparos em massa.</p>
     </div>

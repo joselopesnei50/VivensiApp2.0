@@ -7,7 +7,7 @@
             <h2 style="margin: 0; font-weight: 950; font-size: 2rem; letter-spacing: -1px;">Webhooks</h2>
             <p style="color: #64748b; margin: 6px 0 0; font-size: 0.95rem;">Receba notificações automáticas em tempo real quando eventos ocorrerem no Vivensi.</p>
         </div>
-        <a href="{{ route('settings.api-tokens') }}" style="font-size: 0.8rem; color: #6366f1; font-weight: 700; text-decoration: none;">
+        <a href="{{ route('settings.api-tokens') }}" style="font-size: 0.8rem; color: var(--ds-brand); font-weight: 700; text-decoration: none;">
             <i class="fas fa-key me-1"></i> API Tokens
         </a>
     </div>
@@ -47,7 +47,7 @@
                     @endforeach
                 </div>
 
-                <button type="submit" style="width:100%; background:linear-gradient(135deg,#6366f1,#4f46e5); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.9rem; cursor:pointer; box-shadow:0 8px 24px rgba(99,102,241,0.25);">
+                <button type="submit" style="width:100%; background:linear-gradient(135deg,var(--ds-brand),#4f46e5); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.9rem; cursor:pointer; box-shadow:0 8px 24px rgba(99,102,241,0.25);">
                     <i class="fas fa-plug me-2"></i> Criar Webhook
                 </button>
             </form>

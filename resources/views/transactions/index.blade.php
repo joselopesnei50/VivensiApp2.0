@@ -274,7 +274,7 @@
         <div class="modal-content" style="border: none; border-radius: 20px; overflow: hidden;">
             <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 20px 24px;">
                 <h5 class="modal-title" id="transactionViewModalLabel" style="font-weight: 900; color: #1e293b;">
-                    <i class="fas fa-receipt me-2" style="color: #6366f1;"></i> Detalhes do Lançamento <span id="tvm_id" style="color: #94a3b8; font-weight: 700;"></span>
+                    <i class="fas fa-receipt me-2" style="color: var(--ds-brand);"></i> Detalhes do Lançamento <span id="tvm_id" style="color: #94a3b8; font-weight: 700;"></span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>

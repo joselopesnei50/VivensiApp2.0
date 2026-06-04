@@ -9,8 +9,8 @@
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                <span style="background: #6366f1; width: 12px; height: 3px; border-radius: 2px;"></span>
-                <h6 style="color: #6366f1; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Agenda & Colaboração</h6>
+                <span style="background: var(--ds-brand); width: 12px; height: 3px; border-radius: 2px;"></span>
+                <h6 style="color: var(--ds-brand); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Agenda & Colaboração</h6>
             </div>
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Agendar Nova Tarefa</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Organize o tempo e as responsabilidades da sua equipe.</p>
@@ -40,7 +40,7 @@
 
         <div style="margin-bottom: 35px;">
             <h5 style="color: #1e293b; font-weight: 900; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                <span style="width: 32px; height: 32px; background: #eef2ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 0.9rem;"><i class="fas fa-bullseye"></i></span>
+                <span style="width: 32px; height: 32px; background: #eef2ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--ds-brand); font-size: 0.9rem;"><i class="fas fa-bullseye"></i></span>
                 Definição da Atividade
             </h5>
 
@@ -50,7 +50,7 @@
                     <i class="fas fa-check-to-slot" style="position: absolute; left: 20px; top: 18px; color: #cbd5e1; font-size: 1.1rem;"></i>
                     <input type="text" name="title" id="title" required 
                            style="width: 100%; padding: 18px 20px 18px 55px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 600; font-size: 1rem; color: #1e293b; transition: all 0.3s;"
-                           onfocus="this.style.borderColor='#6366f1'; this.style.background='white';"
+                           onfocus="this.style.borderColor='var(--ds-brand)'; this.style.background='white';"
                            onblur="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc';"
                            placeholder="Ex: Revisão de Relatório Trimestral" value="{{ old('title') }}">
                 </div>
@@ -60,7 +60,7 @@
                 <label for="description" style="display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 0.9rem;">Instruções ou Contexto</label>
                 <textarea name="description" id="description" rows="3" 
                           style="width: 100%; padding: 18px 20px; border: 2px solid #f1f5f9; border-radius: 18px; background: #f8fafc; font-weight: 500; font-size: 0.95rem; color: #1e293b; resize: none; transition: all 0.3s;" 
-                          onfocus="this.style.borderColor='#6366f1'; this.style.background='white';"
+                          onfocus="this.style.borderColor='var(--ds-brand)'; this.style.background='white';"
                           onblur="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc';"
                           placeholder="Detalhe o que precisa ser entregue...">{{ old('description') }}</textarea>
             </div>

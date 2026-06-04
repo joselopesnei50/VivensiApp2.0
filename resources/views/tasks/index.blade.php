@@ -9,8 +9,8 @@
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                <span style="background: #6366f1; width: 12px; height: 3px; border-radius: 2px;"></span>
-                <h6 style="color: #6366f1; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Fluxo de Trabalho</h6>
+                <span style="background: var(--ds-brand); width: 12px; height: 3px; border-radius: 2px;"></span>
+                <h6 style="color: var(--ds-brand); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Fluxo de Trabalho</h6>
             </div>
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Minha Agenda & Missões</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Controle suas pendências e compromissos com precisão.</p>
@@ -43,7 +43,7 @@
                 <tr style="border-bottom: 1px solid #f8fafc; transition: background 0.2s;" onmouseover="this.style.background='#fbfcfe';" onmouseout="this.style.background='white';">
                     <td style="padding: 20px 25px;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="width: 42px; height: 42px; border-radius: 12px; background: #eef2ff; color: #6366f1; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid #e0e7ff;">
+                            <div style="width: 42px; height: 42px; border-radius: 12px; background: #eef2ff; color: var(--ds-brand); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid #e0e7ff;">
                                 <i class="fas fa-check-double"></i>
                             </div>
                             <div>
@@ -90,7 +90,7 @@
                     <td style="padding: 20px 25px; text-align: center;">
                         <div style="display: flex; justify-content: center; gap: 8px;">
                             <button type="button" onclick="updateTaskStatus({{ (int) $task->id }}, 'doing')" class="btn btn-light btn-sm rounded-circle shadow-sm" title="Iniciar" style="width: 36px; height: 36px; border: 1px solid #f1f5f9;">
-                                <i class="fas fa-play" style="color: #6366f1; font-size: 0.85rem;"></i>
+                                <i class="fas fa-play" style="color: var(--ds-brand); font-size: 0.85rem;"></i>
                             </button>
                             <button type="button" onclick="updateTaskStatus({{ (int) $task->id }}, 'done')" class="btn btn-light btn-sm rounded-circle shadow-sm" title="Concluir" style="width: 36px; height: 36px; border: 1px solid #f1f5f9;">
                                 <i class="fas fa-check" style="color: #10b981; font-size: 0.85rem;"></i>

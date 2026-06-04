@@ -7,7 +7,7 @@
             <h2 style="margin: 0; font-weight: 950; font-size: 2rem; letter-spacing: -1px;">API Tokens</h2>
             <p style="color: #64748b; margin: 6px 0 0; font-size: 0.95rem;">Gerencie chaves de acesso para a API Pública v1 do Vivensi.</p>
         </div>
-        <a href="https://docs.vivensi.app.br/api" target="_blank" style="font-size: 0.8rem; color: #6366f1; font-weight: 700; text-decoration: none;">
+        <a href="https://docs.vivensi.app.br/api" target="_blank" style="font-size: 0.8rem; color: var(--ds-brand); font-weight: 700; text-decoration: none;">
             <i class="fas fa-book me-1"></i> Documentação da API
         </a>
     </div>
@@ -45,7 +45,7 @@
                 <div style="margin-bottom: 20px;">
                     <label style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 12px;">Permissões</label>
                     @foreach([
-                        'transactions:read'  => ['Transações: Leitura',  'fa-eye',    '#6366f1'],
+                        'transactions:read'  => ['Transações: Leitura',  'fa-eye',    'var(--ds-brand)'],
                         'transactions:write' => ['Transações: Escrita',  'fa-pen',    '#10b981'],
                         'projects:read'      => ['Projetos: Leitura',    'fa-folder', '#f59e0b'],
                         'tasks:read'         => ['Tarefas: Leitura',     'fa-list',   '#818cf8'],
@@ -60,7 +60,7 @@
                     <p style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:8px;">Sem seleção = acesso total (*)</p>
                 </div>
 
-                <button type="submit" style="width:100%; background:linear-gradient(135deg,#6366f1,#4f46e5); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.9rem; cursor:pointer; box-shadow:0 8px 24px rgba(99,102,241,0.25);">
+                <button type="submit" style="width:100%; background:linear-gradient(135deg,var(--ds-brand),#4f46e5); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.9rem; cursor:pointer; box-shadow:0 8px 24px rgba(99,102,241,0.25);">
                     <i class="fas fa-key me-2"></i> Gerar Token
                 </button>
             </form>
@@ -68,7 +68,7 @@
 
         {{-- API Base URL --}}
         <div style="background: #0f172a; border-radius: 20px; padding: 24px; border: 1px solid rgba(255,255,255,0.06); margin-top: 16px;">
-            <h5 style="color: white; font-weight: 800; font-size: 0.9rem; margin-bottom: 16px;"><i class="fas fa-code me-2" style="color:#6366f1;"></i>Base URL</h5>
+            <h5 style="color: white; font-weight: 800; font-size: 0.9rem; margin-bottom: 16px;"><i class="fas fa-code me-2" style="color:var(--ds-brand);"></i>Base URL</h5>
             <code style="background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2); border-radius:8px; padding:10px 14px; color:#a5b4fc; font-size:0.8rem; display:block; font-family:monospace;">
                 {{ config('app.url') }}/api/v1
             </code>
