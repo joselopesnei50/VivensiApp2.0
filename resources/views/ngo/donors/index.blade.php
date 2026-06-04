@@ -42,7 +42,7 @@
         height: 45px;
         border-radius: 14px;
         background: #eef2ff;
-        color: #6366f1;
+        color: var(--ds-brand);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -201,7 +201,7 @@
                         {{-- Enviar via WhatsApp (com mensagem pré-pronta) --}}
                         @if($d->phone)
                             <a href="{{ $waUrl }}" target="_blank"
-                               class="action-circle" style="background:#eef2ff;color:#6366f1;"
+                               class="action-circle" style="background:#eef2ff;color:var(--ds-brand);"
                                title="Enviar Portal VIP via WhatsApp">
                                 <i class="fas fa-paper-plane"></i>
                             </a>

@@ -24,7 +24,7 @@
         <p class="text-muted mt-1" style="font-size:0.9rem;">Comunique-se com doadores e leads da sua organização.</p>
     </div>
     <a href="{{ route('ngo.email_campaigns.create') }}"
-       style="display:inline-flex; align-items:center; gap:8px; padding:12px 22px; background:#6366f1; color:white; border-radius:14px; font-weight:800; font-size:0.88rem; text-decoration:none;">
+       style="display:inline-flex; align-items:center; gap:8px; padding:12px 22px; background:var(--ds-brand); color:white; border-radius:14px; font-weight:800; font-size:0.88rem; text-decoration:none;">
         <i class="fas fa-plus"></i> Nova Campanha
     </a>
 </div>
@@ -49,7 +49,7 @@
             <div style="font-weight:800; color:#1e293b; font-size:1.1rem; margin-bottom:8px;">Nenhuma campanha ainda</div>
             <p style="font-size:0.88rem; margin:0 0 24px;">Crie sua primeira campanha de e-mail para se comunicar com sua base de doadores.</p>
             <a href="{{ route('ngo.email_campaigns.create') }}"
-               style="display:inline-flex; align-items:center; gap:8px; padding:12px 22px; background:#6366f1; color:white; border-radius:12px; font-weight:700; font-size:0.88rem; text-decoration:none;">
+               style="display:inline-flex; align-items:center; gap:8px; padding:12px 22px; background:var(--ds-brand); color:white; border-radius:12px; font-weight:700; font-size:0.88rem; text-decoration:none;">
                 <i class="fas fa-plus"></i> Criar Primeira Campanha
             </a>
         </div>
@@ -124,7 +124,7 @@
                                 <button type="button"
                                         onclick="abrirModalDisparar({{ $c->id }}, '{{ addslashes($c->name) }}', '{{ addslashes($c->audienceLabel()) }}', {{ $c->recipient_count ?: 'null' }})"
                                         class="ec-action" title="{{ $c->status === 'error' ? 'Tentar novamente' : 'Disparar campanha' }}"
-                                        style="background:#eff6ff; color:#6366f1;">
+                                        style="background:#eff6ff; color:var(--ds-brand);">
                                     <i class="fas fa-paper-plane" style="font-size:0.78rem;"></i>
                                 </button>
                             @endif
@@ -175,13 +175,13 @@
             </div>
             <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:0.83rem;">
                 <span style="color:#64748b; font-weight:600;">Destinatários est.</span>
-                <span id="modalDDestinatarios" style="color:#6366f1; font-weight:800;"></span>
+                <span id="modalDDestinatarios" style="color:var(--ds-brand); font-weight:800;"></span>
             </div>
         </div>
         <div style="display:flex; gap:12px;">
             <button onclick="fecharModalDisparar()" style="flex:1; padding:14px; border:2px solid #e2e8f0; border-radius:12px; background:white; color:#64748b; font-weight:800; font-size:0.9rem; cursor:pointer;">Cancelar</button>
             <button onclick="confirmarDisparar()" id="btnConfirmarDisparar"
-                    style="flex:1; padding:14px; border:none; border-radius:12px; background:#6366f1; color:white; font-weight:800; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    style="flex:1; padding:14px; border:none; border-radius:12px; background:var(--ds-brand); color:white; font-weight:800; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
                 <i class="fas fa-paper-plane"></i> Disparar agora
             </button>
         </div>

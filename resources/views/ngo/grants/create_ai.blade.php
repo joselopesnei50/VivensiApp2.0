@@ -30,7 +30,7 @@
         margin-bottom: 30px;
     }
     .drop-zone-premium:hover {
-        border-color: #6366f1;
+        border-color: var(--ds-brand);
         background: #f5f7ff;
     }
     

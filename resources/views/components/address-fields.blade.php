@@ -12,7 +12,7 @@
 
 <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; background: #f8fafc;">
     <p style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase; color: #64748b; letter-spacing: .08em; margin: 0 0 16px 0;">
-        <i class="fas fa-map-marker-alt me-1" style="color: #6366f1;"></i> Endereço
+        <i class="fas fa-map-marker-alt me-1" style="color: var(--ds-brand);"></i> Endereço
     </p>
 
     {{-- CEP --}}
