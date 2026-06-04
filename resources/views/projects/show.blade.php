@@ -405,9 +405,24 @@
                         <span><i class="fas fa-brain me-2 text-primary"></i> Smart Analysis</span>
                         <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
-                    <button class="btn-ds btn-ds-danger mt-3" style="font-size: 0.8rem; text-transform: uppercase;">
-                        Arquivar Registro
-                    </button>
+                    @php
+                        $isArchived = !empty($project) && method_exists($project, 'isArchived') && $project->isArchived();
+                    @endphp
+                    @if($isArchived)
+                        <form method="POST" action="{{ url('/projects/' . $project->id . '/unarchive') }}" onsubmit="return confirm('Reativar este projeto e voltar para a listagem ativa?');" style="margin-top: 12px;">
+                            @csrf
+                            <button type="submit" class="btn-ds btn-ds-success" style="width: 100%; font-size: 0.8rem; text-transform: uppercase;">
+                                <i class="fas fa-box-open me-2"></i> Reativar Projeto
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ url('/projects/' . $project->id . '/archive') }}" onsubmit="return confirm('Arquivar este projeto? Ele sai da listagem ativa mas mantém todo o histórico (transações, timeline, beneficiários, tarefas). Você pode reativar a qualquer momento.');" style="margin-top: 12px;">
+                            @csrf
+                            <button type="submit" class="btn-ds btn-ds-danger" style="width: 100%; font-size: 0.8rem; text-transform: uppercase;">
+                                <i class="fas fa-archive me-2"></i> Arquivar Registro
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
 

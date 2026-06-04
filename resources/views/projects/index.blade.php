@@ -15,10 +15,15 @@
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Portfólio de Projetos</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Gerencie suas iniciativas com inteligência e controle total.</p>
         </div>
-        @if(in_array(auth()->user()->role, ['manager', 'super_admin'], true))
-            <a href="{{ $basePath . '/projects/create' }}" class="btn-premium btn-premium-shine" style="border: none; padding: 14px 28px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-plus-circle"></i> Iniciar Projeto
-            </a>
+        @if(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true))
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <a href="{{ $basePath . '/projects/archived' }}" class="btn-ds btn-ds-outline" style="padding: 12px 18px; font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-archive"></i> Ver Arquivados
+                </a>
+                <a href="{{ $basePath . '/projects/create' }}" class="btn-premium btn-premium-shine" style="border: none; padding: 14px 28px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-plus-circle"></i> Iniciar Projeto
+                </a>
+            </div>
         @endif
     </div>
 </div>

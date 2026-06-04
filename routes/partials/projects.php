@@ -4,12 +4,15 @@
 Route::middleware(['auth', 'subscription'])->group(function () {
     // Projetos
     Route::get('/projects',              [App\Http\Controllers\ProjectController::class, 'index']);
+    Route::get('/projects/archived',     [App\Http\Controllers\ProjectController::class, 'archived'])->name('projects.archived');
     Route::get('/projects/create',       [App\Http\Controllers\ProjectController::class, 'create']);
     Route::post('/projects',             [App\Http\Controllers\ProjectController::class, 'store'])->middleware('throttle:web_write');
     Route::get('/projects/details/{id}', [App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
     Route::get('/projects/{id}',         [App\Http\Controllers\ProjectController::class, 'show']);
     Route::get('/projects/{id}/edit',    [App\Http\Controllers\ProjectController::class, 'edit']);
     Route::put('/projects/{id}',         [App\Http\Controllers\ProjectController::class, 'update']);
+    Route::post('/projects/{id}/archive',   [App\Http\Controllers\ProjectController::class, 'archive'])->name('projects.archive')->middleware('throttle:web_write');
+    Route::post('/projects/{id}/unarchive', [App\Http\Controllers\ProjectController::class, 'unarchive'])->name('projects.unarchive')->middleware('throttle:web_write');
     Route::post('/projects/{id}/members',             [App\Http\Controllers\ProjectController::class, 'addMember']);
     Route::post('/projects/{id}/members/credential',  [App\Http\Controllers\ProjectController::class, 'addMemberCredential']);
     Route::delete('/projects/{id}/members/{memberId}', [App\Http\Controllers\ProjectController::class, 'removeMember']);
