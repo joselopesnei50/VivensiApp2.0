@@ -64,7 +64,7 @@ class TaskController extends Controller
                           ->where('tenant_id', $tenantId)
                           ->firstOrFail();
 
-        $canManageAll = in_array($user->role, ['manager', 'super_admin'], true);
+        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo'], true);
         if (!$canManageAll) {
             $isMember = ProjectMember::where('tenant_id', $tenantId)
                 ->where('project_id', $project->id)
@@ -110,7 +110,7 @@ class TaskController extends Controller
                     ->where('tenant_id', $tenantId)
                     ->firstOrFail();
 
-        $canManageAll = in_array($user->role, ['manager', 'super_admin'], true);
+        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo'], true);
         if (!$canManageAll) {
             abort_unless(
                 ((int) $task->assigned_to === (int) $user->id) || ((int) $task->created_by === (int) $user->id),
@@ -140,7 +140,7 @@ class TaskController extends Controller
         $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
-        $canManageAll = in_array($user->role, ['manager', 'super_admin'], true);
+        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo'], true);
 
         $validator = Validator::make($request->all(), [
             'id'          => ['required', 'integer'],
