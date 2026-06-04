@@ -414,9 +414,9 @@
                         <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
                     @if(config('bruce.context_project_enabled'))
-                        <button type="button" data-bruce-project-id="{{ $project->id }}" data-bruce-project-name="{{ $project->name }}" id="btn-open-bruce-project" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg,#f0f9ff,#e0f2fe); border: 1px solid #bae6fd;">
-                            <span><i class="fas fa-robot me-2" style="color:#0369a1;"></i> Perguntar ao Bruce sobre este projeto</span>
-                            <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
+                        <button type="button" data-bruce-project-id="{{ $project->id }}" data-bruce-project-name="{{ $project->name }}" id="btn-open-bruce-project" class="btn-ds" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: #6366f1; color: white; border: none; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); padding: 14px 20px; border-radius: 14px; font-weight: 800; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 10px 25px -5px rgba(99, 102, 241, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px -5px rgba(99, 102, 241, 0.4)'">
+                            <span style="display: flex; align-items: center;"><i class="fas fa-magic me-2" style="color: #fff; font-size: 1.1rem;"></i> Perguntar ao Bruce (IA)</span>
+                            <i class="fas fa-chevron-right" style="font-size: 0.75rem; opacity: 0.8;"></i>
                         </button>
                     @endif
                     @php
@@ -595,11 +595,11 @@
                 <i class="fas fa-book-open me-2" style="color:var(--ds-brand);"></i> Diário de Evolução
             </h4>
             <p style="margin:5px 0 0; color:#94a3b8; font-weight:600; font-size:.85rem;">
-                Atualizações diárias da equipe · {{ $logs->count() }} entr{{ $logs->count() === 1 ? 'ada' : 'adas' }}
+                Atualizações diárias da equipe · {{ $logs->total() }} entr{{ $logs->total() === 1 ? 'ada' : 'adas' }}
             </p>
         </div>
         <div class="d-flex gap-2 flex-wrap align-items-center">
-            @if($logs->count() >= 3)
+            @if($logs->total() >= 3)
             <button id="btn-generate-summary" onclick="generateAiSummary()"
                 class="btn btn-sm fw-bold"
                 style="background:linear-gradient(135deg,var(--ds-brand),#8b5cf6);color:#fff;border:none;border-radius:12px;padding:10px 20px;">
@@ -648,8 +648,8 @@
             </label>
             <textarea name="body" rows="3" required maxlength="3000"
                 placeholder="Descreva o que foi feito hoje, dificuldades encontradas, próximas ações..."
-                style="width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;font-size:.88rem;resize:vertical;outline:none;line-height:1.6;"
-                onfocus="this.style.borderColor='var(--ds-brand)'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+                style="width:100%;background:#fff;border:1px solid #94a3b8;border-radius:12px;padding:12px 14px;font-size:.88rem;resize:vertical;outline:none;line-height:1.6;"
+                onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#94a3b8'"></textarea>
             <div style="display:flex;justify-content:flex-end;margin-top:10px;">
                 <button type="submit"
                     style="background:var(--ds-brand);color:#fff;border:none;border-radius:12px;padding:10px 24px;font-weight:700;font-size:.85rem;cursor:pointer;">
@@ -695,6 +695,9 @@
                 <p style="margin:0;color:#475569;font-size:.88rem;line-height:1.65;white-space:pre-wrap;">{{ $log->body }}</p>
             </div>
             @endforeach
+        </div>
+        <div class="mt-4" style="display:flex; justify-content:center;">
+            {{ $logs->appends(request()->query())->links() }}
         </div>
     @endif
 </div>
@@ -1125,36 +1128,49 @@ async function generateProjectPdf(btn) {
      ──────────────────────────────────────────────────────────────── --}}
 <div class="modal fade" id="bruceProjectChatModal" tabindex="-1" aria-labelledby="bruceProjectChatModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 640px;">
-        <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden;">
-            <div class="modal-header" style="background: linear-gradient(135deg,#0369a1,#0c4a6e); color:#fff; border-bottom: none; padding: 20px 24px;">
-                <h5 class="modal-title" id="bruceProjectChatModalLabel" style="font-weight: 900; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-robot"></i>
-                    <span>Bruce</span>
-                    <span id="bpc_project_badge" style="background: rgba(255,255,255,0.18); padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;"></span>
+        <div class="modal-content" style="border: none; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);">
+            <div class="modal-header" style="background: #6366f1; color:#fff; border-bottom: none; padding: 24px 30px;">
+                <h5 class="modal-title" id="bruceProjectChatModalLabel" style="font-weight: 900; display: flex; align-items: center; gap: 12px; font-size: 1.4rem; letter-spacing: -0.5px;">
+                    <div style="background: rgba(255,255,255,0.2); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 14px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);">
+                        <i class="fas fa-robot text-white" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <span>Bruce AI</span>
+                    <span id="bpc_project_badge" style="background: rgba(255,255,255,0.25); padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; margin-left: 8px; border: 1px solid rgba(255,255,255,0.1);"></span>
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar" style="opacity: 0.8;"></button>
             </div>
-            <div class="modal-body" style="padding: 0;">
-                <div id="bpc_messages" style="padding: 20px 24px; height: 380px; overflow-y: auto; background: #f8fafc;">
-                    <div id="bpc_empty" style="text-align: center; color: #94a3b8; padding: 60px 20px;">
-                        <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.5;"></i>
-                        <p style="margin: 0; font-weight: 700; color: #475569;">Pergunte algo sobre este projeto</p>
-                        <p style="margin: 8px 0 0 0; font-size: 0.85rem;">Ex: <em>"como está o orçamento?"</em>, <em>"o que devo priorizar essa semana?"</em>, <em>"resuma o diário dos últimos dias"</em></p>
+            <div class="modal-body" style="padding: 0; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 10px; background: linear-gradient(180deg, rgba(99,102,241,0.05), transparent); z-index: 2;"></div>
+                <div id="bpc_messages" style="padding: 24px 30px; height: 420px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 16px;">
+                    <div id="bpc_empty" style="text-align: center; color: #94a3b8; padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
+                        <div style="width: 80px; height: 80px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(168,85,247,0.1);">
+                            <i class="fas fa-wand-magic-sparkles" style="font-size: 2.2rem; color: #a855f7;"></i>
+                        </div>
+                        <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">O que você precisa saber?</h4>
+                        <p style="margin: 12px 0 0 0; font-size: 0.95rem; line-height: 1.6; color: #64748b;">A IA tem acesso total aos dados financeiros,<br>membros e histórico deste projeto.</p>
+                        <div style="display: flex; gap: 10px; margin-top: 25px; flex-wrap: wrap; justify-content: center;">
+                            <span style="background: #eef2ff; color: #6366f1; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">"Resumo financeiro"</span>
+                            <span style="background: #f5f3ff; color: #a855f7; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">"Últimas entregas"</span>
+                        </div>
                     </div>
                 </div>
-                <div style="padding: 16px 20px; background: #fff; border-top: 1px solid #f1f5f9;">
-                    <form id="bpc_form" onsubmit="return bruceProjectSend(event);" style="display: flex; gap: 8px;">
-                        <input type="text" id="bpc_input" class="form-control" placeholder="Digite sua pergunta sobre este projeto..." autocomplete="off"
-                               style="flex:1; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #0f172a;">
-                        <button type="submit" id="bpc_send" class="btn-premium" style="padding: 12px 18px !important; font-size: 0.85rem !important; background: #0369a1 !important; color: #fff !important;">
+                <div style="padding: 20px 30px; background: #fff; border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 20px rgba(0,0,0,0.02);">
+                    <form id="bpc_form" onsubmit="return bruceProjectSend(event);" style="display: flex; gap: 12px; position: relative;">
+                        <input type="text" id="bpc_input" class="form-control" placeholder="Escreva sua pergunta para a IA..." autocomplete="off"
+                               style="flex:1; padding: 16px 20px; border-radius: 18px; border: 2px solid #e2e8f0; font-weight: 600; color: #0f172a; font-size: 0.95rem; background: #f8fafc; transition: all 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);"
+                               onfocus="this.style.borderColor='#a855f7'; this.style.background='#fff'" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                        <button type="submit" id="bpc_send" class="btn-premium" style="padding: 0 24px !important; border-radius: 18px !important; font-size: 1.1rem !important; background: #6366f1 !important; color: #fff !important; border: none !important; transition: all 0.2s; box-shadow: 0 4px 15px rgba(99,102,241,0.3) !important;">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
                 </div>
             </div>
-            <div class="modal-footer" style="border-top: 1px solid #f1f5f9; padding: 12px 24px; justify-content: space-between;">
-                <button type="button" id="bpc_clear" onclick="bruceProjectClear()" class="btn btn-light" style="font-weight: 700; font-size: 0.8rem;"><i class="fas fa-trash-alt me-1"></i> Limpar conversa</button>
-                <small style="color: #94a3b8;">As respostas são geradas por IA e podem conter imprecisões.</small>
+            <div class="modal-footer" style="background: #fff; border-top: none; padding: 0 30px 24px 30px; justify-content: space-between; display: flex; align-items: center;">
+                <button type="button" id="bpc_clear" onclick="bruceProjectClear()" class="btn btn-sm" style="font-weight: 700; font-size: 0.8rem; color: #94a3b8; background: transparent; border: none; padding: 0;"><i class="fas fa-eraser me-1"></i> Limpar contexto</button>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-bolt" style="color: #fbbf24;"></i>
+                    <span style="color: #cbd5e1; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.5px;">POWERED BY AI</span>
+                </div>
             </div>
         </div>
     </div>

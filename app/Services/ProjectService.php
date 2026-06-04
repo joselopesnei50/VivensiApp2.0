@@ -75,20 +75,20 @@ class ProjectService
                 ->orderBy('name')
                 ->get(['id', 'name', 'email']);
 
-            $logs = ProjectLog::where('project_id', $project->id)
-                ->where('tenant_id', $tenantId)
-                ->with('user:id,name')
-                ->orderBy('created_at', 'desc')
-                ->get();
-
             $percentUsed = ($project->budget > 0)
                 ? ($totalSpent / $project->budget) * 100
                 : 0;
 
-            return compact('totalSpent', 'transactions', 'members', 'availableUsers', 'logs', 'percentUsed');
+            return compact('totalSpent', 'transactions', 'members', 'availableUsers', 'percentUsed');
         });
 
-        return array_merge(['project' => $project], $details);
+        $logs = ProjectLog::where('project_id', $project->id)
+            ->where('tenant_id', $tenantId)
+            ->with('user:id,name')
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'logs_page');
+
+        return array_merge(['project' => $project, 'logs' => $logs], $details);
     }
 
     public function listForTenant(int $tenantId, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
