@@ -6,7 +6,7 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
         <div>
             <a href="{{ route('ngo.email_campaigns.index') }}"
-               style="display:inline-flex; align-items:center; gap:6px; color:#6366f1; font-weight:700; font-size:0.85rem; text-decoration:none; margin-bottom:14px;">
+               style="display:inline-flex; align-items:center; gap:6px; color:var(--ds-brand); font-weight:700; font-size:0.85rem; text-decoration:none; margin-bottom:14px;">
                 <i class="fas fa-arrow-left"></i> Campanhas de E-mail
             </a>
             <h2 style="margin:0; color:#1e293b; font-weight:900; font-size:1.8rem; letter-spacing:-0.5px;">{{ $campaign->name }}</h2>
@@ -18,7 +18,7 @@
                     @csrf
                     <button type="button"
                             onclick="abrirModalDisparar('{{ addslashes($campaign->name) }}', '{{ addslashes($campaign->audienceLabel()) }}', {{ $campaign->recipient_count ?: 'null' }})"
-                            style="padding:14px 24px; border:none; border-radius:14px; background:#6366f1; color:white; font-weight:800; font-size:0.9rem; cursor:pointer;">
+                            style="padding:14px 24px; border:none; border-radius:14px; background:var(--ds-brand); color:white; font-weight:800; font-size:0.9rem; cursor:pointer;">
                         <i class="fas fa-paper-plane me-2"></i>{{ $campaign->status === 'error' ? 'Tentar novamente' : 'Disparar Agora' }}
                     </button>
                 </form>
@@ -52,7 +52,7 @@
 <div class="row g-4 mb-4">
     @php
         $metrics = [
-            ['label'=>'Destinatários', 'value'=>number_format($campaign->recipient_count),                                                                        'icon'=>'fa-users',          'color'=>'#6366f1', 'bg'=>'#eff6ff'],
+            ['label'=>'Destinatários', 'value'=>number_format($campaign->recipient_count),                                                                        'icon'=>'fa-users',          'color'=>'var(--ds-brand)', 'bg'=>'#eff6ff'],
             ['label'=>'Entregues',     'value'=>$campaign->stat_delivered ? number_format($campaign->stat_delivered) : '—',                                        'icon'=>'fa-inbox',          'color'=>'#059669', 'bg'=>'#ecfdf5'],
             ['label'=>'Aberturas',     'value'=>$campaign->openRate() !== null ? $campaign->openRate().'%' : '—',
              'sub' =>$campaign->stat_opens ? number_format($campaign->stat_opens).' únicos' : null,                                                               'icon'=>'fa-envelope-open',  'color'=>'#d97706', 'bg'=>'#fffbeb'],
@@ -87,7 +87,7 @@
         {{-- Preview --}}
         <div class="vivensi-card" style="padding:0; border-radius:20px; overflow:hidden;">
             <div style="padding:18px 24px; border-bottom:1px solid #f1f5f9; background:#f8fafc; display:flex; align-items:center; gap:10px;">
-                <i class="fas fa-eye" style="color:#6366f1;"></i>
+                <i class="fas fa-eye" style="color:var(--ds-brand);"></i>
                 <strong style="font-size:0.9rem; color:#1e293b;">Preview do E-mail</strong>
             </div>
             <iframe srcdoc="{{ $campaign->html_content }}"
@@ -165,7 +165,7 @@
             </div>
             <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:0.83rem;">
                 <span style="color:#64748b; font-weight:600;">Destinatários est.</span>
-                <span id="modalDestinatarios" style="color:#6366f1; font-weight:800;"></span>
+                <span id="modalDestinatarios" style="color:var(--ds-brand); font-weight:800;"></span>
             </div>
         </div>
         <div style="display:flex; gap:12px;">
@@ -174,7 +174,7 @@
                 Cancelar
             </button>
             <button onclick="confirmarDisparar()"
-                    style="flex:1; padding:14px; border:none; border-radius:12px; background:#6366f1; color:white; font-weight:800; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    style="flex:1; padding:14px; border:none; border-radius:12px; background:var(--ds-brand); color:white; font-weight:800; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
                 <i class="fas fa-paper-plane"></i> Disparar agora
             </button>
         </div>

@@ -19,7 +19,7 @@
             <div class="text-muted small" style="margin-top: 6px;">ID: #{{ $grant->id }}</div>
         </div>
         <div style="display:flex; gap: 10px; align-items:center; flex-wrap: wrap;">
-            <button type="button" id="btnGenerateAiProposal" class="btn btn-premium" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 12px; font-weight: 800; padding: 10px 20px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
+            <button type="button" id="btnGenerateAiProposal" class="btn btn-premium" style="background: linear-gradient(135deg, var(--ds-brand) 0%, #8b5cf6 100%); color: white; border: none; border-radius: 12px; font-weight: 800; padding: 10px 20px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
                 <i class="fas fa-sparkles me-2"></i> Copilot Pro IA
             </button>
             <button type="button" id="btnAiAnalysis" class="btn" style="background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%); color: white; border: none; border-radius: 12px; font-weight: 800; padding: 10px 20px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
@@ -520,7 +520,7 @@
             <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding: 30px 40px;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(99, 102, 241, 0.3);">
-                        <i class="fas fa-magic" style="color: #6366f1; font-size: 1.2rem;"></i>
+                        <i class="fas fa-magic" style="color: var(--ds-brand); font-size: 1.2rem;"></i>
                     </div>
                     <div>
                         <h5 class="modal-title" style="font-weight: 950; letter-spacing: -0.5px;">Bruce Copilot Pro</h5>
