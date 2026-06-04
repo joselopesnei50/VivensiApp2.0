@@ -378,17 +378,20 @@ class ProjectController extends Controller
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
+        $tenantId = (int) auth()->user()->tenant_id;
+
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => ['required', Rule::exists('projects', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
         ]);
 
-        // Validate that the project belongs to the tenant
+        // Belt-and-suspenders: a regra de validacao acima ja garante tenant, mas
+        // mantemos o firstOrFail por seguranca (race conditions, mudancas futuras).
         $project = Project::where('id', $validated['project_id'])
-                          ->where('tenant_id', auth()->user()->tenant_id)
+                          ->where('tenant_id', $tenantId)
                           ->firstOrFail();
 
         $validated['tenant_id'] = auth()->user()->tenant_id;
@@ -404,13 +407,15 @@ class ProjectController extends Controller
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
 
+        $tenantId = (int) auth()->user()->tenant_id;
+
         $request->validate([
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => ['required', Rule::exists('projects', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'csv_file' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
         $project = Project::where('id', $request->project_id)
-                          ->where('tenant_id', auth()->user()->tenant_id)
+                          ->where('tenant_id', $tenantId)
                           ->firstOrFail();
 
         $data = array_map('str_getcsv', file($request->file('csv_file')->getRealPath()));
