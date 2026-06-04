@@ -112,7 +112,21 @@ class BruceAiService
 
     private function buildSystemPrompt(int $tenantId, string $role, ?string $contextType = null, ?int $contextId = null): string
     {
-        $ctx = $this->tenantContext($tenantId);
+        // Defaults garantem que cache stale (de versoes antigas do array) nao
+        // explode com Undefined array key. tenantContext sempre retorna todas
+        // as chaves; mas se um deploy anterior tiver cacheado um shape menor,
+        // o merge cobre o vazio.
+        $ctx = array_merge([
+            'income'          => 0.0,
+            'expense'         => 0.0,
+            'balance'         => 0.0,
+            'active_projects' => 0,
+            'open_tasks'      => 0,
+            'overdue_tasks'   => 0,
+            'org_name'        => null,
+            'org_type'        => null,
+            'ai_training'     => null,
+        ], $this->tenantContext($tenantId));
 
         $roleContext = match ($role) {
             'ngo'         => "O usuário gerencia uma ONG/OSC. Use termos do terceiro setor: doadores, editais, captação, beneficiários, voluntários, prestação de contas, transparência. Jamais use termos de SaaS, startup, MRR ou ARR.",
@@ -335,7 +349,9 @@ PCTX;
 
     private function tenantContext(int $tenantId): array
     {
-        return Cache::remember("bruce.ctx.{$tenantId}", 300, function () use ($tenantId) {
+        // v2: bump da chave para invalidar caches em redis que foram gerados
+        // antes de 'org_name'/'org_type'/'ai_training' existirem no shape.
+        return Cache::remember("bruce.ctx.v2.{$tenantId}", 300, function () use ($tenantId) {
             $income  = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->month)->sum('amount');
             $expense = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'expense')->where('status', 'paid')->whereMonth('date', now()->month)->sum('amount');
 
