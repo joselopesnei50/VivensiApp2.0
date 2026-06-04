@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 use App\Traits\BelongsToTenant;
 
 class Contract extends Model
@@ -42,4 +44,32 @@ class Contract extends Model
         'signer_cpf'             => 'encrypted',
         'signer_rg'              => 'encrypted',
     ];
+
+    protected $hidden = ['token_bidx'];
+
+    // ── Token publico de assinatura — encrypted-at-rest + bidx pesquisavel ───
+    // Mesmo padrao de NgoDonor::portal_token e Transaction::public_receipt_token.
+
+    public function getTokenAttribute(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+        try {
+            return Crypt::decryptString($value);
+        } catch (DecryptException) {
+            return $value;
+        }
+    }
+
+    public function setTokenAttribute(?string $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->attributes['token']      = $value;
+            $this->attributes['token_bidx'] = null;
+            return;
+        }
+        $this->attributes['token']      = Crypt::encryptString($value);
+        $this->attributes['token_bidx'] = hash_hmac('sha256', $value, config('app.key'));
+    }
 }

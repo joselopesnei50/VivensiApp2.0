@@ -150,7 +150,10 @@ class ContractController extends Controller
     public function showPublic($token)
     {
         // Public route: ignore tenant scopes (even if someone is logged in).
-        $contract = Contract::withoutGlobalScopes()->where('token', $token)->firstOrFail();
+        // Lookup pelo blind index (HMAC) — coluna token ja contem
+        // Crypt::encryptString do plaintext; bidx e o que casa.
+        $tokenBidx = hash_hmac('sha256', (string) $token, config('app.key'));
+        $contract = Contract::withoutGlobalScopes()->where('token_bidx', $tokenBidx)->firstOrFail();
 
         if (!$contract->document_hash) {
             $contract->document_hash = $this->computeDocumentHash($contract);
@@ -174,7 +177,10 @@ class ContractController extends Controller
     public function sign(Request $request, $token)
     {
         // Public route: ignore tenant scopes (even if someone is logged in).
-        $contract = Contract::withoutGlobalScopes()->where('token', $token)->firstOrFail();
+        // Lookup pelo blind index (HMAC) — coluna token ja contem
+        // Crypt::encryptString do plaintext; bidx e o que casa.
+        $tokenBidx = hash_hmac('sha256', (string) $token, config('app.key'));
+        $contract = Contract::withoutGlobalScopes()->where('token_bidx', $tokenBidx)->firstOrFail();
 
         if ($contract->status === 'signed') {
             return back()->with('success', 'Este contrato já foi assinado.');

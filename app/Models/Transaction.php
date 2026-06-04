@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 use App\Traits\BelongsToTenant;
@@ -92,6 +94,37 @@ class Transaction extends Model
         'amount'         => 'decimal:2',
         'public_receipt_expires_at' => 'datetime',
     ];
+
+    // bidx nunca pode vazar (e o hash usado em lookups); o token plaintext
+    // continua exposto via accessor para construcao de URL.
+    protected $hidden = ['public_receipt_token_bidx'];
+
+    // ── Token de recibo publico — encrypted-at-rest + bidx pesquisavel ────────
+    // Mesmo padrao de NgoDonor::portal_token.
+
+    public function getPublicReceiptTokenAttribute(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+        try {
+            return Crypt::decryptString($value);
+        } catch (DecryptException) {
+            // Fallback para dados ainda nao migrados ou app.key rotacionada.
+            return $value;
+        }
+    }
+
+    public function setPublicReceiptTokenAttribute(?string $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->attributes['public_receipt_token']      = $value;
+            $this->attributes['public_receipt_token_bidx'] = null;
+            return;
+        }
+        $this->attributes['public_receipt_token']      = Crypt::encryptString($value);
+        $this->attributes['public_receipt_token_bidx'] = hash_hmac('sha256', $value, config('app.key'));
+    }
 
     public function category() {
         return $this->belongsTo(\App\Models\FinancialCategory::class, 'category_id');
