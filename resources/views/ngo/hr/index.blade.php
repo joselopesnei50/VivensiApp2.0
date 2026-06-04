@@ -1,30 +1,30 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="header-page" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+<div class="header-page" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div>
         <h2 style="margin: 0; color: #2c3e50;">Recursos Humanos & Voluntariado</h2>
         <p style="color: #64748b; margin: 5px 0 0 0;">Gestão completa da equipe, pagamentos e colaboradores.</p>
     </div>
-    <div style="display: flex; gap: 10px;">
-        <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-            <a href="{{ url('/ngo/hr/employees/export') }}" class="btn-premium" style="background:#4f46e5;">
-                <i class="fas fa-file-csv"></i> CSV Funcionários
-            </a>
-            <a href="{{ url('/ngo/hr/volunteers/export') }}" class="btn-premium" style="background:#0ea5e9;">
-                <i class="fas fa-file-csv"></i> CSV Voluntários
-            </a>
-            <a href="{{ url('/ngo/hr/payroll/pdf') }}?month={{ date('n') }}&year={{ date('Y') }}" class="btn-premium" style="background:#16a34a;">
-                <i class="fas fa-file-pdf"></i> PDF Folha
-            </a>
-            <a href="{{ url('/ngo/hr/certificates') }}" class="btn-premium" style="background:#111827;">
-                <i class="fas fa-certificate"></i> Certificados
-            </a>
-        </div>
-        <button onclick="openModal('employeeModal')" class="btn-premium">
+    {{-- Toolbar de ações: 6 botões compactos, flex-wrap, hierarquia visual (4 export + 2 ação) --}}
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <a href="{{ url('/ngo/hr/employees/export') }}" class="btn-premium" style="padding: 8px 14px !important; font-size: 0.85rem !important; background:#4f46e5 !important; color:#ffffff !important;">
+            <i class="fas fa-file-csv"></i> CSV Funcionários
+        </a>
+        <a href="{{ url('/ngo/hr/volunteers/export') }}" class="btn-premium" style="padding: 8px 14px !important; font-size: 0.85rem !important; background:#0ea5e9 !important; color:#ffffff !important;">
+            <i class="fas fa-file-csv"></i> CSV Voluntários
+        </a>
+        <a href="{{ url('/ngo/hr/payroll/pdf') }}?month={{ date('n') }}&year={{ date('Y') }}" class="btn-premium" style="padding: 8px 14px !important; font-size: 0.85rem !important; background:#16a34a !important; color:#ffffff !important;">
+            <i class="fas fa-file-pdf"></i> PDF Folha
+        </a>
+        <a href="{{ url('/ngo/hr/certificates') }}" class="btn-premium" style="padding: 8px 14px !important; font-size: 0.85rem !important; background:#111827 !important; color:#ffffff !important;">
+            <i class="fas fa-certificate"></i> Certificados
+        </a>
+        <span style="width:1px; height:24px; background:#e2e8f0; margin: 0 4px;" aria-hidden="true"></span>
+        <button onclick="openModal('employeeModal')" class="btn-premium" style="padding: 8px 14px !important; font-size: 0.85rem !important; background:#10b981 !important; color:#ffffff !important;">
             <i class="fas fa-briefcase"></i> Novo Funcionário
         </button>
-        <button onclick="openModal('volunteerModal')" class="btn-premium" style="background: #e0e7ff; color: #4338ca;">
+        <button onclick="openModal('volunteerModal')" class="btn-premium" style="padding: 8px 14px !important; font-size: 0.85rem !important; background:#4f46e5 !important; color:#ffffff !important;">
             <i class="fas fa-hands-helping"></i> Novo Voluntário
         </button>
     </div>
