@@ -414,7 +414,7 @@
                         <i class="fas fa-chevron-right" style="font-size: 0.7rem; opacity: 0.3;"></i>
                     </a>
                     @if(config('bruce.context_project_enabled'))
-                        <button type="button" data-bruce-project-id="{{ $project->id }}" data-bruce-project-name="{{ $project->name }}" id="btn-open-bruce-project" class="btn-ds" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: #6366f1; color: white; border: none; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); padding: 14px 20px; border-radius: 14px; font-weight: 800; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 10px 25px -5px rgba(99, 102, 241, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px -5px rgba(99, 102, 241, 0.4)'">
+                        <button type="button" data-bruce-project-id="{{ $project->id }}" data-bruce-project-name="{{ $project->name }}" id="btn-open-bruce-project" class="btn-ds" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: var(--ds-brand); color: white; border: none; box-shadow: 0 8px 20px -5px rgba(0,0,0, 0.15); padding: 14px 20px; border-radius: 14px; font-weight: 800; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0, 0.2)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px -5px rgba(0,0,0, 0.15)'">
                             <span style="display: flex; align-items: center;"><i class="fas fa-magic me-2" style="color: #fff; font-size: 1.1rem;"></i> Perguntar ao Bruce (IA)</span>
                             <i class="fas fa-chevron-right" style="font-size: 0.75rem; opacity: 0.8;"></i>
                         </button>
@@ -1129,7 +1129,7 @@ async function generateProjectPdf(btn) {
 <div class="modal fade" id="bruceProjectChatModal" tabindex="-1" aria-labelledby="bruceProjectChatModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 640px;">
         <div class="modal-content" style="border: none; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);">
-            <div class="modal-header" style="background: #6366f1; color:#fff; border-bottom: none; padding: 24px 30px;">
+            <div class="modal-header" style="background: var(--ds-brand); color:#fff; border-bottom: none; padding: 24px 30px;">
                 <h5 class="modal-title" id="bruceProjectChatModalLabel" style="font-weight: 900; display: flex; align-items: center; gap: 12px; font-size: 1.4rem; letter-spacing: -0.5px;">
                     <div style="background: rgba(255,255,255,0.2); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 14px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);">
                         <i class="fas fa-robot text-white" style="font-size: 1.2rem;"></i>
@@ -1159,7 +1159,7 @@ async function generateProjectPdf(btn) {
                         <input type="text" id="bpc_input" class="form-control" placeholder="Escreva sua pergunta para a IA..." autocomplete="off"
                                style="flex:1; padding: 16px 20px; border-radius: 18px; border: 2px solid #e2e8f0; font-weight: 600; color: #0f172a; font-size: 0.95rem; background: #f8fafc; transition: all 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);"
                                onfocus="this.style.borderColor='#a855f7'; this.style.background='#fff'" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
-                        <button type="submit" id="bpc_send" class="btn-premium" style="padding: 0 24px !important; border-radius: 18px !important; font-size: 1.1rem !important; background: #6366f1 !important; color: #fff !important; border: none !important; transition: all 0.2s; box-shadow: 0 4px 15px rgba(99,102,241,0.3) !important;">
+                        <button type="submit" id="bpc_send" class="btn-premium" style="padding: 0 24px !important; border-radius: 18px !important; font-size: 1.1rem !important; background: var(--ds-brand) !important; color: #fff !important; border: none !important; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
