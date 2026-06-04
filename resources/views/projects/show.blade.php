@@ -1181,8 +1181,17 @@ async function generateProjectPdf(btn) {
     // script da pagina engolir o data-bs-toggle ou quebrar o objeto
     // `bootstrap` global.
     window.openProjectModal = function(modalId) {
+        // DEBUG temporario para diagnostico do botao Nova Pessoa / Importar CSV
+        // Se o alerta abaixo nao aparecer ao clicar, o onclick NAO esta
+        // disparando (problema fora desta funcao). Se aparecer + modal
+        // nao abrir, problema esta no resto desta funcao.
+        alert('Bruce diag: clique recebido para modal "' + modalId + '". Vou tentar abrir agora.');
+
         const el = document.getElementById(modalId);
-        if (!el) { console.warn('openProjectModal: modal nao encontrado:', modalId); return; }
+        if (!el) {
+            alert('Bruce diag: modal "' + modalId + '" NAO encontrado no DOM. View precisa ser limpa: php artisan view:clear');
+            return;
+        }
 
         // Tentativa 1: Bootstrap nativo
         if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
