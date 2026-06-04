@@ -209,11 +209,28 @@
                                 <i class="fas fa-ellipsis-v" style="font-size: 0.8rem; color: #64748b;"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2">
-                                <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" style="font-size: 0.85rem;"><i class="fas fa-eye me-2 text-muted"></i> Visualizar</a></li>
+                                @php
+                                    $viewData = [
+                                        'id'          => $t->id,
+                                        'date'        => $t->date,
+                                        'description' => $t->description,
+                                        'type'        => $t->type,
+                                        'status'      => $t->status,
+                                        'amount'      => number_format((float) $t->amount, 2, ',', '.'),
+                                        'category'    => optional($t->category)->name,
+                                        'project'     => optional($t->project)->name,
+                                    ];
+                                    $proofPath = $t->attachment_path ?: $t->receipt_path;
+                                @endphp
+                                <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" onclick='openTransactionView(@json($viewData)); return false;' style="font-size: 0.85rem;"><i class="fas fa-eye me-2 text-muted"></i> Visualizar</a></li>
                                 @if($t->type == 'income')
-                                    <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" onclick="shareReceipt('{{ $t->description }}', '{{ route('public.receipt', $t->public_receipt_token) }}')" style="font-size: 0.85rem;"><i class="fab fa-whatsapp me-2 text-success"></i> Zap Recibo</a></li>
+                                    <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" onclick="shareReceipt('{{ $t->description }}', '{{ route('public.receipt', $t->public_receipt_token) }}'); return false;" style="font-size: 0.85rem;"><i class="fab fa-whatsapp me-2 text-success"></i> Zap Recibo</a></li>
                                 @endif
-                                <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" style="font-size: 0.85rem;"><i class="fas fa-paperclip me-2 text-muted"></i> Comprovante</a></li>
+                                @if($proofPath)
+                                    <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="{{ asset('storage/' . $proofPath) }}" target="_blank" rel="noopener" style="font-size: 0.85rem;"><i class="fas fa-paperclip me-2 text-success"></i> Comprovante</a></li>
+                                @else
+                                    <li><a class="dropdown-item py-2 px-3 fw-bold text-muted rounded-3" href="#" onclick="alert('Nenhum comprovante anexado a este lançamento. Edite o lançamento para anexar um arquivo.'); return false;" style="font-size: 0.85rem; opacity: 0.6;"><i class="fas fa-paperclip me-2 text-muted"></i> Comprovante <span style="font-size: 0.65rem; color: #94a3b8;">(sem arquivo)</span></a></li>
+                                @endif
                                 <li><hr class="dropdown-divider opacity-50"></li>
                                 <li>
                                     <form action="{{ url('/transactions/'.$t->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar permanentemente?')">
@@ -251,11 +268,83 @@
     @endif
 </div>
 
+{{-- Modal de Visualização de Transação --}}
+<div class="modal fade" id="transactionViewModal" tabindex="-1" aria-labelledby="transactionViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: 20px; overflow: hidden;">
+            <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 20px 24px;">
+                <h5 class="modal-title" id="transactionViewModalLabel" style="font-weight: 900; color: #1e293b;">
+                    <i class="fas fa-receipt me-2" style="color: #6366f1;"></i> Detalhes do Lançamento <span id="tvm_id" style="color: #94a3b8; font-weight: 700;"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Data</div>
+                        <div id="tvm_date" style="font-weight: 800; color: #1e293b;"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Tipo</div>
+                        <div id="tvm_type" style="font-weight: 800;"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Categoria</div>
+                        <div id="tvm_category" style="font-weight: 800; color: #1e293b;"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Projeto</div>
+                        <div id="tvm_project" style="font-weight: 800; color: #1e293b;"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Status</div>
+                        <div id="tvm_status" style="font-weight: 800;"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Valor</div>
+                        <div id="tvm_amount" style="font-weight: 900; font-size: 1.3rem;"></div>
+                    </div>
+                </div>
+                <hr style="border-color: #f1f5f9; margin: 20px 0;">
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Descrição</div>
+                    <div id="tvm_description" style="font-weight: 700; color: #1e293b; line-height: 1.5;"></div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #f1f5f9; padding: 16px 24px;">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="font-weight: 700;">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function shareReceipt(name, url) {
         let text = `Olá ${name}, muito obrigado por sua contribuição! Você pode baixar seu recibo aqui: ${url}`;
         let waLink = `https://wa.me/?text=${encodeURIComponent(text)}`;
         window.open(waLink, '_blank');
+    }
+
+    function openTransactionView(d) {
+        const isIncome = d.type === 'income';
+        const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? '—'; };
+        const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+
+        setText('tvm_id', '#' + String(d.id).padStart(4, '0'));
+        setText('tvm_date', d.date ? new Date(d.date + 'T00:00:00').toLocaleDateString('pt-BR') : '—');
+        setHtml('tvm_type', isIncome
+            ? '<span style="background:#ecfdf5; color:#065f46; padding:4px 10px; border-radius:999px; font-size:0.75rem;">Entrada</span>'
+            : '<span style="background:#fef2f2; color:#991b1b; padding:4px 10px; border-radius:999px; font-size:0.75rem;">Saída</span>');
+        setText('tvm_category', d.category || '—');
+        setText('tvm_project', d.project || '—');
+        const statusMap = {paid:'Pago', pending:'Pendente', rejected:'Rejeitado', canceled:'Cancelado'};
+        const statusColor = {paid:'#10b981', pending:'#f59e0b', rejected:'#ef4444', canceled:'#94a3b8'};
+        setHtml('tvm_status', '<span style="color:' + (statusColor[d.status] || '#475569') + ';">' + (statusMap[d.status] || d.status || '—') + '</span>');
+        setHtml('tvm_amount', '<span style="color:' + (isIncome ? '#10b981' : '#ef4444') + ';">' + (isIncome ? '+ ' : '- ') + 'R$ ' + d.amount + '</span>');
+        setText('tvm_description', d.description || '—');
+
+        const modal = new bootstrap.Modal(document.getElementById('transactionViewModal'));
+        modal.show();
     }
 </script>
 @endsection
