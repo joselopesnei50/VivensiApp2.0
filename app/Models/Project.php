@@ -26,6 +26,8 @@ class Project extends Model
         'ai_summary',
         'ai_summary_at',
         'ai_summary_status',
+        'archived_at',
+        'archived_by',
     ];
 
     protected $casts = [
@@ -33,10 +35,34 @@ class Project extends Model
         'end_date'      => 'date',
         'budget'        => 'decimal:2',
         'ai_summary_at' => 'datetime',
+        'archived_at'   => 'datetime',
     ];
 
     // Desativa a coluna updated_at que não existe no banco legado
     const UPDATED_AT = null;
+
+    // ── Arquivamento ─────────────────────────────────────────────────────────
+    // archived_at preserva o histórico (sem delete). Listagens padrão usam
+    // ->active(); a tela /projects/archived usa ->archived().
+
+    public function scopeActive($q)   { return $q->whereNull('projects.archived_at'); }
+    public function scopeArchived($q) { return $q->whereNotNull('projects.archived_at'); }
+
+    public function isArchived(): bool { return ! is_null($this->archived_at); }
+
+    public function archive(?int $userId = null): bool
+    {
+        $this->archived_at = now();
+        $this->archived_by = $userId ?? auth()->id();
+        return $this->save();
+    }
+
+    public function unarchive(): bool
+    {
+        $this->archived_at = null;
+        $this->archived_by = null;
+        return $this->save();
+    }
     
     // Relacionamento com Logs (Opicional por enquanto, mas bom ter)
     // Relacionamento com Transações (Opicional)

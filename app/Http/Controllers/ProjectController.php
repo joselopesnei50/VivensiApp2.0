@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\GeneratePdfJob;
+use App\Models\AuditLog;
 use App\Models\GeneratedReport;
 use App\Models\Project;
 use App\Models\User;
@@ -47,6 +48,7 @@ class ProjectController extends Controller
 
         $projectsQ = Project::query()
             ->where('projects.tenant_id', $tenantId)
+            ->active() // arquivados ficam fora da listagem padrão; ver /projects/archived
             ->withCount('members');
 
         // Usuário operacional: só vê projetos onde é membro
@@ -477,5 +479,99 @@ class ProjectController extends Controller
         }
 
         return redirect()->route('whatsapp.broadcast.index')->with('prefilled_phones', $phones);
+    }
+
+    // ── Arquivamento de projetos ────────────────────────────────────────────
+
+    public function archived(Request $request)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
+
+        $tenantId = auth()->user()->tenant_id;
+        $q = trim((string) $request->query('q', ''));
+
+        $projects = Project::query()
+            ->where('tenant_id', $tenantId)
+            ->archived()
+            ->when($q !== '', function ($qq) use ($q) {
+                $qq->where(function ($w) use ($q) {
+                    $w->where('name', 'like', '%' . $q . '%')
+                      ->orWhere('description', 'like', '%' . $q . '%');
+                });
+            })
+            ->orderBy('archived_at', 'desc')
+            ->paginate(20)
+            ->appends($request->query());
+
+        return view('projects.archived', compact('projects', 'q'));
+    }
+
+    public function archive(Request $request, $id)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
+
+        $tenantId = auth()->user()->tenant_id;
+
+        $project = Project::where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
+
+        if ($project->isArchived()) {
+            return back()->with('info', 'Este projeto já está arquivado.');
+        }
+
+        $project->archive((int) auth()->id());
+
+        try {
+            AuditLog::create([
+                'tenant_id'      => $tenantId,
+                'user_id'        => auth()->id(),
+                'event'          => 'project.archived',
+                'auditable_type' => Project::class,
+                'auditable_id'   => $project->id,
+                'old_values'     => ['archived_at' => null],
+                'new_values'     => ['archived_at' => $project->archived_at, 'archived_by' => $project->archived_by],
+            ]);
+        } catch (\Throwable $e) {
+            // Audit log é melhor esforço — não bloqueia a ação
+        }
+
+        return redirect('/projects')->with('success', 'Projeto arquivado. Acesse "Arquivados" para reativá-lo.');
+    }
+
+    public function unarchive(Request $request, $id)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
+
+        $tenantId = auth()->user()->tenant_id;
+
+        $project = Project::where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
+
+        if (! $project->isArchived()) {
+            return back()->with('info', 'Este projeto já está ativo.');
+        }
+
+        $oldArchivedAt = $project->archived_at;
+        $oldArchivedBy = $project->archived_by;
+
+        $project->unarchive();
+
+        try {
+            AuditLog::create([
+                'tenant_id'      => $tenantId,
+                'user_id'        => auth()->id(),
+                'event'          => 'project.unarchived',
+                'auditable_type' => Project::class,
+                'auditable_id'   => $project->id,
+                'old_values'     => ['archived_at' => $oldArchivedAt, 'archived_by' => $oldArchivedBy],
+                'new_values'     => ['archived_at' => null, 'archived_by' => null],
+            ]);
+        } catch (\Throwable $e) {
+            // não bloqueia
+        }
+
+        return redirect('/projects/details/' . $project->id)->with('success', 'Projeto reativado com sucesso.');
     }
 }
