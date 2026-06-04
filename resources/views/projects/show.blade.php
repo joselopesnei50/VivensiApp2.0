@@ -3,10 +3,13 @@
 @section('content')
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
-    $isManager = in_array(auth()->user()->role, ['manager', 'super_admin'], true);
+    // Pode operar este projeto (criar/editar/arquivar, gerir equipe, registrar impacto etc.).
+    // Sempre que mudar aqui, conferir as roles aceitas em ProjectController, ProjectTimelineController
+    // e ProjectLogController para não voltar a divergir.
+    $canManageProject = in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true);
 @endphp
 
-@if($isManager && session('invite_link'))
+@if($canManageProject && session('invite_link'))
     <div class="alert alert-warning d-flex align-items-start justify-content-between gap-3" style="border-radius: 18px; border: 1px solid #fde68a; background: #fffbeb; padding: 16px 18px; margin-bottom: 18px;">
         <div style="flex: 1;">
             <div style="font-weight: 900; color:#92400e; margin-bottom: 6px;">Link para definir senha do novo membro</div>
@@ -219,7 +222,7 @@
                 </div>
             </div>
             <div style="display: flex; gap: 12px;">
-                @if($isManager)
+                @if($canManageProject)
                     <a href="{{ $basePath . '/projects/'.$project->id.'/edit' }}" class="btn-action-pro" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
                         <i class="fas fa-cog" style="color: #94a3b8;"></i> Ajustes
                     </a>
@@ -299,7 +302,7 @@
                     <a href="{{ url('/transactions?project_id=' . $project->id) }}" class="btn-ds btn-ds-outline" style="padding: 10px 16px; font-weight: 700; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                         <i class="fas fa-filter"></i> Ver todas com filtros
                     </a>
-                    @if($isManager)
+                    @if($canManageProject)
                         <a href="{{ $basePath . '/transactions/create?project_id='.$project->id }}" class="btn-premium btn-premium-shine" style="border: none; padding: 12px 25px; font-weight: 800; font-size: 0.85rem;">
                             <i class="fas fa-plus me-2"></i> Lançar Movimentação
                         </a>
@@ -354,7 +357,7 @@
             <div class="project-table-card" style="padding: 30px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                     <h5 style="margin: 0; font-weight: 900; color: #1e293b;">Stakeholders</h5>
-                    @if($isManager)
+                    @if($canManageProject)
                         <button class="btn btn-light rounded-circle" style="width: 36px; height: 36px; padding: 0;" data-bs-toggle="modal" data-bs-target="#addMemberModal">
                             <i class="fas fa-user-plus text-primary"></i>
                         </button>
@@ -376,7 +379,7 @@
                         <div style="font-weight: 800; color: #1e293b; font-size: 0.9rem;">{{ $member->user->name }}</div>
                         <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">{{ strtoupper($member->access_level) }}</div>
                     </div>
-                    @if($isManager)
+                    @if($canManageProject)
                         <form action="{{ $basePath . '/projects/'.$project->id.'/members/'.$member->id }}" method="POST">
                             @csrf @method('DELETE')
                             <button class="btn btn-link btn-sm text-danger p-0"><i class="fas fa-times-circle"></i></button>
@@ -454,7 +457,7 @@
             <button type="button" id="btn-open-import-person" onclick="openProjectModal('importPersonProjectModal')" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
                 <i class="fas fa-file-csv me-2" style="color: #f59e0b;"></i> Importar CSV
             </button>
-            @if($project->people->count() > 0)
+            @if($canManageProject && $project->people->count() > 0)
                 <form action="{{ route('projects.broadcast.create', $project->id) }}" method="POST" style="margin: 0;">
                     @csrf
                     <button type="submit" class="btn-premium btn-premium-shine" style="background: #10b981; color: white; border: none; padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
@@ -493,6 +496,7 @@
                         </div>
                     </td>
                     <td style="padding: 15px; text-align: right;">
+                        @if($canManageProject)
                         <form action="{{ route('projects.people.destroy', [$project->id, $person->id]) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Excluir esta pessoa?');">
                             @csrf
                             @method('DELETE')
@@ -500,6 +504,7 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
+                        @endif
                     </td>
                 </tr>
                 @empty
@@ -522,7 +527,7 @@
             <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">Linha do Tempo de Impacto</h4>
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Evidências e marcos históricos da execução do projeto.</p>
         </div>
-        @if($isManager)
+        @if($canManageProject)
             <button class="btn-premium btn-premium-shine" style="border: none; padding: 12px 25px; font-weight: 800; font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#addTimelineModal">
                 <i class="fas fa-magic me-2"></i> Registrar Impacto
             </button>
@@ -544,7 +549,7 @@
                                 <i class="far fa-calendar-alt me-1"></i> {{ $record->date->format('d/m/Y') }}
                             </div>
                         </div>
-                        @if($isManager)
+                        @if($canManageProject)
                             <form action="{{ route('projects.timeline.destroy', [$project->id, $record->id]) }}" method="POST">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-link text-danger p-0" onclick="return confirm('Excluir este registro?')">
@@ -825,7 +830,7 @@ async function generateProjectPdf(btn) {
 </script>
 
 <!-- Timeline Modal -->
-@if($isManager)
+@if($canManageProject)
 <div class="modal fade" id="addTimelineModal" role="dialog" aria-modal="true" aria-labelledby="addTimelineModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
@@ -884,7 +889,7 @@ async function generateProjectPdf(btn) {
 @endif
 
 <!-- Team Modal Refined -->
-@if($isManager)
+@if($canManageProject)
 <div class="modal fade" id="addMemberModal" role="dialog" aria-modal="true" aria-labelledby="addMemberModalLabel" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 overflow-hidden" style="border-radius: 32px; box-shadow: 0 50px 100px rgba(0,0,0,0.2);">
