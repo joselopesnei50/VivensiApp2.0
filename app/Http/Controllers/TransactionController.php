@@ -10,6 +10,7 @@ use App\Services\DonorRetentionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class TransactionController extends Controller
@@ -171,8 +172,10 @@ class TransactionController extends Controller
         $transaction->approval_status = $needsApproval ? 'pending' : 'approved';
 
         if ($request->hasFile('attachment')) {
-            $tenantId = auth()->user()->tenant_id;
-            $path = $request->file('attachment')->store("tenants/{$tenantId}/attachments", 'public');
+            // LGPD: anexos financeiros ficam em storage/app/private/... (disk 'local'),
+            // fora do alcance do storage:link publico. Acesso vai pela rota
+            // transactions.attachment, que valida tenant antes de servir o stream.
+            $path = $request->file('attachment')->store("private/tenants/{$tenantId}/attachments", 'local');
             $transaction->attachment_path = $path;
             // compat: algumas telas usam receipt_path para mostrar o anexo
             if ($isExpense && empty($transaction->receipt_path)) {
@@ -255,8 +258,41 @@ class TransactionController extends Controller
         $transaction = Transaction::where('id', $id)
                                    ->where('tenant_id', auth()->user()->tenant_id)
                                    ->firstOrFail();
-        
+
         return response()->json($transaction);
+    }
+
+    /**
+     * Stream do anexo financeiro com checagem de tenant.
+     *
+     * Substitui o acesso direto via /storage/... (disco publico). Arquivos novos
+     * vivem em storage/app/private/tenants/{id}/attachments/, fora do storage:link.
+     * Para compatibilidade durante a migracao, tambem serve arquivos legacy que
+     * ainda estao no disco 'public' — apos rodar transactions:migrate-attachments
+     * esse branch fica inativo.
+     */
+    public function downloadAttachment($id)
+    {
+        $tenantId = (int) auth()->user()->tenant_id;
+
+        $transaction = Transaction::where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
+
+        $path = $transaction->attachment_path ?: $transaction->receipt_path;
+        abort_unless($path, 404);
+
+        $disk = str_starts_with($path, 'private/') ? 'local' : 'public';
+        abort_unless(Storage::disk($disk)->exists($path), 404);
+
+        $mime = Storage::disk($disk)->mimeType($path) ?: 'application/octet-stream';
+        $filename = basename($path);
+        $inlineMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        $headers = ['X-Content-Type-Options' => 'nosniff'];
+
+        return in_array($mime, $inlineMimes, true)
+            ? Storage::disk($disk)->response($path, $filename, $headers)
+            : Storage::disk($disk)->download($path, $filename, $headers);
     }
 
     public function update(Request $request, $id)
