@@ -115,13 +115,13 @@
                 </td>
                 <td style="padding: 15px; text-align: center;">
                     <div style="display:flex; gap: 8px; justify-content:center; align-items:center;">
-                        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" class="btn-premium" style="padding: 5px 10px; font-size: 0.8rem; background: #f1f5f9; color: #475569;">
+                        <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" class="btn-premium" title="Ver detalhes" aria-label="Ver detalhes do beneficiário" style="padding: 6px 10px !important; font-size: 0.85rem !important; background: #475569 !important; color: #ffffff !important; box-shadow: none !important;">
                             <i class="fas fa-eye"></i>
                         </a>
                         <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" onsubmit="return confirm('Remover este beneficiário e todo o histórico?');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn-premium" style="padding: 5px 10px; font-size: 0.8rem; background: #fee2e2; color: #991b1b;">
+                            <button type="submit" class="btn-premium" title="Excluir" aria-label="Excluir beneficiário" style="padding: 6px 10px !important; font-size: 0.85rem !important; background: #dc2626 !important; color: #ffffff !important; box-shadow: none !important;">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
