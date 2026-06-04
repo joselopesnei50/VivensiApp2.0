@@ -10,6 +10,7 @@ use App\Services\DonorRetentionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class TransactionController extends Controller
 {
@@ -139,13 +140,17 @@ class TransactionController extends Controller
         }
 
         // Validamos os dados sanitizados
+        // category_id/project_id usam Rule::exists()->where(tenant_id) para impedir
+        // que o usuario submeta um FK que pertence a outro tenant (mesmo padrao do
+        // TaskController::taskValidationRules).
+        $tenantId = auth()->user()->tenant_id;
         $validator = \Illuminate\Support\Facades\Validator::make($data, [
             'description' => 'required|string|max:255',
             'amount' => 'required|numeric',
             'date' => 'required|date',
             'type' => 'required|in:income,expense',
-            'category_id' => 'nullable|integer',
-            'project_id' => 'nullable|integer',
+            'category_id' => ['nullable', 'integer', Rule::exists('financial_categories', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'project_id'  => ['nullable', 'integer', Rule::exists('projects', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'attachment' => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png,zip'
         ]);
 
