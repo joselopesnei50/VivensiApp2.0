@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Jobs\GenerateProjectLogSummaryJob;
 use App\Models\Project;
 use App\Models\ProjectLog;
+use App\Services\ProjectService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class ProjectLogController extends Controller
 {
+    public function __construct(private ProjectService $projectService) {}
+
     public function store(Request $request, int $projectId)
     {
         $tenantId = auth()->user()->tenant_id;
@@ -38,6 +41,9 @@ class ProjectLogController extends Controller
             'created_at' => now(),
         ]);
 
+        // Invalida o cache da tela do projeto para que a nova entrada apareça imediatamente
+        $this->projectService->flushCache($tenantId, $project->id);
+
         return redirect()->back()->with('log_success', 'Entrada registrada.');
     }
 
@@ -58,6 +64,8 @@ class ProjectLogController extends Controller
         );
 
         $log->delete();
+
+        $this->projectService->flushCache($tenantId, $projectId);
 
         return redirect()->back()->with('log_success', 'Entrada removida.');
     }

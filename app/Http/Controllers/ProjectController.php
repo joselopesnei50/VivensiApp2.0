@@ -369,6 +369,8 @@ class ProjectController extends Controller
 
         \App\Models\ProjectPerson::create($validated);
 
+        $this->projectService->flushCache((int) auth()->user()->tenant_id, (int) $project->id);
+
         return back()->with('success', 'Pessoa adicionada ao projeto!');
     }
 
@@ -392,6 +394,8 @@ class ProjectController extends Controller
         $validated['tenant_id'] = auth()->user()->tenant_id;
 
         \App\Models\ProjectPerson::create($validated);
+
+        $this->projectService->flushCache((int) auth()->user()->tenant_id, (int) $project->id);
 
         return back()->with('success', 'Pessoa cadastrada e vinculada ao projeto com sucesso!');
     }
@@ -453,8 +457,10 @@ class ProjectController extends Controller
             ->where('project_id', $projectId)
             ->where('tenant_id', auth()->user()->tenant_id)
             ->firstOrFail();
-            
+
         $person->delete();
+
+        $this->projectService->flushCache((int) auth()->user()->tenant_id, (int) $projectId);
 
         return back()->with('success', 'Pessoa removida.');
     }
