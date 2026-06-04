@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\Task;
 use App\Models\Project;
+use App\Models\ProjectGoal;
 use App\Models\ProjectLog;
 use App\Models\ProjectMember;
+use App\Models\ProjectMilestone;
 use App\Models\ProjectTimelineRecord;
 use App\Models\Tenant;
 use App\Models\Transaction;
@@ -225,11 +227,55 @@ PROMPT;
                 ->map(fn ($l) => '- ' . $l->created_at->format('d/m') . ': ' . \Illuminate\Support\Str::limit((string) $l->body, 140))
                 ->implode("\n");
 
-            // Próximo marco da timeline
+            // Próximo marco da timeline (registros historicos com data futura)
             $nextMilestone = ProjectTimelineRecord::where('project_id', $projectId)
                 ->whereDate('date', '>=', now())
                 ->orderBy('date', 'asc')
                 ->first(['title', 'date', 'type']);
+
+            // Planejamento (atras de feature flag — so injeta se a feature
+            // estiver ligada para este ambiente)
+            $planningBlock = '';
+            if (config('planning.enabled')) {
+                $goalCounts = ProjectGoal::where('tenant_id', $tenantId)
+                    ->where('project_id', $projectId)
+                    ->selectRaw('status, COUNT(*) as total')
+                    ->groupBy('status')
+                    ->pluck('total', 'status')
+                    ->toArray();
+                $goalsTotal = array_sum($goalCounts);
+
+                $nextPlannedMilestone = ProjectMilestone::where('tenant_id', $tenantId)
+                    ->where('project_id', $projectId)
+                    ->where('status', 'pending')
+                    ->whereDate('target_date', '>=', now())
+                    ->orderBy('target_date', 'asc')
+                    ->first(['title', 'target_date']);
+                $overdueMilestones = ProjectMilestone::where('tenant_id', $tenantId)
+                    ->where('project_id', $projectId)
+                    ->where('status', 'pending')
+                    ->whereDate('target_date', '<', now())
+                    ->count();
+
+                if ($goalsTotal > 0 || $nextPlannedMilestone || $overdueMilestones > 0) {
+                    $goalsLine = $goalsTotal > 0
+                        ? "Metas: {$goalsTotal} total (" .
+                          ($goalCounts['completed'] ?? 0) . " concluidas, " .
+                          ($goalCounts['in_progress'] ?? 0) . " em andamento, " .
+                          ($goalCounts['not_started'] ?? 0) . " nao iniciadas)"
+                        : 'Metas: nenhuma cadastrada';
+
+                    $plannedMilestoneLine = $nextPlannedMilestone
+                        ? "Proximo marco planejado: \"{$nextPlannedMilestone->title}\" em " . $nextPlannedMilestone->target_date->format('d/m/Y')
+                        : 'Nenhum marco pendente futuro';
+
+                    $overdueLine = $overdueMilestones > 0
+                        ? "Marcos em atraso: {$overdueMilestones}"
+                        : 'Marcos em atraso: 0';
+
+                    $planningBlock = "\n### Planejamento\n- {$goalsLine}\n- {$plannedMilestoneLine}\n- {$overdueLine}";
+                }
+            }
 
             $statusLabel = match ($project->status) {
                 'active'      => 'em execução',
@@ -264,6 +310,7 @@ O usuário quer falar sobre ESTE projeto especificamente.
 - Tarefas: {$doneTasks} concluídas / {$openTasks} abertas / {$overdueTasks} vencidas
 - Equipe: {$memberCount} membros vinculados
 - {$milestoneLine}
+{$planningBlock}
 {$logsBlock}
 
 ### Regras para este contexto
