@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\ProjectTimelineRecord;
+use App\Services\ProjectService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProjectTimelineController extends Controller
 {
+    public function __construct(private ProjectService $projectService) {}
+
     public function store(Request $request, $projectId)
     {
         abort_unless(
@@ -40,6 +43,8 @@ class ProjectTimelineController extends Controller
 
         ProjectTimelineRecord::create($data);
 
+        $this->projectService->flushCache($tenantId, $project->id);
+
         return redirect()->back()->with('success', 'Registro de impacto adicionado com sucesso!');
     }
 
@@ -60,6 +65,8 @@ class ProjectTimelineController extends Controller
         }
 
         $record->delete();
+
+        $this->projectService->flushCache($tenantId, $projectId);
 
         return redirect()->back()->with('success', 'Registro de impacto removido!');
     }
