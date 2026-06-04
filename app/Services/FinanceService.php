@@ -36,7 +36,11 @@ class FinanceService
         $transaction->approval_status = $needsApproval ? 'pending' : 'approved';
 
         if ($attachment) {
-            $path = $attachment->store('attachments', 'public');
+            // LGPD: anexos vao para storage/app/private/... (fora do storage:link
+            // publico). Acesso via rota transactions.attachment com checagem de
+            // tenant. Antes, escrevia em 'attachments/...' no disco public —
+            // SEM isolamento de tenant — duplo problema agora resolvido.
+            $path = $attachment->store("private/tenants/{$user->tenant_id}/attachments", 'local');
             $transaction->attachment_path = $path;
             if ($isExpense) {
                 $transaction->receipt_path = $path;

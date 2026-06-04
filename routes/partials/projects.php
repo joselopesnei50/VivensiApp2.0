@@ -48,6 +48,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/',              [App\Http\Controllers\TransactionController::class, 'index']);
         Route::get('/create',        [App\Http\Controllers\TransactionController::class, 'create']);
         Route::post('/',             [App\Http\Controllers\TransactionController::class, 'store'])->middleware('throttle:web_write');
+        Route::get('/{id}/attachment', [App\Http\Controllers\TransactionController::class, 'downloadAttachment'])->name('transactions.attachment');
         Route::get('/{id}',          [App\Http\Controllers\TransactionController::class, 'show']);
         Route::put('/{id}',          [App\Http\Controllers\TransactionController::class, 'update'])->middleware('throttle:web_write');
         Route::post('/{id}/approve', [App\Http\Controllers\TransactionController::class, 'approve'])->name('transactions.approve')->middleware('throttle:web_write');

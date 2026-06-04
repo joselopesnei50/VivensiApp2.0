@@ -143,7 +143,7 @@
                             {{-- Anexo --}}
                             <td class="py-3 text-center">
                                 @if($receiptPath)
-                                    <a href="{{ Storage::url($receiptPath) }}" target="_blank"
+                                    <a href="{{ route('transactions.attachment', $t->id) }}" target="_blank" rel="noopener"
                                        class="receipt-btn" title="Ver anexo">
                                         <i class="fas fa-file-invoice-dollar"></i>
                                     </a>

@@ -227,7 +227,7 @@
                                     <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="#" onclick="shareReceipt('{{ $t->description }}', '{{ route('public.receipt', $t->public_receipt_token) }}'); return false;" style="font-size: 0.85rem;"><i class="fab fa-whatsapp me-2 text-success"></i> Zap Recibo</a></li>
                                 @endif
                                 @if($proofPath)
-                                    <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="{{ asset('storage/' . $proofPath) }}" target="_blank" rel="noopener" style="font-size: 0.85rem;"><i class="fas fa-paperclip me-2 text-success"></i> Comprovante</a></li>
+                                    <li><a class="dropdown-item py-2 px-3 fw-bold text-dark rounded-3" href="{{ route('transactions.attachment', $t->id) }}" target="_blank" rel="noopener" style="font-size: 0.85rem;"><i class="fas fa-paperclip me-2 text-success"></i> Comprovante</a></li>
                                 @else
                                     <li><a class="dropdown-item py-2 px-3 fw-bold text-muted rounded-3" href="#" onclick="alert('Nenhum comprovante anexado a este lançamento. Edite o lançamento para anexar um arquivo.'); return false;" style="font-size: 0.85rem; opacity: 0.6;"><i class="fas fa-paperclip me-2 text-muted"></i> Comprovante <span style="font-size: 0.65rem; color: #94a3b8;">(sem arquivo)</span></a></li>
                                 @endif
