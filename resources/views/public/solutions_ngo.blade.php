@@ -163,7 +163,7 @@
             <a href="#bruce">Bruce IA</a>
             <a href="#conformidade">Conformidade</a>
             <a href="#footer">Base legal</a>
-            <a href="{{ url('/contato') }}" class="nav-cta">Entrar na lista de espera</a>
+            <a href="{{ route('register') }}" class="nav-cta">Entrar na lista de espera</a>
         </div>
     </div>
 </nav>
@@ -174,7 +174,7 @@
         <h1 class="hero-title">Gestão completa para sua ONG, em <span class="mark">um só lugar</span>.</h1>
         <p class="hero-sub">A plataforma integrada de gestão para o terceiro setor: doadores, voluntários, projetos, prestação de contas e captação de editais — com transparência LGPD e Bruce IA do seu lado.</p>
         <div class="hero-ctas">
-            <a href="{{ url('/contato') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
+            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
             <a href="#fluxo" class="btn-ghost">Explorar fluxo de trabalho</a>
         </div>
         <div class="hero-mini-grid">
@@ -244,21 +244,40 @@
                     <li><i class="fas fa-check"></i><span>Sem cartão de crédito</span></li>
                 </ul>
                 <div style="margin-top: 32px;">
-                    <a href="{{ url('/contato') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Começar agora</a>
+                    <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Começar agora</a>
                 </div>
             </div>
-            <div class="access-form-card">
-                <h3>Plano Lançamento <small>GRATUITO</small></h3>
-                <div class="price">R$ <strong>0</strong><small>/mês</small></div>
-                <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">Para sua ONG aderir ao programa de lançamento. Sem letras miúdas.</p>
-                <ul>
-                    <li><i class="fas fa-check"></i> Bruce IA incluso</li>
-                    <li><i class="fas fa-check"></i> Doadores e relatórios</li>
-                    <li><i class="fas fa-check"></i> Conforme LGPD e MROSC</li>
-                    <li><i class="fas fa-check"></i> Atualizações incluídas</li>
-                </ul>
-                <button type="button" class="btn-fill" onclick="window.location='{{ url('/contato') }}'">Entrar na lista</button>
-            </div>
+            @php
+                $featuredPlan = ($plans ?? collect())->where('interval', 'monthly')->first() ?? ($plans ?? collect())->first();
+            @endphp
+            @if($featuredPlan)
+                <div class="access-form-card">
+                    <h3>{{ $featuredPlan->name }} <small>{{ $featuredPlan->interval === 'yearly' ? 'ANUAL' : 'MENSAL' }}</small></h3>
+                    <div class="price">R$ <strong>{{ rtrim(rtrim(number_format((float) $featuredPlan->price, 2, ',', '.'), '0'), ',') }}</strong><small>/{{ $featuredPlan->interval === 'yearly' ? 'ano' : 'mês' }}</small></div>
+                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">{{ $featuredPlan->description ?? 'Acesso completo à plataforma — Bruce IA, gestão de doadores, prestação de contas.' }}</p>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Bruce IA incluso</li>
+                        <li><i class="fas fa-check"></i> Doadores e relatórios</li>
+                        <li><i class="fas fa-check"></i> Conforme LGPD e MROSC</li>
+                        <li><i class="fas fa-check"></i> Atualizações incluídas</li>
+                    </ul>
+                    <button type="button" class="btn-fill" onclick="window.location='{{ route('register', ['plan_id' => $featuredPlan->id]) }}'">Assinar agora</button>
+                </div>
+            @else
+                {{-- Fallback: nenhum plano ativo cadastrado — captura interesse via lista de espera --}}
+                <div class="access-form-card">
+                    <h3>Plano Lançamento <small>GRATUITO</small></h3>
+                    <div class="price">R$ <strong>0</strong><small>/mês</small></div>
+                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">Para sua ONG aderir ao programa de lançamento. Sem letras miúdas.</p>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Bruce IA incluso</li>
+                        <li><i class="fas fa-check"></i> Doadores e relatórios</li>
+                        <li><i class="fas fa-check"></i> Conforme LGPD e MROSC</li>
+                        <li><i class="fas fa-check"></i> Atualizações incluídas</li>
+                    </ul>
+                    <button type="button" class="btn-fill" onclick="window.location='{{ route('register') }}'">Entrar na lista</button>
+                </div>
+            @endif
         </div>
     </div>
 </section>
@@ -403,7 +422,7 @@
     <div class="container">
         <h2>Centralize a rotina de gestão da sua ONG em uma experiência simples.</h2>
         <p>Cadastre sua organização, entre na lista de espera gratuita e receba acesso ao painel completo assim que sua conta for liberada.</p>
-        <a href="{{ url('/contato') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
+        <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
     </div>
 </section>
 
@@ -429,8 +448,8 @@
             <div class="footer-col">
                 <h6>Acesso</h6>
                 <ul>
-                    <li><a href="{{ url('/contato') }}">Cadastro gratuito</a></li>
-                    <li><a href="{{ url('/login') }}">Entrar no sistema</a></li>
+                    <li><a href="{{ route('register') }}">Cadastro gratuito</a></li>
+                    <li><a href="{{ route('login') }}">Entrar no sistema</a></li>
                     <li><a href="{{ url('/legal/privacidade') }}">Política de Privacidade</a></li>
                     <li><a href="{{ url('/legal/termos') }}">Termos de Uso</a></li>
                 </ul>
