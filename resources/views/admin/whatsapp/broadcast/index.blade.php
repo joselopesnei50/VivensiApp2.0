@@ -775,6 +775,7 @@
                      'processing'=>['bg'=>'rgba(245,158,11,.1)','c'=>'#d97706','icon'=>'spinner','lbl'=>'Processando'],
                      'completed' =>['bg'=>'rgba(16,185,129,.1)', 'c'=>'#059669','icon'=>'circle-check','lbl'=>'Concluído'],
                      'paused'   =>['bg'=>'rgba(148,163,184,.1)','c'=>'#64748b','icon'=>'pause','lbl'=>'Pausado'],
+                     'cancelled'=>['bg'=>'rgba(148,163,184,.15)','c'=>'#64748b','icon'=>'ban','lbl'=>'Cancelado'],
                      'failed'    =>['bg'=>'rgba(239,68,68,.1)',  'c'=>'#dc2626','icon'=>'circle-xmark','lbl'=>'Falhou']];
             $s = $sMap[$campaign->status] ?? ['bg'=>'rgba(100,116,139,.1)','c'=>'#475569','icon'=>'circle','lbl'=>$campaign->status];
             $isMembers = $campaign->audience_type === 'groups' && $campaign->group_send_mode === 'members';
@@ -826,6 +827,30 @@
                 <span style="font-size:.68rem;color:#94a3b8;white-space:nowrap;"><i class="fas fa-stopwatch" style="font-size:.6rem;"></i> {{ $campaign->duration }}</span>
                 @endif
             </div>
+
+            {{-- Acoes contextuais por status (Retomar / Cancelar) --}}
+            @if(in_array($campaign->status, ['scheduled', 'queued', 'paused', 'processing']))
+                <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;flex-wrap:wrap;">
+                    @if($campaign->status === 'paused')
+                        <span style="font-size:.65rem;color:#92400e;background:#fef3c7;padding:3px 8px;border-radius:6px;">
+                            <i class="fas fa-circle-info"></i> Fora da janela horária OU limite diário/horário atingido. Retomar dentro da janela 08h–21h.
+                        </span>
+                        <form method="POST" action="{{ route('whatsapp.broadcast.resume', $campaign->id) }}" style="display:inline;margin-left:auto;">
+                            @csrf
+                            <button type="submit" style="background:transparent;border:1px solid #10b981;color:#059669;font-size:.7rem;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:8px;">
+                                <i class="fas fa-play me-1" style="font-size:.6rem;"></i> Retomar
+                            </button>
+                        </form>
+                    @endif
+                    <form method="POST" action="{{ route('whatsapp.broadcast.cancel', $campaign->id) }}" style="display:inline;{{ $campaign->status === 'paused' ? '' : 'margin-left:auto;' }}"
+                          onsubmit="return confirm('Cancelar esta campanha? As mensagens já enviadas não serão revertidas.');">
+                        @csrf @method('DELETE')
+                        <button type="submit" style="background:transparent;border:1px solid #ef4444;color:#dc2626;font-size:.7rem;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:8px;">
+                            <i class="fas fa-times me-1" style="font-size:.6rem;"></i> Cancelar
+                        </button>
+                    </form>
+                </div>
+            @endif
         </div>
         @endforeach
     </div>
