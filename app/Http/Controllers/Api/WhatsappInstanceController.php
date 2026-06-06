@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\WhatsappInstance;
 use App\Services\EvolutionApiService;
+use App\Services\Messaging\AntiBanManager;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -121,8 +123,24 @@ class WhatsappInstanceController extends Controller
                 'settings'       => $settings,
             ]);
 
+            // Ativa o warming progressivo (14 dias) — toda instancia nova
+            // comeca em 20 msgs/dia e cresce gradualmente ate 370/dia. Sem isso,
+            // a instancia tentaria usar o daily_limit total no dia 1 e a Meta
+            // bania pela curva de uso suspeita.
+            try {
+                (new AntiBanManager(new EvolutionApiService($instance)))
+                    ->startWarming($instance);
+            } catch (\Throwable $e) {
+                // Warming e best-effort — falha aqui nao bloqueia a criacao
+                // da instancia. Loga para investigacao posterior.
+                Log::warning('WhatsappInstance store: falha ao iniciar warming', [
+                    'instance_id' => $instance->id,
+                    'error'       => $e->getMessage(),
+                ]);
+            }
+
             return response()->json([
-                'instance'    => $instance,
+                'instance'    => $instance->fresh(),
                 'pairingCode' => $result['qrcode']['pairingCode'] ?? ($result['pairingCode'] ?? null),
                 'qrcode'      => $result['qrcode']['base64'] ?? ($result['base64'] ?? null),
             ]);
