@@ -50,11 +50,14 @@ class SocialAIContentService
         'image_prompt': Um prompt descritivo detalhado em INGLÊS para gerar uma imagem fotorrealista de alta qualidade sobre este tema, também considerando as instruções adicionais.
         Responda apenas o JSON puro, sem blocos de código markdown.";
 
+        // deepseek-v4-flash: legenda + prompt de imagem em JSON eh task simples
+        // e curta — flash entrega com qualidade suficiente e custo baixo.
+        // Substitui o alias 'deepseek-chat' (deprecado em 2026/07/24 pela DeepSeek).
         $response = Http::timeout(60)->withHeaders([
             'Authorization' => 'Bearer ' . $this->deepseekKey,
             'Content-Type'  => 'application/json',
         ])->post('https://api.deepseek.com/v1/chat/completions', [
-            'model' => 'deepseek-chat',
+            'model' => 'deepseek-v4-flash',
             'messages' => [
                 ['role' => 'user', 'content' => $prompt]
             ],

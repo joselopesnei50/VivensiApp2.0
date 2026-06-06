@@ -246,11 +246,14 @@ PROMPT;
     private function tryDeepSeek(string $prompt): ?array
     {
         try {
+            // Marketing AI usa PRO — gera plano estrategico de marketing com
+            // Markmap (80+ nos com personas, KPIs, copywriting). Output longo e
+            // estruturado se beneficia do raciocinio mais profundo.
             $ds  = new DeepSeekService();
             $res = $ds->chat([
                 ['role' => 'system', 'content' => 'Você é um estrategista de marketing. Retorne APENAS Markdown estruturado para Markmap.js, sem blocos de código, sem explicações.'],
                 ['role' => 'user',   'content' => $prompt],
-            ]);
+            ], 'deepseek-v4-pro');
             $text = $res['choices'][0]['message']['content'] ?? null;
             if ($text) return ['markdown' => $this->cleanMarkdown(trim($text)), 'provider' => 'deepseek'];
         } catch (\Exception $e) {

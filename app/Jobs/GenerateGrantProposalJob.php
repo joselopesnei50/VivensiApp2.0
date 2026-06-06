@@ -52,8 +52,11 @@ class GenerateGrantProposalJob implements ShouldQueue
 
         Use um tom profissional, persuasivo e focado em resultados sociais mensuráveis. Formate em Markdown.";
 
+            // Geracao de proposta formal para edital usa PRO — documento
+            // estruturado (resumo executivo, justificativa, sustentabilidade)
+            // se beneficia do modelo de maior capacidade.
             $ds       = new DeepSeekService();
-            $result   = $ds->chat([['role' => 'user', 'content' => $prompt]]);
+            $result   = $ds->chat([['role' => 'user', 'content' => $prompt]], 'deepseek-v4-pro');
             $proposal = $result['choices'][0]['message']['content'] ?? null;
 
             if (!$proposal) {

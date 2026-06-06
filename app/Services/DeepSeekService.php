@@ -26,7 +26,20 @@ class DeepSeekService
         return $this->apiKey;
     }
 
-    public function chat($messages)
+    /**
+     * Envia mensagens ao DeepSeek V4.
+     *
+     * @param array        $messages Array de mensagens no formato OpenAI-compatible.
+     * @param string|null  $model    Override do modelo. Default = 'deepseek-v4-flash'
+     *                               (rápido e barato, ideal para chat conversacional).
+     *                               Use 'deepseek-v4-pro' para análises estratégicas
+     *                               profundas (Smart Analysis, propostas de edital,
+     *                               estratégia de marketing).
+     *
+     * Nota: os aliases 'deepseek-chat' e 'deepseek-reasoner' serão deprecados pela
+     * DeepSeek em 2026/07/24. Por isso usamos sempre o nome explícito do modelo V4.
+     */
+    public function chat($messages, ?string $model = null)
     {
         $apiKey = $this->resolveApiKey();
         if (!$apiKey) {
@@ -38,7 +51,7 @@ class DeepSeekService
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
             ])->post($this->baseUrl, [
-                'model' => 'deepseek-chat',
+                'model' => $model ?: 'deepseek-v4-flash',
                 'messages' => $messages,
                 'temperature' => 0.7
             ]);
