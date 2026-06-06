@@ -192,7 +192,7 @@
                             <label class="training-label mb-1">Motor Cognitivo</label>
                             <div class="p-2 rounded-3 d-flex align-items-center gap-2" style="background:#f0fdf4;border:1px solid #bbf7d0;">
                                 <i class="fas fa-brain" style="color:#16a34a;font-size:.9rem;"></i>
-                                <span style="font-size:.85rem;font-weight:700;color:#166534;">DeepSeek Chat (V3)</span>
+                                <span style="font-size:.85rem;font-weight:700;color:#166534;">DeepSeek (V4 Flash)</span>
                             </div>
                         </div>
                         <div class="col-sm-5">
