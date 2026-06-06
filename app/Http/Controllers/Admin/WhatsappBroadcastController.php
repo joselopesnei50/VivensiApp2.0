@@ -213,6 +213,16 @@ class WhatsappBroadcastController extends Controller
             compact('campaigns', 'totalSent', 'totalFailed', 'completed', 'successRate'));
     }
 
+    /**
+     * Cancela campanha em estados nao-terminais (scheduled, queued, paused, processing).
+     *
+     * Para 'processing': muda o status para 'cancelled'. O ProcessBroadcastCampaignJob
+     * verifica em cada iteracao `if (\$campaign->status !== 'processing') break;`,
+     * entao o loop interno encerra naturalmente na proxima iteracao.
+     *
+     * Status 'cancelled' e tratado visualmente como neutro (nao "failed", que e erro
+     * de execucao).
+     */
     public function cancelScheduled(int $id)
     {
         Gate::authorize('access-whatsapp');
@@ -220,12 +230,15 @@ class WhatsappBroadcastController extends Controller
 
         $campaign = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
             ->where('id', $id)
-            ->where('status', 'scheduled')
+            ->whereIn('status', ['scheduled', 'queued', 'paused', 'processing'])
             ->firstOrFail();
 
-        $campaign->update(['status' => 'failed']);
+        $campaign->update([
+            'status'       => 'cancelled',
+            'completed_at' => now(),
+        ]);
 
-        return redirect()->back()->with('success', 'Campanha agendada cancelada com sucesso.');
+        return redirect()->back()->with('success', 'Campanha cancelada.');
     }
 
     public function resumeCampaign(int $id)
