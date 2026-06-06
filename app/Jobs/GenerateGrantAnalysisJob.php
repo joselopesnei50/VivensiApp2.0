@@ -106,11 +106,13 @@ REPORTING;
 
             $prompt .= "\n\nResponda APENAS em Português brasileiro. Seja direto, objetivo e prático.";
 
+            // Analise tecnica de edital usa PRO — viabilidade, riscos,
+            // cronograma e prestacao de contas exigem raciocinio estruturado.
             $ds       = new DeepSeekService();
             $result   = $ds->chat([
                 ['role' => 'system', 'content' => 'Você é um especialista em captação de recursos e gestão de convênios para ONGs brasileiras.'],
                 ['role' => 'user',   'content' => $prompt],
-            ]);
+            ], 'deepseek-v4-pro');
 
             $analysis = trim($result['choices'][0]['message']['content'] ?? '');
 

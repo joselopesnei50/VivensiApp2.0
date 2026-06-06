@@ -62,8 +62,10 @@ INSTRUÇÕES:
 - Seja objetivo, direto e profissional
 - Máximo 500 palavras";
 
+            // Resumo executivo do Diario de Evolucao usa PRO — sintese
+            // estruturada de multiplos logs em ate 500 palavras com secoes.
             $ds      = new DeepSeekService();
-            $result  = $ds->chat([['role' => 'user', 'content' => $prompt]]);
+            $result  = $ds->chat([['role' => 'user', 'content' => $prompt]], 'deepseek-v4-pro');
             $summary = trim($result['choices'][0]['message']['content'] ?? '');
 
             if (!$summary) {

@@ -200,8 +200,11 @@ class SmartAnalysisController extends Controller
 
         $prompt = $this->buildDeepAnalysisPrompt($metrics, $transactions, $tenantType, $role);
 
+        // Smart Analysis usa o modelo PRO — analise financeira profunda
+        // (runway, burn rate, recomendacoes estrategicas) merece o modelo de
+        // maior capacidade de raciocinio.
         $ai         = new DeepSeekService();
-        $resultDeep = $ai->chat([['role' => 'user', 'content' => $prompt]]);
+        $resultDeep = $ai->chat([['role' => 'user', 'content' => $prompt]], 'deepseek-v4-pro');
 
         if (isset($resultDeep['choices'][0]['message']['content'])) {
             $analysis = $resultDeep['choices'][0]['message']['content'];

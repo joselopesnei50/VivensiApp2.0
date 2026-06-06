@@ -113,10 +113,13 @@ class IntegrationTestController extends Controller
 
         try {
             // Using DeepSeek standard chat completions endpoint (OpenAI compatible)
+            // Endpoint de teste de conexao do Super Admin. Usa v4-flash para
+            // ping rapido e barato. Substitui o alias 'deepseek-chat'
+            // (deprecado em 2026/07/24 pela DeepSeek).
             $url = 'https://api.deepseek.com/chat/completions';
-            
+
             $payload = [
-                'model' => 'deepseek-chat',
+                'model' => 'deepseek-v4-flash',
                 'messages' => [
                     ['role' => 'system', 'content' => 'You are a helpful assistant.'],
                     ['role' => 'user', 'content' => 'Responda apenas com a frase: Hello World! Eu sou o DeepSeek e a conexão está perfeita.']

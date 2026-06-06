@@ -137,10 +137,13 @@ class SocialIndicatorController extends Controller
             . "Linguagem empática e profissional.";
 
         try {
+            // Analise territorial curta (4-6 linhas, 400 tokens) — flash da
+            // conta com qualidade boa e custo baixo. Substitui o alias
+            // 'deepseek-chat' (deprecado em 2026/07/24 pela DeepSeek).
             $response = Http::timeout(30)
                 ->withHeaders(['Authorization' => "Bearer {$apiKey}", 'Content-Type' => 'application/json'])
                 ->post('https://api.deepseek.com/v1/chat/completions', [
-                    'model'       => 'deepseek-chat',
+                    'model'       => 'deepseek-v4-flash',
                     'messages'    => [['role' => 'user', 'content' => $prompt]],
                     'temperature' => 0.7,
                     'max_tokens'  => 400,

@@ -356,10 +356,13 @@ class BannerController extends Controller
 
         $systemPrompt = 'Você é um especialista em copywriting para banners e redes sociais. Gere textos curtos, impactantes e criativos. Responda APENAS com o texto gerado, sem explicações ou formatação extra.';
 
+        // Copy para banner — texto curto, criativo, 150 tokens. Flash da conta
+        // perfeitamente. Substitui o alias 'deepseek-chat' (deprecado em
+        // 2026/07/24 pela DeepSeek).
         $resp = Http::withHeaders(['Authorization' => 'Bearer ' . $apiKey])
             ->timeout(20)
             ->post('https://api.deepseek.com/v1/chat/completions', [
-                'model'    => 'deepseek-chat',
+                'model'    => 'deepseek-v4-flash',
                 'messages' => [
                     ['role' => 'system', 'content' => $systemPrompt],
                     ['role' => 'user',   'content' => $v['prompt']],
