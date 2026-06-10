@@ -287,7 +287,7 @@
         <div style="opacity: 0.85; font-size: 0.95rem; margin-top: 10px;">
             Período: <strong>{{ $year ?? now()->year }}</strong>
             @if(!empty($publicDataUpdatedAt))
-                • Atualizado em <strong>{{ \Carbon\Carbon::parse($publicDataUpdatedAt)->format('d/m/Y H:i') }}</strong>
+                • Atualizado em <strong>{{ \Carbon\Carbon::parse($publicDataUpdatedAt)->setTimezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</strong>
             @endif
         </div>
     </header>
@@ -551,9 +551,23 @@
                     <i class="fas fa-map-marked-alt" style="color: var(--primary);"></i>
                     Onde estamos
                 </h3>
-                <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 28px;">
+                <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 20px;">
                     Distribuição geográfica dos beneficiários atendidos pela organização. Agregado por município e estado — sem identificação individual.
                 </p>
+
+                @if(($familiesCount ?? 0) > 0 && ($territoriesStats['beneficiaries'] ?? 0) < $familiesCount)
+                    @php
+                        $covPct = $familiesCount > 0 ? (100 * $territoriesStats['beneficiaries'] / $familiesCount) : 0;
+                    @endphp
+                    <div style="background: #fffbeb; border-left: 3px solid #f59e0b; padding: 12px 16px; border-radius: 10px; margin-bottom: 24px; font-size: 0.86rem; color: #78350f; display: flex; align-items: flex-start; gap: 10px;">
+                        <i class="fas fa-info-circle" style="margin-top: 2px; color: #f59e0b;"></i>
+                        <div>
+                            <strong>{{ number_format($territoriesStats['beneficiaries'], 0, ',', '.') }} de {{ number_format($familiesCount, 0, ',', '.') }}</strong>
+                            beneficiários ({{ number_format($covPct, 1, ',', '.') }}%) com município registrado.
+                            Cadastros sem cidade não aparecem nesta visualização — a organização pode completar os dados na tela de cadastro de beneficiários.
+                        </div>
+                    </div>
+                @endif
 
                 @if(($territoriesStats['beneficiaries'] ?? 0) === 0)
                     <div class="territorios-empty">
