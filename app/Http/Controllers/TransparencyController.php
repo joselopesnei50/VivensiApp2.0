@@ -899,6 +899,13 @@ class TransparencyController extends Controller
 
         extract($cached);
 
+        // Fallbacks defensivos: caches antigos (gravados antes desta release) não
+        // contêm as chaves de territórios. Garante render sem 500 enquanto o cache
+        // antigo expira ou é regravado.
+        $territoriesByCity  = $territoriesByCity  ?? collect();
+        $territoriesByState = $territoriesByState ?? collect();
+        $territoriesStats   = $territoriesStats   ?? ['cities' => 0, 'states' => 0, 'beneficiaries' => 0];
+
         return view('transparency.portal', compact(
             'portal', 'board', 'docs', 'partnerships',
             'totalIn', 'totalOut', 'investmentSocial', 'balance', 'lastExpenses',
