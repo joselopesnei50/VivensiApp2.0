@@ -162,6 +162,119 @@
             .portal-nav { border-radius: 20px; flex-direction: column; }
             header { padding: 40px 0 80px; }
         }
+
+        /* ── Territórios atendidos (aba Impacto Social) ───────────── */
+        .territorios-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+        .territorios-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 22px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .territorios-stats > div {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+        .territorios-stats label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .territorios-stats strong {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -0.5px;
+            display: block;
+            line-height: 1;
+        }
+        .territorios-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .territorios-list li {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        .territorios-list li:hover { background: #f8fafc; }
+        .territorios-list .t-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--primary);
+        }
+        .territorios-list .t-mun { color: var(--dark); font-weight: 600; }
+        .territorios-list .t-uf  { color: var(--gray); font-weight: 500; font-size: 0.78rem; margin-left: 4px; }
+        .territorios-list .t-num {
+            font-weight: 800; color: var(--dark);
+            font-variant-numeric: tabular-nums;
+        }
+        .territorios-map {
+            background: linear-gradient(180deg, #fafbff 0%, #eef2ff 100%);
+            border-radius: 18px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 360px;
+            border: 1px solid #e2e8f0;
+        }
+        .territorios-map svg { width: 100%; max-width: 380px; height: auto; }
+        .territorios-map .br-shape {
+            fill: #ffffff;
+            stroke: var(--primary);
+            stroke-width: 1;
+            stroke-linejoin: round;
+        }
+        .territorios-map .pt { fill: var(--primary); opacity: 0.7; }
+        .territorios-map .pt.main {
+            fill: var(--primary); opacity: 1;
+            filter: drop-shadow(0 2px 6px rgba(59,130,246,0.4));
+        }
+        .territorios-map .ring {
+            fill: none; stroke: var(--primary); stroke-width: 1.2;
+            animation: ringPulse 2.4s ease-out infinite;
+        }
+        @keyframes ringPulse {
+            0%   { r: 5; opacity: 0.7; }
+            100% { r: 22; opacity: 0; }
+        }
+        .territorios-map .lbl {
+            fill: var(--dark);
+            font-family: 'Outfit', sans-serif;
+            font-size: 6px; font-weight: 700;
+        }
+        .territorios-map .lbl-sub {
+            fill: var(--gray);
+            font-family: 'Outfit', sans-serif;
+            font-size: 4.6px; font-weight: 500;
+        }
+        .territorios-empty {
+            padding: 40px; text-align: center;
+            color: var(--gray);
+            border: 1px dashed #cbd5e1;
+            border-radius: 15px;
+        }
+        @media (max-width: 768px) {
+            .territorios-grid { grid-template-columns: 1fr; gap: 28px; }
+            .territorios-map { min-height: 280px; }
+        }
     </style>
 </head>
 <body>
@@ -416,6 +529,92 @@
                     <div class="stat-value" style="color: #06b6d4;">{{ $attendancesCount }}</div>
                     <small style="color: #06b6d4;">Ações realizadas este mês</small>
                 </div>
+            </div>
+
+            {{-- ── Territórios atendidos ────────────────────────────────── --}}
+            @php
+                $stateCoords = [
+                    'AC' => [38,90],  'AL' => [156,87], 'AP' => [108,32], 'AM' => [60,70],
+                    'BA' => [137,102],'CE' => [148,65], 'DF' => [115,113],'ES' => [144,130],
+                    'GO' => [105,113],'MA' => [125,70], 'MT' => [85,102], 'MS' => [88,130],
+                    'MG' => [123,125],'PA' => [95,60],  'PB' => [160,73], 'PR' => [105,152],
+                    'PE' => [156,80], 'PI' => [135,75], 'RJ' => [134,138],'RN' => [160,68],
+                    'RS' => [95,175], 'RO' => [60,92],  'RR' => [73,35],  'SC' => [105,162],
+                    'SP' => [115,140],'SE' => [150,92], 'TO' => [115,90],
+                ];
+                $maxState = ($territoriesByState ?? collect())->max('total') ?: 1;
+                $topState = ($territoriesByState ?? collect())->first();
+            @endphp
+
+            <div class="section-card">
+                <h3 style="margin-top: 0; display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-map-marked-alt" style="color: var(--primary);"></i>
+                    Onde estamos
+                </h3>
+                <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 28px;">
+                    Distribuição geográfica dos beneficiários atendidos pela organização. Agregado por município e estado — sem identificação individual.
+                </p>
+
+                @if(($territoriesStats['beneficiaries'] ?? 0) === 0)
+                    <div class="territorios-empty">
+                        Nenhum beneficiário com município registrado.
+                    </div>
+                @else
+                    <div class="territorios-grid">
+                        <div>
+                            <div class="territorios-stats">
+                                <div>
+                                    <label>Municípios</label>
+                                    <strong>{{ $territoriesStats['cities'] }}</strong>
+                                </div>
+                                <div>
+                                    <label>Estados</label>
+                                    <strong>{{ $territoriesStats['states'] }}</strong>
+                                </div>
+                                <div>
+                                    <label>Beneficiários</label>
+                                    <strong>{{ number_format($territoriesStats['beneficiaries'], 0, ',', '.') }}</strong>
+                                </div>
+                            </div>
+                            <ul class="territorios-list">
+                                @foreach($territoriesByCity as $row)
+                                    <li>
+                                        <span class="t-dot"></span>
+                                        <span>
+                                            <span class="t-mun">{{ $row->city }}</span><span class="t-uf">· {{ $row->state }}</span>
+                                        </span>
+                                        <span class="t-num">{{ number_format((int) $row->total, 0, ',', '.') }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+
+                        <div class="territorios-map">
+                            <svg viewBox="0 0 200 220" role="img" aria-label="Mapa de presença territorial">
+                                <path class="br-shape" d="M 95,15 L 110,18 L 130,22 L 152,30 L 168,42 L 175,58 L 178,75 L 175,92 L 170,110 L 160,128 L 152,145 L 142,160 L 130,172 L 118,182 L 100,188 L 82,185 L 65,178 L 52,168 L 42,154 L 35,140 L 30,122 L 28,102 L 32,85 L 38,68 L 45,52 L 55,38 L 70,26 L 85,18 Z"/>
+
+                                @foreach($territoriesByState as $s)
+                                    @continue(! isset($stateCoords[$s['state']]))
+                                    @php
+                                        $uf = $s['state'];
+                                        [$x, $y] = $stateCoords[$uf];
+                                        $isTop = $topState && $topState['state'] === $uf;
+                                        $radius = max(2.5, min(8, 2.5 + (5.5 * $s['total'] / $maxState)));
+                                    @endphp
+
+                                    @if($isTop)
+                                        <circle class="ring" cx="{{ $x }}" cy="{{ $y }}" r="5"/>
+                                    @endif
+                                    <circle class="pt {{ $isTop ? 'main' : '' }}" cx="{{ $x }}" cy="{{ $y }}" r="{{ $radius }}"/>
+                                    @if($isTop || $s['total'] >= ($maxState * 0.25))
+                                        <text class="lbl" x="{{ $x + $radius + 2 }}" y="{{ $y + 2 }}">{{ $uf }}</text>
+                                        <text class="lbl-sub" x="{{ $x + $radius + 2 }}" y="{{ $y + 8 }}">{{ number_format($s['total'], 0, ',', '.') }} atendidos</text>
+                                    @endif
+                                @endforeach
+                            </svg>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px;">

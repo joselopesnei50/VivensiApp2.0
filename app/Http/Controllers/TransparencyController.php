@@ -754,6 +754,38 @@ class TransparencyController extends Controller
                 ->whereMonth('date', now()->month)
                 ->count();
 
+            // Territorial reach (aggregated by city/state — no PII, LGPD-safe)
+            $territoryRows = DB::table('beneficiaries')
+                ->where('tenant_id', $tenant_id)
+                ->whereNotNull('address_city')
+                ->where('address_city', '!=', '')
+                ->select(
+                    DB::raw("TRIM(address_city) as city"),
+                    DB::raw("COALESCE(NULLIF(TRIM(address_state), ''), '—') as state"),
+                    DB::raw("COUNT(*) as total")
+                )
+                ->groupBy('city', 'state')
+                ->orderByDesc('total')
+                ->get();
+
+            $territoriesByCity = $territoryRows->take(12)->values();
+
+            $territoriesByState = $territoryRows
+                ->groupBy('state')
+                ->map(fn ($rows, $state) => [
+                    'state'  => (string) $state,
+                    'total'  => (int) $rows->sum('total'),
+                    'cities' => (int) $rows->count(),
+                ])
+                ->sortByDesc('total')
+                ->values();
+
+            $territoriesStats = [
+                'cities'        => (int) $territoryRows->pluck('city')->unique()->count(),
+                'states'        => (int) $territoriesByState->reject(fn ($s) => $s['state'] === '—')->count(),
+                'beneficiaries' => (int) $territoryRows->sum('total'),
+            ];
+
             // Attendances evolution (last 6 months)
             $start = now()->startOfMonth()->subMonths(5);
             $end = now()->endOfMonth();
@@ -860,7 +892,8 @@ class TransparencyController extends Controller
                 'publicDataUpdatedAt',
                 'openDataMonthly',
                 'openDataExpenseByCategory',
-                'publicAuditDownloads'
+                'publicAuditDownloads',
+                'territoriesByCity', 'territoriesByState', 'territoriesStats'
             );
         });
 
@@ -876,7 +909,8 @@ class TransparencyController extends Controller
             'publicDataUpdatedAt',
             'openDataMonthly',
             'openDataExpenseByCategory',
-            'publicAuditDownloads'
+            'publicAuditDownloads',
+            'territoriesByCity', 'territoriesByState', 'territoriesStats'
         ));
     }
 }
