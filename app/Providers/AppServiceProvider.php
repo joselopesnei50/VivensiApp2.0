@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         // Wrapped in try/catch to prevent boot failure if DB is not ready.
         try {
             \App\Models\Beneficiary::observe(\App\Observers\BeneficiaryObserver::class);
+            \App\Models\FamilyMember::observe(\App\Observers\FamilyMemberObserver::class);
             \App\Models\Project::observe(\App\Observers\ProjectObserver::class);
             \App\Models\NgoDonor::observe(\App\Observers\NgoDonorObserver::class);
             \App\Models\Transaction::observe(\App\Observers\TransactionObserver::class);
