@@ -36,7 +36,7 @@
                 <div class="mb-4">
                     <label class="form-label fw-bold text-dark">Conteúdo Principal</label>
                     <div id="editor-container" style="height: 600px; border-radius: 15px; border: 1px solid #e2e8f0; background: #fff;">
-                        {!! $page->content !!}
+                        {!! sanitize_user_html($page->content) !!}
                     </div>
                     <input type="hidden" name="content" id="contentInput">
                 </div>

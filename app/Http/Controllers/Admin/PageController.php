@@ -45,9 +45,9 @@ class PageController extends Controller
         ]);
 
         $page->update([
-            'title' => $request->title,
-            'slug' => $request->slug,
-            'content' => $request->content
+            'title'   => $request->title,
+            'slug'    => $request->slug,
+            'content' => sanitize_user_html($request->content),
         ]);
 
         return redirect()->route('admin.pages.index')->with('success', 'Página atualizada com sucesso!');
