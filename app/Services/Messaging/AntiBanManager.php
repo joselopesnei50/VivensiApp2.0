@@ -33,11 +33,32 @@ class AntiBanManager
     ];
 
     // Palavras-chave de opt-out em PT-BR e EN
-    public const OPTOUT_KEYWORDS = [
-        'parar', 'pare', 'para', 'stop', 'sair', 'cancelar',
-        'remover', 'descadastrar', 'não quero', 'nao quero',
-        'desinscrever', 'bloquear', 'sai', 'remove', 'unsubscribe',
-        'descadastro', 'nao me mande', 'não me mande', 'chega',
+    /**
+     * Palavras de opt-out que devem corresponder EXATAMENTE à mensagem normalizada.
+     * São termos curtos que aparecem dentro de palavras comuns do PT-BR — usar
+     * str_contains com elas causaria falso-positivo:
+     *   - 'para' dentro de "parabéns"
+     *   - 'pare' dentro de "parece"
+     *   - 'sai'  dentro de "saia", "assai"
+     *   - 'sair' dentro de "saíram"
+     */
+    public const OPTOUT_EXACT = [
+        'para', 'pare', 'sai', 'sair', 'stop',
+    ];
+
+    /**
+     * Termos inequívocos verificados com word-boundary (\b) — não com str_contains.
+     * O \b impede que a palavra case dentro de outra (ex: 'parar' não casa em
+     * "comparar", 'cancelar' não casa em "cancelaram", 'chega' não casa em
+     * "chegamos"). Todas as entradas estão SEM acento porque a normalização
+     * remove diacríticos antes da comparação.
+     */
+    public const OPTOUT_CONTAINS = [
+        'parar', 'chega',
+        'cancelar', 'remover', 'remove',
+        'descadastrar', 'descadastro', 'desinscrever',
+        'bloquear', 'unsubscribe',
+        'nao quero', 'nao me mande',
     ];
 
     // Perfil de warming: dia => limite diário máximo (~30% de crescimento/dia)
@@ -183,16 +204,58 @@ class AntiBanManager
 
     /**
      * Verifica se a mensagem recebida é um pedido de opt-out.
+     *
+     * Estática porque é função pura — não depende do estado do AntiBanManager.
+     * Pode ser chamada como `AntiBanManager::isOptOutMessage($text)` em
+     * webhooks/handlers sem instanciar o serviço.
+     *
+     * Regra de match:
+     *  1) OPTOUT_EXACT  — mensagem normalizada deve ser idêntica à keyword.
+     *  2) OPTOUT_CONTAINS — keyword com word-boundary (\b), não substring.
      */
-    public function isOptOutMessage(string $text): bool
+    public static function isOptOutMessage(string $text): bool
     {
-        $normalized = mb_strtolower(trim(strip_tags($text)));
-        foreach (self::OPTOUT_KEYWORDS as $keyword) {
-            if ($normalized === $keyword || str_contains($normalized, $keyword)) {
+        $normalized = self::normalizeForOptOut($text);
+
+        if ($normalized === '') {
+            return false;
+        }
+
+        foreach (self::OPTOUT_EXACT as $keyword) {
+            if ($normalized === $keyword) {
                 return true;
             }
         }
+
+        foreach (self::OPTOUT_CONTAINS as $keyword) {
+            $pattern = '/\b' . preg_quote($keyword, '/') . '\b/';
+            if (preg_match($pattern, $normalized) === 1) {
+                return true;
+            }
+        }
+
         return false;
+    }
+
+    /**
+     * Normaliza a mensagem para comparação: minúscula, sem tags, sem espaços
+     * de borda, com diacríticos PT-BR convertidos para ASCII.
+     *
+     * Sem isso, "Não quero" não casaria 'nao quero' e teríamos que duplicar
+     * cada keyword (com e sem acento).
+     */
+    private static function normalizeForOptOut(string $text): string
+    {
+        $clean = mb_strtolower(trim(strip_tags($text)));
+
+        return strtr($clean, [
+            'á' => 'a', 'à' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a',
+            'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+            'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i',
+            'ó' => 'o', 'ò' => 'o', 'ô' => 'o', 'õ' => 'o', 'ö' => 'o',
+            'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u',
+            'ç' => 'c',
+        ]);
     }
 
     /**
