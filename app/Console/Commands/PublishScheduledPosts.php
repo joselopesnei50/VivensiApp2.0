@@ -13,6 +13,10 @@ class PublishScheduledPosts extends Command
 
     public function handle(): void
     {
+        // ── Bypass intencional do BelongsToTenant global scope ─────────────
+        // Cron varre posts agendados de TODOS os tenants. O job individual
+        // PublishScheduledPostJob recebe o ID e usa as credenciais Meta do
+        // tenant dono do post — isolamento aplicado downstream.
         $posts = ScheduledPost::withoutGlobalScopes()
             ->where('status', 'scheduled')
             ->where('scheduled_at', '<=', now())
