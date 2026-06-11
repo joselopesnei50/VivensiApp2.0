@@ -82,7 +82,11 @@ class ProcessAbacatePayWebhook implements ShouldQueue
         $planId = $checkout['metadata']['plan_id'] ?? null;
 
         DB::transaction(function () use ($externalId, $tenant, $planId, $checkout) {
-            // lockForUpdate garante que dois workers simultâneos não processem o mesmo registro
+            // ── Bypass intencional do BelongsToTenant global scope ─────────────
+            // Webhook do AbacatePay chega sem auth Laravel; $tenant ja foi resolvido
+            // acima via findTenantByExternalId(). external_id eh unico globalmente
+            // (gerado pelo gateway), entao lookup por ele eh seguro mesmo cross-tenant.
+            // lockForUpdate previne race com workers simultaneos.
             $transaction = Transaction::withoutGlobalScopes()
                 ->where('external_id', $externalId)
                 ->lockForUpdate()
@@ -138,6 +142,8 @@ class ProcessAbacatePayWebhook implements ShouldQueue
         if (!$externalId) return;
 
         try {
+            // Bypass intencional: external_id eh unico globalmente (gerado pelo
+            // gateway). Webhook nao tem auth Laravel mas o ID nao colide entre tenants.
             Transaction::withoutGlobalScopes()
                 ->where('external_id', $externalId)
                 ->update(['status' => 'refunded']);

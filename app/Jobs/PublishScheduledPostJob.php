@@ -24,6 +24,13 @@ class PublishScheduledPostJob implements ShouldQueue
 
     public function handle(MetaSocialPublisherService $publisher): void
     {
+        // ── Bypass intencional do BelongsToTenant global scope ─────────────
+        // Job é despachado pelo command posts:publish (cron) que opera
+        // cross-tenant. O lookup eh por PK + status, e o tenant_id implícito
+        // em $post->tenant_id eh respeitado pelo MetaSocialPublisherService
+        // (que usa as credenciais Meta do tenant dono do post).
+        // Filtro tenant_id no construtor seria defesa em profundidade — listado
+        // como follow-up em AUDIT_JOBS_TENANT_FILTER.md (item 1.3.A).
         $post = ScheduledPost::withoutGlobalScopes()
             ->with('account')
             ->where('status', 'scheduled')
