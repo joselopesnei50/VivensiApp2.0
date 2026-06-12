@@ -1,5 +1,12 @@
 # ROADMAP: Aprovação Oficial Meta (Embedded Signup)
 
+> **Contexto adicional:** as razões de **por que** sair do Baileys/Evolution
+> e ir para a Cloud API estão documentadas em
+> [`docs/WHATSAPP_COMPLIANCE.md`](docs/WHATSAPP_COMPLIANCE.md) — incluindo
+> risco regulatório, comparação de custos e modelo de termo de uso para
+> clientes que permanecerem em Baileys. Este arquivo aqui cobre só o
+> **processo técnico** de aprovação Meta.
+
 Para que o Vivensi tenha o botão azul "Conectar com Facebook" (que abre a janelinha oficial em vez de pedir IDs manuais), você precisa passar pelo processo de revisão da Meta.
 
 ## 1. Pré-Requisitos de Negócio (Business Manager)
