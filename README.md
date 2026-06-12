@@ -62,3 +62,25 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+---
+
+## Documentação interna do Vivensi
+
+Documentos vivos no repositório (gerados ou atualizados ao longo das auditorias de 2026):
+
+### Auditoria de segurança
+
+- [`PROMPT_CORRECAO_VIVENSI.md`](PROMPT_CORRECAO_VIVENSI.md) — auditoria de segurança original (input)
+- [`AUDIT_JOBS_TENANT_FILTER.md`](AUDIT_JOBS_TENANT_FILTER.md) — auditoria de filtro de tenant em 51 jobs/commands (Tarefa 1.3)
+
+### WhatsApp
+
+- [`docs/WHATSAPP_COMPLIANCE.md`](docs/WHATSAPP_COMPLIANCE.md) — risco regulatório Baileys vs Cloud API, posicionamento Vivensi, termo de uso (Tarefa 3.4)
+- [`ROADMAP_APROVACAO_META.md`](ROADMAP_APROVACAO_META.md) — pré-requisitos técnicos da aprovação Meta
+- [`BACKLOG_WHATSAPP_CONSOLIDATION.md`](BACKLOG_WHATSAPP_CONSOLIDATION.md) — consolidação dos pipelines de campanha (Tarefa 2.1, Caminho A pendente)
+
+### Operacional
+
+- [`HANDOFF.md`](HANDOFF.md) — handoff entre sessões / contexto operacional
+
