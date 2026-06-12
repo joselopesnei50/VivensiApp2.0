@@ -101,7 +101,9 @@ class WhatsappInstance extends Model
             return;
         }
         $this->attributes['instance_token']      = Crypt::encryptString($value);
-        $this->attributes['instance_token_bidx'] = hash_hmac('sha256', $value, config('app.key'));
+        // bidx via helper whatsapp_bidx_key() — chave dedicada se WHATSAPP_BIDX_KEY
+        // estiver definida, senão fallback para APP_KEY (Tarefa 1.5).
+        $this->attributes['instance_token_bidx'] = hash_hmac('sha256', $value, whatsapp_bidx_key());
     }
 
     // ── Accessors para compatibilidade com EvolutionApiService ─────────────
