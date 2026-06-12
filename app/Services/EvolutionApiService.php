@@ -152,6 +152,22 @@ class EvolutionApiService
         }
     }
 
+    /**
+     * Envia mensagem de texto via Evolution API.
+     *
+     * @param  int  $delaySeconds  Delay nativo da Evolution antes do envio.
+     *                             - Use **0** quando já houver delay orgânico
+     *                               aplicado upstream (ex.: AntiBanManager::simulateHumanTyping
+     *                               + sleep no job). NÃO há mais o default
+     *                               silencioso de 1200ms — antes da Tarefa 3.3 da
+     *                               auditoria, passar 0 ainda gerava 1.2s extras,
+     *                               causando dupla contagem com simulateHumanTyping.
+     *                             - Use **1..5** em respostas one-shot (bot, reply
+     *                               de webhook, alerta) onde NÃO há simulateHumanTyping.
+     *
+     * Tempo médio esperado por mensagem na pipeline anti-ban:
+     *   simulateHumanTyping (6-14s) + sleep no job (5-15s) + delay nativo (0s) = ~11-29s.
+     */
     public function sendMessage(string $to, string $message, ?string $idempotencyKey = null, int $delaySeconds = 0): array
     {
         if (!$this->instanceName || !$this->apiKey) return ['error' => 'Evolution API Missing Config'];
@@ -161,7 +177,10 @@ class EvolutionApiService
         $payload = [
             'number' => (string) $to,
             'text'   => $renderedMessage,
-            'delay'  => $delaySeconds > 0 ? $delaySeconds * 1000 : 1200,
+            // Antes: $delaySeconds > 0 ? $delaySeconds * 1000 : 1200 — gerava
+            // 1.2s "magicos" mesmo com caller passando 0. Removido na Tarefa 3.3
+            // para evitar double-counting com simulateHumanTyping upstream.
+            'delay'  => max(0, $delaySeconds * 1000),
         ];
 
         try {

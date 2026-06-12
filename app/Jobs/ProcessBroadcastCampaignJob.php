@@ -261,9 +261,15 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     $antiBan->simulateHumanTyping($instance, $waId, $campaign->message);
                 }
 
+                // delay=0 nos individuais: simulateHumanTyping já cobriu o tempo orgânico.
+                // Tarefa 3.3 da auditoria — evita double-counting (era rand(2,5) antes,
+                // somando 2-5s redundantes ao envio).
+                // Em grupo (sem simulateHumanTyping), passa rand(2,5) como delay nativo.
+                $delayForApi = $isGroupChatMode ? rand(2, 5) : 0;
+
                 $res = $mediaToSend
                     ? $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime)
-                    : $evo->sendMessage($waId, $campaign->message, null, rand(2, 5));
+                    : $evo->sendMessage($waId, $campaign->message, null, $delayForApi);
 
                 if (!isset($res['error']) && !empty($res)) {
                     if (isset($recipient->id)) {
