@@ -61,7 +61,11 @@ class AntiBanManager
         'nao quero', 'nao me mande',
     ];
 
-    // Perfil de warming: dia => limite diário máximo (~30% de crescimento/dia)
+    /**
+     * @deprecated Tarefa 3.2 — migrado para config('whatsapp.antiban.warming_profiles.default').
+     * Mantido aqui apenas como fallback de último recurso (defesa contra config corrompido).
+     * Use getWarmingProfile(\$instance) para leitura runtime.
+     */
     public const WARMING_PROFILE = [
         1  => 20,
         2  => 30,
@@ -79,15 +83,68 @@ class AntiBanManager
         14 => 370,
     ];
 
-    // Limite máximo por hora — acima disso o WhatsApp sinaliza como bot
+    /**
+     * @deprecated Tarefa 3.2 — migrado para config('whatsapp.antiban.max_per_hour').
+     * Use getMaxPerHour(\$instance) para leitura runtime (suporta override por instância).
+     */
     public const MAX_PER_HOUR = 55;
 
-    // Horas de restrição padrão ao detectar sinal de ban
+    /**
+     * @deprecated Tarefa 3.2 — migrado para config('whatsapp.antiban.default_ban_restriction_hours').
+     * Use getBanRestrictionHours() para leitura runtime.
+     */
     public const DEFAULT_BAN_RESTRICTION_HOURS = 24;
 
     public function __construct(EvolutionApiService $api)
     {
         $this->api = $api;
+    }
+
+    // ── Resolução dinâmica de tuning (Tarefa 3.2) ──────────────────────────
+    // Cada getter prefere override por instância (settings JSON), cai para
+    // config global, e por último para o constant deprecated. Permite ajuste
+    // por tenant sem migration.
+
+    /**
+     * Limite horário máximo de mensagens para uma instância.
+     * Override por instância: $instance->settings['max_per_hour'] (int > 0).
+     */
+    public function getMaxPerHour(WhatsappInstance $instance): int
+    {
+        $override = $instance->settings['max_per_hour'] ?? null;
+        if (is_int($override) && $override > 0) {
+            return $override;
+        }
+        return (int) config('whatsapp.antiban.max_per_hour', self::MAX_PER_HOUR);
+    }
+
+    /**
+     * Horas de restrição ao detectar sinal de ban (markAsRestricted default).
+     * Sem override por instância — decisão de plataforma, não de produto.
+     */
+    public function getBanRestrictionHours(): int
+    {
+        return (int) config('whatsapp.antiban.default_ban_restriction_hours', self::DEFAULT_BAN_RESTRICTION_HOURS);
+    }
+
+    /**
+     * Perfil de warming aplicável (mapa dia => limite diário).
+     * Tenant escolhe via $instance->settings['warming_profile'] = 'default'|'conservative'.
+     * Se o perfil indicado não existir, cai para 'default'. Se config corrompido,
+     * cai para o constant deprecated WARMING_PROFILE.
+     */
+    public function getWarmingProfile(WhatsappInstance $instance): array
+    {
+        $profileName = $instance->settings['warming_profile'] ?? 'default';
+        $profiles    = config('whatsapp.antiban.warming_profiles', []);
+
+        if (isset($profiles[$profileName]) && is_array($profiles[$profileName])) {
+            return $profiles[$profileName];
+        }
+        if (isset($profiles['default']) && is_array($profiles['default'])) {
+            return $profiles['default'];
+        }
+        return self::WARMING_PROFILE;
     }
 
     // ── Verificação de permissão de envio ────────────────────────────────────
@@ -123,7 +180,7 @@ class AntiBanManager
         }
 
         if ($this->hasReachedHourlyLimit($instance)) {
-            Log::info("AntiBan: [{$instance->instance_name}] Limite horário atingido (máx " . self::MAX_PER_HOUR . "/hora).");
+            Log::info("AntiBan: [{$instance->instance_name}] Limite horário atingido (máx " . $this->getMaxPerHour($instance) . "/hora).");
             return false;
         }
 
@@ -181,10 +238,11 @@ class AntiBanManager
 
     /**
      * Verifica limite horário via Laravel RateLimiter.
+     * Respeita override por instância (settings.max_per_hour) e config global.
      */
     public function hasReachedHourlyLimit(WhatsappInstance $instance): bool
     {
-        return RateLimiter::tooManyAttempts('wa:hourly:' . $instance->id, self::MAX_PER_HOUR);
+        return RateLimiter::tooManyAttempts('wa:hourly:' . $instance->id, $this->getMaxPerHour($instance));
     }
 
     // ── Detecção de riscos ────────────────────────────────────────────────────
@@ -280,8 +338,11 @@ class AntiBanManager
      * Marca a instância como RESTRITA por N horas.
      * Salva no campo settings JSON — sem migration necessária.
      */
-    public function markAsRestricted(WhatsappInstance $instance, int $hours = self::DEFAULT_BAN_RESTRICTION_HOURS): void
+    public function markAsRestricted(WhatsappInstance $instance, ?int $hours = null): void
     {
+        // Tarefa 3.2: default antes era constant — agora resolvido via config.
+        // Caller pode passar valor explícito para sobrescrever.
+        $hours    = $hours ?? $this->getBanRestrictionHours();
         $until    = now()->addHours($hours)->toIso8601String();
         $settings = $instance->settings ?? [];
         $settings['restricted_until']  = $until;
@@ -348,13 +409,19 @@ class AntiBanManager
 
     /**
      * Retorna o limite diário ajustado ao perfil de warming.
-     * Após dia 14, desativa warming e usa daily_limit normal.
+     * Após o último dia do perfil ativo, desativa warming e usa daily_limit normal.
+     *
+     * Tarefa 3.2: tamanho do warming agora vem do perfil (config), não mais
+     * hardcoded em 14 dias. Perfil 'default' = 14 dias (mesma duração de antes).
+     * Perfil 'conservative' também = 14 dias, com limites menores por dia.
      */
     public function getWarmingDailyLimit(WhatsappInstance $instance): int
     {
-        $day = $this->getWarmingDay($instance);
+        $day     = $this->getWarmingDay($instance);
+        $profile = $this->getWarmingProfile($instance);
+        $maxDay  = empty($profile) ? 14 : max(array_keys($profile));
 
-        if ($day > 14) {
+        if ($day > $maxDay) {
             $settings = $instance->settings ?? [];
             $settings['warming_mode'] = false;
             $instance->update(['settings' => $settings]);
@@ -362,7 +429,9 @@ class AntiBanManager
             return $instance->daily_limit;
         }
 
-        return self::WARMING_PROFILE[$day] ?? 370;
+        // Caso o dia não esteja no perfil (configuração malformada), cai no
+        // último valor disponível — comportamento conservador.
+        return $profile[$day] ?? ($profile[$maxDay] ?? 370);
     }
 
     /**
