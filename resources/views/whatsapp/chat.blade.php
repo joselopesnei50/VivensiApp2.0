@@ -1019,24 +1019,45 @@
                     <div class="crm-body collapse show" id="crm-labels">
                         <div class="label-picker" id="label-picker">
                             @php
-                            $allLabels = [
-                                ['name'=>'Novo Lead',  'slug'=>'novo-lead',  'bg'=>'#dbeafe','color'=>'#1d4ed8'],
-                                ['name'=>'Suporte',    'slug'=>'suporte',    'bg'=>'#ffedd5','color'=>'#c2410c'],
-                                ['name'=>'Venda',      'slug'=>'venda',      'bg'=>'#dcfce7','color'=>'#15803d'],
-                                ['name'=>'Urgente',    'slug'=>'urgente',    'bg'=>'#fee2e2','color'=>'#b91c1c'],
-                                ['name'=>'VIP',        'slug'=>'vip',        'bg'=>'#f3e8ff','color'=>'#7e22ce'],
-                                ['name'=>'Agendado',   'slug'=>'agendado',   'bg'=>'#cffafe','color'=>'#0e7490'],
-                                ['name'=>'Concluído',  'slug'=>'concluido',  'bg'=>'#f1f5f9','color'=>'#64748b'],
-                            ];
+                            // Etiquetas customizadas do tenant. Se vazio (tenant nunca rodou
+                            // whatsapp:migrate-labels), cai no fallback hardcoded para não
+                            // quebrar a UI no primeiro acesso.
+                            $allLabels = \App\Models\WhatsappLabel::where('tenant_id', auth()->user()->tenant_id)
+                                ->orderBy('name')
+                                ->get()
+                                ->map(fn($l) => [
+                                    'id'    => $l->id,
+                                    'name'  => $l->name,
+                                    'slug'  => $l->slug,
+                                    'bg'    => $l->background,
+                                    'color' => $l->color,
+                                ])->all();
+
+                            if (empty($allLabels)) {
+                                $allLabels = [
+                                    ['id'=>null,'name'=>'Novo Lead', 'slug'=>'novo-lead', 'bg'=>'#dbeafe','color'=>'#1d4ed8'],
+                                    ['id'=>null,'name'=>'Suporte',   'slug'=>'suporte',   'bg'=>'#ffedd5','color'=>'#c2410c'],
+                                    ['id'=>null,'name'=>'Venda',     'slug'=>'venda',     'bg'=>'#dcfce7','color'=>'#15803d'],
+                                    ['id'=>null,'name'=>'Urgente',   'slug'=>'urgente',   'bg'=>'#fee2e2','color'=>'#b91c1c'],
+                                    ['id'=>null,'name'=>'VIP',       'slug'=>'vip',       'bg'=>'#f3e8ff','color'=>'#7e22ce'],
+                                    ['id'=>null,'name'=>'Agendado',  'slug'=>'agendado',  'bg'=>'#cffafe','color'=>'#0e7490'],
+                                    ['id'=>null,'name'=>'Concluído', 'slug'=>'concluido', 'bg'=>'#f1f5f9','color'=>'#64748b'],
+                                ];
+                            }
                             @endphp
                             @foreach($allLabels as $lbl)
                             <span class="label-opt clabel-{{ $lbl['slug'] }}"
                                   data-label="{{ $lbl['name'] }}"
+                                  data-label-id="{{ $lbl['id'] }}"
                                   style="background:{{ $lbl['bg'] }};color:{{ $lbl['color'] }};"
                                   onclick="toggleLabel(this)">
                                 {{ $lbl['name'] }}
                             </span>
                             @endforeach
+                            <a href="{{ route('whatsapp.labels.index') }}"
+                               style="font-size:.72rem;color:#6366f1;text-decoration:none;font-weight:700;margin-left:6px;align-self:center;">
+                                <i class="fas fa-gear"></i> gerenciar
+                            </a>
                         </div>
                     </div>
                 </div>

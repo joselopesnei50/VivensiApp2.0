@@ -19,6 +19,14 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/chat/{id}/sales',          [App\Http\Controllers\WhatsappController::class, 'sendToSalesPipeline']);
     Route::post('/whatsapp/chat/{id}/read',           [App\Http\Controllers\WhatsappController::class, 'markRead']);
     Route::patch('/whatsapp/chat/{id}/labels',        [App\Http\Controllers\WhatsappController::class, 'updateLabels']);
+
+    // CRUD de etiquetas customizadas por tenant (Fase 1)
+    Route::get('/whatsapp/etiquetas',                 [App\Http\Controllers\WhatsappLabelController::class, 'index'])->name('whatsapp.labels.index');
+    Route::get('/api/whatsapp/labels',                [App\Http\Controllers\WhatsappLabelController::class, 'listJson'])->name('whatsapp.labels.list');
+    Route::post('/api/whatsapp/labels',               [App\Http\Controllers\WhatsappLabelController::class, 'store'])->name('whatsapp.labels.store');
+    Route::patch('/api/whatsapp/labels/{label}',      [App\Http\Controllers\WhatsappLabelController::class, 'update'])->name('whatsapp.labels.update');
+    Route::delete('/api/whatsapp/labels/{label}',     [App\Http\Controllers\WhatsappLabelController::class, 'destroy'])->name('whatsapp.labels.destroy');
+
     Route::post('/whatsapp/chat/{id}/compliance',     [App\Http\Controllers\WhatsappController::class, 'updateCompliance']);
     Route::post('/whatsapp/chat/{id}/toggle-bot',     [App\Http\Controllers\WhatsappController::class, 'toggleBot'])->name('whatsapp.chat.toggle-bot');
     Route::post('/whatsapp/chat/{id}/assign',         [App\Http\Controllers\WhatsappController::class, 'assignChat'])->name('whatsapp.chat.assign');

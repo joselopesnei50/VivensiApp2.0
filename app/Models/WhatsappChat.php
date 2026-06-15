@@ -49,4 +49,22 @@ class WhatsappChat extends Model
     public function agent() {
         return $this->belongsTo(User::class, 'assigned_to');
     }
+
+    /**
+     * Etiquetas atribuídas a este chat (many-to-many via pivot).
+     *
+     * Nomeado `labelTags()` para não colidir com `$chat->labels` (JSON cast,
+     * mantido durante transição para compat com UI antiga). O `WhatsappController::updateLabels`
+     * faz dual-write — atualiza pivot E coluna JSON na mesma operação.
+     * Coluna JSON será removida em release futura após confirmação em produção.
+     */
+    public function labelTags()
+    {
+        return $this->belongsToMany(
+            WhatsappLabel::class,
+            'whatsapp_chat_label',
+            'chat_id',
+            'label_id'
+        )->withTimestamps();
+    }
 }
