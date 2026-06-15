@@ -394,7 +394,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
-                    $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings');
+                    $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
                     $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*');
                     $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*');
                     $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*');
@@ -477,6 +477,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $sa_wa_active ? '380px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
+                            <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->routeIs('whatsapp.broadcast.*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ route('whatsapp.instances') }}" class="{{ request()->routeIs('whatsapp.instances') ? 'active' : '' }}"><i class="fas fa-plug"></i> Instâncias WA</a></li>
@@ -593,6 +594,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $mgr_wa_active ? '320px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
+                            <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
@@ -691,6 +693,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $ngo_wa_active ? '320px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
+                            <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
@@ -847,6 +850,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $mei_wa_active ? '300px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
+                            <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
@@ -1920,6 +1924,7 @@ const CMD_ITEMS = [
     { label: 'Projetos',         url: '{{ url("/projects") }}',                 icon: 'fa-folder-open' },
     { label: 'Tarefas',          url: '{{ url("/tasks") }}',                    icon: 'fa-check-square' },
     { label: 'WhatsApp CRM',     url: '{{ url("/whatsapp/chat") }}',            icon: 'fa-comment-dots' },
+    { label: 'Etiquetas WhatsApp', url: '{{ route("whatsapp.labels.index") }}', icon: 'fa-tags' },
     { label: 'Clientes',         url: '{{ url("/clients") }}',                  icon: 'fa-users' },
     { label: 'Meu Perfil',       url: '{{ url("/profile") }}',                  icon: 'fa-user-circle' },
     @if(auth()->user()->role === 'ngo')
