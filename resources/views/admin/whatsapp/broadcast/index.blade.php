@@ -92,6 +92,21 @@
         background: #f5f3ff;
     }
     .audience-option input { accent-color: #4f46e5; }
+
+    /* Seletor de etiquetas no broadcast (Fase 2) */
+    .label-picker-broadcast { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
+    .lpb-item { cursor: pointer; margin: 0; }
+    .lpb-item input { display: none; }
+    .lpb-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 12px; border-radius: 99px; font-size: .8rem; font-weight: 700;
+        opacity: .55; border: 2px solid transparent; transition: opacity .15s, border-color .15s;
+    }
+    .lpb-item:hover .lpb-badge { opacity: .85; }
+    .lpb-item input:checked + .lpb-badge { opacity: 1; border-color: currentColor; }
+    #labelCountInfo.warn { color: #b45309; font-weight: 600; }
+    #labelCountInfo.ok   { color: #15803d; font-weight: 600; }
+    #labelCountInfo.over { color: #b91c1c; font-weight: 700; }
     .spintax-badge {
         display: inline-flex;
         align-items: center;
@@ -452,7 +467,47 @@
                                     <div style="font-size:0.75rem;color:#94a3b8;">Selecionar grupos do WhatsApp</div>
                                 </div>
                             </label>
+                            <label class="audience-option">
+                                <input type="radio" name="audience" value="labels" onchange="onAudienceChange('labels')">
+                                <div>
+                                    <div style="font-weight:700;font-size:0.85rem;color:#334155;">
+                                        <i class="fas fa-tags me-1" style="color:#7e22ce;"></i> Etiquetas
+                                    </div>
+                                    <div style="font-size:0.75rem;color:#94a3b8;">Disparar por categoria de contato</div>
+                                </div>
+                            </label>
                         </div>
+                    </div>
+
+                    {{-- Etiquetas (Fase 2) --}}
+                    <div class="mb-4 d-none" id="labelsWrapper">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="section-label mb-0">Etiquetas alvo</div>
+                            <a href="{{ route('whatsapp.labels.index') }}" target="_blank" style="font-size:.78rem;color:#6366f1;text-decoration:none;font-weight:700;">
+                                <i class="fas fa-gear"></i> gerenciar etiquetas
+                            </a>
+                        </div>
+                        @if($labels->isEmpty())
+                            <div style="padding:16px;background:#fef3c7;border:1px solid #fde68a;border-radius:12px;color:#78350f;font-size:.85rem;">
+                                <i class="fas fa-info-circle"></i>
+                                Você ainda não tem etiquetas cadastradas. Crie em <a href="{{ route('whatsapp.labels.index') }}" style="color:#b45309;font-weight:700;">Etiquetas</a> antes de disparar por categoria.
+                            </div>
+                        @else
+                            <div class="label-picker-broadcast" id="labelsPicker">
+                                @foreach($labels as $label)
+                                    <label class="lpb-item">
+                                        <input type="checkbox" name="label_ids[]" value="{{ $label->id }}" onchange="updateLabelCount()">
+                                        <span class="lpb-badge" style="background:{{ $label->background }};color:{{ $label->color }};">
+                                            <i class="fas fa-tag" style="font-size:.6rem;"></i>
+                                            {{ $label->name }}
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <div id="labelCountInfo" class="mt-3" style="font-size:.85rem;color:#64748b;">
+                                Selecione uma ou mais etiquetas para ver a contagem estimada de destinatários.
+                            </div>
+                        @endif
                     </div>
 
                     {{-- Números manuais --}}
@@ -904,6 +959,56 @@
     function onAudienceChange(val) {
         document.getElementById('manualPhonesWrapper').classList.toggle('d-none', val !== 'selected');
         document.getElementById('groupsWrapper').classList.toggle('d-none', val !== 'groups');
+        const labelsWrap = document.getElementById('labelsWrapper');
+        if (labelsWrap) labelsWrap.classList.toggle('d-none', val !== 'labels');
+        if (val === 'labels') updateLabelCount();
+    }
+
+    // Atualiza a contagem estimada de destinatários quando o usuário marca
+    // ou desmarca etiquetas. Aplica os mesmos filtros de compliance que o job.
+    let labelCountTimer = null;
+    function updateLabelCount() {
+        const info = document.getElementById('labelCountInfo');
+        if (!info) return;
+
+        const checked = Array.from(document.querySelectorAll('input[name="label_ids[]"]:checked'))
+            .map(el => el.value);
+
+        if (checked.length === 0) {
+            info.className = 'mt-3';
+            info.textContent = 'Selecione uma ou mais etiquetas para ver a contagem estimada de destinatários.';
+            return;
+        }
+
+        clearTimeout(labelCountTimer);
+        info.className = 'mt-3';
+        info.textContent = 'Calculando...';
+
+        labelCountTimer = setTimeout(() => {
+            const qs = checked.map(id => 'ids[]=' + encodeURIComponent(id)).join('&');
+            fetch('{{ route("whatsapp.broadcast.label-count") }}?' + qs, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const n = data.count ?? 0;
+                const max = data.max ?? 500;
+                if (n === 0) {
+                    info.className = 'mt-3 warn';
+                    info.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Nenhum contato elegível encontrado com essas etiquetas (precisa ter opt-in e não estar bloqueado).';
+                } else if (n > max) {
+                    info.className = 'mt-3 over';
+                    info.innerHTML = '<i class="fas fa-circle-exclamation"></i> <strong>' + n + '</strong> contatos elegíveis — apenas os primeiros <strong>' + max + '</strong> serão disparados (limite anti-ban).';
+                } else {
+                    info.className = 'mt-3 ok';
+                    info.innerHTML = '<i class="fas fa-check-circle"></i> <strong>' + n + '</strong> contatos elegíveis serão disparados.';
+                }
+            })
+            .catch(() => {
+                info.className = 'mt-3 warn';
+                info.textContent = 'Não foi possível calcular agora. A contagem será aplicada no disparo.';
+            });
+        }, 250);
     }
 
     function toggleSchedule(checked) {

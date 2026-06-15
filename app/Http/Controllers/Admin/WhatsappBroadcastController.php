@@ -50,8 +50,13 @@ class WhatsappBroadcastController extends Controller
 
         $preMessage = session('ai_broadcast_message');
 
+        // Etiquetas disponíveis para disparo segmentado (Fase 2)
+        $labels = \App\Models\WhatsappLabel::where('tenant_id', $tenantId)
+            ->orderBy('name')
+            ->get();
+
         return view('admin.whatsapp.broadcast.index',
-            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'scheduled', 'preMessage'));
+            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'scheduled', 'preMessage', 'labels'));
     }
 
     public function importContacts(Request $request)
@@ -285,13 +290,15 @@ class WhatsappBroadcastController extends Controller
 
         $request->validate([
             'message'         => 'nullable|string|max:4000',
-            'audience'        => 'required|in:all,selected,groups',
+            'audience'        => 'required|in:all,selected,groups,labels',
             'cadence'         => 'nullable|integer|in:1,3,5,10,30',
             'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
             'scheduled_at'    => 'nullable|date|after:now',
             'group_send_mode' => 'nullable|in:group,members',
             'group_ids'       => 'required_if:audience,groups|array|min:1',
             'group_ids.*'     => 'string',
+            'label_ids'       => 'required_if:audience,labels|array|min:1',
+            'label_ids.*'     => 'integer',
         ]);
 
         if (!$request->filled('message') && !$request->hasFile('broadcast_image')) {
@@ -347,6 +354,19 @@ class WhatsappBroadcastController extends Controller
             ? $request->input('group_send_mode', 'group')
             : 'group';
 
+        // Filtra os label_ids enviados para garantir que pertencem ao tenant
+        // (proteção contra envio cross-tenant via id forjado no form).
+        $labelIds = null;
+        if ($audience === 'labels') {
+            $labelIds = \App\Models\WhatsappLabel::where('tenant_id', $tenantId)
+                ->whereIn('id', $request->input('label_ids', []))
+                ->pluck('id')
+                ->all();
+            if (empty($labelIds)) {
+                return redirect()->back()->with('error', 'Selecione ao menos uma etiqueta válida.');
+            }
+        }
+
         $campaign = \App\Models\BroadcastCampaign::create([
             'tenant_id'       => $tenantId,
             'created_by'      => auth()->id(),
@@ -360,6 +380,7 @@ class WhatsappBroadcastController extends Controller
             'group_ids'       => $audience === 'groups' ? $request->input('group_ids', []) : null,
             'group_send_mode' => $groupSendMode,
             'phones'          => $audience === 'selected' ? $request->input('phones') : null,
+            'label_ids'       => $labelIds,
         ]);
 
         \Illuminate\Support\Facades\Log::info('Broadcast campaign created', [
@@ -379,5 +400,45 @@ class WhatsappBroadcastController extends Controller
         }
 
         return redirect()->back()->with('success', 'Disparo agendado para ' . $campaign->scheduled_at->format('d/m/Y H:i') . '!');
+    }
+
+    /**
+     * Endpoint AJAX que retorna a contagem estimada de destinatários quando
+     * o usuário seleciona etiquetas no formulário de disparo. Aplica os
+     * mesmos filtros de compliance (opt-in/opt-out/blocked) que o job de
+     * envio usa, então a contagem reflete o número real que será disparado.
+     */
+    public function labelRecipientsCount(\Illuminate\Http\Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+
+        $ids = (array) $request->input('ids', []);
+        $ids = array_filter(array_map('intval', $ids));
+
+        if (empty($ids)) {
+            return response()->json(['count' => 0]);
+        }
+
+        // Filtra IDs para garantir que pertencem ao tenant (segurança)
+        $validIds = \App\Models\WhatsappLabel::where('tenant_id', $tenantId)
+            ->whereIn('id', $ids)
+            ->pluck('id')
+            ->all();
+
+        if (empty($validIds)) {
+            return response()->json(['count' => 0]);
+        }
+
+        $count = \App\Models\WhatsappChat::where('tenant_id', $tenantId)
+            ->whereNotNull('opt_in_at')
+            ->whereNull('opt_out_at')
+            ->whereNull('blocked_at')
+            ->whereHas('labelTags', fn ($q) => $q->whereIn('whatsapp_labels.id', $validIds))
+            ->count();
+
+        return response()->json([
+            'count' => $count,
+            'max'   => \App\Jobs\ProcessBroadcastCampaignJob::MAX_RECIPIENTS,
+        ]);
     }
 }

@@ -11,7 +11,7 @@ class BroadcastCampaign extends Model
     protected $fillable = [
         'tenant_id', 'created_by', 'name', 'message', 'has_image', 'image_path',
         'audience_type', 'status', 'scheduled_at', 'cadence',
-        'group_ids', 'group_send_mode', 'phones',
+        'group_ids', 'group_send_mode', 'phones', 'label_ids',
         'total_sent', 'total_failed', 'total_skipped', 'actual_recipients',
         'started_at', 'completed_at',
     ];
@@ -19,6 +19,7 @@ class BroadcastCampaign extends Model
     protected $casts = [
         'has_image'    => 'boolean',
         'group_ids'    => 'array',
+        'label_ids'    => 'array',
         'scheduled_at' => 'datetime',
         'started_at'   => 'datetime',
         'completed_at' => 'datetime',
