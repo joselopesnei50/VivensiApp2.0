@@ -88,13 +88,72 @@ class WhatsappController extends Controller
         $tenantId = auth()->user()->tenant_id;
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
 
+        // Aceita IDs (novo) ou nomes/strings (legado) — durante a transição,
+        // o frontend pode mandar qualquer um dos dois. Resolvemos para IDs.
         $request->validate([
-            'labels' => 'nullable|array',
-            'labels.*' => 'string|max:30',
+            'labels'     => 'nullable|array',
+            'labels.*'   => 'string|max:30',
+            'label_ids'  => 'nullable|array',
+            'label_ids.*'=> 'integer',
         ]);
 
-        $chat->update(['labels' => $request->labels ?? []]);
-        return response()->json(['success' => true, 'labels' => $chat->labels]);
+        $labelIds = $this->resolveLabelIds(
+            $tenantId,
+            $request->input('label_ids', []),
+            $request->input('labels', [])
+        );
+
+        // Carrega os nomes para o dual-write na coluna JSON (compat com UI antiga)
+        $labelNames = \App\Models\WhatsappLabel::whereIn('id', $labelIds)
+            ->where('tenant_id', $tenantId)
+            ->pluck('name')
+            ->all();
+
+        $chat->labelTags()->sync($labelIds);
+        $chat->update(['labels' => $labelNames]);
+
+        return response()->json([
+            'success' => true,
+            'labels'  => $labelNames,
+            'label_ids' => $labelIds,
+        ]);
+    }
+
+    /**
+     * Resolve IDs a partir do input — prefere label_ids (canônico), cai para
+     * lookup por nome/slug (compat com chamadas legadas que mandavam strings).
+     * Cria etiqueta nova se nome não encontrado (preserva comportamento da UI antiga
+     * que aceitava qualquer string).
+     */
+    private function resolveLabelIds(int $tenantId, array $labelIds, array $labelNames): array
+    {
+        if (!empty($labelIds)) {
+            // Filtra só IDs que pertencem ao tenant (segurança)
+            return \App\Models\WhatsappLabel::whereIn('id', $labelIds)
+                ->where('tenant_id', $tenantId)
+                ->pluck('id')
+                ->all();
+        }
+
+        if (empty($labelNames)) {
+            return [];
+        }
+
+        $resolved = [];
+        foreach ($labelNames as $name) {
+            $slug  = \Illuminate\Support\Str::slug($name) ?: 'etiqueta';
+            $label = \App\Models\WhatsappLabel::firstOrCreate(
+                ['tenant_id' => $tenantId, 'slug' => $slug],
+                [
+                    'name'       => $name,
+                    'color'      => '#64748b',
+                    'background' => '#f1f5f9',
+                    'created_by' => auth()->id(),
+                ]
+            );
+            $resolved[] = $label->id;
+        }
+        return $resolved;
     }
 
     public function toggleBot(Request $request, $chatId)
