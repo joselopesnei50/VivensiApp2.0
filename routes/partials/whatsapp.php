@@ -50,6 +50,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/broadcast',                [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'sendBroadcast'])->name('whatsapp.broadcast.send')->middleware('throttle:10,1');
     Route::post('/whatsapp/broadcast/import',         [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'importContacts'])->name('whatsapp.broadcast.import')->middleware('throttle:5,1');
     Route::get('/whatsapp/broadcast/groups',          [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'getGroups'])->name('whatsapp.broadcast.groups');
+    Route::get('/whatsapp/broadcast/label-count',     [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'labelRecipientsCount'])->name('whatsapp.broadcast.label-count');
     Route::get('/whatsapp/broadcast/campaigns',       [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'campaigns'])->name('whatsapp.broadcast.campaigns');
     Route::delete('/whatsapp/broadcast/{id}/cancel',  [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'cancelScheduled'])->name('whatsapp.broadcast.cancel');
     Route::post('/whatsapp/broadcast/{id}/resume',   [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'resumeCampaign'])->name('whatsapp.broadcast.resume')->middleware('throttle:5,1');

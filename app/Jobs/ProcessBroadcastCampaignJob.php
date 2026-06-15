@@ -432,6 +432,19 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             return collect($groupIds)->map(fn($id) => (object)['wa_id' => $id, 'id' => null]);
         }
 
+        // Fase 2 das etiquetas — disparo segmentado por etiqueta.
+        // Filtros de compliance (opt_in/opt_out/blocked) aplicados aqui, na
+        // mesma query. O loop principal ainda revalida via complianceStatus()
+        // para cobrir mudanças entre a query e o momento do envio.
+        if ($campaign->audience_type === 'labels' && !empty($campaign->label_ids)) {
+            return WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                ->whereNotNull('opt_in_at')
+                ->whereNull('opt_out_at')
+                ->whereNull('blocked_at')
+                ->whereHas('labelTags', fn ($q) => $q->whereIn('whatsapp_labels.id', $campaign->label_ids))
+                ->get(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at']);
+        }
+
         if ($campaign->audience_type === 'selected' && $campaign->phones) {
             $phones = array_map(
                 fn($p) => preg_replace('/\D+/', '', $p),
