@@ -1,0 +1,21 @@
+[Unit]
+Description=Vivensi Laravel Horizon (queue worker)
+Documentation=https://laravel.com/docs/horizon
+After=network.target redis-server.service
+Wants=redis-server.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/vivensi
+ExecStart=/usr/bin/php8.1 /var/www/vivensi/artisan horizon
+ExecStop=/usr/bin/php8.1 /var/www/vivensi/artisan horizon:terminate
+Restart=always
+RestartSec=3
+TimeoutStopSec=90
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
