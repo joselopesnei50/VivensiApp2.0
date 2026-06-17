@@ -62,6 +62,36 @@ return [
     // Nome da instância na Evolution API dedicada ao bot de comandos
     'bot_instance_name' => env('WHATSAPP_BOT_INSTANCE', 'vivensi-bot'),
     'bot_phone'         => env('WHATSAPP_BOT_PHONE', '5516997618695'),
+
+    // Termo de Responsabilidade Anti-Ban (Fase 2 — item 4.2 do roadmap).
+    // Aceite obrigatório do gestor do tenant ANTES de criar instância Evolution.
+    // É um registro jurídico de responsabilidade pelo número — NÃO inclui
+    // técnicas de evasão de banimento.
+    // Subir 'current_version' aqui invalida aceites anteriores e força reaceite.
+    'anti_ban_terms' => [
+        'current_version' => '1.0',
+        'versions' => [
+            '1.0' => [
+                'effective_at' => '2026-06-17',
+                'title'        => 'Termo de Responsabilidade pelo Uso do WhatsApp',
+                'text' => <<<'TERM'
+Ao prosseguir, declaro ciência de que:
+
+1. O WhatsApp (Evolution API / Baileys) é uma integração não-oficial. O número conectado pode ser bloqueado ou banido pela Meta sem aviso, mesmo em uso lícito. O Vivensi NÃO se responsabiliza por banimentos, perdas operacionais ou de reputação decorrentes do uso desse canal.
+
+2. Sou o único responsável jurídico pelo número conectado, pelas mensagens enviadas a partir dele e pelo cumprimento das normas aplicáveis: LGPD (Lei 13.709/18), Marco Civil da Internet (Lei 12.965/14) e — se for o caso — Lei Eleitoral (Lei 9.504/97) e normativas do TSE.
+
+3. Comprometo-me a obter opt-in explícito de cada contato antes de enviar qualquer mensagem em massa, a respeitar pedidos de descadastro (STOP) e a não enviar conteúdo enganoso, ofensivo, ilegal ou que infrinja direitos de terceiros.
+
+4. Em hipótese alguma usarei o canal para fraude, golpe (incluindo falsa promessa de benefício em troca de voto), desinformação eleitoral ou tratamento ilegal de dados pessoais sensíveis.
+
+5. Caso a Meta restrinja o número, comprometo-me a interromper imediatamente o uso, sem responsabilizar o Vivensi pelas consequências.
+
+Ao clicar em "Aceito", confirmo que li, entendi e concordo com este termo na íntegra.
+TERM,
+            ],
+        ],
+    ],
 ];
 
 
