@@ -1181,6 +1181,40 @@
                 </div>
                 @endif
 
+                {{-- Accordion Kanban Geral (Fase 3 — 2.2 / 3.B.3) --}}
+                @if($isManager)
+                <div class="crm-section">
+                    <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-kanban-geral" aria-expanded="false" onclick="loadKanbanGeralColumns()">
+                        <span>
+                            <i class="fas fa-columns me-2" style="color:#10b981;"></i>
+                            Enviar p/ Kanban Geral
+                        </span>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
+                    </div>
+                    <div class="crm-body collapse" id="crm-kanban-geral">
+                        <div class="mb-2">
+                            <label for="kbGeralColumnSelect" class="label mb-1">Selecionar Coluna</label>
+                            <select id="kbGeralColumnSelect" class="form-select form-select-sm" style="border-radius:8px;font-size:0.82rem;">
+                                <option value="">Carregando colunas...</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="kbGeralCardTitle" class="label mb-1">Título do card (opcional)</label>
+                            <input type="text" id="kbGeralCardTitle" class="form-control form-control-sm" placeholder="Deixe vazio para usar o nome do contato" maxlength="200" style="border-radius:8px;font-size:0.82rem;">
+                        </div>
+                        <div class="small text-muted mb-2" style="font-size:0.75rem;">
+                            <i class="fas fa-link me-1" style="color:#10b981;"></i>
+                            O card vai manter o link de volta para esta conversa.
+                        </div>
+                        <button class="btn btn-sm w-100 fw-700" onclick="sendChatToKanbanGeral()"
+                            style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:8px;font-size:0.82rem;padding:7px;">
+                            <i class="fas fa-columns me-1"></i> Criar Card no Kanban Geral
+                        </button>
+                        <div id="kbGeralResult" class="mt-2 d-none small fw-600 text-success text-center"></div>
+                    </div>
+                </div>
+                @endif
+
                 {{-- Funil Comercial (super_admin only) --}}
                 @if(auth()->user()->role === 'super_admin')
                 <div class="crm-section">
@@ -2576,6 +2610,80 @@
                     loadChatData(currentChatId);
                 }
             });
+        }
+
+        // ── Enviar p/ Kanban Geral (Fase 3.B.3) ───────────────────────────────
+        let KB_GERAL_COLUMNS_LOADED = false;
+
+        async function loadKanbanGeralColumns() {
+            if (KB_GERAL_COLUMNS_LOADED) return;
+            const select = document.getElementById('kbGeralColumnSelect');
+            try {
+                const r = await fetch('{{ url("/manager/kanban/columns-list") }}', {
+                    headers: { 'Accept':'application/json' }
+                });
+                const d = await r.json();
+                if (!r.ok || !Array.isArray(d.columns) || d.columns.length === 0) {
+                    select.innerHTML = '<option value="">Nenhuma coluna disponível</option>';
+                    return;
+                }
+                select.innerHTML = '<option value="">— escolha uma coluna —</option>'
+                    + d.columns.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+                KB_GERAL_COLUMNS_LOADED = true;
+            } catch (e) {
+                select.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        }
+
+        async function sendChatToKanbanGeral() {
+            if (!currentChatId) return;
+            const select = document.getElementById('kbGeralColumnSelect');
+            const titleEl = document.getElementById('kbGeralCardTitle');
+            const resEl   = document.getElementById('kbGeralResult');
+            const columnId = parseInt(select.value, 10);
+            resEl.classList.add('d-none');
+
+            if (!columnId) {
+                alert('Selecione uma coluna.');
+                return;
+            }
+
+            const btn = document.querySelector('#crm-kanban-geral .btn');
+            btn.disabled = true;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Criando...';
+
+            try {
+                const r = await fetch('{{ url("/manager/kanban/cards/from-whatsapp") }}/' + currentChatId, {
+                    method: 'POST',
+                    headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrfToken, 'Accept':'application/json' },
+                    body: JSON.stringify({
+                        column_id: columnId,
+                        title:     titleEl.value.trim() || null,
+                    }),
+                });
+                const d = await r.json();
+                if (r.ok && d.card) {
+                    resEl.classList.remove('d-none');
+                    resEl.classList.remove('text-danger');
+                    resEl.classList.add('text-success');
+                    resEl.innerHTML = '<i class="fas fa-check-circle me-1"></i>Card criado!';
+                    titleEl.value = '';
+                } else {
+                    resEl.classList.remove('d-none');
+                    resEl.classList.remove('text-success');
+                    resEl.classList.add('text-danger');
+                    resEl.textContent = 'Falha ao criar card: ' + (d.error || d.message || 'erro desconhecido');
+                }
+            } catch (e) {
+                resEl.classList.remove('d-none');
+                resEl.classList.remove('text-success');
+                resEl.classList.add('text-danger');
+                resEl.textContent = 'Falha de comunicação.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
         }
 
         // ── Transferência de atendimento (Fase 3.A.2) ─────────────────────────

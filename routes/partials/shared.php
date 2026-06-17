@@ -38,6 +38,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::patch( '/cards/{card}/move',             [App\Http\Controllers\Manager\KanbanController::class, 'moveCard'])->name('cards.move')->middleware('throttle:120,1');
         Route::patch( '/cards/{card}',                  [App\Http\Controllers\Manager\KanbanController::class, 'updateCard'])->name('cards.update')->middleware('throttle:60,1');
         Route::post(  '/cards/{card}/archive',          [App\Http\Controllers\Manager\KanbanController::class, 'archiveCard'])->name('cards.archive')->middleware('throttle:30,1');
+
+        // Integração OmniChannel WhatsApp → Kanban (Fase 3 — 2.2 / etapa B.3)
+        Route::get(   '/columns-list',                      [App\Http\Controllers\Manager\KanbanController::class, 'columnsList'])->name('columns.list');
+        Route::post(  '/cards/from-whatsapp/{chat}',        [App\Http\Controllers\Manager\KanbanController::class, 'storeCardFromWhatsapp'])->name('cards.from_whatsapp')->middleware('throttle:60,1');
     });
 
     // E-mail Marketing (CRM)

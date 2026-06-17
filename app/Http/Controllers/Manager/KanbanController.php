@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\KanbanBoard;
 use App\Models\KanbanCard;
 use App\Models\KanbanColumn;
+use App\Models\WhatsappChat;
 use App\Services\KanbanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -119,6 +120,56 @@ class KanbanController extends Controller
     {
         $this->ensureTenant($request, $card);
         $card = $this->service->archiveCard($card);
+        return response()->json(['card' => $card]);
+    }
+
+    /**
+     * Lista de colunas do board default do tenant. Consumido pelo accordion
+     * do OmniChannel ("Enviar p/ Kanban Geral") pra popular o select sem
+     * precisar carregar o board inteiro.
+     */
+    public function columnsList(Request $request): JsonResponse
+    {
+        $tenant = $request->user()->tenant;
+        abort_if($tenant === null, 403);
+
+        $board   = $this->service->ensureDefaultBoard($tenant, $request->user());
+        $columns = KanbanColumn::where('board_id', $board->id)
+            ->orderBy('position')
+            ->get(['id', 'name', 'color']);
+
+        return response()->json([
+            'board_id' => $board->id,
+            'columns'  => $columns,
+        ]);
+    }
+
+    /**
+     * Cria card a partir de uma conversa do WhatsApp — critério de aceite
+     * do item 2.2 do roadmap: o card mantém link de volta para a conversa
+     * via whatsapp_chat_id.
+     */
+    public function storeCardFromWhatsapp(Request $request, WhatsappChat $chat): JsonResponse
+    {
+        $this->ensureTenant($request, $chat);
+
+        $data = $request->validate([
+            'column_id'   => ['required', 'integer'],
+            'title'       => ['nullable', 'string', 'max:200'],
+            'description' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        /** @var KanbanColumn $column */
+        $column = KanbanColumn::where('id', $data['column_id'])
+            ->where('tenant_id', $chat->tenant_id)
+            ->firstOrFail();
+
+        $card = $this->service->createCard($column, [
+            'whatsapp_chat_id' => $chat->id,
+            'title'            => $data['title'] ?: ($chat->contact_name ?: ($chat->contact_phone ?: 'Conversa WhatsApp')),
+            'description'      => $data['description'] ?? null,
+        ], $request->user());
+
         return response()->json(['card' => $card]);
     }
 
