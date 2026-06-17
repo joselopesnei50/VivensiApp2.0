@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\EmailCampaign;
 use App\Services\BrevoService;
+use App\Services\EmailQuotaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -125,11 +126,36 @@ class ManagerEmailCampaignController extends Controller
                 return back()->with('error', 'Nenhum destinatário encontrado para o público selecionado.');
             }
 
+            // ── Gate Fase 2 (item 3.3): cota diária de e-mails ───────────────
+            $tenant = auth()->user()->tenant;
+            $quota  = app(EmailQuotaService::class);
+            $count  = count($contacts);
+
+            if (!$quota->tryConsume($tenant, $count)) {
+                $remaining = $quota->getRemainingToday($tenant);
+                $cap       = $quota->getQuota($tenant);
+                $msg = "Cota diária de e-mails excedida ({$count} destinatários, restam {$remaining}/{$cap} hoje). "
+                     . "Solicite ao Super Admin para aumentar a capacidade ou aguarde o reset diário.";
+                $emailCampaign->update([
+                    'status'        => 'error',
+                    'error_message' => $msg,
+                ]);
+                Log::info('Manager EmailCampaign: cota diária excedida — disparo bloqueado.', [
+                    'campaign_id'  => $emailCampaign->id,
+                    'tenant_id'    => $tenant->id,
+                    'requested'    => $count,
+                    'remaining'    => $remaining,
+                    'daily_quota'  => $cap,
+                ]);
+                return back()->with('error', $msg);
+            }
+
             $orgName  = auth()->user()->tenant->name ?? 'Organização';
             $listName = "MGR — {$orgName} — {$emailCampaign->name} — " . now()->format('d/m/Y H:i');
             $listId   = $brevo->createContactList($listName);
 
             if (!$listId) {
+                $quota->refund($tenant, $count);
                 $emailCampaign->update([
                     'status'        => 'error',
                     'error_message' => 'Falha ao criar lista de contatos no Brevo.',
@@ -140,6 +166,7 @@ class ManagerEmailCampaignController extends Controller
             $imported = $brevo->importContacts($listId, $contacts);
 
             if ($imported === 0) {
+                $quota->refund($tenant, $count);
                 $emailCampaign->update([
                     'status'        => 'error',
                     'error_message' => 'Nenhum contato foi adicionado à lista no Brevo.',
@@ -165,6 +192,7 @@ class ManagerEmailCampaignController extends Controller
             ]);
 
             if (!$campaignId) {
+                $quota->refund($tenant, $count);
                 $brevoMsg = $brevo->lastBrevoError ?? 'Erro desconhecido';
                 $emailCampaign->update([
                     'status'        => 'error',
@@ -175,6 +203,10 @@ class ManagerEmailCampaignController extends Controller
             }
 
             $sent = $brevo->sendBrevoEmailCampaign($campaignId);
+
+            if (!$sent) {
+                $quota->refund($tenant, $count);
+            }
 
             $emailCampaign->update([
                 'status'            => $sent ? 'sent' : 'error',
@@ -198,6 +230,10 @@ class ManagerEmailCampaignController extends Controller
             return back()->with('error', 'A campanha foi criada no Brevo mas não foi possível disparar. Tente novamente.');
 
         } catch (\Throwable $e) {
+            // Se o consume já aconteceu, devolve a cota (não fizemos envio efetivo).
+            if (isset($tenant, $quota, $count)) {
+                $quota->refund($tenant, $count);
+            }
             Log::error('Manager EmailCampaign send error', [
                 'id'        => $emailCampaign->id,
                 'tenant_id' => auth()->user()->tenant_id,
