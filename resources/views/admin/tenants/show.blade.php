@@ -100,6 +100,71 @@
             @endif
         </div>
 
+        {{-- Aceites Anti-Ban (Fase 2 — item 4.2) --}}
+        <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <h4 style="color:#1e293b; margin:0;">
+                    <i class="fas fa-shield-halved me-2" style="color:#ef4444;"></i>Aceites Anti-Ban
+                </h4>
+                @if($antiBanCurrentAccepted)
+                    <span style="background:#dcfce7; color:#15803d; font-weight:700; font-size:.75rem; padding:4px 10px; border-radius:99px;">
+                        <i class="fas fa-check-circle me-1"></i>v{{ $antiBanCurrentVersion }} aceita
+                    </span>
+                @else
+                    <span style="background:#fee2e2; color:#b91c1c; font-weight:700; font-size:.75rem; padding:4px 10px; border-radius:99px;">
+                        <i class="fas fa-exclamation-triangle me-1"></i>v{{ $antiBanCurrentVersion }} pendente
+                    </span>
+                @endif
+            </div>
+            <p style="font-size:.85rem; color:#64748b; margin:8px 0 16px;">
+                Registro versionado do aceite do Termo de Responsabilidade pelo uso do WhatsApp não-oficial.
+                Versão nova exige novo aceite.
+            </p>
+
+            @if($antiBanAcceptances->isEmpty())
+                <div style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:14px 16px; border-radius:10px; font-size:.85rem;">
+                    Esse tenant ainda <strong>não aceitou</strong> nenhuma versão do termo. A criação de instâncias WhatsApp está bloqueada até o aceite.
+                </div>
+            @else
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:.85rem;">
+                        <thead>
+                            <tr style="text-align:left; color:#64748b; border-bottom:1px solid #e2e8f0;">
+                                <th style="padding:8px 6px; font-weight:700;">Versão</th>
+                                <th style="padding:8px 6px; font-weight:700;">Usuário</th>
+                                <th style="padding:8px 6px; font-weight:700;">Quando</th>
+                                <th style="padding:8px 6px; font-weight:700;">IP</th>
+                                <th style="padding:8px 6px; font-weight:700;">Hash</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($antiBanAcceptances as $ac)
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:10px 6px; color:#1e293b; font-weight:700;">
+                                    v{{ $ac->version }}
+                                    @if($ac->version === $antiBanCurrentVersion)
+                                        <span style="background:#e0e7ff; color:#4338ca; font-size:.65rem; font-weight:700; padding:2px 6px; border-radius:99px; margin-left:4px;">VIGENTE</span>
+                                    @endif
+                                </td>
+                                <td style="padding:10px 6px; color:#334155;">
+                                    @if($ac->user)
+                                        {{ $ac->user->name }}<br>
+                                        <span style="font-size:.7rem; color:#94a3b8;">{{ $ac->user->email }}</span>
+                                    @else
+                                        <em style="color:#94a3b8;">usuário removido</em>
+                                    @endif
+                                </td>
+                                <td style="padding:10px 6px; color:#475569;">{{ optional($ac->accepted_at)->format('d/m/Y H:i') }}</td>
+                                <td style="padding:10px 6px; color:#64748b; font-family:monospace; font-size:.78rem;">{{ $ac->ip_address ?: '—' }}</td>
+                                <td style="padding:10px 6px; color:#94a3b8; font-family:monospace; font-size:.72rem;" title="{{ $ac->terms_hash }}">{{ \Illuminate\Support\Str::limit($ac->terms_hash, 12, '…') }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
         <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
             <h4 style="color: #1e293b; margin-top: 0;">Ações Administrativas</h4>
             <p style="font-size: 0.85rem; color: #64748b;">Gerencie o acesso desta organização.</p>
