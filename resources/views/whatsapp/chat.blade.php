@@ -774,6 +774,29 @@
                 <button class="filter-tab" data-filter="waiting">Aguardando</button>
             </div>
 
+            {{-- Filtros por propriedade (Fase 3.A.2) — recarregam server-side via ?owner=. --}}
+            @php
+                $ownerKeys = ['all' => 'Todas', 'mine' => 'Minhas', 'unassigned' => 'Não atribuídas'];
+            @endphp
+            <div class="owner-filter-tabs" style="display:flex; gap:6px; padding:8px 14px 12px; border-bottom:1px solid #f1f5f9; flex-wrap:wrap;">
+                @foreach($ownerKeys as $key => $label)
+                    <a
+                        href="{{ url('/whatsapp/chat') . ($key === 'all' ? '' : '?owner=' . $key) }}"
+                        style="flex:1; min-width:64px; text-align:center; padding:6px 10px; border-radius:99px; font-size:.72rem; font-weight:700; text-decoration:none; transition:.15s;
+                            {{ ($currentOwner ?? 'all') === $key
+                                ? 'background:#4f46e5; color:white;'
+                                : 'background:#f1f5f9; color:#475569;' }}"
+                        title="{{ $label }}"
+                    >
+                        {{ $label }}
+                        <span style="background:rgba(255,255,255,.18); border-radius:10px; padding:0 5px; font-size:.65rem; margin-left:2px;
+                            {{ ($currentOwner ?? 'all') === $key ? '' : 'background:rgba(0,0,0,.07);' }}">
+                            {{ $ownershipCounts[$key] ?? 0 }}
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+
             <div class="contact-list" id="chatList">
                 @foreach($chats as $chat)
                 @php
@@ -886,6 +909,9 @@
                     </div>
                     <button class="btn-header-action btn-assume" id="btn-assign-chat" onclick="assignChatToMe()" style="display:none;">
                         <i class="fas fa-handshake"></i> Assumir
+                    </button>
+                    <button class="btn-header-icon btn-icon-neutral" id="btn-transfer-chat" title="Transferir atendimento" onclick="openTransferChatModal()" style="display:none;">
+                        <i class="fas fa-user-friends"></i>
                     </button>
                     <button class="btn-header-icon btn-icon-green" title="Nova Conversa" onclick="startNewChat()">
                         <i class="fas fa-user-plus"></i>
@@ -1682,9 +1708,17 @@
             const botBtn = document.getElementById('btn-toggle-bot');
             const botText = document.getElementById('bot-status-text');
             const assignBtn = document.getElementById('btn-assign-chat');
+            const transferBtn = document.getElementById('btn-transfer-chat');
 
             if (chat) {
                 botContainer.style.display = 'block';
+                // Transferir aparece sempre que o chat tem dono — atendente atual
+                // ou gestor podem transferir. Quem não tem autoridade vai
+                // receber 403 no POST, então só polui o botão se o backend
+                // rejeitar (raro). Aceitável pra UX.
+                if (transferBtn) {
+                    transferBtn.style.display = chat.assigned_to ? 'inline-flex' : 'none';
+                }
                 if (chat.assigned_to) {
                     botText.innerText = 'Atendimento Humano';
                     botBtn.style.background = '#3b82f6';
@@ -2534,7 +2568,7 @@
             if (!currentChatId) return;
             const btn = document.getElementById('btn-toggle-bot');
             const isActive = !btn.classList.contains('bg-success');
-            $.post('{{ url("/whatsapp/chat") }}/' + currentChatId + '/toggle-bot', { 
+            $.post('{{ url("/whatsapp/chat") }}/' + currentChatId + '/toggle-bot', {
                 _token: csrfToken,
                 is_bot_active: isActive
             }, function(res) {
@@ -2543,6 +2577,149 @@
                 }
             });
         }
+
+        // ── Transferência de atendimento (Fase 3.A.2) ─────────────────────────
+        const TRANSFER_AGENTS_URL = '{{ url("/whatsapp/eligible-agents") }}';
+        const MY_USER_ID = {{ auth()->id() ?? 'null' }};
+
+        async function openTransferChatModal() {
+            if (!currentChatId) return;
+            const modalEl = document.getElementById('transferChatModal');
+            const select  = document.getElementById('transferAgentSelect');
+            const errEl   = document.getElementById('transferError');
+            const btn     = document.getElementById('btnConfirmTransfer');
+            errEl.style.display = 'none';
+            btn.disabled = true;
+            select.innerHTML = '<option>Carregando...</option>';
+
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            try {
+                const r = await fetch(TRANSFER_AGENTS_URL, { headers: { 'Accept': 'application/json' } });
+                const d = await r.json();
+                if (!r.ok || !Array.isArray(d.agents)) {
+                    select.innerHTML = '<option>Erro ao listar agentes</option>';
+                    return;
+                }
+                const agents = d.agents.filter(a => a.id !== MY_USER_ID);
+                if (agents.length === 0) {
+                    select.innerHTML = '<option value="">Nenhum agente disponível</option>';
+                    return;
+                }
+                select.innerHTML = '<option value="">Selecione um agente...</option>'
+                    + agents.map(a =>
+                        `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.email)})</option>`
+                    ).join('');
+                btn.disabled = false;
+            } catch (e) {
+                select.innerHTML = '<option>Falha de rede</option>';
+            }
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+            }[c]));
+        }
+
+        async function confirmTransfer() {
+            if (!currentChatId) return;
+            const select = document.getElementById('transferAgentSelect');
+            const errEl  = document.getElementById('transferError');
+            const btn    = document.getElementById('btnConfirmTransfer');
+            const newId  = parseInt(select.value, 10);
+            errEl.style.display = 'none';
+
+            if (!newId) {
+                errEl.textContent = 'Selecione um agente.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Transferindo...';
+
+            try {
+                const r = await fetch('{{ url("/whatsapp/chat") }}/' + currentChatId + '/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify({ assigned_to: newId }),
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('transferChatModal')).hide();
+                    loadChatData(currentChatId);
+                } else {
+                    errEl.textContent = d.error || 'Falha ao transferir.';
+                    errEl.style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Transferir';
+                }
+            } catch (e) {
+                errEl.textContent = 'Falha de comunicação com o servidor.';
+                errEl.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Transferir';
+            }
+        }
+
+        async function releaseChat() {
+            if (!currentChatId) return;
+            if (!confirm('Devolver esta conversa para a fila de não atribuídas?')) return;
+
+            try {
+                const r = await fetch('{{ url("/whatsapp/chat") }}/' + currentChatId + '/assignee', {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('transferChatModal'))?.hide();
+                    loadChatData(currentChatId);
+                } else {
+                    alert(d.error || 'Falha ao liberar atendimento.');
+                }
+            } catch (e) {
+                alert('Falha de comunicação com o servidor.');
+            }
+        }
     </script>
+
+    {{-- MODAL TRANSFERIR ATENDIMENTO (Fase 3.A.2) --}}
+    <div class="modal fade" id="transferChatModal" role="dialog" aria-modal="true" aria-labelledby="transferChatModalLabel" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+            <div class="modal-content" style="border-radius:18px; border:1px solid #f1f5f9;">
+                <div style="padding:22px 26px 0; display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <h5 id="transferChatModalLabel" style="font-weight:900; color:#1e293b; font-size:1.05rem; margin:0;">
+                            <i class="fas fa-user-friends me-2" style="color:#4f46e5;"></i>Transferir atendimento
+                        </h5>
+                        <p style="color:#64748b; font-size:.8rem; margin:4px 0 0;">Escolha o agente que vai continuar essa conversa.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="modal-body" style="padding:18px 26px 8px;">
+                    <label for="transferAgentSelect" style="font-size:.8rem; font-weight:700; color:#475569; display:block; margin-bottom:6px;">
+                        Novo responsável
+                    </label>
+                    <select id="transferAgentSelect" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:.9rem;">
+                        <option>Carregando...</option>
+                    </select>
+                    <div id="transferError" style="margin-top:10px; color:#ef4444; font-size:.8rem; display:none;"></div>
+                </div>
+
+                <div style="padding:0 26px 20px; display:flex; gap:10px;">
+                    <button type="button" id="btnConfirmTransfer" onclick="confirmTransfer()" disabled style="flex:1; background:#4f46e5; color:white; border:none; padding:12px; border-radius:10px; font-weight:700; font-size:.88rem; cursor:pointer;">
+                        <i class="fas fa-paper-plane me-2"></i>Transferir
+                    </button>
+                    <button type="button" onclick="releaseChat()" title="Devolver para fila" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:12px 14px; border-radius:10px; font-weight:700; font-size:.85rem; cursor:pointer;">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

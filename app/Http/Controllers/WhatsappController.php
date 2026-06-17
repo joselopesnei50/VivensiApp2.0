@@ -706,12 +706,18 @@ class WhatsappController extends Controller
     /**
      * Interface de Chat (Mini CRM)
      */
-    public function chatIndex()
+    public function chatIndex(Request $request)
     {
         $user = auth()->user();
         Gate::authorize('access-whatsapp');
 
-        $chats = WhatsappChat::where('tenant_id', auth()->user()->tenant_id)
+        // Fase 3.A.2 — filtro de propriedade para a sidebar de conversas.
+        $owner = (string) $request->query('owner', 'all');
+        if (!in_array($owner, ['all', 'mine', 'unassigned'], true)) {
+            $owner = 'all';
+        }
+
+        $query = WhatsappChat::where('tenant_id', auth()->user()->tenant_id)
                              ->addSelect([
                                  'last_msg_content' => WhatsappMessage::select('content')
                                      ->whereColumn('chat_id', 'whatsapp_chats.id')
@@ -721,9 +727,29 @@ class WhatsappController extends Controller
                                      ->whereColumn('chat_id', 'whatsapp_chats.id')
                                      ->latest('created_at')
                                      ->limit(1),
-                             ])
-                             ->orderBy('last_message_at', 'desc')
-                             ->get();
+                             ]);
+
+        if ($owner === 'mine') {
+            $query->where('assigned_to', $user->id);
+        } elseif ($owner === 'unassigned') {
+            $query->whereNull('assigned_to');
+        }
+
+        $chats = $query->orderBy('last_message_at', 'desc')->get();
+
+        // Contagens pra badges das pills (sempre na visão do tenant inteiro).
+        $tenantId      = $user->tenant_id;
+        $countAll      = WhatsappChat::where('tenant_id', $tenantId)->count();
+        $countMine     = WhatsappChat::where('tenant_id', $tenantId)
+            ->where('assigned_to', $user->id)->count();
+        $countUnassign = WhatsappChat::where('tenant_id', $tenantId)
+            ->whereNull('assigned_to')->count();
+        $ownershipCounts = [
+            'all'        => $countAll,
+            'mine'       => $countMine,
+            'unassigned' => $countUnassign,
+        ];
+        $currentOwner = $owner;
                              
         $projects = \App\Models\Project::where('tenant_id', auth()->user()->tenant_id)
                                        ->where('status', 'active')
@@ -733,7 +759,7 @@ class WhatsappController extends Controller
             ? \App\Models\SalesStage::ordered()->get()
             : collect();
 
-        return view('whatsapp.chat', compact('chats', 'projects', 'salesStages'));
+        return view('whatsapp.chat', compact('chats', 'projects', 'salesStages', 'ownershipCounts', 'currentOwner'));
     }
 
     public function sendToKanban(Request $request, $chatId)
