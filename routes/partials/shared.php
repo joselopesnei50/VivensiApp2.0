@@ -23,6 +23,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/manager/reconciliation',  [App\Http\Controllers\ManagerController::class, 'reconciliation'])->name('manager.reconciliation');
     Route::get('/manager/schedule',        [App\Http\Controllers\ManagerController::class, 'schedule'])->name('manager.schedule');
 
+    // Perfil Operacional do tenant (Fase 1 — Etapa B)
+    Route::get( '/manager/perfil-operacional', [App\Http\Controllers\Manager\PerfilOperacionalController::class, 'edit'])
+        ->middleware('can:access-manager')->name('manager.perfil_operacional.edit');
+    Route::post('/manager/perfil-operacional', [App\Http\Controllers\Manager\PerfilOperacionalController::class, 'update'])
+        ->middleware('can:access-manager')->name('manager.perfil_operacional.update');
+
     // E-mail Marketing (CRM)
     Route::get('/manager/email-campaigns',                        [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'index'])->name('manager.email_campaigns.index');
     Route::get('/manager/email-campaigns/create',                 [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'create'])->name('manager.email_campaigns.create');
