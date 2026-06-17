@@ -59,4 +59,9 @@ class Tenant extends Model
     {
         return $this->hasMany(WhatsappBlacklist::class);
     }
+
+    public function operationalProfile()
+    {
+        return $this->hasOne(TenantOperationalProfile::class);
+    }
 }
