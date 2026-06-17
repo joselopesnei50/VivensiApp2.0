@@ -101,21 +101,23 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
         if (empty($phone)) return;
 
-        // Extrair conteúdo da mensagem
-        $msg      = $messageData['message'] ?? [];
-        $content  = $msg['conversation'] ?? ($msg['extendedTextMessage']['text'] ?? '');
-        $isAudio  = isset($msg['audioMessage']);
-        
-        // Se for áudio, tentamos obter a transcrição ou o base64 (se disponível no webhook)
-        if ($isAudio && empty($content)) {
-            $content = "[Mensagem de Áudio]";
-        }
-        
+        // Extrair conteúdo da mensagem cobrindo todos os tipos do Baileys.
+        // Regra Fase 0: histórico nunca pode persistir vazio. Mídia sem legenda
+        // vira marcador legível ("[imagem]", "[áudio]", etc).
+        $msg        = $messageData['message'] ?? [];
+        $extracted  = $this->extractMessageContent($msg);
+        $content    = $extracted['content'];
+        $type       = $extracted['type'];
+        $mediaPath  = $extracted['media_path'];
+        $mediaCaption = $extracted['media_caption'];
+        $userText   = $extracted['user_text']; // null quando só mídia sem texto digitado
+        $isAudio    = ($type === 'audio');
+
         $senderName = $messageData['pushName'] ?? 'WhatsApp';
 
-        // 0. Fluxo de opt-in explícito — intercede antes de qualquer outro processamento
-        if (!$isAudio && $content) {
-            $respostaOptIn = app(ContatoOptInService::class)->handle($phone, $content, $tenantId);
+        // 0. Fluxo de opt-in explícito — só processa quando há texto real do usuário
+        if ($userText !== null) {
+            $respostaOptIn = app(ContatoOptInService::class)->handle($phone, $userText, $tenantId);
             if ($respostaOptIn !== null) {
                 try {
                     (new EvolutionApiService($instance))->sendMessage($phone, $respostaOptIn);
@@ -145,12 +147,12 @@ class ProcessEvolutionWebhook implements ShouldQueue
             ]
         );
 
-        // 3. Verificar palavras de opt-out (STOP compliance)
-        $normalized   = mb_strtolower(trim($content));
+        // 3. Verificar palavras de opt-out (STOP compliance) — só vale para texto real
+        $normalized   = $userText !== null ? mb_strtolower(trim($userText)) : '';
         $stopKeywords = ['stop', 'parar', 'pare', 'sair', 'cancelar', 'cancele', 'descadastrar', 'remover', 'não quero', 'nao quero'];
 
         foreach ($stopKeywords as $kw) {
-            if ($kw !== '' && str_contains($normalized, $kw)) {
+            if ($normalized !== '' && $kw !== '' && str_contains($normalized, $kw)) {
                 $chat->update([
                     'opt_out_at'     => now(),
                     'blocked_at'     => now(),
@@ -176,11 +178,13 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
         // 4. Salvar mensagem inbound
         WhatsappMessage::create([
-            'chat_id'    => $chat->id,
-            'message_id' => $messageId,
-            'content'    => $content,
-            'direction'  => 'inbound',
-            'type'       => 'text',
+            'chat_id'       => $chat->id,
+            'message_id'    => $messageId,
+            'content'       => $content,
+            'direction'     => 'inbound',
+            'type'          => $type,
+            'media_path'    => $mediaPath,
+            'media_caption' => $mediaCaption,
         ]);
 
         WhatsappAuditLog::create([
@@ -188,22 +192,36 @@ class ProcessEvolutionWebhook implements ShouldQueue
             'chat_id'    => $chat->id,
             'actor_type' => 'webhook_evolution',
             'event'      => 'inbound_message',
-            'details'    => ['message_id' => $messageId, 'content_len' => mb_strlen($content)],
+            'details'    => [
+                'message_id'  => $messageId,
+                'type'        => $type,
+                'content_len' => mb_strlen($content),
+                'has_media'   => $mediaPath !== null,
+            ],
         ]);
 
-        // 5. Automações por palavra-chave (tempo real)
+        // 5. Automações por palavra-chave (tempo real) — exige texto real
         $keywordFired = false;
-        if (!$isAudio && $content && !$chat->opt_out_at && !$chat->blocked_at) {
-            $keywordFired = $this->processKeywordAutomations($tenantId, $chat, $content, $instance);
+        if ($userText !== null && !$chat->opt_out_at && !$chat->blocked_at) {
+            $keywordFired = $this->processKeywordAutomations($tenantId, $chat, $userText, $instance);
         }
 
-        // 6. Disparar resposta da IA se habilitada e nenhuma automação de keyword disparou
+        // 6. Disparar resposta da IA. Texto puro/caption usam $userText.
+        //    Áudio segue para STT no próprio job da IA. Mídia sem texto e tipos
+        //    não suportados ficam só no histórico (sem disparar IA).
         $config = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
         $isBotAllowed = $chat->is_bot_active && is_null($chat->assigned_to);
+        $shouldFireAi = !$keywordFired
+            && $config?->ai_enabled
+            && $isBotAllowed
+            && !$chat->opt_out_at
+            && !$chat->blocked_at
+            && ($userText !== null || $isAudio);
 
-        if (!$keywordFired && $config?->ai_enabled && $isBotAllowed && !$chat->opt_out_at && !$chat->blocked_at) {
-            $base64Audio = $msg['audioMessage']['base64'] ?? null;
-            ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content, $base64Audio);
+        if ($shouldFireAi) {
+            $base64Audio  = $isAudio ? ($msg['audioMessage']['base64'] ?? null) : null;
+            $contentForAi = $userText ?? '';
+            ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $contentForAi, $base64Audio);
         }
     }
 
@@ -271,6 +289,175 @@ class ProcessEvolutionWebhook implements ShouldQueue
         }
 
         return $fired;
+    }
+
+    /**
+     * Extrai o corpo legível e o tipo da mensagem do payload Baileys.
+     * Garante content não-vazio (regra Fase 0: thread nunca em branco no reload).
+     * user_text é null quando não há texto digitado pelo usuário (mídia sem legenda),
+     * sinalizando que opt-in/keywords/IA-texto não devem ser acionados.
+     *
+     * @return array{content:string,type:string,media_path:?string,media_caption:?string,user_text:?string}
+     */
+    private function extractMessageContent(array $msg): array
+    {
+        if (isset($msg['conversation']) && $msg['conversation'] !== '') {
+            return [
+                'content'       => $msg['conversation'],
+                'type'          => 'text',
+                'media_path'    => null,
+                'media_caption' => null,
+                'user_text'     => $msg['conversation'],
+            ];
+        }
+
+        if (isset($msg['extendedTextMessage']['text']) && $msg['extendedTextMessage']['text'] !== '') {
+            return [
+                'content'       => $msg['extendedTextMessage']['text'],
+                'type'          => 'text',
+                'media_path'    => null,
+                'media_caption' => null,
+                'user_text'     => $msg['extendedTextMessage']['text'],
+            ];
+        }
+
+        if (isset($msg['imageMessage'])) {
+            $caption = $msg['imageMessage']['caption'] ?? '';
+            return [
+                'content'       => $caption !== '' ? $caption : '[imagem]',
+                'type'          => 'image',
+                'media_path'    => $msg['imageMessage']['url'] ?? null,
+                'media_caption' => $caption !== '' ? $caption : null,
+                'user_text'     => $caption !== '' ? $caption : null,
+            ];
+        }
+
+        if (isset($msg['videoMessage'])) {
+            $caption = $msg['videoMessage']['caption'] ?? '';
+            return [
+                'content'       => $caption !== '' ? $caption : '[vídeo]',
+                'type'          => 'video',
+                'media_path'    => $msg['videoMessage']['url'] ?? null,
+                'media_caption' => $caption !== '' ? $caption : null,
+                'user_text'     => $caption !== '' ? $caption : null,
+            ];
+        }
+
+        if (isset($msg['audioMessage'])) {
+            return [
+                'content'       => '[Mensagem de Áudio]',
+                'type'          => 'audio',
+                'media_path'    => $msg['audioMessage']['url'] ?? null,
+                'media_caption' => null,
+                'user_text'     => null,
+            ];
+        }
+
+        if (isset($msg['documentMessage'])) {
+            $fileName = $msg['documentMessage']['fileName']
+                ?? ($msg['documentMessage']['title'] ?? 'documento');
+            $caption  = $msg['documentMessage']['caption'] ?? '';
+            return [
+                'content'       => "[documento: {$fileName}]" . ($caption !== '' ? " — {$caption}" : ''),
+                'type'          => 'document',
+                'media_path'    => $msg['documentMessage']['url'] ?? null,
+                'media_caption' => $caption !== '' ? $caption : null,
+                'user_text'     => $caption !== '' ? $caption : null,
+            ];
+        }
+
+        if (isset($msg['stickerMessage'])) {
+            return [
+                'content'       => '[sticker]',
+                'type'          => 'sticker',
+                'media_path'    => $msg['stickerMessage']['url'] ?? null,
+                'media_caption' => null,
+                'user_text'     => null,
+            ];
+        }
+
+        // Localização: minimização LGPD — não persistimos coordenadas no histórico.
+        if (isset($msg['locationMessage']) || isset($msg['liveLocationMessage'])) {
+            return [
+                'content'       => '[localização compartilhada]',
+                'type'          => 'location',
+                'media_path'    => null,
+                'media_caption' => null,
+                'user_text'     => null,
+            ];
+        }
+
+        // Contato compartilhado: PII de terceiros — só marcador, sem vCard.
+        if (isset($msg['contactMessage']) || isset($msg['contactsArrayMessage'])) {
+            return [
+                'content'       => '[contato compartilhado]',
+                'type'          => 'contact',
+                'media_path'    => null,
+                'media_caption' => null,
+                'user_text'     => null,
+            ];
+        }
+
+        if (isset($msg['buttonsResponseMessage'])) {
+            $text = $msg['buttonsResponseMessage']['selectedDisplayText']
+                ?? ($msg['buttonsResponseMessage']['selectedButtonId'] ?? '[resposta de botão]');
+            return [
+                'content'       => $text,
+                'type'          => 'button_reply',
+                'media_path'    => null,
+                'media_caption' => null,
+                'user_text'     => $text,
+            ];
+        }
+
+        if (isset($msg['listResponseMessage'])) {
+            $text = $msg['listResponseMessage']['title']
+                ?? ($msg['listResponseMessage']['singleSelectReply']['selectedRowId'] ?? '[resposta de lista]');
+            return [
+                'content'       => $text,
+                'type'          => 'list_reply',
+                'media_path'    => null,
+                'media_caption' => null,
+                'user_text'     => $text,
+            ];
+        }
+
+        if (isset($msg['interactiveResponseMessage'])) {
+            $text = $msg['interactiveResponseMessage']['body']['text']
+                ?? '[resposta interativa]';
+            return [
+                'content'       => $text,
+                'type'          => 'interactive_reply',
+                'media_path'    => null,
+                'media_caption' => null,
+                'user_text'     => $text,
+            ];
+        }
+
+        // Reação (emoji em mensagem) — sinaliza no histórico mas não dispara IA.
+        if (isset($msg['reactionMessage'])) {
+            $emoji = $msg['reactionMessage']['text'] ?? '';
+            return [
+                'content'       => $emoji !== '' ? "[reação: {$emoji}]" : '[reação]',
+                'type'          => 'reaction',
+                'media_path'    => null,
+                'media_caption' => null,
+                'user_text'     => null,
+            ];
+        }
+
+        // Fallback: tipo desconhecido / novo. Loga o tipo para mapeamento futuro
+        // (sem o payload — pode conter PII).
+        $unknownKey = is_array($msg) && !empty($msg) ? (array_key_first($msg) ?? 'null') : 'null';
+        Log::info("ProcessEvolutionWebhook: tipo de mensagem Baileys não mapeado: {$unknownKey}");
+
+        return [
+            'content'       => '[mensagem não suportada]',
+            'type'          => 'unsupported',
+            'media_path'    => null,
+            'media_caption' => null,
+            'user_text'     => null,
+        ];
     }
 
     public function failed(\Throwable $exception): void
