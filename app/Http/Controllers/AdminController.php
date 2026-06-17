@@ -14,6 +14,8 @@ use App\Models\SubscriptionPlan;
 use App\Services\BrevoService;
 use Illuminate\Support\Facades\Cache;
 use App\Models\AdminAuditLog;
+use App\Models\WhatsappAntiBanAcceptance;
+use App\Services\AntiBanTermService;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
@@ -291,7 +293,21 @@ class AdminController extends Controller
         $user = User::where('tenant_id', $tenant->id)->first(); // Main user
         $plan = DB::table('subscription_plans')->where('id', $tenant->plan_id)->first();
 
-        return view('admin.tenants.show', compact('tenant', 'user', 'plan'));
+        // Aceites anti-ban (Fase 2 — item 4.2). Lista as 20 últimas versões
+        // aceitas + sinaliza se a versão vigente ainda está pendente.
+        $antiBanService          = app(AntiBanTermService::class);
+        $antiBanCurrentVersion   = $antiBanService->currentVersion();
+        $antiBanCurrentAccepted  = $antiBanService->hasAcceptedCurrent($tenant);
+        $antiBanAcceptances      = WhatsappAntiBanAcceptance::where('tenant_id', $tenant->id)
+            ->with('user:id,name,email')
+            ->orderByDesc('accepted_at')
+            ->limit(20)
+            ->get();
+
+        return view('admin.tenants.show', compact(
+            'tenant', 'user', 'plan',
+            'antiBanCurrentVersion', 'antiBanCurrentAccepted', 'antiBanAcceptances'
+        ));
     }
 
     public function auditLogs()
