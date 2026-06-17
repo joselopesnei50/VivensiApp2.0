@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\AdminAuditLog;
 use App\Models\WhatsappAntiBanAcceptance;
 use App\Services\AntiBanTermService;
+use App\Services\EmailQuotaService;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
@@ -304,10 +305,49 @@ class AdminController extends Controller
             ->limit(20)
             ->get();
 
+        // Cota diária de e-mails (Fase 2 — item 3.3).
+        $emailQuota          = app(EmailQuotaService::class);
+        $emailDailyQuota     = $emailQuota->getQuota($tenant);
+        $emailSentToday      = $emailQuota->getSentToday($tenant);
+        $emailRemainingToday = $emailQuota->getRemainingToday($tenant);
+
         return view('admin.tenants.show', compact(
             'tenant', 'user', 'plan',
-            'antiBanCurrentVersion', 'antiBanCurrentAccepted', 'antiBanAcceptances'
+            'antiBanCurrentVersion', 'antiBanCurrentAccepted', 'antiBanAcceptances',
+            'emailDailyQuota', 'emailSentToday', 'emailRemainingToday'
         ));
+    }
+
+    /**
+     * Atualiza a cota diária de e-mails do tenant (Fase 2 — item 3.3).
+     * Disponível só para Super Admin. Gera audit log.
+     */
+    public function updateEmailQuota(Request $request, $id)
+    {
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'daily_email_quota' => ['required', 'integer', 'min:0', 'max:100000'],
+        ]);
+
+        $tenant = Tenant::findOrFail($id);
+        $old    = (int) ($tenant->daily_email_quota ?? EmailQuotaService::DEFAULT_QUOTA);
+        $new    = (int) $data['daily_email_quota'];
+
+        if ($old !== $new) {
+            $tenant->update(['daily_email_quota' => $new]);
+            AdminAuditLog::record('tenant.email_quota_updated', [
+                'target_type' => 'tenant',
+                'target_id'   => $tenant->id,
+                'target_name' => $tenant->name,
+                'from'        => $old,
+                'to'          => $new,
+            ]);
+        }
+
+        return back()->with('success', "Cota diária de e-mails atualizada para {$new}.");
     }
 
     public function auditLogs()

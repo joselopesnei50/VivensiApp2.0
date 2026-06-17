@@ -16,6 +16,7 @@ class Tenant extends Model
         'asaas_customer_id',
         'plan_id',
         'subscription_status',
+        'daily_email_quota',
         'trial_ends_at',
         'billing_cycle', // monthly, yearly
         // F7 — White-Label

@@ -165,6 +165,55 @@
             @endif
         </div>
 
+        {{-- Cota Diária de E-mails (Fase 2 — item 3.3) --}}
+        <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
+            <h4 style="color: #1e293b; margin-top: 0;">
+                <i class="fas fa-envelope-open-text me-2" style="color:#6366f1;"></i>Cota Diária de E-mails
+            </h4>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px;">
+                Limite de destinatários de campanhas Brevo por dia. Transacionais (2FA, reset, alertas) NÃO consomem cota.
+            </p>
+
+            @php
+                $usagePct = $emailDailyQuota > 0 ? min(100, (int) round(($emailSentToday / $emailDailyQuota) * 100)) : 0;
+                $barColor = $usagePct >= 90 ? '#ef4444' : ($usagePct >= 70 ? '#f59e0b' : '#10b981');
+            @endphp
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:.85rem; color:#334155; margin-bottom:8px;">
+                    <span><strong>{{ $emailSentToday }}</strong> de <strong>{{ $emailDailyQuota }}</strong> hoje</span>
+                    <span style="color:#64748b;">restam <strong>{{ $emailRemainingToday }}</strong></span>
+                </div>
+                <div style="height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden;">
+                    <div style="height:100%; width:{{ $usagePct }}%; background:{{ $barColor }}; border-radius:99px; transition:width .3s;"></div>
+                </div>
+            </div>
+
+            <form action="{{ route('admin.tenants.email_quota', $tenant->id) }}" method="POST" style="display:flex; gap:10px; align-items:flex-end;">
+                @csrf
+                <div style="flex:1;">
+                    <label for="daily_email_quota" style="font-size:.8rem; font-weight:700; color:#475569; display:block; margin-bottom:6px;">
+                        Capacidade diária (destinatários)
+                    </label>
+                    <input
+                        type="number"
+                        id="daily_email_quota"
+                        name="daily_email_quota"
+                        value="{{ old('daily_email_quota', $emailDailyQuota) }}"
+                        min="0"
+                        max="100000"
+                        required
+                        style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:.9rem;"
+                    >
+                </div>
+                <button type="submit" style="background:#6366f1; color:white; border:none; padding:10px 18px; border-radius:8px; font-weight:700; font-size:.85rem; cursor:pointer; height:40px;">
+                    <i class="fas fa-save me-1"></i>Atualizar
+                </button>
+            </form>
+            @error('daily_email_quota')
+                <p style="color:#ef4444; font-size:.8rem; margin-top:8px;">{{ $message }}</p>
+            @enderror
+        </div>
+
         <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
             <h4 style="color: #1e293b; margin-top: 0;">Ações Administrativas</h4>
             <p style="font-size: 0.85rem; color: #64748b;">Gerencie o acesso desta organização.</p>
