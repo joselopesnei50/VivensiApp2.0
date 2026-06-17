@@ -73,6 +73,80 @@ class PerfilOperacionalService
         return TenantOperationalProfile::CATEGORIAS;
     }
 
+    /** KPIs base hardcoded já presentes na hero do Centro de Comando. */
+    private const KPIS_BASE = ['active_projects', 'pending_approvals'];
+
+    /**
+     * Sources que o Controller precisa resolver pra montar os KPIs operacionais
+     * do tenant. Exclui os KPIs base que a hero já renderiza hardcoded.
+     *
+     * @return list<string>
+     */
+    public function getKpiSources(Tenant $tenant): array
+    {
+        return $this->sourcesForCategoria($this->getCategoria($tenant));
+    }
+
+    /**
+     * KPIs operacionais (não-base) com label + valor já resolvido, prontos pra
+     * renderizar. Categorias sem KPIs operacionais (ex.: 'outro') retornam
+     * array vazio — a view não deve mostrar o bloco extra nesse caso.
+     *
+     * @param array<string,mixed> $sourceValues map de source => value já calculado
+     * @return array<string,array{label:string,kind:string,value:mixed}>
+     */
+    public function getResolvedKpis(Tenant $tenant, array $sourceValues = []): array
+    {
+        return $this->resolvedKpisForCategoria($this->getCategoria($tenant), $sourceValues);
+    }
+
+    /**
+     * Versão pura — não depende de Tenant. Útil pra testes e pra UI consultar
+     * antes de persistir uma categoria.
+     *
+     * @return list<string>
+     */
+    public function sourcesForCategoria(string $categoria): array
+    {
+        $sources = [];
+        foreach ($this->kpisForCategoria($categoria) as $kpi) {
+            if (in_array($kpi['source'], self::KPIS_BASE, true)) {
+                continue;
+            }
+            $sources[] = $kpi['source'];
+        }
+        return $sources;
+    }
+
+    /**
+     * Versão pura — não depende de Tenant.
+     *
+     * @param array<string,mixed> $sourceValues
+     * @return array<string,array{label:string,kind:string,value:mixed}>
+     */
+    public function resolvedKpisForCategoria(string $categoria, array $sourceValues = []): array
+    {
+        $resolved = [];
+        foreach ($this->kpisForCategoria($categoria) as $key => $kpi) {
+            if (in_array($key, self::KPIS_BASE, true)) {
+                continue;
+            }
+            $value = $sourceValues[$kpi['source']] ?? null;
+            // Source que o Controller não soube resolver é omitido — evita
+            // renderizar card "R$ 0" confuso (ex.: monthly_revenue duplicaria
+            // a Maré Financeira da hero pra categoria 'outro' e cultural).
+            if ($value === null) {
+                continue;
+            }
+            $resolved[$key] = [
+                'label' => $kpi['label'],
+                'kind'  => $kpi['kind'],
+                'value' => $value,
+            ];
+        }
+        return $resolved;
+    }
+
     /**
      * Métodos puros derivativos — não dependem de Tenant nem do banco.
      * Ficam públicos para testabilidade e para a UI consultar antes de

@@ -7,10 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Services\AiFinancialAdvisor;
+use App\Services\PerfilOperacionalService;
 use App\Models\Campaign;
 use App\Models\NgoDonor;
 use App\Models\NgoGrant;
 use App\Models\NgoGrantDocument;
+use App\Models\Prospect;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\Transaction;
@@ -328,13 +330,49 @@ class DashboardController extends Controller
             $waDailyReceived[] = (int) ($dayData->firstWhere('direction', 'inbound')->total ?? 0);
         }
 
+        // ── KPIs operacionais por Perfil (Fase 1 — Etapa C) ─────────────────
+        // Resolve sources sob demanda — categorias 'outro' não pedem nada
+        // e o foreach abaixo nem entra. Mantém o painel atual intacto.
+        $resolvedKpis = [];
+        $tenant = \App\Models\Tenant::find($tenantId);
+        if ($tenant !== null) {
+            $perfilService = app(PerfilOperacionalService::class);
+            $sources       = $perfilService->getKpiSources($tenant);
+            $sourceValues  = [];
+            foreach ($sources as $source) {
+                $sourceValues[$source] = $this->resolveKpiSource($source, $tenantId, $whatsappStats);
+            }
+            $resolvedKpis = $perfilService->getResolvedKpis($tenant, $sourceValues);
+        }
+
         return view('dashboards.manager', compact(
             'activeProjects', 'impactFeed', 'stats',
             'projects', 'urgentTasks', 'pendingApprovals',
             'chartLabels', 'chartProjects', 'chartTasks',
             'radarData', 'mapMarkers', 'whatsappStats',
-            'waDailyLabels', 'waDailySent', 'waDailyReceived'
+            'waDailyLabels', 'waDailySent', 'waDailyReceived',
+            'resolvedKpis'
         ));
+    }
+
+    /**
+     * Resolve um source de KPI operacional. Mantém cache curto pra não
+     * sobrecarregar o dashboard quando o perfil ativa fontes adicionais.
+     */
+    private function resolveKpiSource(string $source, int $tenantId, array $whatsappStats)
+    {
+        return match ($source) {
+            'whatsapp_inbound_total' => (int) ($whatsappStats['total_replies'] ?? 0),
+            'leads_total' => (int) Cache::remember(
+                "dashboard.manager.kpi.leads.{$tenantId}",
+                300,
+                fn () => Prospect::where('tenant_id', $tenantId)->count()
+            ),
+            // monthly_revenue já aparece na hero como "Maré Financeira" — null
+            // sinaliza pro Service omitir e evitar duplicar card.
+            'monthly_revenue' => null,
+            default => null,
+        };
     }
 
     private function ngoDashboard($tenantId)

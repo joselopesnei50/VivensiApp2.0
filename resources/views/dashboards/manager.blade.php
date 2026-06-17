@@ -99,6 +99,34 @@
                 </div>
             </div>
         </div>
+
+        {{-- KPIs operacionais do Perfil (Fase 1 — Etapa C). Só aparece quando o tenant
+             tem categoria com KPIs específicos (mobilização, eleitoral, cultural...). --}}
+        @if(!empty($resolvedKpis ?? []))
+            <div class="row g-3 mt-1">
+                @foreach($resolvedKpis as $key => $kpi)
+                    <div class="col-6 col-md-3">
+                        <div class="cmd-stat-card" style="border-left: 3px solid #6366f1;">
+                            <div>
+                                <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">{{ $kpi['label'] }}</span>
+                                <div style="font-size: 2.4rem; font-weight: 950; margin-top: 8px; letter-spacing: -2px;">
+                                    @if($kpi['kind'] === 'currency')
+                                        R$ {{ number_format((float) $kpi['value'], 0, ',', '.') }}
+                                    @elseif($kpi['kind'] === 'percent')
+                                        {{ number_format((float) $kpi['value'], 0) }}%
+                                    @else
+                                        {{ number_format((int) $kpi['value'], 0, ',', '.') }}
+                                    @endif
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; color: #a5b4fc; font-weight: 800; font-size: 0.8rem;">
+                                <i class="fas fa-compass"></i> Perfil Operacional
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 </div>
 
