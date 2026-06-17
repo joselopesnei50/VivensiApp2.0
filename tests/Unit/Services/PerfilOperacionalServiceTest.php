@@ -141,6 +141,79 @@ class PerfilOperacionalServiceTest extends TestCase
         $this->assertStringContainsString('a organização', $ctx);
     }
 
+    // ── Resolver de KPIs (Etapa C) ────────────────────────────────────────
+
+    public function test_sources_outro_e_vazio_pois_so_tem_kpis_base(): void
+    {
+        $sources = $this->svc->sourcesForCategoria(TenantOperationalProfile::CATEGORIA_OUTRO);
+        $this->assertContains('monthly_revenue', $sources,
+            'categoria outro tem monthly_revenue como source não-base — deve aparecer');
+    }
+
+    public function test_sources_mobilizacao_inclui_whatsapp_e_leads(): void
+    {
+        $sources = $this->svc->sourcesForCategoria(TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL);
+        $this->assertContains('whatsapp_inbound_total', $sources);
+        $this->assertContains('leads_total', $sources);
+        $this->assertNotContains('active_projects', $sources,
+            'KPIs base não devem aparecer — view já renderiza hardcoded na hero');
+        $this->assertNotContains('pending_approvals', $sources);
+    }
+
+    public function test_resolved_kpis_mobilizacao_usa_valores_passados(): void
+    {
+        $resolved = $this->svc->resolvedKpisForCategoria(
+            TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL,
+            ['whatsapp_inbound_total' => 1234, 'leads_total' => 56]
+        );
+
+        $this->assertArrayHasKey('whatsapp_inbound_total', $resolved);
+        $this->assertSame(1234, $resolved['whatsapp_inbound_total']['value']);
+        $this->assertSame('Mensagens WhatsApp Recebidas', $resolved['whatsapp_inbound_total']['label']);
+        $this->assertSame('count', $resolved['whatsapp_inbound_total']['kind']);
+
+        $this->assertArrayHasKey('leads_total', $resolved);
+        $this->assertSame(56, $resolved['leads_total']['value']);
+
+        $this->assertArrayNotHasKey('active_projects', $resolved,
+            'base KPIs ficam de fora do resolved — view já mostra na hero');
+    }
+
+    public function test_resolved_kpis_omite_sources_nao_resolvidos(): void
+    {
+        // Source com null no map é omitido — sinaliza pra view que o
+        // Controller decidiu não calcular (ex.: duplicaria KPI da hero).
+        $resolved = $this->svc->resolvedKpisForCategoria(
+            TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL,
+            ['whatsapp_inbound_total' => 10, 'leads_total' => null]
+        );
+        $this->assertArrayHasKey('whatsapp_inbound_total', $resolved);
+        $this->assertArrayNotHasKey('leads_total', $resolved,
+            'source com value null deve ser omitido pra evitar card vazio');
+    }
+
+    public function test_resolved_kpis_vazio_quando_nenhum_source_resolvido(): void
+    {
+        // Cenário: categoria sem fonte real (controller retorna null pra tudo).
+        $resolved = $this->svc->resolvedKpisForCategoria(
+            TenantOperationalProfile::CATEGORIA_OUTRO,
+            [] // monthly_revenue não passado — view não deve mostrar nada
+        );
+        $this->assertSame([], $resolved);
+    }
+
+    public function test_resolved_kpis_cultural_tem_captacao_no_mes(): void
+    {
+        $resolved = $this->svc->resolvedKpisForCategoria(
+            TenantOperationalProfile::CATEGORIA_PROJETO_CULTURAL,
+            ['monthly_revenue' => 5000.00]
+        );
+        $this->assertArrayHasKey('monthly_revenue', $resolved);
+        $this->assertSame('Captação no Mês', $resolved['monthly_revenue']['label']);
+        $this->assertSame('currency', $resolved['monthly_revenue']['kind']);
+        $this->assertSame(5000.00, $resolved['monthly_revenue']['value']);
+    }
+
     public function test_categoria_desconhecida_cai_no_perfil_outro(): void
     {
         $kpis  = $this->svc->kpisForCategoria('foobar');
