@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\WhatsappInstance;
+use App\Services\AntiBanTermService;
 use App\Services\EvolutionApiService;
 use App\Services\Messaging\AntiBanManager;
 use Illuminate\Http\Request;
@@ -49,6 +50,19 @@ class WhatsappInstanceController extends Controller
     {
         $user     = auth()->user();
         $tenantId = $user->tenant_id; // Para super_admin = 2 (tenant da plataforma)
+
+        // ── Gate Fase 2 (item 4.2): aceite anti-ban obrigatório ────────────
+        if ($user->tenant !== null) {
+            $antiBan = app(AntiBanTermService::class);
+            if (!$antiBan->hasAcceptedCurrent($user->tenant)) {
+                return response()->json([
+                    'error'        => 'anti_ban_term_required',
+                    'message'      => 'Antes de criar uma instância WhatsApp, é necessário aceitar o Termo de Responsabilidade Anti-Ban.',
+                    'term_version' => $antiBan->currentVersion(),
+                    'accept_url'   => url('/whatsapp/anti-ban/accept'),
+                ], 423);
+            }
+        }
 
         try {
             // ── Conta instâncias ativas (sem soft-deleted)
