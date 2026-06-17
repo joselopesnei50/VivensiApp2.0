@@ -63,6 +63,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::delete('/whatsapp/instances/{id}',         [App\Http\Controllers\Api\WhatsappInstanceController::class, 'destroy'])->name('whatsapp.instances.destroy')->middleware('throttle:10,1');
     Route::patch('/whatsapp/instances/{id}/proxy',    [App\Http\Controllers\Api\WhatsappInstanceController::class, 'updateProxy'])->name('whatsapp.instances.proxy')->middleware('throttle:10,1');
 
+    // Termo anti-ban (Fase 2 — item 4.2)
+    Route::get( '/whatsapp/anti-ban',        [App\Http\Controllers\WhatsappAntiBanController::class, 'show'])->name('whatsapp.anti_ban.show');
+    Route::post('/whatsapp/anti-ban/accept', [App\Http\Controllers\WhatsappAntiBanController::class, 'accept'])->name('whatsapp.anti_ban.accept')->middleware('throttle:10,1');
+
     // Automações
     Route::get('/whatsapp/automations',                    [App\Http\Controllers\WhatsappAutomationController::class, 'index'])->name('whatsapp.automations.index');
     Route::get('/whatsapp/automations/create',             [App\Http\Controllers\WhatsappAutomationController::class, 'create'])->name('whatsapp.automations.create');

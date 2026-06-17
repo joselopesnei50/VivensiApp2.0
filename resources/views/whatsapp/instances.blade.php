@@ -232,6 +232,46 @@
     </div>
 </div>
 
+{{-- MODAL TERMO ANTI-BAN (Fase 2 — item 4.2) --}}
+<div class="modal fade" id="antiBanTermModal" role="dialog" aria-modal="true" aria-labelledby="antiBanTermModalLabel" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:640px;">
+        <div class="modal-content" style="border-radius:20px; border:1px solid #f1f5f9; box-shadow:0 25px 60px rgba(0,0,0,.15);">
+            <div style="padding:24px 28px 0; display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <h5 id="antiBanTermModalLabel" style="font-weight:900; color:#1e293b; font-size:1.1rem; margin:0;">
+                        <i class="fas fa-shield-halved me-2" style="color:#ef4444;"></i>
+                        <span id="antiBanTitle">Termo de Responsabilidade</span>
+                    </h5>
+                    <p style="color:#64748b; font-size:.8rem; margin:4px 0 0;">
+                        Leia atentamente. Esse aceite é exigido antes de conectar uma instância WhatsApp.
+                    </p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <div class="modal-body" style="padding:20px 28px 8px;">
+                <div id="antiBanText" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px 20px; font-size:.85rem; line-height:1.55; color:#334155; white-space:pre-wrap; max-height:340px; overflow-y:auto;">
+                    Carregando termo...
+                </div>
+                <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:.75rem; color:#94a3b8;">
+                    <span><i class="fas fa-tag me-1"></i>Versão <span id="antiBanVersion">—</span></span>
+                    <span><i class="fas fa-calendar me-1"></i>Vigente desde <span id="antiBanEffective">—</span></span>
+                </div>
+                <div id="antiBanError" style="margin-top:12px; color:#ef4444; font-size:.8rem; display:none;"></div>
+            </div>
+
+            <div style="padding:0 28px 22px; display:flex; gap:10px;">
+                <button type="button" id="antiBanAcceptBtn" onclick="acceptAntiBan()" class="inst-btn-primary" style="flex:1; justify-content:center; padding:14px; font-size:.9rem; background:#ef4444;">
+                    <i class="fas fa-check me-2"></i>Li e aceito o termo
+                </button>
+                <button type="button" class="inst-btn-ghost" data-bs-dismiss="modal" style="padding:14px 18px;">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- MODAL NOVA INSTÂNCIA --}}
 <div class="modal fade" id="newInstanceModal" role="dialog" aria-modal="true" aria-labelledby="newInstanceModalLabel" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
@@ -278,11 +318,72 @@ const webHeaders = { 'Content-Type':'application/json', 'X-CSRF-TOKEN':CSRF, 'Ac
 let pollInterval = null, currentInstanceId = null, pollAttempts = 0;
 const MAX_POLL = 36;
 
-function openNewInstanceModal() {
+// Gateway: checa o aceite anti-ban antes de abrir o modal de criação.
+// Se já aceitou a versão vigente, segue direto; senão abre o modal do termo.
+async function openNewInstanceModal() {
+    try {
+        const r = await fetch('/whatsapp/anti-ban', { method: 'GET', headers: webHeaders });
+        if (!r.ok) {
+            // Em erro (500/401), fail-open só pro modal de aceite — o backend
+            // ainda bloqueia se realmente não tiver aceite, então é seguro.
+            openAntiBanModal({ version: '?', title: 'Termo', text: 'Não foi possível carregar o termo.', effective_at: '—' });
+            return;
+        }
+        const d = await r.json();
+        if (d.has_accepted === true) {
+            openCreateInstanceModalDirect();
+        } else {
+            openAntiBanModal(d);
+        }
+    } catch (e) {
+        openAntiBanModal({ version: '?', title: 'Termo', text: 'Falha de rede ao carregar termo. Tente novamente.', effective_at: '—' });
+    }
+}
+
+function openCreateInstanceModalDirect() {
     document.getElementById('create-instance-form').style.display = 'block';
     document.getElementById('qr-code-view').style.display = 'none';
     document.getElementById('instanceName').value = '';
     new bootstrap.Modal(document.getElementById('newInstanceModal')).show();
+}
+
+function openAntiBanModal(data) {
+    document.getElementById('antiBanTitle').textContent     = data.title || 'Termo de Responsabilidade';
+    document.getElementById('antiBanText').textContent      = data.text || '';
+    document.getElementById('antiBanVersion').textContent   = data.version || '—';
+    document.getElementById('antiBanEffective').textContent = data.effective_at || '—';
+    document.getElementById('antiBanError').style.display   = 'none';
+    const btn = document.getElementById('antiBanAcceptBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check me-2"></i>Li e aceito o termo';
+    new bootstrap.Modal(document.getElementById('antiBanTermModal')).show();
+}
+
+async function acceptAntiBan() {
+    const btn = document.getElementById('antiBanAcceptBtn');
+    const errEl = document.getElementById('antiBanError');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Registrando aceite...';
+    errEl.style.display = 'none';
+    try {
+        const r = await fetch('/whatsapp/anti-ban/accept', { method: 'POST', headers: webHeaders, body: '{}' });
+        const d = await r.json();
+        if (r.ok && d.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('antiBanTermModal')).hide();
+            // Aguarda fade-out antes de abrir o próximo modal pra não conflitar backdrop.
+            setTimeout(openCreateInstanceModalDirect, 250);
+        } else {
+            errEl.textContent = 'Não foi possível registrar o aceite. ' + (d.error || '');
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check me-2"></i>Li e aceito o termo';
+        }
+    } catch (e) {
+        errEl.textContent = 'Falha de comunicação com o servidor.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Li e aceito o termo';
+    }
 }
 
 async function createInstance() {
@@ -300,8 +401,13 @@ async function createInstance() {
             document.getElementById('qr-code-view').style.display = 'block';
             fetchQrCode();
             pollInterval = setInterval(fetchQrCode, 5000);
+        } else if (r.status === 423 && d.error === 'anti_ban_term_required') {
+            // Versão do termo pode ter mudado depois que o user passou pelo modal.
+            // Fecha o modal de criação e reabre o fluxo de aceite.
+            bootstrap.Modal.getInstance(document.getElementById('newInstanceModal'))?.hide();
+            setTimeout(openNewInstanceModal, 300);
         } else {
-            alert('Não foi possível criar a instância:\n' + (d.error || d.message || 'Erro desconhecido') + (d.details ? '\n\n' + d.details : ''));
+            alert('Não foi possível criar a instância:\n' + (d.message || d.error || 'Erro desconhecido') + (d.details ? '\n\n' + d.details : ''));
             btn.innerHTML = '<i class="fas fa-qrcode me-2"></i>Gerar QR Code'; btn.disabled = false;
         }
     } catch(e) { alert('Falha de comunicação com o servidor.'); btn.innerHTML = '<i class="fas fa-qrcode me-2"></i>Gerar QR Code'; btn.disabled = false; }
