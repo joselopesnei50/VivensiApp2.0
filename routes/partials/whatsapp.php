@@ -30,6 +30,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/chat/{id}/compliance',     [App\Http\Controllers\WhatsappController::class, 'updateCompliance']);
     Route::post('/whatsapp/chat/{id}/toggle-bot',     [App\Http\Controllers\WhatsappController::class, 'toggleBot'])->name('whatsapp.chat.toggle-bot');
     Route::post('/whatsapp/chat/{id}/assign',         [App\Http\Controllers\WhatsappController::class, 'assignChat'])->name('whatsapp.chat.assign');
+
+    // Transferência de atendimento (Fase 3.A)
+    Route::post(  '/whatsapp/chat/{id}/transfer', [App\Http\Controllers\WhatsappController::class, 'transferChat'])->name('whatsapp.chat.transfer')->middleware('throttle:30,1');
+    Route::delete('/whatsapp/chat/{id}/assignee', [App\Http\Controllers\WhatsappController::class, 'releaseChat'])->name('whatsapp.chat.release')->middleware('throttle:30,1');
+    Route::get(   '/whatsapp/eligible-agents',    [App\Http\Controllers\WhatsappController::class, 'eligibleAgents'])->name('whatsapp.eligible_agents');
     Route::post('/whatsapp/chat/{id}/send-media',     [App\Http\Controllers\WhatsappController::class, 'sendMedia'])->name('whatsapp.chat.send-media');
     Route::post('/whatsapp/chat/{id}/send-audio',     [App\Http\Controllers\WhatsappController::class, 'sendAudio'])->name('whatsapp.chat.send-audio');
     Route::post('/whatsapp/chat/{id}/schedule',       [App\Http\Controllers\WhatsappController::class, 'scheduleMessage'])->name('whatsapp.chat.schedule');
