@@ -16,6 +16,8 @@ use App\Services\WhatsappOutboundPolicy;
 use App\Services\GeminiService;
 use App\Services\DeepSeekService;
 use App\Models\Tenant;
+use App\Models\User;
+use App\Services\Messaging\ChatTransferService;
 use App\Services\Messaging\MetaCloudApiService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -196,6 +198,65 @@ class WhatsappController extends Controller
         ]);
 
         return response()->json(['success' => true, 'chat' => $chat]);
+    }
+
+    /**
+     * Transferência de atendimento (Fase 3.A do roadmap) — atribui o chat a
+     * outro usuário do mesmo tenant. Aceita atendente atual ou manager/super_admin.
+     */
+    public function transferChat(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $data = $request->validate([
+            'assigned_to' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $tenantId = auth()->user()->tenant_id;
+        $chat     = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+        $target   = User::findOrFail($data['assigned_to']);
+        $actor    = $request->user();
+
+        try {
+            $chat = app(ChatTransferService::class)->transferTo($chat, $target, $actor);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 403);
+        }
+
+        return response()->json(['success' => true, 'chat' => $chat]);
+    }
+
+    /**
+     * Libera o atendimento — volta o chat para 'não atribuído'. Atendente
+     * atual ou manager/super_admin.
+     */
+    public function releaseChat(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $tenantId = auth()->user()->tenant_id;
+        $chat     = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+        $actor    = $request->user();
+
+        try {
+            $chat = app(ChatTransferService::class)->release($chat, $actor);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 403);
+        }
+
+        return response()->json(['success' => true, 'chat' => $chat]);
+    }
+
+    /**
+     * Lista de agentes elegíveis para receber atendimento dentro do tenant.
+     * Consumido pelo modal de transferência.
+     */
+    public function eligibleAgents(Request $request)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $agents = app(ChatTransferService::class)->eligibleAgents(auth()->user()->tenant_id);
+        return response()->json(['agents' => $agents]);
     }
 
     /**
@@ -795,6 +856,9 @@ class WhatsappController extends Controller
     {
         $tenantId = auth()->user()->tenant_id;
         $search   = trim((string) $request->query('q', ''));
+        // Fase 3.A: filtro de propriedade — 'mine' | 'unassigned' | 'all' (default).
+        $owner    = (string) $request->query('owner', 'all');
+        $myUserId = auth()->id();
 
         // Subquery correlated: busca última mensagem em query única (sem N+1)
         $query = WhatsappChat::where('tenant_id', $tenantId)
@@ -813,6 +877,12 @@ class WhatsappController extends Controller
             });
         }
 
+        if ($owner === 'mine') {
+            $query->where('assigned_to', $myUserId);
+        } elseif ($owner === 'unassigned') {
+            $query->whereNull('assigned_to');
+        }
+
         $chats = $query->orderBy('last_message_at', 'desc')
             ->limit($search !== '' ? 50 : 200)
             ->get()
@@ -820,6 +890,7 @@ class WhatsappController extends Controller
                 return [
                     'id'                        => $chat->id,
                     'contact_name'              => $chat->contact_name ?? 'Sem Nome',
+                    'assigned_to'               => $chat->assigned_to,
                     'last_message_at_formatted' => $chat->last_message_at
                         ? \Carbon\Carbon::parse($chat->last_message_at)->format('H:i')
                         : '',
