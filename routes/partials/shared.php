@@ -29,6 +29,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/manager/perfil-operacional', [App\Http\Controllers\Manager\PerfilOperacionalController::class, 'update'])
         ->middleware('can:access-manager')->name('manager.perfil_operacional.update');
 
+    // Kanban Geral (Fase 3 — item 2.2)
+    Route::middleware('can:access-manager')->prefix('manager/kanban')->name('manager.kanban.')->group(function () {
+        Route::get(   '/',                              [App\Http\Controllers\Manager\KanbanController::class, 'index'])->name('index');
+        Route::post(  '/boards/{board}/columns',        [App\Http\Controllers\Manager\KanbanController::class, 'storeColumn'])->name('columns.store')->middleware('throttle:30,1');
+        Route::delete('/columns/{column}',              [App\Http\Controllers\Manager\KanbanController::class, 'destroyColumn'])->name('columns.destroy')->middleware('throttle:30,1');
+        Route::post(  '/columns/{column}/cards',        [App\Http\Controllers\Manager\KanbanController::class, 'storeCard'])->name('cards.store')->middleware('throttle:60,1');
+        Route::patch( '/cards/{card}/move',             [App\Http\Controllers\Manager\KanbanController::class, 'moveCard'])->name('cards.move')->middleware('throttle:120,1');
+        Route::patch( '/cards/{card}',                  [App\Http\Controllers\Manager\KanbanController::class, 'updateCard'])->name('cards.update')->middleware('throttle:60,1');
+        Route::post(  '/cards/{card}/archive',          [App\Http\Controllers\Manager\KanbanController::class, 'archiveCard'])->name('cards.archive')->middleware('throttle:30,1');
+    });
+
     // E-mail Marketing (CRM)
     Route::get('/manager/email-campaigns',                        [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'index'])->name('manager.email_campaigns.index');
     Route::get('/manager/email-campaigns/create',                 [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'create'])->name('manager.email_campaigns.create');
