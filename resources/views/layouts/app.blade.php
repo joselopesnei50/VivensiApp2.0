@@ -545,7 +545,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @elseif (auth()->user()->role == 'manager')
                 {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
                 @php
-                    $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*','manager/perfil-operacional*');
+                    $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*','manager/perfil-operacional*','manager/kanban*');
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
                     $mgr_wa_active   = request()->is('whatsapp*');
                     $mgr_mkt_active  = request()->is('manager/landing-pages*','manager/email-campaigns*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
@@ -566,6 +566,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/manager/schedule') }}" class="{{ request()->is('manager/schedule*') ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Agenda Corporativa</a></li>
                             <li><a href="{{ url('/manager/approvals') }}" class="{{ request()->is('manager/approvals*') ? 'active' : '' }}"><i class="fas fa-check-double"></i> Central de Aprovações</a></li>
                             <li><a href="{{ url('/manager/perfil-operacional') }}" class="{{ request()->is('manager/perfil-operacional*') ? 'active' : '' }}"><i class="fas fa-compass"></i> Perfil Operacional</a></li>
+                            <li><a href="{{ url('/manager/kanban') }}" class="{{ request()->is('manager/kanban*') ? 'active' : '' }}"><i class="fas fa-columns"></i> Kanban Geral</a></li>
                         </ul>
                     </div>
                 </div>
