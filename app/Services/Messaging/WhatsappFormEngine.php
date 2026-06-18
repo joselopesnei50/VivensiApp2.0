@@ -263,6 +263,58 @@ class WhatsappFormEngine
     }
 
     /**
+     * Renderiza a pergunta como texto plano pronto pra Evolution::sendMessage.
+     * Como hoje o serviço só manda texto, opções aparecem numeradas no corpo
+     * e a validação aceita o LABEL. Quando a Evolution suportar buttons/list
+     * nativos, esse método pode evoluir mantendo o contrato.
+     */
+    public function renderQuestionAsText(WhatsappFormQuestion $question): string
+    {
+        $payload = $this->renderQuestion($question);
+        $linhas  = [$payload['text']];
+
+        if (is_array($payload['buttons']) && $payload['buttons'] !== []) {
+            $linhas[] = '';
+            foreach ($payload['buttons'] as $i => $btn) {
+                $linhas[] = ($i + 1) . '. ' . (string) ($btn['label'] ?? '');
+            }
+            $linhas[] = '';
+            $linhas[] = '_Responda com o número ou o texto da opção._';
+        } elseif (is_array($payload['list']) && $payload['list'] !== []) {
+            $linhas[] = '';
+            foreach ($payload['list'] as $opt) {
+                $linhas[] = '• ' . (string) ($opt['label'] ?? '');
+            }
+            $linhas[] = '';
+            $linhas[] = '_Responda com o texto exato da opção._';
+        }
+
+        return implode("\n", $linhas);
+    }
+
+    /**
+     * Resolve uma resposta inbound que veio como "1" / "2" para o label
+     * correspondente. Mantém texto original quando não bater.
+     */
+    public function resolveButtonShortcut(WhatsappFormQuestion $question, string $userText): string
+    {
+        $payload = $this->renderQuestion($question);
+        $options = $payload['buttons'] ?? $payload['list'] ?? null;
+        if (!is_array($options) || $options === []) {
+            return $userText;
+        }
+        $trim = trim($userText);
+        if (!ctype_digit($trim)) {
+            return $userText;
+        }
+        $idx = ((int) $trim) - 1;
+        if ($idx < 0 || $idx >= count($options)) {
+            return $userText;
+        }
+        return (string) ($options[$idx]['label'] ?? $userText);
+    }
+
+    /**
      * Atalho quando o caller só quer fechar a sessão sem nova resposta.
      */
     public function complete(WhatsappFormSession $session): array

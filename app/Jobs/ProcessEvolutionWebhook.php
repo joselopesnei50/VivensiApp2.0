@@ -11,6 +11,7 @@ use App\Models\WhatsappMessage;
 use App\Models\WhatsappAuditLog;
 use App\Services\ContatoOptInService;
 use App\Services\EvolutionApiService;
+use App\Services\Messaging\WhatsappFormEngine;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -200,6 +201,19 @@ class ProcessEvolutionWebhook implements ShouldQueue
             ],
         ]);
 
+        // 4.5 Formulário conversacional (Fase 4 — item 2.5). Sessão ativa
+        // intercepta o fluxo normal: nem keyword nem IA disparam enquanto
+        // a máquina de estados está rodando. Exige texto real do usuário —
+        // mídia sem legenda no meio de um form aborta com aviso amigável.
+        if ($userText !== null) {
+            $formEngine = app(WhatsappFormEngine::class);
+            $session    = $formEngine->activeSessionFor($chat);
+            if ($session !== null) {
+                $this->advanceFormSession($formEngine, $session, $userText, $chat, $instance, $msg);
+                return;
+            }
+        }
+
         // 5. Automações por palavra-chave (tempo real) — exige texto real
         $keywordFired = false;
         if ($userText !== null && !$chat->opt_out_at && !$chat->blocked_at) {
@@ -222,6 +236,71 @@ class ProcessEvolutionWebhook implements ShouldQueue
             $base64Audio  = $isAudio ? ($msg['audioMessage']['base64'] ?? null) : null;
             $contentForAi = $userText ?? '';
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $contentForAi, $base64Audio);
+        }
+    }
+
+    /**
+     * Dispatcher do formulário conversacional. Resolve shortcut numérico
+     * (1/2/3 → label da opção), processa a resposta no FormEngine e manda
+     * a próxima pergunta ou mensagem de conclusão via Evolution.
+     */
+    private function advanceFormSession(
+        WhatsappFormEngine $formEngine,
+        \App\Models\WhatsappFormSession $session,
+        string $userText,
+        \App\Models\WhatsappChat $chat,
+        WhatsappInstance $instance,
+        array $rawMsg
+    ): void {
+        $question = $session->currentQuestion;
+        if ($question === null) {
+            $formEngine->complete($session);
+            return;
+        }
+
+        $resolvedText = $formEngine->resolveButtonShortcut($question, $userText);
+        $result       = $formEngine->processInbound($session, $resolvedText, ['raw' => $rawMsg['conversation'] ?? null]);
+
+        $evo = new EvolutionApiService($instance);
+
+        try {
+            if ($result['error']) {
+                // Resposta inválida — manda mensagem amigável + repete pergunta.
+                $evo->sendMessage($chat->wa_id, $result['error'] . "\n\n" . $formEngine->renderQuestionAsText($question), null, rand(1, 2));
+                return;
+            }
+
+            if ($result['next_question'] === null) {
+                // Sessão completa.
+                $form     = \App\Models\WhatsappForm::find($session->form_id);
+                $formName = $form?->name ?: 'questionário';
+                $evo->sendMessage($chat->wa_id, "Obrigado! Suas respostas para *{$formName}* foram registradas.", null, rand(1, 2));
+
+                WhatsappAuditLog::create([
+                    'tenant_id'  => $session->tenant_id,
+                    'chat_id'    => $chat->id,
+                    'actor_type' => 'system',
+                    'event'      => 'form_session_completed',
+                    'details'    => [
+                        'session_id' => $session->id,
+                        'form_id'    => $session->form_id,
+                    ],
+                ]);
+                return;
+            }
+
+            // Próxima pergunta.
+            $evo->sendMessage(
+                $chat->wa_id,
+                $formEngine->renderQuestionAsText($result['next_question']),
+                null,
+                rand(1, 2)
+            );
+        } catch (\Throwable $e) {
+            Log::warning('ProcessEvolutionWebhook: falha ao avançar sessão de formulário', [
+                'session_id' => $session->id,
+                'error'      => $e->getMessage(),
+            ]);
         }
     }
 
