@@ -19,6 +19,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\KanbanColumn;
 use App\Services\KanbanService;
+use App\Services\Messaging\AudioTranscriptionService;
 use App\Services\Messaging\ChatTransferService;
 use App\Services\Messaging\LeadQualificationService;
 use App\Services\Messaging\MetaCloudApiService;
@@ -260,6 +261,40 @@ class WhatsappController extends Controller
 
         $agents = app(ChatTransferService::class)->eligibleAgents(auth()->user()->tenant_id);
         return response()->json(['agents' => $agents]);
+    }
+
+    /**
+     * Transcreve um áudio do chat via Gemini (STT). Fase 4 — item 2.4.
+     * Idempotente: se a mensagem já tem transcrição, retorna direto sem
+     * chamar o provedor de novo.
+     */
+    public function transcribeMessage(Request $request, $messageId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $data = $request->validate([
+            'base64' => ['nullable', 'string'],
+        ]);
+
+        $tenantId = auth()->user()->tenant_id;
+        $message  = WhatsappMessage::whereHas('chat', fn ($q) => $q->where('tenant_id', $tenantId))
+            ->findOrFail($messageId);
+
+        $svc    = app(AudioTranscriptionService::class);
+        $result = $svc->transcribeMessage($message, $data['base64'] ?? null);
+
+        if (!empty($result['error'])) {
+            return response()->json([
+                'success' => false,
+                'error'   => $result['error'],
+            ], 422);
+        }
+
+        return response()->json([
+            'success'       => true,
+            'transcription' => $result['text'],
+            'provider'      => $result['provider'],
+        ]);
     }
 
     /**

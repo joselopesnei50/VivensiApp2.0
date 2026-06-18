@@ -20,6 +20,7 @@ class WhatsappMessage extends Model
         'status',
         'media_path',
         'media_caption',
+        'transcription',
     ];
 
     public function chat() {
