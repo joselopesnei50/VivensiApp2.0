@@ -1877,10 +1877,18 @@
                 const extraClass = (lastDir !== null && lastDir !== msg.direction) ? ' sender-change' : '';
                 lastDir = msg.direction;
 
+                // Fase 4.B — render especial pra áudios (player + transcrição/botão).
+                let body;
+                if (msg.type === 'audio') {
+                    body = renderAudioBubble(msg);
+                } else {
+                    body = escapeHtml(msg.content);
+                }
+
                 html += `
                     <div class="message-row ${isOut ? 'message-out' : 'message-in'}${extraClass}">
                         <div class="bubble ${isOut ? 'out' : 'in'}">
-                            ${escapeHtml(msg.content)}
+                            ${body}
                             <div class="meta">
                                 ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                 ${isOut ? '<i class="fas fa-check-double"></i>' : ''}
@@ -1891,6 +1899,50 @@
 
             $('#chat-messages-area').html(html);
             scrollToBottom();
+        }
+
+        function renderAudioBubble(msg) {
+            const id = msg.id;
+            const player = msg.media_path
+                ? `<audio controls preload="none" style="width:100%; max-width:260px; height:34px; margin-bottom:6px;"><source src="${escapeHtml(msg.media_path)}"></audio>`
+                : `<div style="font-size:.78rem; color:#94a3b8; margin-bottom:6px;"><i class="fas fa-microphone me-1"></i>Áudio recebido</div>`;
+            const transcriptionBlock = msg.transcription
+                ? `<div id="transcription-${id}" style="background:rgba(0,0,0,.05); border-radius:8px; padding:6px 8px; font-size:.78rem; line-height:1.35; color:#334155;"><i class="fas fa-quote-right me-1" style="color:#8b5cf6;"></i>${escapeHtml(msg.transcription)}</div>`
+                : `<div id="transcription-${id}"><button onclick="transcribeAudio(${id})" id="btnTr-${id}" style="background:rgba(139,92,246,.12); color:#7c3aed; border:none; border-radius:8px; padding:5px 10px; font-size:.72rem; font-weight:700; cursor:pointer;"><i class="fas fa-wand-magic-sparkles me-1"></i>Transcrever áudio</button></div>`;
+            return player + transcriptionBlock;
+        }
+
+        async function transcribeAudio(messageId) {
+            const wrap = document.getElementById('transcription-' + messageId);
+            const btn  = document.getElementById('btnTr-' + messageId);
+            if (!wrap) return;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Transcrevendo...';
+            }
+            try {
+                const r = await fetch('{{ url("/whatsapp/messages") }}/' + messageId + '/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrfToken, 'Accept':'application/json' },
+                    body: '{}',
+                });
+                const d = await r.json();
+                if (r.ok && d.success && d.transcription) {
+                    wrap.innerHTML = '<div style="background:rgba(0,0,0,.05); border-radius:8px; padding:6px 8px; font-size:.78rem; line-height:1.35; color:#334155;"><i class="fas fa-quote-right me-1" style="color:#8b5cf6;"></i>'
+                        + escapeHtml(d.transcription) + '</div>';
+                } else {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Falhou — tentar de novo';
+                        btn.title = d.error || 'erro';
+                    }
+                }
+            } catch (e) {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Erro de rede';
+                }
+            }
         }
 
         function renderHistory(messages) {

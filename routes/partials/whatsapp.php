@@ -39,6 +39,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // Qualificação de lead via IA (Fase 4 — item 2.3) — chama LLM, custo de tokens.
     Route::post('/whatsapp/chat/{id}/qualify-with-ai', [App\Http\Controllers\WhatsappController::class, 'qualifyChatWithAi'])
         ->name('whatsapp.chat.qualify_with_ai')->middleware('throttle:20,1');
+
+    // Transcrição de áudio (Fase 4 — item 2.4) — Gemini multimodal.
+    Route::post('/whatsapp/messages/{id}/transcribe', [App\Http\Controllers\WhatsappController::class, 'transcribeMessage'])
+        ->name('whatsapp.messages.transcribe')->middleware('throttle:30,1');
     Route::post('/whatsapp/chat/{id}/send-media',     [App\Http\Controllers\WhatsappController::class, 'sendMedia'])->name('whatsapp.chat.send-media');
     Route::post('/whatsapp/chat/{id}/send-audio',     [App\Http\Controllers\WhatsappController::class, 'sendAudio'])->name('whatsapp.chat.send-audio');
     Route::post('/whatsapp/chat/{id}/schedule',       [App\Http\Controllers\WhatsappController::class, 'scheduleMessage'])->name('whatsapp.chat.schedule');
