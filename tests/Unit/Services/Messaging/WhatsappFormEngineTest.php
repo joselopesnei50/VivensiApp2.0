@@ -204,6 +204,99 @@ class WhatsappFormEngineTest extends TestCase
         $this->assertSame('Qual seu nome?', $payload['text']);
     }
 
+    // ── renderQuestionAsText (4.C.2) ──────────────────────────────────────
+
+    public function test_render_text_plain_text_question_sem_extras(): void
+    {
+        $q = $this->q(['type' => 'text', 'text' => 'Qual seu nome?']);
+        $this->assertSame('Qual seu nome?', $this->svc->renderQuestionAsText($q));
+    }
+
+    public function test_render_text_buttons_numera_opcoes(): void
+    {
+        $q = $this->q([
+            'type' => 'buttons',
+            'options' => [
+                ['id'=>'a','label'=>'Sim, quero'],
+                ['id'=>'b','label'=>'Não'],
+            ],
+            'text' => 'Confirma?',
+        ]);
+        $out = $this->svc->renderQuestionAsText($q);
+
+        $this->assertStringContainsString('Confirma?', $out);
+        $this->assertStringContainsString('1. Sim, quero', $out);
+        $this->assertStringContainsString('2. Não', $out);
+        $this->assertStringContainsString('Responda', $out);
+    }
+
+    public function test_render_text_yes_no_inclui_sim_e_nao(): void
+    {
+        $q = $this->q(['type' => 'yes_no', 'text' => 'Aceita?']);
+        $out = $this->svc->renderQuestionAsText($q);
+
+        $this->assertStringContainsString('Aceita?', $out);
+        $this->assertStringContainsString('Sim', $out);
+        $this->assertStringContainsString('Não', $out);
+    }
+
+    public function test_render_text_list_usa_bullets(): void
+    {
+        $q = $this->q([
+            'type' => 'list',
+            'options' => [
+                ['id'=>'1','label'=>'Manhã'],
+                ['id'=>'2','label'=>'Tarde'],
+                ['id'=>'3','label'=>'Noite'],
+            ],
+            'text' => 'Horário?',
+        ]);
+        $out = $this->svc->renderQuestionAsText($q);
+
+        $this->assertStringContainsString('• Manhã', $out);
+        $this->assertStringContainsString('• Tarde', $out);
+        $this->assertStringContainsString('texto exato', $out);
+    }
+
+    // ── resolveButtonShortcut (4.C.2) ─────────────────────────────────────
+
+    public function test_shortcut_numerico_vira_label_correspondente(): void
+    {
+        $q = $this->q([
+            'type' => 'buttons',
+            'options' => [
+                ['id'=>'a','label'=>'Opção A'],
+                ['id'=>'b','label'=>'Opção B'],
+            ],
+        ]);
+        $this->assertSame('Opção A', $this->svc->resolveButtonShortcut($q, '1'));
+        $this->assertSame('Opção B', $this->svc->resolveButtonShortcut($q, '2'));
+    }
+
+    public function test_shortcut_fora_de_range_mantem_texto_original(): void
+    {
+        $q = $this->q([
+            'type' => 'buttons',
+            'options' => [['id'=>'a','label'=>'A']],
+        ]);
+        $this->assertSame('5', $this->svc->resolveButtonShortcut($q, '5'));
+    }
+
+    public function test_shortcut_em_pergunta_text_nao_muda(): void
+    {
+        $q = $this->q(['type' => 'text']);
+        $this->assertSame('1', $this->svc->resolveButtonShortcut($q, '1'));
+    }
+
+    public function test_shortcut_texto_alfanumerico_passa_intacto(): void
+    {
+        $q = $this->q([
+            'type' => 'list',
+            'options' => [['id'=>'a','label'=>'Sim']],
+        ]);
+        $this->assertSame('Sim', $this->svc->resolveButtonShortcut($q, 'Sim'));
+    }
+
     public function test_constantes_de_status_existem(): void
     {
         $this->assertSame('in_progress', \App\Models\WhatsappFormSession::STATUS_IN_PROGRESS);

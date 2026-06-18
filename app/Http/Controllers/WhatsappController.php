@@ -18,11 +18,13 @@ use App\Services\DeepSeekService;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\KanbanColumn;
+use App\Models\WhatsappForm;
 use App\Services\KanbanService;
 use App\Services\Messaging\AudioTranscriptionService;
 use App\Services\Messaging\ChatTransferService;
 use App\Services\Messaging\LeadQualificationService;
 use App\Services\Messaging\MetaCloudApiService;
+use App\Services\Messaging\WhatsappFormEngine;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -261,6 +263,94 @@ class WhatsappController extends Controller
 
         $agents = app(ChatTransferService::class)->eligibleAgents(auth()->user()->tenant_id);
         return response()->json(['agents' => $agents]);
+    }
+
+    /**
+     * Lista formulários ativos do tenant — popula o select de início no chat.
+     * Fase 4 (item 2.5).
+     */
+    public function listActiveForms(Request $request)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $forms = WhatsappForm::where('tenant_id', auth()->user()->tenant_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'description']);
+
+        return response()->json(['forms' => $forms]);
+    }
+
+    /**
+     * Inicia uma sessão de formulário no chat e envia a primeira pergunta
+     * via Evolution API. Fase 4 (item 2.5).
+     */
+    public function startFormSession(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $data = $request->validate([
+            'form_id' => ['required', 'integer'],
+        ]);
+
+        $tenantId = auth()->user()->tenant_id;
+        $chat     = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+        $form     = WhatsappForm::where('tenant_id', $tenantId)
+            ->where('id', (int) $data['form_id'])
+            ->firstOrFail();
+
+        $engine  = app(WhatsappFormEngine::class);
+
+        try {
+            $session = $engine->start($chat, $form, $request->user());
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 422);
+        }
+
+        // Envia a primeira pergunta. Reusa a instância WhatsApp do tenant.
+        $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('status', 'open')
+            ->first();
+
+        if ($instance === null) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Nenhuma instância WhatsApp conectada para este tenant.',
+                'session' => $session,
+            ], 422);
+        }
+
+        try {
+            $question = $session->currentQuestion;
+            if ($question !== null) {
+                $evo = new EvolutionApiService($instance);
+                $evo->sendMessage($chat->wa_id, $engine->renderQuestionAsText($question), null, rand(1, 2));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('startFormSession: falha ao enviar primeira pergunta', [
+                'session_id' => $session->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
+
+        WhatsappAuditLog::create([
+            'tenant_id'     => $tenantId,
+            'chat_id'       => $chat->id,
+            'actor_user_id' => $request->user()->id,
+            'actor_type'    => 'user',
+            'event'         => 'form_session_started',
+            'details'       => [
+                'session_id' => $session->id,
+                'form_id'    => $form->id,
+                'form_name'  => $form->name,
+            ],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'session' => $session->fresh('currentQuestion'),
+            'form'    => $form,
+        ]);
     }
 
     /**

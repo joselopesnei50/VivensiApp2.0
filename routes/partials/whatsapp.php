@@ -43,6 +43,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // Transcrição de áudio (Fase 4 — item 2.4) — Gemini multimodal.
     Route::post('/whatsapp/messages/{id}/transcribe', [App\Http\Controllers\WhatsappController::class, 'transcribeMessage'])
         ->name('whatsapp.messages.transcribe')->middleware('throttle:30,1');
+
+    // Formulário conversacional (Fase 4 — item 2.5).
+    Route::get( '/whatsapp/forms/active', [App\Http\Controllers\WhatsappController::class, 'listActiveForms'])
+        ->name('whatsapp.forms.active');
+    Route::post('/whatsapp/chat/{id}/forms/start', [App\Http\Controllers\WhatsappController::class, 'startFormSession'])
+        ->name('whatsapp.chat.forms.start')->middleware('throttle:20,1');
     Route::post('/whatsapp/chat/{id}/send-media',     [App\Http\Controllers\WhatsappController::class, 'sendMedia'])->name('whatsapp.chat.send-media');
     Route::post('/whatsapp/chat/{id}/send-audio',     [App\Http\Controllers\WhatsappController::class, 'sendAudio'])->name('whatsapp.chat.send-audio');
     Route::post('/whatsapp/chat/{id}/schedule',       [App\Http\Controllers\WhatsappController::class, 'scheduleMessage'])->name('whatsapp.chat.schedule');

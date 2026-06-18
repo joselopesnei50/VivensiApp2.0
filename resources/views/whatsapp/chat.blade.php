@@ -1181,6 +1181,36 @@
                 </div>
                 @endif
 
+                {{-- Accordion Iniciar Formulário (Fase 4 — 2.5) --}}
+                @if($isManager)
+                <div class="crm-section">
+                    <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-form" aria-expanded="false" onclick="loadActiveForms()">
+                        <span>
+                            <i class="fas fa-clipboard-list me-2" style="color:#0ea5e9;"></i>
+                            Iniciar Formulário
+                        </span>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
+                    </div>
+                    <div class="crm-body collapse" id="crm-form">
+                        <div class="small text-muted mb-2" style="font-size:0.75rem;">
+                            <i class="fas fa-info-circle me-1" style="color:#0ea5e9;"></i>
+                            O bot envia perguntas sequenciais e captura as respostas. Resposta inválida pede a mesma pergunta de novo.
+                        </div>
+                        <div class="mb-2">
+                            <label class="label mb-1" style="font-size:.72rem;">Formulário ativo</label>
+                            <select id="formSelect" class="form-select form-select-sm" style="border-radius:8px;font-size:0.82rem;">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-sm w-100 fw-700" onclick="startFormSession()" id="btnStartForm"
+                            style="background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;border:none;border-radius:8px;font-size:0.82rem;padding:7px;">
+                            <i class="fas fa-play me-1"></i> Iniciar formulário
+                        </button>
+                        <div id="formResult" class="mt-2 d-none small fw-600 text-center" style="font-size:0.78rem;"></div>
+                    </div>
+                </div>
+                @endif
+
                 {{-- Accordion Qualificar com IA (Fase 4 — 2.3) --}}
                 @if($isManager)
                 <div class="crm-section">
@@ -2781,6 +2811,71 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
+            }
+        }
+
+        // ── Formulário conversacional (Fase 4 — 2.5) ──────────────────────────
+        let FORMS_LOADED = false;
+
+        async function loadActiveForms() {
+            if (FORMS_LOADED) return;
+            const select = document.getElementById('formSelect');
+            try {
+                const r = await fetch('{{ url("/whatsapp/forms/active") }}', { headers: { 'Accept':'application/json' } });
+                const d = await r.json();
+                if (!r.ok || !Array.isArray(d.forms) || d.forms.length === 0) {
+                    select.innerHTML = '<option value="">Nenhum formulário ativo</option>';
+                    return;
+                }
+                select.innerHTML = '<option value="">— escolha um formulário —</option>'
+                    + d.forms.map(f => `<option value="${f.id}">${escapeHtml(f.name)}</option>`).join('');
+                FORMS_LOADED = true;
+            } catch (e) {
+                select.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        }
+
+        async function startFormSession() {
+            if (!currentChatId) return;
+            const formId = parseInt(document.getElementById('formSelect').value, 10);
+            const resEl  = document.getElementById('formResult');
+            const btn    = document.getElementById('btnStartForm');
+            resEl.classList.add('d-none');
+
+            if (!formId) {
+                resEl.classList.remove('d-none', 'text-success');
+                resEl.classList.add('text-danger');
+                resEl.textContent = 'Escolha um formulário.';
+                return;
+            }
+
+            btn.disabled = true;
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Iniciando...';
+
+            try {
+                const r = await fetch('{{ url("/whatsapp/chat") }}/' + currentChatId + '/forms/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrfToken, 'Accept':'application/json' },
+                    body: JSON.stringify({ form_id: formId }),
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    resEl.classList.remove('d-none', 'text-danger');
+                    resEl.classList.add('text-success');
+                    resEl.innerHTML = '<i class="fas fa-check-circle me-1"></i>Formulário iniciado! Primeira pergunta enviada ao contato.';
+                } else {
+                    resEl.classList.remove('d-none', 'text-success');
+                    resEl.classList.add('text-danger');
+                    resEl.textContent = d.error || 'Falha ao iniciar formulário.';
+                }
+            } catch (e) {
+                resEl.classList.remove('d-none', 'text-success');
+                resEl.classList.add('text-danger');
+                resEl.textContent = 'Falha de comunicação.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = orig;
             }
         }
 
