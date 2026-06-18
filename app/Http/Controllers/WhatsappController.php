@@ -17,7 +17,10 @@ use App\Services\GeminiService;
 use App\Services\DeepSeekService;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\KanbanColumn;
+use App\Services\KanbanService;
 use App\Services\Messaging\ChatTransferService;
+use App\Services\Messaging\LeadQualificationService;
 use App\Services\Messaging\MetaCloudApiService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -257,6 +260,86 @@ class WhatsappController extends Controller
 
         $agents = app(ChatTransferService::class)->eligibleAgents(auth()->user()->tenant_id);
         return response()->json(['agents' => $agents]);
+    }
+
+    /**
+     * Qualifica o chat via IA e — opcionalmente — cria card no Kanban Geral
+     * com a qualificação estruturada. Fase 4 (item 2.3 do roadmap).
+     */
+    public function qualifyChatWithAi(Request $request, $chatId)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $data = $request->validate([
+            'column_id' => ['nullable', 'integer'],
+            'preview'   => ['nullable', 'boolean'],
+        ]);
+
+        $tenantId = auth()->user()->tenant_id;
+        $chat     = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
+
+        $svc    = app(LeadQualificationService::class);
+        $result = $svc->qualifyChat($chat);
+
+        if (!empty($result['error'])) {
+            return response()->json([
+                'success'        => false,
+                'qualification'  => $result,
+                'error'          => $result['error'],
+            ], 422);
+        }
+
+        $preview = (bool) ($data['preview'] ?? false);
+        if ($preview || empty($data['column_id'])) {
+            // Devolve só a qualificação — o front mostra preview antes do gestor
+            // escolher a coluna onde quer criar o card.
+            return response()->json([
+                'success'       => true,
+                'qualification' => $result,
+                'card'          => null,
+            ]);
+        }
+
+        /** @var KanbanColumn $column */
+        $column = KanbanColumn::where('id', (int) $data['column_id'])
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
+
+        $kanban = app(KanbanService::class);
+        $card   = $kanban->createCard($column, [
+            'whatsapp_chat_id' => $chat->id,
+            'title'            => $chat->contact_name ?: ($chat->contact_phone ?: 'Lead qualificado'),
+            'description'      => $svc->renderForKanbanDescription($result),
+            'meta'             => [
+                'qualification' => $result['qualification'],
+                'intent'        => $result['intent'],
+                'confidence'    => $result['confidence'],
+                'provider'      => $result['provider'],
+                'qualified_at'  => now()->toIso8601String(),
+            ],
+        ], $request->user());
+
+        WhatsappAuditLog::create([
+            'tenant_id'     => $tenantId,
+            'chat_id'       => $chat->id,
+            'actor_user_id' => $request->user()->id,
+            'actor_type'    => 'user',
+            'event'         => 'chat_qualified_with_ai',
+            'details'       => [
+                'qualification' => $result['qualification'],
+                'intent'        => $result['intent'],
+                'confidence'    => $result['confidence'],
+                'provider'      => $result['provider'],
+                'card_id'       => $card->id,
+                'column_id'     => $column->id,
+            ],
+        ]);
+
+        return response()->json([
+            'success'       => true,
+            'qualification' => $result,
+            'card'          => $card,
+        ]);
     }
 
     /**

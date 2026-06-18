@@ -35,6 +35,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post(  '/whatsapp/chat/{id}/transfer', [App\Http\Controllers\WhatsappController::class, 'transferChat'])->name('whatsapp.chat.transfer')->middleware('throttle:30,1');
     Route::delete('/whatsapp/chat/{id}/assignee', [App\Http\Controllers\WhatsappController::class, 'releaseChat'])->name('whatsapp.chat.release')->middleware('throttle:30,1');
     Route::get(   '/whatsapp/eligible-agents',    [App\Http\Controllers\WhatsappController::class, 'eligibleAgents'])->name('whatsapp.eligible_agents');
+
+    // Qualificação de lead via IA (Fase 4 — item 2.3) — chama LLM, custo de tokens.
+    Route::post('/whatsapp/chat/{id}/qualify-with-ai', [App\Http\Controllers\WhatsappController::class, 'qualifyChatWithAi'])
+        ->name('whatsapp.chat.qualify_with_ai')->middleware('throttle:20,1');
     Route::post('/whatsapp/chat/{id}/send-media',     [App\Http\Controllers\WhatsappController::class, 'sendMedia'])->name('whatsapp.chat.send-media');
     Route::post('/whatsapp/chat/{id}/send-audio',     [App\Http\Controllers\WhatsappController::class, 'sendAudio'])->name('whatsapp.chat.send-audio');
     Route::post('/whatsapp/chat/{id}/schedule',       [App\Http\Controllers\WhatsappController::class, 'scheduleMessage'])->name('whatsapp.chat.schedule');

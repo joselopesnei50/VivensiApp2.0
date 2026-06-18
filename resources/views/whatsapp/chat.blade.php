@@ -1181,6 +1181,52 @@
                 </div>
                 @endif
 
+                {{-- Accordion Qualificar com IA (Fase 4 — 2.3) --}}
+                @if($isManager)
+                <div class="crm-section">
+                    <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-qualify-ai" aria-expanded="false">
+                        <span>
+                            <i class="fas fa-wand-magic-sparkles me-2" style="color:#8b5cf6;"></i>
+                            Qualificar Lead com IA
+                        </span>
+                        <i class="fas fa-chevron-down text-muted small crm-chevron"></i>
+                    </div>
+                    <div class="crm-body collapse" id="crm-qualify-ai">
+                        <div class="small text-muted mb-2" style="font-size:0.75rem;">
+                            <i class="fas fa-info-circle me-1" style="color:#8b5cf6;"></i>
+                            A IA analisa as últimas 30 mensagens e gera um diagnóstico estruturado pra alimentar o Kanban.
+                        </div>
+                        <button class="btn btn-sm w-100 fw-700" onclick="runQualifyPreview()" id="btnQualifyPreview"
+                            style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:#fff;border:none;border-radius:8px;font-size:0.82rem;padding:7px;">
+                            <i class="fas fa-magic me-1"></i> Analisar conversa
+                        </button>
+
+                        <div id="qualifyPreviewBox" class="mt-2 d-none" style="background:#faf5ff; border:1px solid #e9d5ff; border-radius:10px; padding:10px 12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span id="qpQualif" style="font-weight:900; font-size:.78rem; color:#7c3aed;">—</span>
+                                <span id="qpConf" style="font-size:.7rem; color:#94a3b8;">—</span>
+                            </div>
+                            <div id="qpSummary" style="font-size:.78rem; color:#334155; line-height:1.35; margin-bottom:4px;"></div>
+                            <div id="qpIntent" style="font-size:.72rem; color:#64748b; margin-bottom:2px;"></div>
+                            <div id="qpAction" style="font-size:.72rem; color:#64748b;"></div>
+
+                            <div class="mt-2">
+                                <label class="label mb-1" style="font-size:.7rem;">Criar card no Kanban</label>
+                                <select id="qpKanbanColumn" class="form-select form-select-sm" style="border-radius:8px;font-size:0.78rem;">
+                                    <option value="">— escolha uma coluna —</option>
+                                </select>
+                                <button class="btn btn-sm w-100 fw-700 mt-2" onclick="qualifyAndCreateCard()" id="btnQualifyCreate"
+                                    style="background:#10b981;color:#fff;border:none;border-radius:8px;font-size:0.78rem;padding:6px;">
+                                    <i class="fas fa-plus-circle me-1"></i> Criar card com a qualificação
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="qualifyError" class="mt-2 d-none small fw-600 text-danger text-center" style="font-size:0.78rem;"></div>
+                    </div>
+                </div>
+                @endif
+
                 {{-- Accordion Kanban Geral (Fase 3 — 2.2 / 3.B.3) --}}
                 @if($isManager)
                 <div class="crm-section">
@@ -2683,6 +2729,114 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
+            }
+        }
+
+        // ── Qualificar lead com IA (Fase 4 — 2.3) ─────────────────────────────
+        let LAST_QUALIFICATION = null;
+
+        async function runQualifyPreview() {
+            if (!currentChatId) return;
+            const btn   = document.getElementById('btnQualifyPreview');
+            const errEl = document.getElementById('qualifyError');
+            const box   = document.getElementById('qualifyPreviewBox');
+            errEl.classList.add('d-none');
+            box.classList.add('d-none');
+            btn.disabled = true;
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Analisando...';
+
+            try {
+                const r = await fetch('{{ url("/whatsapp/chat") }}/' + currentChatId + '/qualify-with-ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrfToken, 'Accept':'application/json' },
+                    body: JSON.stringify({ preview: true }),
+                });
+                const d = await r.json();
+                if (r.ok && d.success && d.qualification) {
+                    LAST_QUALIFICATION = d.qualification;
+                    renderQualificationPreview(d.qualification);
+                    await loadKanbanColumnsForQualify();
+                } else {
+                    errEl.classList.remove('d-none');
+                    errEl.textContent = d.error || (d.qualification && d.qualification.error) || 'Falha ao analisar.';
+                }
+            } catch (e) {
+                errEl.classList.remove('d-none');
+                errEl.textContent = 'Falha de comunicação.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = orig;
+            }
+        }
+
+        function renderQualificationPreview(q) {
+            const box = document.getElementById('qualifyPreviewBox');
+            const colorMap = { frio:'#94a3b8', morno:'#f59e0b', quente:'#ef4444' };
+            const qual = (q.qualification || '').toUpperCase() || '—';
+            document.getElementById('qpQualif').textContent  = qual;
+            document.getElementById('qpQualif').style.color  = colorMap[q.qualification] || '#7c3aed';
+            document.getElementById('qpConf').textContent    = 'confiança ' + Math.round((q.confidence || 0) * 100) + '%';
+            document.getElementById('qpSummary').textContent = q.summary || '(sem resumo)';
+            document.getElementById('qpIntent').innerHTML    = '<i class="fas fa-bullseye me-1"></i> Intenção: ' + (q.intent ? q.intent.charAt(0).toUpperCase() + q.intent.slice(1) : '—');
+            document.getElementById('qpAction').innerHTML    = '<i class="fas fa-arrow-right me-1"></i> Próxima ação: ' + (q.next_action || '—');
+            box.classList.remove('d-none');
+        }
+
+        async function loadKanbanColumnsForQualify() {
+            const select = document.getElementById('qpKanbanColumn');
+            try {
+                const r = await fetch('{{ url("/manager/kanban/columns-list") }}', { headers: { 'Accept':'application/json' } });
+                const d = await r.json();
+                if (!r.ok || !Array.isArray(d.columns) || d.columns.length === 0) {
+                    select.innerHTML = '<option value="">Nenhuma coluna disponível</option>';
+                    return;
+                }
+                select.innerHTML = '<option value="">— escolha uma coluna —</option>'
+                    + d.columns.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+            } catch (e) {
+                select.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        }
+
+        async function qualifyAndCreateCard() {
+            if (!currentChatId || !LAST_QUALIFICATION) return;
+            const columnId = parseInt(document.getElementById('qpKanbanColumn').value, 10);
+            const errEl = document.getElementById('qualifyError');
+            const btn   = document.getElementById('btnQualifyCreate');
+            errEl.classList.add('d-none');
+
+            if (!columnId) {
+                errEl.classList.remove('d-none');
+                errEl.textContent = 'Escolha uma coluna do Kanban.';
+                return;
+            }
+
+            btn.disabled = true;
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Criando card...';
+
+            try {
+                const r = await fetch('{{ url("/whatsapp/chat") }}/' + currentChatId + '/qualify-with-ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrfToken, 'Accept':'application/json' },
+                    body: JSON.stringify({ column_id: columnId }),
+                });
+                const d = await r.json();
+                if (r.ok && d.success && d.card) {
+                    btn.innerHTML = '<i class="fas fa-check me-1"></i> Card criado!';
+                    btn.style.background = '#22c55e';
+                } else {
+                    errEl.classList.remove('d-none');
+                    errEl.textContent = d.error || 'Falha ao criar card.';
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                }
+            } catch (e) {
+                errEl.classList.remove('d-none');
+                errEl.textContent = 'Falha de comunicação.';
+                btn.disabled = false;
+                btn.innerHTML = orig;
             }
         }
 
