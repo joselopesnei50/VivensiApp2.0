@@ -9,7 +9,9 @@ use App\Models\WhatsappFormAnswer;
 use App\Models\WhatsappFormQuestion;
 use App\Models\WhatsappFormSession;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
+use Throwable;
 
 /**
  * WhatsappFormEngine — Fase 4 (item 2.5 do roadmap).
@@ -23,11 +25,25 @@ use RuntimeException;
  * caller — esse Service só decide qual é a próxima e formata o conteúdo
  * (texto + payload de buttons/list quando aplicável).
  *
- * Vinculação ao lead (Fase 5) fica como reserva no campo lead_id; aqui o
- * Service nunca preenche.
+ * Vinculação ao lead (Fase 5 — sub-etapa 5.A.2): ao COMPLETED, delega pro
+ * LeadCaptureFromForm, que cria/atualiza Lead, registra OPT_IN e seta
+ * session.lead_id. Falhas na captura são logadas mas NÃO bloqueiam a
+ * conclusão do form (UX no WA não pode quebrar por dado ruim).
  */
 class WhatsappFormEngine
 {
+    /**
+     * Captura de lead é opcional pra preservar o construtor sem dependências
+     * obrigatórias (testes unitários instanciam direto sem container). Quando
+     * null, resolvemos via container no momento do uso.
+     */
+    private ?LeadCaptureFromForm $leadCapture;
+
+    public function __construct(?LeadCaptureFromForm $leadCapture = null)
+    {
+        $this->leadCapture = $leadCapture;
+    }
+
     /**
      * Inicia uma sessão num chat. Se houver uma anterior in_progress, é
      * marcada como 'abandoned' antes (atendente decidiu trocar de form).
@@ -137,9 +153,11 @@ class WhatsappFormEngine
                     'current_question_id' => null,
                     'completed_at'        => now(),
                 ]);
+                $fresh = $session->fresh('answers');
+                $this->captureLead($fresh);
                 return [
                     'next_question' => null,
-                    'session'       => $session->fresh('answers'),
+                    'session'       => $fresh->fresh('answers'),
                     'error'         => null,
                 ];
             }
@@ -324,10 +342,34 @@ class WhatsappFormEngine
             'current_question_id' => null,
             'completed_at'        => now(),
         ]);
+        $fresh = $session->fresh('answers');
+        $this->captureLead($fresh);
         return [
             'next_question' => null,
-            'session'       => $session->fresh('answers'),
+            'session'       => $fresh->fresh('answers'),
             'error'         => null,
         ];
+    }
+
+    /**
+     * Dispara captura de lead a partir da sessão concluída. Resolve o
+     * LeadCaptureFromForm via container quando não injetado. Falhas só
+     * logam — completar o form no WA não pode ser bloqueado por erro
+     * no CRM.
+     */
+    private function captureLead(?WhatsappFormSession $session): void
+    {
+        if ($session === null || $session->status !== WhatsappFormSession::STATUS_COMPLETED) {
+            return;
+        }
+        try {
+            $capture = $this->leadCapture ?? app(LeadCaptureFromForm::class);
+            $capture->capture($session);
+        } catch (Throwable $e) {
+            Log::error('WhatsappFormEngine: falha ao capturar lead a partir do form.', [
+                'session_id' => $session->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
     }
 }
