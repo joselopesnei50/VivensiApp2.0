@@ -12,7 +12,7 @@ use App\Models\Campaign;
 use App\Models\NgoDonor;
 use App\Models\NgoGrant;
 use App\Models\NgoGrantDocument;
-use App\Models\Prospect;
+use App\Models\Lead;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\Transaction;
@@ -366,7 +366,7 @@ class DashboardController extends Controller
             'leads_total' => (int) Cache::remember(
                 "dashboard.manager.kpi.leads.{$tenantId}",
                 300,
-                fn () => Prospect::where('tenant_id', $tenantId)->count()
+                fn () => Lead::where('tenant_id', $tenantId)->count()
             ),
             // monthly_revenue já aparece na hero como "Maré Financeira" — null
             // sinaliza pro Service omitir e evitar duplicar card.
