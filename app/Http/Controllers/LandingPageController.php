@@ -568,6 +568,9 @@ class LandingPageController extends Controller
                         'form_type'       => $extra['source'] ?? 'unknown',
                     ]
                 );
+
+                // P0.2 — dispara double opt-in via WhatsApp se houver phone.
+                app(\App\Services\Messaging\DoubleOptInService::class)->requestFor($lead);
             } catch (\Throwable $e) {
                 // Não revela detalhes ao público; loga sem PII direto no body.
                 Log::warning('Lead CRM capture failed', [
