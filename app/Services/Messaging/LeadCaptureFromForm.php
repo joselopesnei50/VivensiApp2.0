@@ -151,6 +151,17 @@ class LeadCaptureFromForm
             $session->update(['lead_id' => $lead->id]);
         }
 
+        // P0.2 — solicita double opt-in (idempotente; só dispara se phone
+        // normalizado existe e lead ainda não está confirmado).
+        try {
+            app(DoubleOptInService::class)->requestFor($lead);
+        } catch (Throwable $e) {
+            Log::warning('LeadCaptureFromForm: falha ao iniciar double opt-in', [
+                'lead_id' => $lead->id,
+                'reason'  => $e->getMessage(),
+            ]);
+        }
+
         return $lead;
     }
 

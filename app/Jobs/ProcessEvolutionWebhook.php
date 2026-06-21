@@ -9,8 +9,11 @@ use App\Models\WhatsappConfig;
 use App\Models\WhatsappInstance;
 use App\Models\WhatsappMessage;
 use App\Models\WhatsappAuditLog;
+use App\Models\Lead;
 use App\Services\ContatoOptInService;
 use App\Services\EvolutionApiService;
+use App\Services\LeadService;
+use App\Services\Messaging\DoubleOptInService;
 use App\Services\Messaging\WhatsappFormEngine;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -200,6 +203,22 @@ class ProcessEvolutionWebhook implements ShouldQueue
                 'has_media'   => $mediaPath !== null,
             ],
         ]);
+
+        // 4.4 Double opt-in (P0.2). Resposta do lead pendente confirma ou
+        // recusa antes do form/IA/automações. Token ativo é único por lead.
+        if ($userText !== null) {
+            $normalizedPhone = app(LeadService::class)->normalizePhone($phone);
+            if ($normalizedPhone !== null) {
+                $pendingLead = Lead::where('tenant_id', $tenantId)
+                    ->where('phone_normalized', $normalizedPhone)
+                    ->where('status', Lead::STATUS_PENDING)
+                    ->first();
+                if ($pendingLead !== null
+                    && app(DoubleOptInService::class)->processInbound($pendingLead, $userText)) {
+                    return;
+                }
+            }
+        }
 
         // 4.5 Formulário conversacional (Fase 4 — item 2.5). Sessão ativa
         // intercepta o fluxo normal: nem keyword nem IA disparam enquanto

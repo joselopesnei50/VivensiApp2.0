@@ -63,6 +63,23 @@ return [
     'bot_instance_name' => env('WHATSAPP_BOT_INSTANCE', 'vivensi-bot'),
     'bot_phone'         => env('WHATSAPP_BOT_PHONE', '5516997618695'),
 
+    // ── Double Opt-in (P0.2 — Fase 5.2 do roadmap) ─────────────────────────
+    // Mensagem disparada quando um Lead opt-in é capturado em formulário
+    // público ou WhatsApp. O webhook inbound confirma/recusa pela resposta
+    // do contato, comparando contra as keywords abaixo (case-insensitive,
+    // sem acentos). TTL define a janela de validade do token.
+    //
+    // Placeholders disponíveis no template: :nome e :tenant.
+    'double_opt_in' => [
+        'message_template' => env(
+            'WHATSAPP_DOUBLE_OPT_IN_MESSAGE',
+            "Olá :nome! 👋\n\nRecebemos seu cadastro em *:tenant*.\n\nPara confirmar e receber nossas comunicações, responda *SIM*.\n\nSe não foi você ou prefere não receber, responda *NÃO* — ficamos por aqui sem te incomodar."
+        ),
+        'ttl_hours'        => (int) env('WHATSAPP_DOUBLE_OPT_IN_TTL_HOURS', 72),
+        'confirm_keywords' => ['sim', 'quero', 'confirmo', 'confirmar', 'aceito', 'concordo', 'yes', 'ok', '1'],
+        'opt_out_keywords' => ['nao', 'cancelar', 'sair', 'stop', 'remover', 'descadastrar', 'no', '2'],
+    ],
+
     // Termo de Responsabilidade Anti-Ban (Fase 2 — item 4.2 do roadmap).
     // Aceite obrigatório do gestor do tenant ANTES de criar instância Evolution.
     // É um registro jurídico de responsabilidade pelo número — NÃO inclui
