@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
 use App\Models\LandingPageSection;
+use App\Models\LeadConsent;
+use App\Models\Tenant;
+use App\Services\LeadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -498,7 +501,7 @@ class LandingPageController extends Controller
         });
     }
 
-    public function submitLead(Request $request, $slug)
+    public function submitLead(Request $request, $slug, LeadService $leadService)
     {
         // Public route: ignore tenant scopes. Leads should only be captured for published pages
         // (draft capture is allowed only for the owner tenant, for testing).
@@ -507,21 +510,26 @@ class LandingPageController extends Controller
             abort(404);
         }
 
+        // LGPD Art. 7º/8º: consentimento explícito por página é obrigatório.
+        // 'accepted' valida marcações de checkbox: "yes", "on", 1, true.
         $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'email' => 'required|email:rfc,dns|max:255',
-            'phone' => 'nullable|string|max:30',
+            'name'           => 'nullable|string|max:255',
+            'email'          => 'required|email:rfc,dns|max:255',
+            'phone'          => 'nullable|string|max:30',
+            'consent_given'  => 'accepted',
+        ], [
+            'consent_given.accepted' => 'É necessário marcar o consentimento para receber comunicações.',
         ]);
 
         // Limit extra fields to avoid abuse.
-        $extra = collect($request->except(['_token', 'name', 'email', 'phone']))
+        $extra = collect($request->except(['_token', 'name', 'email', 'phone', 'consent_given']))
             ->take(20)
             ->map(function ($v) {
                 $s = is_scalar($v) ? (string) $v : json_encode($v);
                 return mb_substr((string) $s, 0, 500);
             })
             ->toArray();
-        
+
         DB::table('landing_page_leads')->insert([
             'landing_page_id' => $page->id,
             'name' => $validated['name'] ?? null,
@@ -531,6 +539,44 @@ class LandingPageController extends Controller
             'created_at' => now(),
             'updated_at' => now()
         ]);
+
+        // CRM LGPD-compliant: idempotente, vincula consentimento auditável.
+        // Falhas aqui não devem perder o cadastro legacy acima.
+        $tenant = Tenant::find($page->tenant_id);
+        if ($tenant !== null) {
+            try {
+                $attrs = [
+                    'name' => $validated['name'] ?? null,
+                    'tags' => ['public_form', 'landing:' . $page->slug],
+                    'meta' => [
+                        'landing_page_id' => $page->id,
+                        'source'          => $extra['source'] ?? null,
+                    ],
+                ];
+
+                $lead = !empty($validated['phone'])
+                    ? $leadService->findOrCreateByPhone($tenant, $validated['phone'], $attrs + ['email' => $validated['email']])
+                    : $leadService->findOrCreateByEmail($tenant, $validated['email'], $attrs);
+
+                $leadService->recordConsent(
+                    $lead,
+                    LeadConsent::TYPE_OPT_IN,
+                    'public_form:' . $page->slug,
+                    $request,
+                    [
+                        'landing_page_id' => $page->id,
+                        'form_type'       => $extra['source'] ?? 'unknown',
+                    ]
+                );
+            } catch (\Throwable $e) {
+                // Não revela detalhes ao público; loga sem PII direto no body.
+                Log::warning('Lead CRM capture failed', [
+                    'landing_page_id' => $page->id,
+                    'tenant_id'       => $page->tenant_id,
+                    'error'           => $e->getMessage(),
+                ]);
+            }
+        }
 
         return back()->with('success', 'Dados enviados com sucesso! Entraremos em contato.');
     }
