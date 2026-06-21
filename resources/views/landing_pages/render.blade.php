@@ -624,7 +624,11 @@
                                 @csrf
                                 <input type="text" name="name" style="width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; margin-bottom: 12px; background: rgba(15,23,42,0.25); color: #fff;" placeholder="Seu nome (opcional)">
                                 <input type="email" name="email" required style="width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; margin-bottom: 12px; background: rgba(15,23,42,0.25); color: #fff;" placeholder="Seu e-mail">
-                                <input type="text" name="phone" style="width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; margin-bottom: 14px; background: rgba(15,23,42,0.25); color: #fff;" placeholder="WhatsApp (opcional)">
+                                <input type="text" name="phone" style="width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; margin-bottom: 12px; background: rgba(15,23,42,0.25); color: #fff;" placeholder="WhatsApp (opcional)">
+                                <label style="display:flex; gap:10px; align-items:flex-start; margin-bottom: 14px; font-size: .85rem; opacity:.9; line-height:1.45;">
+                                    <input type="checkbox" name="consent_given" value="1" required style="margin-top: 4px; flex-shrink:0;">
+                                    <span>Autorizo o contato e o tratamento dos meus dados conforme a <a href="/privacidade" target="_blank" rel="noopener" style="color:inherit; text-decoration: underline;">Política de Privacidade</a> (LGPD). Você pode cancelar a qualquer momento.</span>
+                                </label>
                                 <button type="submit" class="btn-cta" style="width: 100%; border:none; cursor:pointer;">
                                     {{ $section->content['button_text'] ?? 'Enviar' }}
                                 </button>
@@ -785,7 +789,11 @@
                             <form action="{{ url('/lp/'.$page->slug.'/lead') }}" method="POST" style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.06);">
                                 @csrf
                                 <input type="text" name="name" required style="width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px;" placeholder="Seu nome completo">
-                                <input type="email" name="email" required style="width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 20px;" placeholder="Seu melhor e-mail">
+                                <input type="email" name="email" required style="width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px;" placeholder="Seu melhor e-mail">
+                                <label style="display:flex; gap:10px; align-items:flex-start; margin-bottom: 18px; font-size: .9rem; color:#475569; line-height:1.45;">
+                                    <input type="checkbox" name="consent_given" value="1" required style="margin-top: 4px; flex-shrink:0;">
+                                    <span>Autorizo o contato e o tratamento dos meus dados conforme a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a> (LGPD). Você pode cancelar a qualquer momento.</span>
+                                </label>
                                 <button type="submit" class="btn-cta" style="width: 100%; border: none; cursor: pointer;">{{ $section->content['button_text'] ?? 'Enviar' }}</button>
                             </form>
                         </div>
