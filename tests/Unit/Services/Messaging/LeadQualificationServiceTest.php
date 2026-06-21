@@ -5,6 +5,7 @@ namespace Tests\Unit\Services\Messaging;
 use App\Models\TenantOperationalProfile;
 use App\Services\DeepSeekService;
 use App\Services\GeminiService;
+use App\Services\LeadService;
 use App\Services\Messaging\LeadQualificationService;
 use App\Services\PerfilOperacionalService;
 use PHPUnit\Framework\TestCase;
@@ -31,6 +32,7 @@ class LeadQualificationServiceTest extends TestCase
             new DeepSeekService(),
             new GeminiService(),
             new PerfilOperacionalService(),
+            new LeadService(),
         );
     }
 
