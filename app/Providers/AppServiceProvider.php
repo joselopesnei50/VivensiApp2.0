@@ -49,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Models\Project::observe(\App\Observers\ProjectObserver::class);
             \App\Models\NgoDonor::observe(\App\Observers\NgoDonorObserver::class);
             \App\Models\Transaction::observe(\App\Observers\TransactionObserver::class);
+            // P1.7 — timeline do lead a partir de mensagens WhatsApp
+            \App\Models\WhatsappMessage::observe(\App\Observers\WhatsappMessageObserver::class);
         } catch (\Throwable $e) {
             // Silently ignore observer registration errors during boot
         }

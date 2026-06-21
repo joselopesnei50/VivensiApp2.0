@@ -2,11 +2,14 @@
 
 namespace App\Services\Messaging;
 
+use App\Models\Lead;
+use App\Models\LeadTimelineItem;
 use App\Models\TenantOperationalProfile;
 use App\Models\WhatsappChat;
 use App\Models\WhatsappMessage;
 use App\Services\DeepSeekService;
 use App\Services\GeminiService;
+use App\Services\LeadService;
 use App\Services\PerfilOperacionalService;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -41,6 +44,7 @@ class LeadQualificationService
         private DeepSeekService $deepSeek,
         private GeminiService $gemini,
         private PerfilOperacionalService $perfil,
+        private LeadService $leads,
     ) {
     }
 
@@ -97,7 +101,12 @@ class LeadQualificationService
             return $this->fallback('A IA não respondeu em formato esperado.', $provider);
         }
 
-        return $this->normalize($parsed, $provider);
+        $result = $this->normalize($parsed, $provider);
+
+        // P1.7 — anexa sugestão do Bruce à timeline do lead vinculado, se houver.
+        $this->attachToLeadTimeline($chat, $result);
+
+        return $result;
     }
 
     // ── Provedor ───────────────────────────────────────────────────────────
@@ -279,6 +288,73 @@ PROMPT;
                 'created_at' => optional($m->created_at)->toIso8601String(),
             ])
             ->toArray();
+    }
+
+    /**
+     * P1.7 — grava AI_SUGGESTION (resumo da IA) e NEXT_ACTION (próxima
+     * ação proposta) na timeline do lead vinculado ao chat. Falha silenciosa:
+     * timeline é histórico cosmético, não pode quebrar a qualificação.
+     */
+    private function attachToLeadTimeline(WhatsappChat $chat, array $result): void
+    {
+        try {
+            if (!empty($result['error'])) {
+                return;
+            }
+            $phoneInput = $chat->contact_phone ?: $chat->wa_id;
+            if (empty($phoneInput)) {
+                return;
+            }
+            $normalized = $this->leads->normalizePhone((string) $phoneInput);
+            if ($normalized === null) {
+                return;
+            }
+
+            $lead = Lead::where('tenant_id', $chat->tenant_id)
+                ->where('phone_normalized', $normalized)
+                ->first();
+            if ($lead === null) {
+                return;
+            }
+
+            $summary = trim((string) ($result['summary'] ?? ''));
+            if ($summary !== '') {
+                $this->leads->addTimelineItem(
+                    $lead,
+                    LeadTimelineItem::TYPE_AI_SUGGESTION,
+                    $summary,
+                    null,
+                    [
+                        'qualification' => $result['qualification'] ?? null,
+                        'intent'        => $result['intent'] ?? null,
+                        'confidence'    => $result['confidence'] ?? null,
+                        'provider'      => $result['provider'] ?? null,
+                        'chat_id'       => $chat->id,
+                    ]
+                );
+            }
+
+            $nextAction = trim((string) ($result['next_action'] ?? ''));
+            if ($nextAction !== '') {
+                $this->leads->addTimelineItem(
+                    $lead,
+                    LeadTimelineItem::TYPE_NEXT_ACTION,
+                    $nextAction,
+                    null,
+                    [
+                        'qualification' => $result['qualification'] ?? null,
+                        'provider'      => $result['provider'] ?? null,
+                        'chat_id'       => $chat->id,
+                    ]
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::warning('LeadQualification: falha ao gravar timeline do lead', [
+                'tenant_id' => $chat->tenant_id,
+                'chat_id'   => $chat->id,
+                'error'     => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
