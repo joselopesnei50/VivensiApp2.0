@@ -710,14 +710,11 @@
     let currentInstanceId = null;
 
     function openNewInstanceModal() {
-        document.getElementById('create-instance-form').style.display = 'block';
-        document.getElementById('qr-code-view').style.display = 'none';
-        document.getElementById('instanceName').value = '';
-        document.getElementById('instanceNumber').value = '';
-        document.getElementById('pairing-code-display').style.display = 'none';
-        document.getElementById('qr-code-display').style.display = 'block';
-        var modal = new bootstrap.Modal(document.getElementById('newInstanceModal'));
-        modal.show();
+        // P0/hotfix: criar instancia aqui exige o aceite anti-ban (Fase 2 — 4.2)
+        // e a tela /whatsapp/instances já implementa o modal completo do termo.
+        // Em vez de duplicar o modal nesta view (frágil — view tem 3 blocos
+        // de <script> e estilos inline conflitantes), redirecionamos.
+        window.location.href = '/whatsapp/instances';
     }
 
     async function createInstance() {
