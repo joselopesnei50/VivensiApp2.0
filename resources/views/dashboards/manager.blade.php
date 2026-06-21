@@ -130,6 +130,58 @@
     </div>
 </div>
 
+{{-- ===== BASE DE CADASTROS (P1.6) — só perfis mobilizacao/eleitoral ===== --}}
+@if(!empty($leadsBreakdown))
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div style="background: #0f172a; border-radius: 28px; padding: 36px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h3 style="color: white; font-weight: 950; font-size: 1.5rem; letter-spacing: -1px; margin: 0;">Base de Cadastros</h3>
+                    <p style="color: rgba(255,255,255,0.5); font-size: .85rem; margin: 4px 0 0 0;">Distribuição da base ativa (opt-in pendente + confirmado) por cidade e segmentação.</p>
+                </div>
+                <div style="display: inline-flex; align-items: baseline; gap: 8px; padding: 10px 18px; background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); border-radius: 14px;">
+                    <span style="font-size: .7rem; font-weight: 900; color: #a5b4fc; text-transform: uppercase; letter-spacing: 2px;">Base Ativa</span>
+                    <span style="font-size: 1.6rem; font-weight: 950; color: white;">{{ number_format($leadsBreakdown['total'], 0, ',', '.') }}</span>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 24px; height: 100%; display: flex; flex-direction: column;">
+                        <h4 style="font-weight: 900; color: white; font-size: 1rem; margin-bottom: 20px;">Por Cidade (Top 10)</h4>
+                        @if($leadsBreakdown['total'] === 0)
+                            <div style="color: rgba(255,255,255,0.5); font-size: .9rem; padding: 32px 0; text-align: center;">
+                                Nenhum cadastro ativo ainda — cadastros aparecem aqui quando o opt-in (público ou WhatsApp) for confirmado.
+                            </div>
+                        @else
+                            <div style="flex: 1; min-height: 280px;">
+                                <canvas id="leadsCityChart"></canvas>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 24px; height: 100%; display: flex; flex-direction: column;">
+                        <h4 style="font-weight: 900; color: white; font-size: 1rem; margin-bottom: 20px;">Por Segmentação (Top 10 tags)</h4>
+                        @if($leadsBreakdown['total'] === 0)
+                            <div style="color: rgba(255,255,255,0.5); font-size: .9rem; padding: 32px 0; text-align: center;">
+                                Sem tags ainda. Adicione segmentações nos formulários públicos ou no CRM para ver a distribuição aqui.
+                            </div>
+                        @else
+                            <div style="flex: 1; min-height: 280px;">
+                                <canvas id="leadsTagsChart"></canvas>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- ===== MÁQUINA DE ENGAJAMENTO ===== --}}
 <div class="row g-4 mb-4">
     <div class="col-12">
@@ -626,6 +678,73 @@
                 }
             }
         });
+
+        @if(!empty($leadsBreakdown) && ($leadsBreakdown['total'] ?? 0) > 0)
+        (function () {
+            const horizontalOpts = {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#ffffff',
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.parsed.x} cadastro(s)`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { color: 'rgba(255,255,255,0.4)', precision: 0 },
+                        grid: { color: 'rgba(255,255,255,0.06)', drawBorder: false }
+                    },
+                    y: {
+                        ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 11, weight: '700' } },
+                        grid: { display: false, drawBorder: false }
+                    }
+                }
+            };
+
+            const ctxCity = document.getElementById('leadsCityChart');
+            if (ctxCity) {
+                new Chart(ctxCity.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: @json($leadsBreakdown['cities']['labels']),
+                        datasets: [{
+                            data: @json($leadsBreakdown['cities']['values']),
+                            backgroundColor: '#6366f1',
+                            borderRadius: 6,
+                            borderWidth: 0,
+                            barThickness: 16
+                        }]
+                    },
+                    options: horizontalOpts
+                });
+            }
+
+            const ctxTags = document.getElementById('leadsTagsChart');
+            if (ctxTags) {
+                new Chart(ctxTags.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: @json($leadsBreakdown['tags']['labels']),
+                        datasets: [{
+                            data: @json($leadsBreakdown['tags']['values']),
+                            backgroundColor: '#10b981',
+                            borderRadius: 6,
+                            borderWidth: 0,
+                            barThickness: 16
+                        }]
+                    },
+                    options: horizontalOpts
+                });
+            }
+        })();
+        @endif
 
         const ctxEngagement = document.getElementById('engagementChart').getContext('2d');
         new Chart(ctxEngagement, {
