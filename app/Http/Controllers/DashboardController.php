@@ -334,6 +334,7 @@ class DashboardController extends Controller
         // Resolve sources sob demanda — categorias 'outro' não pedem nada
         // e o foreach abaixo nem entra. Mantém o painel atual intacto.
         $resolvedKpis = [];
+        $leadsBreakdown = null;
         $tenant = \App\Models\Tenant::find($tenantId);
         if ($tenant !== null) {
             $perfilService = app(PerfilOperacionalService::class);
@@ -343,6 +344,10 @@ class DashboardController extends Controller
                 $sourceValues[$source] = $this->resolveKpiSource($source, $tenantId, $whatsappStats);
             }
             $resolvedKpis = $perfilService->getResolvedKpis($tenant, $sourceValues);
+
+            // P1.6 — Base de cadastros por cidade/segmentação (só categorias
+            // que vendem mobilização). Devolve null para perfis que não usam.
+            $leadsBreakdown = $this->resolveLeadsBreakdown($tenant, $perfilService);
         }
 
         return view('dashboards.manager', compact(
@@ -351,8 +356,90 @@ class DashboardController extends Controller
             'chartLabels', 'chartProjects', 'chartTasks',
             'radarData', 'mapMarkers', 'whatsappStats',
             'waDailyLabels', 'waDailySent', 'waDailyReceived',
-            'resolvedKpis'
+            'resolvedKpis', 'leadsBreakdown'
         ));
+    }
+
+    /**
+     * P1.6 — Top 10 cidades e top 10 tags da base de leads ativos
+     * (status pending + confirmed). Só roda para perfis que vendem
+     * mobilização; demais retornam null pra view não exibir a seção.
+     */
+    private function resolveLeadsBreakdown(\App\Models\Tenant $tenant, PerfilOperacionalService $perfilService): ?array
+    {
+        $categoria = $perfilService->getCategoria($tenant);
+        $habilitadas = [
+            \App\Models\TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL,
+            \App\Models\TenantOperationalProfile::CATEGORIA_CAMPANHA_ELEITORAL,
+        ];
+        if (!in_array($categoria, $habilitadas, true)) {
+            return null;
+        }
+
+        return Cache::remember("dashboard.manager.leads_breakdown.{$tenant->id}", 300, function () use ($tenant) {
+            $rows = Lead::where('tenant_id', $tenant->id)
+                ->whereIn('status', [Lead::STATUS_PENDING, Lead::STATUS_CONFIRMED])
+                ->get(['city', 'tags']);
+
+            $total = $rows->count();
+            if ($total === 0) {
+                return [
+                    'total'  => 0,
+                    'cities' => ['labels' => [], 'values' => []],
+                    'tags'   => ['labels' => [], 'values' => []],
+                ];
+            }
+
+            // Agrupamento puro em PHP — para a ordem de magnitude esperada
+            // (poucos milhares por tenant) é mais simples que GROUP BY com
+            // JSON_TABLE e portável entre MySQL/SQLite.
+            $cityCounts = [];
+            $tagCounts  = [];
+            foreach ($rows as $r) {
+                $city = trim((string) ($r->city ?? ''));
+                if ($city !== '') {
+                    $cityCounts[$city] = ($cityCounts[$city] ?? 0) + 1;
+                }
+                foreach ((array) ($r->tags ?? []) as $tag) {
+                    $tag = trim((string) $tag);
+                    if ($tag !== '') {
+                        $tagCounts[$tag] = ($tagCounts[$tag] ?? 0) + 1;
+                    }
+                }
+            }
+
+            return [
+                'total'  => $total,
+                'cities' => $this->topNWithOthers($cityCounts, 10, 'Sem cidade'),
+                'tags'   => $this->topNWithOthers($tagCounts, 10, 'Sem segmentação'),
+            ];
+        });
+    }
+
+    /**
+     * Ordena desc, mantém top N e empilha o resto como "Outras".
+     * Quando o map está vazio devolve labels com placeholder pra view
+     * indicar "ninguém ainda" em vez de gráfico em branco.
+     *
+     * @param array<string,int> $counts
+     * @return array{labels: list<string>, values: list<int>}
+     */
+    private function topNWithOthers(array $counts, int $topN, string $emptyLabel): array
+    {
+        if ($counts === []) {
+            return ['labels' => [$emptyLabel], 'values' => [0]];
+        }
+        arsort($counts);
+        $top    = array_slice($counts, 0, $topN, true);
+        $rest   = array_slice($counts, $topN, null, true);
+        $labels = array_keys($top);
+        $values = array_values($top);
+        $restSum = array_sum($rest);
+        if ($restSum > 0) {
+            $labels[] = 'Outras';
+            $values[] = $restSum;
+        }
+        return ['labels' => $labels, 'values' => $values];
     }
 
     /**
