@@ -54,6 +54,8 @@ class AppServiceProvider extends ServiceProvider
             // Cozinha Solidária — Fase 0
             \App\Models\TermoColaboracao::observe(\App\Observers\TermoColaboracaoObserver::class);
             \App\Models\RegraCompliance::observe(\App\Observers\RegraComplianceObserver::class);
+            // Cozinha Solidária — Fase 1 (imutabilidade do lastro)
+            \App\Models\RegistroRefeicao::observe(\App\Observers\RegistroRefeicaoObserver::class);
         } catch (\Throwable $e) {
             // Silently ignore observer registration errors during boot
         }

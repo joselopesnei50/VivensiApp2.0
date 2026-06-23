@@ -201,4 +201,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/ngo/transparencia/partnerships',      [App\Http\Controllers\TransparencyController::class, 'addPartnership']);
     Route::put('/ngo/transparencia/partnerships/{id}',  [App\Http\Controllers\TransparencyController::class, 'updatePartnership'])->name('ngo.transparency.partnerships.update');
     Route::delete('/ngo/transparencia/partnerships/{id}', [App\Http\Controllers\TransparencyController::class, 'deletePartnership']);
+
+    // ── Cozinha Solidária — Fase 1 (painel realizado vs meta, JSON) ──────
+    Route::get('/ngo/cozinhas/realizado-vs-meta',
+        [App\Http\Controllers\Ngo\CozinhaPainelController::class, 'index'])
+        ->name('ngo.cozinhas.realizado_vs_meta');
+    Route::get('/ngo/cozinhas/{cozinha}/realizado-vs-meta',
+        [App\Http\Controllers\Ngo\CozinhaPainelController::class, 'detalhe'])
+        ->name('ngo.cozinhas.detalhe');
 });

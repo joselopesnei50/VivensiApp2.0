@@ -13,6 +13,7 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\SocialAccount::class => \App\Policies\SocialAccountPolicy::class,
         \App\Models\ScheduledPost::class => \App\Policies\ScheduledPostPolicy::class,
         \App\Models\Cozinha::class       => \App\Policies\CozinhaPolicy::class,
+        \App\Models\RegistroRefeicao::class => \App\Policies\RegistroRefeicaoPolicy::class,
     ];
 
     public function boot()
