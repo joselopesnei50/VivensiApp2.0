@@ -12,6 +12,7 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Banner::class        => \App\Policies\BannerPolicy::class,
         \App\Models\SocialAccount::class => \App\Policies\SocialAccountPolicy::class,
         \App\Models\ScheduledPost::class => \App\Policies\ScheduledPostPolicy::class,
+        \App\Models\Cozinha::class       => \App\Policies\CozinhaPolicy::class,
     ];
 
     public function boot()
@@ -71,6 +72,26 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('manage-broadcast', function (User $user) use ($perm) {
             return $perm($user, 'manage-broadcast') || in_array($user->role, ['manager', 'ngo', 'super_admin', 'client']);
+        });
+
+        // ── Cozinha Solidária (Fase 0) ────────────────────────────────────────
+        // manage-termo / manage-cozinha: gestão administrativa (criar Termo,
+        //   editar Cozinha, definir Plano de Trabalho). Restrito a NGO/super.
+        // view-cozinha-propria: leitura para o coordenador da cozinha vê SUA
+        //   unidade. O filtro de "qual cozinha" é responsabilidade do controller
+        //   (User::cozinhasAtivasIds()).
+
+        Gate::define('manage-termo', function (User $user) use ($perm) {
+            return $perm($user, 'manage-termo') || in_array($user->role, ['ngo', 'super_admin']);
+        });
+
+        Gate::define('manage-cozinha', function (User $user) use ($perm) {
+            return $perm($user, 'manage-cozinha') || in_array($user->role, ['ngo', 'super_admin']);
+        });
+
+        Gate::define('view-cozinha-propria', function (User $user) use ($perm) {
+            return $perm($user, 'view-cozinha-propria')
+                || in_array($user->role, ['coordenador_cozinha', 'ngo', 'super_admin']);
         });
     }
 }

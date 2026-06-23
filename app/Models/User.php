@@ -114,6 +114,34 @@ class User extends Authenticatable
         return $this->role === 'common';
     }
 
+    public function isCoordenadorCozinha(): bool
+    {
+        return $this->role === 'coordenador_cozinha';
+    }
+
+    // ── Cozinha Solidária (Fase 0) ────────────────────────────────────────────
+
+    public function cozinhasComoCoordenador()
+    {
+        return $this->belongsToMany(Cozinha::class, 'cozinha_coordenadores')
+            ->withPivot(['papel', 'ativo', 'tenant_id'])
+            ->withTimestamps();
+    }
+
+    /**
+     * IDs de cozinhas onde o usuário é coordenador ATIVO. Usado pelo filtro
+     * opt-in nos controllers de Cozinha (sub-tenancy escopo §3.6 do plano).
+     *
+     * @return array<int,int>
+     */
+    public function cozinhasAtivasIds(): array
+    {
+        return $this->cozinhasComoCoordenador()
+            ->wherePivot('ativo', true)
+            ->pluck('cozinhas.id')
+            ->all();
+    }
+
     /**
      * Password reset notification using Brevo transactional API.
      * This avoids dependency on SMTP configuration.
