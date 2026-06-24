@@ -38,11 +38,11 @@ class AuthServiceProvider extends ServiceProvider
         };
 
         Gate::define('access-whatsapp', function (User $user) use ($perm) {
-            return $perm($user, 'access-whatsapp') || in_array($user->role, ['manager', 'ngo', 'common']);
+            return $perm($user, 'access-whatsapp') || in_array($user->role, ['manager', 'ngo', 'common', 'client']);
         });
 
         Gate::define('access-manager', function (User $user) use ($perm) {
-            return $perm($user, 'access-manager') || in_array($user->role, ['manager', 'ngo', 'common']);
+            return $perm($user, 'access-manager') || in_array($user->role, ['manager', 'ngo', 'common', 'client']);
         });
 
         Gate::define('access-admin', function (User $user) {
@@ -50,7 +50,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('access-social-ai', function (User $user) use ($perm) {
-            return $perm($user, 'access-social-ai') || in_array($user->role, ['manager', 'ngo', 'common']);
+            return $perm($user, 'access-social-ai') || in_array($user->role, ['manager', 'ngo', 'common', 'client']);
         });
 
         Gate::define('manage-settings', function (User $user) use ($perm) {
@@ -70,7 +70,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-broadcast', function (User $user) use ($perm) {
-            return $perm($user, 'manage-broadcast') || in_array($user->role, ['manager', 'ngo', 'super_admin']);
+            return $perm($user, 'manage-broadcast') || in_array($user->role, ['manager', 'ngo', 'super_admin', 'client']);
         });
     }
 }
