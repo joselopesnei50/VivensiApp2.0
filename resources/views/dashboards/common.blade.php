@@ -20,15 +20,31 @@
                 @endif
             </p>
         </div>
-        <div style="display: flex; gap: 12px;">
-             <a href="{{ url('/personal/receipts/create') }}" class="btn-ds btn-ds-outline">
-                <i class="fas fa-file-invoice me-2 text-primary"></i> Emitir Recibo
-            </a>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items:center;">
              <a href="{{ url('/personal/reconciliation') }}" class="btn-ds btn-ds-outline">
                 <i class="fas fa-university me-2 text-primary"></i> Conciliar Banco
             </a>
              <a href="{{ url('/transactions/create') }}" class="btn-premium">
                 <i class="fas fa-plus me-2"></i> Nova Transação
+            </a>
+            {{-- CTA principal — função monetizadora do MEI. Estilo destacado pra
+                 não se perder entre os outros botões do header. --}}
+             <a href="{{ url('/personal/receipts/create') }}"
+                style="display:inline-flex; align-items:center; gap:10px;
+                       background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+                       color:#fff; font-weight:800; font-size:.92rem;
+                       padding:13px 24px; border-radius:14px;
+                       text-decoration:none; letter-spacing:.2px;
+                       box-shadow: 0 12px 28px rgba(16,185,129,.38), 0 2px 6px rgba(16,185,129,.25);
+                       border: 1px solid rgba(255,255,255,.12);
+                       transition: transform .18s ease, box-shadow .18s ease;"
+                onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 16px 36px rgba(16,185,129,.48), 0 3px 8px rgba(16,185,129,.30)';"
+                onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 12px 28px rgba(16,185,129,.38), 0 2px 6px rgba(16,185,129,.25)';">
+                 <span style="background:rgba(255,255,255,.18); width:30px; height:30px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center;">
+                     <i class="fas fa-file-invoice-dollar"></i>
+                 </span>
+                 Emitir Recibo
+                 <span style="background:rgba(255,255,255,.16); font-size:.65rem; padding:3px 9px; border-radius:99px; letter-spacing:1px; text-transform:uppercase; font-weight:900;">Novo</span>
             </a>
         </div>
     </div>
