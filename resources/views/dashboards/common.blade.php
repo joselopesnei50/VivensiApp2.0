@@ -33,6 +33,120 @@
 
 @include('partials.quick_access')
 
+{{-- ===== MEI no Controle: Termômetro · DAS · DRE ===== --}}
+@if(!empty($meiTeto ?? null))
+@php
+    $tetoCorStatus = ['verde' => '#10b981', 'amarelo' => '#f59e0b', 'vermelho' => '#ef4444'][$meiTeto['status']] ?? '#10b981';
+    $tetoMsgStatus = [
+        'verde'    => 'Você está confortável dentro do limite.',
+        'amarelo'  => 'Atenção — passou de 70% do teto. Acompanhe de perto.',
+        'vermelho' => 'CRÍTICO — passou de 90% do teto. Pode perder o regime MEI.',
+    ][$meiTeto['status']] ?? '';
+    $dasUrgenciaCor = $meiDas['pago']
+        ? '#10b981'
+        : ($meiDas['dias_restantes'] <= 5 ? '#ef4444' : ($meiDas['dias_restantes'] <= 10 ? '#f59e0b' : '#6366f1'));
+@endphp
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="vivensi-card" style="padding: 28px; background: linear-gradient(135deg,#312e81 0%,#1e293b 100%); color:#fff; border:none; border-radius:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; flex-wrap:wrap; gap:14px;">
+                <div>
+                    <span style="color:rgba(255,255,255,0.5); font-weight:800; font-size:.7rem; text-transform:uppercase; letter-spacing:2px;">MEI no Controle</span>
+                    <h4 style="margin:4px 0 0 0; font-weight:900; font-size:1.4rem;">Saúde do seu negócio em 1 olhar</h4>
+                </div>
+                <span style="font-size:.75rem; font-weight:700; color:rgba(255,255,255,0.5);">
+                    Ano-base {{ $meiTeto['ano'] }}
+                </span>
+            </div>
+
+            <div class="row g-3">
+                {{-- TERMÔMETRO DO TETO --}}
+                <div class="col-lg-5">
+                    <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:22px;">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <span style="font-weight:800; font-size:.72rem; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.6);">Termômetro do Teto</span>
+                            <span style="font-size:.8rem; font-weight:900; color:{{ $tetoCorStatus }};">{{ $meiTeto['percentual'] }}%</span>
+                        </div>
+                        <div style="font-size:1.7rem; font-weight:900; margin-top:8px;">
+                            R$ {{ number_format($meiTeto['realizado_centavos']/100, 2, ',', '.') }}
+                            <span style="font-size:.85rem; font-weight:700; color:rgba(255,255,255,0.4);">/ R$ {{ number_format($meiTeto['teto_centavos']/100, 0, ',', '.') }}</span>
+                        </div>
+                        <div style="height:10px; background:rgba(255,255,255,0.08); border-radius:99px; margin-top:14px; overflow:hidden;">
+                            <div style="height:100%; width:{{ min(100, $meiTeto['percentual']) }}%; background:{{ $tetoCorStatus }}; border-radius:99px; transition:width .4s;"></div>
+                        </div>
+                        <div style="margin-top:10px; font-size:.78rem; color:rgba(255,255,255,0.7);">
+                            {{ $tetoMsgStatus }}
+                        </div>
+                        <div style="margin-top:6px; font-size:.72rem; color:rgba(255,255,255,0.4);">
+                            Restam <strong style="color:#fff;">R$ {{ number_format($meiTeto['faltam_centavos']/100, 0, ',', '.') }}</strong> até o limite anual.
+                        </div>
+                    </div>
+                </div>
+
+                {{-- LEMBRETE DAS --}}
+                <div class="col-lg-3">
+                    <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:22px; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <span style="font-weight:800; font-size:.72rem; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.6);">DAS — Próximo</span>
+                            @if($meiDas['pago'])
+                                <div style="margin-top:8px; font-size:1.05rem; font-weight:900; color:#10b981;"><i class="fas fa-check-circle me-1"></i> Pago este mês</div>
+                                <div style="margin-top:6px; font-size:.75rem; color:rgba(255,255,255,0.5);">Próximo vencimento: {{ \Carbon\Carbon::parse($meiDas['vencimento'])->translatedFormat('d/m/Y') }}</div>
+                            @else
+                                <div style="margin-top:8px; font-size:1.7rem; font-weight:900; color:{{ $dasUrgenciaCor }};">
+                                    {{ \Carbon\Carbon::parse($meiDas['vencimento'])->translatedFormat('d/m') }}
+                                </div>
+                                <div style="margin-top:4px; font-size:.78rem; color:rgba(255,255,255,0.7);">
+                                    @if($meiDas['dias_restantes'] <= 0)
+                                        <strong style="color:#ef4444;">VENCE HOJE</strong>
+                                    @else
+                                        Em {{ $meiDas['dias_restantes'] }} dia{{ $meiDas['dias_restantes']>1?'s':'' }}
+                                    @endif
+                                </div>
+                                <div style="margin-top:6px; font-size:.85rem; font-weight:700;">R$ {{ number_format($meiDas['valor_centavos']/100, 2, ',', '.') }}</div>
+                            @endif
+                        </div>
+                        @unless($meiDas['pago'])
+                            <form action="{{ url('/personal/das/pago') }}" method="POST" style="margin-top:14px;">
+                                @csrf
+                                <button type="submit" class="btn-cta" style="width:100%; background:#10b981; color:#fff; border:none; padding:10px; font-weight:700; border-radius:10px; font-size:.78rem; cursor:pointer;">
+                                    <i class="fas fa-check me-1"></i> Marcar como pago
+                                </button>
+                            </form>
+                        @endunless
+                    </div>
+                </div>
+
+                {{-- MINI-DRE --}}
+                <div class="col-lg-4">
+                    <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:22px;">
+                        <span style="font-weight:800; font-size:.72rem; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.6);">Resultado do Mês</span>
+                        <div style="display:flex; justify-content:space-between; margin-top:14px; font-size:.85rem;">
+                            <span style="color:rgba(255,255,255,0.7);">Receita</span>
+                            <strong style="color:#10b981;">R$ {{ number_format($meiDre['receita_centavos']/100, 2, ',', '.') }}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:.85rem;">
+                            <span style="color:rgba(255,255,255,0.7);">(−) Despesas</span>
+                            <strong style="color:#f87171;">R$ {{ number_format($meiDre['despesa_centavos']/100, 2, ',', '.') }}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:.85rem;">
+                            <span style="color:rgba(255,255,255,0.7);">(−) DAS</span>
+                            <strong style="color:#fbbf24;">R$ {{ number_format($meiDre['das_centavos']/100, 2, ',', '.') }}</strong>
+                        </div>
+                        <hr style="border-color:rgba(255,255,255,0.12); margin:14px 0;">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <span style="font-weight:800; font-size:.75rem; color:rgba(255,255,255,0.6); letter-spacing:1px; text-transform:uppercase;">Lucro Líquido</span>
+                            <strong style="font-size:1.4rem; color:{{ $meiDre['lucro_centavos']>=0 ? '#34d399' : '#f87171' }};">
+                                R$ {{ number_format($meiDre['lucro_centavos']/100, 2, ',', '.') }}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="row g-4 mb-5">
     <!-- Saldo do Mês -->
     <div class="col-md-4">

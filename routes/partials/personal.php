@@ -12,4 +12,10 @@ Route::middleware(['auth', 'subscription'])->prefix('personal')->group(function 
 
     // CRM MEI (Clientes)
     Route::resource('clients', \App\Http\Controllers\ClientController::class);
+
+    // MEI — botão "Marcar DAS como pago" do widget no dashboard common
+    Route::post('/das/pago',
+        [\App\Http\Controllers\Mei\MeiDasController::class, 'marcarPago'])
+        ->name('personal.das.pago')
+        ->middleware('throttle:web_write');
 });
