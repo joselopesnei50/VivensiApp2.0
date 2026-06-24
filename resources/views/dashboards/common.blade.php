@@ -21,6 +21,9 @@
             </p>
         </div>
         <div style="display: flex; gap: 12px;">
+             <a href="{{ url('/personal/receipts/create') }}" class="btn-ds btn-ds-outline">
+                <i class="fas fa-file-invoice me-2 text-primary"></i> Emitir Recibo
+            </a>
              <a href="{{ url('/personal/reconciliation') }}" class="btn-ds btn-ds-outline">
                 <i class="fas fa-university me-2 text-primary"></i> Conciliar Banco
             </a>

@@ -18,4 +18,11 @@ Route::middleware(['auth', 'subscription'])->prefix('personal')->group(function 
         [\App\Http\Controllers\Mei\MeiDasController::class, 'marcarPago'])
         ->name('personal.das.pago')
         ->middleware('throttle:web_write');
+
+    // MEI — Recibos pro cliente do MEI
+    Route::get('/receipts',                           [\App\Http\Controllers\Mei\MeiReceiptController::class, 'index'])->name('personal.receipts.index');
+    Route::get('/receipts/create',                    [\App\Http\Controllers\Mei\MeiReceiptController::class, 'create'])->name('personal.receipts.create');
+    Route::post('/receipts',                          [\App\Http\Controllers\Mei\MeiReceiptController::class, 'store'])->name('personal.receipts.store')->middleware('throttle:web_write');
+    Route::post('/receipts/{id}/regenerate-link',     [\App\Http\Controllers\Mei\MeiReceiptController::class, 'regenerateLink'])->name('personal.receipts.regenerate_link')->middleware('throttle:web_write');
+    Route::post('/receipts/{id}/revoke-link',         [\App\Http\Controllers\Mei\MeiReceiptController::class, 'revokeLink'])->name('personal.receipts.revoke_link')->middleware('throttle:web_write');
 });
