@@ -27,4 +27,9 @@ class Client extends Model
     {
         return $this->belongsTo(Tenant::class);
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'client_id');
+    }
 }
