@@ -69,6 +69,7 @@ class Transaction extends Model
         'category_id',
         'project_id',
         'ngo_donor_id',
+        'client_id',
         'description',
         'amount',
         'type',
@@ -137,6 +138,11 @@ class Transaction extends Model
     public function donor()
     {
         return $this->belongsTo(\App\Models\NgoDonor::class, 'ngo_donor_id');
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(\App\Models\Client::class, 'client_id');
     }
 
     public function tenant() {
