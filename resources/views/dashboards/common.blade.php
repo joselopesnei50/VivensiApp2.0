@@ -166,6 +166,46 @@
         </div>
     </div>
 </div>
+
+{{-- ===== Barra de Dossiê Fiscal (NFS-e) — incentiva o MEI a anexar ===== --}}
+@if(!empty($meiNfse) && ($meiNfse['total_receitas'] ?? 0) > 0)
+@php
+    $nfseCor = $meiNfse['percentual'] >= 90 ? '#10b981' : ($meiNfse['percentual'] >= 50 ? '#f59e0b' : '#ef4444');
+@endphp
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="vivensi-card" style="padding:20px 28px; display:flex; align-items:center; gap:22px; flex-wrap:wrap;">
+            <div style="width:54px; height:54px; border-radius:14px; background:rgba(79,70,229,.08); color:#4f46e5; display:flex; align-items:center; justify-content:center; font-size:1.3rem;">
+                <i class="fas fa-file-circle-check"></i>
+            </div>
+            <div style="flex:1; min-width:260px;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:.78rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1.5px;">Dossiê fiscal {{ now()->year }}</div>
+                        <div style="font-size:1rem; font-weight:800; color:#1e293b; margin-top:2px;">
+                            <span style="color:{{ $nfseCor }};">{{ $meiNfse['com_nfse'] }}</span> de {{ $meiNfse['total_receitas'] }} receitas com NFS-e anexada
+                            <span style="color:#94a3b8; font-weight:600; font-size:.85rem;"> · {{ number_format($meiNfse['percentual'], 0) }}%</span>
+                        </div>
+                    </div>
+                    <a href="{{ url('/personal/receipts') }}" class="btn btn-sm" style="background:#eef2ff; color:#4f46e5; font-weight:800; font-size:.78rem; padding:8px 16px; border-radius:10px; text-decoration:none;">
+                        <i class="fas fa-paperclip me-1"></i> Completar
+                    </a>
+                </div>
+                <div style="height:7px; background:#f1f5f9; border-radius:99px; margin-top:10px; overflow:hidden;">
+                    <div style="height:100%; width:{{ min(100, $meiNfse['percentual']) }}%; background:{{ $nfseCor }}; transition:width .4s;"></div>
+                </div>
+                @if($meiNfse['sem_nfse'] > 0)
+                    <div style="margin-top:8px; font-size:.78rem; color:#64748b;">
+                        Emita pelo portal gratuito do governo
+                        <a href="https://www.nfse.gov.br" target="_blank" rel="noopener" style="color:#4f46e5; font-weight:700;">nfse.gov.br</a>
+                        e anexe aqui pra manter o dossiê sempre auditável.
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @endif
 
 <div class="row g-4 mb-5">
