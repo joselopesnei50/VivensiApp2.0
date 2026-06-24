@@ -85,15 +85,17 @@ class MeiPanelService
             ? $vencimentoEsteMes
             : $vencimentoEsteMes->copy()->addMonth();
 
-        // Pago = transaction expense com description marcador no MESMO mês
-        // do vencimento (DAS de competência X foi pago em data do vencimento ou
-        // antes — usamos mês do vencimento como referência).
+        // Pago = transaction expense com description marcador NO MÊS CORRENTE.
+        // Importante: quando o dia atual passa do vencimento (ex: hoje 24, DAS
+        // venceu dia 20), o $vencimento aponta pro PRÓXIMO mês — mas o pagamento
+        // do DAS atrasado é feito no mês corrente. Por isso filtramos por
+        // $hoje->year/month, não por $vencimento->year/month.
         $pago = Transaction::where('tenant_id', $tenantId)
             ->where('type', 'expense')
             ->where('status', 'paid')
             ->where('description', $marker)
-            ->whereYear('date', $vencimento->year)
-            ->whereMonth('date', $vencimento->month)
+            ->whereYear('date', $hoje->year)
+            ->whereMonth('date', $hoje->month)
             ->first();
 
         return [
