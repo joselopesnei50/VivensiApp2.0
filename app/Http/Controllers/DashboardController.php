@@ -700,6 +700,12 @@ class DashboardController extends Controller
         $userId = Auth::id();
         \Carbon\Carbon::setLocale('pt_BR');
 
+        // Módulo MEI — 3 métricas-vendedoras (teto, DAS, mini-DRE).
+        $meiSvc = app(\App\Services\MeiPanelService::class);
+        $meiTeto = $meiSvc->tetoMei($tenantId);
+        $meiDas  = $meiSvc->proximoDas($tenantId);
+        $meiDre  = $meiSvc->dreMensal($tenantId);
+
         // ── Financeiro: cache 5 min por tenant (não é user-specific) ──────
         $financial = Cache::remember("dashboard.common.financial.{$tenantId}." . now()->format('Y-m'), 300, function () use ($tenantId) {
             $totalIncome  = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->sum('amount');
@@ -784,7 +790,8 @@ class DashboardController extends Controller
             'overdueCount',
             'recentTransactions', 'pendingTasks',
             'chartLabels', 'chartIncome', 'chartExpense',
-            'impactFeed'
+            'impactFeed',
+            'meiTeto', 'meiDas', 'meiDre'
         ));
     }
 }
