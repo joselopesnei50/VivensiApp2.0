@@ -31,7 +31,9 @@
     </div>
 </div>
 
-@include('partials.quick_access')
+{{-- Bloco quick_access (Novo Lançamento, Social AI Hub, Minhas Tarefas,
+     Inteligência Territorial) removido a pedido — duplicava com o
+     bloco "MEI no Controle" e poluía a primeira tela do MEI. --}}
 
 {{-- ===== MEI no Controle: Termômetro · DAS · DRE ===== --}}
 @if(!empty($meiTeto ?? null))
