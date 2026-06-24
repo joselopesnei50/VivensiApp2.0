@@ -86,6 +86,9 @@ class Transaction extends Model
         'plan_id',
         'ofx_fitid',
         'reconciled_at',
+        'nfse_numero',
+        'nfse_url_pdf',
+        'nfse_emitida_em',
     ];
 
     protected $casts = [
@@ -94,6 +97,7 @@ class Transaction extends Model
         'reconciled_at'  => 'datetime',
         'amount'         => 'decimal:2',
         'public_receipt_expires_at' => 'datetime',
+        'nfse_emitida_em' => 'date',
     ];
 
     // bidx nunca pode vazar (e o hash usado em lookups); o token plaintext
