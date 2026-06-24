@@ -221,4 +221,30 @@ class MeiPanelService
         Cache::forget(sprintf('%s.teto.%d.%d', self::CACHE_PREFIX, $tenantId, $ano));
         Cache::forget(sprintf('%s.dre.%d.%d-%02d', self::CACHE_PREFIX, $tenantId, $ano, $mes));
     }
+
+    /**
+     * Cobertura de NFS-e nas receitas pagas do ano-corrente.
+     * Conta quantas Transactions income/paid têm nfse_numero preenchido.
+     *
+     * @return array{total_receitas:int, com_nfse:int, sem_nfse:int, percentual:float}
+     */
+    public function coberturaNfse(int $tenantId, ?int $ano = null): array
+    {
+        $ano = $ano ?? (int) now()->year;
+
+        $base = Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')
+            ->where('status', 'paid')
+            ->whereYear('date', $ano);
+
+        $total = (int) (clone $base)->count();
+        $comNfse = (int) (clone $base)->whereNotNull('nfse_numero')->count();
+
+        return [
+            'total_receitas' => $total,
+            'com_nfse'       => $comNfse,
+            'sem_nfse'       => max(0, $total - $comNfse),
+            'percentual'     => $total > 0 ? round(($comNfse / $total) * 100, 1) : 0.0,
+        ];
+    }
 }

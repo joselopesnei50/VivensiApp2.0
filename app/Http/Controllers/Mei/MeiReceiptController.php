@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Vivensi — Módulo MEI / Recibos.
@@ -151,5 +153,99 @@ class MeiReceiptController extends Controller
         $transaction->save();
 
         return back()->with('success', 'Link público revogado.');
+    }
+
+    // ── NFS-e (opção C: anexa nota emitida no portal nfse.gov.br) ────────────
+
+    private const NFSE_DISK = 'local';
+    private const NFSE_MAX_KB = 5120; // 5 MB
+
+    /**
+     * Anexa NFS-e (número + data + PDF) à Transaction. O MEI emite a nota no
+     * Emissor Nacional gratuito do governo e cola aqui — Vivensi vira o
+     * "guarda-tudo" do dossiê fiscal sem custo recorrente.
+     */
+    public function attachNfse(Request $request, $id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $transaction = Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'nfse_numero'     => 'required|string|max:60',
+            'nfse_emitida_em' => 'required|date',
+            'pdf'             => ['nullable', 'file', 'mimes:pdf', 'max:' . self::NFSE_MAX_KB],
+        ]);
+
+        // Se uma NFS-e anterior existir, apaga o PDF antigo antes de substituir.
+        if ($request->hasFile('pdf') && $transaction->nfse_url_pdf) {
+            Storage::disk(self::NFSE_DISK)->delete($transaction->nfse_url_pdf);
+        }
+
+        if ($request->hasFile('pdf')) {
+            $file = $request->file('pdf');
+            $filename = sprintf(
+                'nfse_%d_%s.pdf',
+                $transaction->id,
+                Str::random(10)
+            );
+            $path = $file->storeAs(
+                sprintf('private/nfse/%d', $tenantId),
+                $filename,
+                self::NFSE_DISK
+            );
+            $transaction->nfse_url_pdf = $path;
+        }
+
+        $transaction->nfse_numero     = $validated['nfse_numero'];
+        $transaction->nfse_emitida_em = $validated['nfse_emitida_em'];
+        $transaction->save();
+
+        return back()->with('success', 'NFS-e anexada com sucesso. Receita agora tem dossiê fiscal completo. 🎯');
+    }
+
+    /**
+     * Remove NFS-e da Transaction (limpa campos + apaga arquivo).
+     */
+    public function detachNfse($id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $transaction = Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')
+            ->where('id', $id)
+            ->firstOrFail();
+
+        if ($transaction->nfse_url_pdf) {
+            Storage::disk(self::NFSE_DISK)->delete($transaction->nfse_url_pdf);
+        }
+        $transaction->nfse_numero     = null;
+        $transaction->nfse_url_pdf    = null;
+        $transaction->nfse_emitida_em = null;
+        $transaction->save();
+
+        return back()->with('success', 'NFS-e removida.');
+    }
+
+    /**
+     * Download privado do PDF da NFS-e.
+     */
+    public function downloadNfse($id): StreamedResponse
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $transaction = Transaction::where('tenant_id', $tenantId)
+            ->where('type', 'income')
+            ->where('id', $id)
+            ->firstOrFail();
+
+        abort_unless(
+            $transaction->nfse_url_pdf && Storage::disk(self::NFSE_DISK)->exists($transaction->nfse_url_pdf),
+            404,
+            'NFS-e não encontrada.'
+        );
+
+        $filename = sprintf('NFS-e %s.pdf', $transaction->nfse_numero ?: $transaction->id);
+        return Storage::disk(self::NFSE_DISK)->download($transaction->nfse_url_pdf, $filename);
     }
 }

@@ -25,4 +25,10 @@ Route::middleware(['auth', 'subscription'])->prefix('personal')->group(function 
     Route::post('/receipts',                          [\App\Http\Controllers\Mei\MeiReceiptController::class, 'store'])->name('personal.receipts.store')->middleware('throttle:web_write');
     Route::post('/receipts/{id}/regenerate-link',     [\App\Http\Controllers\Mei\MeiReceiptController::class, 'regenerateLink'])->name('personal.receipts.regenerate_link')->middleware('throttle:web_write');
     Route::post('/receipts/{id}/revoke-link',         [\App\Http\Controllers\Mei\MeiReceiptController::class, 'revokeLink'])->name('personal.receipts.revoke_link')->middleware('throttle:web_write');
+
+    // NFS-e — anexa nota emitida no portal nfse.gov.br (opção C: sem integrar
+    // SEFIN diretamente, Vivensi só guarda o dossiê).
+    Route::post('/receipts/{id}/nfse',                  [\App\Http\Controllers\Mei\MeiReceiptController::class, 'attachNfse'])->name('personal.receipts.nfse.attach')->middleware('throttle:web_write');
+    Route::delete('/receipts/{id}/nfse',                [\App\Http\Controllers\Mei\MeiReceiptController::class, 'detachNfse'])->name('personal.receipts.nfse.detach')->middleware('throttle:web_write');
+    Route::get('/receipts/{id}/nfse/download',          [\App\Http\Controllers\Mei\MeiReceiptController::class, 'downloadNfse'])->name('personal.receipts.nfse.download');
 });
