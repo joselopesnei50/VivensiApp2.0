@@ -119,19 +119,6 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
         $senderName = $messageData['pushName'] ?? 'WhatsApp';
 
-        // 0. Fluxo de opt-in explícito — só processa quando há texto real do usuário
-        if ($userText !== null) {
-            $respostaOptIn = app(ContatoOptInService::class)->handle($phone, $userText, $tenantId);
-            if ($respostaOptIn !== null) {
-                try {
-                    (new EvolutionApiService($instance))->sendMessage($phone, $respostaOptIn);
-                } catch (\Throwable $e) {
-                    Log::warning("ProcessEvolutionWebhook: falha ao enviar resposta opt-in para {$phone}: " . $e->getMessage());
-                }
-                return;
-            }
-        }
-
         // 1. Verificar blacklist
         if (WhatsappBlacklist::where('tenant_id', $tenantId)->where('phone', $phone)->exists()) {
             Log::info("ProcessEvolutionWebhook: Mensagem de {$phone} ignorada (blacklist).");
@@ -180,8 +167,11 @@ class ProcessEvolutionWebhook implements ShouldQueue
             }
         }
 
-        // 4. Salvar mensagem inbound
+        // 4. Salvar mensagem inbound. tenant_id explícito porque o trait
+        // BelongsToTenant não tem Auth ativo em fila (Auth::check() = false),
+        // o que deixava a coluna NULL e quebrava isolamento downstream.
         WhatsappMessage::create([
+            'tenant_id'     => $tenantId,
             'chat_id'       => $chat->id,
             'message_id'    => $messageId,
             'content'       => $content,
@@ -203,6 +193,24 @@ class ProcessEvolutionWebhook implements ShouldQueue
                 'has_media'   => $mediaPath !== null,
             ],
         ]);
+
+        // 4.1 Portão de opt-in. A mensagem JÁ foi salva acima — o atendente sempre vê
+        // o que o contato escreveu. Aqui só decidimos se respondemos o pedido de
+        // consentimento e paramos o processamento automático (IA/form/automações).
+        // Antes desse bug fix, esse gate estava no topo do método e DESCARTAVA a
+        // mensagem (return sem salvar) — todo contato novo sumia do histórico,
+        // sintoma que estava causando cancelamentos.
+        if ($userText !== null) {
+            $respostaOptIn = app(ContatoOptInService::class)->handle($phone, $userText, $tenantId);
+            if ($respostaOptIn !== null) {
+                try {
+                    (new EvolutionApiService($instance))->sendMessage($phone, $respostaOptIn);
+                } catch (\Throwable $e) {
+                    Log::warning("ProcessEvolutionWebhook: falha ao enviar resposta opt-in para {$phone}: " . $e->getMessage());
+                }
+                return;
+            }
+        }
 
         // 4.4 Double opt-in (P0.2). Resposta do lead pendente confirma ou
         // recusa antes do form/IA/automações. Token ativo é único por lead.
@@ -390,6 +398,49 @@ class ProcessEvolutionWebhook implements ShouldQueue
     }
 
     /**
+     * Desembrulha os "envelopes" que a Evolution v2/Baileys coloca em volta da
+     * mensagem real. Sem isso, qualquer mensagem temporária (ephemeralMessage),
+     * view-once, doc com legenda ou editada cai no fallback "[mensagem não suportada]"
+     * e o conteúdo do usuário se perde (a IA também não dispara, pois user_text fica null).
+     *
+     * Itera no máximo 6 níveis para evitar loop com payload malformado.
+     */
+    private function unwrapEvolutionMessage(array $msg): array
+    {
+        $wrappers = [
+            'ephemeralMessage',
+            'viewOnceMessage',
+            'viewOnceMessageV2',
+            'viewOnceMessageV2Extension',
+            'documentWithCaptionMessage',
+            'editedMessage',
+            'deviceSentMessage',
+        ];
+
+        for ($i = 0; $i < 6; $i++) {
+            $hit = null;
+            foreach ($wrappers as $w) {
+                if (isset($msg[$w]['message']) && is_array($msg[$w]['message'])) {
+                    $hit = $w;
+                    break;
+                }
+            }
+            if ($hit === null) {
+                break;
+            }
+            $msg = $msg[$hit]['message'];
+
+            // Edição: o conteúdo real fica em protocolMessage.editedMessage
+            if (isset($msg['protocolMessage']['editedMessage'])
+                && is_array($msg['protocolMessage']['editedMessage'])) {
+                $msg = $msg['protocolMessage']['editedMessage'];
+            }
+        }
+
+        return $msg;
+    }
+
+    /**
      * Extrai o corpo legível e o tipo da mensagem do payload Baileys.
      * Garante content não-vazio (regra Fase 0: thread nunca em branco no reload).
      * user_text é null quando não há texto digitado pelo usuário (mídia sem legenda),
@@ -399,6 +450,10 @@ class ProcessEvolutionWebhook implements ShouldQueue
      */
     private function extractMessageContent(array $msg): array
     {
+        // Evolution v2/Baileys embrulha o conteúdo real em wrappers (mensagens
+        // temporárias, view-once, doc-com-legenda, edição). Desembrulha antes de extrair.
+        $msg = $this->unwrapEvolutionMessage($msg);
+
         if (isset($msg['conversation']) && $msg['conversation'] !== '') {
             return [
                 'content'       => $msg['conversation'],

@@ -64,52 +64,100 @@ class WhatsappBroadcastController extends Controller
         Gate::authorize('access-whatsapp');
 
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+            // mimes:csv é frágil (Excel envia application/vnd.ms-excel). Valida por extensão.
+            'csv_file' => 'required|file|max:2048',
         ]);
 
         $tenantId  = auth()->user()->tenant_id;
         $maxLines  = 5000;
         $imported  = 0;
         $lineCount = 0;
-        $handle    = fopen($request->file('csv_file')->getRealPath(), 'r');
+        $handle    = false;
 
-        // Pular cabeçalho se existir
-        $firstRow = fgetcsv($handle);
-        if ($firstRow && strtolower(trim($firstRow[0] ?? '')) !== 'nome') {
-            // Não é cabeçalho — processa como dado
-            if (count($firstRow) >= 2) {
-                $phone = \App\Services\EvolutionApiService::normalizeBrazilianPhone($firstRow[1]);
-                if ($phone && strlen($phone) >= 12) {
-                    [$optInAt, $optInSource] = $this->parseConsentDate($firstRow[2] ?? null);
-                    WhatsappChat::firstOrCreate(
-                        ['tenant_id' => $tenantId, 'wa_id' => $phone],
-                        ['contact_name' => trim($firstRow[0]), 'contact_phone' => $phone, 'status' => 'open',
-                         'opt_in_at' => $optInAt, 'opt_in_source' => $optInSource]
-                    );
-                    $imported++;
-                }
+        try {
+            $path = $request->file('csv_file')->getRealPath();
+            $handle = $path ? fopen($path, 'r') : false;
+
+            if ($handle === false) {
+                return redirect()->back()->with('error', 'Não foi possível ler o arquivo enviado. Tente novamente.');
             }
-            $lineCount++;
-        }
 
-        while (($row = fgetcsv($handle)) !== false && $lineCount < $maxLines) {
-            $lineCount++;
-            if (count($row) >= 2) {
-                $name  = trim($row[0]);
-                $phone = \App\Services\EvolutionApiService::normalizeBrazilianPhone($row[1]);
-                if ($phone && strlen($phone) >= 12) {
-                    [$optInAt, $optInSource] = $this->parseConsentDate($row[2] ?? null);
-                    WhatsappChat::firstOrCreate(
-                        ['tenant_id' => $tenantId, 'wa_id' => $phone],
-                        ['contact_name' => $name, 'contact_phone' => $phone, 'status' => 'open',
-                         'opt_in_at' => $optInAt, 'opt_in_source' => $optInSource]
-                    );
-                    $imported++;
+            // Detecta separador na primeira linha (vírgula ou ponto-e-vírgula do Excel-BR).
+            $firstLine = fgets($handle);
+            $firstLine = $firstLine === false ? '' : ltrim($firstLine, "\xEF\xBB\xBF"); // remove BOM
+            $delimiter = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
+            rewind($handle);
+
+            $isHeader = true;
+            while (($row = fgetcsv($handle, 0, $delimiter)) !== false && $lineCount < $maxLines) {
+                // Remove BOM do primeiro campo da primeira linha
+                if ($lineCount === 0 && isset($row[0])) {
+                    $row[0] = ltrim($row[0], "\xEF\xBB\xBF");
                 }
-            }
-        }
 
-        fclose($handle);
+                // Pula o cabeçalho se a primeira coluna for "nome"
+                if ($isHeader) {
+                    $isHeader = false;
+                    if (isset($row[0]) && strtolower(trim($row[0])) === 'nome') {
+                        continue;
+                    }
+                }
+
+                $lineCount++;
+
+                if (count($row) < 2) {
+                    continue;
+                }
+
+                // CONSERTA O 1366: Excel-BR salva em Windows-1252. Converte cada
+                // campo para UTF-8 quando não for UTF-8 válido — sem isso, qualquer
+                // nome com acento (Angélica, José, Conceição) estoura SQL erro 1366
+                // e derruba a importação inteira em 500.
+                $row = array_map([$this, 'toUtf8'], $row);
+
+                $name  = trim($row[0] ?? '');
+                $phone = \App\Services\EvolutionApiService::normalizeBrazilianPhone((string) ($row[1] ?? ''));
+
+                if (!$phone || strlen($phone) < 12) {
+                    continue;
+                }
+
+                [$optInAt, $optInSource] = $this->parseConsentDate($row[2] ?? null);
+
+                $attributes = [
+                    'contact_name'  => $name,
+                    'contact_phone' => $phone,
+                    'status'        => 'open',
+                    'opt_in_at'     => $optInAt,
+                ];
+                // Só grava opt_in_source se a coluna existir (evita 500 se migration não rodou).
+                if (Schema::hasColumn('whatsapp_chats', 'opt_in_source')) {
+                    $attributes['opt_in_source'] = $optInSource;
+                }
+
+                WhatsappChat::firstOrCreate(
+                    ['tenant_id' => $tenantId, 'wa_id' => $phone],
+                    $attributes
+                );
+                $imported++;
+            }
+
+            fclose($handle);
+        } catch (\Throwable $e) {
+            if ($handle !== false) {
+                @fclose($handle);
+            }
+            Log::error('Falha ao importar contatos no Broadcast', [
+                'tenant_id' => $tenantId,
+                'line'      => $lineCount,
+                'error'     => $e->getMessage(),
+                'file'      => basename($e->getFile()) . ':' . $e->getLine(),
+            ]);
+            return redirect()->back()->with(
+                'error',
+                'Erro ao importar contatos. Verifique se o arquivo está no formato "Nome,Telefone". Detalhe: ' . $e->getMessage()
+            );
+        }
 
         $msg = "{$imported} contatos importados com sucesso!";
         if ($lineCount >= $maxLines) {
@@ -117,6 +165,22 @@ class WhatsappBroadcastController extends Controller
         }
 
         return redirect()->back()->with('success', $msg);
+    }
+
+    /**
+     * Normaliza para UTF-8. Excel no Windows (PT-BR) salva CSV em Windows-1252,
+     * cujos bytes acentuados (É = \xC9, ç = \xE7…) não são UTF-8 válido e fazem
+     * o MySQL estourar erro 1366 ao inserir. Converte só quando necessário.
+     */
+    private function toUtf8($value)
+    {
+        if (!is_string($value) || $value === '') {
+            return $value;
+        }
+        if (mb_check_encoding($value, 'UTF-8')) {
+            return $value;
+        }
+        return mb_convert_encoding($value, 'UTF-8', 'Windows-1252');
     }
 
     /**
