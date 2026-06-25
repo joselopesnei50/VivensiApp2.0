@@ -194,23 +194,16 @@ class ProcessEvolutionWebhook implements ShouldQueue
             ],
         ]);
 
-        // 4.1 Portão de opt-in. A mensagem JÁ foi salva acima — o atendente sempre vê
-        // o que o contato escreveu. Aqui só decidimos se respondemos o pedido de
-        // consentimento e paramos o processamento automático (IA/form/automações).
-        // Antes desse bug fix, esse gate estava no topo do método e DESCARTAVA a
-        // mensagem (return sem salvar) — todo contato novo sumia do histórico,
-        // sintoma que estava causando cancelamentos.
-        if ($userText !== null) {
-            $respostaOptIn = app(ContatoOptInService::class)->handle($phone, $userText, $tenantId);
-            if ($respostaOptIn !== null) {
-                try {
-                    (new EvolutionApiService($instance))->sendMessage($phone, $respostaOptIn);
-                } catch (\Throwable $e) {
-                    Log::warning("ProcessEvolutionWebhook: falha ao enviar resposta opt-in para {$phone}: " . $e->getMessage());
-                }
-                return;
-            }
-        }
+        // 4.1 Portão de opt-in em INBOUND — DESATIVADO por decisão de produto.
+        //
+        // Quem te procura espontaneamente já consentiu implicitamente em receber
+        // resposta — pedir 'digite SIM para autorizar' em atendimento estraga a
+        // experiência (cliente novo conclui que é só robô e cancela). LGPD exige
+        // opt-in formal apenas para DISPAROS EM MASSA (outbound) — o ContatoOptInService
+        // continua sendo usado nesse fluxo, intocado.
+        //
+        // Se um dia precisar reativar pra um tenant específico (ex.: SAC bancário),
+        // colocar atrás de uma flag em WhatsappConfig do tenant, não como default.
 
         // 4.4 Double opt-in (P0.2). Resposta do lead pendente confirma ou
         // recusa antes do form/IA/automações. Token ativo é único por lead.
