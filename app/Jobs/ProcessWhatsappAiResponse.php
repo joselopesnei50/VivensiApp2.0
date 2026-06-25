@@ -90,7 +90,18 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         $systemPrompt .= "- NUNCA invente links ou telefones que não estejam no treinamento acima.\n";
         $systemPrompt .= "- Se não souber algo, não invente. Peça para o usuário aguardar que a equipe irá complementar.\n";
 
-        $prompt = "{$systemPrompt}\n---\nMENSAGEM DO USUÁRIO: {$this->userMessage}";
+        // MEMÓRIA CONVERSACIONAL — sem isso o LLM trata cada mensagem como
+        // primeira interação e fica repetindo "Olá, sou o assistente..." em
+        // todo turno. Pega o histórico textual e injeta no prompt.
+        $historico = $this->buildHistoryMessages($chat, $this->userMessage);
+        $historicoTextoParaGemini = $this->historyAsPlainText($historico);
+
+        // Prompt para Gemini text-only (concat histórico + mensagem atual).
+        // Gemini multimodal de áudio NÃO recebe histórico — áudio é one-shot
+        // e o histórico bagunçaria o entendimento da gravação.
+        $prompt = "{$systemPrompt}\n"
+            . ($historicoTextoParaGemini !== '' ? "\n### HISTÓRICO DA CONVERSA ###\n{$historicoTextoParaGemini}\n" : "")
+            . "\n---\nMENSAGEM DO USUÁRIO: {$this->userMessage}";
 
         $replyText = '';
         // Default to DeepSeek as primary engine
@@ -114,10 +125,11 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                 // Tentativa Principal: DeepSeek (ou o provedor explicitamente configurado)
                 if ($provider === 'deepseek') {
                     $ds = new DeepSeekService();
-                    $dsRes = $ds->chat([
-                        ['role' => 'system', 'content' => $systemPrompt],
-                        ['role' => 'user', 'content' => $this->userMessage]
-                    ]);
+                    $dsRes = $ds->chat(array_merge(
+                        [['role' => 'system', 'content' => $systemPrompt]],
+                        $historico,
+                        [['role' => 'user', 'content' => $this->userMessage]]
+                    ));
                     $replyText = (string) ($dsRes['choices'][0]['message']['content'] ?? '');
                 } else {
                     // Se estiver explicitamente como Gemini
@@ -136,10 +148,11 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                     } else {
                         // Gemini falhou, tenta DeepSeek como bote salva-vidas
                         $ds = new DeepSeekService();
-                        $dsRes = $ds->chat([
-                            ['role' => 'system', 'content' => $systemPrompt],
-                            ['role' => 'user', 'content' => $this->userMessage]
-                        ]);
+                        $dsRes = $ds->chat(array_merge(
+                            [['role' => 'system', 'content' => $systemPrompt]],
+                            $historico,
+                            [['role' => 'user', 'content' => $this->userMessage]]
+                        ));
                         $replyText = (string) ($dsRes['choices'][0]['message']['content'] ?? '');
                     }
                 }
@@ -268,5 +281,90 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         }
     }
 
+    // ── Memória conversacional (sem isso o bot vira robô amnésico) ──────────
+
+    public const HISTORY_TURNS_LIMIT = 20;       // ~10 trocas (user+assistant)
+    public const HISTORY_MSG_MAX_CHARS = 500;    // trunca mensagem isolada gigante
+    public const HISTORY_TOTAL_MAX_CHARS = 6000; // ceil aproximado do contexto histórico
+
+    /**
+     * Monta o histórico da conversa em formato OpenAI-like (lista de
+     * ['role' => 'user'|'assistant', 'content' => ...]) pra alimentar o LLM.
+     *
+     * Garante:
+     *  - ordem cronológica ascendente (a mais antiga primeiro);
+     *  - exclui a mensagem atual do usuário (evita duplicar quando o caller
+     *    adiciona ela depois do histórico);
+     *  - filtra conteúdo vazio/marcador (ex: '[áudio]' sem transcrição) — o
+     *    LLM se confunde com placeholders soltos no histórico;
+     *  - trunca cada mensagem isolada e limita o tamanho total.
+     *
+     * @return array<int,array{role:string,content:string}>
+     */
+    private function buildHistoryMessages(WhatsappChat $chat, string $currentUserMessage): array
+    {
+        $atual = trim($currentUserMessage);
+
+        $msgs = WhatsappMessage::where('chat_id', $chat->id)
+            ->orderByDesc('id')
+            ->take(self::HISTORY_TURNS_LIMIT + 5) // folga pra absorver descartes
+            ->get(['content', 'direction', 'created_at']);
+
+        $items = [];
+        $totalChars = 0;
+        foreach ($msgs->reverse() as $m) {
+            $content = trim((string) $m->content);
+            if ($content === '') {
+                continue;
+            }
+            // Pula marcadores de mídia sem conteúdo legível.
+            if (in_array($content, ['[áudio]', '[imagem]', '[vídeo]', '[sticker]', '[localização]', '[contato]', '[mensagem não suportada]'], true)) {
+                continue;
+            }
+            // Última mensagem inbound = atual; não duplicar (o caller adiciona).
+            if ($m->direction === 'inbound' && $content === $atual) {
+                continue;
+            }
+            if (mb_strlen($content) > self::HISTORY_MSG_MAX_CHARS) {
+                $content = mb_substr($content, 0, self::HISTORY_MSG_MAX_CHARS) . '…';
+            }
+            $items[] = [
+                'role' => $m->direction === 'outbound' ? 'assistant' : 'user',
+                'content' => $content,
+            ];
+            $totalChars += mb_strlen($content);
+        }
+
+        // Defesa em profundidade: corta as MAIS ANTIGAS se passar do teto.
+        while ($totalChars > self::HISTORY_TOTAL_MAX_CHARS && !empty($items)) {
+            $removida = array_shift($items);
+            $totalChars -= mb_strlen($removida['content']);
+        }
+        // E limita o nº de turnos absoluto.
+        if (count($items) > self::HISTORY_TURNS_LIMIT) {
+            $items = array_slice($items, -self::HISTORY_TURNS_LIMIT);
+        }
+
+        return array_values($items);
+    }
+
+    /**
+     * Converte o histórico estruturado em uma string única pra prompts
+     * que não suportam multi-turn nativamente (Gemini text-only no fluxo atual).
+     *
+     * @param array<int,array{role:string,content:string}> $history
+     */
+    private function historyAsPlainText(array $history): string
+    {
+        if (empty($history)) {
+            return '';
+        }
+        $lines = [];
+        foreach ($history as $m) {
+            $who = $m['role'] === 'assistant' ? 'Você (assistente)' : 'Usuário';
+            $lines[] = "{$who}: {$m['content']}";
+        }
+        return implode("\n", $lines);
+    }
 }
 
