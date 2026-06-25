@@ -23,8 +23,11 @@ class WhatsappInstanceController extends Controller
     {
         $this->middleware(function ($request, $next) {
             $user = auth()->user();
+            // Adicionado 'common' e 'client' para o MEI conectar instancia WhatsApp.
+            // Mesma classe de bug dos Gates que arrumamos em 2026-06-24 — esse
+            // check inline tinha ficado de fora.
             abort_unless(
-                in_array($user->role, ['manager', 'ngo', 'super_admin'], true),
+                in_array($user->role, ['manager', 'ngo', 'super_admin', 'common', 'client'], true),
                 403,
                 'Acesso restrito.'
             );
