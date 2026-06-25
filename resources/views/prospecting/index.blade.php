@@ -125,6 +125,15 @@
                 onclick="openBroadcastModal()">
             <i class="fab fa-whatsapp me-2"></i> Disparar WhatsApp para Selecionados
         </button>
+        <form id="formSendToBroadcast" action="{{ route('prospecting.send-to-broadcast') }}" method="POST" class="m-0">
+            @csrf
+            <input type="hidden" name="prospect_ids_raw" id="sendToBroadcastIdsInput" value="">
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold"
+                    onclick="enviarParaDisparoEmMassa()"
+                    title="Cria um rascunho no módulo formal de Disparo em Massa (anti-ban, agendamento, cota)">
+                <i class="fas fa-paper-plane me-1"></i> Enviar pro Disparo em Massa
+            </button>
+        </form>
         <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold"
                 onclick="deletarSelecionados()">
             <i class="fas fa-trash-alt me-1"></i> Deletar Selecionados
@@ -610,6 +619,15 @@
         const ids = Array.from(checked).map(el => el.value).join(',');
         document.getElementById('bulkDeleteIds').value = ids;
         document.getElementById('formBulkDelete').submit();
+    }
+
+    function enviarParaDisparoEmMassa() {
+        const checked = document.querySelectorAll('.prospect-cb:checked');
+        if (!checked.length) return;
+        if (!confirm(checked.length + ' contato(s) serão enviados como rascunho no módulo de Disparo em Massa. Continuar?')) return;
+        const ids = Array.from(checked).map(el => el.value).join(',');
+        document.getElementById('sendToBroadcastIdsInput').value = ids;
+        document.getElementById('formSendToBroadcast').submit();
     }
 
     function openBroadcastModal() {

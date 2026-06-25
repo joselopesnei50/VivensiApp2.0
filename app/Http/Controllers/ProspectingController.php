@@ -224,6 +224,82 @@ class ProspectingController extends Controller
         return back()->with('success', "{$total} mensagem(ns) agendada(s) para envio via WhatsApp. Processando em segundo plano.");
     }
 
+    /**
+     * Envia prospects selecionados pro módulo formal de Disparo em Massa.
+     * Cria uma BroadcastCampaign rascunho (status='draft') com os telefones
+     * pré-populados — o cliente conclui a campanha em /whatsapp/broadcast
+     * usando a infra completa (templates, agendamento, anti-ban, cota).
+     *
+     * Diferença vs broadcastWhatsapp: aquele dispara DIRETO (sem revisão,
+     * cota, agendamento). Esse aqui prepara o terreno pro fluxo formal.
+     */
+    public function sendToBroadcast(Request $request)
+    {
+        $request->validate([
+            'prospect_ids_raw' => 'required|string',
+        ]);
+
+        $ids = array_filter(array_map('intval', explode(',', $request->input('prospect_ids_raw'))));
+        if (empty($ids)) {
+            return back()->with('error', 'Nenhum lead selecionado.');
+        }
+
+        $tenantId = Auth::user()->tenant_id;
+
+        $prospects = Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $ids)
+            ->whereNotNull('phone')
+            ->where('phone', '!=', '')
+            ->get();
+
+        if ($prospects->isEmpty()) {
+            return back()->with('error', 'Nenhum lead selecionado possui número de telefone.');
+        }
+
+        // Normaliza e desduplica os telefones BR antes de gravar.
+        $phones = $prospects
+            ->map(fn ($p) => EvolutionApiService::normalizeBrazilianPhone((string) $p->phone))
+            ->filter(fn ($p) => $p && strlen($p) >= 12)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($phones)) {
+            return back()->with('error', 'Nenhum telefone válido entre os leads selecionados.');
+        }
+
+        if (!Schema::hasTable('broadcast_campaigns')) {
+            return back()->with('error', 'O módulo de Disparo em Massa não está disponível no momento.');
+        }
+
+        $campaign = BroadcastCampaign::create([
+            'tenant_id'         => $tenantId,
+            'created_by'        => Auth::id(),
+            'name'              => 'Prospecção IA — ' . now()->format('d/m/Y H:i'),
+            'message'           => '',
+            'has_image'         => false,
+            'audience_type'     => 'selected',
+            'status'            => 'draft',
+            'phones'            => json_encode($phones),
+            'actual_recipients' => count($phones),
+        ]);
+
+        // Marca os prospects como contatados pra não disparar duas vezes.
+        Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $prospects->pluck('id')->all())
+            ->update(['status' => 'contacted']);
+
+        return redirect()->route('whatsapp.broadcast.campaigns')->with(
+            'success',
+            sprintf(
+                'Rascunho criado com %d destinatário(s) da Prospecção IA. Edite a mensagem e dispare quando quiser.',
+                count($phones)
+            )
+        );
+    }
+
     private function findForTenant(int $id): Prospect
     {
         $tenantId = Auth::user()->tenant_id;
