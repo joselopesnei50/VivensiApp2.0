@@ -1186,7 +1186,10 @@
                 @endif
 
                 {{-- Accordion Iniciar Formulário (Fase 4 — 2.5) --}}
-                @if($isManager)
+                {{-- Usa $canQualifyLead (definido no @php do topo) que cobre
+                     manager, super_admin, ngo, common e client. NGO precisa
+                     poder disparar formularios de cadastro de doador / lead. --}}
+                @if($canQualifyLead)
                 <div class="crm-section">
                     <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-form" aria-expanded="false" onclick="loadActiveForms()">
                         <span>
