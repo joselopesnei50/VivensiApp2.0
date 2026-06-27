@@ -61,12 +61,21 @@ class LeadQualificationService
      */
     public function qualifyChat(WhatsappChat $chat): array
     {
+        Log::info('LeadQualification: invocado', [
+            'chat_id'   => $chat->id,
+            'tenant_id' => $chat->tenant_id,
+        ]);
+
         $tenant = $chat->tenant;
         if ($tenant === null) {
             throw new RuntimeException('Chat sem tenant — qualificação cancelada.');
         }
 
         $messages = $this->collectMessages($chat);
+        Log::info('LeadQualification: mensagens coletadas', [
+            'chat_id' => $chat->id,
+            'count'   => count($messages),
+        ]);
         if ($messages === []) {
             return $this->fallback('Conversa vazia — nada para classificar.', 'deepseek');
         }
@@ -260,6 +269,11 @@ PROMPT;
 
     private function fallback(string $error, string $provider): array
     {
+        Log::warning('LeadQualification: fallback', [
+            'provider' => $provider,
+            'error'    => $error,
+        ]);
+
         return [
             'qualification' => null,
             'intent'        => null,
