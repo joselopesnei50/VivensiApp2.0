@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 trait BelongsToTenant
 {
+    public function tenant()
+    {
+        return $this->belongsTo(\App\Models\Tenant::class);
+    }
+
     protected static function bootBelongsToTenant()
     {
         // 1. Aplicar filtro global de tenant_id em todas as consultas (SELECT)
