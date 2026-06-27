@@ -744,6 +744,10 @@
 @php
     $isManager = in_array(auth()->user()->role, ['manager', 'super_admin'], true);
     $isNgo     = auth()->user()->role === 'ngo';
+    // Qualificar Lead com IA: gestor, ONG, MEI/Comum/Cliente, super_admin.
+    // Não restringir só a $isManager (que cobre só Gestor) — MEI também precisa
+    // qualificar leads dos próprios clientes; NGO precisa qualificar doadores.
+    $canQualifyLead = in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo', 'common', 'client'], true);
 @endphp
 
     <div class="crm-layout">
@@ -1212,7 +1216,7 @@
                 @endif
 
                 {{-- Accordion Qualificar com IA (Fase 4 — 2.3) --}}
-                @if($isManager)
+                @if($canQualifyLead)
                 <div class="crm-section">
                     <div class="crm-header collapsed" data-bs-toggle="collapse" data-bs-target="#crm-qualify-ai" aria-expanded="false">
                         <span>
