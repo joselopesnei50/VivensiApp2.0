@@ -42,6 +42,10 @@ class WhatsappChat extends Model
         'is_bot_active',
     ];
 
+    public function tenant() {
+        return $this->belongsTo(Tenant::class);
+    }
+
     public function messages() {
         return $this->hasMany(WhatsappMessage::class, 'chat_id');
     }
