@@ -49,6 +49,20 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         ->name('whatsapp.forms.active');
     Route::post('/whatsapp/chat/{id}/forms/start', [App\Http\Controllers\WhatsappController::class, 'startFormSession'])
         ->name('whatsapp.chat.forms.start')->middleware('throttle:20,1');
+
+    // CRUD de formulários (Fase 4 — item 2.5, parte UI)
+    Route::get(   '/whatsapp/forms',                              [App\Http\Controllers\WhatsappFormController::class, 'index'])->name('whatsapp.forms.index');
+    Route::get(   '/whatsapp/forms/create',                       [App\Http\Controllers\WhatsappFormController::class, 'create'])->name('whatsapp.forms.create');
+    Route::post(  '/whatsapp/forms',                              [App\Http\Controllers\WhatsappFormController::class, 'store'])->name('whatsapp.forms.store')->middleware('throttle:30,1');
+    Route::get(   '/whatsapp/forms/{form}/edit',                  [App\Http\Controllers\WhatsappFormController::class, 'edit'])->name('whatsapp.forms.edit');
+    Route::put(   '/whatsapp/forms/{form}',                       [App\Http\Controllers\WhatsappFormController::class, 'update'])->name('whatsapp.forms.update')->middleware('throttle:30,1');
+    Route::delete('/whatsapp/forms/{form}',                       [App\Http\Controllers\WhatsappFormController::class, 'destroy'])->name('whatsapp.forms.destroy')->middleware('throttle:10,1');
+    Route::post(  '/whatsapp/forms/{form}/duplicate',             [App\Http\Controllers\WhatsappFormController::class, 'duplicate'])->name('whatsapp.forms.duplicate')->middleware('throttle:10,1');
+    Route::post(  '/whatsapp/forms/{form}/questions',             [App\Http\Controllers\WhatsappFormController::class, 'addQuestion'])->name('whatsapp.forms.questions.add')->middleware('throttle:60,1');
+    Route::patch( '/whatsapp/forms/{form}/questions/{question}',  [App\Http\Controllers\WhatsappFormController::class, 'updateQuestion'])->name('whatsapp.forms.questions.update')->middleware('throttle:60,1');
+    Route::delete('/whatsapp/forms/{form}/questions/{question}',  [App\Http\Controllers\WhatsappFormController::class, 'deleteQuestion'])->name('whatsapp.forms.questions.delete')->middleware('throttle:30,1');
+    Route::post(  '/whatsapp/forms/{form}/questions/reorder',     [App\Http\Controllers\WhatsappFormController::class, 'reorderQuestions'])->name('whatsapp.forms.questions.reorder')->middleware('throttle:30,1');
+
     Route::post('/whatsapp/chat/{id}/send-media',     [App\Http\Controllers\WhatsappController::class, 'sendMedia'])->name('whatsapp.chat.send-media');
     Route::post('/whatsapp/chat/{id}/send-audio',     [App\Http\Controllers\WhatsappController::class, 'sendAudio'])->name('whatsapp.chat.send-audio');
     Route::post('/whatsapp/chat/{id}/schedule',       [App\Http\Controllers\WhatsappController::class, 'scheduleMessage'])->name('whatsapp.chat.schedule');
