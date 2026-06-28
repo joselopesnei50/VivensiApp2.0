@@ -44,6 +44,12 @@
         </div>
     </div>
 
+    {{-- Painel de debug — mostra o JSON completo do ultimo response. --}}
+    <details class="mt-3 small">
+        <summary class="text-muted" style="cursor:pointer;">🔍 Debug: último JSON recebido</summary>
+        <pre id="debug-pane" class="mt-2 p-2 bg-light rounded" style="font-size:11px;max-height:200px;overflow:auto;">(sem dados ainda — mande uma mensagem)</pre>
+    </details>
+
 </div>
 
 <script>
@@ -126,7 +132,8 @@
                 body: JSON.stringify({ message: text }),
             });
             const d = await r.json();
-            console.log('[BRUNO DEBUG] response:', d);
+            const dbg = document.getElementById('debug-pane');
+            if (dbg) dbg.textContent = JSON.stringify(d, null, 2);
             if (r.ok && d.success) {
                 bubble('bot', d.reply, `tokens: ${d.tokens}`);
                 renderQualification(d.qualification);
