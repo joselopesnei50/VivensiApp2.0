@@ -70,6 +70,15 @@ class AdminSettingsController extends Controller
         $meta_social_app_secret_configured = (bool) SystemSetting::getValue('meta_social_app_secret');
         $meta_social_app_id = SystemSetting::getValue('meta_social_app_id'); // App ID is not a secret
 
+        // Bot Vendedor "Bruno" — id do tenant designado como "Vivensi Comercial".
+        // Conversas inbound nesse tenant viram Bruno automaticamente.
+        $bruno_sales_bot_tenant_id = (int) SystemSetting::getValue('bruno_sales_bot_tenant_id', 0);
+        try {
+            $bruno_tenants = \App\Models\Tenant::orderBy('name')->get(['id', 'name']);
+        } catch (\Throwable $e) {
+            $bruno_tenants = collect();
+        }
+
         // Booking / agenda settings — safe fallbacks se a tabela ainda não existir
         $booking_days          = SystemSetting::getValue('booking_days', '1,2,3,4,5');
         $booking_months        = SystemSetting::getValue('booking_months', '1,2,3,4,5,6,7,8,9,10,11,12');
@@ -138,7 +147,9 @@ class AdminSettingsController extends Controller
             'together_ai_configured',
             'dev_page_password_configured',
             'ga4_measurement_id',
-            'gtm_container_id'
+            'gtm_container_id',
+            'bruno_sales_bot_tenant_id',
+            'bruno_tenants'
         ));
 
     }
@@ -195,6 +206,7 @@ class AdminSettingsController extends Controller
             'dev_page_password'         => 'nullable|string|min:8|max:255',
             'ga4_measurement_id'        => 'nullable|string|max:50|regex:/^G-[A-Z0-9]+$/',
             'gtm_container_id'          => 'nullable|string|max:50|regex:/^GTM-[A-Z0-9]+$/',
+            'bruno_sales_bot_tenant_id' => 'nullable|integer|min:0',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -325,6 +337,10 @@ class AdminSettingsController extends Controller
         } else {
             \App\Models\SystemSetting::where('key', 'gtm_container_id')->delete();
         }
+
+        // Bruno — tenant id designado (0 = desligado, integer > 0 = tenant ativo)
+        $brunoTid = (int) ($validated['bruno_sales_bot_tenant_id'] ?? 0);
+        SystemSetting::setValue('bruno_sales_bot_tenant_id', $brunoTid, 'bruno');
 
         return redirect()->back()->with('success', 'Configurações de API atualizadas com sucesso!');
     }

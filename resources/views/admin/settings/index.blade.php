@@ -822,6 +822,46 @@
             </div>
         </div>
 
+        <!-- Bot Vendedor "Bruno" — tenant designado -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-box bg-primary text-white rounded-3 me-3">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Bot Vendedor — Bruno</h5>
+                        <p class="text-muted small mb-0">Tenant designado como "Vivensi Comercial". Conversas inbound nesse tenant viram Bruno automaticamente (em vez do Bruce padrão do cliente).</p>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-600 text-dark">
+                            Tenant ativo
+                            @if(!empty($bruno_sales_bot_tenant_id))
+                                <span class="badge bg-success ms-2">Ativo</span>
+                            @endif
+                        </label>
+                        <select name="bruno_sales_bot_tenant_id" class="form-select form-select-lg">
+                            <option value="0" {{ empty($bruno_sales_bot_tenant_id) ? 'selected' : '' }}>— Desligado (Bruno não responde em nenhum tenant) —</option>
+                            @foreach($bruno_tenants as $t)
+                                <option value="{{ $t->id }}" {{ (int) $bruno_sales_bot_tenant_id === (int) $t->id ? 'selected' : '' }}>
+                                    #{{ $t->id }} · {{ $t->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="form-text">Selecione o tenant onde o Bruno deve atender. Outros tenants continuam usando o Bruce padrão com o treinamento livre que cada cliente configurou.</div>
+                    </div>
+                </div>
+                <div class="alert alert-light border border-info border-opacity-50 d-flex align-items-start mt-4 mb-0 p-3 rounded-3">
+                    <i class="fas fa-info-circle text-info me-3 mt-1 fs-5"></i>
+                    <div class="small text-muted">
+                        Lembre de também ativar <code>ai_enabled</code> no WhatsappConfig do tenant escolhido — sem isso o job nem entra no Bruno. Persona, KB, planos e few-shot estão em <code>config/bot-vendedor.php</code> e podem ser editados sem deploy de código.
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Dev Portal Password -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
