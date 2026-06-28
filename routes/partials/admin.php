@@ -9,6 +9,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/analytics',  [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('admin.analytics');
         Route::get('/live-users', [App\Http\Controllers\AdminController::class, 'liveUsers'])->name('admin.live_users');
 
+        // Bruno Sandbox (teste do bot vendedor)
+        Route::get('/bruno',        [App\Http\Controllers\Admin\BrunoSandboxController::class, 'index'])->name('admin.bruno.index');
+        Route::post('/bruno/chat',  [App\Http\Controllers\Admin\BrunoSandboxController::class, 'chat'])->name('admin.bruno.chat');
+        Route::post('/bruno/clear', [App\Http\Controllers\Admin\BrunoSandboxController::class, 'clear'])->name('admin.bruno.clear');
+
         // Tenants
         Route::get('/tenants',             [App\Http\Controllers\AdminController::class, 'tenants'])->name('admin.tenants.index');
         Route::get('/tenants/create',      [App\Http\Controllers\AdminController::class, 'createTenant'])->name('admin.tenants.create');
