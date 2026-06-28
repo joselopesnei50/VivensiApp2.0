@@ -139,6 +139,7 @@ class BrunoTools
         }
 
         SendMeetingEmailsJob::dispatch($booking->id);
+        MeetingBooking::notifyAdmins($booking, 'via Bruno');
 
         return [
             'success'        => true,

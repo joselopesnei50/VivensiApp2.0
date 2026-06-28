@@ -4,7 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\Notification;
 use App\Models\SystemSetting;
+use App\Models\User;
+use Carbon\Carbon;
 
 class MeetingBooking extends Model
 {
@@ -35,6 +38,34 @@ class MeetingBooking extends Model
      * Retorna os slots disponíveis para uma data, respeitando as
      * configurações da agenda salvas em SystemSetting.
      */
+    /**
+     * Cria notificação no sininho pra todos os super_admins informando o
+     * novo agendamento. Usado tanto pela página pública /agendar quanto pelo
+     * agendamento inline do Bruno via function calling — centralizado aqui
+     * pra ambos passarem pelo mesmo caminho.
+     *
+     * @param  string  $sourceLabel  texto curto pra distinguir origem ("via Bruno", "via página pública")
+     */
+    public static function notifyAdmins(self $booking, string $sourceLabel = ''): void
+    {
+        $admins = User::where('role', 'super_admin')->pluck('id');
+        $dateFmt = Carbon::parse($booking->meeting_date)
+            ->locale('pt_BR')
+            ->isoFormat('D [de] MMMM');
+        $suffix = $sourceLabel !== '' ? " ({$sourceLabel})" : '';
+
+        foreach ($admins as $adminId) {
+            Notification::create([
+                'user_id' => $adminId,
+                'title'   => 'Novo Agendamento',
+                'message' => "📅 {$booking->name} agendou uma reunião para {$dateFmt} às {$booking->meeting_time}{$suffix}",
+                'type'    => 'booking',
+                'link'    => '/admin/bookings',
+                'read_at' => null,
+            ]);
+        }
+    }
+
     public static function availableSlotsFor(string $date): array
     {
         // Lê configurações do banco (com defaults sensatos)

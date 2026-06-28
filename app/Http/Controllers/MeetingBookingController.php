@@ -57,7 +57,7 @@ class MeetingBookingController extends Controller
         SendMeetingEmailsJob::dispatch($booking->id);
 
         // Notificações no painel (DB write rápido — síncrono)
-        $this->notifyAdmins($booking);
+        MeetingBooking::notifyAdmins($booking, 'via página pública');
 
         return response()->json([
             'success' => true,
@@ -81,23 +81,4 @@ class MeetingBookingController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    private function notifyAdmins(MeetingBooking $booking): void
-    {
-        $admins = User::where('role', 'super_admin')->pluck('id');
-
-        $date = Carbon::parse($booking->meeting_date)
-            ->locale('pt_BR')
-            ->isoFormat('D [de] MMMM');
-
-        foreach ($admins as $adminId) {
-            Notification::create([
-                'user_id' => $adminId,
-                'title'   => 'Novo Agendamento',
-                'message' => "📅 {$booking->name} agendou uma reunião para {$date} às {$booking->meeting_time}",
-                'type'    => 'booking',
-                'link'    => '/admin/bookings',
-                'read_at' => null,
-            ]);
-        }
-    }
 }
