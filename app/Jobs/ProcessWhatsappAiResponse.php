@@ -78,6 +78,47 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         $tenant = Tenant::find($tenantId);
         $orgName = $tenant->name ?? ('Tenant #' . $tenantId);
 
+        // Etapa 4: roteia pro Bot Vendedor "Bruno" quando o inbound chega no
+        // tenant designado como "Vivensi Comercial". Bruno tem KB própria,
+        // tools de agendamento e qualificação automática. Outros tenants
+        // continuam no fluxo Bruce padrão abaixo.
+        $brunoTenantId = (int) \App\Models\SystemSetting::getValue('bruno_sales_bot_tenant_id', 0);
+        $isSalesBot    = $brunoTenantId > 0 && $brunoTenantId === (int) $tenantId;
+
+        if ($isSalesBot) {
+            $brunoQualification = null;
+            $replyText = '';
+            try {
+                /** @var \App\Services\BruceAiService $bruce */
+                $bruce = app(\App\Services\BruceAiService::class);
+                $bResult = $bruce->chat(
+                    userMessage: $this->userMessage,
+                    tenantId: $tenantId,
+                    role: 'sales_bot',
+                    userId: 0,
+                    contextType: 'whatsapp_chat',
+                    contextId: $chat->id,
+                );
+                if (empty($bResult['error'])) {
+                    $replyText          = trim((string) ($bResult['reply'] ?? ''));
+                    $brunoQualification = $bResult['qualification'] ?? null;
+                } else {
+                    Log::warning('Bruno (sales_bot) devolveu erro', [
+                        'chat_id' => $chat->id,
+                        'err'     => $bResult['error'],
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Bruno (sales_bot) exception', [
+                    'chat_id' => $chat->id,
+                    'err'     => $e->getMessage(),
+                ]);
+            }
+
+            $this->sendAndSync($config, $chat, $replyText, $tenantId, $brunoQualification);
+            return;
+        }
+
         // Treinamento personalizado do tenant — é o protagonista do prompt
         $training = $config->ai_training ?? "Você é um assistente virtual prestativo da organização {$orgName}. Responda de forma acolhedora e objetiva.";
 
@@ -275,6 +316,130 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                     'actor_type' => 'ai',
                     'event' => 'outbound_error',
                     'details' => ['error' => $e->getMessage()],
+                ]);
+            } catch (\Throwable $ignore) {
+            }
+        }
+    }
+
+    /**
+     * Envia o reply pelo provedor ativo (Meta Cloud > Evolution fallback),
+     * registra WhatsappMessage + audit log e sincroniza Lead/Kanban quando
+     * for caminho Bruno (sales_bot). Usado pelo caminho Bruno; o caminho
+     * Bruce padrão continua com a lógica inline acima.
+     */
+    private function sendAndSync(
+        WhatsappConfig $config,
+        WhatsappChat $chat,
+        string $replyText,
+        int $tenantId,
+        ?array $brunoQualification = null
+    ): void {
+        if ($replyText === '') {
+            $chat->update(['is_bot_active' => false]);
+            WhatsappAuditLog::create([
+                'tenant_id'  => (int) $tenantId,
+                'chat_id'    => (int) $chat->id,
+                'actor_type' => 'ai',
+                'event'      => 'ai_escalated_to_human',
+                'details'    => ['reason' => 'Bruno (sales_bot) não gerou resposta'],
+            ]);
+            Log::error('Bruno: nenhuma resposta gerada, escalado pra humano', [
+                'tenant_id' => $tenantId,
+                'chat_id'   => $chat->id,
+            ]);
+            $replyText = "Olá! Vou pedir pra Cristiane te chamar — costuma ser em até 2h em horário comercial. 🙏";
+        }
+
+        try {
+            $policy = app(WhatsappOutboundPolicy::class);
+            $reason = null;
+            $code = null;
+            if (!$policy->canSend($config, $chat, false, $reason, $code, true)) {
+                Log::info('Bruno outbound blocked by policy', [
+                    'tenant_id' => $tenantId,
+                    'chat_id'   => $chat->id,
+                    'reason'    => $reason,
+                    'code'      => $code,
+                ]);
+                WhatsappAuditLog::create([
+                    'tenant_id'  => (int) $tenantId,
+                    'chat_id'    => (int) $chat->id,
+                    'actor_type' => 'ai',
+                    'event'      => 'outbound_blocked',
+                    'details'    => [
+                        'code'         => $code,
+                        'reason'       => $reason,
+                        'content_len'  => mb_strlen($replyText),
+                        'content_hash' => hash('sha256', $replyText),
+                    ],
+                ]);
+                return;
+            }
+
+            $messageId = 'AI_' . uniqid();
+            if (!empty($config->meta_phone_number_id) && !empty($config->meta_access_token)) {
+                $metaService = new MetaCloudApiService($config);
+                $res = $metaService->sendTextMessage($chat->wa_id, $replyText);
+                if (isset($res['messages'][0]['id'])) {
+                    $messageId = $res['messages'][0]['id'];
+                } elseif (isset($res['error'])) {
+                    Log::error('Bruno: Meta Cloud API send failed', ['error' => $res, 'chat_id' => $chat->id]);
+                    return;
+                }
+            } else {
+                $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+                    ->where('status', 'open')
+                    ->first();
+                if (!$instance) {
+                    Log::error('Bruno: nenhuma instância WhatsApp conectada', ['tenant_id' => $tenantId]);
+                    return;
+                }
+                $evo = new \App\Services\EvolutionApiService($instance);
+                $res = $evo->sendMessage($chat->wa_id, $replyText, null, 2);
+                $messageId = $res['key']['id'] ?? ($res['messageId'] ?? $messageId);
+            }
+
+            WhatsappMessage::create([
+                'chat_id'    => $chat->id,
+                'message_id' => $messageId,
+                'content'    => $replyText,
+                'direction'  => 'outbound',
+                'type'       => 'text',
+            ]);
+
+            $chat->update(['last_message_at' => now()]);
+            $policy->recordSend($config, $chat);
+
+            WhatsappAuditLog::create([
+                'tenant_id'  => (int) $tenantId,
+                'chat_id'    => (int) $chat->id,
+                'actor_type' => 'ai',
+                'event'      => 'outbound_allowed',
+                'details'    => [
+                    'provider_message_id' => $messageId,
+                    'content_len'         => mb_strlen($replyText),
+                    'content_hash'        => hash('sha256', $replyText),
+                    'source'              => 'bruno_sales_bot',
+                ],
+            ]);
+
+            // Sincroniza Lead + Kanban — idempotente. Não interrompe o fluxo
+            // se falhar (BrunoLeadSync trata internamente).
+            \App\Services\Bruno\BrunoLeadSync::syncFromChat($chat, $brunoQualification);
+        } catch (\Throwable $e) {
+            Log::warning('Bruno send failed', [
+                'tenant_id' => $tenantId,
+                'chat_id'   => $chat->id,
+                'error'     => $e->getMessage(),
+            ]);
+            try {
+                WhatsappAuditLog::create([
+                    'tenant_id'  => (int) $tenantId,
+                    'chat_id'    => (int) $chat->id,
+                    'actor_type' => 'ai',
+                    'event'      => 'outbound_error',
+                    'details'    => ['error' => $e->getMessage()],
                 ]);
             } catch (\Throwable $ignore) {
             }
