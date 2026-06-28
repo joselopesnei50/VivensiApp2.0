@@ -61,6 +61,13 @@ class BruceAiService
 
         $reply = data_get($response, 'choices.0.message.content', 'Não consegui processar sua mensagem.');
 
+        // Pos-processamento: Bruno (sales_bot) responde em WhatsApp, que não
+        // renderiza Markdown. LLM as vezes ignora a regra do prompt — strip
+        // forçado garante texto limpo.
+        if ($role === 'sales_bot') {
+            $reply = $this->stripMarkdown($reply);
+        }
+
         // Persistir histórico (user + assistant) — chave isolada por contexto
         $newHistory = array_merge($history, [
             ['role' => 'user',      'content' => $userMessage],
@@ -85,6 +92,30 @@ class BruceAiService
     public function clearHistory(int $tenantId, int $userId = 0, ?string $contextType = null, ?int $contextId = null): void
     {
         Cache::forget($this->historyKey($tenantId, $userId, $contextType, $contextId));
+    }
+
+    /**
+     * Remove sintaxe Markdown comum da resposta antes de devolver pro canal
+     * WhatsApp (que não renderiza). Defesa em profundidade — o prompt já pede
+     * pra não usar, mas o LLM as vezes escapa.
+     */
+    private function stripMarkdown(string $text): string
+    {
+        // Negrito **texto** → texto, e __texto__ → texto
+        $text = preg_replace('/\*\*(.+?)\*\*/u', '$1', $text);
+        $text = preg_replace('/__(.+?)__/u', '$1', $text);
+        // Itálico *texto* → texto, e _texto_ → texto (evita pegar **)
+        $text = preg_replace('/(?<!\*)\*(?!\*)([^\*\n]+?)\*(?!\*)/u', '$1', $text);
+        $text = preg_replace('/(?<!_)_(?!_)([^_\n]+?)_(?!_)/u', '$1', $text);
+        // Strike ~~texto~~ → texto
+        $text = preg_replace('/~~(.+?)~~/u', '$1', $text);
+        // Headers no início de linha: ### Texto → Texto
+        $text = preg_replace('/^#{1,6}\s+/mu', '', $text);
+        // Bullets no início de linha: "- item" ou "* item" → "item"
+        $text = preg_replace('/^[\-\*]\s+/mu', '', $text);
+        // Múltiplas linhas em branco viram uma só
+        $text = preg_replace("/\n{3,}/", "\n\n", $text);
+        return trim($text);
     }
 
     // ── Insight proativo (usado no dashboard, cache 6h) ───────────────────────
@@ -219,6 +250,7 @@ PROMPT;
         $ctas          = $kb['ctas']                ?? [];
         $fewShot       = $kb['few_shot']            ?? [];
         $links         = $kb['links']               ?? [];
+        $lgpd          = $kb['lgpd']                ?? [];
 
         $personaRules = isset($persona['rules']) && is_array($persona['rules'])
             ? implode("\n", array_map(fn ($r) => "- {$r}", $persona['rules']))
@@ -328,6 +360,14 @@ PROMPT;
             $linksBlock .= "- {$k}: {$v}\n";
         }
 
+        $lgpdBlock = '';
+        if (!empty($lgpd['pitch'])) {
+            $lgpdBlock .= "\nPitch: {$lgpd['pitch']}\n\nMecanismos disponíveis:\n";
+            foreach (($lgpd['mecanismos'] ?? []) as $m) {
+                $lgpdBlock .= "- {$m}\n";
+            }
+        }
+
         return <<<PROMPT
 Você é {$persona['name']}, {$persona['role']}.
 
@@ -349,6 +389,9 @@ Quando o lead perguntar "o que vocês têm pra X?" ou "no plano X eu consigo faz
 ### WhatsApp — Opções e Treinamento da Bruce AI (use esta seção para perguntas sobre WhatsApp e bot)
 O cliente escolhe entre Evolution API (nativa, sem custo extra) e WhatsApp Oficial Meta (sob custos da Meta). NUNCA diga que só temos uma das duas — temos as duas, integradas.
 {$waBlock}
+
+### LGPD e Proteção de Dados (importante pra ONGs, empresas e qualquer lead que lida com dados pessoais — mencione PROATIVAMENTE)
+{$lgpdBlock}
 
 ### Diferenciais
 {$differentials}
