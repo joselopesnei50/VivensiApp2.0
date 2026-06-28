@@ -43,8 +43,12 @@ class BruceAiService
     ): array {
         $history = $this->getHistory($tenantId, $userId, $contextType, $contextId);
 
+        $systemPrompt = $role === 'sales_bot'
+            ? $this->buildSalesBotPrompt($tenantId)
+            : $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId);
+
         $messages = array_merge(
-            [['role' => 'system', 'content' => $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId)]],
+            [['role' => 'system', 'content' => $systemPrompt]],
             $history,
             [['role' => 'user', 'content' => $userMessage]]
         );
@@ -193,6 +197,153 @@ Você é Bruce, assistente de inteligência artificial do sistema Vivensi.
 Use esses dados para responder perguntas sobre finanças, projetos e tarefas sem pedir que o usuário os forneça novamente.
 
 {$contextBlock}
+PROMPT;
+    }
+
+    /**
+     * System prompt do Bot Vendedor "Bruno" (vide docs/bot-vendedor.md).
+     * Lê KB de config/prompts/bot-vendedor.php — editável sem deploy de código.
+     */
+    private function buildSalesBotPrompt(int $tenantId): string
+    {
+        $kb = config('bot-vendedor');
+        if (!is_array($kb)) {
+            return 'Você é Bruno, consultor comercial Vivensi. (KB do bot-vendedor não carregada — verificar config/bot-vendedor.php)';
+        }
+
+        $persona       = $kb['persona']             ?? [];
+        $product       = $kb['product']             ?? [];
+        $discovery     = $kb['discovery_framework'] ?? [];
+        $objections    = $kb['objections']          ?? [];
+        $escalation    = $kb['escalation']          ?? [];
+        $ctas          = $kb['ctas']                ?? [];
+        $fewShot       = $kb['few_shot']            ?? [];
+        $links         = $kb['links']               ?? [];
+
+        $personaRules = isset($persona['rules']) && is_array($persona['rules'])
+            ? implode("\n", array_map(fn ($r) => "- {$r}", $persona['rules']))
+            : '';
+
+        $differentials = isset($product['differentials']) && is_array($product['differentials'])
+            ? implode("\n", array_map(fn ($d) => "- {$d}", $product['differentials']))
+            : '';
+
+        $verticalsBlock = isset($product['verticals']) && is_array($product['verticals'])
+            ? implode("\n", array_map(fn ($k, $v) => "- **{$k}**: {$v}", array_keys($product['verticals']), $product['verticals']))
+            : '';
+
+        $plansBlock = '';
+        if (isset($product['plans']) && is_array($product['plans'])) {
+            foreach ($product['plans'] as $p) {
+                $feats = isset($p['features']) && is_array($p['features']) ? implode(', ', $p['features']) : '';
+                $plansBlock .= "- **{$p['name']}** ({$p['target']}): {$p['price_monthly']}/mês ou {$p['price_yearly']}/ano — {$feats}\n";
+            }
+        }
+
+        $casesBlock = isset($product['cases']) && is_array($product['cases'])
+            ? implode("\n", array_map(fn ($c) => "- {$c}", $product['cases']))
+            : '';
+
+        $notForBlock = isset($product['not_for']) && is_array($product['not_for'])
+            ? implode("\n", array_map(fn ($n) => "- {$n}", $product['not_for']))
+            : '';
+
+        $discoveryBlock = '';
+        foreach (['situacao', 'problema', 'implicacao', 'necessidade'] as $stage) {
+            if (!empty($discovery[$stage])) {
+                $discoveryBlock .= "- **{$stage}**: \"{$discovery[$stage]}\"\n";
+            }
+        }
+        $discoveryRule = $discovery['rule'] ?? '';
+
+        $objectionsBlock = '';
+        foreach ($objections as $o) {
+            $objectionsBlock .= "- **\"{$o['objection']}\"** → {$o['reply']}\n";
+        }
+
+        $escalationTriggers = isset($escalation['triggers']) && is_array($escalation['triggers'])
+            ? implode("\n", array_map(fn ($t) => "- {$t}", $escalation['triggers']))
+            : '';
+        $humanName    = $escalation['human_name']      ?? '{{NOME_HUMANO}}';
+        $humanEta     = $escalation['human_eta_hours'] ?? 2;
+        $bizHours     = $escalation['business_hours']  ?? '';
+        $escalationAction = $escalation['action']      ?? '';
+
+        $ctasBlock = '';
+        foreach ($ctas as $level => $cta) {
+            $ctasBlock .= "- **{$level}**: {$cta}\n";
+        }
+
+        $fewShotBlock = '';
+        foreach ($fewShot as $i => $ex) {
+            $n = $i + 1;
+            $fewShotBlock .= "### Exemplo {$n} — {$ex['situacao']}\n";
+            $fewShotBlock .= "Lead: \"{$ex['lead']}\"\n";
+            $fewShotBlock .= "Bruno: \"{$ex['bruno']}\"\n\n";
+        }
+
+        $linksBlock = '';
+        foreach ($links as $k => $v) {
+            $linksBlock .= "- {$k}: {$v}\n";
+        }
+
+        return <<<PROMPT
+Você é {$persona['name']}, {$persona['role']}.
+
+## TOM E IDENTIDADE (OBRIGATÓRIO)
+{$persona['tone']}
+
+{$personaRules}
+
+## PRODUTO — VIVENSI
+{$product['short_pitch']}
+
+### Verticais atendidas
+{$verticalsBlock}
+
+### Diferenciais
+{$differentials}
+
+### Planos
+{$plansBlock}
+### Cases reais (prova social)
+{$casesBlock}
+
+### Onde Vivensi NÃO é a melhor escolha (seja honesto)
+{$notForBlock}
+
+## FRAMEWORK DE DESCOBERTA (use ANTES de pitchar)
+Encadeie 2-4 perguntas naturalmente — não despeje todas de uma vez:
+{$discoveryBlock}
+
+Regra: {$discoveryRule}
+
+## OBJEÇÕES — COMO RESPONDER
+{$objectionsBlock}
+
+## ESCALADA PARA HUMANO
+Escale automaticamente quando:
+{$escalationTriggers}
+
+Quando escalar: {$escalationAction}
+Humano de plantão: {$humanName} (responde em até {$humanEta}h, horário comercial: {$bizHours}).
+
+## CTAs (1 por resposta relevante — NUNCA pergunta vaga tipo "posso ajudar em algo mais?")
+{$ctasBlock}
+
+## EXEMPLOS DE CONVERSAS (few-shot — siga o estilo)
+
+{$fewShotBlock}
+
+## LINKS ÚTEIS
+{$linksBlock}
+
+## REGRAS FINAIS
+- Nunca prometa feature que não está na lista de planos acima.
+- Nunca invente preços — use os da seção Planos. Se não souber, diga "sob consulta" e escale.
+- Se a pergunta sair completamente do escopo de venda (suporte técnico de cliente já ativo, dúvida operacional), diga "esse é um assunto pra equipe de sucesso — vou redirecionar" e escale.
+- Idioma: português do Brasil.
+- Data atual: {$this->today()}
 PROMPT;
     }
 
