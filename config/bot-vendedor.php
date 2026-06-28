@@ -42,22 +42,22 @@ return [
             'terceiro_setor' => [
                 'titulo' => 'Painel Terceiro Setor (ONGs/OSCs)',
                 'grupos' => [
-                    'Projetos e Captação'      => ['Projetos Ativos', 'Doadores (CRM)', 'Recibos de doação', 'Editais e Convênios', 'CRM de Patrocínios'],
-                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA (Bruce)', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
-                    'Marketing e Comunicação'  => ['E-mail Marketing', 'Construtor de Landing Pages', 'Inteligência Territorial (geo)', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA de doadores', 'Rifas Online', 'Gestão de Redes Sociais'],
-                    'Financeiro'               => ['Fluxo de Caixa', 'Orçamento Anual por projeto', 'Conciliação Bancária', 'Lançamento de transações'],
-                    'Pessoas e Beneficiários'  => ['Equipe da ONG', 'RH e Voluntários', 'Cadastro de Beneficiários', 'Indicadores Sociais', 'Relatório Anual de impacto'],
-                    'Patrimônio e Estoque'     => ['Almoxarifado e Estoque', 'Gestão de Patrimônio'],
-                    'Contratos e Jurídico'     => ['Contratos Digitais com assinatura eletrônica'],
-                    'Relatórios e Auditoria'   => ['DRE (Demonstração de Resultados)', 'Central de Auditoria', 'Portal da Transparência público'],
-                    'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas)', 'Bruce AI (assistente conversacional)'],
+                    'Projetos e Captação'      => ['Projetos Ativos com orçamento e equipe', 'Doadores (CRM completo)', 'Recibos de doação', 'Editais e Convênios', 'Análise de Editais pela Bruce AI', 'Geração de proposta de edital pela Bruce AI', 'CRM de Patrocínios'],
+                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA Bruce — treinavel pelo cliente', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
+                    'Marketing e Comunicação'  => ['E-mail Marketing', 'Construtor de Landing Pages', 'Inteligência Territorial (mapas e geo)', 'Social AI Hub (gera posts pra redes)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA de doadores', 'Rifas Online', 'Gestão de Redes Sociais'],
+                    'Financeiro'               => ['Fluxo de Caixa', 'Planejamento e Orçamento Anual por projeto', 'Conciliação Bancária', 'Lançamento de transações', 'Aprovação de despesas'],
+                    'Pessoas, RH e Voluntários' => ['Equipe da ONG (gestão de colaboradores)', 'RH com folha simplificada', 'Cadastro de Voluntários', 'Emissão de Certificados de Voluntário em PDF', 'Cadastro de Beneficiários', 'Indicadores Sociais e ESG', 'Relatório Anual de impacto'],
+                    'Patrimônio e Estoque'     => ['Almoxarifado e Estoque com movimentação', 'Gestão de Patrimônio com depreciação'],
+                    'Contratos e Jurídico'     => ['Contratos Digitais com assinatura eletrônica', 'Repositório de contratos e termos'],
+                    'Relatórios e Auditoria'   => ['DRE (Demonstração de Resultados)', 'Central de Auditoria', 'Portal da Transparência público (URL pública)'],
+                    'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas BruceIA)', 'Bruce AI (assistente conversacional integrado em todo o sistema)'],
                 ],
             ],
             'mei' => [
                 'titulo' => 'Painel MEI / Pequeno Negócio',
                 'grupos' => [
                     'CRM e Clientes'           => ['Meus Clientes', 'Cadastro rápido de cliente'],
-                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA (Bruce)', 'Formulários conversacionais', 'Automações por regra'],
+                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA Bruce — treinavel pelo cliente', 'Formulários conversacionais', 'Automações por regra'],
                     'Marketing e Comunicação'  => ['Landing Pages', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA de clientes', 'Gestão de Redes Sociais'],
                     'Gestão Financeira'        => ['Fluxo de Caixa', 'Recibos e NFS-e', 'Emissão rápida de recibo', 'Conciliação Bancária', 'Planejamento Anual'],
                     'Inteligência Artificial'  => ['Bruce AI (assistente conversacional)'],
@@ -68,7 +68,7 @@ return [
                 'grupos' => [
                     'Projetos e Operações'     => ['Projetos com orçamento', 'Equipe e RH', 'Agenda Corporativa', 'Central de Aprovações', 'Perfil Operacional', 'Kanban Geral'],
                     'Contratos e Financeiro'   => ['Contratos Digitais com assinatura eletrônica', 'Conciliação Bancária'],
-                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA (Bruce)', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
+                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA Bruce — treinavel pelo cliente', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
                     'Marketing e Comunicação'  => ['E-mail Marketing', 'Landing Pages', 'Inteligência Territorial (geo)', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA', 'Rifas Online', 'Gestão de Redes Sociais'],
                     'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas)', 'Bruce AI (assistente conversacional)'],
                     'Treinamento'              => ['Vivensi Academy (cursos)'],
@@ -76,11 +76,44 @@ return [
             ],
         ],
         'differentials' => [
-            'Único ERP brasileiro com WhatsApp Oficial Meta integrado (concorrentes usam Z-API/Evolution = risco de ban).',
-            'Bruce AI nativa: qualifica leads, sugere próxima ação, gera propostas, análise financeira — sem addon.',
-            'Especialização por vertical: painel ONG, painel MEI, painel Gestor falam a linguagem certa.',
+            'Flexibilidade WhatsApp: o cliente escolhe entre Evolution API nativa (sem custo adicional, número via celular conectado) OU WhatsApp Oficial Meta (Cloud API, sem celular, custos da Meta por conversa). Os dois caminhos estão prontos no sistema, basta ativar o que preferir.',
+            'Bruce AI nativa e treinável pelo próprio cliente: cada organização configura personalidade, tom e regras da IA no painel (WhatsApp > Chatbot & Config). A Bruce aprende e responde seguindo o padrão da organização.',
+            'IA nativa pra qualificar leads, sugerir próxima ação, gerar propostas e fazer análise financeira — sem addon, sem mensalidade extra.',
+            'Especialização por vertical: painel ONG, painel MEI, painel Gestor falam a linguagem certa (doador/edital vs cliente/venda vs projeto/aprovação).',
             'LGPD-first: auditoria, opt-in/opt-out automático, criptografia at-rest.',
             'Preço em reais, sem dólar volátil.',
+        ],
+
+        // Detalhes do WhatsApp pra Bruno responder com precisao quando perguntarem
+        // sobre custos, API, treinamento do bot, etc.
+        'whatsapp_detalhes' => [
+            'evolution' => [
+                'titulo' => 'Evolution API (nativa do Vivensi)',
+                'pontos' => [
+                    'Incluida sem custo adicional em todos os planos',
+                    'Conecta o numero via QR Code (precisa de um celular ou chip ativo)',
+                    'Boa pra MEI, ONGs pequenas e quem comeca',
+                    'Risco moderado de ban se houver disparo em massa fora de boas praticas',
+                ],
+            ],
+            'meta_oficial' => [
+                'titulo' => 'WhatsApp Oficial Meta (Cloud API)',
+                'pontos' => [
+                    'Numero hospedado na nuvem da Meta — sem celular, sem QR Code',
+                    'Custos cobrados pela Meta por conversa iniciada (24h)',
+                    'Templates aprovados pela Meta pra iniciar conversas',
+                    'Zero risco de ban — recomendado pra operacoes maiores',
+                ],
+            ],
+            'treinamento_bot' => [
+                'onde' => 'No painel do cliente, em WhatsApp > Chatbot e Config',
+                'como' => 'Cliente escreve em texto livre as instrucoes de personalidade, tom, vocabulario e regras da Bruce AI. A IA aplica essas instrucoes em todas as respostas automaticas. Pode atualizar a qualquer momento.',
+                'exemplos_de_instrucao' => [
+                    'Tom formal, sempre tratar o doador por "senhor" ou "senhora".',
+                    'Quando o lead perguntar sobre evento, responder com link de inscricao e telefone do organizador.',
+                    'Nao oferecer descontos sem aprovacao humana.',
+                ],
+            ],
         ],
         'plans' => [
             // {{REVISAR: preencher com os planos reais cadastrados em /admin/subscription-plans}}
@@ -221,6 +254,16 @@ return [
             'situacao' => 'Lead já usa concorrente (RD CRM)',
             'lead'     => 'Já uso RD CRM, por que mudaria?',
             'bruno'    => 'RD é bom em automação de marketing. Curiosidade: você usa o WhatsApp pelo RD ou pelo Z-API à parte? E hoje, qual parte do RD você gostaria que funcionasse melhor?',
+        ],
+        [
+            'situacao' => 'Pergunta sobre WhatsApp (Evolution vs Meta)',
+            'lead'     => 'Como funciona o WhatsApp no Vivensi? Tem custo extra?',
+            'bruno'    => 'Tem duas opções e quem escolhe é você. A primeira é a Evolution API, nativa do Vivensi e sem custo adicional — conecta pelo QR Code, dá pra começar hoje. A segunda é o WhatsApp Oficial da Meta, que roda na nuvem sem celular conectado e tem custo por conversa pago direto à Meta — recomendado pra operações maiores que querem zero risco de ban. Pra te indicar a melhor: qual volume de mensagens por mês você imagina?',
+        ],
+        [
+            'situacao' => 'Pergunta sobre treinamento do bot',
+            'lead'     => 'Como é o treinamento do chatbot? Eu consigo personalizar?',
+            'bruno'    => 'Sim, treinamento é direto no painel. Em WhatsApp e depois Chatbot e Config, você escreve em texto livre como quer que a Bruce responda — personalidade, tom, vocabulário, regras. Por exemplo: tratar doador por "senhor", não oferecer desconto sem aprovação humana, sempre mandar link de inscrição em pergunta sobre evento. A Bruce aplica essas instruções em todas as respostas e você pode atualizar a qualquer momento.',
         ],
     ],
 

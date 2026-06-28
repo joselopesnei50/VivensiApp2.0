@@ -245,6 +245,34 @@ PROMPT;
             }
         }
 
+        // Detalhes do WhatsApp (Evolution vs Meta) + treinamento do bot.
+        $waBlock = '';
+        $waDet = $product['whatsapp_detalhes'] ?? [];
+        if (!empty($waDet['evolution'])) {
+            $waBlock .= "\n#### {$waDet['evolution']['titulo']}\n";
+            foreach (($waDet['evolution']['pontos'] ?? []) as $p) {
+                $waBlock .= "- {$p}\n";
+            }
+        }
+        if (!empty($waDet['meta_oficial'])) {
+            $waBlock .= "\n#### {$waDet['meta_oficial']['titulo']}\n";
+            foreach (($waDet['meta_oficial']['pontos'] ?? []) as $p) {
+                $waBlock .= "- {$p}\n";
+            }
+        }
+        if (!empty($waDet['treinamento_bot'])) {
+            $tb = $waDet['treinamento_bot'];
+            $waBlock .= "\n#### Treinamento da Bruce AI\n";
+            $waBlock .= "- Onde: {$tb['onde']}\n";
+            $waBlock .= "- Como: {$tb['como']}\n";
+            if (!empty($tb['exemplos_de_instrucao'])) {
+                $waBlock .= "- Exemplos de instrução do cliente:\n";
+                foreach ($tb['exemplos_de_instrucao'] as $ex) {
+                    $waBlock .= "  * \"{$ex}\"\n";
+                }
+            }
+        }
+
         $plansBlock = '';
         if (isset($product['plans']) && is_array($product['plans'])) {
             foreach ($product['plans'] as $p) {
@@ -317,6 +345,10 @@ Você é {$persona['name']}, {$persona['role']}.
 ### Catálogo de funcionalidades por painel (CONSULTE SEMPRE — não invente, não omita)
 Quando o lead perguntar "o que vocês têm pra X?" ou "no plano X eu consigo fazer Y?", use ESTA lista. Não cite funcionalidades fora dela. Se a pergunta for sobre algo que não está aqui, diga que vai verificar e escala pra humano.
 {$panelsBlock}
+
+### WhatsApp — Opções e Treinamento da Bruce AI (use esta seção para perguntas sobre WhatsApp e bot)
+O cliente escolhe entre Evolution API (nativa, sem custo extra) e WhatsApp Oficial Meta (sob custos da Meta). NUNCA diga que só temos uma das duas — temos as duas, integradas.
+{$waBlock}
 
 ### Diferenciais
 {$differentials}
