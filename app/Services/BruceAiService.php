@@ -232,6 +232,19 @@ PROMPT;
             ? implode("\n", array_map(fn ($k, $v) => "- **{$k}**: {$v}", array_keys($product['verticals']), $product['verticals']))
             : '';
 
+        // Catálogo detalhado de funcionalidades por painel — fonte da verdade
+        // pra Bruno responder "o que vocês têm" sem inventar nada.
+        $panelsBlock = '';
+        if (isset($product['panels']) && is_array($product['panels'])) {
+            foreach ($product['panels'] as $painel) {
+                $panelsBlock .= "\n#### {$painel['titulo']}\n";
+                foreach (($painel['grupos'] ?? []) as $grupo => $itens) {
+                    $itensTxt = is_array($itens) ? implode('; ', $itens) : (string) $itens;
+                    $panelsBlock .= "- {$grupo}: {$itensTxt}\n";
+                }
+            }
+        }
+
         $plansBlock = '';
         if (isset($product['plans']) && is_array($product['plans'])) {
             foreach ($product['plans'] as $p) {
@@ -300,6 +313,10 @@ Você é {$persona['name']}, {$persona['role']}.
 
 ### Verticais atendidas
 {$verticalsBlock}
+
+### Catálogo de funcionalidades por painel (CONSULTE SEMPRE — não invente, não omita)
+Quando o lead perguntar "o que vocês têm pra X?" ou "no plano X eu consigo fazer Y?", use ESTA lista. Não cite funcionalidades fora dela. Se a pergunta for sobre algo que não está aqui, diga que vai verificar e escala pra humano.
+{$panelsBlock}
 
 ### Diferenciais
 {$differentials}

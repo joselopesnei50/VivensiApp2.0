@@ -18,7 +18,8 @@ return [
         'tone' => 'Direto, profissional, acessível. Trata por "você". Empático sem ser bajulador. Curioso antes de pitchar.',
         'rules' => [
             'Português brasileiro, frases curtas.',
-            'Markdown só quando organiza melhor (listas, negritos pontuais).',
+            'IMPORTANTE: NÃO use Markdown. Nada de ** (negrito), nada de # (títulos), nada de - (listas com hífen). O canal é WhatsApp, que não renderiza Markdown e os caracteres aparecem literais. Use texto plano em parágrafos curtos separados por linha em branco.',
+            'Quando precisar enumerar, prefira frase corrida ("Temos finanças, CRM e WhatsApp") ou numeração simples ("1)", "2)") em vez de bullets.',
             'Sem emojis na abertura. Máximo 1 emoji por conversa.',
             'PROIBIDO: mascote, animal, "que ótima pergunta", "amei sua dúvida".',
             'Nunca prometa feature inexistente — se não souber, escala pra humano.',
@@ -32,6 +33,47 @@ return [
             'ongs'      => 'ONGs/OSCs — captação, prestação de contas, beneficiários, transparência, LGPD.',
             'mei'       => 'MEI / pequeno negócio — finanças, clientes, vendas, WhatsApp comercial.',
             'gestor'    => 'Gestor de projetos / PME — projetos, equipe, fluxo de caixa, CRM.',
+        ],
+
+        // Catálogo completo de funcionalidades por painel/vertical — fonte da verdade
+        // pra Bruno responder "o que vocês têm" com precisão. Extraído do menu real
+        // (resources/views/layouts/app.blade.php) em 2026-06-27.
+        'panels' => [
+            'terceiro_setor' => [
+                'titulo' => 'Painel Terceiro Setor (ONGs/OSCs)',
+                'grupos' => [
+                    'Projetos e Captação'      => ['Projetos Ativos', 'Doadores (CRM)', 'Recibos de doação', 'Editais e Convênios', 'CRM de Patrocínios'],
+                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA (Bruce)', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
+                    'Marketing e Comunicação'  => ['E-mail Marketing', 'Construtor de Landing Pages', 'Inteligência Territorial (geo)', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA de doadores', 'Rifas Online', 'Gestão de Redes Sociais'],
+                    'Financeiro'               => ['Fluxo de Caixa', 'Orçamento Anual por projeto', 'Conciliação Bancária', 'Lançamento de transações'],
+                    'Pessoas e Beneficiários'  => ['Equipe da ONG', 'RH e Voluntários', 'Cadastro de Beneficiários', 'Indicadores Sociais', 'Relatório Anual de impacto'],
+                    'Patrimônio e Estoque'     => ['Almoxarifado e Estoque', 'Gestão de Patrimônio'],
+                    'Contratos e Jurídico'     => ['Contratos Digitais com assinatura eletrônica'],
+                    'Relatórios e Auditoria'   => ['DRE (Demonstração de Resultados)', 'Central de Auditoria', 'Portal da Transparência público'],
+                    'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas)', 'Bruce AI (assistente conversacional)'],
+                ],
+            ],
+            'mei' => [
+                'titulo' => 'Painel MEI / Pequeno Negócio',
+                'grupos' => [
+                    'CRM e Clientes'           => ['Meus Clientes', 'Cadastro rápido de cliente'],
+                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA (Bruce)', 'Formulários conversacionais', 'Automações por regra'],
+                    'Marketing e Comunicação'  => ['Landing Pages', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA de clientes', 'Gestão de Redes Sociais'],
+                    'Gestão Financeira'        => ['Fluxo de Caixa', 'Recibos e NFS-e', 'Emissão rápida de recibo', 'Conciliação Bancária', 'Planejamento Anual'],
+                    'Inteligência Artificial'  => ['Bruce AI (assistente conversacional)'],
+                ],
+            ],
+            'gestor' => [
+                'titulo' => 'Painel Gestor de Projetos / PME',
+                'grupos' => [
+                    'Projetos e Operações'     => ['Projetos com orçamento', 'Equipe e RH', 'Agenda Corporativa', 'Central de Aprovações', 'Perfil Operacional', 'Kanban Geral'],
+                    'Contratos e Financeiro'   => ['Contratos Digitais com assinatura eletrônica', 'Conciliação Bancária'],
+                    'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA (Bruce)', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
+                    'Marketing e Comunicação'  => ['E-mail Marketing', 'Landing Pages', 'Inteligência Territorial (geo)', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA', 'Rifas Online', 'Gestão de Redes Sociais'],
+                    'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas)', 'Bruce AI (assistente conversacional)'],
+                    'Treinamento'              => ['Vivensi Academy (cursos)'],
+                ],
+            ],
         ],
         'differentials' => [
             'Único ERP brasileiro com WhatsApp Oficial Meta integrado (concorrentes usam Z-API/Evolution = risco de ban).',
