@@ -12,9 +12,12 @@
                 Persona, KB e few-shot ficam em <code>config/bot-vendedor.php</code>.
             </p>
         </div>
-        <button id="btn-clear" class="btn btn-outline-secondary btn-sm">
-            🗑️ Limpar histórico
-        </button>
+        <div class="text-end">
+            <div id="qual-badge" class="d-none mb-2"></div>
+            <button id="btn-clear" class="btn btn-outline-secondary btn-sm">
+                🗑️ Limpar histórico
+            </button>
+        </div>
     </div>
 
     <div class="card shadow-sm">
@@ -51,7 +54,31 @@
     const input     = document.getElementById('msg-input');
     const btnSend   = document.getElementById('btn-send');
     const btnClear  = document.getElementById('btn-clear');
+    const qualBadge = document.getElementById('qual-badge');
     const csrfToken = '{{ csrf_token() }}';
+
+    function renderQualification(q) {
+        if (!q || !q.qualification) {
+            qualBadge.classList.add('d-none');
+            qualBadge.innerHTML = '';
+            return;
+        }
+        const colors = { frio: '#6c757d', morno: '#f59e0b', quente: '#dc2626' };
+        const labels = { frio: '🥶 Frio', morno: '☕ Morno', quente: '🔥 Quente' };
+        const c = colors[q.qualification] || '#6c757d';
+        const lbl = labels[q.qualification] || q.qualification;
+        const conf = Math.round((q.confidence || 0) * 100);
+        let html = '<span style="display:inline-block;padding:6px 12px;border-radius:12px;background:' + c + ';color:#fff;font-weight:600;font-size:13px;">' + lbl + ' · ' + conf + '%</span>';
+        if (q.summary) {
+            html += '<div class="small text-muted mt-1" style="max-width:280px;">' + escapeHtml(q.summary) + '</div>';
+        }
+        qualBadge.innerHTML = html;
+        qualBadge.classList.remove('d-none');
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
 
     function bubble(role, text, meta) {
         if (empty) empty.remove();
@@ -101,6 +128,7 @@
             const d = await r.json();
             if (r.ok && d.success) {
                 bubble('bot', d.reply, `tokens: ${d.tokens}`);
+                renderQualification(d.qualification);
             } else {
                 bubble('bot', '⚠️ ' + (d.error || 'Falha ao responder.'), '');
             }
@@ -133,6 +161,7 @@
             },
         });
         log.innerHTML = '<div class="text-center text-muted small py-5" id="empty-state">Histórico limpo. Recomece a conversa.</div>';
+        renderQualification(null);
     });
 })();
 </script>

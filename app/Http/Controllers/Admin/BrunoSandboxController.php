@@ -43,16 +43,19 @@ class BrunoSandboxController extends Controller
         }
 
         return response()->json([
-            'success'   => true,
-            'reply'     => $result['reply'],
-            'tokens'    => $result['tokens'] ?? 0,
-            'timestamp' => $result['timestamp'] ?? now()->toIso8601String(),
+            'success'       => true,
+            'reply'         => $result['reply'],
+            'tokens'        => $result['tokens'] ?? 0,
+            'timestamp'     => $result['timestamp'] ?? now()->toIso8601String(),
+            'qualification' => $result['qualification'] ?? null,
         ]);
     }
 
     public function clear(BruceAiService $bruce): JsonResponse
     {
-        $bruce->clearHistory(self::SANDBOX_TENANT_ID, (int) auth()->id());
+        $userId = (int) auth()->id();
+        $bruce->clearHistory(self::SANDBOX_TENANT_ID, $userId);
+        \Illuminate\Support\Facades\Cache::forget("bruno.qualification." . self::SANDBOX_TENANT_ID . ".{$userId}");
 
         return response()->json(['success' => true]);
     }

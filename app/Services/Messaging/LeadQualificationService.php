@@ -180,6 +180,96 @@ PROMPT;
         return implode("\n", $lines);
     }
 
+    /**
+     * Qualifica diretamente a partir de um array de mensagens (formato OpenAI:
+     * [{role:'user'|'assistant', content:'...'}]). Usado pelo Bot Vendedor
+     * "Bruno" que mantém histórico em Redis (sem WhatsappChat persistido).
+     * Não depende de tenant/categoria — usa DeepSeek com prompt genérico.
+     *
+     * @param array<int,array{role:string, content:string}> $messages
+     */
+    public function qualifyMessages(array $messages, string $contactName = 'Lead', string $contextLabel = 'Conversa comercial Vivensi'): array
+    {
+        $clean = array_values(array_filter(
+            $messages,
+            fn ($m) => isset($m['role'], $m['content'])
+                && in_array($m['role'], ['user', 'assistant'], true)
+                && trim((string) $m['content']) !== ''
+        ));
+
+        if ($clean === []) {
+            return $this->fallback('Conversa vazia — nada para classificar.', 'deepseek');
+        }
+
+        $systemPrompt = $this->buildGenericQualificationPrompt($contextLabel);
+        $userPrompt   = $this->buildGenericUserPrompt($contactName, $clean);
+
+        try {
+            $raw = $this->callDeepSeek($systemPrompt, $userPrompt);
+        } catch (\Throwable $e) {
+            Log::warning('LeadQualification: qualifyMessages provedor falhou', [
+                'error' => $e->getMessage(),
+            ]);
+            return $this->fallback('Falha no provedor de IA (deepseek).', 'deepseek');
+        }
+
+        $parsed = $this->parseLlmJson($raw);
+        if ($parsed === null) {
+            Log::warning('LeadQualification: qualifyMessages JSON inválido', [
+                'raw_preview' => mb_substr($raw, 0, 300),
+            ]);
+            return $this->fallback('A IA não respondeu em formato esperado.', 'deepseek');
+        }
+
+        return $this->normalize($parsed, 'deepseek');
+    }
+
+    private function buildGenericQualificationPrompt(string $contextLabel): string
+    {
+        return <<<PROMPT
+Você é o qualificador de leads do Vivensi.
+
+Contexto: {$contextLabel}.
+
+Sua tarefa ÚNICA é analisar o histórico desta conversa e devolver um
+diagnóstico estruturado pra alimentar o CRM/Kanban.
+
+Saída obrigatória: APENAS um objeto JSON, sem prefácio, sem markdown, sem
+comentários. Schema:
+
+{
+  "qualification": "frio" | "morno" | "quente",
+  "intent": "interesse" | "suporte" | "reclamacao" | "outro",
+  "summary": "resumo curto (até 300 caracteres) do que o lead quer",
+  "next_action": "sugestão objetiva de próxima ação do vendedor",
+  "confidence": 0.0 a 1.0
+}
+
+Regras:
+- 'frio' = pouco engajamento ou sondagem distante.
+- 'morno' = interesse demonstrado mas sem decisão.
+- 'quente' = quer agir agora (assinar, agendar, pagar).
+- Não invente informação que não esteja na conversa.
+- Não exponha dado pessoal sensível no summary ou next_action.
+- Se a conversa for ambígua, prefira 'frio' com confidence baixa.
+PROMPT;
+    }
+
+    /**
+     * @param array<int,array{role:string, content:string}> $messages
+     */
+    private function buildGenericUserPrompt(string $contactName, array $messages): string
+    {
+        $lines = ["Conversa com {$contactName}:"];
+        foreach ($messages as $m) {
+            $who = $m['role'] === 'user' ? 'LEAD' : 'BRUNO';
+            $lines[] = "[{$who}] " . $m['content'];
+        }
+        $lines[] = '';
+        $lines[] = 'Devolva o JSON do diagnóstico.';
+        return implode("\n", $lines);
+    }
+
     // ── Provider calls ─────────────────────────────────────────────────────
 
     private function callDeepSeek(string $system, string $user): string

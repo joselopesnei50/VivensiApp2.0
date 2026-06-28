@@ -44,7 +44,7 @@ class BruceAiService
         $history = $this->getHistory($tenantId, $userId, $contextType, $contextId);
 
         $systemPrompt = $role === 'sales_bot'
-            ? $this->buildSalesBotPrompt($tenantId)
+            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)))
             : $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId);
 
         $messages = array_merge(
@@ -119,12 +119,45 @@ class BruceAiService
 
         $this->saveHistory($tenantId, $userId, $newHistory, $contextType, $contextId);
 
+        // Qualificação automática do lead (sales_bot apenas). Dispara a cada
+        // 4 mensagens do user (4, 8, 12...). Resultado é cacheado e injetado
+        // no system prompt do PRÓXIMO turno, ajustando o tom do Bruno.
+        $qualification = null;
+        if ($role === 'sales_bot') {
+            $userCount = count(array_filter($newHistory, fn ($m) => ($m['role'] ?? '') === 'user'));
+            $shouldQualify = $userCount >= 4 && $userCount % 4 === 0;
+            if ($shouldQualify) {
+                try {
+                    $qual = app(\App\Services\Messaging\LeadQualificationService::class)
+                        ->qualifyMessages($newHistory, 'Lead Sandbox');
+                    if (empty($qual['error'])) {
+                        Cache::put($this->qualificationKey($tenantId, $userId), $qual, self::HISTORY_TTL);
+                        $qualification = $qual;
+                    } else {
+                        Log::info('Bruno: qualifyMessages devolveu erro', ['err' => $qual['error']]);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Bruno: qualifyMessages exception', ['err' => $e->getMessage()]);
+                }
+            } else {
+                // Mesmo sem qualificar agora, devolve a última qualificação cacheada
+                // (se houver) pra UI mostrar status atualizado.
+                $qualification = Cache::get($this->qualificationKey($tenantId, $userId));
+            }
+        }
+
         return [
-            'reply'     => $reply,
-            'tokens'    => $tokens,
-            'timestamp' => now()->toIso8601String(),
-            'context'   => $contextType ? ['type' => $contextType, 'id' => $contextId] : null,
+            'reply'         => $reply,
+            'tokens'        => $tokens,
+            'timestamp'     => now()->toIso8601String(),
+            'context'       => $contextType ? ['type' => $contextType, 'id' => $contextId] : null,
+            'qualification' => $qualification,
         ];
+    }
+
+    private function qualificationKey(int $tenantId, int $userId): string
+    {
+        return "bruno.qualification.{$tenantId}.{$userId}";
     }
 
     public function clearHistory(int $tenantId, int $userId = 0, ?string $contextType = null, ?int $contextId = null): void
@@ -273,11 +306,37 @@ PROMPT;
      * System prompt do Bot Vendedor "Bruno" (vide docs/bot-vendedor.md).
      * Lê KB de config/prompts/bot-vendedor.php — editável sem deploy de código.
      */
-    private function buildSalesBotPrompt(int $tenantId): string
+    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null): string
     {
         $kb = config('bot-vendedor');
         if (!is_array($kb)) {
             return 'Você é Bruno, consultor comercial Vivensi. (KB do bot-vendedor não carregada — verificar config/bot-vendedor.php)';
+        }
+
+        // Bloco de status do lead — injetado quando há qualificação cacheada.
+        // Bruno usa isso pra adaptar tom: frio → educar, morno → descoberta,
+        // quente → propor demo ou link de pagamento.
+        $qualBlock = '';
+        if (!empty($qualification['qualification'])) {
+            $q       = $qualification['qualification'];
+            $conf    = round(((float) ($qualification['confidence'] ?? 0)) * 100);
+            $intent  = $qualification['intent']      ?? null;
+            $summary = $qualification['summary']     ?? '';
+            $action  = $qualification['next_action'] ?? '';
+
+            $estrategia = match ($q) {
+                'frio'   => 'EDUQUE — apresente diferenciais relevantes e descubra a dor real. NÃO ofereça demo ainda.',
+                'morno'  => 'DESCUBRA — aprofunde 1-2 perguntas SPIN antes de propor demo. Mencione um case real se couber.',
+                'quente' => 'FECHE — proponha agendamento de demo (use a tool consultar_slots) OU link de pagamento.',
+                default  => 'Continue a descoberta natural.',
+            };
+
+            $qualBlock = "\n### STATUS ATUAL DO LEAD (atualizado automaticamente pela IA de qualificação)\n"
+                . "- Classificação: {$q} ({$conf}% de confiança)\n"
+                . ($intent ? "- Intenção: {$intent}\n" : '')
+                . ($summary ? "- Resumo: {$summary}\n" : '')
+                . ($action ? "- Próxima ação sugerida: {$action}\n" : '')
+                . "- Estratégia recomendada: {$estrategia}\n";
         }
 
         $persona       = $kb['persona']             ?? [];
@@ -414,7 +473,7 @@ Você é {$persona['name']}, {$persona['role']}.
 {$persona['tone']}
 
 {$personaRules}
-
+{$qualBlock}
 ## PRODUTO — VIVENSI
 {$product['short_pitch']}
 
