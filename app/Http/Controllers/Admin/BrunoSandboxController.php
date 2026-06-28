@@ -48,7 +48,6 @@ class BrunoSandboxController extends Controller
             'tokens'        => $result['tokens'] ?? 0,
             'timestamp'     => $result['timestamp'] ?? now()->toIso8601String(),
             'qualification' => $result['qualification'] ?? null,
-            '_debug_qual'   => $result['_debug_qual'] ?? null,
         ]);
     }
 

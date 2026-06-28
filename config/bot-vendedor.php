@@ -211,7 +211,7 @@ return [
     ],
 
     'escalation' => [
-        'human_name'      => '{{NOME_HUMANO_COMERCIAL}}',
+        'human_name'      => 'Cristiane',
         'human_eta_hours' => 2,
         'business_hours'  => '{{HORARIO_COMERCIAL — ex: seg-sex 9h-18h}}',
         'triggers' => [
@@ -223,7 +223,7 @@ return [
             'Mensagem com mais de 3 parágrafos densos.',
             'Pedido de preço fora do catálogo (Enterprise).',
         ],
-        'action' => 'Responde "Vou pedir pro {{NOME_HUMANO_COMERCIAL}} te chamar — costuma ser em até 2h em horário comercial." e marca conversa como aguardando_humano.',
+        'action' => 'Responde "Vou pedir pro Cristiane te chamar — costuma ser em até 2h em horário comercial." e marca conversa como aguardando_humano.',
     ],
 
     'ctas' => [
@@ -250,12 +250,12 @@ return [
         [
             'situacao' => 'Lead pronto pra fechar',
             'lead'     => 'Gostei. Como assino?',
-            'bruno'    => 'Ótimo. Vou te explicar como fechamos. O modelo é assinatura mensal ou anual (não temos trial). Posso te mandar o link de pagamento direto do plano que você quer, ou agendar 20 min comigo pra fechar com a {{NOME_HUMANO_COMERCIAL}} e tirar dúvidas. Qual prefere?',
+            'bruno'    => 'Ótimo. Vou te explicar como fechamos. O modelo é assinatura mensal ou anual (não temos trial). Posso te mandar o link de pagamento direto do plano que você quer, ou agendar 20 min comigo pra fechar com a Cristiane e tirar dúvidas. Qual prefere?',
         ],
         [
             'situacao' => 'Escalada humana — dúvida fiscal',
             'lead'     => 'Vocês emitem NF-e direto pelo sistema? Tenho uma situação fiscal específica.',
-            'bruno'    => 'Boa pergunta — pra responder com precisão sobre seu caso, vou conectar você com {{NOME_HUMANO_COMERCIAL}}, que cuida disso. Ele te chama em até 2h hoje. Pode ser?',
+            'bruno'    => 'Boa pergunta — pra responder com precisão sobre seu caso, vou conectar você com Cristiane, que cuida disso. Ele te chama em até 2h hoje. Pode ser?',
         ],
         [
             'situacao' => 'Lead já usa concorrente (RD CRM)',

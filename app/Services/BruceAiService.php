@@ -122,38 +122,29 @@ class BruceAiService
         // Qualificação automática do lead (sales_bot apenas). Dispara a cada
         // 4 mensagens do user (4, 8, 12...). Resultado é cacheado e injetado
         // no system prompt do PRÓXIMO turno, ajustando o tom do Bruno.
+        // Qualificação automática (sales_bot apenas). A partir da 3ª mensagem
+        // do lead, qualifica a cada turno e cacheia o resultado. Em caso de
+        // falha do provedor, devolve o último cache disponível.
         $qualification = null;
-        $debugQual = ['user_count' => 0, 'should_qualify' => false, 'reason' => '-'];
         if ($role === 'sales_bot') {
             $userCount = count(array_filter($newHistory, fn ($m) => ($m['role'] ?? '') === 'user'));
-            // Gatilho: a partir da 3a mensagem do user, qualifica a cada turno.
-            // Custo desprezivel (~\$0.0003 por chamada DeepSeek).
-            $shouldQualify = $userCount >= 3;
-            $debugQual['user_count'] = $userCount;
-            $debugQual['should_qualify'] = $shouldQualify;
-
-            if ($shouldQualify) {
-                Log::info('Bruno: tentando qualifyMessages', ['user_count' => $userCount, 'history_size' => count($newHistory)]);
+            if ($userCount >= 3) {
                 try {
                     $qual = app(\App\Services\Messaging\LeadQualificationService::class)
                         ->qualifyMessages($newHistory, 'Lead Sandbox');
                     if (empty($qual['error'])) {
                         Cache::put($this->qualificationKey($tenantId, $userId), $qual, self::HISTORY_TTL);
                         $qualification = $qual;
-                        $debugQual['reason'] = 'fresh qualification';
                     } else {
                         Log::warning('Bruno: qualifyMessages devolveu erro', ['err' => $qual['error']]);
                         $qualification = Cache::get($this->qualificationKey($tenantId, $userId));
-                        $debugQual['reason'] = 'fresh failed, fallback cache: ' . $qual['error'];
                     }
                 } catch (\Throwable $e) {
                     Log::warning('Bruno: qualifyMessages exception', ['err' => $e->getMessage()]);
                     $qualification = Cache::get($this->qualificationKey($tenantId, $userId));
-                    $debugQual['reason'] = 'exception: ' . $e->getMessage();
                 }
             } else {
                 $qualification = Cache::get($this->qualificationKey($tenantId, $userId));
-                $debugQual['reason'] = "user_count={$userCount} < 3, sem gatilho";
             }
         }
 
@@ -163,7 +154,6 @@ class BruceAiService
             'timestamp'     => now()->toIso8601String(),
             'context'       => $contextType ? ['type' => $contextType, 'id' => $contextId] : null,
             'qualification' => $qualification,
-            '_debug_qual'   => $debugQual,
         ];
     }
 
