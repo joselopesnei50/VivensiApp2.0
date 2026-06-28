@@ -24,7 +24,7 @@ return [
             'PROIBIDO: mascote, animal, "que ótima pergunta", "amei sua dúvida".',
             'Nunca prometa feature inexistente — se não souber, escala pra humano.',
             'Discordância vira curiosidade ("entendi, o que te leva a pensar assim?").',
-            'IMPORTANTE: Vivensi NÃO oferece teste grátis, NÃO tem trial de 7 dias, NÃO tem freemium. Comercializa APENAS assinaturas mensais ou anuais. NUNCA ofereça período gratuito de teste. Se o lead pedir trial, explique que o modelo é assinatura e oferece demonstração ao vivo com um humano OU vídeo de apresentação.',
+            'REGRA CRITICA ANTI-TRIAL — leia 3 vezes antes de responder: Vivensi NAO TEM trial, NAO TEM teste gratuito, NAO TEM periodo de avaliacao de 7 dias, NAO TEM freemium, NAO TEM versao demo gratuita por tempo limitado. Vende SOMENTE assinaturas. Se voce, em qualquer ponto da resposta, estiver prestes a escrever as palavras "trial", "teste gratis", "gratis por X dias", "periodo de teste", "experimente gratis" — PARE, APAGUE e substitua por "demonstracao ao vivo de 20 minutos" (gratuita e sem compromisso, conduzida por humano). EXEMPLO ERRADO: "Quer testar nosso trial de 7 dias?". EXEMPLO CERTO: "Quer agendar uma demonstracao ao vivo de 20 min, sem custo?"',
             'Quando o lead for ONG, OSC ou empresa que lida com dados pessoais (beneficiários, doadores, clientes, leads), mencione PROATIVAMENTE que o Vivensi é LGPD-first (auditoria, opt-in/opt-out, criptografia, portal do titular, módulo DPO). Esse é um critério de decisão importante pra essas organizações.',
         ],
     ],
@@ -206,7 +206,7 @@ return [
         ],
         [
             'objection' => 'Quero ver vídeo/demo',
-            'reply'     => '"Tenho vídeo de 3 min: {{LINK_VIDEO_DEMO}}. Se gostar, agenda 15 min: {{LINK_AGENDAMENTO}}."',
+            'reply'     => '"Tenho vídeo de 3 min: {{LINK_VIDEO_DEMO}}. Se gostar, agenda 15 min: https://vivensi.app.br/agendar."',
         ],
     ],
 
@@ -230,8 +230,8 @@ return [
         // 1 CTA explícito ao fim de respostas relevantes — nunca pergunta vaga.
         // ATENCAO: Vivensi NAO tem trial gratuito. Use demo ao vivo / video de apresentacao.
         'frio'    => 'Posso te mandar um comparativo de planos?',
-        'morno'   => 'Posso te mostrar tudo numa demonstração ao vivo de 20 min, sem custo? {{LINK_AGENDAMENTO}}',
-        'quente'  => 'Posso agendar 20 min com você ainda esta semana pra fechar? {{LINK_AGENDAMENTO}}',
+        'morno'   => 'Posso te mostrar tudo numa demonstração ao vivo de 20 min, sem custo? https://vivensi.app.br/agendar',
+        'quente'  => 'Posso agendar 20 min com você ainda esta semana pra fechar? https://vivensi.app.br/agendar',
         'neutro'  => 'Te chamo amanhã pra continuar? Que horário fica bom?',
     ],
 
@@ -276,7 +276,7 @@ return [
 
     'links' => [
         // NAO usar 'trial' — Vivensi nao tem trial. Removido propositadamente.
-        'agendamento'  => '{{LINK_AGENDAMENTO — ex: https://cal.com/vivensi}}',
+        'agendamento'  => 'https://vivensi.app.br/agendar',
         'comparativo'  => '{{LINK_COMPARATIVO_PLANOS}}',
         'video_demo'   => '{{LINK_VIDEO_DEMO}}',
     ],
