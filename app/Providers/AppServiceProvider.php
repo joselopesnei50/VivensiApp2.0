@@ -37,9 +37,35 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Pagination\Paginator::useBootstrapFive();
 
-        // Configuração Dinâmica de Broadcasting (Pusher/Soketi)
-        // Broadcasting dinâmico via SystemSetting — só ativa após migrations
-        // Configurar manualmente via config/broadcasting.php ou painel admin
+        // Broadcasting dinâmico via SystemSetting — lê valores que o super_admin
+        // salvou em /admin/settings e sobrescreve config('broadcasting.connections.pusher.*')
+        // em runtime. Sem isso, o .env vence (e fica vazio no VPS), causando
+        // erro "https://:443" no PusherBroadcaster.
+        try {
+            $pusherAppId     = \App\Models\SystemSetting::getValue('pusher_app_id');
+            $pusherAppKey    = \App\Models\SystemSetting::getValue('pusher_app_key');
+            $pusherAppSecret = \App\Models\SystemSetting::getValue('pusher_app_secret');
+            $pusherHost      = \App\Models\SystemSetting::getValue('pusher_host');
+            $pusherPort      = \App\Models\SystemSetting::getValue('pusher_port');
+            $pusherScheme    = \App\Models\SystemSetting::getValue('pusher_scheme');
+
+            if ($pusherAppId)     config(['broadcasting.connections.pusher.app_id' => $pusherAppId]);
+            if ($pusherAppKey)    config(['broadcasting.connections.pusher.key'    => $pusherAppKey]);
+            if ($pusherAppSecret) config(['broadcasting.connections.pusher.secret' => $pusherAppSecret]);
+            if ($pusherHost)      config(['broadcasting.connections.pusher.options.host' => $pusherHost]);
+            if ($pusherPort)      config(['broadcasting.connections.pusher.options.port' => (int) $pusherPort]);
+            if ($pusherScheme) {
+                $isHttps = $pusherScheme === 'https';
+                config([
+                    'broadcasting.connections.pusher.options.scheme'    => $pusherScheme,
+                    'broadcasting.connections.pusher.options.encrypted' => $isHttps,
+                    'broadcasting.connections.pusher.options.useTLS'    => $isHttps,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // DB not ready (durante migrations, ou se a tabela system_settings
+            // não existir ainda). Mantém fallback do .env.
+        }
 
         // Registrar Observers para Geocodificação Automática
         // Wrapped in try/catch to prevent boot failure if DB is not ready.
