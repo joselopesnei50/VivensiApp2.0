@@ -53,13 +53,51 @@ class BruceAiService
             [['role' => 'user', 'content' => $userMessage]]
         );
 
-        $response = $this->deepSeek->chat($messages);
+        // Bruno tem ferramentas (consultar slots de agenda, criar agendamento).
+        // Loop até resposta final (sem tool_calls) ou limite de 5 iterações.
+        $tools  = $role === 'sales_bot' ? \App\Services\Bruno\BrunoTools::definitions() : null;
+        $reply  = '';
+        $tokens = 0;
+        $maxIter = $tools ? 5 : 1;
 
-        if (isset($response['error'])) {
-            return ['error' => $response['error']];
+        for ($iter = 0; $iter < $maxIter; $iter++) {
+            $response = $this->deepSeek->chat($messages, null, $tools);
+
+            if (isset($response['error'])) {
+                return ['error' => $response['error']];
+            }
+
+            $assistantMsg = data_get($response, 'choices.0.message', []);
+            $tokens      += (int) data_get($response, 'usage.total_tokens', 0);
+            $toolCalls    = $assistantMsg['tool_calls'] ?? null;
+
+            if (empty($toolCalls)) {
+                $reply = $assistantMsg['content'] ?? 'Não consegui processar sua mensagem.';
+                break;
+            }
+
+            // O LLM pediu pra rodar uma ou mais tools. Anexa a assistant msg
+            // (que contém os tool_calls) E o resultado de cada tool, depois
+            // chama de novo pra LLM redigir a resposta final.
+            $messages[] = $assistantMsg;
+
+            foreach ($toolCalls as $tc) {
+                $name = data_get($tc, 'function.name', '');
+                $args = json_decode(data_get($tc, 'function.arguments', '{}'), true) ?: [];
+                $result = \App\Services\Bruno\BrunoTools::execute($name, $args);
+
+                $messages[] = [
+                    'role'         => 'tool',
+                    'tool_call_id' => $tc['id'] ?? '',
+                    'name'         => $name,
+                    'content'      => json_encode($result, JSON_UNESCAPED_UNICODE),
+                ];
+            }
         }
 
-        $reply = data_get($response, 'choices.0.message.content', 'Não consegui processar sua mensagem.');
+        if ($reply === '') {
+            $reply = 'Não consegui concluir essa solicitação agora. Pode tentar de novo?';
+        }
 
         // Pos-processamento: Bruno (sales_bot) responde em WhatsApp, que não
         // renderiza Markdown. LLM as vezes ignora a regra do prompt — strip
@@ -83,7 +121,7 @@ class BruceAiService
 
         return [
             'reply'     => $reply,
-            'tokens'    => data_get($response, 'usage.total_tokens', 0),
+            'tokens'    => $tokens,
             'timestamp' => now()->toIso8601String(),
             'context'   => $contextType ? ['type' => $contextType, 'id' => $contextId] : null,
         ];
@@ -251,6 +289,7 @@ PROMPT;
         $fewShot       = $kb['few_shot']            ?? [];
         $links         = $kb['links']               ?? [];
         $lgpd          = $kb['lgpd']                ?? [];
+        $agendamento   = $kb['agendamento']         ?? [];
 
         $personaRules = isset($persona['rules']) && is_array($persona['rules'])
             ? implode("\n", array_map(fn ($r) => "- {$r}", $persona['rules']))
@@ -392,6 +431,13 @@ O cliente escolhe entre Evolution API (nativa, sem custo extra) e WhatsApp Ofici
 
 ### LGPD e Proteção de Dados (importante pra ONGs, empresas e qualquer lead que lida com dados pessoais — mencione PROATIVAMENTE)
 {$lgpdBlock}
+
+### AGENDAMENTO INLINE (você TEM ferramentas pra agendar diretamente no chat)
+Duração da demo: {$agendamento['duracao']}
+Página pública: {$agendamento['pagina_publica']}
+
+Instrução:
+{$agendamento['instrucao']}
 
 ### Diferenciais
 {$differentials}

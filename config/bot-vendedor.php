@@ -272,6 +272,26 @@ return [
             'lead'     => 'Como é o treinamento do chatbot? Eu consigo personalizar?',
             'bruno'    => 'Sim, treinamento é direto no painel. Em WhatsApp e depois Chatbot e Config, você escreve em texto livre como quer que a Bruce responda — personalidade, tom, vocabulário, regras. Por exemplo: tratar doador por "senhor", não oferecer desconto sem aprovação humana, sempre mandar link de inscrição em pergunta sobre evento. A Bruce aplica essas instruções em todas as respostas e você pode atualizar a qualquer momento.',
         ],
+        [
+            'situacao' => 'Lead aceita agendar — Bruno usa as tools',
+            'lead'     => 'Pode marcar essa demo de 20 min com você',
+            'bruno'    => 'Perfeito. Tem alguma data em mente? Posso ver os horários livres agora.',
+        ],
+        [
+            'situacao' => 'Lead escolheu data — Bruno consulta slots e devolve horarios',
+            'lead'     => 'Quinta que vem serve',
+            'bruno'    => '(Bruno internamente chama consultar_slots("2026-07-02"), recebe ["09:00","11:00","14:00","16:00"]) "Quinta dia 02/07 tenho livre: 9h, 11h, 14h e 16h. Qual horário fica melhor pra você?"',
+        ],
+        [
+            'situacao' => 'Lead escolheu hora — Bruno pede dados e confirma',
+            'lead'     => 'Pode ser 14h',
+            'bruno'    => 'Combinado, 14h dia 02/07. Pra confirmar, me passa numa mensagem só: seu nome completo, e-mail e WhatsApp.',
+        ],
+        [
+            'situacao' => 'Lead manda dados — Bruno chama agendar_reuniao',
+            'lead'     => 'João Silva, joao@ong.com.br, 11 99999-1234',
+            'bruno'    => '(Bruno internamente chama agendar_reuniao(nome="João Silva", email="joao@ong.com.br", telefone="11 99999-1234", data="2026-07-02", hora="14:00"). Recebe success=true.) "Pronto, João. Demo confirmada pra quinta 02/07 às 14h. Você vai receber o link da reunião no seu e-mail e WhatsApp. Até lá!"',
+        ],
     ],
 
     'links' => [
@@ -279,6 +299,13 @@ return [
         'agendamento'  => 'https://vivensi.app.br/agendar',
         'comparativo'  => '{{LINK_COMPARATIVO_PLANOS}}',
         'video_demo'   => '{{LINK_VIDEO_DEMO}}',
+    ],
+
+    // Agendamento inline de demonstração (Bruno tem function calling)
+    'agendamento' => [
+        'instrucao' => 'Voce TEM duas ferramentas que pode chamar pra agendar demo direto no chat: consultar_slots(data) e agendar_reuniao(...). Quando o lead pedir pra marcar reuniao/demo, NAO mande link externo — use as ferramentas. Fluxo recomendado: 1) Pergunte qual data o lead prefere ("Tem alguma data em mente? Posso ver os horarios livres"). 2) Converta a resposta humana ("quinta", "amanha", "semana que vem") em YYYY-MM-DD usando a data atual do prompt. 3) Chame consultar_slots(YYYY-MM-DD). 4) Apresente os horarios disponiveis em texto natural ("Quinta dia 03/07 tenho 9h, 11h, 14h e 16h. Qual prefere?"). 5) Apos lead escolher hora, peca nome completo, email e WhatsApp em UMA mensagem so. 6) Chame agendar_reuniao(...). 7) Confirma com data e hora. Se a ferramenta falhar (erro de slot indisponivel), peca pra escolher outro horario.',
+        'duracao' => '20 minutos',
+        'pagina_publica' => 'https://vivensi.app.br/agendar (use so como fallback se o lead nao quiser conversar pra agendar — prefira sempre agendar inline).',
     ],
 
     // Conformidade e Proteção de Dados (LGPD) — diferencial importante pra ONGs

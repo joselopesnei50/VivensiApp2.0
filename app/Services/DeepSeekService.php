@@ -39,7 +39,7 @@ class DeepSeekService
      * Nota: os aliases 'deepseek-chat' e 'deepseek-reasoner' serão deprecados pela
      * DeepSeek em 2026/07/24. Por isso usamos sempre o nome explícito do modelo V4.
      */
-    public function chat($messages, ?string $model = null)
+    public function chat($messages, ?string $model = null, ?array $tools = null)
     {
         $apiKey = $this->resolveApiKey();
         if (!$apiKey) {
@@ -47,14 +47,20 @@ class DeepSeekService
         }
 
         try {
+            $payload = [
+                'model' => $model ?: 'deepseek-v4-flash',
+                'messages' => $messages,
+                'temperature' => 0.7,
+            ];
+            if (!empty($tools)) {
+                $payload['tools'] = $tools;
+                $payload['tool_choice'] = 'auto';
+            }
+
             $response = Http::timeout(60)->retry(2)->withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
-            ])->post($this->baseUrl, [
-                'model' => $model ?: 'deepseek-v4-flash',
-                'messages' => $messages,
-                'temperature' => 0.7
-            ]);
+            ])->post($this->baseUrl, $payload);
 
             if ($response->successful()) {
                 return $response->json();
