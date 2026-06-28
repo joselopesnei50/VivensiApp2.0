@@ -126,6 +126,7 @@
                 body: JSON.stringify({ message: text }),
             });
             const d = await r.json();
+            console.log('[BRUNO DEBUG] response:', d);
             if (r.ok && d.success) {
                 bubble('bot', d.reply, `tokens: ${d.tokens}`);
                 renderQualification(d.qualification);
