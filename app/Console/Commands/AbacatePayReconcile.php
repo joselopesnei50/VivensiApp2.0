@@ -39,9 +39,12 @@ class AbacatePayReconcile extends Command
         $dryRun     = (bool) $this->option('dry-run');
         $cutoff     = Carbon::now()->subMinutes($minutesOld);
 
+        // Filtra AbacatePay pelo padrão do external_id (sempre VIVENSI_*) +
+        // gateway_id setado. Transactions não-AbacatePay com o mesmo padrão
+        // (improvavel) sao filtradas no loop quando getCheckout devolve erro.
         $pending = Transaction::withoutGlobalScopes()
-            ->where('gateway', 'abacatepay')
             ->where('status', 'pending')
+            ->where('external_id', 'like', 'VIVENSI_%')
             ->whereNotNull('gateway_id')
             ->where('created_at', '<', $cutoff)
             ->orderBy('created_at')
