@@ -24,49 +24,6 @@ class IntegrationTestController extends Controller
     }
 
     /**
-     * Test PagSeguro Integration
-     */
-    public function testPagSeguro()
-    {
-        $token = SystemSetting::getValue('pagseguro_token', env('PAGSEGURO_TOKEN'));
-        $env = SystemSetting::getValue('pagseguro_environment', env('PAGSEGURO_ENV', 'sandbox'));
-        $baseUrl = $env === 'production' ? 'https://api.pagseguro.com' : 'https://sandbox.api.pagseguro.com';
-
-        if (!$token) {
-            return response()->json(['error' => 'PAGSEGURO_TOKEN não configurado no painel Admin.'], 500);
-        }
-
-        try {
-            // Simple GET request to list orders to verify auth
-            $response = Http::withHeaders([
-                'Authorization' => "Bearer {$token}",
-                'Accept' => 'application/json',
-            ])->get("{$baseUrl}/orders");
-
-            // PagSeguro might return 400 for structural validations, but 401 means auth failed.
-            $isAuthSuccess = !in_array($response->status(), [401, 403]);
-
-            return response()->json([
-                'service' => 'PagSeguro',
-                'environment' => $env,
-                'status' => $response->status(),
-                'successful' => $isAuthSuccess,
-                'message' => $isAuthSuccess ? 'Token Válido! Conexão com PagSeguro estabelecida com sucesso.' : 'Falha na autenticação.',
-                'api_response' => $response->json(),
-                'masked_token' => substr($token, 0, 8) . '...' . substr($token, -4)
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'service' => 'PagSeguro',
-                'status' => 500,
-                'successful' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
      * Test Gemini AI Integration
      */
     public function testGemini()

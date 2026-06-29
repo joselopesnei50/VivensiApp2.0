@@ -230,8 +230,7 @@ class AdminController extends Controller
         $iaOk       = (bool) \App\Models\SystemSetting::getValue('deepseek_api_key')
                    || (bool) \App\Models\SystemSetting::getValue('gemini_api_key');
         $emailOk    = (bool) \App\Models\SystemSetting::getValue('brevo_api_key');
-        $pagamentoOk= (bool) \App\Models\SystemSetting::getValue('abacatepay_api_key')
-                   || (bool) \App\Models\SystemSetting::getValue('pagseguro_token');
+        $pagamentoOk= (bool) \App\Models\SystemSetting::getValue('abacatepay_api_key');
         $metaOk     = (bool) \App\Models\SystemSetting::getValue('meta_app_secret');
 
         $checks = [
@@ -240,7 +239,7 @@ class AdminController extends Controller
             ['label' => 'APP_KEY configurada',   'desc' => 'Chave de criptografia presente',      'ok' => strlen(config('app.key', '')) > 10],
             ['label' => 'IA configurada',        'desc' => 'DeepSeek ou Gemini no painel admin',  'ok' => $iaOk],
             ['label' => 'E-mail (Brevo)',         'desc' => 'Chave Brevo no painel admin',         'ok' => $emailOk],
-            ['label' => 'Pagamento configurado', 'desc' => 'AbacatePay ou PagSeguro ativo',       'ok' => $pagamentoOk],
+            ['label' => 'Pagamento configurado', 'desc' => 'AbacatePay ativo no painel admin',    'ok' => $pagamentoOk],
             ['label' => 'Meta WhatsApp',         'desc' => 'App Secret da Meta configurado',      'ok' => $metaOk],
             ['label' => 'Falhas de login 24h',   'desc' => $loginFails . ' tentativa(s)',         'ok' => $loginFails < 50],
         ];

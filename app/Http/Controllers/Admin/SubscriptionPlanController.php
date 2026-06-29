@@ -26,8 +26,7 @@ class SubscriptionPlanController extends Controller
             'target_audience'          => 'required|in:ngo,manager,common',
             'price'                    => 'required|numeric|min:0',
             'price_yearly'             => 'nullable|numeric|min:0',
-            'pagseguro_plan_id_yearly' => 'nullable|string|max:255',
-            'abacatepay_product_id'    => 'nullable|string|max:255', // ✅ adicionado
+            'abacatepay_product_id'    => 'nullable|string|max:255',
             'interval'                 => 'required|in:monthly,yearly',
             'features'                 => 'nullable|array',
             'is_active'                => 'boolean',
@@ -50,8 +49,7 @@ class SubscriptionPlanController extends Controller
             'target_audience'          => 'required|in:ngo,manager,common',
             'price'                    => 'required|numeric|min:0',
             'price_yearly'             => 'nullable|numeric|min:0',
-            'pagseguro_plan_id_yearly' => 'nullable|string|max:255',
-            'abacatepay_product_id'    => 'nullable|string|max:255', // ✅ adicionado
+            'abacatepay_product_id'    => 'nullable|string|max:255',
             'interval'                 => 'required|in:monthly,yearly',
             'features'                 => 'nullable|array',
             'is_active'                => 'boolean',

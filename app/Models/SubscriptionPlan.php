@@ -18,7 +18,6 @@ class SubscriptionPlan extends Model
         'features',
         'is_active',
         'asaas_id',
-        'pagseguro_plan_id_yearly',
         'abacatepay_product_id', // ID do produto na AbacatePay
     ];
 

@@ -46,11 +46,6 @@
                     </div>
 
                     <div class="col-md-6">
-                         <label class="form-label fw-bold">ID do Plano Anual (PagSeguro)</label>
-                         <input type="text" name="pagseguro_plan_id_yearly" class="form-control-vivensi" placeholder="Ex: PLAN_12345">
-                    </div>
-
-                    <div class="col-md-6">
                          <label class="form-label fw-bold">🥑 ID do Produto (AbacatePay)</label>
                          <input type="text" name="abacatepay_product_id" class="form-control-vivensi" placeholder="Ex: prod_abc123xyz">
                          <div class="form-text">Copie do painel AbacatePay → Produtos.</div>

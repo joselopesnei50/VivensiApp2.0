@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Cache;
 
 class AdminSettingsController extends Controller
 {
-    // Updated for PagSeguro Integration
     public function index()
     {
         // Permission check (Simple for now, can be middleware)
@@ -20,7 +19,6 @@ class AdminSettingsController extends Controller
         $deepseek_configured = (bool) SystemSetting::getValue('deepseek_api_key');
         $gemini_configured = (bool) SystemSetting::getValue('gemini_api_key');
         $brevo_configured = (bool) SystemSetting::getValue('brevo_api_key');
-        $pagseguro_configured = (bool) SystemSetting::getValue('pagseguro_token');
         $unsplash_configured = (bool) SystemSetting::getValue('unsplash_access_key');
         $zapi_configured = (bool) SystemSetting::getValue('zapi_instance_id') && (bool) SystemSetting::getValue('zapi_token');
         $serper_configured = (bool) SystemSetting::getValue('serper_api_key');
@@ -39,11 +37,8 @@ class AdminSettingsController extends Controller
         $deepseek_key = null;
         $gemini_key = null;
         $brevo_key = null;
-        $pagseguro_key = null;
         $pusher_secret = null; // Sensitive
 
-        $pagseguro_email = SystemSetting::getValue('pagseguro_email');
-        $pagseguro_env = SystemSetting::getValue('pagseguro_environment', 'sandbox');
         $email_from = SystemSetting::getValue('email_from');
         $email_from_name = SystemSetting::getValue('email_from_name');
         $home_video_url = SystemSetting::getValue('home_video_url');
@@ -102,19 +97,15 @@ class AdminSettingsController extends Controller
             'deepseek_key',
             'gemini_key',
             'brevo_key',
-            'pagseguro_key',
             'deepseek_configured',
             'gemini_configured',
             'brevo_configured',
-            'pagseguro_configured',
             'unsplash_configured',
             'zapi_configured',
             'serper_configured',
             'google_maps_configured',
             'pusher_configured',
             'meta_app_secret_configured',
-            'pagseguro_email',
-            'pagseguro_env',
             'email_from',
             'email_from_name',
             'home_video_url',
@@ -175,9 +166,6 @@ class AdminSettingsController extends Controller
             'gemini_api_key' => 'nullable|string|max:5000',
             'unsplash_access_key' => 'nullable|string|max:5000',
             'brevo_api_key' => 'nullable|string|max:5000',
-            'pagseguro_email' => 'nullable|email|max:255',
-            'pagseguro_token' => 'nullable|string|max:5000',
-            'pagseguro_environment' => 'required|in:sandbox,production',
             'email_from' => 'nullable|email|max:255',
             'email_from_name' => 'nullable|string|max:255',
             'home_video_url' => 'nullable|url|max:2048',
@@ -215,7 +203,6 @@ class AdminSettingsController extends Controller
             'gemini_api_key' => 'api',
             'unsplash_access_key' => 'api',
             'brevo_api_key' => 'api',
-            'pagseguro_token' => 'api',
             'zapi_token' => 'whatsapp',
             'zapi_client_token' => 'whatsapp',
             'serper_api_key'     => 'api',
@@ -232,12 +219,6 @@ class AdminSettingsController extends Controller
             if ($val !== '') {
                 SystemSetting::setValue($key, $val, $group);
             }
-        }
-
-        SystemSetting::setValue('pagseguro_environment', $validated['pagseguro_environment'], 'api');
-        
-        if (!empty($validated['pagseguro_email'])) {
-            SystemSetting::setValue('pagseguro_email', $validated['pagseguro_email'], 'api');
         }
 
         if (!empty($validated['email_from'])) {

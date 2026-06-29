@@ -207,7 +207,7 @@ class DevController extends Controller
                 ['label' => 'Mail',       'value' => 'Brevo (SendinBlue) SMTP'],
                 ['label' => 'WhatsApp',   'value' => 'Evolution API v2 (Baileys)'],
                 ['label' => 'AI',         'value' => 'DeepSeek / Gemini / Together AI'],
-                ['label' => 'Payments',   'value' => 'PagSeguro · OpenPix (PIX) · AbacatePay'],
+                ['label' => 'Payments',   'value' => 'AbacatePay · OpenPix (PIX)'],
                 ['label' => 'Auth',       'value' => 'Laravel Sanctum · 2FA (TOTP) · Super Admin'],
             ],
             'tenancy' => [

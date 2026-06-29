@@ -47,11 +47,6 @@
                     </div>
 
                     <div class="col-md-6">
-                         <label class="form-label fw-bold">ID do Plano Anual (PagSeguro)</label>
-                         <input type="text" name="pagseguro_plan_id_yearly" class="form-control-vivensi" value="{{ old('pagseguro_plan_id_yearly', $plan->pagseguro_plan_id_yearly) }}" placeholder="Ex: PLAN_12345">
-                    </div>
-
-                    <div class="col-md-6">
                          <label class="form-label fw-bold">🥑 ID do Produto (AbacatePay)</label>
                          <input type="text" name="abacatepay_product_id" class="form-control-vivensi"
                                 value="{{ old('abacatepay_product_id', $plan->abacatepay_product_id) }}"

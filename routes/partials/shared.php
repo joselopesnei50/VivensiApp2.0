@@ -169,7 +169,6 @@ Route::group(['prefix' => 'academy', 'as' => 'academy.', 'middleware' => ['auth'
 
 // ── Testes de Integração (apenas auth) ───────────────────────────────────────
 Route::prefix('test-api')->middleware(['auth'])->group(function () {
-    Route::get('/pagseguro', [App\Http\Controllers\IntegrationTestController::class, 'testPagSeguro']);
     Route::get('/gemini',    [App\Http\Controllers\IntegrationTestController::class, 'testGemini']);
     Route::get('/deepseek',  [App\Http\Controllers\IntegrationTestController::class, 'testDeepSeek']);
 });

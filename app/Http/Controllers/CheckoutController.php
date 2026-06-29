@@ -37,7 +37,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Processa o checkout — AbacatePay (padrão) ou PagSeguro (legado).
+     * Processa o checkout via AbacatePay.
      */
     public function process(Request $request)
     {
@@ -63,15 +63,7 @@ class CheckoutController extends Controller
                 return back()->with('error', 'CPF ou CNPJ é obrigatório para o faturamento.');
             }
 
-            // ── AbacatePay (padrão) ────────────────────────────────────────
-            if ($gateway === 'abacatepay') {
-                return $this->processAbacatePay($request, $tenant, $plan, $user);
-            }
-
-            // ── PagSeguro foi descontinuado — redireciona para AbacatePay ──
-            Log::info('CheckoutController: tentativa de uso do PagSeguro descontinuado', [
-                'tenant_id' => $tenant->id, 'plan_id' => $plan->id,
-            ]);
+            // AbacatePay é o único gateway ativo.
             return $this->processAbacatePay($request, $tenant, $plan, $user);
 
         } catch (Exception $e) {
