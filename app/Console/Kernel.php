@@ -47,6 +47,14 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // AbacatePay: reconcilia Transactions pending caso o webhook tenha sido
+        // perdido (worker fora do ar, rede ruim). Roda a cada 5 min, varre as
+        // que tem > 5 min de idade. Idempotente via processed_webhooks.
+        $schedule->command('abacatepay:reconcile --minutes-old=5')
+                 ->everyFiveMinutes()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Relatório Semanal com Bruce AI — todo domingo às 08:00
         $schedule->job(new \App\Jobs\SendWeeklyReportJob())
                  ->weeklyOn(0, '08:00')
