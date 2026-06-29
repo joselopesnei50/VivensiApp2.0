@@ -10,9 +10,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/live-users', [App\Http\Controllers\AdminController::class, 'liveUsers'])->name('admin.live_users');
 
         // Bruno Sandbox (teste do bot vendedor)
-        Route::get('/bruno',        [App\Http\Controllers\Admin\BrunoSandboxController::class, 'index'])->name('admin.bruno.index');
-        Route::post('/bruno/chat',  [App\Http\Controllers\Admin\BrunoSandboxController::class, 'chat'])->name('admin.bruno.chat');
-        Route::post('/bruno/clear', [App\Http\Controllers\Admin\BrunoSandboxController::class, 'clear'])->name('admin.bruno.clear');
+        Route::get('/bruno',          [App\Http\Controllers\Admin\BrunoSandboxController::class, 'index'])->name('admin.bruno.index');
+        Route::post('/bruno/chat',    [App\Http\Controllers\Admin\BrunoSandboxController::class, 'chat'])->name('admin.bruno.chat');
+        Route::post('/bruno/clear',   [App\Http\Controllers\Admin\BrunoSandboxController::class, 'clear'])->name('admin.bruno.clear');
+        Route::get('/bruno/metrics',  [App\Http\Controllers\Admin\BrunoMetricsController::class, 'index'])->name('admin.bruno.metrics');
 
         // Tenants
         Route::get('/tenants',             [App\Http\Controllers\AdminController::class, 'tenants'])->name('admin.tenants.index');

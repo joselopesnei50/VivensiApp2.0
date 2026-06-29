@@ -123,12 +123,17 @@ class BrunoTools
             ];
         }
 
+        // Prefixa notes com marca de origem pra dashboard de metricas saber
+        // distinguir agendamentos via Bruno dos via pagina publica /agendar.
+        $obs = trim((string) ($args['observacoes'] ?? ''));
+        $notes = '[via Bruno]' . ($obs !== '' ? ' ' . $obs : '');
+
         try {
             $booking = MeetingBooking::create([
                 'name'         => $args['nome'],
                 'email'        => $args['email'],
                 'phone'        => $args['telefone'],
-                'notes'        => $args['observacoes'] ?? null,
+                'notes'        => $notes,
                 'meeting_date' => $args['data'],
                 'meeting_time' => $args['hora'],
                 'status'       => 'confirmed',
