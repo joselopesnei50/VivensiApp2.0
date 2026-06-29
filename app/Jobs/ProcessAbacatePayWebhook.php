@@ -172,31 +172,101 @@ class ProcessAbacatePayWebhook implements ShouldQueue
 
     private function handleSubscriptionCompleted(array $payload): void
     {
-        $customer = $payload['data']['customer'] ?? null;
-        $sub      = $payload['data']['subscription'] ?? null;
-
-        if (!$customer || !$sub) return;
-
-        $tenant = Tenant::whereHas('owner', fn($q) => $q->where('email', $customer['email']))->first();
-
-        if ($tenant) {
-            $tenant->subscription_status = 'active';
-            $tenant->save();
-            Log::info('AbacatePay: subscription ativada', ['tenant' => $tenant->id, 'subId' => $sub['id'] ?? null]);
+        $webhookId = $payload['id'] ?? null;
+        if (!$this->markProcessed($webhookId, 'subscription.completed')) {
+            return;
         }
+
+        $resolved = $this->resolveTenantFromSubscriptionPayload($payload);
+        if (!$resolved) {
+            Log::error('AbacatePay: subscription.completed sem tenant resolvido', [
+                'payload_keys' => array_keys($payload['data'] ?? []),
+            ]);
+            return;
+        }
+
+        /** @var Tenant $tenant */
+        $tenant   = $resolved['tenant'];
+        $source   = $resolved['source'];
+        $sub      = $payload['data']['subscription'] ?? [];
+        $planId   = $sub['metadata']['plan_id'] ?? ($payload['data']['customer']['metadata']['plan_id'] ?? null);
+        $extId    = $sub['externalId'] ?? null;
+        $subId    = $sub['id'] ?? null;
+
+        DB::transaction(function () use ($tenant, $sub, $planId, $extId, $subId, $source) {
+            // Marca Transaction pendente como paid se conseguirmos linkar pelo external_id
+            if ($extId) {
+                $tx = Transaction::withoutGlobalScopes()
+                    ->where('external_id', $extId)
+                    ->lockForUpdate()
+                    ->first();
+                if ($tx && $tx->status !== 'paid') {
+                    $tx->update([
+                        'status'          => 'paid',
+                        'approval_status' => 'approved',
+                        'paid_at'         => now(),
+                    ]);
+                }
+            }
+
+            $oldSubStatus = $tenant->subscription_status;
+            $tenant->subscription_status = 'active';
+            if ($planId && SubscriptionPlan::find($planId)) {
+                $tenant->plan_id = $planId;
+            }
+            $tenant->save();
+            Cache::forget("tenant.{$tenant->id}");
+
+            AuditLog::create([
+                'tenant_id'      => $tenant->id,
+                'user_id'        => null,
+                'event'          => 'subscription.activated',
+                'auditable_type' => Tenant::class,
+                'auditable_id'   => $tenant->id,
+                'old_values'     => ['subscription_status' => $oldSubStatus],
+                'new_values'     => [
+                    'subscription_status' => 'active',
+                    'gateway'             => 'abacatepay',
+                    'plan_id'             => $planId,
+                    'subscription_id'     => $subId,
+                    'lookup_source'       => $source,
+                ],
+            ]);
+        });
+
+        Log::info('AbacatePay: subscription ativada', [
+            'tenant'        => $tenant->id,
+            'subId'         => $subId,
+            'lookup_source' => $source,
+        ]);
     }
 
     private function handleSubscriptionCancelled(array $payload): void
     {
-        $customer = $payload['data']['customer'] ?? null;
-        if (!$customer) return;
+        $webhookId = $payload['id'] ?? null;
+        if (!$this->markProcessed($webhookId, 'subscription.cancelled')) {
+            return;
+        }
 
-        $tenant = Tenant::whereHas('owner', fn($q) => $q->where('email', $customer['email']))->first();
+        $resolved = $this->resolveTenantFromSubscriptionPayload($payload);
+        if (!$resolved) {
+            Log::error('AbacatePay: subscription.cancelled sem tenant resolvido', [
+                'payload_keys' => array_keys($payload['data'] ?? []),
+            ]);
+            return;
+        }
 
-        if ($tenant) {
+        /** @var Tenant $tenant */
+        $tenant = $resolved['tenant'];
+        $source = $resolved['source'];
+        $subId  = $payload['data']['subscription']['id'] ?? null;
+
+        DB::transaction(function () use ($tenant, $subId, $source) {
             $oldSubStatus = $tenant->subscription_status;
             $tenant->subscription_status = 'canceled';
             $tenant->save();
+            Cache::forget("tenant.{$tenant->id}");
+
             AuditLog::create([
                 'tenant_id'      => $tenant->id,
                 'user_id'        => null,
@@ -204,10 +274,107 @@ class ProcessAbacatePayWebhook implements ShouldQueue
                 'auditable_type' => Tenant::class,
                 'auditable_id'   => $tenant->id,
                 'old_values'     => ['subscription_status' => $oldSubStatus],
-                'new_values'     => ['subscription_status' => 'canceled', 'gateway' => 'abacatepay', 'reason' => 'subscription.cancelled'],
+                'new_values'     => [
+                    'subscription_status' => 'canceled',
+                    'gateway'             => 'abacatepay',
+                    'reason'              => 'subscription.cancelled',
+                    'subscription_id'     => $subId,
+                    'lookup_source'       => $source,
+                ],
             ]);
-            Log::info('AbacatePay: subscription cancelada', ['tenant' => $tenant->id]);
+        });
+
+        Log::info('AbacatePay: subscription cancelada', [
+            'tenant'        => $tenant->id,
+            'subId'         => $subId,
+            'lookup_source' => $source,
+        ]);
+    }
+
+    /**
+     * Resolve o tenant a partir do payload de subscription, tentando em cascata
+     * (do mais robusto pro mais frágil):
+     *  1. subscription.externalId (gerado pelo Vivensi no padrão VIVENSI_{id}_*)
+     *  2. subscription.metadata.tenant_id (enviado pelo Vivensi na criação)
+     *  3. customer.metadata.tenant_id
+     *  4. customer.email → owner do tenant (fallback frágil, marcado no log)
+     *
+     * @return array{tenant:Tenant, source:string}|null
+     */
+    private function resolveTenantFromSubscriptionPayload(array $payload): ?array
+    {
+        $sub      = $payload['data']['subscription'] ?? [];
+        $customer = $payload['data']['customer']     ?? [];
+
+        // 1) external_id no formato VIVENSI_{id}_*
+        $extId = $sub['externalId'] ?? null;
+        if ($extId) {
+            $tenant = $this->findTenantByExternalId($extId);
+            if ($tenant) {
+                return ['tenant' => $tenant, 'source' => 'subscription.externalId'];
+            }
         }
+
+        // 2) subscription.metadata.tenant_id
+        $tenantId = $sub['metadata']['tenant_id'] ?? null;
+        if ($tenantId && ($tenant = Tenant::find((int) $tenantId))) {
+            return ['tenant' => $tenant, 'source' => 'subscription.metadata.tenant_id'];
+        }
+
+        // 3) customer.metadata.tenant_id
+        $tenantId = $customer['metadata']['tenant_id'] ?? null;
+        if ($tenantId && ($tenant = Tenant::find((int) $tenantId))) {
+            return ['tenant' => $tenant, 'source' => 'customer.metadata.tenant_id'];
+        }
+
+        // 4) Email fallback — pode falhar se o email do owner mudou
+        $email = $customer['email'] ?? null;
+        if ($email) {
+            $tenant = Tenant::whereHas('owner', fn ($q) => $q->where('email', $email))->first();
+            if ($tenant) {
+                Log::warning('AbacatePay: tenant resolvido por fallback de email — considere garantir externalId ou metadata nas subscriptions futuras', [
+                    'tenant_id' => $tenant->id,
+                    'email'     => $email,
+                ]);
+                return ['tenant' => $tenant, 'source' => 'email_fallback'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Registra processamento idempotente do webhook. Retorna true se este worker
+     * deve seguir processando, false se outro já processou (duplicata).
+     */
+    private function markProcessed(?string $webhookId, string $event): bool
+    {
+        if (!$webhookId) {
+            return true; // sem id => não dá pra deduplicar, segue
+        }
+        try {
+            $inserted = DB::table('processed_webhooks')->insertOrIgnore([
+                'gateway'      => 'abacatepay',
+                'webhook_id'   => $webhookId,
+                'event'        => $event,
+                'processed_at' => now(),
+            ]);
+            if (!$inserted) {
+                Log::info('AbacatePay: webhook duplicado ignorado', [
+                    'webhookId' => $webhookId,
+                    'event'     => $event,
+                ]);
+                return false;
+            }
+        } catch (\Throwable $e) {
+            // Race: outro worker venceu
+            Log::info('AbacatePay: webhook já processado por outro worker', [
+                'webhookId' => $webhookId,
+                'event'     => $event,
+            ]);
+            return false;
+        }
+        return true;
     }
 
     private function findTenantByExternalId(string $externalId): ?Tenant
