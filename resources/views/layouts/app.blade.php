@@ -833,6 +833,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $mei_wa_active   = request()->is('whatsapp*');
                     $mei_mkt_active  = request()->is('marketing*','prospecting*','social/accounts*','social-ai*','manager/landing-pages*');
                     $mei_crm_active  = request()->is('personal/clients*');
+                    $mei_ai_active   = request()->is('smart-analysis*');
                 @endphp
 
                 {{-- Grupo: CRM & Clientes --}}
@@ -901,6 +902,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/personal/receipts/create') }}" class="{{ request()->is('personal/receipts/create') ? 'active' : '' }}"><i class="fas fa-file-circle-plus" style="color:#10b981;"></i> Emitir Recibo</a></li>
                             <li><a href="{{ url('/personal/reconciliation') }}" class="{{ request()->is('personal/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
                             <li><a href="{{ url('/personal/budget') }}" class="{{ request()->is('personal/budget*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Planejamento Anual</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Inteligência Artificial --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_ai_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-robot group-icon"></i> Inteligência Artificial
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_ai_active ? '150px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                         </ul>
                     </div>
                 </div>

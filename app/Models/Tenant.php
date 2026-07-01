@@ -13,6 +13,7 @@ class Tenant extends Model
         'name',
         'document',
         'type',
+        'business_type',
         'asaas_customer_id',
         'plan_id',
         'subscription_status',
@@ -64,5 +65,10 @@ class Tenant extends Model
     public function operationalProfile()
     {
         return $this->hasOne(TenantOperationalProfile::class);
+    }
+
+    public function isMei(): bool
+    {
+        return $this->business_type === 'mei';
     }
 }

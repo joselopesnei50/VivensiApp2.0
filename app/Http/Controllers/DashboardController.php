@@ -700,12 +700,17 @@ class DashboardController extends Controller
         $userId = Auth::id();
         \Carbon\Carbon::setLocale('pt_BR');
 
-        // Módulo MEI — 3 métricas-vendedoras + cobertura NFS-e.
-        $meiSvc = app(\App\Services\MeiPanelService::class);
-        $meiTeto = $meiSvc->tetoMei($tenantId);
-        $meiDas  = $meiSvc->proximoDas($tenantId);
-        $meiDre  = $meiSvc->dreMensal($tenantId);
-        $meiNfse = $meiSvc->coberturaNfse($tenantId);
+        // Módulo MEI — só carrega quando o tenant é explicitamente MEI.
+        // Autônomos/PJ simples/outros veem só fluxo de caixa geral abaixo.
+        // View já protege com @if(!empty($meiTeto)) então null aqui basta.
+        $meiTeto = $meiDas = $meiDre = $meiNfse = null;
+        if (optional(\App\Models\Tenant::find($tenantId))->isMei()) {
+            $meiSvc  = app(\App\Services\MeiPanelService::class);
+            $meiTeto = $meiSvc->tetoMei($tenantId);
+            $meiDas  = $meiSvc->proximoDas($tenantId);
+            $meiDre  = $meiSvc->dreMensal($tenantId);
+            $meiNfse = $meiSvc->coberturaNfse($tenantId);
+        }
 
         // ── Financeiro: cache 5 min por tenant (não é user-specific) ──────
         $financial = Cache::remember("dashboard.common.financial.{$tenantId}." . now()->format('Y-m'), 300, function () use ($tenantId) {
