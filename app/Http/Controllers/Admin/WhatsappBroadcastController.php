@@ -292,6 +292,53 @@ class WhatsappBroadcastController extends Controller
      * Status 'cancelled' e tratado visualmente como neutro (nao "failed", que e erro
      * de execucao).
      */
+    // Carrega um rascunho no form principal (padrao prefilled_phones + preMessage
+    // que a index() ja consome). Guarda o draft_campaign_id na sessao pra o
+    // sendBroadcast() saber que deve atualizar o rascunho ao inves de criar novo.
+    public function editDraft(int $id)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $draft = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
+            ->where('id', $id)
+            ->where('status', 'draft')
+            ->firstOrFail();
+
+        // phones no schema atual e string CSV. Fallback pra JSON legado (rascunhos
+        // criados antes do fix do implode).
+        $phonesRaw = (string) ($draft->phones ?? '');
+        if ($phonesRaw !== '' && str_starts_with(trim($phonesRaw), '[')) {
+            $decoded = json_decode($phonesRaw, true);
+            if (is_array($decoded)) {
+                $phonesRaw = implode(',', $decoded);
+            }
+        }
+
+        session()->flash('prefilled_phones', $phonesRaw);
+        session()->flash('ai_broadcast_message', (string) ($draft->message ?? ''));
+        session()->put('draft_campaign_id', $draft->id); // put, nao flash — sobrevive o redirect ate o submit.
+
+        return redirect()->route('whatsapp.broadcast.index')
+            ->with('success', 'Rascunho carregado. Complete a mensagem e dispare quando quiser.');
+    }
+
+    public function discardDraft(int $id)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $draft = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
+            ->where('id', $id)
+            ->where('status', 'draft')
+            ->firstOrFail();
+
+        $draft->delete();
+
+        return redirect()->route('whatsapp.broadcast.campaigns')
+            ->with('success', 'Rascunho descartado.');
+    }
+
     public function cancelScheduled(int $id)
     {
         Gate::authorize('access-whatsapp');
@@ -431,7 +478,7 @@ class WhatsappBroadcastController extends Controller
             }
         }
 
-        $campaign = \App\Models\BroadcastCampaign::create([
+        $payload = [
             'tenant_id'       => $tenantId,
             'created_by'      => auth()->id(),
             'message'         => $message ?: null,
@@ -445,7 +492,26 @@ class WhatsappBroadcastController extends Controller
             'group_send_mode' => $groupSendMode,
             'phones'          => $audience === 'selected' ? $request->input('phones') : null,
             'label_ids'       => $labelIds,
-        ]);
+        ];
+
+        // Se o usuario veio da fila "Continuar edicao" de um rascunho, atualiza
+        // o mesmo campaign ao inves de criar novo (evita rascunhos orfaos no banco).
+        $draftId = (int) session('draft_campaign_id');
+        if ($draftId > 0) {
+            $campaign = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
+                ->where('id', $draftId)
+                ->where('status', 'draft')
+                ->first();
+        } else {
+            $campaign = null;
+        }
+
+        if ($campaign) {
+            $campaign->update($payload);
+            session()->forget('draft_campaign_id');
+        } else {
+            $campaign = \App\Models\BroadcastCampaign::create($payload);
+        }
 
         \Illuminate\Support\Facades\Log::info('Broadcast campaign created', [
             'campaign_id'     => $campaign->id,

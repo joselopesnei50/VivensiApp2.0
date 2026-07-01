@@ -281,7 +281,8 @@ class ProspectingController extends Controller
             'has_image'         => false,
             'audience_type'     => 'selected',
             'status'            => 'draft',
-            'phones'            => json_encode($phones),
+            // Formato alinhado com ProcessBroadcastCampaignJob:451 (explode por virgula).
+            'phones'            => implode(',', $phones),
             'actual_recipients' => count($phones),
         ]);
 

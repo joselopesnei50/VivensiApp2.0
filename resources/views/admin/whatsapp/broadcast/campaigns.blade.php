@@ -276,6 +276,22 @@
                 </div>
                 @endif
 
+                @if($campaign->status === 'draft')
+                <div class="bc-card-actions" style="display:flex; gap:10px; flex-wrap:wrap; padding-top:12px;">
+                    <a href="{{ route('whatsapp.broadcast.draft.edit', $campaign->id) }}" class="bc-btn-resume" style="text-decoration:none; background:#4f46e5; color:white;">
+                        <i class="fas fa-edit"></i> Continuar edição
+                    </a>
+                    <form method="POST" action="{{ route('whatsapp.broadcast.draft.discard', $campaign->id) }}"
+                          onsubmit="return confirm('Descartar este rascunho? Os telefones pré-carregados também serão apagados.');" style="margin:0;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" style="background:#fee2e2; color:#991b1b; border:none; padding:10px 16px; border-radius:10px; font-weight:800; cursor:pointer;">
+                            <i class="fas fa-trash"></i> Descartar rascunho
+                        </button>
+                    </form>
+                </div>
+                @endif
+
             </div>
             @endforeach
         </div>
