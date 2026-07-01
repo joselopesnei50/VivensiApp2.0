@@ -46,7 +46,10 @@ class BruceAiService
         // Bruno — se ainda nao identificou o segmento, tenta pela ultima msg
         // do usuario. Uma vez identificado, cachea e injeta no prompt pra
         // (a) evitar re-perguntar (b) filtrar o painel relevante.
-        $segment = null;
+        // Segundo nivel: dentro de segment=mei, tenta detectar business_type
+        // (mei/autonomo/pj_simples) pra tailored pitching.
+        $segment      = null;
+        $businessType = null;
         if ($role === 'sales_bot') {
             $segment = Cache::get($this->segmentKey($tenantId, $userId));
             if (!$segment) {
@@ -56,10 +59,22 @@ class BruceAiService
                     $segment = $detected;
                 }
             }
+
+            // business_type so faz sentido dentro do segment mei
+            if ($segment === 'mei') {
+                $businessType = Cache::get($this->businessTypeKey($tenantId, $userId));
+                if (!$businessType) {
+                    $detected = $this->detectBusinessType($userMessage);
+                    if ($detected) {
+                        Cache::put($this->businessTypeKey($tenantId, $userId), $detected, self::HISTORY_TTL);
+                        $businessType = $detected;
+                    }
+                }
+            }
         }
 
         $systemPrompt = $role === 'sales_bot'
-            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment)
+            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment, $businessType)
             : $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId);
 
         $messages = array_merge(
@@ -182,14 +197,17 @@ class BruceAiService
         return "bruno.segment.{$tenantId}.{$userId}";
     }
 
+    private function businessTypeKey(int $tenantId, int $userId): string
+    {
+        return "bruno.business_type.{$tenantId}.{$userId}";
+    }
+
     // Heuristica leve pra identificar o segmento do lead pela mensagem.
     // Retorna 'ongs' | 'mei' | 'gestor' | null. Prefere numeros explicitos
     // (1/2/3), depois palavras-chave. Case-insensitive, tolera acentos.
     private function detectSegment(string $userMessage): ?string
     {
-        $t = mb_strtolower(trim($userMessage));
-        // Normaliza acentos comuns pra facilitar match.
-        $t = strtr($t, ['á'=>'a','à'=>'a','ã'=>'a','â'=>'a','é'=>'e','ê'=>'e','í'=>'i','ó'=>'o','ô'=>'o','õ'=>'o','ú'=>'u','ç'=>'c']);
+        $t = $this->normalizeForDetection($userMessage);
 
         // Respostas numericas puras ou com prefixo comum ('1', '1)', 'opcao 1', 'sou o 1').
         if (preg_match('/(^|\D)1(\D|$)/', $t) && !preg_match('/1[0-9]/', $t)) return 'ongs';
@@ -202,6 +220,39 @@ class BruceAiService
         if (preg_match('/\b(gestor|gerente de projetos|pme|empresa|equipe|escritorio|consultoria|agencia)/', $t)) return 'gestor';
 
         return null;
+    }
+
+    /**
+     * Segundo nivel de detecao — dentro do segmento MEI (segmento 2), tenta
+     * distinguir MEI de fato vs autonomo vs PJ simples. Casa com os valores
+     * da coluna tenants.business_type. So faz sentido chamar quando o
+     * segmento ja foi identificado como 'mei'.
+     *
+     * Retorna 'mei' | 'autonomo' | 'pj_simples' | null.
+     */
+    private function detectBusinessType(string $userMessage): ?string
+    {
+        $t = $this->normalizeForDetection($userMessage);
+
+        // Ordem importa: mais especifico primeiro. MEI e o mais claro.
+        if (preg_match('/\b(mei|micro ?empreendedor|cnpj mei|simei|das mei|teto mei|simples mei)\b/', $t)) return 'mei';
+
+        // Autonomo — sem CNPJ formal ou explicitamente autonomo/freelance
+        if (preg_match('/\b(autonomo|autonoma|freelance|freelancer|sem cnpj|profissional liberal|prestador de servico|presto servico)\b/', $t)) return 'autonomo';
+
+        // PJ Simples / pequena empresa (mas nao MEI)
+        if (preg_match('/\b(simples nacional|pequena empresa|micro empresa|me\b|epp|ltda|pj|pessoa juridica|razao social)\b/', $t)
+            && !preg_match('/\bmei\b/', $t)) {
+            return 'pj_simples';
+        }
+
+        return null;
+    }
+
+    private function normalizeForDetection(string $s): string
+    {
+        $s = mb_strtolower(trim($s));
+        return strtr($s, ['á'=>'a','à'=>'a','ã'=>'a','â'=>'a','é'=>'e','ê'=>'e','í'=>'i','ó'=>'o','ô'=>'o','õ'=>'o','ú'=>'u','ç'=>'c']);
     }
 
     public function clearHistory(int $tenantId, int $userId = 0, ?string $contextType = null, ?int $contextId = null): void
@@ -350,7 +401,7 @@ PROMPT;
      * System prompt do Bot Vendedor "Bruno" (vide docs/bot-vendedor.md).
      * Lê KB de config/prompts/bot-vendedor.php — editável sem deploy de código.
      */
-    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null): string
+    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null, ?string $businessType = null): string
     {
         $kb = config('bot-vendedor');
         if (!is_array($kb)) {
@@ -434,6 +485,25 @@ PROMPT;
                 . "- Segmento: {$segmentLabel}\n"
                 . "- NAO pergunte de novo qual e o segmento — ja foi respondido.\n"
                 . "- Foque as respostas nas funcionalidades do painel acima. Nao mencione features dos outros paineis salvo se o lead perguntar diretamente.\n";
+
+            // Sub-refinamento: dentro de segment=mei, se ja identificamos o
+            // business_type especifico, injeta guidance tailored.
+            if ($segment === 'mei' && $businessType) {
+                $btKb = $kb['business_type_context'][$businessType] ?? null;
+                if (is_array($btKb) && !empty($btKb['label'])) {
+                    $segmentBlock .= "\n### TIPO ESPECIFICO IDENTIFICADO ({$btKb['label']})\n"
+                        . (!empty($btKb['pitch'])     ? "- Pitch: {$btKb['pitch']}\n" : '')
+                        . (!empty($btKb['destacar']) && is_array($btKb['destacar'])
+                            ? "- Destaque estas features: " . implode('; ', $btKb['destacar']) . "\n"
+                            : '')
+                        . (!empty($btKb['evitar']) && is_array($btKb['evitar'])
+                            ? "- NAO mencione (nao se aplica a este perfil): " . implode('; ', $btKb['evitar']) . "\n"
+                            : '')
+                        . (!empty($btKb['dores']) && is_array($btKb['dores'])
+                            ? "- Dores tipicas: " . implode('; ', $btKb['dores']) . "\n"
+                            : '');
+                }
+            }
         } else {
             $segmentBlock = "\n### ABERTURA COM LEAD NOVO\n"
                 . "- Se essa e a primeira mensagem util do lead (ele acabou de chegar e nao disse o segmento ainda), sua PRIMEIRA resposta deve OBRIGATORIAMENTE perguntar em qual cenario ele atua, usando exatamente estes tres:\n"

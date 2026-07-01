@@ -155,6 +155,77 @@ return [
         ],
     ],
 
+    // Sub-refinamento dentro do segmento MEI. Quando Bruno detecta que o lead
+    // e MEI/autonomo/PJ simples, injeta o pitch tailored no prompt (vide
+    // BruceAiService::buildSalesBotPrompt). Casa com tenants.business_type
+    // pra que, se o lead virar cliente, o painel dele ja saia calibrado.
+    'business_type_context' => [
+        'mei' => [
+            'label'    => 'MEI (Microempreendedor Individual)',
+            'pitch'    => 'Vivensi te ajuda a NAO passar do teto de R$ 81 mil, pagar DAS em dia e manter o dossie fiscal auditavel (NFS-e anexada em cada receita).',
+            'destacar' => [
+                'Termometro do Teto MEI (avisa aos 70% e 90% do limite anual)',
+                'Lembrete DAS mensal (dia 20) com botao pra marcar como pago',
+                'Dossie fiscal com NFS-e anexada por receita — auditavel',
+                'Emissao rapida de recibos com um clique',
+                'Bruce AI que sugere: "voce ta perto do teto, considere abrir ME"',
+            ],
+            'evitar' => [
+                'Contratos digitais com assinatura eletronica (nao e prioridade pra MEI)',
+                'Simples Nacional em regimes mais complexos',
+            ],
+            'dores' => [
+                'Medo de passar do teto e perder o regime',
+                'Esquecer o DAS e pagar multa',
+                'Nao saber quanto pode gastar sem quebrar o negocio',
+            ],
+        ],
+        'autonomo' => [
+            'label'    => 'Autonomo (sem CNPJ formal)',
+            'pitch'    => 'Vivensi organiza seu fluxo de caixa e clientes sem burocracia de MEI. Foco em receber, controlar despesas e crescer sem virar refem de planilha.',
+            'destacar' => [
+                'Fluxo de caixa simples (entrou / saiu / saldo do mes)',
+                'CRM de clientes com historico de servicos',
+                'Recibos rapidos (nao NFS-e obrigatoria)',
+                'Planejamento anual pra ver quando vale abrir CNPJ',
+                'WhatsApp integrado pra atendimento profissional',
+            ],
+            'evitar' => [
+                'Termometro do Teto MEI (autonomo nao tem esse limite)',
+                'DAS mensal (autonomo paga INSS diferente, nao DAS)',
+                'Dossie fiscal NFS-e obrigatorio (so quando fatura B2B)',
+                'Contratos digitais complexos',
+            ],
+            'dores' => [
+                'Nao saber quanto ganha por mes de verdade',
+                'Misturar dinheiro pessoal com o do servico',
+                'Perder cliente por nao lembrar de dar retorno',
+            ],
+        ],
+        'pj_simples' => [
+            'label'    => 'PJ / Pequena Empresa (Simples Nacional, nao-MEI)',
+            'pitch'    => 'Vivensi da o controle financeiro e comercial da pequena empresa sem custo de ERP grande. Fluxo, CRM, WhatsApp e contratos — tudo integrado.',
+            'destacar' => [
+                'Fluxo de caixa com conciliacao bancaria',
+                'CRM de clientes com pipeline',
+                'Contratos digitais com assinatura eletronica',
+                'WhatsApp Oficial Meta ou Evolution API (escolhe)',
+                'Planejamento anual com Bruce AI sugerindo cortes',
+                'Landing pages e prospeccao IA pra crescer',
+            ],
+            'evitar' => [
+                'Termometro do Teto MEI (nao aplicavel)',
+                'DAS mensal (PJ paga guia DAS Simples diferente ou GNRE)',
+                'Widget de dossie NFS-e obrigatorio (aparece so pra MEI)',
+            ],
+            'dores' => [
+                'Contabilidade acha o financeiro bagunçado',
+                'Vendedores usam WhatsApp pessoal e nada fica registrado',
+                'Contratos indo e voltando por e-mail sem controle',
+            ],
+        ],
+    ],
+
     'discovery_framework' => [
         // SPIN simplificado — Bruno encadeia 2-4 perguntas, não despeja todas.
         'situacao'     => 'Conta um pouco — você gerencia ONG, MEI ou empresa de outro tipo?',
