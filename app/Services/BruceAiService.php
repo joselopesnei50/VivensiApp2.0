@@ -28,7 +28,8 @@ class BruceAiService
     const MAX_HISTORY = 20;   // mensagens mantidas por tenant
 
     public function __construct(
-        private DeepSeekService $deepSeek
+        private DeepSeekService $deepSeek,
+        private TenantContextService $tenantCtx,
     ) {}
 
     // ── Chat ─────────────────────────────────────────────────────────────────
@@ -291,7 +292,7 @@ class BruceAiService
         $cacheKey = "bruce.insight.{$tenantId}." . now()->format('Y-m-d');
 
         return Cache::remember($cacheKey, 21600, function () use ($tenantId, $role) {
-            $ctx = $this->tenantContext($tenantId);
+            $ctx = $this->tenantCtx->for($tenantId);
 
             $prompt = "Em no máximo 2 frases diretas e profissionais, dê um insight acionável sobre a situação financeira/operacional atual. "
                 . "Sem saudação, sem emojis, sem menções a animais. "
@@ -327,7 +328,7 @@ class BruceAiService
             'org_name'        => null,
             'org_type'        => null,
             'ai_training'     => null,
-        ], $this->tenantContext($tenantId));
+        ], $this->tenantCtx->for($tenantId));
 
         $roleContext = match ($role) {
             'ngo'         => "O usuário gerencia uma ONG/OSC. Use termos do terceiro setor: doadores, editais, captação, beneficiários, voluntários, prestação de contas, transparência. Jamais use termos de SaaS, startup, MRR ou ARR.",
@@ -833,33 +834,6 @@ PCTX;
     private function today(): string
     {
         return now()->translatedFormat('d \d\e F \d\e Y');
-    }
-
-    // ── Métricas do tenant (cacheadas 5 min) ──────────────────────────────────
-
-    private function tenantContext(int $tenantId): array
-    {
-        // v2: bump da chave para invalidar caches em redis que foram gerados
-        // antes de 'org_name'/'org_type'/'ai_training' existirem no shape.
-        return Cache::remember("bruce.ctx.v2.{$tenantId}", 300, function () use ($tenantId) {
-            $income  = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'income')->where('status', 'paid')->whereMonth('date', now()->month)->sum('amount');
-            $expense = (float) Transaction::where('tenant_id', $tenantId)->where('type', 'expense')->where('status', 'paid')->whereMonth('date', now()->month)->sum('amount');
-
-            $tenant    = Tenant::find($tenantId);
-            $waConfig  = WhatsappConfig::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
-
-            return [
-                'income'          => $income,
-                'expense'         => $expense,
-                'balance'         => $income - $expense,
-                'active_projects' => Project::where('tenant_id', $tenantId)->where('status', 'active')->count(),
-                'open_tasks'      => Task::where('tenant_id', $tenantId)->whereNotIn('status', ['done', 'completed'])->count(),
-                'overdue_tasks'   => Task::where('tenant_id', $tenantId)->whereNotIn('status', ['done', 'completed'])->whereNotNull('due_date')->where('due_date', '<', now()->toDateString())->count(),
-                'org_name'        => $tenant?->brand_name ?: $tenant?->name,
-                'org_type'        => $tenant?->type,
-                'ai_training'     => $waConfig?->ai_training,
-            ];
-        });
     }
 
     // ── Redis history helpers ─────────────────────────────────────────────────
