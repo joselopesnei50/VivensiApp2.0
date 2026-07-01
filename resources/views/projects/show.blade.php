@@ -241,6 +241,9 @@
                 <a href="{{ $basePath . '/projects/'.$project->id.'/class-sessions' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
                     <i class="fas fa-clipboard-list" style="color: var(--ds-brand);"></i> Lista de Presença
                 </a>
+                <a href="{{ $basePath . '/projects/'.$project->id.'/attendance/report' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                    <i class="fas fa-chart-line" style="color: var(--ds-brand);"></i> Frequência
+                </a>
             </div>
         </div>
 

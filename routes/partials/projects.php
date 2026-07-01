@@ -57,6 +57,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/projects/{project}/class-sessions/{session}/attendance',     [App\Http\Controllers\ClassSessionController::class, 'saveAttendance'])->name('class-sessions.save-attendance')->middleware('throttle:web_write');
     Route::post('/projects/{project}/class-sessions/{session}/token/generate', [App\Http\Controllers\ClassSessionController::class, 'generateToken'])->name('class-sessions.token.generate')->middleware('throttle:web_write');
     Route::post('/projects/{project}/class-sessions/{session}/token/revoke',   [App\Http\Controllers\ClassSessionController::class, 'revokeToken'])->name('class-sessions.token.revoke')->middleware('throttle:web_write');
+    Route::get('/projects/{project}/attendance/report',                        [App\Http\Controllers\AttendanceReportController::class, 'show'])->name('attendance.report');
+    Route::get('/projects/{project}/attendance/report.csv',                    [App\Http\Controllers\AttendanceReportController::class, 'exportReport'])->name('attendance.report.csv')->middleware('throttle:web_export');
+    Route::get('/projects/{project}/class-sessions/{session}/export.csv',      [App\Http\Controllers\AttendanceReportController::class, 'exportSession'])->name('class-sessions.export.csv')->middleware('throttle:web_export');
 
     // Tarefas
     Route::get('/tasks',             [App\Http\Controllers\TaskController::class, 'index']);
