@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\ProjectPerson;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ClassSessionController extends Controller
@@ -216,6 +217,39 @@ class ClassSessionController extends Controller
 
         return redirect("/projects/{$project->id}/class-sessions/{$session->id}")
             ->with('success', 'Chamada salva.');
+    }
+
+    // Gera/regenera token publico + expiracao no fim do dia da sessao.
+    public function generateToken(int $projectId, int $sessionId)
+    {
+        abort_unless(in_array(auth()->user()->role, self::ROLES_WRITE, true), 403);
+
+        $project = $this->findProject($projectId);
+        $session = $this->findSession($sessionId);
+        abort_if($session->project_id !== $project->id, 404);
+
+        $session->public_token         = Str::random(48);
+        $session->public_enabled_until = $session->date->copy()->endOfDay();
+        $session->save();
+
+        return redirect("/projects/{$project->id}/class-sessions/{$session->id}")
+            ->with('success', 'Link público gerado. Copie a URL abaixo.');
+    }
+
+    public function revokeToken(int $projectId, int $sessionId)
+    {
+        abort_unless(in_array(auth()->user()->role, self::ROLES_WRITE, true), 403);
+
+        $project = $this->findProject($projectId);
+        $session = $this->findSession($sessionId);
+        abort_if($session->project_id !== $project->id, 404);
+
+        $session->public_token         = null;
+        $session->public_enabled_until = null;
+        $session->save();
+
+        return redirect("/projects/{$project->id}/class-sessions/{$session->id}")
+            ->with('success', 'Link público revogado.');
     }
 
     private function validateSession(Request $request): array

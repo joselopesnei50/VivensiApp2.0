@@ -77,6 +77,11 @@ Route::get('/validar-certificado/{uuid}', [App\Http\Controllers\HumanResourcesCo
 Route::get('/sign/{token}',  [App\Http\Controllers\ContractController::class, 'showPublic'])->middleware('throttle:30,1')->name('public.contract');
 Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign'])->middleware('throttle:10,1');
 
+// ── Chamada pública (lista de presença via token) ────────────────────────────
+Route::get('/chamada/{token}',         [App\Http\Controllers\PublicAttendanceController::class, 'show'])->middleware('throttle:30,1')->name('public.attendance.show');
+Route::post('/chamada/{token}/checkin', [App\Http\Controllers\PublicAttendanceController::class, 'checkin'])->middleware('throttle:10,1')->name('public.attendance.checkin');
+Route::get('/chamada/{token}/ok',       [App\Http\Controllers\PublicAttendanceController::class, 'success'])->middleware('throttle:30,1')->name('public.attendance.ok');
+
 // ── Rifas públicas ────────────────────────────────────────────────────────────
 Route::get('/rifa/{slug}',                       [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');
 Route::post('/rifa/{slug}/reserve',              [App\Http\Controllers\PublicRaffleController::class, 'reserve'])->middleware('throttle:20,1')->name('public.raffle.reserve');

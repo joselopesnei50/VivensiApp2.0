@@ -33,6 +33,62 @@
     </div>
 @endif
 
+{{-- Painel de Link Publico (Fase 3) --}}
+@if($canWrite)
+    @php
+        $hasToken = !empty($session->public_token_bidx);
+        $publicUrl = $hasToken ? url('/chamada/' . $session->public_token) : null;
+        $isExpired = $hasToken && $session->public_enabled_until && $session->public_enabled_until->isPast();
+    @endphp
+    <div class="vivensi-card" style="background:white; padding:22px 26px; border-radius:18px; box-shadow:0 8px 24px rgba(0,0,0,0.03); margin-bottom:24px; border:1px solid #eef2ff;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <div>
+                <h4 style="margin:0 0 6px; color:#1e293b; font-weight:900; font-size:1.05rem;">
+                    <i class="fas fa-link" style="color:#4f46e5;"></i>&nbsp; Link Público de Chamada
+                </h4>
+                <p style="margin:0; color:#64748b; font-size:0.85rem;">
+                    Alunos marcam presença pelo celular. Modo <strong>{{ ucfirst($session->mode) }}</strong>{{ $session->mode === 'aberta' ? ' — permite autocadastro.' : ' — só matriculados ativos.' }}
+                </p>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <form method="POST" action="{{ $basePath . '/projects/' . $project->id . '/class-sessions/' . $session->id . '/token/generate' }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="btn-ds btn-ds-primary" style="font-weight:800; font-size:0.85rem;">
+                        <i class="fas fa-{{ $hasToken ? 'sync-alt' : 'plus' }}"></i>&nbsp; {{ $hasToken ? 'Regerar' : 'Gerar Link' }}
+                    </button>
+                </form>
+                @if($hasToken)
+                    <form method="POST" action="{{ $basePath . '/projects/' . $project->id . '/class-sessions/' . $session->id . '/token/revoke' }}" style="margin:0;" onsubmit="return confirm('Revogar o link público? Novos check-ins serão bloqueados.');">
+                        @csrf
+                        <button type="submit" class="btn-ds btn-ds-ghost" style="font-weight:700; font-size:0.85rem; color:#dc2626;">
+                            <i class="fas fa-ban"></i>&nbsp; Revogar
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </div>
+
+        @if($hasToken)
+            <div style="margin-top:16px; padding:14px 16px; background:#f8fafc; border-radius:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <input type="text" readonly value="{{ $publicUrl }}"
+                       id="public-url"
+                       style="flex:1; min-width:250px; padding:10px 14px; border:1px solid #e2e8f0; border-radius:8px; background:white; font-family:monospace; font-size:0.85rem;">
+                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('public-url').value); this.innerText='Copiado!';"
+                        class="btn-ds btn-ds-ghost" style="font-size:0.8rem; font-weight:700;">
+                    <i class="fas fa-copy"></i>&nbsp; Copiar
+                </button>
+            </div>
+            <div style="margin-top:10px; font-size:0.8rem; color:{{ $isExpired ? '#b91c1c' : '#64748b' }};">
+                @if($isExpired)
+                    <i class="fas fa-exclamation-triangle"></i>&nbsp; Expirou em {{ $session->public_enabled_until->format('d/m/Y H:i') }} — clique em "Regerar" para novo link.
+                @else
+                    <i class="fas fa-clock"></i>&nbsp; Ativo até {{ $session->public_enabled_until->format('d/m/Y H:i') }}.
+                @endif
+            </div>
+        @endif
+    </div>
+@endif
+
 <div class="vivensi-card" style="background:white; padding:0; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.03); overflow:hidden;">
     @if($students->isEmpty())
         <div style="padding:60px 30px; text-align:center; color:#64748b;">
