@@ -247,6 +247,50 @@ class EvolutionApiService
     }
 
     /**
+     * Baixa midia inbound do Evolution como base64.
+     * A URL crua do WhatsApp (mmg.whatsapp.net) exige auth especial, entao o
+     * browser nao consegue carregar direto. Esse endpoint devolve o binario
+     * decodificado que persistimos localmente em storage/app/public.
+     *
+     * Retorna ['base64' => string, 'mimetype' => string] em sucesso,
+     * ['error' => string] em falha.
+     */
+    public function getBase64FromMedia(array $messageKey): array
+    {
+        if (!$this->instanceName) return ['error' => 'No instance configured'];
+
+        try {
+            $response = $this->http()->timeout(30)->withHeaders([
+                'apikey' => $this->globalApiKey,
+            ])->post("{$this->baseUrl}/chat/getBase64FromMediaMessage/{$this->instanceName}", [
+                'message' => ['key' => $messageKey],
+                'convertToMp4' => false,
+            ]);
+
+            if ($response->failed()) {
+                Log::warning('Evolution getBase64FromMedia falhou', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+                return ['error' => 'Failed status ' . $response->status()];
+            }
+
+            $data = $response->json();
+            $base64 = $data['base64'] ?? null;
+            if (!$base64) {
+                return ['error' => 'Empty base64 in response'];
+            }
+            return [
+                'base64'   => $base64,
+                'mimetype' => $data['mimetype'] ?? 'application/octet-stream',
+            ];
+        } catch (\Throwable $e) {
+            Log::warning('Evolution getBase64FromMedia exception', ['msg' => $e->getMessage()]);
+            return ['error' => 'Exception: ' . $e->getMessage()];
+        }
+    }
+
+    /**
      * Envia áudio como Push-to-Talk (PTT) — formato nativo de voz do WhatsApp.
      * Usar ptt:true reduz drasticamente o risco de ban pois imita gravação humana.
      */

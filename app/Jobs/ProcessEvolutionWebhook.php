@@ -21,6 +21,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * ProcessEvolutionWebhook
@@ -116,6 +118,16 @@ class ProcessEvolutionWebhook implements ShouldQueue
         $mediaCaption = $extracted['media_caption'];
         $userText   = $extracted['user_text']; // null quando só mídia sem texto digitado
         $isAudio    = ($type === 'audio');
+
+        // A URL crua que a Evolution manda em imageMessage/videoMessage/etc aponta
+        // pra mmg.whatsapp.net, que exige auth especial — browser nao carrega.
+        // Baixa via API do Evolution e persiste local pra o painel renderizar.
+        if (in_array($type, ['image', 'video', 'document', 'sticker'], true)) {
+            $localPath = $this->downloadInboundMedia($instance, $key, $type);
+            if ($localPath !== null) {
+                $mediaPath = $localPath;
+            }
+        }
 
         $senderName = $messageData['pushName'] ?? 'WhatsApp';
 
@@ -653,5 +665,49 @@ class ProcessEvolutionWebhook implements ShouldQueue
         }
 
         Log::info("ProcessEvolutionWebhook: Instance [{$instance->instance_name}] status={$state}");
+    }
+
+    // Baixa midia inbound via Evolution e salva em disco publico.
+    // Retorna URL local (/storage/whatsapp-inbound/...) ou null em falha.
+    private function downloadInboundMedia(WhatsappInstance $instance, array $key, string $type): ?string
+    {
+        try {
+            $evo = new EvolutionApiService($instance);
+            $result = $evo->getBase64FromMedia($key);
+            if (isset($result['error']) || empty($result['base64'])) {
+                Log::warning('downloadInboundMedia: getBase64FromMedia falhou', [
+                    'instance' => $instance->id,
+                    'msg_id'   => $key['id'] ?? null,
+                    'err'      => $result['error'] ?? 'empty',
+                ]);
+                return null;
+            }
+
+            $mimetype = $result['mimetype'] ?? 'application/octet-stream';
+            $extMap = [
+                'image/jpeg'       => 'jpg',
+                'image/png'        => 'png',
+                'image/webp'       => 'webp',
+                'image/gif'        => 'gif',
+                'video/mp4'        => 'mp4',
+                'video/webm'       => 'webm',
+                'application/pdf'  => 'pdf',
+                'audio/ogg'        => 'ogg',
+                'audio/mpeg'       => 'mp3',
+            ];
+            $ext = $extMap[$mimetype] ?? ($type === 'document' ? 'bin' : 'dat');
+
+            $binary = base64_decode($result['base64'], true);
+            if ($binary === false || $binary === '') {
+                return null;
+            }
+
+            $path = 'whatsapp-inbound/' . $instance->tenant_id . '/' . Str::uuid() . '.' . $ext;
+            Storage::disk('public')->put($path, $binary);
+            return Storage::url($path);
+        } catch (\Throwable $e) {
+            Log::warning('downloadInboundMedia exception', ['msg' => $e->getMessage()]);
+            return null;
+        }
     }
 }
