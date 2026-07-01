@@ -66,18 +66,32 @@
         box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     }
     .btn-action-pro {
-        padding: 12px 24px;
-        border-radius: 14px;
+        padding: 10px 16px;
+        border-radius: 12px;
         font-weight: 800;
-        font-size: 0.85rem;
+        font-size: 0.78rem;
         transition: all 0.2s;
         display: inline-flex;
         align-items: center;
         gap: 8px;
         text-decoration: none;
+        white-space: nowrap;
     }
     .btn-action-pro:hover {
         transform: scale(1.02);
+    }
+    .project-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+        max-width: 100%;
+    }
+    @media (max-width: 991px) {
+        .project-hero-premium { padding: 32px; }
+        .project-hero-title-row { flex-direction: column; align-items: stretch !important; gap: 20px; }
+        .project-hero-title-row h1 { font-size: 2.4rem !important; letter-spacing: -1.5px !important; }
+        .project-hero-actions { justify-content: flex-start; }
     }
     .project-table-card {
         background: white;
@@ -214,14 +228,14 @@
             <span style="color: rgba(255,255,255,0.4); font-weight: 700; font-size: 0.8rem;">REGISTRO #{{ str_pad($project->id, 5, '0', STR_PAD_LEFT) }}</span>
         </div>
         
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px;">
-            <div style="flex: 1;">
-                <h1 style="font-size: 3.5rem; font-weight: 950; margin: 0; letter-spacing: -3px; line-height: 1; color: white;">{{ $project->name }}</h1>
+        <div class="project-hero-title-row" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 48px; flex-wrap: wrap;">
+            <div style="flex: 1 1 320px; min-width: 0;">
+                <h1 style="font-size: 3.5rem; font-weight: 950; margin: 0; letter-spacing: -3px; line-height: 1; color: white; word-break: break-word;">{{ $project->name }}</h1>
                 <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
                     <span style="font-size: 1rem; color: rgba(255,255,255,0.4); font-weight: 600;">{{ $project->description ?: 'Gestão de alta performance Vivensi' }}</span>
                 </div>
             </div>
-            <div style="display: flex; gap: 12px;">
+            <div class="project-hero-actions">
                 @if($canManageProject)
                     <a href="{{ $basePath . '/projects/'.$project->id.'/edit' }}" class="btn-action-pro" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
                         <i class="fas fa-cog" style="color: #94a3b8;"></i> Ajustes
