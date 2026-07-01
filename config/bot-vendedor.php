@@ -45,7 +45,7 @@ return [
             'terceiro_setor' => [
                 'titulo' => 'Painel Terceiro Setor (ONGs/OSCs)',
                 'grupos' => [
-                    'Projetos e Captação'      => ['Projetos Ativos com orçamento e equipe', 'Doadores (CRM completo)', 'Recibos de doação', 'Editais e Convênios', 'Análise de Editais pela Bruce AI', 'Geração de proposta de edital pela Bruce AI', 'CRM de Patrocínios'],
+                    'Projetos e Captação'      => ['Projetos Ativos com orçamento e equipe', 'Chamada / Lista de Presença (dentro do projeto — token público, dashboard de risco, opt-in LGPD)', 'Doadores (CRM completo)', 'Recibos de doação', 'Editais e Convênios', 'Análise de Editais pela Bruce AI', 'Geração de proposta de edital pela Bruce AI', 'CRM de Patrocínios'],
                     'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA Bruce — treinavel pelo cliente', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
                     'Marketing e Comunicação'  => ['E-mail Marketing', 'Construtor de Landing Pages', 'Inteligência Territorial (mapas e geo)', 'Social AI Hub (gera posts pra redes)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA de doadores', 'Rifas Online', 'Gestão de Redes Sociais'],
                     'Financeiro'               => ['Fluxo de Caixa', 'Planejamento e Orçamento Anual por projeto', 'Conciliação Bancária', 'Lançamento de transações', 'Aprovação de despesas'],
@@ -69,7 +69,7 @@ return [
             'gestor' => [
                 'titulo' => 'Painel Gestor de Projetos / PME',
                 'grupos' => [
-                    'Projetos e Operações'     => ['Projetos com orçamento', 'Equipe e RH', 'Agenda Corporativa', 'Central de Aprovações', 'Perfil Operacional', 'Kanban Geral'],
+                    'Projetos e Operações'     => ['Projetos com orçamento', 'Chamada / Lista de Presença (dentro do projeto — token público, dashboard de risco, opt-in LGPD)', 'Equipe e RH', 'Agenda Corporativa', 'Central de Aprovações', 'Perfil Operacional', 'Kanban Geral'],
                     'Contratos e Financeiro'   => ['Contratos Digitais com assinatura eletrônica', 'Conciliação Bancária'],
                     'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA Bruce — treinavel pelo cliente', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
                     'Marketing e Comunicação'  => ['E-mail Marketing', 'Landing Pages', 'Inteligência Territorial (geo)', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA', 'Rifas Online', 'Gestão de Redes Sociais'],
