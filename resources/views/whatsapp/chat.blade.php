@@ -1758,10 +1758,11 @@
                         let html = '';
                         const isAtBottom = isScrolledToBottom();
                         msgs.forEach(msg => {
-                            let isOut = msg.direction === 'outbound';
+                            const isOut = msg.direction === 'outbound';
+                            const body  = renderBubbleBody(msg);
                             html += `<div class="message-row ${isOut ? 'message-out' : 'message-in'}">
                                 <div class="bubble ${isOut ? 'out' : 'in'}">
-                                    ${escapeHtml(msg.content)}
+                                    ${body}
                                     <div class="meta">${new Date(msg.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${isOut ? ' <i class="fas fa-check-double text-light"></i>' : ''}</div>
                                 </div></div>`;
                         });
@@ -1914,23 +1915,7 @@
                 const extraClass = (lastDir !== null && lastDir !== msg.direction) ? ' sender-change' : '';
                 lastDir = msg.direction;
 
-                // Fase 4.B — render especial pra áudios (player + transcrição/botão).
-                // Fix midia visivel — renderiza image/video/document/sticker
-                // que antes caiam em texto plano '[imagem]', '[documento: X]'.
-                let body;
-                if (msg.type === 'audio') {
-                    body = renderAudioBubble(msg);
-                } else if (msg.type === 'image' && msg.media_path) {
-                    body = renderImageBubble(msg);
-                } else if (msg.type === 'video' && msg.media_path) {
-                    body = renderVideoBubble(msg);
-                } else if (msg.type === 'document' && msg.media_path) {
-                    body = renderDocumentBubble(msg);
-                } else if (msg.type === 'sticker' && msg.media_path) {
-                    body = renderStickerBubble(msg);
-                } else {
-                    body = escapeHtml(msg.content);
-                }
+                const body = renderBubbleBody(msg);
 
                 html += `
                     <div class="message-row ${isOut ? 'message-out' : 'message-in'}${extraClass}">
@@ -1946,6 +1931,18 @@
 
             $('#chat-messages-area').html(html);
             scrollToBottom();
+        }
+
+        // Escolhe o render correto por tipo. Usado por renderMessages (load
+        // inicial) E por pollNewMessages (append ao vivo) — sem essa fatoracao
+        // o polling pintaria "[imagem]" texto plano e so o F5 mostrava a foto.
+        function renderBubbleBody(msg) {
+            if (msg.type === 'audio')                        return renderAudioBubble(msg);
+            if (msg.type === 'image'    && msg.media_path)   return renderImageBubble(msg);
+            if (msg.type === 'video'    && msg.media_path)   return renderVideoBubble(msg);
+            if (msg.type === 'document' && msg.media_path)   return renderDocumentBubble(msg);
+            if (msg.type === 'sticker'  && msg.media_path)   return renderStickerBubble(msg);
+            return escapeHtml(msg.content);
         }
 
         function renderAudioBubble(msg) {
