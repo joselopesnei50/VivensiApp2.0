@@ -1915,9 +1915,19 @@
                 lastDir = msg.direction;
 
                 // Fase 4.B — render especial pra áudios (player + transcrição/botão).
+                // Fix midia visivel — renderiza image/video/document/sticker
+                // que antes caiam em texto plano '[imagem]', '[documento: X]'.
                 let body;
                 if (msg.type === 'audio') {
                     body = renderAudioBubble(msg);
+                } else if (msg.type === 'image' && msg.media_path) {
+                    body = renderImageBubble(msg);
+                } else if (msg.type === 'video' && msg.media_path) {
+                    body = renderVideoBubble(msg);
+                } else if (msg.type === 'document' && msg.media_path) {
+                    body = renderDocumentBubble(msg);
+                } else if (msg.type === 'sticker' && msg.media_path) {
+                    body = renderStickerBubble(msg);
                 } else {
                     body = escapeHtml(msg.content);
                 }
@@ -1947,6 +1957,46 @@
                 ? `<div id="transcription-${id}" style="background:rgba(0,0,0,.05); border-radius:8px; padding:6px 8px; font-size:.78rem; line-height:1.35; color:#334155;"><i class="fas fa-quote-right me-1" style="color:#8b5cf6;"></i>${escapeHtml(msg.transcription)}</div>`
                 : `<div id="transcription-${id}"><button onclick="transcribeAudio(${id})" id="btnTr-${id}" style="background:rgba(139,92,246,.12); color:#7c3aed; border:none; border-radius:8px; padding:5px 10px; font-size:.72rem; font-weight:700; cursor:pointer;"><i class="fas fa-wand-magic-sparkles me-1"></i>Transcrever áudio</button></div>`;
             return player + transcriptionBlock;
+        }
+
+        function renderImageBubble(msg) {
+            const url = escapeHtml(msg.media_path);
+            const caption = msg.content && msg.content !== '[imagem]' && !msg.content.startsWith('[imagem] ')
+                ? msg.content
+                : (msg.content && msg.content.startsWith('[imagem] ') ? msg.content.substring(9) : '');
+            const captionHtml = caption
+                ? `<div style="font-size:.85rem; margin-top:6px;">${escapeHtml(caption)}</div>`
+                : '';
+            return `<img src="${url}" alt="imagem" onclick="window.open('${url}','_blank')" style="max-width:260px; max-height:320px; border-radius:12px; cursor:pointer; display:block;">` + captionHtml;
+        }
+
+        function renderVideoBubble(msg) {
+            const url = escapeHtml(msg.media_path);
+            const caption = msg.content && msg.content !== '[vídeo]' ? msg.content : '';
+            const captionHtml = caption
+                ? `<div style="font-size:.85rem; margin-top:6px;">${escapeHtml(caption)}</div>`
+                : '';
+            return `<video controls preload="metadata" style="max-width:280px; border-radius:12px; display:block;"><source src="${url}"></video>` + captionHtml;
+        }
+
+        function renderDocumentBubble(msg) {
+            const url = escapeHtml(msg.media_path);
+            // Extrai nome do arquivo do content padrao '[documento: nome.pdf]'
+            const match = msg.content ? msg.content.match(/^\[documento:\s*(.+?)\](?:\s*—\s*(.+))?$/) : null;
+            const fileName = match ? match[1] : 'documento';
+            const captionText = match && match[2] ? match[2] : '';
+            const isPdf = /\.pdf(\?|$)/i.test(fileName);
+            const icon = isPdf ? 'fa-file-pdf' : 'fa-file';
+            const iconColor = isPdf ? '#dc2626' : '#4f46e5';
+            const captionHtml = captionText
+                ? `<div style="font-size:.82rem; margin-top:8px; color:#475569;">${escapeHtml(captionText)}</div>`
+                : '';
+            return `<a href="${url}" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(0,0,0,.05); border-radius:10px; text-decoration:none; color:inherit; max-width:280px;"><i class="fas ${icon}" style="font-size:1.6rem; color:${iconColor};"></i><div style="flex:1; min-width:0;"><div style="font-weight:700; font-size:.85rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(fileName)}</div><div style="font-size:.72rem; color:#64748b;"><i class="fas fa-download me-1"></i>Abrir</div></div></a>` + captionHtml;
+        }
+
+        function renderStickerBubble(msg) {
+            const url = escapeHtml(msg.media_path);
+            return `<img src="${url}" alt="sticker" style="max-width:130px; max-height:130px; display:block;">`;
         }
 
         async function transcribeAudio(messageId) {

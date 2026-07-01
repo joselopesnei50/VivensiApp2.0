@@ -12,6 +12,8 @@ use App\Services\EvolutionApiService;
 use App\Services\Messaging\MetaCloudApiService;
 use App\Services\WhatsappOutboundPolicy;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class WhatsAppService
 {
@@ -140,12 +142,18 @@ class WhatsAppService
 
         $messageId = $res['key']['id'] ?? ('MEDIA_' . uniqid());
 
+        // Persiste a imagem em storage/app/public pra a UI conseguir renderizar
+        // o preview mesmo depois. Sem isso o outbound so tinha content='[imagem]'
+        // e desaparecia da tela.
+        $mediaPath = $this->storeOutboundMedia($chat->tenant_id, $base64, $mimetype);
+
         $msg = WhatsappMessage::create([
             'chat_id'    => $chat->id,
             'message_id' => $messageId,
             'content'    => $caption ? "[imagem] {$caption}" : '[imagem]',
             'direction'  => 'outbound',
             'type'       => 'image',
+            'media_path' => $mediaPath,
         ]);
 
         $chat->update(['last_message_at' => now()]);
@@ -158,6 +166,36 @@ class WhatsAppService
         ]);
 
         return ['message_id' => $messageId, 'message' => $msg];
+    }
+
+    // Salva base64 outbound em disco publico, retorna URL relativa acessivel via asset().
+    // Sem isso o painel nao consegue renderizar preview de imagens que ele mesmo enviou.
+    private function storeOutboundMedia(int $tenantId, string $base64, string $mimetype): ?string
+    {
+        try {
+            $mimeMap = [
+                'image/jpeg' => 'jpg',
+                'image/png'  => 'png',
+                'image/webp' => 'webp',
+                'image/gif'  => 'gif',
+            ];
+            $ext = $mimeMap[$mimetype] ?? 'bin';
+
+            // Remove prefixo data URL se presente.
+            $clean  = preg_replace('/^data:[^;]+;base64,/', '', $base64);
+            $binary = base64_decode($clean, true);
+            if ($binary === false || $binary === '') {
+                return null;
+            }
+
+            $path = 'whatsapp-outbound/' . $tenantId . '/' . Str::uuid() . '.' . $ext;
+            Storage::disk('public')->put($path, $binary);
+
+            return Storage::url($path); // /storage/whatsapp-outbound/{tenant}/{uuid}.ext
+        } catch (\Throwable $e) {
+            Log::warning('storeOutboundMedia falhou', ['err' => $e->getMessage()]);
+            return null;
+        }
     }
 
     // ── Audio ─────────────────────────────────────────────────────────────────
