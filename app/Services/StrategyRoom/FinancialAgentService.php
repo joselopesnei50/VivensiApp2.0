@@ -92,7 +92,14 @@ class FinancialAgentService
 
         $fala       = trim((string) ($parsed['fala'] ?? ''));
         $factsUsed  = $this->sanitizeFactsUsed($parsed['fatos_usados'] ?? [], $factCatalog);
-        $confianca  = $this->sanitizeConfidence($parsed['confianca'] ?? 'media');
+        // Trave defensiva: se a fala cita `handle` em backtick mas o modelo
+        // esqueceu de incluir no array, mescla. Garante consistencia entre
+        // texto e metadata mesmo com escorregao do modelo.
+        $factsUsed  = $this->mergeFactsFromFala($fala, $factsUsed, $factCatalog);
+        $confianca  = $this->reconcileConfidence(
+            $this->sanitizeConfidence($parsed['confianca'] ?? 'media'),
+            $fala,
+        );
 
         if ($fala === '') {
             $session->update(['status' => 'concluida']);
@@ -214,11 +221,11 @@ NUNCA invente ou estime um numero que nao esteja listado acima. Se a informacao 
 
 Regras do JSON:
 - fala: texto sem quebra de linha, aspas duplas escapadas se precisar
-- fatos_usados: array com os handles (exatamente como listado acima) que voce citou na fala. Se citou 2 fatos, devolve 2 handles. Se nao citou nenhum, devolve array vazio []
+- fatos_usados: array com os handles (exatamente como listado acima) que voce citou na fala. REGRA DE CONSISTENCIA: CADA handle que aparece em backtick na fala DEVE estar no array. Se citou 5 handles distintos em backtick, o array tem 5 entradas. Se nao citou nenhum, array vazio []. NUNCA cite handle na fala sem incluir no array (e vice-versa).
 - confianca: uma das strings "alta" | "media" | "baixa"
-  - alta: dados presentes cobrem a resposta completamente
-  - media: usou os dados mas com ressalva de contexto ausente
-  - baixa: teve que dizer "nao tenho essa informacao no momento" em ponto critico
+  - alta: TODOS os dados relevantes estao presentes E cobrem a resposta completamente, SEM RESSALVA de dado ausente. Se voce escreveu "nao tenho essa informacao", "desconhecido", "sem snapshot", "nao ha como avaliar", "sem dados" ou equivalente em QUALQUER parte da fala, confianca NAO PODE ser alta.
+  - media: usou os dados mas com ressalva de contexto ausente (ex: 1 handle chave sem valor, fala menciona "sem snapshot" em ponto nao-critico).
+  - baixa: teve que dizer "nao tenho essa informacao no momento" em ponto critico da analise (ex: score do projeto sem snapshot quando isso e o eixo da recomendacao).
 
 ## O QUE VOCE FAZ
 Analisa a saude financeira do tenant no momento, aponta o que chama atencao (positivo ou negativo), e sugere UM foco de acao. Nao propoe cenario. Nao inventa historico. So o que os fatos mostram agora.
@@ -266,5 +273,51 @@ PROMPT;
     {
         $c = is_string($c) ? mb_strtolower(trim($c)) : 'media';
         return in_array($c, ['alta', 'media', 'baixa'], true) ? $c : 'media';
+    }
+
+    /**
+     * Extrai handles em backtick (`handle`) da fala e mescla com o array
+     * que o modelo devolveu. Corrige o caso onde o modelo cita um fato mas
+     * esquece de listar. Preserva a ordem original + adiciona os faltantes
+     * ao final. So considera handles que existem no catalogo.
+     */
+    private function mergeFactsFromFala(string $fala, array $factsUsed, array $catalog): array
+    {
+        if (!preg_match_all('/`([a-z_][a-z0-9_]*)`/u', $fala, $m)) {
+            return $factsUsed;
+        }
+        $valid = array_keys($catalog);
+        $out   = $factsUsed;
+        foreach ($m[1] as $h) {
+            if (in_array($h, $valid, true) && !in_array($h, $out, true)) {
+                $out[] = $h;
+            }
+        }
+        return array_values(array_unique($out));
+    }
+
+    /**
+     * Trava a calibracao: se o modelo devolveu 'alta' mas a fala admite
+     * dado ausente ("sem snapshot", "desconhecido", "nao tenho essa
+     * informacao", "nao ha como avaliar"), rebaixa pra 'media'. Nunca
+     * eleva — so contem otimismo.
+     */
+    private function reconcileConfidence(string $confianca, string $fala): string
+    {
+        if ($confianca !== 'alta') return $confianca;
+
+        $t = mb_strtolower($fala);
+        $red_flags = [
+            'sem snapshot', 'sem dados', 'desconhecid', 'nao tenho essa informacao',
+            'não tenho essa informação', 'nao ha como avaliar', 'não há como avaliar',
+            'nao tem snapshot', 'não tem snapshot', 'nao esta disponivel',
+            'não está disponível', 'sem registro',
+        ];
+        foreach ($red_flags as $flag) {
+            if (str_contains($t, $flag)) {
+                return 'media';
+            }
+        }
+        return 'alta';
     }
 }
