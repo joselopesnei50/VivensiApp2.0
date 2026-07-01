@@ -36,21 +36,26 @@ class FinancialAgentService
     ) {}
 
     /**
+     * Se $sessionId for null, cria sessao nova (compat Fase 0 / teste isolado).
+     * Se dado, usa a sessao existente (uso normal via StrategyDebateOrchestrator).
+     *
      * Devolve:
-     *   - Success: ['fala' => '...', 'fatos_usados' => [...], 'confianca' => '...']
-     *   - Falha:   ['error' => '...']
+     *   - Success: ['fala' => '...', 'fatos_usados' => [...], 'confianca' => '...', 'session_id', 'message_id']
+     *   - Falha:   ['error' => '...', 'session_id' => ...]
      */
-    public function speak(int $tenantId): array
+    public function speak(int $tenantId, ?int $sessionId = null): array
     {
         $ctx           = $this->tenantCtx->for($tenantId);
         $projectScores = $this->activeProjectFinancialScores($tenantId);
         $factCatalog   = $this->buildFactCatalog($ctx, $projectScores);
 
-        $session = StrategySession::create([
-            'tenant_id'    => $tenantId,
-            'trigger_type' => 'manual_test',
-            'status'       => 'em_andamento',
-        ]);
+        $session = $sessionId
+            ? StrategySession::withoutGlobalScopes()->findOrFail($sessionId)
+            : StrategySession::create([
+                'tenant_id'    => $tenantId,
+                'trigger_type' => 'manual_test',
+                'status'       => 'em_andamento',
+            ]);
 
         $systemPrompt = $this->buildSystemPrompt($factCatalog);
         $userPrompt   = 'Baseado APENAS nos fatos listados acima, comece o debate. Em portugues direto, sem rodeios. Devolva SOMENTE o JSON no formato instruido.';
@@ -115,7 +120,11 @@ class FinancialAgentService
             'confidence'          => $confianca,
         ]);
 
-        $session->update(['status' => 'concluida']);
+        // Se sessao foi criada aqui (teste isolado), fecha. Orquestrador
+        // que passou sessionId decide quando fechar.
+        if (!$sessionId) {
+            $session->update(['status' => 'concluida']);
+        }
 
         return [
             'session_id'   => $session->id,
