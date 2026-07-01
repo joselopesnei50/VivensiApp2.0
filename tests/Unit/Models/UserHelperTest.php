@@ -25,7 +25,7 @@ it('isNgo returns true for ngo role', function () {
     expect((new User(['role' => 'manager']))->isNgo())->toBeFalse();
 });
 
-it('isMei returns true for common role', function () {
-    expect((new User(['role' => 'common']))->isMei())->toBeTrue();
-    expect((new User(['role' => 'manager']))->isMei())->toBeFalse();
+it('hasCommonPanel returns true for common role', function () {
+    expect((new User(['role' => 'common']))->hasCommonPanel())->toBeTrue();
+    expect((new User(['role' => 'manager']))->hasCommonPanel())->toBeFalse();
 });

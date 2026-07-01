@@ -109,7 +109,11 @@ class User extends Authenticatable
         return $this->role === 'manager';
     }
 
-    public function isMei(): bool
+    /**
+     * Usa o painel "common" — pequeno negocio (MEI, autonomo, PJ Simples, outros).
+     * NAO significa que o usuario e MEI de fato — pra isso, ver tenant.business_type.
+     */
+    public function hasCommonPanel(): bool
     {
         return $this->role === 'common';
     }

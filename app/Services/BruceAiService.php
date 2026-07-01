@@ -480,7 +480,7 @@ PROMPT;
         }
 
         if ($segment) {
-            $segmentLabel = ['ongs' => 'ONG/OSC (Terceiro Setor)', 'mei' => 'MEI / Pequeno negocio', 'gestor' => 'Gestor de projetos / PME'][$segment] ?? $segment;
+            $segmentLabel = ['ongs' => 'ONG/OSC (Terceiro Setor)', 'mei' => 'Pequeno Negocio (MEI, autonomo ou PJ)', 'gestor' => 'Gestor de projetos / PME'][$segment] ?? $segment;
             $segmentBlock = "\n### SEGMENTO IDENTIFICADO DO LEAD\n"
                 . "- Segmento: {$segmentLabel}\n"
                 . "- NAO pergunte de novo qual e o segmento — ja foi respondido.\n"
@@ -508,9 +508,9 @@ PROMPT;
             $segmentBlock = "\n### ABERTURA COM LEAD NOVO\n"
                 . "- Se essa e a primeira mensagem util do lead (ele acabou de chegar e nao disse o segmento ainda), sua PRIMEIRA resposta deve OBRIGATORIAMENTE perguntar em qual cenario ele atua, usando exatamente estes tres:\n"
                 . "  1) ONG ou OSC (Terceiro Setor)\n"
-                . "  2) MEI ou pequeno negocio\n"
+                . "  2) MEI, autonomo ou pequena empresa\n"
                 . "  3) Gestor de projetos ou PME\n"
-                . "- Formato sugerido (adapte tom, mas mantenha as 3 opcoes numeradas): 'Oi, tudo bem? Sou o Bruno, da Vivensi. Antes de te ajudar melhor, me conta rapidinho: voce atua em qual desses cenarios? 1) ONG ou OSC 2) MEI ou pequeno negocio 3) Gestor de projetos ou PME'\n"
+                . "- Formato sugerido (adapte tom, mas mantenha as 3 opcoes numeradas): 'Oi, tudo bem? Sou o Bruno, da Vivensi. Antes de te ajudar melhor, me conta rapidinho: voce atua em qual desses cenarios? 1) ONG ou OSC 2) MEI, autonomo ou pequena empresa 3) Gestor de projetos ou PME'\n"
                 . "- Se o lead ja falou algo que revela o segmento (ex: 'sou de uma ong'), NAO pergunte — siga direto pra descoberta focada.\n";
         }
 

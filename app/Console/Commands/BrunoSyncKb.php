@@ -280,7 +280,7 @@ class BrunoSyncKb extends Command
     {
         return match ($panelKey) {
             'terceiro_setor' => 'Painel Terceiro Setor (ONGs/OSCs)',
-            'mei'            => 'Painel MEI / Pequeno Negócio',
+            'mei'            => 'Painel Pequeno Negócio (MEI, autônomo, PJ Simples)',
             'gestor'         => 'Painel Gestor de Projetos / PME',
             default          => 'Painel',
         };

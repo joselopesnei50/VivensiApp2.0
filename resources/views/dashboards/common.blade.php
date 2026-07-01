@@ -27,7 +27,7 @@
              <a href="{{ url('/transactions/create') }}" class="btn-premium">
                 <i class="fas fa-plus me-2"></i> Nova Transação
             </a>
-            {{-- CTA principal — função monetizadora do MEI. Estilo destacado pra
+            {{-- CTA principal — função monetizadora do painel. Estilo destacado pra
                  não se perder entre os outros botões do header. --}}
              <a href="{{ url('/personal/receipts/create') }}"
                 style="display:inline-flex; align-items:center; gap:10px;
@@ -52,7 +52,8 @@
 
 {{-- Bloco quick_access (Novo Lançamento, Social AI Hub, Minhas Tarefas,
      Inteligência Territorial) removido a pedido — duplicava com o
-     bloco "MEI no Controle" e poluía a primeira tela do MEI. --}}
+     bloco "MEI no Controle" (que aparece só pra MEI de fato) e poluía
+     a primeira tela do painel. --}}
 
 {{-- ===== MEI no Controle: Termômetro · DAS · DRE ===== --}}
 @if(!empty($meiTeto ?? null))
