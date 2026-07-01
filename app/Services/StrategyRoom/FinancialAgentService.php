@@ -29,6 +29,7 @@ class FinancialAgentService
 {
     public const AGENT_KEY = 'financeiro';
     public const MODEL     = 'deepseek-v4-pro';
+    private const MAX_TOOL_ITERATIONS = 3;
 
     public function __construct(
         private DeepSeekService $deepSeek,
@@ -58,39 +59,63 @@ class FinancialAgentService
             ]);
 
         $systemPrompt = $this->buildSystemPrompt($factCatalog);
-        $userPrompt   = 'Baseado APENAS nos fatos listados acima, comece o debate. Em portugues direto, sem rodeios. Devolva SOMENTE o JSON no formato instruido.';
+        $messages     = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user',   'content' => 'Analise a situacao financeira. Use as ferramentas quando quiser detalhar por projeto ou ver tendencia. Devolva SOMENTE o JSON no formato instruido.'],
+        ];
+        $tools = FinancialAgentTools::definitions();
 
-        $response = $this->deepSeek->chat(
-            [
-                ['role' => 'system', 'content' => $systemPrompt],
-                ['role' => 'user',   'content' => $userPrompt],
-            ],
-            self::MODEL,
-        );
+        $rawContent  = '';
+        $toolsCalled = [];
+        $projetoIds  = []; // ids de projetos citados pelas tools — vira handle projeto:X
 
-        if (isset($response['error'])) {
-            $session->update(['status' => 'concluida']);
-            Log::warning('StrategyRoom/Financeiro: DeepSeek retornou erro', [
-                'tenant_id' => $tenantId,
-                'session'   => $session->id,
-                'error'     => $response['error'],
-            ]);
-            return ['error' => $response['error'], 'session_id' => $session->id];
+        for ($iter = 0; $iter < self::MAX_TOOL_ITERATIONS + 1; $iter++) {
+            $response = $this->deepSeek->chat($messages, self::MODEL, $tools);
+
+            if (isset($response['error'])) {
+                $session->update(['status' => 'concluida']);
+                Log::warning('StrategyRoom/Financeiro: DeepSeek erro', [
+                    'tenant_id' => $tenantId, 'session' => $session->id, 'err' => $response['error'],
+                ]);
+                return ['error' => $response['error'], 'session_id' => $session->id];
+            }
+
+            $assistantMsg = data_get($response, 'choices.0.message', []);
+            $toolCalls    = $assistantMsg['tool_calls'] ?? null;
+
+            if (empty($toolCalls)) {
+                $rawContent = (string) ($assistantMsg['content'] ?? '');
+                break;
+            }
+
+            $messages[] = $assistantMsg;
+            foreach ($toolCalls as $tc) {
+                $name = data_get($tc, 'function.name', '');
+                $args = json_decode(data_get($tc, 'function.arguments', '{}'), true) ?: [];
+                $result = FinancialAgentTools::execute($name, $args, $tenantId);
+
+                $toolsCalled[] = $name;
+                foreach (($result['projetos'] ?? []) as $p) {
+                    if (isset($p['id'])) $projetoIds[] = (int) $p['id'];
+                }
+
+                $messages[] = [
+                    'role'         => 'tool',
+                    'tool_call_id' => $tc['id'] ?? '',
+                    'name'         => $name,
+                    'content'      => json_encode($result, JSON_UNESCAPED_UNICODE),
+                ];
+            }
         }
 
-        $raw    = data_get($response, 'choices.0.message.content', '');
-        $parsed = $this->parseJson($raw);
-
+        $parsed = $this->parseJson($rawContent);
         if ($parsed === null) {
             $session->update(['status' => 'concluida']);
-            Log::warning('StrategyRoom/Financeiro: JSON invalido do modelo', [
-                'tenant_id' => $tenantId,
-                'session'   => $session->id,
-                'raw_len'   => strlen($raw),
-                // NAO logar $raw — pode conter dado agregado; loga so o tamanho.
+            Log::warning('StrategyRoom/Financeiro: JSON invalido', [
+                'tenant_id' => $tenantId, 'session' => $session->id, 'raw_len' => strlen($rawContent),
             ]);
             return [
-                'error'      => 'O modelo devolveu resposta fora do formato JSON esperado. Tente novamente.',
+                'error'      => 'O modelo devolveu resposta fora do formato JSON esperado.',
                 'session_id' => $session->id,
             ];
         }
@@ -101,6 +126,12 @@ class FinancialAgentService
         // esqueceu de incluir no array, mescla. Garante consistencia entre
         // texto e metadata mesmo com escorregao do modelo.
         $factsUsed  = $this->mergeFactsFromFala($fala, $factsUsed, $factCatalog);
+        // Adiciona rastreabilidade de tools + entidades
+        $factsUsed  = array_values(array_unique(array_merge(
+            $factsUsed,
+            array_map(fn ($t) => "tool:{$t}", array_unique($toolsCalled)),
+            array_map(fn ($id) => "projeto:{$id}", array_unique($projetoIds)),
+        )));
         $confianca  = $this->reconcileConfidence(
             $this->sanitizeConfidence($parsed['confianca'] ?? 'media'),
             $fala,
@@ -220,17 +251,27 @@ class FinancialAgentService
         return <<<PROMPT
 Voce e o Agente Financeiro da Sala de Estrategia do Vivensi, inspirado no papel de CFO. Fala em portugues direto, sem rodeios. Sem emojis, sem saudacoes floreadas.
 
-## FATOS DISPONIVEIS (unicos que voce pode citar)
+## FATOS DISPONIVEIS BASE (unicos que voce pode citar em backticks)
 {$factsBlock}
+## FERRAMENTAS OPCIONAIS (chame quando quiser aprofundar)
+
+### `analisar_transacoes_por_projeto({periodo_dias?})`
+Quebra receita/despesa por projeto ativo no periodo. Retorna status por projeto (sangrando/so_despesa/so_receita/sem_movimentacao/saudavel) e pct de budget usado. Use quando quiser apontar problema em projeto ESPECIFICO em vez de so falar do agregado do tenant.
+
+### `historico_health_score({ultimos_n_snapshots?})`
+Ultimos snapshots do score financeiro por projeto — permite ver TENDENCIA (subindo/estavel/caindo/sem_dado). Use quando quiser dizer "score caiu de X pra Y" ou detectar deterioracao ao longo do tempo. Muito util quando o handle `project_health_score` do catalogo mostra so o valor atual.
+
+Chame 0, 1 ou as 2 ferramentas conforme fizer sentido pra sua analise. Se decidir chamar, cite os projetos especificos retornados pelo nome (nao invente).
+
 ## REGRA CRITICA DE ANTI-ALUCINACAO
-NUNCA invente ou estime um numero que nao esteja listado acima. Se a informacao que voce precisa nao estiver disponivel, diga explicitamente "nao tenho essa informacao no momento" em vez de calcular ou aproximar. Nao projete cenario com numero fabricado. Nao cite valor de projeto se o handle project_health_score estiver como "sem snapshot registrado".
+NUNCA invente ou estime um numero que nao esteja listado acima OU vindo de tool call desta sessao. Se a informacao que voce precisa nao estiver disponivel, diga explicitamente "nao tenho essa informacao no momento" em vez de calcular ou aproximar. Nao projete cenario com numero fabricado. Nao cite projeto/valor que nao veio de tool call ou do catalogo base.
 
 ## FORMATO DE SAIDA (obrigatorio — devolva SOMENTE o JSON abaixo, sem texto antes nem depois)
 {"fala": "string em portugues, direto (2-4 frases). Cite as fontes usando os handles em backticks, ex: baseado no `saldo_mes`", "fatos_usados": ["saldo_mes","receita_mes"], "confianca": "alta"}
 
 Regras do JSON:
 - fala: texto sem quebra de linha, aspas duplas escapadas se precisar
-- fatos_usados: array com os handles (exatamente como listado acima) que voce citou na fala. REGRA DE CONSISTENCIA: CADA handle que aparece em backtick na fala DEVE estar no array. Se citou 5 handles distintos em backtick, o array tem 5 entradas. Se nao citou nenhum, array vazio []. NUNCA cite handle na fala sem incluir no array (e vice-versa).
+- fatos_usados: array com os handles (exatamente como listado acima) que voce citou na fala. REGRA DE CONSISTENCIA: CADA handle do catalogo base que aparece em backtick na fala DEVE estar no array. Se citou 5 handles distintos em backtick, o array tem 5 entradas. Se nao citou nenhum, array vazio []. NUNCA cite handle na fala sem incluir no array (e vice-versa). Handles de tools e projetos sao adicionados automaticamente pelo sistema — voce nao precisa se preocupar com "tool:X" nem "projeto:Y" no array.
 - confianca: uma das strings "alta" | "media" | "baixa"
   - alta: TODOS os dados relevantes estao presentes E cobrem a resposta completamente, SEM RESSALVA de dado ausente. Se voce escreveu "nao tenho essa informacao", "desconhecido", "sem snapshot", "nao ha como avaliar", "sem dados" ou equivalente em QUALQUER parte da fala, confianca NAO PODE ser alta.
   - media: usou os dados mas com ressalva de contexto ausente (ex: 1 handle chave sem valor, fala menciona "sem snapshot" em ponto nao-critico).
