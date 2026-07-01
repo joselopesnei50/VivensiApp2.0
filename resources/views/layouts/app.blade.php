@@ -548,7 +548,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @elseif (auth()->user()->role == 'manager')
                 {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
                 @php
-                    $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*','manager/perfil-operacional*','manager/kanban*');
+                    $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*','manager/perfil-operacional*','manager/kanban*','class-sessions*');
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
                     $mgr_wa_active   = request()->is('whatsapp*');
                     $mgr_mkt_active  = request()->is('manager/landing-pages*','manager/email-campaigns*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
@@ -565,6 +565,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $mgr_ops_active ? '300px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/projects') }}" class="{{ request()->is('projects*') ? 'active' : '' }}"><i class="fas fa-project-diagram"></i> Projetos</a></li>
+                            <li><a href="{{ url('/class-sessions') }}" class="{{ request()->is('class-sessions*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Chamada</a></li>
                             <li><a href="{{ url('/manager/team') }}" class="{{ request()->is('manager/team*') ? 'active' : '' }}"><i class="fas fa-users"></i> Equipe &amp; RH</a></li>
                             <li><a href="{{ url('/manager/schedule') }}" class="{{ request()->is('manager/schedule*') ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Agenda Corporativa</a></li>
                             <li><a href="{{ url('/manager/approvals') }}" class="{{ request()->is('manager/approvals*') ? 'active' : '' }}"><i class="fas fa-check-double"></i> Central de Aprovações</a></li>
@@ -661,7 +662,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @elseif (auth()->user()->role == 'ngo' || (auth()->user()->tenant && auth()->user()->tenant->type == 'ngo'))
                 {{-- ═══ MENU TERCEIRO SETOR (ONG) — Agrupado ═══ --}}
                 @php
-                    $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*');
+                    $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*','class-sessions*');
                     $ngo_wa_active     = request()->is('whatsapp*');
                     $ngo_mkt_active    = request()->is('ngo/landing-pages*','ngo/email-campaigns*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
                     $ngo_fin_active    = request()->is('transactions*','ngo/budget*','ngo/reconciliation*');
@@ -681,6 +682,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $ngo_capt_active ? '350px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/projects') }}" class="{{ request()->is('projects*') ? 'active' : '' }}"><i class="fas fa-project-diagram"></i> Projetos Ativos</a></li>
+                            <li><a href="{{ url('/class-sessions') }}" class="{{ request()->is('class-sessions*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Chamada</a></li>
                             <li><a href="{{ url('/ngo/donors') }}" class="{{ request()->is('ngo/donors*') ? 'active' : '' }}"><i class="fas fa-heart"></i> Doadores</a></li>
                             <li><a href="{{ url('/ngo/receipts') }}" class="{{ request()->is('ngo/receipts*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Recibos</a></li>
                             <li><a href="{{ url('/ngo/grants') }}" class="{{ request()->is('ngo/grants*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Editais &amp; Convênios</a></li>

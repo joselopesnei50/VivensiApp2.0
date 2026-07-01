@@ -119,4 +119,9 @@ class Project extends Model
     {
         return $this->hasMany(ProjectMilestone::class)->orderBy('target_date');
     }
+
+    public function classSessions()
+    {
+        return $this->hasMany(ClassSession::class);
+    }
 }

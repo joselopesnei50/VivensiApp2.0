@@ -45,6 +45,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::put('/projects/{id}/planning/milestones/{milestoneId}',   [App\Http\Controllers\ProjectPlanningController::class, 'updateMilestone'])->name('projects.planning.milestones.update')->middleware('throttle:web_write');
     Route::delete('/projects/{id}/planning/milestones/{milestoneId}',[App\Http\Controllers\ProjectPlanningController::class, 'destroyMilestone'])->name('projects.planning.milestones.destroy')->middleware('throttle:web_write');
 
+    // ── Lista de Presenca (class_sessions) ────────────────────────────────
+    Route::get('/class-sessions',                                              [App\Http\Controllers\ClassSessionController::class, 'indexAll'])->name('class-sessions.index-all');
+    Route::get('/projects/{project}/class-sessions',                           [App\Http\Controllers\ClassSessionController::class, 'index'])->name('class-sessions.index');
+    Route::get('/projects/{project}/class-sessions/create',                    [App\Http\Controllers\ClassSessionController::class, 'create'])->name('class-sessions.create');
+    Route::post('/projects/{project}/class-sessions',                          [App\Http\Controllers\ClassSessionController::class, 'store'])->name('class-sessions.store')->middleware('throttle:web_write');
+    Route::get('/projects/{project}/class-sessions/{session}',                 [App\Http\Controllers\ClassSessionController::class, 'show'])->name('class-sessions.show');
+    Route::get('/projects/{project}/class-sessions/{session}/edit',            [App\Http\Controllers\ClassSessionController::class, 'edit'])->name('class-sessions.edit');
+    Route::put('/projects/{project}/class-sessions/{session}',                 [App\Http\Controllers\ClassSessionController::class, 'update'])->name('class-sessions.update')->middleware('throttle:web_write');
+    Route::delete('/projects/{project}/class-sessions/{session}',              [App\Http\Controllers\ClassSessionController::class, 'destroy'])->name('class-sessions.destroy')->middleware('throttle:web_write');
+    Route::post('/projects/{project}/class-sessions/{session}/attendance',     [App\Http\Controllers\ClassSessionController::class, 'saveAttendance'])->name('class-sessions.save-attendance')->middleware('throttle:web_write');
+
     // Tarefas
     Route::get('/tasks',             [App\Http\Controllers\TaskController::class, 'index']);
     Route::get('/tasks/calendar',    [App\Http\Controllers\TaskController::class, 'calendar'])->name('tasks.calendar');

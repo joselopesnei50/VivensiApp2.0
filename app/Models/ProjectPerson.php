@@ -17,10 +17,23 @@ class ProjectPerson extends Model
         'address',
         'city',
         'phone',
+        'birth_date',
+        'guardian_name',
+        'guardian_phone',
+        'enrollment_status',
+    ];
+
+    protected $casts = [
+        'birth_date' => 'date',
     ];
 
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(ClassAttendance::class, 'project_person_id');
     }
 }
