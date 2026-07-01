@@ -43,8 +43,23 @@ class BruceAiService
     ): array {
         $history = $this->getHistory($tenantId, $userId, $contextType, $contextId);
 
+        // Bruno — se ainda nao identificou o segmento, tenta pela ultima msg
+        // do usuario. Uma vez identificado, cachea e injeta no prompt pra
+        // (a) evitar re-perguntar (b) filtrar o painel relevante.
+        $segment = null;
+        if ($role === 'sales_bot') {
+            $segment = Cache::get($this->segmentKey($tenantId, $userId));
+            if (!$segment) {
+                $detected = $this->detectSegment($userMessage);
+                if ($detected) {
+                    Cache::put($this->segmentKey($tenantId, $userId), $detected, self::HISTORY_TTL);
+                    $segment = $detected;
+                }
+            }
+        }
+
         $systemPrompt = $role === 'sales_bot'
-            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)))
+            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment)
             : $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId);
 
         $messages = array_merge(
@@ -160,6 +175,33 @@ class BruceAiService
     private function qualificationKey(int $tenantId, int $userId): string
     {
         return "bruno.qualification.{$tenantId}.{$userId}";
+    }
+
+    private function segmentKey(int $tenantId, int $userId): string
+    {
+        return "bruno.segment.{$tenantId}.{$userId}";
+    }
+
+    // Heuristica leve pra identificar o segmento do lead pela mensagem.
+    // Retorna 'ongs' | 'mei' | 'gestor' | null. Prefere numeros explicitos
+    // (1/2/3), depois palavras-chave. Case-insensitive, tolera acentos.
+    private function detectSegment(string $userMessage): ?string
+    {
+        $t = mb_strtolower(trim($userMessage));
+        // Normaliza acentos comuns pra facilitar match.
+        $t = strtr($t, ['á'=>'a','à'=>'a','ã'=>'a','â'=>'a','é'=>'e','ê'=>'e','í'=>'i','ó'=>'o','ô'=>'o','õ'=>'o','ú'=>'u','ç'=>'c']);
+
+        // Respostas numericas puras ou com prefixo comum ('1', '1)', 'opcao 1', 'sou o 1').
+        if (preg_match('/(^|\D)1(\D|$)/', $t) && !preg_match('/1[0-9]/', $t)) return 'ongs';
+        if (preg_match('/(^|\D)2(\D|$)/', $t) && !preg_match('/2[0-9]/', $t)) return 'mei';
+        if (preg_match('/(^|\D)3(\D|$)/', $t) && !preg_match('/3[0-9]/', $t)) return 'gestor';
+
+        // Palavras-chave por segmento — ordem importa (mais especifico primeiro).
+        if (preg_match('/\b(ong|osc|terceiro setor|instituto|associacao|fundacao|filantropia|assistencia social|voluntari)/', $t)) return 'ongs';
+        if (preg_match('/\b(mei|micro ?empreendedor|pequeno negocio|autonomo|freelance|profissional liberal)/', $t)) return 'mei';
+        if (preg_match('/\b(gestor|gerente de projetos|pme|empresa|equipe|escritorio|consultoria|agencia)/', $t)) return 'gestor';
+
+        return null;
     }
 
     public function clearHistory(int $tenantId, int $userId = 0, ?string $contextType = null, ?int $contextId = null): void
@@ -308,7 +350,7 @@ PROMPT;
      * System prompt do Bot Vendedor "Bruno" (vide docs/bot-vendedor.md).
      * Lê KB de config/prompts/bot-vendedor.php — editável sem deploy de código.
      */
-    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null): string
+    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null): string
     {
         $kb = config('bot-vendedor');
         if (!is_array($kb)) {
@@ -366,15 +408,40 @@ PROMPT;
 
         // Catálogo detalhado de funcionalidades por painel — fonte da verdade
         // pra Bruno responder "o que vocês têm" sem inventar nada.
+        // Quando o segmento ja foi identificado (cache), filtra pro painel
+        // relevante — economiza tokens e afia a resposta.
+        $segmentToPanelKey = ['ongs' => 'terceiro_setor', 'mei' => 'mei', 'gestor' => 'gestor'];
+        $panelKeyForSegment = $segment ? ($segmentToPanelKey[$segment] ?? null) : null;
+
         $panelsBlock = '';
+        $segmentBlock = '';
         if (isset($product['panels']) && is_array($product['panels'])) {
-            foreach ($product['panels'] as $painel) {
+            foreach ($product['panels'] as $key => $painel) {
+                if ($panelKeyForSegment && $key !== $panelKeyForSegment) {
+                    continue; // segmento definido — inclui apenas o painel relevante
+                }
                 $panelsBlock .= "\n#### {$painel['titulo']}\n";
                 foreach (($painel['grupos'] ?? []) as $grupo => $itens) {
                     $itensTxt = is_array($itens) ? implode('; ', $itens) : (string) $itens;
                     $panelsBlock .= "- {$grupo}: {$itensTxt}\n";
                 }
             }
+        }
+
+        if ($segment) {
+            $segmentLabel = ['ongs' => 'ONG/OSC (Terceiro Setor)', 'mei' => 'MEI / Pequeno negocio', 'gestor' => 'Gestor de projetos / PME'][$segment] ?? $segment;
+            $segmentBlock = "\n### SEGMENTO IDENTIFICADO DO LEAD\n"
+                . "- Segmento: {$segmentLabel}\n"
+                . "- NAO pergunte de novo qual e o segmento — ja foi respondido.\n"
+                . "- Foque as respostas nas funcionalidades do painel acima. Nao mencione features dos outros paineis salvo se o lead perguntar diretamente.\n";
+        } else {
+            $segmentBlock = "\n### ABERTURA COM LEAD NOVO\n"
+                . "- Se essa e a primeira mensagem util do lead (ele acabou de chegar e nao disse o segmento ainda), sua PRIMEIRA resposta deve OBRIGATORIAMENTE perguntar em qual cenario ele atua, usando exatamente estes tres:\n"
+                . "  1) ONG ou OSC (Terceiro Setor)\n"
+                . "  2) MEI ou pequeno negocio\n"
+                . "  3) Gestor de projetos ou PME\n"
+                . "- Formato sugerido (adapte tom, mas mantenha as 3 opcoes numeradas): 'Oi, tudo bem? Sou o Bruno, da Vivensi. Antes de te ajudar melhor, me conta rapidinho: voce atua em qual desses cenarios? 1) ONG ou OSC 2) MEI ou pequeno negocio 3) Gestor de projetos ou PME'\n"
+                . "- Se o lead ja falou algo que revela o segmento (ex: 'sou de uma ong'), NAO pergunte — siga direto pra descoberta focada.\n";
         }
 
         // Detalhes do WhatsApp (Evolution vs Meta) + treinamento do bot.
@@ -475,6 +542,7 @@ Você é {$persona['name']}, {$persona['role']}.
 {$persona['tone']}
 
 {$personaRules}
+{$segmentBlock}
 {$qualBlock}
 ## PRODUTO — VIVENSI
 {$product['short_pitch']}
