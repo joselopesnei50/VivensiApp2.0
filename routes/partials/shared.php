@@ -105,9 +105,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
     // ── Perfil do Usuário ─────────────────────────────────────────────────────
     Route::get('/profile',           [App\Http\Controllers\ProfileController::class, 'edit']);
-    Route::post('/profile/update',   [App\Http\Controllers\ProfileController::class, 'update']);
-    Route::post('/profile/password', [App\Http\Controllers\ProfileController::class, 'updatePassword']);
-    Route::get('/profile/export',    [App\Http\Controllers\ProfileController::class, 'exportData'])->name('profile.export')->middleware('throttle:3,60');
+    Route::post('/profile/update',        [App\Http\Controllers\ProfileController::class, 'update']);
+    Route::post('/profile/password',      [App\Http\Controllers\ProfileController::class, 'updatePassword']);
+    Route::post('/profile/business-type', [App\Http\Controllers\ProfileController::class, 'updateBusinessType'])->name('profile.business-type');
+    Route::get('/profile/export',         [App\Http\Controllers\ProfileController::class, 'exportData'])->name('profile.export')->middleware('throttle:3,60');
     Route::post('/profile/delete',   [App\Http\Controllers\ProfileController::class, 'requestDelete'])->name('profile.delete')->middleware('throttle:2,60');
 
     // ── Suporte ───────────────────────────────────────────────────────────────

@@ -37,6 +37,41 @@ class ProfileController extends Controller
         return back()->with('success', 'Perfil atualizado com sucesso!');
     }
 
+    /**
+     * Atualiza o tipo de negócio do tenant (mei/autônomo/PJ simples/outro).
+     * Só usuários do painel common (role=common) veem essa opção — outros
+     * roles (ngo/manager/super_admin) têm painel próprio e o campo é ignorado.
+     */
+    public function updateBusinessType(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'common') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'business_type' => ['required', 'in:mei,autonomo,pj_simples,outro'],
+        ]);
+
+        $tenant = \App\Models\Tenant::find($user->tenant_id);
+        if (!$tenant) {
+            return back()->withErrors(['business_type' => 'Tenant não encontrado.']);
+        }
+
+        $old = $tenant->business_type;
+        $tenant->business_type = $validated['business_type'];
+        $tenant->save();
+
+        Log::info('Tenant business_type alterado', [
+            'tenant_id' => $tenant->id,
+            'user_id'   => $user->id,
+            'de'        => $old,
+            'para'      => $validated['business_type'],
+        ]);
+
+        return back()->with('success', 'Tipo de negócio atualizado. O painel foi ajustado às novas configurações.');
+    }
+
     public function updatePassword(Request $request)
     {
         $request->validate([

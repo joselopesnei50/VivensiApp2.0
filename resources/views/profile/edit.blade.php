@@ -123,6 +123,70 @@
 
 </div>
 
+{{-- ── Tipo de Negócio (só painel common — MEI, autônomo, PJ simples, outro) ──── --}}
+@if(auth()->user()->role === 'common')
+@php
+    $tenant   = \App\Models\Tenant::find(auth()->user()->tenant_id);
+    $current  = $tenant?->business_type ?? 'mei';
+    $tipos    = [
+        'mei'        => ['icon' => 'fa-money-bill-wave',  'color' => '#10b981', 'titulo' => 'MEI',                 'desc' => 'Microempreendedor Individual — teto R$ 81 mil/ano, DAS mensal, NFS-e.'],
+        'autonomo'   => ['icon' => 'fa-user-tie',         'color' => '#3b82f6', 'titulo' => 'Autônomo',            'desc' => 'Profissional autônomo sem CNPJ formal — foco em fluxo de caixa e clientes.'],
+        'pj_simples' => ['icon' => 'fa-building',         'color' => '#6366f1', 'titulo' => 'PJ / Pequena Empresa', 'desc' => 'Empresa no Simples Nacional (não-MEI) — sem widgets de teto MEI/DAS.'],
+        'outro'      => ['icon' => 'fa-shapes',           'color' => '#64748b', 'titulo' => 'Outro',               'desc' => 'Qualquer outro perfil — painel genérico focado em fluxo de caixa.'],
+    ];
+@endphp
+<div class="row g-5 mt-2">
+    <div class="col-12">
+        <div class="vivensi-card" style="padding: 40px; border-radius: 28px; background: white; border: 1px solid #f1f5f9; box-shadow: 0 15px 45px rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 8px;">
+                <div style="width: 48px; height: 48px; background: #eef2ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #4f46e5; font-size: 1.2rem; border: 1px solid #e0e7ff;">
+                    <i class="fas fa-store"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 1.2rem; letter-spacing: -0.5px;">Tipo de Negócio</h3>
+                    <p style="margin: 2px 0 0 0; color: #64748b; font-size: 0.82rem;">Ajusta os widgets do painel principal ao seu perfil. Alteração vale a partir do próximo carregamento.</p>
+                </div>
+            </div>
+
+            <form action="{{ route('profile.business-type') }}" method="POST" style="margin-top: 24px;">
+                @csrf
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+                    @foreach($tipos as $key => $t)
+                        @php $active = $current === $key; @endphp
+                        <label style="cursor: pointer; display: block; background: {{ $active ? '#eef2ff' : '#f8fafc' }}; border: 2px solid {{ $active ? '#4f46e5' : '#e2e8f0' }}; border-radius: 16px; padding: 20px; transition: all 0.2s;">
+                            <input type="radio" name="business_type" value="{{ $key }}" {{ $active ? 'checked' : '' }} style="position: absolute; opacity: 0; pointer-events: none;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                                <div style="width: 36px; height: 36px; background: {{ $t['color'] }}1a; color: {{ $t['color'] }}; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
+                                    <i class="fas {{ $t['icon'] }}"></i>
+                                </div>
+                                <strong style="color: #1e293b; font-size: 0.95rem; flex: 1;">{{ $t['titulo'] }}</strong>
+                                @if($active)
+                                    <i class="fas fa-circle-check" style="color: #4f46e5; font-size: 1.1rem;"></i>
+                                @endif
+                            </div>
+                            <p style="color: #64748b; font-size: 0.78rem; line-height: 1.5; margin: 0;">{{ $t['desc'] }}</p>
+                        </label>
+                    @endforeach
+                </div>
+
+                <div style="margin-top: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <span style="color: #94a3b8; font-size: 0.78rem;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Atual: <strong style="color: #1e293b;">{{ $tipos[$current]['titulo'] ?? 'Não definido' }}</strong>
+                    </span>
+                    <button type="submit" class="btn-premium" style="border: none; padding: 12px 28px; font-weight: 800; border-radius: 12px; background: #1e293b; color: white; font-size: 0.85rem;">
+                        Salvar tipo <i class="fas fa-check ms-2"></i>
+                    </button>
+                </div>
+                @error('business_type')
+                    <div style="margin-top: 14px; color: #ef4444; font-size: 0.8rem; font-weight: 700;"><i class="fas fa-triangle-exclamation me-1"></i> {{ $message }}</div>
+                @enderror
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- ── LGPD: Direitos do Titular ──────────────────────────────────────── --}}
 <div class="row g-5 mt-2">
     <div class="col-12">
