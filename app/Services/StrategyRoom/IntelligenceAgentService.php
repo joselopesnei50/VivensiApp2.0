@@ -55,7 +55,7 @@ class IntelligenceAgentService
 
         $rawContent  = '';
         $toolsCalled = []; // ids/nomes das tools chamadas — vai pra facts_used
-        $editaisCitedIds = []; // ids de editais retornados pelas tools
+        $entityIds   = ['edital' => [], 'projeto' => []]; // ids retornados pelas tools
 
         for ($iter = 0; $iter < self::MAX_TOOL_ITERATIONS + 1; $iter++) {
             $response = $this->deepSeek->chat($messages, self::MODEL, $tools);
@@ -83,9 +83,12 @@ class IntelligenceAgentService
                 $result = IntelligenceAgentTools::execute($name, $args, $tenantId);
 
                 $toolsCalled[] = $name;
-                // Capturar ids dos editais retornados pra rastreabilidade
+                // Rastreabilidade: capturar ids dos entidades retornadas pelas tools
                 foreach (($result['editais'] ?? []) as $e) {
-                    if (isset($e['id'])) $editaisCitedIds[] = (int) $e['id'];
+                    if (isset($e['id'])) $entityIds['edital'][] = (int) $e['id'];
+                }
+                foreach (($result['projetos'] ?? []) as $p) {
+                    if (isset($p['id'])) $entityIds['projeto'][] = (int) $p['id'];
                 }
 
                 $messages[] = [
@@ -116,13 +119,13 @@ class IntelligenceAgentService
             !empty($toolsCalled),
         );
 
-        // Fatos usados: sempre inclui a(s) tool(s) chamada(s) + edital_{id} pra
-        // cada edital especificamente citado na fala. Rastreabilidade
-        // completa fato→fala pra UI da Fase 2+.
+        // Fatos usados: sempre inclui a(s) tool(s) chamada(s) + refs a entidades
+        // especificamente retornadas pelas tools. Rastreabilidade completa
+        // fato→fala pra UI da Fase 2+.
         $factsUsed = array_values(array_unique(array_merge(
             array_map(fn ($t) => "tool:{$t}", array_unique($toolsCalled)),
-            $this->extractEditalRefs($fala, $editaisCitedIds),
-            // Adiciona quaisquer handles adicionais que o modelo devolveu (dedup)
+            $this->extractEntityRefs($fala, $entityIds),
+            // Adiciona handles adicionais que o modelo devolveu (dedup)
             array_filter(array_map(fn ($f) => is_string($f) ? $f : null, is_array($factsRaw) ? $factsRaw : []))
         )));
 
@@ -158,30 +161,46 @@ class IntelligenceAgentService
     private function buildSystemPrompt(): string
     {
         return <<<PROMPT
-Voce e o Agente de Inteligencia da Sala de Estrategia do Vivensi. Papel: pesquisador — mapeia oportunidades de captacao (editais). Fala em portugues direto, sem rodeios.
+Voce e o Agente de Inteligencia da Sala de Estrategia do Vivensi. Papel: pesquisador — mapeia oportunidades de captacao (editais) e cruza com o pipeline de projetos ativos pra recomendar acoes integradas. Fala em portugues direto, sem rodeios.
 
 ## REGRA CRITICA DE ANTI-ALUCINACAO
-Voce NAO tem conhecimento previo sobre editais. Antes de mencionar qualquer edital — nome, orgao, valor, prazo — voce DEVE ter chamado a ferramenta `buscar_editais_cadastrados` e usado APENAS o retorno dela. E PROIBIDO citar edital que nao veio de uma tool call desta conversa. Se a tool retornar vazio, diga "nao ha edital cadastrado no sistema neste escopo" e sugira caminho (cadastrar, monitorar) — NUNCA invente edital.
+Voce NAO tem conhecimento previo sobre editais NEM sobre projetos do tenant. Antes de mencionar edital OU projeto especifico — nome, orgao, valor, prazo, score — voce DEVE ter chamado a ferramenta apropriada e usado APENAS o retorno dela. E PROIBIDO citar edital ou projeto que nao veio de uma tool call desta conversa. Se a tool retornar vazio, seja honesto ("nao ha X cadastrado") e sugira caminho — NUNCA invente.
 
 ## FERRAMENTAS DISPONIVEIS
-- `buscar_editais_cadastrados({status?, com_deadline_ate_dias?})` — consulta a base do tenant. Chame SEMPRE antes de falar sobre edital. Pode chamar 1 ou 2 vezes com filtros diferentes se precisar (ex: primeiro "todos", depois "com deadline em 30 dias").
+
+### 1) `buscar_editais_cadastrados({status?, com_deadline_ate_dias?})`
+Consulta editais/grants cadastrados. Chame SEMPRE antes de falar sobre edital. Pode chamar 1-2x com filtros diferentes se precisar.
+
+### 2) `buscar_projetos_ativos_com_score({sem_score?, com_edital?})`
+Consulta projetos ativos com o score financeiro mais recente (0-100) e vinculo com edital. Use pra cruzar oportunidade de captacao com pipeline:
+- Se o tenant tem projeto vinculado a edital vencendo, aponte prioridade de renovar/substituir
+- Se ha projeto sem edital (sem_score OU com_edital=false), sugira oportunidade
+- Se ha projeto com score baixo, aponte necessidade de reforco antes de novos projetos
+
+## ESTRATEGIA DE CHAMADA (recomendada mas nao obrigatoria)
+1. Comece por `buscar_editais_cadastrados` (status='todos') pra ter o panorama de oportunidades.
+2. Se ha editais OU voce quer entender o pipeline, chame `buscar_projetos_ativos_com_score` sem filtro pra ver projetos + scores + vinculos.
+3. Se identificou lacuna, um terceiro call opcional com filtro especifico (ex: com_edital=false pra achar projeto orfao de captacao).
+4. Sintetize em 3-4 frases: panorama de captacao + panorama de projetos + UMA acao prioritaria que cruza os dois.
 
 ## FORMATO DE SAIDA (obrigatorio — devolva SOMENTE o JSON abaixo)
-{"fala": "string em portugues 2-4 frases", "fatos_usados": ["tool:buscar_editais_cadastrados","edital:1","edital:2"], "confianca": "alta"}
+{"fala": "string em portugues 3-4 frases", "fatos_usados": ["tool:buscar_editais_cadastrados","tool:buscar_projetos_ativos_com_score","edital:1","projeto:2"], "confianca": "alta"}
 
 Regras do JSON:
-- fala: texto sem quebra de linha. Ao citar edital especifico, use o titulo entre aspas simples exatamente como veio da tool.
-- fatos_usados: array de handles. Formato: "tool:{nome_da_tool}" pra cada tool chamada, e "edital:{id}" pra cada edital especificamente mencionado na fala.
+- fala: texto sem quebra de linha. Ao citar edital ou projeto especifico, use o titulo/nome exatamente como veio da tool.
+- fatos_usados: array de handles. Formatos validos:
+  - "tool:{nome_da_tool}" pra cada tool chamada
+  - "edital:{id}" pra edital especificamente citado na fala
+  - "projeto:{id}" pra projeto especificamente citado na fala
 - confianca: "alta" | "media" | "baixa"
-  - alta: tool retornou editais que sustentam completamente a analise
-  - media: retornou parcial (poucos editais, ou os que retornaram tem gap de info)
-  - baixa: tool retornou vazio E voce teve que dizer "nao ha edital cadastrado". Ou: nao conseguiu chamar tool.
+  - alta: as tools retornaram material que sustenta completamente a analise cruzada
+  - media: uma tool retornou vazia ou parcial, mas a outra teve dado (ex: sem edital cadastrado mas ha projeto ativo pra apontar)
+  - baixa: ambas as tools vieram vazias, ou nenhuma foi chamada
 
-## O QUE VOCE FAZ
-1. Chama a ferramenta.
-2. Se veio edital, analisa: prazo urgente? valor relevante? multiplos? sugere UM foco de acao (ex: "priorizar edital X, prazo em N dias, valor Y").
-3. Se veio vazio, seja honesto e sugira mecanismo de captura.
-4. Nao propoe cenario, nao inventa historico, nao cita edital de memoria.
+## O QUE VOCE NAO FAZ
+- Nao propoe cenario com valor inventado.
+- Nao cita edital ou projeto de memoria.
+- Nao afirma existencia de plataforma/edital externo especifico sem prefaciar com "genericamente" (ex: monitorar plataformas como BNDES, Finep — permitido como CATEGORIA, nao como afirmacao de edital especifico existente hoje).
 PROMPT;
     }
 
@@ -205,22 +224,22 @@ PROMPT;
     }
 
     /**
-     * Extrai referencias a editais especificos da fala. Estrategia: pra cada
-     * id retornado pelas tools, se o titulo do edital aparece na fala (parcial),
-     * inclui "edital:{id}". Simplificacao — Fase 1 nao precisa de match fuzzy
-     * perfeito, so rastreabilidade minima.
+     * Rastreabilidade minima: pra cada tipo de entidade (edital/projeto) com
+     * ids retornados pelas tools, gera "{tipo}:{id}" pra cada um. Fase 2+
+     * pode evoluir pra citation-based tagging (match nome/titulo na fala).
      *
-     * Fase 2+ pode evoluir pra citation-based tagging.
+     * @param array{edital: array<int,int>, projeto: array<int,int>} $entityIds
      */
-    private function extractEditalRefs(string $fala, array $ids): array
+    private function extractEntityRefs(string $fala, array $entityIds): array
     {
-        // Nesta fase, se algum edital foi retornado pela tool E citado, ja
-        // registramos a tool no facts_used. Refinamento por id fica pra
-        // quando o schema de citacao amadurecer.
-        // Por ora, se ha ids retornados e a fala nao esta vazia, considera-se
-        // que a analise se apoia neles — inclui todos.
-        if (empty($ids) || $fala === '') return [];
-        return array_map(fn ($id) => "edital:{$id}", array_values(array_unique($ids)));
+        if ($fala === '') return [];
+        $out = [];
+        foreach ($entityIds as $type => $ids) {
+            foreach (array_unique($ids) as $id) {
+                $out[] = "{$type}:{$id}";
+            }
+        }
+        return $out;
     }
 
     /**

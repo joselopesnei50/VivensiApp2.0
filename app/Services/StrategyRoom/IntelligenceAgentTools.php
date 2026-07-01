@@ -3,6 +3,8 @@
 namespace App\Services\StrategyRoom;
 
 use App\Models\NgoGrant;
+use App\Models\Project;
+use App\Models\ProjectHealthHistory;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -45,6 +47,26 @@ class IntelligenceAgentTools
                     ],
                 ],
             ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'buscar_projetos_ativos_com_score',
+                    'description' => 'Consulta os projetos ativos do tenant com score financeiro mais recente (0-100) e vinculo com edital (se houver). Use pra cruzar oportunidades de captacao com pipeline atual — ex: projeto vinculado a edital vencendo, ou projeto com score baixo que precisa de reforco. Se filtrar por sem_score=true, retorna so projetos que nunca tiveram snapshot (candidatos a priorizar).',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'sem_score' => [
+                                'type'        => 'boolean',
+                                'description' => 'Se true, retorna somente projetos que nao tem snapshot de saude registrado. Util pra apontar lacuna de dado.',
+                            ],
+                            'com_edital' => [
+                                'type'        => 'boolean',
+                                'description' => 'Se true, retorna somente projetos vinculados a um edital (ngo_grant_id != null). Se false, so projetos sem vinculo.',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -59,9 +81,67 @@ class IntelligenceAgentTools
         ]);
 
         return match ($name) {
-            'buscar_editais_cadastrados' => self::buscarEditaisCadastrados($args, $tenantId),
+            'buscar_editais_cadastrados'       => self::buscarEditaisCadastrados($args, $tenantId),
+            'buscar_projetos_ativos_com_score' => self::buscarProjetosAtivosComScore($args, $tenantId),
             default => ['error' => "Ferramenta desconhecida: {$name}"],
         };
+    }
+
+    private static function buscarProjetosAtivosComScore(array $args, int $tenantId): array
+    {
+        $semScore  = isset($args['sem_score']) ? (bool) $args['sem_score'] : null;
+        $comEdital = isset($args['com_edital']) ? (bool) $args['com_edital'] : null;
+
+        $query = Project::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active');
+
+        if ($comEdital === true) {
+            $query->whereNotNull('ngo_grant_id');
+        } elseif ($comEdital === false) {
+            $query->whereNull('ngo_grant_id');
+        }
+
+        $rows = $query->limit(20)
+            ->get(['id', 'name', 'budget', 'start_date', 'end_date', 'ngo_grant_id']);
+
+        $projetos = [];
+        foreach ($rows as $p) {
+            // Score financeiro mais recente por projeto
+            $latest = ProjectHealthHistory::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('project_id', $p->id)
+                ->orderByDesc('recorded_at')
+                ->first(['financial_score', 'recorded_at']);
+
+            $hasScore = $latest !== null;
+            if ($semScore === true && $hasScore) continue;
+            if ($semScore === false && !$hasScore) continue;
+
+            $projetos[] = [
+                'id'                => (int) $p->id,
+                'nome'              => (string) $p->name,
+                'budget'            => $p->budget !== null ? (float) $p->budget : null,
+                'start_date'        => $p->start_date?->toDateString(),
+                'end_date'          => $p->end_date?->toDateString(),
+                'dias_para_fim'     => $p->end_date
+                    ? (int) now()->startOfDay()->diffInDays($p->end_date->startOfDay(), false)
+                    : null,
+                'ngo_grant_id'      => $p->ngo_grant_id !== null ? (int) $p->ngo_grant_id : null,
+                'financial_score'   => $hasScore ? (int) $latest->financial_score : null,
+                'score_recorded_at' => $hasScore ? $latest->recorded_at?->toDateString() : null,
+            ];
+        }
+
+        return [
+            'success' => true,
+            'filtros' => ['sem_score' => $semScore, 'com_edital' => $comEdital],
+            'total'   => count($projetos),
+            'projetos' => $projetos,
+            'instrucao_llm' => count($projetos) === 0
+                ? 'Nenhum projeto ativo bate com o filtro. NAO invente projeto. Diga honestamente que nao ha projeto ativo nesse escopo.'
+                : 'Voce PODE citar estes projetos pelo nome, budget, prazo e score — dados reais. Ao cruzar com editais, use o campo ngo_grant_id pra saber se o projeto ja tem vinculo. NAO cite projeto fora desta lista.',
+        ];
     }
 
     private static function buscarEditaisCadastrados(array $args, int $tenantId): array
