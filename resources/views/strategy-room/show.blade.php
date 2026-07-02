@@ -185,6 +185,7 @@
                             'manual_debate'    => 'CLI (debate)',
                             'manual_test'      => 'CLI (teste)',
                             'auto_health_drop' => 'Automático · queda de score',
+                            'auto_donor_decline' => 'Automático · doadores em declínio',
                             default            => $session->trigger_type,
                         };
                     @endphp

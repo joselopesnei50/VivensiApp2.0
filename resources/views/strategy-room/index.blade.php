@@ -289,6 +289,7 @@
                     'manual_debate'  => ['icon' => 'fa-terminal',      'label' => 'CLI (debate)'],
                     'manual_test'    => ['icon' => 'fa-flask',         'label' => 'CLI (teste)'],
                     'auto_health_drop' => ['icon' => 'fa-heart-pulse', 'label' => 'Automático · queda de score'],
+                    'auto_donor_decline' => ['icon' => 'fa-hand-holding-heart', 'label' => 'Automático · doadores em declínio'],
                     default          => ['icon' => 'fa-bolt',          'label' => $s->trigger_type],
                 };
             @endphp

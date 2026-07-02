@@ -62,4 +62,21 @@ return [
     'auto_trigger_drop_threshold'   => (int) env('STRATEGY_ROOM_AUTO_DROP_THRESHOLD', 10),
     'auto_trigger_cooldown_days'    => (int) env('STRATEGY_ROOM_AUTO_COOLDOWN_DAYS', 7),
     'auto_trigger_global_daily_cap' => (int) env('STRATEGY_ROOM_AUTO_GLOBAL_CAP', 20),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Trigger automático por doador recorrente em declínio
+    |--------------------------------------------------------------------------
+    | Comando strategy:donor-decline-trigger (agendado diário 07:45).
+    | Doador recorrente = doou em >= recurring_min_months meses distintos nos
+    | últimos 6 meses. Em declínio = sem nenhuma doação há decline_days dias.
+    | Se o tenant tem >= 1 doador nessa condição, convoca reunião
+    | (trigger_type=auto_donor_decline).
+    |
+    | Compartilha o cap global diário e o cooldown do trigger de health.
+    | Default OFF — ligar com STRATEGY_ROOM_AUTO_TRIGGER_DONOR=true no .env.
+    */
+    'auto_trigger_donor'         => env('STRATEGY_ROOM_AUTO_TRIGGER_DONOR', false),
+    'donor_recurring_min_months' => (int) env('STRATEGY_ROOM_DONOR_MIN_MONTHS', 3),
+    'donor_decline_days'         => (int) env('STRATEGY_ROOM_DONOR_DECLINE_DAYS', 45),
 ];

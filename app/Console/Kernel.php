@@ -141,6 +141,13 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Sala de Estratégia: trigger automático por doador recorrente em declínio
+        // No-op se STRATEGY_ROOM_AUTO_TRIGGER_DONOR=false (default).
+        $schedule->command('strategy:donor-decline-trigger')
+                 ->dailyAt('07:45')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');
