@@ -552,7 +552,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
                     $mgr_wa_active   = request()->is('whatsapp*');
                     $mgr_mkt_active  = request()->is('manager/landing-pages*','manager/email-campaigns*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
-                    $mgr_ai_active   = request()->is('smart-analysis*');
+                    $mgr_ai_active   = request()->is('smart-analysis*','strategy-room*');
                     $mgr_acad_active = request()->is('academy*');
                 @endphp
 
@@ -639,9 +639,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-robot group-icon"></i> Inteligência Artificial
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mgr_ai_active ? '150px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mgr_ai_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            @if(config('strategy_room.enabled'))
+                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -670,7 +673,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $ngo_pat_active    = request()->is('ngo/inventory*','ngo/assets*');
                     $ngo_jur_active    = request()->is('ngo/contracts*');
                     $ngo_rep_active    = request()->is('ngo/reports*','ngo/audit*','ngo/transparencia*');
-                    $ngo_ai_active     = request()->is('smart-analysis*');
+                    $ngo_ai_active     = request()->is('smart-analysis*','strategy-room*');
                 @endphp
 
                 {{-- Grupo: Projetos & Captação --}}
@@ -820,9 +823,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-robot group-icon"></i> Inteligência Artificial
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $ngo_ai_active ? '150px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $ngo_ai_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            @if(config('strategy_room.enabled'))
+                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -833,7 +839,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $mei_wa_active   = request()->is('whatsapp*');
                     $mei_mkt_active  = request()->is('marketing*','prospecting*','social/accounts*','social-ai*','manager/landing-pages*');
                     $mei_crm_active  = request()->is('personal/clients*');
-                    $mei_ai_active   = request()->is('smart-analysis*');
+                    $mei_ai_active   = request()->is('smart-analysis*','strategy-room*');
                 @endphp
 
                 {{-- Grupo: CRM & Clientes --}}
@@ -913,9 +919,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-robot group-icon"></i> Inteligência Artificial
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mei_ai_active ? '150px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mei_ai_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            @if(config('strategy_room.enabled'))
+                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>

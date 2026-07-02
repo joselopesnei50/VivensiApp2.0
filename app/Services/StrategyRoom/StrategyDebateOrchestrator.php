@@ -38,13 +38,19 @@ class StrategyDebateOrchestrator
      *     'erros'        => array,
      *   ]
      */
-    public function run(int $tenantId): array
+    /**
+     * $sessionId opcional. Se null, cria nova sessao (CLI). Se dado, usa a
+     * existente (job dispatchado pelo controller ja criou a session vazia).
+     */
+    public function run(int $tenantId, ?int $sessionId = null): array
     {
-        $session = StrategySession::create([
-            'tenant_id'    => $tenantId,
-            'trigger_type' => 'manual_debate',
-            'status'       => 'em_andamento',
-        ]);
+        $session = $sessionId
+            ? StrategySession::withoutGlobalScopes()->findOrFail($sessionId)
+            : StrategySession::create([
+                'tenant_id'    => $tenantId,
+                'trigger_type' => 'manual_debate',
+                'status'       => 'em_andamento',
+            ]);
 
         $out = [
             'session_id'   => $session->id,

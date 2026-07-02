@@ -104,6 +104,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::delete('/profile/2fa', [App\Http\Controllers\TwoFactorController::class, 'disable'])->name('2fa.disable');
 
     // ── Perfil do Usuário ─────────────────────────────────────────────────────
+    // ── Sala de Estrategia (Fase 2) ──────────────────────────────────────────
+    Route::get('/strategy-room',          [App\Http\Controllers\StrategyRoomController::class, 'index'])->name('strategy-room.index');
+    Route::post('/strategy-room',         [App\Http\Controllers\StrategyRoomController::class, 'store'])->name('strategy-room.store')->middleware('throttle:6,60');
+    Route::get('/strategy-room/{session}', [App\Http\Controllers\StrategyRoomController::class, 'show'])->name('strategy-room.show');
+
     Route::get('/profile',           [App\Http\Controllers\ProfileController::class, 'edit']);
     Route::post('/profile/update',        [App\Http\Controllers\ProfileController::class, 'update']);
     Route::post('/profile/password',      [App\Http\Controllers\ProfileController::class, 'updatePassword']);
