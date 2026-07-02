@@ -27,8 +27,8 @@
     .sr-show-hero {
         position: relative;
         background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-        border-radius: 28px;
-        padding: 36px 40px;
+        border-radius: 24px;
+        padding: 32px 36px;
         color: white;
         overflow: hidden;
         margin-bottom: 32px;
@@ -159,6 +159,12 @@
         0%, 100% { opacity: 0.5; }
         50%      { opacity: 1; }
     }
+
+    @media (max-width: 576px) {
+        .sr-show-hero { padding: 24px 20px; }
+        .sr-message-card, .sr-skeleton-card { flex-direction: column; padding: 20px; }
+        .sr-avatar-big { width: 48px; height: 48px; font-size: 1.05rem; }
+    }
 </style>
 
 <div class="sr-show-hero">
@@ -169,7 +175,7 @@
 
         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; gap: 20px; flex-wrap: wrap;">
             <div>
-                <h1 style="margin: 0 0 6px 0; color: white; font-weight: 950; font-size: 2.4rem; letter-spacing: -1.5px;">
+                <h1 style="margin: 0 0 6px 0; color: white; font-weight: 950; font-size: 2rem; letter-spacing: -1px;">
                     Reunião #{{ $session->id }}
                 </h1>
                 <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 500;">
