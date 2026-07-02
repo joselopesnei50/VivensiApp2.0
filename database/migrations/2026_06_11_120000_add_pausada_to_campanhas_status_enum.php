@@ -19,6 +19,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // sqlite (testes) nao suporta MODIFY nem enum — coluna vira TEXT livre.
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement(
             "ALTER TABLE campanhas MODIFY COLUMN status "
             . "ENUM('rascunho', 'agendada', 'processando', 'pausada', 'concluida', 'cancelada') "
@@ -32,6 +37,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement("UPDATE campanhas SET status = 'cancelada' WHERE status = 'pausada'");
         DB::statement(
             "ALTER TABLE campanhas MODIFY COLUMN status "
