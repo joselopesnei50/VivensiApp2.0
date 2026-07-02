@@ -104,9 +104,11 @@ class MobilizationAgentService
         }
 
         $factsRaw  = is_array($parsed['fatos_usados'] ?? null) ? $parsed['fatos_usados'] : [];
+        // Handles vindos do modelo passam por filtro anti-colagem (flash as vezes
+        // junta handles em 1 string com " · ") — descarta strings com espaco.
         $factsUsed = array_values(array_unique(array_merge(
             array_map(fn ($t) => "tool:{$t}", array_unique($toolsCalled)),
-            array_filter(array_map(fn ($f) => is_string($f) ? $f : null, $factsRaw)),
+            $this->cleanHandles($factsRaw),
         )));
 
         $confianca = $this->reconcileConfidence(
@@ -191,6 +193,18 @@ PROMPT;
     {
         $c = is_string($c) ? mb_strtolower(trim($c)) : 'media';
         return in_array($c, ['alta', 'media', 'baixa'], true) ? $c : 'media';
+    }
+
+    /**
+     * Filtra handles vindos do modelo — rejeita string com espaco (indica
+     * colagem de N handles em 1 pelo flash) ou vazia.
+     */
+    private function cleanHandles(array $raw): array
+    {
+        return array_values(array_filter(
+            array_map(fn ($f) => is_string($f) ? trim($f) : null, $raw),
+            fn ($h) => is_string($h) && $h !== '' && !str_contains($h, ' '),
+        ));
     }
 
     /**

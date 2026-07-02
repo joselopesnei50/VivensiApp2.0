@@ -65,8 +65,10 @@ class MobilizationAgentTools
                     'name' => 'saude_da_base',
                     'description' => 'Contagem da base de contatos (doadores, se tenant NGO) e percentual com opt-in ativo para email marketing. Sinal de "estoque de audiencia disponivel para campanha". Sem PII — retorna somente numeros agregados.',
                     'parameters' => [
-                        'type' => 'object',
-                        'properties' => [],
+                        'type'       => 'object',
+                        // (object) [] pra serializar como {} no JSON, nao []. deepseek-v4-flash
+                        // rejeita properties=[] com Invalid schema.
+                        'properties' => (object) [],
                     ],
                 ],
             ],

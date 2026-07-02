@@ -126,12 +126,13 @@ class IntelligenceAgentService
 
         // Fatos usados: sempre inclui a(s) tool(s) chamada(s) + refs a entidades
         // especificamente retornadas pelas tools. Rastreabilidade completa
-        // fato→fala pra UI da Fase 2+.
+        // fato→fala pra UI da Fase 2+. Handles vindos do modelo passam por
+        // filtro anti-colagem (deepseek-v4-flash as vezes junta N handles em
+        // 1 string com " · " no meio) — descarta strings com espaco.
         $factsUsed = array_values(array_unique(array_merge(
             array_map(fn ($t) => "tool:{$t}", array_unique($toolsCalled)),
             $this->extractEntityRefs($fala, $entityIds),
-            // Adiciona handles adicionais que o modelo devolveu (dedup)
-            array_filter(array_map(fn ($f) => is_string($f) ? $f : null, is_array($factsRaw) ? $factsRaw : []))
+            $this->cleanHandles(is_array($factsRaw) ? $factsRaw : [])
         )));
 
         if ($fala === '') {
@@ -226,6 +227,18 @@ PROMPT;
     {
         $c = is_string($c) ? mb_strtolower(trim($c)) : 'media';
         return in_array($c, ['alta', 'media', 'baixa'], true) ? $c : 'media';
+    }
+
+    /**
+     * Filtra handles vindos do modelo — rejeita string com espaco (indica
+     * colagem de N handles em 1) ou vazia. Handles reais nao tem espaco.
+     */
+    private function cleanHandles(array $raw): array
+    {
+        return array_values(array_filter(
+            array_map(fn ($f) => is_string($f) ? trim($f) : null, $raw),
+            fn ($h) => is_string($h) && $h !== '' && !str_contains($h, ' '),
+        ));
     }
 
     /**
