@@ -105,9 +105,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
     // ── Perfil do Usuário ─────────────────────────────────────────────────────
     // ── Sala de Estrategia (Fase 2) ──────────────────────────────────────────
-    Route::get('/strategy-room',          [App\Http\Controllers\StrategyRoomController::class, 'index'])->name('strategy-room.index');
-    Route::post('/strategy-room',         [App\Http\Controllers\StrategyRoomController::class, 'store'])->name('strategy-room.store')->middleware('throttle:6,60');
-    Route::get('/strategy-room/{session}', [App\Http\Controllers\StrategyRoomController::class, 'show'])->name('strategy-room.show');
+    Route::get('/strategy-room',                    [App\Http\Controllers\StrategyRoomController::class, 'index'])->name('strategy-room.index');
+    Route::post('/strategy-room',                   [App\Http\Controllers\StrategyRoomController::class, 'store'])->name('strategy-room.store')->middleware('throttle:6,60');
+    Route::get('/strategy-room/{session}',          [App\Http\Controllers\StrategyRoomController::class, 'show'])->name('strategy-room.show');
+    Route::get('/strategy-room/{session}/status',   [App\Http\Controllers\StrategyRoomController::class, 'status'])->name('strategy-room.status');
 
     Route::get('/profile',           [App\Http\Controllers\ProfileController::class, 'edit']);
     Route::post('/profile/update',        [App\Http\Controllers\ProfileController::class, 'update']);
