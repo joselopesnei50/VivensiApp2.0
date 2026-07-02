@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
 class StrategyTestDebate extends Command
 {
     protected $signature   = 'strategy:test-debate {tenant_id : ID do tenant real}';
-    protected $description = 'Roda o debate completo da Sala de Estrategia (Financeiro + Inteligencia + Mobilizacao + Estrategista-Chefe).';
+    protected $description = 'Roda o debate completo da Sala de Estrategia (Financeiro + Inteligencia + Mobilizacao + Programas + Estrategista-Chefe).';
 
     public function handle(StrategyDebateOrchestrator $orchestrator): int
     {
@@ -56,6 +56,7 @@ class StrategyTestDebate extends Command
         $this->renderAgent('FINANCEIRO',    $result['financeiro']);
         $this->renderAgent('INTELIGENCIA',  $result['inteligencia']);
         $this->renderAgent('MOBILIZACAO',   $result['mobilizacao']);
+        $this->renderAgent('PROGRAMAS',     $result['programas']);
         $this->renderAgent('ESTRATEGISTA-CHEFE', $result['sintese'], sintese: true);
 
         if (!empty($result['erros'])) {

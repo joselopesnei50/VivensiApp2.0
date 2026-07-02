@@ -20,7 +20,7 @@
 
     // Ordem esperada de aparecimento — pra render em fila mesmo se as mensagens
     // chegarem fora de ordem por qualquer motivo.
-    $agentOrder = ['financeiro' => 1, 'inteligencia' => 2, 'mobilizacao' => 3, 'estrategista_chefe' => 4];
+    $agentOrder = ['financeiro' => 1, 'inteligencia' => 2, 'mobilizacao' => 3, 'programas' => 4, 'estrategista_chefe' => 5];
 @endphp
 
 <style>
@@ -202,7 +202,7 @@
             </div>
         </div>
 
-        {{-- Progress dots — 4 slots, um por agente na ordem esperada --}}
+        {{-- Progress dots — 5 slots, um por agente na ordem esperada --}}
         <div class="sr-progress-bar" id="sr-progress-bar">
             @foreach($agentOrder as $agentKey => $ordem)
                 @php
@@ -266,7 +266,7 @@
                                 } elseif ($type === 'tool') {
                                     $tip = 'Consulta feita via ferramenta: ' . $id;
                                     $kind = 'tool';
-                                } elseif (in_array($handle, ['financeiro', 'inteligencia', 'mobilizacao'], true)) {
+                                } elseif (in_array($handle, ['financeiro', 'inteligencia', 'mobilizacao', 'programas'], true)) {
                                     $refAgent = $agents[$handle] ?? null;
                                     $tip = 'Referência ao ' . ($refAgent['name'] ?? ucfirst($handle));
                                     $kind = 'agent';

@@ -31,12 +31,13 @@ class StrategyRoomController extends Controller
     }
 
     /**
-     * Casting da diretoria virtual. Metadata visual + narrativa dos 4 agentes.
+     * Casting da diretoria virtual. Metadata visual + narrativa dos 5 agentes.
      * Nomes aprovados pelo usuario:
      *   Bruce (Estrategista-Chefe · CEO)
      *   Olga (Financeira · CFO)
      *   Maria (Inteligencia · Pesquisadora)
      *   Time Vibra (Mobilizacao · CMO — o "time")
+     *   Sofia (Programas · COO — Fase 4)
      */
     public static function agentsMeta(): array
     {
@@ -51,7 +52,7 @@ class StrategyRoomController extends Controller
                 'from'      => '#6366f1',
                 'to'        => '#4338ca',
                 'initials'  => 'B',
-                'ordem'     => 4,
+                'ordem'     => 5,
             ],
             'financeiro' => [
                 'name'      => 'Olga',
@@ -88,6 +89,18 @@ class StrategyRoomController extends Controller
                 'to'        => '#d97706',
                 'initials'  => 'V',
                 'ordem'     => 3,
+            ],
+            'programas' => [
+                'name'      => 'Sofia',
+                'role'      => 'Diretora de Programas',
+                'sub_role'  => 'COO',
+                'bio'       => 'Acompanha frequência, risco de evasão dos beneficiários e execução de tarefas. Só contagens agregadas, nunca nome de beneficiário.',
+                'icon'      => 'fa-hands-holding-child',
+                'color'     => '#ec4899',
+                'from'      => '#f472b6',
+                'to'        => '#db2777',
+                'initials'  => 'S',
+                'ordem'     => 4,
             ],
         ];
     }

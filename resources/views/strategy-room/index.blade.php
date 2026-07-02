@@ -147,7 +147,7 @@
                     Sala de Estratégia
                 </h1>
                 <p style="color: rgba(255,255,255,0.72); font-size: 1rem; font-weight: 500; line-height: 1.55; margin: 0 0 26px 0;">
-                    Quatro agentes de IA — <strong style="color: #fff;">Bruce</strong>, <strong style="color: #34d399;">Olga</strong>, <strong style="color: #60a5fa;">Maria</strong> e <strong style="color: #fbbf24;">Time Vibra</strong> — cruzam dado real do seu painel, debatem entre si e propõem <em style="color: white;">uma</em> ação prioritária. Cada afirmação vem rastreada.
+                    Cinco agentes de IA — <strong style="color: #fff;">Bruce</strong>, <strong style="color: #34d399;">Olga</strong>, <strong style="color: #60a5fa;">Maria</strong>, <strong style="color: #fbbf24;">Time Vibra</strong> e <strong style="color: #f472b6;">Sofia</strong> — cruzam dado real do seu painel, debatem entre si e propõem <em style="color: white;">uma</em> ação prioritária. Cada afirmação vem rastreada.
                 </p>
                 <form action="{{ route('strategy-room.store') }}" method="POST" style="margin: 0;">
                     @csrf
@@ -161,7 +161,8 @@
             <div class="col-lg-5">
                 <div class="row g-3">
                     @foreach($agents as $a)
-                        <div class="col-sm-6">
+                        {{-- 5 agentes: o ultimo (Bruce, impar) ocupa a linha inteira embaixo do 2x2 --}}
+                        <div class="{{ $loop->last && $loop->iteration % 2 === 1 ? 'col-12' : 'col-sm-6' }}">
                             <div class="sr-hero-agent">
                                 <div class="sr-avatar" style="width: 44px; height: 44px; font-size: 1rem; border-radius: 13px; background: linear-gradient(135deg, {{ $a['from'] }}, {{ $a['to'] }});">
                                     {{ $a['initials'] }}
@@ -188,7 +189,8 @@
     <p class="sr-section-sub">Cada um consulta uma fatia diferente do painel — sem sobreposição.</p>
 </div>
 
-<div class="row g-4 mb-5">
+{{-- 5 cards: 4 analistas + Bruce; justify-content-center centraliza o que quebrar de linha --}}
+<div class="row g-4 mb-5 justify-content-center">
     @foreach($agents as $a)
         <div class="col-sm-6 col-xl-3">
             <div class="sr-card" style="border-top: 4px solid {{ $a['color'] }};">
@@ -209,12 +211,12 @@
 {{-- ═══ Como funciona ═══════════════════════════════════════════════ --}}
 <div class="mb-3">
     <h2 class="sr-section-title">Como funciona uma reunião</h2>
-    <p class="sr-section-sub">4 chamadas sequenciais em cerca de 40-90 segundos. Cada agente responde só do que consulta.</p>
+    <p class="sr-section-sub">5 chamadas sequenciais em cerca de 50-100 segundos. Cada agente responde só do que consulta.</p>
 </div>
 
 <div class="sr-card mb-5" style="padding: 32px;">
     <div class="row g-4">
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl">
             <div style="display: flex; gap: 14px;">
                 <div class="sr-step-num" style="background: #ecfdf5; color: #065f46;">1</div>
                 <div>
@@ -223,7 +225,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl">
             <div style="display: flex; gap: 14px;">
                 <div class="sr-step-num" style="background: #eff6ff; color: #1d4ed8;">2</div>
                 <div>
@@ -232,7 +234,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl">
             <div style="display: flex; gap: 14px;">
                 <div class="sr-step-num" style="background: #fffbeb; color: #92400e;">3</div>
                 <div>
@@ -241,12 +243,21 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl">
             <div style="display: flex; gap: 14px;">
-                <div class="sr-step-num" style="background: #eef2ff; color: #4338ca;">4</div>
+                <div class="sr-step-num" style="background: #fdf2f8; color: #be185d;">4</div>
+                <div>
+                    <strong style="color: #1e293b; display: block; margin-bottom: 6px; font-size: 0.92rem;">Sofia checa a entrega</strong>
+                    <span style="color: #64748b; font-size: 0.84rem; line-height: 1.5;">Frequência, risco de evasão e tarefas dos projetos. Só contagens.</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl">
+            <div style="display: flex; gap: 14px;">
+                <div class="sr-step-num" style="background: #eef2ff; color: #4338ca;">5</div>
                 <div>
                     <strong style="color: #1e293b; display: block; margin-bottom: 6px; font-size: 0.92rem;">Bruce fecha</strong>
-                    <span style="color: #64748b; font-size: 0.84rem; line-height: 1.5;">Sintetiza as três vozes e prioriza uma ação. Sem dado bruto.</span>
+                    <span style="color: #64748b; font-size: 0.84rem; line-height: 1.5;">Sintetiza as quatro vozes e prioriza uma ação. Sem dado bruto.</span>
                 </div>
             </div>
         </div>

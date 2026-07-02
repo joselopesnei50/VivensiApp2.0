@@ -32,6 +32,7 @@ return [
         'financeiro'   => env('STRATEGY_MODEL_FINANCEIRO',   'deepseek-v4-flash'),
         'inteligencia' => env('STRATEGY_MODEL_INTELIGENCIA', 'deepseek-v4-flash'),
         'mobilizacao'  => env('STRATEGY_MODEL_MOBILIZACAO',  'deepseek-v4-flash'),
+        'programas'    => env('STRATEGY_MODEL_PROGRAMAS',    'deepseek-v4-flash'),
         'chefe'        => env('STRATEGY_MODEL_CHEFE',        'deepseek-v4-pro'),
     ],
 

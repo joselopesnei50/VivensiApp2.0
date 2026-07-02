@@ -46,13 +46,13 @@ class ChiefStrategistAgentService
 
         $priorMessages = StrategyMessage::withoutGlobalScopes()
             ->where('strategy_session_id', $sessionId)
-            ->whereIn('agent', ['financeiro', 'inteligencia', 'mobilizacao'])
+            ->whereIn('agent', ['financeiro', 'inteligencia', 'mobilizacao', 'programas'])
             ->orderBy('created_at', 'asc')
             ->get(['agent', 'content', 'confidence']);
 
         if ($priorMessages->isEmpty()) {
             return [
-                'error'      => 'Nao ha falas de agente pra sintetizar (financeiro/inteligencia/mobilizacao).',
+                'error'      => 'Nao ha falas de agente pra sintetizar (financeiro/inteligencia/mobilizacao/programas).',
                 'session_id' => $sessionId,
             ];
         }
@@ -165,7 +165,7 @@ Voce so pode sintetizar o que os outros agentes disseram acima. NAO introduza fa
 Regras do JSON:
 - fala: sem quebra de linha, aspas duplas escapadas se precisar. Cite explicitamente os agentes ao referenciar: "conforme o Financeiro..." / "o Inteligencia apontou...".
 - acao: a MESMA acao prioritaria da fala, em formato de tarefa. titulo comeca com verbo no infinitivo ("Revisar...", "Inscrever...", "Cortar..."). descricao resume o que fazer e a justificativa em 1-2 frases. Nao introduza fato novo aqui tambem.
-- fatos_usados: array com os agentes cuja fala voce efetivamente usou na sintese. Valores validos: "financeiro", "inteligencia" e "mobilizacao" (nao inclua outros). So inclua agente cuja fala apareceu na sessao — ignore o que nao veio.
+- fatos_usados: array com os agentes cuja fala voce efetivamente usou na sintese. Valores validos: "financeiro", "inteligencia", "mobilizacao" e "programas" (nao inclua outros). So inclua agente cuja fala apareceu na sessao — ignore o que nao veio.
 - confianca: "alta" | "media" | "baixa"
   - alta: ambos os agentes deram base solida e a sintese aponta acao clara
   - media: ambos deram base parcial OU um deles teve confianca media

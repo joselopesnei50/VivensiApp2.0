@@ -24,6 +24,7 @@ class StrategyDebateOrchestrator
         private FinancialAgentService $financeiro,
         private IntelligenceAgentService $inteligencia,
         private MobilizationAgentService $mobilizacao,
+        private ProgramsAgentService $programas,
         private ChiefStrategistAgentService $chefe,
     ) {}
 
@@ -34,6 +35,7 @@ class StrategyDebateOrchestrator
      *     'financeiro'   => array|null,
      *     'inteligencia' => array|null,
      *     'mobilizacao'  => array|null,
+     *     'programas'    => array|null,
      *     'sintese'      => array|null,
      *     'erros'        => array,
      *   ]
@@ -57,6 +59,7 @@ class StrategyDebateOrchestrator
             'financeiro'   => null,
             'inteligencia' => null,
             'mobilizacao'  => null,
+            'programas'    => null,
             'sintese'      => null,
             'erros'        => [],
         ];
@@ -94,8 +97,19 @@ class StrategyDebateOrchestrator
             $out['mobilizacao'] = $mob;
         }
 
-        // 4) Chefe — sintetiza se pelo menos 1 agente falou
-        if ($out['financeiro'] || $out['inteligencia'] || $out['mobilizacao']) {
+        // 4) Programas (Sofia)
+        $prog = $this->programas->speak($tenantId, $session->id);
+        if (isset($prog['error'])) {
+            $out['erros'][] = ['agente' => 'programas', 'msg' => $prog['error']];
+            Log::warning('StrategyRoom/Orquestrador: programas falhou', [
+                'session' => $session->id, 'err' => $prog['error'],
+            ]);
+        } else {
+            $out['programas'] = $prog;
+        }
+
+        // 5) Chefe — sintetiza se pelo menos 1 agente falou
+        if ($out['financeiro'] || $out['inteligencia'] || $out['mobilizacao'] || $out['programas']) {
             $chief = $this->chefe->synthesize($session->id);
             if (isset($chief['error'])) {
                 $out['erros'][] = ['agente' => 'estrategista_chefe', 'msg' => $chief['error']];
