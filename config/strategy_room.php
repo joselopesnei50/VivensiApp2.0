@@ -44,4 +44,21 @@ return [
     | 0 = sem limite.
     */
     'daily_quota' => (int) env('STRATEGY_ROOM_DAILY_QUOTA', 10),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Trigger automático por queda de health score (Fase 3.1)
+    |--------------------------------------------------------------------------
+    | Comando strategy:auto-trigger (agendado diário 07:30) grava snapshots
+    | de health dos projetos ativos e convoca reunião quando o overall_score
+    | de algum projeto cai >= drop_threshold vs o snapshot anterior.
+    |
+    | Proteções de custo: cooldown por tenant + cap global diário de reuniões
+    | automáticas + cota diária normal do tenant. Default OFF — ligar com
+    | STRATEGY_ROOM_AUTO_TRIGGER=true no .env do VPS.
+    */
+    'auto_trigger'                  => env('STRATEGY_ROOM_AUTO_TRIGGER', false),
+    'auto_trigger_drop_threshold'   => (int) env('STRATEGY_ROOM_AUTO_DROP_THRESHOLD', 10),
+    'auto_trigger_cooldown_days'    => (int) env('STRATEGY_ROOM_AUTO_COOLDOWN_DAYS', 7),
+    'auto_trigger_global_daily_cap' => (int) env('STRATEGY_ROOM_AUTO_GLOBAL_CAP', 20),
 ];

@@ -133,6 +133,14 @@ class Kernel extends ConsoleKernel
                  ->everyFifteenMinutes()
                  ->withoutOverlapping();
 
+        // Sala de Estratégia: snapshot de health + trigger automático por queda de score
+        // No-op se STRATEGY_ROOM_AUTO_TRIGGER=false (default). Roda depois dos
+        // alertas de projeto (08:15) do dia anterior, antes do expediente.
+        $schedule->command('strategy:auto-trigger')
+                 ->dailyAt('07:30')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');

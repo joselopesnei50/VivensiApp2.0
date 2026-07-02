@@ -179,7 +179,16 @@
                     Reunião #{{ $session->id }}
                 </h1>
                 <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 500;">
-                    Convocada {{ $session->created_at->diffForHumans() }} · Gatilho: <span style="color: white;">{{ $session->trigger_type }}</span>
+                    @php
+                        $gatilho = match($session->trigger_type){
+                            'manual_ui'        => 'Painel',
+                            'manual_debate'    => 'CLI (debate)',
+                            'manual_test'      => 'CLI (teste)',
+                            'auto_health_drop' => 'Automático · queda de score',
+                            default            => $session->trigger_type,
+                        };
+                    @endphp
+                    Convocada {{ $session->created_at->diffForHumans() }} · Gatilho: <span style="color: white;">{{ $gatilho }}</span>
                 </div>
             </div>
 
