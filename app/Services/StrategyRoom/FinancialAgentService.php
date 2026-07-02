@@ -27,9 +27,14 @@ use Illuminate\Support\Facades\Log;
  */
 class FinancialAgentService
 {
-    public const AGENT_KEY = 'financeiro';
-    public const MODEL     = 'deepseek-v4-pro';
+    public const AGENT_KEY     = 'financeiro';
+    public const DEFAULT_MODEL = 'deepseek-v4-flash';
     private const MAX_TOOL_ITERATIONS = 3;
+
+    private function model(): string
+    {
+        return (string) config('strategy_room.models.financeiro', self::DEFAULT_MODEL);
+    }
 
     public function __construct(
         private DeepSeekService $deepSeek,
@@ -70,7 +75,7 @@ class FinancialAgentService
         $projetoIds  = []; // ids de projetos citados pelas tools — vira handle projeto:X
 
         for ($iter = 0; $iter < self::MAX_TOOL_ITERATIONS + 1; $iter++) {
-            $response = $this->deepSeek->chat($messages, self::MODEL, $tools);
+            $response = $this->deepSeek->chat($messages, $this->model(), $tools);
 
             if (isset($response['error'])) {
                 $session->update(['status' => 'concluida']);

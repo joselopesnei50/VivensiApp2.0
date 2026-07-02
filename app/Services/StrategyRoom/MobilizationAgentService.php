@@ -19,9 +19,14 @@ use Illuminate\Support\Facades\Log;
  */
 class MobilizationAgentService
 {
-    public const AGENT_KEY = 'mobilizacao';
-    public const MODEL     = 'deepseek-v4-pro';
+    public const AGENT_KEY     = 'mobilizacao';
+    public const DEFAULT_MODEL = 'deepseek-v4-flash';
     private const MAX_TOOL_ITERATIONS = 3;
+
+    private function model(): string
+    {
+        return (string) config('strategy_room.models.mobilizacao', self::DEFAULT_MODEL);
+    }
 
     public function __construct(
         private DeepSeekService $deepSeek,
@@ -47,7 +52,7 @@ class MobilizationAgentService
         $toolsCalled = [];
 
         for ($iter = 0; $iter < self::MAX_TOOL_ITERATIONS + 1; $iter++) {
-            $response = $this->deepSeek->chat($messages, self::MODEL, $tools);
+            $response = $this->deepSeek->chat($messages, $this->model(), $tools);
 
             if (isset($response['error'])) {
                 Log::warning('StrategyRoom/Mobilizacao: DeepSeek erro', [

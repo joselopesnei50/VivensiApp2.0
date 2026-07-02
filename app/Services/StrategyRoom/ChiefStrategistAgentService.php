@@ -20,8 +20,13 @@ use Illuminate\Support\Facades\Log;
  */
 class ChiefStrategistAgentService
 {
-    public const AGENT_KEY = 'estrategista_chefe';
-    public const MODEL     = 'deepseek-v4-pro';
+    public const AGENT_KEY     = 'estrategista_chefe';
+    public const DEFAULT_MODEL = 'deepseek-v4-pro';
+
+    private function model(): string
+    {
+        return (string) config('strategy_room.models.chefe', self::DEFAULT_MODEL);
+    }
 
     public function __construct(
         private DeepSeekService $deepSeek,
@@ -60,7 +65,7 @@ class ChiefStrategistAgentService
             ['role' => 'user',   'content' => 'Sintetize as falas acima e proponha UMA acao prioritaria. Devolva SOMENTE o JSON no formato instruido.'],
         ];
 
-        $response = $this->deepSeek->chat($messages, self::MODEL);
+        $response = $this->deepSeek->chat($messages, $this->model());
 
         if (isset($response['error'])) {
             Log::warning('StrategyRoom/Chefe: DeepSeek erro', [

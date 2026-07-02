@@ -21,9 +21,14 @@ use Illuminate\Support\Facades\Log;
  */
 class IntelligenceAgentService
 {
-    public const AGENT_KEY = 'inteligencia';
-    public const MODEL     = 'deepseek-v4-pro';
+    public const AGENT_KEY     = 'inteligencia';
+    public const DEFAULT_MODEL = 'deepseek-v4-flash';
     private const MAX_TOOL_ITERATIONS = 3;
+
+    private function model(): string
+    {
+        return (string) config('strategy_room.models.inteligencia', self::DEFAULT_MODEL);
+    }
 
     public function __construct(
         private DeepSeekService $deepSeek,
@@ -58,7 +63,7 @@ class IntelligenceAgentService
         $entityIds   = ['edital' => [], 'projeto' => []]; // ids retornados pelas tools
 
         for ($iter = 0; $iter < self::MAX_TOOL_ITERATIONS + 1; $iter++) {
-            $response = $this->deepSeek->chat($messages, self::MODEL, $tools);
+            $response = $this->deepSeek->chat($messages, $this->model(), $tools);
 
             if (isset($response['error'])) {
                 Log::warning('StrategyRoom/Inteligencia: DeepSeek erro', [
