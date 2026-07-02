@@ -109,6 +109,8 @@ class StrategyRoomController extends Controller
     {
         $this->ensureEnabled();
 
+        StrategySession::healStaleForTenant((int) auth()->user()->tenant_id);
+
         $sessions = StrategySession::where('tenant_id', auth()->user()->tenant_id)
             ->withCount('messages')
             ->orderByDesc('created_at')
@@ -130,6 +132,8 @@ class StrategyRoomController extends Controller
             abort(403);
         }
 
+        $session->healIfStale();
+
         $messages = StrategyMessage::where('strategy_session_id', $session->id)
             ->orderBy('created_at', 'asc')
             ->get();
@@ -150,6 +154,8 @@ class StrategyRoomController extends Controller
         if ((int) $session->tenant_id !== (int) auth()->user()->tenant_id) {
             abort(403);
         }
+
+        $session->healIfStale();
 
         return response()->json([
             'session_id'     => $session->id,
