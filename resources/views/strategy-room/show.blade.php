@@ -327,6 +327,44 @@
     </div>
 @endif
 
+{{-- ═══ Decisão da diretoria → Kanban (Fase 3) ══════════════════════════ --}}
+@php
+    $chiefSpoke = $messages->contains(fn ($m) => $m->agent === 'estrategista_chefe');
+    $action     = is_array($session->proposed_action) ? $session->proposed_action : [];
+@endphp
+@if(!$inProgress && $chiefSpoke)
+    <div style="background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); border: 1px solid #c7d2fe; border-radius: 20px; padding: 26px 28px; margin-bottom: 32px;">
+        <div class="row g-4 align-items-center">
+            <div class="col-md">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <i class="fas fa-chess-king" style="color: #4f46e5;"></i>
+                    <span style="color: #4338ca; font-weight: 900; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px;">Decisão da diretoria</span>
+                </div>
+                <div style="color: #1e293b; font-weight: 900; font-size: 1.15rem; letter-spacing: -0.3px; margin-bottom: 6px;">
+                    {{ $action['titulo'] ?? 'Ação prioritária definida pelo Bruce' }}
+                </div>
+                @if(!empty($action['descricao']))
+                    <div style="color: #64748b; font-size: 0.88rem; line-height: 1.55;">{{ $action['descricao'] }}</div>
+                @endif
+            </div>
+            <div class="col-md-auto">
+                @if($session->kanban_card_id)
+                    <a href="{{ route('manager.kanban.index') }}" style="display: inline-flex; align-items: center; gap: 10px; background: white; color: #4338ca; border: 1px solid #c7d2fe; padding: 13px 22px; border-radius: 13px; font-weight: 900; font-size: 0.9rem; text-decoration: none;">
+                        <i class="fas fa-check"></i> Ver tarefa no Kanban
+                    </a>
+                @else
+                    <form action="{{ route('strategy-room.create-task', $session->id) }}" method="POST" style="margin: 0;">
+                        @csrf
+                        <button type="submit" style="display: inline-flex; align-items: center; gap: 10px; background: #4f46e5; color: white; border: none; padding: 13px 22px; border-radius: 13px; font-weight: 900; font-size: 0.9rem; cursor: pointer; box-shadow: 0 10px 24px rgba(79,70,229,0.3);">
+                            <i class="fas fa-diagram-project"></i> Criar tarefa no Kanban
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </div>
+    </div>
+@endif
+
 {{-- Legenda das pílulas --}}
 <div style="padding: 22px 26px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 14px; margin-top: 8px;">
     <i class="fas fa-shield-halved" style="color: #64748b; margin-top: 2px; font-size: 0.95rem;"></i>

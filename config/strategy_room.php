@@ -34,4 +34,14 @@ return [
         'mobilizacao'  => env('STRATEGY_MODEL_MOBILIZACAO',  'deepseek-v4-flash'),
         'chefe'        => env('STRATEGY_MODEL_CHEFE',        'deepseek-v4-pro'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cota diária de debates por tenant (Fase 3)
+    |--------------------------------------------------------------------------
+    | Cada debate custa 4 chamadas de API (3 flash + 1 pro). O throttle de
+    | rota (6/h) protege contra rajada; esta cota protege o custo diário.
+    | 0 = sem limite.
+    */
+    'daily_quota' => (int) env('STRATEGY_ROOM_DAILY_QUOTA', 10),
 ];

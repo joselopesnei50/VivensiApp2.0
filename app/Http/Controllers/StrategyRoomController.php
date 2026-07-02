@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Jobs\RunStrategyDebateJob;
 use App\Models\StrategyMessage;
 use App\Models\StrategySession;
+use App\Models\Tenant;
+use App\Services\KanbanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -151,6 +153,19 @@ class StrategyRoomController extends Controller
         $tenantId = (int) auth()->user()->tenant_id;
         if (!$tenantId) abort(403);
 
+        // Cota diaria por tenant (Fase 3) — protege custo de API.
+        $quota = (int) config('strategy_room.daily_quota', 10);
+        if ($quota > 0) {
+            $hoje = StrategySession::where('tenant_id', $tenantId)
+                ->whereDate('created_at', today())
+                ->count();
+            if ($hoje >= $quota) {
+                return redirect()
+                    ->route('strategy-room.index')
+                    ->with('error', "Cota diária de reuniões atingida ({$quota}/dia). A diretoria volta amanhã — ou revise as reuniões de hoje abaixo.");
+            }
+        }
+
         // Cria a sessao vazia agora pra ter o ID pra redirecionar.
         $session = StrategySession::create([
             'tenant_id'    => $tenantId,
@@ -163,5 +178,66 @@ class StrategyRoomController extends Controller
         return redirect()
             ->route('strategy-room.show', $session->id)
             ->with('success', 'Reunião estratégica iniciada. A página atualiza sozinha assim que a diretoria concluir (~40-90s).');
+    }
+
+    /**
+     * Fase 3 — transforma a decisao do Chefe em card no Kanban Geral.
+     * 1 card por sessao: se ja existe, so redireciona pro board.
+     */
+    public function createTask(Request $request, StrategySession $session, KanbanService $kanban)
+    {
+        $this->ensureEnabled();
+
+        if ((int) $session->tenant_id !== (int) auth()->user()->tenant_id) {
+            abort(403);
+        }
+
+        if ($session->status !== 'concluida') {
+            return back()->with('error', 'A reunião ainda não terminou — aguarde a síntese do Bruce.');
+        }
+
+        if ($session->kanban_card_id && $session->kanbanCard) {
+            return redirect()
+                ->route('manager.kanban.index')
+                ->with('success', "A tarefa da reunião #{$session->id} já está no Kanban.");
+        }
+
+        $action = is_array($session->proposed_action) ? $session->proposed_action : [];
+        $titulo = trim((string) ($action['titulo'] ?? ''));
+
+        // Fallback pra sessoes anteriores a Fase 3 (sem proposed_action):
+        // usa a primeira frase da fala do Chefe.
+        if ($titulo === '') {
+            $chefe = $session->messages()->where('agent', 'estrategista_chefe')->latest()->first();
+            if (!$chefe) {
+                return back()->with('error', 'Esta reunião não tem síntese do Bruce — não há decisão pra virar tarefa.');
+            }
+            $titulo = mb_substr(preg_split('/(?<=[.!?])\s+/u', $chefe->content, 2)[0] ?? $chefe->content, 0, 120);
+            $action['descricao'] = $chefe->content;
+        }
+
+        $tenant = Tenant::findOrFail((int) $session->tenant_id);
+        $board  = $kanban->ensureDefaultBoard($tenant, auth()->user());
+        $column = $board->columns()->orderBy('position')->firstOrFail();
+
+        $descricao = trim((string) ($action['descricao'] ?? ''));
+        $descricao .= ($descricao !== '' ? "\n\n" : '')
+            . "— Decisão da Sala de Estratégia (reunião #{$session->id}): "
+            . route('strategy-room.show', $session->id);
+
+        $card = $kanban->createCard($column, [
+            'title'       => $titulo,
+            'description' => mb_substr($descricao, 0, 2000),
+            'meta'        => [
+                'source'              => 'strategy_room',
+                'strategy_session_id' => $session->id,
+            ],
+        ], auth()->user());
+
+        $session->update(['kanban_card_id' => $card->id]);
+
+        return redirect()
+            ->route('manager.kanban.index')
+            ->with('success', "Tarefa criada no Kanban a partir da reunião #{$session->id}.");
     }
 }

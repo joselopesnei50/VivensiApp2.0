@@ -182,13 +182,6 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div style="background: #ecfdf5; color: #065f46; padding: 16px 22px; border-radius: 14px; margin-bottom: 28px; border: 1px solid #a7f3d0; font-weight: 600; display: flex; align-items: center; gap: 12px;">
-        <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
-        <span>{{ session('success') }}</span>
-    </div>
-@endif
-
 {{-- ═══ Conheça a diretoria ═══════════════════════════════════════════════ --}}
 <div class="mb-3">
     <h2 class="sr-section-title">Conheça a diretoria</h2>

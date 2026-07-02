@@ -109,6 +109,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/strategy-room',                   [App\Http\Controllers\StrategyRoomController::class, 'store'])->name('strategy-room.store')->middleware('throttle:6,60');
     Route::get('/strategy-room/{session}',          [App\Http\Controllers\StrategyRoomController::class, 'show'])->name('strategy-room.show');
     Route::get('/strategy-room/{session}/status',   [App\Http\Controllers\StrategyRoomController::class, 'status'])->name('strategy-room.status');
+    Route::post('/strategy-room/{session}/create-task', [App\Http\Controllers\StrategyRoomController::class, 'createTask'])->name('strategy-room.create-task')->middleware('throttle:30,1');
 
     Route::get('/profile',           [App\Http\Controllers\ProfileController::class, 'edit']);
     Route::post('/profile/update',        [App\Http\Controllers\ProfileController::class, 'update']);

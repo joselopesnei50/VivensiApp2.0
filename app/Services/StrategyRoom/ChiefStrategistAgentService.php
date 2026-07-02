@@ -118,7 +118,10 @@ class ChiefStrategistAgentService
         ]);
 
         // O chefe fecha a sessao — e sempre a ultima fala do debate na Fase 1.
-        $session->update(['status' => 'concluida']);
+        $session->update([
+            'status'          => 'concluida',
+            'proposed_action' => $this->extractAction($parsed, $fala),
+        ]);
 
         return [
             'session_id'   => $session->id,
@@ -157,16 +160,38 @@ Voce so pode sintetizar o que os outros agentes disseram acima. NAO introduza fa
 3. Se ha lacuna importante (dado ausente que impede recomendacao segura), diga isso explicitamente antes de propor acao.
 
 ## FORMATO DE SAIDA (obrigatorio — devolva SOMENTE o JSON abaixo)
-{"fala": "string em portugues 3-4 frases: sintese + acao prioritaria", "fatos_usados": ["financeiro","inteligencia"], "confianca": "alta"}
+{"fala": "string em portugues 3-4 frases: sintese + acao prioritaria", "acao": {"titulo": "verbo no infinitivo, max 80 caracteres", "descricao": "1-2 frases: o que fazer e por que"}, "fatos_usados": ["financeiro","inteligencia"], "confianca": "alta"}
 
 Regras do JSON:
 - fala: sem quebra de linha, aspas duplas escapadas se precisar. Cite explicitamente os agentes ao referenciar: "conforme o Financeiro..." / "o Inteligencia apontou...".
+- acao: a MESMA acao prioritaria da fala, em formato de tarefa. titulo comeca com verbo no infinitivo ("Revisar...", "Inscrever...", "Cortar..."). descricao resume o que fazer e a justificativa em 1-2 frases. Nao introduza fato novo aqui tambem.
 - fatos_usados: array com os agentes cuja fala voce efetivamente usou na sintese. Valores validos: "financeiro", "inteligencia" e "mobilizacao" (nao inclua outros). So inclua agente cuja fala apareceu na sessao — ignore o que nao veio.
 - confianca: "alta" | "media" | "baixa"
   - alta: ambos os agentes deram base solida e a sintese aponta acao clara
   - media: ambos deram base parcial OU um deles teve confianca media
   - baixa: um ou ambos deram confianca baixa OU as falas sao inconclusivas
 PROMPT;
+    }
+
+    /**
+     * Extrai {titulo, descricao} do JSON do chefe. Fallback: se o modelo
+     * nao devolveu 'acao' valida, usa a primeira frase da fala como titulo.
+     */
+    private function extractAction(array $parsed, string $fala): array
+    {
+        $acao      = is_array($parsed['acao'] ?? null) ? $parsed['acao'] : [];
+        $titulo    = trim((string) ($acao['titulo'] ?? ''));
+        $descricao = trim((string) ($acao['descricao'] ?? ''));
+
+        if ($titulo === '') {
+            $primeiraFrase = preg_split('/(?<=[.!?])\s+/u', $fala, 2)[0] ?? $fala;
+            $titulo = $primeiraFrase;
+        }
+
+        return [
+            'titulo'    => mb_substr($titulo, 0, 120),
+            'descricao' => mb_substr($descricao !== '' ? $descricao : $fala, 0, 1000),
+        ];
     }
 
     private function parseJson(string $raw): ?array
