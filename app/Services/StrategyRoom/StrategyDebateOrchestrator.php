@@ -23,17 +23,19 @@ class StrategyDebateOrchestrator
     public function __construct(
         private FinancialAgentService $financeiro,
         private IntelligenceAgentService $inteligencia,
+        private MobilizationAgentService $mobilizacao,
         private ChiefStrategistAgentService $chefe,
     ) {}
 
     /**
      * Retorna:
      *   [
-     *     'session_id' => int,
-     *     'financeiro' => array|null,   // resultado do agente ou null se falhou
+     *     'session_id'   => int,
+     *     'financeiro'   => array|null,
      *     'inteligencia' => array|null,
-     *     'sintese' => array|null,
-     *     'erros' => array,             // lista de erros parciais
+     *     'mobilizacao'  => array|null,
+     *     'sintese'      => array|null,
+     *     'erros'        => array,
      *   ]
      */
     public function run(int $tenantId): array
@@ -48,6 +50,7 @@ class StrategyDebateOrchestrator
             'session_id'   => $session->id,
             'financeiro'   => null,
             'inteligencia' => null,
+            'mobilizacao'  => null,
             'sintese'      => null,
             'erros'        => [],
         ];
@@ -74,22 +77,30 @@ class StrategyDebateOrchestrator
             $out['inteligencia'] = $int;
         }
 
-        // 3) Chefe — so faz sentido se ao menos 1 agente falou
-        if ($out['financeiro'] || $out['inteligencia']) {
+        // 3) Mobilizacao
+        $mob = $this->mobilizacao->speak($tenantId, $session->id);
+        if (isset($mob['error'])) {
+            $out['erros'][] = ['agente' => 'mobilizacao', 'msg' => $mob['error']];
+            Log::warning('StrategyRoom/Orquestrador: mobilizacao falhou', [
+                'session' => $session->id, 'err' => $mob['error'],
+            ]);
+        } else {
+            $out['mobilizacao'] = $mob;
+        }
+
+        // 4) Chefe — sintetiza se pelo menos 1 agente falou
+        if ($out['financeiro'] || $out['inteligencia'] || $out['mobilizacao']) {
             $chief = $this->chefe->synthesize($session->id);
             if (isset($chief['error'])) {
                 $out['erros'][] = ['agente' => 'estrategista_chefe', 'msg' => $chief['error']];
                 Log::warning('StrategyRoom/Orquestrador: chefe falhou', [
                     'session' => $session->id, 'err' => $chief['error'],
                 ]);
-                // Chefe falhou — fecha sessao manual pra nao ficar em andamento
                 $session->update(['status' => 'concluida']);
             } else {
                 $out['sintese'] = $chief;
-                // Chefe ja fechou a sessao no proprio synthesize()
             }
         } else {
-            // Nem financeiro nem inteligencia falaram — fecha e reporta
             $session->update(['status' => 'concluida']);
         }
 

@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
 class StrategyTestDebate extends Command
 {
     protected $signature   = 'strategy:test-debate {tenant_id : ID do tenant real}';
-    protected $description = 'Roda o debate completo da Sala de Estrategia (Financeiro + Inteligencia + Estrategista-Chefe).';
+    protected $description = 'Roda o debate completo da Sala de Estrategia (Financeiro + Inteligencia + Mobilizacao + Estrategista-Chefe).';
 
     public function handle(StrategyDebateOrchestrator $orchestrator): int
     {
@@ -55,6 +55,7 @@ class StrategyTestDebate extends Command
 
         $this->renderAgent('FINANCEIRO',    $result['financeiro']);
         $this->renderAgent('INTELIGENCIA',  $result['inteligencia']);
+        $this->renderAgent('MOBILIZACAO',   $result['mobilizacao']);
         $this->renderAgent('ESTRATEGISTA-CHEFE', $result['sintese'], sintese: true);
 
         if (!empty($result['erros'])) {
@@ -85,12 +86,15 @@ class StrategyTestDebate extends Command
 
         $this->line('<fg=gray>Fatos usados:</>');
         if (empty($data['fatos_usados'])) {
-            $this->line('  <fg=gray>(nenhum)</>');
+            $this->line('  · <fg=gray>(nenhum)</>');
         } else {
+            // Tag-close no meio da linha as vezes cola com a proxima na copia
+            // do terminal — quebra manual pra garantir separacao visivel.
             foreach ($data['fatos_usados'] as $f) {
                 $this->line("  · <fg=cyan>{$f}</>");
             }
         }
+        $this->newLine();
 
         $confColor = match ($data['confianca']) {
             'alta'  => 'green',
@@ -100,5 +104,6 @@ class StrategyTestDebate extends Command
         };
         $this->line("<fg=gray>Confianca:</> <fg={$confColor}>{$data['confianca']}</>");
         $this->line("<fg=gray>message #{$data['message_id']}</>");
+        $this->newLine();
     }
 }
