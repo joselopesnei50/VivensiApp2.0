@@ -128,15 +128,18 @@
 </div>
 
 {{-- Import CSV --}}
-<div class="ds-card" style="max-width: 860px; margin-top: 24px; border-style: dashed;">
+<div id="importar" class="ds-card" style="max-width: 860px; margin-top: 24px; border-style: dashed; scroll-margin-top: 90px;">
     <div class="ds-card-header">
         <span style="font-weight: 700; color: var(--ds-text); font-size: 0.95rem;">
             <i class="fas fa-file-import me-2" style="color: var(--ds-brand);"></i> Importar via Planilha (CSV)
         </span>
     </div>
     <div class="ds-card-body">
-        <p style="color:var(--ds-text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+        <p style="color:var(--ds-text-muted); font-size: 0.9rem; margin-bottom: 8px;">
             Se você tem muitos beneficiários, suba um CSV. Se o CPF ou NIS já existir, os dados serão atualizados.
+        </p>
+        <p style="color:var(--ds-text-muted); font-size: 0.82rem; margin-bottom: 20px;">
+            O modelo inclui dados sociais (gênero, raça/cor, escolaridade) e endereço estruturado (CEP, rua, número, bairro, cidade, UF) — endereços completos aparecem no mapa. Datas podem vir como <code>2020-05-31</code> ou <code>31/05/2020</code>. Planilhas no formato antigo continuam aceitas.
         </p>
 
         @if(session('import_errors'))

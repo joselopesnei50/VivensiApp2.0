@@ -22,6 +22,9 @@
         <a href="{{ url('/ngo/beneficiaries/print') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#f1f5f9; color:#0f172a;">
             <i class="fas fa-print"></i> Imprimir
         </a>
+        <a href="{{ url('/ngo/beneficiaries/create') }}#importar" class="btn-premium" style="background:#0f766e;">
+            <i class="fas fa-file-import"></i> Importar Planilha
+        </a>
         <a href="{{ url('/ngo/beneficiaries/create') }}" class="btn-premium">
             <i class="fas fa-plus"></i> Novo Beneficiário
         </a>

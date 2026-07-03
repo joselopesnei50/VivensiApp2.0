@@ -762,14 +762,26 @@ class BeneficiaryController extends Controller
     public function downloadImportTemplate()
     {
         $filename = 'modelo_importacao_familias.csv';
-        $headers = ['Nome', 'NIS', 'CPF', 'Data_Nascimento', 'Telefone', 'Endereco', 'Status'];
+        $headers = [
+            'Nome', 'NIS', 'CPF', 'Data_Nascimento', 'Genero', 'Raca_Cor', 'Escolaridade',
+            'Telefone', 'CEP', 'Rua', 'Numero', 'Complemento', 'Bairro', 'Cidade', 'UF', 'Status',
+        ];
 
         return response()->streamDownload(function () use ($headers) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, $headers);
-            // Example row
-            fputcsv($out, ['Maria da Silva', '12345678910', '123.456.789-10', '1985-05-20', '(11) 99999-9999', 'Rua Exemplo, 123', 'active']);
+            // Example rows
+            fputcsv($out, [
+                'Maria da Silva', '12345678910', '123.456.789-10', '1985-05-20',
+                'feminino', 'parda', 'medio_completo', '(11) 99999-9999',
+                '01001-000', 'Rua Exemplo', '123', 'Casa B', 'Centro', 'São Paulo', 'SP', 'ativo',
+            ]);
+            fputcsv($out, [
+                'João Pereira', '', '987.654.321-00', '20/03/1990',
+                'masculino', 'prefiro_nao_informar', 'fundamental_completo', '(11) 98888-7777',
+                '', '', '', '', '', 'Guarulhos', 'SP', 'ativo',
+            ]);
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
@@ -792,26 +804,27 @@ class BeneficiaryController extends Controller
         }
 
         $header = fgetcsv($handle);
+        $columnMap = $this->buildImportColumnMap(is_array($header) ? $header : []);
+
         $successCount = 0;
         $errorCount = 0;
         $duplicatesUpdated = 0;
         $errors = [];
+        $lineNum = 1; // linha 1 = cabecalho
 
         while (($row = fgetcsv($handle)) !== false) {
+            $lineNum++;
             if (empty(array_filter($row))) continue;
 
-            // Map columns: 0:Nome, 1:NIS, 2:CPF, 3:Nascimento, 4:Telefone, 5:Endereco, 6:Status
-            $name     = trim($row[0] ?? '');
-            $nis      = preg_replace('/\D+/', '', (string) ($row[1] ?? ''));
-            $cpf      = preg_replace('/\D+/', '', (string) ($row[2] ?? ''));
-            $birth    = trim($row[3] ?? '');
-            $phone    = trim($row[4] ?? '');
-            $address  = trim($row[5] ?? '');
-            $status   = trim($row[6] ?? 'active');
+            $get = fn (string $field) => trim((string) ($row[$columnMap[$field] ?? -1] ?? ''));
+
+            $name = $get('name');
+            $nis  = preg_replace('/\D+/', '', $get('nis'));
+            $cpf  = preg_replace('/\D+/', '', $get('cpf'));
 
             if (empty($name)) {
                 $errorCount++;
-                $errors[] = "Linha " . ($successCount + $errorCount + $duplicatesUpdated + 1) . ": Nome é obrigatório.";
+                $errors[] = "Linha {$lineNum}: Nome é obrigatório.";
                 continue;
             }
 
@@ -829,12 +842,31 @@ class BeneficiaryController extends Controller
                     'name'       => $name,
                     'nis'        => $nis ?: null,
                     'cpf'        => $cpf ?: null,
-                    'birth_date' => !empty($birth) ? Carbon::parse($birth)->toDateString() : null,
-                    'phone'      => $phone ?: null,
-                    'address'    => $address ?: null,
-                    'status'     => in_array($status, ['active', 'inactive', 'graduated']) ? $status : 'active',
-                    'tenant_id'  => $tenantId
+                    'birth_date' => $this->parseImportDate($get('birth_date'), $lineNum, $errors),
+                    'gender'     => $this->normalizeImportEnum($get('gender'), ['masculino', 'feminino', 'nao_binario', 'outro', 'prefiro_nao_informar'], 'Gênero', $lineNum, $errors),
+                    'race_color' => $this->normalizeImportEnum($get('race_color'), ['branca', 'preta', 'parda', 'amarela', 'indigena', 'prefiro_nao_informar'], 'Raça/Cor', $lineNum, $errors),
+                    'education'  => $this->normalizeImportEnum($get('education'), ['sem_escolaridade', 'fundamental_incompleto', 'fundamental_completo', 'medio_incompleto', 'medio_completo', 'superior_incompleto', 'superior_completo', 'pos_graduacao'], 'Escolaridade', $lineNum, $errors),
+                    'phone'      => $get('phone') ?: null,
+                    'address_zip'          => mb_substr($get('address_zip'), 0, 10) ?: null,
+                    'address_street'       => $get('address_street') ?: null,
+                    'address_number'       => mb_substr($get('address_number'), 0, 20) ?: null,
+                    'address_complement'   => mb_substr($get('address_complement'), 0, 100) ?: null,
+                    'address_neighborhood' => $get('address_neighborhood') ?: null,
+                    'address_city'         => $get('address_city') ?: null,
+                    'address_state'        => mb_substr(mb_strtoupper($get('address_state')), 0, 2) ?: null,
+                    'status'     => $this->normalizeImportStatus($get('status')),
+                    'tenant_id'  => $tenantId,
                 ];
+
+                // Endereco: campos estruturados compoem o texto (composeAddress
+                // devolve "Brasil" mesmo vazio — so chamar se houver parte real);
+                // planilha antiga cai na coluna unica. Geocodificacao fica por
+                // conta do BeneficiaryObserver::saved() quando address muda.
+                $hasStructured = $beneficiaryData['address_street'] || $beneficiaryData['address_city']
+                    || $beneficiaryData['address_zip'] || $beneficiaryData['address_neighborhood'];
+                $beneficiaryData['address'] = $hasStructured
+                    ? $this->composeAddress($beneficiaryData)
+                    : ($get('address') ?: null);
 
                 if ($existing) {
                     $existing->update($beneficiaryData);
@@ -846,19 +878,108 @@ class BeneficiaryController extends Controller
             } catch (\Exception $e) {
                 $errorCount++;
                 Log::error("Import beneficiary error for '{$name}'", ['error' => $e->getMessage()]);
-                $errors[] = "Erro na linha do beneficiário '{$name}': verifique os dados e tente novamente.";
+                $errors[] = "Linha {$lineNum}: erro ao salvar '{$name}' — verifique os dados e tente novamente.";
             }
         }
 
         fclose($handle);
 
         $msg = "Importação concluída: $successCount novos cadastros, $duplicatesUpdated duplicatas atualizadas.";
-        if ($errorCount > 0) {
-            $msg .= " Houve $errorCount falhas.";
+        if ($errorCount > 0 || count($errors) > 0) {
+            $msg .= $errorCount > 0 ? " Houve $errorCount falhas." : ' Alguns campos foram ignorados (veja avisos).';
             return redirect()->back()->with('warning', $msg)->with('import_errors', $errors);
         }
 
         return redirect()->back()->with('success', $msg);
+    }
+
+    /**
+     * Mapeia cabecalho da planilha -> campo do model (aceita o modelo novo de
+     * 16 colunas e o legado de 7). Sem cabecalho reconhecivel, cai no
+     * posicional legado: Nome, NIS, CPF, Nascimento, Telefone, Endereco, Status.
+     */
+    private function buildImportColumnMap(array $header): array
+    {
+        $aliases = [
+            'nome' => 'name',
+            'nis'  => 'nis',
+            'cpf'  => 'cpf',
+            'data_nascimento' => 'birth_date', 'data_de_nascimento' => 'birth_date', 'nascimento' => 'birth_date',
+            'genero' => 'gender', 'sexo' => 'gender',
+            'raca_cor' => 'race_color', 'raca' => 'race_color', 'cor' => 'race_color',
+            'escolaridade' => 'education',
+            'telefone' => 'phone', 'celular' => 'phone', 'fone' => 'phone',
+            'endereco' => 'address',
+            'cep' => 'address_zip',
+            'rua' => 'address_street', 'logradouro' => 'address_street',
+            'numero' => 'address_number',
+            'complemento' => 'address_complement',
+            'bairro' => 'address_neighborhood',
+            'cidade' => 'address_city', 'municipio' => 'address_city',
+            'uf' => 'address_state', 'estado' => 'address_state',
+            'status' => 'status', 'situacao' => 'status',
+        ];
+
+        $map = [];
+        foreach ($header as $index => $label) {
+            $key = $this->normalizeImportKey((string) $label);
+            if (isset($aliases[$key]) && !isset($map[$aliases[$key]])) {
+                $map[$aliases[$key]] = $index;
+            }
+        }
+
+        if (!isset($map['name'])) {
+            return ['name' => 0, 'nis' => 1, 'cpf' => 2, 'birth_date' => 3, 'phone' => 4, 'address' => 5, 'status' => 6];
+        }
+
+        return $map;
+    }
+
+    private function normalizeImportKey(string $value): string
+    {
+        $key = mb_strtolower(trim(Str::ascii($value)));
+        return trim(preg_replace('/[^a-z0-9]+/', '_', $key), '_');
+    }
+
+    private function parseImportDate(string $value, int $lineNum, array &$errors): ?string
+    {
+        if ($value === '') return null;
+
+        try {
+            // Formato BR — checkdate evita overflow silencioso (31/02 viraria 02/03).
+            if (preg_match('#^(\d{1,2})/(\d{1,2})/(\d{4})$#', $value, $m)) {
+                if (!checkdate((int) $m[2], (int) $m[1], (int) $m[3])) {
+                    throw new \InvalidArgumentException("data inexistente: {$value}");
+                }
+                return Carbon::createFromDate((int) $m[3], (int) $m[2], (int) $m[1])->toDateString();
+            }
+            return Carbon::parse($value)->toDateString();
+        } catch (\Exception $e) {
+            $errors[] = "Linha {$lineNum}: data de nascimento '{$value}' inválida — campo ignorado.";
+            return null;
+        }
+    }
+
+    private function normalizeImportEnum(string $value, array $allowed, string $label, int $lineNum, array &$errors): ?string
+    {
+        if ($value === '') return null;
+
+        $normalized = $this->normalizeImportKey($value);
+        if (in_array($normalized, $allowed, true)) {
+            return $normalized;
+        }
+
+        $errors[] = "Linha {$lineNum}: valor '{$value}' inválido para {$label} — campo ignorado.";
+        return null;
+    }
+
+    private function normalizeImportStatus(string $value): string
+    {
+        $map = ['ativo' => 'active', 'inativo' => 'inactive', 'graduado' => 'graduated', 'egresso' => 'graduated'];
+        $normalized = $this->normalizeImportKey($value);
+        $normalized = $map[$normalized] ?? $normalized;
+
+        return in_array($normalized, ['active', 'inactive', 'graduated'], true) ? $normalized : 'active';
     }
 
     public function show(Request $request, $id)
