@@ -22,10 +22,10 @@ function stbTenantUser(): array
 function stbProspect(Tenant $tenant, ?string $phone = '11999990001'): Prospect
 {
     return Prospect::create([
-        'tenant_id' => $tenant->id,
-        'name'      => 'Prospect ' . uniqid(),
-        'phone'     => $phone,
-        'status'    => 'analyzed',
+        'tenant_id'    => $tenant->id,
+        'company_name' => 'Prospect ' . uniqid(), // coluna e company_name (NOT NULL), nao name
+        'phone'        => $phone,
+        'status'       => 'analyzed',
     ]);
 }
 
@@ -44,9 +44,10 @@ it('cria broadcast rascunho com phones normalizados', function () {
     expect($camp)->not->toBeNull();
     expect($camp->status)->toBe('draft');
     expect($camp->audience_type)->toBe('selected');
-    expect($camp->actual_recipients)->toBe(2);
+    expect((int) $camp->actual_recipients)->toBe(2); // (int): sqlite devolve string sem cast
 
-    $phones = json_decode($camp->phones, true);
+    // phones e string separada por virgula (formato do ProcessBroadcastCampaignJob), nao JSON
+    $phones = explode(',', $camp->phones);
     expect($phones)->toHaveCount(2);
     foreach ($phones as $p) {
         expect($p)->toStartWith('55');
@@ -63,17 +64,17 @@ it('desduplica phones repetidos', function () {
     ]);
 
     $camp = BroadcastCampaign::first();
-    expect(json_decode($camp->phones, true))->toHaveCount(1);
+    expect(explode(',', $camp->phones))->toHaveCount(1);
 });
 
 it('ignora prospects sem telefone', function () {
     [$tenant, $user] = stbTenantUser();
     $p1 = stbProspect($tenant, '11999990001');
     $p2 = Prospect::create([
-        'tenant_id' => $tenant->id,
-        'name'      => 'Sem fone',
-        'phone'     => null,
-        'status'    => 'analyzed',
+        'tenant_id'    => $tenant->id,
+        'company_name' => 'Sem fone',
+        'phone'        => null,
+        'status'       => 'analyzed',
     ]);
 
     $this->actingAs($user)->post('/prospecting/send-to-broadcast', [
@@ -81,7 +82,7 @@ it('ignora prospects sem telefone', function () {
     ]);
 
     $camp = BroadcastCampaign::first();
-    expect($camp->actual_recipients)->toBe(1);
+    expect((int) $camp->actual_recipients)->toBe(1);
 });
 
 it('marca prospects como contacted', function () {
@@ -108,10 +109,10 @@ it('rejeita quando nenhum lead selecionado', function () {
 it('rejeita quando todos prospects nao tem telefone', function () {
     [$tenant, $user] = stbTenantUser();
     $p = Prospect::create([
-        'tenant_id' => $tenant->id,
-        'name'      => 'Sem fone',
-        'phone'     => null,
-        'status'    => 'analyzed',
+        'tenant_id'    => $tenant->id,
+        'company_name' => 'Sem fone',
+        'phone'        => null,
+        'status'       => 'analyzed',
     ]);
 
     $resp = $this->actingAs($user)->from('/prospecting')->post('/prospecting/send-to-broadcast', [
