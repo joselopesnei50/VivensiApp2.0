@@ -2,8 +2,10 @@
 
 namespace App\Services\StrategyRoom;
 
+use App\Enums\StrategyRoomMode;
 use App\Models\StrategyMessage;
 use App\Models\StrategySession;
+use App\Models\Tenant;
 use App\Services\DeepSeekService;
 use Illuminate\Support\Facades\Log;
 
@@ -60,8 +62,10 @@ class ChiefStrategistAgentService
         $falasBlock  = $this->buildFalasBlock($priorMessages);
         $agentsHeard = $priorMessages->pluck('agent')->unique()->values()->all();
 
+        $mode = Tenant::find((int) $session->tenant_id)?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
+
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt($falasBlock)],
+            ['role' => 'system', 'content' => $this->buildSystemPrompt($falasBlock, $mode)],
             ['role' => 'user',   'content' => 'Sintetize as falas acima e proponha UMA acao prioritaria. Devolva SOMENTE o JSON no formato instruido.'],
         ];
 
@@ -143,10 +147,17 @@ class ChiefStrategistAgentService
         return trim($out);
     }
 
-    private function buildSystemPrompt(string $falasBlock): string
+    private function buildSystemPrompt(string $falasBlock, StrategyRoomMode $mode): string
     {
+        $contexto = $mode === StrategyRoomMode::Negocio
+            ? 'Este tenant e um pequeno negocio (MEI/autonomo/PJ): a acao prioritaria deve falar de clientes, vendas, faturamento, formalizacao — NAO de doadores, editais nem captacao.'
+            : 'Este tenant e uma organizacao de impacto social (ONG/gestor de projetos): a acao prioritaria pode falar de doadores, editais, captacao e sustentabilidade dos projetos.';
+
         return <<<PROMPT
 Voce e o Estrategista-Chefe da Sala de Estrategia do Vivensi, papel de CEO/moderador. Fala em portugues direto, sem rodeios. Sem emojis.
+
+## CONTEXTO DO TENANT
+{$contexto}
 
 ## FALAS DOS AGENTES QUE VOCE VAI SINTETIZAR
 {$falasBlock}

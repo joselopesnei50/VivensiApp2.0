@@ -2,10 +2,12 @@
 
 namespace App\Services\StrategyRoom;
 
+use App\Enums\StrategyRoomMode;
 use App\Models\Project;
 use App\Models\ProjectHealthHistory;
 use App\Models\StrategyMessage;
 use App\Models\StrategySession;
+use App\Models\Tenant;
 use App\Services\DeepSeekService;
 use App\Services\TenantContextService;
 use Illuminate\Support\Facades\Log;
@@ -63,7 +65,9 @@ class FinancialAgentService
                 'status'       => 'em_andamento',
             ]);
 
-        $systemPrompt = $this->buildSystemPrompt($factCatalog);
+        $mode = Tenant::find($tenantId)?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
+
+        $systemPrompt = $this->buildSystemPrompt($factCatalog, $mode);
         $messages     = [
             ['role' => 'system', 'content' => $systemPrompt],
             ['role' => 'user',   'content' => 'Analise a situacao financeira. Use as ferramentas quando quiser detalhar por projeto ou ver tendencia. Devolva SOMENTE o JSON no formato instruido.'],
@@ -246,15 +250,22 @@ class FinancialAgentService
         ];
     }
 
-    private function buildSystemPrompt(array $factCatalog): string
+    private function buildSystemPrompt(array $factCatalog, StrategyRoomMode $mode): string
     {
         $factsBlock = '';
         foreach ($factCatalog as $key => $f) {
             $factsBlock .= "- `{$key}` — {$f['label']}: {$f['valor']} {$f['unit']}\n";
         }
 
+        $contexto = $mode === StrategyRoomMode::Negocio
+            ? 'Este tenant e um pequeno negocio (MEI/autonomo/PJ): a receita vem de CLIENTES e vendas de produtos/servicos. Use vocabulario de faturamento, clientes e fluxo de caixa. NAO fale de doadores, editais nem captacao — esses conceitos nao existem neste perfil.'
+            : 'Este tenant e uma organizacao de impacto social (ONG/gestor de projetos): a receita vem de doadores, editais e captacao de recursos. Use vocabulario de captacao, doadores e sustentabilidade dos projetos.';
+
         return <<<PROMPT
 Voce e o Agente Financeiro da Sala de Estrategia do Vivensi, inspirado no papel de CFO. Fala em portugues direto, sem rodeios. Sem emojis, sem saudacoes floreadas.
+
+## CONTEXTO DO TENANT
+{$contexto}
 
 ## FATOS DISPONIVEIS BASE (unicos que voce pode citar em backticks)
 {$factsBlock}

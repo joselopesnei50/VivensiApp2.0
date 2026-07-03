@@ -2,8 +2,10 @@
 
 namespace App\Services\StrategyRoom;
 
+use App\Enums\StrategyRoomMode;
 use App\Models\StrategyMessage;
 use App\Models\StrategySession;
+use App\Models\Tenant;
 use App\Services\DeepSeekService;
 use Illuminate\Support\Facades\Log;
 
@@ -42,8 +44,10 @@ class MobilizationAgentService
                 'status'       => 'em_andamento',
             ]);
 
+        $mode = Tenant::find($tenantId)?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
+
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt()],
+            ['role' => 'system', 'content' => $this->buildSystemPrompt($mode)],
             ['role' => 'user',   'content' => 'Analise a mobilizacao do tenant — canais de campanha e saude da base. Chame as ferramentas relevantes. Devolva SOMENTE o JSON no formato instruido.'],
         ];
         $tools = MobilizationAgentTools::definitions();
@@ -137,10 +141,21 @@ class MobilizationAgentService
         ];
     }
 
-    private function buildSystemPrompt(): string
+    private function buildSystemPrompt(StrategyRoomMode $mode): string
     {
+        $contexto = $mode === StrategyRoomMode::Negocio
+            ? 'Este tenant e um pequeno negocio (MEI/autonomo/PJ): a base de contatos sao CLIENTES e leads, e campanha serve pra vender e fidelizar. Use vocabulario de clientes, vendas e relacionamento. NAO fale de doadores nem captacao — esses conceitos nao existem neste perfil.'
+            : 'Este tenant e uma organizacao de impacto social (ONG/gestor de projetos): a base de contatos sao doadores e apoiadores, e campanha serve pra captar e engajar. Use vocabulario de doadores, captacao e engajamento.';
+
+        $notaBase = $mode === StrategyRoomMode::Negocio
+            ? 'Neste tenant, saude_da_base mede o estoque de CONTATOS/CLIENTES pra campanha — se retornar 0 doadores, e esperado (negocio nao tem doador); avalie o canal pelo volume de campanhas e pela taxa de sucesso.'
+            : 'Se tenant NAO e NGO, saude_da_base pode retornar 0 doadores — nao tem problema, ignore ou aponte oportunidade.';
+
         return <<<PROMPT
 Voce e o Agente de Mobilizacao da Sala de Estrategia do Vivensi, papel de CMO. Analisa o USO dos canais de campanha (WhatsApp, e-mail) e a saude da BASE DE CONTATOS. Fala em portugues direto, sem rodeios. Sem emojis.
+
+## CONTEXTO DO TENANT
+{$contexto}
 
 ## REGRA DURA DE LGPD E ANTI-ALUCINACAO
 Voce NUNCA recebe nome, telefone ou email de contato individual — nem no prompt nem nas tools. Toda metrica e AGREGADA (contagem, percentual, taxa). Se em qualquer lugar da conversa aparecer PII individual, e erro do sistema — nao repita esse dado na fala.
@@ -159,7 +174,7 @@ Total de campanhas de email, delivered/opens/clicks agregado, taxa de abertura e
 Total de doadores (se NGO) e % com opt-in de email. Sinal de "estoque de audiencia".
 
 ## ESTRATEGIA
-Chame 1, 2 ou as 3 ferramentas conforme fizer sentido. Se tenant NAO e NGO, saude_da_base pode retornar 0 doadores — nao tem problema, ignore ou aponte oportunidade.
+Chame 1, 2 ou as 3 ferramentas conforme fizer sentido. {$notaBase}
 
 Sintetize em 3-4 frases: panorama de canais + estoque de audiencia + UMA acao prioritaria. Se todos os canais estao ociosos (0 campanhas), aponte "canal subutilizado" como sinal.
 
