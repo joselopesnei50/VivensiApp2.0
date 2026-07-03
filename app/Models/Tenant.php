@@ -71,4 +71,14 @@ class Tenant extends Model
     {
         return $this->business_type === 'mei';
     }
+
+    public function strategyRoomMode(): \App\Enums\StrategyRoomMode
+    {
+        // Fallback institucional pra type desconhecido/null: preserva o
+        // comportamento original da Sala (gestores type=business inclusos —
+        // eles usam Chamada e editais, então NAO são modo negocio).
+        return in_array($this->type, ['common', 'personal'], true)
+            ? \App\Enums\StrategyRoomMode::Negocio
+            : \App\Enums\StrategyRoomMode::Institucional;
+    }
 }
