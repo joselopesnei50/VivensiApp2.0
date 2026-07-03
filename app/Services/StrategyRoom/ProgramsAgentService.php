@@ -2,8 +2,10 @@
 
 namespace App\Services\StrategyRoom;
 
+use App\Enums\StrategyRoomMode;
 use App\Models\StrategyMessage;
 use App\Models\StrategySession;
+use App\Models\Tenant;
 use App\Services\DeepSeekService;
 use Illuminate\Support\Facades\Log;
 
@@ -43,11 +45,16 @@ class ProgramsAgentService
                 'status'       => 'em_andamento',
             ]);
 
+        $mode = Tenant::find($tenantId)?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
+
+        $userPrompt = $mode === StrategyRoomMode::Negocio
+            ? 'Analise a operacao do negocio — teto MEI, notas fiscais e execucao de tarefas. Chame as ferramentas relevantes. Devolva SOMENTE o JSON no formato instruido.'
+            : 'Analise a execucao dos programas do tenant — frequencia/evasao e tarefas dos projetos. Chame as ferramentas relevantes. Devolva SOMENTE o JSON no formato instruido.';
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt()],
-            ['role' => 'user',   'content' => 'Analise a execucao dos programas do tenant — frequencia/evasao e tarefas dos projetos. Chame as ferramentas relevantes. Devolva SOMENTE o JSON no formato instruido.'],
+            ['role' => 'system', 'content' => $this->buildSystemPrompt($mode)],
+            ['role' => 'user',   'content' => $userPrompt],
         ];
-        $tools = ProgramsAgentTools::definitions();
+        $tools = ProgramsAgentTools::definitions($mode);
 
         $rawContent  = '';
         $toolsCalled = [];
@@ -136,7 +143,15 @@ class ProgramsAgentService
         ];
     }
 
-    private function buildSystemPrompt(): string
+    private function buildSystemPrompt(StrategyRoomMode $mode): string
+    {
+        return match ($mode) {
+            StrategyRoomMode::Negocio       => $this->businessSystemPrompt(),
+            StrategyRoomMode::Institucional => $this->institutionalSystemPrompt(),
+        };
+    }
+
+    private function institutionalSystemPrompt(): string
     {
         return <<<PROMPT
 Voce e Sofia, a Diretora de Programas da Sala de Estrategia do Vivensi, papel de COO. Analisa se os projetos estao ENTREGANDO na ponta: frequencia dos beneficiarios nas aulas/atividades, risco de evasao e execucao de tarefas. Fala em portugues direto, sem rodeios. Sem emojis.
@@ -168,6 +183,43 @@ Regras do JSON:
 - confianca: "alta" | "media" | "baixa"
   - alta: as tools retornaram dado que cobre frequencia E execucao
   - media: uma dimensao veio vazia mas a outra tem dado
+  - baixa: tudo vazio, ou nenhuma tool foi chamada
+PROMPT;
+    }
+
+    private function businessSystemPrompt(): string
+    {
+        return <<<PROMPT
+Voce e Sofia, a Diretora de Operacoes da Sala de Estrategia do Vivensi, papel de COO. Analisa se o negocio esta OPERANDO com seguranca: teto anual do MEI, formalizacao fiscal (NFS-e) e execucao de tarefas. Fala em portugues direto, sem rodeios. Sem emojis.
+
+## REGRA DURA DE ANTI-ALUCINACAO
+Voce so pode citar numeros que vieram do retorno das tools desta sessao. NAO invente faturamento, percentual de teto, quantidade de notas ou tarefa nomeada. Se uma tool retornar vazio ou aplicavel=false, seja honesto ("nao ha registro de X" / "teto MEI nao se aplica a este perfil") e aponte a lacuna — NUNCA invente.
+
+## FERRAMENTAS DISPONIVEIS
+
+### 1) termometro_teto_mei({ano?})
+Faturamento do ano vs teto anual do MEI: percentual, status (verde/amarelo/vermelho) e situacao do proximo DAS. Se retornar aplicavel=false, o tenant NAO e MEI — nao fale de teto, foque nas outras dimensoes.
+
+### 2) notas_fiscais_pendentes({ano?})
+Cobertura de NFS-e nas receitas pagas do ano: quantas tem nota, quantas nao tem e o valor total sem nota. Formalizacao fiscal e o sinal de seguranca do negocio.
+
+### 3) execucao_de_tarefas({periodo_dias?})
+Por projeto ativo: tarefas totais, concluidas, VENCIDAS (prazo estourado) e % de conclusao. Sinal de gestao operacional.
+
+## ESTRATEGIA
+Chame as 3 ferramentas (ou menos se alguma nao fizer sentido). Prioridade de analise: (1) teto MEI em amarelo/vermelho — risco de desenquadramento, (2) receitas sem NFS-e, (3) tarefas vencidas. Se o teto nao se aplica, diga isso em meia frase e siga pras outras dimensoes.
+
+Sintetize em 3-4 frases: situacao operacional do negocio + UMA acao prioritaria (ex: emitir as notas pendentes, planejar o ritmo de vendas vs teto, destravar tarefas vencidas).
+
+## FORMATO DE SAIDA (obrigatorio — devolva SOMENTE o JSON abaixo)
+{"fala": "string em portugues 3-4 frases", "fatos_usados": ["tool:termometro_teto_mei","tool:notas_fiscais_pendentes"], "confianca": "alta"}
+
+Regras do JSON:
+- fala: sem quebra de linha, aspas duplas escapadas se precisar.
+- fatos_usados: array com handles "tool:{nome_da_tool}" pra cada tool chamada. Sistema adiciona automaticamente pelas tools chamadas.
+- confianca: "alta" | "media" | "baixa"
+  - alta: as tools retornaram dado que cobre faturamento E formalizacao
+  - media: uma dimensao veio vazia ou nao-aplicavel mas outra tem dado
   - baixa: tudo vazio, ou nenhuma tool foi chamada
 PROMPT;
     }
@@ -213,6 +265,9 @@ PROMPT;
             'nao ha registro', 'não há registro', 'nenhuma aula',
             'sem aulas', 'sem tarefas', 'nenhuma tarefa',
             'lacuna de monitoramento', 'sem dados',
+            // Modo negocio — admissoes de dado ausente/nao-aplicavel
+            'nenhuma receita', 'sem receita', 'nenhuma nota', 'sem nota fiscal',
+            'nao se aplica', 'não se aplica',
         ];
         foreach ($red_flags as $flag) {
             if (str_contains($t, $flag)) return 'media';
