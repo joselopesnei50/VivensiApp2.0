@@ -14,7 +14,13 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 function spAdmin(): User
 {
     $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
-    return User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'super_admin']);
+    // 2FA habilitado: RequireTwoFactor barra super_admin sem 2FA em /admin/*.
+    // Cada request ainda precisa da sessao 2fa_verified (ver withSession abaixo).
+    return User::factory()->create([
+        'tenant_id'               => $tenant->id,
+        'role'                    => 'super_admin',
+        'two_factor_confirmed_at' => now(),
+    ]);
 }
 
 function regularUser(): User
@@ -66,7 +72,7 @@ it('bloqueia acesso ao funil para usuário não super_admin', function () {
 });
 
 it('super_admin acessa o board com sucesso', function () {
-    $this->actingAs(spAdmin())
+    $this->actingAs(spAdmin())->withSession(['2fa_verified' => true])
         ->get('/admin/sales')
         ->assertStatus(200)
         ->assertSee('Funil Comercial');
@@ -85,7 +91,7 @@ it('mover card atualiza stage_id no banco', function () {
                          ->where('id', '!=', $lead->stage_id)
                          ->orderBy('position')->first();
 
-    $this->actingAs($admin)
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->postJson("/admin/sales/leads/{$lead->id}/move", [
             'stage_id' => $target->id,
             'position' => 0,
@@ -102,7 +108,7 @@ it('mover card registra atividade stage_changed', function () {
                         ->where('id', '!=', $lead->stage_id)
                         ->orderBy('position')->first();
 
-    $this->actingAs($admin)
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->postJson("/admin/sales/leads/{$lead->id}/move", [
             'stage_id' => $target->id,
             'position' => 0,
@@ -119,7 +125,7 @@ it('mover para estágio Ganho retorna needs_conversion=true', function () {
     $admin = spAdmin();
     $lead  = makeLead();
 
-    $this->actingAs($admin)
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->postJson("/admin/sales/leads/{$lead->id}/move", [
             'stage_id' => wonStage()->id,
             'position' => 0,
@@ -134,7 +140,7 @@ it('mover para estágio comum retorna needs_conversion=false', function () {
                         ->where('id', '!=', $lead->stage_id)
                         ->orderBy('position')->first();
 
-    $this->actingAs($admin)
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->postJson("/admin/sales/leads/{$lead->id}/move", [
             'stage_id' => $target->id,
             'position' => 0,
@@ -147,7 +153,7 @@ it('mover para estágio comum retorna needs_conversion=false', function () {
 it('super_admin cria lead com sucesso', function () {
     $admin = spAdmin();
 
-    $this->actingAs($admin)
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->postJson('/admin/sales/leads', [
             'name'     => 'Novo Lead',
             'origin'   => 'manual',
@@ -161,7 +167,7 @@ it('super_admin cria lead com sucesso', function () {
 it('criar lead registra atividade created', function () {
     $admin = spAdmin();
 
-    $this->actingAs($admin)->postJson('/admin/sales/leads', [
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])->postJson('/admin/sales/leads', [
         'name'     => 'Lead Com Atividade',
         'origin'   => 'manual',
         'stage_id' => firstStage()->id,
@@ -181,7 +187,7 @@ it('importação ignora booking quando e-mail já existe como lead', function ()
     $booking = makeBooking(['email' => 'duplicado@teste.com']);
     makeLead(['email' => 'duplicado@teste.com']); // já existe
 
-    $this->actingAs($admin)
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->postJson('/admin/sales/import/bookings')
         ->assertJson(['success' => true, 'imported' => 0, 'skipped' => 1]);
 });
@@ -190,7 +196,7 @@ it('importação cria lead para booking sem duplicata', function () {
     $admin   = spAdmin();
     $booking = makeBooking(['email' => 'novo@teste.com']);
 
-    $response = $this->actingAs($admin)
+    $response = $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->postJson('/admin/sales/import/bookings')
         ->assertJson(['success' => true]);
 
@@ -210,7 +216,7 @@ it('importação não duplica booking já vinculado a lead', function () {
     $booking = makeBooking(['email' => 'javia@teste.com']);
     makeLead(['email' => 'javia@teste.com', 'meeting_booking_id' => $booking->id]);
 
-    $this->actingAs($admin)
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->postJson('/admin/sales/import/bookings')
         ->assertJson(['imported' => 0]);
 });
@@ -221,7 +227,7 @@ it('excluir lead faz soft delete (permanece no banco)', function () {
     $admin = spAdmin();
     $lead  = makeLead();
 
-    $this->actingAs($admin)
+    $this->actingAs($admin)->withSession(['2fa_verified' => true])
         ->deleteJson("/admin/sales/leads/{$lead->id}")
         ->assertJson(['success' => true]);
 

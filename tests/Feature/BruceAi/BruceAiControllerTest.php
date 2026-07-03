@@ -77,7 +77,8 @@ it('bruce clear history returns success', function () {
     $this->actingAs($user);
 
     $mock = Mockery::mock(BruceAiService::class);
-    $mock->shouldReceive('clearHistory')->once()->with($user->tenant_id);
+    // Assinatura atual: clearHistory(tenantId, userId, contextType, contextId)
+    $mock->shouldReceive('clearHistory')->once()->with($user->tenant_id, $user->id, null, null);
     $this->app->instance(BruceAiService::class, $mock);
 
     $response = $this->deleteJson('/api/bruce/chat/history');

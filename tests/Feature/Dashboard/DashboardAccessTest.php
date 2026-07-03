@@ -45,10 +45,16 @@ it('ngo user sees impact dashboard header', function () {
 
 it('super_admin is redirected from dashboard to admin panel', function () {
     $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
-    $admin  = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'super_admin']);
+    // super_admin sem 2FA e mandado pro /profile/2fa pelo RequireTwoFactor —
+    // habilita 2FA + sessao verificada pra chegar no redirect do dashboard.
+    $admin  = User::factory()->create([
+        'tenant_id'               => $tenant->id,
+        'role'                    => 'super_admin',
+        'two_factor_confirmed_at' => now(),
+    ]);
     $this->actingAs($admin);
 
-    $response = $this->get('/dashboard');
+    $response = $this->withSession(['2fa_verified' => true])->get('/dashboard');
     $response->assertRedirect('/admin');
 });
 

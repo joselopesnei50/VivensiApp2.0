@@ -17,7 +17,8 @@ class TransactionUploadTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Storage::fake('public');
+        // LGPD: anexos financeiros vivem no disk 'local' (private/), nao no public
+        Storage::fake('local');
     }
 
     public function test_manager_can_upload_pdf_attachment()
@@ -60,7 +61,7 @@ class TransactionUploadTest extends TestCase
         // 6. Assert File Exists
         $transaction = Transaction::where('description', 'Despesa com PDF')->latest()->first();
         $this->assertNotNull($transaction->attachment_path);
-        Storage::disk('public')->assertExists($transaction->attachment_path);
+        Storage::disk('local')->assertExists($transaction->attachment_path);
         
         // Cleanup
         $transaction->delete();

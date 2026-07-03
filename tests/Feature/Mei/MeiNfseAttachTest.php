@@ -79,7 +79,9 @@ it('attachNfse sem PDF mantém receita válida (PDF é opcional)', function () {
 it('attachNfse rejeita arquivo não-PDF', function () {
     [$tenant, $user] = nfseTenantUser();
     $tx = nfseReceipt($tenant->id);
-    $jpg = UploadedFile::fake()->image('foto.jpg');
+    // create() em vez de image(): fake()->image() exige a extensão GD,
+    // que nem todo PHP local tem — o mime jpeg basta pra validação.
+    $jpg = UploadedFile::fake()->create('foto.jpg', 100, 'image/jpeg');
 
     $resp = $this->actingAs($user)
         ->from('/personal/receipts')

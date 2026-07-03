@@ -78,7 +78,11 @@ it('agrega cidade e tags so com status pending+confirmed', function () {
     expect($r['total'])->toBe(3);
     expect($r['cities']['labels'])->toBe(['Ribeirão Preto', 'Sertãozinho']);
     expect($r['cities']['values'])->toBe([2, 1]);
-    expect(array_combine($r['tags']['labels'], $r['tags']['values']))->toBe([
+    // jovem e voluntario empatam em 2 — ordem do desempate depende da ordem
+    // que o DB devolve as rows (sqlite != mysql), entao compara sem ordem.
+    $tags = array_combine($r['tags']['labels'], $r['tags']['values']);
+    ksort($tags);
+    expect($tags)->toBe([
         'jovem'      => 2,
         'voluntario' => 2,
     ]);
@@ -87,11 +91,12 @@ it('agrega cidade e tags so com status pending+confirmed', function () {
 it('mantem top 10 e empilha resto como Outras', function () {
     $tenant = lbTenantWithProfile(TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL);
 
-    // 11 cidades distintas: a primeira com 12 leads, demais com 1.
+    // 11 cidades distintas: Capital com 12 leads + 10 cidades com 1 lead.
+    // Top 10 = Capital + 9 cidades; a 11a vira "Outras" com 1.
     for ($i = 0; $i < 12; $i++) {
         lbLead($tenant, Lead::STATUS_CONFIRMED, 'Capital', []);
     }
-    for ($i = 1; $i <= 11; $i++) {
+    for ($i = 1; $i <= 10; $i++) {
         lbLead($tenant, Lead::STATUS_CONFIRMED, "Cidade {$i}", []);
     }
 

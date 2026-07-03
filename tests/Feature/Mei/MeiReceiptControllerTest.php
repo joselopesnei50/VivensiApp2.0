@@ -43,7 +43,7 @@ it('store cria Transaction income com token e vincula client', function () {
     expect($tx)->not->toBeNull();
     expect($tx->type)->toBe('income');
     expect($tx->status)->toBe('paid');
-    expect($tx->client_id)->toBe($client->id);
+    expect((int) $tx->client_id)->toBe($client->id); // (int): sqlite devolve string em colunas sem cast no model
     expect($tx->public_receipt_token)->not->toBeEmpty();
     expect($tx->public_receipt_token_bidx)->not->toBeEmpty();
     expect($tx->receipt_auth_code)->not->toBeEmpty();
