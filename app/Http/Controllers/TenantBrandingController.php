@@ -30,7 +30,8 @@ class TenantBrandingController extends Controller
         $request->validate([
             'brand_name'            => 'nullable|string|max:80',
             'brand_color'           => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
-            'brand_logo'            => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
+            // SVG removido: pode embutir <script> e vira XSS servido do nosso domínio.
+            'brand_logo'            => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
             'weekly_report_enabled' => 'boolean',
             'report_email'          => 'nullable|email|max:100',
             'pix_key'               => 'nullable|string|max:100',
