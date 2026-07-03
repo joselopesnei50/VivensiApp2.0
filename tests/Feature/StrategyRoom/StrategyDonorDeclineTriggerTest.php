@@ -44,7 +44,9 @@ class StrategyDonorDeclineTriggerTest extends TestCase
             'strategy_room.daily_quota'                   => 10,
         ]);
 
-        $this->tenant = Tenant::factory()->create();
+        // type=ngo explicito: o gate do trigger so varre tenants ONG
+        // (factory sorteia o type, o que deixaria o teste flaky).
+        $this->tenant = Tenant::factory()->create(['type' => 'ngo']);
         $this->user   = User::factory()->create([
             'tenant_id' => $this->tenant->id,
             'role'      => 'ngo',
@@ -329,7 +331,7 @@ class StrategyDonorDeclineTriggerTest extends TestCase
     /** @test */
     public function doador_de_outro_tenant_nao_convoca_para_este(): void
     {
-        $outroTenant = Tenant::factory()->create();
+        $outroTenant = Tenant::factory()->create(['type' => 'ngo']);
         $this->seedDecliningDonor($outroTenant->id);
 
         $this->artisan('strategy:donor-decline-trigger')->assertSuccessful();

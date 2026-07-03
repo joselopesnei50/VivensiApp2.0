@@ -54,7 +54,7 @@ class StrategyDonorDeclineTrigger extends Command
             ->whereDate('created_at', today())
             ->count();
 
-        $tenantIds = Transaction::withoutGlobalScopes()
+        $candidatos = Transaction::withoutGlobalScopes()
             ->whereNull('deleted_at')
             ->where('type', 'income')
             ->whereNotNull('ngo_donor_id')
@@ -63,6 +63,15 @@ class StrategyDonorDeclineTrigger extends Command
             ->pluck('tenant_id')
             ->filter()
             ->values();
+
+        // Gate explicito: doador em declinio e conceito do terceiro setor —
+        // tenant nao-ONG com ngo_donor_id residual nao deve convocar reuniao.
+        $ongIds    = \App\Models\Tenant::where('type', 'ngo')->whereIn('id', $candidatos)->pluck('id');
+        $tenantIds = $candidatos->intersect($ongIds)->values();
+
+        if ($candidatos->count() > $tenantIds->count()) {
+            $this->line(sprintf('%d tenant(s) nao-ONG ignorado(s) pelo gate.', $candidatos->count() - $tenantIds->count()));
+        }
 
         $this->info(sprintf(
             'Varredura: %d tenant(s) com doacao em 6 meses · recorrente=%d+ meses · declinio=%dd · tiquete=-%d%% · cooldown=%dd · cap global=%d (%d ja usadas hoje)%s',
