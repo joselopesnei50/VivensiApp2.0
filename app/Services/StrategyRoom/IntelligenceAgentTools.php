@@ -103,7 +103,7 @@ class IntelligenceAgentTools
                 'type' => 'function',
                 'function' => [
                     'name' => 'recibos_emitidos',
-                    'description' => 'Mede a formalizacao das receitas: quantas receitas pagas do periodo tem recibo emitido (com link publico) e o valor coberto. Use pra apontar receita sem comprovante — risco de formalizacao pro MEI/PJ.',
+                    'description' => 'Mede a qualidade dos recibos das receitas pagas do periodo: quantas vendas estao vinculadas a cliente do CRM (nominais) vs avulsas, e quantos links publicos de recibo continuam ativos. Use pra apontar venda sem cliente vinculado — perda de historico de relacionamento.',
                     'parameters' => [
                         'type' => 'object',
                         'properties' => [
@@ -325,23 +325,33 @@ class IntelligenceAgentTools
             ->where('status', 'paid')
             ->where('date', '>=', $inicio);
 
-        $totalReceitas = (clone $base)->count();
-        $valorReceitas = (float) (clone $base)->sum('amount');
-        $comRecibo     = (clone $base)->whereNotNull('public_receipt_token')->count();
-        $valorRecibo   = (float) (clone $base)->whereNotNull('public_receipt_token')->sum('amount');
+        // O Vivensi gera recibo (token publico) automaticamente pra TODA
+        // receita — "tem recibo" e sempre 100% e nao diz nada. Os sinais que
+        // variam de verdade: venda vinculada a cliente do CRM (nominal) vs
+        // avulsa, e link de recibo ainda ativo vs expirado/revogado.
+        $totalReceitas   = (clone $base)->count();
+        $valorReceitas   = (float) (clone $base)->sum('amount');
+        $comCliente      = (clone $base)->whereNotNull('client_id')->count();
+        $valorComCliente = (float) (clone $base)->whereNotNull('client_id')->sum('amount');
+        $linksAtivos     = (clone $base)->where(function ($q) {
+            $q->whereNull('public_receipt_expires_at')
+              ->orWhere('public_receipt_expires_at', '>', now());
+        })->count();
 
         return [
-            'success'            => true,
-            'periodo_dias'       => $dias,
-            'receitas_pagas'     => $totalReceitas,
-            'com_recibo'         => $comRecibo,
-            'sem_recibo'         => $totalReceitas - $comRecibo,
-            'valor_total'        => $valorReceitas,
-            'valor_com_recibo'   => $valorRecibo,
-            'percentual_recibo'  => $totalReceitas > 0 ? round($comRecibo / $totalReceitas * 100, 1) : 0.0,
+            'success'                 => true,
+            'periodo_dias'            => $dias,
+            'receitas_pagas'          => $totalReceitas,
+            'com_cliente'             => $comCliente,
+            'sem_cliente'             => $totalReceitas - $comCliente,
+            'valor_total'             => $valorReceitas,
+            'valor_com_cliente'       => $valorComCliente,
+            'percentual_com_cliente'  => $totalReceitas > 0 ? round($comCliente / $totalReceitas * 100, 1) : 0.0,
+            'links_ativos'            => $linksAtivos,
+            'links_expirados'         => $totalReceitas - $linksAtivos,
             'instrucao_llm' => $totalReceitas === 0
                 ? 'Nenhuma receita paga no periodo. NAO invente numero. Diga honestamente que nao ha receita registrada nessa janela.'
-                : 'Percentuais e valores reais do sistema. Se a cobertura de recibo for baixa, aponte o risco de formalizacao e recomende emitir recibo pelas Receitas.',
+                : 'Percentuais e valores reais do sistema. Todo lancamento ja tem recibo automatico; o que importa: venda SEM cliente vinculado perde historico de relacionamento (recomende vincular ao CRM) e link expirado precisa ser regenerado antes de reenviar ao cliente.',
         ];
     }
 

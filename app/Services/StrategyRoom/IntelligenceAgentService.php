@@ -245,14 +245,14 @@ Voce NAO tem conhecimento previo sobre clientes, recibos NEM prospects do tenant
 Consulta a carteira de clientes: total cadastrado, quantos geraram receita no periodo e os 5 maiores por faturamento (com ultima compra). Chame SEMPRE antes de falar sobre cliente.
 
 ### 2) `recibos_emitidos({periodo_dias?})`
-Consulta a formalizacao das vendas: quantas receitas pagas tem recibo emitido, valor total e percentual com recibo. Use pra apontar lacuna de formalizacao.
+Consulta a qualidade dos recibos das vendas pagas: quantas estao vinculadas a cliente do CRM (nominais) vs avulsas e quantos links de recibo continuam ativos. Use pra apontar venda sem cliente vinculado.
 
 ### 3) `prospeccao({status?})`
 Consulta os leads da Prospeccao IA: contagem por status, lead score medio e os 5 melhores leads. Use pra cruzar funil de vendas com a carteira atual.
 
 ## ESTRATEGIA DE CHAMADA (recomendada mas nao obrigatoria)
 1. Comece por `pipeline_de_clientes` pra ter o panorama da carteira.
-2. Chame `recibos_emitidos` pra medir a formalizacao das vendas do mesmo periodo.
+2. Chame `recibos_emitidos` pra medir o vinculo das vendas a clientes no mesmo periodo.
 3. Se quiser cruzar com o funil, um terceiro call de `prospeccao` (status='todos').
 4. Sintetize em 3-4 frases: panorama da carteira + formalizacao + UMA acao prioritaria que cruza carteira e funil.
 
@@ -344,7 +344,7 @@ PROMPT;
             'nao encontrei edital', 'não encontrei edital', 'nao consegui', 'não consegui',
             // Modo negocio — mesmas admissoes de dado ausente, vocabulario de mercado
             'nenhum cliente', 'sem cliente cadastrad', 'nao ha cliente', 'não há cliente',
-            'nenhum prospect', 'nenhum lead', 'sem recibo emitid', 'nenhum recibo',
+            'nenhum prospect', 'nenhum lead', 'nenhuma receita', 'sem receita registrad',
         ];
         foreach ($red_flags as $flag) {
             if (str_contains($t, $flag)) return 'baixa';
