@@ -53,7 +53,7 @@ return [
                     'Patrimônio e Estoque'     => ['Almoxarifado e Estoque com movimentação', 'Gestão de Patrimônio com depreciação'],
                     'Contratos e Jurídico'     => ['Contratos Digitais com assinatura eletrônica', 'Repositório de contratos e termos'],
                     'Relatórios e Auditoria'   => ['DRE (Demonstração de Resultados)', 'Central de Auditoria', 'Portal da Transparência público (URL pública)'],
-                    'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas BruceIA)', 'Bruce AI (assistente conversacional integrado em todo o sistema)'],
+                    'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas BruceIA)', 'Bruce AI (assistente conversacional integrado em todo o sistema)', 'Sala de Estratégia (5 agentes de IA debatem os dados reais da ONG — captação, financeiro, programas, mobilização — e entregam uma ação prioritária com plano que vira cartão no Kanban)'],
                 ],
             ],
             'mei' => [
@@ -63,7 +63,7 @@ return [
                     'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA Bruce — treinavel pelo cliente', 'Formulários conversacionais', 'Automações por regra'],
                     'Marketing e Comunicação'  => ['Landing Pages', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA de clientes', 'Gestão de Redes Sociais'],
                     'Gestão Financeira'        => ['Fluxo de Caixa', 'Recibos e NFS-e', 'Emissão rápida de recibo', 'Conciliação Bancária', 'Planejamento Anual'],
-                    'Inteligência Artificial'  => ['Bruce AI (assistente conversacional)'],
+                    'Inteligência Artificial'  => ['Bruce AI (assistente conversacional)', 'Sala de Estratégia (5 agentes de IA analisam clientes, teto MEI, notas fiscais e tarefas e sugerem a próxima ação com plano no Kanban)'],
                 ],
             ],
             'gestor' => [
@@ -73,7 +73,7 @@ return [
                     'Contratos e Financeiro'   => ['Contratos Digitais com assinatura eletrônica', 'Conciliação Bancária'],
                     'WhatsApp'                 => ['Chat e Atendimento Omnichannel', 'Etiquetas de conversa', 'Disparo em Massa', 'Opt-in e Campanhas LGPD', 'Chatbot com IA Bruce — treinavel pelo cliente', 'Templates oficiais Meta', 'Formulários conversacionais', 'Automações por regra'],
                     'Marketing e Comunicação'  => ['E-mail Marketing', 'Landing Pages', 'Inteligência Territorial (geo)', 'Social AI Hub (gera posts)', 'Hub de Marketing IA (estratégia)', 'Prospecção IA', 'Rifas Online', 'Gestão de Redes Sociais'],
-                    'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas)', 'Bruce AI (assistente conversacional)'],
+                    'Inteligência Artificial'  => ['Smart Analysis AI (análises estratégicas)', 'Bruce AI (assistente conversacional)', 'Sala de Estratégia (5 agentes de IA debatem os dados dos projetos e finanças e entregam uma ação prioritária com plano no Kanban)'],
                     'Treinamento'              => ['Vivensi Academy (cursos)'],
                 ],
             ],
@@ -82,6 +82,7 @@ return [
             'Flexibilidade WhatsApp: o cliente escolhe entre Evolution API nativa (sem custo adicional, número via celular conectado) OU WhatsApp Oficial Meta (Cloud API, sem celular, custos da Meta por conversa). Os dois caminhos estão prontos no sistema, basta ativar o que preferir.',
             'Bruce AI nativa e treinável pelo próprio cliente: cada organização configura personalidade, tom e regras da IA no painel (WhatsApp > Chatbot & Config). A Bruce aprende e responde seguindo o padrão da organização.',
             'IA nativa pra qualificar leads, sugerir próxima ação, gerar propostas e fazer análise financeira — sem addon, sem mensalidade extra.',
+            'Sala de Estratégia: um conselho de 5 agentes de IA (dados/mercado, financeiro, operações/programas, mobilização e um estrategista-chefe) que debatem os números REAIS da organização e entregam UMA ação prioritária com plano de execução — que já vira cartão no Kanban. O vocabulário se adapta ao perfil: ONG ouve sobre doadores, editais e beneficiários; MEI/PJ ouve sobre clientes, teto MEI e notas fiscais. Também dispara sozinha quando detecta sinais de risco nos dados (ex: queda de doadores).',
             'Especialização por vertical: painel ONG, painel MEI, painel Gestor falam a linguagem certa (doador/edital vs cliente/venda vs projeto/aprovação).',
             'LGPD-first: auditoria, opt-in/opt-out automático, criptografia at-rest.',
             'Preço em reais, sem dólar volátil.',
@@ -169,6 +170,7 @@ return [
                 'Dossie fiscal com NFS-e anexada por receita — auditavel',
                 'Emissao rapida de recibos com um clique',
                 'Bruce AI que sugere: "voce ta perto do teto, considere abrir ME"',
+                'Sala de Estrategia: 5 agentes de IA analisam teto MEI, notas e clientes e sugerem a proxima acao com plano no Kanban',
             ],
             'evitar' => [
                 'Contratos digitais com assinatura eletronica (nao e prioridade pra MEI)',
@@ -189,6 +191,7 @@ return [
                 'Recibos rapidos (nao NFS-e obrigatoria)',
                 'Planejamento anual pra ver quando vale abrir CNPJ',
                 'WhatsApp integrado pra atendimento profissional',
+                'Sala de Estrategia: 5 agentes de IA analisam seus clientes e fluxo de caixa e sugerem a proxima acao com plano no Kanban',
             ],
             'evitar' => [
                 'Termometro do Teto MEI (autonomo nao tem esse limite)',
@@ -212,6 +215,7 @@ return [
                 'WhatsApp Oficial Meta ou Evolution API (escolhe)',
                 'Planejamento anual com Bruce AI sugerindo cortes',
                 'Landing pages e prospeccao IA pra crescer',
+                'Sala de Estrategia: 5 agentes de IA debatem os numeros da empresa e entregam uma acao prioritaria com plano no Kanban',
             ],
             'evitar' => [
                 'Termometro do Teto MEI (nao aplicavel)',
@@ -343,6 +347,11 @@ return [
             'situacao' => 'Pergunta sobre treinamento do bot',
             'lead'     => 'Como é o treinamento do chatbot? Eu consigo personalizar?',
             'bruno'    => 'Sim, treinamento é direto no painel. Em WhatsApp e depois Chatbot e Config, você escreve em texto livre como quer que a Bruce responda — personalidade, tom, vocabulário, regras. Por exemplo: tratar doador por "senhor", não oferecer desconto sem aprovação humana, sempre mandar link de inscrição em pergunta sobre evento. A Bruce aplica essas instruções em todas as respostas e você pode atualizar a qualquer momento.',
+        ],
+        [
+            'situacao' => 'Pergunta sobre a Sala de Estratégia',
+            'lead'     => 'Vi que vocês têm uma tal de Sala de Estratégia. O que é isso?',
+            'bruno'    => 'É um conselho de IA dentro do Vivensi. Cinco agentes especializados (dados, financeiro, operações, mobilização e um estrategista-chefe) analisam os números reais da sua organização, debatem entre si e te entregam uma ação prioritária com plano de execução — que já vira cartão no seu Kanban. Se você é ONG, eles falam de doadores, editais e beneficiários. Se é MEI ou empresa, falam de clientes, teto MEI e notas fiscais. Quer ver isso funcionando numa demonstração ao vivo de 20 min?',
         ],
         [
             'situacao' => 'Lead aceita agendar — Bruno usa as tools',
