@@ -250,7 +250,7 @@ class FinancialAgentService
         ];
     }
 
-    private function buildSystemPrompt(array $factCatalog, StrategyRoomMode $mode): string
+    private function buildSystemPrompt(array $factCatalog, string $mode): string
     {
         $factsBlock = '';
         foreach ($factCatalog as $key => $f) {

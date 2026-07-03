@@ -147,7 +147,7 @@ class ChiefStrategistAgentService
         return trim($out);
     }
 
-    private function buildSystemPrompt(string $falasBlock, StrategyRoomMode $mode): string
+    private function buildSystemPrompt(string $falasBlock, string $mode): string
     {
         $contexto = $mode === StrategyRoomMode::Negocio
             ? 'Este tenant e um pequeno negocio (MEI/autonomo/PJ): a acao prioritaria deve falar de clientes, vendas, faturamento, formalizacao — NAO de doadores, editais nem captacao.'

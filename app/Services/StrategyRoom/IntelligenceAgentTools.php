@@ -29,7 +29,7 @@ class IntelligenceAgentTools
      * Institucional: editais + projetos. Negocio (MEI/PJ): clientes,
      * recibos e prospeccao — editais nao fazem sentido nesse perfil.
      */
-    public static function definitions(StrategyRoomMode $mode = StrategyRoomMode::Institucional): array
+    public static function definitions(string $mode = StrategyRoomMode::Institucional): array
     {
         if ($mode === StrategyRoomMode::Negocio) {
             return self::businessDefinitions();

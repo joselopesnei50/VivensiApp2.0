@@ -143,11 +143,11 @@ class ProgramsAgentService
         ];
     }
 
-    private function buildSystemPrompt(StrategyRoomMode $mode): string
+    private function buildSystemPrompt(string $mode): string
     {
         return match ($mode) {
-            StrategyRoomMode::Negocio       => $this->businessSystemPrompt(),
-            StrategyRoomMode::Institucional => $this->institutionalSystemPrompt(),
+            StrategyRoomMode::Negocio => $this->businessSystemPrompt(),
+            default                   => $this->institutionalSystemPrompt(),
         };
     }
 

@@ -35,7 +35,7 @@ class ProgramsAgentTools
      * frequencia_e_evasao NAO e exposta — beneficiario/aula e conceito do
      * terceiro setor.
      */
-    public static function definitions(StrategyRoomMode $mode = StrategyRoomMode::Institucional): array
+    public static function definitions(string $mode = StrategyRoomMode::Institucional): array
     {
         if ($mode === StrategyRoomMode::Negocio) {
             return self::businessDefinitions();

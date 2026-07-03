@@ -141,7 +141,7 @@ class MobilizationAgentService
         ];
     }
 
-    private function buildSystemPrompt(StrategyRoomMode $mode): string
+    private function buildSystemPrompt(string $mode): string
     {
         $contexto = $mode === StrategyRoomMode::Negocio
             ? 'Este tenant e um pequeno negocio (MEI/autonomo/PJ): a base de contatos sao CLIENTES e leads, e campanha serve pra vender e fidelizar. Use vocabulario de clientes, vendas e relacionamento. NAO fale de doadores nem captacao — esses conceitos nao existem neste perfil.'
