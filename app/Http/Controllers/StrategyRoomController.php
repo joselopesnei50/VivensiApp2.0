@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StrategyRoomMode;
 use App\Jobs\RunStrategyDebateJob;
 use App\Models\StrategyMessage;
 use App\Models\StrategySession;
@@ -38,10 +39,14 @@ class StrategyRoomController extends Controller
      *   Maria (Inteligencia · Pesquisadora)
      *   Time Vibra (Mobilizacao · CMO — o "time")
      *   Sofia (Programas · COO — Fase 4)
+     *
+     * No modo Negocio (MEI/autonomo/PJ) mesmas personas, papeis adaptados:
+     * Maria vira mapa de mercado (clientes/recibos/prospeccao) e Sofia vira
+     * diretora de operacoes (teto MEI/NFS-e/tarefas).
      */
-    public static function agentsMeta(): array
+    public static function agentsMeta(string $mode = StrategyRoomMode::Institucional): array
     {
-        return [
+        $meta = [
             'estrategista_chefe' => [
                 'name'      => 'Bruce',
                 'role'      => 'Estrategista-Chefe',
@@ -103,6 +108,21 @@ class StrategyRoomController extends Controller
                 'ordem'     => 4,
             ],
         ];
+
+        if ($mode === StrategyRoomMode::Negocio) {
+            $meta['financeiro']['bio'] = 'Analisa saldo, faturamento e despesas do negócio. Nunca projeta cenário com número que não veio do painel.';
+
+            $meta['inteligencia']['sub_role'] = 'Mapa de Mercado';
+            $meta['inteligencia']['bio']      = 'Cruza carteira de clientes, recibos emitidos e prospecção. Nunca cita cliente ou lead que não veio do sistema.';
+
+            $meta['mobilizacao']['bio'] = 'Mede uso dos canais (WhatsApp, e-mail) e saúde da base de clientes e contatos. Sempre agregado, nunca PII individual.';
+
+            $meta['programas']['role'] = 'Diretora de Operações';
+            $meta['programas']['bio']  = 'Acompanha o teto anual do MEI, notas fiscais pendentes e execução de tarefas. Só números agregados do painel.';
+            $meta['programas']['icon'] = 'fa-gauge-high';
+        }
+
+        return $meta;
     }
 
     public function index(Request $request)
@@ -117,7 +137,8 @@ class StrategyRoomController extends Controller
             ->limit(30)
             ->get();
 
-        $agents = collect(self::agentsMeta())->sortBy('ordem')->values()->all();
+        $mode   = auth()->user()->tenant?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
+        $agents = collect(self::agentsMeta($mode))->sortBy('ordem')->values()->all();
 
         return view('strategy-room.index', compact('sessions', 'agents'));
     }
@@ -138,7 +159,8 @@ class StrategyRoomController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        $agents = self::agentsMeta();
+        $mode   = auth()->user()->tenant?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
+        $agents = self::agentsMeta($mode);
 
         return view('strategy-room.show', compact('session', 'messages', 'agents'));
     }
