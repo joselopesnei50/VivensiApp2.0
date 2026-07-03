@@ -107,11 +107,10 @@ class DoubleOptInService
     private function normalize(string $text): string
     {
         $text = mb_strtolower(trim($text));
-        // Remove acentos via transliteração ASCII.
-        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
-        if ($ascii !== false) {
-            $text = $ascii;
-        }
+        // Remove acentos. Str::ascii (portable-ascii) é determinístico em
+        // qualquer SO/locale — iconv //TRANSLIT vira 'n~ao' no Windows e
+        // pode virar 'n?o' no Linux com locale C, quebrando o opt-out.
+        $text = Str::ascii($text);
         // Mantém só letras, dígitos e espaço; colapsa whitespace.
         $text = preg_replace('/[^a-z0-9\s]/', ' ', $text) ?? '';
         $text = trim(preg_replace('/\s+/', ' ', $text) ?? '');
