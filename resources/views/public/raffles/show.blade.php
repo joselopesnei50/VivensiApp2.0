@@ -302,10 +302,13 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/imask"></script>
+    <script src="https://cdn.jsdelivr.net/npm/imask@7/dist/imask.min.js"></script>
     <script>
-        // Máscara de telefone
-        IMask(document.getElementById('phone'), { mask: '(00) 00000-0000' });
+        // Máscara de telefone — guarda contra falha do CDN para não abortar
+        // o script e quebrar a seleção de números.
+        if (window.IMask) {
+            IMask(document.getElementById('phone'), { mask: '(00) 00000-0000' });
+        }
 
         let selectedNumbers = [];
         const ticketPrice = {{ $raffle->ticket_price }};
