@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
@@ -15,6 +16,10 @@ class DevController extends Controller
 {
     public function gate()
     {
+        if ($redirect = $this->requireVerifiedTwoFactor()) {
+            return $redirect;
+        }
+
         if (session('dev_authenticated')) {
             return redirect()->route('admin.dev.dashboard');
         }
@@ -24,6 +29,10 @@ class DevController extends Controller
 
     public function authenticate(Request $request)
     {
+        if ($redirect = $this->requireVerifiedTwoFactor()) {
+            return $redirect;
+        }
+
         $request->validate([
             'dev_password' => 'required|string',
         ]);
@@ -39,7 +48,37 @@ class DevController extends Controller
             'dev_authenticated_at' => now(),
         ]);
 
+        // Auditoria de acesso: o Dev Portal expõe schema/rotas — IP sempre
+        // hasheado, nunca cru (padrão sem-PII-em-log do projeto).
+        Log::info('Dev Portal: acesso autenticado', [
+            'user_id'    => auth()->id(),
+            'ip_hash'    => hash('sha256', (string) $request->ip()),
+            'user_agent' => substr((string) $request->userAgent(), 0, 200),
+        ]);
+
         return redirect()->route('admin.dev.dashboard');
+    }
+
+    /**
+     * Defesa em profundidade: o RequireTwoFactor no grupo web já cobre estas
+     * rotas, mas o Dev Portal expõe schema/rotas internas — se o grupo mudar,
+     * esta camada explícita continua exigindo 2FA ativo e verificado.
+     */
+    private function requireVerifiedTwoFactor()
+    {
+        $user = auth()->user();
+
+        if (!$user->hasTwoFactorEnabled()) {
+            return redirect()->route('2fa.show')
+                ->with('warning', 'Ative o 2FA antes de acessar o Dev Portal.');
+        }
+
+        if (!session('2fa_verified')) {
+            return redirect()->route('2fa.challenge')
+                ->with('warning', 'Verifique seu segundo fator para continuar.');
+        }
+
+        return null;
     }
 
     public function logout()
@@ -56,6 +95,15 @@ class DevController extends Controller
         $arch      = $this->buildArchitecture();
 
         return view('admin.dev.dashboard', compact('schema', 'routes', 'queues', 'arch'));
+    }
+
+    /**
+     * Colunas de credenciais/tokens ficam fora do schema dump — reduzem o
+     * reconhecimento de um atacante que comprometa a conta do super admin.
+     */
+    public static function isSensitiveColumn(string $name): bool
+    {
+        return (bool) preg_match('/(password|secret|token|bidx|recovery_codes|api_key)/i', $name);
     }
 
     // ── Private builders ──────────────────────────────────────────────────────
@@ -81,6 +129,10 @@ class DevController extends Controller
 
             $cols = [];
             foreach ($columns as $col) {
+                if (self::isSensitiveColumn($col->Field)) {
+                    continue;
+                }
+
                 $flags = $indexMap[$col->Field] ?? [];
                 $cols[] = [
                     'name'    => $col->Field,
