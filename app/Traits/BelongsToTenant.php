@@ -33,12 +33,12 @@ trait BelongsToTenant
                     $builder->where($builder->getModel()->getTable() . '.tenant_id', $user->tenant_id);
                 }
             } else {
-                // Contexto web sem autenticação (Webhooks)
-                // Se o builder já tiver um filtro por tenant_id ou id, permitimos.
-                // Caso contrário, bloqueamos por segurança.
-                // IMPORTANTE: Em Webhooks, devemos usar ->withoutGlobalScopes() ou ->withoutGlobalScope('tenant')
-                // Mas para evitar quebrar o sistema, vamos apenas retornar se não houver auth.
-                // $builder->whereRaw('0 = 1'); // Removido para permitir Webhooks com tratativa manual
+                // FAIL-CLOSED (Fase 2 do hardening): contexto web sem autenticação
+                // não vê NENHUM registro tenant-scoped por padrão. Rotas públicas
+                // legítimas (transparência, rifas, SIC, webhooks Evolution/OpenPix)
+                // usam ->withoutGlobalScopes() explicitamente e mantêm filtro manual
+                // por tenant_id/slug/token — o bypass fica visível e auditável.
+                $builder->whereRaw('1 = 0');
             }
         });
 

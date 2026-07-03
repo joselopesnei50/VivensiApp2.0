@@ -12,13 +12,13 @@ class SicController extends Controller
 
     public function publicForm(string $slug)
     {
-        $portal = TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $portal = TransparencyPortal::withoutGlobalScope('tenant')->where('slug', $slug)->where('is_published', true)->firstOrFail();
         return view('transparency.sic_form', compact('portal'));
     }
 
     public function publicStore(Request $request, string $slug)
     {
-        $portal = TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $portal = TransparencyPortal::withoutGlobalScope('tenant')->where('slug', $slug)->where('is_published', true)->firstOrFail();
 
         $request->validate([
             'requester_name'  => 'required|string|max:255',
@@ -47,7 +47,7 @@ class SicController extends Controller
 
     public function publicStatus(string $slug, string $protocol)
     {
-        $portal = TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $portal = TransparencyPortal::withoutGlobalScope('tenant')->where('slug', $slug)->where('is_published', true)->firstOrFail();
         $sic    = SicRequest::where('tenant_id', $portal->tenant_id)
             ->where('protocol', strtoupper($protocol))
             ->firstOrFail();

@@ -272,14 +272,14 @@ class TransparencyController extends Controller
 
     public function publicView(string $slug)
     {
-        TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        TransparencyPortal::withoutGlobalScope('tenant')->where('slug', $slug)->where('is_published', true)->firstOrFail();
         return redirect()->route('transparency.portal', ['slug' => $slug], 301);
     }
 
     public function downloadDocument($slug, $id)
     {
-        $portal = TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
-        $doc = TransparencyDocument::where('tenant_id', $portal->tenant_id)->findOrFail($id);
+        $portal = TransparencyPortal::withoutGlobalScope('tenant')->where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $doc = TransparencyDocument::withoutGlobalScope('tenant')->where('tenant_id', $portal->tenant_id)->findOrFail($id);
 
         if (empty($doc->file_path) || !Storage::disk('public')->exists($doc->file_path)) {
             abort(404);
@@ -346,7 +346,7 @@ class TransparencyController extends Controller
      */
     public function openDataCsv($slug)
     {
-        $portal = TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $portal = TransparencyPortal::withoutGlobalScope('tenant')->where('slug', $slug)->where('is_published', true)->firstOrFail();
         $tenant_id = $portal->tenant_id;
 
         $year = (int) request()->get('year', (int) now()->year);
@@ -416,16 +416,18 @@ class TransparencyController extends Controller
     {
         $tenant_id = $portal->tenant_id;
 
-        $board = BoardMember::where('tenant_id', $tenant_id)
+        // withoutGlobalScopes em todo este builder público: o scope de tenant é
+        // fail-closed sem auth; o isolamento vem do filtro manual por $tenant_id.
+        $board = BoardMember::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
             ->orderBy('position')
             ->orderBy('name')
             ->orderBy('id')
             ->get(['name', 'position', 'tenure_start', 'tenure_end']);
-        $docs = TransparencyDocument::where('tenant_id', $tenant_id)
+        $docs = TransparencyDocument::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
             ->orderByDesc('year')
             ->get(['id', 'title', 'type', 'year'])
             ->groupBy('type');
-        $partnerships = PublicPartnership::where('tenant_id', $tenant_id)
+        $partnerships = PublicPartnership::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
             ->orderBy('start_date')
             ->orderBy('project_name')
             ->orderBy('id')
@@ -433,19 +435,19 @@ class TransparencyController extends Controller
                 'agency_name', 'project_name', 'value', 'gazette_link', 'status', 'start_date', 'end_date'
             ]);
 
-        $totalIn = (float) Transaction::where('tenant_id', $tenant_id)
+        $totalIn = (float) Transaction::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
             ->where('type', 'income')
             ->where('status', 'paid')
             ->whereBetween('date', [$yearStart, $yearEnd])
             ->sum('amount');
 
-        $totalOut = (float) Transaction::where('tenant_id', $tenant_id)
+        $totalOut = (float) Transaction::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
             ->where('type', 'expense')
             ->where('status', 'paid')
             ->whereBetween('date', [$yearStart, $yearEnd])
             ->sum('amount');
 
-        $projectOut = (float) Transaction::where('tenant_id', $tenant_id)
+        $projectOut = (float) Transaction::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
             ->where('type', 'expense')
             ->where('status', 'paid')
             ->whereBetween('date', [$yearStart, $yearEnd])
@@ -504,7 +506,7 @@ class TransparencyController extends Controller
             ];
         })->values();
 
-        $familiesCount = (int) Beneficiary::where('tenant_id', $tenant_id)->count();
+        $familiesCount = (int) Beneficiary::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)->count();
         $familyMembersCount = (int) DB::table('family_members as fm')
             ->join('beneficiaries as b', 'b.id', '=', 'fm.beneficiary_id')
             ->where('b.tenant_id', $tenant_id)
@@ -516,10 +518,10 @@ class TransparencyController extends Controller
             ->whereBetween('date', [$yearStart, $yearEnd])
             ->count();
 
-        $assetsCount = (int) Asset::query()->where('tenant_id', $tenant_id)->count();
-        $assetsTotalValue = (float) Asset::query()->where('tenant_id', $tenant_id)->sum('value');
+        $assetsCount = (int) Asset::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)->count();
+        $assetsTotalValue = (float) Asset::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)->sum('value');
 
-        $hrEmployees = Employee::where('tenant_id', $tenant_id)
+        $hrEmployees = Employee::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
             ->where('status', 'active')
             ->select(['id', 'salary', 'bonus'])
             ->get();
@@ -572,7 +574,7 @@ class TransparencyController extends Controller
 
     public function publicReportPdf($slug)
     {
-        $portal = TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $portal = TransparencyPortal::withoutGlobalScope('tenant')->where('slug', $slug)->where('is_published', true)->firstOrFail();
         $year = (int) request()->get('year', (int) now()->year);
         if ($year < 2000 || $year > ((int) now()->year + 2)) $year = (int) now()->year;
         $yearStart = Carbon::create($year, 1, 1)->toDateString();
@@ -617,7 +619,7 @@ class TransparencyController extends Controller
      */
     public function renderPortal($slug)
     {
-        $portal = TransparencyPortal::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $portal = TransparencyPortal::withoutGlobalScope('tenant')->where('slug', $slug)->where('is_published', true)->firstOrFail();
         $tenant_id = $portal->tenant_id;
 
         $year = (int) request()->get('year', (int) now()->year);
@@ -627,22 +629,24 @@ class TransparencyController extends Controller
 
         $cached = Cache::remember("transparency_portal_{$tenant_id}_{$year}", 3600, function () use ($tenant_id, $year, $yearStart, $yearEnd, $portal) {
             // Metadata
-            $board = BoardMember::where('tenant_id', $tenant_id)->get();
-            $docs = TransparencyDocument::where('tenant_id', $tenant_id)->get()->groupBy('type');
-            $partnerships = PublicPartnership::where('tenant_id', $tenant_id)->get();
+            // withoutGlobalScopes em todo o bloco público: o scope de tenant é
+            // fail-closed sem auth; o isolamento vem do filtro manual por $tenant_id.
+            $board = BoardMember::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)->get();
+            $docs = TransparencyDocument::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)->get()->groupBy('type');
+            $partnerships = PublicPartnership::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)->get();
 
             // Financial Data (Aggregated from Transactions)
-            $totalIn = Transaction::where('tenant_id', $tenant_id)
+            $totalIn = Transaction::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
                 ->where('type', 'income')
                 ->where('status', 'paid')
                 ->whereBetween('date', [$yearStart, $yearEnd])
                 ->sum('amount');
-            $totalOut = Transaction::where('tenant_id', $tenant_id)
+            $totalOut = Transaction::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
                 ->where('type', 'expense')
                 ->where('status', 'paid')
                 ->whereBetween('date', [$yearStart, $yearEnd])
                 ->sum('amount');
-            $projectOut = Transaction::where('tenant_id', $tenant_id)
+            $projectOut = Transaction::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
                 ->where('type', 'expense')
                 ->where('status', 'paid')
                 ->whereBetween('date', [$yearStart, $yearEnd])
@@ -657,7 +661,7 @@ class TransparencyController extends Controller
             $balance = $totalIn - $totalOut;
 
             // Minimize fields to reduce risk of PII exposure (no description, no attachments).
-            $lastExpenses = Transaction::query()
+            $lastExpenses = Transaction::withoutGlobalScope('tenant')
                 ->select(['id', 'tenant_id', 'category_id', 'amount', 'date'])
                 ->where('tenant_id', $tenant_id)
                 ->where('type', 'expense')
@@ -665,11 +669,12 @@ class TransparencyController extends Controller
                 ->whereBetween('date', [$yearStart, $yearEnd])
                 ->orderBy('date', 'desc')
                 ->limit(10)
-                ->with(['category:id,tenant_id,name'])
+                // Eager load também precisa do bypass: o scope se aplica à relação
+                ->with(['category' => fn ($q) => $q->withoutGlobalScope('tenant')->select(['id', 'tenant_id', 'name'])])
                 ->get();
 
             // Expense distribution (by category)
-            $expenseRows = Transaction::query()
+            $expenseRows = Transaction::withoutGlobalScope('tenant')
                 ->leftJoin('financial_categories as c', function ($j) {
                     $j->on('c.id', '=', 'transactions.category_id');
                     $j->on('c.tenant_id', '=', 'transactions.tenant_id');
@@ -742,7 +747,7 @@ class TransparencyController extends Controller
                 ->values();
 
             // Social Impact (Aggregated)
-            $familiesCount = Beneficiary::where('tenant_id', $tenant_id)->count();
+            $familiesCount = Beneficiary::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)->count();
             $familyMembersCount = (int) DB::table('family_members as fm')
                 ->join('beneficiaries as b', 'b.id', '=', 'fm.beneficiary_id')
                 ->where('b.tenant_id', $tenant_id)
@@ -813,14 +818,14 @@ class TransparencyController extends Controller
             $impactChart = ['labels' => $impactLabels, 'data' => $impactData];
 
             // Minimize asset fields exposed/processed in public view.
-            $assets = Asset::query()
+            $assets = Asset::withoutGlobalScope('tenant')
                 ->select(['id', 'tenant_id', 'name', 'code', 'acquisition_date', 'value', 'status'])
                 ->where('tenant_id', $tenant_id)
                 ->orderBy('acquisition_date', 'desc')
                 ->get();
 
             // HR: aggregated only (LGPD - do not load names).
-            $hrEmployees = Employee::where('tenant_id', $tenant_id)
+            $hrEmployees = Employee::withoutGlobalScope('tenant')->where('tenant_id', $tenant_id)
                 ->where('status', 'active')
                 ->select(['id', 'salary', 'bonus'])
                 ->get();

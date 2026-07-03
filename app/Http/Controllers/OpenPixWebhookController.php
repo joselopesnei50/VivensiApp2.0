@@ -114,7 +114,14 @@ class OpenPixWebhookController extends Controller
         // Enviar emails fora da transaction para não bloquear
         foreach ($emailsToSend as $ticket) {
             try {
-                Mail::to($ticket->buyer_email)->send(new RaffleTicketPaid($ticket->raffle, $ticket));
+                // Lookup explícito: lazy-load $ticket->raffle seria bloqueado
+                // pelo scope fail-closed de tenant nesta rota pública.
+                $raffle = Raffle::withoutGlobalScope('tenant')->find($ticket->raffle_id);
+                if (!$raffle) {
+                    Log::warning("OpenPix Webhook: rifa não encontrada para ticket {$ticket->id}");
+                    continue;
+                }
+                Mail::to($ticket->buyer_email)->send(new RaffleTicketPaid($raffle, $ticket));
             } catch (\Exception $e) {
                 Log::error("Error sending RaffleTicketPaid email: " . $e->getMessage());
             }
