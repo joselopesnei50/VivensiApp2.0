@@ -329,6 +329,23 @@ class StrategyDonorDeclineTriggerTest extends TestCase
     }
 
     /** @test */
+    public function tenant_nao_ong_nao_convoca_mesmo_com_doador_em_declinio(): void
+    {
+        // ngo_donor_id residual em tenant common (MEI/PJ) nao pode convocar —
+        // doador em declinio e conceito do terceiro setor (gate explicito).
+        $comum = Tenant::factory()->create(['type' => 'common']);
+        $this->seedDecliningDonor($comum->id);
+
+        $this->artisan('strategy:donor-decline-trigger')->assertSuccessful();
+
+        $this->assertSame(0, StrategySession::withoutGlobalScopes()
+            ->where('tenant_id', $comum->id)
+            ->where('trigger_type', StrategyDonorDeclineTrigger::TRIGGER_TYPE)
+            ->count());
+        Bus::assertNotDispatched(RunStrategyDebateJob::class);
+    }
+
+    /** @test */
     public function doador_de_outro_tenant_nao_convoca_para_este(): void
     {
         $outroTenant = Tenant::factory()->create(['type' => 'ngo']);
