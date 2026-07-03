@@ -43,9 +43,10 @@ it('grava item de timeline ao receber mensagem inbound do contato', function () 
     [$chat, $lead] = twChatWithLead($tenant);
 
     WhatsappMessage::create([
-        'tenant_id' => $tenant->id,
-        'chat_id'   => $chat->id,
-        'content'   => 'Oi, tudo bem?',
+        'tenant_id'  => $tenant->id,
+        'chat_id'    => $chat->id,
+        'message_id' => 'wamid.test.' . \Illuminate\Support\Str::uuid(),
+        'content'    => 'Oi, tudo bem?',
         'direction' => 'inbound',
         'type'      => 'conversation',
     ]);
@@ -64,9 +65,10 @@ it('grava item de timeline ao enviar mensagem outbound do atendente', function (
     [$chat, $lead] = twChatWithLead($tenant);
 
     WhatsappMessage::create([
-        'tenant_id' => $tenant->id,
-        'chat_id'   => $chat->id,
-        'content'   => 'Boa! Posso te ajudar',
+        'tenant_id'  => $tenant->id,
+        'chat_id'    => $chat->id,
+        'message_id' => 'wamid.test.' . \Illuminate\Support\Str::uuid(),
+        'content'    => 'Boa! Posso te ajudar',
         'direction' => 'outbound',
         'type'      => 'conversation',
     ]);
@@ -88,9 +90,10 @@ it('nao grava timeline para chat sem lead vinculado', function () {
     ]);
 
     WhatsappMessage::create([
-        'tenant_id' => $tenant->id,
-        'chat_id'   => $chat->id,
-        'content'   => 'sem lead',
+        'tenant_id'  => $tenant->id,
+        'chat_id'    => $chat->id,
+        'message_id' => 'wamid.test.' . \Illuminate\Support\Str::uuid(),
+        'content'    => 'sem lead',
         'direction' => 'inbound',
         'type'      => 'conversation',
     ]);
@@ -104,9 +107,10 @@ it('trunca corpo em 500 chars', function () {
 
     $longContent = str_repeat('A', 800);
     WhatsappMessage::create([
-        'tenant_id' => $tenant->id,
-        'chat_id'   => $chat->id,
-        'content'   => $longContent,
+        'tenant_id'  => $tenant->id,
+        'chat_id'    => $chat->id,
+        'message_id' => 'wamid.test.' . \Illuminate\Support\Str::uuid(),
+        'content'    => $longContent,
         'direction' => 'inbound',
         'type'      => 'conversation',
     ]);
@@ -121,9 +125,10 @@ it('nao grava timeline para conteudo vazio', function () {
     [$chat, $lead] = twChatWithLead($tenant);
 
     WhatsappMessage::create([
-        'tenant_id' => $tenant->id,
-        'chat_id'   => $chat->id,
-        'content'   => '',
+        'tenant_id'  => $tenant->id,
+        'chat_id'    => $chat->id,
+        'message_id' => 'wamid.test.' . \Illuminate\Support\Str::uuid(),
+        'content'    => '',
         'direction' => 'inbound',
         'type'      => 'conversation',
     ]);

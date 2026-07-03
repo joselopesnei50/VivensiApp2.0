@@ -243,7 +243,8 @@ it('atualiza session.lead_id ao capturar', function () {
 
     $lead = lcffCapture()->capture($session);
 
-    expect($session->fresh()->lead_id)->toBe($lead->id);
+    // (int): sqlite devolve string em colunas sem cast no model
+    expect((int) $session->fresh()->lead_id)->toBe($lead->id);
 });
 
 it('é idempotente: capturar duas vezes devolve o mesmo lead', function () {
@@ -316,7 +317,7 @@ it('engine completa a sessão e dispara captura via container', function () {
     $lead = Lead::where('tenant_id', $tenant->id)->first();
     expect($lead)->not->toBeNull();
     expect($lead->phone_normalized)->toBe('5511912345678');
-    expect($session->fresh()->lead_id)->toBe($lead->id);
+    expect((int) $session->fresh()->lead_id)->toBe($lead->id);
 });
 
 it('engine não quebra a UX do WA se captura falhar', function () {

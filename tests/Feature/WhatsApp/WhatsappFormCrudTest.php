@@ -98,8 +98,9 @@ it('addQuestion cria pergunta com position incremental', function () {
     $r2->assertOk();
     $qs = $form->questions()->orderBy('position')->get();
     expect($qs)->toHaveCount(2);
-    expect($qs[0]->position)->toBe(0);
-    expect($qs[1]->position)->toBe(1);
+    // (int): sqlite devolve string em colunas sem cast no model
+    expect((int) $qs[0]->position)->toBe(0);
+    expect((int) $qs[1]->position)->toBe(1);
 });
 
 it('addQuestion valida tipo permitido', function () {
@@ -123,9 +124,9 @@ it('reorderQuestions reordena por array', function () {
         'ordered_ids' => [$q3->id, $q1->id, $q2->id],
     ])->assertOk();
 
-    expect($q1->fresh()->position)->toBe(1);
-    expect($q2->fresh()->position)->toBe(2);
-    expect($q3->fresh()->position)->toBe(0);
+    expect((int) $q1->fresh()->position)->toBe(1);
+    expect((int) $q2->fresh()->position)->toBe(2);
+    expect((int) $q3->fresh()->position)->toBe(0);
 });
 
 it('reorderQuestions rejeita id de outro form', function () {

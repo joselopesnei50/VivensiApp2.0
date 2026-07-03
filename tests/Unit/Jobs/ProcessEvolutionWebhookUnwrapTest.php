@@ -59,7 +59,7 @@ class ProcessEvolutionWebhookUnwrapTest extends TestCase
         $r = $this->extract($payload);
         $this->assertSame('Oi, tenho interesse!', $r['content']);
         $this->assertSame('Oi, tenho interesse!', $r['user_text']);
-        $this->assertSame('conversation', $r['type']);
+        $this->assertSame('text', $r['type']);
     }
 
     public function test_ephemeral_message_com_extendedTextMessage(): void

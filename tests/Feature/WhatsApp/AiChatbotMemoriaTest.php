@@ -29,11 +29,12 @@ function chatMemChat(Tenant $tenant): WhatsappChat
 function chatMemMsg(WhatsappChat $chat, string $direction, string $content): WhatsappMessage
 {
     return WhatsappMessage::create([
-        'tenant_id' => $chat->tenant_id,
-        'chat_id'   => $chat->id,
-        'content'   => $content,
-        'direction' => $direction,
-        'type'      => 'conversation',
+        'tenant_id'  => $chat->tenant_id,
+        'chat_id'    => $chat->id,
+        'message_id' => 'wamid.test.' . \Illuminate\Support\Str::uuid(), // NOT NULL UNIQUE no schema
+        'content'    => $content,
+        'direction'  => $direction,
+        'type'       => 'conversation',
     ]);
 }
 
