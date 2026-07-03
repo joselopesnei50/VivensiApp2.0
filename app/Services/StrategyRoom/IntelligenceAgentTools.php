@@ -2,9 +2,13 @@
 
 namespace App\Services\StrategyRoom;
 
+use App\Enums\StrategyRoomMode;
+use App\Models\Client;
 use App\Models\NgoGrant;
 use App\Models\Project;
 use App\Models\ProjectHealthHistory;
+use App\Models\Prospect;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -21,10 +25,16 @@ use Illuminate\Support\Facades\Log;
 class IntelligenceAgentTools
 {
     /**
-     * Definicoes no formato OpenAI/DeepSeek tools.
+     * Definicoes no formato OpenAI/DeepSeek tools, por modo da Sala.
+     * Institucional: editais + projetos. Negocio (MEI/PJ): clientes,
+     * recibos e prospeccao — editais nao fazem sentido nesse perfil.
      */
-    public static function definitions(): array
+    public static function definitions(StrategyRoomMode $mode = StrategyRoomMode::Institucional): array
     {
+        if ($mode === StrategyRoomMode::Negocio) {
+            return self::businessDefinitions();
+        }
+
         return [
             [
                 'type' => 'function',
@@ -70,6 +80,61 @@ class IntelligenceAgentTools
         ];
     }
 
+    private static function businessDefinitions(): array
+    {
+        return [
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'pipeline_de_clientes',
+                    'description' => 'Consulta a base de clientes do tenant e a receita paga vinculada a cada um no periodo. Use SEMPRE que precisar falar de cliente, faturamento por cliente ou concentracao de receita. Se a lista vir vazia, NAO invente cliente — informe que nao ha cliente com receita no periodo.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'periodo_dias' => [
+                                'type'        => 'integer',
+                                'description' => 'Janela de analise em dias (default 90).',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'recibos_emitidos',
+                    'description' => 'Mede a formalizacao das receitas: quantas receitas pagas do periodo tem recibo emitido (com link publico) e o valor coberto. Use pra apontar receita sem comprovante — risco de formalizacao pro MEI/PJ.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'periodo_dias' => [
+                                'type'        => 'integer',
+                                'description' => 'Janela de analise em dias (default 90).',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'prospeccao',
+                    'description' => 'Consulta os leads gerados pela Prospeccao IA do tenant: contagem por status, lead score medio e os 5 melhores leads. Use pra cruzar pipeline de vendas com a base de clientes atual. Se vier vazio, NAO invente lead — sugira rodar uma busca de prospeccao.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'status' => [
+                                'type'        => 'string',
+                                'enum'        => ['new', 'analyzed', 'contacted', 'converted', 'todos'],
+                                'description' => 'Filtro por status do lead. Default "todos".',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
     /**
      * Roteador de tools. Recebe tenantId via param (nao Auth::) pq roda
      * em fila/console fora de sessao web.
@@ -83,6 +148,9 @@ class IntelligenceAgentTools
         return match ($name) {
             'buscar_editais_cadastrados'       => self::buscarEditaisCadastrados($args, $tenantId),
             'buscar_projetos_ativos_com_score' => self::buscarProjetosAtivosComScore($args, $tenantId),
+            'pipeline_de_clientes'             => self::pipelineDeClientes($args, $tenantId),
+            'recibos_emitidos'                 => self::recibosEmitidos($args, $tenantId),
+            'prospeccao'                       => self::prospeccao($args, $tenantId),
             default => ['error' => "Ferramenta desconhecida: {$name}"],
         };
     }
@@ -187,6 +255,138 @@ class IntelligenceAgentTools
             'instrucao_llm' => count($editais) === 0
                 ? 'Nao ha edital cadastrado nesse escopo. NAO invente. Seja honesto: "Nao ha edital cadastrado no sistema no filtro X". Sugira ao tenant cadastrar/monitorar.'
                 : 'Voce PODE citar estes editais pelo titulo, orgao, valor e prazo — sao dados reais do sistema. NAO cite edital que nao esteja nesta lista.',
+        ];
+    }
+
+    // ── Tools do modo Negocio (MEI/PJ) ────────────────────────────────────────
+
+    private static function pipelineDeClientes(array $args, int $tenantId): array
+    {
+        $dias   = max(7, min(365, (int) ($args['periodo_dias'] ?? 90)));
+        $inicio = now()->subDays($dias)->toDateString();
+
+        $totalClientes = Client::withoutGlobalScopes()->where('tenant_id', $tenantId)->count();
+
+        $porCliente = Transaction::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->where('type', 'income')
+            ->where('status', 'paid')
+            ->whereNotNull('client_id')
+            ->where('date', '>=', $inicio)
+            ->selectRaw('client_id, SUM(amount) as receita_total, MAX(date) as ultima_compra')
+            ->groupBy('client_id')
+            ->orderByDesc('receita_total')
+            ->limit(5)
+            ->get();
+
+        $nomes = Client::withoutGlobalScopes()
+            ->whereIn('id', $porCliente->pluck('client_id'))
+            ->pluck('name', 'id');
+
+        $top = $porCliente->map(fn ($r) => [
+            'id'            => (int) $r->client_id,
+            'nome'          => (string) ($nomes[$r->client_id] ?? 'Cliente removido'),
+            'receita_total' => (float) $r->receita_total,
+            'ultima_compra' => (string) $r->ultima_compra,
+        ])->all();
+
+        $comReceita = Transaction::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->where('type', 'income')
+            ->where('status', 'paid')
+            ->whereNotNull('client_id')
+            ->where('date', '>=', $inicio)
+            ->distinct()
+            ->count('client_id');
+
+        return [
+            'success'              => true,
+            'periodo_dias'         => $dias,
+            'total_clientes'       => $totalClientes,
+            'clientes_com_receita' => $comReceita,
+            'top_clientes'         => $top,
+            'instrucao_llm' => count($top) === 0
+                ? 'Nenhum cliente com receita paga no periodo. NAO invente cliente. Diga honestamente que nao ha receita vinculada a cliente e sugira vincular lancamentos a clientes no cadastro.'
+                : 'Voce PODE citar estes clientes pelo nome e receita — dados reais. NAO cite cliente fora desta lista. Se a receita estiver concentrada em 1-2 clientes, aponte o risco de dependencia.',
+        ];
+    }
+
+    private static function recibosEmitidos(array $args, int $tenantId): array
+    {
+        $dias   = max(7, min(365, (int) ($args['periodo_dias'] ?? 90)));
+        $inicio = now()->subDays($dias)->toDateString();
+
+        $base = Transaction::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->where('type', 'income')
+            ->where('status', 'paid')
+            ->where('date', '>=', $inicio);
+
+        $totalReceitas = (clone $base)->count();
+        $valorReceitas = (float) (clone $base)->sum('amount');
+        $comRecibo     = (clone $base)->whereNotNull('public_receipt_token')->count();
+        $valorRecibo   = (float) (clone $base)->whereNotNull('public_receipt_token')->sum('amount');
+
+        return [
+            'success'            => true,
+            'periodo_dias'       => $dias,
+            'receitas_pagas'     => $totalReceitas,
+            'com_recibo'         => $comRecibo,
+            'sem_recibo'         => $totalReceitas - $comRecibo,
+            'valor_total'        => $valorReceitas,
+            'valor_com_recibo'   => $valorRecibo,
+            'percentual_recibo'  => $totalReceitas > 0 ? round($comRecibo / $totalReceitas * 100, 1) : 0.0,
+            'instrucao_llm' => $totalReceitas === 0
+                ? 'Nenhuma receita paga no periodo. NAO invente numero. Diga honestamente que nao ha receita registrada nessa janela.'
+                : 'Percentuais e valores reais do sistema. Se a cobertura de recibo for baixa, aponte o risco de formalizacao e recomende emitir recibo pelas Receitas.',
+        ];
+    }
+
+    private static function prospeccao(array $args, int $tenantId): array
+    {
+        $status = $args['status'] ?? 'todos';
+
+        $query = Prospect::withoutGlobalScopes()->where('tenant_id', $tenantId);
+        if ($status !== 'todos') {
+            $query->where('status', $status);
+        }
+
+        $porStatus = (clone $query)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->map(fn ($v) => (int) $v)
+            ->all();
+
+        $scoreMedio = (clone $query)->whereNotNull('lead_score')->avg('lead_score');
+
+        $top = (clone $query)
+            ->whereNotNull('lead_score')
+            ->orderByDesc('lead_score')
+            ->limit(5)
+            ->get(['id', 'company_name', 'lead_score', 'status'])
+            ->map(fn ($p) => [
+                'id'           => (int) $p->id,
+                'empresa'      => (string) $p->company_name,
+                'lead_score'   => (int) $p->lead_score,
+                'status'       => (string) $p->status,
+            ])->all();
+
+        $total = array_sum($porStatus);
+
+        return [
+            'success'     => true,
+            'filtros'     => ['status' => $status],
+            'total'       => $total,
+            'por_status'  => $porStatus,
+            'score_medio' => $scoreMedio !== null ? round((float) $scoreMedio, 1) : null,
+            'prospects'   => $top,
+            'instrucao_llm' => $total === 0
+                ? 'Nenhum lead de prospeccao nesse escopo. NAO invente lead. Sugira rodar uma busca na Prospeccao IA pra alimentar o funil.'
+                : 'Voce PODE citar estes leads pela empresa e score — dados reais. NAO cite lead fora desta lista. Leads "analyzed" com score alto e ainda nao contatados sao a prioridade natural.',
         ];
     }
 }

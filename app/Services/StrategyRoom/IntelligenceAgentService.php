@@ -2,8 +2,10 @@
 
 namespace App\Services\StrategyRoom;
 
+use App\Enums\StrategyRoomMode;
 use App\Models\StrategyMessage;
 use App\Models\StrategySession;
+use App\Models\Tenant;
 use App\Services\DeepSeekService;
 use Illuminate\Support\Facades\Log;
 
@@ -49,18 +51,23 @@ class IntelligenceAgentService
                 'status'       => 'em_andamento',
             ]);
 
-        // Loop de function calling — o modelo pode chamar buscar_editais_*
+        $mode = Tenant::find($tenantId)?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
+
+        // Loop de function calling — o modelo pode chamar as tools do modo
         // 1 ou mais vezes antes de dar a fala final. Teto duro pra evitar
         // recursao acidental (max 3 iteracoes de tool + 1 fala final).
+        $userPrompt = $mode === StrategyRoomMode::Negocio
+            ? 'Analise o mercado do negocio: pipeline de clientes, recibos emitidos e prospeccao. Consulte os dados via ferramenta. Devolva SOMENTE o JSON no formato instruido.'
+            : 'Analise as oportunidades de captacao disponiveis. Consulte editais cadastrados via ferramenta. Devolva SOMENTE o JSON no formato instruido.';
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt()],
-            ['role' => 'user',   'content' => 'Analise as oportunidades de captacao disponiveis. Consulte editais cadastrados via ferramenta. Devolva SOMENTE o JSON no formato instruido.'],
+            ['role' => 'system', 'content' => $this->buildSystemPrompt($mode)],
+            ['role' => 'user',   'content' => $userPrompt],
         ];
-        $tools = IntelligenceAgentTools::definitions();
+        $tools = IntelligenceAgentTools::definitions($mode);
 
         $rawContent  = '';
         $toolsCalled = []; // ids/nomes das tools chamadas — vai pra facts_used
-        $entityIds   = ['edital' => [], 'projeto' => []]; // ids retornados pelas tools
+        $entityIds   = ['edital' => [], 'projeto' => [], 'cliente' => [], 'prospect' => []]; // ids retornados pelas tools
 
         for ($iter = 0; $iter < self::MAX_TOOL_ITERATIONS + 1; $iter++) {
             $response = $this->deepSeek->chat($messages, $this->model(), $tools);
@@ -94,6 +101,12 @@ class IntelligenceAgentService
                 }
                 foreach (($result['projetos'] ?? []) as $p) {
                     if (isset($p['id'])) $entityIds['projeto'][] = (int) $p['id'];
+                }
+                foreach (($result['top_clientes'] ?? []) as $c) {
+                    if (isset($c['id'])) $entityIds['cliente'][] = (int) $c['id'];
+                }
+                foreach (($result['prospects'] ?? []) as $p) {
+                    if (isset($p['id'])) $entityIds['prospect'][] = (int) $p['id'];
                 }
 
                 $messages[] = [
@@ -164,7 +177,15 @@ class IntelligenceAgentService
         ];
     }
 
-    private function buildSystemPrompt(): string
+    private function buildSystemPrompt(StrategyRoomMode $mode): string
+    {
+        return match ($mode) {
+            StrategyRoomMode::Negocio       => $this->businessSystemPrompt(),
+            StrategyRoomMode::Institucional => $this->institutionalSystemPrompt(),
+        };
+    }
+
+    private function institutionalSystemPrompt(): string
     {
         return <<<PROMPT
 Voce e o Agente de Inteligencia da Sala de Estrategia do Vivensi. Papel: pesquisador — mapeia oportunidades de captacao (editais) e cruza com o pipeline de projetos ativos pra recomendar acoes integradas. Fala em portugues direto, sem rodeios.
@@ -210,6 +231,52 @@ Regras do JSON:
 PROMPT;
     }
 
+    private function businessSystemPrompt(): string
+    {
+        return <<<PROMPT
+Voce e o Agente de Inteligencia da Sala de Estrategia do Vivensi. Papel: pesquisador de mercado — mapeia a carteira de clientes, a formalizacao das vendas (recibos) e o funil de prospeccao pra recomendar acoes integradas de crescimento. Fala em portugues direto, sem rodeios.
+
+## REGRA CRITICA DE ANTI-ALUCINACAO
+Voce NAO tem conhecimento previo sobre clientes, recibos NEM prospects do tenant. Antes de mencionar cliente OU lead especifico — nome, valor, score, status — voce DEVE ter chamado a ferramenta apropriada e usado APENAS o retorno dela. E PROIBIDO citar cliente ou prospect que nao veio de uma tool call desta conversa. Se a tool retornar vazio, seja honesto ("nao ha X cadastrado") e sugira caminho — NUNCA invente.
+
+## FERRAMENTAS DISPONIVEIS
+
+### 1) `pipeline_de_clientes({periodo_dias?})`
+Consulta a carteira de clientes: total cadastrado, quantos geraram receita no periodo e os 5 maiores por faturamento (com ultima compra). Chame SEMPRE antes de falar sobre cliente.
+
+### 2) `recibos_emitidos({periodo_dias?})`
+Consulta a formalizacao das vendas: quantas receitas pagas tem recibo emitido, valor total e percentual com recibo. Use pra apontar lacuna de formalizacao.
+
+### 3) `prospeccao({status?})`
+Consulta os leads da Prospeccao IA: contagem por status, lead score medio e os 5 melhores leads. Use pra cruzar funil de vendas com a carteira atual.
+
+## ESTRATEGIA DE CHAMADA (recomendada mas nao obrigatoria)
+1. Comece por `pipeline_de_clientes` pra ter o panorama da carteira.
+2. Chame `recibos_emitidos` pra medir a formalizacao das vendas do mesmo periodo.
+3. Se quiser cruzar com o funil, um terceiro call de `prospeccao` (status='todos').
+4. Sintetize em 3-4 frases: panorama da carteira + formalizacao + UMA acao prioritaria que cruza carteira e funil.
+
+## FORMATO DE SAIDA (obrigatorio — devolva SOMENTE o JSON abaixo)
+{"fala": "string em portugues 3-4 frases", "fatos_usados": ["tool:pipeline_de_clientes","tool:recibos_emitidos","cliente:1","prospect:2"], "confianca": "alta"}
+
+Regras do JSON:
+- fala: texto sem quebra de linha. Ao citar cliente ou lead especifico, use o nome exatamente como veio da tool.
+- fatos_usados: array de handles. Formatos validos:
+  - "tool:{nome_da_tool}" pra cada tool chamada
+  - "cliente:{id}" pra cliente especificamente citado na fala
+  - "prospect:{id}" pra lead especificamente citado na fala
+- confianca: "alta" | "media" | "baixa"
+  - alta: as tools retornaram material que sustenta completamente a analise cruzada
+  - media: uma tool retornou vazia ou parcial, mas outra teve dado (ex: sem prospect mas ha clientes ativos pra apontar)
+  - baixa: as tools vieram vazias, ou nenhuma foi chamada
+
+## O QUE VOCE NAO FAZ
+- Nao propoe cenario com valor inventado.
+- Nao cita cliente ou prospect de memoria.
+- Nao afirma existencia de mercado/nicho externo especifico sem prefaciar com "genericamente" (ex: explorar canais como marketplaces, indicacao — permitido como CATEGORIA, nao como afirmacao de oportunidade especifica existente hoje).
+PROMPT;
+    }
+
     private function parseJson(string $raw): ?array
     {
         $raw = trim($raw);
@@ -242,11 +309,12 @@ PROMPT;
     }
 
     /**
-     * Rastreabilidade minima: pra cada tipo de entidade (edital/projeto) com
-     * ids retornados pelas tools, gera "{tipo}:{id}" pra cada um. Fase 2+
-     * pode evoluir pra citation-based tagging (match nome/titulo na fala).
+     * Rastreabilidade minima: pra cada tipo de entidade (edital/projeto no
+     * modo institucional, cliente/prospect no modo negocio) com ids retornados
+     * pelas tools, gera "{tipo}:{id}" pra cada um. Fase 2+ pode evoluir pra
+     * citation-based tagging (match nome/titulo na fala).
      *
-     * @param array{edital: array<int,int>, projeto: array<int,int>} $entityIds
+     * @param array<string, array<int,int>> $entityIds
      */
     private function extractEntityRefs(string $fala, array $entityIds): array
     {
@@ -274,6 +342,9 @@ PROMPT;
         $red_flags = [
             'nao ha edital', 'não há edital', 'sem edital cadastrad', 'nenhum edital',
             'nao encontrei edital', 'não encontrei edital', 'nao consegui', 'não consegui',
+            // Modo negocio — mesmas admissoes de dado ausente, vocabulario de mercado
+            'nenhum cliente', 'sem cliente cadastrad', 'nao ha cliente', 'não há cliente',
+            'nenhum prospect', 'nenhum lead', 'sem recibo emitid', 'nenhum recibo',
         ];
         foreach ($red_flags as $flag) {
             if (str_contains($t, $flag)) return 'baixa';
