@@ -1507,8 +1507,10 @@ class BeneficiaryController extends Controller
 
         $line1 = implode(', ', array_filter([$street, $complement, $neighborhood]));
         $line2 = implode(' - ', array_filter([$city, $state]));
-        $full  = implode(', ', array_filter([$line1, $line2, $zip, 'Brasil']));
+        $full  = implode(', ', array_filter([$line1, $line2, $zip]));
 
-        return $full ?: null;
+        // Sem nenhuma parte real, devolve null — nunca "Brasil" sozinho
+        // (gerava endereco fantasma + job de geocode inutil).
+        return $full !== '' ? "{$full}, Brasil" : null;
     }
 }
