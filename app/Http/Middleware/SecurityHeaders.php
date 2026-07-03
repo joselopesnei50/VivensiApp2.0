@@ -41,11 +41,11 @@ class SecurityHeaders
 
         $directives = [
             "default-src 'self'",
-            "script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'",
+            "script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com 'unsafe-inline'",
             "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'",
             "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
             "img-src 'self' data: blob: https:",
-            "connect-src 'self' {$wsOrigin} https://viacep.com.br",
+            "connect-src 'self' {$wsOrigin} https://viacep.com.br https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
             "object-src 'none'",
             "frame-ancestors 'self'",
             "base-uri 'self'",
