@@ -4,6 +4,7 @@ namespace App\Services\Bruno;
 
 use App\Jobs\SendMeetingEmailsJob;
 use App\Models\MeetingBooking;
+use App\Models\SubscriptionPlan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -64,6 +65,24 @@ class BrunoTools
             [
                 'type' => 'function',
                 'function' => [
+                    'name' => 'consultar_planos',
+                    'description' => 'Consulta os planos de assinatura REAIS do Vivensi (nome, preço mensal, preço anual e recursos), direto do cadastro oficial — sempre atualizados. Use SEMPRE que o lead perguntar preço, valor, plano ou "quanto custa", ANTES de responder. NUNCA cite preço de memória.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'painel' => [
+                                'type'        => 'string',
+                                'enum'        => ['terceiro_setor', 'mei', 'gestor'],
+                                'description' => 'Opcional. Filtra os planos pro perfil do lead (terceiro_setor = ONG/OSC, mei = MEI/autônomo/pequena empresa, gestor = gestor de projetos/PME). Se o segmento do lead já foi identificado, passe-o. Se omitido, retorna todos os planos.',
+                            ],
+                        ],
+                        'required' => [],
+                    ],
+                ],
+            ],
+            [
+                'type' => 'function',
+                'function' => [
                     'name' => 'agendar_reuniao',
                     'description' => 'Confirma o agendamento de uma reunião de 20 minutos. SÓ chame depois que: (1) o lead escolheu data e hora dentre os slots disponíveis retornados por consultar_slots, e (2) você coletou nome completo, e-mail e telefone/WhatsApp do lead. Retorna token de cancelamento e link.',
                     'parameters' => [
@@ -94,8 +113,65 @@ class BrunoTools
             'consultar_slots'   => self::consultarSlots($args),
             'agendar_reuniao'   => self::agendarReuniao($args),
             'verificar_feature' => self::verificarFeature($args),
+            'consultar_planos'  => self::consultarPlanos($args),
             default             => ['error' => "Ferramenta desconhecida: {$name}"],
         };
+    }
+
+    // Mapeia o painel usado na KB do Bruno pro target_audience do banco.
+    private const PAINEL_TO_AUDIENCE = [
+        'terceiro_setor' => 'ngo',
+        'mei'            => 'common',
+        'gestor'         => 'manager',
+    ];
+
+    /**
+     * Consulta os planos de assinatura reais (subscription_plans) — fonte única
+     * de verdade de preço. Elimina os placeholders {{R$ XXX}} que existiam no
+     * config e o risco de Bruno alucinar valores.
+     */
+    private static function consultarPlanos(array $args): array
+    {
+        $painel = $args['painel'] ?? null;
+
+        if ($painel !== null && !isset(self::PAINEL_TO_AUDIENCE[$painel])) {
+            return ['error' => "Painel inválido: {$painel}. Use: terceiro_setor, mei ou gestor."];
+        }
+
+        $query = SubscriptionPlan::query()->where('is_active', true)->orderBy('price');
+        if ($painel) {
+            $query->where('target_audience', self::PAINEL_TO_AUDIENCE[$painel]);
+        }
+
+        $plans = $query->get();
+
+        if ($plans->isEmpty()) {
+            return [
+                'success' => true,
+                'total'   => 0,
+                'escopo'  => $painel ?? 'todos os perfis',
+                'planos'  => [],
+                'instrucao_llm' => 'Nenhum plano ativo cadastrado pra esse perfil. NAO invente preço — diga que o valor é "sob consulta" e ofereça agendar demo de 20 min ou conectar com a Cristiane.',
+            ];
+        }
+
+        $audienceToPainel = array_flip(self::PAINEL_TO_AUDIENCE);
+
+        return [
+            'success' => true,
+            'total'   => $plans->count(),
+            'escopo'  => $painel ?? 'todos os perfis',
+            'planos'  => $plans->map(fn ($p) => [
+                'nome'         => $p->name,
+                'painel'       => $audienceToPainel[$p->target_audience] ?? $p->target_audience,
+                'preco_mensal' => 'R$ ' . number_format((float) $p->price, 2, ',', '.'),
+                'preco_anual'  => $p->price_yearly !== null
+                    ? 'R$ ' . number_format((float) $p->price_yearly, 2, ',', '.')
+                    : null,
+                'recursos'     => is_array($p->features) ? $p->features : [],
+            ])->all(),
+            'instrucao_llm' => 'Cite APENAS os preços retornados aqui, exatamente como estão. Não arredonde, não estime, não invente desconto ou promoção. Se o lead achar caro, faça a conta de ROI (horas economizadas por semana x valor da hora dele).',
+        ];
     }
 
     /**

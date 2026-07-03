@@ -543,17 +543,12 @@ PROMPT;
             }
         }
 
-        $plansBlock = '';
-        if (isset($product['plans']) && is_array($product['plans'])) {
-            foreach ($product['plans'] as $p) {
-                $feats = isset($p['features']) && is_array($p['features']) ? implode(', ', $p['features']) : '';
-                $plansBlock .= "- **{$p['name']}** ({$p['target']}): {$p['price_monthly']}/mês ou {$p['price_yearly']}/ano — {$feats}\n";
-            }
-        }
-
-        $casesBlock = isset($product['cases']) && is_array($product['cases'])
-            ? implode("\n", array_map(fn ($c) => "- {$c}", $product['cases']))
-            : '';
+        $cases = isset($product['cases']) && is_array($product['cases'])
+            ? array_values(array_filter($product['cases']))
+            : [];
+        $casesBlock = !empty($cases)
+            ? implode("\n", array_map(fn ($c) => "- {$c}", $cases))
+            : 'Ainda não temos cases publicáveis. NUNCA invente números, nomes ou histórias de clientes. Se o lead pedir referências, ofereça conectar com a Cristiane.';
 
         $notForBlock = isset($product['not_for']) && is_array($product['not_for'])
             ? implode("\n", array_map(fn ($n) => "- {$n}", $product['not_for']))
@@ -644,8 +639,9 @@ Instrução:
 ### Diferenciais
 {$differentials}
 
-### Planos
-{$plansBlock}
+### Planos e Preços (você TEM a ferramenta consultar_planos)
+REGRA DE PREÇO: você NÃO sabe os preços de memória. Quando o lead perguntar preço, valor, plano ou "quanto custa", CHAME a ferramenta consultar_planos(painel) — ela retorna os planos reais e atualizados (nome, preço mensal, anual e recursos). Se o segmento do lead já foi identificado, passe o painel dele. Cite os valores EXATAMENTE como retornados. Se a ferramenta não retornar plano pro perfil, diga "sob consulta" e ofereça demo ou a Cristiane. NUNCA invente preço, desconto ou promoção.
+
 ### Cases reais (prova social)
 {$casesBlock}
 
@@ -679,8 +675,8 @@ Humano de plantão: {$humanName} (responde em até {$humanEta}h, horário comerc
 {$linksBlock}
 
 ## REGRAS FINAIS
-- Nunca prometa feature que não está na lista de planos acima.
-- Nunca invente preços — use os da seção Planos. Se não souber, diga "sob consulta" e escale.
+- Nunca prometa feature que não está no catálogo acima (ou confirmada via verificar_feature).
+- Nunca invente preços — consulte a ferramenta consultar_planos. Se ela não tiver o dado, diga "sob consulta" e escale.
 - Se a pergunta sair completamente do escopo de venda (suporte técnico de cliente já ativo, dúvida operacional), diga "esse é um assunto pra equipe de sucesso — vou redirecionar" e escale.
 - Idioma: português do Brasil.
 - Data atual: {$this->today()}
