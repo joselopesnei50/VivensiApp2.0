@@ -39,12 +39,13 @@ class StrategyDonorDeclineTrigger extends Command
             return self::SUCCESS;
         }
 
-        $dryRun      = (bool) $this->option('dry-run');
-        $minMonths   = max(2, (int) config('strategy_room.donor_recurring_min_months', 3));
-        $declineDays = max(15, (int) config('strategy_room.donor_decline_days', 45));
-        $cooldown    = max(1, (int) config('strategy_room.auto_trigger_cooldown_days', 7));
-        $globalCap   = (int) config('strategy_room.auto_trigger_global_daily_cap', 20);
-        $quota       = (int) config('strategy_room.daily_quota', 10);
+        $dryRun        = (bool) $this->option('dry-run');
+        $minMonths     = max(2, (int) config('strategy_room.donor_recurring_min_months', 3));
+        $declineDays   = max(15, (int) config('strategy_room.donor_decline_days', 45));
+        $ticketDropPct = max(0, min(95, (int) config('strategy_room.donor_ticket_drop_pct', 30)));
+        $cooldown      = max(1, (int) config('strategy_room.auto_trigger_cooldown_days', 7));
+        $globalCap     = (int) config('strategy_room.auto_trigger_global_daily_cap', 20);
+        $quota         = (int) config('strategy_room.daily_quota', 10);
 
         // Cap global compartilhado entre os triggers automaticos: soma as
         // reunioes de health + doadores de hoje pra limitar o custo total.
@@ -64,8 +65,8 @@ class StrategyDonorDeclineTrigger extends Command
             ->values();
 
         $this->info(sprintf(
-            'Varredura: %d tenant(s) com doacao em 6 meses · recorrente=%d+ meses · declinio=%dd · cooldown=%dd · cap global=%d (%d ja usadas hoje)%s',
-            $tenantIds->count(), $minMonths, $declineDays, $cooldown, $globalCap, $dispatchedToday, $dryRun ? ' · DRY-RUN' : ''
+            'Varredura: %d tenant(s) com doacao em 6 meses · recorrente=%d+ meses · declinio=%dd · tiquete=-%d%% · cooldown=%dd · cap global=%d (%d ja usadas hoje)%s',
+            $tenantIds->count(), $minMonths, $declineDays, $ticketDropPct, $cooldown, $globalCap, $dispatchedToday, $dryRun ? ' · DRY-RUN' : ''
         ));
 
         $convocadas = 0;
@@ -74,7 +75,7 @@ class StrategyDonorDeclineTrigger extends Command
             $tenantId = (int) $tenantId;
 
             try {
-                $emDeclinio = $this->countDecliningRecurringDonors($tenantId, $minMonths, $declineDays);
+                $declinio = $this->detectDecliningRecurringDonors($tenantId, $minMonths, $declineDays, $ticketDropPct);
             } catch (Throwable $e) {
                 Log::warning('StrategyRoom/DonorTrigger: deteccao falhou', [
                     'tenant' => $tenantId, 'err' => $e->getMessage(),
@@ -82,11 +83,14 @@ class StrategyDonorDeclineTrigger extends Command
                 continue;
             }
 
-            if ($emDeclinio < 1) {
+            if ($declinio['parados'] + $declinio['ticket'] < 1) {
                 continue;
             }
 
-            $this->line("Tenant #{$tenantId}: {$emDeclinio} doador(es) recorrente(s) em declinio.");
+            $this->line(sprintf(
+                'Tenant #%d: %d doador(es) parado(s) + %d com queda de tiquete.',
+                $tenantId, $declinio['parados'], $declinio['ticket']
+            ));
 
             // ── Protecoes de custo ────────────────────────────────────────
             if ($globalCap > 0 && $dispatchedToday >= $globalCap) {
@@ -131,13 +135,14 @@ class StrategyDonorDeclineTrigger extends Command
             $dispatchedToday++;
             $convocadas++;
 
-            $this->notifyTenantUsers($tenantId, $session->id, $emDeclinio, $declineDays);
+            $this->notifyTenantUsers($tenantId, $session->id, $declinio, $declineDays, $ticketDropPct);
             $this->info("  → reuniao #{$session->id} convocada.");
 
             Log::info('StrategyRoom/DonorTrigger: reuniao convocada', [
-                'tenant'      => $tenantId,
-                'session'     => $session->id,
-                'em_declinio' => $emDeclinio,
+                'tenant'  => $tenantId,
+                'session' => $session->id,
+                'parados' => $declinio['parados'],
+                'ticket'  => $declinio['ticket'],
             ]);
         }
 
@@ -146,13 +151,18 @@ class StrategyDonorDeclineTrigger extends Command
     }
 
     /**
-     * Conta doadores recorrentes (>= $minMonths meses distintos com doacao
-     * nos ultimos 6 meses) cuja ultima doacao foi ha mais de $declineDays.
+     * Doadores recorrentes (>= $minMonths meses distintos com doacao nos
+     * ultimos 6 meses) em declinio, em duas categorias exclusivas:
+     *   - parados: ultima doacao ha mais de $declineDays (tem precedencia)
+     *   - ticket: ainda doando, mas tiquete medio dos ultimos 60 dias caiu
+     *     >= $ticketDropPct % vs a media do periodo anterior (0 desliga)
      *
      * Agrega em PHP pra ficar portavel sqlite/mysql (extracao de mes em SQL
      * difere entre os drivers).
+     *
+     * @return array{parados:int,ticket:int}
      */
-    private function countDecliningRecurringDonors(int $tenantId, int $minMonths, int $declineDays): int
+    private function detectDecliningRecurringDonors(int $tenantId, int $minMonths, int $declineDays, int $ticketDropPct): array
     {
         $doacoes = Transaction::withoutGlobalScopes()
             ->whereNull('deleted_at')
@@ -160,30 +170,65 @@ class StrategyDonorDeclineTrigger extends Command
             ->where('type', 'income')
             ->whereNotNull('ngo_donor_id')
             ->where('date', '>=', now()->subMonths(6)->startOfMonth()->toDateString())
-            ->get(['ngo_donor_id', 'date']);
+            ->get(['ngo_donor_id', 'date', 'amount']);
 
         $limiteDeclinio = now()->subDays($declineDays);
+        $inicioRecente  = now()->subDays(60);
 
-        return $doacoes
-            ->groupBy('ngo_donor_id')
-            ->filter(function ($txs) use ($minMonths, $limiteDeclinio) {
-                $mesesDistintos = $txs->map(fn ($t) => $t->date->format('Y-m'))->unique()->count();
-                $ultimaDoacao   = $txs->max('date');
+        $parados = 0;
+        $ticket  = 0;
 
-                return $mesesDistintos >= $minMonths && $ultimaDoacao->lt($limiteDeclinio);
-            })
-            ->count();
+        foreach ($doacoes->groupBy('ngo_donor_id') as $txs) {
+            $mesesDistintos = $txs->map(fn ($t) => $t->date->format('Y-m'))->unique()->count();
+            if ($mesesDistintos < $minMonths) {
+                continue;
+            }
+
+            if ($txs->max('date')->lt($limiteDeclinio)) {
+                $parados++;
+                continue; // parado tem precedencia — nunca conta nas duas
+            }
+
+            if ($ticketDropPct <= 0) {
+                continue;
+            }
+
+            [$recentes, $anteriores] = $txs->partition(fn ($t) => $t->date->gte($inicioRecente));
+            if ($recentes->isEmpty() || $anteriores->isEmpty()) {
+                continue;
+            }
+
+            $mediaRecente  = (float) $recentes->avg('amount');
+            $mediaAnterior = (float) $anteriores->avg('amount');
+
+            if ($mediaAnterior > 0 && $mediaRecente <= $mediaAnterior * (1 - $ticketDropPct / 100)) {
+                $ticket++;
+            }
+        }
+
+        return ['parados' => $parados, 'ticket' => $ticket];
     }
 
-    private function notifyTenantUsers(int $tenantId, int $sessionId, int $emDeclinio, int $declineDays): void
+    /** @param array{parados:int,ticket:int} $declinio */
+    private function notifyTenantUsers(int $tenantId, int $sessionId, array $declinio, int $declineDays, int $ticketDropPct): void
     {
         $users = User::where('tenant_id', $tenantId)
             ->whereIn('role', ['manager', 'ngo', 'common'])
             ->get(['id']);
 
-        $mensagem = $emDeclinio === 1
-            ? "1 doador recorrente está há mais de {$declineDays} dias sem doar. A Sala de Estratégia se reuniu pra analisar a retenção."
-            : "{$emDeclinio} doadores recorrentes estão há mais de {$declineDays} dias sem doar. A Sala de Estratégia se reuniu pra analisar a retenção.";
+        $partes = [];
+        if ($declinio['parados'] > 0) {
+            $partes[] = $declinio['parados'] === 1
+                ? "1 doador recorrente está há mais de {$declineDays} dias sem doar"
+                : "{$declinio['parados']} doadores recorrentes estão há mais de {$declineDays} dias sem doar";
+        }
+        if ($declinio['ticket'] > 0) {
+            $partes[] = $declinio['ticket'] === 1
+                ? "1 doador recorrente reduziu o valor das doações em {$ticketDropPct}% ou mais"
+                : "{$declinio['ticket']} doadores recorrentes reduziram o valor das doações em {$ticketDropPct}% ou mais";
+        }
+
+        $mensagem = implode(' e ', $partes) . '. A Sala de Estratégia se reuniu pra analisar a retenção.';
 
         foreach ($users as $user) {
             try {

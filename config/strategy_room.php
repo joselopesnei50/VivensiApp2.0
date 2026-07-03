@@ -69,14 +69,18 @@ return [
     |--------------------------------------------------------------------------
     | Comando strategy:donor-decline-trigger (agendado diário 07:45).
     | Doador recorrente = doou em >= recurring_min_months meses distintos nos
-    | últimos 6 meses. Em declínio = sem nenhuma doação há decline_days dias.
-    | Se o tenant tem >= 1 doador nessa condição, convoca reunião
+    | últimos 6 meses. Em declínio = sem nenhuma doação há decline_days dias
+    | OU (ainda doando) tíquete médio dos últimos 60 dias caiu
+    | >= ticket_drop_pct % vs a média do período anterior. Se o tenant tem
+    | >= 1 doador nessas condições, convoca reunião
     | (trigger_type=auto_donor_decline).
     |
     | Compartilha o cap global diário e o cooldown do trigger de health.
     | Default OFF — ligar com STRATEGY_ROOM_AUTO_TRIGGER_DONOR=true no .env.
+    | ticket_drop_pct=0 desliga só o critério de queda de tíquete.
     */
     'auto_trigger_donor'         => env('STRATEGY_ROOM_AUTO_TRIGGER_DONOR', false),
     'donor_recurring_min_months' => (int) env('STRATEGY_ROOM_DONOR_MIN_MONTHS', 3),
     'donor_decline_days'         => (int) env('STRATEGY_ROOM_DONOR_DECLINE_DAYS', 45),
+    'donor_ticket_drop_pct'      => (int) env('STRATEGY_ROOM_DONOR_TICKET_DROP_PCT', 30),
 ];
