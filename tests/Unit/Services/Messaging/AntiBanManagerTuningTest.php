@@ -10,6 +10,9 @@ use App\Services\Messaging\AntiBanManager;
  * comportamento default idêntico ao anterior (constants deprecated).
  */
 
+// Precisa do TestCase do Laravel: config() usa o container.
+uses(Tests\TestCase::class);
+
 /**
  * Helper local: cria instância "leve" sem persistir no banco — getters do
  * AntiBanManager só leem $instance->settings, não tocam DB.

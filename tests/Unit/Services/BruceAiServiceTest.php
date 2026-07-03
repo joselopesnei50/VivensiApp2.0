@@ -2,6 +2,7 @@
 
 use App\Services\BruceAiService;
 use App\Services\DeepSeekService;
+use App\Services\TenantContextService;
 use Illuminate\Support\Facades\Cache;
 
 uses(Tests\TestCase::class);
@@ -10,7 +11,8 @@ uses(Tests\TestCase::class);
 
 function seedCtx(int $tenantId): void
 {
-    Cache::put("bruce.ctx.{$tenantId}", [
+    // Mesma chave do TenantContextService — com cache quente, for() não toca o DB
+    Cache::put((new TenantContextService())->cacheKey($tenantId), [
         'income'          => 5000.0,
         'expense'         => 1200.0,
         'balance'         => 3800.0,
@@ -39,7 +41,7 @@ function fakeDeepSeekError(): DeepSeekService
 
 function makeBruce(DeepSeekService $ds): BruceAiService
 {
-    return new BruceAiService($ds);
+    return new BruceAiService($ds, new TenantContextService());
 }
 
 // ── fmt() ─────────────────────────────────────────────────────────────────────
@@ -88,18 +90,18 @@ it('chat persists conversation history in cache', function () {
     $bruce = makeBruce(fakeDeepSeekOk('Resposta 1'));
     $bruce->chat('Mensagem 1', 99, 'common');
 
-    $history = Cache::get('bruce.history.99');
+    $history = Cache::get('bruce.history.99.0'); // sufixo .0 = userId default
     expect($history)->toBeArray()->toHaveCount(2);
     expect($history[0]['role'])->toBe('user');
     expect($history[1]['role'])->toBe('assistant');
 });
 
 it('clearHistory removes tenant history from cache', function () {
-    Cache::put('bruce.history.5', [['role' => 'user', 'content' => 'Oi']], 1800);
+    Cache::put('bruce.history.5.0', [['role' => 'user', 'content' => 'Oi']], 1800);
 
     makeBruce(fakeDeepSeekOk())->clearHistory(5);
 
-    expect(Cache::get('bruce.history.5'))->toBeNull();
+    expect(Cache::get('bruce.history.5.0'))->toBeNull();
 });
 
 it('history is capped at MAX_HISTORY messages', function () {
@@ -112,11 +114,11 @@ it('history is capped at MAX_HISTORY messages', function () {
     for ($i = 0; $i < 10; $i++) {
         $existing[] = ['role' => 'user', 'content' => "msg $i"];
     }
-    Cache::put('bruce.history.7', $existing, 1800);
+    Cache::put('bruce.history.7.0', $existing, 1800);
 
     $bruce->chat('new message', 7, 'common');
 
-    $history = Cache::get('bruce.history.7');
+    $history = Cache::get('bruce.history.7.0');
     expect(count($history))->toBeLessThanOrEqual(BruceAiService::MAX_HISTORY);
 });
 
