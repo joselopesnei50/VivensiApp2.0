@@ -122,24 +122,19 @@
 
         /* ── SALA DE ESTRATÉGIA — PREMIUM ── */
         #sala { position: relative; overflow: hidden; }
-        .sala-glow { position: absolute; border-radius: 50%; pointer-events: none; }
-        .sala-glow-a { top: -140px; left: -140px; width: 640px; height: 640px; background: radial-gradient(circle, rgba(245,158,11,0.13), transparent 70%); }
-        .sala-glow-b { bottom: -80px; right: -80px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(139,92,246,0.10), transparent 70%); }
-        #sala::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 52px 52px; pointer-events: none; }
-        .sala-kv { position: relative; background: linear-gradient(135deg, rgba(245,158,11,0.07) 0%, rgba(139,92,246,0.07) 100%); border-radius: 24px; padding: 54px 48px; margin-bottom: 52px; box-shadow: 0 0 0 1px rgba(245,158,11,0.22), 0 0 80px rgba(245,158,11,0.06), inset 0 1px 0 rgba(255,255,255,0.05); }
+        .sala-kv { position: relative; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 54px 48px; margin-bottom: 52px; }
         @media (max-width: 768px) { .sala-kv { padding: 34px 24px; } }
-        .sala-pill-premium { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0a0e1a; font-size: 0.7rem; font-weight: 900; padding: 7px 16px; border-radius: 100px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 26px; box-shadow: 0 4px 22px rgba(245,158,11,0.35); }
         .sala-kv-title { font-size: clamp(1.9rem, 4.5vw, 3rem); font-weight: 900; line-height: 1.1; letter-spacing: -1.8px; margin-bottom: 18px; background: linear-gradient(140deg, #ffffff 35%, rgba(245,158,11,0.85) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .sala-kv-sub { font-size: 1rem; color: rgba(255,255,255,0.5); max-width: 680px; line-height: 1.78; }
         /* pipeline */
         .sala-pipeline { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 52px; flex-wrap: wrap; row-gap: 20px; }
         .pl-agent { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 90px; }
         .pl-avatar { width: 58px; height: 58px; border-radius: 50%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(245,158,11,0.28); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; color: var(--brand); transition: all 0.2s; backdrop-filter: blur(6px); }
-        .pl-agent:hover .pl-avatar { border-color: var(--brand); box-shadow: 0 0 28px rgba(245,158,11,0.28); }
+        .pl-agent:hover .pl-avatar { border-color: var(--brand); }
         .pl-name { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.65); text-align: center; line-height: 1.35; max-width: 80px; }
         .pl-arrow { color: rgba(245,158,11,0.35); font-size: 0.85rem; padding: 0 8px; flex-shrink: 0; }
         .pl-result { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 100px; }
-        .pl-result .pl-avatar { width: 66px; height: 66px; background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(139,92,246,0.14)); border-color: var(--brand); box-shadow: 0 0 36px rgba(245,158,11,0.22); font-size: 1.3rem; }
+        .pl-result .pl-avatar { width: 66px; height: 66px; background: rgba(245,158,11,0.1); border-color: var(--brand); font-size: 1.3rem; }
         .pl-result .pl-name { color: var(--brand); font-weight: 800; font-size: 0.73rem; }
         /* outcome cards premium */
         .sala-outcomes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -356,16 +351,12 @@
     </div>
 </section>
 
-<section class="dark" id="sala" style="padding: 90px 0; position: relative; overflow: hidden;">
-    <div class="sala-glow sala-glow-a"></div>
-    <div class="sala-glow sala-glow-b"></div>
-    <div class="container" style="position: relative;">
-        <div class="section-eyebrow">Exclusivo Vivensi</div>
+<section class="dark" id="sala" style="padding: 90px 0;">
+    <div class="container">
         <h2 class="section-title" style="color:#fff; max-width: 760px;">Sala de Estratégia: um <span style="background:linear-gradient(135deg,#f59e0b,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">conselho de IA</span> trabalhando pro seu negócio.</h2>
         <p class="section-sub" style="max-width: 680px; color: rgba(255,255,255,0.5);">Grandes empresas têm diretoria pra decidir o próximo passo. Agora você também. Cinco agentes de IA debatem seus números reais e devolvem UMA decisão — não um relatório com 40 gráficos.</p>
 
         <div class="sala-kv">
-            <span class="sala-pill-premium"><i class="fas fa-star" style="font-size:.65rem;"></i>&nbsp;Exclusivo Vivensi</span>
             <div class="sala-kv-title">Você aperta um botão.<br>Eles debatem. Você recebe<br>UMA ação prioritária.</div>
             <p class="sala-kv-sub">Nada de dashboard com 40 gráficos pra você interpretar. A Sala discute seus dados como uma diretoria de verdade e entrega a conclusão — o que fazer, por que fazer e em que ordem.</p>
         </div>
