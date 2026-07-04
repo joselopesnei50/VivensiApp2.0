@@ -231,7 +231,6 @@
 
 <section class="hero">
     <div class="container" style="text-align: center;">
-        <div class="hero-eyebrow"><i class="fas fa-store"></i> Vivensi MEI &amp; Pequenas Empresas</div>
         <h1 class="hero-title">Seu negócio inteiro em <span class="mark">um só painel</span>: clientes, WhatsApp, dinheiro e IA.</h1>
         <p class="hero-sub">Para MEI, autônomos e pequenas empresas: CRM de clientes, atendimento comercial pelo WhatsApp, fluxo de caixa com NFS-e, termômetro do teto MEI — e uma Sala de Estratégia onde 5 agentes de IA analisam seus números e dizem qual é a próxima jogada.</p>
         <div class="hero-ctas">
