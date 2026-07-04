@@ -124,7 +124,7 @@
         #sala { position: relative; overflow: hidden; }
         .sala-kv { position: relative; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 54px 48px; margin-bottom: 52px; }
         @media (max-width: 768px) { .sala-kv { padding: 34px 24px; } }
-        .sala-kv-title { font-size: clamp(1.9rem, 4.5vw, 3rem); font-weight: 900; line-height: 1.1; letter-spacing: -1.8px; margin-bottom: 18px; background: linear-gradient(140deg, #ffffff 35%, rgba(245,158,11,0.85) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .sala-kv-title { font-size: clamp(1.9rem, 4.5vw, 3rem); font-weight: 900; line-height: 1.1; letter-spacing: -1.8px; margin-bottom: 18px; color: #fff; }
         .sala-kv-sub { font-size: 1rem; color: rgba(255,255,255,0.5); max-width: 680px; line-height: 1.78; }
         /* pipeline */
         .sala-pipeline { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 52px; flex-wrap: wrap; row-gap: 20px; }
@@ -353,7 +353,7 @@
 
 <section class="dark" id="sala" style="padding: 90px 0;">
     <div class="container">
-        <h2 class="section-title" style="color:#fff; max-width: 760px;">Sala de Estratégia: um <span style="background:linear-gradient(135deg,#f59e0b,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">conselho de IA</span> trabalhando pro seu negócio.</h2>
+        <h2 class="section-title" style="color:#fff; max-width: 760px;">Sala de Estratégia: um conselho de IA trabalhando pro seu negócio.</h2>
         <p class="section-sub" style="max-width: 680px; color: rgba(255,255,255,0.5);">Grandes empresas têm diretoria pra decidir o próximo passo. Agora você também. Cinco agentes de IA debatem seus números reais e devolvem UMA decisão — não um relatório com 40 gráficos.</p>
 
         <div class="sala-kv">
