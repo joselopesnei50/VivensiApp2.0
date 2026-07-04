@@ -27,8 +27,8 @@
     @endif
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vivensi para Pessoa Comum | Suas Finanças e Tarefas em um só lugar</title>
-    <meta name="description" content="Vivensi para quem é MEI, autônomo ou só quer organizar a própria vida financeira. Receitas, despesas, tarefas e Bruce IA — sem planilha.">
+    <title>Vivensi para MEI e Pequenas Empresas | Clientes, WhatsApp, Finanças e IA</title>
+    <meta name="description" content="Vivensi para MEI, autônomos e pequenas empresas: CRM de clientes, WhatsApp comercial, fluxo de caixa, NFS-e, teto MEI e a Sala de Estratégia com 5 agentes de IA.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
@@ -74,8 +74,8 @@
 
         .hero { padding: 80px 0 60px; }
         .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; color: var(--brand-dark); background: var(--brand-bg); padding: 7px 14px; border-radius: 100px; margin-bottom: 22px; }
-        .hero-title { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.12; letter-spacing: -1.5px; color: var(--ink); max-width: 760px; margin: 0 auto 18px; text-align: center; }
-        .hero-sub { font-size: 1.05rem; color: var(--muted); max-width: 640px; margin: 0 auto 36px; text-align: center; line-height: 1.65; }
+        .hero-title { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.12; letter-spacing: -1.5px; color: var(--ink); max-width: 800px; margin: 0 auto 18px; text-align: center; }
+        .hero-sub { font-size: 1.05rem; color: var(--muted); max-width: 680px; margin: 0 auto 36px; text-align: center; line-height: 1.65; }
         .hero-ctas { display: flex; gap: 12px; justify-content: center; margin-bottom: 56px; flex-wrap: wrap; }
         .btn-primary { background: var(--ink); color: #fff; border: 1px solid var(--ink); padding: 14px 28px; border-radius: 12px; font-weight: 700; font-size: 0.92rem; display: inline-flex; align-items: center; gap: 10px; transition: background 0.15s; }
         .btn-primary:hover { background: #1f2937; border-color: #1f2937; }
@@ -103,10 +103,43 @@
         .step-title { font-size: 1.02rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
         .step-text { font-size: 0.86rem; color: var(--muted); line-height: 1.6; }
 
+        /* ── SERVIÇOS ── */
+        .svc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        @media (max-width: 992px) { .svc-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 768px) { .svc-grid { grid-template-columns: 1fr; } }
+        .svc-card { background: var(--bg); border: 1px solid var(--border-soft); border-radius: 16px; padding: 26px 24px; transition: border-color 0.2s, transform 0.2s; }
+        .svc-card:hover { border-color: var(--brand); transform: translateY(-2px); }
+        .svc-icon { width: 40px; height: 40px; border-radius: 11px; background: var(--brand-bg); color: var(--brand-dark); display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-bottom: 16px; }
+        .svc-card h4 { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 12px; }
+        .svc-card ul { list-style: none; }
+        .svc-card ul li { display: flex; align-items: flex-start; gap: 9px; font-size: 0.85rem; color: var(--ink-soft); padding: 4px 0; line-height: 1.5; }
+        .svc-card ul li i { color: var(--brand); font-size: 0.68rem; margin-top: 6px; flex-shrink: 0; }
+
         .dark { background: var(--dark); color: var(--dark-text); padding: 90px 0; }
         .dark .section-eyebrow { color: var(--brand); }
         .dark .section-title { color: #fff; }
         .dark .section-sub { color: var(--dark-muted); }
+
+        /* ── SALA DE ESTRATÉGIA (destaque) ── */
+        .sala-hero { position: relative; background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(139,92,246,0.10)); border: 1px solid rgba(245,158,11,0.35); border-radius: 22px; padding: 44px 40px; margin-bottom: 40px; overflow: hidden; }
+        .sala-hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(245,158,11,0.22), transparent 70%); }
+        .sala-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--brand); color: #0a0e1a; font-size: 0.72rem; font-weight: 900; padding: 6px 14px; border-radius: 100px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 18px; }
+        .sala-hero h3 { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800; color: #fff; letter-spacing: -0.8px; line-height: 1.2; max-width: 720px; margin-bottom: 14px; }
+        .sala-hero p { font-size: 0.98rem; color: var(--dark-muted); max-width: 700px; line-height: 1.7; }
+        .agents-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 28px; }
+        @media (max-width: 992px) { .agents-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 576px) { .agents-grid { grid-template-columns: 1fr; } }
+        .agent-card { background: var(--dark-2); border: 1px solid var(--dark-border); border-radius: 14px; padding: 20px 18px; text-align: center; transition: border-color 0.2s; }
+        .agent-card:hover { border-color: rgba(245,158,11,0.5); }
+        .agent-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(245,158,11,0.16); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; margin: 0 auto 12px; }
+        .agent-card h5 { font-size: 0.85rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
+        .agent-card span { font-size: 0.73rem; color: var(--dark-muted); line-height: 1.45; display: block; }
+        .sala-outcome { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 768px) { .sala-outcome { grid-template-columns: 1fr; } }
+        .outcome-card { background: rgba(255,255,255,0.025); border: 1px solid var(--dark-border); border-radius: 14px; padding: 22px; display: flex; gap: 14px; align-items: flex-start; }
+        .outcome-card i { color: var(--brand); font-size: 1rem; margin-top: 3px; }
+        .outcome-card h6 { font-size: 0.9rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+        .outcome-card p { font-size: 0.8rem; color: var(--dark-muted); line-height: 1.55; }
 
         .access-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; align-items: center; }
         @media (max-width: 768px) { .access-grid { grid-template-columns: 1fr; gap: 36px; } }
@@ -121,7 +154,7 @@
         .access-form-card ul { list-style: none; margin-bottom: 24px; }
         .access-form-card ul li { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--dark-text); padding: 7px 0; }
         .access-form-card ul li i { color: var(--brand); font-size: 0.7rem; }
-        .access-form-card .btn-fill { background: var(--brand); color: #fff; border: none; width: 100%; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 0.92rem; transition: background 0.15s; }
+        .access-form-card .btn-fill { background: var(--brand); color: #fff; border: none; width: 100%; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 0.92rem; transition: background 0.15s; text-align: center; display: block; }
         .access-form-card .btn-fill:hover { background: var(--brand-dark); }
 
         .mark { position: relative; white-space: nowrap; }
@@ -133,12 +166,6 @@
         .info-card-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(245,158,11,0.18); color: var(--brand); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
         .info-card h4 { font-size: 0.98rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
         .info-card p { font-size: 0.85rem; color: var(--dark-muted); line-height: 1.6; }
-
-        .free-block { background: var(--dark-2); color: #fff; padding: 36px 40px; border-radius: 18px; display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; }
-        .free-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--brand); color: #fff; font-size: 0.72rem; font-weight: 800; padding: 6px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
-        .free-block h3 { font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.3; letter-spacing: -0.5px; }
-        .free-block p { margin-top: 6px; font-size: 0.9rem; color: var(--dark-muted); }
-        @media (max-width: 768px) { .free-block { grid-template-columns: 1fr; padding: 26px; } }
 
         .training-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         @media (max-width: 768px) { .training-grid { grid-template-columns: 1fr; } }
@@ -178,41 +205,41 @@
             <span class="nav-logo-mark">V</span>
             <span class="nav-logo-text">
                 <strong>Vivensi</strong>
-                <span>Pessoa Comum</span>
+                <span>MEI &amp; Empresas</span>
             </span>
         </a>
         <div class="nav-links">
             <a href="#fluxo">Como funciona</a>
-            <a href="#gratuito">Gratuito</a>
-            <a href="#bruce">Bruce IA</a>
-            <a href="#conformidade">Conformidade</a>
-            <a href="#footer">Base legal</a>
-            <a href="{{ route('register') }}" class="nav-cta">Entrar na lista de espera</a>
+            <a href="#servicos">Serviços</a>
+            <a href="#sala">Sala de Estratégia</a>
+            <a href="#plano">Plano</a>
+            <a href="#conformidade">Base legal</a>
+            <a href="{{ route('register') }}" class="nav-cta">Criar minha conta</a>
         </div>
     </div>
 </nav>
 
 <section class="hero">
     <div class="container" style="text-align: center;">
-        <div class="hero-eyebrow"><i class="fas fa-arrow-right"></i> Vivensi Pessoa Comum</div>
-        <h1 class="hero-title">Suas finanças e tarefas em <span class="mark">um só lugar</span>, sem complicação.</h1>
-        <p class="hero-sub">Para você que é MEI, autônomo ou só quer organizar a própria vida: receitas, despesas, contas a pagar, tarefas do dia e Bruce IA te dando dicas práticas — tudo no mesmo painel.</p>
+        <div class="hero-eyebrow"><i class="fas fa-store"></i> Vivensi MEI &amp; Pequenas Empresas</div>
+        <h1 class="hero-title">Seu negócio inteiro em <span class="mark">um só painel</span>: clientes, WhatsApp, dinheiro e IA.</h1>
+        <p class="hero-sub">Para MEI, autônomos e pequenas empresas: CRM de clientes, atendimento comercial pelo WhatsApp, fluxo de caixa com NFS-e, termômetro do teto MEI — e uma Sala de Estratégia onde 5 agentes de IA analisam seus números e dizem qual é a próxima jogada.</p>
         <div class="hero-ctas">
-            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
-            <a href="#fluxo" class="btn-ghost">Explorar como funciona</a>
+            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Criar minha conta</a>
+            <a href="{{ url('/agendar') }}" class="btn-ghost"><i class="fas fa-calendar-check"></i> Agendar demonstração</a>
         </div>
         <div class="hero-mini-grid">
             <div class="hero-mini">
-                <strong>Receitas e despesas</strong>
-                <span>Lance em segundos. Veja seu saldo em tempo real e o gasto por categoria.</span>
+                <strong>Termômetro do Teto MEI</strong>
+                <span>Avisa quando você chega a 70% e 90% do limite anual de R$ 81 mil — e lembra o DAS todo dia 20.</span>
             </div>
             <div class="hero-mini">
-                <strong>Bruce IA do dia</strong>
-                <span>Recebe 3 dicas práticas de finanças e produtividade — todo dia, sem chatice.</span>
+                <strong>WhatsApp comercial</strong>
+                <span>Atendimento, chatbot com IA treinável, disparo em massa e automações — no número do seu negócio.</span>
             </div>
             <div class="hero-mini">
-                <strong>Tarefas e metas</strong>
-                <span>Lista do dia, calendário, lembretes — sem precisar de outro app.</span>
+                <strong>Sala de Estratégia</strong>
+                <span>5 agentes de IA debatem seus dados reais e entregam UMA ação prioritária com plano de execução.</span>
             </div>
         </div>
     </div>
@@ -223,52 +250,186 @@
         <div class="section-head-split">
             <div>
                 <div class="section-eyebrow">Como funciona</div>
-                <h2 class="section-title">Do lançamento do dia ao resumo da semana.</h2>
+                <h2 class="section-title">Da venda do dia à decisão da semana.</h2>
             </div>
-            <p class="section-sub" style="margin: 0;">A Vivensi foi pensada para a pessoa comum brasileira — quem não tem tempo de virar planilha noia, mas quer entender pra onde vai o dinheiro e o que tem que fazer hoje.</p>
+            <p class="section-sub" style="margin: 0;">A Vivensi foi pensada para quem toca o negócio sozinho ou com equipe pequena — sem tempo pra planilha, mas com necessidade real de saber quem é cliente, quanto entrou e o que fazer a seguir.</p>
         </div>
         <div class="step-grid">
             <div class="step-card">
                 <div class="step-num">01</div>
-                <div class="step-title">Lança movimentação</div>
-                <div class="step-text">Receita, despesa, conta a pagar — em 3 segundos, com categoria sugerida pela IA.</div>
+                <div class="step-title">Cadastra o cliente</div>
+                <div class="step-text">CRM simples: cadastro rápido, histórico de conversa e venda — tudo ligado ao WhatsApp.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">02</div>
-                <div class="step-title">Bruce IA orienta</div>
-                <div class="step-text">3 dicas curtas por dia sobre onde economizar e o que organizar — adaptadas ao seu padrão.</div>
+                <div class="step-title">Vende e registra</div>
+                <div class="step-text">Recibo ou NFS-e na hora, receita lançada no fluxo de caixa e teto MEI atualizado automaticamente.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">03</div>
-                <div class="step-title">Organiza o dia</div>
-                <div class="step-text">Tarefas, lembretes, metas e calendário — em uma lista simples que cabe na tela do celular.</div>
+                <div class="step-title">Atende no WhatsApp</div>
+                <div class="step-text">Chatbot com a Bruce IA responde, etiqueta e qualifica — você entra só quando precisa fechar.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">04</div>
-                <div class="step-title">Vê resultado</div>
-                <div class="step-text">Resumo semanal por WhatsApp ou e-mail, com saldo, gastos por categoria e tarefas concluídas.</div>
+                <div class="step-title">Decide com a IA</div>
+                <div class="step-text">A Sala de Estratégia analisa clientes, notas e caixa e devolve a próxima ação com plano no Kanban.</div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="section" id="gratuito">
+<section class="section" id="servicos">
+    <div class="container">
+        <div class="section-eyebrow">Todos os serviços</div>
+        <h2 class="section-title">Tudo que o painel MEI &amp; Empresas entrega.</h2>
+        <p class="section-sub">Sem módulo escondido, sem addon pago por fora. Isso aqui é o painel completo que você recebe ao assinar.</p>
+        <div class="svc-grid">
+            <div class="svc-card">
+                <div class="svc-icon"><i class="fas fa-address-book"></i></div>
+                <h4>CRM &amp; Clientes</h4>
+                <ul>
+                    <li><i class="fas fa-check"></i>Meus Clientes com histórico completo</li>
+                    <li><i class="fas fa-check"></i>Cadastro rápido de cliente</li>
+                    <li><i class="fas fa-check"></i>Prospecção de clientes com IA</li>
+                </ul>
+            </div>
+            <div class="svc-card">
+                <div class="svc-icon"><i class="fab fa-whatsapp"></i></div>
+                <h4>WhatsApp Comercial</h4>
+                <ul>
+                    <li><i class="fas fa-check"></i>Chat e atendimento omnichannel</li>
+                    <li><i class="fas fa-check"></i>Chatbot com IA Bruce — você treina do seu jeito</li>
+                    <li><i class="fas fa-check"></i>Etiquetas, disparo em massa e automações</li>
+                    <li><i class="fas fa-check"></i>Formulários conversacionais</li>
+                    <li><i class="fas fa-check"></i>Opt-in e campanhas dentro da LGPD</li>
+                </ul>
+            </div>
+            <div class="svc-card">
+                <div class="svc-icon"><i class="fas fa-bullhorn"></i></div>
+                <h4>Marketing &amp; Vendas</h4>
+                <ul>
+                    <li><i class="fas fa-check"></i>Landing pages prontas pra divulgar</li>
+                    <li><i class="fas fa-check"></i>Social AI Hub — gera posts pras redes</li>
+                    <li><i class="fas fa-check"></i>Hub de Marketing IA (estratégia)</li>
+                    <li><i class="fas fa-check"></i>Gestão de redes sociais</li>
+                </ul>
+            </div>
+            <div class="svc-card">
+                <div class="svc-icon"><i class="fas fa-wallet"></i></div>
+                <h4>Gestão Financeira</h4>
+                <ul>
+                    <li><i class="fas fa-check"></i>Fluxo de caixa em tempo real</li>
+                    <li><i class="fas fa-check"></i>Recibos e NFS-e — emissão rápida</li>
+                    <li><i class="fas fa-check"></i>Conciliação bancária</li>
+                    <li><i class="fas fa-check"></i>Planejamento anual</li>
+                </ul>
+            </div>
+            <div class="svc-card">
+                <div class="svc-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                <h4>Rotina Fiscal MEI</h4>
+                <ul>
+                    <li><i class="fas fa-check"></i>Termômetro do teto MEI (alerta em 70% e 90%)</li>
+                    <li><i class="fas fa-check"></i>Lembrete do DAS todo dia 20</li>
+                    <li><i class="fas fa-check"></i>Dossiê fiscal auditável — NFS-e anexada em cada receita</li>
+                </ul>
+            </div>
+            <div class="svc-card" style="border-color: var(--brand);">
+                <div class="svc-icon"><i class="fas fa-brain"></i></div>
+                <h4>Inteligência Artificial</h4>
+                <ul>
+                    <li><i class="fas fa-check"></i>Bruce IA — assistente integrado em todo o sistema</li>
+                    <li><i class="fas fa-check"></i><strong>Sala de Estratégia — seu conselho de 5 agentes de IA</strong></li>
+                    <li><i class="fas fa-check"></i>Sem addon, sem mensalidade extra de IA</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="dark" id="sala">
+    <div class="container">
+        <div class="section-eyebrow">O diferencial</div>
+        <h2 class="section-title" style="max-width: 760px;">Sala de Estratégia: um <span class="mark">conselho de IA</span> trabalhando pro seu negócio.</h2>
+        <p class="section-sub" style="max-width: 720px;">Grandes empresas têm diretoria pra decidir o próximo passo. Agora você também. Cinco agentes de IA debatem os seus números reais — clientes, teto MEI, notas fiscais, tarefas — e devolvem uma decisão, não um relatório.</p>
+
+        <div class="sala-hero">
+            <span class="sala-pill"><i class="fas fa-star"></i> Exclusivo Vivensi</span>
+            <h3>Você aperta um botão. Eles debatem. Você recebe UMA ação prioritária com plano de execução.</h3>
+            <p>Nada de dashboard com 40 gráficos pra você interpretar sozinho. A Sala de Estratégia discute seus dados como uma diretoria de verdade e entrega a conclusão pronta — o que fazer, por que fazer e em que ordem.</p>
+        </div>
+
+        <div class="agents-grid">
+            <div class="agent-card">
+                <div class="agent-avatar"><i class="fas fa-chart-line"></i></div>
+                <h5>Dados &amp; Mercado</h5>
+                <span>Lê seus clientes e vendas e enxerga padrões que você não teria tempo de ver.</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-avatar"><i class="fas fa-coins"></i></div>
+                <h5>Financeiro</h5>
+                <span>Cruza caixa, notas fiscais e teto MEI pra proteger sua margem.</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-avatar"><i class="fas fa-gears"></i></div>
+                <h5>Operações</h5>
+                <span>Olha suas tarefas e rotina e aponta onde está o gargalo da semana.</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-avatar"><i class="fas fa-bullseye"></i></div>
+                <h5>Mobilização</h5>
+                <span>Sugere como ativar clientes parados e trazer venda nova.</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-avatar"><i class="fas fa-chess-king"></i></div>
+                <h5>Estrategista-chefe</h5>
+                <span>Ouve os quatro, decide a prioridade e monta o plano de execução.</span>
+            </div>
+        </div>
+
+        <div class="sala-outcome">
+            <div class="outcome-card">
+                <i class="fas fa-clipboard-check"></i>
+                <div>
+                    <h6>Vira cartão no Kanban</h6>
+                    <p>A ação recomendada já entra no seu quadro de tarefas com o plano passo a passo. É executar, não interpretar.</p>
+                </div>
+            </div>
+            <div class="outcome-card">
+                <i class="fas fa-bell"></i>
+                <div>
+                    <h6>Dispara sozinha em risco</h6>
+                    <p>Detectou sinal de perigo nos seus dados — queda de vendas, teto MEI estourando? A Sala se reúne sem você pedir.</p>
+                </div>
+            </div>
+            <div class="outcome-card">
+                <i class="fas fa-comments-dollar"></i>
+                <div>
+                    <h6>Fala a sua língua</h6>
+                    <p>Pra MEI e PJ, a conversa é sobre clientes, notas fiscais e faturamento — não jargão corporativo.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="plano">
     <div class="container">
         <div class="access-grid">
             <div>
-                <div class="section-eyebrow">Acesso gratuito</div>
-                <h2 class="section-title">Feito para o seu bolso. Sem custar nada.</h2>
-                <p style="font-size: 1rem; color: var(--muted); margin-bottom: 18px;">A Vivensi foi desenhada para a pessoa comum brasileira — quem quer organização sem ter que pagar mensalidade. Acesso 100% gratuito durante o programa de lançamento.</p>
+                <div class="section-eyebrow">Plano MEI &amp; Empresas</div>
+                <h2 class="section-title">Um preço em reais. Tudo incluso.</h2>
+                <p style="font-size: 1rem; color: var(--muted); margin-bottom: 18px;">Assinatura única com o painel completo — sem cobrança por módulo, sem surpresa em dólar, sem taxa extra de IA. Cancele quando quiser.</p>
                 <ul class="access-list" style="color: var(--ink);">
-                    <li><i class="fas fa-check"></i><span>Receitas e despesas ilimitadas</span></li>
-                    <li><i class="fas fa-check"></i><span>Bruce IA com dica diária</span></li>
-                    <li><i class="fas fa-check"></i><span>Tarefas e calendário integrados</span></li>
-                    <li><i class="fas fa-check"></i><span>Resumo semanal automático</span></li>
-                    <li><i class="fas fa-check"></i><span>App mobile responsivo</span></li>
-                    <li><i class="fas fa-check"></i><span>Sem cartão de crédito</span></li>
+                    <li><i class="fas fa-check"></i><span>CRM de clientes completo</span></li>
+                    <li><i class="fas fa-check"></i><span>WhatsApp com chatbot IA</span></li>
+                    <li><i class="fas fa-check"></i><span>Fluxo de caixa, recibos e NFS-e</span></li>
+                    <li><i class="fas fa-check"></i><span>Teto MEI e lembrete de DAS</span></li>
+                    <li><i class="fas fa-check"></i><span>Sala de Estratégia inclusa</span></li>
+                    <li><i class="fas fa-check"></i><span>Marketing e redes com IA</span></li>
                 </ul>
                 <div style="margin-top: 32px;">
-                    <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Começar agora</a>
+                    <a href="{{ url('/agendar') }}" class="btn-primary"><i class="fas fa-calendar-check"></i> Agendar demonstração de 20 min</a>
                 </div>
             </div>
             @php
@@ -278,66 +439,29 @@
                 <div class="access-form-card">
                     <h3>{{ $featuredPlan->name }} <small>{{ $featuredPlan->interval === 'yearly' ? 'ANUAL' : 'MENSAL' }}</small></h3>
                     <div class="price">R$ <strong>{{ rtrim(rtrim(number_format((float) $featuredPlan->price, 2, ',', '.'), '0'), ',') }}</strong><small>/{{ $featuredPlan->interval === 'yearly' ? 'ano' : 'mês' }}</small></div>
-                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">{{ $featuredPlan->description ?? 'Acesso completo à plataforma — Bruce IA, finanças pessoais, tarefas e dicas diárias.' }}</p>
+                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">{{ $featuredPlan->description ?? 'Painel completo MEI & Empresas — clientes, WhatsApp, finanças, rotina fiscal e Sala de Estratégia.' }}</p>
                     <ul>
-                        <li><i class="fas fa-check"></i> Bruce IA incluso</li>
-                        <li><i class="fas fa-check"></i> Finanças e tarefas</li>
+                        <li><i class="fas fa-check"></i> Todos os serviços do painel</li>
+                        <li><i class="fas fa-check"></i> Sala de Estratégia inclusa</li>
+                        <li><i class="fas fa-check"></i> Bruce IA sem custo extra</li>
                         <li><i class="fas fa-check"></i> Conforme LGPD</li>
-                        <li><i class="fas fa-check"></i> Atualizações incluídas</li>
                     </ul>
                     <button type="button" class="btn-fill" onclick="window.location='{{ route('register', ['plan_id' => $featuredPlan->id]) }}'">Assinar agora</button>
                 </div>
             @else
                 <div class="access-form-card">
-                    <h3>Plano Lançamento <small>GRATUITO</small></h3>
-                    <div class="price">R$ <strong>0</strong><small>/mês</small></div>
-                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">Para você usar à vontade enquanto está em fase de lançamento. Sem letras miúdas.</p>
+                    <h3>Plano MEI &amp; Empresas <small>SOB CONSULTA</small></h3>
+                    <div class="price" style="font-size: 2.2rem; letter-spacing: -1px;">Fale com a gente</div>
+                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">Agende uma demonstração de 20 minutos e receba o valor do plano completo direto com o nosso time.</p>
                     <ul>
-                        <li><i class="fas fa-check"></i> Bruce IA incluso</li>
-                        <li><i class="fas fa-check"></i> Finanças e tarefas</li>
+                        <li><i class="fas fa-check"></i> Todos os serviços do painel</li>
+                        <li><i class="fas fa-check"></i> Sala de Estratégia inclusa</li>
+                        <li><i class="fas fa-check"></i> Bruce IA sem custo extra</li>
                         <li><i class="fas fa-check"></i> Conforme LGPD</li>
-                        <li><i class="fas fa-check"></i> Atualizações incluídas</li>
                     </ul>
-                    <button type="button" class="btn-fill" onclick="window.location='{{ route('register') }}'">Entrar na lista</button>
+                    <a href="{{ url('/agendar') }}" class="btn-fill">Agendar demonstração</a>
                 </div>
             @endif
-        </div>
-    </div>
-</section>
-
-<section class="dark" id="bruce">
-    <div class="container">
-        <div class="section-eyebrow">Bruce IA</div>
-        <h2 class="section-title" style="max-width: 760px;">Bruce IA <span class="mark">não te julga</span>. Te dá dica prática pra organizar a vida.</h2>
-        <p class="section-sub" style="max-width: 720px;">Treinado em finanças pessoais e produtividade do dia a dia, Bruce te entrega 3 dicas curtas todo dia — onde economizar, o que organizar, o que priorizar. Sem sermão, sem app travando.</p>
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-card-icon"><i class="fas fa-lightbulb"></i></div>
-                <h4>Dica diária</h4>
-                <p>Recebe 3 dicas curtas todo dia, baseadas no seu padrão real de gastos. Nada de papo genérico.</p>
-            </div>
-            <div class="info-card">
-                <div class="info-card-icon"><i class="fas fa-list-check"></i></div>
-                <h4>Lista do dia</h4>
-                <p>Bruce ajuda a montar a lista de tarefas do dia priorizando o que tem mais impacto. Você só executa.</p>
-            </div>
-            <div class="info-card">
-                <div class="info-card-icon"><i class="fas fa-shield-halved"></i></div>
-                <h4>IA responsável</h4>
-                <p>Seus dados financeiros ficam só com você. Não treinamos com seu histórico, não vendemos pra ninguém.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="dark" style="padding-top: 0;">
-    <div class="container">
-        <div class="free-block">
-            <span class="free-pill"><i class="fas fa-gift"></i> Acesso gratuito</span>
-            <div>
-                <h3>Organização não pode ser cara.</h3>
-                <p>A Vivensi oferece acesso gratuito porque acredita que organização financeira e produtividade pessoal não deveriam ser luxo. Independente do seu bolso, você merece ferramenta boa.</p>
-            </div>
         </div>
     </div>
 </section>
@@ -346,7 +470,7 @@
     <div class="container">
         <div class="section-eyebrow">Escola Vivensi</div>
         <h2 class="section-title" style="max-width: 640px;">Aprende junto, sem ter que sair do app.</h2>
-        <p class="section-sub" style="max-width: 640px;">Vídeos curtos, e-books simples e plantão ao vivo — sobre finanças pessoais, MEI na prática e produtividade para quem não tem 2h pra estudar.</p>
+        <p class="section-sub" style="max-width: 640px;">Vídeos curtos, e-books simples e plantão ao vivo — sobre MEI na prática, vendas pelo WhatsApp e finanças do negócio, pra quem não tem 2h pra estudar.</p>
         <div class="training-grid">
             <div class="training-card">
                 <div class="training-card-left">
@@ -362,7 +486,7 @@
                 <div class="training-card-left">
                     <span class="training-tag">PDF</span>
                     <div>
-                        <h5>5 categorias que destroem seu mês (e como cortar)</h5>
+                        <h5>5 gastos que destroem o caixa (e como cortar)</h5>
                         <span>E-book · leitura de 15 min</span>
                     </div>
                 </div>
@@ -372,7 +496,7 @@
                 <div class="training-card-left">
                     <span class="training-tag">LIVE</span>
                     <div>
-                        <h5>Plantão de finanças com a galera</h5>
+                        <h5>Plantão de vendas e finanças</h5>
                         <span>Semanal · ao vivo no painel</span>
                     </div>
                 </div>
@@ -385,13 +509,13 @@
 <section class="section" id="conformidade">
     <div class="container">
         <div class="section-eyebrow">Base legal</div>
-        <h2 class="section-title">Construído com referências legais para quem é MEI ou autônomo.</h2>
+        <h2 class="section-title">Construído com referências legais para quem é MEI ou pequena empresa.</h2>
         <p class="section-sub">O sistema apoia sua organização com base em LGPD, regras do MEI (LC 123/2006) e exigências da Receita — sem complicar a sua vida.</p>
         <div class="step-grid">
             <div class="step-card">
                 <div class="step-num">LGPD</div>
                 <div class="step-title">Proteção de dados</div>
-                <div class="step-text">Seus dados financeiros são criptografados em repouso. Acesso só você.</div>
+                <div class="step-text">Os dados do seu negócio e dos seus clientes são criptografados em repouso. Acesso só você.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">MEI</div>
@@ -417,15 +541,15 @@
         <div class="section-head-split">
             <div>
                 <div class="section-eyebrow">Proteção de dados</div>
-                <h2 class="section-title">Seus dados financeiros ficam só com você.</h2>
+                <h2 class="section-title">Os dados do seu negócio ficam só com você.</h2>
             </div>
-            <p class="section-sub" style="margin: 0;">A Vivensi trata os seus dados pessoais e financeiros com cuidado de banco — criptografia em repouso, isolamento por usuário e auditoria de cada acesso. Não vendemos para terceiros, não treinamos modelos com seu histórico.</p>
+            <p class="section-sub" style="margin: 0;">A Vivensi trata os dados do seu negócio e dos seus clientes com cuidado de banco — criptografia em repouso, isolamento por conta e auditoria de cada acesso. Não vendemos para terceiros, não treinamos modelos com seu histórico.</p>
         </div>
         <div class="info-grid">
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-lock"></i></div>
                 <h4>Criptografia</h4>
-                <p>CPF, comprovantes e contas bancárias vivem cifrados em repouso. Acesso só com sua senha + 2FA opcional.</p>
+                <p>CPF/CNPJ, comprovantes e contas bancárias vivem cifrados em repouso. Acesso só com sua senha + 2FA opcional.</p>
             </div>
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-eye"></i></div>
@@ -443,9 +567,12 @@
 
 <section class="final-cta">
     <div class="container">
-        <h2>Organize sua vida financeira sem perder a sanidade.</h2>
-        <p>Cadastre-se, entre na lista de espera gratuita e receba acesso ao painel completo assim que sua conta for liberada.</p>
-        <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
+        <h2>Toque o negócio. A Vivensi cuida do resto.</h2>
+        <p>Crie sua conta e comece com o painel completo — ou agende uma demonstração de 20 minutos e veja a Sala de Estratégia funcionando com dados de verdade.</p>
+        <div class="hero-ctas" style="margin-bottom: 0;">
+            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Criar minha conta</a>
+            <a href="{{ url('/agendar') }}" class="btn-ghost"><i class="fas fa-calendar-check"></i> Agendar demonstração</a>
+        </div>
     </div>
 </section>
 
@@ -455,24 +582,25 @@
             <div>
                 <div class="footer-brand">
                     <span class="nav-logo-mark">V</span>
-                    <strong>Vivensi · Pessoa Comum</strong>
+                    <strong>Vivensi · MEI &amp; Empresas</strong>
                 </div>
-                <p class="footer-text">Finanças pessoais, MEI e produtividade do dia a dia em uma só plataforma. Segurança LGPD e Bruce IA dando dica prática.</p>
+                <p class="footer-text">CRM, WhatsApp comercial, finanças com NFS-e, rotina fiscal MEI e Sala de Estratégia com IA — em uma só plataforma, conforme a LGPD.</p>
             </div>
             <div class="footer-col">
                 <h6>Sistema</h6>
                 <ul>
                     <li><a href="#fluxo">Como funciona</a></li>
-                    <li><a href="#bruce">Bruce IA</a></li>
-                    <li><a href="#escola">Escola Vivensi</a></li>
+                    <li><a href="#servicos">Serviços</a></li>
+                    <li><a href="#sala">Sala de Estratégia</a></li>
                     <li><a href="#conformidade">Base legal</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h6>Acesso</h6>
                 <ul>
-                    <li><a href="{{ route('register') }}">Cadastro gratuito</a></li>
+                    <li><a href="{{ route('register') }}">Criar conta</a></li>
                     <li><a href="{{ route('login') }}">Entrar no sistema</a></li>
+                    <li><a href="{{ url('/agendar') }}">Agendar demonstração</a></li>
                     <li><a href="{{ url('/legal/privacidade') }}">Política de Privacidade</a></li>
                     <li><a href="{{ url('/legal/termos') }}">Termos de Uso</a></li>
                 </ul>
@@ -488,11 +616,12 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>© {{ date('Y') }} Vivensi. Feito para a pessoa comum brasileira.</span>
+            <span>© {{ date('Y') }} Vivensi. Feito para quem toca o próprio negócio.</span>
             <div class="footer-bottom-tags">
                 <span>MEI</span>
+                <span>Pequenas Empresas</span>
                 <span>LGPD</span>
-                <span>Bruce IA</span>
+                <span>Sala de Estratégia</span>
             </div>
         </div>
     </div>
