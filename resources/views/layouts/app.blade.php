@@ -396,15 +396,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
                     $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
                     $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*');
-                    $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.bruno.*');
-                    $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*');
+                    $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.bruno.*') || request()->routeIs('admin.live_users') || request()->routeIs('admin.audit_logs') || request()->routeIs('admin.failed-jobs.*');
+                    $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*') || request()->is('admin/dev*');
                     // Badges de notificação
                     try {
                         $sa_badge_bookings = \App\Models\MeetingBooking::where('status','confirmed')->where('meeting_date','>=',today())->count();
                         $sa_badge_lgpd     = \App\Models\LgpdDataRequest::where('status','pending')->count();
                         $sa_badge_tasks    = \App\Models\Task::where('tenant_id',1)->whereNotIn('status',['done','completed'])->where(function($q){ $q->whereNotNull('due_date')->where('due_date','<',now()); })->count();
+                        $sa_badge_failed   = \Illuminate\Support\Facades\DB::table('failed_jobs')->count();
                     } catch(\Throwable $e) {
-                        $sa_badge_bookings = 0; $sa_badge_lgpd = 0; $sa_badge_tasks = 0;
+                        $sa_badge_bookings = 0; $sa_badge_lgpd = 0; $sa_badge_tasks = 0; $sa_badge_failed = 0;
                     }
                 @endphp
 
@@ -513,10 +514,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-shield-halved group-icon"></i> Infra &amp; Compliance
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '350px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '520px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.analytics') }}" class="{{ request()->routeIs('admin.analytics') ? 'active' : '' }}"><i class="fas fa-chart-bar"></i> Analytics</a></li>
                             <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
+                            <li><a href="{{ route('admin.live_users') }}" class="{{ request()->routeIs('admin.live_users') ? 'active' : '' }}"><i class="fas fa-signal"></i> Usuários Online</a></li>
+                            <li><a href="{{ route('admin.failed-jobs.index') }}" class="{{ request()->routeIs('admin.failed-jobs.*') ? 'active' : '' }}">
+                                <i class="fas fa-circle-exclamation"></i> Jobs Falhados
+                                @if($sa_badge_failed > 0)<span class="sa-badge sa-red">{{ $sa_badge_failed }}</span>@endif
+                            </a></li>
+                            <li><a href="{{ route('admin.audit_logs') }}" class="{{ request()->routeIs('admin.audit_logs') ? 'active' : '' }}"><i class="fas fa-clipboard-check"></i> Auditoria</a></li>
                             <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurações Globais</a></li>
                             <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fas fa-robot"></i> Bot de Atendimento</a></li>
                             <li><a href="{{ route('admin.bruno.index') }}" class="{{ request()->routeIs('admin.bruno.index') ? 'active' : '' }}"><i class="fas fa-handshake"></i> Bruno — Sandbox Vendedor</a></li>
@@ -536,11 +543,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-code group-icon"></i> API &amp; Dev
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_api_active ? '220px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_api_active ? '280px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('api.docs') }}" class="{{ request()->is('api-docs*') ? 'active' : '' }}"><i class="fas fa-book"></i> Documentação API</a></li>
                             <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->is('settings/api-tokens*') ? 'active' : '' }}"><i class="fas fa-key"></i> API &amp; Integrações</a></li>
                             <li><a href="{{ route('settings.webhooks') }}" class="{{ request()->is('settings/webhooks*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Webhooks</a></li>
+                            <li><a href="{{ route('admin.dev.dashboard') }}" class="{{ request()->is('admin/dev*') ? 'active' : '' }}"><i class="fas fa-terminal"></i> Portal Dev</a></li>
                         </ul>
                     </div>
                 </div>

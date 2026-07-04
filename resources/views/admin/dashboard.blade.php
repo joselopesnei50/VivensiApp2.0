@@ -275,7 +275,7 @@
             <div class="exec-card-head">
                 <div>
                     <div class="exec-card-title">Funil por Vertical</div>
-                    <div class="exec-card-sub">Trials iniciados por segmento</div>
+                    <div class="exec-card-sub">Cadastros por segmento</div>
                 </div>
                 <span class="badge-pill badge-gray">{{ $lpMetrics->sum('total_registrations') }} total</span>
             </div>
@@ -300,7 +300,7 @@
                 </div>
                 <div class="d-flex justify-content-between mt-1">
                     <span class="funnel-meta">{{ $views }} visitas</span>
-                    <span class="funnel-meta">{{ $regs }} trials</span>
+                    <span class="funnel-meta">{{ $regs }} cadastros</span>
                 </div>
             </div>
             @endforeach
