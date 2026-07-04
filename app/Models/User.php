@@ -65,6 +65,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at'          => 'datetime',
         'last_login_at'              => 'datetime',
+        'last_seen_at'               => 'datetime',
         'two_factor_confirmed_at'    => 'datetime',
         'two_factor_secret'          => 'encrypted',
         'two_factor_recovery_codes'  => 'encrypted:array',
