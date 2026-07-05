@@ -113,6 +113,12 @@ class AntiBanManager
     // conversas com inbound e conversas com outbound no mesmo período.
     public const RESPONSE_RATE_MIN_HEALTHY = 0.05;
 
+    // Fase 4 (Anti-Ban 2026): daily_limit recomendado após conclusão do warming
+    // sob o novo cenário Meta. Acima disso, o warming termina com log de aviso
+    // — mas o valor NUNCA é alterado automaticamente (poderia quebrar operações
+    // legítimas configuradas com limite maior).
+    public const RECOMMENDED_POST_WARMING_LIMIT_2026 = 150;
+
     public function __construct(EvolutionApiService $api)
     {
         $this->api = $api;
@@ -544,6 +550,22 @@ class AntiBanManager
             $settings['warming_mode'] = false;
             $instance->update(['settings' => $settings]);
             Log::info("AntiBan: warming concluído para [{$instance->instance_name}] após {$day} dias.");
+
+            // Fase 4 (Anti-Ban 2026): aviso quando daily_limit continua alto pós-warming.
+            // NÃO alteramos automaticamente pra não quebrar operações legítimas —
+            // gestor decide se ajusta ou mantém.
+            if ($instance->daily_limit > self::RECOMMENDED_POST_WARMING_LIMIT_2026) {
+                Log::info(
+                    "AntiBan: warming concluído com daily_limit={$instance->daily_limit} — recomendado para 2026 é " .
+                    self::RECOMMENDED_POST_WARMING_LIMIT_2026 . " ou menos.",
+                    [
+                        'instance_id' => $instance->id,
+                        'daily_limit' => $instance->daily_limit,
+                        'recommended' => self::RECOMMENDED_POST_WARMING_LIMIT_2026,
+                    ]
+                );
+            }
+
             return $instance->daily_limit;
         }
 

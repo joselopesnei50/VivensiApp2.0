@@ -132,6 +132,16 @@ class WhatsappInstanceController extends Controller
                 $settings = [];
             }
 
+            // Fase 4 (Anti-Ban 2026): perfil de warming escolhido pelo gestor.
+            // Aceita 'default' (14d) | 'conservative' (14d limites menores) |
+            // 'ultra_safe' (21d, recomendado 2026). Qualquer valor inválido cai
+            // no default via getWarmingProfile() no runtime.
+            $allowedProfiles = array_keys(config('whatsapp.antiban.warming_profiles', []));
+            $requestedProfile = $request->input('warming_profile');
+            if (is_string($requestedProfile) && in_array($requestedProfile, $allowedProfiles, true)) {
+                $settings['warming_profile'] = $requestedProfile;
+            }
+
             $instance = WhatsappInstance::create([
                 'tenant_id'      => $tenantId,
                 'instance_name'  => $instanceName,

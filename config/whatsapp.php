@@ -55,6 +55,16 @@ return [
                 6  => 55,  7  => 65,  8  => 80,  9  => 95,  10 => 110,
                 11 => 125, 12 => 135, 13 => 145, 14 => 150,
             ],
+            // Fase 4 (Anti-Ban 2026): perfil "ultra-seguro" — recomendado
+            // para o cenário Meta pós-jan/2026 e para clientes com histórico
+            // de ban. Escalada MAIS suave (10 → 370) em 21 dias em vez de 14.
+            'ultra_safe' => [
+                1  => 10,  2  => 15,  3  => 20,  4  => 28,  5  => 36,
+                6  => 46,  7  => 58,  8  => 72,  9  => 88,  10 => 106,
+                11 => 126, 12 => 148, 13 => 172, 14 => 198, 15 => 226,
+                16 => 256, 17 => 288, 18 => 322, 19 => 358, 20 => 370,
+                21 => 370,
+            ],
         ],
     ],
 

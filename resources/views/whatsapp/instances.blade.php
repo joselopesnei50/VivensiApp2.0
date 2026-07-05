@@ -291,7 +291,20 @@
                 <div id="create-instance-form">
                     <label for="instanceName" class="inst-field-label">Nome da instância</label>
                     <input type="text" id="instanceName" class="inst-field" placeholder="Ex: Vendas — Principal">
-                    <p style="color:#94a3b8; font-size:.75rem; margin:8px 0 20px;">Apenas para identificação interna no sistema.</p>
+                    <p style="color:#94a3b8; font-size:.75rem; margin:8px 0 16px;">Apenas para identificação interna no sistema.</p>
+
+                    {{-- Fase 4 Anti-Ban 2026: escolha do perfil de aquecimento --}}
+                    <label for="warmingProfile" class="inst-field-label">Perfil de aquecimento</label>
+                    <select id="warmingProfile" class="inst-field">
+                        <option value="ultra_safe" selected>Ultra-seguro — 21 dias (recomendado 2026)</option>
+                        <option value="conservative">Conservador — 14 dias, limites menores</option>
+                        <option value="default">Padrão — 14 dias, escalada normal</option>
+                    </select>
+                    <p style="color:#94a3b8; font-size:.75rem; margin:8px 0 20px;">
+                        <i class="fas fa-shield-alt me-1" style="color:#f59e0b;"></i>
+                        Em 2026 a Meta está mais rigorosa com números novos. Ultra-seguro reduz o risco de banimento.
+                    </p>
+
                     <button onclick="createInstance()" class="inst-btn-primary" style="width:100%; justify-content:center; padding:14px; font-size:.9rem;">
                         <i class="fas fa-qrcode me-2"></i>Gerar QR Code
                     </button>
@@ -389,11 +402,12 @@ async function acceptAntiBan() {
 async function createInstance() {
     const name = document.getElementById('instanceName').value.trim();
     if (!name) { alert('Informe um nome para a instância.'); return; }
+    const warmingProfile = document.getElementById('warmingProfile')?.value || 'ultra_safe';
     const btn = document.querySelector('#create-instance-form button');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Gerando...';
     btn.disabled = true;
     try {
-        const r = await fetch('/whatsapp/instances', { method:'POST', headers:webHeaders, body:JSON.stringify({name}) });
+        const r = await fetch('/whatsapp/instances', { method:'POST', headers:webHeaders, body:JSON.stringify({name, warming_profile: warmingProfile}) });
         const d = await r.json();
         if (r.ok && d.instance) {
             currentInstanceId = d.instance.id; pollAttempts = 0;
