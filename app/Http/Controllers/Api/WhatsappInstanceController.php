@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\WhatsappInstanceResource;
 use App\Models\WhatsappInstance;
 use App\Services\AntiBanTermService;
 use App\Services\EvolutionApiService;
@@ -43,7 +44,7 @@ class WhatsappInstanceController extends Controller
         $tenantId  = auth()->user()->tenant_id;
         $instances = WhatsappInstance::forTenant($tenantId)->get();
 
-        return response()->json($instances);
+        return WhatsappInstanceResource::collection($instances);
     }
 
     /**
@@ -167,7 +168,7 @@ class WhatsappInstanceController extends Controller
             }
 
             return response()->json([
-                'instance'    => $instance->fresh(),
+                'instance'    => new WhatsappInstanceResource($instance->fresh()),
                 'pairingCode' => $result['qrcode']['pairingCode'] ?? ($result['pairingCode'] ?? null),
                 'qrcode'      => $result['qrcode']['base64'] ?? ($result['base64'] ?? null),
             ]);
@@ -203,7 +204,7 @@ class WhatsappInstanceController extends Controller
         }
 
         return response()->json([
-            'instance' => $instance->fresh(),
+            'instance' => new WhatsappInstanceResource($instance->fresh()),
             'evo'      => $result,
         ]);
     }

@@ -15,7 +15,7 @@ Route::prefix('agendar')->name('booking.')->group(function () {
     Route::get('/',                    [App\Http\Controllers\MeetingBookingController::class, 'index'])->name('index');
     Route::get('/slots',               [App\Http\Controllers\MeetingBookingController::class, 'slots'])->name('slots');
     Route::post('/',                   [App\Http\Controllers\MeetingBookingController::class, 'store'])->name('store')->middleware('throttle:10,1');
-    Route::get('/cancelar/{token}',    [App\Http\Controllers\MeetingBookingController::class, 'cancel'])->name('cancel');
+    Route::get('/cancelar/{token}',    [App\Http\Controllers\MeetingBookingController::class, 'cancel'])->middleware('no.referrer')->name('cancel');
 });
 
 // ── Páginas CMS & LGPD ────────────────────────────────────────────────────────
@@ -34,11 +34,14 @@ Route::get('/lang/{locale}', function ($locale) {
 })->name('lang.switch');
 
 // ── Portal do Doador ──────────────────────────────────────────────────────────
-Route::middleware('throttle:30,1')->group(function () {
+// no.referrer aplicado em todas as rotas com {token} em URL — Fix 3 do relatório
+// de segurança de 2026-07-05. Evita vazamento do token no cabeçalho Referer
+// quando o doador clica em links externos dentro do portal.
+Route::middleware(['throttle:30,1', 'no.referrer'])->group(function () {
     Route::get('/portal-doador/{token}',         [App\Http\Controllers\DonorPortalController::class, 'show'])->name('donor.portal');
     Route::post('/portal-doador/{token}/update', [App\Http\Controllers\DonorPortalController::class, 'update'])->name('donor.portal.update');
 });
-Route::middleware('throttle:10,1')->group(function () {
+Route::middleware(['throttle:10,1', 'no.referrer'])->group(function () {
     Route::get('/portal-doador/{token}/ir-pdf',  [App\Http\Controllers\DonorPortalController::class, 'downloadIrPdf'])->name('donor.portal.pdf');
 });
 
@@ -68,19 +71,20 @@ Route::get('/transparencia/{slug}/sic/{protocol}',               [App\Http\Contr
 Route::get('/t/{slug}',                           [App\Http\Controllers\TransparencyController::class, 'publicView'])->where('slug', '[a-z0-9\-]+')->middleware('throttle:10,1');
 
 // ── Recibos & Certificados públicos ──────────────────────────────────────────
-Route::get('/r/{token}',               [App\Http\Controllers\ReceiptController::class, 'show'])->middleware('throttle:30,1')->name('public.receipt');
+// no.referrer aplicado nas rotas com {token} — Fix 3 do relatório de segurança.
+Route::get('/r/{token}',               [App\Http\Controllers\ReceiptController::class, 'show'])->middleware(['throttle:30,1', 'no.referrer'])->name('public.receipt');
 Route::get('/validar-recibo',          [App\Http\Controllers\ReceiptController::class, 'validateForm'])->name('public.receipt.validate');
 Route::post('/validar-recibo',         [App\Http\Controllers\ReceiptController::class, 'validateSubmit'])->middleware('throttle:5,1');
 Route::get('/validar-certificado/{uuid}', [App\Http\Controllers\HumanResourcesController::class, 'publicValidateVolunteerCertificate'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')->middleware('throttle:5,1')->name('public.volunteer_certificate.validate');
 
 // ── Assinatura de contratos pública ──────────────────────────────────────────
-Route::get('/sign/{token}',  [App\Http\Controllers\ContractController::class, 'showPublic'])->middleware('throttle:30,1')->name('public.contract');
-Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign'])->middleware('throttle:10,1');
+Route::get('/sign/{token}',  [App\Http\Controllers\ContractController::class, 'showPublic'])->middleware(['throttle:30,1', 'no.referrer'])->name('public.contract');
+Route::post('/sign/{token}', [App\Http\Controllers\ContractController::class, 'sign'])->middleware(['throttle:10,1', 'no.referrer']);
 
 // ── Chamada pública (lista de presença via token) ────────────────────────────
-Route::get('/chamada/{token}',         [App\Http\Controllers\PublicAttendanceController::class, 'show'])->middleware('throttle:30,1')->name('public.attendance.show');
-Route::post('/chamada/{token}/checkin', [App\Http\Controllers\PublicAttendanceController::class, 'checkin'])->middleware('throttle:10,1')->name('public.attendance.checkin');
-Route::get('/chamada/{token}/ok',       [App\Http\Controllers\PublicAttendanceController::class, 'success'])->middleware('throttle:30,1')->name('public.attendance.ok');
+Route::get('/chamada/{token}',         [App\Http\Controllers\PublicAttendanceController::class, 'show'])->middleware(['throttle:30,1', 'no.referrer'])->name('public.attendance.show');
+Route::post('/chamada/{token}/checkin', [App\Http\Controllers\PublicAttendanceController::class, 'checkin'])->middleware(['throttle:10,1', 'no.referrer'])->name('public.attendance.checkin');
+Route::get('/chamada/{token}/ok',       [App\Http\Controllers\PublicAttendanceController::class, 'success'])->middleware(['throttle:30,1', 'no.referrer'])->name('public.attendance.ok');
 
 // ── Rifas públicas ────────────────────────────────────────────────────────────
 Route::get('/rifa/{slug}',                       [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');

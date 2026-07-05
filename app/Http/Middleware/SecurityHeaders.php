@@ -22,7 +22,14 @@ class SecurityHeaders
             $response->header('X-Frame-Options', 'SAMEORIGIN');
             $response->header('X-XSS-Protection', '1; mode=block');
             $response->header('X-Content-Type-Options', 'nosniff');
-            $response->header('Referrer-Policy', 'strict-origin-when-cross-origin');
+            // Referrer-Policy: só define o default se nenhum middleware de rota
+            // (ex.: NoReferrerPolicy nas rotas com token) já tiver definido um
+            // valor mais restritivo. Global middleware roda no wrap DEPOIS do
+            // route middleware — sem esse guard, ele sobrescreveria o
+            // no-referrer que a rota específica pediu.
+            if (!$response->headers->has('Referrer-Policy')) {
+                $response->header('Referrer-Policy', 'strict-origin-when-cross-origin');
+            }
             $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
             $response->header('Content-Security-Policy', $this->buildCsp());
             $response->header('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
