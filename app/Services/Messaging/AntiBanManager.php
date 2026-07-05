@@ -107,6 +107,12 @@ class AntiBanManager
     // "Novo" = contato sem last_inbound_at, i.e. nunca respondeu à marca.
     public const NEW_RECIPIENT_RISK_THRESHOLD = 0.70;
 
+    // Fase 3 (Anti-Ban 2026): taxa de resposta mínima "saudável" nos últimos 7d.
+    // Abaixo disso a instância recebe alerta de risco elevado — contas legítimas
+    // recebem resposta, contas de spam quase nunca. Métrica é a razão entre
+    // conversas com inbound e conversas com outbound no mesmo período.
+    public const RESPONSE_RATE_MIN_HEALTHY = 0.05;
+
     public function __construct(EvolutionApiService $api)
     {
         $this->api = $api;
@@ -548,21 +554,33 @@ class AntiBanManager
 
     /**
      * Retorna status resumido da instância para exibição no painel.
+     *
+     * `response_rate_7d` é preenchido semanalmente pelo comando
+     * `antiban:compute-response-rates` (Fase 3 Anti-Ban 2026). null significa
+     * que ainda não houve cálculo — não deve disparar risco (default seguro).
+     * `response_rate_risk` só é true quando a métrica ESTÁ disponível E abaixo
+     * do limiar saudável — evita falso-positivo em instâncias novas.
      */
     public function getInstanceStatus(WhatsappInstance $instance): array
     {
-        $isWarming = $this->isWarming($instance);
+        $isWarming    = $this->isWarming($instance);
+        $responseRate = $instance->settings['response_rate_7d'] ?? null;
+        $rrUpdatedAt  = $instance->settings['response_rate_updated_at'] ?? null;
 
         return [
-            'can_send'         => $this->canSendMessage($instance),
-            'is_restricted'    => $this->isInstanceRestricted($instance),
-            'restricted_until' => $instance->settings['restricted_until'] ?? null,
-            'is_warming'       => $isWarming,
-            'warming_day'      => $isWarming ? $this->getWarmingDay($instance) : null,
-            'warming_limit'    => $isWarming ? $this->getWarmingDailyLimit($instance) : null,
-            'sent_today'       => $instance->messages_sent_today,
-            'daily_limit'      => $instance->daily_limit,
-            'within_window'    => $instance->isWithinSafeWindow(),
+            'can_send'                   => $this->canSendMessage($instance),
+            'is_restricted'              => $this->isInstanceRestricted($instance),
+            'restricted_until'           => $instance->settings['restricted_until'] ?? null,
+            'is_warming'                 => $isWarming,
+            'warming_day'                => $isWarming ? $this->getWarmingDay($instance) : null,
+            'warming_limit'              => $isWarming ? $this->getWarmingDailyLimit($instance) : null,
+            'sent_today'                 => $instance->messages_sent_today,
+            'daily_limit'                => $instance->daily_limit,
+            'within_window'              => $instance->isWithinSafeWindow(),
+            'response_rate_7d'           => is_numeric($responseRate) ? (float) $responseRate : null,
+            'response_rate_updated_at'   => $rrUpdatedAt,
+            'response_rate_risk'         => is_numeric($responseRate)
+                && ((float) $responseRate) < self::RESPONSE_RATE_MIN_HEALTHY,
         ];
     }
 }

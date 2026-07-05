@@ -148,6 +148,14 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Anti-Ban 2026 (Fase 3): calcula taxa de resposta 7d por instância
+        // ativa e emite Log::critical se ficar abaixo do limiar saudável (5%).
+        // Semanal aos domingos 03:00 — período de baixíssima carga.
+        $schedule->command('antiban:compute-response-rates')
+                 ->weeklyOn(0, '03:00')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');
