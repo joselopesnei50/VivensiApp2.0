@@ -185,6 +185,26 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             $campaign->refresh();
             if ($campaign->status !== 'processing') break;
 
+            // ── Anti-ban: fingerprint de conteúdo (Fase 1 2026) ───────────────
+            // Bloqueia se a MESMA mensagem já foi enviada MAX_SAME_CONTENT_PER_DAY
+            // vezes hoje por esta instância. Pausa a campanha — amanhã o contador
+            // reseta e o operador pode retomar. Só aplica quando há texto (mídia
+            // sem legenda não passa por fingerprint — não é padrão de spam da Meta).
+            if (!empty($campaign->message) && !$antiBan->contentFingerprintAllowed($instance, $campaign->message)) {
+                Log::warning('AntiBan: fingerprint de conteúdo atingiu limite diário — campanha pausada', [
+                    'campaign_id' => $campaign->id,
+                    'instance_id' => $instance->id,
+                    'limit'       => AntiBanManager::MAX_SAME_CONTENT_PER_DAY,
+                ]);
+                $campaign->update([
+                    'status'       => 'paused',
+                    'completed_at' => now(),
+                    'total_sent'   => $sentCount,
+                    'total_failed' => $failedCount,
+                ]);
+                return;
+            }
+
             // ── Anti-ban: verifica janela de horário e limite diário ──────────
             if (!$antiBan->canSendMessage($instance)) {
                 $instance->refresh();
@@ -284,6 +304,9 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     $sentCount++;
                     $consecutiveErrors = 0;
                     $antiBan->recordSent($instance); // contabiliza no limite diário
+                    if (!empty($campaign->message)) {
+                        $antiBan->recordContentSent($instance, $campaign->message);
+                    }
                 } else {
                     $errorMsg = is_array($res) ? json_encode($res) : ($res ?: 'Unknown Error');
                     Log::warning("Broadcast failed for {$waId}. Campaign ID: {$campaign->id}. Error: " . $errorMsg);

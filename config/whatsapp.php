@@ -86,7 +86,7 @@ return [
     // técnicas de evasão de banimento.
     // Subir 'current_version' aqui invalida aceites anteriores e força reaceite.
     'anti_ban_terms' => [
-        'current_version' => '1.0',
+        'current_version' => 'v2026-07',
         'versions' => [
             '1.0' => [
                 'effective_at' => '2026-06-17',
@@ -105,6 +105,61 @@ Ao prosseguir, declaro ciência de que:
 5. Caso a Meta restrinja o número, comprometo-me a interromper imediatamente o uso, sem responsabilizar o Vivensi pelas consequências.
 
 Ao clicar em "Aceito", confirmo que li, entendi e concordo com este termo na íntegra.
+TERM,
+            ],
+
+            // v2026-07 — atualização de julho/2026.
+            // Justificativa: em janeiro/2026 a Meta intensificou o bloqueio de APIs
+            // não-oficiais. O termo antigo (1.0) não cobria esse cenário. Aceites
+            // em 1.0 continuam válidos (aceite histórico) — só criações NOVAS
+            // exigem a versão vigente (current_version).
+            'v2026-07' => [
+                'effective_at' => '2026-07-04',
+                'title'        => 'Termo de Responsabilidade — Uso de API WhatsApp via Evolution API (v2026-07)',
+                'text' => <<<'TERM'
+Ao prosseguir com a criação de uma instância WhatsApp, você declara ter lido, compreendido e concordado com os seguintes termos:
+
+1. Natureza da ferramenta
+A Evolution API é uma solução de código aberto desenvolvida pela comunidade que emula o protocolo do WhatsApp Web. Ela NÃO é autorizada, homologada ou reconhecida pela Meta Platforms, Inc. (empresa controladora do WhatsApp).
+
+2. Cenário regulatório de 2026
+Em janeiro de 2026, a Meta intensificou os mecanismos automáticos de detecção e bloqueio de ferramentas não-oficiais. O risco de suspensão ou banimento de números que utilizam APIs não-oficiais aumentou significativamente em relação a anos anteriores. Este risco é real, mensurável e permanente.
+
+3. Consequências do banimento
+O banimento imposto pela Meta é vinculado ao número de telefone, não à conta ou à ferramenta utilizada. Isso significa que:
+— Um número banido não pode ser recuperado pela simples troca de ferramenta;
+— Números banidos pela Meta geralmente não são aceitos para cadastro na API Oficial do WhatsApp mesmo após a migração;
+— A perda do número implica perda do histórico de conversas e da base de contatos associada a ele.
+
+4. Proteções técnicas implementadas pelo Vivensi
+O Vivensi implementa as seguintes camadas de proteção técnica para reduzir (mas não eliminar) o risco de banimento:
+— Warming progressivo com escalada gradual de volume;
+— Limite horário de mensagens por instância;
+— Janela de horário seguro de envio;
+— Simulação de comportamento humano (digitação, pausas);
+— Bloqueio automático de URLs encurtadas;
+— Detecção automática de opt-out e parada imediata de envio;
+— Detecção de sinal de ban e restrição automática da instância;
+— Fingerprint de conteúdo: limite diário de envios do mesmo texto por instância, para reduzir o padrão de spam detectado pelo ML da Meta.
+
+5. O que NÃO é coberto pelas proteções
+As proteções acima NÃO eliminam o risco de banimento. Situações que aumentam significativamente o risco incluem, sem se limitar a:
+— Envio de mensagens idênticas para grande número de destinatários sem variação de conteúdo (mesmo dentro dos limites configurados);
+— Disparo para listas sem opt-in explícito e documentado;
+— Conteúdo classificado pela Meta como spam (promoções agressivas, links encurtados, conteúdo enganoso);
+— Volume elevado de denúncias pelos destinatários;
+— Uso simultâneo do mesmo número em múltiplas ferramentas.
+
+6. Responsabilidade
+— O Vivensi fornece a infraestrutura e as proteções técnicas descritas acima.
+— A responsabilidade pelo conteúdo enviado, pelo respeito ao opt-in dos destinatários e pela conformidade com as políticas de uso do WhatsApp é EXCLUSIVAMENTE do usuário/organização.
+— O Vivensi não se responsabiliza por banimentos de números, perda de histórico ou danos operacionais decorrentes do uso da Evolution API.
+— O Vivensi não oferece garantia de ausência de banimento nem compromisso de recuperação de números banidos.
+
+7. Recomendação do Vivensi
+Para operações de maior escala, alto volume de disparos ou tolerância zero a risco de interrupção, o Vivensi recomenda a migração para a API Oficial do WhatsApp (Cloud API da Meta). Consulte os planos disponíveis.
+
+Ao clicar em "Li e aceito os termos", você confirma que leu este documento, compreende os riscos descritos e assume responsabilidade pelo uso da ferramenta.
 TERM,
             ],
         ],

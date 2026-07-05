@@ -4,6 +4,7 @@ namespace App\Services\Messaging;
 
 use App\Models\WhatsappInstance;
 use App\Services\EvolutionApiService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -94,6 +95,12 @@ class AntiBanManager
      * Use getBanRestrictionHours() para leitura runtime.
      */
     public const DEFAULT_BAN_RESTRICTION_HOURS = 24;
+
+    // Fase 1 (Anti-Ban 2026): limite de envios do mesmo fingerprint de conteúdo
+    // por instância por dia. Acima disso, o ML da Meta trata como spam mesmo
+    // dentro dos limites de warming e horário — é o gatilho de detecção mais
+    // sensível de 2026.
+    public const MAX_SAME_CONTENT_PER_DAY = 40;
 
     public function __construct(EvolutionApiService $api)
     {
@@ -246,6 +253,63 @@ class AntiBanManager
     }
 
     // ── Detecção de riscos ────────────────────────────────────────────────────
+
+    // ── Fingerprint de conteúdo (Fase 1 Anti-Ban 2026) ───────────────────────
+    // Enviar a mesma mensagem repetida em massa dispara o ML da Meta mesmo
+    // dentro dos limites de warming/horário. Contamos envios por hash SHA-256
+    // do conteúdo normalizado, por instância, resetando à meia-noite.
+
+    /**
+     * Hash determinístico do conteúdo, normalizado (lowercase, whitespace
+     * colapsado). Duas variações do mesmo texto — só espaços/quebras
+     * diferentes — colidem no mesmo hash de propósito: o objetivo é
+     * detectar "mesmo conteúdo", não "mesmos bytes".
+     */
+    private function fingerprintHash(string $content): string
+    {
+        $normalized = mb_strtolower(trim(preg_replace('/\s+/u', ' ', $content) ?? ''));
+        return hash('sha256', $normalized);
+    }
+
+    private function fingerprintKey(WhatsappInstance $instance, string $content): string
+    {
+        return "wa:fingerprint:{$instance->id}:" . $this->fingerprintHash($content);
+    }
+
+    /**
+     * Verifica se este fingerprint de conteúdo ainda pode ser enviado hoje
+     * pela instância. Limite: MAX_SAME_CONTENT_PER_DAY. TTL da chave é até
+     * o fim do dia — reset automático à meia-noite. Em prod usa Redis (via
+     * Cache facade); em testes o driver array cobre sem infra externa.
+     */
+    public function contentFingerprintAllowed(WhatsappInstance $instance, string $content): bool
+    {
+        $count = (int) Cache::get($this->fingerprintKey($instance, $content), 0);
+        return $count < self::MAX_SAME_CONTENT_PER_DAY;
+    }
+
+    /**
+     * Registra 1 envio deste conteúdo. Chamar APÓS envio confirmado (mesma
+     * lógica de recordSent). Cache::add é atômico e cria com TTL só se a
+     * chave não existir; depois increment sobe o contador sem estender o TTL.
+     */
+    public function recordContentSent(WhatsappInstance $instance, string $content): void
+    {
+        $key = $this->fingerprintKey($instance, $content);
+        $ttl = max(1, (int) now()->diffInSeconds(now()->endOfDay()));
+
+        Cache::add($key, 0, $ttl);
+        Cache::increment($key);
+    }
+
+    /**
+     * Detecta padrão de spintax {a|b|c} — usado pelo controller para alertar
+     * o gestor quando a campanha grande vai sem variação de conteúdo.
+     */
+    public static function hasSpintax(string $message): bool
+    {
+        return (bool) preg_match('/\{[^{}]*\|[^{}]*\}/', $message);
+    }
 
     /**
      * Verifica se a mensagem contém URL encurtada (gatilho de spam da Meta).

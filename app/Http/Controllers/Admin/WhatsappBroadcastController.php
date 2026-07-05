@@ -524,12 +524,74 @@ class WhatsappBroadcastController extends Controller
             'status'          => $campaign->status,
         ]);
 
+        // ── Alerta anti-ban (Fase 1 2026): mensagem sem spintax em campanha grande ─
+        // A Meta detecta como spam mensagens IDÊNTICAS disparadas em massa mesmo
+        // dentro dos limites de warming/horário. Se a campanha tem >40 destinatários
+        // estimados e o texto não tem variação {a|b}, avisa o gestor. Não bloqueia
+        // — o job já bloqueia acima do limite de fingerprint.
+        if (!empty($message) && !\App\Services\Messaging\AntiBanManager::hasSpintax($message)) {
+            $estimatedCount = $this->estimateAudienceSize($campaign, $tenantId);
+            if ($estimatedCount > \App\Services\Messaging\AntiBanManager::MAX_SAME_CONTENT_PER_DAY) {
+                session()->flash(
+                    'warning_antiban',
+                    "⚠️ Campanha estimada em {$estimatedCount} destinatários com mensagem sem variação. " .
+                    "Risco de detecção elevado pela Meta em 2026. " .
+                    "Considere usar spintax nas mensagens (exemplo: {Olá|Oi|E aí}) para variar o conteúdo entre envios."
+                );
+            }
+        }
+
         if (!$scheduledAt) {
             \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id, $campaign->tenant_id);
             return redirect()->back()->with('success', 'Disparo iniciado em segundo plano!');
         }
 
         return redirect()->back()->with('success', 'Disparo agendado para ' . $campaign->scheduled_at->format('d/m/Y H:i') . '!');
+    }
+
+    /**
+     * Estimativa barata do tamanho da audiência de uma campanha, só para
+     * fins de alerta anti-ban antes do dispatch. O count real quem calcula
+     * é o job — este método só precisa saber "provavelmente > 40 ou não".
+     * Retorna 0 se não conseguir estimar (é aceitável — o alerta simplesmente
+     * não dispara nesse caso).
+     */
+    private function estimateAudienceSize(\App\Models\BroadcastCampaign $campaign, int $tenantId): int
+    {
+        try {
+            switch ($campaign->audience_type) {
+                case 'selected':
+                    $phones = array_filter(
+                        array_map('trim', explode(',', (string) $campaign->phones)),
+                        fn ($p) => strlen(preg_replace('/\D+/', '', $p)) >= 10
+                    );
+                    return count($phones);
+
+                case 'labels':
+                    if (empty($campaign->label_ids)) {
+                        return 0;
+                    }
+                    return \App\Models\WhatsappChat::where('tenant_id', $tenantId)
+                        ->whereNotNull('opt_in_at')
+                        ->whereNull('opt_out_at')
+                        ->whereNull('blocked_at')
+                        ->whereHas('labelTags', fn ($q) => $q->whereIn('whatsapp_labels.id', $campaign->label_ids))
+                        ->count();
+
+                case 'groups':
+                    return count($campaign->group_ids ?? []);
+
+                case 'all':
+                default:
+                    return \App\Models\WhatsappChat::where('tenant_id', $tenantId)
+                        ->whereNotNull('opt_in_at')
+                        ->whereNull('opt_out_at')
+                        ->whereNull('blocked_at')
+                        ->count();
+            }
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 
     /**
