@@ -102,6 +102,11 @@ class AntiBanManager
     // sensível de 2026.
     public const MAX_SAME_CONTENT_PER_DAY = 40;
 
+    // Fase 2 (Anti-Ban 2026): limiar de proporção de destinatários "novos" na
+    // audiência. Acima disso o job entra em modo conservador (delay dobrado).
+    // "Novo" = contato sem last_inbound_at, i.e. nunca respondeu à marca.
+    public const NEW_RECIPIENT_RISK_THRESHOLD = 0.70;
+
     public function __construct(EvolutionApiService $api)
     {
         $this->api = $api;
@@ -309,6 +314,49 @@ class AntiBanManager
     public static function hasSpintax(string $message): bool
     {
         return (bool) preg_match('/\{[^{}]*\|[^{}]*\}/', $message);
+    }
+
+    // ── Diversidade de destinatários (Fase 2 Anti-Ban 2026) ─────────────────
+    // Disparo pra muitos contatos que NUNCA responderam é padrão de spam
+    // clássico. Se o ratio ultrapassa NEW_RECIPIENT_RISK_THRESHOLD, o job
+    // ativa modo conservador — dobra o delay entre envios sem alterar
+    // permanentemente a instância.
+
+    /**
+     * Retorna a proporção de destinatários "novos" (sem inbound registrado)
+     * num conjunto de wa_ids, no tenant da instância.
+     *
+     * "Novo" = chat sem `last_inbound_at`, i.e. o contato nunca respondeu
+     * a uma mensagem nossa. Contato conhecido = ao menos 1 mensagem inbound
+     * recebida no histórico.
+     *
+     * A escolha por `last_inbound_at` (coluna no próprio chat) em vez de
+     * subquery em `whatsapp_messages` é deliberada: já está indexada e
+     * atualizada em toda inbound; evita join pesado em broadcasts com
+     * milhares de destinatários.
+     *
+     * Escopo por tenant (não por instance) porque `WhatsappChat` é
+     * tenant-scoped: se o tenant tem múltiplas instâncias, o histórico
+     * de relação com o contato é compartilhado.
+     *
+     * @param array<int,string> $waIds Lista de wa_ids (números) da audiência.
+     * @return float Entre 0.0 (todos conhecidos) e 1.0 (todos novos).
+     */
+    public function getNewRecipientRatio(WhatsappInstance $instance, array $waIds): float
+    {
+        $unique = array_values(array_unique(array_filter($waIds, fn ($id) => $id !== null && $id !== '')));
+        $total  = count($unique);
+
+        if ($total === 0) {
+            return 0.0;
+        }
+
+        $known = \App\Models\WhatsappChat::where('tenant_id', $instance->tenant_id)
+            ->whereIn('wa_id', $unique)
+            ->whereNotNull('last_inbound_at')
+            ->count();
+
+        return 1.0 - ($known / $total);
     }
 
     /**

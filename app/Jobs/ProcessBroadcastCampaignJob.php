@@ -181,6 +181,25 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             }
         }
 
+        // ── Anti-ban: score de diversidade de destinatários (Fase 2 2026) ────
+        // Disparo majoritário pra contatos que nunca responderam é padrão de
+        // spam clássico. Se >70% da audiência é "nova" (sem last_inbound_at),
+        // ativamos modo conservador que DOBRA o delay entre envios sem alterar
+        // permanentemente a instância. Grupos são pulados (grupo != contato).
+        $conservativeMode = false;
+        if (!$isGroupChatMode && !empty($waIdsAll)) {
+            $newRatio = $antiBan->getNewRecipientRatio($instance, $waIdsAll);
+            if ($newRatio > AntiBanManager::NEW_RECIPIENT_RISK_THRESHOLD) {
+                $conservativeMode = true;
+                Log::warning('AntiBan: audiência majoritariamente nova — modo conservador ativado', [
+                    'campaign_id' => $campaign->id,
+                    'new_ratio'   => round($newRatio, 2),
+                    'threshold'   => AntiBanManager::NEW_RECIPIENT_RISK_THRESHOLD,
+                    'total'       => count($waIdsAll),
+                ]);
+            }
+        }
+
         foreach ($recipientsIterable as $recipient) {
             $campaign->refresh();
             if ($campaign->status !== 'processing') break;
@@ -350,8 +369,11 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             ]);
 
             // ── Anti-ban: delay entre mensagens (mínimo 5s, orgânico) ───────
+            // Em modo conservador (Fase 2 2026) o delay é DOBRADO — audiência
+            // majoritariamente nova exige ritmo mais lento pra não parecer spam.
             $minDelay = max(5, $campaign->cadence ?: 5);
-            sleep(rand($minDelay, $minDelay + 10));
+            $multiplier = $conservativeMode ? 2 : 1;
+            sleep(rand($minDelay * $multiplier, ($minDelay + 10) * $multiplier));
 
             // ── Anti-ban: pausa de 3-5 min a cada 30 mensagens ──────────────
             if ($sentCount > 0 && $sentCount % 30 === 0) {
