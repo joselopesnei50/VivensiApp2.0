@@ -209,6 +209,58 @@ class WhatsappInstanceController extends Controller
     }
 
     /**
+     * Fase 5 (Anti-Ban 2026): endpoint leve pra painel de saúde da instância.
+     *
+     * Diferente de `status()`, NÃO consulta a Evolution API — retorna só o
+     * agregado local do AntiBanManager. Concebido pra polling frequente (60s)
+     * sem gerar carga na Evolution nem custo de rede.
+     *
+     * Traffic light:
+     *   🔴 red    — instância restrita, ban detectado ou fora da janela horária
+     *   🟡 yellow — taxa de resposta abaixo do saudável OU >=80% do limite do dia
+     *   🟢 green  — pode enviar sem sinais de alerta
+     */
+    public function health(int $id)
+    {
+        $instance = $this->findForTenant($id);
+        $antiBan  = new AntiBanManager(new EvolutionApiService($instance));
+
+        $status = $antiBan->getInstanceStatus($instance);
+
+        return response()->json([
+            'instance_id'   => $instance->id,
+            'instance_name' => $instance->instance_name,
+            'status'        => $status,
+            'traffic_light' => $this->trafficLightFrom($status),
+        ]);
+    }
+
+    /**
+     * Deriva o semáforo (green/yellow/red) do array retornado por
+     * AntiBanManager::getInstanceStatus. Ordem importa — red domina yellow,
+     * que domina green.
+     */
+    private function trafficLightFrom(array $s): string
+    {
+        // Vermelho: bloqueadores duros
+        if (!empty($s['is_restricted']) || empty($s['within_window'])) {
+            return 'red';
+        }
+
+        // Amarelo: sinais de risco relevantes
+        if (!empty($s['response_rate_risk'])) {
+            return 'yellow';
+        }
+        $limit = (int) ($s['warming_limit'] ?? $s['daily_limit'] ?? 0);
+        $sent  = (int) ($s['sent_today'] ?? 0);
+        if ($limit > 0 && $sent >= (int) floor($limit * 0.80)) {
+            return 'yellow';
+        }
+
+        return 'green';
+    }
+
+    /**
      * Gera QR Code ou Pairing Code para conectar o WhatsApp.
      */
     public function connect(Request $request, int $id)

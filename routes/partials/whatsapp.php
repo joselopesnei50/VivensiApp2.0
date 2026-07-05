@@ -94,6 +94,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/instances',                 [App\Http\Controllers\WhatsappController::class, 'instances'])->name('whatsapp.instances');
     Route::post('/whatsapp/instances',                [App\Http\Controllers\Api\WhatsappInstanceController::class, 'store'])->name('whatsapp.instances.store')->middleware('throttle:5,1');
     Route::get('/whatsapp/instances/{id}/status',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'status'])->name('whatsapp.instances.status');
+    Route::get('/whatsapp/instances/{id}/health',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'health'])->name('whatsapp.instances.health');
     Route::post('/whatsapp/instances/{id}/connect',   [App\Http\Controllers\Api\WhatsappInstanceController::class, 'connect'])->name('whatsapp.instances.connect')->middleware('throttle:20,1');
     Route::delete('/whatsapp/instances/{id}',         [App\Http\Controllers\Api\WhatsappInstanceController::class, 'destroy'])->name('whatsapp.instances.destroy')->middleware('throttle:10,1');
     Route::patch('/whatsapp/instances/{id}/proxy',    [App\Http\Controllers\Api\WhatsappInstanceController::class, 'updateProxy'])->name('whatsapp.instances.proxy')->middleware('throttle:10,1');

@@ -76,6 +76,25 @@
 .proxy-badge.on  { background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; }
 .proxy-badge.off { background:#f8fafc; color:#94a3b8; border:1px solid #e2e8f0; }
 
+/* Fase 5 Anti-Ban 2026: strip de saúde da instância */
+.health-strip {
+    display:flex; align-items:center; gap:12px;
+    background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;
+    padding:10px 14px; margin-bottom:14px;
+}
+.health-light {
+    font-size:1.2rem; line-height:1;
+    filter:drop-shadow(0 0 4px currentColor);
+    transition:color .3s;
+    color:#94a3b8;
+}
+.health-light.green  { color:#10b981; }
+.health-light.yellow { color:#f59e0b; }
+.health-light.red    { color:#ef4444; }
+.health-copy { flex:1; min-width:0; }
+.health-title { font-size:.78rem; font-weight:800; color:#1e293b; line-height:1.2; }
+.health-sub   { font-size:.7rem; color:#64748b; margin-top:2px; }
+
 /* Empty state */
 .inst-empty {
     text-align:center; padding:80px 20px;
@@ -137,7 +156,7 @@
             $hasProxy   = !empty(($instance->settings ?? [])['proxy_url']);
         @endphp
         <div class="col-md-6 col-xl-4">
-            <div class="inst-card">
+            <div class="inst-card" data-instance-id="{{ $instance->id }}">
                 <div class="inst-card-top">
                     <div style="display:flex; gap:14px; align-items:center; flex:1; min-width:0;">
                         <div class="inst-avatar"><i class="fab fa-whatsapp"></i></div>
@@ -156,6 +175,16 @@
                 </div>
 
                 <div class="inst-card-body">
+                    {{-- Fase 5 Anti-Ban 2026: strip de saúde da instância --}}
+                    {{-- Atualiza via polling de 60s no fetchHealth() abaixo. --}}
+                    <div class="health-strip" data-health-strip>
+                        <span class="health-light" data-health-light title="Carregando saúde...">●</span>
+                        <div class="health-copy">
+                            <div class="health-title" data-health-title>Analisando saúde...</div>
+                            <div class="health-sub" data-health-sub>&nbsp;</div>
+                        </div>
+                    </div>
+
                     <div class="inst-progress-label">
                         <span style="color:#475569;">Anti-Ban — uso diário</span>
                         <span style="color:#1e293b; font-weight:800;">{{ $instance->messages_sent_today }} / {{ $instance->daily_limit }}</span>
@@ -512,6 +541,80 @@ async function saveProxy() {
         btn.disabled = false;
         label.textContent = orig;
     }
+}
+
+// ── Fase 5 Anti-Ban 2026: polling do painel de saúde ───────────────────
+// Atualiza o strip verde/amarelo/vermelho a cada 60s consultando o endpoint
+// leve /whatsapp/instances/{id}/health (não bate na Evolution API).
+const HEALTH_POLL_MS = 60000;
+
+async function fetchHealth(card) {
+    const id = card.dataset.instanceId;
+    if (!id) return;
+    try {
+        const r = await fetch(`/whatsapp/instances/${id}/health`, { headers:webHeaders });
+        if (!r.ok) return;
+        const d = await r.json();
+        renderHealth(card, d);
+    } catch (e) {
+        // Falha silenciosa — mantém último estado. Próximo tick tenta de novo.
+    }
+}
+
+function renderHealth(card, data) {
+    const light = card.querySelector('[data-health-light]');
+    const title = card.querySelector('[data-health-title]');
+    const sub   = card.querySelector('[data-health-sub]');
+    if (!light || !title || !sub) return;
+
+    const s     = data.status || {};
+    const color = data.traffic_light || 'green';
+
+    light.classList.remove('green','yellow','red');
+    light.classList.add(color);
+
+    // Título + subtítulo variam por cor
+    if (color === 'red') {
+        if (s.is_restricted) {
+            title.textContent = 'Instância restrita';
+            sub.textContent   = s.restricted_until ? ('Liberação: ' + new Date(s.restricted_until).toLocaleString('pt-BR')) : 'Sinal de ban detectado';
+        } else if (!s.within_window) {
+            title.textContent = 'Fora da janela horária';
+            sub.textContent   = 'Envios só voltam na janela segura configurada';
+        } else {
+            title.textContent = 'Bloqueio ativo';
+            sub.textContent   = '';
+        }
+    } else if (color === 'yellow') {
+        if (s.response_rate_risk) {
+            const pct = (s.response_rate_7d != null) ? (s.response_rate_7d * 100).toFixed(1) : '?';
+            title.textContent = 'Taxa de resposta baixa';
+            sub.textContent   = `${pct}% de resposta em 7d — risco elevado de ban`;
+        } else {
+            title.textContent = 'Próximo do limite';
+            sub.textContent   = `${s.sent_today} / ${s.warming_limit || s.daily_limit} — reduza o ritmo`;
+        }
+    } else {
+        title.textContent = 'Saudável';
+        const parts = [];
+        if (s.is_warming) parts.push(`Warming dia ${s.warming_day}`);
+        if (s.response_rate_7d != null) parts.push(`${(s.response_rate_7d * 100).toFixed(0)}% de resposta`);
+        parts.push(`${s.sent_today} / ${s.warming_limit || s.daily_limit} hoje`);
+        sub.textContent = parts.join(' · ');
+    }
+}
+
+function startHealthPolling() {
+    const cards = document.querySelectorAll('.inst-card[data-instance-id]');
+    if (!cards.length) return;
+    cards.forEach(fetchHealth);
+    setInterval(() => cards.forEach(fetchHealth), HEALTH_POLL_MS);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startHealthPolling);
+} else {
+    startHealthPolling();
 }
 </script>
 @endsection
