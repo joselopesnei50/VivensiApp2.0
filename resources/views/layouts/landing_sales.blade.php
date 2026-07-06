@@ -224,7 +224,8 @@
         <div style="margin-bottom: 30px;">
             <x-application-logo style="height: 35px; width: auto; filter: brightness(0) invert(1);" />
         </div>
-        <p style="color: #94a3b8; font-size: 0.9rem;">&copy; {{ date('Y') }} Vivensi App. Todos os direitos reservados. Orgulhosamente Brasileiro 🇧🇷</p>
+        <p style="color: #94a3b8; font-size: 0.9rem;">&copy; {{ date('Y') }} VIVENSIAPP. Todos os direitos reservados. Orgulhosamente Brasileiro 🇧🇷</p>
+        <p style="color: #94a3b8; font-size: 0.82rem; margin-top: 10px;">VivensiApp é um produto da <strong style="color:#cbd5e1;">NC5 HUB DIGITAL LTDA</strong> &middot; CNPJ: 67.848.807/0001-50</p>
     </footer>
 
     <a href="https://wa.me/5581999999999?text=Olá! Vim da página de vendas e quero saber mais sobre o Vivensi." class="whatsapp-float" target="_blank">

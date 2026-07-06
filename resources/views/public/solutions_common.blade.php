@@ -633,13 +633,16 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>© {{ date('Y') }} Vivensi. Feito para quem toca o próprio negócio.</span>
+            <span>© {{ date('Y') }} VIVENSIAPP. Todos os direitos reservados. Feito para quem toca o próprio negócio.</span>
             <div class="footer-bottom-tags">
                 <span>MEI</span>
                 <span>Pequenas Empresas</span>
                 <span>LGPD</span>
                 <span>Sala de Estratégia</span>
             </div>
+        </div>
+        <div class="footer-owner" style="text-align:center; padding:16px 0 0; margin-top:16px; border-top:1px solid rgba(255,255,255,0.08); font-size:.82rem; color:rgba(255,255,255,0.55);">
+            VivensiApp é um produto da <strong>NC5 HUB DIGITAL LTDA</strong> · CNPJ: 67.848.807/0001-50
         </div>
     </div>
 </footer>

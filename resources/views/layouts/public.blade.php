@@ -236,7 +236,8 @@
             </div>
         </div>
         <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;">
-            <p>&copy; 2026 Vivensi Inc. Todos os direitos reservados.</p>
+            <p>&copy; 2026 VIVENSIAPP. Todos os direitos reservados.</p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">VivensiApp é um produto da <strong style="color:#cbd5e1;">NC5 HUB DIGITAL LTDA</strong> &middot; CNPJ: 67.848.807/0001-50</p>
         </div>
     </footer>
 
