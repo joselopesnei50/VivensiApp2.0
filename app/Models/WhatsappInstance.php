@@ -27,6 +27,10 @@ class WhatsappInstance extends Model
 
     protected $fillable = [
         'tenant_id',
+        'provider',
+        'waba_id',
+        'phone_number_id',
+        'graph_access_token',
         'instance_name',
         'instance_token',
         'status',
@@ -44,7 +48,11 @@ class WhatsappInstance extends Model
     protected $hidden = [
         'instance_token',
         'instance_token_bidx',
+        'graph_access_token',
     ];
+
+    public const PROVIDER_EVOLUTION = 'evolution';
+    public const PROVIDER_CLOUD_API = 'cloud_api';
 
     protected $casts = [
         'settings'        => 'array',
@@ -116,6 +124,40 @@ class WhatsappInstance extends Model
     public function getEvolutionInstanceTokenAttribute(): ?string
     {
         return $this->instance_token;
+    }
+
+    // ── Encryption accessor/mutator para graph_access_token (Meta Cloud) ───
+
+    public function getGraphAccessTokenAttribute(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+        try {
+            return Crypt::decryptString($value);
+        } catch (DecryptException) {
+            return $value; // Plaintext legacy — return as-is
+        }
+    }
+
+    public function setGraphAccessTokenAttribute(?string $value): void
+    {
+        $this->attributes['graph_access_token'] = ($value === null || $value === '')
+            ? $value
+            : Crypt::encryptString($value);
+    }
+
+    // ── Discriminadores de provider ────────────────────────────────────────
+
+    public function isCloudApi(): bool
+    {
+        return $this->provider === self::PROVIDER_CLOUD_API;
+    }
+
+    public function isEvolution(): bool
+    {
+        // Retrocompatível: instâncias sem provider explícito são tratadas como Evolution.
+        return $this->provider === self::PROVIDER_EVOLUTION || empty($this->provider);
     }
 
     // ── Métodos de Negócio ──────────────────────────────────────────────────
