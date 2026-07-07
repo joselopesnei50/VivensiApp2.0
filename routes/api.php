@@ -5,9 +5,13 @@ use Illuminate\Support\Facades\Route;
 
 // ── WhatsApp Webhooks ──────────────────────────────────────────────────────
 
-// Meta Cloud API (Oficial) — handshake GET + eventos POST
+// Meta Cloud API (Oficial) — handshake GET + eventos POST (LEGADO — WhatsappConfig por tenant)
 Route::match(['get', 'post'], '/whatsapp/webhook', [App\Http\Controllers\WhatsappController::class, 'webhook'])
     ->middleware('throttle:300,1');
+
+// Meta Cloud API — instance-level (novo, alinhado com WhatsappInstance.provider='cloud_api')
+Route::get('/whatsapp/cloud-webhook',  [App\Http\Controllers\Api\CloudApiWebhookController::class, 'verify'])->middleware('throttle:60,1');
+Route::post('/whatsapp/cloud-webhook', [App\Http\Controllers\Api\CloudApiWebhookController::class, 'handle'])->middleware('throttle:300,1');
 
 // Evolution API (Nossa Infra) — URL segura por token por instância
 // POST /api/evo/webhook/{instance_token}

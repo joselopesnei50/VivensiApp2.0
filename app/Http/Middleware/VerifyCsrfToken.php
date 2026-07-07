@@ -21,5 +21,6 @@ class VerifyCsrfToken extends Middleware
         '/openpix/webhook',
         '/social/facebook/deauthorize',   // Meta OAuth deauthorize callback
         '/social/facebook/data-deletion', // Meta data deletion callback
+        '/api/whatsapp/cloud-webhook',    // Meta WhatsApp Business Cloud API webhook
     ];
 }
