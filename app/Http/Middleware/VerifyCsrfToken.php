@@ -19,5 +19,7 @@ class VerifyCsrfToken extends Middleware
         '/lp/*/lead',
         '/validar-recibo',
         '/openpix/webhook',
+        '/social/facebook/deauthorize',   // Meta OAuth deauthorize callback
+        '/social/facebook/data-deletion', // Meta data deletion callback
     ];
 }

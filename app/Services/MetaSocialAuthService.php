@@ -114,6 +114,59 @@ class MetaSocialAuthService
         return $igResponse->successful() ? $igResponse->json() : null;
     }
 
+    /**
+     * Decodifica e valida um signed_request enviado pela Meta
+     * (usado em Deauthorize Callback e Data Deletion Callback).
+     *
+     * Formato: base64url(signature).base64url(payload_json)
+     * Assinatura: HMAC-SHA256(payload_base64url, app_secret)
+     *
+     * @return array|null Payload decodificado (com user_id, algorithm, issued_at)
+     *                    ou null se signed_request for inválido/adulterado.
+     */
+    public function parseSignedRequest(?string $signedRequest): ?array
+    {
+        if (empty($signedRequest) || !str_contains($signedRequest, '.')) {
+            return null;
+        }
+
+        [$encodedSig, $encodedPayload] = explode('.', $signedRequest, 2);
+
+        $sig     = $this->base64UrlDecode($encodedSig);
+        $payload = $this->base64UrlDecode($encodedPayload);
+
+        if ($sig === false || $payload === false) {
+            return null;
+        }
+
+        $data = json_decode($payload, true);
+        if (!is_array($data) || (($data['algorithm'] ?? '') !== 'HMAC-SHA256')) {
+            Log::warning('Meta signed_request com algoritmo inesperado', ['algo' => $data['algorithm'] ?? null]);
+            return null;
+        }
+
+        if (empty($this->appSecret)) {
+            Log::error('Meta signed_request recebido mas app_secret não está configurado');
+            return null;
+        }
+
+        $expectedSig = hash_hmac('sha256', $encodedPayload, $this->appSecret, true);
+        if (!hash_equals($expectedSig, $sig)) {
+            Log::warning('Meta signed_request com assinatura inválida', ['user_id' => $data['user_id'] ?? null]);
+            return null;
+        }
+
+        return $data;
+    }
+
+    /** Decodifica base64 URL-safe (Facebook usa - e _ no lugar de + e /) */
+    private function base64UrlDecode(string $input): string|false
+    {
+        $padded = strtr($input, '-_', '+/');
+        $padded .= str_repeat('=', (4 - strlen($padded) % 4) % 4);
+        return base64_decode($padded, true);
+    }
+
     /** Salva ou atualiza as contas conectadas para o tenant */
     public function saveAccounts(array $pages, int $tenantId): int
     {

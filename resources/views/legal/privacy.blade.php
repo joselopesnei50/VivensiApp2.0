@@ -221,14 +221,29 @@
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">7</span> Cookies</h2>
+        <h2><span class="num">7</span> Exclusão de dados — como solicitar</h2>
+        <p>Você pode pedir a exclusão dos seus dados pessoais a qualquer momento, por três canais:</p>
+        <ul>
+            <li><strong>Pela plataforma</strong> — logado, acesse <em>Configurações → Perfil → Privacidade & Direitos LGPD</em> e clique em "Solicitar exclusão".</li>
+            <li><strong>Por e-mail</strong> — envie um pedido para <a href="mailto:{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}">{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}</a> a partir do e-mail cadastrado na conta.</li>
+            <li><strong>Via aplicativos conectados</strong> — se você conectou seu Facebook ou Instagram ao Vivensi, pode revogar o acesso e pedir exclusão diretamente pelas configurações do Facebook. Ao fazer isso, receberemos automaticamente o pedido e você poderá acompanhar o status pelo link informado no próprio Facebook.</li>
+        </ul>
+        <p><strong>Prazo:</strong> processamos pedidos de exclusão em até 15 (quinze) dias corridos, conforme o art. 19 da LGPD.</p>
+        <p><strong>O que é excluído:</strong> perfil, credenciais, mensagens, tokens de integrações e conteúdo produzido por você. Alguns dados podem ser retidos, de forma anonimizada, quando exigido por obrigação legal (registros fiscais e logs de acesso — ver seção 5).</p>
+        <p><strong>Confirmação:</strong> após o processamento, enviamos confirmação por e-mail para o endereço cadastrado.</p>
+    </div>
+
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+        <h2><span class="num">8</span> Cookies</h2>
         <p>Utilizamos cookies essenciais (necessários para o funcionamento do sistema) e cookies de análise (com seu consentimento). Você pode gerenciar suas preferências no banner de cookies exibido no primeiro acesso.</p>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">8</span> Segurança</h2>
+        <h2><span class="num">9</span> Segurança</h2>
         <p>Adotamos medidas técnicas e organizacionais para proteger seus dados, incluindo:</p>
         <ul>
             <li>Criptografia em trânsito (TLS 1.2+);</li>
@@ -241,14 +256,14 @@
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">9</span> Incidentes de segurança</h2>
+        <h2><span class="num">10</span> Incidentes de segurança</h2>
         <p>Em caso de vazamento ou incidente que possa afetar seus direitos, comunicaremos a ANPD e os titulares afetados nos prazos legais estabelecidos pelo art. 48 da LGPD (72 horas para a ANPD).</p>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">10</span> Alterações desta política</h2>
+        <h2><span class="num">11</span> Alterações desta política</h2>
         <p>Podemos atualizar esta política periodicamente. Notificaremos alterações relevantes por e-mail ou aviso na plataforma. O uso continuado após a notificação implica aceitação das alterações.</p>
     </div>
 

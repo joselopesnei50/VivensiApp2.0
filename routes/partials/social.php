@@ -6,6 +6,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/accounts',                       [App\Http\Controllers\SocialAccountController::class, 'index'])->name('accounts');
         Route::get('/accounts/connect',               [App\Http\Controllers\SocialAccountController::class, 'connect'])->name('facebook.connect');
         Route::get('/facebook/callback',              [App\Http\Controllers\SocialAccountController::class, 'callback'])->name('facebook.callback');
+        // Webhooks públicos (Meta chama sem autenticação) tratados fora deste grupo — ver abaixo.
         Route::patch('/accounts/{account}/disconnect', [App\Http\Controllers\SocialAccountController::class, 'disconnect'])->name('accounts.disconnect');
         Route::delete('/accounts/{account}',          [App\Http\Controllers\SocialAccountController::class, 'destroy'])->name('accounts.destroy');
         Route::get('/posts',                          [App\Http\Controllers\ScheduledPostController::class, 'index'])->name('posts.index');
@@ -18,6 +19,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/posts/generate-caption',        [App\Http\Controllers\ScheduledPostController::class, 'generateCaption'])->name('posts.generate-caption');
     });
 });
+
+// ── Webhooks públicos da Meta (Facebook) ──────────────────────────────────────
+// Chamados pela Meta sem autenticação — validação via signed_request (HMAC).
+Route::post('/social/facebook/deauthorize',   [App\Http\Controllers\SocialAccountController::class, 'handleDeauthorize'])->middleware('throttle:60,1')->name('social.facebook.deauthorize');
+Route::post('/social/facebook/data-deletion', [App\Http\Controllers\SocialAccountController::class, 'handleDataDeletion'])->middleware('throttle:60,1')->name('social.facebook.data-deletion');
 
 // ── Social AI Hub (geração de conteúdo com IA) ────────────────────────────────
 Route::middleware(['auth'])->group(function () {
