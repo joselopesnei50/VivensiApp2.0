@@ -92,6 +92,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
     // Instâncias
     Route::get('/whatsapp/instances',                 [App\Http\Controllers\WhatsappController::class, 'instances'])->name('whatsapp.instances');
+
+    // Meta Cloud API — Embedded Signup (Tech Provider)
+    Route::get('/whatsapp/cloud/connect',              [App\Http\Controllers\WhatsappCloudSignupController::class, 'show'])->name('whatsapp.cloud.connect');
+    Route::post('/whatsapp/cloud/callback',            [App\Http\Controllers\WhatsappCloudSignupController::class, 'callback'])->name('whatsapp.cloud.callback')->middleware('throttle:10,1');
     Route::post('/whatsapp/instances',                [App\Http\Controllers\Api\WhatsappInstanceController::class, 'store'])->name('whatsapp.instances.store')->middleware('throttle:5,1');
     Route::get('/whatsapp/instances/{id}/status',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'status'])->name('whatsapp.instances.status');
     Route::get('/whatsapp/instances/{id}/health',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'health'])->name('whatsapp.instances.health');
