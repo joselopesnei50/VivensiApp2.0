@@ -89,6 +89,15 @@
 
         <div id="signup-status" style="margin-top: 20px;"></div>
     </div>
+
+    <div class="cloud-card" style="background:#0f172a; color:#cbd5e1; font-family: monospace; font-size: .85rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <strong style="color:#e2e8f0;"><i class="fas fa-bug"></i> Console de debug ao vivo</strong>
+            <button id="clear-debug" style="background:#334155; color:#fff; border:0; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:.75rem;">Limpar</button>
+        </div>
+        <pre id="debug-log" style="background:#020617; color:#94a3b8; padding:12px; border-radius:8px; max-height:300px; overflow-y:auto; margin:0; white-space:pre-wrap;">[aguardando eventos...]</pre>
+        <div style="color:#64748b; font-size:.75rem; margin-top:8px;">Se algo der errado, tire print dessa caixa e me mande.</div>
+    </div>
 </div>
 
 @endsection
@@ -100,41 +109,74 @@
     const CLOUD_CONFIG_ID = @json($configId);
     const CLOUD_CSRF      = document.querySelector('meta[name="csrf-token"]').content;
 
+    // ── Debug logger inline (não depende de F12) ─────────────────────────────
+    const debugBox = document.getElementById('debug-log');
+    function dbg(label, payload) {
+        const t = new Date().toISOString().substr(11, 12);
+        const line = payload === undefined
+            ? `[${t}] ${label}`
+            : `[${t}] ${label}\n${JSON.stringify(payload, null, 2)}`;
+        debugBox.textContent = debugBox.textContent === '[aguardando eventos...]'
+            ? line
+            : debugBox.textContent + '\n\n' + line;
+        debugBox.scrollTop = debugBox.scrollHeight;
+        console.log('[VivensiCloud]', label, payload);
+    }
+    document.getElementById('clear-debug').addEventListener('click', () => {
+        debugBox.textContent = '[aguardando eventos...]';
+    });
+
+    dbg('Config injetado do backend:', {
+        appId: CLOUD_APP_ID,
+        configId: CLOUD_CONFIG_ID,
+        appIdLen: (CLOUD_APP_ID || '').length,
+        configIdLen: (CLOUD_CONFIG_ID || '').length,
+    });
+
     // ── Facebook JS SDK ──────────────────────────────────────────────────────
     window.fbAsyncInit = function () {
+        dbg('fbAsyncInit: chamando FB.init');
         FB.init({
             appId:   CLOUD_APP_ID,
             cookie:  true,
             xfbml:   false,
-            version: 'v20.0',
+            version: 'v22.0',
         });
+        dbg('FB.init concluído. FB.getVersion?', typeof FB.getVersion === 'function' ? FB.getVersion() : 'n/a');
     };
 
     (function (d, s, id) {
         var js, fjs = d.getElementsByTagName(s)[0];
         if (d.getElementById(id)) return;
         js = d.createElement(s); js.id = id;
-        js.src = "https://connect.facebook.net/pt_BR/sdk.js";
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        js.async = true; js.defer = true; js.crossOrigin = "anonymous";
+        js.onload  = () => dbg('SDK script carregado');
+        js.onerror = (e) => dbg('SDK script FALHOU ao carregar', String(e));
         fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
 
     // ── Escuta mensagens do Embedded Signup ──────────────────────────────────
-    // A Meta manda uma window.postMessage com waba_id + phone_number_id
     let __wabaData = null;
 
     window.addEventListener('message', (event) => {
         if (!event.origin.endsWith('facebook.com')) return;
+        dbg('postMessage recebido de facebook.com', event.data);
         try {
-            const parsed = JSON.parse(event.data);
-            if (parsed.type === 'WA_EMBEDDED_SIGNUP') {
+            const parsed = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+            if (parsed && parsed.type === 'WA_EMBEDDED_SIGNUP') {
+                dbg('WA_EMBEDDED_SIGNUP event', parsed);
                 if (parsed.event === 'FINISH' && parsed.data) {
                     __wabaData = {
                         waba_id: parsed.data.waba_id,
                         phone_number_id: parsed.data.phone_number_id,
                     };
+                    dbg('WABA data capturada', __wabaData);
                 }
             }
-        } catch (e) { /* ignora payloads não-JSON */ }
+        } catch (e) {
+            dbg('postMessage não parseou como JSON — ignorando');
+        }
     });
 
     // ── UI ───────────────────────────────────────────────────────────────────
@@ -156,25 +198,47 @@
 
         if (typeof FB === 'undefined') {
             alert('err', 'O SDK do Facebook ainda não carregou. Aguarde 3 segundos e tente de novo.');
+            dbg('ERRO: FB é undefined no click');
             return;
         }
 
         __wabaData = null;
         alert('ok', '<i class="fas fa-spinner fa-spin"></i> Aguardando autorização no popup do Facebook...');
 
+        const fbLoginOptions = {
+            config_id:                       CLOUD_CONFIG_ID,
+            response_type:                   'code',
+            override_default_response_type:  true,
+            extras: { setup: {} },
+        };
+        dbg('Chamando FB.login com options', fbLoginOptions);
+
         FB.login(function (response) {
-            if (!response.authResponse || !response.authResponse.code) {
-                alert('warn', 'Autorização cancelada ou incompleta. Você pode tentar novamente.');
+            dbg('FB.login CALLBACK — resposta COMPLETA', response);
+
+            if (!response) {
+                alert('err', 'FB.login retornou undefined. Provavelmente o popup foi bloqueado. Libera pop-ups pra vivensi.app.br e tenta de novo.');
+                return;
+            }
+
+            if (!response.authResponse) {
+                alert('err', 'Sem authResponse. Status: ' + (response.status || 'desconhecido') + '. Cola o log de debug abaixo pra suporte.');
+                return;
+            }
+
+            if (!response.authResponse.code) {
+                alert('err', 'authResponse sem code. Cola o log de debug.');
                 return;
             }
 
             if (!__wabaData) {
-                alert('err', 'Não recebemos os dados da sua conta WhatsApp Business. Tente novamente e conclua todos os passos do popup.');
+                alert('err', 'code obtido mas não recebemos WABA data do postMessage. Cola o log.');
                 return;
             }
 
             const code = response.authResponse.code;
             alert('ok', '<i class="fas fa-spinner fa-spin"></i> Registrando seu número na Meta e ativando webhook...');
+            dbg('Enviando pro backend', { code_preview: code.substring(0, 20) + '...', waba: __wabaData });
 
             fetch('{{ route("whatsapp.cloud.callback") }}', {
                 method: 'POST',
@@ -191,8 +255,9 @@
                     pin:             pin,
                 }),
             })
-            .then(r => r.json().then(j => ({ ok: r.ok, body: j })))
-            .then(({ ok, body }) => {
+            .then(r => r.json().then(j => ({ ok: r.ok, status: r.status, body: j })))
+            .then(({ ok, status: httpStatus, body }) => {
+                dbg('Resposta backend', { httpStatus, body });
                 if (!ok) {
                     alert('err', 'Falha no cadastro: ' + (body.error || 'erro desconhecido'));
                     return;
@@ -201,14 +266,10 @@
                 setTimeout(() => window.location.href = body.redirect, 1500);
             })
             .catch(err => {
+                dbg('ERRO fetch backend', String(err));
                 alert('err', 'Erro de comunicação com o servidor: ' + err.message);
             });
-        }, {
-            config_id:                       CLOUD_CONFIG_ID,
-            response_type:                   'code',
-            override_default_response_type:  true,
-            extras: { setup: {} },
-        });
+        }, fbLoginOptions);
     });
 </script>
 @endpush
