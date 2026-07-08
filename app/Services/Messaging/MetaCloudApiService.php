@@ -17,7 +17,7 @@ class MetaCloudApiService
      */
     public function __construct($contextModel = null)
     {
-        $this->apiVersion = config('whatsapp.meta_api_version', 'v20.0');
+        $this->apiVersion = config('whatsapp.meta_api_version', 'v22.0');
 
         if ($contextModel) {
             $this->wabaId = $contextModel->meta_waba_id;

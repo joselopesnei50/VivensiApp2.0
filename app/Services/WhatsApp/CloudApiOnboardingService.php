@@ -32,7 +32,7 @@ class CloudApiOnboardingService
 
     public function __construct()
     {
-        $this->apiVersion = config('whatsapp.meta_api_version', 'v20.0');
+        $this->apiVersion = config('whatsapp.meta_api_version', 'v22.0');
         $this->appId      = (string) SystemSetting::getValue('meta_cloud_app_id', '');
         $this->appSecret  = (string) SystemSetting::getValue('meta_cloud_app_secret', '');
     }

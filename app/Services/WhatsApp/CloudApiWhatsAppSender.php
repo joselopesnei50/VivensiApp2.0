@@ -23,7 +23,7 @@ class CloudApiWhatsAppSender implements WhatsAppSenderInterface
         private WhatsappInstance $instance,
         private MetaCloudApiService $meta,
     ) {
-        $this->apiVersion = config('whatsapp.meta_api_version', 'v20.0');
+        $this->apiVersion = config('whatsapp.meta_api_version', 'v22.0');
     }
 
     public function providerName(): string
