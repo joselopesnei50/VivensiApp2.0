@@ -411,7 +411,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
-                    $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
+                    $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.templates.cloud.*') || request()->is('whatsapp/cloud/*') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
                     $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*');
                     $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.bruno.*') || request()->routeIs('admin.audit_logs') || request()->routeIs('admin.failed-jobs.*');
                     $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*') || request()->is('admin/dev*');
@@ -500,7 +500,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ route('whatsapp.instances') }}" class="{{ request()->routeIs('whatsapp.instances') ? 'active' : '' }}"><i class="fas fa-plug"></i> Instâncias WA</a></li>
                             <li><a href="{{ route('whatsapp.settings') }}" class="{{ request()->routeIs('whatsapp.settings') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
-                            <li><a href="{{ route('whatsapp.templates') }}" class="{{ request()->routeIs('whatsapp.templates') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            <li><a href="{{ route('whatsapp.templates.cloud.index') }}" class="{{ request()->routeIs('whatsapp.templates.cloud.*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
                             <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->routeIs('whatsapp.forms.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->routeIs('whatsapp.automations.*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
@@ -628,7 +628,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
-                            <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            <li><a href="{{ url('/whatsapp/cloud/templates') }}" class="{{ request()->is('whatsapp/cloud/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
                             <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
@@ -732,7 +732,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
-                            <li><a href="{{ url('/whatsapp/templates') }}" class="{{ request()->is('whatsapp/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            <li><a href="{{ url('/whatsapp/cloud/templates') }}" class="{{ request()->is('whatsapp/cloud/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
                             <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
