@@ -273,6 +273,14 @@ it('GET /whatsapp/cloud/templates/create redireciona se tenant nao tem instancia
         ->assertRedirect(route('whatsapp.templates.cloud.index'));
 });
 
+it('GET /whatsapp/cloud/templates/create renderiza view com sucesso quando ha instancia', function () {
+    $this->actingAs($this->user)
+        ->get('/whatsapp/cloud/templates/create')
+        ->assertStatus(200)
+        ->assertSee('Novo template')
+        ->assertSee('Corpo da mensagem');
+});
+
 // ── sendTest endpoint ─────────────────────────────────────────────────────────
 
 it('POST send-test envia template APPROVED e retorna JSON com provider_message_id', function () {

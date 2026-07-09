@@ -84,8 +84,8 @@
         <div class="fcard">
             <div class="fgroup">
                 <label class="flabel" for="body">Corpo da mensagem</label>
-                <textarea name="body" id="body" class="ftextarea" required maxlength="1024" placeholder="Ex: Olá {{ '{{' }}1{{ '}}' }}, seu pedido {{ '{{' }}2{{ '}}' }} está pronto para retirada.">{{ old('body') }}</textarea>
-                <div class="fhint">Use <code>{{ '{{' }}1{{ '}}' }}</code>, <code>{{ '{{' }}2{{ '}}' }}</code>, etc. para variáveis. Máximo 1024 caracteres.</div>
+                <textarea name="body" id="body" class="ftextarea" required maxlength="1024" placeholder="Ex: Olá @{{1}}, seu pedido @{{2}} está pronto para retirada.">{{ old('body') }}</textarea>
+                <div class="fhint">Use <code>@{{1}}</code>, <code>@{{2}}</code>, etc. para variáveis. Máximo 1024 caracteres.</div>
             </div>
 
             <div class="fgroup">
