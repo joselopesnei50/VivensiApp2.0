@@ -51,16 +51,25 @@ class ProcessCloudApiWebhook implements ShouldQueue
     public function handle(): void
     {
         foreach ($this->payload['entry'] ?? [] as $entry) {
+            $wabaId = $entry['id'] ?? null;
+
             foreach ($entry['changes'] ?? [] as $change) {
-                if (($change['field'] ?? '') !== 'messages') {
-                    continue; // Só tratamos 'messages' no MVP; templates/account_update ficam pra depois.
+                $field = $change['field'] ?? '';
+                $value = $change['value'] ?? [];
+
+                if ($field === 'message_template_status_update') {
+                    $this->handleTemplateStatusUpdate($wabaId, $value);
+                    continue;
                 }
 
-                $value = $change['value'] ?? [];
+                if ($field !== 'messages') {
+                    continue; // Ignora demais campos (billing, account_update, etc.) por enquanto.
+                }
+
                 $phoneNumberId = $value['metadata']['phone_number_id'] ?? null;
 
                 if (!$phoneNumberId) {
-                    Log::warning('CloudApi Job: entry sem phone_number_id', ['entry_id' => $entry['id'] ?? null]);
+                    Log::warning('CloudApi Job: entry sem phone_number_id', ['entry_id' => $wabaId]);
                     continue;
                 }
 
@@ -83,6 +92,31 @@ class ProcessCloudApiWebhook implements ShouldQueue
                 }
             }
         }
+    }
+
+    /**
+     * Processa evento message_template_status_update — Meta notifica quando aprova/rejeita
+     * um template criado via API. Delega ao CloudApiTemplateService::applyStatusUpdate
+     * que atualiza WhatsappTemplate no cache local (isolado por waba_id).
+     */
+    private function handleTemplateStatusUpdate(?string $wabaId, array $value): void
+    {
+        if (!$wabaId) {
+            Log::warning('CloudApi Job: template_status_update sem waba_id');
+            return;
+        }
+
+        $metaTemplateId = (string) ($value['message_template_id'] ?? '');
+        $event          = $value['event']           ?? null; // APPROVED | REJECTED | PAUSED | DISABLED | PENDING_DELETION
+        $reason         = $value['reason']          ?? null;
+
+        if (empty($metaTemplateId) || empty($event)) {
+            Log::warning('CloudApi Job: template_status_update sem id/event', ['payload' => $value]);
+            return;
+        }
+
+        app(\App\Services\WhatsApp\CloudApiTemplateService::class)
+            ->applyStatusUpdate($wabaId, $metaTemplateId, $event, $reason);
     }
 
     private function persistInbound(WhatsappInstance $instance, array $msg, array $contacts): void
