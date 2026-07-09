@@ -103,6 +103,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/whatsapp/cloud/templates',                      [App\Http\Controllers\WhatsappTemplateController::class, 'store'])->name('whatsapp.templates.cloud.store')->middleware('throttle:20,1');
     Route::delete('/whatsapp/cloud/templates/{template}',         [App\Http\Controllers\WhatsappTemplateController::class, 'destroy'])->name('whatsapp.templates.cloud.destroy')->middleware('throttle:20,1');
     Route::post('/whatsapp/cloud/templates/sync',                 [App\Http\Controllers\WhatsappTemplateController::class, 'sync'])->name('whatsapp.templates.cloud.sync')->middleware('throttle:10,1');
+    Route::post('/whatsapp/cloud/templates/{template}/send-test', [App\Http\Controllers\WhatsappTemplateController::class, 'sendTest'])->name('whatsapp.templates.cloud.send-test')->middleware('throttle:5,1');
     Route::post('/whatsapp/instances',                [App\Http\Controllers\Api\WhatsappInstanceController::class, 'store'])->name('whatsapp.instances.store')->middleware('throttle:5,1');
     Route::get('/whatsapp/instances/{id}/status',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'status'])->name('whatsapp.instances.status');
     Route::get('/whatsapp/instances/{id}/health',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'health'])->name('whatsapp.instances.health');

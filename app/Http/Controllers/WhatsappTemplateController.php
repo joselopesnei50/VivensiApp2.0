@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\WhatsappInstance;
 use App\Models\WhatsappTemplate;
 use App\Services\WhatsApp\CloudApiTemplateService;
+use App\Services\WhatsApp\WhatsAppSenderFactory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -152,5 +154,60 @@ class WhatsappTemplateController extends Controller
         }
 
         return back()->with('success', "{$count} template(s) sincronizado(s) da Meta.");
+    }
+
+    /**
+     * Envia mensagem de teste usando o template aprovado.
+     *
+     * Multi-tenancy: template precisa pertencer ao tenant do usuário logado.
+     * Só aceita templates APPROVED (isSendable). Retorna JSON com resultado bruto
+     * do provider (WhatsAppSenderFactory).
+     */
+    public function sendTest(Request $request, WhatsappTemplate $template): JsonResponse
+    {
+        Gate::authorize('access-whatsapp');
+
+        // Isolamento explícito por tenant (IDOR)
+        if ((int) $template->tenant_id !== (int) auth()->user()->tenant_id) {
+            return response()->json(['ok' => false, 'error' => 'Template não encontrado.'], 404);
+        }
+
+        if (!$template->isSendable()) {
+            return response()->json([
+                'ok'    => false,
+                'error' => "Template com status \"{$template->status}\" não pode enviar. Só APPROVED.",
+            ], 422);
+        }
+
+        $data = $request->validate([
+            'to'        => ['required', 'string', 'regex:/^\+?\d{10,15}$/'],
+            'variables' => ['nullable', 'array', 'max:20'],
+            'variables.*' => ['string', 'max:200'],
+        ], [
+            'to.regex' => 'Número em formato E.164 (ex: +5511987654321 ou 5511987654321).',
+        ]);
+
+        $instance = $template->instance;
+        if (!$instance || !$instance->isCloudApi()) {
+            return response()->json(['ok' => false, 'error' => 'Instância vinculada ao template não é Cloud API.'], 422);
+        }
+
+        try {
+            $sender = WhatsAppSenderFactory::forInstance($instance);
+            $result = $sender->sendTemplate(
+                to:           $data['to'],
+                templateName: $template->name,
+                languageCode: $template->language,
+                variables:    array_values($data['variables'] ?? []),
+            );
+        } catch (Throwable $e) {
+            Log::error('sendTest falhou', [
+                'template_id' => $template->id,
+                'error'       => $e->getMessage(),
+            ]);
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+        }
+
+        return response()->json($result);
     }
 }

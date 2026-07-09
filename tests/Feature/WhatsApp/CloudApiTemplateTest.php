@@ -272,3 +272,75 @@ it('GET /whatsapp/cloud/templates/create redireciona se tenant nao tem instancia
         ->get('/whatsapp/cloud/templates/create')
         ->assertRedirect(route('whatsapp.templates.cloud.index'));
 });
+
+// ── sendTest endpoint ─────────────────────────────────────────────────────────
+
+it('POST send-test envia template APPROVED e retorna JSON com provider_message_id', function () {
+    $tpl = WhatsappTemplate::factory()->create([
+        'tenant_id'            => $this->tenant->id,
+        'whatsapp_instance_id' => $this->instance->id,
+        'waba_id'              => $this->instance->waba_id,
+        'status'               => 'APPROVED',
+    ]);
+
+    Http::fake([
+        'graph.facebook.com/*/messages' => Http::response([
+            'messages' => [['id' => 'wamid.TESTE_ABC']],
+        ], 200),
+    ]);
+
+    $response = $this->actingAs($this->user)
+        ->postJson("/whatsapp/cloud/templates/{$tpl->id}/send-test", [
+            'to'        => '+5511987654321',
+            'variables' => ['João'],
+        ]);
+
+    $response->assertStatus(200)
+        ->assertJson(['ok' => true, 'provider' => 'cloud_api', 'provider_message_id' => 'wamid.TESTE_ABC']);
+});
+
+it('POST send-test rejeita template com status PENDING (422)', function () {
+    $tpl = WhatsappTemplate::factory()->create([
+        'tenant_id'            => $this->tenant->id,
+        'whatsapp_instance_id' => $this->instance->id,
+        'waba_id'              => $this->instance->waba_id,
+        'status'               => 'PENDING',
+    ]);
+
+    $this->actingAs($this->user)
+        ->postJson("/whatsapp/cloud/templates/{$tpl->id}/send-test", [
+            'to' => '+5511987654321',
+        ])
+        ->assertStatus(422)
+        ->assertJson(['ok' => false]);
+});
+
+it('POST send-test bloqueia acesso de outro tenant (IDOR, retorna 404)', function () {
+    $outroTenant = Tenant::factory()->create();
+    $outroInstance = WhatsappInstance::factory()->cloudApi()->create(['tenant_id' => $outroTenant->id]);
+    $tpl = WhatsappTemplate::factory()->create([
+        'tenant_id'            => $outroTenant->id,
+        'whatsapp_instance_id' => $outroInstance->id,
+        'waba_id'              => $outroInstance->waba_id,
+        'status'               => 'APPROVED',
+    ]);
+
+    $this->actingAs($this->user)
+        ->postJson("/whatsapp/cloud/templates/{$tpl->id}/send-test", ['to' => '+5511987654321'])
+        ->assertStatus(404);
+});
+
+it('POST send-test valida formato E.164 do telefone', function () {
+    $tpl = WhatsappTemplate::factory()->create([
+        'tenant_id'            => $this->tenant->id,
+        'whatsapp_instance_id' => $this->instance->id,
+        'waba_id'              => $this->instance->waba_id,
+        'status'               => 'APPROVED',
+    ]);
+
+    foreach (['abc', '123', '+55abc12345', '+55123'] as $badPhone) {
+        $this->actingAs($this->user)
+            ->postJson("/whatsapp/cloud/templates/{$tpl->id}/send-test", ['to' => $badPhone])
+            ->assertStatus(422);
+    }
+});
