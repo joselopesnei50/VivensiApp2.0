@@ -639,7 +639,7 @@
             
             <div style="display: flex; align-items: center; margin-bottom: 25px; position: relative; z-index: 1;">
                 <div style="position: relative; margin-right: 15px;">
-                    <img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="Bruce" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); padding: 2px; object-fit: cover;">
+                    <img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); padding: 2px; object-fit: cover;">
                     <div style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: #10b981; border: 2px solid #0f172a; border-radius: 50%;"></div>
                 </div>
                 <div>

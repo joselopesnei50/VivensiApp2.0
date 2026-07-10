@@ -47,7 +47,7 @@
             <div style="position: relative;">
                 <div style="position: absolute; inset: -12px; background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%); border-radius: 50%; animation: glow-ring 3s ease-in-out infinite;"></div>
                 <div style="position: absolute; inset: -4px; border: 1px solid rgba(99,102,241,0.3); border-radius: 50%; animation: spin-slow 8s linear infinite;"></div>
-                <img src="{{ asset('img/nova-ideintidade-bruce/BruceIA.png') }}" alt="Bruce AI"
+                <img src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce AI"
                      style="width: 90px; height: 90px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.1); object-fit: cover; position: relative; z-index: 1; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                 <div style="position: absolute; bottom: 2px; right: 2px; width: 16px; height: 16px; background: #10b981; border: 2px solid #0f172a; border-radius: 50%; z-index: 2; box-shadow: 0 0 8px #10b981;"></div>
             </div>

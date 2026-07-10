@@ -665,7 +665,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mgr_ai_active ? '200px' : '0' }};">
                         <ul>
-                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                             @if(config('strategy_room.enabled'))
                             <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
                             @endif
@@ -849,7 +849,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_ai_active ? '200px' : '0' }};">
                         <ul>
-                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                             @if(config('strategy_room.enabled'))
                             <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
                             @endif
@@ -945,7 +945,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mei_ai_active ? '200px' : '0' }};">
                         <ul>
-                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                             @if(config('strategy_room.enabled'))
                             <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
                             @endif
@@ -1772,7 +1772,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="bruce-fab" id="bruceFab">
     <div class="bruce-panel" id="brucePanel">
         <div class="bruce-panel-head">
-            <img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/icon-bruceIA.png') }}" alt="Bruce" onerror="this.style.display='none'">
+            <img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce" onerror="this.style.display='none'">
             <div class="bruce-info">
                 <div class="bruce-name">Bruce AI</div>
                 <div class="bruce-status">● Online — DeepSeek</div>

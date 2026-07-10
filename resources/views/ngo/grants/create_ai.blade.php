@@ -80,7 +80,7 @@
     <div class="ai-import-card">
         <div class="loading-overlay" id="loadingOverlay">
             <div class="mb-4">
-                <img loading="lazy" src="{{ asset('img/nova-ideintidade-bruce/BruceIA.png') }}" class="rounded-circle shadow" style="width: 80px; height: 80px; animation: pulse 2s infinite;">
+                <img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" class="rounded-circle shadow" style="width: 80px; height: 80px; animation: pulse 2s infinite;">
             </div>
             <h5 class="fw-bold text-dark">Farejando Dados...</h5>
             <p class="text-muted small">O Bruce está analisando o edital e extraindo as informações financeiras.</p>
