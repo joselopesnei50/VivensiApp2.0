@@ -57,7 +57,7 @@
             <a href="{{ url('/ngo/audit') }}" class="btn-premium btn-audit" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-weight: 800; padding: 14px 28px; border-radius: 18px;">
                 <i class="fas fa-eye me-2" style="color: var(--ngo-primary);"></i> Central de Auditoria
             </a>
-            <a href="{{ url('/ngo/grants/create') }}" class="btn-premium" style="background: white; color: #0f172a; text-decoration: none; border: none; font-weight: 800; padding: 14px 28px; border-radius: 18px; box-shadow: 0 10px 30px rgba(255,255,255,0.1);">
+            <a href="{{ url('/ngo/grants/create') }}" class="btn-premium" style="background: white !important; color: #0f172a !important; text-decoration: none; border: none; font-weight: 800; padding: 14px 28px; border-radius: 18px; box-shadow: 0 10px 30px rgba(255,255,255,0.1);">
                 <i class="fas fa-plus me-2" style="color: var(--ngo-primary);"></i> Novo Edital
             </a>
         </div>
