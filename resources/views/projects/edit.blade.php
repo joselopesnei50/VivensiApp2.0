@@ -15,7 +15,7 @@
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Ajustar Portfólio</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Refinando a visão e o planejamento do projeto <strong>{{ $project->name }}</strong>.</p>
         </div>
-        <a href="{{ $basePath . '/projects/details/'.$project->id }}" class="btn-premium" style="background: white; color: #1e293b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
+        <a href="{{ $basePath . '/projects/details/'.$project->id }}" class="btn-premium" style="background: white !important; color: #1e293b !important; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700;">
             <i class="fas fa-arrow-left me-2"></i> Voltar ao Painel
         </a>
     </div>

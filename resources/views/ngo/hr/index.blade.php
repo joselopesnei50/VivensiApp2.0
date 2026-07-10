@@ -252,13 +252,13 @@
                 <button type="button" class="btn-ds btn-ds-outline" style="font-size: 0.8rem; padding: 5px 10px;" onclick='openCertificateModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
                     <i class="fas fa-certificate"></i> Certificado
                 </button>
-                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fffbeb; color: #b45309; padding: 5px 10px; border: 1px solid #fde68a;" onclick='openLogHoursModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fffbeb !important; color: #b45309 !important; padding: 5px 10px; border: 1px solid #fde68a;" onclick='openLogHoursModal({{ (int) $volunteer->id }}, @json($volunteer->name))'>
                     <i class="fas fa-plus"></i> Horas
                 </button>
-                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #f0fdf4; color: #166534; padding: 5px 10px; border: 1px solid #bbf7d0;" onclick='openHourLogs({{ (int) $volunteer->id }}, @json($volunteer->name))'>
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #f0fdf4 !important; color: #166534 !important; padding: 5px 10px; border: 1px solid #bbf7d0;" onclick='openHourLogs({{ (int) $volunteer->id }}, @json($volunteer->name))'>
                     <i class="fas fa-history"></i> Histórico
                 </button>
-                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #eef2ff; color: #4338ca; padding: 5px 10px;"
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #eef2ff !important; color: #4338ca !important; padding: 5px 10px;"
                     onclick='openEditVolunteer({{ (int) $volunteer->id }}, @json($volunteer->name), @json($volunteer->email ?? ""), @json($volunteer->phone ?? ""), @json($volunteer->skills ?? ""), @json($volunteer->availability ?? ""))'>
                     <i class="fas fa-pen"></i> Editar
                 </button>
@@ -266,17 +266,17 @@
                 <form method="POST" action="{{ url('/ngo/hr/volunteers/'.$volunteer->id.'/toggle-status') }}" style="display:inline;">
                     @csrf @method('PATCH')
                     @if(($volunteer->status ?? 'active') === 'active')
-                    <button type="submit" class="btn-premium" style="font-size: 0.8rem; background: #f1f5f9; color: #475569; padding: 5px 10px;" title="Desativar voluntário">
+                    <button type="submit" class="btn-premium" style="font-size: 0.8rem; background: #f1f5f9 !important; color: #475569 !important; padding: 5px 10px;" title="Desativar voluntário">
                         <i class="fas fa-user-slash"></i>
                     </button>
                     @else
-                    <button type="submit" class="btn-premium" style="font-size: 0.8rem; background: #dcfce7; color: #16a34a; padding: 5px 10px;" title="Reativar voluntário">
+                    <button type="submit" class="btn-premium" style="font-size: 0.8rem; background: #dcfce7 !important; color: #16a34a !important; padding: 5px 10px;" title="Reativar voluntário">
                         <i class="fas fa-user-check"></i>
                     </button>
                     @endif
                 </form>
                 {{-- Delete with cert-count warning --}}
-                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fee2e2; color: #dc2626; padding: 5px 10px;"
+                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fee2e2 !important; color: #dc2626 !important; padding: 5px 10px;"
                     onclick='confirmDeleteVolunteer({{ (int) $volunteer->id }}, @json($volunteer->name), {{ $vCertCount }})'>
                     <i class="fas fa-trash"></i>
                 </button>

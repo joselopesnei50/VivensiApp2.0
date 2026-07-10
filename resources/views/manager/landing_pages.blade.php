@@ -40,10 +40,10 @@
             <a href="{{ url('/ngo/landing-pages/builder/' . $page->id) }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center;">
                 <i class="fas fa-edit"></i> Editar
             </a>
-            <a href="{{ url('/ngo/landing-pages/' . $page->id . '/leads') }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center; background: #f8fafc; color: #4f46e5; border: 1px solid #e2e8f0;">
+            <a href="{{ url('/ngo/landing-pages/' . $page->id . '/leads') }}" class="btn-premium" style="flex: 1; font-size: 0.8rem; justify-content: center; background: #f8fafc !important; color: #4f46e5 !important; border: 1px solid #e2e8f0;">
                 <i class="fas fa-users"></i> Leads
             </a>
-            <a href="{{ url('/lp/' . $page->slug) }}" target="_blank" class="btn-premium" style="background: #f1f5f9; color: #475569; padding: 10px; border-radius: 8px;">
+            <a href="{{ url('/lp/' . $page->slug) }}" target="_blank" class="btn-premium" style="background: #f1f5f9 !important; color: #475569 !important; padding: 10px; border-radius: 8px;">
                 <i class="fas fa-external-link-alt"></i>
             </a>
         </div>
@@ -58,7 +58,7 @@
 
             <form action="{{ url('/ngo/landing-pages/' . $page->id . '/duplicate') }}" method="POST" style="flex:1;" onsubmit="return confirm('Duplicar esta Landing Page (com os mesmos blocos)?')">
                 @csrf
-                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff; color: #4f46e5; border: 1px solid #e2e8f0;">
+                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff !important; color: #4f46e5 !important; border: 1px solid #e2e8f0;">
                     <i class="fas fa-clone"></i> Duplicar
                 </button>
             </form>
@@ -66,7 +66,7 @@
             <form action="{{ url('/ngo/landing-pages/' . $page->id) }}" method="POST" style="flex:1;" onsubmit="return confirm('Excluir esta Landing Page? Isso remove também os blocos e leads capturados.')">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff; color: #ef4444; border: 1px solid rgba(239,68,68,.25);">
+                <button type="submit" class="btn-premium" style="width:100%; justify-content:center; font-size: 0.8rem; background: #ffffff !important; color: #ef4444 !important; border: 1px solid rgba(239,68,68,.25);">
                     <i class="fas fa-trash"></i> Excluir
                 </button>
             </form>

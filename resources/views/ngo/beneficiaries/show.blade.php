@@ -263,7 +263,7 @@
                 </div>
                 <div style="display:flex; gap: 10px;">
                     <button class="btn-premium" type="submit"><i class="fas fa-filter"></i> Filtrar</button>
-                    <a class="btn-premium" style="background:#f1f5f9; color:#0f172a;" href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}">Limpar</a>
+                    <a class="btn-premium" style="background:#f1f5f9 !important; color:#0f172a !important;" href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}">Limpar</a>
                 </div>
             </form>
         </div>
@@ -317,13 +317,13 @@
                     <div style="display:flex; justify-content: space-between; gap: 10px; align-items:center; margin-top: 6px; flex-wrap: wrap;">
                         <span style="font-size: 0.75rem; color: #94a3b8;">Registrado por: {{ $attendance->user->name ?? 'Sistema' }}</span>
                         <div style="display:flex; gap: 8px; align-items:center;">
-                            <button type="button" class="btn-premium" style="font-size:.78rem; padding: 4px 10px; background:#f1f5f9; color:#0f172a;" onclick="toggleAttendanceEdit({{ (int) $attendance->id }})">
+                            <button type="button" class="btn-premium" style="font-size:.78rem; padding: 4px 10px; background:#f1f5f9 !important; color:#0f172a !important;" onclick="toggleAttendanceEdit({{ (int) $attendance->id }})">
                                 <i class="fas fa-pen"></i> Editar
                             </button>
                             <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance/' . $attendance->id) }}" onsubmit="return confirm('Remover este atendimento?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn-premium" style="font-size:.78rem; padding: 4px 10px; background:#fee2e2; color:#991b1b;">
+                                <button type="submit" class="btn-premium" style="font-size:.78rem; padding: 4px 10px; background:#fee2e2 !important; color:#991b1b !important;">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

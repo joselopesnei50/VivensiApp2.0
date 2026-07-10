@@ -19,7 +19,7 @@
         <a href="{{ url('/ngo/beneficiaries/export') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#4f46e5;">
             <i class="fas fa-file-csv"></i> Exportar CSV
         </a>
-        <a href="{{ url('/ngo/beneficiaries/print') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#f1f5f9; color:#0f172a;">
+        <a href="{{ url('/ngo/beneficiaries/print') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#f1f5f9 !important; color:#0f172a !important;">
             <i class="fas fa-print"></i> Imprimir
         </a>
         <a href="{{ url('/ngo/beneficiaries/create') }}#importar" class="btn-premium" style="background:#0f766e;">
@@ -71,7 +71,7 @@
         </div>
         <div style="display:flex; gap: 10px;">
             <button class="btn-premium" type="submit"><i class="fas fa-filter"></i> Filtrar</button>
-            <a class="btn-premium" style="background:#f1f5f9; color:#0f172a;" href="{{ url('/ngo/beneficiaries') }}">Limpar</a>
+            <a class="btn-premium" style="background:#f1f5f9 !important; color:#0f172a !important;" href="{{ url('/ngo/beneficiaries') }}">Limpar</a>
         </div>
     </form>
 </div>

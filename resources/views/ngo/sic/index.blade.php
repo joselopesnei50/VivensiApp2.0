@@ -55,7 +55,7 @@
         </div>
         <div style="display:flex; gap: 10px;">
             <button type="submit" class="btn-premium" style="justify-content:center;"><i class="fas fa-filter"></i> Filtrar</button>
-            <a href="{{ route('sic.index') }}" class="btn-premium" style="background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0;">Limpar</a>
+            <a href="{{ route('sic.index') }}" class="btn-premium" style="background:#f1f5f9 !important; color:#0f172a !important; border:1px solid #e2e8f0;">Limpar</a>
         </div>
     </form>
 </div>

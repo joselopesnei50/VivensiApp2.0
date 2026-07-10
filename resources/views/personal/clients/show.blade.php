@@ -27,12 +27,12 @@
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
             @endif
-            <a href="{{ route('clients.edit', $client) }}" class="btn-premium" style="background: #fef3c7; color: #92400e; border: none;">
+            <a href="{{ route('clients.edit', $client) }}" class="btn-premium" style="background: #fef3c7 !important; color: #92400e !important; border: none;">
                 <i class="fas fa-pen"></i> Editar
             </a>
             <form action="{{ route('clients.destroy', $client) }}" method="POST" onsubmit="return confirm('Remover este cliente?');" style="display:inline;">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn-premium" style="background: #fee2e2; color: #991b1b; border: none;">
+                <button type="submit" class="btn-premium" style="background: #fee2e2 !important; color: #991b1b !important; border: none;">
                     <i class="fas fa-trash"></i> Remover
                 </button>
             </form>
