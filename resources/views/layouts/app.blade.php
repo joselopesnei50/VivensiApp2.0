@@ -2134,6 +2134,8 @@ document.addEventListener('submit', function(e) {
     }, 15000);
 }, true);
 </script>
+
+@include('partials.welcome_modal')
 </body>
 </html>
 

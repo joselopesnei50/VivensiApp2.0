@@ -93,6 +93,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // ── Locale switcher (Phase 6) ─────────────────────────────────────────────
     Route::post('/locale/{code}', [App\Http\Controllers\LocaleController::class, 'set'])->name('locale.set');
 
+    // ── Welcome Modal (dismiss após 1º login) ─────────────────────────────────
+    Route::post('/welcome/dismiss', [App\Http\Controllers\WelcomeModalController::class, 'dismiss'])
+        ->name('welcome.dismiss')
+        ->middleware('throttle:10,1');
+
     // ── Smart Analysis ────────────────────────────────────────────────────────
     Route::get('/smart-analysis',       [App\Http\Controllers\SmartAnalysisController::class, 'index']);
     Route::post('/smart-analysis/deep', [App\Http\Controllers\SmartAnalysisController::class, 'generateDeepAnalysis'])->middleware('throttle:web_ai');

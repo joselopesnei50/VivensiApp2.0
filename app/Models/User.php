@@ -39,6 +39,7 @@ class User extends Authenticatable
         'two_factor_secret',
         'two_factor_recovery_codes',
         'two_factor_confirmed_at',
+        'welcome_dismissed_at',
     ];
 
     public function hasTwoFactorEnabled(): bool
@@ -72,6 +73,7 @@ class User extends Authenticatable
         'onboarding_completed_at'    => 'datetime',
         'terms_accepted_at'          => 'datetime',
         'onboarding_steps'           => 'array',
+        'welcome_dismissed_at'       => 'datetime',
     ];
 
     public function tenant()
