@@ -2230,5 +2230,6 @@ function ptToggle(id) {
     });
 })();
 </script>
+@include('partials.bruce_public_popup')
 </body>
 </html>

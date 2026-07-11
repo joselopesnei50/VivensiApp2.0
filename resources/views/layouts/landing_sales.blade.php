@@ -233,5 +233,6 @@
     </a>
 
     @yield('scripts')
+    @include('partials.bruce_public_popup')
 </body>
 </html>
