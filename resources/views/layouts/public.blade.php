@@ -244,6 +244,8 @@
     @include('partials.whatsapp-button')
     <!-- Cookie Consent Banner (LGPD) -->
     @include('partials.cookie-banner')
+    <!-- Popup público BruceIA (canto inferior direito, aparece após 6s) -->
+    @include('partials.bruce_public_popup')
 
 </body>
 </html>
