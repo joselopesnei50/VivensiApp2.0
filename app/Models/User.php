@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Crypt;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use App\Services\BrevoService;
@@ -40,11 +42,37 @@ class User extends Authenticatable
         'two_factor_recovery_codes',
         'two_factor_confirmed_at',
         'welcome_dismissed_at',
+        'phone_bidx',
     ];
 
     public function hasTwoFactorEnabled(): bool
     {
         return !is_null($this->two_factor_confirmed_at);
+    }
+
+    // ── Encryption at-rest (LGPD C4) ─────────────────────────────────────────
+    // Phone cifrado com AES-256-CBC. Blind index HMAC-SHA256 permite busca.
+    // Plaintext legado (pre-backfill) e aceito no getter via fallback catch.
+
+    public function getPhoneAttribute(?string $value): ?string
+    {
+        if ($value === null || $value === '') return $value;
+        try {
+            return Crypt::decryptString($value);
+        } catch (DecryptException) {
+            return $value; // Plaintext legacy
+        }
+    }
+
+    public function setPhoneAttribute(?string $value): void
+    {
+        if ($value === null || $value === '') {
+            $this->attributes['phone']      = $value;
+            $this->attributes['phone_bidx'] = null;
+            return;
+        }
+        $this->attributes['phone']      = Crypt::encryptString($value);
+        $this->attributes['phone_bidx'] = hash_hmac('sha256', $value, config('app.key'));
     }
 
     public function supervisor()

@@ -121,8 +121,9 @@ class LeadService
         }
 
         return DB::transaction(function () use ($tenant, $email, $attrs) {
+            // Email cifrado at-rest (C4). Busca via blind index HMAC.
             $existing = Lead::where('tenant_id', $tenant->id)
-                ->where('email', $email)
+                ->where('email_bidx', Lead::hashForBidx($email))
                 ->first();
 
             if ($existing) {
