@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\WhatsappChat;
+use App\Models\WhatsappConversation;
 use App\Models\WhatsappInstance;
 use App\Models\WhatsappMessage;
 use Illuminate\Bus\Queueable;
@@ -216,6 +217,9 @@ class ProcessCloudApiWebhook implements ShouldQueue
      * Atualiza status de mensagens outbound (delivered/read/failed).
      * Idempotente — se WhatsappMessage não existe (ex: enviada por outro sistema),
      * ignoramos silenciosamente.
+     *
+     * Alem de status, tambem captura conversation+pricing quando presente
+     * (Fase 5 Billing) e linka a WhatsappMessage ao seu WhatsappConversation.
      */
     private function applyStatus(WhatsappInstance $instance, array $status): void
     {
@@ -238,11 +242,121 @@ class ProcessCloudApiWebhook implements ShouldQueue
             return;
         }
 
+        $updates = [];
         $currentRank = $ranking[$msg->status] ?? 0;
         $newRank     = $ranking[$newStatus] ?? 0;
 
         if ($newRank > $currentRank) {
-            $msg->update(['status' => $newStatus]);
+            $updates['status'] = $newStatus;
         }
+
+        // Captura conversation+pricing (Fase 5 Billing) apenas se ambos vieram.
+        // Meta envia isso tipicamente no primeiro status "sent" da conversa.
+        if (!empty($status['conversation']) && !empty($status['pricing'])) {
+            $conversation = $this->upsertConversation($instance, $status);
+
+            if ($conversation && !$msg->whatsapp_conversation_id) {
+                $updates['whatsapp_conversation_id'] = $conversation->id;
+                $updates['meta_pricing_category']    = $conversation->category;
+            }
+        }
+
+        if (!empty($updates)) {
+            $msg->update($updates);
+        }
+    }
+
+    /**
+     * Cria ou atualiza WhatsappConversation a partir do payload conversation+pricing
+     * do webhook Meta. Idempotente por (instance_id, meta_conversation_id).
+     *
+     * Payload Meta (statuses[]):
+     *   "conversation": {
+     *     "id": "abc123",
+     *     "expiration_timestamp": "1755180000",
+     *     "origin": { "type": "utility" }
+     *   },
+     *   "pricing": {
+     *     "billable": true,
+     *     "pricing_model": "CBP",
+     *     "category": "utility"
+     *   }
+     */
+    private function upsertConversation(WhatsappInstance $instance, array $status): ?WhatsappConversation
+    {
+        $conv       = $status['conversation'] ?? [];
+        $pricing    = $status['pricing']      ?? [];
+        $convId     = $conv['id'] ?? null;
+
+        if (!$convId) {
+            return null;
+        }
+
+        $category    = $pricing['category'] ?? ($conv['origin']['type'] ?? null);
+        $originType  = $conv['origin']['type'] ?? null;
+        $recipientId = $status['recipient_id'] ?? null;
+        $countryCode = $this->deriveCountryCode($recipientId);
+
+        // Fallback: se webhook nao trouxe billable ou pricing_model.
+        $isBillable    = (bool) ($pricing['billable'] ?? true);
+        $pricingModel  = strtoupper((string) ($pricing['pricing_model'] ?? WhatsappConversation::PRICING_MODEL_CBP));
+
+        // Custo em USD micros — Meta nao envia valor no webhook, calculamos via config.
+        $costMicros = $isBillable ? $this->resolveCostMicros($countryCode, $category) : 0;
+
+        $expiresAt = isset($conv['expiration_timestamp'])
+            ? \Carbon\Carbon::createFromTimestamp((int) $conv['expiration_timestamp'])
+            : now()->addDay();
+
+        return WhatsappConversation::withoutGlobalScope('tenant')->updateOrCreate(
+            [
+                'whatsapp_instance_id' => $instance->id,
+                'meta_conversation_id' => $convId,
+            ],
+            [
+                'tenant_id'       => $instance->tenant_id,
+                'contact_wa_id'   => (string) ($recipientId ?? ''),
+                'category'        => $category ?? WhatsappConversation::CATEGORY_UTILITY,
+                'origin_type'     => $originType,
+                'expires_at'      => $expiresAt,
+                'started_at'      => now(),
+                'cost_usd_micros' => $costMicros,
+                'pricing_model'   => $pricingModel,
+                'is_billable'     => $isBillable,
+                'country_code'    => $countryCode,
+            ]
+        );
+    }
+
+    /**
+     * Deriva o country code (ISO 3166-1 alpha-2) do numero E.164 sem +.
+     * Cobre os principais paises Vivensi; fallback pra null (dashboard usa 'default').
+     */
+    private function deriveCountryCode(?string $recipientId): ?string
+    {
+        if (!$recipientId) {
+            return null;
+        }
+
+        return match (true) {
+            str_starts_with($recipientId, '55') => 'BR',
+            str_starts_with($recipientId, '1')  => 'US',
+            default                             => null,
+        };
+    }
+
+    /**
+     * Resolve custo em USD micros pela tabela config/whatsapp_pricing.php.
+     */
+    private function resolveCostMicros(?string $countryCode, ?string $category): int
+    {
+        if (!$category) {
+            return 0;
+        }
+
+        $table   = config('whatsapp_pricing.pricing', []);
+        $country = $countryCode && isset($table[$countryCode]) ? $countryCode : 'default';
+
+        return (int) ($table[$country][$category] ?? 0);
     }
 }

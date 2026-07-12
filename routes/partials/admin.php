@@ -15,6 +15,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/bruno/clear',   [App\Http\Controllers\Admin\BrunoSandboxController::class, 'clear'])->name('admin.bruno.clear');
         Route::get('/bruno/metrics',  [App\Http\Controllers\Admin\BrunoMetricsController::class, 'index'])->name('admin.bruno.metrics');
 
+        // WhatsApp Cloud API — Consumo / Faturamento (Fase 5.1 tracking)
+        Route::get('/whatsapp-billing', [App\Http\Controllers\Admin\WhatsappBillingController::class, 'index'])->name('admin.whatsapp.billing');
+
         // Tenants
         Route::get('/tenants',             [App\Http\Controllers\AdminController::class, 'tenants'])->name('admin.tenants.index');
         Route::get('/tenants/create',      [App\Http\Controllers\AdminController::class, 'createTenant'])->name('admin.tenants.create');
