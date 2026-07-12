@@ -13,6 +13,20 @@ trait BelongsToTenant
         return $this->belongsTo(\App\Models\Tenant::class);
     }
 
+    /**
+     * Bypass AUDITADO do scope de tenant: exige o tenant explícito na mesma
+     * expressão, tornando impossível esquecer o filtro manual.
+     *
+     * Preferir este helper a `withoutGlobalScope('tenant')` solto em webhooks,
+     * jobs e rotas públicas — o par bypass+filtro fica atômico e grepável.
+     */
+    public static function forTenantUnscoped(int $tenantId): Builder
+    {
+        return static::query()
+            ->withoutGlobalScope('tenant')
+            ->where((new static)->getTable() . '.tenant_id', $tenantId);
+    }
+
     protected static function bootBelongsToTenant()
     {
         // 1. Aplicar filtro global de tenant_id em todas as consultas (SELECT)

@@ -31,8 +31,15 @@ Passos:
 1. Classificar cada ocorrência: ✅ legítimo / ⚠️ legítimo mas frágil (sem `where('tenant_id')` na mesma query) / 🔴 vulnerável.
 2. Para cada 🔴: PoC de teste (tenant A acessa recurso do tenant B) ANTES do fix — vira regressão.
 3. Fix mínimo por ocorrência (where tenant_id explícito ou resolução correta).
-4. Helper `withoutTenantScopeAuditado(int $tenantId, Closure $q)`; migrar as ⚠️ para ele.
-5. Suíte `TenantIsolationRegressionTest` cobrindo endpoints públicos (Transparency, Sic, PublicRaffle, Prospecting).
+4. ✅ Helper criado como `Model::forTenantUnscoped(int $tenantId)` no trait BelongsToTenant — par bypass+filtro atômico.
+   Migração em massa dos 61 call sites NÃO feita de propósito (churn + risco de conflito com sessão C4.6);
+   usar o helper daqui pra frente em código novo.
+5. ✅ Suíte `tests/Feature/Security/TenantIsolationRegressionTest.php` — 8 testes: docs Transparency cross-tenant,
+   portal não publicado, SIC cross-tenant, Prospecting destroy/bulk-delete cross-tenant, helper.
+   (Rifa coberta por PublicRaffleStatusTest; LGPD por IdorRegressionTest do commit fdfbb04.)
+
+**P0 CONCLUÍDO em 2026-07-12** — commits 398bcd0 (fixes export LGPD + rifa) + task 3.
+Complementar ao fdfbb04 (auditoria C1 ampla da sessão paralela, foco cross-tenant; este P0 achou o intra-tenant).
 
 **Saída:** zero 🔴; ocorrências restantes usam helper ou têm justificativa.
 
