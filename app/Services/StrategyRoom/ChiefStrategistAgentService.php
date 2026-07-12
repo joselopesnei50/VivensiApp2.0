@@ -69,7 +69,7 @@ class ChiefStrategistAgentService
             ['role' => 'user',   'content' => 'Sintetize as falas acima e proponha UMA acao prioritaria. Devolva SOMENTE o JSON no formato instruido.'],
         ];
 
-        $response = $this->deepSeek->chat($messages, $this->model());
+        $response = $this->deepSeek->chat($messages, $this->model(), null, (int) $session->tenant_id);
 
         if (isset($response['error'])) {
             Log::warning('StrategyRoom/Chefe: DeepSeek erro', [

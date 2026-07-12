@@ -88,7 +88,7 @@ class LeadQualificationService
         try {
             $raw = $provider === 'gemini'
                 ? $this->callGemini($systemPrompt, $userPrompt)
-                : $this->callDeepSeek($systemPrompt, $userPrompt);
+                : $this->callDeepSeek($systemPrompt, $userPrompt, (int) $tenant->id);
         } catch (\Throwable $e) {
             Log::warning('LeadQualification: provedor falhou', [
                 'provider' => $provider,
@@ -272,12 +272,12 @@ PROMPT;
 
     // ── Provider calls ─────────────────────────────────────────────────────
 
-    private function callDeepSeek(string $system, string $user): string
+    private function callDeepSeek(string $system, string $user, ?int $tenantId = null): string
     {
         $res = $this->deepSeek->chat([
             ['role' => 'system', 'content' => $system],
             ['role' => 'user',   'content' => $user],
-        ]);
+        ], null, null, $tenantId);
 
         if (isset($res['error'])) {
             throw new RuntimeException('DeepSeek error: ' . (is_string($res['error']) ? $res['error'] : json_encode($res['error'])));

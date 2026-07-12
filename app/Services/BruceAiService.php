@@ -92,7 +92,7 @@ class BruceAiService
         $maxIter = $tools ? 5 : 1;
 
         for ($iter = 0; $iter < $maxIter; $iter++) {
-            $response = $this->deepSeek->chat($messages, null, $tools);
+            $response = $this->deepSeek->chat($messages, null, $tools, $tenantId);
 
             if (isset($response['error'])) {
                 return ['error' => $response['error']];
@@ -303,7 +303,7 @@ class BruceAiService
             $response = $this->deepSeek->chat([
                 ['role' => 'system', 'content' => $this->buildSystemPrompt($tenantId, $role)],
                 ['role' => 'user',   'content' => $prompt],
-            ]);
+            ], null, null, $tenantId);
 
             return data_get($response, 'choices.0.message.content', '')
                 ?: 'Adicione mais transações para gerar insights precisos.';

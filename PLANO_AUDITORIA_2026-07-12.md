@@ -87,6 +87,22 @@ Ponto de partida: `DeepSeekService` lê key de `SystemSetting deepseek_api_key`,
 
 **Saída:** matriz serviço × dados × risco; fixes; canário da key.
 
+### Resultado P1.a (2026-07-12)
+
+**Verificado:** key isolada em `SystemSetting` (canário C2 já cobre `deepseek_api_key`), HTTPS+timeout OK, anti-injection presente onde importa (LeadQualification enum+normalize, Financial/Intelligence "proibe fora da lista", Bruno ANTI-ALUCINACAO).
+
+**Corrigido:**
+- `DeepSeekService::chat()` retorna erro genérico + `error_code` (`ai_not_configured`, `ai_invalid_key`, `ai_upstream_error`, `ai_connection_error`, `ai_quota_exceeded`). Body cru fica só no Log. Fecha vazamento em 6 controllers (BruceAi, Chat, PersonalBudget, BrunoSandbox, NgoGrant, Whatsapp) sem tocá-los.
+- `retry(2, 100, null, false)` — preserva Response final pra diferenciar 401/5xx (antes retry lançava exception e apagava a distinção UX).
+- `AiCallQuotaService` novo: cap diário por tenant (default 500, override via `SystemSetting ai_daily_quota_per_tenant`), TTL até fim do dia UTC.
+- Assinatura `DeepSeekService::chat($messages, $model=null, $tools=null, ?int $tenantId=null)` — propagado nos 8 call sites que conhecem o tenant: BruceAiService (chat + dailyInsight), LeadQualificationService, 5 StrategyRoom (Programs, Mobilization, Intelligence, Financial, ChiefStrategist). ChatController e PersonalBudgetController mantêm sem — já limitados por `web_ai` per-user, não são vetor de background.
+
+**Testes:** `DeepSeekHardeningTest` (8 verdes): sanitização de body upstream (500/401), sem key, cota per-tenant, isolamento de cota, bypass sem tenantId, override via SystemSetting. Security 62/62, IA 102/102.
+
+**Reclassificado:** "prompt injection via WhatsApp inbound" (agent marcou CRÍTICO) → BAIXO. Output do LeadQualification é enum forte + normalize com max 300 chars; sem canal pra exfil de PII do sistema.
+
+**Não implementado (fora de escopo mínimo):** ChatController/PersonalBudgetController sem tenantId propagado (já cobertos por `web_ai` per-user); PII masking nos prompts (não é vazamento cross-tenant — a DeepSeek é operador em conformidade com a política LGPD do próprio tenant).
+
 ## P1.b — Campanhas de e-mail (item 5)
 
 Ponto de partida: `EmailQuotaService`, controllers Admin/Manager/Ngo EmailCampaignController, `BrevoService`.

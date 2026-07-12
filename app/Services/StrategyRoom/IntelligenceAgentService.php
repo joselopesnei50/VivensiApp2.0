@@ -70,7 +70,7 @@ class IntelligenceAgentService
         $entityIds   = ['edital' => [], 'projeto' => [], 'cliente' => [], 'prospect' => []]; // ids retornados pelas tools
 
         for ($iter = 0; $iter < self::MAX_TOOL_ITERATIONS + 1; $iter++) {
-            $response = $this->deepSeek->chat($messages, $this->model(), $tools);
+            $response = $this->deepSeek->chat($messages, $this->model(), $tools, $tenantId);
 
             if (isset($response['error'])) {
                 Log::warning('StrategyRoom/Inteligencia: DeepSeek erro', [

@@ -60,7 +60,7 @@ class ProgramsAgentService
         $toolsCalled = [];
 
         for ($iter = 0; $iter < self::MAX_TOOL_ITERATIONS + 1; $iter++) {
-            $response = $this->deepSeek->chat($messages, $this->model(), $tools);
+            $response = $this->deepSeek->chat($messages, $this->model(), $tools, $tenantId);
 
             if (isset($response['error'])) {
                 Log::warning('StrategyRoom/Programas: DeepSeek erro', [
