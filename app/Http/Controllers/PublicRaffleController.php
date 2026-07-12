@@ -37,7 +37,10 @@ class PublicRaffleController extends Controller
         try {
             \Illuminate\Support\Facades\Log::info("Iniciando reserva para rifa: $slug");
         } catch (\Exception $e) {}
-        $raffle = Raffle::withoutGlobalScope('tenant')->where('slug', $slug)->firstOrFail();
+        $raffle = Raffle::withoutGlobalScope('tenant')
+            ->where('slug', $slug)
+            ->where('status', 'active')
+            ->firstOrFail();
         $tenant = $raffle->tenant;
 
         // Ensure NGO has PIX configured

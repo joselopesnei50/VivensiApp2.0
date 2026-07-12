@@ -7,8 +7,6 @@ use App\Models\LgpdDataRequest;
 use App\Models\LoginActivity;
 use App\Models\MeetingBooking;
 use App\Models\User;
-use App\Models\WhatsappChat;
-use App\Models\WhatsappMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -29,8 +27,6 @@ use ZipArchive;
  * Categorias exportadas:
  *   - profile            → dados da conta (name, email, phone, roles)
  *   - login_activity     → historico de logins (ultimos 90d)
- *   - whatsapp_chats     → conversas onde o user participou
- *   - whatsapp_messages  → mensagens (limite 5000 mais recentes)
  *   - meeting_bookings   → agendamentos (quando user e o cliente)
  *   - lgpd_requests      → historico de solicitacoes LGPD do proprio user
  *   - consents           → registros de consentimento LGPD
@@ -130,17 +126,9 @@ class ExportUserLgpdDataJob implements ShouldQueue
                 ->limit(500)
                 ->get(['created_at', 'ip_address', 'user_agent', 'success'])
                 ->toArray()),
-            'whatsapp_chats'    => $this->safeCollect(fn() => WhatsappChat::withoutGlobalScope('tenant')
-                ->where('tenant_id', $user->tenant_id)
-                ->limit(200)
-                ->get(['id', 'wa_id', 'contact_name', 'status', 'last_message_at', 'created_at'])
-                ->toArray()),
-            'whatsapp_messages' => $this->safeCollect(fn() => WhatsappMessage::withoutGlobalScope('tenant')
-                ->where('tenant_id', $user->tenant_id)
-                ->latest()
-                ->limit(5000)
-                ->get(['id', 'chat_id', 'content', 'direction', 'type', 'status', 'created_at'])
-                ->toArray()),
+            // Conversas de WhatsApp do tenant NAO entram: pertencem aos contatos
+            // (terceiros), nao ao titular — incluir seria vazamento intra-tenant
+            // de PII (achado P0 da auditoria 2026-07-12).
             'meeting_bookings'  => $this->safeCollect(fn() => MeetingBooking::where('email', $user->email)
                 ->get(['name', 'email', 'phone', 'meeting_date', 'meeting_time', 'status', 'created_at'])
                 ->toArray()),
@@ -209,8 +197,6 @@ class ExportUserLgpdDataJob implements ShouldQueue
         Categorias:
           profile           — dados da sua conta
           login_activity    — historico de logins (ultimos 90 dias)
-          whatsapp_chats    — conversas do seu tenant
-          whatsapp_messages — mensagens (ate 5000 mais recentes)
           meeting_bookings  — agendamentos vinculados ao seu e-mail
           lgpd_requests     — historico das suas solicitacoes LGPD
 

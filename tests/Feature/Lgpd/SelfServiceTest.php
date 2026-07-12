@@ -5,6 +5,8 @@ use App\Mail\LgpdExportReadyMail;
 use App\Models\LgpdDataRequest;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WhatsappChat;
+use App\Models\WhatsappMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Mail;
@@ -148,6 +150,54 @@ it('download com token expirado retorna 410', function () {
 it('download com token invalido retorna 404', function () {
     $this->get('/eu/dados/download/token_completamente_invalido_1234567890abcdefgh')
         ->assertNotFound();
+});
+
+it('export nao inclui conversas whatsapp do tenant (PII de terceiros)', function () {
+    Mail::fake();
+    Storage::fake('local');
+
+    $user = lgpdUser();
+
+    // Conversas do tenant com TERCEIROS (leads/contatos) — nao sao dados do titular
+    $chat = WhatsappChat::create([
+        'tenant_id'     => $user->tenant_id,
+        'wa_id'         => '5511999990000',
+        'contact_name'  => 'CANARY-CONTATO-TERCEIRO',
+        'contact_phone' => '5511999990000',
+        'status'        => 'open',
+    ]);
+    WhatsappMessage::create([
+        'tenant_id'  => $user->tenant_id,
+        'chat_id'    => $chat->id,
+        'message_id' => 'wamid.canary-poc-1',
+        'content'    => 'CANARY-MENSAGEM-TERCEIRO',
+        'direction' => 'inbound',
+        'type'      => 'text',
+        'status'    => 'delivered',
+    ]);
+
+    $req = LgpdDataRequest::create([
+        'user_id'    => $user->id,
+        'tenant_id'  => $user->tenant_id,
+        'type'       => LgpdDataRequest::TYPE_EXPORT,
+        'status'     => LgpdDataRequest::STATUS_PENDING,
+        'ip_address' => '127.0.0.1',
+    ]);
+
+    (new ExportUserLgpdDataJob($req->id))->handle();
+    $req->refresh();
+
+    $zip = new ZipArchive();
+    expect($zip->open(Storage::disk('local')->path($req->export_file_path)))->toBeTrue();
+    $json = $zip->getFromName('data.json');
+    $zip->close();
+
+    expect($json)->not->toContain('CANARY-CONTATO-TERCEIRO');
+    expect($json)->not->toContain('CANARY-MENSAGEM-TERCEIRO');
+
+    $payload = json_decode($json, true);
+    expect($payload)->not->toHaveKey('whatsapp_chats');
+    expect($payload)->not->toHaveKey('whatsapp_messages');
 });
 
 // ── Delecao (Art. 15) ─────────────────────────────────────────────────────────

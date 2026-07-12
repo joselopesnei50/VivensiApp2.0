@@ -1,0 +1,129 @@
+# Plano de Auditoria Vivensi — 2026-07-12
+
+Origem: `analise-segurança.md` (8 itens). Reordenado por risco real, com base na auditoria
+`AUDIT_SECURITY_2026-07-11.md` e nos módulos já fechados (AbacatePay 06-30, C2 canários, C3 LGPD, seguranca26).
+
+> **Restrição de sessão:** C4.6 (encryption at-rest) roda em paralelo tocando `Lead`, `User` e migrations.
+> Este plano NÃO altera esses models. Fixes que esbarrem neles ficam em fila até o C4 fechar e ser deployado.
+> Nenhuma migration prevista em P0–P2.
+
+---
+
+## P0 — Isolamento de tenants (item 1)
+
+**Objetivo:** garantir que nenhum dos 68 usos de `withoutGlobalScope('tenant')` (16 arquivos, contagem 2026-07-12)
+permita acesso cruzado de dados entre tenants.
+
+Inventário:
+
+| Arquivo | Ocorrências | Risco a priori |
+|---|---|---|
+| TransparencyController | 28 | Alto — público |
+| ProspectingController | 7 | Alto — leads |
+| LgpdSelfServiceController | 6 | Médio — token-based (C3) |
+| AntibanComputeResponseRates / ProcessCloudApiWebhook / ExportUserLgpdDataJob | 4 cada | Médio — jobs sem request context |
+| SicController | 3 | Alto — público |
+| CloudApiTemplateService | 3 | Médio |
+| PublicRaffleController | 2 | Alto — público |
+| PurgeScheduledLgpdDeletions, SendDoubleOptInWhatsapp, CloudApiOnboardingService, EvolutionWebhookController, OpenPixWebhookController, WhatsappBillingController, WhatsappConversation | 1 cada | Baixo/verificar |
+
+Passos:
+1. Classificar cada ocorrência: ✅ legítimo / ⚠️ legítimo mas frágil (sem `where('tenant_id')` na mesma query) / 🔴 vulnerável.
+2. Para cada 🔴: PoC de teste (tenant A acessa recurso do tenant B) ANTES do fix — vira regressão.
+3. Fix mínimo por ocorrência (where tenant_id explícito ou resolução correta).
+4. Helper `withoutTenantScopeAuditado(int $tenantId, Closure $q)`; migrar as ⚠️ para ele.
+5. Suíte `TenantIsolationRegressionTest` cobrindo endpoints públicos (Transparency, Sic, PublicRaffle, Prospecting).
+
+**Saída:** zero 🔴; ocorrências restantes usam helper ou têm justificativa.
+
+### Resultado da classificação (2026-07-12)
+
+Dos 68 hits do grep, 3 são comentários (Antiban L45, EvolutionWebhook L27, WhatsappConversation docblock L19) → **65 usos reais**.
+
+| Arquivo | Usos | Veredicto |
+|---|---|---|
+| TransparencyController | 28 | ✅ todos — lookup por slug único+published; demais com `where('tenant_id', $portal->tenant_id)`. Nota: eager load `category` (L673) confia no `category_id` da transação do próprio tenant — risco desprezível |
+| ProspectingController | 7 | ✅ todos — `where('tenant_id', Auth::user()->tenant_id)` imediato em todos |
+| LgpdSelfServiceController | 6 | ✅ todos — filtro por `user_id` ou `export_token` opaco (design C3) |
+| ExportUserLgpdDataJob | 4 | 🔴 **2 vulneráveis** (L133 whatsapp_chats, L138 whatsapp_messages): export individual inclui até 200 chats + 5.000 mensagens do TENANT INTEIRO (PII de terceiros). Intra-tenant, não cross-tenant. L52 e L147 ✅ |
+| ProcessCloudApiWebhook | 4 | ✅ todos — instância por `phone_number_id` (único Meta); demais keyed por tenant da instância |
+| AntibanComputeResponseRates | 3 | ✅ todos — comando console cross-tenant por design, agrega por tenant com filtro explícito |
+| SicController | 3 | ✅ todos — lookup por slug único+published; SicRequest filtrado por tenant do portal |
+| CloudApiTemplateService | 3 | ✅ todos — keyed por instance_id/waba_id+meta_template_id (únicos Meta) |
+| PublicRaffleController | 2 | ✅ show (slug tem UNIQUE global — migration 2026_03_31_144631). ⚠️ reserve (L40): sem vazamento, mas **falta filtro `status='active'`** — permite reservar em rifa pausada/encerrada (gap funcional) |
+| CloudApiOnboardingService | 1 | ✅ updateOrCreate keyed por tenant_id+phone_number_id |
+| EvolutionWebhookController | 1 | ✅ lookup por blind index HMAC do token |
+| OpenPixWebhookController | 1 | ✅ find por FK interno (ticket validado pelo webhook) |
+| WhatsappBillingController | 1 | ✅ cross-tenant por design (dashboard super admin; rota sob middleware `super_admin` confirmado) |
+| PurgeScheduledLgpdDeletions | 1 | ✅ comando console cross-tenant por design |
+| SendDoubleOptInWhatsapp | 1 | ✅ `forTenant($token->tenant_id)` |
+
+**Resumo: 61 ✅ · 2 ⚠️ · 2 🔴** (mesma causa raiz, no ExportUserLgpdDataJob).
+
+**Conclusão-chave:** NÃO há vazamento cross-tenant. O único 🔴 é superexposição intra-tenant de PII de terceiros
+no export LGPD self-service. `WhatsappMessage` não tem `user_id` — mensagens não são atribuíveis a um usuário
+individual, então as opções de fix são: (a) remover chats/mensagens do export individual, ou (b) incluir apenas
+metadados agregados. Decisão pendente com José.
+
+---
+
+## P1.a — Integração DeepSeek (item 3)
+
+Ponto de partida: `DeepSeekService` lê key de `SystemSetting deepseek_api_key`, `Http::timeout(60)->retry(2)`.
+13 serviços consomem (Bruce, Bruno, 7 Sala de Estratégia, LeadQualification, SocialAI, MarketingAI).
+
+1. Vazamento de PII nos prompts (CPF/telefone/e-mail de beneficiários/leads) → mascaramento antes do envio.
+2. Tratamento de erro: timeout/429/500 vaza stack/mensagem crua? Backoff nas filas?
+3. Key nunca em logs nem no HTML do /admin/settings (verificar se canário C2 cobre `deepseek_api_key`).
+4. Quota de IA por tenant (estilo `EmailQuotaService`) — hoje um tenant pode drenar a conta.
+5. Prompt injection via conteúdo do usuário — replicar padrão ANTI-ALUCINACAO do Bruno nos demais serviços.
+
+**Saída:** matriz serviço × dados × risco; fixes; canário da key.
+
+## P1.b — Campanhas de e-mail (item 5)
+
+Ponto de partida: `EmailQuotaService`, controllers Admin/Manager/Ngo EmailCampaignController, `BrevoService`.
+
+1. Quota aplicada nos 3 controllers E no job de envio (sem bypass).
+2. Anti-abuso: opt-in na importação de destinatários; rate limit por tenant/dia.
+3. HTML da campanha via Purifier; header injection (subject/reply-to).
+4. Tenant scope nas listas de destinatários (cruza com P0).
+5. SPF/DKIM/DMARC — checklist manual de DNS/Brevo (infra, não código).
+6. Webhook de bounce/unsubscribe da Brevo respeitado nos próximos envios.
+
+**Saída:** relatório de gaps + fixes + checklist DNS.
+
+## P1.c — Super Admin: segurança (item 6, parte auditoria)
+
+(2FA forçado e canário de secrets já existem.)
+
+1. Teste automatizado: 100% das rotas `admin/*` com middleware `EnsureSuperAdmin`.
+2. AuditLog em ações sensíveis (impersonation, edição de tenant, settings, `admin/bot/users/{id}/phone`).
+3. Mass assignment nos POSTs do admin (ex.: `BotController::save`).
+
+---
+
+## P2 — AbacatePay: regressão (item 4)
+
+Módulo fechado 2026-06-30 (idempotência + HMAC + AuditLog + reconcile 5/5min). Apenas:
+1. Rodar suite existente do módulo.
+2. Diff dos arquivos desde o fechamento; se nada mudou e suite verde → encerrar.
+3. Check novo: logs de webhook sem payload de pagamento em plaintext desnecessário.
+
+---
+
+## Sprint separado (produto — fora da auditoria)
+
+- Item 7 — Bruno (`BrunoSandboxController`/`BrunoMetricsController`): NLU, KB, dúvidas complexas.
+- Item 8 — Bot interno (`BotController`): qualidade de suporte (endpoints cobertos em P1.c).
+- Item 6 (parte produto) — melhorias no painel executivo do super admin.
+
+## Itens do documento original descartados/reinterpretados
+
+- Item 2 ("todos os módulos funcionando") → substituído por suite de testes (617+) + smoke test; inexecutável como auditoria.
+- PCI (item 4) → não se aplica diretamente: cartão fica no gateway AbacatePay.
+
+## Ordem e regras
+
+P0 → P1.a → P1.b → P1.c → P2. Cada fase: testes verdes + commit próprio (sem co-autor).
+Fixes tocando `Lead`/`User` aguardam deploy do C4.
