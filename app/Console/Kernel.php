@@ -156,6 +156,13 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // LGPD art. 15: executa deletions cujo grace period de 30d expirou.
+        // 03:00 UTC diario — baixa carga; anonimiza usuarios em transacao.
+        $schedule->command('lgpd:purge-scheduled-deletions')
+                 ->dailyAt('03:00')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');

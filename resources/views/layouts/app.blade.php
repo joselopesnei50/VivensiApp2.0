@@ -989,6 +989,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="suc-dropdown" id="sucDropdown">
             <a href="{{ url('/profile') }}"><i class="fas fa-user-circle"></i> {{ __('ui.profile') }}</a>
             <a href="{{ url('/profile') }}#settings"><i class="fas fa-cog"></i> {{ __('ui.settings') }}</a>
+            <a href="{{ route('lgpd.self.index') }}"><i class="fas fa-shield-halved"></i> Meus dados (LGPD)</a>
             <div class="suc-divider"></div>
             <a href="#" class="danger" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();">
                 <i class="fas fa-sign-out-alt"></i> {{ __('ui.logout') }}

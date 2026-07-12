@@ -98,6 +98,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         ->name('welcome.dismiss')
         ->middleware('throttle:10,1');
 
+    // ── LGPD Self-Service (art. 15 delecao + art. 18 IV exportacao) ───────────
+    Route::get( '/eu/dados',                         [App\Http\Controllers\LgpdSelfServiceController::class, 'index'])->name('lgpd.self.index');
+    Route::post('/eu/dados/exportar',                [App\Http\Controllers\LgpdSelfServiceController::class, 'requestExport'])->name('lgpd.self.export')->middleware('throttle:5,60');
+    Route::post('/eu/dados/excluir',                 [App\Http\Controllers\LgpdSelfServiceController::class, 'requestDelete'])->name('lgpd.self.delete')->middleware('throttle:3,60');
+    Route::post('/eu/dados/excluir/cancelar/{id}',   [App\Http\Controllers\LgpdSelfServiceController::class, 'cancelDelete'])->name('lgpd.self.cancel_delete')->middleware('throttle:10,60');
+
     // ── Smart Analysis ────────────────────────────────────────────────────────
     Route::get('/smart-analysis',       [App\Http\Controllers\SmartAnalysisController::class, 'index']);
     Route::post('/smart-analysis/deep', [App\Http\Controllers\SmartAnalysisController::class, 'generateDeepAnalysis'])->middleware('throttle:web_ai');
@@ -185,3 +191,10 @@ Route::prefix('test-api')->middleware(['auth'])->group(function () {
     Route::get('/gemini',    [App\Http\Controllers\IntegrationTestController::class, 'testGemini']);
     Route::get('/deepseek',  [App\Http\Controllers\IntegrationTestController::class, 'testDeepSeek']);
 });
+
+// ── LGPD Export Download (fora de auth — autorizacao pelo token opaco 256 bits) ──
+// Rate-limitada pra evitar brute-force do token.
+Route::get('/eu/dados/download/{token}', [App\Http\Controllers\LgpdSelfServiceController::class, 'download'])
+    ->name('lgpd.self.download')
+    ->middleware('throttle:60,1')
+    ->where('token', '[A-Za-z0-9_\-]{40,80}');
