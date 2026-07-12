@@ -15,7 +15,19 @@ class AdminSettingsController extends Controller
             return redirect('/dashboard')->with('error', 'Acesso não autorizado.');
         }
 
-        // Never expose secret keys back to the browser (even in password inputs).
+        // ────────────────────────────────────────────────────────────────────────
+        // REGRA DE SEGURANCA CRITICA — NAO REMOVER
+        // ────────────────────────────────────────────────────────────────────────
+        // Nunca retornar o valor real de um secret pra view — nem em input password.
+        // <input type="password" value="sk_..."> ESCONDE do olho mas EXPOE no HTML.
+        // DevTools > Elements > busca "sk_" vaza a chave em <5 segundos.
+        //
+        // Padrao correto:
+        //   1. Aqui: retorne apenas $xxx_configured (bool) via SystemSetting::getValue()
+        //   2. Na view: use <input value=""> + placeholder mostra badge "Configurada"
+        //   3. No store(): so sobrescreva se input vier NAO-vazio (loop abaixo, linha ~200)
+        //
+        // Regressao coberta por tests/Feature/Admin/AdminSettingsSecurityTest.php.
         $deepseek_configured = (bool) SystemSetting::getValue('deepseek_api_key');
         $gemini_configured = (bool) SystemSetting::getValue('gemini_api_key');
         $brevo_configured = (bool) SystemSetting::getValue('brevo_api_key');
