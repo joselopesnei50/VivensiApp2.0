@@ -86,7 +86,11 @@
                 <i class="fas fa-eye" style="color:#6366f1;"></i>
                 <strong style="font-size:0.9rem; color:#1e293b;">Preview do E-mail</strong>
             </div>
-            <iframe srcdoc="{{ $campaign->html_content }}" style="width:100%; height:600px; border:none;"></iframe>
+            {{-- Preview sandbox: bloqueia JS inline do HTML da campanha no painel (defesa em profundidade) --}}
+            <iframe srcdoc="{{ $campaign->html_content }}"
+                    sandbox="allow-popups allow-popups-to-escape-sandbox"
+                    referrerpolicy="no-referrer"
+                    style="width:100%; height:600px; border:none;"></iframe>
         </div>
     </div>
     <div class="col-lg-4">

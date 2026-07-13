@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ngo;
 use App\Http\Controllers\Controller;
 use App\Models\EmailCampaign;
 use App\Services\BrevoService;
+use App\Services\EmailQuotaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -29,9 +30,10 @@ class NgoEmailCampaignController extends Controller
     {
         $validated = $request->validate([
             'name'              => ['required', 'string', 'max:255'],
-            'subject'           => ['required', 'string', 'max:255'],
+            // not_regex bloqueia CRLF injection em headers SMTP (Bcc:, From: forjados).
+            'subject'           => ['required', 'string', 'max:255', 'not_regex:/[\r\n]/'],
             'html_content'      => ['required', 'string'],
-            'sender_name'       => ['nullable', 'string', 'max:100'],
+            'sender_name'       => ['nullable', 'string', 'max:100', 'not_regex:/[\r\n]/'],
             'sender_email'      => ['nullable', 'email', 'max:150'],
             'reply_to_email'    => ['nullable', 'email', 'max:150'],
             'audience_type'     => ['required', 'in:donors,donors_optins,leads,manual'],
@@ -125,11 +127,33 @@ class NgoEmailCampaignController extends Controller
                 return back()->with('error', 'Nenhum destinatário encontrado para o público selecionado.');
             }
 
+            // ── P1.b: cota diária per-tenant (mesmo gate do Manager) ─────────
+            $tenant = auth()->user()->tenant;
+            $quota  = app(EmailQuotaService::class);
+            $count  = count($contacts);
+
+            if (!$quota->tryConsume($tenant, $count)) {
+                $remaining = $quota->getRemainingToday($tenant);
+                $cap       = $quota->getQuota($tenant);
+                $msg = "Cota diária de e-mails excedida ({$count} destinatários, restam {$remaining}/{$cap} hoje). "
+                     . "Solicite ao Super Admin para aumentar a capacidade ou aguarde o reset diário.";
+                $emailCampaign->update(['status' => 'error', 'error_message' => $msg]);
+                Log::info('NGO EmailCampaign: cota diária excedida — disparo bloqueado.', [
+                    'campaign_id' => $emailCampaign->id,
+                    'tenant_id'   => $tenant->id,
+                    'requested'   => $count,
+                    'remaining'   => $remaining,
+                    'daily_quota' => $cap,
+                ]);
+                return back()->with('error', $msg);
+            }
+
             $orgName  = auth()->user()->tenant->name ?? 'Organização';
             $listName = "NGO — {$orgName} — {$emailCampaign->name} — " . now()->format('d/m/Y H:i');
             $listId   = $brevo->createContactList($listName);
 
             if (!$listId) {
+                $quota->refund($tenant, $count);
                 $emailCampaign->update([
                     'status'        => 'error',
                     'error_message' => 'Falha ao criar lista de contatos no Brevo.',
@@ -140,6 +164,7 @@ class NgoEmailCampaignController extends Controller
             $imported = $brevo->importContacts($listId, $contacts);
 
             if ($imported === 0) {
+                $quota->refund($tenant, $count);
                 $emailCampaign->update([
                     'status'        => 'error',
                     'error_message' => 'Nenhum contato foi adicionado à lista no Brevo.',
@@ -165,6 +190,7 @@ class NgoEmailCampaignController extends Controller
             ]);
 
             if (!$campaignId) {
+                $quota->refund($tenant, $count);
                 $brevoMsg = $brevo->lastBrevoError ?? 'Erro desconhecido';
                 $emailCampaign->update([
                     'status'        => 'error',
@@ -175,6 +201,10 @@ class NgoEmailCampaignController extends Controller
             }
 
             $sent = $brevo->sendBrevoEmailCampaign($campaignId);
+
+            if (!$sent) {
+                $quota->refund($tenant, $count);
+            }
 
             $emailCampaign->update([
                 'status'            => $sent ? 'sent' : 'error',
@@ -198,6 +228,9 @@ class NgoEmailCampaignController extends Controller
             return back()->with('error', 'A campanha foi criada no Brevo mas não foi possível disparar. Tente novamente.');
 
         } catch (\Throwable $e) {
+            if (isset($tenant, $quota, $count)) {
+                $quota->refund($tenant, $count);
+            }
             Log::error('NGO EmailCampaign send error', [
                 'id'        => $emailCampaign->id,
                 'tenant_id' => auth()->user()->tenant_id,
@@ -243,16 +276,17 @@ class NgoEmailCampaignController extends Controller
         $contacts = collect();
 
         if (in_array($type, ['donors', 'donors_optins'])) {
-            $query = DB::table('ngo_donors')
+            // LGPD art. 8: consentimento sempre obrigatorio para marketing.
+            // Ambos os tipos (legado 'donors' e 'donors_optins') exigem opt-in.
+            // Doadores sem opt-in devem receber transacionais via BrevoService::sendEmail,
+            // nunca via modulo de campanha.
+            $donors = DB::table('ngo_donors')
                 ->where('tenant_id', $tenantId)
+                ->where('email_marketing_opt_in', true)
                 ->whereNotNull('email')
-                ->where('email', '!=', '');
+                ->where('email', '!=', '')
+                ->get(['email', 'name']);
 
-            if ($type === 'donors_optins') {
-                $query->where('email_marketing_opt_in', true);
-            }
-
-            $donors = $query->get(['email', 'name']);
             $contacts = $contacts->merge(
                 $donors->map(fn($d) => ['email' => $d->email, 'name' => $d->name ?? ''])
             );

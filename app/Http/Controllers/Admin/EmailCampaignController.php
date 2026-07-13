@@ -27,9 +27,10 @@ class EmailCampaignController extends Controller
     {
         $validated = $request->validate([
             'name'           => ['required', 'string', 'max:255'],
-            'subject'        => ['required', 'string', 'max:255'],
+            // not_regex bloqueia CRLF injection em headers SMTP (Bcc:, From: forjados).
+            'subject'        => ['required', 'string', 'max:255', 'not_regex:/[\r\n]/'],
             'html_content'   => ['required', 'string'],
-            'sender_name'    => ['nullable', 'string', 'max:100'],
+            'sender_name'    => ['nullable', 'string', 'max:100', 'not_regex:/[\r\n]/'],
             'sender_email'   => ['nullable', 'email', 'max:150'],
             'reply_to_email' => ['nullable', 'email', 'max:150'],
             'audience_type'  => ['required', 'in:tenant_admins,all_users,leads,all,manual,none'],

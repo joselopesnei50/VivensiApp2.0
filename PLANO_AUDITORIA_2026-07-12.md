@@ -116,6 +116,27 @@ Ponto de partida: `EmailQuotaService`, controllers Admin/Manager/Ngo EmailCampai
 
 **Saída:** relatório de gaps + fixes + checklist DNS.
 
+### Resultado P1.b (2026-07-12)
+
+**Verificado:** Manager já usa EmailQuotaService com refund em todas as ramificações de falha; NGO donors_optins já filtra opt-in.
+
+**Corrigido:**
+- **NGO `send()`**: aplica `EmailQuotaService::tryConsume()` + refund em cada branch de erro (mesmo padrão do Manager). Antes um user NGO comum podia disparar ilimitadamente e drenar reputação Brevo.
+- **NGO `resolveRecipients()`**: forca `email_marketing_opt_in=true` também no tipo legado `donors` (não só em `donors_optins`). LGPD art. 8: consentimento sempre. Doadores sem opt-in devem receber transacionais via `BrevoService::sendEmail`, nunca via módulo campanha.
+- **`iframe sandbox=""`** nos 3 views (`admin/manager/ngo email_campaigns/show.blade.php`) — `srcdoc` sem sandbox execute JS inline com origem herdada; era XSS armazenado real intra-tenant (manager cria campanha com `<script>fetch('/api/...', {credentials:'include'})</script>` e outros users do tenant que abrem o show ficam expostos). Sandbox só com `allow-popups` — email pode abrir link em nova aba, mas JS não roda.
+- **CRLF injection**: `not_regex:/[\r\n]/` em `subject` e `sender_name` nos 3 controllers store (Admin, Manager, NGO). Bloqueia forjar Bcc:, From:.
+
+**Testes:** `EmailCampaignHardeningTest` (12 verdes) — resolveRecipients em 3 cenários (com/sem opt-in, isolamento tenant), quota consume+refund, CRLF em NGO+Manager+Admin store, sandbox nas 3 views. Security 74/74 sem regressão.
+
+**Reclassificado:**
+- **HTMLPurifier no `html_content`**: NÃO implementado de propósito. HTMLPurifier quebra CSS inline de emails; defesa correta é o `sandbox=""` no iframe do painel (feito). No envio, o Brevo tem sua própria validação. Purifier aqui traria dano ao produto sem ganho real.
+- Agente overhype: agent classificou "srcdoc é seguro" (ERRADO — sem `sandbox=` explícito, srcdoc executa JS inline com origem herdada).
+
+**Recomendação p/ sprint futuro (não implementado — escopo maior):**
+- **Webhook Brevo** para bounces/unsubscribes em tempo real: nova rota `/webhook/brevo` com HMAC (`webhook_key` do Brevo), tabela `email_bounces` (`email`, `tenant_id`, `type`, `reason`, `received_at`), filtro em `resolveRecipients` para excluir bounces/unsubs conhecidos. Hoje o sistema depende de polling `getBrevoEmailCampaignStats()` — métricas ficam horas/dias defasadas e a próxima campanha reenvia pra quem já se desinscreveu (LGPD art. 18 II).
+- **`landing_page_leads.unsubscribed_at`**: coluna não existe hoje; NGO/Manager que enviam pra `leads` não conseguem respeitar opt-out via link do email. Requer migration + link `unsubscribe` no template Brevo.
+- **SPF/DKIM/DMARC**: checklist manual de infra fora do código — validar registros DNS do domínio de envio no painel Brevo e no provedor de DNS.
+
 ## P1.c — Super Admin: segurança (item 6, parte auditoria)
 
 (2FA forçado e canário de secrets já existem.)
