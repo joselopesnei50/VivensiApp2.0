@@ -252,8 +252,11 @@
                 <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
                     <i class="fas fa-tasks" style="color: var(--ds-brand);"></i> Quadros Kanban
                 </a>
+                <a href="{{ $basePath . '/projects/'.$project->id.'/classes' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                    <i class="fas fa-chalkboard-teacher" style="color: var(--ds-brand);"></i> Turmas
+                </a>
                 <a href="{{ $basePath . '/projects/'.$project->id.'/class-sessions' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
-                    <i class="fas fa-clipboard-list" style="color: var(--ds-brand);"></i> Lista de Presença
+                    <i class="fas fa-clipboard-list" style="color: var(--ds-brand);"></i> Chamadas avulsas
                 </a>
                 <a href="{{ $basePath . '/projects/'.$project->id.'/attendance/report' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
                     <i class="fas fa-chart-line" style="color: var(--ds-brand);"></i> Frequência
