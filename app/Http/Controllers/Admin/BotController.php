@@ -115,14 +115,23 @@ class BotController extends Controller
                        'bot_msg_welcome_manager', 'bot_msg_welcome_employee',
                        'bot_msg_welcome_common', 'bot_msg_help'];
 
+        $changed = [];
         foreach ($textFields as $field) {
             if ($request->filled($field)) {
                 $value = $field === 'bot_phone'
                     ? preg_replace('/\D/', '', $request->input($field))
                     : $request->input($field);
                 SystemSetting::setValue($field, $value, 'bot');
+                $changed[] = $field;
             }
         }
+
+        \App\Models\AdminAuditLog::record('bot.config_updated', [
+            'target_type'   => 'system_setting',
+            'target_name'   => 'bot',
+            // Chaves alteradas, nunca valores — mensagens do bot podem conter dados sensiveis.
+            'fields_changed' => array_values(array_unique(array_merge(['bot_enabled'], $changed))),
+        ]);
 
         return back()->with('success', '✅ Configurações do bot salvas com sucesso!');
     }
@@ -132,6 +141,7 @@ class BotController extends Controller
         $request->validate(['phone' => 'nullable|string|max:20']);
 
         $user = User::withoutGlobalScopes()->findOrFail($id);
+        $previousPhone = $user->phone;
 
         $phone = $request->filled('phone')
             ? preg_replace('/\D/', '', $request->input('phone'))
@@ -139,6 +149,14 @@ class BotController extends Controller
 
         $user->phone = $phone;
         $user->save();
+
+        \App\Models\AdminAuditLog::record('bot.user_phone_updated', [
+            'target_type'   => 'user',
+            'target_id'     => $user->id,
+            'target_name'   => $user->name,
+            'had_phone'     => $previousPhone !== null,
+            'has_phone_now' => $phone !== null,
+        ]);
 
         return back()->with('success', "✅ Telefone de {$user->name} atualizado.");
     }
@@ -322,6 +340,14 @@ class BotController extends Controller
                 'ai_training' => $request->input('ai_training', $waConfig->ai_training),
             ]);
         }
+
+        \App\Models\AdminAuditLog::record('bot.attendance_updated', [
+            'target_type'    => 'system_setting',
+            'target_name'    => 'attendance_bot',
+            'faq_entries'    => count($faq),
+            'tenant_id'      => $tenantId,
+            'ai_enabled'     => $request->has('ai_enabled'),
+        ]);
 
         return back()->with('success', '✅ Configurações do Bot de Atendimento salvas!');
     }

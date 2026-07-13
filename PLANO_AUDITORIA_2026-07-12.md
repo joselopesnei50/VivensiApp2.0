@@ -145,6 +145,22 @@ Ponto de partida: `EmailQuotaService`, controllers Admin/Manager/Ngo EmailCampai
 2. AuditLog em ações sensíveis (impersonation, edição de tenant, settings, `admin/bot/users/{id}/phone`).
 3. Mass assignment nos POSTs do admin (ex.: `BotController::save`).
 
+### Resultado P1.c (2026-07-12)
+
+**Verificado:**
+- Cobertura EnsureSuperAdmin: teste automatizado ITERA `Route::getRoutes()` e prova que 100% das rotas com nome `admin.*` (GET, sem params) recusam user comum. Falso positivo do agent: rotas `whatsapp/broadcast/*` e `whatsapp/optin/*` usam namespace `Admin\` MAS são controllers **tenant** (usam `tenant_id` do user autenticado) — nomenclatura confusa, não vulnerabilidade.
+- Mass assignment: nenhum caso — todos os POSTs admin validam antes de create/update ou usam atribuição campo-a-campo.
+- AuditLog já existia em: `tenant.suspend/activate/delete/create/email_quota_updated`.
+
+**Corrigido — 6 pontos passaram a gravar `AdminAuditLog`:**
+- `AdminSettingsController::store` → `settings.updated` — logs `keys_touched` mas NUNCA valores (secret rotation é auditável, valor bruto fica só na tabela `system_settings`).
+- `BotController::save` → `bot.config_updated` — logs `fields_changed`.
+- `BotController::saveAtendimento` → `bot.attendance_updated` — logs contadores (`faq_entries`, `ai_enabled`).
+- `BotController::updateUserPhone` → `bot.user_phone_updated` — logs `target_id` + `target_name`, sem o número em si.
+- `AdminTeamController::store/update/destroy` → `team.member_added/updated/removed` — logs `target_id`, `role`, `department`, sem senha.
+
+**Testes:** `AdminAuditCoverageTest` (8 verdes) — cobertura de middleware (iteração dinâmica), sanity de super_admin, AuditLog em cada um dos 6 pontos + 3 canários (deepseek/brevo keys não aparecem no log, senha não aparece, telefone não aparece). Security 82/82 sem regressão.
+
 ---
 
 ## P2 — AbacatePay: regressão (item 4)

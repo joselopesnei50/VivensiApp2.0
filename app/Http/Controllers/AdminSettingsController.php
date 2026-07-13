@@ -335,6 +335,30 @@ class AdminSettingsController extends Controller
         $brunoTid = (int) ($validated['bruno_sales_bot_tenant_id'] ?? 0);
         SystemSetting::setValue('bruno_sales_bot_tenant_id', $brunoTid, 'bruno');
 
+        // Auditoria: registra APENAS as chaves alteradas, NUNCA os valores.
+        // Secrets rotacionadas (API keys, senhas, tokens) precisam trilha, mas o
+        // valor bruto nunca deve tocar o AuditLog (usar canario C2 como rede).
+        $touchedKeys = [];
+        foreach (array_keys($validated) as $key) {
+            if ($key === 'booking_days' || $key === 'booking_months') {
+                $touchedKeys[] = $key;
+                continue;
+            }
+            $val = $validated[$key] ?? null;
+            if (is_string($val) && trim($val) === '') {
+                continue;
+            }
+            if ($val === null) {
+                continue;
+            }
+            $touchedKeys[] = $key;
+        }
+        \App\Models\AdminAuditLog::record('settings.updated', [
+            'target_type'    => 'system_setting',
+            'target_name'    => 'admin_settings',
+            'keys_touched'   => array_values(array_unique($touchedKeys)),
+        ]);
+
         return redirect()->back()->with('success', 'Configurações de API atualizadas com sucesso!');
     }
 }

@@ -48,7 +48,7 @@ class AdminTeamController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        User::create([
+        $newUser = User::create([
             'tenant_id' => 1, // Vivensi Platform Tenant
             'name' => $request->name,
             'email' => $request->email,
@@ -58,6 +58,14 @@ class AdminTeamController extends Controller
             'is_platform_team' => true, // Marcação crucial para isolamento
             'supervisor_id' => $request->supervisor_id,
             'status' => 'active',
+        ]);
+
+        \App\Models\AdminAuditLog::record('team.member_added', [
+            'target_type' => 'user',
+            'target_id'   => $newUser->id,
+            'target_name' => $newUser->name,
+            'role'        => $newUser->role,
+            'department'  => $newUser->department,
         ]);
 
         return redirect()->back()->with('success', 'Membro do time cadastrado com sucesso!');
@@ -88,6 +96,14 @@ class AdminTeamController extends Controller
             'supervisor_id' => $request->supervisor_id,
         ]);
 
+        \App\Models\AdminAuditLog::record('team.member_updated', [
+            'target_type' => 'user',
+            'target_id'   => $user->id,
+            'target_name' => $user->name,
+            'role'        => $user->role,
+            'department'  => $user->department,
+        ]);
+
         return redirect()->back()->with('success', 'Membro atualizado!');
     }
 
@@ -106,7 +122,15 @@ class AdminTeamController extends Controller
             return redirect()->back()->with('error', 'Você não pode remover a si mesmo.');
         }
 
+        $userSnapshot = ['id' => $user->id, 'name' => $user->name, 'role' => $user->role];
         $user->delete();
+
+        \App\Models\AdminAuditLog::record('team.member_removed', [
+            'target_type' => 'user',
+            'target_id'   => $userSnapshot['id'],
+            'target_name' => $userSnapshot['name'],
+            'role'        => $userSnapshot['role'],
+        ]);
 
         return redirect()->back()->with('success', 'Membro removido do time.');
     }
