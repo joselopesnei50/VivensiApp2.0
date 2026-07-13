@@ -61,6 +61,18 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/projects/{project}/attendance/report.csv',                    [App\Http\Controllers\AttendanceReportController::class, 'exportReport'])->name('attendance.report.csv')->middleware('throttle:web_export');
     Route::get('/projects/{project}/class-sessions/{session}/export.csv',      [App\Http\Controllers\AttendanceReportController::class, 'exportSession'])->name('class-sessions.export.csv')->middleware('throttle:web_export');
 
+    // ── Turmas (project_classes) — camada persistente que agrupa chamadas ────
+    Route::get(   '/projects/{project}/classes',                                      [App\Http\Controllers\ProjectClassController::class, 'index'])->name('projects.classes.index');
+    Route::get(   '/projects/{project}/classes/create',                               [App\Http\Controllers\ProjectClassController::class, 'create'])->name('projects.classes.create');
+    Route::post(  '/projects/{project}/classes',                                      [App\Http\Controllers\ProjectClassController::class, 'store'])->name('projects.classes.store')->middleware('throttle:web_write');
+    Route::get(   '/projects/{project}/classes/{classId}',                              [App\Http\Controllers\ProjectClassController::class, 'show'])->name('projects.classes.show');
+    Route::get(   '/projects/{project}/classes/{classId}/edit',                         [App\Http\Controllers\ProjectClassController::class, 'edit'])->name('projects.classes.edit');
+    Route::put(   '/projects/{project}/classes/{classId}',                              [App\Http\Controllers\ProjectClassController::class, 'update'])->name('projects.classes.update')->middleware('throttle:web_write');
+    Route::delete('/projects/{project}/classes/{classId}',                              [App\Http\Controllers\ProjectClassController::class, 'destroy'])->name('projects.classes.destroy')->middleware('throttle:web_write');
+    Route::post(  '/projects/{project}/classes/{classId}/enrollments/bulk',             [App\Http\Controllers\ProjectClassController::class, 'enrollBulk'])->name('projects.classes.enroll-bulk')->middleware('throttle:web_write');
+    Route::delete('/projects/{project}/classes/{classId}/enrollments/{enrollmentId}',     [App\Http\Controllers\ProjectClassController::class, 'unenroll'])->name('projects.classes.unenroll')->middleware('throttle:web_write');
+    Route::post(  '/projects/{project}/classes/{classId}/generate-sessions',            [App\Http\Controllers\ProjectClassController::class, 'generateSessions'])->name('projects.classes.generate-sessions')->middleware('throttle:web_write');
+
     // Tarefas
     Route::get('/tasks',             [App\Http\Controllers\TaskController::class, 'index']);
     Route::get('/tasks/calendar',    [App\Http\Controllers\TaskController::class, 'calendar'])->name('tasks.calendar');

@@ -15,6 +15,7 @@ class ClassSession extends Model
     protected $fillable = [
         'tenant_id',
         'project_id',
+        'project_class_id',
         'title',
         'date',
         'start_time',
