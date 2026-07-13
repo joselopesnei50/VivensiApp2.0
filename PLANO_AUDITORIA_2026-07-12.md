@@ -170,6 +170,19 @@ Módulo fechado 2026-06-30 (idempotência + HMAC + AuditLog + reconcile 5/5min).
 2. Diff dos arquivos desde o fechamento; se nada mudou e suite verde → encerrar.
 3. Check novo: logs de webhook sem payload de pagamento em plaintext desnecessário.
 
+### Resultado P2 (2026-07-12)
+
+**Regressão limpa:**
+- **Zero commits** no módulo AbacatePay desde o fechamento em 2026-06-30 (`git log --since` nos 8 arquivos do módulo).
+- **`AbacatePayWebhookTest` 10/10 verde** — HMAC, secret via header/query, dispatch, dev mode, event ausente.
+- Sem drift desde o fechamento.
+
+**Fixes leves de log (defesa em profundidade LGPD):**
+- `ProcessAbacatePayWebhook.php:337`: `email` do fallback → `email_hash` SHA-256. Mantém correlação pra debug sem gravar PII em log de aplicação.
+- `AbacatePayService.php:65`: `createCheckout` erro logava `$response` inteiro; agora grava só metadata (`error`, `error_code`, `success`, `externalId`). Se a Abacate retornar dados sensíveis no `error` no futuro, o payload cru não vaza.
+
+**Suite 10/10 verde após os fixes**, sem novos testes (mudanças são só na estrutura do log, sem lógica).
+
 ---
 
 ## Sprint separado (produto — fora da auditoria)

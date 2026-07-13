@@ -333,8 +333,9 @@ class ProcessAbacatePayWebhook implements ShouldQueue
             $tenant = Tenant::whereHas('owner', fn ($q) => $q->where('email', $email))->first();
             if ($tenant) {
                 Log::warning('AbacatePay: tenant resolvido por fallback de email — considere garantir externalId ou metadata nas subscriptions futuras', [
-                    'tenant_id' => $tenant->id,
-                    'email'     => $email,
+                    'tenant_id'  => $tenant->id,
+                    // Hash SHA-256 do email — mantem correlacao pra debug sem gravar PII (LGPD).
+                    'email_hash' => hash('sha256', strtolower(trim($email))),
                 ]);
                 return ['tenant' => $tenant, 'source' => 'email_fallback'];
             }

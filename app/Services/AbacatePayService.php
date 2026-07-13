@@ -62,7 +62,16 @@ class AbacatePayService
             return $response['data'];
         }
 
-        Log::error('AbacatePay: createCheckout falhou', ['response' => $response]);
+        // Log defensivo: gravamos apenas metadata de erro, nao o payload cru.
+        // Endpoints da AbacatePay podem retornar dados do checkout (billing info,
+        // customer email) em algumas condicoes — resto vai pro Log::error de rede
+        // no metodo post() abaixo, com granularidade menor.
+        Log::error('AbacatePay: createCheckout falhou', [
+            'error'       => $response['error']   ?? null,
+            'error_code'  => $response['code']    ?? null,
+            'success'     => $response['success'] ?? null,
+            'externalId'  => $externalId,
+        ]);
         return null;
     }
 
