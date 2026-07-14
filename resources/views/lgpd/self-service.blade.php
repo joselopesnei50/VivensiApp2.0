@@ -157,7 +157,8 @@
             </p>
             <p class="mb-0">
                 <strong>Encarregado de Dados (DPO):</strong>
-                <a href="mailto:dpo@vivensi.com.br">dpo@vivensi.com.br</a><br>
+                @php $dpoEmail = config('legal.email_dpo', 'dpo@vivensi.app.br'); @endphp
+                <a href="mailto:{{ $dpoEmail }}">{{ $dpoEmail }}</a><br>
                 <strong>Controlador:</strong> NC5 HUB DIGITAL LTDA · CNPJ 67.848.807/0001-50
             </p>
         </div>

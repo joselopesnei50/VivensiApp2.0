@@ -38,7 +38,8 @@
                 <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6;">
                     Se você não solicitou este download, ignore este email — o link expira
                     sozinho. Em caso de dúvidas, contate nosso DPO em
-                    <a href="mailto:dpo@vivensi.com.br" style="color:#4f46e5;">dpo@vivensi.com.br</a>.
+                    @php $dpoEmail = config('legal.email_dpo', 'dpo@vivensi.app.br'); @endphp
+                    <a href="mailto:{{ $dpoEmail }}" style="color:#4f46e5;">{{ $dpoEmail }}</a>.
                 </p>
             </div>
             <div style="padding:14px 22px;background:#f1f5f9;color:#64748b;font-size:11px;border-top:1px solid #e2e8f0;">

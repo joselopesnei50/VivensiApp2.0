@@ -40,7 +40,9 @@ class ExportUserLgpdDataJob implements ShouldQueue
 
     public function __construct(protected int $requestId)
     {
-        $this->onQueue('lgpd');
+        // Queue 'emails' — worker vivensi-worker-emails no VPS processa isso.
+        // Antes era 'lgpd' mas nao havia worker registrado, jobs ficavam pending.
+        $this->onQueue('emails');
     }
 
     public function handle(): void
@@ -104,7 +106,7 @@ class ExportUserLgpdDataJob implements ShouldQueue
                 'export_generated_at' => now()->toIso8601String(),
                 'export_law'          => 'LGPD Lei 13.709/2018 art. 18 IV',
                 'controller'          => 'NC5 HUB DIGITAL LTDA (Vivensi)',
-                'contact_dpo'         => 'dpo@vivensi.com.br',
+                'contact_dpo'         => config('legal.email_dpo', 'dpo@vivensi.app.br'),
             ],
             'profile' => [
                 'id'                       => $user->id,
@@ -181,7 +183,8 @@ class ExportUserLgpdDataJob implements ShouldQueue
 
     private function buildReadme(User $user): string
     {
-        $now = now()->format('d/m/Y H:i');
+        $now      = now()->format('d/m/Y H:i');
+        $dpoEmail = config('legal.email_dpo', 'dpo@vivensi.app.br');
         return <<<TXT
         EXPORTACAO DE DADOS PESSOAIS — LGPD
         ====================================
@@ -201,8 +204,8 @@ class ExportUserLgpdDataJob implements ShouldQueue
           lgpd_requests     — historico das suas solicitacoes LGPD
 
         Para exercer outros direitos previstos na LGPD:
-          Contato DPO: dpo@vivensi.com.br
-          Site:        https://vivensi.com.br
+          Contato DPO: {$dpoEmail}
+          Site:        https://vivensi.app.br
 
         Controlador dos Dados: NC5 HUB DIGITAL LTDA
         CNPJ: 67.848.807/0001-50
