@@ -86,13 +86,15 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::prefix('transactions')->group(function () {
         Route::get('/',              [App\Http\Controllers\TransactionController::class, 'index']);
         Route::get('/create',        [App\Http\Controllers\TransactionController::class, 'create']);
+        // Rotas com paths fixos ANTES das rotas com {id} — evita Laravel
+        // interpretar "export" como id na rota /{id} de baixo (causa 404).
+        Route::get('/export',        [App\Http\Controllers\TransactionController::class, 'export'])->name('transactions.export')->middleware('throttle:web_export');
         Route::post('/',             [App\Http\Controllers\TransactionController::class, 'store'])->middleware('throttle:web_write');
         Route::get('/{id}/attachment', [App\Http\Controllers\TransactionController::class, 'downloadAttachment'])->name('transactions.attachment');
         Route::get('/{id}',          [App\Http\Controllers\TransactionController::class, 'show']);
         Route::put('/{id}',          [App\Http\Controllers\TransactionController::class, 'update'])->middleware('throttle:web_write');
         Route::post('/{id}/approve', [App\Http\Controllers\TransactionController::class, 'approve'])->name('transactions.approve')->middleware('throttle:web_write');
         Route::post('/{id}/reject',  [App\Http\Controllers\TransactionController::class, 'reject'])->name('transactions.reject')->middleware('throttle:web_write');
-        Route::get('/export',        [App\Http\Controllers\TransactionController::class, 'export'])->middleware('throttle:web_export');
         Route::delete('/{id}',       [App\Http\Controllers\TransactionController::class, 'destroy'])->middleware('throttle:web_write');
     });
 });
