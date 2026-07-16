@@ -103,6 +103,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         ->name('welcome.dismiss')
         ->middleware('throttle:10,1');
 
+    // ── Import de Planilhas de Gastos (multi-painel: NGO/Manager/Common) ──────
+    Route::get( '/finance/import',           [App\Http\Controllers\TransactionImportController::class, 'showForm'])->name('finance.import.form');
+    Route::get( '/finance/import/template',  [App\Http\Controllers\TransactionImportController::class, 'downloadTemplate'])->name('finance.import.template');
+    Route::post('/finance/import/preview',   [App\Http\Controllers\TransactionImportController::class, 'preview'])->name('finance.import.preview')->middleware('throttle:10,1');
+    Route::post('/finance/import/confirm',   [App\Http\Controllers\TransactionImportController::class, 'import'])->name('finance.import.confirm')->middleware('throttle:5,1');
+
     // ── LGPD Self-Service (art. 15 delecao + art. 18 IV exportacao) ───────────
     Route::get( '/eu/dados',                         [App\Http\Controllers\LgpdSelfServiceController::class, 'index'])->name('lgpd.self.index');
     Route::post('/eu/dados/exportar',                [App\Http\Controllers\LgpdSelfServiceController::class, 'requestExport'])->name('lgpd.self.export')->middleware('throttle:5,60');

@@ -611,6 +611,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <ul>
                             <li><a href="{{ url('/manager/contracts') }}" class="{{ request()->is('manager/contracts*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Contratos Digitais</a></li>
                             <li><a href="{{ url('/manager/reconciliation') }}" class="{{ request()->is('manager/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
+                            <li><a href="{{ url('/finance/import') }}" class="{{ request()->is('finance/import*') ? 'active' : '' }}"><i class="fas fa-file-import" style="color:#10b981;"></i> Importar Planilha</a></li>
                         </ul>
                     </div>
                 </div>
@@ -776,6 +777,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/transactions/create') }}" class="{{ request()->is('transactions/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Nova Transação</a></li>
                             <li><a href="{{ url('/ngo/budget') }}" class="{{ request()->is('ngo/budget*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> Orçamento Anual</a></li>
                             <li><a href="{{ url('/ngo/reconciliation') }}" class="{{ request()->is('ngo/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
+                            <li><a href="{{ url('/finance/import') }}" class="{{ request()->is('finance/import*') ? 'active' : '' }}"><i class="fas fa-file-import" style="color:#10b981;"></i> Importar Planilha</a></li>
                         </ul>
                     </div>
                 </div>
@@ -935,6 +937,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/personal/receipts') }}" class="{{ request()->is('personal/receipts*') && !request()->is('personal/receipts/create') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Recibos &amp; NFS-e</a></li>
                             <li><a href="{{ url('/personal/receipts/create') }}" class="{{ request()->is('personal/receipts/create') ? 'active' : '' }}"><i class="fas fa-file-circle-plus" style="color:#10b981;"></i> Emitir Recibo</a></li>
                             <li><a href="{{ url('/personal/reconciliation') }}" class="{{ request()->is('personal/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
+                            <li><a href="{{ url('/finance/import') }}" class="{{ request()->is('finance/import*') ? 'active' : '' }}"><i class="fas fa-file-import" style="color:#10b981;"></i> Importar Planilha</a></li>
                             <li><a href="{{ url('/personal/budget') }}" class="{{ request()->is('personal/budget*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Planejamento Anual</a></li>
                         </ul>
                     </div>
