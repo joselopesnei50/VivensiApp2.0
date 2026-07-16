@@ -44,14 +44,19 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post(  '/cards/from-whatsapp/{chat}',        [App\Http\Controllers\Manager\KanbanController::class, 'storeCardFromWhatsapp'])->name('cards.from_whatsapp')->middleware('throttle:60,1');
     });
 
-    // E-mail Marketing (CRM)
-    Route::get('/manager/email-campaigns',                        [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'index'])->name('manager.email_campaigns.index');
-    Route::get('/manager/email-campaigns/create',                 [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'create'])->name('manager.email_campaigns.create');
-    Route::post('/manager/email-campaigns',                       [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'store'])->name('manager.email_campaigns.store');
-    Route::get('/manager/email-campaigns/{emailCampaign}',        [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'show'])->name('manager.email_campaigns.show');
-    Route::post('/manager/email-campaigns/{emailCampaign}/send',  [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'send'])->name('manager.email_campaigns.send');
-    Route::post('/manager/email-campaigns/{emailCampaign}/stats', [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'refreshStats'])->name('manager.email_campaigns.stats');
-    Route::delete('/manager/email-campaigns/{emailCampaign}',     [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'destroy'])->name('manager.email_campaigns.destroy');
+    // E-mail Marketing (CRM) — exige access-manager (bloqueia role=employee).
+    // O check por tenant_id (authorizeForTenant no controller) permanece como
+    // defesa em profundidade, mas o gate impede que subordinados disparem
+    // campanhas ou consumam quota de email do tenant.
+    Route::middleware('can:access-manager')->group(function () {
+        Route::get('/manager/email-campaigns',                        [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'index'])->name('manager.email_campaigns.index');
+        Route::get('/manager/email-campaigns/create',                 [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'create'])->name('manager.email_campaigns.create');
+        Route::post('/manager/email-campaigns',                       [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'store'])->name('manager.email_campaigns.store');
+        Route::get('/manager/email-campaigns/{emailCampaign}',        [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'show'])->name('manager.email_campaigns.show');
+        Route::post('/manager/email-campaigns/{emailCampaign}/send',  [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'send'])->name('manager.email_campaigns.send');
+        Route::post('/manager/email-campaigns/{emailCampaign}/stats', [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'refreshStats'])->name('manager.email_campaigns.stats');
+        Route::delete('/manager/email-campaigns/{emailCampaign}',     [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'destroy'])->name('manager.email_campaigns.destroy');
+    });
 
     // ── Marketing & Prospecção ────────────────────────────────────────────────
     Route::middleware('can:access-manager')->group(function () {
