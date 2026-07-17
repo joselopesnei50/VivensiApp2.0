@@ -38,9 +38,17 @@
             </div>
         </div>
 
-        {{-- KPIs no hero --}}
+        {{-- KPIs no hero (fixos + Perfil Operacional numa unica row responsiva) --}}
+        @php
+            // Layout dinamico do grid pra evitar quebras feias tipo 4+2.
+            // Total = 4 fixos + N do perfil operacional.
+            $totalKpiBoxes = 4 + count($resolvedKpis ?? []);
+            // 3 ou 6 boxes → col-md-4 (linha limpa de 3 ou 3+3, evita o 4+2 feio)
+            // resto (4, 5, 7, 8) → col-md-3 (4 por linha)
+            $kpiCol = in_array($totalKpiBoxes, [3, 6], true) ? 'col-6 col-md-4' : 'col-6 col-md-3';
+        @endphp
         <div class="row g-3">
-            <div class="col-6 col-md-3">
+            <div class="{{ $kpiCol }}">
                 <div class="cmd-stat-card">
                     <div>
                         <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Missões Ativas</span>
@@ -51,7 +59,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="{{ $kpiCol }}">
                 <div class="cmd-stat-card">
                     <div>
                         <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Radar de Alertas</span>
@@ -67,7 +75,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="{{ $kpiCol }}">
                 <div class="cmd-stat-card">
                     <div>
                         <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Entrada / Mês</span>
@@ -87,7 +95,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="{{ $kpiCol }}">
                 <div class="cmd-stat-card">
                     <div>
                         <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Célula Operacional</span>
@@ -98,35 +106,30 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        {{-- KPIs operacionais do Perfil (Fase 1 — Etapa C). Só aparece quando o tenant
-             tem categoria com KPIs específicos (mobilização, eleitoral, cultural...). --}}
-        @if(!empty($resolvedKpis ?? []))
-            <div class="row g-3 mt-1">
-                @foreach($resolvedKpis as $key => $kpi)
-                    <div class="col-6 col-md-3">
-                        <div class="cmd-stat-card" style="border-left: 3px solid #6366f1;">
-                            <div>
-                                <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">{{ $kpi['label'] }}</span>
-                                <div style="font-size: 2.4rem; font-weight: 950; margin-top: 8px; letter-spacing: -2px;">
-                                    @if($kpi['kind'] === 'currency')
-                                        R$ {{ number_format((float) $kpi['value'], 0, ',', '.') }}
-                                    @elseif($kpi['kind'] === 'percent')
-                                        {{ number_format((float) $kpi['value'], 0) }}%
-                                    @else
-                                        {{ number_format((int) $kpi['value'], 0, ',', '.') }}
-                                    @endif
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; color: #a5b4fc; font-weight: 800; font-size: 0.8rem;">
-                                <i class="fas fa-compass"></i> Perfil Operacional
+            {{-- KPIs do Perfil Operacional (Fase 1 — Etapa C). Ficam na MESMA row
+                 pra o grid balancear (ex.: 6 boxes = 3+3 em vez de 4+2). --}}
+            @foreach($resolvedKpis ?? [] as $key => $kpi)
+                <div class="{{ $kpiCol }}">
+                    <div class="cmd-stat-card" style="border-left: 3px solid #6366f1;">
+                        <div>
+                            <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">{{ $kpi['label'] }}</span>
+                            <div style="font-size: 2.4rem; font-weight: 950; margin-top: 8px; letter-spacing: -2px;">
+                                @if($kpi['kind'] === 'currency')
+                                    R$ {{ number_format((float) $kpi['value'], 0, ',', '.') }}
+                                @elseif($kpi['kind'] === 'percent')
+                                    {{ number_format((float) $kpi['value'], 0) }}%
+                                @else
+                                    {{ number_format((int) $kpi['value'], 0, ',', '.') }}
+                                @endif
                             </div>
                         </div>
+                        <div style="display: flex; align-items: center; gap: 8px; color: #a5b4fc; font-weight: 800; font-size: 0.8rem;">
+                            <i class="fas fa-compass"></i> Perfil Operacional
+                        </div>
                     </div>
-                @endforeach
-            </div>
-        @endif
+                </div>
+            @endforeach
+        </div>
     </div>
 </div>
 
