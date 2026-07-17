@@ -26,7 +26,10 @@ return new class extends Migration {
             $table->foreignId('lead_id')->constrained('leads')->cascadeOnDelete();
             $table->string('token', 64)->unique();
             $table->timestamp('sent_at')->nullable();
-            $table->timestamp('expires_at');
+            // nullable pra compatibilidade com MySQL strict mode (NO_ZERO_DATE).
+            // O application code sempre seta expires_at ao criar o token; default
+            // nunca e usado na pratica.
+            $table->timestamp('expires_at')->nullable();
             $table->timestamp('confirmed_at')->nullable();
             $table->timestamp('opted_out_at')->nullable();
             $table->timestamps();
