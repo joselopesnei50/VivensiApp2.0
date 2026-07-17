@@ -2,6 +2,7 @@
 
 use App\Models\FinancialCategory;
 use App\Models\Project;
+use App\Models\ProjectStage;
 use App\Models\Tenant;
 use App\Models\Transaction;
 use App\Models\User;
@@ -243,4 +244,125 @@ it('rejeita arquivo maior que 5 MB', function () {
     $this->actingAs(importUser())
         ->post('/finance/import/preview', ['file' => UploadedFile::fake()->createWithContent('big.csv', $big . str_repeat('x', 6 * 1024 * 1024))])
         ->assertSessionHasErrors('file');
+});
+
+// ── Etapa (ProjectStage) ─────────────────────────────────────────────────────
+
+it('etapa por nome resolve stage_id da Transaction', function () {
+    $user = importUser();
+    $project = Project::factory()->create([
+        'tenant_id' => $user->tenant_id,
+        'name'      => 'Proj com etapa',
+        'status'    => 'active',
+    ]);
+    $stage = ProjectStage::create([
+        'tenant_id'  => $user->tenant_id,
+        'project_id' => $project->id,
+        'title'      => 'Pre-producao',
+        'order'      => 1,
+        'status'     => 'pending',
+    ]);
+
+    $csv = "descricao,valor,data,tipo,categoria,projeto,etapa\n"
+         . "Aluguel Etapa 1,1500,15/07/2026,despesa,,Proj com etapa,Pre-producao\n";
+
+    $this->actingAs($user)->post('/finance/import/preview', ['file' => makeCsv($csv)]);
+    $this->actingAs($user)->post('/finance/import/confirm');
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'Aluguel Etapa 1')->first();
+    expect($tx)->not->toBeNull();
+    expect((int) $tx->project_id)->toBe($project->id);
+    expect((int) $tx->stage_id)->toBe($stage->id);
+});
+
+it('etapa nao encontrada deixa stage_id null (fallback silencioso)', function () {
+    $user = importUser();
+    $project = Project::factory()->create([
+        'tenant_id' => $user->tenant_id,
+        'name'      => 'Proj X',
+        'status'    => 'active',
+    ]);
+
+    $csv = "descricao,valor,data,tipo,categoria,projeto,etapa\n"
+         . "Y,100,15/07/2026,despesa,,Proj X,Nao existe\n";
+
+    $this->actingAs($user)->post('/finance/import/preview', ['file' => makeCsv($csv)]);
+    $this->actingAs($user)->post('/finance/import/confirm');
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'Y')->first();
+    expect($tx)->not->toBeNull();
+    expect((int) $tx->project_id)->toBe($project->id);
+    expect($tx->stage_id)->toBeNull();
+});
+
+it('etapa e ignorada quando nao ha projeto resolvido', function () {
+    $user = importUser();
+
+    $csv = "descricao,valor,data,tipo,categoria,projeto,etapa\n"
+         . "Z,100,15/07/2026,despesa,,,Etapa qualquer\n";
+
+    $this->actingAs($user)->post('/finance/import/preview', ['file' => makeCsv($csv)]);
+    $this->actingAs($user)->post('/finance/import/confirm');
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'Z')->first();
+    expect($tx->project_id)->toBeNull();
+    expect($tx->stage_id)->toBeNull();
+});
+
+it('stage_id override do dropdown forca stage em todas as linhas', function () {
+    $user = importUser();
+    $project = Project::factory()->create([
+        'tenant_id' => $user->tenant_id,
+        'name'      => 'Proj OV',
+        'status'    => 'active',
+    ]);
+    $stageA = ProjectStage::create([
+        'tenant_id'  => $user->tenant_id,
+        'project_id' => $project->id,
+        'title'      => 'A',
+        'order'      => 1,
+        'status'     => 'pending',
+    ]);
+
+    // CSV nem menciona etapa. Override forca stageA em ambas.
+    $csv = "descricao,valor,data,tipo\nX,10,01/07/2026,despesa\nY,20,02/07/2026,despesa\n";
+
+    $this->actingAs($user)->post('/finance/import/preview', [
+        'file'       => makeCsv($csv),
+        'project_id' => $project->id,
+        'stage_id'   => $stageA->id,
+    ]);
+    $this->actingAs($user)->post('/finance/import/confirm');
+
+    $txs = Transaction::withoutGlobalScope('tenant')->whereIn('description', ['X','Y'])->get();
+    expect($txs)->toHaveCount(2);
+    foreach ($txs as $tx) {
+        expect((int) $tx->stage_id)->toBe($stageA->id);
+    }
+});
+
+it('stage_id de outro projeto e rejeitado (anti-IDOR)', function () {
+    $user = importUser();
+    $projA = Project::factory()->create(['tenant_id' => $user->tenant_id, 'name' => 'A', 'status' => 'active']);
+    $projB = Project::factory()->create(['tenant_id' => $user->tenant_id, 'name' => 'B', 'status' => 'active']);
+    $stageB = ProjectStage::create([
+        'tenant_id'  => $user->tenant_id,
+        'project_id' => $projB->id,
+        'title'      => 'Stage B',
+        'order'      => 1,
+        'status'     => 'pending',
+    ]);
+
+    // Selecionou projA no dropdown + stageB no dropdown → stage rejeitada.
+    $csv = "descricao,valor,data,tipo\nX,10,01/07/2026,despesa\n";
+    $this->actingAs($user)->post('/finance/import/preview', [
+        'file'       => makeCsv($csv),
+        'project_id' => $projA->id,
+        'stage_id'   => $stageB->id,
+    ]);
+    $this->actingAs($user)->post('/finance/import/confirm');
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'X')->first();
+    expect((int) $tx->project_id)->toBe($projA->id);
+    expect($tx->stage_id)->toBeNull(); // stage foi rejeitada
 });
