@@ -109,6 +109,21 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/finance/import/preview',   [App\Http\Controllers\TransactionImportController::class, 'preview'])->name('finance.import.preview')->middleware('throttle:10,1');
     Route::post('/finance/import/confirm',   [App\Http\Controllers\TransactionImportController::class, 'import'])->name('finance.import.confirm')->middleware('throttle:5,1');
 
+    // ── Anexos polimorficos (Patrimonio, Almox/Estoque, Movimentos) ───────────
+    // morphType e whitelistado no AttachmentController (asset, inv_item, inv_move).
+    Route::post(  '/attachments/{morphType}/{morphId}', [App\Http\Controllers\AttachmentController::class, 'store'])
+        ->where(['morphType' => '[a-z_]+', 'morphId' => '[0-9]+'])
+        ->name('attachments.store')
+        ->middleware('throttle:20,1');
+    Route::get(   '/attachments/{id}/download',        [App\Http\Controllers\AttachmentController::class, 'download'])
+        ->where('id', '[0-9]+')
+        ->name('attachments.download')
+        ->middleware('throttle:60,1');
+    Route::delete('/attachments/{id}',                 [App\Http\Controllers\AttachmentController::class, 'destroy'])
+        ->where('id', '[0-9]+')
+        ->name('attachments.destroy')
+        ->middleware('throttle:20,1');
+
     // ── LGPD Self-Service (art. 15 delecao + art. 18 IV exportacao) ───────────
     Route::get( '/eu/dados',                         [App\Http\Controllers\LgpdSelfServiceController::class, 'index'])->name('lgpd.self.index');
     Route::post('/eu/dados/exportar',                [App\Http\Controllers\LgpdSelfServiceController::class, 'requestExport'])->name('lgpd.self.export')->middleware('throttle:5,60');
