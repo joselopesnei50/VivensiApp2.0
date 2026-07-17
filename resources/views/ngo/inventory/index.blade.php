@@ -4,7 +4,7 @@
 <div class="header-page" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
     <div>
         <h2 style="margin: 0; color: #2c3e50;">Almoxarifado & Estoque</h2>
-        <p style="color: #64748b; margin: 5px 0 0 0;">Controle de doações físicas, cestas básicas e materiais.</p>
+        <p style="color: #64748b; margin: 5px 0 0 0;">Controle de materiais, insumos e itens em estoque.</p>
     </div>
     <div style="display: flex; gap: 10px;">
         <a href="{{ route('inventory.import.form') }}" class="btn-premium" style="background:#0284c7;">
