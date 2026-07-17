@@ -50,6 +50,10 @@
                     <button class="btn-premium" style="padding: 5px 10px; font-size: 0.8rem; background: #10b981;" onclick="openMovementModal({{ $item->id }}, 'in', '{{ $item->name }}')">
                         <i class="fas fa-plus"></i> Entrada
                     </button>
+                    <a href="{{ route('attachments.index', ['morphType' => 'inv_item', 'morphId' => $item->id]) }}"
+                       class="btn-premium" style="padding: 5px 10px; font-size: 0.8rem; background: #0284c7;" title="Anexos">
+                        <i class="fas fa-paperclip"></i>
+                    </a>
                     <form action="{{ url('/ngo/inventory/'.$item->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir o item?');">
                         @csrf
                         @method('DELETE')
@@ -78,6 +82,7 @@
                     <th style="padding: 15px; text-align: left; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Item</th>
                     <th style="padding: 15px; text-align: right; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Qtd</th>
                     <th style="padding: 15px; text-align: left; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Motivo/Destino</th>
+                    <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Anexos</th>
                 </tr>
             </thead>
             <tbody>
@@ -108,10 +113,14 @@
                             <div style="color: #0ea5e9;"><i class="fas fa-diagram-project"></i> {{ optional($mov->project)->name }}</div>
                         @endif
                     </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <a href="{{ route('attachments.index', ['morphType' => 'inv_move', 'morphId' => $mov->id]) }}"
+                           style="color:#0284c7;" title="Anexos"><i class="fas fa-paperclip"></i></a>
+                    </td>
                 </tr>
                 @endforeach
                 @if(count($recentMovements) == 0)
-                <tr><td colspan="5" style="padding: 30px; text-align: center; color: #94a3b8;">Nenhuma movimentação recente registrada.</td></tr>
+                <tr><td colspan="6" style="padding: 30px; text-align: center; color: #94a3b8;">Nenhuma movimentação recente registrada.</td></tr>
                 @endif
             </tbody>
         </table>

@@ -129,6 +129,8 @@
                     @endif
                 </td>
                 <td style="padding: 15px; text-align: center; white-space: nowrap;">
+                    <a href="{{ route('attachments.index', ['morphType' => 'asset', 'morphId' => $asset->id]) }}"
+                       style="color:#0284c7; padding:0 6px;" title="Anexos"><i class="fas fa-paperclip"></i></a>
                     <button onclick="openAssetEdit({{ json_encode($asset) }})" style="background:none; border:none; color:#4f46e5; cursor:pointer; padding:0 6px;" title="Editar"><i class="fas fa-edit"></i></button>
                     <form action="{{ url('/ngo/assets/'.$asset->id) }}" method="POST" onsubmit="return confirm('Excluir este item?');" style="display:inline;">
                         @csrf

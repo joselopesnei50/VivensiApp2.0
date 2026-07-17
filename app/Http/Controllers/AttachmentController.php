@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -39,6 +40,34 @@ class AttachmentController extends Controller
         'inv_item' => InventoryItem::class,
         'inv_move' => InventoryMovement::class,
     ];
+
+    /**
+     * Rotulos amigaveis por morphType — usados no titulo da view.
+     */
+    private const LABELS = [
+        'asset'    => 'Patrimônio',
+        'inv_item' => 'Item de Estoque',
+        'inv_move' => 'Movimento de Estoque',
+    ];
+
+    /**
+     * Lista de anexos de um registro dono (+ formulario upload).
+     * GET /attachments/{morphType}/{morphId}
+     */
+    public function index(string $morphType, int $morphId): View
+    {
+        $owner       = $this->resolveOwner($morphType, $morphId);
+        $attachments = $owner->attachments()->latest()->get();
+
+        return view('attachments.index', [
+            'owner'       => $owner,
+            'morphType'   => $morphType,
+            'morphId'     => $morphId,
+            'label'       => self::LABELS[$morphType] ?? 'Registro',
+            'attachments' => $attachments,
+            'maxSizeMb'   => (int) (self::MAX_SIZE_KB / 1024),
+        ]);
+    }
 
     /**
      * Sobe um anexo pra um registro dono.

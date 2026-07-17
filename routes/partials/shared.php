@@ -111,6 +111,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
     // ── Anexos polimorficos (Patrimonio, Almox/Estoque, Movimentos) ───────────
     // morphType e whitelistado no AttachmentController (asset, inv_item, inv_move).
+    Route::get(   '/attachments/{morphType}/{morphId}', [App\Http\Controllers\AttachmentController::class, 'index'])
+        ->where(['morphType' => '[a-z_]+', 'morphId' => '[0-9]+'])
+        ->name('attachments.index');
     Route::post(  '/attachments/{morphType}/{morphId}', [App\Http\Controllers\AttachmentController::class, 'store'])
         ->where(['morphType' => '[a-z_]+', 'morphId' => '[0-9]+'])
         ->name('attachments.store')
