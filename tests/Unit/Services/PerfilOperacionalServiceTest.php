@@ -43,23 +43,31 @@ class PerfilOperacionalServiceTest extends TestCase
         $this->assertSame('currency', $kpis['monthly_revenue']['kind']);
     }
 
-    public function test_kpis_mobilizacao_substitui_financeiro_por_whatsapp(): void
+    public function test_kpis_mobilizacao_usa_apenas_base(): void
     {
+        // Desde 2026-07-17 (decisao do gestor), whatsapp_inbound_total e
+        // leads_total foram removidos do perfil — ja aparecem no bloco
+        // "Base de Cadastros" logo abaixo do hero, evitando duplicidade.
         $kpis = $this->svc->kpisForCategoria(TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL);
 
-        $this->assertArrayHasKey('whatsapp_inbound_total', $kpis,
-            'mobilizacao_social deve mostrar nº de mensagens WhatsApp recebidas (item 2.1 do roadmap)');
-        $this->assertArrayNotHasKey('monthly_revenue', $kpis,
-            'mobilizacao_social não deve mostrar KPI financeiro como destaque');
-        $this->assertSame('Mensagens WhatsApp Recebidas', $kpis['whatsapp_inbound_total']['label']);
+        $this->assertArrayHasKey('active_projects', $kpis);
+        $this->assertArrayHasKey('pending_approvals', $kpis);
+        $this->assertArrayNotHasKey('whatsapp_inbound_total', $kpis,
+            'removido do hero por decisao do gestor 2026-07-17');
+        $this->assertArrayNotHasKey('leads_total', $kpis,
+            'removido do hero por decisao do gestor 2026-07-17');
+        $this->assertArrayNotHasKey('monthly_revenue', $kpis);
     }
 
-    public function test_kpis_eleitoral_tem_whatsapp_e_base_de_eleitores(): void
+    public function test_kpis_eleitoral_usa_apenas_base(): void
     {
+        // Mesma regra do mobilizacao — so KPIs base.
         $kpis = $this->svc->kpisForCategoria(TenantOperationalProfile::CATEGORIA_CAMPANHA_ELEITORAL);
 
-        $this->assertArrayHasKey('whatsapp_inbound_total', $kpis);
-        $this->assertArrayHasKey('leads_total', $kpis);
+        $this->assertArrayHasKey('active_projects', $kpis);
+        $this->assertArrayHasKey('pending_approvals', $kpis);
+        $this->assertArrayNotHasKey('whatsapp_inbound_total', $kpis);
+        $this->assertArrayNotHasKey('leads_total', $kpis);
         $this->assertArrayNotHasKey('monthly_revenue', $kpis);
     }
 
@@ -150,46 +158,29 @@ class PerfilOperacionalServiceTest extends TestCase
             'categoria outro tem monthly_revenue como source não-base — deve aparecer');
     }
 
-    public function test_sources_mobilizacao_inclui_whatsapp_e_leads(): void
+    public function test_sources_mobilizacao_nao_tem_kpis_extras(): void
     {
+        // Apos remocao 2026-07-17, mobilizacao so tem KPIs base — que ficam
+        // hardcoded no hero. sourcesForCategoria filtra base, entao retorna vazio.
         $sources = $this->svc->sourcesForCategoria(TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL);
-        $this->assertContains('whatsapp_inbound_total', $sources);
-        $this->assertContains('leads_total', $sources);
+        $this->assertNotContains('whatsapp_inbound_total', $sources);
+        $this->assertNotContains('leads_total', $sources);
         $this->assertNotContains('active_projects', $sources,
             'KPIs base não devem aparecer — view já renderiza hardcoded na hero');
         $this->assertNotContains('pending_approvals', $sources);
     }
 
-    public function test_resolved_kpis_mobilizacao_usa_valores_passados(): void
+    public function test_resolved_kpis_mobilizacao_e_vazio_apos_remocao(): void
     {
+        // Sem KPIs extras no perfil mobilizacao, resolvedKpis sempre volta vazio —
+        // view nao renderiza cards extras (o hero fica so com os 4 base).
         $resolved = $this->svc->resolvedKpisForCategoria(
             TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL,
             ['whatsapp_inbound_total' => 1234, 'leads_total' => 56]
         );
 
-        $this->assertArrayHasKey('whatsapp_inbound_total', $resolved);
-        $this->assertSame(1234, $resolved['whatsapp_inbound_total']['value']);
-        $this->assertSame('Mensagens WhatsApp Recebidas', $resolved['whatsapp_inbound_total']['label']);
-        $this->assertSame('count', $resolved['whatsapp_inbound_total']['kind']);
-
-        $this->assertArrayHasKey('leads_total', $resolved);
-        $this->assertSame(56, $resolved['leads_total']['value']);
-
-        $this->assertArrayNotHasKey('active_projects', $resolved,
-            'base KPIs ficam de fora do resolved — view já mostra na hero');
-    }
-
-    public function test_resolved_kpis_omite_sources_nao_resolvidos(): void
-    {
-        // Source com null no map é omitido — sinaliza pra view que o
-        // Controller decidiu não calcular (ex.: duplicaria KPI da hero).
-        $resolved = $this->svc->resolvedKpisForCategoria(
-            TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL,
-            ['whatsapp_inbound_total' => 10, 'leads_total' => null]
-        );
-        $this->assertArrayHasKey('whatsapp_inbound_total', $resolved);
-        $this->assertArrayNotHasKey('leads_total', $resolved,
-            'source com value null deve ser omitido pra evitar card vazio');
+        $this->assertSame([], $resolved,
+            'apos remocao dos 2 KPIs, mobilizacao nao produz cards extras no hero');
     }
 
     public function test_resolved_kpis_vazio_quando_nenhum_source_resolvido(): void

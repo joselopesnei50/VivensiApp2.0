@@ -170,19 +170,12 @@ class PerfilOperacionalService
         ];
 
         return match ($categoria) {
+            // MOBILIZACAO_SOCIAL e CAMPANHA_ELEITORAL usam apenas os KPIs base
+            // (active_projects + pending_approvals). Os KPIs `whatsapp_inbound_total`
+            // e `leads_total` foram removidos por decisao do gestor em 2026-07-17 —
+            // ja estao expostos no bloco "Base de Cadastros" logo abaixo do hero.
             TenantOperationalProfile::CATEGORIA_MOBILIZACAO_SOCIAL,
-            TenantOperationalProfile::CATEGORIA_CAMPANHA_ELEITORAL => $base + [
-                'whatsapp_inbound_total' => [
-                    'label'  => 'Mensagens WhatsApp Recebidas',
-                    'kind'   => 'count',
-                    'source' => 'whatsapp_inbound_total',
-                ],
-                'leads_total' => [
-                    'label'  => 'Cadastros (Base)',
-                    'kind'   => 'count',
-                    'source' => 'leads_total',
-                ],
-            ],
+            TenantOperationalProfile::CATEGORIA_CAMPANHA_ELEITORAL => $base,
             TenantOperationalProfile::CATEGORIA_PROJETO_CULTURAL => $base + [
                 'monthly_revenue' => [
                     'label'  => 'Captação no Mês',

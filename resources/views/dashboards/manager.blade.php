@@ -38,94 +38,94 @@
             </div>
         </div>
 
-        {{-- KPIs no hero (fixos + Perfil Operacional numa unica row responsiva) --}}
-        @php
-            // Layout dinamico do grid pra evitar quebras feias tipo 4+2.
-            // Total = 4 fixos + N do perfil operacional.
-            $totalKpiBoxes = 4 + count($resolvedKpis ?? []);
-            // 3 ou 6 boxes → col-md-4 (linha limpa de 3 ou 3+3, evita o 4+2 feio)
-            // resto (4, 5, 7, 8) → col-md-3 (4 por linha)
-            $kpiCol = in_array($totalKpiBoxes, [3, 6], true) ? 'col-6 col-md-4' : 'col-6 col-md-3';
-        @endphp
-        <div class="row g-3">
-            <div class="{{ $kpiCol }}">
-                <div class="cmd-stat-card">
-                    <div>
-                        <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Missões Ativas</span>
-                        <div style="font-size: 2.8rem; font-weight: 950; margin-top: 8px; letter-spacing: -2px;">{{ $activeProjects }}</div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: 800; font-size: 0.8rem;">
-                        <i class="fas fa-satellite-dish"></i> Sincronizado
-                    </div>
+        {{-- KPIs no hero — CSS Grid auto-fit se adapta a qualquer N (4, 5, 6, 7…)
+             + compact override reduzindo padding/height/font pra evitar boxes gigantes.
+             Escopo do override: `.hero-kpi-grid .cmd-stat-card` — nao vaza pra outras views. --}}
+        <style>
+            .hero-kpi-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+                gap: 12px;
+            }
+            .hero-kpi-grid .cmd-stat-card {
+                padding: 20px;
+                min-height: 130px;
+                border-radius: 20px;
+            }
+            .hero-kpi-grid .kpi-value      { font-size: 2rem;   line-height: 1.05; letter-spacing: -1.5px; margin-top: 6px; }
+            .hero-kpi-grid .kpi-value-cash { font-size: 1.35rem; line-height: 1.05; letter-spacing: -1px;   margin-top: 6px; }
+            .hero-kpi-grid .kpi-label      { font-size: 0.62rem; letter-spacing: 1.5px; }
+            .hero-kpi-grid .kpi-footer     { font-size: 0.75rem; }
+        </style>
+        <div class="hero-kpi-grid">
+            <div class="cmd-stat-card">
+                <div>
+                    <span class="kpi-label" style="font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase;">Missões Ativas</span>
+                    <div class="kpi-value" style="font-weight: 950;">{{ $activeProjects }}</div>
+                </div>
+                <div class="kpi-footer" style="display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: 800;">
+                    <i class="fas fa-satellite-dish"></i> Sincronizado
                 </div>
             </div>
-            <div class="{{ $kpiCol }}">
-                <div class="cmd-stat-card">
-                    <div>
-                        <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Radar de Alertas</span>
-                        <div style="font-size: 2.8rem; font-weight: 950; margin-top: 8px; color: #f59e0b; letter-spacing: -2px;">{{ $stats['pending_tasks'] }}</div>
-                        @if($stats['overdue_tasks'] > 0)
-                        <div style="font-size: 0.7rem; font-weight: 800; color: #ef4444; margin-top: 4px;">
-                            <i class="fas fa-circle-exclamation me-1"></i>{{ $stats['overdue_tasks'] }} vencida{{ $stats['overdue_tasks'] > 1 ? 's' : '' }}
-                        </div>
-                        @endif
+            <div class="cmd-stat-card">
+                <div>
+                    <span class="kpi-label" style="font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase;">Radar de Alertas</span>
+                    <div class="kpi-value" style="font-weight: 950; color: #f59e0b;">{{ $stats['pending_tasks'] }}</div>
+                    @if($stats['overdue_tasks'] > 0)
+                    <div style="font-size: 0.7rem; font-weight: 800; color: #ef4444; margin-top: 4px;">
+                        <i class="fas fa-circle-exclamation me-1"></i>{{ $stats['overdue_tasks'] }} vencida{{ $stats['overdue_tasks'] > 1 ? 's' : '' }}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; color: #f59e0b; font-weight: 800; font-size: 0.8rem;">
-                        <i class="fas fa-wave-square"></i> Ação Requerida
-                    </div>
+                    @endif
+                </div>
+                <div class="kpi-footer" style="display: flex; align-items: center; gap: 8px; color: #f59e0b; font-weight: 800;">
+                    <i class="fas fa-wave-square"></i> Ação Requerida
                 </div>
             </div>
-            <div class="{{ $kpiCol }}">
-                <div class="cmd-stat-card">
-                    <div>
-                        <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Entrada / Mês</span>
-                        <div style="font-size: 1.6rem; font-weight: 950; margin-top: 8px; color: #34d399; letter-spacing: -1px;">
-                            R$ {{ number_format($stats['monthly_income'], 0, ',', '.') }}
-                        </div>
-                        @if($stats['income_change'] !== null)
-                        @php $ic = $stats['income_change']; @endphp
-                        <div style="font-size: 0.7rem; font-weight: 800; color: {{ $ic >= 0 ? '#34d399' : '#f87171' }}; margin-top: 4px;">
-                            {{ $ic >= 0 ? '▲' : '▼' }} {{ number_format(abs($ic), 1) }}% vs mês anterior
-                        </div>
-                        @endif
+            <div class="cmd-stat-card">
+                <div>
+                    <span class="kpi-label" style="font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase;">Entrada / Mês</span>
+                    <div class="kpi-value-cash" style="font-weight: 950; color: #34d399;">
+                        R$ {{ number_format($stats['monthly_income'], 0, ',', '.') }}
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; color: #34d399; font-weight: 800; font-size: 0.8rem;">
-                        <i class="fas fa-arrow-trend-up"></i>
-                        Saldo: R$ {{ number_format($stats['monthly_balance'], 0, ',', '.') }}
+                    @if($stats['income_change'] !== null)
+                    @php $ic = $stats['income_change']; @endphp
+                    <div style="font-size: 0.7rem; font-weight: 800; color: {{ $ic >= 0 ? '#34d399' : '#f87171' }}; margin-top: 4px;">
+                        {{ $ic >= 0 ? '▲' : '▼' }} {{ number_format(abs($ic), 1) }}% vs mês anterior
                     </div>
+                    @endif
+                </div>
+                <div class="kpi-footer" style="display: flex; align-items: center; gap: 8px; color: #34d399; font-weight: 800;">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    Saldo: R$ {{ number_format($stats['monthly_balance'], 0, ',', '.') }}
                 </div>
             </div>
-            <div class="{{ $kpiCol }}">
-                <div class="cmd-stat-card">
-                    <div>
-                        <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">Célula Operacional</span>
-                        <div style="font-size: 2.8rem; font-weight: 950; margin-top: 8px; letter-spacing: -2px;">{{ $stats['team_size'] }}</div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.4); font-weight: 800; font-size: 0.8rem;">
-                        <i class="fas fa-network-wired"></i> Membros Ativos
-                    </div>
+            <div class="cmd-stat-card">
+                <div>
+                    <span class="kpi-label" style="font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase;">Célula Operacional</span>
+                    <div class="kpi-value" style="font-weight: 950;">{{ $stats['team_size'] }}</div>
+                </div>
+                <div class="kpi-footer" style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.4); font-weight: 800;">
+                    <i class="fas fa-network-wired"></i> Membros Ativos
                 </div>
             </div>
-            {{-- KPIs do Perfil Operacional (Fase 1 — Etapa C). Ficam na MESMA row
-                 pra o grid balancear (ex.: 6 boxes = 3+3 em vez de 4+2). --}}
+            {{-- KPIs do Perfil Operacional (Fase 1 — Etapa C). Grid auto-fit
+                 adapta pra qualquer quantidade extra sem quebra feia. --}}
             @foreach($resolvedKpis ?? [] as $key => $kpi)
-                <div class="{{ $kpiCol }}">
-                    <div class="cmd-stat-card" style="border-left: 3px solid #6366f1;">
-                        <div>
-                            <span style="font-size: 0.65rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px;">{{ $kpi['label'] }}</span>
-                            <div style="font-size: 2.4rem; font-weight: 950; margin-top: 8px; letter-spacing: -2px;">
-                                @if($kpi['kind'] === 'currency')
-                                    R$ {{ number_format((float) $kpi['value'], 0, ',', '.') }}
-                                @elseif($kpi['kind'] === 'percent')
-                                    {{ number_format((float) $kpi['value'], 0) }}%
-                                @else
-                                    {{ number_format((int) $kpi['value'], 0, ',', '.') }}
-                                @endif
-                            </div>
+                <div class="cmd-stat-card" style="border-left: 3px solid #6366f1;">
+                    <div>
+                        <span class="kpi-label" style="font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase;">{{ $kpi['label'] }}</span>
+                        <div class="{{ $kpi['kind'] === 'currency' ? 'kpi-value-cash' : 'kpi-value' }}" style="font-weight: 950;">
+                            @if($kpi['kind'] === 'currency')
+                                R$ {{ number_format((float) $kpi['value'], 0, ',', '.') }}
+                            @elseif($kpi['kind'] === 'percent')
+                                {{ number_format((float) $kpi['value'], 0) }}%
+                            @else
+                                {{ number_format((int) $kpi['value'], 0, ',', '.') }}
+                            @endif
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px; color: #a5b4fc; font-weight: 800; font-size: 0.8rem;">
-                            <i class="fas fa-compass"></i> Perfil Operacional
-                        </div>
+                    </div>
+                    <div class="kpi-footer" style="display: flex; align-items: center; gap: 8px; color: #a5b4fc; font-weight: 800;">
+                        <i class="fas fa-compass"></i> Perfil Operacional
                     </div>
                 </div>
             @endforeach
