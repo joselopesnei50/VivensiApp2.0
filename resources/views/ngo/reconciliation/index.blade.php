@@ -25,6 +25,19 @@
 
         <input type="file" name="ofx_file" accept=".ofx" class="form-control-vivensi" style="padding: 10px; border: 2px dashed #cbd5e1; background: #f8fafc; cursor: pointer; margin-bottom: 20px;" required>
 
+        <div style="margin-bottom: 20px; text-align: left;">
+            <label for="project_id" style="display:block; font-size:0.85rem; color:#475569; margin-bottom:6px; font-weight:600;">
+                <i class="fas fa-diagram-project" style="color:#4f46e5;"></i> Vincular a um projeto (opcional)
+            </label>
+            <select name="project_id" id="project_id" class="form-control-vivensi" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; background:#f8fafc;">
+                <option value="">— Nenhum · deixar sem projeto —</option>
+                @foreach(($projects ?? []) as $p)
+                    <option value="{{ $p->id }}">{{ $p->name }}</option>
+                @endforeach
+            </select>
+            <small style="color:#64748b; display:block; margin-top:6px;">Se escolher, TODAS as transações importadas desse extrato ficarão vinculadas a este projeto.</small>
+        </div>
+
         <button type="submit" class="btn-premium" style="width: 100%; justify-content: center; font-size: 1.1rem; padding: 15px;">
             <i class="fas fa-sync" style="margin-right: 10px;"></i> Processar Arquivo
         </button>

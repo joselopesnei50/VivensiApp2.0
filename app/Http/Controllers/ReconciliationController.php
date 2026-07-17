@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\OfxParserService;
 use App\Models\Transaction;
 use App\Models\FinancialCategory;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
@@ -13,14 +14,37 @@ class ReconciliationController extends Controller
 {
     public function index()
     {
-        return view('ngo.reconciliation.index');
+        $tenantId = (int) auth()->user()->tenant_id;
+        $projects = Project::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('ngo.reconciliation.index', compact('projects'));
     }
 
     public function upload(Request $request, OfxParserService $parser)
     {
         $request->validate([
-            'ofx_file' => 'required|file|max:2048|mimetypes:text/plain,application/xml,text/xml,application/octet-stream,application/x-ofx',
+            'ofx_file'   => 'required|file|max:2048|mimetypes:text/plain,application/xml,text/xml,application/octet-stream,application/x-ofx',
+            'project_id' => 'nullable|integer',
         ]);
+
+        $tenantId = (int) auth()->user()->tenant_id;
+
+        // Valida projeto opcional contra o tenant do user (anti-IDOR).
+        $projectIdOverride = null;
+        $projectNameLabel  = null;
+        if ($request->filled('project_id')) {
+            $p = Project::withoutGlobalScope('tenant')
+                ->where('tenant_id', $tenantId)
+                ->where('id', (int) $request->input('project_id'))
+                ->first(['id', 'name']);
+            if ($p) {
+                $projectIdOverride = $p->id;
+                $projectNameLabel  = $p->name;
+            }
+        }
 
         $file = $request->file('ofx_file');
         $path = $file->storeAs('temp', 'upload_' . auth()->id() . '_' . uniqid() . '.ofx');
@@ -85,7 +109,7 @@ class ReconciliationController extends Controller
 
             Storage::delete($path);
 
-            return view('ngo.reconciliation.match', compact('matches', 'categories'));
+            return view('ngo.reconciliation.match', compact('matches', 'categories', 'projectIdOverride', 'projectNameLabel'));
 
         } catch (\Exception $e) {
             return back()->with('error', 'Erro ao ler arquivo OFX: ' . $e->getMessage());
@@ -94,13 +118,24 @@ class ReconciliationController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate(['project_id' => 'nullable|integer']);
+
         $data = $request->input('transactions');
-        
+
         if (!$data) {
              return redirect('/ngo/reconciliation')->with('success', 'Nenhuma transação importada.');
         }
 
         $tenantId = auth()->user()->tenant_id;
+
+        // Valida projeto opcional (vem do hidden field da match.blade.php).
+        $projectIdOverride = null;
+        if ($request->filled('project_id')) {
+            $projectIdOverride = Project::withoutGlobalScope('tenant')
+                ->where('tenant_id', $tenantId)
+                ->where('id', (int) $request->input('project_id'))
+                ->value('id');
+        }
 
         // Carrega fitids existentes para bloquear duplicatas na importação
         $existingFitids = Transaction::withTrashed()
@@ -129,6 +164,7 @@ class ReconciliationController extends Controller
 
             $trn = new Transaction();
             $trn->tenant_id    = $tenantId;
+            $trn->project_id   = $projectIdOverride; // null se nao selecionado no upload
             $trn->description  = $trnData['description'];
             $trn->amount       = $trnData['amount'];
             $trn->type         = $trnData['type'];

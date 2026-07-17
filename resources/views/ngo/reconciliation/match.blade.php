@@ -7,10 +7,17 @@
 <div class="header-page" style="margin-bottom: 30px;">
     <h2 style="margin: 0; color: #2c3e50;">Revisão da Importação</h2>
     <p style="color: #64748b; margin: 5px 0 0 0;">Verifique as transações antes de confirmar.</p>
+    @if(!empty($projectNameLabel))
+        <div style="margin-top: 12px; padding: 12px 16px; background: #e0f2fe; border: 1px solid #7dd3fc; border-radius: 10px; color: #075985; font-size: 0.9rem;">
+            <i class="fas fa-diagram-project"></i>
+            Todas as transações confirmadas serão vinculadas ao projeto <strong>{{ $projectNameLabel }}</strong>.
+        </div>
+    @endif
 </div>
 
 <form action="{{ $basePath . '/ngo/reconciliation/store' }}" method="POST">
     @csrf
+    <input type="hidden" name="project_id" value="{{ $projectIdOverride ?? '' }}">
     <div class="vivensi-card" style="padding: 0; overflow: hidden;">
         <table style="width: 100%; border-collapse: collapse;">
             <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">

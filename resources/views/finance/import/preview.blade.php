@@ -5,6 +5,13 @@
     <div class="mb-4">
         <p class="text-muted text-uppercase small mb-1" style="letter-spacing:.15em;">Financeiro · Import</p>
         <h1 class="h3 mb-1">👀 Preview antes de importar</h1>
+        @if(!empty($projectOverride))
+            <div class="alert alert-info mt-3 mb-0" style="border:none;background:#e0f2fe;color:#075985;">
+                <i class="fas fa-diagram-project me-2"></i>
+                Todas as transações serão vinculadas ao projeto <strong>{{ $projectOverride }}</strong>.
+                A coluna "projeto" do CSV será ignorada.
+            </div>
+        @endif
     </div>
 
     <div class="row g-3 mb-4">

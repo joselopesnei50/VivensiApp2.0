@@ -181,6 +181,45 @@ it('deduplicacao ignora linha ja existente por description+date+amount', functio
     expect(Transaction::withoutGlobalScope('tenant')->where('description', 'Aluguel')->count())->toBe(1);
 });
 
+it('project_id override do dropdown ganha da coluna projeto do CSV', function () {
+    $user  = importUser();
+    $projA = Project::factory()->create(['tenant_id' => $user->tenant_id, 'name' => 'Projeto A', 'status' => 'active']);
+    $projB = Project::factory()->create(['tenant_id' => $user->tenant_id, 'name' => 'Projeto B', 'status' => 'active']);
+
+    // CSV menciona Projeto B, mas dropdown seleciona Projeto A → todas viram A.
+    $csv = "descricao,valor,data,tipo,categoria,projeto\n"
+         . "X,100,01/07/2026,despesa,Cat,Projeto B\n"
+         . "Y,200,02/07/2026,despesa,Cat,\n";
+
+    $this->actingAs($user)->post('/finance/import/preview', [
+        'file'       => makeCsv($csv),
+        'project_id' => $projA->id,
+    ]);
+    $this->actingAs($user)->post('/finance/import/confirm');
+
+    $txs = Transaction::withoutGlobalScope('tenant')->get();
+    expect($txs)->toHaveCount(2);
+    foreach ($txs as $tx) {
+        expect((int) $tx->project_id)->toBe($projA->id);
+    }
+});
+
+it('project_id de outro tenant e ignorado (anti-IDOR)', function () {
+    $mine   = importUser();
+    $other  = importUser(); // outro tenant
+    $othersProj = Project::factory()->create(['tenant_id' => $other->tenant_id, 'name' => 'Alheio', 'status' => 'active']);
+
+    $csv = "descricao,valor,data,tipo\nX,100,01/07/2026,despesa\n";
+    $this->actingAs($mine)->post('/finance/import/preview', [
+        'file'       => makeCsv($csv),
+        'project_id' => $othersProj->id,
+    ]);
+    $this->actingAs($mine)->post('/finance/import/confirm');
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'X')->first();
+    expect($tx->project_id)->toBeNull(); // override rejeitado; sem coluna projeto no CSV, fica null
+});
+
 it('projeto por nome e resolvido corretamente', function () {
     $user = importUser();
     $project = Project::factory()->create([

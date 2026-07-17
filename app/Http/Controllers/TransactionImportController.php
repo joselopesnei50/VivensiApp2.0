@@ -49,7 +49,15 @@ class TransactionImportController extends Controller
 
     public function showForm(): View
     {
-        return view('finance.import.form');
+        $tenantId = (int) auth()->user()->tenant_id;
+        // Lista de projetos ativos do tenant pra dropdown "Aplicar a projeto".
+        // withoutGlobalScope('tenant') + where tenant_id: belt+suspenders anti-IDOR.
+        $projects = \App\Models\Project::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('finance.import.form', compact('projects'));
     }
 
     public function downloadTemplate(): StreamedResponse
@@ -67,8 +75,25 @@ class TransactionImportController extends Controller
     public function preview(Request $request): View|RedirectResponse
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:5120', // 5 MB
+            'file'       => 'required|file|mimes:csv,txt|max:5120', // 5 MB
+            'project_id' => 'nullable|integer',
         ]);
+
+        $tenantId = (int) auth()->user()->tenant_id;
+
+        // Se veio project_id, valida que pertence ao tenant do user (anti-IDOR).
+        $projectIdOverride = null;
+        $projectNameLabel  = null;
+        if ($request->filled('project_id')) {
+            $p = \App\Models\Project::withoutGlobalScope('tenant')
+                ->where('tenant_id', $tenantId)
+                ->where('id', (int) $request->input('project_id'))
+                ->first(['id', 'name']);
+            if ($p) {
+                $projectIdOverride = $p->id;
+                $projectNameLabel  = $p->name;
+            }
+        }
 
         $parsed = $this->parseCsv($request->file('file')->getRealPath());
 
@@ -79,11 +104,13 @@ class TransactionImportController extends Controller
         // Guardar em session pra confirmar depois (max 5000 linhas)
         session()->put('transaction_import.rows', $parsed['rows']);
         session()->put('transaction_import.errors', $parsed['errors']);
+        session()->put('transaction_import.project_id_override', $projectIdOverride);
 
         return view('finance.import.preview', [
-            'rows'         => $parsed['rows'],
-            'parseErrors'  => $parsed['errors'],
-            'summary'      => [
+            'rows'              => $parsed['rows'],
+            'parseErrors'       => $parsed['errors'],
+            'projectOverride'   => $projectNameLabel,
+            'summary'           => [
                 'total'  => count($parsed['rows']),
                 'valid'  => count(array_filter($parsed['rows'], fn ($r) => empty($r['_error']))),
                 'errors' => count($parsed['errors']),
@@ -93,7 +120,8 @@ class TransactionImportController extends Controller
 
     public function import(Request $request): RedirectResponse
     {
-        $rows = session()->pull('transaction_import.rows', []);
+        $rows              = session()->pull('transaction_import.rows', []);
+        $projectIdOverride = session()->pull('transaction_import.project_id_override');
         session()->forget('transaction_import.errors');
 
         if (empty($rows)) {
@@ -111,7 +139,7 @@ class TransactionImportController extends Controller
         // Manager/NGO/super_admin (admin do painel) importam ja aprovado.
         $isSubordinate = !in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
 
-        DB::transaction(function () use ($rows, $tenantId, $isSubordinate, $user, &$stats) {
+        DB::transaction(function () use ($rows, $tenantId, $isSubordinate, $user, $projectIdOverride, &$stats) {
             foreach ($rows as $row) {
                 if (!empty($row['_error'])) {
                     $stats['errors']++;
@@ -132,7 +160,9 @@ class TransactionImportController extends Controller
                 }
 
                 $categoryId = $this->resolveCategoryId($tenantId, $row['categoria'] ?? null, $row['tipo']);
-                $projectId  = $this->resolveProjectId($tenantId, $row['projeto'] ?? null);
+                // Se veio override do dropdown, ele ganha de qualquer coisa na coluna projeto do CSV.
+                // Caso contrario, usa o nome da coluna projeto (comportamento antigo).
+                $projectId  = $projectIdOverride ?: $this->resolveProjectId($tenantId, $row['projeto'] ?? null);
 
                 // Aprovacao: despesa de subordinado sempre pending.
                 // Receita nao precisa de aprovacao (pattern do TransactionController).

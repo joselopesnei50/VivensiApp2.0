@@ -41,6 +41,18 @@
                     <input type="file" name="file" accept=".csv,.txt" class="form-control form-control-lg" required>
                     @error('file')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 </div>
+                <div class="mb-3">
+                    <label for="project_id" class="form-label small text-muted mb-1">
+                        <i class="fas fa-diagram-project me-1"></i>Vincular a um projeto (opcional)
+                    </label>
+                    <select name="project_id" id="project_id" class="form-control form-control-lg">
+                        <option value="">— Nenhum · usar coluna "projeto" do CSV —</option>
+                        @foreach(($projects ?? []) as $p)
+                            <option value="{{ $p->id }}">{{ $p->name }}</option>
+                        @endforeach
+                    </select>
+                    <small class="text-muted d-block mt-1">Se escolher aqui, TODAS as linhas viram desse projeto (ignora coluna "projeto" do CSV).</small>
+                </div>
                 <button type="submit" class="btn btn-primary btn-lg">
                     <i class="fas fa-eye me-1"></i> Pré-visualizar
                 </button>
