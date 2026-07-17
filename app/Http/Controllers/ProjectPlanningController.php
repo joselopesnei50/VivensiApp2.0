@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\ProjectGoal;
 use App\Models\ProjectMember;
-use App\Models\ProjectMilestone;
+use App\Models\ProjectStage as ProjectMilestone;
 use App\Services\ProjectService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;

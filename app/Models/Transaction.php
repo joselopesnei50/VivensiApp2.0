@@ -68,6 +68,7 @@ class Transaction extends Model
         'tenant_id',
         'category_id',
         'project_id',
+        'stage_id',
         'ngo_donor_id',
         'client_id',
         'description',
@@ -137,6 +138,10 @@ class Transaction extends Model
 
     public function project() {
         return $this->belongsTo(\App\Models\Project::class);
+    }
+
+    public function stage() {
+        return $this->belongsTo(\App\Models\ProjectStage::class, 'stage_id');
     }
 
     public function donor()

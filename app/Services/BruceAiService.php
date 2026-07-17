@@ -7,7 +7,7 @@ use App\Models\Project;
 use App\Models\ProjectGoal;
 use App\Models\ProjectLog;
 use App\Models\ProjectMember;
-use App\Models\ProjectMilestone;
+use App\Models\ProjectStage as ProjectMilestone;
 use App\Models\ProjectTimelineRecord;
 use App\Models\Tenant;
 use App\Models\Transaction;

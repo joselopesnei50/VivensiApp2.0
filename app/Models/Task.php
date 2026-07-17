@@ -16,6 +16,7 @@ class Task extends Model
     protected $fillable = [
         'tenant_id',
         'project_id',
+        'stage_id',
         'title',
         'description',
         'status',
@@ -40,6 +41,11 @@ class Task extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function stage()
+    {
+        return $this->belongsTo(ProjectStage::class, 'stage_id');
     }
 
     public function creator()

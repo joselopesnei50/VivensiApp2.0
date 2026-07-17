@@ -115,13 +115,75 @@ class Project extends Model
         return $this->hasMany(ProjectGoal::class)->orderBy('created_at', 'desc');
     }
 
+    public function stages()
+    {
+        return $this->hasMany(ProjectStage::class)->orderBy('order')->orderBy('start_date');
+    }
+
+    // Alias BC — a UI de Planejamento (Fase 3 substitui) ainda referencia
+    // `milestones`. Retorna as mesmas linhas ordenadas por target_date
+    // (campo preservado no rename).
     public function milestones()
     {
-        return $this->hasMany(ProjectMilestone::class)->orderBy('target_date');
+        return $this->hasMany(ProjectStage::class)->orderBy('target_date');
     }
 
     public function classSessions()
     {
         return $this->hasMany(ClassSession::class);
+    }
+
+    public function hasStages(): bool
+    {
+        return $this->stages()->exists();
+    }
+
+    /**
+     * Budget efetivo: soma de planned_value das stages ativas quando o projeto
+     * usa stages; senao null (UI cai no `budget` cadastrado manualmente).
+     */
+    public function getCalculatedBudgetAttribute(): ?float
+    {
+        if (! $this->hasStages()) {
+            return null;
+        }
+        return (float) $this->stages()
+            ->where('status', '!=', 'cancelled')
+            ->sum('planned_value');
+    }
+
+    /**
+     * Etapa atual (regra determinista):
+     * 1) status='in_progress' AND now BETWEEN start_date AND end_date
+     * 2) end_date < now AND status != completed  -> atrasada
+     * 3) primeira futura (start_date > now)      -> proxima
+     * 4) tudo completed                          -> null
+     * Empate: order ASC.
+     */
+    public function getCurrentStageAttribute(): ?ProjectStage
+    {
+        $stages = $this->stages()->get();
+        if ($stages->isEmpty()) {
+            return null;
+        }
+        $today = now()->startOfDay();
+
+        $current = $stages->first(function (ProjectStage $s) use ($today) {
+            if ($s->status !== 'in_progress') return false;
+            if ($s->start_date && $today->lt($s->start_date)) return false;
+            if ($s->end_date   && $today->gt($s->end_date))   return false;
+            return true;
+        });
+        if ($current) return $current;
+
+        $overdue = $stages->first(fn (ProjectStage $s) =>
+            $s->end_date && $s->end_date->lt($today) && $s->status !== 'completed'
+        );
+        if ($overdue) return $overdue;
+
+        $upcoming = $stages->first(fn (ProjectStage $s) =>
+            $s->start_date && $s->start_date->gt($today)
+        );
+        return $upcoming;
     }
 }
