@@ -50,9 +50,20 @@ class InventoryImportController extends Controller
 
     public function downloadTemplate(): StreamedResponse
     {
+        // Exemplos variados pra ilustrar bem os formatos aceitos:
+        // - Unidades diversas (resma, un, kg, litro, caixa, pacote)
+        // - Com e sem SKU (dedup cai em nome+unidade quando SKU vazio)
+        // - Com e sem validade (produtos pereciveis vs. duraveis)
+        // - Valores em formato BR ("R$ 1.234,56") e US (25.90)
         $csv = "nome,sku,unidade,quantidade,estoque_minimo,valor_unitario,descricao,validade\n"
-             . "\"Papel A4\",SKU-A4,resma,50,10,25.90,\"75g branco\",\n"
-             . "\"Cesta basica\",SKU-CB,unidade,120,20,89.90,,31/12/2026\n";
+             . "\"Papel A4\",PAP-A4,resma,50,10,25.90,\"75g branco - 500 folhas\",\n"
+             . "\"Cesta basica padrao\",CB-STD,unidade,120,20,\"R\$ 89,90\",\"Kit mensal para familias assistidas\",31/12/2026\n"
+             . "\"Cafe torrado 500g\",CAFE-500,pacote,80,15,18.50,\"Marca X - moido tradicional\",15/09/2026\n"
+             . "\"Agua mineral 500ml\",AG-500,caixa,30,5,\"R\$ 24,00\",\"Caixa com 12 unidades\",10/01/2027\n"
+             . "\"Arroz tipo 1\",ARROZ-01,kg,200,50,\"6,90\",\"Pacote 5kg - branco polido\",30/06/2027\n"
+             . "\"Alcool gel 70%\",ALCG-500,litro,45,10,15.00,\"Litros de 1L\",20/11/2027\n"
+             . "\"Caneta esferografica azul\",,unidade,300,100,1.50,,\n"
+             . "\"Kit higiene pessoal\",,unidade,60,15,\"R\$ 32,50\",\"Sabonete, shampoo, condicionador e escova de dente\",\n";
 
         return response()->streamDownload(function () use ($csv) {
             echo "\xEF\xBB\xBF" . $csv;
