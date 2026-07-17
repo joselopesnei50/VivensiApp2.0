@@ -45,6 +45,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::put('/projects/{id}/planning/milestones/{milestoneId}',   [App\Http\Controllers\ProjectPlanningController::class, 'updateMilestone'])->name('projects.planning.milestones.update')->middleware('throttle:web_write');
     Route::delete('/projects/{id}/planning/milestones/{milestoneId}',[App\Http\Controllers\ProjectPlanningController::class, 'destroyMilestone'])->name('projects.planning.milestones.destroy')->middleware('throttle:web_write');
 
+    // ── Etapas de Projeto (project_stages) ────────────────────────────────
+    // Rotas com paths fixos ANTES de {stageId} — evita Laravel confundir
+    // "reorder" com um id na rota /{stageId} (padrao ja provado em transactions
+    // /export, inventory/import, assets/import).
+    Route::get(   '/projects/{project}/stages',                       [App\Http\Controllers\ProjectStageController::class, 'index'])->name('projects.stages.index');
+    Route::post(  '/projects/{project}/stages/reorder',               [App\Http\Controllers\ProjectStageController::class, 'reorder'])->name('projects.stages.reorder')->middleware('throttle:web_write');
+    Route::post(  '/projects/{project}/stages',                       [App\Http\Controllers\ProjectStageController::class, 'store'])->name('projects.stages.store')->middleware('throttle:web_write');
+    Route::post(  '/projects/{project}/stages/{stageId}/complete',    [App\Http\Controllers\ProjectStageController::class, 'complete'])->name('projects.stages.complete')->middleware('throttle:web_write');
+    Route::put(   '/projects/{project}/stages/{stageId}',             [App\Http\Controllers\ProjectStageController::class, 'update'])->name('projects.stages.update')->middleware('throttle:web_write');
+    Route::delete('/projects/{project}/stages/{stageId}',             [App\Http\Controllers\ProjectStageController::class, 'destroy'])->name('projects.stages.destroy')->middleware('throttle:web_write');
+
     // ── Lista de Presenca (class_sessions) ────────────────────────────────
     Route::get('/class-sessions',                                              [App\Http\Controllers\ClassSessionController::class, 'indexAll'])->name('class-sessions.index-all');
     Route::get('/projects/{project}/class-sessions',                           [App\Http\Controllers\ClassSessionController::class, 'index'])->name('class-sessions.index');

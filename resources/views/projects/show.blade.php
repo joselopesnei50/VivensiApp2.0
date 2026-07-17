@@ -249,6 +249,9 @@
                         <i class="fas fa-bullseye" style="color: var(--ds-brand);"></i> Planejamento
                     </a>
                 @endif
+                <a href="{{ $basePath . '/projects/'.$project->id.'/stages' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                    <i class="fas fa-layer-group" style="color: var(--ds-brand);"></i> Etapas
+                </a>
                 <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
                     <i class="fas fa-tasks" style="color: var(--ds-brand);"></i> Quadros Kanban
                 </a>
@@ -316,6 +319,8 @@
         </div>
     </div>
 </div>
+
+@include('projects.partials.stage_sticky_banner')
 
 <div class="row g-4">
     <!-- Operations Column -->
