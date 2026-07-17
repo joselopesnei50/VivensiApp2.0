@@ -80,8 +80,8 @@ it('preview rejeita CSV sem colunas obrigatorias', function () {
 
 // ── Import ────────────────────────────────────────────────────────────────────
 
-it('confirma import cria transacoes no banco', function () {
-    $user = importUser();
+it('confirma import cria transacoes no banco (admin ngo → aprovado)', function () {
+    $user = importUser(); // role=ngo (admin)
     $csv  = "descricao,valor,data,tipo,categoria\n"
           . "Salario Ana,3200.00,05/07/2026,despesa,Folha\n"
           . "Doacao empresa,\"500,00\",10/07/2026,receita,Doações\n";
@@ -97,8 +97,55 @@ it('confirma import cria transacoes no banco', function () {
     $salario = Transaction::withoutGlobalScope('tenant')->where('description', 'Salario Ana')->first();
     expect((float) $salario->amount)->toBe(3200.00);
     expect($salario->type)->toBe('expense');
-    expect($salario->status)->toBe('pending');
+    // Admin (ngo) importando: vai direto aprovado
+    expect($salario->status)->toBe('paid');
+    expect($salario->approval_status)->toBe('approved');
     expect((int) $salario->tenant_id)->toBe($user->tenant_id);
+});
+
+// ── Aprovacao por role ────────────────────────────────────────────────────────
+
+it('subordinado (employee) importando despesa: fica em pending', function () {
+    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $employee = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'employee']);
+
+    $csv = "descricao,valor,data,tipo\nMaterial escritorio,120,01/07/2026,despesa\n";
+
+    $this->actingAs($employee)->post('/finance/import/preview', ['file' => makeCsv($csv)]);
+    $this->actingAs($employee)->post('/finance/import/confirm');
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'Material escritorio')->first();
+    expect($tx)->not->toBeNull();
+    expect($tx->status)->toBe('pending');
+    expect($tx->approval_status)->toBe('pending');
+});
+
+it('subordinado importando receita: nao precisa aprovacao', function () {
+    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $employee = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'employee']);
+
+    $csv = "descricao,valor,data,tipo\nDoacao pessoa fisica,50,01/07/2026,receita\n";
+
+    $this->actingAs($employee)->post('/finance/import/preview', ['file' => makeCsv($csv)]);
+    $this->actingAs($employee)->post('/finance/import/confirm');
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'Doacao pessoa fisica')->first();
+    expect($tx->status)->toBe('paid');
+    expect($tx->approval_status)->toBe('approved');
+});
+
+it('manager importando despesa: aprovado direto (nao pending)', function () {
+    $tenant  = Tenant::factory()->create(['subscription_status' => 'active']);
+    $manager = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
+
+    $csv = "descricao,valor,data,tipo\nConta luz,300,01/07/2026,despesa\n";
+
+    $this->actingAs($manager)->post('/finance/import/preview', ['file' => makeCsv($csv)]);
+    $this->actingAs($manager)->post('/finance/import/confirm');
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'Conta luz')->first();
+    expect($tx->status)->toBe('paid');
+    expect($tx->approval_status)->toBe('approved');
 });
 
 it('categoria e criada se nao existir (find-or-create)', function () {

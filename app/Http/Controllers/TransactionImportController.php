@@ -28,7 +28,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  *
  * Fluxo: showForm → preview (post CSV) → import (post confirm).
  * Idempotencia por (tenant, description, date, amount) — evita duplicar.
- * Status: 'pending' (aguarda aprovacao manual do gestor).
+ *
+ * Aprovacao: despesas importadas por colaboradores (employee/client) ficam em
+ * status=pending + approval_status=pending pra passar pela central de aprovacoes
+ * do gestor (mesma regra do TransactionController::store()). Manager/NGO/super_admin
+ * importam ja aprovado.
  */
 class TransactionImportController extends Controller
 {
@@ -97,17 +101,24 @@ class TransactionImportController extends Controller
                 ->with('error', 'Sessão expirou. Faça upload novamente.');
         }
 
-        $tenantId = auth()->user()->tenant_id;
-        $stats    = ['created' => 0, 'duplicated' => 0, 'errors' => 0];
+        $user     = auth()->user();
+        $tenantId = $user->tenant_id;
+        $stats    = ['created' => 0, 'duplicated' => 0, 'errors' => 0, 'pending' => 0];
 
-        DB::transaction(function () use ($rows, $tenantId, &$stats) {
+        // Mesma regra do TransactionController::store() (linha 169):
+        // Despesa importada por colaborador (nao-gestor) fica em pending +
+        // approval_status=pending — passa pela central de aprovacoes do gestor.
+        // Manager/NGO/super_admin (admin do painel) importam ja aprovado.
+        $isSubordinate = !in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
+
+        DB::transaction(function () use ($rows, $tenantId, $isSubordinate, $user, &$stats) {
             foreach ($rows as $row) {
                 if (!empty($row['_error'])) {
                     $stats['errors']++;
                     continue;
                 }
 
-                // Deduplicacao por (tenant, description, date, amount) — memoria user
+                // Deduplicacao por (tenant, description, date, amount)
                 $exists = Transaction::withoutGlobalScope('tenant')
                     ->where('tenant_id', $tenantId)
                     ->where('description', $row['descricao'])
@@ -123,30 +134,45 @@ class TransactionImportController extends Controller
                 $categoryId = $this->resolveCategoryId($tenantId, $row['categoria'] ?? null, $row['tipo']);
                 $projectId  = $this->resolveProjectId($tenantId, $row['projeto'] ?? null);
 
+                // Aprovacao: despesa de subordinado sempre pending.
+                // Receita nao precisa de aprovacao (pattern do TransactionController).
+                $isExpense     = $row['tipo'] === 'expense';
+                $needsApproval = $isExpense && $isSubordinate;
+
                 Transaction::create([
-                    'tenant_id'   => $tenantId,
-                    'project_id'  => $projectId,
-                    'description' => $row['descricao'],
-                    'amount'      => $row['valor'],
-                    'date'        => $row['data'],
-                    'type'        => $row['tipo'],
-                    'category_id' => $categoryId,
-                    'status'      => 'pending', // memoria user — importados vao pra aprovacao
+                    'tenant_id'       => $tenantId,
+                    'project_id'      => $projectId,
+                    'description'     => $row['descricao'],
+                    'amount'          => $row['valor'],
+                    'date'            => $row['data'],
+                    'type'            => $row['tipo'],
+                    'category_id'     => $categoryId,
+                    'status'          => $needsApproval ? 'pending' : 'paid',
+                    'approval_status' => $needsApproval ? 'pending' : 'approved',
                 ]);
 
+                if ($needsApproval) {
+                    $stats['pending']++;
+                }
                 $stats['created']++;
             }
         });
 
         Log::info('TRANSACTION_IMPORT_COMPLETED', array_merge($stats, [
             'tenant_id' => $tenantId,
-            'user_id'   => auth()->id(),
+            'user_id'   => $user->id,
+            'role'      => $user->role,
         ]));
 
-        return redirect()->route('finance.import.form')->with('success', sprintf(
+        $msg = sprintf(
             '%d transações criadas · %d duplicadas ignoradas · %d com erro.',
             $stats['created'], $stats['duplicated'], $stats['errors']
-        ));
+        );
+        if ($stats['pending'] > 0) {
+            $msg .= sprintf(' 🟡 %d despesa(s) aguardando aprovação do gestor.', $stats['pending']);
+        }
+
+        return redirect()->route('finance.import.form')->with('success', $msg);
     }
 
     // ── Parsing ─────────────────────────────────────────────────────────────
