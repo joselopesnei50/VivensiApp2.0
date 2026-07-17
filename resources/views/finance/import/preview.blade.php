@@ -10,6 +10,9 @@
                 <i class="fas fa-diagram-project me-2"></i>
                 Todas as transações serão vinculadas ao projeto <strong>{{ $projectOverride }}</strong>.
                 A coluna "projeto" do CSV será ignorada.
+                @if(!empty($stageOverride))
+                    · Etapa: <strong>{{ $stageOverride }}</strong> (coluna "etapa" do CSV será ignorada).
+                @endif
             </div>
         @endif
     </div>

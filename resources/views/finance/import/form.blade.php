@@ -16,11 +16,12 @@
             <h5 class="fw-bold mb-3">1. Baixe o template</h5>
             <p class="text-muted small">Use as colunas exatamente com esses nomes:</p>
             <div class="p-3 rounded-3 mb-3" style="background:#f1f5f9;">
-                <code>descricao,valor,data,tipo,categoria,projeto</code>
+                <code>descricao,valor,data,tipo,categoria,projeto,etapa</code>
             </div>
             <ul class="small text-muted">
                 <li><strong>descricao, valor, data, tipo</strong> — obrigatórios</li>
-                <li><strong>categoria, projeto</strong> — opcionais</li>
+                <li><strong>categoria, projeto, etapa</strong> — opcionais</li>
+                <li><strong>etapa</strong> — vincula a uma etapa do projeto (título exato). Sem projeto, é ignorada.</li>
                 <li>Valor aceita <code>R$ 1.234,56</code> ou <code>1234.56</code></li>
                 <li>Data aceita <code>dd/mm/aaaa</code> ou <code>aaaa-mm-dd</code></li>
                 <li>Tipo: <code>receita</code> ou <code>despesa</code></li>
@@ -45,7 +46,7 @@
                     <label for="project_id" class="form-label small text-muted mb-1">
                         <i class="fas fa-diagram-project me-1"></i>Vincular a um projeto (opcional)
                     </label>
-                    <select name="project_id" id="project_id" class="form-control form-control-lg">
+                    <select name="project_id" id="project_id" class="form-control form-control-lg" onchange="onProjectChange()">
                         <option value="">— Nenhum · usar coluna "projeto" do CSV —</option>
                         @foreach(($projects ?? []) as $p)
                             <option value="{{ $p->id }}">{{ $p->name }}</option>
@@ -53,6 +54,32 @@
                     </select>
                     <small class="text-muted d-block mt-1">Se escolher aqui, TODAS as linhas viram desse projeto (ignora coluna "projeto" do CSV).</small>
                 </div>
+                <div class="mb-3" id="stage-wrap" style="display:none;">
+                    <label for="stage_id" class="form-label small text-muted mb-1">
+                        <i class="fas fa-layer-group me-1"></i>Vincular a uma etapa do projeto (opcional)
+                    </label>
+                    <select name="stage_id" id="stage_id" class="form-control form-control-lg">
+                        <option value="">— Nenhuma · usar coluna "etapa" do CSV —</option>
+                    </select>
+                    <small class="text-muted d-block mt-1">Aparece quando o projeto acima tem etapas cadastradas. Se escolher, TODAS as linhas viram dessa etapa.</small>
+                </div>
+                <script>
+                    const STAGES_BY_PROJECT = @json($stagesByProject ?? []);
+                    function onProjectChange() {
+                        const pid = document.getElementById('project_id').value;
+                        const wrap = document.getElementById('stage-wrap');
+                        const sel = document.getElementById('stage_id');
+                        sel.innerHTML = '<option value="">— Nenhuma · usar coluna "etapa" do CSV —</option>';
+                        const list = pid ? (STAGES_BY_PROJECT[pid] || []) : [];
+                        if (!pid || list.length === 0) { wrap.style.display = 'none'; return; }
+                        list.forEach(s => {
+                            const opt = document.createElement('option');
+                            opt.value = s.id; opt.textContent = s.title;
+                            sel.appendChild(opt);
+                        });
+                        wrap.style.display = 'block';
+                    }
+                </script>
                 <button type="submit" class="btn btn-primary btn-lg">
                     <i class="fas fa-eye me-1"></i> Pré-visualizar
                 </button>

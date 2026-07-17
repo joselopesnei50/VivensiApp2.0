@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\FinancialCategory;
 use App\Models\Project;
+use App\Models\ProjectStage;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  *   tipo      (obrigatorio, receita|despesa|income|expense)
  *   categoria (opcional, find-or-create)
  *   projeto   (opcional, busca por nome exato no tenant)
+ *   etapa     (opcional, busca por titulo exato dentro do projeto resolvido)
  *
  * Fluxo: showForm → preview (post CSV) → import (post confirm).
  * Idempotencia por (tenant, description, date, amount) — evita duplicar.
@@ -45,6 +47,7 @@ class TransactionImportController extends Controller
         'tipo'      => ['tipo', 'type', 'natureza'],
         'categoria' => ['categoria', 'category', 'grupo'],
         'projeto'   => ['projeto', 'project', 'obra'],
+        'etapa'     => ['etapa', 'stage', 'fase', 'phase'],
     ];
 
     public function showForm(): View
@@ -57,15 +60,26 @@ class TransactionImportController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        return view('finance.import.form', compact('projects'));
+        // Pre-carrega stages por projeto pra dropdown contextual no cliente
+        // (evita round-trip AJAX no simples caso de <200 projetos por tenant).
+        $stagesByProject = ProjectStage::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('project_id')
+            ->orderBy('order')
+            ->get(['id', 'project_id', 'title'])
+            ->groupBy('project_id')
+            ->map(fn ($group) => $group->map(fn ($s) => ['id' => $s->id, 'title' => $s->title])->values())
+            ->toArray();
+
+        return view('finance.import.form', compact('projects', 'stagesByProject'));
     }
 
     public function downloadTemplate(): StreamedResponse
     {
-        $csv = "descricao,valor,data,tipo,categoria,projeto\n"
-             . "\"Aluguel escritório\",\"R\$ 1.500,00\",\"01/07/2026\",despesa,\"Aluguel\",\n"
-             . "\"Salário Ana\",\"3200.00\",\"05/07/2026\",despesa,\"Folha de pagamento\",\"Projeto Musica\"\n"
-             . "\"Doação empresa X\",\"500,00\",\"10/07/2026\",receita,\"Doações\",\n";
+        $csv = "descricao,valor,data,tipo,categoria,projeto,etapa\n"
+             . "\"Aluguel escritório\",\"R\$ 1.500,00\",\"01/07/2026\",despesa,\"Aluguel\",,\n"
+             . "\"Salário Ana\",\"3200.00\",\"05/07/2026\",despesa,\"Folha de pagamento\",\"Projeto Musica\",\"Pre-producao\"\n"
+             . "\"Doação empresa X\",\"500,00\",\"10/07/2026\",receita,\"Doações\",,\n";
 
         return response()->streamDownload(function () use ($csv) {
             echo "\xEF\xBB\xBF" . $csv; // UTF-8 BOM pra Excel abrir corretamente
@@ -77,6 +91,7 @@ class TransactionImportController extends Controller
         $request->validate([
             'file'       => 'required|file|mimes:csv,txt|max:5120', // 5 MB
             'project_id' => 'nullable|integer',
+            'stage_id'   => 'nullable|integer',
         ]);
 
         $tenantId = (int) auth()->user()->tenant_id;
@@ -95,6 +110,21 @@ class TransactionImportController extends Controller
             }
         }
 
+        // stage_id so vale se veio project_id e a stage pertence a ele.
+        $stageIdOverride  = null;
+        $stageTitleLabel = null;
+        if ($projectIdOverride && $request->filled('stage_id')) {
+            $s = ProjectStage::withoutGlobalScope('tenant')
+                ->where('tenant_id', $tenantId)
+                ->where('project_id', $projectIdOverride)
+                ->where('id', (int) $request->input('stage_id'))
+                ->first(['id', 'title']);
+            if ($s) {
+                $stageIdOverride = $s->id;
+                $stageTitleLabel = $s->title;
+            }
+        }
+
         $parsed = $this->parseCsv($request->file('file')->getRealPath());
 
         if (isset($parsed['error'])) {
@@ -105,11 +135,13 @@ class TransactionImportController extends Controller
         session()->put('transaction_import.rows', $parsed['rows']);
         session()->put('transaction_import.errors', $parsed['errors']);
         session()->put('transaction_import.project_id_override', $projectIdOverride);
+        session()->put('transaction_import.stage_id_override',   $stageIdOverride);
 
         return view('finance.import.preview', [
             'rows'              => $parsed['rows'],
             'parseErrors'       => $parsed['errors'],
             'projectOverride'   => $projectNameLabel,
+            'stageOverride'     => $stageTitleLabel,
             'summary'           => [
                 'total'  => count($parsed['rows']),
                 'valid'  => count(array_filter($parsed['rows'], fn ($r) => empty($r['_error']))),
@@ -122,6 +154,7 @@ class TransactionImportController extends Controller
     {
         $rows              = session()->pull('transaction_import.rows', []);
         $projectIdOverride = session()->pull('transaction_import.project_id_override');
+        $stageIdOverride   = session()->pull('transaction_import.stage_id_override');
         session()->forget('transaction_import.errors');
 
         if (empty($rows)) {
@@ -139,7 +172,7 @@ class TransactionImportController extends Controller
         // Manager/NGO/super_admin (admin do painel) importam ja aprovado.
         $isSubordinate = !in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
 
-        DB::transaction(function () use ($rows, $tenantId, $isSubordinate, $user, $projectIdOverride, &$stats) {
+        DB::transaction(function () use ($rows, $tenantId, $isSubordinate, $user, $projectIdOverride, $stageIdOverride, &$stats) {
             foreach ($rows as $row) {
                 if (!empty($row['_error'])) {
                     $stats['errors']++;
@@ -164,6 +197,15 @@ class TransactionImportController extends Controller
                 // Caso contrario, usa o nome da coluna projeto (comportamento antigo).
                 $projectId  = $projectIdOverride ?: $this->resolveProjectId($tenantId, $row['projeto'] ?? null);
 
+                // stage: override do dropdown vence; senao, resolve pelo nome da
+                // coluna `etapa` DENTRO do projeto ja resolvido. Se projeto for
+                // null, stage e forcada a null (nao ha stage sem projeto).
+                $stageId = null;
+                if ($projectId) {
+                    $stageId = $stageIdOverride
+                        ?: $this->resolveStageId($tenantId, $projectId, $row['etapa'] ?? null);
+                }
+
                 // Aprovacao: despesa de subordinado sempre pending.
                 // Receita nao precisa de aprovacao (pattern do TransactionController).
                 $isExpense     = $row['tipo'] === 'expense';
@@ -172,6 +214,7 @@ class TransactionImportController extends Controller
                 Transaction::create([
                     'tenant_id'       => $tenantId,
                     'project_id'      => $projectId,
+                    'stage_id'        => $stageId,
                     'description'     => $row['descricao'],
                     'amount'          => $row['valor'],
                     'date'            => $row['data'],
@@ -393,5 +436,19 @@ class TransactionImportController extends Controller
             ->first();
 
         return $project?->id;
+    }
+
+    private function resolveStageId(int $tenantId, int $projectId, ?string $title): ?int
+    {
+        if (empty($title)) return null;
+        $title = trim($title);
+
+        $stage = ProjectStage::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->where('project_id', $projectId)
+            ->where('title', $title)
+            ->first();
+
+        return $stage?->id;
     }
 }
