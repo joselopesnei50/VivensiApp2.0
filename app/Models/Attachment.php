@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models;
+
+use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+/**
+ * Anexo polimorfico — associado a Asset, InventoryItem ou InventoryMovement.
+ *
+ * Armazenamento: disk 'local' privado, em
+ *   storage/app/private/tenants/{tenantId}/attachments/{morphType}/{uuid}.{ext}
+ *
+ * Acesso: sempre via rota controlada com tenant check (evitar exposicao direta).
+ * Nao expor `path` ao publico.
+ */
+class Attachment extends Model
+{
+    use BelongsToTenant, HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'tenant_id',
+        'attachable_type',
+        'attachable_id',
+        'original_name',
+        'path',
+        'mime_type',
+        'size_bytes',
+        'uploaded_by',
+    ];
+
+    protected $hidden = ['path'];
+
+    public function attachable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function uploader()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+}
