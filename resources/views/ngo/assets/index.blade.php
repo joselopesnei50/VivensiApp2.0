@@ -7,6 +7,9 @@
         <p style="color: #64748b; margin: 5px 0 0 0;">Inventário de bens duráveis e localização.</p>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+        <a class="btn-premium" href="{{ route('assets.import.form') }}" style="background:#0284c7;">
+            <i class="fas fa-file-import"></i> Importar Planilha
+        </a>
         <a class="btn-premium" href="{{ url('/ngo/assets/export?'.http_build_query(request()->query())) }}" style="background:#4f46e5;">
             <i class="fas fa-file-csv"></i> Exportar CSV
         </a>

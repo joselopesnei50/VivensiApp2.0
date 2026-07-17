@@ -7,6 +7,9 @@
         <p style="color: #64748b; margin: 5px 0 0 0;">Controle de doações físicas, cestas básicas e materiais.</p>
     </div>
     <div style="display: flex; gap: 10px;">
+        <a href="{{ route('inventory.import.form') }}" class="btn-premium" style="background:#0284c7;">
+            <i class="fas fa-file-import"></i> Importar Planilha
+        </a>
         <button onclick="openModal('itemModal')" class="btn-premium">
             <i class="fas fa-plus"></i> Novo Item
         </button>

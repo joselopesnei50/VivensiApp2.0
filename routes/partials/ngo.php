@@ -132,12 +132,22 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/inventory/{id}/movement', [App\Http\Controllers\InventoryController::class, 'movement'])->name('ngo.inventory.movement');
         Route::get('/inventory/export',        [App\Http\Controllers\InventoryController::class, 'exportCsv'])->name('ngo.inventory.export');
         Route::get('/inventory/movements/export', [App\Http\Controllers\InventoryController::class, 'exportMovementsCsv'])->name('ngo.inventory.movements.export');
+        // Import CSV em massa — rotas fixas ANTES das rotas com {id}
+        Route::get('/inventory/import',           [App\Http\Controllers\InventoryImportController::class, 'showForm'])->name('inventory.import.form');
+        Route::get('/inventory/import/template',  [App\Http\Controllers\InventoryImportController::class, 'downloadTemplate'])->name('inventory.import.template');
+        Route::post('/inventory/import/preview',  [App\Http\Controllers\InventoryImportController::class, 'preview'])->name('inventory.import.preview')->middleware('throttle:10,1');
+        Route::post('/inventory/import/confirm',  [App\Http\Controllers\InventoryImportController::class, 'import'])->name('inventory.import.confirm')->middleware('throttle:5,1');
 
         // Patrimônio (Assets)
         Route::get('/assets',                  [App\Http\Controllers\AssetController::class, 'index']);
         Route::get('/assets/term',             [App\Http\Controllers\AssetController::class, 'term']);
         Route::get('/assets/term/pdf',         [App\Http\Controllers\AssetController::class, 'termPdf']);
         Route::get('/assets/export',           [App\Http\Controllers\AssetController::class, 'exportCsv']);
+        // Import CSV em massa — rotas com paths fixos ANTES das rotas com {id}
+        Route::get('/assets/import',           [App\Http\Controllers\AssetImportController::class, 'showForm'])->name('assets.import.form');
+        Route::get('/assets/import/template',  [App\Http\Controllers\AssetImportController::class, 'downloadTemplate'])->name('assets.import.template');
+        Route::post('/assets/import/preview',  [App\Http\Controllers\AssetImportController::class, 'preview'])->name('assets.import.preview')->middleware('throttle:10,1');
+        Route::post('/assets/import/confirm',  [App\Http\Controllers\AssetImportController::class, 'import'])->name('assets.import.confirm')->middleware('throttle:5,1');
         Route::post('/assets',                 [App\Http\Controllers\AssetController::class, 'store']);
         Route::put('/assets/{id}',             [App\Http\Controllers\AssetController::class, 'update']);
         Route::delete('/assets/{id}',          [App\Http\Controllers\AssetController::class, 'destroy']);
