@@ -173,7 +173,12 @@
                                 <span class="stage-badge" style="color: #2563eb; background: #dbeafe;"><i class="fas fa-play"></i> Atual</span>
                             @endif
                         </div>
-                        <div style="font-weight: 900; color: #0f172a; font-size: 1.05rem; line-height: 1.3;">{{ $s->title }}</div>
+                        <a href="{{ $basePath . '/projects/' . $project->id . '/stages/' . $s->id }}"
+                           style="font-weight: 900; color: #0f172a; font-size: 1.05rem; line-height: 1.3; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                            {{ $s->title }}
+                            <i class="fas fa-arrow-right" style="font-size: .75rem; color: #2563eb;"></i>
+                        </a>
+                        <div style="font-size: .7rem; color: #64748b; font-weight: 700; margin-top: 3px;">Clique para gerenciar tarefas e financeiro da etapa</div>
                     </div>
                 </div>
 

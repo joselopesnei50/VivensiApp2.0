@@ -317,3 +317,118 @@ it('calculated_budget retorna null se projeto nao tem stages', function () {
 
     expect($p->fresh()->calculated_budget)->toBeNull();
 });
+
+// ── Espaco de trabalho da etapa (show) ───────────────────────────────────────
+
+it('renderiza pagina de espaco da etapa com tarefas e transactions', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+    $s = stageFor($p, ['title' => 'Producao', 'planned_value' => 5000, 'status' => 'in_progress']);
+
+    Task::create([
+        'tenant_id' => $user->tenant_id, 'project_id' => $p->id, 'stage_id' => $s->id,
+        'title' => 'Contratar audio', 'status' => 'todo', 'priority' => 'high',
+        'created_by' => $user->id,
+    ]);
+    Transaction::create([
+        'tenant_id' => $user->tenant_id, 'project_id' => $p->id, 'stage_id' => $s->id,
+        'description' => 'Aluguel de camera', 'amount' => 1200,
+        'type' => 'expense', 'date' => now()->toDateString(),
+        'status' => 'paid', 'approval_status' => 'approved',
+    ]);
+
+    $this->actingAs($user)
+        ->get("/projects/{$p->id}/stages/{$s->id}")
+        ->assertOk()
+        ->assertSee('Producao')
+        ->assertSee('Contratar audio')
+        ->assertSee('Aluguel de camera');
+});
+
+it('show da etapa bloqueia cross-tenant (404)', function () {
+    $ownerA = stageOwner();
+    $ownerB = stageOwner();
+    $pB = projectFor($ownerB);
+    $sB = stageFor($pB);
+
+    $this->actingAs($ownerA)
+        ->get("/projects/{$pB->id}/stages/{$sB->id}")
+        ->assertNotFound();
+});
+
+// ── stage_id em Task/Transaction stores ─────────────────────────────────────
+
+it('POST /tasks aceita stage_id quando pertence ao mesmo projeto', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+    $s = stageFor($p);
+
+    $this->actingAs($user)->post('/tasks', [
+        'project_id' => $p->id,
+        'stage_id'   => $s->id,
+        'title'      => 'Nova tarefa',
+        'status'     => 'todo',
+    ]);
+
+    $t = Task::withoutGlobalScope('tenant')->where('title', 'Nova tarefa')->first();
+    expect($t)->not->toBeNull();
+    expect((int) $t->stage_id)->toBe($s->id);
+});
+
+it('POST /tasks rejeita stage_id de outro projeto (anti-IDOR)', function () {
+    $user = stageOwner();
+    $projA = projectFor($user, 'A');
+    $projB = projectFor($user, 'B');
+    $stageB = stageFor($projB);
+
+    // project_id=A + stage_id=B -> stage rejeitada (fica null)
+    $this->actingAs($user)->post('/tasks', [
+        'project_id' => $projA->id,
+        'stage_id'   => $stageB->id,
+        'title'      => 'IDOR test',
+        'status'     => 'todo',
+    ]);
+
+    $t = Task::withoutGlobalScope('tenant')->where('title', 'IDOR test')->first();
+    expect($t)->not->toBeNull();
+    expect($t->stage_id)->toBeNull();
+});
+
+it('POST /transactions aceita stage_id quando pertence ao mesmo projeto', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+    $s = stageFor($p);
+
+    $this->actingAs($user)->post('/transactions', [
+        'project_id'  => $p->id,
+        'stage_id'    => $s->id,
+        'description' => 'Compra material',
+        'amount'      => '150,00',
+        'date'        => now()->toDateString(),
+        'type'        => 'expense',
+    ]);
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'Compra material')->first();
+    expect($tx)->not->toBeNull();
+    expect((int) $tx->stage_id)->toBe($s->id);
+});
+
+it('POST /transactions rejeita stage_id de outro projeto (anti-IDOR)', function () {
+    $user = stageOwner();
+    $projA = projectFor($user, 'A');
+    $projB = projectFor($user, 'B');
+    $stageB = stageFor($projB);
+
+    $this->actingAs($user)->post('/transactions', [
+        'project_id'  => $projA->id,
+        'stage_id'    => $stageB->id,
+        'description' => 'IDOR tx test',
+        'amount'      => '99,00',
+        'date'        => now()->toDateString(),
+        'type'        => 'expense',
+    ]);
+
+    $tx = Transaction::withoutGlobalScope('tenant')->where('description', 'IDOR tx test')->first();
+    expect($tx)->not->toBeNull();
+    expect($tx->stage_id)->toBeNull();
+});

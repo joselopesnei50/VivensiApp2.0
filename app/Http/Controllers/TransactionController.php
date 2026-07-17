@@ -152,6 +152,7 @@ class TransactionController extends Controller
             'type' => 'required|in:income,expense',
             'category_id' => ['nullable', 'integer', Rule::exists('financial_categories', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'project_id'  => ['nullable', 'integer', Rule::exists('projects', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'stage_id'    => ['nullable', 'integer', Rule::exists('project_stages', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'attachment' => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png,zip'
         ]);
 
@@ -160,6 +161,21 @@ class TransactionController extends Controller
         }
 
         $validated = $validator->validated();
+
+        // stage_id so vale se pertencer ao mesmo project_id validado. Anti-IDOR
+        // + evita orfaos de stage em outro projeto do mesmo tenant.
+        if (!empty($validated['stage_id']) && !empty($validated['project_id'])) {
+            $stageOk = \App\Models\ProjectStage::withoutGlobalScope('tenant')
+                ->where('id', (int) $validated['stage_id'])
+                ->where('tenant_id', $tenantId)
+                ->where('project_id', (int) $validated['project_id'])
+                ->exists();
+            if (! $stageOk) {
+                $validated['stage_id'] = null;
+            }
+        } else {
+            $validated['stage_id'] = null;
+        }
 
         $transaction = new Transaction($validated);
         $transaction->tenant_id = auth()->user()->tenant_id;

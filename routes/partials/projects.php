@@ -53,6 +53,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post(  '/projects/{project}/stages/reorder',               [App\Http\Controllers\ProjectStageController::class, 'reorder'])->name('projects.stages.reorder')->middleware('throttle:web_write');
     Route::post(  '/projects/{project}/stages',                       [App\Http\Controllers\ProjectStageController::class, 'store'])->name('projects.stages.store')->middleware('throttle:web_write');
     Route::post(  '/projects/{project}/stages/{stageId}/complete',    [App\Http\Controllers\ProjectStageController::class, 'complete'])->name('projects.stages.complete')->middleware('throttle:web_write');
+    Route::get(   '/projects/{project}/stages/{stageId}',             [App\Http\Controllers\ProjectStageController::class, 'show'])->name('projects.stages.show');
     Route::put(   '/projects/{project}/stages/{stageId}',             [App\Http\Controllers\ProjectStageController::class, 'update'])->name('projects.stages.update')->middleware('throttle:web_write');
     Route::delete('/projects/{project}/stages/{stageId}',             [App\Http\Controllers\ProjectStageController::class, 'destroy'])->name('projects.stages.destroy')->middleware('throttle:web_write');
 

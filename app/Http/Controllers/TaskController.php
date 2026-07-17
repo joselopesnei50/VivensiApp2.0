@@ -346,9 +346,16 @@ class TaskController extends Controller
 
         $isPrivileged = in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
 
+        // stage_id so vale se veio com project_id valido; validacao de cross-project
+        // (stage precisa pertencer ao mesmo projeto) fica no makeTask() pra ter acesso
+        // ao valor validado do project_id.
+        $stageExistsRule = Rule::exists('project_stages', 'id')
+            ->where(fn ($q) => $q->where('tenant_id', $tenantId));
+
         return [
             'rules' => [
                 'project_id'  => $isPrivileged ? ['nullable', 'integer', $projectExistsRule] : ['nullable'],
+                'stage_id'    => $isPrivileged ? ['nullable', 'integer', $stageExistsRule] : ['nullable'],
                 'title'       => ['required', 'string', 'max:255'],
                 'description' => ['nullable', 'string'],
                 'status'      => ['required', Rule::in(['todo', 'doing', 'done', 'pending', 'in_progress', 'completed', 'blocked'])],
@@ -365,6 +372,21 @@ class TaskController extends Controller
         $task              = new Task();
         $task->tenant_id   = $tenantId;
         $task->project_id  = $isPrivileged ? ($validated['project_id'] ?? null) : null;
+        // stage_id so persiste quando: (a) usuario privilegiado, (b) veio no
+        // payload, (c) pertence ao MESMO projeto validado. Anti-IDOR: bloqueia
+        // stage_id de outro projeto do mesmo tenant.
+        $stageId = null;
+        if ($isPrivileged && !empty($validated['stage_id']) && $task->project_id) {
+            $ok = \App\Models\ProjectStage::withoutGlobalScope('tenant')
+                ->where('id', (int) $validated['stage_id'])
+                ->where('tenant_id', $tenantId)
+                ->where('project_id', $task->project_id)
+                ->exists();
+            if ($ok) {
+                $stageId = (int) $validated['stage_id'];
+            }
+        }
+        $task->stage_id    = $stageId;
         $task->title       = $validated['title'];
         $task->description = $validated['description'] ?? null;
         $task->status      = $validated['status'];

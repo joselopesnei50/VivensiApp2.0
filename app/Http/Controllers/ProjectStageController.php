@@ -76,6 +76,58 @@ class ProjectStageController extends Controller
         return response()->json(['stage' => $this->present($stage)], 201);
     }
 
+    /**
+     * Pagina de espaco de trabalho da etapa: tarefas + financeiro da etapa,
+     * overview de valor previsto x realizado, botoes de criar tarefa/lancamento
+     * ja com stage_id + project_id pre-selecionados.
+     */
+    public function show(Request $request, Project $project, int $stageId)
+    {
+        $stage = $this->resolveStage($project, $stageId);
+
+        // CASE cross-DB (MySQL + SQLite): FIELD() e so MySQL.
+        $tasks = $stage->tasks()
+            ->with('assignee:id,name')
+            ->orderByRaw("CASE status
+                WHEN 'in_progress' THEN 1
+                WHEN 'doing'       THEN 2
+                WHEN 'todo'        THEN 3
+                WHEN 'pending'     THEN 4
+                WHEN 'blocked'     THEN 5
+                WHEN 'done'        THEN 6
+                WHEN 'completed'   THEN 7
+                WHEN 'cancelled'   THEN 8
+                ELSE 9 END")
+            ->orderBy('due_date')
+            ->get();
+
+        $transactions = $stage->transactions()
+            ->with('category:id,name')
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->get();
+
+        $categories = \DB::table('financial_categories')
+            ->where('tenant_id', $project->tenant_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $assignableUsers = \App\Models\User::withoutGlobalScope('tenant')
+            ->where('tenant_id', $project->tenant_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('projects.stages.show', [
+            'project'         => $project,
+            'stage'           => $stage,
+            'tasks'           => $tasks,
+            'transactions'    => $transactions,
+            'categories'      => $categories,
+            'assignableUsers' => $assignableUsers,
+            'financial'       => $stage->financial_summary,
+        ]);
+    }
+
     public function update(Request $request, Project $project, int $stageId): JsonResponse
     {
         $stage = $this->resolveStage($project, $stageId);
