@@ -432,3 +432,132 @@ it('POST /transactions rejeita stage_id de outro projeto (anti-IDOR)', function 
     expect($tx)->not->toBeNull();
     expect($tx->stage_id)->toBeNull();
 });
+
+// ── Kanban filtrado por etapa ────────────────────────────────────────────────
+
+it('kanban aceita filtro ?stage_id e restringe tarefas', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+    $sA = stageFor($p, ['title' => 'A', 'order' => 1]);
+    $sB = stageFor($p, ['title' => 'B', 'order' => 2]);
+
+    Task::create([
+        'tenant_id'=>$user->tenant_id,'project_id'=>$p->id,'stage_id'=>$sA->id,
+        'title'=>'da_etapa_A','status'=>'todo','priority'=>'medium','created_by'=>$user->id,
+    ]);
+    Task::create([
+        'tenant_id'=>$user->tenant_id,'project_id'=>$p->id,'stage_id'=>$sB->id,
+        'title'=>'da_etapa_B','status'=>'todo','priority'=>'medium','created_by'=>$user->id,
+    ]);
+
+    $r = $this->actingAs($user)->get("/projects/{$p->id}/kanban?stage_id={$sA->id}");
+    $r->assertOk()
+        ->assertSee('da_etapa_A')
+        ->assertSee('Filtrando por etapa: A')
+        ->assertDontSee('da_etapa_B');
+});
+
+it('kanban ignora stage_id de projeto diferente (anti-IDOR)', function () {
+    $user = stageOwner();
+    $projA = projectFor($user, 'A');
+    $projB = projectFor($user, 'B');
+    $stageB = stageFor($projB);
+
+    Task::create([
+        'tenant_id'=>$user->tenant_id,'project_id'=>$projA->id,'stage_id'=>null,
+        'title'=>'A_only','status'=>'todo','priority'=>'medium','created_by'=>$user->id,
+    ]);
+
+    // stage_id pertence a projB, mas rota e do projA -> filtro ignorado, mostra
+    // tarefas do projA sem restricao
+    $this->actingAs($user)
+        ->get("/projects/{$projA->id}/kanban?stage_id={$stageB->id}")
+        ->assertOk()
+        ->assertSee('A_only')
+        ->assertDontSee('Filtrando por etapa');
+});
+
+// ── Aprovar Transaction sugerida no workspace ────────────────────────────────
+
+it('workspace mostra card de aprovacao quando etapa completa tem tx pending', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+    $s = stageFor($p, ['title' => 'Fase X', 'planned_value' => 1000, 'status' => 'completed']);
+
+    Transaction::create([
+        'tenant_id'=>$user->tenant_id,'project_id'=>$p->id,'stage_id'=>$s->id,
+        'description'=>'Sugestao: recebimento','amount'=>1000,'type'=>'income',
+        'date'=>now()->toDateString(),'status'=>'pending','approval_status'=>'pending',
+    ]);
+
+    $this->actingAs($user)
+        ->get("/projects/{$p->id}/stages/{$s->id}")
+        ->assertOk()
+        ->assertSee('Recebimento sugerido aguardando aprovacao')
+        ->assertSee('Aprovar recebimento');
+});
+
+it('workspace NAO mostra card de aprovacao quando etapa nao esta completed', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+    $s = stageFor($p, ['status' => 'in_progress']);
+
+    // Cria mesmo assim uma tx pending vinculada, so pra provar o gate por status
+    Transaction::create([
+        'tenant_id'=>$user->tenant_id,'project_id'=>$p->id,'stage_id'=>$s->id,
+        'description'=>'X','amount'=>500,'type'=>'income',
+        'date'=>now()->toDateString(),'status'=>'pending','approval_status'=>'pending',
+    ]);
+
+    $this->actingAs($user)
+        ->get("/projects/{$p->id}/stages/{$s->id}")
+        ->assertOk()
+        ->assertDontSee('Recebimento sugerido aguardando aprovacao');
+});
+
+// ── Command stages:overdue-alert ─────────────────────────────────────────────
+
+it('stages:overdue-alert enfileira email de digest com etapas atrasadas', function () {
+    \Illuminate\Support\Facades\Mail::fake();
+
+    $user = stageOwner(); // role=ngo, um gestor
+    $p = projectFor($user, 'ProjX');
+    // Atrasada: end_date ontem, status ainda pending
+    stageFor($p, [
+        'title' => 'Atrasada 1',
+        'end_date' => now()->subDay(),
+        'status' => 'pending',
+    ]);
+    // Nao entra: ja completed
+    stageFor($p, [
+        'title' => 'Ja concluida',
+        'order' => 2,
+        'end_date' => now()->subDays(3),
+        'status' => 'completed',
+    ]);
+    // Nao entra: end_date no futuro
+    stageFor($p, [
+        'title' => 'Futura',
+        'order' => 3,
+        'end_date' => now()->addDays(3),
+        'status' => 'in_progress',
+    ]);
+
+    $this->artisan('stages:overdue-alert')->assertExitCode(0);
+
+    \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\StageOverdueAlertMail::class, function ($mail) use ($user) {
+        return $mail->hasTo($user->email)
+            && $mail->stages->count() === 1
+            && $mail->stages->first()->title === 'Atrasada 1';
+    });
+});
+
+it('stages:overdue-alert nao enfileira email quando nao ha etapas atrasadas', function () {
+    \Illuminate\Support\Facades\Mail::fake();
+    $user = stageOwner();
+    $p = projectFor($user);
+    stageFor($p, ['end_date' => now()->addDays(10), 'status' => 'in_progress']);
+
+    $this->artisan('stages:overdue-alert')->assertExitCode(0);
+    \Illuminate\Support\Facades\Mail::assertNothingQueued();
+});

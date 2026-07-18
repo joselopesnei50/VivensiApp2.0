@@ -77,6 +77,9 @@
             <a href="{{ $basePath . '/projects/' . $project->id . '/stages' }}" class="st-btn-outline" style="background:rgba(255,255,255,.08); color:white; border:1px solid rgba(255,255,255,.2);">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
+            <a href="{{ $basePath . '/projects/' . $project->id . '/kanban?stage_id=' . $stage->id }}" class="st-btn-outline" style="background:rgba(255,255,255,.08); color:white; border:1px solid rgba(255,255,255,.2);" title="Ver tarefas desta etapa em formato Kanban">
+                <i class="fas fa-columns"></i> Kanban desta etapa
+            </a>
             @if($canManage && $stage->status !== 'completed')
                 <button type="button" class="st-btn-outline" style="background:#22c55e; color:white; border:none;" onclick="completeStage()">
                     <i class="fas fa-check"></i> Concluir etapa
@@ -118,6 +121,31 @@
         </div>
     </div>
 </div>
+
+{{-- Transaction sugerida aguardando aprovacao --}}
+@if($canManage && !empty($pendingSuggestion))
+<div class="st-panel" style="background:linear-gradient(90deg,#fff7ed 0%,#fef3c7 100%); border:1px solid #f59e0b;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div>
+            <div style="font-size:.72rem; color:#b45309; font-weight:800; letter-spacing:1.2px; text-transform:uppercase;">
+                <i class="fas fa-hourglass-half me-1"></i> Recebimento sugerido aguardando aprovacao
+            </div>
+            <div style="font-weight:900; color:#78350f; font-size:1.05rem; margin-top:4px;">
+                {{ $pendingSuggestion->description }} · R$ {{ number_format((float) $pendingSuggestion->amount, 2, ',', '.') }}
+            </div>
+            <div style="font-size:.8rem; color:#92400e; margin-top:2px;">
+                Criado ao concluir a etapa. Aprove para lancar como receita do projeto.
+            </div>
+        </div>
+        <form action="{{ $basePath . '/transactions/' . $pendingSuggestion->id . '/approve' }}" method="POST" style="margin:0;">
+            @csrf
+            <button type="submit" class="st-btn-primary" style="background:#059669;" onclick="return confirm('Aprovar este recebimento de R$ {{ number_format((float) $pendingSuggestion->amount, 2, ',', '.') }}?')">
+                <i class="fas fa-check-circle"></i> Aprovar recebimento
+            </button>
+        </form>
+    </div>
+</div>
+@endif
 
 {{-- Descricao --}}
 @if($stage->description)

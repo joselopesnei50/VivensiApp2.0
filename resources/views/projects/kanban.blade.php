@@ -19,6 +19,14 @@
             </div>
             <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Quadro de Missões: {{ $project->name }}</h2>
             <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Orquestração de tarefas e fluxo operacional em tempo real.</p>
+            @isset($stageFilter)
+                @if($stageFilter)
+                    <div style="margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; background: #dbeafe; border: 1px solid #93c5fd; border-radius: 999px; padding: 6px 14px; font-weight: 800; color: #1e3a8a; font-size: .85rem;">
+                        <i class="fas fa-filter"></i> Filtrando por etapa: {{ $stageFilter->title }}
+                        <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" style="color: #1e3a8a; margin-left: 4px;" title="Remover filtro"><i class="fas fa-times"></i></a>
+                    </div>
+                @endif
+            @endisset
         </div>
         <div style="display: flex; gap: 15px;">
             <a href="{{ $basePath . '/projects/details/'.$project->id }}" class="btn-ds btn-ds-outline" style="font-weight: 700;">

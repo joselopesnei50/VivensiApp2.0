@@ -18,6 +18,12 @@ class Kernel extends ConsoleKernel
         // Trials: lembrete de vencimento — todo dia às 09:00
         $schedule->command('trials:remind')->dailyAt('09:00');
 
+        // ProjectStage: digest diario de etapas atrasadas — 08:00
+        $schedule->command('stages:overdue-alert')
+                 ->dailyAt('08:00')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // WhatsApp Automações: processa regras de reativação todos os dias às 10:00
         $schedule->job(new \App\Jobs\ProcessWhatsappAutomations())
                  ->dailyAt('10:00')

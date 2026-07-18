@@ -55,8 +55,9 @@ class TaskController extends Controller
         return view('tasks.create', compact('projects', 'users'));
     }
 
-    public function kanban($projectId)
+    public function kanban($projectId, \Illuminate\Http\Request $request = null)
     {
+        $request  = $request ?? request();
         $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
@@ -74,13 +75,27 @@ class TaskController extends Controller
             abort_unless($isMember, 403);
         }
 
-        $tasks = Task::where('project_id', $projectId)
+        // Filtro opcional por etapa: `?stage_id=X`. Anti-IDOR: stage precisa
+        // pertencer ao MESMO projeto (senao ignora o filtro).
+        $stageFilter = null;
+        if ($request->filled('stage_id')) {
+            $stageFilter = \App\Models\ProjectStage::withoutGlobalScope('tenant')
+                ->where('id', (int) $request->input('stage_id'))
+                ->where('tenant_id', $tenantId)
+                ->where('project_id', $project->id)
+                ->first(['id', 'title', 'status']);
+        }
+
+        $tasksQuery = Task::where('project_id', $projectId)
                      ->where('tenant_id', $tenantId)
                      ->with('assignee:id,name')
-                     ->orderByRaw("FIELD(priority,'critical','high','medium','low')")
+                     ->orderByRaw("CASE priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 ELSE 5 END")
                      ->orderBy('due_date')
-                     ->orderBy('created_at', 'desc')
-                     ->get();
+                     ->orderBy('created_at', 'desc');
+        if ($stageFilter) {
+            $tasksQuery->where('stage_id', $stageFilter->id);
+        }
+        $tasks = $tasksQuery->get();
 
         $kanban = [
             'todo'  => $tasks->whereIn('status', ['todo', 'pending', 'blocked']),
@@ -93,7 +108,7 @@ class TaskController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        return view('projects.kanban', compact('project', 'kanban', 'users', 'canManageAll'));
+        return view('projects.kanban', compact('project', 'kanban', 'users', 'canManageAll', 'stageFilter'));
     }
 
     public function updateStatus(Request $request)

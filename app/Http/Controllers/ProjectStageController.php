@@ -117,14 +117,30 @@ class ProjectStageController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        // Transaction sugerida pelo complete() que ainda aguarda aprovacao:
+        // etapa completada + tx income + stage_id da etapa + approval pendente.
+        // Fecha o loop na propria tela (sem precisar navegar pra central de
+        // aprovacoes).
+        $pendingSuggestion = null;
+        if ($stage->status === 'completed') {
+            $pendingSuggestion = \App\Models\Transaction::withoutGlobalScope('tenant')
+                ->where('tenant_id', $project->tenant_id)
+                ->where('stage_id', $stage->id)
+                ->where('type', 'income')
+                ->where('approval_status', 'pending')
+                ->orderByDesc('id')
+                ->first();
+        }
+
         return view('projects.stages.show', [
-            'project'         => $project,
-            'stage'           => $stage,
-            'tasks'           => $tasks,
-            'transactions'    => $transactions,
-            'categories'      => $categories,
-            'assignableUsers' => $assignableUsers,
-            'financial'       => $stage->financial_summary,
+            'project'           => $project,
+            'stage'             => $stage,
+            'tasks'             => $tasks,
+            'transactions'      => $transactions,
+            'categories'        => $categories,
+            'assignableUsers'   => $assignableUsers,
+            'financial'         => $stage->financial_summary,
+            'pendingSuggestion' => $pendingSuggestion,
         ]);
     }
 
