@@ -561,3 +561,43 @@ it('stages:overdue-alert nao enfileira email quando nao ha etapas atrasadas', fu
     $this->artisan('stages:overdue-alert')->assertExitCode(0);
     \Illuminate\Support\Facades\Mail::assertNothingQueued();
 });
+
+// ── Mini painel de etapas na show do projeto ─────────────────────────────────
+
+it('show do projeto mostra mini painel com KPIs quando tem stages', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+    $p->update(['budget' => 10000]);
+    stageFor($p, ['title' => 'A', 'planned_value' => 3000, 'status' => 'in_progress']);
+    stageFor($p, ['title' => 'B', 'planned_value' => 2500, 'order' => 2, 'status' => 'pending']);
+
+    $r = $this->actingAs($user)->get("/projects/details/{$p->id}");
+    $r->assertOk()
+        ->assertSee('Etapas do projeto')
+        ->assertSee('2 etapas')
+        ->assertSee('1 em andamento')
+        ->assertSee('5.500,00') // alocado
+        ->assertSee('Saldo disponível');
+});
+
+it('show do projeto exibe alerta quando etapas ultrapassam budget', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+    $p->update(['budget' => 1000]);
+    stageFor($p, ['planned_value' => 5500, 'status' => 'in_progress']);
+
+    $this->actingAs($user)
+        ->get("/projects/details/{$p->id}")
+        ->assertOk()
+        ->assertSee('Ultrapassou em');
+});
+
+it('show do projeto mostra convite quando nao ha stages', function () {
+    $user = stageOwner();
+    $p = projectFor($user);
+
+    $this->actingAs($user)
+        ->get("/projects/details/{$p->id}")
+        ->assertOk()
+        ->assertSee('Divida este projeto em etapas');
+});

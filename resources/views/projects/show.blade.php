@@ -321,6 +321,7 @@
 </div>
 
 @include('projects.partials.stage_sticky_banner')
+@include('projects.partials.stage_mini_panel')
 
 <div class="row g-4">
     <!-- Operations Column -->
