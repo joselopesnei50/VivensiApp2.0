@@ -97,15 +97,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // Beneficiários
         Route::get('/beneficiaries',           [App\Http\Controllers\BeneficiaryController::class, 'index']);
         Route::get('/beneficiaries/insights',  [App\Http\Controllers\BeneficiaryController::class, 'insights']);
-        Route::get('/beneficiaries/attendances/export', [App\Http\Controllers\BeneficiaryController::class, 'exportAllAttendancesCsv'])->middleware('throttle:web_export');
-        Route::get('/beneficiaries/reports/annual',              [App\Http\Controllers\BeneficiaryController::class, 'annualReport']);
-        Route::get('/beneficiaries/reports/annual/pdf',          [App\Http\Controllers\BeneficiaryController::class, 'annualReportPdf'])->middleware('throttle:web_export');
-        Route::get('/beneficiaries/reports/annual/pdf-appendix', [App\Http\Controllers\BeneficiaryController::class, 'annualReportPdfAppendix'])->middleware('throttle:web_export');
-        Route::get('/beneficiaries/reports/annual/export',       [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportCsv'])->middleware('throttle:web_export');
-        Route::get('/beneficiaries/reports/annual/export-grouped',        [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportGroupedCsv'])->middleware('throttle:web_export');
-        Route::get('/beneficiaries/reports/annual/export-grouped-simple', [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportGroupedSimpleCsv'])->middleware('throttle:web_export');
-        Route::get('/beneficiaries/reports/annual/export-pivot-type',     [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotTypeCsv'])->middleware('throttle:web_export');
-        Route::get('/beneficiaries/reports/annual/export-pivot-user',     [App\Http\Controllers\BeneficiaryController::class, 'annualReportExportPivotUserCsv'])->middleware('throttle:web_export');
+        // Attendance export global — movido pra BeneficiaryAttendanceController em 2026-07-18
+        Route::get('/beneficiaries/attendances/export', [App\Http\Controllers\BeneficiaryAttendanceController::class, 'exportAllAttendancesCsv'])->middleware('throttle:web_export');
+        // Reports — movidos pra BeneficiaryReportController em 2026-07-18
+        Route::get('/beneficiaries/reports/annual',              [App\Http\Controllers\BeneficiaryReportController::class, 'annualReport']);
+        Route::get('/beneficiaries/reports/annual/pdf',          [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportPdf'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/pdf-appendix', [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportPdfAppendix'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export',       [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExportCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export-grouped',        [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExportGroupedCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export-grouped-simple', [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExportGroupedSimpleCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export-pivot-type',     [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExportPivotTypeCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/reports/annual/export-pivot-user',     [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExportPivotUserCsv'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/create',    [App\Http\Controllers\BeneficiaryController::class, 'create']);
         Route::get('/beneficiaries/import/template', [App\Http\Controllers\BeneficiaryController::class, 'downloadImportTemplate']);
         Route::post('/beneficiaries/import',   [App\Http\Controllers\BeneficiaryController::class, 'import'])->middleware('throttle:web_ai_bulk');
@@ -115,14 +117,16 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/beneficiaries/{id}',      [App\Http\Controllers\BeneficiaryController::class, 'show']);
         Route::delete('/beneficiaries/{id}',   [App\Http\Controllers\BeneficiaryController::class, 'destroy']);
         Route::put('/beneficiaries/{id}',      [App\Http\Controllers\BeneficiaryController::class, 'update']);
-        Route::post('/beneficiaries/{id}/attendance',                 [App\Http\Controllers\BeneficiaryController::class, 'storeAttendance']);
-        Route::put('/beneficiaries/{id}/attendance/{attendanceId}',   [App\Http\Controllers\BeneficiaryController::class, 'updateAttendance']);
-        Route::delete('/beneficiaries/{id}/attendance/{attendanceId}', [App\Http\Controllers\BeneficiaryController::class, 'destroyAttendance']);
-        Route::get('/beneficiaries/{id}/attendance/export',           [App\Http\Controllers\BeneficiaryController::class, 'exportAttendanceCsv'])->middleware('throttle:web_export');
-        Route::get('/beneficiaries/{id}/attendance/print',            [App\Http\Controllers\BeneficiaryController::class, 'printAttendance']);
+        // Attendance CRUD — movido pra BeneficiaryAttendanceController em 2026-07-18
+        Route::post('/beneficiaries/{id}/attendance',                 [App\Http\Controllers\BeneficiaryAttendanceController::class, 'storeAttendance']);
+        Route::put('/beneficiaries/{id}/attendance/{attendanceId}',   [App\Http\Controllers\BeneficiaryAttendanceController::class, 'updateAttendance']);
+        Route::delete('/beneficiaries/{id}/attendance/{attendanceId}', [App\Http\Controllers\BeneficiaryAttendanceController::class, 'destroyAttendance']);
+        Route::get('/beneficiaries/{id}/attendance/export',           [App\Http\Controllers\BeneficiaryAttendanceController::class, 'exportAttendanceCsv'])->middleware('throttle:web_export');
+        Route::get('/beneficiaries/{id}/attendance/print',            [App\Http\Controllers\BeneficiaryAttendanceController::class, 'printAttendance']);
         Route::get('/beneficiaries/{id}/pdf',                         [App\Http\Controllers\BeneficiaryController::class, 'pdf'])->middleware('throttle:web_export');
-        Route::post('/beneficiaries/{id}/family-members',             [App\Http\Controllers\BeneficiaryController::class, 'storeFamilyMember']);
-        Route::delete('/beneficiaries/{id}/family-members/{memberId}', [App\Http\Controllers\BeneficiaryController::class, 'destroyFamilyMember']);
+        // Family members — movido pra BeneficiaryFamilyController em 2026-07-18
+        Route::post('/beneficiaries/{id}/family-members',             [App\Http\Controllers\BeneficiaryFamilyController::class, 'storeFamilyMember']);
+        Route::delete('/beneficiaries/{id}/family-members/{memberId}', [App\Http\Controllers\BeneficiaryFamilyController::class, 'destroyFamilyMember']);
 
         // Almoxarifado (Inventory)
         Route::get('/inventory',               [App\Http\Controllers\InventoryController::class, 'index'])->name('ngo.inventory.index');
