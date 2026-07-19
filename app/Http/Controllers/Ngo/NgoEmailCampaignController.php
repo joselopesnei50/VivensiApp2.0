@@ -113,132 +113,49 @@ class NgoEmailCampaignController extends Controller
             return back()->with('error', 'Esta campanha já está sendo enviada.');
         }
 
-        $emailCampaign->update(['status' => 'sending']);
-        $brevo = app(BrevoService::class);
+        // Etapa rapida: resolve destinatarios + valida cota (sincrono).
+        // Parte lenta (Brevo importContacts loop) vai pro worker de emails.
+        $contacts = $this->resolveRecipients($emailCampaign->audience_type, $emailCampaign->manual_emails);
 
-        try {
-            $contacts = $this->resolveRecipients($emailCampaign->audience_type, $emailCampaign->manual_emails);
-
-            if (empty($contacts)) {
-                $emailCampaign->update([
-                    'status'        => 'error',
-                    'error_message' => 'Nenhum destinatário encontrado para o público selecionado.',
-                ]);
-                return back()->with('error', 'Nenhum destinatário encontrado para o público selecionado.');
-            }
-
-            // ── P1.b: cota diária per-tenant (mesmo gate do Manager) ─────────
-            $tenant = auth()->user()->tenant;
-            $quota  = app(EmailQuotaService::class);
-            $count  = count($contacts);
-
-            if (!$quota->tryConsume($tenant, $count)) {
-                $remaining = $quota->getRemainingToday($tenant);
-                $cap       = $quota->getQuota($tenant);
-                $msg = "Cota diária de e-mails excedida ({$count} destinatários, restam {$remaining}/{$cap} hoje). "
-                     . "Solicite ao Super Admin para aumentar a capacidade ou aguarde o reset diário.";
-                $emailCampaign->update(['status' => 'error', 'error_message' => $msg]);
-                Log::info('NGO EmailCampaign: cota diária excedida — disparo bloqueado.', [
-                    'campaign_id' => $emailCampaign->id,
-                    'tenant_id'   => $tenant->id,
-                    'requested'   => $count,
-                    'remaining'   => $remaining,
-                    'daily_quota' => $cap,
-                ]);
-                return back()->with('error', $msg);
-            }
-
-            $orgName  = auth()->user()->tenant->name ?? 'Organização';
-            $listName = "NGO — {$orgName} — {$emailCampaign->name} — " . now()->format('d/m/Y H:i');
-            $listId   = $brevo->createContactList($listName);
-
-            if (!$listId) {
-                $quota->refund($tenant, $count);
-                $emailCampaign->update([
-                    'status'        => 'error',
-                    'error_message' => 'Falha ao criar lista de contatos no Brevo.',
-                ]);
-                return back()->with('error', 'Falha ao criar lista no Brevo. Verifique as configurações do sistema.');
-            }
-
-            $imported = $brevo->importContacts($listId, $contacts);
-
-            if ($imported === 0) {
-                $quota->refund($tenant, $count);
-                $emailCampaign->update([
-                    'status'        => 'error',
-                    'error_message' => 'Nenhum contato foi adicionado à lista no Brevo.',
-                ]);
-                return back()->with('error', 'Falha ao importar contatos. Verifique se os e-mails são válidos.');
-            }
-
-            Log::info('NGO EmailCampaign: contatos importados', [
-                'campaign_id' => $emailCampaign->id,
-                'tenant_id'   => auth()->user()->tenant_id,
-                'imported'    => $imported,
-                'total'       => count($contacts),
-            ]);
-
-            $campaignId = $brevo->createBrevoEmailCampaign([
-                'name'           => $emailCampaign->name,
-                'subject'        => $emailCampaign->subject,
-                'html_content'   => $emailCampaign->html_content,
-                'sender_name'    => $emailCampaign->sender_name,
-                'sender_email'   => $emailCampaign->sender_email,
-                'reply_to_email' => $emailCampaign->reply_to_email,
-                'brevo_list_id'  => $listId,
-            ]);
-
-            if (!$campaignId) {
-                $quota->refund($tenant, $count);
-                $brevoMsg = $brevo->lastBrevoError ?? 'Erro desconhecido';
-                $emailCampaign->update([
-                    'status'        => 'error',
-                    'brevo_list_id' => $listId,
-                    'error_message' => 'Falha ao criar campanha no Brevo. ' . $brevoMsg,
-                ]);
-                return back()->with('error', 'Falha ao criar campanha no Brevo. ' . $brevoMsg);
-            }
-
-            $sent = $brevo->sendBrevoEmailCampaign($campaignId);
-
-            if (!$sent) {
-                $quota->refund($tenant, $count);
-            }
-
+        if (empty($contacts)) {
             $emailCampaign->update([
-                'status'            => $sent ? 'sent' : 'error',
-                'brevo_list_id'     => $listId,
-                'brevo_campaign_id' => $campaignId,
-                'recipient_count'   => count($contacts),
-                'sent_at'           => $sent ? now() : null,
-                'error_message'     => $sent ? null : 'Falha ao disparar a campanha no Brevo.',
+                'status'        => 'error',
+                'error_message' => 'Nenhum destinatário encontrado para o público selecionado.',
             ]);
-
-            if ($sent) {
-                Log::info('NGO EmailCampaign sent', [
-                    'id'         => $emailCampaign->id,
-                    'tenant_id'  => auth()->user()->tenant_id,
-                    'recipients' => count($contacts),
-                    'imported'   => $imported,
-                ]);
-                return back()->with('success', "Campanha enfileirada para {$imported} destinatário(s). O Brevo processa e entrega em alguns minutos — atualize as métricas em instantes.");
-            }
-
-            return back()->with('error', 'A campanha foi criada no Brevo mas não foi possível disparar. Tente novamente.');
-
-        } catch (\Throwable $e) {
-            if (isset($tenant, $quota, $count)) {
-                $quota->refund($tenant, $count);
-            }
-            Log::error('NGO EmailCampaign send error', [
-                'id'        => $emailCampaign->id,
-                'tenant_id' => auth()->user()->tenant_id,
-                'error'     => $e->getMessage(),
-            ]);
-            $emailCampaign->update(['status' => 'error', 'error_message' => $e->getMessage()]);
-            return back()->with('error', 'Erro inesperado: ' . $e->getMessage());
+            return back()->with('error', 'Nenhum destinatário encontrado para o público selecionado.');
         }
+
+        $tenant = auth()->user()->tenant;
+        $quota  = app(EmailQuotaService::class);
+        $count  = count($contacts);
+
+        if (!$quota->tryConsume($tenant, $count)) {
+            $remaining = $quota->getRemainingToday($tenant);
+            $cap       = $quota->getQuota($tenant);
+            $msg = "Cota diária de e-mails excedida ({$count} destinatários, restam {$remaining}/{$cap} hoje). "
+                 . "Solicite ao Super Admin para aumentar a capacidade ou aguarde o reset diário.";
+            $emailCampaign->update(['status' => 'error', 'error_message' => $msg]);
+            Log::info('NGO EmailCampaign: cota diária excedida — disparo bloqueado.', [
+                'campaign_id' => $emailCampaign->id,
+                'tenant_id'   => $tenant->id,
+                'requested'   => $count,
+                'remaining'   => $remaining,
+                'daily_quota' => $cap,
+            ]);
+            return back()->with('error', $msg);
+        }
+
+        $emailCampaign->update(['status' => 'sending', 'error_message' => null]);
+
+        \App\Jobs\SendEmailCampaignJob::dispatch($emailCampaign->id, $contacts, $tenant->id)->onQueue('emails');
+
+        Log::info('NGO EmailCampaign: enfileirado', [
+            'campaign_id' => $emailCampaign->id,
+            'tenant_id'   => $tenant->id,
+            'recipients'  => $count,
+        ]);
+
+        return back()->with('success', "Campanha enfileirada para {$count} destinatário(s). O envio roda em segundo plano — acompanhe o status na lista de campanhas.");
     }
 
     public function refreshStats(EmailCampaign $emailCampaign)

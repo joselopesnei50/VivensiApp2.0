@@ -116,83 +116,25 @@ class EmailCampaignController extends Controller
             return back()->with('error', 'Esta campanha já está sendo enviada.');
         }
 
-        $emailCampaign->update(['status' => 'sending']);
-        $brevo = app(BrevoService::class);
+        // Colhe destinatarios agora (rapido) e enfileira o disparo lento
+        // pro worker de emails — evita nginx 504 em campanhas grandes.
+        $contacts = $this->resolveRecipients($emailCampaign->audience_type, $emailCampaign->manual_emails);
 
-        try {
-            // 1. Coleta destinatários
-            $contacts = $this->resolveRecipients($emailCampaign->audience_type, $emailCampaign->manual_emails);
-
-            if (empty($contacts)) {
-                $emailCampaign->update(['status' => 'error', 'error_message' => 'Nenhum destinatário encontrado para o público selecionado.']);
-                return back()->with('error', 'Nenhum destinatário encontrado.');
-            }
-
-            // 2. Cria lista no Brevo
-            $listName = 'Vivensi — ' . $emailCampaign->name . ' — ' . now()->format('d/m/Y H:i');
-            $listId   = $brevo->createContactList($listName);
-
-            if (!$listId) {
-                $emailCampaign->update(['status' => 'error', 'error_message' => 'Falha ao criar lista de contatos no Brevo.']);
-                return back()->with('error', 'Falha ao criar lista no Brevo. Verifique a chave API nas configurações.');
-            }
-
-            // 3. Importa contatos (síncrono — aguarda confirmação por contato)
-            $imported = $brevo->importContacts($listId, $contacts);
-
-            if ($imported === 0) {
-                $emailCampaign->update(['status' => 'error', 'error_message' => 'Nenhum contato foi adicionado à lista no Brevo. Verifique se os e-mails são válidos e não estão bloqueados.']);
-                return back()->with('error', 'Falha ao importar contatos para o Brevo. Nenhum destinatário adicionado.');
-            }
-
-            Log::info('EmailCampaign: contatos importados', ['imported' => $imported, 'total' => count($contacts)]);
-
-            // 4. Cria campanha no Brevo
-            $campaignId = $brevo->createBrevoEmailCampaign([
-                'name'           => $emailCampaign->name,
-                'subject'        => $emailCampaign->subject,
-                'html_content'   => $emailCampaign->html_content,
-                'sender_name'    => $emailCampaign->sender_name,
-                'sender_email'   => $emailCampaign->sender_email,
-                'reply_to_email' => $emailCampaign->reply_to_email,
-                'brevo_list_id'  => $listId,
-            ]);
-
-            if (!$campaignId) {
-                $brevoMsg    = $brevo->lastBrevoError ?? 'Erro desconhecido';
-                $errorDetail = "Brevo respondeu: {$brevoMsg}";
-                $emailCampaign->update([
-                    'status'        => 'error',
-                    'brevo_list_id' => $listId,
-                    'error_message' => 'Falha ao criar campanha no Brevo. ' . $errorDetail,
-                ]);
-                return back()->with('error', 'Falha ao criar campanha no Brevo. ' . $errorDetail);
-            }
-
-            // 5. Dispara
-            $sent = $brevo->sendBrevoEmailCampaign($campaignId);
-
-            $emailCampaign->update([
-                'status'           => $sent ? 'sent' : 'error',
-                'brevo_list_id'    => $listId,
-                'brevo_campaign_id'=> $campaignId,
-                'recipient_count'  => count($contacts),
-                'sent_at'          => $sent ? now() : null,
-                'error_message'    => $sent ? null : 'Falha ao disparar a campanha no Brevo.',
-            ]);
-
-            if ($sent) {
-                Log::info('EmailCampaign sent', ['id' => $emailCampaign->id, 'recipients' => count($contacts), 'imported' => $imported]);
-                return back()->with('success', "Campanha enfileirada para {$imported} destinatário(s). O Brevo processa e entrega em alguns minutos — atualize as métricas em instantes.");
-            }
-
-            return back()->with('error', 'A campanha foi criada no Brevo mas não foi possível disparar. Tente novamente.');
-
-        } catch (\Throwable $e) {
-            Log::error('EmailCampaign send error', ['id' => $emailCampaign->id, 'error' => $e->getMessage()]);
-            $emailCampaign->update(['status' => 'error', 'error_message' => $e->getMessage()]);
-            return back()->with('error', 'Erro inesperado: ' . $e->getMessage());
+        if (empty($contacts)) {
+            $emailCampaign->update(['status' => 'error', 'error_message' => 'Nenhum destinatário encontrado para o público selecionado.']);
+            return back()->with('error', 'Nenhum destinatário encontrado.');
         }
+
+        $emailCampaign->update(['status' => 'sending', 'error_message' => null]);
+
+        \App\Jobs\SendEmailCampaignJob::dispatch($emailCampaign->id, $contacts)->onQueue('emails');
+
+        Log::info('EmailCampaign: enfileirado (admin)', [
+            'campaign_id' => $emailCampaign->id,
+            'recipients'  => count($contacts),
+        ]);
+
+        return back()->with('success', 'Campanha enfileirada para ' . count($contacts) . ' destinatário(s). O envio roda em segundo plano — acompanhe o status na lista de campanhas.');
     }
 
     /**
