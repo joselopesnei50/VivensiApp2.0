@@ -13,6 +13,7 @@ class ProjectPerson extends Model
     protected $fillable = [
         'tenant_id',
         'project_id',
+        'beneficiary_id',
         'name',
         'address',
         'city',
@@ -30,6 +31,11 @@ class ProjectPerson extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function beneficiary()
+    {
+        return $this->belongsTo(Beneficiary::class);
     }
 
     public function attendances()

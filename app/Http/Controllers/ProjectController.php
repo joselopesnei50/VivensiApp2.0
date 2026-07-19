@@ -196,6 +196,16 @@ class ProjectController extends Controller
             );
         }
 
+        // Lista compacta de beneficiarios do tenant pro seletor no modal
+        // "Cadastrar Pessoa". Ate 500 beneficiarios cabe em memoria; acima
+        // disso o dropdown ja fica ruim de usar mesmo — tratar com AJAX
+        // quando aparecer o primeiro tenant nessa faixa.
+        $data['beneficiariesForLink'] = \App\Models\Beneficiary::where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->limit(500)
+            ->get(['id', 'name']);
+
         return view('projects.show', $data);
     }
 
@@ -353,8 +363,9 @@ class ProjectController extends Controller
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin', 'ngo'], true), 403);
 
+        $tenantId = (int) auth()->user()->tenant_id;
         $project = Project::where('id', $id)
-                          ->where('tenant_id', auth()->user()->tenant_id)
+                          ->where('tenant_id', $tenantId)
                           ->firstOrFail();
 
         $validated = $request->validate([
@@ -362,14 +373,29 @@ class ProjectController extends Controller
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
+            'beneficiary_id' => ['nullable', 'integer', Rule::exists('beneficiaries', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
         ]);
 
-        $validated['tenant_id'] = auth()->user()->tenant_id;
+        // Se veio beneficiary_id: Rule::exists ja garante ownership; evitamos
+        // duplicar o vinculo do mesmo beneficiario no mesmo projeto.
+        if (!empty($validated['beneficiary_id'])) {
+            $exists = \App\Models\ProjectPerson::where('tenant_id', $tenantId)
+                ->where('project_id', $project->id)
+                ->where('beneficiary_id', (int) $validated['beneficiary_id'])
+                ->exists();
+            if ($exists) {
+                return back()
+                    ->with('error', 'Este beneficiário já está vinculado a este projeto.')
+                    ->withInput();
+            }
+        }
+
+        $validated['tenant_id'] = $tenantId;
         $validated['project_id'] = $project->id;
 
         \App\Models\ProjectPerson::create($validated);
 
-        $this->projectService->flushCache((int) auth()->user()->tenant_id, (int) $project->id);
+        $this->projectService->flushCache($tenantId, (int) $project->id);
 
         return back()->with('success', 'Pessoa adicionada ao projeto!');
     }
@@ -386,7 +412,20 @@ class ProjectController extends Controller
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
+            'beneficiary_id' => ['nullable', 'integer', Rule::exists('beneficiaries', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
         ]);
+
+        if (!empty($validated['beneficiary_id'])) {
+            $duplicated = \App\Models\ProjectPerson::where('tenant_id', $tenantId)
+                ->where('project_id', (int) $validated['project_id'])
+                ->where('beneficiary_id', (int) $validated['beneficiary_id'])
+                ->exists();
+            if ($duplicated) {
+                return back()
+                    ->with('error', 'Este beneficiário já está vinculado a este projeto.')
+                    ->withInput();
+            }
+        }
 
         // Belt-and-suspenders: a regra de validacao acima ja garante tenant, mas
         // mantemos o firstOrFail por seguranca (race conditions, mudancas futuras).

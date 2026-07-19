@@ -212,6 +212,47 @@
                 </form>
             </div>
         </div>
+
+        <!-- Projetos vinculados -->
+        <div class="vivensi-card">
+            <h4 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                <i class="fas fa-project-diagram" style="color:#4f46e5; margin-right:6px;"></i> Projetos vinculados
+                <span style="color:#94a3b8; font-weight:700; font-size:.85rem;">({{ $beneficiary->projectMemberships->count() }})</span>
+            </h4>
+            @forelse($beneficiary->projectMemberships as $link)
+                @php
+                    $enrolStatus = $link->enrollment_status ?? 'ativo';
+                    $enrolColor  = match(strtolower($enrolStatus)) {
+                        'ativo'         => ['#059669', '#d1fae5'],
+                        'desligado'     => ['#dc2626', '#fee2e2'],
+                        'concluido', 'concluído' => ['#2563eb', '#dbeafe'],
+                        default         => ['#64748b', '#f1f5f9'],
+                    };
+                @endphp
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+                    <div style="flex:1;">
+                        @if($link->project)
+                            <a href="{{ url('/projects/details/' . $link->project->id) }}"
+                               style="font-weight:800; color:#0f172a; text-decoration:none;">
+                                {{ $link->project->name }}
+                                <i class="fas fa-external-link-alt" style="font-size:.7rem; color:#94a3b8; margin-left:4px;"></i>
+                            </a>
+                        @else
+                            <span style="font-weight:800; color:#94a3b8;">— projeto excluído —</span>
+                        @endif
+                        <div style="font-size:.8rem; color:#64748b; margin-top:2px;">
+                            Nome no projeto: {{ $link->name }}
+                        </div>
+                    </div>
+                    <span style="padding:4px 10px; border-radius:99px; font-size:.72rem; font-weight:800; letter-spacing:.3px; color:{{ $enrolColor[0] }}; background:{{ $enrolColor[1] }};">
+                        {{ ucfirst($enrolStatus) }}
+                    </span>
+                </div>
+            @empty
+                <p style="color:#94a3b8; font-size:.9rem; margin:0;">Este beneficiário ainda não foi vinculado a nenhum projeto.</p>
+                <div style="font-size:.8rem; color:#64748b; margin-top:6px;">Vá em <strong>Projetos</strong> → escolha um projeto → <em>"Adicionar pessoa"</em> → botão "Escolher beneficiário".</div>
+            @endforelse
+        </div>
     </div>
 
     <!-- Coluna Direita: Evolução e Atendimentos -->

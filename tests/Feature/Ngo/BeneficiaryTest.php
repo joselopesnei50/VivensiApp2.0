@@ -33,6 +33,12 @@ class BeneficiaryTest extends TestCase
         parent::setUp();
         Bus::fake([GeocodeAddressJob::class]);
 
+        // SQLite em memoria nao respeita ON DELETE SET NULL sem isso — o teste
+        // de nullOnDelete cross-model depende deste comportamento.
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON');
+        }
+
         $this->tenant = Tenant::factory()->create(['subscription_status' => 'active', 'type' => 'ngo']);
         $this->user   = User::factory()->create([
             'tenant_id' => $this->tenant->id,
@@ -361,5 +367,100 @@ class BeneficiaryTest extends TestCase
         $content = $r->streamedContent();
         expect($content)->toContain('No CSV');
         expect($content)->not->toContain('Nao deve aparecer');
+    }
+
+    // ── Vinculo Beneficiary <-> ProjectPerson (opt-in) ────────────────────────
+
+    /** @test */
+    public function projeto_recebe_pessoa_vinculada_a_beneficiario(): void
+    {
+        $benef = $this->makeBeneficiary(['name' => 'Ana Beneficiaria']);
+        $project = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $this->post("/projects/{$project->id}/people", [
+            'name'           => 'Ana Beneficiaria',
+            'beneficiary_id' => $benef->id,
+        ])->assertRedirect();
+
+        $pp = \App\Models\ProjectPerson::where('project_id', $project->id)->firstOrFail();
+        expect((int) $pp->beneficiary_id)->toBe($benef->id);
+        expect((int) $pp->tenant_id)->toBe($this->tenant->id);
+    }
+
+    /** @test */
+    public function beneficiary_id_de_outro_tenant_e_rejeitado_pela_validacao(): void
+    {
+        $outroTenant = Tenant::factory()->create(['subscription_status' => 'active', 'type' => 'ngo']);
+        $benefAlheio = $this->makeBeneficiary(['name' => 'Alheio'], $outroTenant);
+        $project = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $this->post("/projects/{$project->id}/people", [
+            'name'           => 'Tentativa',
+            'beneficiary_id' => $benefAlheio->id,
+        ])->assertSessionHasErrors('beneficiary_id');
+
+        expect(\App\Models\ProjectPerson::where('project_id', $project->id)->count())->toBe(0);
+    }
+
+    /** @test */
+    public function vincular_mesmo_beneficiario_no_mesmo_projeto_duas_vezes_e_bloqueado(): void
+    {
+        $benef = $this->makeBeneficiary(['name' => 'Duplicada']);
+        $project = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        // Primeiro vinculo OK
+        $this->post("/projects/{$project->id}/people", [
+            'name'           => 'Duplicada',
+            'beneficiary_id' => $benef->id,
+        ])->assertRedirect();
+
+        // Tentativa de duplicar
+        $r = $this->post("/projects/{$project->id}/people", [
+            'name'           => 'Duplicada de novo',
+            'beneficiary_id' => $benef->id,
+        ]);
+        $r->assertRedirect();
+        $r->assertSessionHas('error');
+
+        expect(\App\Models\ProjectPerson::where('project_id', $project->id)->where('beneficiary_id', $benef->id)->count())->toBe(1);
+    }
+
+    /** @test */
+    public function excluir_beneficiario_apenas_nullifica_a_ligacao_no_project_person(): void
+    {
+        $benef = $this->makeBeneficiary(['name' => 'Sera excluido']);
+        $project = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id]);
+        $pp = \App\Models\ProjectPerson::create([
+            'tenant_id'      => $this->tenant->id,
+            'project_id'     => $project->id,
+            'beneficiary_id' => $benef->id,
+            'name'           => 'Sera excluido',
+        ]);
+
+        $this->delete("/ngo/beneficiaries/{$benef->id}")->assertRedirect();
+
+        // ProjectPerson permanece; beneficiary_id vira null via FK nullOnDelete
+        $pp->refresh();
+        expect($pp->beneficiary_id)->toBeNull();
+        expect($pp->name)->toBe('Sera excluido');
+    }
+
+    /** @test */
+    public function show_do_beneficiario_lista_projetos_vinculados(): void
+    {
+        $benef = $this->makeBeneficiary(['name' => 'Com vinculo']);
+        $project = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Projeto Cultural']);
+        \App\Models\ProjectPerson::create([
+            'tenant_id'         => $this->tenant->id,
+            'project_id'        => $project->id,
+            'beneficiary_id'    => $benef->id,
+            'name'              => 'Com vinculo',
+            'enrollment_status' => 'ativo',
+        ]);
+
+        $this->get("/ngo/beneficiaries/{$benef->id}")
+            ->assertOk()
+            ->assertSee('Projetos vinculados')
+            ->assertSee('Projeto Cultural');
     }
 }

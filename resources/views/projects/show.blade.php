@@ -1095,7 +1095,56 @@ async function generateProjectPdf(btn) {
             </div>
             <form action="{{ route('projects.people.store', $project->id) }}" method="POST">
                 @csrf
+                <input type="hidden" name="beneficiary_id" id="linkBenefIdInput" value="">
                 <div class="modal-body p-5">
+                    @if(($beneficiariesForLink ?? collect())->isNotEmpty())
+                        <div class="mb-4 p-3 rounded-4" style="background:#f0fdf4; border:1px dashed #86efac;">
+                            <div id="linkBenefBadge" style="display:none; padding:8px 12px; background:#059669; color:white; border-radius:10px; font-weight:800; margin-bottom:10px;">
+                                <i class="fas fa-check-circle"></i>
+                                Vinculando a <span id="linkBenefName"></span>
+                                <button type="button" onclick="clearBenefLink()" style="background:none; border:none; color:white; float:right; cursor:pointer;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <label class="fw-800 text-uppercase small text-muted d-block mb-2">
+                                <i class="fas fa-link" style="color:#059669;"></i> Vincular a um beneficiário cadastrado
+                            </label>
+                            <input type="text" id="benefSearchInput" placeholder="Buscar por nome..." oninput="filterBeneficiaries()" class="form-control border-0 rounded-4 py-2 fw-700 mb-2" style="background:white;">
+                            <div id="benefListWrap" style="max-height:180px; overflow-y:auto; display:none; background:white; border-radius:10px; border:1px solid #d1fae5;">
+                                <div id="benefList"></div>
+                            </div>
+                            <small class="text-muted d-block mt-1">Opcional — deixa em branco pra cadastrar uma pessoa nova sem vincular a beneficiário.</small>
+                        </div>
+                        <script>
+                            const BENEFICIARIES_FOR_LINK = @json($beneficiariesForLink->map(fn($b)=>['id'=>$b->id,'name'=>$b->name])->values());
+                            function renderBenefList(items) {
+                                const el = document.getElementById('benefList');
+                                el.innerHTML = items.length === 0
+                                    ? '<div style="padding:10px 14px; color:#64748b; font-size:.85rem;">Nenhum beneficiário encontrado</div>'
+                                    : items.map(b => `<button type="button" onclick="pickBeneficiary(${b.id},'${(b.name||'').replace(/'/g,"\\'")}')" style="display:block; width:100%; text-align:left; padding:8px 14px; background:none; border:none; border-bottom:1px solid #ecfdf5; cursor:pointer; font-weight:700; color:#0f172a;">${b.name}</button>`).join('');
+                            }
+                            function filterBeneficiaries() {
+                                const q = (document.getElementById('benefSearchInput').value || '').toLowerCase().trim();
+                                const wrap = document.getElementById('benefListWrap');
+                                if (q.length < 2) { wrap.style.display = 'none'; return; }
+                                const filtered = BENEFICIARIES_FOR_LINK.filter(b => (b.name || '').toLowerCase().includes(q)).slice(0, 30);
+                                renderBenefList(filtered);
+                                wrap.style.display = 'block';
+                            }
+                            function pickBeneficiary(id, name) {
+                                document.getElementById('linkBenefIdInput').value = id;
+                                document.getElementById('linkBenefName').textContent = name;
+                                document.getElementById('linkBenefBadge').style.display = 'block';
+                                document.querySelector('#addPersonModal [name=name]').value = name;
+                                document.getElementById('benefListWrap').style.display = 'none';
+                                document.getElementById('benefSearchInput').value = '';
+                            }
+                            function clearBenefLink() {
+                                document.getElementById('linkBenefIdInput').value = '';
+                                document.getElementById('linkBenefBadge').style.display = 'none';
+                            }
+                        </script>
+                    @endif
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Nome Completo</label>
                         <input name="name" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" required>

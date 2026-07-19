@@ -407,7 +407,7 @@ class BeneficiaryController extends Controller
 
         $beneficiary = Beneficiary::where('tenant_id', $tenantId)
                                   ->where('id', $id)
-                                  ->with(['familyMembers'])
+                                  ->with(['familyMembers', 'projectMemberships.project:id,name,status'])
                                   ->firstOrFail();
 
         $from = $request->get('from');

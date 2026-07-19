@@ -89,4 +89,25 @@ class Beneficiary extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+
+    // Vinculos ao projeto (opt-in via form de ProjectPerson). Podem existir
+    // varios (um por projeto que o beneficiario participa).
+    public function projectMemberships()
+    {
+        return $this->hasMany(ProjectPerson::class);
+    }
+
+    protected static function booted(): void
+    {
+        // Ao excluir o beneficiario, apenas quebra o link em cada ProjectPerson
+        // — o cadastro do projeto e o historico de chamada da turma sao
+        // preservados. Redundante com a FK nullOnDelete em MySQL, mas garante
+        // o comportamento em drivers que nao propagam ON DELETE (ex: SQLite
+        // ao alterar tabela) e em codigo que use ->forceDelete diretamente.
+        static::deleting(function (self $beneficiary) {
+            ProjectPerson::where('tenant_id', $beneficiary->tenant_id)
+                ->where('beneficiary_id', $beneficiary->id)
+                ->update(['beneficiary_id' => null]);
+        });
+    }
 }
