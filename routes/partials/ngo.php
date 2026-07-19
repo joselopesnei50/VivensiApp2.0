@@ -103,6 +103,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/beneficiaries/reports/annual',              [App\Http\Controllers\BeneficiaryReportController::class, 'annualReport']);
         Route::get('/beneficiaries/reports/annual/pdf',          [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportPdf'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/reports/annual/pdf-appendix', [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportPdfAppendix'])->middleware('throttle:web_export');
+        // Dispatcher unificado (2026-07-18): aceita ?format=detailed|grouped|grouped-simple|pivot-type|pivot-user
+        Route::get('/beneficiaries/reports/annual/export.csv',   [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExport'])->name('ngo.beneficiaries.reports.annual.export')->middleware('throttle:web_export');
         Route::get('/beneficiaries/reports/annual/export',       [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExportCsv'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/reports/annual/export-grouped',        [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExportGroupedCsv'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/reports/annual/export-grouped-simple', [App\Http\Controllers\BeneficiaryReportController::class, 'annualReportExportGroupedSimpleCsv'])->middleware('throttle:web_export');
