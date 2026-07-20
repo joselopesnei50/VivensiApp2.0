@@ -478,7 +478,24 @@ class BeneficiaryController extends Controller
             ->pluck('type')
             ->all();
 
-        return view('ngo.beneficiaries.show', compact('beneficiary', 'attendances', 'stats', 'from', 'to', 'type', 'q', 'types'));
+        // Historico de matriculas (status = saiu | concluido). Reaproveita
+        // os ids ja carregados em projectMemberships pra evitar subselect
+        // whereHas — 2 queries no pior caso (uma ja feita no eager load).
+        $personIds = $beneficiary->projectMemberships->pluck('id');
+        $historicoMatriculas = $personIds->isEmpty()
+            ? collect()
+            : \App\Models\ProjectClassEnrollment::where('tenant_id', $tenantId)
+                ->whereIn('project_person_id', $personIds)
+                ->whereIn('status', [
+                    \App\Models\ProjectClassEnrollment::STATUS_SAIU,
+                    \App\Models\ProjectClassEnrollment::STATUS_CONCLUIDO,
+                ])
+                ->with(['projectClass:id,name,project_id', 'projectClass.project:id,name'])
+                ->orderByDesc('unenrolled_at')
+                ->orderByDesc('enrolled_at')
+                ->get();
+
+        return view('ngo.beneficiaries.show', compact('beneficiary', 'attendances', 'stats', 'from', 'to', 'type', 'q', 'types', 'historicoMatriculas'));
     }
 
     public function store(Request $request)

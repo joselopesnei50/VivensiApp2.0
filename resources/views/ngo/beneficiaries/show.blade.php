@@ -270,6 +270,42 @@
                 <div style="font-size:.8rem; color:#64748b; margin-top:6px;">Vá em <strong>Projetos</strong> → escolha um projeto → <em>"Adicionar pessoa"</em> → botão "Escolher beneficiário".</div>
             @endforelse
         </div>
+
+        @if(($historicoMatriculas ?? collect())->isNotEmpty())
+        <div class="vivensi-card" style="margin-top: 16px;">
+            <h4 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                <i class="fas fa-history" style="color:#94a3b8; margin-right:6px;"></i> Histórico de matrículas
+                <span style="color:#94a3b8; font-weight:700; font-size:.85rem;">({{ $historicoMatriculas->count() }})</span>
+            </h4>
+            @foreach($historicoMatriculas as $enr)
+                @php
+                    $statusColor = match($enr->status) {
+                        \App\Models\ProjectClassEnrollment::STATUS_CONCLUIDO => ['#2563eb', '#dbeafe', 'Concluído'],
+                        \App\Models\ProjectClassEnrollment::STATUS_SAIU      => ['#dc2626', '#fee2e2', 'Saiu'],
+                        default => ['#64748b', '#f1f5f9', ucfirst($enr->status)],
+                    };
+                @endphp
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+                    <div style="flex:1;">
+                        <div style="font-weight:800; color:#0f172a;">
+                            {{ $enr->projectClass->name ?? '— turma excluída —' }}
+                        </div>
+                        <div style="font-size:.8rem; color:#64748b; margin-top:2px;">
+                            Projeto: {{ $enr->projectClass->project->name ?? '— excluído —' }}
+                        </div>
+                        <div style="font-size:.72rem; color:#94a3b8; margin-top:3px;">
+                            {{ optional($enr->enrolled_at)->format('d/m/Y') ?: '—' }}
+                            →
+                            {{ optional($enr->unenrolled_at)->format('d/m/Y') ?: '—' }}
+                        </div>
+                    </div>
+                    <span style="padding:4px 10px; border-radius:99px; font-size:.72rem; font-weight:800; letter-spacing:.3px; color:{{ $statusColor[0] }}; background:{{ $statusColor[1] }};">
+                        {{ $statusColor[2] }}
+                    </span>
+                </div>
+            @endforeach
+        </div>
+        @endif
     </div>
 
     <!-- Coluna Direita: Evolução e Atendimentos -->

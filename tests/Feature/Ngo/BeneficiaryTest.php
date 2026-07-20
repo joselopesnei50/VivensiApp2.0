@@ -578,7 +578,43 @@ class BeneficiaryTest extends TestCase
             ->assertOk()
             ->assertSee('Turmas ativas')
             ->assertSee('Turma Violao Manha')
-            ->assertDontSee('Turma Violao Tarde');
+            // A turma "Tarde" tem enrollment SAIU — aparece no card de historico,
+            // nao no bloco de "Turmas ativas". Sao regioes visuais diferentes.
+            ->assertSee('Histórico de matrículas', false)
+            ->assertSee('Turma Violao Tarde');
+    }
+
+    /** @test */
+    public function show_do_beneficiario_exibe_historico_de_matriculas_encerradas(): void
+    {
+        $benef = $this->makeBeneficiary(['name' => 'Aluna Historico']);
+        $projeto = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Projeto Cultura']);
+
+        $pp = \App\Models\ProjectPerson::create([
+            'tenant_id'      => $this->tenant->id,
+            'project_id'     => $projeto->id,
+            'beneficiary_id' => $benef->id,
+            'name'           => 'Aluna Historico',
+        ]);
+
+        $turmaAtiva     = \App\Models\ProjectClass::create(['tenant_id' => $this->tenant->id, 'project_id' => $projeto->id, 'name' => 'Turma Teatro Atual', 'status' => \App\Models\ProjectClass::STATUS_ATIVO, 'weekdays' => [1]]);
+        $turmaConcluida = \App\Models\ProjectClass::create(['tenant_id' => $this->tenant->id, 'project_id' => $projeto->id, 'name' => 'Turma Danca 2025', 'status' => \App\Models\ProjectClass::STATUS_ATIVO, 'weekdays' => [3]]);
+        $turmaSaiu      = \App\Models\ProjectClass::create(['tenant_id' => $this->tenant->id, 'project_id' => $projeto->id, 'name' => 'Turma Musica Abandonada', 'status' => \App\Models\ProjectClass::STATUS_ATIVO, 'weekdays' => [5]]);
+
+        \App\Models\ProjectClassEnrollment::create(['tenant_id' => $this->tenant->id, 'project_class_id' => $turmaAtiva->id,     'project_person_id' => $pp->id, 'status' => \App\Models\ProjectClassEnrollment::STATUS_ATIVO,     'enrolled_at' => now()->subMonths(2)]);
+        \App\Models\ProjectClassEnrollment::create(['tenant_id' => $this->tenant->id, 'project_class_id' => $turmaConcluida->id, 'project_person_id' => $pp->id, 'status' => \App\Models\ProjectClassEnrollment::STATUS_CONCLUIDO, 'enrolled_at' => now()->subYear(), 'unenrolled_at' => now()->subMonths(6)]);
+        \App\Models\ProjectClassEnrollment::create(['tenant_id' => $this->tenant->id, 'project_class_id' => $turmaSaiu->id,      'project_person_id' => $pp->id, 'status' => \App\Models\ProjectClassEnrollment::STATUS_SAIU,      'enrolled_at' => now()->subMonths(4), 'unenrolled_at' => now()->subMonths(1)]);
+
+        $this->get("/ngo/beneficiaries/{$benef->id}")
+            ->assertOk()
+            // Card historico com contador 2 (concluida + saiu)
+            ->assertSee('Histórico de matrículas', false)
+            ->assertSee('Turma Danca 2025')
+            ->assertSee('Turma Musica Abandonada')
+            ->assertSee('Concluído', false)
+            ->assertSee('Saiu')
+            // Ativa continua no card de projetos vinculados, nao no historico
+            ->assertSee('Turma Teatro Atual');
     }
 
     /** @test */
