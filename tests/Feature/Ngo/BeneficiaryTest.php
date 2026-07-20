@@ -528,4 +528,49 @@ class BeneficiaryTest extends TestCase
             ->assertSee('Projetos vinculados')
             ->assertSee('Projeto Cultural');
     }
+
+    /** @test */
+    public function show_do_projeto_marca_pessoa_ligada_a_beneficiario_com_link(): void
+    {
+        $benef = $this->makeBeneficiary(['name' => 'Ana Familia']);
+        $projeto = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        \App\Models\ProjectPerson::create([
+            'tenant_id'      => $this->tenant->id,
+            'project_id'     => $projeto->id,
+            'beneficiary_id' => $benef->id,
+            'name'           => 'Ana Familia',
+        ]);
+        // Pessoa sem vinculo pra garantir que so a vinculada mostra o badge
+        \App\Models\ProjectPerson::create([
+            'tenant_id'  => $this->tenant->id,
+            'project_id' => $projeto->id,
+            'name'       => 'Sem vinculo',
+        ]);
+
+        $this->get("/projects/{$projeto->id}")
+            ->assertOk()
+            ->assertSee('Beneficiário cadastrado')
+            ->assertSee('/ngo/beneficiaries/' . $benef->id, false);
+    }
+
+    /** @test */
+    public function show_do_projeto_conta_beneficiarios_distintos_vinculados(): void
+    {
+        $b1 = $this->makeBeneficiary(['name' => 'Ana']);
+        $b2 = $this->makeBeneficiary(['name' => 'Bruno']);
+        $projeto = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        // 2 pessoas apontando pro MESMO beneficiario (mesma familia em contextos
+        // diferentes) — deve contar 1 unico
+        \App\Models\ProjectPerson::create(['tenant_id' => $this->tenant->id, 'project_id' => $projeto->id, 'beneficiary_id' => $b1->id, 'name' => 'Ana turno manha']);
+        \App\Models\ProjectPerson::create(['tenant_id' => $this->tenant->id, 'project_id' => $projeto->id, 'beneficiary_id' => $b1->id, 'name' => 'Ana turno tarde']);
+        \App\Models\ProjectPerson::create(['tenant_id' => $this->tenant->id, 'project_id' => $projeto->id, 'beneficiary_id' => $b2->id, 'name' => 'Bruno']);
+        // Pessoa sem vinculo — nao conta
+        \App\Models\ProjectPerson::create(['tenant_id' => $this->tenant->id, 'project_id' => $projeto->id, 'name' => 'Voluntario avulso']);
+
+        $this->get("/projects/{$projeto->id}")
+            ->assertOk()
+            ->assertSee('2 beneficiários vinculados');
+    }
 }

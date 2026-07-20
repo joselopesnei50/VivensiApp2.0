@@ -483,6 +483,12 @@
         <div>
             <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">Pessoas & Contatos</h4>
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Gerencie o cadastro de pessoas relacionadas a este projeto.</p>
+            @if(($linkedBeneficiariesCount ?? 0) > 0)
+                <p style="margin: 8px 0 0 0; font-weight: 700; font-size: 0.8rem; color: #10b981;">
+                    <i class="fas fa-hand-holding-heart me-1"></i>
+                    {{ $linkedBeneficiariesCount }} {{ $linkedBeneficiariesCount === 1 ? 'beneficiário vinculado' : 'beneficiários vinculados' }}
+                </p>
+            @endif
         </div>
         <div style="display: flex; gap: 10px;">
             <button type="button" id="btn-open-add-person" onclick="openProjectModal('addPersonModal')" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
@@ -517,6 +523,13 @@
                 <tr style="border-bottom: 1px solid #f8fafc;">
                     <td style="padding: 15px;">
                         <div style="font-weight: 800; color: #1e293b;">{{ $person->name }}</div>
+                        @if($person->beneficiary)
+                            <a href="{{ url('/ngo/beneficiaries/' . $person->beneficiary->id) }}"
+                               style="display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 3px 8px; border-radius: 999px; background: #ecfdf5; color: #047857; font-size: 0.7rem; font-weight: 700; text-decoration: none;"
+                               title="Abrir perfil do beneficiário">
+                                <i class="fas fa-hand-holding-heart"></i> Beneficiário cadastrado
+                            </a>
+                        @endif
                     </td>
                     <td style="padding: 15px;">
                         <div style="font-weight: 600; color: #64748b;">

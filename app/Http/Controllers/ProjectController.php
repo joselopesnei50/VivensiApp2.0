@@ -206,6 +206,22 @@ class ProjectController extends Controller
             ->limit(500)
             ->get(['id', 'name']);
 
+        // Eager load do beneficiario ligado a cada ProjectPerson (opt-in via
+        // form). Evita N+1 quando a tabela "Pessoas & Contatos" renderiza o
+        // badge/link pro perfil. Beneficiario deletado -> beneficiary_id fica
+        // null (booted hook do Beneficiary + FK nullOnDelete).
+        $data['project']->load(['people.beneficiary:id,name,status']);
+
+        // Contador de beneficiarios DISTINTOS vinculados ao projeto (uma mesma
+        // familia pode aparecer varias vezes em people com o mesmo beneficiary_id
+        // se cadastrada em multiplos contextos). So faz sentido mostrar quando
+        // houver pelo menos um vinculo.
+        $data['linkedBeneficiariesCount'] = $data['project']->people
+            ->whereNotNull('beneficiary_id')
+            ->pluck('beneficiary_id')
+            ->unique()
+            ->count();
+
         return view('projects.show', $data);
     }
 
