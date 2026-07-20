@@ -243,6 +243,23 @@
                         <div style="font-size:.8rem; color:#64748b; margin-top:2px;">
                             Nome no projeto: {{ $link->name }}
                         </div>
+                        @php
+                            $activeTurmas = $link->enrollments
+                                ->map(fn ($e) => $e->projectClass)
+                                ->filter()
+                                ->unique('id');
+                        @endphp
+                        @if($activeTurmas->isNotEmpty())
+                            <div style="font-size:.75rem; color:#4f46e5; margin-top:4px; font-weight:700;">
+                                <i class="fas fa-chalkboard-teacher" style="margin-right:4px;"></i>
+                                Turmas ativas:
+                                @foreach($activeTurmas as $turma)
+                                    <span style="display:inline-block; margin-right:6px; padding:2px 8px; border-radius:99px; background:#eef2ff; color:#4338ca; font-weight:800;">
+                                        {{ $turma->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                     <span style="padding:4px 10px; border-radius:99px; font-size:.72rem; font-weight:800; letter-spacing:.3px; color:{{ $enrolColor[0] }}; background:{{ $enrolColor[1] }};">
                         {{ ucfirst($enrolStatus) }}

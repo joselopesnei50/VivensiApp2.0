@@ -42,4 +42,9 @@ class ProjectPerson extends Model
     {
         return $this->hasMany(ClassAttendance::class, 'project_person_id');
     }
+
+    public function enrollments()
+    {
+        return $this->hasMany(ProjectClassEnrollment::class, 'project_person_id');
+    }
 }

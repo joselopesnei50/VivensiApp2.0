@@ -530,6 +530,58 @@ class BeneficiaryTest extends TestCase
     }
 
     /** @test */
+    public function show_do_beneficiario_lista_turmas_ativas_do_projeto_e_esconde_inativas(): void
+    {
+        $benef = $this->makeBeneficiary(['name' => 'Aluna Musica']);
+        $projeto = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Projeto Musica']);
+
+        $pp = \App\Models\ProjectPerson::create([
+            'tenant_id'      => $this->tenant->id,
+            'project_id'     => $projeto->id,
+            'beneficiary_id' => $benef->id,
+            'name'           => 'Aluna Musica',
+        ]);
+
+        $turmaAtiva = \App\Models\ProjectClass::create([
+            'tenant_id'  => $this->tenant->id,
+            'project_id' => $projeto->id,
+            'name'       => 'Turma Violao Manha',
+            'status'     => \App\Models\ProjectClass::STATUS_ATIVO,
+            'weekdays'   => [1, 3],
+        ]);
+        $turmaAntiga = \App\Models\ProjectClass::create([
+            'tenant_id'  => $this->tenant->id,
+            'project_id' => $projeto->id,
+            'name'       => 'Turma Violao Tarde',
+            'status'     => \App\Models\ProjectClass::STATUS_ATIVO,
+            'weekdays'   => [2, 4],
+        ]);
+
+        \App\Models\ProjectClassEnrollment::create([
+            'tenant_id'         => $this->tenant->id,
+            'project_class_id'  => $turmaAtiva->id,
+            'project_person_id' => $pp->id,
+            'status'            => \App\Models\ProjectClassEnrollment::STATUS_ATIVO,
+            'enrolled_at'       => now(),
+        ]);
+        // Matricula historica — nao deve aparecer
+        \App\Models\ProjectClassEnrollment::create([
+            'tenant_id'         => $this->tenant->id,
+            'project_class_id'  => $turmaAntiga->id,
+            'project_person_id' => $pp->id,
+            'status'            => \App\Models\ProjectClassEnrollment::STATUS_SAIU,
+            'enrolled_at'       => now()->subMonths(3),
+            'unenrolled_at'     => now()->subMonth(),
+        ]);
+
+        $this->get("/ngo/beneficiaries/{$benef->id}")
+            ->assertOk()
+            ->assertSee('Turmas ativas')
+            ->assertSee('Turma Violao Manha')
+            ->assertDontSee('Turma Violao Tarde');
+    }
+
+    /** @test */
     public function show_do_projeto_marca_pessoa_ligada_a_beneficiario_com_link(): void
     {
         $benef = $this->makeBeneficiary(['name' => 'Ana Familia']);

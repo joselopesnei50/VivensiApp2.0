@@ -430,7 +430,14 @@ class BeneficiaryController extends Controller
 
         $beneficiary = Beneficiary::where('tenant_id', $tenantId)
                                   ->where('id', $id)
-                                  ->with(['familyMembers', 'projectMemberships.project:id,name,status'])
+                                  ->with([
+                                      'familyMembers',
+                                      'projectMemberships.project:id,name,status',
+                                      // So matriculas ativas — 'saiu'/'concluido' viram historico, nao clutter na tela
+                                      'projectMemberships.enrollments' => fn ($q) =>
+                                          $q->where('status', \App\Models\ProjectClassEnrollment::STATUS_ATIVO)
+                                            ->with('projectClass:id,name,status'),
+                                  ])
                                   ->firstOrFail();
 
         $from = $request->get('from');
