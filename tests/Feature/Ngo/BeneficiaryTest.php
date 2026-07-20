@@ -160,6 +160,90 @@ class BeneficiaryTest extends TestCase
         expect($content)->not->toContain('Fabio Outro');
     }
 
+    /** @test */
+    public function index_filtra_por_faixa_etaria(): void
+    {
+        $this->makeBeneficiary(['name' => 'Crianca 10', 'birth_date' => now()->subYears(10)->toDateString()]);
+        $this->makeBeneficiary(['name' => 'Jovem 25',   'birth_date' => now()->subYears(25)->toDateString()]);
+        $this->makeBeneficiary(['name' => 'Idoso 65',   'birth_date' => now()->subYears(65)->toDateString()]);
+
+        $this->get('/ngo/beneficiaries?age_bracket=crianca')
+            ->assertOk()
+            ->assertSee('Crianca 10')
+            ->assertDontSee('Jovem 25')
+            ->assertDontSee('Idoso 65');
+
+        $this->get('/ngo/beneficiaries?age_bracket=idoso')
+            ->assertOk()
+            ->assertSee('Idoso 65')
+            ->assertDontSee('Crianca 10')
+            ->assertDontSee('Jovem 25');
+    }
+
+    /** @test */
+    public function index_filtra_por_genero(): void
+    {
+        $this->makeBeneficiary(['name' => 'Ana Fem', 'gender' => 'feminino']);
+        $this->makeBeneficiary(['name' => 'Bruno Masc', 'gender' => 'masculino']);
+
+        $this->get('/ngo/beneficiaries?gender=feminino')
+            ->assertOk()
+            ->assertSee('Ana Fem')
+            ->assertDontSee('Bruno Masc');
+    }
+
+    /** @test */
+    public function index_filtra_por_escolaridade(): void
+    {
+        $this->makeBeneficiary(['name' => 'Maria Medio', 'education' => 'medio_completo']);
+        $this->makeBeneficiary(['name' => 'Jose Superior', 'education' => 'superior_completo']);
+
+        $this->get('/ngo/beneficiaries?education=medio_completo')
+            ->assertOk()
+            ->assertSee('Maria Medio')
+            ->assertDontSee('Jose Superior');
+    }
+
+    /** @test */
+    public function index_filtra_por_projeto_vinculado(): void
+    {
+        $benefLinked = $this->makeBeneficiary(['name' => 'Vinculada Cultural']);
+        $this->makeBeneficiary(['name' => 'Solta Sem Projeto']);
+
+        $projeto = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Projeto Cultural']);
+        \App\Models\ProjectPerson::create([
+            'tenant_id'      => $this->tenant->id,
+            'project_id'     => $projeto->id,
+            'beneficiary_id' => $benefLinked->id,
+            'name'           => 'Vinculada Cultural',
+        ]);
+        // Person do mesmo projeto sem beneficiary_id nao deve puxar ninguem
+        \App\Models\ProjectPerson::create([
+            'tenant_id'  => $this->tenant->id,
+            'project_id' => $projeto->id,
+            'name'       => 'Avulsa sem cadastro',
+        ]);
+
+        $this->get('/ngo/beneficiaries?project_id=' . $projeto->id)
+            ->assertOk()
+            ->assertSee('Vinculada Cultural')
+            ->assertDontSee('Solta Sem Projeto');
+    }
+
+    /** @test */
+    public function index_filtra_por_novos_ultimos_n_dias(): void
+    {
+        $novo = $this->makeBeneficiary(['name' => 'Cadastrado agora']);
+        $antigo = $this->makeBeneficiary(['name' => 'Cadastrado ha muito']);
+        // created_at nao passa pelo create() (timestamps automaticos) — usar update raw
+        \App\Models\Beneficiary::where('id', $antigo->id)->update(['created_at' => now()->subDays(100)]);
+
+        $this->get('/ngo/beneficiaries?novo_dias=30')
+            ->assertOk()
+            ->assertSee('Cadastrado agora')
+            ->assertDontSee('Cadastrado ha muito');
+    }
+
     // ── Store (PII criptografada) ────────────────────────────────────────────
 
     /** @test */

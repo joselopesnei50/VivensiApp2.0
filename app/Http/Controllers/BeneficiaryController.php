@@ -27,6 +27,53 @@ use Illuminate\Support\Str;
  */
 class BeneficiaryController extends Controller
 {
+    // Faixas etarias usadas nos filtros do index/print/export. Segunda posicao
+    // null = sem teto (60+ = idoso). Buckets sao mais legiveis pro assistente
+    // social que dois inputs numericos e evitam confusao (idade "17" tabela
+    // como jovem ou adolescente?).
+    public const AGE_BRACKETS = [
+        'infantil'    => [0, 6],
+        'crianca'     => [7, 14],
+        'adolescente' => [15, 17],
+        'jovem'       => [18, 29],
+        'adulto'      => [30, 59],
+        'idoso'       => [60, null],
+    ];
+
+    public const AGE_BRACKET_LABELS = [
+        'infantil'    => 'Primeira infância (0-6)',
+        'crianca'     => 'Criança (7-14)',
+        'adolescente' => 'Adolescente (15-17)',
+        'jovem'       => 'Jovem (18-29)',
+        'adulto'      => 'Adulto (30-59)',
+        'idoso'       => 'Idoso (60+)',
+    ];
+
+    public const GENDER_OPTIONS = [
+        'masculino'            => 'Masculino',
+        'feminino'             => 'Feminino',
+        'nao_binario'          => 'Não-binário',
+        'outro'                => 'Outro',
+        'prefiro_nao_informar' => 'Prefiro não informar',
+    ];
+
+    public const EDUCATION_OPTIONS = [
+        'sem_escolaridade'       => 'Sem escolaridade',
+        'fundamental_incompleto' => 'Fundamental incompleto',
+        'fundamental_completo'   => 'Fundamental completo',
+        'medio_incompleto'       => 'Médio incompleto',
+        'medio_completo'         => 'Médio completo',
+        'superior_incompleto'    => 'Superior incompleto',
+        'superior_completo'      => 'Superior completo',
+        'pos_graduacao'          => 'Pós-graduação',
+    ];
+
+    public const NOVO_DIAS_OPTIONS = [
+        7  => 'Novos últimos 7 dias',
+        30 => 'Novos últimos 30 dias',
+        90 => 'Novos últimos 90 dias',
+    ];
+
     public function insights(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
@@ -129,7 +176,7 @@ class BeneficiaryController extends Controller
     }
 
     /**
-     * Filtro de busca livre compartilhado entre index/print/exportCsv.
+     * Filtro de busca livre.
      *
      * Nome/telefone sao LIKE parcial. CPF/NIS estao cifrados (Crypt::encryptString
      * gera ciphertext nao-deterministico) — LIKE nunca casa. Store/update/import
@@ -154,23 +201,79 @@ class BeneficiaryController extends Controller
         });
     }
 
+    /**
+     * Le os parametros de filtro da request. Usado por index/print/exportCsv
+     * pra garantir mesma leitura de nomes de campo.
+     */
+    private function collectListFilters(Request $request): array
+    {
+        return [
+            'q'           => trim((string) $request->get('q', '')),
+            'status'      => trim((string) $request->get('status', '')),
+            'gender'      => trim((string) $request->get('gender', '')),
+            'education'   => trim((string) $request->get('education', '')),
+            'age_bracket' => trim((string) $request->get('age_bracket', '')),
+            'project_id'  => trim((string) $request->get('project_id', '')),
+            'novo_dias'   => trim((string) $request->get('novo_dias', '')),
+        ];
+    }
+
+    /**
+     * Aplica todos os filtros do index (q + status + demograficos + projeto +
+     * novo_dias) no query builder. Compartilhado entre index/print/exportCsv
+     * pra garantir que a lista visivel e o export tenham o mesmo escopo.
+     */
+    private function applyBeneficiaryListFilters($query, array $inputs, int $tenantId): void
+    {
+        if (!empty($inputs['q'])) {
+            $this->applyBeneficiarySearch($query, (string) $inputs['q']);
+        }
+        if (!empty($inputs['status'])) {
+            $query->where('status', $inputs['status']);
+        }
+        if (!empty($inputs['gender']) && isset(self::GENDER_OPTIONS[$inputs['gender']])) {
+            $query->where('gender', $inputs['gender']);
+        }
+        if (!empty($inputs['education']) && isset(self::EDUCATION_OPTIONS[$inputs['education']])) {
+            $query->where('education', $inputs['education']);
+        }
+        if (!empty($inputs['age_bracket']) && isset(self::AGE_BRACKETS[$inputs['age_bracket']])) {
+            [$minAge, $maxAge] = self::AGE_BRACKETS[$inputs['age_bracket']];
+            // Idade >= min => nasceu ha ao menos min anos => birth_date <= hoje - min anos
+            $query->where('birth_date', '<=', now()->subYears($minAge)->toDateString());
+            if ($maxAge !== null) {
+                // Idade <= max => nasceu apos hoje - (max+1) anos
+                $query->where('birth_date', '>', now()->subYears($maxAge + 1)->toDateString());
+            }
+        }
+        if (!empty($inputs['project_id'])) {
+            $pid = (int) $inputs['project_id'];
+            $query->whereIn('id', function ($sub) use ($pid, $tenantId) {
+                $sub->select('beneficiary_id')
+                    ->from('project_people')
+                    ->where('tenant_id', $tenantId)
+                    ->where('project_id', $pid)
+                    ->whereNotNull('beneficiary_id');
+            });
+        }
+        if (!empty($inputs['novo_dias'])) {
+            $dias = (int) $inputs['novo_dias'];
+            if ($dias > 0) {
+                $query->where('created_at', '>=', now()->subDays($dias));
+            }
+        }
+    }
+
     public function index(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
-
-        $q = trim((string) $request->get('q', ''));
-        $status = trim((string) $request->get('status', ''));
+        $filters  = $this->collectListFilters($request);
 
         $beneficiariesQ = Beneficiary::where('tenant_id', $tenantId)
             ->withCount('attendances')
             ->orderBy('name');
 
-        if ($q !== '') {
-            $this->applyBeneficiarySearch($beneficiariesQ, $q);
-        }
-        if ($status !== '') {
-            $beneficiariesQ->where('status', $status);
-        }
+        $this->applyBeneficiaryListFilters($beneficiariesQ, $filters, $tenantId);
 
         $beneficiaries = $beneficiariesQ->paginate(15)->appends($request->query());
 
@@ -193,7 +296,24 @@ class BeneficiaryController extends Controller
 
         $stats = compact('total', 'active', 'inactive', 'graduated', 'monthAttendances');
 
-        return view('ngo.beneficiaries.index', compact('beneficiaries', 'q', 'status', 'stats'));
+        // Opcoes pros selects de filtro (projetos do proprio tenant + enums)
+        $projectsForFilter = \App\Models\Project::where('tenant_id', $tenantId)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $filterOptions = [
+            'genders'      => self::GENDER_OPTIONS,
+            'educations'   => self::EDUCATION_OPTIONS,
+            'ageBrackets'  => self::AGE_BRACKET_LABELS,
+            'novoDias'     => self::NOVO_DIAS_OPTIONS,
+            'projects'     => $projectsForFilter,
+        ];
+
+        // Alias q/status pra compatibilidade com o blade atual antes do refactor da view
+        $q = $filters['q'];
+        $status = $filters['status'];
+
+        return view('ngo.beneficiaries.index', compact('beneficiaries', 'q', 'status', 'stats', 'filters', 'filterOptions'));
     }
 
     public function create()
@@ -660,18 +780,13 @@ class BeneficiaryController extends Controller
     public function exportCsv(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
-        $q = trim((string) $request->get('q', ''));
-        $status = trim((string) $request->get('status', ''));
+        $filters = $this->collectListFilters($request);
 
-        AuditDownload::log('Beneficiaries', null, [
-            'format' => 'csv',
-            'q' => $q,
-            'status' => $status,
-        ]);
+        AuditDownload::log('Beneficiaries', null, array_merge(['format' => 'csv'], $filters));
 
         $filename = 'beneficiarios-' . date('Y-m-d_His') . '.csv';
 
-        return response()->streamDownload(function () use ($tenantId, $q, $status) {
+        return response()->streamDownload(function () use ($tenantId, $filters) {
             $out = fopen('php://output', 'w');
             if ($out === false) return;
 
@@ -679,10 +794,7 @@ class BeneficiaryController extends Controller
             fputcsv($out, ['Nome', 'NIS', 'CPF', 'Nascimento', 'Telefone', 'Endereço', 'Status', 'Atendimentos']);
 
             $baseQ = Beneficiary::where('tenant_id', $tenantId)->withCount('attendances')->orderBy('name');
-            if ($q !== '') {
-                $this->applyBeneficiarySearch($baseQ, $q);
-            }
-            if ($status !== '') $baseQ->where('status', $status);
+            $this->applyBeneficiaryListFilters($baseQ, $filters, $tenantId);
 
             $baseQ->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $b) {
@@ -708,20 +820,20 @@ class BeneficiaryController extends Controller
     public function print(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
-        $q = trim((string) $request->get('q', ''));
-        $status = trim((string) $request->get('status', ''));
+        $filters = $this->collectListFilters($request);
 
         $beneficiariesQ = Beneficiary::where('tenant_id', $tenantId)->withCount('attendances')->orderBy('name');
-        if ($q !== '') {
-            $this->applyBeneficiarySearch($beneficiariesQ, $q);
-        }
-        if ($status !== '') $beneficiariesQ->where('status', $status);
+        $this->applyBeneficiaryListFilters($beneficiariesQ, $filters, $tenantId);
 
         $beneficiaries = $beneficiariesQ->limit(500)->get();
         $truncated     = $beneficiaries->count() === 500;
 
         $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
         $generatedAt = now()->format('d/m/Y H:i');
+
+        // Alias q/status pro blade atual — o print.blade.php ainda le esses names
+        $q      = $filters['q'];
+        $status = $filters['status'];
 
         return view('ngo.beneficiaries.print', compact('beneficiaries', 'truncated', 'orgName', 'generatedAt', 'q', 'status'));
     }

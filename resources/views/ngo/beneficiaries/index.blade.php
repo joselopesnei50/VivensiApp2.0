@@ -54,19 +54,69 @@
     </div>
 </div>
 
+@php
+    $f = $filters ?? ['q'=>$q ?? '', 'status'=>$status ?? '', 'gender'=>'', 'education'=>'', 'age_bracket'=>'', 'project_id'=>'', 'novo_dias'=>''];
+    $fo = $filterOptions ?? ['genders'=>[], 'educations'=>[], 'ageBrackets'=>[], 'novoDias'=>[], 'projects'=>collect()];
+@endphp
+
 <div class="vivensi-card" style="margin-bottom: 14px;">
     <form method="GET" action="{{ url('/ngo/beneficiaries') }}" style="display:flex; gap: 10px; flex-wrap: wrap; align-items: end;">
-        <div class="form-group" style="min-width: 260px; margin:0;">
+        <div class="form-group" style="min-width: 260px; margin:0; flex:1;">
             <label>Busca</label>
-            <input class="form-control-vivensi" type="text" name="q" value="{{ $q ?? '' }}" placeholder="Nome, CPF, NIS, telefone...">
+            <input class="form-control-vivensi" type="text" name="q" value="{{ $f['q'] }}" placeholder="Nome, CPF, NIS, telefone...">
         </div>
-        <div class="form-group" style="min-width: 220px; margin:0;">
+        <div class="form-group" style="min-width: 160px; margin:0;">
             <label>Status</label>
             <select class="form-control-vivensi" name="status">
                 <option value="">Todos</option>
-                <option value="active" @if(($status ?? '')==='active') selected @endif>Ativo</option>
-                <option value="inactive" @if(($status ?? '')==='inactive') selected @endif>Inativo</option>
-                <option value="graduated" @if(($status ?? '')==='graduated') selected @endif>Graduado</option>
+                <option value="active" @if($f['status']==='active') selected @endif>Ativo</option>
+                <option value="inactive" @if($f['status']==='inactive') selected @endif>Inativo</option>
+                <option value="graduated" @if($f['status']==='graduated') selected @endif>Graduado</option>
+            </select>
+        </div>
+        <div class="form-group" style="min-width: 200px; margin:0;">
+            <label>Faixa etária</label>
+            <select class="form-control-vivensi" name="age_bracket">
+                <option value="">Todas as idades</option>
+                @foreach($fo['ageBrackets'] as $key => $label)
+                    <option value="{{ $key }}" @if($f['age_bracket']===$key) selected @endif>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group" style="min-width: 180px; margin:0;">
+            <label>Gênero</label>
+            <select class="form-control-vivensi" name="gender">
+                <option value="">Todos</option>
+                @foreach($fo['genders'] as $key => $label)
+                    <option value="{{ $key }}" @if($f['gender']===$key) selected @endif>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group" style="min-width: 220px; margin:0;">
+            <label>Escolaridade</label>
+            <select class="form-control-vivensi" name="education">
+                <option value="">Todas</option>
+                @foreach($fo['educations'] as $key => $label)
+                    <option value="{{ $key }}" @if($f['education']===$key) selected @endif>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group" style="min-width: 220px; margin:0;">
+            <label>Projeto vinculado</label>
+            <select class="form-control-vivensi" name="project_id">
+                <option value="">Todos os projetos</option>
+                @foreach($fo['projects'] as $p)
+                    <option value="{{ $p->id }}" @if((string) $f['project_id'] === (string) $p->id) selected @endif>{{ $p->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group" style="min-width: 210px; margin:0;">
+            <label>Cadastro</label>
+            <select class="form-control-vivensi" name="novo_dias">
+                <option value="">Qualquer época</option>
+                @foreach($fo['novoDias'] as $key => $label)
+                    <option value="{{ $key }}" @if((string) $f['novo_dias'] === (string) $key) selected @endif>{{ $label }}</option>
+                @endforeach
             </select>
         </div>
         <div style="display:flex; gap: 10px;">
