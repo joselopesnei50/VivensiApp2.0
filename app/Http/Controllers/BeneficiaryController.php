@@ -128,6 +128,32 @@ class BeneficiaryController extends Controller
         ));
     }
 
+    /**
+     * Filtro de busca livre compartilhado entre index/print/exportCsv.
+     *
+     * Nome/telefone sao LIKE parcial. CPF/NIS estao cifrados (Crypt::encryptString
+     * gera ciphertext nao-deterministico) — LIKE nunca casa. Store/update/import
+     * normalizam pra digitos e populam *_bidx via hash_hmac; entao busca por
+     * documento so funciona com match exato do blind index. Aceita 11 digitos
+     * (com ou sem mascara) — CPF e NIS tem ambos 11 no Brasil.
+     */
+    private function applyBeneficiarySearch($query, string $q): void
+    {
+        $digits = (string) preg_replace('/\D+/', '', $q);
+        $bidx = strlen($digits) === 11
+            ? hash_hmac('sha256', $digits, config('app.key'))
+            : null;
+
+        $query->where(function ($w) use ($q, $bidx) {
+            $w->where('name', 'like', '%' . $q . '%')
+              ->orWhere('phone', 'like', '%' . $q . '%');
+            if ($bidx !== null) {
+                $w->orWhere('cpf_bidx', $bidx)
+                  ->orWhere('nis_bidx', $bidx);
+            }
+        });
+    }
+
     public function index(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
@@ -140,10 +166,7 @@ class BeneficiaryController extends Controller
             ->orderBy('name');
 
         if ($q !== '') {
-            $beneficiariesQ->where(function ($w) use ($q) {
-                $w->where('name', 'like', '%' . $q . '%')
-                  ->orWhere('phone', 'like', '%' . $q . '%');
-            });
+            $this->applyBeneficiarySearch($beneficiariesQ, $q);
         }
         if ($status !== '') {
             $beneficiariesQ->where('status', $status);
@@ -633,12 +656,7 @@ class BeneficiaryController extends Controller
 
             $baseQ = Beneficiary::where('tenant_id', $tenantId)->withCount('attendances')->orderBy('name');
             if ($q !== '') {
-                $baseQ->where(function ($w) use ($q) {
-                    $w->where('name', 'like', '%' . $q . '%')
-                      ->orWhere('cpf', 'like', '%' . $q . '%')
-                      ->orWhere('nis', 'like', '%' . $q . '%')
-                      ->orWhere('phone', 'like', '%' . $q . '%');
-                });
+                $this->applyBeneficiarySearch($baseQ, $q);
             }
             if ($status !== '') $baseQ->where('status', $status);
 
@@ -671,10 +689,7 @@ class BeneficiaryController extends Controller
 
         $beneficiariesQ = Beneficiary::where('tenant_id', $tenantId)->withCount('attendances')->orderBy('name');
         if ($q !== '') {
-            $beneficiariesQ->where(function ($w) use ($q) {
-                $w->where('name', 'like', '%' . $q . '%')
-                  ->orWhere('phone', 'like', '%' . $q . '%');
-            });
+            $this->applyBeneficiarySearch($beneficiariesQ, $q);
         }
         if ($status !== '') $beneficiariesQ->where('status', $status);
 

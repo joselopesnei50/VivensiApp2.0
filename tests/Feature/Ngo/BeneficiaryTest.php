@@ -95,6 +95,71 @@ class BeneficiaryTest extends TestCase
             ->assertDontSee('Alheio Vitima');
     }
 
+    /** @test */
+    public function index_busca_por_cpf_via_blind_index_com_e_sem_mascara(): void
+    {
+        // Cadastrado via POST — controller normaliza pra digitos antes de salvar,
+        // entao cpf_bidx = hash_hmac('11122233344').
+        $this->post('/ngo/beneficiaries', [
+            'name'   => 'Ana Match CPF',
+            'cpf'    => '111.222.333-44',
+            'status' => 'active',
+        ])->assertRedirect();
+
+        $this->makeBeneficiary(['name' => 'Beto Sem CPF']);
+
+        // Busca com formatacao
+        $this->get('/ngo/beneficiaries?q=' . urlencode('111.222.333-44'))
+            ->assertOk()
+            ->assertSee('Ana Match CPF')
+            ->assertDontSee('Beto Sem CPF');
+
+        // Busca sem formatacao (11 digitos)
+        $this->get('/ngo/beneficiaries?q=11122233344')
+            ->assertOk()
+            ->assertSee('Ana Match CPF')
+            ->assertDontSee('Beto Sem CPF');
+    }
+
+    /** @test */
+    public function index_busca_por_nis_via_blind_index(): void
+    {
+        $this->post('/ngo/beneficiaries', [
+            'name'   => 'Carlos NIS',
+            'nis'    => '99988877766',
+            'status' => 'active',
+        ])->assertRedirect();
+
+        $this->makeBeneficiary(['name' => 'Diana Sem NIS']);
+
+        $this->get('/ngo/beneficiaries?q=99988877766')
+            ->assertOk()
+            ->assertSee('Carlos NIS')
+            ->assertDontSee('Diana Sem NIS');
+    }
+
+    /** @test */
+    public function export_csv_busca_por_cpf_filtra_via_blind_index(): void
+    {
+        $this->post('/ngo/beneficiaries', [
+            'name'   => 'Eva CSV',
+            'cpf'    => '11122233344',
+            'status' => 'active',
+        ])->assertRedirect();
+
+        $this->post('/ngo/beneficiaries', [
+            'name'   => 'Fabio Outro',
+            'cpf'    => '55566677788',
+            'status' => 'active',
+        ])->assertRedirect();
+
+        $r = $this->get('/ngo/beneficiaries/export?q=11122233344');
+        $r->assertOk();
+        $content = $r->streamedContent();
+        expect($content)->toContain('Eva CSV');
+        expect($content)->not->toContain('Fabio Outro');
+    }
+
     // ── Store (PII criptografada) ────────────────────────────────────────────
 
     /** @test */
