@@ -83,8 +83,8 @@ return [
             'maxTime'            => 0,
             'maxJobs'            => 0,
             'memory'             => 128,
-            'tries'              => 2,
-            'timeout'            => 7500,  // ProcessBroadcastCampaignJob tem $timeout=7200; margem de 5min para teardown
+            'tries'              => 3,
+            'timeout'            => 960,   // ProcessBroadcastCampaignJob chunks: $timeout=900s (15min) + margem de 1min
             'nice'               => 0,
         ],
 

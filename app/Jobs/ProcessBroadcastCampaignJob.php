@@ -22,23 +22,27 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     const MAX_RECIPIENTS = 500;
+    const CHUNK_SIZE     = 20;   // mensagens por execução de job
 
     public $campaignId;
     public $tenantId;
-    public $timeout = 7200; // 2h — campanhas grandes precisam de mais tempo
-    public $tries   = 1;
+    public $offset   = 0;    // posição no array de destinatários
+    public $timeout  = 900;  // 15min por chunk — cobre até 20 msgs × 30s (modo conservador) + margem
+    public $tries    = 3;    // retenta o chunk em falhas transitórias
     public $failOnTimeout = true;
 
-    public function __construct($campaignId, $tenantId)
+    public function __construct($campaignId, $tenantId, $offset = 0)
     {
         $this->campaignId = $campaignId;
         $this->tenantId   = $tenantId;
+        $this->offset     = $offset;
         $this->onQueue('whatsapp');
     }
 
     public function uniqueId(): string
     {
-        return (string) $this->campaignId;
+        // Inclui offset: impede dispatch duplo do mesmo chunk; chunks distintos coexistem na fila
+        return $this->campaignId . '_' . $this->offset;
     }
 
     public function handle()
@@ -47,11 +51,18 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             ->where('tenant_id', $this->tenantId)
             ->first();
 
-        if (!$campaign || $campaign->status === 'completed') {
+        if (!$campaign || in_array($campaign->status, ['completed', 'failed'])) {
             return;
         }
 
-        $campaign->update(['status' => 'processing', 'started_at' => now()]);
+        // Primeiro chunk: inicializa estado; chunks seguintes apenas verificam status
+        if ($this->offset === 0) {
+            $campaign->update(['status' => 'processing', 'started_at' => now()]);
+        } elseif ($campaign->status !== 'processing') {
+            // Campanha foi pausada/cancelada entre chunks
+            Log::info("Broadcast chunk abortado: status={$campaign->status}", ['campaign_id' => $campaign->id, 'offset' => $this->offset]);
+            return;
+        }
 
         $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
             ->where('status', 'open')->first();
@@ -65,11 +76,10 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         $evo     = new EvolutionApiService($instance);
         $antiBan = new AntiBanManager($evo);
 
-        // ── Pré-carrega dados de compliance LGPD (1 query cada, evita N+1 no loop) ──
+        // Pré-carrega dados de compliance LGPD (1 query cada, evita N+1 no loop)
         $config       = \App\Models\WhatsappConfig::where('tenant_id', $campaign->tenant_id)->first();
         $requireOptIn = (bool) ($config?->require_opt_in ?? false);
 
-        // Blacklist como Set [phone => true] para lookup O(1)
         $blacklistSet = \App\Models\WhatsappBlacklist::where('tenant_id', $campaign->tenant_id)
             ->pluck('phone')
             ->mapWithKeys(fn ($p) => [(string) $p => true])
@@ -77,40 +87,62 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
         $policy = app(\App\Services\WhatsappOutboundPolicy::class);
 
-        // Para 'all': 3 queries leves (count, wa_ids, cursor) evitam carregar
-        // milhares de contatos na memória de uma vez com get().
+        // ── Carrega apenas o chunk atual de destinatários ──────────────────────
         if ($campaign->audience_type === 'all') {
             $baseQuery = WhatsappChat::where('tenant_id', $campaign->tenant_id)
                 ->whereNotNull('opt_in_at')
                 ->whereNull('opt_out_at')->whereNull('blocked_at');
 
             $recipientCount = min((clone $baseQuery)->count(), self::MAX_RECIPIENTS);
+
             if ($recipientCount === 0) {
                 $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
                 return;
             }
 
-            $waIdsAll           = (clone $baseQuery)->limit(self::MAX_RECIPIENTS)->pluck('wa_id')->all();
-            $recipientsIterable = (clone $baseQuery)->select(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])->limit(self::MAX_RECIPIENTS)->cursor();
+            if ($this->offset === 0) {
+                $campaign->update(['actual_recipients' => $recipientCount]);
+            }
+
+            $recipientsIterable = (clone $baseQuery)
+                ->select(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])
+                ->orderBy('id')
+                ->offset($this->offset)
+                ->limit(self::CHUNK_SIZE)
+                ->get();
         } else {
-            $collection = $this->getRecipients($campaign, $evo)->take(self::MAX_RECIPIENTS);
-            if ($collection->isEmpty()) {
+            $fullCollection = $this->getRecipients($campaign, $evo)->take(self::MAX_RECIPIENTS);
+
+            if ($fullCollection->isEmpty()) {
                 $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
                 return;
             }
-            $recipientCount     = $collection->count();
-            $waIdsAll           = $collection->pluck('wa_id')->all();
-            $recipientsIterable = $collection;
+
+            $recipientCount = $fullCollection->count();
+
+            if ($this->offset === 0) {
+                $campaign->update(['actual_recipients' => $recipientCount]);
+            }
+
+            $recipientsIterable = $fullCollection->slice($this->offset, self::CHUNK_SIZE)->values();
+        }
+
+        if ($recipientsIterable->isEmpty()) {
+            $campaign->update(['status' => 'completed', 'completed_at' => now()]);
+            return;
         }
 
         // Rejeitar campanha antes de iniciar se contiver URL encurtada
-        if ($antiBan->containsBlockedShortener($campaign->message ?? '')) {
+        if ($this->offset === 0 && $antiBan->containsBlockedShortener($campaign->message ?? '')) {
             $campaign->update(['status' => 'failed', 'completed_at' => now()]);
             Log::error("Broadcast bloqueado: mensagem contém URL encurtada (risco de ban)", ['campaign_id' => $campaign->id]);
             return;
         }
 
-        $campaign->update(['actual_recipients' => $recipientCount]);
+        // Captura contagens anteriores (chunks já processados) antes de qualquer update no loop
+        $baseSent    = $campaign->total_sent    ?? 0;
+        $baseFailed  = $campaign->total_failed  ?? 0;
+        $baseSkipped = $campaign->total_skipped ?? 0;
 
         $sentCount         = 0;
         $failedCount       = 0;
@@ -119,29 +151,26 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
         $mediaToSend = null;
         $imageMime   = 'image/jpeg';
-        
+
         if ($campaign->has_image && $campaign->image_path) {
-            // Tentamos primeiro enviar a URL pública (mais leve, evita erro 413)
             $mediaToSend = Storage::disk('public')->url($campaign->image_path);
-            
-            // Se a URL não for absoluta (ex: /storage/...), prefixamos com o APP_URL
             if (!str_starts_with($mediaToSend, 'http')) {
                 $mediaToSend = rtrim(config('app.url'), '/') . $mediaToSend;
             }
-
             if (Storage::disk('public')->exists($campaign->image_path)) {
                 $imageMime = Storage::disk('public')->mimeType($campaign->image_path);
             }
         }
 
-        // Para envios individuais (não grupo direto), valida e corrige JIDs via Evolution API
-        // Resolve o problema do "9º dígito" brasileiro: entrega no celular depende do JID exato
         $isGroupChatMode = ($campaign->audience_type === 'groups')
             && (($campaign->group_send_mode ?? 'group') === 'group');
 
-        $jidMap = [];
+        // Valida apenas os números do chunk atual (evita revalidar tudo a cada chunk)
+        $waIdsChunk = $recipientsIterable->pluck('wa_id')->all();
+        $jidMap     = [];
+
         if (!$isGroupChatMode) {
-            $normalizedNumbers = collect($waIdsAll)
+            $normalizedNumbers = collect($waIdsChunk)
                 ->map(fn($n) => EvolutionApiService::normalizeBrazilianPhone((string) $n))
                 ->filter()
                 ->unique()
@@ -149,18 +178,13 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 ->all();
 
             if (!empty($normalizedNumbers)) {
-                Log::info('Validando números no WhatsApp antes do disparo', [
+                Log::info('Validando números do chunk no WhatsApp', [
                     'campaign_id' => $campaign->id,
+                    'offset'      => $this->offset,
                     'total'       => count($normalizedNumbers),
                 ]);
                 $jidMap = $evo->checkWhatsappNumbers($normalizedNumbers);
-                Log::info('Validação concluída', [
-                    'campaign_id' => $campaign->id,
-                    'validos'     => count($jidMap),
-                    'invalidos'   => count($normalizedNumbers) - count($jidMap),
-                ]);
 
-                // Cache os JIDs validados no banco para reuso futuro (opcional — não bloqueia o envio)
                 if (!empty($jidMap)) {
                     foreach ($jidMap as $original => $jid) {
                         try {
@@ -181,21 +205,16 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             }
         }
 
-        // ── Anti-ban: score de diversidade de destinatários (Fase 2 2026) ────
-        // Disparo majoritário pra contatos que nunca responderam é padrão de
-        // spam clássico. Se >70% da audiência é "nova" (sem last_inbound_at),
-        // ativamos modo conservador que DOBRA o delay entre envios sem alterar
-        // permanentemente a instância. Grupos são pulados (grupo != contato).
+        // Anti-ban: score de diversidade de destinatários (Fase 2 2026)
         $conservativeMode = false;
-        if (!$isGroupChatMode && !empty($waIdsAll)) {
-            $newRatio = $antiBan->getNewRecipientRatio($instance, $waIdsAll);
+        if (!$isGroupChatMode && !empty($waIdsChunk)) {
+            $newRatio = $antiBan->getNewRecipientRatio($instance, $waIdsChunk);
             if ($newRatio > AntiBanManager::NEW_RECIPIENT_RISK_THRESHOLD) {
                 $conservativeMode = true;
                 Log::warning('AntiBan: audiência majoritariamente nova — modo conservador ativado', [
                     'campaign_id' => $campaign->id,
+                    'offset'      => $this->offset,
                     'new_ratio'   => round($newRatio, 2),
-                    'threshold'   => AntiBanManager::NEW_RECIPIENT_RISK_THRESHOLD,
-                    'total'       => count($waIdsAll),
                 ]);
             }
         }
@@ -204,45 +223,33 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             $campaign->refresh();
             if ($campaign->status !== 'processing') break;
 
-            // ── Anti-ban: fingerprint de conteúdo (Fase 1 2026) ───────────────
-            // Bloqueia se a MESMA mensagem já foi enviada MAX_SAME_CONTENT_PER_DAY
-            // vezes hoje por esta instância. Pausa a campanha — amanhã o contador
-            // reseta e o operador pode retomar. Só aplica quando há texto (mídia
-            // sem legenda não passa por fingerprint — não é padrão de spam da Meta).
+            // Anti-ban: fingerprint de conteúdo (Fase 1 2026)
             if (!empty($campaign->message) && !$antiBan->contentFingerprintAllowed($instance, $campaign->message)) {
                 Log::warning('AntiBan: fingerprint de conteúdo atingiu limite diário — campanha pausada', [
                     'campaign_id' => $campaign->id,
                     'instance_id' => $instance->id,
-                    'limit'       => AntiBanManager::MAX_SAME_CONTENT_PER_DAY,
                 ]);
                 $campaign->update([
                     'status'       => 'paused',
                     'completed_at' => now(),
-                    'total_sent'   => $sentCount,
-                    'total_failed' => $failedCount,
+                    'total_sent'   => $baseSent + $sentCount,
+                    'total_failed' => $baseFailed + $failedCount,
                 ]);
                 return;
             }
 
-            // ── Anti-ban: verifica janela de horário e limite diário ──────────
+            // Anti-ban: verifica janela de horário e limite diário
             if (!$antiBan->canSendMessage($instance)) {
                 $instance->refresh();
-                if (!$instance->isWithinSafeWindow()) {
-                    // Fora da janela horária — salva progresso e encerra
-                    // O operador deve reagendar dentro da janela configurada
-                    $campaign->update([
-                        'status'       => 'paused',
-                        'completed_at' => now(),
-                        'total_sent'   => $sentCount,
-                        'total_failed' => $failedCount,
-                    ]);
-                    Log::info("Broadcast pausado: fora da janela horária — reagende dentro da janela", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
-                    return;
-                } else {
-                    $campaign->update(['status' => 'paused', 'completed_at' => now(), 'total_sent' => $sentCount, 'total_failed' => $failedCount]);
-                    Log::info("Broadcast pausado: limite diário/horário atingido", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
-                    return;
-                }
+                $statusMsg = $instance->isWithinSafeWindow() ? 'limite diário/horário atingido' : 'fora da janela horária';
+                $campaign->update([
+                    'status'       => 'paused',
+                    'completed_at' => now(),
+                    'total_sent'   => $baseSent + $sentCount,
+                    'total_failed' => $baseFailed + $failedCount,
+                ]);
+                Log::info("Broadcast pausado: {$statusMsg}", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
+                return;
             }
 
             try {
@@ -258,12 +265,14 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                             'wa_id'       => $rawWaId,
                         ]);
                         $failedCount++;
-                        $campaign->update(['total_sent' => $sentCount, 'total_failed' => $failedCount]);
+                        $campaign->update([
+                            'total_sent'   => $baseSent + $sentCount,
+                            'total_failed' => $baseFailed + $failedCount,
+                        ]);
                         continue;
                     }
                     $waId = $jidMap[$normalized];
 
-                    // ── Compliance LGPD — usa complianceStatus() (mesma regra do chat individual) ──
                     $blockCode = $policy->complianceStatus(
                         $requireOptIn,
                         $recipient->opt_in_at ?? null,
@@ -290,20 +299,20 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                             } catch (\Throwable) {}
                         }
                         $skippedCount++;
-                        $campaign->update(['total_skipped' => $skippedCount, 'total_sent' => $sentCount, 'total_failed' => $failedCount]);
+                        $campaign->update([
+                            'total_skipped' => $baseSkipped + $skippedCount,
+                            'total_sent'    => $baseSent + $sentCount,
+                            'total_failed'  => $baseFailed + $failedCount,
+                        ]);
                         continue;
                     }
                 }
 
-                // ── Anti-ban: simula digitação antes do envio (apenas individuais) ──
+                // Anti-ban: simula digitação antes do envio (apenas individuais)
                 if (!$isGroupChatMode) {
                     $antiBan->simulateHumanTyping($instance, $waId, $campaign->message);
                 }
 
-                // delay=0 nos individuais: simulateHumanTyping já cobriu o tempo orgânico.
-                // Tarefa 3.3 da auditoria — evita double-counting (era rand(2,5) antes,
-                // somando 2-5s redundantes ao envio).
-                // Em grupo (sem simulateHumanTyping), passa rand(2,5) como delay nativo.
                 $delayForApi = $isGroupChatMode ? rand(2, 5) : 0;
 
                 $res = $mediaToSend
@@ -322,7 +331,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     }
                     $sentCount++;
                     $consecutiveErrors = 0;
-                    $antiBan->recordSent($instance); // contabiliza no limite diário
+                    $antiBan->recordSent($instance);
                     if (!empty($campaign->message)) {
                         $antiBan->recordContentSent($instance, $campaign->message);
                     }
@@ -332,28 +341,30 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     $failedCount++;
                     $consecutiveErrors++;
 
-                    // ── Circuit breaker: detecta sinal de ban / rate limit ────────
                     if ($antiBan->isBanSignal($res)) {
                         Log::critical("Broadcast: sinal de ban detectado — instância restrita por 24h, campanha encerrada", [
                             'campaign_id' => $campaign->id,
                             'sent'        => $sentCount,
                             'response'    => substr(json_encode($res), 0, 300),
                         ]);
-                        // Marca instância como restrita por 24h — NÃO dormimos no worker
                         $antiBan->markAsRestricted($instance, 24);
                         $campaign->update([
                             'status'       => 'failed',
                             'completed_at' => now(),
-                            'total_sent'   => $sentCount,
-                            'total_failed' => $failedCount,
+                            'total_sent'   => $baseSent + $sentCount,
+                            'total_failed' => $baseFailed + $failedCount,
                         ]);
                         return;
                     }
 
-                    // 5 erros consecutivos sem sinal de ban → parar campanha
                     if ($consecutiveErrors >= 5) {
                         Log::error("Broadcast encerrado: 5 erros consecutivos na API", ['campaign_id' => $campaign->id]);
-                        $campaign->update(['status' => 'failed', 'completed_at' => now(), 'total_sent' => $sentCount, 'total_failed' => $failedCount]);
+                        $campaign->update([
+                            'status'       => 'failed',
+                            'completed_at' => now(),
+                            'total_sent'   => $baseSent + $sentCount,
+                            'total_failed' => $baseFailed + $failedCount,
+                        ]);
                         return;
                     }
                 }
@@ -364,32 +375,56 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             }
 
             $campaign->update([
-                'total_sent'   => $sentCount,
-                'total_failed' => $failedCount,
+                'total_sent'   => $baseSent + $sentCount,
+                'total_failed' => $baseFailed + $failedCount,
             ]);
 
-            // ── Anti-ban: delay entre mensagens (mínimo 5s, orgânico) ───────
-            // Em modo conservador (Fase 2 2026) o delay é DOBRADO — audiência
-            // majoritariamente nova exige ritmo mais lento pra não parecer spam.
-            $minDelay = max(5, $campaign->cadence ?: 5);
+            // Delay entre mensagens (mínimo 5s, orgânico) — conservador dobra o intervalo
+            $minDelay   = max(5, $campaign->cadence ?: 5);
             $multiplier = $conservativeMode ? 2 : 1;
             sleep(rand($minDelay * $multiplier, ($minDelay + 10) * $multiplier));
-
-            // ── Anti-ban: pausa de 3-5 min a cada 30 mensagens ──────────────
-            if ($sentCount > 0 && $sentCount % 30 === 0) {
-                $pause = rand(180, 300);
-                Log::info("Broadcast: pausa anti-ban ({$pause}s) após 30 msgs", ['campaign_id' => $campaign->id, 'sent' => $sentCount]);
-                sleep($pause);
-            }
         }
 
-        $campaign->update(['status' => 'completed', 'completed_at' => now(), 'total_skipped' => $skippedCount]);
+        // ── Verifica se a campanha foi interrompida externamente durante o chunk ──
+        $campaign->refresh();
+        if ($campaign->status !== 'processing') {
+            return;
+        }
+
+        $processedUpTo = $this->offset + self::CHUNK_SIZE;
+        $hasMore       = $processedUpTo < $recipientCount && $recipientsIterable->count() >= self::CHUNK_SIZE;
+
+        if ($hasMore) {
+            // Pausa anti-ban de 3-5 min a cada 30 mensagens (agora via delay de fila, não sleep)
+            $totalSentGlobal = $campaign->total_sent ?? 0;
+            $dispatchDelay   = 0;
+            $prevBatch       = (int) floor(($totalSentGlobal - $sentCount) / 30);
+            $curBatch        = (int) floor($totalSentGlobal / 30);
+            if ($curBatch > $prevBatch && $totalSentGlobal > 0) {
+                $dispatchDelay = rand(180, 300);
+                Log::info("Broadcast: pausa anti-ban ({$dispatchDelay}s) via delay de fila após {$totalSentGlobal} msgs", [
+                    'campaign_id' => $campaign->id,
+                    'next_offset' => $processedUpTo,
+                ]);
+            }
+
+            static::dispatch($this->campaignId, $this->tenantId, $processedUpTo)
+                ->delay(now()->addSeconds($dispatchDelay));
+        } else {
+            $campaign->update(['status' => 'completed', 'completed_at' => now()]);
+            Log::info("Broadcast concluído", [
+                'campaign_id' => $campaign->id,
+                'total_sent'  => $campaign->total_sent,
+                'total_failed'=> $campaign->total_failed,
+            ]);
+        }
     }
 
     public function failed(\Throwable $exception): void
     {
-        Log::error("ProcessBroadcastCampaignJob falhou definitivamente", [
+        Log::error("ProcessBroadcastCampaignJob chunk falhou definitivamente", [
             'campaign_id' => $this->campaignId,
+            'offset'      => $this->offset,
             'error'       => $exception->getMessage(),
         ]);
 
@@ -410,7 +445,6 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         if ($campaign->audience_type === 'groups') {
             $groupIds = $campaign->group_ids ?: [];
 
-            // Modo "members": expande cada grupo nos seus membros individuais
             if (($campaign->group_send_mode ?? 'group') === 'members') {
                 Log::info('Broadcast members mode: iniciando expansão de grupos', [
                     'campaign_id' => $campaign->id,
@@ -426,7 +460,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     }
                     $evo = new EvolutionApiService($instance);
                 }
-                $members = collect();
+                $members   = collect();
                 $allPhones = [];
 
                 foreach ($groupIds as $groupId) {
@@ -441,9 +475,8 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     }
                 }
 
-                // Uma única query para todos os membros (evita N+1)
                 $allPhones = array_unique($allPhones);
-                $chatsMap = WhatsappChat::where('tenant_id', $campaign->tenant_id)
+                $chatsMap  = WhatsappChat::where('tenant_id', $campaign->tenant_id)
                     ->whereIn('wa_id', $allPhones)
                     ->get(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])
                     ->keyBy('wa_id');
@@ -473,14 +506,9 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 return $unique;
             }
 
-            // Modo "group": envia UMA mensagem para o chat do grupo
             return collect($groupIds)->map(fn($id) => (object)['wa_id' => $id, 'id' => null]);
         }
 
-        // Fase 2 das etiquetas — disparo segmentado por etiqueta.
-        // Filtros de compliance (opt_in/opt_out/blocked) aplicados aqui, na
-        // mesma query. O loop principal ainda revalida via complianceStatus()
-        // para cobrir mudanças entre a query e o momento do envio.
         if ($campaign->audience_type === 'labels' && !empty($campaign->label_ids)) {
             return WhatsappChat::where('tenant_id', $campaign->tenant_id)
                 ->whereNotNull('opt_in_at')
@@ -502,7 +530,6 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 ->get(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])
                 ->keyBy('wa_id');
 
-            // Compliance (opt_out, blocked, opt_in, blacklist) é verificado no loop principal
             return collect($phones)->map(function ($phone) use ($existingChats) {
                 $chat = $existingChats->get($phone);
                 return (object)[
