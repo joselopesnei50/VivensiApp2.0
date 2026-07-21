@@ -244,6 +244,85 @@ class BeneficiaryTest extends TestCase
             ->assertDontSee('Cadastrado ha muito');
     }
 
+    // ── Bulk actions ─────────────────────────────────────────────────────────
+
+    /** @test */
+    public function bulk_altera_status_dos_ids_selecionados_do_proprio_tenant(): void
+    {
+        $b1 = $this->makeBeneficiary(['name' => 'Um', 'status' => 'active']);
+        $b2 = $this->makeBeneficiary(['name' => 'Dois', 'status' => 'active']);
+        $b3 = $this->makeBeneficiary(['name' => 'Fora', 'status' => 'active']);
+
+        $this->post('/ngo/beneficiaries/bulk', [
+            'action' => 'status',
+            'value'  => 'inactive',
+            'ids'    => [$b1->id, $b2->id],
+        ])->assertRedirect();
+
+        expect($b1->fresh()->status)->toBe('inactive');
+        expect($b2->fresh()->status)->toBe('inactive');
+        expect($b3->fresh()->status)->toBe('active'); // nao selecionado
+    }
+
+    /** @test */
+    public function bulk_delete_remove_e_nullifica_project_person(): void
+    {
+        $b = $this->makeBeneficiary(['name' => 'Sera removida']);
+        $projeto = \App\Models\Project::factory()->create(['tenant_id' => $this->tenant->id]);
+        $pp = \App\Models\ProjectPerson::create([
+            'tenant_id'      => $this->tenant->id,
+            'project_id'     => $projeto->id,
+            'beneficiary_id' => $b->id,
+            'name'           => 'Sera removida',
+        ]);
+
+        $this->post('/ngo/beneficiaries/bulk', [
+            'action' => 'delete',
+            'ids'    => [$b->id],
+        ])->assertRedirect();
+
+        expect(\App\Models\Beneficiary::where('id', $b->id)->exists())->toBeFalse();
+        // Booted hook nullifica ao inves de cascatear — historico preservado
+        $pp->refresh();
+        expect($pp->beneficiary_id)->toBeNull();
+        expect($pp->name)->toBe('Sera removida');
+    }
+
+    /** @test */
+    public function bulk_ignora_ids_de_outro_tenant(): void
+    {
+        $outroTenant = Tenant::factory()->create(['subscription_status' => 'active', 'type' => 'ngo']);
+        $benefAlheio = $this->makeBeneficiary(['name' => 'Alheio', 'status' => 'active'], $outroTenant);
+        $benefMeu    = $this->makeBeneficiary(['name' => 'Meu', 'status' => 'active']);
+
+        $this->post('/ngo/beneficiaries/bulk', [
+            'action' => 'status',
+            'value'  => 'inactive',
+            'ids'    => [$benefAlheio->id, $benefMeu->id],
+        ])->assertRedirect();
+
+        expect($benefMeu->fresh()->status)->toBe('inactive');
+        expect($benefAlheio->fresh()->status)->toBe('active'); // intacto
+    }
+
+    /** @test */
+    public function bulk_rejeita_action_invalida_com_422(): void
+    {
+        $b = $this->makeBeneficiary(['name' => 'X']);
+
+        $this->post('/ngo/beneficiaries/bulk', [
+            'action' => 'purgar_tudo',
+            'ids'    => [$b->id],
+        ])->assertSessionHasErrors('action');
+
+        // Sem ids: 422 tambem
+        $this->post('/ngo/beneficiaries/bulk', [
+            'action' => 'status',
+            'value'  => 'inactive',
+            'ids'    => [],
+        ])->assertSessionHasErrors('ids');
+    }
+
     // ── Store (PII criptografada) ────────────────────────────────────────────
 
     /** @test */

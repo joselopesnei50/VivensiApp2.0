@@ -113,6 +113,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/beneficiaries/create',    [App\Http\Controllers\BeneficiaryController::class, 'create']);
         Route::get('/beneficiaries/import/template', [App\Http\Controllers\BeneficiaryController::class, 'downloadImportTemplate']);
         Route::post('/beneficiaries/import',   [App\Http\Controllers\BeneficiaryController::class, 'import'])->middleware('throttle:web_ai_bulk');
+        Route::post('/beneficiaries/bulk',     [App\Http\Controllers\BeneficiaryController::class, 'bulk'])->middleware('throttle:web_write');
         Route::get('/beneficiaries/export',    [App\Http\Controllers\BeneficiaryController::class, 'exportCsv'])->middleware('throttle:web_export');
         Route::get('/beneficiaries/print',     [App\Http\Controllers\BeneficiaryController::class, 'print']);
         Route::post('/beneficiaries',          [App\Http\Controllers\BeneficiaryController::class, 'store'])->middleware('throttle:web_write');

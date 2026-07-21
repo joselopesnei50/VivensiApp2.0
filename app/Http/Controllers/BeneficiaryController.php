@@ -742,6 +742,74 @@ class BeneficiaryController extends Controller
         return redirect('/ngo/beneficiaries')->with('success', 'Beneficiário removido.');
     }
 
+    /**
+     * Bulk actions do index: alterar status ou remover em lote.
+     *
+     * ids[] IDs sao filtrados por tenant antes de qualquer escrita (defesa-em
+     * -profundidade contra IDOR mesmo com CSRF ok). Delete percorre um a um
+     * pra disparar o hook Booted::deleting no Beneficiary (nullifica
+     * ProjectPerson.beneficiary_id — nao dependemos so do FK ON DELETE
+     * porque SQLite in-memory pula quando a coluna foi ALTERada).
+     *
+     * Limite de 500 IDs por request bate com o chunk() do exportCsv — pra
+     * lotes maiores o fluxo esperado e CSV + reimport, nao bulk UI.
+     */
+    public function bulk(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+
+        $validated = $request->validate([
+            'action' => 'required|in:status,delete',
+            'value'  => 'required_if:action,status|nullable|in:active,inactive,graduated',
+            'ids'    => 'required|array|min:1|max:500',
+            'ids.*'  => 'integer|min:1',
+        ]);
+
+        $ids = array_values(array_unique(array_map('intval', $validated['ids'])));
+
+        $found = Beneficiary::where('tenant_id', $tenantId)
+            ->whereIn('id', $ids)
+            ->pluck('id')
+            ->all();
+
+        if (empty($found)) {
+            return redirect()->back()->with('error', 'Nenhum beneficiário válido selecionado.');
+        }
+
+        if ($validated['action'] === 'status') {
+            Beneficiary::where('tenant_id', $tenantId)
+                ->whereIn('id', $found)
+                ->update(['status' => $validated['value']]);
+
+            Log::info('NGO Beneficiaries bulk status', [
+                'tenant_id' => $tenantId,
+                'value'     => $validated['value'],
+                'count'     => count($found),
+                'by'        => auth()->id(),
+            ]);
+
+            $labelMap = ['active' => 'Ativo', 'inactive' => 'Inativo', 'graduated' => 'Graduado'];
+            $label = $labelMap[$validated['value']] ?? $validated['value'];
+
+            return redirect()->back()->with('success', count($found) . ' beneficiário(s) marcado(s) como ' . $label . '.');
+        }
+
+        // delete: percorre um a um pra disparar hook deleting
+        Beneficiary::where('tenant_id', $tenantId)
+            ->whereIn('id', $found)
+            ->get()
+            ->each
+            ->delete();
+
+        Log::info('NGO Beneficiaries bulk delete', [
+            'tenant_id' => $tenantId,
+            'count'     => count($found),
+            'by'        => auth()->id(),
+        ]);
+
+        return redirect()->back()->with('success', count($found) . ' beneficiário(s) removido(s).');
+    }
+
     public function pdf(Request $request, $id)
     {
         $tenantId    = auth()->user()->tenant_id;
