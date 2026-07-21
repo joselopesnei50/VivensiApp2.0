@@ -165,7 +165,39 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         $isGroupChatMode = ($campaign->audience_type === 'groups')
             && (($campaign->group_send_mode ?? 'group') === 'group');
 
-        // Valida apenas os números do chunk atual (evita revalidar tudo a cada chunk)
+        // Anti-ban: avalia diversidade no lote completo ANTES de reduzir o chunk
+        $waIdsChunk       = $recipientsIterable->pluck('wa_id')->all();
+        $conservativeMode = false;
+        if (!$isGroupChatMode && !empty($waIdsChunk)) {
+            $newRatio = $antiBan->getNewRecipientRatio($instance, $waIdsChunk);
+            if ($newRatio > AntiBanManager::NEW_RECIPIENT_RISK_THRESHOLD) {
+                $conservativeMode = true;
+                Log::warning('AntiBan: audiência majoritariamente nova — modo conservador ativado', [
+                    'campaign_id' => $campaign->id,
+                    'offset'      => $this->offset,
+                    'new_ratio'   => round($newRatio, 2),
+                ]);
+            }
+        }
+
+        // Chunk size dinâmico: garante que o chunk cabe no $timeout=900s com margem
+        // Fórmula: 800s disponíveis ÷ delay máximo por mensagem
+        $minDelay           = max(5, $campaign->cadence ?: 5);
+        $multiplier         = $conservativeMode ? 2 : 1;
+        $maxMsgDelay        = ($minDelay + 10) * $multiplier;
+        $effectiveChunkSize = min(self::CHUNK_SIZE, max(3, (int) floor(800 / max(1, $maxMsgDelay))));
+
+        if ($effectiveChunkSize < self::CHUNK_SIZE) {
+            $recipientsIterable = $recipientsIterable->take($effectiveChunkSize);
+            Log::info('Broadcast: chunk reduzido por cadência/modo conservador', [
+                'campaign_id'       => $campaign->id,
+                'effective_chunk'   => $effectiveChunkSize,
+                'max_delay_per_msg' => $maxMsgDelay,
+                'conservative'      => $conservativeMode,
+            ]);
+        }
+
+        // Valida apenas os números do chunk efetivo (após redução)
         $waIdsChunk = $recipientsIterable->pluck('wa_id')->all();
         $jidMap     = [];
 
@@ -202,20 +234,6 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                         }
                     }
                 }
-            }
-        }
-
-        // Anti-ban: score de diversidade de destinatários (Fase 2 2026)
-        $conservativeMode = false;
-        if (!$isGroupChatMode && !empty($waIdsChunk)) {
-            $newRatio = $antiBan->getNewRecipientRatio($instance, $waIdsChunk);
-            if ($newRatio > AntiBanManager::NEW_RECIPIENT_RISK_THRESHOLD) {
-                $conservativeMode = true;
-                Log::warning('AntiBan: audiência majoritariamente nova — modo conservador ativado', [
-                    'campaign_id' => $campaign->id,
-                    'offset'      => $this->offset,
-                    'new_ratio'   => round($newRatio, 2),
-                ]);
             }
         }
 
@@ -379,9 +397,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 'total_failed' => $baseFailed + $failedCount,
             ]);
 
-            // Delay entre mensagens (mínimo 5s, orgânico) — conservador dobra o intervalo
-            $minDelay   = max(5, $campaign->cadence ?: 5);
-            $multiplier = $conservativeMode ? 2 : 1;
+            // Delay entre mensagens — usa $minDelay/$multiplier calculados antes do loop
             sleep(rand($minDelay * $multiplier, ($minDelay + 10) * $multiplier));
         }
 
@@ -391,8 +407,8 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             return;
         }
 
-        $processedUpTo = $this->offset + self::CHUNK_SIZE;
-        $hasMore       = $processedUpTo < $recipientCount && $recipientsIterable->count() >= self::CHUNK_SIZE;
+        $processedUpTo = $this->offset + $effectiveChunkSize;
+        $hasMore       = $processedUpTo < $recipientCount;
 
         if ($hasMore) {
             // Pausa anti-ban de 3-5 min a cada 30 mensagens (agora via delay de fila, não sleep)
