@@ -30,9 +30,30 @@ class Attachment extends Model
         'mime_type',
         'size_bytes',
         'uploaded_by',
+        'tipo_documento',
+        'valid_until',
+        'versao',
+        'substituido_por_id',
+        'alerta_enviado_em',
+    ];
+
+    protected $casts = [
+        'valid_until'       => 'date',
+        'versao'            => 'integer',
+        'alerta_enviado_em' => 'datetime',
     ];
 
     protected $hidden = ['path'];
+
+    public function substituidoPor()
+    {
+        return $this->belongsTo(Attachment::class, 'substituido_por_id');
+    }
+
+    public function versoes()
+    {
+        return $this->hasMany(Attachment::class, 'substituido_por_id');
+    }
 
     public function attachable(): MorphTo
     {

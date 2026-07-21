@@ -31,6 +31,16 @@ class Tenant extends Model
         'pix_key_type',
         'openpix_app_id',
         'whatsapp_support',
+        // Conformidade
+        'cnae_principal',
+        'data_fundacao',
+        'area_atuacao_cebas',
+        'cnas_numero',
+        'cnas_validade',
+        'cmas_numero',
+        'cmas_validade',
+        'cneas_codigo',
+        'receita_bruta_anual_ref',
     ];
 
     protected $hidden = [
@@ -45,6 +55,10 @@ class Tenant extends Model
         'pix_key'                 => 'encrypted',
         'pix_key_type'            => 'encrypted',
         'openpix_app_id'          => 'encrypted',
+        'data_fundacao'           => 'date',
+        'cnas_validade'           => 'date',
+        'cmas_validade'           => 'date',
+        'receita_bruta_anual_ref' => 'decimal:2',
     ];
 
     public function plan()

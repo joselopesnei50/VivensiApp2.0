@@ -90,6 +90,8 @@ class Transaction extends Model
         'nfse_numero',
         'nfse_url_pdf',
         'nfse_emitida_em',
+        'elegivel_mrosc',
+        'fonte_recurso',
     ];
 
     protected $casts = [
@@ -99,6 +101,7 @@ class Transaction extends Model
         'amount'         => 'decimal:2',
         'public_receipt_expires_at' => 'datetime',
         'nfse_emitida_em' => 'date',
+        'elegivel_mrosc'  => 'boolean',
     ];
 
     // bidx nunca pode vazar (e o hash usado em lookups); o token plaintext

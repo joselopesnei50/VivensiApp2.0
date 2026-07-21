@@ -17,11 +17,14 @@ class Attendance extends Model
         'user_id',
         'date',
         'type',
-        'description'
+        'description',
+        'gratuito',
+        'tipificacao_suas',
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date'     => 'date',
+        'gratuito' => 'boolean',
     ];
 
     public function user()

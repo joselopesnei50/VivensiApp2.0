@@ -28,6 +28,9 @@ class NgoGrant extends Model
         'ai_proposal_status',
         'ai_analysis',
         'ai_analysis_status',
+        'modalidade',
+        'numero_instrumento',
+        'orgao_concedente_codigo',
     ];
 
     protected $casts = [

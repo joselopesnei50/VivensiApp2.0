@@ -21,7 +21,8 @@ class Employee extends Model
         'work_hours_weekly',
         'contract_type',
         'hired_at',
-        'status'
+        'status',
+        'categoria_profissional',
     ];
 
     protected $casts = [

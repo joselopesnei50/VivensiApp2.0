@@ -25,6 +25,7 @@ class ProjectStage extends Model
         'target_date',
         'status',
         'completed_at',
+        'executed_value',
     ];
 
     protected $casts = [
@@ -32,8 +33,9 @@ class ProjectStage extends Model
         'end_date'      => 'date',
         'target_date'   => 'date',
         'completed_at'  => 'datetime',
-        'planned_value' => 'decimal:2',
-        'order'         => 'integer',
+        'planned_value'  => 'decimal:2',
+        'executed_value' => 'decimal:2',
+        'order'          => 'integer',
     ];
 
     public function project()
