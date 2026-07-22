@@ -218,4 +218,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/ngo/transparencia/partnerships',      [App\Http\Controllers\TransparencyController::class, 'addPartnership']);
     Route::put('/ngo/transparencia/partnerships/{id}',  [App\Http\Controllers\TransparencyController::class, 'updatePartnership'])->name('ngo.transparency.partnerships.update');
     Route::delete('/ngo/transparencia/partnerships/{id}', [App\Http\Controllers\TransparencyController::class, 'deletePartnership']);
+
+    // ── Conformidade Contínua ─────────────────────────────────────────────────
+    Route::prefix('ngo/conformidade')->middleware(['auth', 'subscription'])->group(function () {
+        Route::get('/',                      [App\Http\Controllers\Ngo\ConformidadeController::class, 'dashboard'])->name('ngo.conformidade.dashboard');
+        Route::get('/eixo/{eixo}',           [App\Http\Controllers\Ngo\ConformidadeController::class, 'eixo'])->name('ngo.conformidade.eixo');
+        Route::post('/declarar/{requisito}', [App\Http\Controllers\Ngo\ConformidadeController::class, 'declarar'])->name('ngo.conformidade.declarar')->middleware('throttle:web_write');
+        Route::post('/ciclo',                [App\Http\Controllers\Ngo\ConformidadeController::class, 'atualizarCiclo'])->name('ngo.conformidade.ciclo')->middleware('throttle:web_write');
+        Route::post('/recalcular',           [App\Http\Controllers\Ngo\ConformidadeController::class, 'recalcular'])->name('ngo.conformidade.recalcular')->middleware('throttle:web_write');
+    });
 });

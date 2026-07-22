@@ -169,6 +169,15 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Conformidade: snapshot semanal de todos os tenants ativos (domingo 03:30)
+        $schedule->job(new \App\Jobs\SnapshotConformidadeJob())
+                 ->weeklyOn(0, '03:30')
+                 ->withoutOverlapping()
+                 ->runInBackground()
+                 ->onFailure(function () {
+                     \Illuminate\Support\Facades\Log::error('SnapshotConformidadeJob falhou.');
+                 });
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');

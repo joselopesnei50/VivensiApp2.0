@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\RecalcularConformidadeJob;
 use App\Models\Transaction;
 use App\Models\AuditLog;
 use Illuminate\Support\Facades\Cache;
@@ -22,6 +23,7 @@ class TransactionObserver
     {
         $this->clearTenantCache($transaction);
         $this->log('created', $transaction, null, $transaction->getAttributes());
+        $this->dispatchConformidade($transaction);
     }
 
     public function updated(Transaction $transaction): void
@@ -30,12 +32,14 @@ class TransactionObserver
         $dirty = $transaction->getDirty();
         if (empty($dirty)) return;
         $this->log('updated', $transaction, $transaction->getOriginal(), $dirty);
+        $this->dispatchConformidade($transaction);
     }
 
     public function deleted(Transaction $transaction): void
     {
         $this->clearTenantCache($transaction);
         $this->log('deleted', $transaction, $transaction->getAttributes(), null);
+        $this->dispatchConformidade($transaction);
     }
 
     public function restored(Transaction $transaction): void
@@ -48,6 +52,13 @@ class TransactionObserver
     {
         $this->clearTenantCache($transaction);
         $this->log('force_deleted', $transaction, $transaction->getAttributes(), null);
+    }
+
+    private function dispatchConformidade(Transaction $transaction): void
+    {
+        if ($transaction->tenant_id) {
+            RecalcularConformidadeJob::dispatch($transaction->tenant_id);
+        }
     }
 
     private function log(string $event, Transaction $transaction, ?array $old, ?array $new): void
