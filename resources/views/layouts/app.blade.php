@@ -854,12 +854,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-shield-check group-icon" style="color:#10b981;"></i> Conformidade Contínua
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $ngo_conf_active ? '350px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $ngo_conf_active ? '420px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('ngo.conformidade.dashboard') }}" class="{{ request()->is('ngo/conformidade') ? 'active' : '' }}"><i class="fas fa-gauge-high" style="color:#10b981;"></i> Dashboard</a></li>
                             <li><a href="{{ route('ngo.conformidade.eixo', 'cebas_as') }}" class="{{ request()->is('ngo/conformidade/eixo/cebas*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> CEBAS</a></li>
                             <li><a href="{{ route('ngo.conformidade.eixo', 'suas') }}" class="{{ request()->is('ngo/conformidade/eixo/suas*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> SUAS</a></li>
                             <li><a href="{{ route('ngo.conformidade.eixo', 'mrosc') }}" class="{{ request()->is('ngo/conformidade/eixo/mrosc*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> MROSC</a></li>
+                            <li><a href="{{ route('ngo.conformidade.planos.index') }}" class="{{ request()->is('ngo/conformidade/planos-acao*') ? 'active' : '' }}"><i class="fas fa-tasks"></i> Planos de Ação</a></li>
                             <li><a href="{{ route('ngo.conformidade.ciclos') }}" class="{{ request()->is('ngo/conformidade/ciclos') ? 'active' : '' }}"><i class="fas fa-rotate"></i> Ciclos</a></li>
                             <li><a href="{{ route('ngo.conformidade.configurar') }}" class="{{ request()->is('ngo/conformidade/configurar') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurar</a></li>
                         </ul>

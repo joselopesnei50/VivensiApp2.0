@@ -128,6 +128,13 @@ $label = $eixoLabels[$eixo] ?? $eixo;
                    class="btn btn-sm btn-outline-secondary" style="font-size:.72rem">
                     <i class="bi bi-clock-history me-1"></i>Histórico
                 </a>
+                @if(in_array($resultado, ['vermelho', 'amarelo']))
+                <a href="{{ route('ngo.conformidade.planos.index') }}#novo"
+                   class="btn btn-sm btn-outline-danger" style="font-size:.72rem"
+                   onclick="sessionStorage.setItem('plano_req_id','{{ $req->id }}')">
+                    <i class="bi bi-plus-circle me-1"></i>Plano
+                </a>
+                @endif
             </div>
         </div>
     </div>

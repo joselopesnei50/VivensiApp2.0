@@ -8,6 +8,7 @@ use App\Models\Attachment;
 use App\Models\AvaliacaoRequisito;
 use App\Models\CicloConformidade;
 use App\Models\RequisitoLegal;
+use App\Models\PlanoAcaoConformidade;
 use App\Models\SnapshotConformidade;
 use App\Models\Tenant;
 use App\Services\CnpjApiService;
@@ -292,6 +293,85 @@ class ConformidadeController extends Controller
         abort_unless($path && Storage::disk('local')->exists($path), 404);
 
         return Storage::disk('local')->download($path, $doc->original_name);
+    }
+
+    public function planosAcao()
+    {
+        $this->autorizarAdmin();
+
+        $tenantId = auth()->user()->tenant_id;
+
+        $planos = PlanoAcaoConformidade::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->with('requisito')
+            ->orderByRaw("CASE status WHEN 'em_andamento' THEN 1 WHEN 'pendente' THEN 2 WHEN 'concluido' THEN 3 ELSE 4 END")
+            ->orderBy('prazo')
+            ->get()
+            ->groupBy('status');
+
+        $requisitos = RequisitoLegal::where('ativo', true)
+            ->orderBy('eixo')->orderBy('codigo')
+            ->get();
+
+        return view('ngo.conformidade.planos_acao', compact('planos', 'requisitos'));
+    }
+
+    public function storePlanoAcao(Request $request): RedirectResponse
+    {
+        $this->autorizarSoAdmin();
+
+        $validated = $request->validate([
+            'requisito_legal_id' => ['required', 'integer', 'exists:requisitos_legais,id'],
+            'titulo'             => ['required', 'string', 'max:200'],
+            'descricao'          => ['required', 'string', 'min:10', 'max:2000'],
+            'responsavel'        => ['required', 'string', 'max:100'],
+            'prazo'              => ['required', 'date', 'after:today'],
+        ]);
+
+        PlanoAcaoConformidade::create(array_merge($validated, [
+            'tenant_id' => auth()->user()->tenant_id,
+            'status'    => 'pendente',
+        ]));
+
+        return back()->with('success', 'Plano de ação criado com sucesso.');
+    }
+
+    public function updatePlanoAcao(Request $request, int $plano): RedirectResponse
+    {
+        $this->autorizarSoAdmin();
+
+        $p = PlanoAcaoConformidade::withoutGlobalScopes()
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->findOrFail($plano);
+
+        $validated = $request->validate([
+            'status'                 => ['required', 'string', 'in:pendente,em_andamento,concluido,cancelado'],
+            'responsavel'            => ['nullable', 'string', 'max:100'],
+            'prazo'                  => ['nullable', 'date'],
+            'observacoes_resolucao'  => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $extra = [];
+        if (in_array($validated['status'], ['concluido', 'cancelado']) && ! $p->resolvido_em) {
+            $extra['resolvido_em']  = now();
+            $extra['resolvido_por'] = auth()->id();
+        }
+
+        $p->update(array_merge(array_filter($validated, fn($v) => $v !== null), $extra));
+
+        return back()->with('success', 'Plano de ação atualizado.');
+    }
+
+    public function destroyPlanoAcao(int $plano): RedirectResponse
+    {
+        $this->autorizarSoAdmin();
+
+        PlanoAcaoConformidade::withoutGlobalScopes()
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->findOrFail($plano)
+            ->delete();
+
+        return back()->with('success', 'Plano de ação removido.');
     }
 
     public function exportCsv(Request $request)
