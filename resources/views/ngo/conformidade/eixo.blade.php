@@ -111,8 +111,10 @@ $label = $eixoLabels[$eixo] ?? $eixo;
             {{-- Ação por tipo --}}
             <div class="flex-shrink-0">
                 @if($req->tipo === 'B')
-                    <a href="/ngo/patrimonio" class="btn btn-sm btn-outline-primary" style="font-size:.75rem">
-                        <i class="bi bi-upload me-1"></i>Fazer Upload
+                    <a href="{{ route('ngo.conformidade.upload.form', $req->id) }}"
+                       class="btn btn-sm {{ $resultado === 'vermelho' ? 'btn-danger' : ($resultado === 'amarelo' ? 'btn-warning' : 'btn-outline-primary') }}"
+                       style="font-size:.75rem">
+                        <i class="bi bi-upload me-1"></i>{{ $resultado === 'verde' ? 'Atualizar' : 'Enviar Documento' }}
                     </a>
                 @elseif($req->tipo === 'C' && $resultado !== 'verde')
                     <button class="btn btn-sm btn-outline-success" style="font-size:.75rem"

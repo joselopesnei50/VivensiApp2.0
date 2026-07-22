@@ -226,5 +226,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/declarar/{requisito}', [App\Http\Controllers\Ngo\ConformidadeController::class, 'declarar'])->name('ngo.conformidade.declarar')->middleware('throttle:web_write');
         Route::post('/ciclo',                [App\Http\Controllers\Ngo\ConformidadeController::class, 'atualizarCiclo'])->name('ngo.conformidade.ciclo')->middleware('throttle:web_write');
         Route::post('/recalcular',           [App\Http\Controllers\Ngo\ConformidadeController::class, 'recalcular'])->name('ngo.conformidade.recalcular')->middleware('throttle:web_write');
+        Route::get('/documento/{requisito}', [App\Http\Controllers\Ngo\ConformidadeController::class, 'uploadForm'])->name('ngo.conformidade.upload.form');
+        Route::post('/documento/{requisito}',[App\Http\Controllers\Ngo\ConformidadeController::class, 'uploadDocumento'])->name('ngo.conformidade.upload')->middleware('throttle:web_write');
+        Route::get('/download/{attachment}', [App\Http\Controllers\Ngo\ConformidadeController::class, 'downloadDocumento'])->name('ngo.conformidade.download');
     });
 });

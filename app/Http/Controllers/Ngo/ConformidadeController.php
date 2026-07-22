@@ -4,13 +4,18 @@ namespace App\Http\Controllers\Ngo;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\RecalcularConformidadeJob;
+use App\Models\Attachment;
 use App\Models\AvaliacaoRequisito;
 use App\Models\CicloConformidade;
 use App\Models\RequisitoLegal;
 use App\Models\SnapshotConformidade;
+use App\Models\Tenant;
 use App\Services\ComplianceCalculationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ConformidadeController extends Controller
 {
@@ -137,6 +142,101 @@ class ConformidadeController extends Controller
         RecalcularConformidadeJob::dispatch($tenantId);
 
         return back()->with('success', 'Recálculo agendado. Atualize a página em alguns instantes.');
+    }
+
+    public function uploadForm(int $requisito)
+    {
+        $this->autorizarSoAdmin();
+
+        $req = RequisitoLegal::with('regra')->where('tipo', 'B')->findOrFail($requisito);
+
+        $tenantId = auth()->user()->tenant_id;
+        $historico = [];
+
+        if ($req->regra?->tipo_documento_obrigatorio) {
+            $historico = Attachment::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('tipo_documento', $req->regra->tipo_documento_obrigatorio)
+                ->whereNull('deleted_at')
+                ->latest()
+                ->limit(10)
+                ->get();
+        }
+
+        return view('ngo.conformidade.upload', [
+            'requisito' => $req,
+            'historico' => $historico,
+        ]);
+    }
+
+    public function uploadDocumento(Request $request, int $requisito): RedirectResponse
+    {
+        $this->autorizarSoAdmin();
+
+        $req = RequisitoLegal::with('regra')->where('tipo', 'B')->findOrFail($requisito);
+        abort_unless($req->regra && $req->regra->tipo_documento_obrigatorio, 422);
+
+        $validated = $request->validate([
+            'arquivo'     => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'valid_until' => ['nullable', 'date', 'after:today'],
+        ]);
+
+        $tenantId = auth()->user()->tenant_id;
+        $file     = $request->file('arquivo');
+        $ext      = $file->getClientOriginalExtension();
+        $uuid     = (string) Str::uuid();
+        $path     = "private/tenants/{$tenantId}/conformidade/{$uuid}.{$ext}";
+
+        Storage::disk('local')->put($path, file_get_contents($file->getRealPath()));
+
+        $anterior = Attachment::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('tipo_documento', $req->regra->tipo_documento_obrigatorio)
+            ->whereNull('deleted_at')
+            ->whereNull('substituido_por_id')
+            ->latest()
+            ->first();
+
+        $novoDoc = Attachment::create([
+            'tenant_id'        => $tenantId,
+            'attachable_type'  => Tenant::class,
+            'attachable_id'    => $tenantId,
+            'original_name'    => $file->getClientOriginalName(),
+            'path'             => $path,
+            'mime_type'        => $file->getMimeType(),
+            'size_bytes'       => $file->getSize(),
+            'uploaded_by'      => auth()->id(),
+            'tipo_documento'   => $req->regra->tipo_documento_obrigatorio,
+            'valid_until'      => $validated['valid_until'] ?? null,
+            'versao'           => $anterior ? (($anterior->versao ?? 1) + 1) : 1,
+            'alerta_enviado_em' => null,
+        ]);
+
+        if ($anterior) {
+            $anterior->update(['substituido_por_id' => $novoDoc->id]);
+        }
+
+        $this->service->invalidarCache($tenantId);
+        RecalcularConformidadeJob::dispatch($tenantId);
+
+        return back()->with('success', 'Documento enviado com sucesso. O índice de conformidade será recalculado em instantes.');
+    }
+
+    public function downloadDocumento(int $attachment): StreamedResponse
+    {
+        $tenantId = auth()->user()->tenant_id;
+
+        $doc = Attachment::withoutGlobalScopes()
+            ->where('id', $attachment)
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->firstOrFail();
+
+        // Expõe path apenas internamente para o download
+        $path = $doc->getRawOriginal('path');
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->download($path, $doc->original_name);
     }
 
     private function autorizarAdmin(): void

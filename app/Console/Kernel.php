@@ -169,6 +169,15 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Conformidade: alertas de documentos vencendo — todo dia às 07:00
+        $schedule->job(new \App\Jobs\AlertaDocumentoVencendoJob())
+                 ->dailyAt('07:00')
+                 ->withoutOverlapping()
+                 ->runInBackground()
+                 ->onFailure(function () {
+                     \Illuminate\Support\Facades\Log::error('AlertaDocumentoVencendoJob falhou.');
+                 });
+
         // Conformidade: snapshot semanal de todos os tenants ativos (domingo 03:30)
         $schedule->job(new \App\Jobs\SnapshotConformidadeJob())
                  ->weeklyOn(0, '03:30')
