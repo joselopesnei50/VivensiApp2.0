@@ -10,6 +10,7 @@ use App\Models\CicloConformidade;
 use App\Models\RequisitoLegal;
 use App\Models\SnapshotConformidade;
 use App\Models\Tenant;
+use App\Services\CnpjApiService;
 use App\Services\ComplianceCalculationService;
 use App\Services\RelatorioPdfService;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +23,7 @@ class ConformidadeController extends Controller
     public function __construct(
         private ComplianceCalculationService $service,
         private RelatorioPdfService $relatorio,
+        private CnpjApiService $cnpjApi,
     ) {}
 
     public function dashboard()
@@ -290,6 +292,76 @@ class ConformidadeController extends Controller
         abort_unless($path && Storage::disk('local')->exists($path), 404);
 
         return Storage::disk('local')->download($path, $doc->original_name);
+    }
+
+    public function configurar()
+    {
+        $this->autorizarSoAdmin();
+
+        $tenant = Tenant::withoutGlobalScopes()->findOrFail(auth()->user()->tenant_id);
+
+        return view('ngo.conformidade.configurar', compact('tenant'));
+    }
+
+    public function salvarConfigurar(Request $request): RedirectResponse
+    {
+        $this->autorizarSoAdmin();
+
+        $validated = $request->validate([
+            'cnas_numero'          => ['nullable', 'string', 'max:30'],
+            'cnas_validade'        => ['nullable', 'date'],
+            'cmas_numero'          => ['nullable', 'string', 'max:30'],
+            'cmas_validade'        => ['nullable', 'date'],
+            'cneas_codigo'         => ['nullable', 'string', 'max:30'],
+            'area_atuacao_cebas'   => ['nullable', 'string', 'in:assistencia_social,saude,educacao'],
+            'data_fundacao'        => ['nullable', 'date', 'before:today'],
+            'cnae_principal'       => ['nullable', 'string', 'max:20'],
+            'receita_bruta_anual_ref' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $tenantId = auth()->user()->tenant_id;
+
+        Tenant::withoutGlobalScopes()->where('id', $tenantId)->update($validated);
+
+        $this->service->invalidarCache($tenantId);
+
+        return back()->with('success', 'Perfil de conformidade atualizado com sucesso.');
+    }
+
+    public function cnpjLookup(Request $request)
+    {
+        $this->autorizarSoAdmin();
+
+        $cnpj = preg_replace('/\D/', '', (string) $request->input('cnpj', ''));
+
+        if (strlen($cnpj) !== 14) {
+            return response()->json(['error' => 'CNPJ inválido.'], 422);
+        }
+
+        $dados = $this->cnpjApi->consultar($cnpj);
+
+        if (! $dados) {
+            return response()->json(['error' => 'CNPJ não encontrado ou serviço indisponível.'], 404);
+        }
+
+        return response()->json($dados);
+    }
+
+    public function ciclos()
+    {
+        $this->autorizarAdmin();
+
+        $tenantId = auth()->user()->tenant_id;
+
+        $eixos = ['cebas_geral', 'cebas_as', 'cebas_saude', 'cebas_educacao', 'mrosc', 'suas'];
+
+        $ciclosPorEixo = CicloConformidade::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy('eixo');
+
+        return view('ngo.conformidade.ciclos', compact('eixos', 'ciclosPorEixo'));
     }
 
     private function autorizarAdmin(): void

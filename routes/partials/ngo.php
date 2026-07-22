@@ -232,5 +232,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/pdf/rma',   [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfRma'])->name('ngo.conformidade.pdf.rma');
         Route::get('/pdf/cebas', [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfCebas'])->name('ngo.conformidade.pdf.cebas');
         Route::get('/pdf/mrosc', [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfMrosc'])->name('ngo.conformidade.pdf.mrosc');
+        Route::get('/configurar',        [App\Http\Controllers\Ngo\ConformidadeController::class, 'configurar'])->name('ngo.conformidade.configurar');
+        Route::post('/configurar',       [App\Http\Controllers\Ngo\ConformidadeController::class, 'salvarConfigurar'])->name('ngo.conformidade.configurar.save')->middleware('throttle:web_write');
+        Route::get('/cnpj-lookup',       [App\Http\Controllers\Ngo\ConformidadeController::class, 'cnpjLookup'])->name('ngo.conformidade.cnpj.lookup');
+        Route::get('/ciclos',            [App\Http\Controllers\Ngo\ConformidadeController::class, 'ciclos'])->name('ngo.conformidade.ciclos');
     });
 });

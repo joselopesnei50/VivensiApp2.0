@@ -18,6 +18,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // WhatsApp Cloud API — Consumo / Faturamento (Fase 5.1 tracking)
         Route::get('/whatsapp-billing', [App\Http\Controllers\Admin\WhatsappBillingController::class, 'index'])->name('admin.whatsapp.billing');
 
+        // Conformidade: editor de thresholds globais
+        Route::get('/conformidade', [App\Http\Controllers\Admin\ConformidadeAdminController::class, 'index'])->name('admin.conformidade.index');
+        Route::put('/conformidade/regra/{regra}', [App\Http\Controllers\Admin\ConformidadeAdminController::class, 'update'])->name('admin.conformidade.regra.update');
+
         // Tenants
         Route::get('/tenants',             [App\Http\Controllers\AdminController::class, 'tenants'])->name('admin.tenants.index');
         Route::get('/tenants/create',      [App\Http\Controllers\AdminController::class, 'createTenant'])->name('admin.tenants.create');
