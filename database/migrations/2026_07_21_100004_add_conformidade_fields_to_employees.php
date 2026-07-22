@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('employees', function (Blueprint $table) {
-            $table->string('categoria_profissional', 50)->nullable()->after('role');
+            $table->string('categoria_profissional', 50)->nullable()->after('status');
             // assistente_social|psicologo|pedagogo|advogado|contador|terapeuta_ocupacional
             // |fonoaudiologo|medico|enfermeiro|educador_social|monitor|outros
         });
