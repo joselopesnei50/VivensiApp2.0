@@ -26,9 +26,6 @@ class Post extends Model
 
     public function getContentHtmlAttribute(): string
     {
-        return \Illuminate\Support\Str::markdown($this->content ?? '', [
-            'html_input'         => 'strip',
-            'allow_unsafe_links' => false,
-        ]);
+        return $this->content ?? '';
     }
 }
