@@ -170,22 +170,15 @@ class Kernel extends ConsoleKernel
                  ->runInBackground();
 
         // Conformidade: alertas de documentos vencendo — todo dia às 07:00
+        // Jobs já são enfileirados — runInBackground() inválido em CallbackEvent (Laravel 9)
         $schedule->job(new \App\Jobs\AlertaDocumentoVencendoJob())
                  ->dailyAt('07:00')
-                 ->withoutOverlapping()
-                 ->runInBackground()
-                 ->onFailure(function () {
-                     \Illuminate\Support\Facades\Log::error('AlertaDocumentoVencendoJob falhou.');
-                 });
+                 ->withoutOverlapping();
 
         // Conformidade: snapshot semanal de todos os tenants ativos (domingo 03:30)
         $schedule->job(new \App\Jobs\SnapshotConformidadeJob())
                  ->weeklyOn(0, '03:30')
-                 ->withoutOverlapping()
-                 ->runInBackground()
-                 ->onFailure(function () {
-                     \Illuminate\Support\Facades\Log::error('SnapshotConformidadeJob falhou.');
-                 });
+                 ->withoutOverlapping();
 
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
