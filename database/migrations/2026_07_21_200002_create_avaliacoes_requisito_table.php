@@ -28,8 +28,8 @@ return new class extends Migration
             $table->timestamps();
 
             // Uma avaliação por requisito por ciclo (mais recente sobrescreve via updateOrCreate)
-            $table->index(['tenant_id', 'ciclo_conformidade_id', 'resultado']);
-            $table->index(['tenant_id', 'requisito_legal_id']);
+            $table->index(['tenant_id', 'ciclo_conformidade_id', 'resultado'], 'aval_req_tenant_ciclo_resultado_idx');
+            $table->index(['tenant_id', 'requisito_legal_id'], 'aval_req_tenant_requisito_idx');
         });
     }
 
