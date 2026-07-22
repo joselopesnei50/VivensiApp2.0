@@ -11,15 +11,18 @@ use App\Models\RequisitoLegal;
 use App\Models\SnapshotConformidade;
 use App\Models\Tenant;
 use App\Services\ComplianceCalculationService;
+use App\Services\RelatorioPdfService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ConformidadeController extends Controller
 {
-    public function __construct(private ComplianceCalculationService $service) {}
+    public function __construct(
+        private ComplianceCalculationService $service,
+        private RelatorioPdfService $relatorio,
+    ) {}
 
     public function dashboard()
     {
@@ -222,7 +225,57 @@ class ConformidadeController extends Controller
         return back()->with('success', 'Documento enviado com sucesso. O índice de conformidade será recalculado em instantes.');
     }
 
-    public function downloadDocumento(int $attachment): StreamedResponse
+    public function pdfRma(Request $request)
+    {
+        $this->autorizarAdmin();
+
+        $validated = $request->validate([
+            'mes' => ['required', 'integer', 'between:1,12'],
+            'ano' => ['required', 'integer', 'min:2020', 'max:' . now()->year],
+        ]);
+
+        $dados = $this->relatorio->dadosRma(
+            auth()->user()->tenant_id,
+            (int) $validated['mes'],
+            (int) $validated['ano'],
+        );
+
+        $pdf = app('dompdf.wrapper');
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->loadView('ngo.conformidade.pdf.rma', $dados);
+
+        $filename = 'rma-' . str_pad($dados['mes'], 2, '0', STR_PAD_LEFT) . '-' . $dados['ano'] . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function pdfCebas()
+    {
+        $this->autorizarAdmin();
+
+        $dados = $this->relatorio->dadosCebas(auth()->user()->tenant_id);
+
+        $pdf = app('dompdf.wrapper');
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->loadView('ngo.conformidade.pdf.dossie_cebas', $dados);
+
+        return $pdf->download('dossie-cebas-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function pdfMrosc()
+    {
+        $this->autorizarAdmin();
+
+        $dados = $this->relatorio->dadosMrosc(auth()->user()->tenant_id);
+
+        $pdf = app('dompdf.wrapper');
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->loadView('ngo.conformidade.pdf.relatorio_mrosc', $dados);
+
+        return $pdf->download('relatorio-mrosc-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function downloadDocumento(int $attachment)
     {
         $tenantId = auth()->user()->tenant_id;
 

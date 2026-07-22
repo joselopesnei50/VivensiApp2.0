@@ -229,5 +229,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/documento/{requisito}', [App\Http\Controllers\Ngo\ConformidadeController::class, 'uploadForm'])->name('ngo.conformidade.upload.form');
         Route::post('/documento/{requisito}',[App\Http\Controllers\Ngo\ConformidadeController::class, 'uploadDocumento'])->name('ngo.conformidade.upload')->middleware('throttle:web_write');
         Route::get('/download/{attachment}', [App\Http\Controllers\Ngo\ConformidadeController::class, 'downloadDocumento'])->name('ngo.conformidade.download');
+        Route::get('/pdf/rma',   [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfRma'])->name('ngo.conformidade.pdf.rma');
+        Route::get('/pdf/cebas', [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfCebas'])->name('ngo.conformidade.pdf.cebas');
+        Route::get('/pdf/mrosc', [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfMrosc'])->name('ngo.conformidade.pdf.mrosc');
     });
 });

@@ -31,12 +31,62 @@
         <p class="mb-0 opacity-75" style="font-size:.9rem">CEBAS · MROSC · SUAS — índice calculado automaticamente</p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
+        {{-- RMA: precisa de mês/ano --}}
+        <button class="btn btn-outline-success btn-sm fw-semibold px-3" data-bs-toggle="modal" data-bs-target="#modalRma">
+            <i class="bi bi-file-earmark-pdf me-1"></i> RMA
+        </button>
+        <a href="{{ route('ngo.conformidade.pdf.cebas') }}" class="btn btn-outline-primary btn-sm fw-semibold px-3" target="_blank">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Dossiê CEBAS
+        </a>
+        <a href="{{ route('ngo.conformidade.pdf.mrosc') }}" class="btn btn-outline-secondary btn-sm fw-semibold px-3" target="_blank">
+            <i class="bi bi-file-earmark-pdf me-1"></i> MROSC
+        </a>
         <form action="{{ route('ngo.conformidade.recalcular') }}" method="POST">
             @csrf
             <button class="btn btn-light btn-sm fw-semibold px-3">
                 <i class="bi bi-arrow-clockwise me-1"></i> Recalcular
             </button>
         </form>
+    </div>
+</div>
+
+{{-- Modal RMA --}}
+<div class="modal fade" id="modalRma" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow" style="border-radius:16px">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">Gerar RMA</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('ngo.conformidade.pdf.rma') }}" method="GET" target="_blank">
+                <div class="modal-body pt-2">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Mês <span class="text-danger">*</span></label>
+                        <select name="mes" class="form-select form-select-sm" required>
+                            @for($m = 1; $m <= 12; $m++)
+                                <option value="{{ $m }}" {{ $m == now()->month ? 'selected' : '' }}>
+                                    {{ now()->setMonth($m)->translatedFormat('F') }}
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Ano <span class="text-danger">*</span></label>
+                        <select name="ano" class="form-select form-select-sm" required>
+                            @for($a = now()->year; $a >= now()->year - 3; $a--)
+                                <option value="{{ $a }}" {{ $a == now()->year ? 'selected' : '' }}>{{ $a }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-success fw-semibold px-4">
+                        <i class="bi bi-download me-1"></i>Gerar PDF
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
