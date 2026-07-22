@@ -701,6 +701,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $ngo_pat_active    = request()->is('ngo/inventory*','ngo/assets*');
                     $ngo_jur_active    = request()->is('ngo/contracts*');
                     $ngo_rep_active    = request()->is('ngo/reports*','ngo/audit*','ngo/transparencia*');
+                    $ngo_conf_active   = request()->is('ngo/conformidade*');
                     $ngo_ai_active     = request()->is('smart-analysis*','strategy-room*');
                 @endphp
 
@@ -842,6 +843,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/ngo/reports/dre') }}" class="{{ request()->is('ngo/reports*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Relatórios (DRE)</a></li>
                             <li><a href="{{ url('/ngo/audit') }}" class="{{ request()->is('ngo/audit*') ? 'active' : '' }}"><i class="fas fa-eye"></i> Central de Auditoria</a></li>
                             <li><a href="{{ url('/ngo/transparencia') }}" class="{{ request()->is('ngo/transparencia*') ? 'active' : '' }}"><i class="fas fa-landmark"></i> Portal Transparência</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Conformidade Contínua --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $ngo_conf_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-shield-check group-icon" style="color:#10b981;"></i> Conformidade Contínua
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $ngo_conf_active ? '200px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ route('ngo.conformidade.dashboard') }}" class="{{ request()->is('ngo/conformidade') ? 'active' : '' }}"><i class="fas fa-gauge-high" style="color:#10b981;"></i> Dashboard</a></li>
+                            <li><a href="{{ route('ngo.conformidade.eixo', 'cebas_as') }}" class="{{ request()->is('ngo/conformidade/eixo/cebas*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> CEBAS</a></li>
+                            <li><a href="{{ route('ngo.conformidade.eixo', 'suas') }}" class="{{ request()->is('ngo/conformidade/eixo/suas*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> SUAS</a></li>
+                            <li><a href="{{ route('ngo.conformidade.eixo', 'mrosc') }}" class="{{ request()->is('ngo/conformidade/eixo/mrosc*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> MROSC</a></li>
                         </ul>
                     </div>
                 </div>
