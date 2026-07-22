@@ -294,6 +294,87 @@ class ConformidadeController extends Controller
         return Storage::disk('local')->download($path, $doc->original_name);
     }
 
+    public function requisito(int $requisito)
+    {
+        $this->autorizarAdmin();
+
+        $req = RequisitoLegal::with('regra')->where('ativo', true)->findOrFail($requisito);
+
+        $tenantId  = auth()->user()->tenant_id;
+        $dashboard = $this->service->dashboard($tenantId);
+
+        $avaliacaoAtual = collect($dashboard['avaliacoes'])->firstWhere('codigo', $req->codigo);
+
+        $historico = AvaliacaoRequisito::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('requisito_legal_id', $req->id)
+            ->with(['avaliador', 'evidencias'])
+            ->orderByDesc('avaliado_em')
+            ->limit(20)
+            ->get();
+
+        $documentos = null;
+        if ($req->tipo === 'B' && $req->regra?->tipo_documento_obrigatorio) {
+            $documentos = Attachment::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('tipo_documento', $req->regra->tipo_documento_obrigatorio)
+                ->whereNull('deleted_at')
+                ->latest()
+                ->limit(5)
+                ->get();
+        }
+
+        return view('ngo.conformidade.requisito', compact('req', 'avaliacaoAtual', 'historico', 'documentos'));
+    }
+
+    public function uploadEvidencia(Request $request, int $avaliacao): RedirectResponse
+    {
+        $this->autorizarSoAdmin();
+
+        $tenantId = auth()->user()->tenant_id;
+
+        $av = AvaliacaoRequisito::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->with('requisito')
+            ->findOrFail($avaliacao);
+
+        abort_unless($av->requisito->tipo === 'C', 422, 'Evidências são permitidas apenas para requisitos Tipo C.');
+
+        $validated = $request->validate([
+            'arquivo'   => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'descricao' => ['required', 'string', 'min:5', 'max:500'],
+        ]);
+
+        $file = $request->file('arquivo');
+        $ext  = $file->getClientOriginalExtension();
+        $uuid = (string) Str::uuid();
+        $path = "private/tenants/{$tenantId}/conformidade/evidencias/{$uuid}.{$ext}";
+
+        Storage::disk('local')->put($path, file_get_contents($file->getRealPath()));
+
+        $attachment = Attachment::create([
+            'tenant_id'        => $tenantId,
+            'attachable_type'  => AvaliacaoRequisito::class,
+            'attachable_id'    => $av->id,
+            'original_name'    => $file->getClientOriginalName(),
+            'path'             => $path,
+            'mime_type'        => $file->getMimeType(),
+            'size_bytes'       => $file->getSize(),
+            'uploaded_by'      => auth()->id(),
+            'tipo_documento'   => 'evidencia_tipo_c',
+        ]);
+
+        \App\Models\Evidencia::create([
+            'avaliacao_requisito_id' => $av->id,
+            'evidenciavel_type'      => Attachment::class,
+            'evidenciavel_id'        => $attachment->id,
+            'tipo'                   => 'arquivo',
+            'descricao'              => $validated['descricao'],
+        ]);
+
+        return back()->with('success', 'Evidência anexada com sucesso.');
+    }
+
     public function configurar()
     {
         $this->autorizarSoAdmin();

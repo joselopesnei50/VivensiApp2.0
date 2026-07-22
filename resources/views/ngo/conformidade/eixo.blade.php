@@ -109,7 +109,7 @@ $label = $eixoLabels[$eixo] ?? $eixo;
             </div>
 
             {{-- Ação por tipo --}}
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 d-flex flex-column gap-1 align-items-end">
                 @if($req->tipo === 'B')
                     <a href="{{ route('ngo.conformidade.upload.form', $req->id) }}"
                        class="btn btn-sm {{ $resultado === 'vermelho' ? 'btn-danger' : ($resultado === 'amarelo' ? 'btn-warning' : 'btn-outline-primary') }}"
@@ -124,6 +124,10 @@ $label = $eixoLabels[$eixo] ?? $eixo;
                 @elseif($req->tipo === 'A')
                     <span class="text-muted" style="font-size:.72rem">Automático</span>
                 @endif
+                <a href="{{ route('ngo.conformidade.requisito', $req->id) }}"
+                   class="btn btn-sm btn-outline-secondary" style="font-size:.72rem">
+                    <i class="bi bi-clock-history me-1"></i>Histórico
+                </a>
             </div>
         </div>
     </div>

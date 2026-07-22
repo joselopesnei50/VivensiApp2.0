@@ -92,6 +92,12 @@ class Kernel extends ConsoleKernel
             \Illuminate\Support\Facades\Log::info('🟢 Scheduler alive — ' . now()->toDateTimeString());
         })->hourly()->name('scheduler:health-check')->withoutOverlapping();
 
+        // Conformidade: alerta WhatsApp quando índice < 50% — todo dia às 08:30
+        $schedule->command('conformidade:alert-critical')
+                 ->dailyAt('08:30')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // Editais: alerta de deadline próximo — todo dia às 08:00
         $schedule->command('grants:deadline-alert')
                  ->dailyAt('08:00')
