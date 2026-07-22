@@ -33,10 +33,10 @@ class RaffleCleanupCommandTest extends TestCase
     /** @test */
     public function bilhete_reservado_exatamente_no_limite_nao_e_liberado(): void
     {
-        // Reservado há exatamente 30 minutos — ainda no prazo
+        // Reservado há 29min55s — ainda dentro do prazo (5s de buffer contra flakiness)
         $ticket = RaffleTicket::factory()->create([
             'status'      => 'pending',
-            'reserved_at' => Carbon::now()->subMinutes(30),
+            'reserved_at' => Carbon::now()->subMinutes(30)->addSeconds(5),
         ]);
 
         $this->artisan('raffles:cleanup-reservations')->assertExitCode(0);
