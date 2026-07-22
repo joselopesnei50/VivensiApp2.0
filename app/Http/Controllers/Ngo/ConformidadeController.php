@@ -294,6 +294,86 @@ class ConformidadeController extends Controller
         return Storage::disk('local')->download($path, $doc->original_name);
     }
 
+    public function exportCsv(Request $request)
+    {
+        $this->autorizarAdmin();
+
+        $validated = $request->validate([
+            'eixo'        => ['nullable', 'string', 'in:cebas_geral,cebas_as,cebas_saude,cebas_educacao,mrosc,suas'],
+            'data_inicio' => ['nullable', 'date'],
+            'data_fim'    => ['nullable', 'date'],
+        ]);
+
+        $tenantId = auth()->user()->tenant_id;
+
+        $query = AvaliacaoRequisito::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->with(['requisito.regra', 'avaliador'])
+            ->orderBy('avaliado_em', 'desc');
+
+        if (! empty($validated['eixo'])) {
+            $query->whereHas('requisito', fn($q) => $q->where('eixo', $validated['eixo']));
+        }
+        if (! empty($validated['data_inicio'])) {
+            $query->where('avaliado_em', '>=', $validated['data_inicio']);
+        }
+        if (! empty($validated['data_fim'])) {
+            $query->where('avaliado_em', '<=', $validated['data_fim'] . ' 23:59:59');
+        }
+
+        $avaliacoes = $query->get();
+        $filename   = 'conformidade-' . now()->format('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control'       => 'no-cache, no-store',
+        ];
+
+        $callback = function () use ($avaliacoes) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF"); // BOM UTF-8 para Excel
+
+            fputcsv($out, [
+                'Código', 'Título', 'Eixo', 'Tipo', 'Risco',
+                'Resultado', 'Valor Calculado', 'Threshold', 'Unidade',
+                'Avaliado Em', 'Avaliado Por', 'Observações',
+            ], ';');
+
+            foreach ($avaliacoes as $a) {
+                fputcsv($out, [
+                    $a->requisito?->codigo,
+                    $a->requisito?->titulo,
+                    $a->requisito?->eixo,
+                    $a->requisito?->tipo,
+                    $a->requisito?->risco,
+                    $a->resultado,
+                    $a->valor_calculado,
+                    $a->requisito?->regra?->threshold,
+                    $a->requisito?->regra?->unidade,
+                    $a->avaliado_em?->format('d/m/Y H:i'),
+                    $a->avaliador?->name ?? 'Sistema',
+                    $a->observacoes,
+                ], ';');
+            }
+
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function snapshot(): RedirectResponse
+    {
+        $this->autorizarSoAdmin();
+
+        $tenantId = auth()->user()->tenant_id;
+        $this->service->gerarSnapshot($tenantId);
+        $this->service->invalidarCache($tenantId);
+
+        return back()->with('success', 'Snapshot de conformidade registrado com sucesso.');
+    }
+
     public function requisito(int $requisito)
     {
         $this->autorizarAdmin();

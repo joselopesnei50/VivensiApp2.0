@@ -232,6 +232,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/pdf/rma',   [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfRma'])->name('ngo.conformidade.pdf.rma');
         Route::get('/pdf/cebas', [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfCebas'])->name('ngo.conformidade.pdf.cebas');
         Route::get('/pdf/mrosc', [App\Http\Controllers\Ngo\ConformidadeController::class, 'pdfMrosc'])->name('ngo.conformidade.pdf.mrosc');
+        Route::get('/export',                [App\Http\Controllers\Ngo\ConformidadeController::class, 'exportCsv'])->name('ngo.conformidade.export');
+        Route::post('/snapshot',             [App\Http\Controllers\Ngo\ConformidadeController::class, 'snapshot'])->name('ngo.conformidade.snapshot')->middleware('throttle:web_write');
         Route::get('/requisito/{requisito}', [App\Http\Controllers\Ngo\ConformidadeController::class, 'requisito'])->name('ngo.conformidade.requisito');
         Route::post('/avaliacao/{avaliacao}/evidencia', [App\Http\Controllers\Ngo\ConformidadeController::class, 'uploadEvidencia'])->name('ngo.conformidade.evidencia.upload')->middleware('throttle:web_write');
         Route::get('/configurar',        [App\Http\Controllers\Ngo\ConformidadeController::class, 'configurar'])->name('ngo.conformidade.configurar');

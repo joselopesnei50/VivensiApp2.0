@@ -41,12 +41,63 @@
         <a href="{{ route('ngo.conformidade.pdf.mrosc') }}" class="btn btn-outline-secondary btn-sm fw-semibold px-3" target="_blank">
             <i class="bi bi-file-earmark-pdf me-1"></i> MROSC
         </a>
+        <button class="btn btn-outline-warning btn-sm fw-semibold px-3" data-bs-toggle="modal" data-bs-target="#modalExportCsv">
+            <i class="bi bi-download me-1"></i> Exportar CSV
+        </button>
+        <form action="{{ route('ngo.conformidade.snapshot') }}" method="POST" class="d-inline">
+            @csrf
+            <button class="btn btn-outline-info btn-sm fw-semibold px-3">
+                <i class="bi bi-camera me-1"></i> Snapshot
+            </button>
+        </form>
         <form action="{{ route('ngo.conformidade.recalcular') }}" method="POST">
             @csrf
             <button class="btn btn-light btn-sm fw-semibold px-3">
                 <i class="bi bi-arrow-clockwise me-1"></i> Recalcular
             </button>
         </form>
+    </div>
+</div>
+
+{{-- Modal Export CSV --}}
+<div class="modal fade" id="modalExportCsv" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow" style="border-radius:16px">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-download me-2"></i>Exportar CSV</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('ngo.conformidade.export') }}" method="GET">
+                <div class="modal-body pt-2">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Eixo (opcional)</label>
+                        <select name="eixo" class="form-select form-select-sm">
+                            <option value="">Todos os eixos</option>
+                            <option value="cebas_geral">CEBAS Geral</option>
+                            <option value="cebas_as">CEBAS Assist. Social</option>
+                            <option value="cebas_saude">CEBAS Saúde</option>
+                            <option value="cebas_educacao">CEBAS Educação</option>
+                            <option value="mrosc">MROSC</option>
+                            <option value="suas">SUAS</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Data início</label>
+                        <input type="date" name="data_inicio" class="form-control form-control-sm">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Data fim</label>
+                        <input type="date" name="data_fim" class="form-control form-control-sm" value="{{ now()->toDateString() }}">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-warning fw-semibold px-4">
+                        <i class="bi bi-download me-1"></i>Baixar CSV
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -227,23 +278,49 @@
                     <i class="bi bi-graph-up me-2"></i>Evolução do Índice
                 </h6>
                 @if($historico->count() > 0)
-                    <div style="font-size:.78rem">
-                        @foreach($historico->take(8) as $snap)
-                            @php $snapVal = (float)$snap->indice_geral; @endphp
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <span class="text-muted">{{ \Carbon\Carbon::parse($snap->snapshotado_em)->format('d/m/Y') }}</span>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div style="width:100px;height:6px;background:#e2e8f0;border-radius:3px;">
-                                        <div style="width:{{ $snapVal }}%;height:100%;background:{{ $snapVal >= 70 ? '#10b981' : ($snapVal >= 50 ? '#f59e0b' : '#ef4444') }};border-radius:3px;"></div>
-                                    </div>
-                                    <span class="fw-semibold">{{ $snapVal }}%</span>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
+                    @php
+                        $chartSnaps = $historico->take(12)->reverse()->values();
+                        $chartLabels = $chartSnaps->map(fn($s) => \Carbon\Carbon::parse($s->snapshotado_em)->format('d/m'))->toJson();
+                        $chartData   = $chartSnaps->map(fn($s) => (float)$s->indice_geral)->toJson();
+                    @endphp
+                    <canvas id="chartIndice" height="130"></canvas>
+                @push('scripts')
+                <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+                <script>
+                (function(){
+                    const labels = {!! $chartLabels !!};
+                    const data   = {!! $chartData !!};
+                    const colors = data.map(v => v >= 70 ? '#10b981' : (v >= 50 ? '#f59e0b' : '#ef4444'));
+                    new Chart(document.getElementById('chartIndice'), {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: 'Índice Geral (%)',
+                                data,
+                                borderColor: '#6366f1',
+                                backgroundColor: 'rgba(99,102,241,0.08)',
+                                pointBackgroundColor: colors,
+                                pointRadius: 5,
+                                tension: 0.3,
+                                fill: true,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } } },
+                                x: { ticks: { font: { size: 10 } } }
+                            }
+                        }
+                    });
+                })();
+                </script>
+                @endpush
                 @else
                     <p class="text-muted small text-center py-3">
-                        Snapshots semanais aparecerão aqui após o primeiro domingo de uso.
+                        Snapshots aparecerão aqui após o primeiro uso do botão <strong>Snapshot</strong>.
                     </p>
                 @endif
             </div>
