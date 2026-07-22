@@ -148,6 +148,22 @@
 </div>
 @endif
 
+{{-- Banner Guia --}}
+<div class="d-flex align-items-center gap-3 mb-4 p-3 alert-dismissible fade show"
+     style="background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border-radius:16px;border:1px solid #bfdbfe;border-left:4px solid #3b82f6"
+     role="alert">
+    <div style="font-size:2rem;line-height:1;flex-shrink:0">📋</div>
+    <div class="flex-grow-1">
+        <div class="fw-bold" style="color:#1e40af;font-size:.9rem">Como preencher o módulo de Conformidade?</div>
+        <div style="color:#2563eb;font-size:.8rem">Veja o guia passo a passo para configurar perfil, ciclos, documentos, declarações e planos de ação.</div>
+    </div>
+    <a href="{{ route('ngo.conformidade.guia') }}" class="btn btn-sm fw-semibold px-3 flex-shrink-0"
+       style="background:#3b82f6;color:#fff;border-radius:10px">
+        <i class="bi bi-map me-1"></i> Ver Guia
+    </a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" style="flex-shrink:0"></button>
+</div>
+
 {{-- Índice Geral + Semáforos por eixo-família --}}
 <div class="row g-4 mb-4">
 

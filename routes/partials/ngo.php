@@ -244,5 +244,6 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/configurar',       [App\Http\Controllers\Ngo\ConformidadeController::class, 'salvarConfigurar'])->name('ngo.conformidade.configurar.save')->middleware('throttle:web_write');
         Route::get('/cnpj-lookup',       [App\Http\Controllers\Ngo\ConformidadeController::class, 'cnpjLookup'])->name('ngo.conformidade.cnpj.lookup');
         Route::get('/ciclos',            [App\Http\Controllers\Ngo\ConformidadeController::class, 'ciclos'])->name('ngo.conformidade.ciclos');
+        Route::get('/guia',              [App\Http\Controllers\Ngo\ConformidadeController::class, 'guia'])->name('ngo.conformidade.guia');
     });
 });

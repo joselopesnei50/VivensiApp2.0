@@ -605,6 +605,12 @@ class ConformidadeController extends Controller
         return view('ngo.conformidade.ciclos', compact('eixos', 'ciclosPorEixo'));
     }
 
+    public function guia()
+    {
+        $this->autorizarAdmin();
+        return view('ngo.conformidade.guia');
+    }
+
     private function autorizarAdmin(): void
     {
         abort_unless(
