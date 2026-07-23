@@ -25,14 +25,29 @@ class MatchingService
             $reasons[] = 'transferegov_global';
         }
 
-        // Area overlap: tenant's activity areas found in excerpt
-        $areas  = $tenant->radar_areas ?? [];
-        $excerpt = mb_strtolower($finding->excerpt ?? '');
+        // Area overlap: use AI-extracted areas when available (more precise),
+        // fall back to keyword search in raw excerpt
+        $tenantAreas  = $tenant->radar_areas ?? [];
+        $findingAreas = $finding->areas ?? [];
 
-        foreach ($areas as $area) {
-            if ($area && str_contains($excerpt, mb_strtolower($area))) {
-                $score     = min(100, $score + 10);
-                $reasons[] = "area:{$area}";
+        if (!empty($findingAreas)) {
+            foreach ($tenantAreas as $tenantArea) {
+                foreach ($findingAreas as $findingArea) {
+                    if (str_contains(mb_strtolower($findingArea), mb_strtolower($tenantArea))
+                        || str_contains(mb_strtolower($tenantArea), mb_strtolower($findingArea))) {
+                        $score     = min(100, $score + 15);
+                        $reasons[] = "ai_area:{$findingArea}";
+                        break;
+                    }
+                }
+            }
+        } else {
+            $excerpt = mb_strtolower($finding->excerpt ?? '');
+            foreach ($tenantAreas as $area) {
+                if ($area && str_contains($excerpt, mb_strtolower($area))) {
+                    $score     = min(100, $score + 10);
+                    $reasons[] = "area:{$area}";
+                }
             }
         }
 

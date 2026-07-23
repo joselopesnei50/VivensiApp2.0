@@ -86,6 +86,35 @@
                         <p style="color:#64748b;font-size:0.8rem;margin-bottom:6px;line-height:1.5;">
                             {{ Str::limit($finding->excerpt, 220) }}
                         </p>
+
+                        {{-- Sugestão da IA --}}
+                        @if($finding->ai_processed_at)
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:0.78rem;">
+                            <span style="font-weight:700;color:#166534;">🤖 IA:</span>
+                            @if($finding->is_relevant)
+                                <span style="color:#10b981;font-weight:700;">Relevante</span>
+                            @else
+                                <span style="color:#ef4444;font-weight:700;">Irrelevante</span>
+                            @endif
+                            @if($finding->object_summary)
+                                <span style="color:#374151;margin-left:6px;">— {{ $finding->object_summary }}</span>
+                            @endif
+                            @if($finding->areas)
+                                <div style="margin-top:4px;">
+                                    @foreach($finding->areas as $area)
+                                        <span style="display:inline-block;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:8px;font-size:0.7rem;margin:1px;">{{ $area }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
+                            @if($finding->deadline)
+                                <div style="margin-top:3px;color:#7c3aed;">📅 Prazo: {{ $finding->deadline->format('d/m/Y') }}</div>
+                            @endif
+                            @if($finding->value_total)
+                                <div style="margin-top:2px;color:#0369a1;">💰 Valor: R$ {{ number_format($finding->value_total, 2, ',', '.') }}</div>
+                            @endif
+                        </div>
+                        @endif
+
                         <div class="d-flex gap-3 flex-wrap" style="font-size:0.75rem;color:#94a3b8;">
                             <span><i class="fas fa-calendar me-1"></i>{{ $finding->published_at ? $finding->published_at->format('d/m/Y') : '—' }}</span>
                             @if($finding->territory_ibge)

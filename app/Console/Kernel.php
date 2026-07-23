@@ -199,6 +199,13 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->when(fn() => config('radar.enabled'));
 
+        // Radar de Editais: enriquece findings novos com IA às 07:00
+        $schedule->job(new \App\Jobs\Radar\EnrichRadarFindings())
+                 ->dailyAt('07:00')
+                 ->withoutOverlapping()
+                 ->runInBackground()
+                 ->when(fn() => config('radar.enabled'));
+
         // Radar de Editais: digest semanal (segunda-feira às 08:00)
         $schedule->job(new \App\Jobs\Radar\SendRadarDigest())
                  ->weeklyOn(1, '08:00')
