@@ -246,4 +246,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/ciclos',            [App\Http\Controllers\Ngo\ConformidadeController::class, 'ciclos'])->name('ngo.conformidade.ciclos');
         Route::get('/guia',              [App\Http\Controllers\Ngo\ConformidadeController::class, 'guia'])->name('ngo.conformidade.guia');
     });
+
+    // ── Radar de Editais (NGO) ────────────────────────────────────────────────
+    Route::prefix('ngo/radar')->middleware(['auth', 'subscription'])->group(function () {
+        Route::get('/',                         [App\Http\Controllers\Ngo\RadarController::class, 'index'])->name('ngo.radar.index');
+        Route::post('/configurar',              [App\Http\Controllers\Ngo\RadarController::class, 'configurar'])->name('ngo.radar.configurar')->middleware('throttle:web_write');
+        Route::post('/{finding}/feedback',      [App\Http\Controllers\Ngo\RadarController::class, 'feedback'])->name('ngo.radar.feedback')->middleware('throttle:web_write');
+    });
 });

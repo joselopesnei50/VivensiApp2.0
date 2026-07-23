@@ -193,6 +193,12 @@ class Kernel extends ConsoleKernel
                  ->runInBackground()
                  ->when(fn() => config('radar.enabled'));
 
+        // Radar de Editais: gera matches para todos os tenants após a coleta (06:30)
+        $schedule->job(new \App\Jobs\Radar\GenerateMatches())
+                 ->dailyAt('06:30')
+                 ->withoutOverlapping()
+                 ->when(fn() => config('radar.enabled'));
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');

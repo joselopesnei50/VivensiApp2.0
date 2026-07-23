@@ -58,6 +58,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::delete('/manager/email-campaigns/{emailCampaign}',     [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'destroy'])->name('manager.email_campaigns.destroy');
     });
 
+    // ── Radar de Editais (Manager) ────────────────────────────────────────────
+    Route::get('/manager/radar', [App\Http\Controllers\Manager\RadarManagerController::class, 'index'])
+         ->middleware('can:access-manager')
+         ->name('manager.radar.index');
+
     // ── Marketing & Prospecção ────────────────────────────────────────────────
     Route::middleware('can:access-manager')->group(function () {
         Route::get('/marketing',                    [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');
