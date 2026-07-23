@@ -94,6 +94,19 @@
             <i class="fas fa-chevron-down cfgArrow" style="margin-left:auto;color:#94a3b8;font-size:0.72rem;transition:transform .2s;{{ $configOpen ? 'transform:rotate(180deg)' : '' }}"></i>
         </button>
         <div id="radarCfg" style="display:{{ $configOpen ? 'block' : 'none' }};border-top:1px solid #e2e8f0;padding:20px;">
+
+            {{-- Banner Bruce IA ajuda --}}
+            <a href="{{ route('ngo.radar.ajuda') }}"
+               style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#ede9fe,#e0f2fe);border:1px solid #c4b5fd;border-radius:10px;padding:11px 16px;margin-bottom:18px;text-decoration:none;">
+                <img src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce IA"
+                     style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #a5b4fc;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:800;font-size:0.82rem;color:#3730a3;">Bruce IA — Guia de configuração</div>
+                    <div style="font-size:0.75rem;color:#5b21b6;margin-top:1px;">Como encontrar seu IBGE, quais áreas informar e como o Radar funciona.</div>
+                </div>
+                <i class="fas fa-arrow-right" style="color:#6366f1;font-size:0.8rem;flex-shrink:0;"></i>
+            </a>
+
             <form action="{{ route('ngo.radar.configurar') }}" method="POST">
                 @csrf
                 <div class="row g-3">

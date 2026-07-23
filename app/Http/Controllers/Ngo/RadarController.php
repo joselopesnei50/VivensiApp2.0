@@ -51,6 +51,11 @@ class RadarController extends Controller
         return view('ngo.radar.index', compact('matches', 'tenant', 'feedbacks'));
     }
 
+    public function ajuda()
+    {
+        return view('ngo.radar.ajuda');
+    }
+
     public function configurar(Request $request): RedirectResponse
     {
         $this->autorizarAdmin();

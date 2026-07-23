@@ -250,6 +250,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // ── Radar de Editais (NGO) ────────────────────────────────────────────────
     Route::prefix('ngo/radar')->middleware(['auth', 'subscription'])->group(function () {
         Route::get('/',                         [App\Http\Controllers\Ngo\RadarController::class, 'index'])->name('ngo.radar.index');
+        Route::get('/ajuda',                    [App\Http\Controllers\Ngo\RadarController::class, 'ajuda'])->name('ngo.radar.ajuda');
         Route::post('/configurar',              [App\Http\Controllers\Ngo\RadarController::class, 'configurar'])->name('ngo.radar.configurar')->middleware('throttle:web_write');
         Route::post('/{finding}/feedback',      [App\Http\Controllers\Ngo\RadarController::class, 'feedback'])->name('ngo.radar.feedback')->middleware('throttle:web_write');
         Route::post('/regenerar',              [App\Http\Controllers\Ngo\RadarController::class, 'regenerar'])->name('ngo.radar.regenerar')->middleware('throttle:web_write');
