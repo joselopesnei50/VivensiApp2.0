@@ -115,4 +115,12 @@ class RadarController extends Controller
 
         return back()->with('success', "{$created} novos achados encontrados para o seu perfil.");
     }
+
+    private function autorizarAdmin(): void
+    {
+        abort_unless(
+            in_array(auth()->user()->role, ['ngo', 'manager', 'super_admin']),
+            403
+        );
+    }
 }

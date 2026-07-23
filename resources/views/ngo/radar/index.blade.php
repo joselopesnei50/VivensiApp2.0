@@ -18,7 +18,7 @@
     @endif
 
     {{-- Configuração do perfil de busca --}}
-    @if(auth()->user()->role === 'admin')
+    @if(auth()->user()->role === 'ngo')
     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:20px;margin-bottom:28px;">
         <div style="font-weight:800;font-size:0.9rem;color:#1e293b;margin-bottom:12px;">
             <i class="fas fa-sliders-h me-2" style="color:#6366f1;"></i>Configurar perfil de busca

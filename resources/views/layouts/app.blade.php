@@ -413,7 +413,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*');
                     $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.templates.cloud.*') || request()->is('whatsapp/cloud/*') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
                     $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*');
-                    $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.bruno.*') || request()->routeIs('admin.audit_logs') || request()->routeIs('admin.failed-jobs.*');
+                    $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.bruno.*') || request()->routeIs('admin.audit_logs') || request()->routeIs('admin.failed-jobs.*') || request()->routeIs('admin.radar.*');
                     $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*') || request()->is('admin/dev*');
                     // Badges de notificação
                     try {
@@ -549,6 +549,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 <i class="fas fa-scale-balanced"></i> Painel LGPD / DPO
                                 @if($sa_badge_lgpd > 0)<span class="sa-badge sa-amber">{{ $sa_badge_lgpd }}</span>@endif
                             </a></li>
+                            <li><a href="{{ route('admin.radar.index') }}" class="{{ request()->is('admin/radar') && !request()->is('admin/radar/qualidade') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
+                            <li><a href="{{ route('admin.radar.qualidade') }}" class="{{ request()->routeIs('admin.radar.qualidade') ? 'active' : '' }}"><i class="fas fa-chart-bar" style="color:#6366f1;"></i> Radar — Qualidade</a></li>
                         </ul>
                     </div>
                 </div>
@@ -573,7 +575,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @elseif (auth()->user()->role == 'manager')
                 {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
                 @php
-                    $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*','manager/perfil-operacional*','manager/kanban*','class-sessions*','ngo/inventory*');
+                    $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*','manager/perfil-operacional*','manager/kanban*','class-sessions*','ngo/inventory*','manager/radar*');
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
                     $mgr_wa_active   = request()->is('whatsapp*');
                     $mgr_mkt_active  = request()->is('manager/landing-pages*','manager/email-campaigns*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
@@ -597,6 +599,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/manager/approvals') }}" class="{{ request()->is('manager/approvals*') ? 'active' : '' }}"><i class="fas fa-check-double"></i> Central de Aprovações</a></li>
                             <li><a href="{{ url('/manager/perfil-operacional') }}" class="{{ request()->is('manager/perfil-operacional*') ? 'active' : '' }}"><i class="fas fa-compass"></i> Perfil Operacional</a></li>
                             <li><a href="{{ url('/manager/kanban') }}" class="{{ request()->is('manager/kanban*') ? 'active' : '' }}"><i class="fas fa-columns"></i> Kanban Geral</a></li>
+                            <li><a href="{{ route('manager.radar.index') }}" class="{{ request()->is('manager/radar*') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
                         </ul>
                     </div>
                 </div>
@@ -693,7 +696,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @elseif (auth()->user()->role == 'ngo' || (auth()->user()->tenant && auth()->user()->tenant->type == 'ngo'))
                 {{-- ═══ MENU TERCEIRO SETOR (ONG) — Agrupado ═══ --}}
                 @php
-                    $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*','class-sessions*');
+                    $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*','class-sessions*','ngo/radar*');
                     $ngo_wa_active     = request()->is('whatsapp*');
                     $ngo_mkt_active    = request()->is('ngo/landing-pages*','ngo/email-campaigns*','marketing*','prospecting*','raffles*','social/accounts*','social-ai*','banners*');
                     $ngo_fin_active    = request()->is('transactions*','ngo/budget*','ngo/reconciliation*');
@@ -719,6 +722,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/ngo/receipts') }}" class="{{ request()->is('ngo/receipts*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Recibos</a></li>
                             <li><a href="{{ url('/ngo/grants') }}" class="{{ request()->is('ngo/grants*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Editais &amp; Convênios</a></li>
                             <li><a href="{{ url('/ngo/sponsorships') }}" class="{{ request()->is('ngo/sponsorships*') ? 'active' : '' }}"><i class="fas fa-handshake"></i> CRM Patrocínios</a></li>
+                            <li><a href="{{ route('ngo.radar.index') }}" class="{{ request()->is('ngo/radar*') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
                         </ul>
                     </div>
                 </div>
