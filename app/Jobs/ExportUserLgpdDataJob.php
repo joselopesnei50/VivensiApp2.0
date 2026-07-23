@@ -2,18 +2,17 @@
 
 namespace App\Jobs;
 
-use App\Mail\LgpdExportReadyMail;
 use App\Models\LgpdDataRequest;
 use App\Models\LoginActivity;
 use App\Models\MeetingBooking;
 use App\Models\User;
+use App\Services\BrevoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
@@ -80,7 +79,21 @@ class ExportUserLgpdDataJob implements ShouldQueue
                 'file_size'  => Storage::disk('local')->size($zipPath),
             ]);
 
-            Mail::to($user->email)->send(new LgpdExportReadyMail($user, $request, $token));
+            $downloadUrl = url("/eu/dados/download/{$token}");
+            $expiresAt   = $request->export_expires_at->format('d/m/Y H:i');
+            $html        = view('emails.lgpd.export_ready', [
+                'userName'    => $user->name,
+                'downloadUrl' => $downloadUrl,
+                'expiresAt'   => $expiresAt,
+            ])->render();
+
+            app(BrevoService::class)->sendEmail(
+                $user->email,
+                $user->name,
+                'Seus dados estão prontos para download — LGPD',
+                $html,
+                $user->tenant_id
+            );
         } catch (\Throwable $e) {
             Log::error('LGPD_EXPORT_FAILED', [
                 'request_id' => $request->id,
