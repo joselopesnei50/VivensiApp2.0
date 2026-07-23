@@ -24,6 +24,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
         // Radar de Editais — curadoria
         Route::get('/radar',                       [App\Http\Controllers\Admin\RadarAdminController::class, 'index'])->name('admin.radar.index');
+        Route::get('/radar/qualidade',             [App\Http\Controllers\Admin\RadarAdminController::class, 'qualidade'])->name('admin.radar.qualidade');
         Route::put('/radar/{finding}/aprovar',     [App\Http\Controllers\Admin\RadarAdminController::class, 'aprovar'])->name('admin.radar.aprovar');
         Route::put('/radar/{finding}/rejeitar',    [App\Http\Controllers\Admin\RadarAdminController::class, 'rejeitar'])->name('admin.radar.rejeitar');
 

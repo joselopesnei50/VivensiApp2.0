@@ -206,6 +206,12 @@ class Kernel extends ConsoleKernel
                  ->runInBackground()
                  ->when(fn() => config('radar.enabled'));
 
+        // Radar de Editais: auto-aprovação após enriquecimento (07:30)
+        $schedule->command('radar:auto-approve')
+                 ->dailyAt('07:30')
+                 ->withoutOverlapping()
+                 ->when(fn() => config('radar.enabled'));
+
         // Radar de Editais: digest semanal (segunda-feira às 08:00)
         $schedule->job(new \App\Jobs\Radar\SendRadarDigest())
                  ->weeklyOn(1, '08:00')

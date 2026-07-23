@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\RadarFinding;
+use App\Services\Radar\AutoApproveService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -50,5 +51,23 @@ class RadarAdminController extends Controller
         ]);
 
         return back()->with('success', 'Achado rejeitado.');
+    }
+
+    public function qualidade(AutoApproveService $service)
+    {
+        $keywordStats = $service->keywordQualityStats();
+        $sourceStats  = $service->sourceQualityStats();
+
+        $autoApproved = RadarFinding::where('auto_approved', true)->count();
+        $pendentes    = RadarFinding::where('status', 'novo')
+            ->where('is_relevant', true)
+            ->whereNotNull('ai_processed_at')
+            ->count();
+
+        $flaggedKeywords = array_filter($keywordStats, fn($s) => $s['flagged']);
+
+        return view('admin.radar.qualidade', compact(
+            'keywordStats', 'sourceStats', 'autoApproved', 'pendentes', 'flaggedKeywords'
+        ));
     }
 }

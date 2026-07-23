@@ -25,6 +25,7 @@ class RadarFinding extends Model
         'value_total',
         'ai_processed_at',
         'is_relevant',
+        'auto_approved',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class RadarFinding extends Model
         'deadline'        => 'date',
         'value_total'     => 'decimal:2',
         'is_relevant'     => 'boolean',
+        'auto_approved'   => 'boolean',
     ];
 
     public function curator(): \Illuminate\Database\Eloquent\Relations\BelongsTo
