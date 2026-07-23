@@ -43,6 +43,9 @@ class Tenant extends Model
         'receita_bruta_anual_ref',
         'radar_ibge_code',
         'radar_areas',
+        'radar_digest_channel',
+        'radar_min_score',
+        'radar_last_digest_at',
     ];
 
     protected $hidden = [
@@ -62,6 +65,8 @@ class Tenant extends Model
         'cmas_validade'           => 'date',
         'receita_bruta_anual_ref' => 'decimal:2',
         'radar_areas'             => 'array',
+        'radar_min_score'         => 'integer',
+        'radar_last_digest_at'    => 'datetime',
     ];
 
     public function plan()

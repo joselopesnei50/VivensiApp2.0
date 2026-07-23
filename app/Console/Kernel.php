@@ -199,6 +199,12 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->when(fn() => config('radar.enabled'));
 
+        // Radar de Editais: digest semanal (segunda-feira às 08:00)
+        $schedule->job(new \App\Jobs\Radar\SendRadarDigest())
+                 ->weeklyOn(1, '08:00')
+                 ->withoutOverlapping()
+                 ->when(fn() => config('radar.enabled'));
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');

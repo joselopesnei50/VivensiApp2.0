@@ -56,8 +56,10 @@ class RadarController extends Controller
         $this->autorizarAdmin();
 
         $request->validate([
-            'radar_ibge_code' => ['nullable', 'string', 'size:7', 'regex:/^\d{7}$/'],
-            'radar_areas'     => ['nullable', 'string'],
+            'radar_ibge_code'      => ['nullable', 'string', 'size:7', 'regex:/^\d{7}$/'],
+            'radar_areas'          => ['nullable', 'string'],
+            'radar_digest_channel' => ['nullable', 'in:email,whatsapp,desligado'],
+            'radar_min_score'      => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
         $areas = [];
@@ -68,11 +70,15 @@ class RadarController extends Controller
             );
         }
 
+        $channel = $request->input('radar_digest_channel', 'desligado');
+
         Tenant::withoutGlobalScopes()
             ->where('id', auth()->user()->tenant_id)
             ->update([
-                'radar_ibge_code' => $request->input('radar_ibge_code') ?: null,
-                'radar_areas'     => array_values($areas) ?: null,
+                'radar_ibge_code'      => $request->input('radar_ibge_code') ?: null,
+                'radar_areas'          => array_values($areas) ?: null,
+                'radar_digest_channel' => $channel === 'desligado' ? null : $channel,
+                'radar_min_score'      => (int) $request->input('radar_min_score', 30),
             ]);
 
         return back()->with('success', 'Configurações do Radar salvas.');

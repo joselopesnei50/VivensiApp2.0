@@ -25,7 +25,7 @@
         </div>
         <form action="{{ route('ngo.radar.configurar') }}" method="POST">
             @csrf
-            <div class="row g-3 align-items-end">
+            <div class="row g-3">
                 <div class="col-md-4">
                     <label style="font-size:0.78rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">
                         Código IBGE do Município
@@ -36,7 +36,7 @@
                            style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:0.85rem;">
                     <div style="font-size:0.72rem;color:#94a3b8;margin-top:3px;">7 dígitos. Busque em ibge.gov.br</div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <label style="font-size:0.78rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">
                         Áreas de Atuação <span style="font-weight:400;">(uma por linha)</span>
                     </label>
@@ -44,10 +44,31 @@
                               placeholder="assistência social&#10;criança e adolescente&#10;idoso"
                               style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:0.85rem;resize:vertical;">{{ implode("\n", $tenant->radar_areas ?? []) }}</textarea>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" style="width:100%;background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;font-size:0.85rem;cursor:pointer;">
-                        Salvar
+                <div class="col-md-3">
+                    <label style="font-size:0.78rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">
+                        Enviar digest via
+                    </label>
+                    <select name="radar_digest_channel" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:0.85rem;background:#fff;">
+                        <option value="desligado" {{ !$tenant->radar_digest_channel ? 'selected' : '' }}>Desligado</option>
+                        <option value="email"     {{ $tenant->radar_digest_channel === 'email'    ? 'selected' : '' }}>E-mail (semanal)</option>
+                        <option value="whatsapp"  {{ $tenant->radar_digest_channel === 'whatsapp' ? 'selected' : '' }}>WhatsApp (semanal)</option>
+                    </select>
+                    <div style="margin-top:6px;">
+                        <label style="font-size:0.78rem;font-weight:700;color:#64748b;">Score mínimo</label>
+                        <input type="number" name="radar_min_score" value="{{ $tenant->radar_min_score ?? 30 }}"
+                               min="0" max="100"
+                               style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:0.85rem;margin-top:3px;">
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:9px 24px;font-weight:700;font-size:0.85rem;cursor:pointer;">
+                        Salvar configurações
                     </button>
+                    @if($tenant->radar_last_digest_at)
+                    <span style="font-size:0.75rem;color:#94a3b8;margin-left:12px;">
+                        Último digest: {{ $tenant->radar_last_digest_at->format('d/m/Y H:i') }}
+                    </span>
+                    @endif
                 </div>
             </div>
         </form>
