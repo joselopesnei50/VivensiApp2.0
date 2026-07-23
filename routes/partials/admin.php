@@ -22,6 +22,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/conformidade', [App\Http\Controllers\Admin\ConformidadeAdminController::class, 'index'])->name('admin.conformidade.index');
         Route::put('/conformidade/regra/{regra}', [App\Http\Controllers\Admin\ConformidadeAdminController::class, 'update'])->name('admin.conformidade.regra.update');
 
+        // Radar de Editais — curadoria
+        Route::get('/radar',                       [App\Http\Controllers\Admin\RadarAdminController::class, 'index'])->name('admin.radar.index');
+        Route::put('/radar/{finding}/aprovar',     [App\Http\Controllers\Admin\RadarAdminController::class, 'aprovar'])->name('admin.radar.aprovar');
+        Route::put('/radar/{finding}/rejeitar',    [App\Http\Controllers\Admin\RadarAdminController::class, 'rejeitar'])->name('admin.radar.rejeitar');
+
         // Tenants
         Route::get('/tenants',             [App\Http\Controllers\AdminController::class, 'tenants'])->name('admin.tenants.index');
         Route::get('/tenants/create',      [App\Http\Controllers\AdminController::class, 'createTenant'])->name('admin.tenants.create');

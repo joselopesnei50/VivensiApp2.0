@@ -186,6 +186,13 @@ class Kernel extends ConsoleKernel
                  ->weeklyOn(0, '03:30')
                  ->withoutOverlapping();
 
+        // Radar de Editais: coleta diária às 06:00 (somente se RADAR_ENABLED=true)
+        $schedule->command('radar:collect')
+                 ->dailyAt('06:00')
+                 ->withoutOverlapping()
+                 ->runInBackground()
+                 ->when(fn() => config('radar.enabled'));
+
         // Rotação de logs: truncar laravel.log quando passar de 50MB (evita disco cheio)
         $schedule->call(function () {
             $log = storage_path('logs/laravel.log');
