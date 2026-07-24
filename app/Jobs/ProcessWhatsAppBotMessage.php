@@ -127,12 +127,20 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             }
         }
 
+        if ($lower === '7') {
+            if (in_array($role, ['ngo', 'super_admin'])) {
+                Cache::put($sessionKey, ['state' => 'evol_nome'], now()->addMinutes(self::SESSION_TTL));
+                return "📝 *Registrar Evolução*\n\nDigite o *nome* do beneficiário:";
+            }
+        }
+
         // Structured prefix commands — power-user mode, sem confirmação
         if (str_starts_with(strtoupper($raw), 'DESP:'))  return $this->cmdDespesa($raw);
         if (str_starts_with(strtoupper($raw), 'RECV:'))  return $this->cmdReceita($raw);
         if (str_starts_with(strtoupper($raw), 'ATEND:')) return $this->cmdAtendimento($raw);
         if (str_starts_with(strtoupper($raw), 'BENEF:')) return $this->cmdBeneficiario(trim(substr($raw, 6)));
         if (str_starts_with(strtoupper($raw), 'HIST:'))  return $this->cmdHistoricoAtendimentos(trim(substr($raw, 5)));
+        if (str_starts_with(strtoupper($raw), 'EVOL:'))  return $this->cmdEvolucaoRapida($raw);
 
         return "❓ Não entendi o comando. Digite *menu* para ver as opções disponíveis.";
     }
@@ -303,6 +311,60 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
                 }
             }
             return "❌ Operação cancelada.\n\nDigite *menu* para continuar.";
+        }
+
+        // ── EVOLUÇÃO ──────────────────────────────────────────────────────────────
+
+        if ($state === 'evol_nome') {
+            $beneficiary = Beneficiary::where('tenant_id', $this->user->tenant_id)
+                ->where('name', 'like', '%' . strip_tags($raw) . '%')
+                ->first();
+
+            if (!$beneficiary) {
+                return "❌ Beneficiário *\"{$raw}\"* não encontrado.\n\nTente com outro nome ou *cancelar*.";
+            }
+
+            Cache::put($sessionKey, [
+                'state'            => 'evol_texto',
+                'beneficiary_id'   => $beneficiary->id,
+                'beneficiary_name' => $beneficiary->name,
+            ], $ttl);
+
+            return "👤 *{$beneficiary->name}* encontrado.\n\nDigite o texto da *evolução de caso*:";
+        }
+
+        if ($state === 'evol_texto') {
+            $texto = strip_tags($raw);
+            Cache::put($sessionKey, [
+                'state'            => 'evol_confirm',
+                'beneficiary_id'   => $session['beneficiary_id'],
+                'beneficiary_name' => $session['beneficiary_name'],
+                'texto'            => $texto,
+            ], $ttl);
+
+            return "📋 *Confirmar evolução?*\n\n"
+                . "Beneficiário: *{$session['beneficiary_name']}*\n"
+                . "Texto: _{$texto}_\n\n"
+                . "Responda *SIM* para salvar ou *NÃO* para cancelar.";
+        }
+
+        if ($state === 'evol_confirm') {
+            Cache::forget($sessionKey);
+            if (!in_array($lower, ['sim', 's', 'yes', '1'])) {
+                return "❌ Evolução cancelada.\n\nDigite *menu* para continuar.";
+            }
+            \Illuminate\Support\Facades\DB::table('attendances')->insert([
+                'tenant_id'      => $this->user->tenant_id,
+                'beneficiary_id' => $session['beneficiary_id'],
+                'user_id'        => $this->user->id,
+                'date'           => now()->toDateString(),
+                'type'           => 'Evolução',
+                'description'    => $session['texto'],
+                'gratuito'       => true,
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
+            return "✅ Evolução registrada!\n👤 *{$session['beneficiary_name']}*\n\nDigite *menu* para continuar.";
         }
 
         // ── BENEFICIÁRIO ──────────────────────────────────────────────────────
@@ -564,26 +626,63 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             ->get();
 
         if ($rows->isEmpty()) {
-            return "📋 *{$beneficiary->name}*\n\nNenhum atendimento registrado.\n\n_Digite *menu* para voltar._";
+            return "📋 *{$beneficiary->name}*\n\nNenhum registro encontrado.\n\n_Digite *menu* para voltar._";
         }
 
         $lines = ["📋 *Histórico: {$beneficiary->name}*\n"];
         foreach ($rows as $a) {
-            $data = Carbon::parse($a->date)->format('d/m/Y');
-            $tipo = mb_substr($a->type, 0, 22);
-            $desc = $a->description ? ' — ' . mb_substr($a->description, 0, 35) . '...' : '';
-            $lines[] = "• {$data} | {$tipo}{$desc}";
+            $data  = Carbon::parse($a->date)->format('d/m/Y');
+            $tipo  = mb_substr($a->type, 0, 22);
+            $icon  = strtolower($a->type) === 'evolução' ? '📝' : '🤝';
+            $desc  = $a->description ? ' — ' . mb_substr($a->description, 0, 35) . '...' : '';
+            $lines[] = "{$icon} {$data} | {$tipo}{$desc}";
         }
 
-        $total = \Illuminate\Support\Facades\DB::table('attendances')
-            ->where('tenant_id', $tenantId)
-            ->where('beneficiary_id', $beneficiary->id)
-            ->count();
+        $total     = \Illuminate\Support\Facades\DB::table('attendances')
+            ->where('tenant_id', $tenantId)->where('beneficiary_id', $beneficiary->id)->count();
+        $totalEvol = \Illuminate\Support\Facades\DB::table('attendances')
+            ->where('tenant_id', $tenantId)->where('beneficiary_id', $beneficiary->id)
+            ->where('type', 'Evolução')->count();
 
-        $lines[] = "\n_Total geral: {$total} atendimento(s)_";
+        $lines[] = "\n_Total: {$total} registro(s) | {$totalEvol} evolução(ões)_";
         $lines[] = "_Digite *menu* para voltar._";
 
         return implode("\n", $lines);
+    }
+
+    private function cmdEvolucaoRapida(string $raw): string
+    {
+        // EVOL: Nome do Beneficiário | Texto da evolução
+        $body  = trim(substr($raw, 5));
+        $parts = explode('|', $body, 2);
+        $nome  = strip_tags(trim($parts[0] ?? ''));
+        $texto = strip_tags(trim($parts[1] ?? ''));
+
+        if (!$nome || !$texto) {
+            return "❌ Formato inválido. Use:\n*EVOL: Nome Beneficiário | Texto da evolução*";
+        }
+
+        $beneficiary = Beneficiary::where('tenant_id', $this->user->tenant_id)
+            ->where('name', 'like', "%{$nome}%")
+            ->first();
+
+        if (!$beneficiary) {
+            return "❌ Beneficiário *\"{$nome}\"* não encontrado no cadastro.\n\n_Use BENEF: {$nome} para verificar o nome exato._";
+        }
+
+        \Illuminate\Support\Facades\DB::table('attendances')->insert([
+            'tenant_id'      => $this->user->tenant_id,
+            'beneficiary_id' => $beneficiary->id,
+            'user_id'        => $this->user->id,
+            'date'           => now()->toDateString(),
+            'type'           => 'Evolução',
+            'description'    => $texto,
+            'gratuito'       => true,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        return "✅ Evolução registrada!\n👤 *{$beneficiary->name}*\n_{$texto}_\n\n_Digite *menu* para continuar._";
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
