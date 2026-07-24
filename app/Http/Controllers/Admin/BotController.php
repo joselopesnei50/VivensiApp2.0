@@ -305,6 +305,11 @@ class BotController extends Controller
             'ai_enabled'         => 'nullable|boolean',
             'ai_provider'        => 'nullable|in:deepseek,gemini',
             'ai_training'        => 'nullable|string|max:5000',
+            'bot_name'           => 'nullable|string|max:80',
+            'bot_tone'           => 'nullable|in:formal,amigavel,tecnico,descontraido',
+            'org_info'           => 'nullable|string|max:1000',
+            'can_answer'         => 'nullable|string|max:2000',
+            'cannot_answer'      => 'nullable|string|max:2000',
         ]);
 
         // Toggle
@@ -334,10 +339,19 @@ class BotController extends Controller
         $tenantId = auth()->user()->tenant_id;
         $waConfig = WhatsappConfig::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
         if ($waConfig) {
+            $structured = array_filter([
+                'bot_name'      => $request->input('bot_name') ?: null,
+                'bot_tone'      => $request->input('bot_tone') ?: null,
+                'org_info'      => $request->input('org_info') ?: null,
+                'can_answer'    => $request->input('can_answer') ?: null,
+                'cannot_answer' => $request->input('cannot_answer') ?: null,
+            ]);
+
             $waConfig->update([
-                'ai_enabled'  => $request->has('ai_enabled'),
-                'ai_provider' => $request->input('ai_provider', $waConfig->ai_provider ?? 'deepseek'),
-                'ai_training' => $request->input('ai_training', $waConfig->ai_training),
+                'ai_enabled'             => $request->has('ai_enabled'),
+                'ai_provider'            => $request->input('ai_provider', $waConfig->ai_provider ?? 'deepseek'),
+                'ai_training'            => $request->input('ai_training', $waConfig->ai_training),
+                'ai_training_structured' => $structured ?: null,
             ]);
         }
 

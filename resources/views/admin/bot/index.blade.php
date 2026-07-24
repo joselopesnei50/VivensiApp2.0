@@ -141,6 +141,9 @@
 
             {{-- IA --}}
             <div class="col-lg-5">
+                @php
+                    $aiStr = is_array($waConfig?->ai_training_structured) ? $waConfig->ai_training_structured : [];
+                @endphp
                 <div class="exec-card mb-3">
                     <div class="exec-card-head">
                         <div>
@@ -151,7 +154,7 @@
 
                     <div class="toggle-row mb-3">
                         <div>
-                            <div class="toggle-label">Habilitar IA (Bruce AI)</div>
+                            <div class="toggle-label">Habilitar IA</div>
                             <div class="toggle-sub">DeepSeek responde automaticamente</div>
                         </div>
                         <label class="switch">
@@ -163,11 +166,66 @@
 
                     <input type="hidden" name="ai_provider" value="deepseek">
 
-                    <div class="field mb-0">
-                        <label class="field-label">Treinamento / Contexto da IA</label>
-                        <textarea name="ai_training" class="field-input" rows="6"
-                            placeholder="Você é um assistente da [Nome da organização]. Responda apenas sobre nossos serviços...">{{ $waConfig->ai_training ?? '' }}</textarea>
-                        <div class="field-hint">Descreva o comportamento da IA — quem ela é, o que pode e não pode responder.</div>
+                    {{-- Persona estruturada --}}
+                    <div class="persona-section">
+                        <div class="persona-label mb-3">
+                            <i class="fas fa-robot me-1 text-primary"></i>
+                            <span style="font-size:.8rem;font-weight:700;color:#374151;">Persona do Assistente</span>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-7">
+                                <label class="field-label">Nome do assistente</label>
+                                <input type="text" name="bot_name" class="field-input"
+                                    placeholder="ex: Ana, Sofia, Bruce..."
+                                    value="{{ $aiStr['bot_name'] ?? '' }}">
+                                <div class="field-hint">Deixe vazio para usar "Bruce".</div>
+                            </div>
+                            <div class="col-5">
+                                <label class="field-label">Tom de voz</label>
+                                <select name="bot_tone" class="field-input">
+                                    <option value="">Padrão</option>
+                                    <option value="formal"       {{ ($aiStr['bot_tone'] ?? '') === 'formal'       ? 'selected' : '' }}>Formal</option>
+                                    <option value="amigavel"     {{ ($aiStr['bot_tone'] ?? '') === 'amigavel'     ? 'selected' : '' }}>Amigável</option>
+                                    <option value="tecnico"      {{ ($aiStr['bot_tone'] ?? '') === 'tecnico'      ? 'selected' : '' }}>Técnico</option>
+                                    <option value="descontraido" {{ ($aiStr['bot_tone'] ?? '') === 'descontraido' ? 'selected' : '' }}>Descontraído</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="field mb-3">
+                            <label class="field-label">Sobre a organização</label>
+                            <textarea name="org_info" class="field-input" rows="2"
+                                placeholder="ex: Somos uma ONG de assistência social fundada em 2010, atendemos famílias em situação de vulnerabilidade em SP.">{{ $aiStr['org_info'] ?? '' }}</textarea>
+                        </div>
+
+                        <div class="field mb-3">
+                            <label class="field-label">
+                                <span class="scope-dot scope-dot-ok"></span> Pode responder sobre
+                            </label>
+                            <textarea name="can_answer" class="field-input" rows="2"
+                                placeholder="ex: serviços da ONG, horários, como fazer doação, programas sociais, documentação necessária">{{ $aiStr['can_answer'] ?? '' }}</textarea>
+                        </div>
+
+                        <div class="field mb-3">
+                            <label class="field-label">
+                                <span class="scope-dot scope-dot-no"></span> Não responde sobre
+                            </label>
+                            <textarea name="cannot_answer" class="field-input" rows="2"
+                                placeholder="ex: valores internos, dados financeiros, informações de colaboradores, concorrentes">{{ $aiStr['cannot_answer'] ?? '' }}</textarea>
+                        </div>
+
+                        <details class="mb-0">
+                            <summary class="field-label" style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;">
+                                <i class="fas fa-chevron-right details-arrow" style="font-size:.65rem;color:#94a3b8;transition:transform .2s;"></i>
+                                Instruções avançadas (modo livre)
+                            </summary>
+                            <div class="mt-2">
+                                <textarea name="ai_training" class="field-input" rows="4"
+                                    placeholder="Instruções adicionais no formato livre. Complementa os campos acima.">{{ $waConfig->ai_training ?? '' }}</textarea>
+                                <div class="field-hint">Use para regras específicas que não cabem nos campos estruturados.</div>
+                            </div>
+                        </details>
                     </div>
                 </div>
             </div>
@@ -671,6 +729,16 @@
 .action-edit:hover { background:#e0e7ff;color:#4f46e5; }
 
 textarea.field-input { resize:vertical;min-height:120px; }
+
+/* ── PERSONA SECTION ── */
+.persona-section { padding-top:4px; }
+.persona-label { display:flex;align-items:center;gap:6px; }
+.scope-dot { display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;flex-shrink:0; }
+.scope-dot-ok { background:#22c55e; }
+.scope-dot-no { background:#ef4444; }
+details summary::-webkit-details-marker { display:none; }
+details[open] .details-arrow { transform:rotate(90deg); }
+select.field-input { appearance:auto; }
 </style>
 @endpush
 

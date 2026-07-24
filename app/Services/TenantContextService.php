@@ -63,7 +63,8 @@ class TenantContextService
                     ->count(),
                 'org_name'        => $tenant?->brand_name ?: $tenant?->name,
                 'org_type'        => $tenant?->type,
-                'ai_training'     => $waConfig?->ai_training,
+                'ai_training'            => $waConfig?->ai_training,
+                'ai_training_structured' => $waConfig?->ai_training_structured,
             ];
         });
     }

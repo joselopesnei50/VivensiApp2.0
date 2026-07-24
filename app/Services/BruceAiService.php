@@ -320,16 +320,32 @@ class BruceAiService
         // as chaves; mas se um deploy anterior tiver cacheado um shape menor,
         // o merge cobre o vazio.
         $ctx = array_merge([
-            'income'          => 0.0,
-            'expense'         => 0.0,
-            'balance'         => 0.0,
-            'active_projects' => 0,
-            'open_tasks'      => 0,
-            'overdue_tasks'   => 0,
-            'org_name'        => null,
-            'org_type'        => null,
-            'ai_training'     => null,
+            'income'                 => 0.0,
+            'expense'                => 0.0,
+            'balance'                => 0.0,
+            'active_projects'        => 0,
+            'open_tasks'             => 0,
+            'overdue_tasks'          => 0,
+            'org_name'               => null,
+            'org_type'               => null,
+            'ai_training'            => null,
+            'ai_training_structured' => null,
         ], $this->tenantCtx->for($tenantId));
+
+        $structured   = is_array($ctx['ai_training_structured']) ? $ctx['ai_training_structured'] : [];
+        $botName      = trim($structured['bot_name'] ?? '') ?: 'Bruce';
+        $botTone      = $structured['bot_tone'] ?? null;
+        $orgInfo      = trim($structured['org_info'] ?? '');
+        $canAnswer    = trim($structured['can_answer'] ?? '');
+        $cannotAnswer = trim($structured['cannot_answer'] ?? '');
+
+        $toneDescription = match ($botTone) {
+            'formal'       => 'Tom: extremamente formal e profissional. Use linguagem corporativa precisa.',
+            'amigavel'     => 'Tom: amigável e acolhedor. Seja próximo, use linguagem acessível e calorosa.',
+            'tecnico'      => 'Tom: técnico e preciso. Priorize exatidão nos termos, seja conciso e objetivo.',
+            'descontraido' => 'Tom: descontraído e natural. Seja informal mas mantenha o profissionalismo.',
+            default        => 'Tom: formal mas acessível. Nunca use linguagem infantil, piadas ou metáforas de animais.',
+        };
 
         $roleContext = match ($role) {
             'ngo'         => "O usuário gerencia uma ONG/OSC. Use termos do terceiro setor: doadores, editais, captação, beneficiários, voluntários, prestação de contas, transparência. Jamais use termos de SaaS, startup, MRR ou ARR.",
@@ -352,13 +368,25 @@ class BruceAiService
 - **Configurações**: integrações (WhatsApp, pagamentos), dados da organização, personalização de marca.
 CAP;
 
-        $orgBlock      = $ctx['org_name']
+        $orgBlock = $ctx['org_name']
             ? "## ORGANIZAÇÃO\nVocê está respondendo para **{$ctx['org_name']}**" . ($ctx['org_type'] ? " ({$ctx['org_type']})" : '') . ".\n"
             : '';
+
+        if ($orgInfo) {
+            $orgBlock .= "## SOBRE A ORGANIZAÇÃO\n{$orgInfo}\n";
+        }
 
         $trainingBlock = $ctx['ai_training']
             ? "## INSTRUÇÕES ESPECÍFICAS DA ORGANIZAÇÃO\n{$ctx['ai_training']}\n"
             : '';
+
+        $scopeBlock = '';
+        if ($canAnswer || $cannotAnswer) {
+            $scopeBlock = "## ESCOPO DE ATENDIMENTO\n";
+            if ($canAnswer)    $scopeBlock .= "PODE responder sobre: {$canAnswer}\n";
+            if ($cannotAnswer) $scopeBlock .= "NÃO responde sobre: {$cannotAnswer} — nestes casos, informe que não pode ajudar e sugira o canal correto.\n";
+            $scopeBlock .= "\n";
+        }
 
         $contextBlock = '';
         if ($contextType === 'project' && $contextId && config('bruce.context_project_enabled', false)) {
@@ -366,11 +394,11 @@ CAP;
         }
 
         return <<<PROMPT
-Você é Bruce, assistente de inteligência artificial do sistema Vivensi.
+Você é {$botName}, assistente de inteligência artificial do sistema Vivensi.
 
 ## IDENTIDADE E TOM (OBRIGATÓRIO — nunca ignore estas regras)
-- Você é um assistente profissional, direto e inteligente.
-- Tom: formal mas acessível. Nunca use linguagem infantil, piadas ou metáforas de animais.
+- Você é um assistente profissional, direto e inteligente. Seu nome é {$botName}.
+- {$toneDescription}
 - PROIBIDO absolutamente: referências a cachorro, Golden Retriever, latir, 🐾, ou qualquer linguagem de mascote/animal. Isso é inadequado e ofensivo.
 - NÃO use emojis excessivos. No máximo 1 emoji por resposta, apenas quando realmente agrega valor.
 - Não se apresente repetidamente. Se o usuário já iniciou uma conversa, responda diretamente ao que foi perguntado.
@@ -381,7 +409,7 @@ Você é Bruce, assistente de inteligência artificial do sistema Vivensi.
 ## PAPEL
 {$roleContext}
 
-{$trainingBlock}
+{$scopeBlock}{$trainingBlock}
 {$systemCapabilities}
 
 ## DADOS ATUAIS DA CONTA (em tempo real)
