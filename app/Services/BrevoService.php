@@ -123,23 +123,28 @@ class BrevoService
             ]);
 
             $success = $response->successful();
-            
-            // Log in database (Lazy Table creation is not ideal for Laravel, but we'll use a try-catch for now)
+
+            if (!$success) {
+                $this->lastBrevoError = $response->json('message') ?? $response->body();
+                Log::error('Brevo sendEmail failed', [
+                    'to'     => $toEmail,
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+            }
+
             try {
                 \DB::table('email_logs')->insert([
                     'tenant_id' => $tenantId,
-                    'to_email' => $toEmail,
-                    'subject' => $subject,
-                    'status' => $success ? 'sent' : 'failed',
-                    'response' => $response->body(),
+                    'to_email'  => $toEmail,
+                    'subject'   => $subject,
+                    'status'    => $success ? 'sent' : 'failed',
+                    'response'  => $response->body(),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
             } catch (\Exception $e) {
-                // If table doesn't exist, we just log to Laravel log for now
-                if (!$success) {
-                    Log::error('Erro ao enviar e-mail via Brevo: ' . $response->body());
-                }
+                // tabela email_logs ausente — ignorar, erro ja logado acima
             }
 
             return $success;

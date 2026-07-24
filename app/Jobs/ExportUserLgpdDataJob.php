@@ -87,13 +87,20 @@ class ExportUserLgpdDataJob implements ShouldQueue
                 'expiresAt'   => $expiresAt,
             ])->render();
 
-            app(BrevoService::class)->sendEmail(
+            $brevo = app(BrevoService::class);
+            $sent  = $brevo->sendEmail(
                 $user->email,
                 $user->name,
                 'Seus dados estão prontos para download — LGPD',
                 $html,
                 $user->tenant_id
             );
+
+            if (!$sent) {
+                throw new \RuntimeException(
+                    'Brevo recusou o e-mail LGPD: ' . ($brevo->lastBrevoError ?? 'sem detalhe')
+                );
+            }
         } catch (\Throwable $e) {
             Log::error('LGPD_EXPORT_FAILED', [
                 'request_id' => $request->id,

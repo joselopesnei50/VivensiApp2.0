@@ -1,15 +1,14 @@
 <?php
 
 use App\Jobs\ExportUserLgpdDataJob;
-use App\Mail\LgpdExportReadyMail;
 use App\Models\LgpdDataRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WhatsappChat;
 use App\Models\WhatsappMessage;
+use App\Services\BrevoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -78,12 +77,22 @@ it('bloqueia segunda exportacao dentro de 6 horas', function () {
         ->count())->toBe(1);
 });
 
-it('job de exportacao gera ZIP + salva token + envia email', function () {
-    Mail::fake();
+it('job de exportacao gera ZIP + salva token + envia email via Brevo', function () {
     Storage::fake('local');
 
     $user = lgpdUser();
-    $req  = LgpdDataRequest::create([
+
+    $sentTo = null;
+    $this->mock(BrevoService::class, function ($mock) use ($user, &$sentTo) {
+        $mock->shouldReceive('sendEmail')
+             ->once()
+             ->andReturnUsing(function ($toEmail) use (&$sentTo) {
+                 $sentTo = $toEmail;
+                 return true;
+             });
+    });
+
+    $req = LgpdDataRequest::create([
         'user_id'   => $user->id,
         'tenant_id' => $user->tenant_id,
         'type'      => LgpdDataRequest::TYPE_EXPORT,
@@ -100,15 +109,12 @@ it('job de exportacao gera ZIP + salva token + envia email', function () {
     expect($req->export_file_path)->toStartWith('lgpd-exports/');
     expect(Storage::disk('local')->exists($req->export_file_path))->toBeTrue();
     expect($req->export_expires_at->isFuture())->toBeTrue();
-
-    Mail::assertSent(LgpdExportReadyMail::class, function ($mail) use ($user) {
-        return $mail->hasTo($user->email);
-    });
+    expect($sentTo)->toBe($user->email);
 });
 
 it('download com token valido serve o ZIP', function () {
-    Mail::fake();
     Storage::fake('local');
+    $this->mock(BrevoService::class, fn ($m) => $m->shouldReceive('sendEmail')->andReturn(true));
 
     $user = lgpdUser();
     $req  = LgpdDataRequest::create([
@@ -153,8 +159,8 @@ it('download com token invalido retorna 404', function () {
 });
 
 it('export nao inclui conversas whatsapp do tenant (PII de terceiros)', function () {
-    Mail::fake();
     Storage::fake('local');
+    $this->mock(BrevoService::class, fn ($m) => $m->shouldReceive('sendEmail')->andReturn(true));
 
     $user = lgpdUser();
 
