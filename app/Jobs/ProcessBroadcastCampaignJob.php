@@ -353,6 +353,20 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     if (!empty($campaign->message)) {
                         $antiBan->recordContentSent($instance, $campaign->message);
                     }
+
+                    // Marker pro Bruno: quando este contato responder no WhatsApp,
+                    // ele saberá que a mensagem é continuação desta campanha —
+                    // evita abertura fria como se o lead fosse desconhecido.
+                    \Illuminate\Support\Facades\Cache::put(
+                        "bruno:campaign_ctx:{$campaign->tenant_id}:{$rawWaId}",
+                        [
+                            'campaign_id'   => $campaign->id,
+                            'campaign_name' => $campaign->name,
+                            'preview'       => mb_substr($campaign->message ?? '', 0, 250),
+                            'sent_at'       => now()->toDateTimeString(),
+                        ],
+                        now()->addDays(7)
+                    );
                 } else {
                     $errorMsg = is_array($res) ? json_encode($res) : ($res ?: 'Unknown Error');
                     Log::warning("Broadcast failed for {$waId}. Campaign ID: {$campaign->id}. Error: " . $errorMsg);

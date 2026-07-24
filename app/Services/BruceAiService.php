@@ -40,7 +40,8 @@ class BruceAiService
         string $role = 'common',
         int $userId = 0,
         ?string $contextType = null,
-        ?int $contextId = null
+        ?int $contextId = null,
+        ?array $campaignContext = null
     ): array {
         $history = $this->getHistory($tenantId, $userId, $contextType, $contextId);
 
@@ -75,7 +76,7 @@ class BruceAiService
         }
 
         $systemPrompt = $role === 'sales_bot'
-            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment, $businessType)
+            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment, $businessType, $campaignContext)
             : $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId);
 
         $messages = array_merge(
@@ -402,7 +403,7 @@ PROMPT;
      * System prompt do Bot Vendedor "Bruno" (vide docs/bot-vendedor.md).
      * Lê KB de config/prompts/bot-vendedor.php — editável sem deploy de código.
      */
-    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null, ?string $businessType = null): string
+    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null, ?string $businessType = null, ?array $campaignContext = null): string
     {
         $kb = config('bot-vendedor');
         if (!is_array($kb)) {
@@ -458,11 +459,29 @@ PROMPT;
             ? implode("\n", array_map(fn ($k, $v) => "- **{$k}**: {$v}", array_keys($product['verticals']), $product['verticals']))
             : '';
 
+        // Contexto de campanha: injetado quando o lead respondeu a uma campanha
+        // WhatsApp recente. Muda radicalmente a abertura — Bruno NÃO faz pitch
+        // de primeiro contato, trata como continuação direta da campanha.
+        $campaignBlock = '';
+        if (!empty($campaignContext['campaign_name'])) {
+            $cName    = $campaignContext['campaign_name'];
+            $cSentAt  = $campaignContext['sent_at']  ?? '';
+            $cPreview = $campaignContext['preview']   ?? '';
+            $campaignBlock = "\n### ATENCAO — LEAD RESPONDEU A UMA CAMPANHA WHATSAPP\n"
+                . "- Campanha enviada: \"{$cName}\"\n"
+                . ($cSentAt  ? "- Data do envio: {$cSentAt}\n" : '')
+                . ($cPreview ? "- Mensagem que recebeu: \"{$cPreview}\"\n" : '')
+                . "- ABORDAGEM OBRIGATORIA: trate como CONTINUACAO DIRETA da campanha. O lead JA conhece a Vivensi.\n"
+                . "- NAO faca abertura generica de primeiro contato ('me conta em qual cenario voce atua') — o lead acabou de receber nossa mensagem.\n"
+                . "- Comece reconhecendo a campanha (ex: 'Vi que voce recebeu nossa mensagem sobre X — ficou com alguma duvida? Posso explicar melhor.') e explore o interesse especifico.\n"
+                . "- Se o lead nao mencionar a campanha diretamente, pergunte naturalmente sobre o que chamou atencao na mensagem que recebeu.\n";
+        }
+
         // Catálogo detalhado de funcionalidades por painel — fonte da verdade
         // pra Bruno responder "o que vocês têm" sem inventar nada.
-        // Quando o segmento ja foi identificado (cache), filtra pro painel
-        // relevante — economiza tokens e afia a resposta.
-        $segmentToPanelKey = ['ongs' => 'terceiro_setor', 'mei' => 'mei', 'gestor' => 'gestor'];
+        // Foco exclusivo terceiro setor: mesmo que o lead seja MEI/gestor,
+        // Bruno mostra o painel ONG (nosso nicho) e redireciona o pitch.
+        $segmentToPanelKey = ['ongs' => 'terceiro_setor', 'mei' => 'terceiro_setor', 'gestor' => 'terceiro_setor'];
         $panelKeyForSegment = $segment ? ($segmentToPanelKey[$segment] ?? null) : null;
 
         $panelsBlock = '';
@@ -480,39 +499,30 @@ PROMPT;
             }
         }
 
-        if ($segment) {
-            $segmentLabel = ['ongs' => 'ONG/OSC (Terceiro Setor)', 'mei' => 'Pequeno Negocio (MEI, autonomo ou PJ)', 'gestor' => 'Gestor de projetos / PME'][$segment] ?? $segment;
-            $segmentBlock = "\n### SEGMENTO IDENTIFICADO DO LEAD\n"
-                . "- Segmento: {$segmentLabel}\n"
-                . "- NAO pergunte de novo qual e o segmento — ja foi respondido.\n"
-                . "- Foque as respostas nas funcionalidades do painel acima. Nao mencione features dos outros paineis salvo se o lead perguntar diretamente.\n";
-
-            // Sub-refinamento: dentro de segment=mei, se ja identificamos o
-            // business_type especifico, injeta guidance tailored.
-            if ($segment === 'mei' && $businessType) {
-                $btKb = $kb['business_type_context'][$businessType] ?? null;
-                if (is_array($btKb) && !empty($btKb['label'])) {
-                    $segmentBlock .= "\n### TIPO ESPECIFICO IDENTIFICADO ({$btKb['label']})\n"
-                        . (!empty($btKb['pitch'])     ? "- Pitch: {$btKb['pitch']}\n" : '')
-                        . (!empty($btKb['destacar']) && is_array($btKb['destacar'])
-                            ? "- Destaque estas features: " . implode('; ', $btKb['destacar']) . "\n"
-                            : '')
-                        . (!empty($btKb['evitar']) && is_array($btKb['evitar'])
-                            ? "- NAO mencione (nao se aplica a este perfil): " . implode('; ', $btKb['evitar']) . "\n"
-                            : '')
-                        . (!empty($btKb['dores']) && is_array($btKb['dores'])
-                            ? "- Dores tipicas: " . implode('; ', $btKb['dores']) . "\n"
-                            : '');
-                }
-            }
+        if ($segment === 'ongs') {
+            $segmentBlock = "\n### SEGMENTO: TERCEIRO SETOR (ONG/OSC/Associacao)\n"
+                . "- Lead confirmado como organizacao do terceiro setor — nosso nicho principal.\n"
+                . "- NAO pergunte de novo o segmento — ja foi respondido.\n"
+                . "- Vocabulario correto: beneficiarios, doadores, editais, captacao, prestacao de contas, voluntarios, CEBAS, MROSC.\n"
+                . "- Foque nas funcionalidades do Painel Terceiro Setor listadas acima.\n"
+                . "- Mencione PROATIVAMENTE LGPD-first (especialmente opt-in de beneficiarios e doadores, portal do titular, auditoria).\n";
+        } elseif (in_array($segment, ['mei', 'gestor'], true)) {
+            $segmentLabel = $segment === 'mei' ? 'MEI / pequena empresa' : 'empresa / gestor de projetos';
+            $segmentBlock = "\n### ATENCAO: LEAD FORA DO NICHO PRIMARIO\n"
+                . "- Lead identificado como: {$segmentLabel}.\n"
+                . "- O Vivensi e especializado em terceiro setor (ONGs, associacoes, institutos, fundacoes). Este e nosso foco de excelencia.\n"
+                . "- Seja honesto e empático: reconheca o perfil, explique que o produto e pensado para o terceiro setor.\n"
+                . "- Exemplo de resposta: 'Entendido. O Vivensi e bem focado em terceiro setor — ONGs, associacoes e fundacoes. Se voce gerencia ou apoia alguma dessas organizacoes, posso ajudar muito. Se for principalmente um negocio privado, posso te mostrar numa demo de 20 min e voce decide se faz sentido.'\n"
+                . "- Se o lead tiver qualquer ligacao com terceiro setor (apoia uma ONG, tem fundacao propria), explore isso ativamente.\n"
+                . "- NAO pita MEI ou empresa privada como alvo principal do produto.\n";
         } else {
-            $segmentBlock = "\n### ABERTURA COM LEAD NOVO\n"
-                . "- Se essa e a primeira mensagem util do lead (ele acabou de chegar e nao disse o segmento ainda), sua PRIMEIRA resposta deve OBRIGATORIAMENTE perguntar em qual cenario ele atua, usando exatamente estes tres:\n"
-                . "  1) ONG ou OSC (Terceiro Setor)\n"
-                . "  2) MEI, autonomo ou pequena empresa\n"
-                . "  3) Gestor de projetos ou PME\n"
-                . "- Formato sugerido (adapte tom, mas mantenha as 3 opcoes numeradas): 'Oi, tudo bem? Sou o Bruno, da Vivensi. Antes de te ajudar melhor, me conta rapidinho: voce atua em qual desses cenarios? 1) ONG ou OSC 2) MEI, autonomo ou pequena empresa 3) Gestor de projetos ou PME'\n"
-                . "- Se o lead ja falou algo que revela o segmento (ex: 'sou de uma ong'), NAO pergunte — siga direto pra descoberta focada.\n";
+            // Segmento ainda nao identificado — abertura focada em terceiro setor
+            $segmentBlock = "\n### ABERTURA (FOCO EXCLUSIVO TERCEIRO SETOR)\n"
+                . "- O Vivensi e especializado em terceiro setor. Este e o nosso nicho de excelencia.\n"
+                . "- Se o lead chegou sem contexto, sua PRIMEIRA resposta se apresenta brevemente e pergunta sobre a organizacao — sem oferecer opcoes de MEI/empresa.\n"
+                . "- Formato sugerido: 'Ola! Sou o Bruno, da Vivensi. Trabalhamos com gestao para o terceiro setor — ONGs, associacoes, institutos e fundacoes. Me conta: voce atua em qual tipo de organizacao?'\n"
+                . "- Se o lead disser que e MEI ou empresa privada, siga o script de redirect do bloco LEAD FORA DO NICHO.\n"
+                . "- Se o lead ja revelou que e ONG/OSC/associacao/instituto, va direto pra descoberta — NAO pergunte de novo.\n";
         }
 
         // Detalhes do WhatsApp (Evolution vs Meta) + treinamento do bot.
@@ -602,6 +612,7 @@ PROMPT;
         }
 
         return <<<PROMPT
+{$campaignBlock}
 Você é {$persona['name']}, {$persona['role']}.
 
 ## TOM E IDENTIDADE (OBRIGATÓRIO)

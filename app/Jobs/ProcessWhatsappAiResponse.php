@@ -89,6 +89,12 @@ class ProcessWhatsappAiResponse implements ShouldQueue
             $brunoQualification = null;
             $replyText = '';
             try {
+                // Se este contato recebeu uma campanha WhatsApp recente,
+                // passa o contexto pro Bruno para abordagem de continuação.
+                $campaignContext = \Illuminate\Support\Facades\Cache::get(
+                    "bruno:campaign_ctx:{$tenantId}:{$chat->wa_id}"
+                );
+
                 /** @var \App\Services\BruceAiService $bruce */
                 $bruce = app(\App\Services\BruceAiService::class);
                 $bResult = $bruce->chat(
@@ -98,6 +104,7 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                     userId: 0,
                     contextType: 'whatsapp_chat',
                     contextId: $chat->id,
+                    campaignContext: $campaignContext,
                 );
                 if (empty($bResult['error'])) {
                     $replyText          = trim((string) ($bResult['reply'] ?? ''));
