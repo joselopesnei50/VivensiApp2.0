@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Attendance;
 use App\Models\Beneficiary;
 use App\Models\SystemSetting;
 use App\Models\Task;
@@ -120,11 +121,18 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             return "💸 *Lançar Despesa*\n\nDigite o *valor* (ex: 150,00):";
         }
 
+        if ($lower === '6') {
+            if (in_array($role, ['ngo', 'super_admin'])) {
+                return $this->cmdAtendimentos();
+            }
+        }
+
         // Structured prefix commands — power-user mode, sem confirmação
         if (str_starts_with(strtoupper($raw), 'DESP:'))  return $this->cmdDespesa($raw);
         if (str_starts_with(strtoupper($raw), 'RECV:'))  return $this->cmdReceita($raw);
         if (str_starts_with(strtoupper($raw), 'ATEND:')) return $this->cmdAtendimento($raw);
         if (str_starts_with(strtoupper($raw), 'BENEF:')) return $this->cmdBeneficiario(trim(substr($raw, 6)));
+        if (str_starts_with(strtoupper($raw), 'HIST:'))  return $this->cmdHistoricoAtendimentos(trim(substr($raw, 5)));
 
         return "❓ Não entendi o comando. Digite *menu* para ver as opções disponíveis.";
     }
@@ -490,6 +498,90 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             $lines[] = "• *{$b->name}*{$cpf}{$status}";
         }
         $lines[] = "\n_Digite *menu* para voltar._";
+
+        return implode("\n", $lines);
+    }
+
+    private function cmdAtendimentos(): string
+    {
+        $tenantId = $this->user->tenant_id;
+        $month    = now()->translatedFormat('F/Y');
+
+        $rows = \Illuminate\Support\Facades\DB::table('attendances')
+            ->join('beneficiaries', 'attendances.beneficiary_id', '=', 'beneficiaries.id')
+            ->where('attendances.tenant_id', $tenantId)
+            ->whereMonth('attendances.date', now()->month)
+            ->whereYear('attendances.date', now()->year)
+            ->orderBy('attendances.date', 'desc')
+            ->limit(15)
+            ->select('beneficiaries.name as beneficiary_name', 'attendances.date', 'attendances.type')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return "📋 Nenhum atendimento registrado em {$month}.\n\n_Digite *menu* para voltar._";
+        }
+
+        $lines = ["📋 *Atendimentos — {$month}*\n"];
+        foreach ($rows as $a) {
+            $data  = Carbon::parse($a->date)->format('d/m');
+            $tipo  = mb_substr($a->type, 0, 22);
+            $nome  = mb_substr($a->beneficiary_name, 0, 25);
+            $lines[] = "• {$nome} | {$tipo} | {$data}";
+        }
+
+        $total = \Illuminate\Support\Facades\DB::table('attendances')
+            ->where('tenant_id', $tenantId)
+            ->whereMonth('date', now()->month)
+            ->whereYear('date', now()->year)
+            ->count();
+
+        $lines[] = "\n_Total no mês: {$total} atendimento(s)_";
+        $lines[] = "_HIST: [nome] para histórico individual_";
+        $lines[] = "_Digite *menu* para voltar._";
+
+        return implode("\n", $lines);
+    }
+
+    private function cmdHistoricoAtendimentos(string $query): string
+    {
+        if (!$query) return "❌ Informe o nome. Ex: *HIST: João Silva*";
+
+        $tenantId    = $this->user->tenant_id;
+        $beneficiary = Beneficiary::where('tenant_id', $tenantId)
+            ->where('name', 'like', "%{$query}%")
+            ->first();
+
+        if (!$beneficiary) {
+            return "❌ Beneficiário *\"{$query}\"* não encontrado no cadastro.\n\n_Digite *menu* para voltar._";
+        }
+
+        $rows = \Illuminate\Support\Facades\DB::table('attendances')
+            ->where('tenant_id', $tenantId)
+            ->where('beneficiary_id', $beneficiary->id)
+            ->orderBy('date', 'desc')
+            ->limit(10)
+            ->select('date', 'type', 'description')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return "📋 *{$beneficiary->name}*\n\nNenhum atendimento registrado.\n\n_Digite *menu* para voltar._";
+        }
+
+        $lines = ["📋 *Histórico: {$beneficiary->name}*\n"];
+        foreach ($rows as $a) {
+            $data = Carbon::parse($a->date)->format('d/m/Y');
+            $tipo = mb_substr($a->type, 0, 22);
+            $desc = $a->description ? ' — ' . mb_substr($a->description, 0, 35) . '...' : '';
+            $lines[] = "• {$data} | {$tipo}{$desc}";
+        }
+
+        $total = \Illuminate\Support\Facades\DB::table('attendances')
+            ->where('tenant_id', $tenantId)
+            ->where('beneficiary_id', $beneficiary->id)
+            ->count();
+
+        $lines[] = "\n_Total geral: {$total} atendimento(s)_";
+        $lines[] = "_Digite *menu* para voltar._";
 
         return implode("\n", $lines);
     }
