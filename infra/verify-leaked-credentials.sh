@@ -22,6 +22,9 @@ ENV_FILE="$APP_DIR/.env"
 LEAKED_DB_PASS='Viv3nsi@2026'
 LEAKED_EVO_KEY='e838f5d5b86ea0fe27492c283c27498ffe0b250085896f1eaa8093baf0a3309e'
 LEAKED_AUTH_KEY='SenhaForteVivensi2026@!'
+# Achados adicionais do scan gitleaks (2026-07-25):
+LEAKED_EVO_KEY_ALT='4f2a7b9c1d8e5f3a6b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a'
+LEAKED_META_TOKEN='vivensi_seguro_2026'
 
 # ── Cores ────────────────────────────────────────────────────────────────────
 red()    { printf '\033[31m%s\033[0m\n' "$*"; }
@@ -53,6 +56,46 @@ dim "  Evolution URL: ${EVO_URL:-<não configurada>}"
 echo ""
 
 FINDINGS=()
+
+# ── Helper: testa uma chave Evolution via HTTP ───────────────────────────────
+test_evo_key() {
+  local label="$1" key="$2"
+  bold "── $label ──"
+
+  if [ -z "$EVO_URL" ]; then
+    yellow "   ⚠️  EVOLUTION_API_URL ausente — pulando"
+    FINDINGS+=("$label: TESTE_PULADO")
+    return
+  fi
+  if ! command -v curl >/dev/null; then
+    yellow "   ⚠️  curl ausente — pulando"
+    FINDINGS+=("$label: TESTE_PULADO")
+    return
+  fi
+
+  local url_clean="${EVO_URL%/}"
+  echo "   Chave vazada: ${key:0:16}...${key: -8}"
+
+  local http_code
+  http_code=$(curl -sS -o /tmp/evo_test_$$.tmp -w "%{http_code}" \
+                --max-time 15 -H "apikey: $key" \
+                "$url_clean/instance/fetchInstances" 2>/dev/null || echo "000")
+
+  local body
+  body=$(head -c 200 /tmp/evo_test_$$.tmp 2>/dev/null | tr -d '\n')
+  rm -f /tmp/evo_test_$$.tmp
+
+  echo "   HTTP:         $http_code"
+  [ -n "$body" ] && dim "   Body:         $body"
+
+  case "$http_code" in
+    401|403) green "   ✅ REJEITADA ($http_code)"; FINDINGS+=("$label: ✅ INERTE") ;;
+    200)     red "   🚨 AINDA ACEITA — rotacionar já"; FINDINGS+=("$label: 🚨 ATIVA") ;;
+    000)     yellow "   ⚠️  Falha de rede"; FINDINGS+=("$label: TESTE_INCONCLUSIVO") ;;
+    *)       yellow "   ⚠️  Resposta $http_code"; FINDINGS+=("$label: TESTE_INCONCLUSIVO ($http_code)") ;;
+  esac
+  echo ""
+}
 
 # ── 1. Testar DB_PASSWORD vazada ─────────────────────────────────────────────
 bold "── [1/3] DB_PASSWORD ──"
@@ -161,6 +204,26 @@ else
       FINDINGS+=("AUTHENTICATION_API_KEY: TESTE_INCONCLUSIVO ($HTTP_CODE)")
       ;;
   esac
+fi
+echo ""
+
+# ── 4. EVOLUTION_GLOBAL_KEY histórica alternativa (achado gitleaks 2026-07-25) ─
+test_evo_key "[4/5] EVOLUTION_GLOBAL_KEY (histórica alt 4f2a7b9c...)" "$LEAKED_EVO_KEY_ALT"
+
+# ── 5. META_WEBHOOK_VERIFY_TOKEN histórico (achado gitleaks 2026-07-25) ──────
+bold "── [5/5] META_WEBHOOK_VERIFY_TOKEN ──"
+echo "   Token vazado: $LEAKED_META_TOKEN"
+CURRENT_META_TOKEN="$(get_env META_WEBHOOK_VERIFY_TOKEN)"
+if [ -z "$CURRENT_META_TOKEN" ]; then
+  green "   ✅ INERTE — .env não define META_WEBHOOK_VERIFY_TOKEN (token só usado em handshake)"
+  FINDINGS+=("META_WEBHOOK_VERIFY_TOKEN: ✅ INERTE (não configurado)")
+elif [ "$CURRENT_META_TOKEN" = "$LEAKED_META_TOKEN" ]; then
+  red "   🚨 EM USO — o token do .env é IDÊNTICO ao vazado"
+  FINDINGS+=("META_WEBHOOK_VERIFY_TOKEN: 🚨 ATIVA — reconfigurar no Meta App")
+else
+  green "   ✅ REJEITADA — token atual é diferente do vazado"
+  dim "   Token atual (prefixo): ${CURRENT_META_TOKEN:0:8}..."
+  FINDINGS+=("META_WEBHOOK_VERIFY_TOKEN: ✅ INERTE")
 fi
 echo ""
 
