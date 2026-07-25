@@ -27,8 +27,8 @@
     @endif
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vivensi | Gestão Inteligente para ONGs, Projetos e Pessoas</title>
-    <meta name="description" content="A plataforma mais completa do Brasil para gestão de ONGs, projetos sociais e equipes. Donor portal, prestação de contas, CRM e muito mais.">
+    <title>Vivensi | Gestão Inteligente para ONGs e Organizações do Terceiro Setor</title>
+    <meta name="description" content="A plataforma mais completa do Brasil para ONGs e organizações do terceiro setor. Prestação de contas, portal do doador, CRM, captação de editais e Bruce IA — o assistente estratégico da sua organização social.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
@@ -109,6 +109,50 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
     display:inline-flex;align-items:center;gap:7px;
 }
 .btn-nav:hover{background:#e8e8e8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,255,255,.15)}
+/* Nav dropdown (Soluções) */
+.nav-dropdown{position:relative}
+.nav-dropdown > a::after{
+    content:'';display:inline-block;margin-left:5px;
+    width:0;height:0;
+    border-left:3.5px solid transparent;border-right:3.5px solid transparent;
+    border-top:4px solid currentColor;
+    opacity:.55;transition:transform .2s;vertical-align:middle;
+}
+.nav-dropdown:hover > a::after{transform:rotate(180deg)}
+.nav-dropdown-menu{
+    position:absolute;top:calc(100% + 6px);left:-6px;
+    min-width:260px;
+    background:#111111;border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;padding:8px;
+    box-shadow:0 12px 40px rgba(0,0,0,.5);
+    opacity:0;pointer-events:none;transform:translateY(-4px);
+    transition:opacity .18s,transform .18s;
+    display:flex;flex-direction:column;gap:2px;list-style:none;
+}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu{
+    opacity:1;pointer-events:auto;transform:translateY(0);
+}
+.nav-dropdown-menu li{list-style:none}
+.nav-dropdown-menu a{
+    display:flex;flex-direction:column;gap:2px;
+    padding:11px 13px;border-radius:10px;
+    color:rgba(255,255,255,.78);font-size:.83rem;font-weight:600;
+    text-decoration:none;transition:background .15s;
+    white-space:normal;
+}
+.nav-dropdown-menu a:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav-dropdown-menu .ndm-title{display:flex;align-items:center;gap:8px}
+.nav-dropdown-menu .ndm-badge{
+    background:linear-gradient(135deg,#FF7A1A,#ea580c);color:#fff;
+    font-size:.58rem;font-weight:800;
+    padding:2px 7px;border-radius:6px;letter-spacing:.06em;
+    text-transform:uppercase;
+}
+.nav-dropdown-menu .ndm-desc{
+    font-size:.71rem;color:rgba(255,255,255,.42);
+    font-weight:500;
+}
 /* Mobile */
 .mobile-btn{display:none;background:none;border:none;color:rgba(255,255,255,.7);font-size:1.2rem;cursor:pointer;padding:6px}
 @media(max-width:860px){
@@ -868,9 +912,30 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     </a>
 
     <ul class="nav-links">
-        <li><a href="{{ route('solutions.ngo') }}">Para ONGs</a></li>
-        <li><a href="{{ route('solutions.manager') }}">Para Gestores</a></li>
-        <li><a href="{{ route('solutions.common') }}">Uso Pessoal</a></li>
+        <li class="nav-dropdown">
+            <a href="#" tabindex="0">Soluções</a>
+            <ul class="nav-dropdown-menu">
+                <li>
+                    <a href="{{ route('solutions.ngo') }}">
+                        <span class="ndm-title">Terceiro Setor <span class="ndm-badge">Principal</span></span>
+                        <span class="ndm-desc">ONGs, associações e fundações</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('solutions.manager') }}">
+                        <span class="ndm-title">Gestor de Projetos</span>
+                        <span class="ndm-desc">Consultores e coordenadores sociais</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('solutions.common') }}">
+                        <span class="ndm-title">MEI &amp; Empresas</span>
+                        <span class="ndm-desc">Autônomos, MEIs e pequenas empresas</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li><a href="#bruce-ia">Bruce IA</a></li>
         <li><a href="#features">Recursos</a></li>
         <li><a href="#academy">Academy</a></li>
         <div class="nav-sep"></div>
@@ -890,9 +955,10 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
-    <a href="{{ route('solutions.ngo') }}">Para ONGs</a>
+    <a href="{{ route('solutions.ngo') }}">Para ONGs <span style="font-size:.6rem;background:#FF7A1A;color:#0a0a0a;padding:2px 6px;border-radius:5px;margin-left:6px;font-weight:800;letter-spacing:.05em">PRINCIPAL</span></a>
     <a href="{{ route('solutions.manager') }}">Para Gestores</a>
-    <a href="{{ route('solutions.common') }}">Uso Pessoal</a>
+    <a href="{{ route('solutions.common') }}">MEI &amp; Empresas</a>
+    <a href="#bruce-ia">Bruce IA</a>
     <a href="#features">Recursos</a>
     <a href="#academy">Academy</a>
     <a href="#pricing">Preços</a>
@@ -914,13 +980,13 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </a>
 
         <h1 class="hero-title">
-            <span class="ht-white">Gestão que</span><br>
+            <span class="ht-white">A gestão que</span><br>
             <span class="ht-grad">transforma</span><br>
-            <span class="ht-dim">vidas em escala.</span>
+            <span class="ht-dim">o terceiro setor.</span>
         </h1>
 
         <p class="hero-sub">
-            Da ONG de bairro à rede nacional — Vivensi conecta projetos, doações, voluntários e captação em um único ecossistema.
+            Da ONG de bairro à rede nacional — Vivensi unifica projetos, doações, voluntários, prestação de contas e captação de editais em uma única plataforma pensada para organizações sociais.
         </p>
 
         <div class="hero-ctas">
@@ -1243,13 +1309,13 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </div>
         <div class="seg-hdr-right">
             <p style="margin-bottom: 15px;">
-                Cada vertical foi construída para um perfil específico — com fluxos, dados e terminologia do seu setor.
+                Três pilares para sustentar sua organização: gestão unificada, transparência à prova de auditoria e captação inteligente de recursos.
             </p>
             <div style="background: rgba(37, 211, 102, 0.1); border: 1px solid rgba(37, 211, 102, 0.3); padding: 12px 20px; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px;">
                 <i class="fab fa-whatsapp" style="color: #25D366; font-size: 1.5rem;"></i>
                 <div>
-                    <strong style="color: white; display: block; font-size: 0.9rem;">Mensageria Completa Integrada</strong>
-                    <span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Disparo em massa, Chatbot 24/7 e Atendimento Humanizado.</span>
+                    <strong style="color: white; display: block; font-size: 0.9rem;">WhatsApp integrado à sua ONG</strong>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Disparo em massa para doadores, Chatbot 24/7 e atendimento humanizado.</span>
                 </div>
             </div>
         </div>
@@ -1311,66 +1377,66 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </span>
         </a>
 
-        {{-- ── Gestores & Projetos (compacto) ─────────────────────────── --}}
-        <a href="{{ route('solutions.manager') }}" class="seg-card seg-mgr seg-compact aos">
+        {{-- ── Pilar: Transparência & Compliance ──────────────────────── --}}
+        <a href="{{ route('solutions.ngo') }}#transparencia" class="seg-card seg-mgr seg-compact aos">
             <div class="seg-num">02</div>
 
             <div class="seg-icon-row">
-                <div class="seg-icon si-blue"><i class="fas fa-chart-gantt"></i></div>
-                <span class="seg-badge sb-blue">Gestão</span>
+                <div class="seg-icon si-blue"><i class="fas fa-shield-halved"></i></div>
+                <span class="seg-badge sb-blue">Transparência</span>
             </div>
 
-            <h3>Gestores &amp; Equipes de Projeto</h3>
-            <p>Kanban, financeiro e CRM integrados — visibilidade total do planejamento à entrega.</p>
+            <h3>Transparência &amp; Compliance</h3>
+            <p>Portal público, prestação de contas automatizada e conformidade com LGPD, CEBAS e MROSC — sem planilha.</p>
 
             <div class="seg-chips">
-                <span class="seg-chip">Kanban</span>
-                <span class="seg-chip">CRM</span>
-                <span class="seg-chip">Financeiro</span>
-                <span class="seg-chip">Agenda</span>
-                <span class="seg-chip">Relatórios</span>
-                <span class="seg-chip">WhatsApp IA</span>
+                <span class="seg-chip">Portal Público</span>
+                <span class="seg-chip">Prestação de Contas</span>
+                <span class="seg-chip">CEBAS / MROSC</span>
+                <span class="seg-chip">LGPD</span>
+                <span class="seg-chip">Auditoria</span>
+                <span class="seg-chip">Recibo IR</span>
             </div>
 
             <div class="seg-stat">
-                <div class="seg-stat-val">{{ $siteStats['projects_count'] }}+</div>
-                <div class="seg-stat-lbl">{{ $siteStats['projects_label'] }}</div>
+                <div class="seg-stat-val" style="color:#3B6CF6">100%</div>
+                <div class="seg-stat-lbl">rastreabilidade nos processos sensíveis</div>
             </div>
 
             <span class="seg-link sl-blue">
-                Ver solução
+                Ver como funciona
                 <span class="seg-link-arrow sla-blue"><i class="fas fa-arrow-right"></i></span>
             </span>
         </a>
 
-        {{-- ── Uso Pessoal & Profissional (compacto) ──────────────────── --}}
-        <a href="{{ route('solutions.common') }}" class="seg-card seg-ppl seg-compact aos">
+        {{-- ── Pilar: Captação & Sustentabilidade ─────────────────────── --}}
+        <a href="{{ route('solutions.ngo') }}#captacao" class="seg-card seg-ppl seg-compact aos">
             <div class="seg-num">03</div>
 
             <div class="seg-icon-row">
-                <div class="seg-icon si-purple"><i class="fas fa-briefcase"></i></div>
-                <span class="seg-badge sb-purple">Profissional</span>
+                <div class="seg-icon si-purple"><i class="fas fa-hand-holding-dollar"></i></div>
+                <span class="seg-badge sb-purple">Captação</span>
             </div>
 
-            <h3>Uso Pessoal &amp; Profissional</h3>
-            <p>Para freelancers e autônomos: finanças, contratos e comunicação com clientes em um só lugar.</p>
+            <h3>Captação &amp; Sustentabilidade</h3>
+            <p>Radar de editais com IA, portal do doador, campanhas, rifas e patrocínios — para diversificar sua receita.</p>
 
             <div class="seg-chips">
-                <span class="seg-chip">Finanças</span>
-                <span class="seg-chip">Contratos Digitais</span>
-                <span class="seg-chip">Landing Pages</span>
+                <span class="seg-chip">Radar de Editais IA</span>
+                <span class="seg-chip">Portal do Doador</span>
+                <span class="seg-chip">Campanhas</span>
                 <span class="seg-chip">Rifas</span>
-                <span class="seg-chip">WhatsApp</span>
-                <span class="seg-chip">Agenda</span>
+                <span class="seg-chip">Patrocínios</span>
+                <span class="seg-chip">CRM de Doadores</span>
             </div>
 
             <div class="seg-stat">
-                <div class="seg-stat-val">{{ $siteStats['users_count'] }}+</div>
-                <div class="seg-stat-lbl">{{ $siteStats['users_label'] }}</div>
+                <div class="seg-stat-val" style="color:#7C3AED">IA</div>
+                <div class="seg-stat-lbl">Bruce IA prospecta parceiros pra você</div>
             </div>
 
             <span class="seg-link sl-purple">
-                Ver solução
+                Ver como funciona
                 <span class="seg-link-arrow sla-purple"><i class="fas fa-arrow-right"></i></span>
             </span>
         </a>
@@ -1483,10 +1549,10 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <div class="pt-head">
         <div class="feat-eyebrow"><span class="feat-ey-dot"></span> Plataforma Inteligente</div>
         <h2 class="pt-h2">
-            13 módulos prontos para usar hoje.<br>
-            <em>Escolha o que é para você.</em>
+            18 módulos prontos para a sua ONG.<br>
+            <em>Explore por área de atuação.</em>
         </h2>
-        <span class="pt-h2-cta">Clique no seu perfil e veja o que o Vivensi faz por você.</span>
+        <span class="pt-h2-cta">Clique em cada tema e veja o que o Vivensi faz pela sua organização.</span>
     </div>
 
     <!-- ACCORDION SEGMENTS -->
@@ -1555,13 +1621,13 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </div>
     </div>
 
-    {{-- ─── 2. Gestores & Projetos ──────────────────────────────────── --}}
+    {{-- ─── 2. Gestão Financeira & Prestação de Contas ──────────────── --}}
     <div class="pt-accord" id="pt-mgr">
         <button class="pta-hdr" onclick="ptToggle('mgr')" type="button">
-            <div class="pta-icon pta-ic-blue"><i class="fas fa-briefcase"></i></div>
+            <div class="pta-icon pta-ic-blue"><i class="fas fa-scale-balanced"></i></div>
             <div class="pta-meta">
-                <div class="pta-name">Gestores &amp; Projetos</div>
-                <div class="pta-sub">CRM, financeiro, RH, prospecção com IA e marketing</div>
+                <div class="pta-name">Financeiro &amp; Prestação de Contas</div>
+                <div class="pta-sub">DRE, conciliação, CEBAS, MROSC e auditoria pronta pra Ministério Público</div>
             </div>
             <span class="pta-badge">6 módulos</span>
             <div class="pta-chevron"><i class="fas fa-chevron-down"></i></div>
@@ -1570,53 +1636,44 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             <div class="pta-content">
                 <div class="pta-feats">
                     <div class="pta-feat">
-                        <div class="pta-fi afi-orange"><i class="fas fa-kanban"></i></div>
-                        <div><div class="pta-ft">CRM Patrocínios Kanban</div><div class="pta-fd">Pipeline visual: Prospecção → Proposta → Fechado. KPIs de conversão e valor total do pipeline em tempo real.</div></div>
-                    </div>
-                    <div class="pta-feat">
                         <div class="pta-fi afi-blue"><i class="fas fa-chart-line"></i></div>
                         <div><div class="pta-ft">Financeiro Completo</div><div class="pta-fd">DRE, conciliação bancária, balancetes e exportação para contabilidade em um clique.</div></div>
                     </div>
                     <div class="pta-feat">
-                        <div class="pta-fi afi-purple"><i class="fas fa-brain"></i></div>
-                        <div><div class="pta-ft">Bruce AI — Prospecção</div><div class="pta-fd">IA busca empresas, calcula Fit Score e escreve o pitch de abordagem. Você só aprova e envia.</div></div>
+                        <div class="pta-fi afi-orange"><i class="fas fa-shield-halved"></i></div>
+                        <div><div class="pta-ft">CEBAS &amp; MROSC</div><div class="pta-fd">Motor de conformidade contínua com checklists automáticos, alertas de vencimento e relatórios prontos para renovação.</div></div>
                     </div>
                     <div class="pta-feat">
-                        <div class="pta-fi afi-red"><i class="fas fa-users-gear"></i></div>
-                        <div><div class="pta-ft">RH &amp; Departamento Pessoal</div><div class="pta-fd">Fichas de funcionários e voluntários, controle de horas e funções centralizados.</div></div>
+                        <div class="pta-fi afi-teal"><i class="fas fa-file-invoice-dollar"></i></div>
+                        <div><div class="pta-ft">Recibo de IR Automático</div><div class="pta-fd">Cada doação vira PDF com QR de validação. O doador recebe direto no WhatsApp ou e-mail.</div></div>
                     </div>
                     <div class="pta-feat">
-                        <div class="pta-fi afi-green"><i class="fas fa-paper-plane"></i></div>
-                        <div><div class="pta-ft">Disparos em Massa WhatsApp</div><div class="pta-fd">Campanhas segmentadas com imagens, links e CTA — respeitando a janela de 24h da Meta.</div></div>
+                        <div class="pta-fi afi-red"><i class="fas fa-clipboard-check"></i></div>
+                        <div><div class="pta-ft">Auditoria &amp; LGPD</div><div class="pta-fd">Log rastreável de cada ação sensível (quem, quando, de onde). Prova prática para MP, fiscais e ANPD.</div></div>
                     </div>
                     <div class="pta-feat">
-                        <div class="pta-fi afi-pink"><i class="fas fa-calendar-days"></i></div>
-                        <div><div class="pta-ft">Calendário Editorial</div><div class="pta-fd">Agende posts no Instagram e Facebook. A IA escreve a legenda — você aprova e publica.</div></div>
+                        <div class="pta-fi afi-yellow"><i class="fas fa-boxes-stacked"></i></div>
+                        <div><div class="pta-ft">Almoxarifado &amp; Patrimônio</div><div class="pta-fd">Doações físicas, saídas por projeto e inventário — relatório pronto para auditoria externa.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-purple"><i class="fas fa-earth-americas"></i></div>
+                        <div><div class="pta-ft">Portal de Transparência</div><div class="pta-fd">Página pública obrigatória em CEBAS, atualizada em tempo real. Sem planilha, sem risco de erro.</div></div>
                     </div>
                 </div>
                 <div class="pta-demo">
                     <div class="pta-demo-box">
-                        <div class="ptd-label"><i class="fas fa-kanban"></i> CRM Patrocínios</div>
-                        <div class="ptd-kanban">
-                            <div>
-                                <div class="ptd-kcol-hdr ptd-kh-o">Prospecção</div>
-                                <div class="ptd-kcard">Empresa ABC<span>R$ 5k</span></div>
-                                <div class="ptd-kcard">Farmácia XP<span>R$ 2k</span></div>
-                            </div>
-                            <div>
-                                <div class="ptd-kcol-hdr ptd-kh-b">Proposta</div>
-                                <div class="ptd-kcard hot">Supermercado BH<span>R$ 12k</span></div>
-                                <div class="ptd-kcard">Tech Solutions<span>R$ 8k</span></div>
-                            </div>
-                            <div>
-                                <div class="ptd-kcol-hdr ptd-kh-g">Fechado</div>
-                                <div class="ptd-kcard">Grupo Alfa<span>R$ 18k</span></div>
-                                <div class="ptd-kcard">Banco Beta<span>R$ 30k</span></div>
-                            </div>
+                        <div class="ptd-label"><i class="fas fa-shield-halved"></i> Motor de Conformidade</div>
+                        <div class="ptd-slots">
+                            <div class="ptd-slot ptd-slot-ok">CEBAS · Certidão Federal · <strong>Ok</strong></div>
+                            <div class="ptd-slot ptd-slot-ok">MROSC · Plano de Trabalho 2026 · <strong>Enviado</strong></div>
+                            <div class="ptd-slot ptd-slot-ok">LGPD · Registro de Operações · <strong>Em dia</strong></div>
+                            <div class="ptd-slot ptd-slot-free">CNAS · Renovação em 47 dias</div>
                         </div>
-                        <div class="ptd-kpi-row">
-                            <div class="ptd-kpi"><div class="ptd-kpi-v">R$ 75k</div><div class="ptd-kpi-l">Pipeline total</div></div>
-                            <div class="ptd-kpi"><div class="ptd-kpi-v">71%</div><div class="ptd-kpi-l">Taxa conversão</div></div>
+                        <div class="ptd-label" style="margin-top:14px"><i class="fas fa-file-invoice-dollar"></i> Prestação de Contas 2026</div>
+                        <div class="ptd-stats-row">
+                            <div class="ptd-stat"><span class="ptd-stat-v">R$ 1.2M</span><span class="ptd-stat-l">Executado</span></div>
+                            <div class="ptd-stat"><span class="ptd-stat-v">96%</span><span class="ptd-stat-l">Comprovado</span></div>
+                            <div class="ptd-stat"><span class="ptd-stat-v">4/4</span><span class="ptd-stat-l">Convênios ok</span></div>
                         </div>
                     </div>
                 </div>
@@ -1624,53 +1681,56 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </div>
     </div>
 
-    {{-- ─── 3. Uso Pessoal / Negócio ───────────────────────────────── --}}
+    {{-- ─── 3. Captação Inteligente & Editais ──────────────────────── --}}
     <div class="pt-accord" id="pt-personal">
         <button class="pta-hdr" onclick="ptToggle('personal')" type="button">
-            <div class="pta-icon pta-ic-purple"><i class="fas fa-user"></i></div>
+            <div class="pta-icon pta-ic-purple"><i class="fas fa-brain"></i></div>
             <div class="pta-meta">
-                <div class="pta-name">Uso Pessoal &amp; Negócio</div>
-                <div class="pta-sub">Bot WhatsApp, agendamento, marketing IA e redes sociais</div>
+                <div class="pta-name">Captação Inteligente &amp; Editais</div>
+                <div class="pta-sub">Radar de editais IA, portal do doador, campanhas, rifas e patrocínios</div>
             </div>
-            <span class="pta-badge">5 módulos</span>
+            <span class="pta-badge">6 módulos</span>
             <div class="pta-chevron"><i class="fas fa-chevron-down"></i></div>
         </button>
         <div class="pta-body">
             <div class="pta-content">
                 <div class="pta-feats">
                     <div class="pta-feat">
+                        <div class="pta-fi afi-purple"><i class="fas fa-satellite-dish"></i></div>
+                        <div><div class="pta-ft">Radar de Editais com IA</div><div class="pta-fd">Bruce IA varre Transferegov e QueroDoação, filtra por tema/UF e sugere só editais alinhados à sua missão.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-pink"><i class="fas fa-heart"></i></div>
+                        <div><div class="pta-ft">Portal do Doador</div><div class="pta-fd">Cada doador tem área logada com histórico, próximos vencimentos e recibo de IR baixável a qualquer hora.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-orange"><i class="fas fa-bullhorn"></i></div>
+                        <div><div class="pta-ft">Campanhas Públicas</div><div class="pta-fd">Landing pages com meta em tempo real, integração PIX/cartão e checkout otimizado — feitas em minutos.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-yellow"><i class="fas fa-ticket"></i></div>
+                        <div><div class="pta-ft">Rifas &amp; Sorteios</div><div class="pta-fd">Rifas beneficentes com pagamento PIX, sorteio auditável e envio automático dos bilhetes pelo WhatsApp.</div></div>
+                    </div>
+                    <div class="pta-feat">
+                        <div class="pta-fi afi-blue"><i class="fas fa-handshake"></i></div>
+                        <div><div class="pta-ft">CRM de Patrocínios</div><div class="pta-fd">Pipeline visual: Prospecção → Proposta → Fechado. Bruce IA sugere fit com empresas e ajuda no pitch.</div></div>
+                    </div>
+                    <div class="pta-feat">
                         <div class="pta-fi afi-green"><i class="fab fa-whatsapp"></i></div>
-                        <div><div class="pta-ft">Bot WhatsApp Personalizado</div><div class="pta-fd">Chatbot treinável com a identidade, missão e FAQ do seu negócio ou projeto pessoal.</div></div>
-                    </div>
-                    <div class="pta-feat">
-                        <div class="pta-fi afi-blue"><i class="fas fa-calendar-check"></i></div>
-                        <div><div class="pta-ft">Agendamento Online</div><div class="pta-fd">Link público para clientes agendarem. Confirmações automáticas por WhatsApp sem você intervir.</div></div>
-                    </div>
-                    <div class="pta-feat">
-                        <div class="pta-fi afi-purple"><i class="fas fa-wand-magic-sparkles"></i></div>
-                        <div><div class="pta-ft">Marketing Intelligence IA</div><div class="pta-fd">IA gera campanha completa: texto, imagem e legenda. Exporte para redes sociais em segundos.</div></div>
-                    </div>
-                    <div class="pta-feat">
-                        <div class="pta-fi afi-teal"><i class="fas fa-file-invoice-dollar"></i></div>
-                        <div><div class="pta-ft">Financeiro Simplificado</div><div class="pta-fd">Controle de receitas e despesas, categorias e relatório mensal. Claro e direto ao ponto.</div></div>
-                    </div>
-                    <div class="pta-feat">
-                        <div class="pta-fi afi-pink"><i class="fas fa-calendar-days"></i></div>
-                        <div><div class="pta-ft">Social Media Integrado</div><div class="pta-fd">Calendário editorial + legenda gerada por IA + conexão direta com Facebook e Instagram via Meta.</div></div>
+                        <div><div class="pta-ft">Régua de Reativação</div><div class="pta-fd">Doadores que ficaram inativos recebem sequência automatizada por WhatsApp — sem esforço da equipe.</div></div>
                     </div>
                 </div>
                 <div class="pta-demo">
                     <div class="pta-demo-box">
-                        <div class="ptd-label"><i class="fas fa-calendar-check"></i> Agenda do dia</div>
+                        <div class="ptd-label"><i class="fas fa-satellite-dish"></i> Radar de Editais — Últimas 24h</div>
                         <div class="ptd-slots">
-                            <div class="ptd-slot ptd-slot-ok">09:00 — Maria Souza · Confirmado</div>
-                            <div class="ptd-slot ptd-slot-ok">11:30 — Pedro Lima · Confirmado</div>
-                            <div class="ptd-slot ptd-slot-free">14:00 — Disponível</div>
-                            <div class="ptd-slot ptd-slot-free">16:00 — Disponível</div>
+                            <div class="ptd-slot ptd-slot-ok"><strong>Petrobras Socioambiental</strong> · R$ 800k · Fit 94%</div>
+                            <div class="ptd-slot ptd-slot-ok"><strong>Itaú Social</strong> · R$ 250k · Fit 87%</div>
+                            <div class="ptd-slot ptd-slot-free">Transferegov Cultura · R$ 120k · Fit 71%</div>
                         </div>
                         <div class="ptd-tags">
-                            <span class="ptd-tag"><i class="fab fa-whatsapp" style="color:#25d366"></i> Bot enviou confirmações</span>
-                            <span class="ptd-tag"><i class="fas fa-wand-magic-sparkles" style="color:#a78bfa"></i> IA gerou legenda</span>
+                            <span class="ptd-tag"><i class="fas fa-brain" style="color:#a78bfa"></i> Bruce IA aprovou 2</span>
+                            <span class="ptd-tag"><i class="fas fa-envelope-open-text" style="color:#4ade80"></i> Digest enviado</span>
                         </div>
                     </div>
                 </div>
@@ -1679,6 +1739,173 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     </div>
 
 </div><!-- /pt-inner -->
+</section>
+
+<!-- ─── BRUCE IA — SEÇÃO DEDICADA ─── -->
+<section class="bruce-section" id="bruce-ia">
+<style>
+.bruce-section{
+    padding:110px 6% 100px;
+    background:linear-gradient(180deg,#080808 0%,#0A0A0B 60%,#0d0d18 100%);
+    position:relative;overflow:hidden;
+}
+.bruce-section::before{
+    content:'';position:absolute;inset:0;
+    background-image:radial-gradient(circle at 15% 20%,rgba(255,122,26,.08),transparent 40%),
+                     radial-gradient(circle at 85% 80%,rgba(79,110,247,.06),transparent 45%);
+    pointer-events:none;
+}
+.bruce-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.bruce-header{
+    display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:center;
+    margin-bottom:56px;
+}
+.bruce-icon-wrap{
+    display:flex;flex-direction:column;align-items:center;gap:12px;flex-shrink:0;
+}
+.bruce-icon-wrap img{
+    width:140px;height:140px;border-radius:32px;
+    box-shadow:0 20px 60px rgba(255,122,26,.35),0 6px 20px rgba(0,0,0,.5);
+    background:#0f0f1e;
+}
+.bruce-tag{
+    background:rgba(255,122,26,.15);color:#FF7A1A;
+    font-size:.68rem;font-weight:800;
+    padding:5px 14px;border-radius:20px;letter-spacing:.1em;
+    text-transform:uppercase;border:1px solid rgba(255,122,26,.3);
+}
+.bruce-title-block .bt-eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:.72rem;font-weight:800;letter-spacing:.14em;
+    color:#FF7A1A;text-transform:uppercase;margin-bottom:14px;
+}
+.bruce-title-block h2{
+    font-size:clamp(2rem,4vw,3rem);font-weight:900;
+    color:#fff;letter-spacing:-.03em;line-height:1.1;
+    margin:0 0 18px;
+}
+.bruce-title-block h2 em{font-style:normal;color:#FF7A1A;}
+.bruce-title-block p{
+    font-size:1.03rem;line-height:1.65;
+    color:rgba(255,255,255,.62);max-width:560px;margin:0;
+}
+.bruce-pillars{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:44px;
+}
+.bp-card{
+    background:linear-gradient(145deg,rgba(20,20,32,.6),rgba(15,15,30,.4));
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:18px;padding:26px 22px;
+    transition:border-color .25s,transform .25s;
+    backdrop-filter:blur(10px);
+}
+.bp-card:hover{border-color:rgba(255,122,26,.25);transform:translateY(-3px)}
+.bp-ico{
+    width:44px;height:44px;border-radius:12px;
+    background:linear-gradient(135deg,#FF7A1A,#ea580c);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.05rem;color:#fff;margin-bottom:16px;
+    box-shadow:0 6px 20px rgba(255,122,26,.25);
+}
+.bp-title{
+    font-size:.95rem;font-weight:800;color:#fff;
+    letter-spacing:-.01em;margin-bottom:8px;
+}
+.bp-desc{
+    font-size:.82rem;line-height:1.55;color:rgba(255,255,255,.55);margin:0;
+}
+.bruce-cta-row{
+    display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;
+    padding-top:8px;
+}
+.bruce-cta-primary{
+    display:inline-flex;align-items:center;gap:10px;
+    background:linear-gradient(135deg,#FF7A1A,#ea580c);
+    color:#fff;font-size:.9rem;font-weight:800;
+    padding:14px 28px;border-radius:12px;text-decoration:none;
+    box-shadow:0 8px 24px rgba(255,122,26,.35);
+    transition:transform .2s,box-shadow .2s;letter-spacing:-.01em;
+}
+.bruce-cta-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,122,26,.45)}
+.bruce-cta-secondary{
+    display:inline-flex;align-items:center;gap:10px;
+    background:rgba(255,255,255,.05);color:rgba(255,255,255,.85);
+    border:1px solid rgba(255,255,255,.12);
+    font-size:.9rem;font-weight:700;
+    padding:13px 26px;border-radius:12px;text-decoration:none;
+    transition:background .2s,border-color .2s;letter-spacing:-.01em;
+}
+.bruce-cta-secondary:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+@media(max-width:900px){
+    .bruce-header{grid-template-columns:1fr;gap:24px;text-align:center}
+    .bruce-icon-wrap{align-items:center}
+    .bruce-title-block .bt-eyebrow{justify-content:center;display:inline-flex}
+    .bruce-pillars{grid-template-columns:repeat(2,1fr)}
+    .bruce-title-block p{margin:0 auto}
+}
+@media(max-width:520px){
+    .bruce-section{padding:80px 5% 70px}
+    .bruce-pillars{grid-template-columns:1fr}
+    .bruce-icon-wrap img{width:110px;height:110px;border-radius:26px}
+}
+</style>
+
+<div class="bruce-inner">
+
+    <div class="bruce-header">
+        <div class="bruce-icon-wrap">
+            <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA">
+            <span class="bruce-tag">Exclusivo Vivensi</span>
+        </div>
+        <div class="bruce-title-block">
+            <div class="bt-eyebrow">
+                <i class="fas fa-sparkles"></i> A inteligência da sua ONG
+            </div>
+            <h2>Bruce IA — o<br><em>assistente estratégico</em><br>da sua organização social.</h2>
+            <p>
+                Enquanto sua equipe cuida das pessoas, o Bruce lê seus dados, prospecta editais e patrocínios, monta relatórios, alerta sobre riscos e sugere o próximo passo estratégico. Feito pelo Vivensi, treinado para o terceiro setor brasileiro.
+            </p>
+        </div>
+    </div>
+
+    <div class="bruce-pillars">
+
+        <div class="bp-card">
+            <div class="bp-ico"><i class="fas fa-satellite-dish"></i></div>
+            <div class="bp-title">Radar de Editais &amp; Patrocínios</div>
+            <p class="bp-desc">Varre Transferegov, QueroDoação e empresas privadas 24/7. Sugere apenas oportunidades alinhadas à missão da sua ONG, com fit score e pitch pronto.</p>
+        </div>
+
+        <div class="bp-card">
+            <div class="bp-ico"><i class="fas fa-chart-line"></i></div>
+            <div class="bp-title">Análise de Indicadores</div>
+            <p class="bp-desc">Cruza doações, projetos, beneficiários e financeiro. Detecta tendências, gargalos e desvios antes que virem problema.</p>
+        </div>
+
+        <div class="bp-card">
+            <div class="bp-ico"><i class="fas fa-file-lines"></i></div>
+            <div class="bp-title">Relatórios Automatizados</div>
+            <p class="bp-desc">Prestação de contas, relatórios de impacto e narrativas para editais — gerados em segundos a partir dos dados da sua organização.</p>
+        </div>
+
+        <div class="bp-card">
+            <div class="bp-ico"><i class="fas fa-brain"></i></div>
+            <div class="bp-title">Assistente Estratégico</div>
+            <p class="bp-desc">Sala de estratégia com 5 personas (financeira, captação, jurídico, comunicação, projetos). Você pergunta, Bruce responde com base nos seus dados reais.</p>
+        </div>
+
+    </div>
+
+    <div class="bruce-cta-row">
+        <a href="{{ route('register') }}" class="bruce-cta-primary">
+            <i class="fas fa-rocket"></i> Ativar o Bruce na minha ONG
+        </a>
+        <a href="{{ route('solutions.ngo') }}" class="bruce-cta-secondary">
+            <i class="fas fa-book-open"></i> Como o Bruce trabalha
+        </a>
+    </div>
+
+</div>
 </section>
 
 <!-- ─── VIVENSI ACADEMY ─── -->
@@ -1945,13 +2172,14 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <div class="footer-row">
         <div class="footer-col">
             <img src="{{ asset('img/novalogo.png') }}" alt="Vivensi" style="height:32px;display:block;filter:brightness(0) invert(1);opacity:.6">
-            <p class="footer-brand-desc">Tecnologia para quem transforma o Brasil. Gestão inteligente para ONGs, gestores de projetos e pessoas.</p>
+            <p class="footer-brand-desc">Tecnologia para quem transforma o Brasil. Gestão inteligente feita para o terceiro setor.</p>
         </div>
         <div class="footer-col">
             <h5>Soluções</h5>
-            <a href="{{ route('solutions.ngo') }}">Para ONGs</a>
-            <a href="{{ route('solutions.manager') }}">Para Gestores</a>
-            <a href="{{ route('solutions.common') }}">Uso Pessoal</a>
+            <a href="{{ route('solutions.ngo') }}">Terceiro Setor · ONGs</a>
+            <a href="{{ route('solutions.manager') }}">Gestores de Projetos</a>
+            <a href="{{ route('solutions.common') }}">MEI &amp; Empresas</a>
+            <a href="#bruce-ia">Bruce IA</a>
             <a href="#features">Recursos</a>
         </div>
         <div class="footer-col">
