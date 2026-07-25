@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Vivensi pre-commit hook: escaneia arquivos staged com gitleaks.
+#
+# Ativar (uma vez por clone):
+#   git config core.hooksPath .githooks
+#
+# Instalar gitleaks:
+#   macOS:   brew install gitleaks
+#   Windows: winget install gitleaks.gitleaks   (ou scoop install gitleaks)
+#   Linux:   https://github.com/gitleaks/gitleaks#installing
+
+set -e
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "ℹ️  gitleaks não instalado — scan de segredos pulado."
+    echo "   Instale para ativar: https://github.com/gitleaks/gitleaks#installing"
+    exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+CONFIG="$REPO_ROOT/.gitleaks.toml"
+
+if [ ! -f "$CONFIG" ]; then
+    echo "⚠️  .gitleaks.toml não encontrado — pulando scan"
+    exit 0
+fi
+
+echo "🔍 gitleaks scan (staged files)..."
+if ! gitleaks protect --staged --config "$CONFIG" --redact --verbose; then
+    echo ""
+    echo "❌ gitleaks detectou possível segredo nos arquivos staged."
+    echo "   Commit BLOQUEADO."
+    echo ""
+    echo "   → Se for credencial real: remova, rotacione, e não faça bypass."
+    echo "   → Se for falso positivo: adicione o padrão ao [allowlist] em .gitleaks.toml"
+    echo ""
+    exit 1
+fi
+
+echo "✅ gitleaks OK"
+exit 0

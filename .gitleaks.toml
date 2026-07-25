@@ -1,0 +1,67 @@
+# Vivensi — configuração do gitleaks (detecção de segredos em Git)
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+#
+# Ativação:
+#   - CI: job `gitleaks` em .github/workflows/laravel.yml (automático em push/PR)
+#   - Local (opcional): git config core.hooksPath .githooks
+
+title = "Vivensi gitleaks config"
+
+[extend]
+# Herda o ruleset padrão do gitleaks (AWS, GCP, Slack, GitHub, Stripe, etc)
+useDefault = true
+
+# ── Allowlist global (aplica a TODAS as regras) ──────────────────────────────
+[allowlist]
+description = "Falsos positivos conhecidos e credenciais já rotacionadas"
+
+# Valores literais que podem aparecer em qualquer arquivo/commit sem alerta.
+# Uso: strings que já foram rotacionadas em produção e ficam no histórico
+# como fantasmas — não abrem mais nada, não devem gerar ruído em scans --all.
+regexes = [
+    # EVOLUTION_GLOBAL_KEY antiga (rotacionada, comprovadamente inerte via HTTP 401)
+    '''e838f5d5b86ea0fe27492c283c27498ffe0b250085896f1eaa8093baf0a3309e''',
+    # DB_PASSWORD antiga do MySQL (rotacionada, rejeitada pelo mysql client)
+    '''Viv3nsi@2026''',
+    # AUTHENTICATION_API_KEY antiga da Evolution (rotacionada, HTTP 401)
+    '''SenhaForteVivensi2026@!''',
+    # APP_KEY exposta em .github/workflows/laravel.yml — fixo pro ambiente de CI
+    '''base64:kZ1GflhBe1nqNVSJNDZ9FWJMFG7rJ1XLuMoFBJFWjXc=''',
+    # Placeholders públicos do soketi/pusher em dev local
+    '''vivensi-key''',
+    '''vivensi-secret''',
+]
+
+# Paths ignorados globalmente (regex sobre o caminho do arquivo)
+paths = [
+    '''\.env\.example$''',
+    '''\.gitleaks\.toml$''',
+    '''vendor/''',
+    '''node_modules/''',
+    '''storage/''',
+    '''public/build/''',
+    # Testes e fixtures — senhas fake documentadas
+    '''tests/.*\.php$''',
+    '''database/factories/''',
+    '''database/seeders/''',
+    # Docs internos (auditorias, planos, análises) — sem segredos ativos
+    '''docs/AUDIT_.*\.md$''',
+    '''docs/VPS_ANALISE_.*\.md$''',
+    '''docs/PLANO_.*\.md$''',
+    '''docs/GITLEAKS_SETUP\.md$''',
+    # Arquivos ignorados pelo próprio git (defesa em profundidade)
+    '''^report\.md$''',
+    '''^resultado.*\.md$''',
+    '''^relatorio.*\.md$''',
+    '''^seguranca.*\.md$''',
+    '''^teste.*\.md$''',
+    '''^analise.*\.md$''',
+    '''^auditoria.*\.md$''',
+    '''^erro.*\.md$''',
+]
+
+# Commits específicos que sabemos conter segredos já rotacionados.
+# Adicione novos SHAs aqui quando fizer sentido silenciar histórico.
+commits = [
+    # Deixe vazio ou adicione SHAs pontuais. Regexes acima já pegam a maioria.
+]
