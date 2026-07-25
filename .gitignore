@@ -36,6 +36,16 @@ test_result*.txt
 # ── Arquivos de credenciais e sessão sensíveis ───────────
 aws_env.txt
 cookies.txt
+soketi.json
+
+# ── Relatórios de diagnóstico / auditoria (podem conter segredos) ──
+/report.md
+/resultado.md
+/resultado*.md
+/relatorio*.md
+/erro*.md
+/analise*.md
+/auditoria*.md
 
 # ── Scripts de diagnóstico / one-off (raiz do projeto) ───
 check_*.php
