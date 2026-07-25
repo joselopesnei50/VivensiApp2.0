@@ -12,7 +12,16 @@
             'shadow'   => 'rgba(16,185,129,.25)',
             'light'    => '#ECFDF5',
         ],
-        [
+        $role === 'ngo' ? [
+            'icon'     => 'fa-people-roof',
+            'label'    => 'Beneficiários',
+            'desc'     => 'Gerencie e consulte seus beneficiários',
+            'url'      => url('/ngo/beneficiaries'),
+            'gradient' => 'linear-gradient(135deg, #F97316, #EA580C)',
+            'shadow'   => 'rgba(249,115,22,.30)',
+            'light'    => '#FFF7ED',
+            'featured' => true,
+        ] : [
             'icon'     => 'fa-robot',
             'label'    => 'Social AI Hub',
             'desc'     => 'Crie posts com inteligência artificial',
@@ -162,11 +171,28 @@
     color: #98A2B3;
     transform: translate(2px, -2px);
 }
+.qa-card-featured {
+    border-color: rgba(249,115,22,.35);
+    background: linear-gradient(160deg, #fff 60%, #fff7ed 100%);
+    box-shadow: 0 4px 20px rgba(249,115,22,.12), 0 1px 3px rgba(16,24,40,.05);
+}
+.qa-card-featured::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #F97316, #EA580C);
+    border-radius: 16px 16px 0 0;
+}
+.qa-card-featured:hover {
+    box-shadow: 0 16px 40px rgba(249,115,22,.22);
+}
 </style>
 
 <div class="qa-grid">
     @foreach($cards as $card)
-    <a href="{{ $card['url'] }}" class="qa-card"
+    <a href="{{ $card['url'] }}"
+       class="qa-card {{ !empty($card['featured']) ? 'qa-card-featured' : '' }}"
        style="--qa-shadow: {{ $card['shadow'] }}; --qa-light: {{ $card['light'] }};">
         <div class="qa-icon" style="background: {{ $card['gradient'] }};">
             <i class="fas {{ $card['icon'] }}"></i>
