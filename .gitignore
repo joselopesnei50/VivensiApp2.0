@@ -46,6 +46,8 @@ soketi.json
 /erro*.md
 /analise*.md
 /auditoria*.md
+/seguranca*.md
+/teste*.md
 
 # ── Scripts de diagnóstico / one-off (raiz do projeto) ───
 check_*.php
