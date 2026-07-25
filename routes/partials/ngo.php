@@ -171,6 +171,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 
         // Trilha de Auditoria
         Route::get('/audit',                   [App\Http\Controllers\AuditController::class, 'index']);
+        Route::get('/audit/about',             [App\Http\Controllers\AuditController::class, 'about']);
         Route::get('/audit/export',            [App\Http\Controllers\AuditController::class, 'exportCsv'])->middleware('throttle:web_export');
         Route::get('/audit/{id}',              [App\Http\Controllers\AuditController::class, 'show']);
 

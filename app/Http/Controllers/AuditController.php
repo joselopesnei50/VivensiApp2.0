@@ -76,6 +76,12 @@ class AuditController extends Controller
         return view('ngo.audit.show', compact('log'));
     }
 
+    public function about()
+    {
+        $this->authorizeAccess();
+        return view('ngo.audit.about');
+    }
+
     public function exportCsv(Request $request)
     {
         $this->authorizeAccess();

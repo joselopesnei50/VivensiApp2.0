@@ -16,6 +16,26 @@
     </div>
 </div>
 
+{{-- ── Banner Bruce IA ── --}}
+<div style="position:relative; background:linear-gradient(135deg, #0A0A0B 0%, #141420 60%, #0f0f1e 100%); border-radius:20px; padding:28px 36px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:24px; border:1px solid rgba(255,122,26,.2); overflow:hidden;">
+    <div style="position:absolute; right:220px; top:-60px; width:240px; height:240px; background:rgba(255,122,26,.07); border-radius:50%; filter:blur(50px); pointer-events:none;"></div>
+    <div style="position:absolute; left:0; bottom:0; width:180px; height:180px; background:rgba(79,70,229,.05); border-radius:50%; filter:blur(40px); pointer-events:none;"></div>
+    <div style="position:relative; z-index:1; flex:1;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span style="background:rgba(255,122,26,.15); color:#FF7A1A; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; padding:4px 11px; border-radius:20px; border:1px solid rgba(255,122,26,.3);">Bruce IA explica</span>
+        </div>
+        <h3 style="color:#fff; font-size:1.05rem; font-weight:800; margin:0 0 6px; letter-spacing:-.3px; line-height:1.3;">Como funciona a Central de Auditoria?</h3>
+        <p style="color:rgba(255,255,255,.55); font-size:.8rem; margin:0 0 18px; max-width:500px; line-height:1.55;">Entenda o que é registrado, como interpretar cada evento e como usar os logs para transparência, LGPD e prestação de contas ao CEBAS e MROSC.</p>
+        <a href="{{ url('/ngo/audit/about') }}" style="display:inline-flex; align-items:center; gap:8px; background:#FF7A1A; color:#0A0A0B; font-size:.8rem; font-weight:800; padding:10px 22px; border-radius:12px; text-decoration:none; letter-spacing:-.1px;">
+            <i class="fas fa-book-open"></i> Entender como funciona
+        </a>
+    </div>
+    <div style="flex-shrink:0; position:relative; z-index:1;">
+        <img src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce IA"
+             style="width:100px; height:100px; border-radius:24px; box-shadow:0 8px 32px rgba(255,122,26,.35), 0 2px 8px rgba(0,0,0,.4);">
+    </div>
+</div>
+
 <div class="vivensi-card" style="margin-bottom: 14px;">
     <form method="GET" action="{{ url('/ngo/audit') }}" style="display:flex; gap: 10px; flex-wrap: wrap; align-items:end;">
         <div style="flex: 1; min-width: 220px;">
