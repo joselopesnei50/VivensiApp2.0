@@ -10,4 +10,10 @@ class PublicPartnership extends Model
 {
     use HasFactory, BelongsToTenant;
     protected $fillable = ['tenant_id', 'agency_name', 'project_name', 'value', 'gazette_link', 'status', 'start_date', 'end_date'];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
+        'value'      => 'decimal:2',
+    ];
 }

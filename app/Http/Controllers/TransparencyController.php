@@ -21,6 +21,33 @@ use Illuminate\Support\Facades\Cache;
 
 class TransparencyController extends Controller
 {
+    private function clearPortalCache(int $tenantId): void
+    {
+        $currentYear = (int) now()->year;
+        for ($y = $currentYear - 3; $y <= $currentYear + 1; $y++) {
+            Cache::forget("transparency_portal_{$tenantId}_{$y}");
+        }
+    }
+
+    private function computePublicDataUpdatedAt(int $tenantId, string $yearStart, string $yearEnd, TransparencyPortal $portal): ?Carbon
+    {
+        $updatedAts = [
+            DB::table('transactions')->where('tenant_id', $tenantId)->where('status', 'paid')->whereBetween('date', [$yearStart, $yearEnd])->max('updated_at'),
+            DB::table('attendances')->where('tenant_id', $tenantId)->max('updated_at'),
+            DB::table('assets')->where('tenant_id', $tenantId)->max('updated_at'),
+            DB::table('employees')->where('tenant_id', $tenantId)->max('updated_at'),
+            DB::table('transparency_documents')->where('tenant_id', $tenantId)->max('updated_at'),
+            DB::table('public_partnerships')->where('tenant_id', $tenantId)->max('updated_at'),
+            DB::table('transparency_board')->where('tenant_id', $tenantId)->max('updated_at'),
+            $portal->updated_at ?? null,
+        ];
+        return collect($updatedAts)
+            ->filter()
+            ->map(fn ($v) => $v instanceof Carbon ? $v : Carbon::parse($v))
+            ->sortDesc()
+            ->first();
+    }
+
     private static function dompdfPdfDateString(Carbon $dt): string
     {
         // Dompdf expects a PDF date like: D:YYYYMMDDHHMMSS+00'00'
@@ -164,7 +191,8 @@ class TransparencyController extends Controller
         $validated['settings'] = $settings;
 
         $portal->update($validated);
-        
+        $this->clearPortalCache($tenant_id);
+
         return back()->with('success', 'Configurações do portal atualizadas!');
     }
 
@@ -180,6 +208,7 @@ class TransparencyController extends Controller
         $tenant_id = auth()->user()->tenant_id;
 
         BoardMember::create(array_merge($validated, ['tenant_id' => $tenant_id]));
+        $this->clearPortalCache($tenant_id);
 
         return back()->with('success', 'Membro da diretoria adicionado!');
     }
@@ -196,12 +225,14 @@ class TransparencyController extends Controller
         ]);
 
         $member->update($validated);
+        $this->clearPortalCache(auth()->user()->tenant_id);
         return back()->with('success', 'Membro atualizado!');
     }
 
     public function deleteBoardMember($id)
     {
         BoardMember::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id)->delete();
+        $this->clearPortalCache(auth()->user()->tenant_id);
         return back()->with('success', 'Membro removido.');
     }
 
@@ -227,6 +258,7 @@ class TransparencyController extends Controller
                 'year' => $request->year,
                 'document_date' => $request->document_date
             ]);
+            $this->clearPortalCache($tenant_id);
         }
 
         return back()->with('success', 'Documento postado com sucesso!');
@@ -243,6 +275,7 @@ class TransparencyController extends Controller
             // ignore storage deletion failures
         }
         $doc->delete();
+        $this->clearPortalCache(auth()->user()->tenant_id);
         return back()->with('success', 'Documento removido.');
     }
 
@@ -266,7 +299,8 @@ class TransparencyController extends Controller
         $tenant_id = auth()->user()->tenant_id;
         
         PublicPartnership::create(array_merge($validated, ['tenant_id' => $tenant_id]));
-        
+        $this->clearPortalCache($tenant_id);
+
         return back()->with('success', 'Parceria registrada!');
     }
 
@@ -332,12 +366,14 @@ class TransparencyController extends Controller
         ])->validate();
 
         $partnership->update($validated);
+        $this->clearPortalCache(auth()->user()->tenant_id);
         return back()->with('success', 'Parceria atualizada!');
     }
 
     public function deletePartnership($id)
     {
         PublicPartnership::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id)->delete();
+        $this->clearPortalCache(auth()->user()->tenant_id);
         return back()->with('success', 'Parceria removida.');
     }
 
@@ -833,23 +869,6 @@ class TransparencyController extends Controller
             $payrollTotal   = (float) $hrEmployees->sum('salary');
             $bonusTotal     = (float) $hrEmployees->sum('bonus');
 
-            // Public data "last updated" timestamp (for auditability / LAI good practice)
-            $updatedAts = [
-                DB::table('transactions')->where('tenant_id', $tenant_id)->where('status', 'paid')->whereBetween('date', [$yearStart, $yearEnd])->max('updated_at'),
-                DB::table('attendances')->where('tenant_id', $tenant_id)->max('updated_at'),
-                DB::table('assets')->where('tenant_id', $tenant_id)->max('updated_at'),
-                DB::table('employees')->where('tenant_id', $tenant_id)->max('updated_at'),
-                DB::table('transparency_documents')->where('tenant_id', $tenant_id)->max('updated_at'),
-                DB::table('public_partnerships')->where('tenant_id', $tenant_id)->max('updated_at'),
-                DB::table('transparency_board')->where('tenant_id', $tenant_id)->max('updated_at'),
-                $portal->updated_at ?? null,
-            ];
-            $publicDataUpdatedAt = collect($updatedAts)
-                ->filter()
-                ->map(fn ($v) => Carbon::parse($v))
-                ->sortDesc()
-                ->first();
-
             // Public audit (aggregated counts) - last 6 months
             $auditStart = now()->startOfMonth()->subMonths(5);
             $auditEnd = now()->endOfMonth();
@@ -894,7 +913,6 @@ class TransparencyController extends Controller
                 'expenseChart', 'impactChart',
                 'employeesCount', 'payrollTotal', 'bonusTotal',
                 'investmentNote',
-                'publicDataUpdatedAt',
                 'openDataMonthly',
                 'openDataExpenseByCategory',
                 'publicAuditDownloads',
@@ -903,6 +921,9 @@ class TransparencyController extends Controller
         });
 
         extract($cached);
+
+        // Computed outside the cache so it always reflects real-time changes.
+        $publicDataUpdatedAt = $this->computePublicDataUpdatedAt($tenant_id, $yearStart, $yearEnd, $portal);
 
         // Fallbacks defensivos: caches antigos (gravados antes desta release) não
         // contêm as chaves de territórios. Garante render sem 500 enquanto o cache
