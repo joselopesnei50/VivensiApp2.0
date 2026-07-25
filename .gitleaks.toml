@@ -25,17 +25,32 @@ regexes = [
     '''Viv3nsi@2026''',
     # AUTHENTICATION_API_KEY antiga da Evolution (rotacionada, HTTP 401)
     '''SenhaForteVivensi2026@!''',
+    # WEBHOOK_HMAC_KEY hardcoded histórica (AbacatePayService.php:21 em commit a7f83cf)
+    # — nunca configurada em prod (nem .env nem SystemSetting retornam valor)
+    '''t9dXRhHHo3yDEj5pVDYz0frf7q6bMKyMRmxx''',
+    # EVOLUTION_GLOBAL_KEY histórica adicional (EvolutionApiService.php em commit fee52ce)
+    # — inertização confirmada por teste HTTP 401 na Evolution API
+    '''4f2a7b9c1d8e5f3a6b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a''',
+    # META_WEBHOOK_VERIFY_TOKEN histórico (WhatsappController.php em commit c3a21cf)
+    # — token só usado no handshake inicial de setup do webhook Meta
+    '''vivensi_seguro_2026''',
     # APP_KEY exposta em .github/workflows/laravel.yml — fixo pro ambiente de CI
     '''base64:kZ1GflhBe1nqNVSJNDZ9FWJMFG7rJ1XLuMoFBJFWjXc=''',
     # Placeholders públicos do soketi/pusher em dev local
     '''vivensi-key''',
     '''vivensi-secret''',
+    # Placeholders de documentação Evolution API
+    '''evolution-api\.seuservidor\.com''',
+    '''SUA_API_KEY''',
 ]
 
 # Paths ignorados globalmente (regex sobre o caminho do arquivo)
 paths = [
+    '''^\.env$''',
     '''\.env\.example$''',
+    '''\.env\.backup$''',
     '''\.gitleaks\.toml$''',
+    '''\.gitleaks-report\.json$''',
     '''vendor/''',
     '''node_modules/''',
     '''storage/''',
@@ -58,6 +73,32 @@ paths = [
     '''^analise.*\.md$''',
     '''^auditoria.*\.md$''',
     '''^erro.*\.md$''',
+    # Docs de auditoria antigos com strings sensíveis (referências históricas)
+    '''^AUDIT_SUMMARY\.md$''',
+    '''^CORRECTION_PLAN\.md$''',
+    '''^SESSION_LOG\.md$''',
+    '''^evolution_api_fix\.md$''',
+]
+
+# ── Regras específicas com allowlist próprio ─────────────────────────────────
+# LinkedIn Client ID triggera em strings "linkedin_..." em blades/php (nomes
+# de canais social, não de client_id real). Ignoramos ocorrências no view layer.
+[[rules]]
+id = "linkedin-client-id"
+[rules.allowlist]
+paths = [
+    '''resources/views/''',
+    '''app/Http/Controllers/''',
+    '''app/Models/''',
+]
+
+# GA4 measurement ID é nome de campo em SystemSetting, não credencial.
+[[rules]]
+id = "generic-api-key"
+[rules.allowlist]
+regexes = [
+    '''ga4_measurement_id''',
+    '''ga4_tracking_id''',
 ]
 
 # Commits específicos que sabemos conter segredos já rotacionados.
