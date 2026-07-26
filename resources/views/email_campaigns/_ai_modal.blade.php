@@ -19,7 +19,7 @@
     <i class="fas fa-wand-magic-sparkles me-1"></i>Gerar com IA
 </button>
 
-<div id="aiModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:1050; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto;">
+<div id="aiModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:9999; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto;">
     <div style="background:white; border-radius:20px; width:100%; max-width:720px; box-shadow:0 20px 60px rgba(0,0,0,0.25); overflow:hidden;">
         <div style="background:linear-gradient(135deg,{{ $brandColor }},#8b5cf6); padding:22px 28px; color:white; display:flex; align-items:center; justify-content:space-between;">
             <div>
@@ -132,6 +132,15 @@
 <script>
 (function() {
     const modal        = document.getElementById('aiModal');
+
+    // IMPORTANTE: reparent para o <body> pra escapar de qualquer ancestor com
+    // transform/filter/perspective (ex.: .vivensi-card:hover tem
+    // transform:translateY(-2px), o que quebra position:fixed do modal e faz
+    // ele "descer" pra dentro do card quando o mouse entra).
+    if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
     const formPane     = document.getElementById('aiFormPane');
     const loadingPane  = document.getElementById('aiLoadingPane');
     const resultPane   = document.getElementById('aiResultPane');
