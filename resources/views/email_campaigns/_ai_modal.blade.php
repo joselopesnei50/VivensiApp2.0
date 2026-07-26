@@ -147,8 +147,11 @@
     const errorBox     = document.getElementById('aiError');
     const quotaText    = document.getElementById('aiQuotaText');
     const generateBtn  = document.getElementById('aiGenerateBtn');
-    const quotaUrl     = @json(route('email_campaigns.ai.quota'));
-    const generateUrl  = @json(route('email_campaigns.ai.generate'));
+    // Paths hardcoded (nao usa route() helper) — se o cache de rotas em prod
+    // ainda nao pegou a rota nova, route() lanca RouteNotFoundException no
+    // render e quebra a pagina inteira com 500. Path fixo e imune a isso.
+    const quotaUrl     = '/email-campaigns/ai/quota';
+    const generateUrl  = '/email-campaigns/ai/generate';
     const csrf         = document.querySelector('meta[name="csrf-token"]')?.content
                        || document.querySelector('input[name="_token"]')?.value
                        || '';
