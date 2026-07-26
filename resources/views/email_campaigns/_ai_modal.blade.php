@@ -15,18 +15,27 @@
 @endphp
 
 <button type="button" onclick="openAiModal()"
-        style="padding:8px 16px; border-radius:10px; border:none; background:linear-gradient(135deg,{{ $brandColor }},#8b5cf6); color:white; font-weight:700; font-size:0.8rem; cursor:pointer; box-shadow:0 2px 6px rgba(99,102,241,0.25);">
-    <i class="fas fa-wand-magic-sparkles me-1"></i>Gerar com IA
+        style="padding:8px 16px; border-radius:10px; border:none; background:linear-gradient(135deg,{{ $brandColor }},#8b5cf6); color:white; font-weight:700; font-size:0.8rem; cursor:pointer; box-shadow:0 2px 6px rgba(99,102,241,0.25); display:inline-flex; align-items:center; gap:8px;">
+    <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce" style="width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.15); padding:1px;">
+    Gerar com Bruce
 </button>
 
 <div id="aiModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:9999; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto;">
     <div style="background:white; border-radius:20px; width:100%; max-width:720px; box-shadow:0 20px 60px rgba(0,0,0,0.25); overflow:hidden;">
-        <div style="background:linear-gradient(135deg,{{ $brandColor }},#8b5cf6); padding:22px 28px; color:white; display:flex; align-items:center; justify-content:space-between;">
-            <div>
-                <div style="font-weight:900; font-size:1.1rem;"><i class="fas fa-wand-magic-sparkles me-2"></i>Gerador de Template com IA</div>
-                <div style="font-size:0.8rem; opacity:0.9; margin-top:2px;">Descreva sua campanha e a IA cria o HTML pronto</div>
+        <div style="background:linear-gradient(135deg,#1e1b4b,#4f46e5); padding:22px 28px; color:white; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+            <div style="display:flex; align-items:center; gap:14px; min-width:0;">
+                <div style="width:52px; height:52px; border-radius:50%; background:white; padding:4px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                    <img src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce IA" style="width:100%; height:100%; object-fit:contain;">
+                </div>
+                <div style="min-width:0;">
+                    <div style="font-weight:900; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+                        Bruce IA <span style="font-size:1rem;">🐶</span>
+                        <span style="font-size:0.62rem; font-weight:800; background:rgba(16,185,129,0.25); color:#a7f3d0; padding:2px 8px; border-radius:10px; letter-spacing:0.5px; text-transform:uppercase;">Online</span>
+                    </div>
+                    <div style="font-size:0.8rem; opacity:0.85; margin-top:2px;">Seu redator de e-mail marketing</div>
+                </div>
             </div>
-            <button type="button" onclick="closeAiModal()" style="background:rgba(255,255,255,0.18); border:none; color:white; width:32px; height:32px; border-radius:10px; cursor:pointer; font-size:1rem;">&times;</button>
+            <button type="button" onclick="closeAiModal()" style="background:rgba(255,255,255,0.18); border:none; color:white; width:32px; height:32px; border-radius:10px; cursor:pointer; font-size:1rem; flex-shrink:0;">&times;</button>
         </div>
 
         <div style="padding:24px 28px;">
@@ -36,11 +45,14 @@
             </div>
 
             <div id="aiFormPane">
+                <div style="background:#f8fafc; border-left:3px solid #6366f1; padding:10px 14px; border-radius:6px; margin-bottom:16px; font-size:0.82rem; color:#475569; line-height:1.55;">
+                    <strong style="color:#4f46e5;">Bruce:</strong> Me conta o que voce quer comunicar e para quem. Quanto mais detalhe, melhor o e-mail que eu escrevo pra voce.
+                </div>
                 <div style="margin-bottom:14px;">
-                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:6px;">Descreva a campanha *</label>
+                    <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:6px;">O que voce quer comunicar? *</label>
                     <textarea id="aiBrief" rows="4" placeholder="Ex: Convidar doadores ativos para um evento beneficente presencial no dia 15/08. Destacar que sera uma noite com jantar, palestras de impacto social e homenagem aos maiores doadores do ano."
                               style="width:100%; padding:12px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.88rem; box-sizing:border-box; resize:vertical; line-height:1.55;"></textarea>
-                    <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px;">Quanto mais especifica a descricao, melhor o template. Minimo 15 caracteres.</div>
+                    <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px;">Minimo 15 caracteres. Quanto mais especifico, melhor.</div>
                 </div>
 
                 <div class="row g-3" style="margin-bottom:14px;">
@@ -80,21 +92,26 @@
                     <button type="button" onclick="closeAiModal()"
                             style="padding:11px 20px; border-radius:10px; border:2px solid #e2e8f0; background:white; color:#64748b; font-weight:700; font-size:0.85rem; cursor:pointer;">Cancelar</button>
                     <button type="button" id="aiGenerateBtn" onclick="submitAiGeneration()"
-                            style="padding:11px 24px; border-radius:10px; border:none; background:linear-gradient(135deg,{{ $brandColor }},#8b5cf6); color:white; font-weight:800; font-size:0.85rem; cursor:pointer; box-shadow:0 2px 6px rgba(99,102,241,0.35);">
-                        <i class="fas fa-wand-magic-sparkles me-1"></i>Gerar template
+                            style="padding:11px 24px; border-radius:10px; border:none; background:linear-gradient(135deg,#4f46e5,#6366f1); color:white; font-weight:800; font-size:0.85rem; cursor:pointer; box-shadow:0 4px 12px rgba(79,70,229,0.4); display:inline-flex; align-items:center; gap:8px;">
+                        <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="" style="width:18px; height:18px; border-radius:50%; background:rgba(255,255,255,0.15); padding:1px;">
+                        Bruce, escreve pra mim
                     </button>
                 </div>
             </div>
 
             <div id="aiLoadingPane" style="display:none; text-align:center; padding:40px 20px;">
-                <div style="display:inline-block; width:48px; height:48px; border:4px solid #e2e8f0; border-top-color:{{ $brandColor }}; border-radius:50%; animation:aiSpin 0.8s linear infinite;"></div>
-                <div style="margin-top:16px; font-weight:700; color:#475569; font-size:0.9rem;">A IA esta escrevendo seu template...</div>
-                <div style="margin-top:4px; color:#94a3b8; font-size:0.78rem;">Pode levar de 10 a 30 segundos.</div>
+                <div style="position:relative; display:inline-block; width:80px; height:80px;">
+                    <div style="position:absolute; inset:0; border:4px solid #e2e8f0; border-top-color:#4f46e5; border-radius:50%; animation:aiSpin 0.9s linear infinite;"></div>
+                    <img src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce" style="position:absolute; inset:12px; width:56px; height:56px; border-radius:50%;">
+                </div>
+                <div style="margin-top:18px; font-weight:800; color:#1e293b; font-size:0.95rem;">Bruce esta escrevendo seu e-mail<span id="aiLoadingDots">...</span></div>
+                <div style="margin-top:4px; color:#94a3b8; font-size:0.78rem;">Costuma levar de 10 a 30 segundos.</div>
             </div>
 
             <div id="aiResultPane" style="display:none;">
-                <div style="background:#f0fdf4; border:1px solid #86efac; color:#166534; border-radius:10px; padding:10px 14px; font-size:0.85rem; font-weight:700; margin-bottom:14px;">
-                    <i class="fas fa-check-circle me-1"></i>Template gerado! Revise o preview abaixo antes de usar.
+                <div style="background:#f0fdf4; border:1px solid #86efac; color:#166534; border-radius:10px; padding:10px 14px; font-size:0.85rem; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:10px;">
+                    <img src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce" style="width:24px; height:24px; border-radius:50%; flex-shrink:0;">
+                    <span><strong>Bruce:</strong> Prontinho! Da uma olhada no preview e me diz se posso usar.</span>
                 </div>
                 <div style="margin-bottom:12px;">
                     <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Assunto sugerido</label>
@@ -113,11 +130,11 @@
                 <div style="display:flex; gap:10px; justify-content:space-between;">
                     <button type="button" onclick="backToAiForm()"
                             style="padding:11px 18px; border-radius:10px; border:2px solid #e2e8f0; background:white; color:#64748b; font-weight:700; font-size:0.85rem; cursor:pointer;">
-                        <i class="fas fa-arrow-left me-1"></i>Gerar outro
+                        <i class="fas fa-arrow-left me-1"></i>Bruce, tenta outro
                     </button>
                     <button type="button" onclick="applyAiTemplate()"
                             style="padding:11px 24px; border-radius:10px; border:none; background:#059669; color:white; font-weight:800; font-size:0.85rem; cursor:pointer;">
-                        <i class="fas fa-check me-1"></i>Usar este template
+                        <i class="fas fa-check me-1"></i>Usar este e-mail
                     </button>
                 </div>
             </div>
@@ -147,6 +164,7 @@
     const errorBox     = document.getElementById('aiError');
     const quotaText    = document.getElementById('aiQuotaText');
     const generateBtn  = document.getElementById('aiGenerateBtn');
+    const loadingDots  = document.getElementById('aiLoadingDots');
     // Paths hardcoded (nao usa route() helper) — se o cache de rotas em prod
     // ainda nao pegou a rota nova, route() lanca RouteNotFoundException no
     // render e quebra a pagina inteira com 500. Path fixo e imune a isso.
@@ -156,11 +174,22 @@
                        || document.querySelector('input[name="_token"]')?.value
                        || '';
     let lastResult     = null;
+    let dotsTimer      = null;
 
     function showPane(pane) {
         formPane.style.display    = pane === 'form'    ? 'block' : 'none';
         loadingPane.style.display = pane === 'loading' ? 'block' : 'none';
         resultPane.style.display  = pane === 'result'  ? 'block' : 'none';
+
+        if (dotsTimer) { clearInterval(dotsTimer); dotsTimer = null; }
+        if (pane === 'loading' && loadingDots) {
+            let n = 0;
+            loadingDots.textContent = '';
+            dotsTimer = setInterval(() => {
+                n = (n + 1) % 4;
+                loadingDots.textContent = '.'.repeat(n);
+            }, 400);
+        }
     }
 
     function renderQuota(used, limit, remaining) {
