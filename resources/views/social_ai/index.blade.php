@@ -709,6 +709,54 @@
 }
 .sai-pagination .page-link:hover { background: #F4F3FF; color: var(--primary-color, #4F46E5); border-color: #DDD6FE; }
 
+/* ── Banner Bruce IA ────────────────────────────────────────────────────── */
+.sai-bruce-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; padding: 24px 32px; margin-bottom: 22px;
+    background: #0A0A0B;
+    border: 1px solid rgba(255,122,26,.2);
+    border-radius: 20px;
+    flex-wrap: wrap;
+}
+.sai-bruce-body { flex: 1; min-width: 260px; }
+.sai-bruce-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,122,26,.12);
+    border: 1px solid rgba(255,122,26,.3);
+    color: #FF7A1A; font-size: .65rem; font-weight: 800;
+    padding: 4px 12px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    margin-bottom: 10px;
+}
+.sai-bruce-title {
+    color: #fff; font-size: 1.1rem; font-weight: 800;
+    margin: 0 0 6px; letter-spacing: -.3px; line-height: 1.3;
+}
+.sai-bruce-desc {
+    color: rgba(255,255,255,.55); font-size: .82rem;
+    margin: 0 0 16px; max-width: 560px; line-height: 1.55;
+}
+.sai-bruce-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #FF7A1A; color: #fff;
+    font-size: .8rem; font-weight: 800;
+    padding: 10px 22px; border-radius: 10px;
+    text-decoration: none; letter-spacing: -.1px;
+    transition: background .15s;
+}
+.sai-bruce-cta:hover { background: #ea580c; color: #fff; }
+.sai-bruce-icon-wrap { flex-shrink: 0; }
+.sai-bruce-icon-wrap img {
+    width: 90px; height: 90px; border-radius: 22px;
+    background: #0f0f1e;
+    border: 1px solid rgba(255,255,255,.08);
+    display: block;
+}
+@media (max-width: 640px) {
+    .sai-bruce-banner { padding: 20px; }
+    .sai-bruce-icon-wrap img { width: 70px; height: 70px; }
+}
+
 /* ── Options Panel (Formato + Estilo + Referência) ─────────────────────── */
 .sai-options-panel {
     margin-top: 22px; padding: 20px;
@@ -830,6 +878,24 @@
     </div>
 
 <div class="sai-content">
+
+    {{-- ── BANNER BRUCE IA ── --}}
+    <div class="sai-bruce-banner">
+        <div class="sai-bruce-body">
+            <div class="sai-bruce-tag">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                <span>Bruce IA explica</span>
+            </div>
+            <h3 class="sai-bruce-title">Como funciona o Social AI Hub?</h3>
+            <p class="sai-bruce-desc">Entenda cada opção — formato, estilo visual, imagem de referência, variações de legenda — e as melhores práticas para tirar o máximo do Bruce.</p>
+            <a href="{{ route('social-ai.about') }}" class="sai-bruce-cta">
+                <i class="fas fa-book-open"></i> Entender como funciona
+            </a>
+        </div>
+        <div class="sai-bruce-icon-wrap">
+            <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA">
+        </div>
+    </div>
 
     {{-- ── GENERATOR ────────────────────────────── --}}
     <div class="sai-generator">

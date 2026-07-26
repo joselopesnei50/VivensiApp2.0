@@ -28,6 +28,7 @@ Route::post('/social/facebook/data-deletion', [App\Http\Controllers\SocialAccoun
 // ── Social AI Hub (geração de conteúdo com IA) ────────────────────────────────
 Route::middleware(['auth'])->group(function () {
     Route::get('/social-ai',                      [App\Http\Controllers\SocialAIPostController::class, 'index'])->name('social-ai.index');
+    Route::get('/social-ai/about',                [App\Http\Controllers\SocialAIPostController::class, 'about'])->name('social-ai.about');
     Route::post('/social-ai/generate',            [App\Http\Controllers\SocialAIPostController::class, 'generate'])->name('social-ai.generate');
     Route::get('/social-ai/{post}/status',        [App\Http\Controllers\SocialAIPostController::class, 'getStatus'])->name('social-ai.status');
     Route::get('/social-ai/{post}/to-broadcast',  [App\Http\Controllers\SocialAIPostController::class, 'toBroadcast'])->name('social-ai.to-broadcast');

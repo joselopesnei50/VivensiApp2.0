@@ -30,6 +30,12 @@ class SocialAIPostController extends Controller
         return view('social_ai.index', compact('posts', 'quotaUsed'));
     }
 
+    public function about()
+    {
+        Gate::authorize('access-social-ai');
+        return view('social_ai.about');
+    }
+
     public function generate(Request $request)
     {
         Gate::authorize('access-social-ai');
