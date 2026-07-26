@@ -55,8 +55,17 @@ class WhatsappBroadcastController extends Controller
             ->orderBy('name')
             ->get();
 
+        // Importações recentes (últimas 5 etiquetas criadas via upload de CSV).
+        // Nome começa com "Importação" (padrão gerado por importContacts()).
+        $recentImports = \App\Models\WhatsappLabel::where('tenant_id', $tenantId)
+            ->where('name', 'like', 'Importação%')
+            ->withCount('chats')
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
         return view('admin.whatsapp.broadcast.index',
-            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'scheduled', 'preMessage', 'labels'));
+            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'scheduled', 'preMessage', 'labels', 'recentImports'));
     }
 
     public function importContacts(Request $request)
@@ -65,20 +74,49 @@ class WhatsappBroadcastController extends Controller
 
         $request->validate([
             // mimes:csv é frágil (Excel envia application/vnd.ms-excel). Valida por extensão.
-            'csv_file' => 'required|file|max:2048',
+            'csv_file'      => 'required|file|max:2048',
+            // LGPD art. 7º inciso IX (legítimo interesse) exige que o controlador
+            // declare posse do consentimento antes do disparo. Checkbox obrigatório.
+            'lgpd_consent'  => 'required|accepted',
+            // Nome opcional pra facilitar identificar a importação depois.
+            'import_name'   => 'nullable|string|max:80',
+        ], [
+            'lgpd_consent.required' => 'Você precisa confirmar que possui consentimento dos contatos (LGPD).',
+            'lgpd_consent.accepted' => 'Você precisa confirmar que possui consentimento dos contatos (LGPD).',
         ]);
 
-        $tenantId  = auth()->user()->tenant_id;
-        $maxLines  = 5000;
-        $imported  = 0;
-        $lineCount = 0;
-        $handle    = false;
+        $tenantId    = auth()->user()->tenant_id;
+        $userId      = auth()->id();
+        $maxLines    = 5000;
+        $imported    = 0;
+        $lineCount   = 0;
+        $handle      = false;
+        $importedIds = []; // ids dos WhatsappChat criados/encontrados nesta importação
+
+        // Cria a etiqueta dedicada dessa importação ANTES do parsing.
+        // Nome padrão: "Importação DD/MM HH:MM" (ou o custom informado pelo user).
+        $labelName = trim((string) $request->input('import_name', ''));
+        if ($labelName === '') {
+            $labelName = 'Importação ' . now()->format('d/m H:i');
+        } else {
+            $labelName = 'Importação: ' . mb_substr($labelName, 0, 60);
+        }
+
+        $importLabel = \App\Models\WhatsappLabel::create([
+            'tenant_id'  => $tenantId,
+            'name'       => $labelName,
+            'slug'       => \Illuminate\Support\Str::slug($labelName . '-' . now()->timestamp),
+            'color'      => '#7c3aed',
+            'background' => '#f5f3ff',
+            'created_by' => $userId,
+        ]);
 
         try {
             $path = $request->file('csv_file')->getRealPath();
             $handle = $path ? fopen($path, 'r') : false;
 
             if ($handle === false) {
+                $importLabel->delete(); // rollback: sem contatos, etiqueta vazia é lixo
                 return redirect()->back()->with('error', 'Não foi possível ler o arquivo enviado. Tente novamente.');
             }
 
@@ -122,7 +160,13 @@ class WhatsappBroadcastController extends Controller
                     continue;
                 }
 
+                // Data de consentimento: se coluna 3 do CSV tem data válida, usa ela;
+                // senão usa NOW() porque o user confirmou consentimento LGPD na UI.
                 [$optInAt, $optInSource] = $this->parseConsentDate($row[2] ?? null);
+                if ($optInAt === null) {
+                    $optInAt     = now();
+                    $optInSource = 'csv_import_with_consent';
+                }
 
                 $attributes = [
                     'contact_name'  => $name,
@@ -135,17 +179,43 @@ class WhatsappBroadcastController extends Controller
                     $attributes['opt_in_source'] = $optInSource;
                 }
 
-                WhatsappChat::firstOrCreate(
+                $chat = WhatsappChat::firstOrCreate(
                     ['tenant_id' => $tenantId, 'wa_id' => $phone],
                     $attributes
                 );
+
+                // Se o contato já existia SEM opt-in, atualiza pra opt-in agora
+                // (user acabou de declarar consentimento pra esse número).
+                if (!$chat->wasRecentlyCreated && $chat->opt_in_at === null) {
+                    $chat->update(['opt_in_at' => $optInAt] + (
+                        Schema::hasColumn('whatsapp_chats', 'opt_in_source')
+                            ? ['opt_in_source' => $optInSource]
+                            : []
+                    ));
+                }
+
+                $importedIds[] = $chat->id;
                 $imported++;
             }
 
             fclose($handle);
+
+            // Vincula todos os contatos importados à etiqueta desta importação.
+            // syncWithoutDetaching mantém etiquetas antigas caso o contato já existisse.
+            if (!empty($importedIds)) {
+                $importLabel->chats()->syncWithoutDetaching($importedIds);
+            } else {
+                // Nenhum contato válido no CSV — apaga etiqueta vazia
+                $importLabel->delete();
+                $importLabel = null;
+            }
         } catch (\Throwable $e) {
             if ($handle !== false) {
                 @fclose($handle);
+            }
+            // Rollback da etiqueta em caso de erro fatal no meio da importação
+            if ($importLabel && $importLabel->exists) {
+                try { $importLabel->delete(); } catch (\Throwable $ex) { /* ignore */ }
             }
             Log::error('Falha ao importar contatos no Broadcast', [
                 'tenant_id' => $tenantId,
@@ -159,12 +229,47 @@ class WhatsappBroadcastController extends Controller
             );
         }
 
-        $msg = "{$imported} contatos importados com sucesso!";
+        // Registro de auditoria (LGPD art. 37 — operações de tratamento).
+        try {
+            if (class_exists(\App\Models\AuditLog::class) && $importLabel) {
+                \App\Models\AuditLog::create([
+                    'tenant_id'      => $tenantId,
+                    'user_id'        => $userId,
+                    'event'          => 'created',
+                    'auditable_type' => \App\Models\WhatsappLabel::class,
+                    'auditable_id'   => $importLabel->id,
+                    'url'            => $request->fullUrl(),
+                    'ip_address'     => $request->ip(),
+                    'user_agent'     => (string) $request->userAgent(),
+                    'new_values'     => [
+                        'source'           => 'csv_import_with_consent',
+                        'label_name'       => $importLabel->name,
+                        'imported_count'   => $imported,
+                        'lines_processed'  => $lineCount,
+                        'consent_declared' => true,
+                    ],
+                ]);
+            }
+        } catch (\Throwable $auditEx) {
+            Log::warning('AuditLog do broadcast import falhou (não bloqueia)', ['error' => $auditEx->getMessage()]);
+        }
+
+        if ($imported === 0 || !$importLabel) {
+            return redirect()->back()->with(
+                'error',
+                'Nenhum contato válido encontrado no arquivo. Verifique o formato: Nome,Telefone.'
+            );
+        }
+
+        $msg = "{$imported} contatos importados e vinculados à etiqueta \"{$importLabel->name}\". Para disparar apenas para eles, escolha Público Alvo → Etiquetas → \"{$importLabel->name}\".";
         if ($lineCount >= $maxLines) {
             $msg .= " (limite de {$maxLines} linhas por importação atingido)";
         }
 
-        return redirect()->back()->with('success', $msg);
+        return redirect()->back()
+            ->with('success', $msg)
+            ->with('import_label_id', $importLabel->id)
+            ->with('import_label_name', $importLabel->name);
     }
 
     /**

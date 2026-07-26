@@ -319,6 +319,16 @@
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
         <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+        @if(session('import_label_id'))
+            <div class="mt-3 d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-sm fw-bold"
+                        style="background:#7c3aed;color:#fff;border-radius:8px;"
+                        onclick="selectImportLabel({{ session('import_label_id') }})">
+                    <i class="fas fa-bullseye me-1"></i>
+                    Disparar só para "{{ session('import_label_name') }}"
+                </button>
+            </div>
+        @endif
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 @endif
@@ -388,16 +398,35 @@
             <h6><i class="fas fa-file-csv me-1"></i> Importar Contatos</h6>
             <form action="{{ route('whatsapp.broadcast.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
+
                 <label class="import-zone w-100 mb-2" for="csvFileInput">
                     <i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color:#94a3b8;"></i>
                     <div style="font-size:0.8rem;color:#64748b;">Clique para selecionar o CSV</div>
                     <div id="csvFileName" style="font-size:0.75rem;color:#4f46e5;margin-top:4px;"></div>
                     <input type="file" id="csvFileInput" name="csv_file" accept=".csv" required class="d-none" onchange="document.getElementById('csvFileName').textContent = this.files[0]?.name || ''">
                 </label>
+
+                {{-- Nome opcional pra facilitar identificar a lista depois --}}
+                <input type="text" name="import_name" maxlength="60"
+                       placeholder="Nome da lista (opcional, ex: Doadores 2025)"
+                       style="width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.78rem;margin-bottom:8px;">
+
+                {{-- Declaração LGPD obrigatória --}}
+                <label style="display:flex;align-items:flex-start;gap:8px;padding:10px;background:#fef9c3;border:1px solid #fde68a;border-radius:8px;margin-bottom:10px;cursor:pointer;">
+                    <input type="checkbox" name="lgpd_consent" value="1" required style="margin-top:2px;flex-shrink:0;">
+                    <span style="font-size:.72rem;color:#78350f;line-height:1.4;">
+                        <strong>Declaro (LGPD art. 7º)</strong> que possuo consentimento
+                        dos contatos desta planilha para enviar mensagens pelo WhatsApp.
+                    </span>
+                </label>
+
                 <button type="submit" class="btn btn-sm w-100 fw-bold" style="background:#10b981;color:#fff;border-radius:8px;">
-                    <i class="fas fa-upload me-1"></i> Importar
+                    <i class="fas fa-upload me-1"></i> Importar + criar etiqueta
                 </button>
                 @error('csv_file')
+                    <div class="text-danger small mt-1">{{ $message }}</div>
+                @enderror
+                @error('lgpd_consent')
                     <div class="text-danger small mt-1">{{ $message }}</div>
                 @enderror
             </form>
@@ -406,6 +435,11 @@
                 Nome,Telefone<br>
                 João Silva,5511999999999<br>
                 Maria Souza,5521988888888
+                <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e2e8f0;font-size:.7rem;color:#64748b;">
+                    <i class="fas fa-info-circle" style="color:#4f46e5;"></i>
+                    Ao importar, criamos uma <strong>etiqueta</strong> com essa lista.
+                    Para disparar só pra ela: <em>Público Alvo → Etiquetas</em>.
+                </div>
             </div>
         </div>
 
@@ -442,6 +476,35 @@
             <div class="compose-card-body">
                 <form action="{{ route('whatsapp.broadcast.send') }}" method="POST" id="broadcastForm" enctype="multipart/form-data">
                     @csrf
+
+                    {{-- Importações recentes: atalho de 1 clique pra disparar só pra planilha subida --}}
+                    @if(isset($recentImports) && $recentImports->isNotEmpty())
+                    <div class="mb-4 p-3 rounded-3" style="background:#f5f3ff;border:1px solid #e9d5ff;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="section-label mb-0" style="color:#6d28d9;">
+                                <i class="fas fa-file-import me-1"></i> Importações Recentes
+                            </div>
+                            <span style="font-size:.72rem;color:#7c3aed;font-weight:700;">Últimas planilhas subidas</span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($recentImports as $imp)
+                                <button type="button"
+                                        onclick="selectImportLabel({{ $imp->id }})"
+                                        style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#fff;border:1px solid #d8b4fe;border-radius:10px;cursor:pointer;font-size:.78rem;color:#5b21b6;font-weight:600;transition:background .15s;"
+                                        onmouseover="this.style.background='#ede9fe'"
+                                        onmouseout="this.style.background='#fff'">
+                                    <i class="fas fa-tag" style="color:#7c3aed;font-size:.7rem;"></i>
+                                    <span>{{ $imp->name }}</span>
+                                    <span style="background:#7c3aed;color:#fff;padding:2px 7px;border-radius:20px;font-size:.65rem;font-weight:800;">{{ $imp->chats_count }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                        <div style="font-size:.72rem;color:#6d28d9;margin-top:8px;">
+                            <i class="fas fa-info-circle"></i>
+                            Clique em uma importação para disparar <strong>apenas para os contatos daquela planilha</strong>.
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="mb-4">
                         <div class="section-label">Público Alvo</div>
@@ -968,6 +1031,24 @@
         const labelsWrap = document.getElementById('labelsWrapper');
         if (labelsWrap) labelsWrap.classList.toggle('d-none', val !== 'labels');
         if (val === 'labels') updateLabelCount();
+    }
+
+    // Chamado pelos botões "Disparar só para esta importação" (alert pós-upload e
+    // dropdown de importações recentes). Seleciona a audiência "labels", marca só
+    // a etiqueta dessa importação e rola até a seção.
+    function selectImportLabel(labelId) {
+        const radioLabels = document.querySelector('input[name="audience"][value="labels"]');
+        if (radioLabels) {
+            radioLabels.checked = true;
+            onAudienceChange('labels');
+        }
+        // Desmarca todos os checkboxes de etiqueta e marca só o desta importação
+        document.querySelectorAll('input[name="label_ids[]"]').forEach(cb => {
+            cb.checked = (String(cb.value) === String(labelId));
+        });
+        updateLabelCount();
+        const composeCard = document.querySelector('.compose-card');
+        if (composeCard) composeCard.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
 
     // Atualiza a contagem estimada de destinatários quando o usuário marca
