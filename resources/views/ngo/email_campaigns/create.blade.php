@@ -93,9 +93,10 @@
                         <i class="fas fa-eye me-1"></i>Preview
                     </button>
                     <button type="button" onclick="insertTemplate()"
-                            style="padding:8px 16px; border-radius:10px; border:none; background:var(--ds-brand); color:white; font-weight:700; font-size:0.8rem; cursor:pointer;">
-                        <i class="fas fa-magic me-1"></i>Inserir template
+                            style="padding:8px 16px; border-radius:10px; border:2px solid #e2e8f0; background:white; color:#475569; font-weight:700; font-size:0.8rem; cursor:pointer;">
+                        <i class="fas fa-magic me-1"></i>Template base
                     </button>
+                    @include('email_campaigns._ai_modal', ['brandColor' => '#059669'])
                 </div>
             </div>
             <textarea name="html_content" id="htmlContent" required rows="20"

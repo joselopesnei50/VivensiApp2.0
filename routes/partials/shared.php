@@ -58,6 +58,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::delete('/manager/email-campaigns/{emailCampaign}',     [App\Http\Controllers\Manager\ManagerEmailCampaignController::class, 'destroy'])->name('manager.email_campaigns.destroy');
     });
 
+    // ── E-mail Marketing (IA) — geracao de template via DeepSeek ─────────────
+    // Disponivel para Manager E NGO (ambos criam campanhas de e-mail). Cota
+    // mensal por tenant (10/mes default) em EmailAiTemplateQuotaService.
+    // Throttle web_ai (10/min por usuario) protege contra loop no cliente.
+    Route::get( '/email-campaigns/ai/quota',    [App\Http\Controllers\EmailAiGenerationController::class, 'quota'])->name('email_campaigns.ai.quota');
+    Route::post('/email-campaigns/ai/generate', [App\Http\Controllers\EmailAiGenerationController::class, 'generate'])->middleware('throttle:web_ai')->name('email_campaigns.ai.generate');
+
     // ── Radar de Editais (Manager) ────────────────────────────────────────────
     Route::get('/manager/radar', [App\Http\Controllers\Manager\RadarManagerController::class, 'index'])
          ->middleware('can:access-manager')
