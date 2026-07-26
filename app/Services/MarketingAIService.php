@@ -269,4 +269,158 @@ PROMPT;
         $text = preg_replace('/\s*```\s*$/', '', $text);
         return trim($text);
     }
+
+    /**
+     * "Guia do Bruce" — 2ª chamada DeepSeek que transforma o plano estratégico
+     * em um checklist EXECUTÁVEL usando as ferramentas do Vivensi.
+     *
+     * Retorna array estruturado: ['phases' => [{name, steps: [{...}]}]]
+     * ou null se falhar. Não bloqueia o plano principal (que já é 'done').
+     */
+    public function generateExecutionGuide(MarketingPlan $plan): ?array
+    {
+        $markdown = $plan->mindmap_data['markdown'] ?? '';
+        if (empty($markdown)) {
+            return null;
+        }
+
+        $apiKey = SystemSetting::getValue('deepseek_api_key');
+        if (!$apiKey) {
+            Log::warning('Guia do Bruce: DeepSeek API key ausente');
+            return null;
+        }
+
+        $prompt = $this->buildGuidePrompt($plan, $markdown);
+
+        try {
+            // Chamada HTTP direta (mesmo padrão do SocialAIContentService)
+            // porque precisamos de response_format: json_object, que o
+            // DeepSeekService::chat não expõe.
+            $response = Http::timeout(90)->withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type'  => 'application/json',
+            ])->post('https://api.deepseek.com/v1/chat/completions', [
+                'model' => 'deepseek-v4-flash',
+                'messages' => [
+                    ['role' => 'system', 'content' => 'Você é o Bruce, consultor prescritivo. Retorne APENAS JSON válido — sem texto explicativo, sem markdown fences. Cada passo deve ser executável em uma ferramenta específica do Vivensi.'],
+                    ['role' => 'user',   'content' => $prompt],
+                ],
+                'temperature'     => 0.5,
+                'response_format' => ['type' => 'json_object'],
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Guia do Bruce: DeepSeek falhou', [
+                    'plan_id' => $plan->id,
+                    'status'  => $response->status(),
+                    'body'    => mb_substr($response->body(), 0, 500),
+                ]);
+                return null;
+            }
+
+            $text = $response->json('choices.0.message.content');
+            if (!$text) return null;
+
+            $text = $this->cleanMarkdown($text);
+            $data = json_decode($text, true);
+
+            if (!is_array($data) || !isset($data['phases']) || !is_array($data['phases'])) {
+                Log::warning('Guia do Bruce: JSON sem chave phases', ['plan_id' => $plan->id]);
+                return null;
+            }
+
+            return $data;
+        } catch (\Throwable $e) {
+            Log::error("MarketingAI generateExecutionGuide: " . $e->getMessage(), [
+                'plan_id' => $plan->id,
+            ]);
+            return null;
+        }
+    }
+
+    private function buildGuidePrompt(MarketingPlan $plan, string $planMarkdown): string
+    {
+        $tone   = $plan->tone ?? 'professional';
+        $scope  = $plan->scope ?? 'online';
+        $budget = $plan->budget_range ?? 'não informado';
+
+        // Recorta o markdown a ~8k chars pra não estourar contexto do modelo flash
+        $planExcerpt = mb_substr($planMarkdown, 0, 8000);
+
+        return <<<PROMPT
+Você recebeu o seguinte PLANO ESTRATÉGICO de marketing (formato Markdown) para uma organização:
+
+--- INÍCIO DO PLANO ---
+{$planExcerpt}
+--- FIM DO PLANO ---
+
+CONTEXTO DA ORGANIZAÇÃO:
+- Objetivo: {$plan->objective}
+- Público-alvo: {$plan->target_audience}
+- Abrangência: {$scope}
+- Tom de comunicação: {$tone}
+- Orçamento: {$budget}
+
+FERRAMENTAS DISPONÍVEIS NO VIVENSI (use EXATAMENTE estes identificadores + urls):
+
+| identifier                | url                                | label                        |
+|---------------------------|------------------------------------|------------------------------|
+| whatsapp_broadcast        | /whatsapp/broadcast                | Disparo em massa WhatsApp    |
+| whatsapp_settings         | /whatsapp/settings                 | Configurar Bot WhatsApp      |
+| whatsapp_labels           | /whatsapp/labels                   | Etiquetas WhatsApp           |
+| email_campaigns_manager   | /manager/email-campaigns/create    | Nova campanha e-mail         |
+| email_campaigns_ngo       | /ngo/email-campaigns/create        | Nova campanha e-mail (ONG)   |
+| social_ai_hub             | /social-ai                         | Social AI Hub                |
+| social_ai_about           | /social-ai/about                   | Guia Social AI               |
+| social_posts              | /social/posts                      | Calendário Instagram/FB      |
+| prospecting               | /prospecting                       | Prospecção de leads/parceiros|
+| landing_pages_manager     | /manager/landing_pages             | Landing Pages (Manager)      |
+| landing_pages_ngo         | /ngo/landing_pages                 | Landing Pages (ONG)          |
+| raffles                   | /raffles                           | Rifas Online                 |
+| donor_portal              | /ngo/donor-portal-links            | Portal do Doador             |
+| radar_editais_ngo         | /ngo/radar                         | Radar de Editais             |
+| project_show              | /projects                          | Meus Projetos                |
+| forms                     | /forms                             | Formulários                  |
+
+TAREFA: Traduza o plano acima em um CHECKLIST PRESCRITIVO organizado em fases temporais (Semana 1, Semana 2, Mês 1, Mês 2 etc). Cada passo DEVE:
+- Referenciar UMA ferramenta específica da tabela acima
+- Ser acionável hoje (verbo no imperativo: "Configure", "Crie", "Dispare", "Prospecte")
+- Incluir tempo estimado realista
+- Ter description curta (máx 200 chars) explicando O QUE e POR QUÊ
+
+Retorne OBRIGATORIAMENTE este JSON (sem markdown fences):
+
+{
+  "summary": "Frase única resumindo o plano de execução em 1 linha",
+  "phases": [
+    {
+      "name": "Semana 1 — Fundação",
+      "goal": "Objetivo específico desta fase (1 linha)",
+      "steps": [
+        {
+          "title": "Título curto e imperativo",
+          "description": "O que fazer e por que — máx 200 chars",
+          "tool": "whatsapp_settings",
+          "tool_url": "/whatsapp/settings",
+          "tool_label": "Configurar Bot WhatsApp",
+          "estimated_time": "20 min"
+        }
+      ]
+    }
+  ]
+}
+
+REGRAS:
+- Mínimo 3 fases, máximo 5 fases
+- Cada fase: mínimo 3 passos, máximo 6 passos
+- Total geral: entre 12 e 25 passos
+- Use SEMPRE ferramentas da tabela — não invente URLs
+- Se o plano fala de e-mail marketing, use email_campaigns_ngo ou email_campaigns_manager conforme perfil (default: ngo)
+- Se fala de captação de doações/leads, priorize donor_portal + landing_pages_ngo + campaigns
+- Se fala de sponsors/parceiros, use prospecting
+- Se fala de conteúdo/posts, use social_ai_hub e social_posts
+
+Gere agora o JSON:
+PROMPT;
+    }
 }

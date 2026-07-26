@@ -14,11 +14,15 @@ class MarketingPlan extends Model
         'scope', 'competitor_links', 'budget_range', 'tone',
         'has_whatsapp_groups', 'extra_info', 'mindmap_data',
         'ai_provider', 'status',
+        // Guia do Bruce (segunda chamada IA)
+        'execution_guide', 'guide_status', 'guide_generated_at',
     ];
 
     protected $casts = [
-        'mindmap_data'       => 'array',
+        'mindmap_data'        => 'array',
+        'execution_guide'     => 'array',
         'has_whatsapp_groups' => 'boolean',
+        'guide_generated_at'  => 'datetime',
     ];
 
     public function user()

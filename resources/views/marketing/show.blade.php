@@ -1,649 +1,616 @@
 @extends('layouts.app')
-@section('title', 'Mapa Estratégico')
+@section('title', 'Plano Estratégico')
+
+@php
+    // Parse do markdown gerado pelo DeepSeek em blocos executivos.
+    // Cada H2 vira um card na aba "Plano Executivo". H3s viram sub-tópicos.
+    $md = $marketing->mindmap_data['markdown'] ?? '';
+    $rootTitle = null;
+    $sections  = []; // [{h2, h3s: [{title, bullets: []}]}]
+    $currentH2 = null;
+    $currentH3 = null;
+
+    foreach (preg_split("/\r?\n/", $md) as $line) {
+        $trimmed = rtrim($line);
+        if ($trimmed === '') continue;
+
+        if (preg_match('/^#\s+(.+)$/', $trimmed, $m) && !$rootTitle) {
+            $rootTitle = trim($m[1]);
+        } elseif (preg_match('/^##\s+(.+)$/', $trimmed, $m)) {
+            if ($currentH2) $sections[] = $currentH2;
+            $currentH2 = ['title' => trim($m[1]), 'h3s' => []];
+            $currentH3 = null;
+        } elseif (preg_match('/^###\s+(.+)$/', $trimmed, $m) && $currentH2) {
+            $currentH3 = ['title' => trim($m[1]), 'bullets' => []];
+            $currentH2['h3s'][] = &$currentH3;
+        } elseif (preg_match('/^\s*[-*]\s+(.+)$/', $line, $m) && $currentH2) {
+            if ($currentH3 !== null) {
+                $currentH3['bullets'][] = trim($m[1]);
+            } elseif (!empty($currentH2['h3s'])) {
+                // bullet direto no H2 sem H3 — vai pro último H3
+                $lastKey = count($currentH2['h3s']) - 1;
+                $currentH2['h3s'][$lastKey]['bullets'][] = trim($m[1]);
+            } else {
+                // bullet no H2 sem nenhum H3 ainda — cria pseudo-h3 "Pontos-chave"
+                $currentH2['h3s'][] = ['title' => 'Pontos-chave', 'bullets' => [trim($m[1])]];
+                $currentH3 = &$currentH2['h3s'][count($currentH2['h3s']) - 1];
+            }
+        }
+    }
+    if ($currentH2) $sections[] = $currentH2;
+    unset($currentH3);
+
+    $sectionIcons = [
+        'posicion'  => 'fa-bullseye',
+        'whatsapp'  => 'fa-brands fa-whatsapp',
+        'redes'     => 'fa-hashtag',
+        'social'    => 'fa-hashtag',
+        'captac'    => 'fa-magnet',
+        'lead'      => 'fa-magnet',
+        'copy'      => 'fa-feather',
+        'metric'    => 'fa-chart-line',
+        'kpi'       => 'fa-chart-line',
+        'plano'     => 'fa-flag-checkered',
+        '72h'       => 'fa-flag-checkered',
+        'persona'   => 'fa-users',
+        'orcamento' => 'fa-coins',
+        'agenda'    => 'fa-calendar-days',
+        'default'   => 'fa-lightbulb',
+    ];
+    $iconFor = function (string $title) use ($sectionIcons) {
+        $t = mb_strtolower($title);
+        foreach ($sectionIcons as $key => $ico) {
+            if ($key !== 'default' && str_contains($t, $key)) return $ico;
+        }
+        return $sectionIcons['default'];
+    };
+@endphp
 
 @push('styles')
 <style>
-/* ── Layout ─────────────────────────────────────────────────────────────── */
-.mkt-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-}
-/* ── Mapa ───────────────────────────────────────────────────────────────── */
-.mindmap-shell {
-    background: #f8fafc;
+/* ══════════ HEADER ══════════ */
+.mkt-head {
+    background: #0A0A0B;
+    border: 1px solid rgba(255,122,26,.15);
     border-radius: 24px;
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    height: calc(100vh - 220px);
-    min-height: 540px;
-    box-shadow: 0 25px 60px rgba(0,0,0,.08);
-    border: 1px solid #e2e8f0;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    color: #fff;
 }
-.mindmap-shell::before {
-    content: '';
-    position: absolute; inset: 0;
-    background:
-        radial-gradient(ellipse at 20% 30%, rgba(99,102,241,.06) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 70%, rgba(16,185,129,.05) 0%, transparent 55%);
-    pointer-events: none;
-    z-index: 0;
+.mkt-head-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
 }
-#mindmap-svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    position: relative;
-    z-index: 1;
-}
-
-/* ── Controles flutuantes ───────────────────────────────────────────────── */
-.map-controls {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.map-btn {
-    width: 40px; height: 40px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    color: #475569;
-    font-size: .95rem;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: all .15s;
-    box-shadow: 0 2px 8px rgba(0,0,0,.08);
-}
-.map-btn:hover { background: #6366f1; color: #fff; border-color: #6366f1; }
-
-/* Fullscreen button top-right */
-.map-controls-top {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 10;
-    display: flex;
-    gap: 8px;
-}
-
-/* ── Badge de hint ──────────────────────────────────────────────────────── */
-.map-hint {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    z-index: 10;
-    font-size: .72rem;
-    color: #94a3b8;
-    font-weight: 600;
-    pointer-events: none;
-}
-
-/* ── Pulse loading ──────────────────────────────────────────────────────── */
-.status-pulse {
-    display: inline-block;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: #3b82f6;
-    animation: pulse-blue 1.5s infinite;
-    margin-right: 8px;
-}
-@keyframes pulse-blue {
-    0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,.5); }
-    50%      { box-shadow: 0 0 0 8px rgba(59,130,246,0); }
-}
-
-/* ── Info strip ─────────────────────────────────────────────────────────── */
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-top: 20px;
-}
-.info-pill {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 16px 18px;
-}
-.info-pill .label { font-size: .72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
-.info-pill .value { font-size: .88rem; font-weight: 700; color: #1e293b; }
-
-/* ── Quick actions ──────────────────────────────────────────────────────── */
-.action-chip {
+.mkt-back {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: .78rem;
-    font-weight: 700;
-    background: #eef2ff;
-    color: #4f46e5;
-    text-decoration: none;
-    border: 1px solid #c7d2fe;
-    transition: all .15s;
-    white-space: nowrap;
+    color: rgba(255,255,255,.5); font-size: .78rem; font-weight: 700;
+    text-decoration: none; padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,.08); border-radius: 8px;
+    transition: color .15s, background .15s;
 }
-.action-chip:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+.mkt-back:hover { color: #fff; background: rgba(255,255,255,.05); }
+.mkt-title-block { flex: 1; min-width: 260px; }
+.mkt-title {
+    font-size: 1.6rem; font-weight: 900; color: #fff;
+    margin: 12px 0 6px; letter-spacing: -.4px; line-height: 1.2;
+}
+.mkt-subtitle {
+    color: rgba(255,255,255,.55); font-size: .85rem;
+    margin: 0 0 14px; line-height: 1.55; max-width: 720px;
+}
+.mkt-briefing {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+}
+.mkt-pill {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.08);
+    color: rgba(255,255,255,.75);
+    font-size: .72rem; font-weight: 600;
+    padding: 5px 12px; border-radius: 20px;
+    display: inline-flex; align-items: center; gap: 6px;
+}
+.mkt-pill i { color: #FF7A1A; font-size: .68rem; }
 
-/* ── Fullscreen override ────────────────────────────────────────────────── */
-.mindmap-shell:-webkit-full-screen { height: 100vh; border-radius: 0; }
-.mindmap-shell:-moz-full-screen    { height: 100vh; border-radius: 0; }
-.mindmap-shell:fullscreen          { height: 100vh; border-radius: 0; }
+/* ══════════ TABS ══════════ */
+.mkt-tabs {
+    display: flex; gap: 6px; padding: 6px;
+    background: #f1f5f9; border-radius: 14px;
+    margin-bottom: 20px;
+}
+.mkt-tab {
+    flex: 1; padding: 12px 20px; text-align: center;
+    background: transparent; border: none; border-radius: 10px;
+    font-size: .88rem; font-weight: 700; color: #64748b;
+    cursor: pointer; transition: background .18s, color .18s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.mkt-tab:hover { color: #0f172a; }
+.mkt-tab.active {
+    background: #fff; color: #0f172a;
+    box-shadow: 0 1px 3px rgba(15,23,42,.08);
+}
+.mkt-tab .badge-count {
+    background: #FF7A1A; color: #fff;
+    font-size: .65rem; font-weight: 800;
+    padding: 2px 8px; border-radius: 10px;
+    letter-spacing: .05em;
+}
+.mkt-panel { display: none; }
+.mkt-panel.active { display: block; }
+
+/* ══════════ PLANO EXECUTIVO — CARDS + SETAS ══════════ */
+.mkt-flow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.mkt-card {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 20px; padding: 28px 32px;
+    width: 100%; max-width: 820px;
+    position: relative; transition: border-color .18s;
+}
+.mkt-card:hover { border-color: #FF7A1A; }
+.mkt-card-head {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+    padding-bottom: 16px; border-bottom: 1px dashed #e2e8f0;
+}
+.mkt-card-num {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: #FF7A1A; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: .95rem; flex-shrink: 0;
+}
+.mkt-card-ico {
+    color: #FF7A1A; font-size: 1.05rem;
+}
+.mkt-card-title {
+    font-size: 1.05rem; font-weight: 800; color: #0f172a;
+    letter-spacing: -.2px; flex: 1; line-height: 1.3;
+}
+.mkt-card-body {
+    display: flex; flex-direction: column; gap: 14px;
+}
+.mkt-h3 {
+    padding: 14px 16px;
+    background: #f8fafc; border: 1px solid #f1f5f9;
+    border-radius: 12px;
+}
+.mkt-h3-title {
+    font-size: .85rem; font-weight: 800; color: #334155;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+}
+.mkt-h3-title::before {
+    content: ''; display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #FF7A1A;
+}
+.mkt-bullets {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 6px;
+}
+.mkt-bullets li {
+    font-size: .8rem; color: #475569; line-height: 1.55;
+    padding-left: 18px; position: relative;
+}
+.mkt-bullets li::before {
+    content: '›'; position: absolute; left: 4px; top: 0;
+    color: #cbd5e1; font-weight: 800;
+}
+.mkt-bullets li strong { color: #0f172a; }
+.mkt-card-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 18px; padding-top: 16px; border-top: 1px dashed #e2e8f0;
+}
+.mkt-h3-count {
+    font-size: .7rem; color: #94a3b8; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em;
+}
+.mkt-card-expand {
+    background: transparent; border: 1px solid #e2e8f0;
+    color: #64748b; font-size: .72rem; font-weight: 700;
+    padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    transition: background .15s;
+}
+.mkt-card-expand:hover { background: #f8fafc; color: #0f172a; }
+.mkt-card.collapsed .mkt-card-body .mkt-h3:nth-child(n+3) { display: none; }
+
+/* Seta conectora entre cards */
+.mkt-arrow {
+    width: 2px; height: 40px;
+    background: #e2e8f0;
+    position: relative;
+    margin: 0 auto;
+}
+.mkt-arrow::after {
+    content: ''; position: absolute;
+    bottom: -2px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #cbd5e1;
+}
+
+/* ══════════ GUIA DO BRUCE ══════════ */
+.bruce-shell { max-width: 900px; margin: 0 auto; }
+.bruce-intro {
+    background: #0A0A0B;
+    border: 1px solid rgba(255,122,26,.2);
+    border-radius: 20px; padding: 28px 32px;
+    color: #fff; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.bruce-intro-icon {
+    width: 84px; height: 84px; border-radius: 20px;
+    background: #0f0f1e; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,.08);
+}
+.bruce-intro-body { flex: 1; min-width: 260px; }
+.bruce-intro-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,122,26,.12); border: 1px solid rgba(255,122,26,.3);
+    color: #FF7A1A; font-size: .62rem; font-weight: 800;
+    padding: 3px 10px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px;
+}
+.bruce-intro-title { font-size: 1.05rem; font-weight: 800; margin: 0 0 6px; letter-spacing: -.2px; }
+.bruce-intro-summary { color: rgba(255,255,255,.6); font-size: .85rem; margin: 0; line-height: 1.55; }
+.bruce-phase {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 18px; padding: 24px 28px; margin-bottom: 16px;
+}
+.bruce-phase-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+}
+.bruce-phase-num {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: #FF7A1A; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: .82rem; flex-shrink: 0;
+}
+.bruce-phase-name { font-size: 1rem; font-weight: 800; color: #0f172a; letter-spacing: -.2px; }
+.bruce-phase-goal { color: #64748b; font-size: .8rem; margin: 0 0 18px; padding-left: 44px; }
+.bruce-steps { display: flex; flex-direction: column; gap: 10px; }
+.bruce-step {
+    display: grid; grid-template-columns: 40px 1fr auto; gap: 14px;
+    align-items: center; padding: 14px 16px;
+    background: #fafafa; border: 1px solid #f1f5f9; border-radius: 12px;
+    transition: background .15s, border-color .15s;
+}
+.bruce-step:hover { background: #fff; border-color: #FF7A1A; }
+.bruce-step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #fff; border: 1.5px solid #FF7A1A; color: #FF7A1A;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: .78rem;
+}
+.bruce-step-body { min-width: 0; }
+.bruce-step-title { font-size: .88rem; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+.bruce-step-desc { font-size: .76rem; color: #64748b; line-height: 1.5; }
+.bruce-step-meta {
+    display: flex; align-items: center; gap: 8px; margin-top: 8px;
+    font-size: .68rem; color: #94a3b8; font-weight: 600;
+}
+.bruce-step-meta i { color: #94a3b8; }
+.bruce-step-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #FF7A1A; color: #fff !important;
+    font-size: .74rem; font-weight: 800;
+    padding: 8px 14px; border-radius: 8px;
+    text-decoration: none; white-space: nowrap;
+    transition: background .15s;
+}
+.bruce-step-cta:hover { background: #ea580c; color: #fff !important; }
+
+.bruce-empty {
+    background: #fff; border: 1px dashed #e2e8f0;
+    border-radius: 18px; padding: 40px 32px;
+    text-align: center; color: #64748b;
+}
+.bruce-empty .fa-hourglass-half { color: #FF7A1A; font-size: 2rem; margin-bottom: 16px; }
+.bruce-empty h4 { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
+.bruce-empty p { font-size: .82rem; margin: 0 0 16px; }
+.bruce-empty button {
+    background: #FF7A1A; color: #fff; border: none;
+    font-size: .82rem; font-weight: 700; padding: 10px 24px;
+    border-radius: 10px; cursor: pointer; transition: background .15s;
+}
+.bruce-empty button:hover { background: #ea580c; }
+.bruce-empty button:disabled { opacity: .6; cursor: wait; }
+
+/* ══════════ Status / actions bar ══════════ */
+.mkt-actions {
+    display: flex; gap: 8px; flex-wrap: wrap;
+}
+.mkt-btn {
+    background: rgba(255,255,255,.08); color: #fff;
+    border: 1px solid rgba(255,255,255,.12);
+    font-size: .78rem; font-weight: 700; padding: 8px 16px;
+    border-radius: 10px; cursor: pointer;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background .15s;
+}
+.mkt-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+.mkt-btn-danger { background: rgba(220,38,38,.15); border-color: rgba(220,38,38,.3); color: #fca5a5; }
+.mkt-btn-danger:hover { background: rgba(220,38,38,.25); color: #fca5a5; }
+
+@media (max-width: 720px) {
+    .mkt-tab { font-size: .78rem; padding: 10px 12px; }
+    .mkt-card { padding: 20px; }
+    .bruce-step { grid-template-columns: 1fr; }
+    .bruce-step-cta { justify-self: start; }
+}
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid py-4">
+<div style="max-width: 1200px; margin: 0 auto;">
 
-    @if(session('success'))
-        <div class="alert alert-success rounded-3 border-0 mb-4">{{ session('success') }}</div>
+    {{-- ══════════════ HEADER ══════════════ --}}
+    <div class="mkt-head">
+        <div class="mkt-head-top">
+            <a href="{{ route('marketing.index') }}" class="mkt-back">
+                <i class="fas fa-arrow-left" style="font-size:.65rem;"></i> Meus planos
+            </a>
+            <div class="mkt-actions">
+                <button type="button" class="mkt-btn" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <form action="{{ route('marketing.destroy', $marketing->id) }}" method="POST"
+                      onsubmit="return confirm('Excluir este plano estratégico?')" style="margin:0;">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="mkt-btn mkt-btn-danger">
+                        <i class="fas fa-trash-alt"></i> Excluir
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <h1 class="mkt-title">{{ $rootTitle ?: $marketing->title }}</h1>
+        <p class="mkt-subtitle">{{ $marketing->objective }}</p>
+
+        <div class="mkt-briefing">
+            <span class="mkt-pill"><i class="fas fa-users"></i> {{ Str::limit($marketing->target_audience, 50) }}</span>
+            <span class="mkt-pill"><i class="fas fa-globe"></i> {{ $marketing->scope === 'online_offline' ? 'Online + Presencial' : 'Apenas Online' }}</span>
+            <span class="mkt-pill"><i class="fas fa-microphone"></i> Tom {{ ['professional'=>'Profissional','friendly'=>'Amigável','inspirational'=>'Inspirador','urgent'=>'Urgente'][$marketing->tone] ?? $marketing->tone }}</span>
+            @if($marketing->budget_range)
+                <span class="mkt-pill"><i class="fas fa-coins"></i> {{ $marketing->budget_range }}</span>
+            @endif
+            @if($marketing->project)
+                <span class="mkt-pill"><i class="fas fa-diagram-project"></i> {{ $marketing->project->name }}</span>
+            @endif
+            <span class="mkt-pill"><i class="fas fa-calendar"></i> {{ $marketing->created_at->format('d/m/Y') }}</span>
+        </div>
+    </div>
+
+    {{-- ══════════════ STATUS (processing / failed) ══════════════ --}}
+    @if($marketing->status !== 'done')
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:32px;text-align:center;color:#475569;" id="statusBox">
+            @if($marketing->status === 'failed')
+                <i class="fas fa-triangle-exclamation" style="color:#dc2626;font-size:1.6rem;margin-bottom:12px;"></i>
+                <h3 style="margin:0 0 6px;color:#0f172a;font-size:1rem;">Falha ao gerar o plano</h3>
+                <p style="font-size:.85rem;margin:0;">A IA não conseguiu processar. Tente criar um novo plano.</p>
+            @else
+                <i class="fas fa-circle-notch fa-spin" style="color:#FF7A1A;font-size:1.6rem;margin-bottom:12px;"></i>
+                <h3 style="margin:0 0 6px;color:#0f172a;font-size:1rem;">A IA está gerando seu plano...</h3>
+                <p style="font-size:.85rem;margin:0;">Isso leva ~30-60 segundos. Esta página atualiza sozinha quando ficar pronto.</p>
+            @endif
+        </div>
+    @else
+
+    {{-- ══════════════ TABS ══════════════ --}}
+    <div class="mkt-tabs">
+        <button type="button" class="mkt-tab active" data-tab="executive" onclick="switchTab('executive')">
+            <i class="fas fa-diagram-project"></i>
+            Plano Executivo
+            <span class="badge-count">{{ count($sections) }}</span>
+        </button>
+        <button type="button" class="mkt-tab" data-tab="bruce" onclick="switchTab('bruce')">
+            <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="" style="width:18px;height:18px;border-radius:5px;">
+            Guia do Bruce
+            @if($marketing->guide_status === 'ready' && $marketing->execution_guide)
+                @php $stepCount = collect($marketing->execution_guide['phases'] ?? [])->sum(fn($p) => count($p['steps'] ?? [])); @endphp
+                <span class="badge-count">{{ $stepCount }}</span>
+            @endif
+        </button>
+    </div>
+
+    {{-- ══════════════ TAB 1 — PLANO EXECUTIVO ══════════════ --}}
+    <div class="mkt-panel active" id="panel-executive">
+        <div class="mkt-flow">
+            @forelse($sections as $idx => $section)
+                <div class="mkt-card {{ count($section['h3s']) > 3 ? 'collapsed' : '' }}" id="card-{{ $idx }}">
+                    <div class="mkt-card-head">
+                        <div class="mkt-card-num">{{ str_pad($idx + 1, 2, '0', STR_PAD_LEFT) }}</div>
+                        <i class="fas {{ $iconFor($section['title']) }} mkt-card-ico"></i>
+                        <div class="mkt-card-title">{{ $section['title'] }}</div>
+                    </div>
+
+                    <div class="mkt-card-body">
+                        @foreach($section['h3s'] as $h3)
+                            <div class="mkt-h3">
+                                <div class="mkt-h3-title">{{ $h3['title'] }}</div>
+                                @if(!empty($h3['bullets']))
+                                    <ul class="mkt-bullets">
+                                        @foreach($h3['bullets'] as $bullet)
+                                            <li>{!! preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', e($bullet)) !!}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if(count($section['h3s']) > 3)
+                        <div class="mkt-card-toolbar">
+                            <span class="mkt-h3-count">{{ count($section['h3s']) }} tópicos</span>
+                            <button type="button" class="mkt-card-expand" onclick="toggleCard({{ $idx }})">
+                                <span class="expand-text">Ver todos</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    @endif
+                </div>
+
+                @if(!$loop->last)
+                    <div class="mkt-arrow"></div>
+                @endif
+            @empty
+                <div class="bruce-empty">
+                    <p>Nenhum conteúdo estruturado neste plano.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- ══════════════ TAB 2 — GUIA DO BRUCE ══════════════ --}}
+    <div class="mkt-panel" id="panel-bruce">
+        <div class="bruce-shell">
+
+            @if($marketing->guide_status === 'ready' && !empty($marketing->execution_guide['phases']))
+                @php $guide = $marketing->execution_guide; @endphp
+
+                <div class="bruce-intro">
+                    <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA" class="bruce-intro-icon">
+                    <div class="bruce-intro-body">
+                        <span class="bruce-intro-tag"><i class="fas fa-route"></i> Rota executável</span>
+                        <div class="bruce-intro-title">Como colocar este plano em prática no Vivensi</div>
+                        <p class="bruce-intro-summary">
+                            {{ $guide['summary'] ?? 'Sequência de passos usando as ferramentas do Vivensi para executar o plano estratégico gerado acima.' }}
+                        </p>
+                    </div>
+                </div>
+
+                @foreach($guide['phases'] as $pIdx => $phase)
+                    <div class="bruce-phase">
+                        <div class="bruce-phase-head">
+                            <div class="bruce-phase-num">{{ $pIdx + 1 }}</div>
+                            <div class="bruce-phase-name">{{ $phase['name'] ?? 'Fase '.($pIdx+1) }}</div>
+                        </div>
+                        @if(!empty($phase['goal']))
+                            <p class="bruce-phase-goal">🎯 {{ $phase['goal'] }}</p>
+                        @endif
+
+                        <div class="bruce-steps">
+                            @foreach(($phase['steps'] ?? []) as $sIdx => $step)
+                                <div class="bruce-step">
+                                    <div class="bruce-step-num">{{ $sIdx + 1 }}</div>
+                                    <div class="bruce-step-body">
+                                        <div class="bruce-step-title">{{ $step['title'] ?? 'Passo' }}</div>
+                                        <div class="bruce-step-desc">{{ $step['description'] ?? '' }}</div>
+                                        <div class="bruce-step-meta">
+                                            @if(!empty($step['tool_label']))
+                                                <span><i class="fas fa-toolbox"></i> {{ $step['tool_label'] }}</span>
+                                            @endif
+                                            @if(!empty($step['estimated_time']))
+                                                <span>·</span>
+                                                <span><i class="far fa-clock"></i> {{ $step['estimated_time'] }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @if(!empty($step['tool_url']))
+                                        <a href="{{ $step['tool_url'] }}" class="bruce-step-cta" target="_blank" rel="noopener">
+                                            <i class="fas fa-arrow-up-right-from-square"></i> Abrir agora
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+
+            @elseif($marketing->guide_status === 'pending')
+                <div class="bruce-empty">
+                    <i class="fas fa-hourglass-half"></i>
+                    <h4>Bruce está preparando as orientações</h4>
+                    <p>Isso leva ~30-45 segundos após o plano ficar pronto. Esta página atualiza sozinha.</p>
+                </div>
+
+            @else
+                {{-- guide_status === 'failed' ou null --}}
+                <div class="bruce-empty">
+                    <i class="fas fa-hourglass-half"></i>
+                    <h4>Guia ainda não disponível</h4>
+                    <p>Clique abaixo para o Bruce gerar orientações práticas de como executar este plano no Vivensi.</p>
+                    <button type="button" id="btnRegenGuide" onclick="regenerateGuide()">
+                        <i class="fas fa-wand-magic-sparkles"></i> Gerar Guia do Bruce
+                    </button>
+                </div>
+            @endif
+        </div>
+    </div>
+
     @endif
 
-    {{-- Header --}}
-    <div class="mkt-header">
-        <div>
-            <a href="{{ route('marketing.index') }}" class="text-muted small text-decoration-none">
-                <i class="fas fa-arrow-left me-1"></i> Meus Planos
-            </a>
-            <h4 class="fw-bold mt-1 mb-0" style="color:#1e293b;">
-                <i class="fas fa-brain me-2" style="color:#4f46e5;"></i>
-                {{ mb_substr($marketing->title ?? $marketing->objective, 0, 80) }}
-            </h4>
-            @if($marketing->ai_provider)
-                <span class="badge bg-light text-dark border mt-1" style="font-size:.7rem;">
-                    <i class="fas fa-robot me-1"></i> Bruce AI
-                </span>
-            @endif
-        </div>
-        <div class="d-flex gap-2 flex-wrap align-items-center">
-            @if($marketing->status === 'done')
-                <button onclick="window.print()" class="btn btn-outline-secondary rounded-pill btn-sm px-3">
-                    <i class="fas fa-print me-1"></i> Imprimir
-                </button>
-                <button onclick="exportMarkdown()" class="btn btn-outline-primary rounded-pill btn-sm px-3">
-                    <i class="fas fa-download me-1"></i> Exportar MD
-                </button>
-            @endif
-            <a href="{{ route('marketing.create') }}" class="btn btn-primary rounded-pill btn-sm px-4 fw-bold">
-                <i class="fas fa-plus me-1"></i> Novo Plano
-            </a>
-            <form action="{{ route('marketing.destroy', $marketing->id) }}" method="POST"
-                  onsubmit="return confirm('Remover este plano?')" class="mb-0">
-                @csrf @method('DELETE')
-                <button class="btn btn-outline-danger rounded-pill btn-sm px-3">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    {{-- ── Mapa Mental ── --}}
-    <div class="mindmap-shell mb-4">
-
-        {{-- Controles topo-direita --}}
-        <div class="map-controls-top">
-            @if($marketing->ai_provider)
-            <span class="map-btn" style="width:auto;padding:0 14px;font-size:.72rem;font-weight:700;gap:6px;pointer-events:none;">
-                <i class="fas fa-robot"></i> Bruce AI
-            </span>
-            @endif
-            <button class="map-btn" onclick="toggleFullscreen()" title="Tela cheia">
-                <i class="fas fa-expand" id="fs-icon"></i>
-            </button>
-        </div>
-
-        {{-- Controles laterais direita-baixo --}}
-        <div class="map-controls">
-            <button class="map-btn" onclick="mmZoom(1.25)" title="Zoom in"><i class="fas fa-plus"></i></button>
-            <button class="map-btn" onclick="mmZoom(0.8)"  title="Zoom out"><i class="fas fa-minus"></i></button>
-            <button class="map-btn" onclick="mmFit()"      title="Encaixar"><i class="fas fa-compress-arrows-alt"></i></button>
-        </div>
-
-        {{-- Hint --}}
-        <div class="map-hint">
-            <i class="fas fa-mouse me-1"></i> Scroll para zoom &nbsp;·&nbsp; Arraste para mover &nbsp;·&nbsp; Clique nos nós para expandir
-        </div>
-
-        {{-- Estado: Processando --}}
-        <div id="state-processing"
-             class="{{ in_array($marketing->status, ['pending','processing']) ? '' : 'd-none' }}"
-             style="position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-            <div class="mb-4">
-                <span class="status-pulse"></span>
-                <span class="fw-bold" style="color:#4f46e5;font-size:1.05rem;">A IA está gerando seu plano estratégico...</span>
-            </div>
-            <div style="width:280px;">
-                <div class="progress" style="height:5px;border-radius:99px;background:#e2e8f0;">
-                    <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated w-100"></div>
-                </div>
-                <p style="color:#64748b;font-size:.8rem;text-align:center;margin-top:14px;">
-                    Analisando briefing e gerando estratégias com Bruce AI.<br>Isso leva entre 10 e 30 segundos.
-                </p>
-            </div>
-        </div>
-
-        {{-- Estado: Falhou --}}
-        <div id="state-failed"
-             class="{{ $marketing->status === 'failed' ? '' : 'd-none' }}"
-             style="position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-            <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color:#fbbf24;"></i>
-            <h6 class="fw-bold" style="color:#1e293b;">Não foi possível gerar o plano</h6>
-            <p style="color:#64748b;font-size:.85rem;max-width:320px;">
-                As APIs de IA podem estar indisponíveis. Tente novamente em alguns minutos.
-            </p>
-            <a href="{{ route('marketing.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2">
-                Tentar Novamente
-            </a>
-        </div>
-
-        {{-- SVG do mapa --}}
-        <svg id="mindmap-svg" style="{{ $marketing->status === 'done' ? '' : 'visibility:hidden;' }}"></svg>
-    </div>
-
-    {{-- ── Briefing + Ações ── --}}
-    <div class="row g-4">
-
-        {{-- Briefing --}}
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold mb-3" style="color:#1e293b;">
-                        <i class="fas fa-clipboard-list me-2 text-warning"></i> Briefing do Plano
-                    </h6>
-                    <div class="info-grid">
-                        <div class="info-pill">
-                            <div class="label">Objetivo</div>
-                            <div class="value">{{ mb_substr($marketing->objective, 0, 140) }}</div>
-                        </div>
-                        <div class="info-pill">
-                            <div class="label">Público-alvo</div>
-                            <div class="value">{{ mb_substr($marketing->target_audience, 0, 100) }}</div>
-                        </div>
-                        <div class="info-pill">
-                            <div class="label">Abrangência</div>
-                            <div class="value">{{ $marketing->scope === 'online_offline' ? 'Online + Presencial' : 'Apenas Online' }}</div>
-                        </div>
-                        <div class="info-pill">
-                            <div class="label">Tom de Voz</div>
-                            <div class="value">{{ ucfirst($marketing->tone) }}</div>
-                        </div>
-                        @if($marketing->budget_range)
-                        <div class="info-pill">
-                            <div class="label">Orçamento</div>
-                            <div class="value">{{ $marketing->budget_range }}</div>
-                        </div>
-                        @endif
-                        @if($marketing->project)
-                        <div class="info-pill">
-                            <div class="label">Projeto</div>
-                            <div class="value">
-                                <a href="{{ url('/projects/details/' . $marketing->project_id) }}"
-                                   style="color:#4f46e5;text-decoration:none;font-weight:700;">
-                                    <i class="fas fa-sitemap me-1" style="font-size:.8rem;"></i>
-                                    {{ $marketing->project->name }}
-                                </a>
-                            </div>
-                        </div>
-                        @endif
-                        <div class="info-pill">
-                            <div class="label">Criado em</div>
-                            <div class="value">{{ $marketing->created_at->format('d/m/Y H:i') }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Ações Rápidas --}}
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold mb-1" style="color:#1e293b;">
-                        <i class="fas fa-bolt me-2 text-primary"></i> Executar no Vivensi
-                    </h6>
-                    <p class="text-muted small mb-3">Módulos disponíveis para colocar o plano em prática:</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="{{ url('/whatsapp/broadcast') }}" class="action-chip">
-                            <i class="fab fa-whatsapp"></i> Disparo WhatsApp
-                        </a>
-                        <a href="{{ url('/whatsapp/settings') }}" class="action-chip">
-                            <i class="fas fa-robot"></i> Configurar Bot
-                        </a>
-                        @php $isNgo = in_array(auth()->user()->role, ['ngo','super_admin']) || (auth()->user()->tenant?->type === 'ngo'); @endphp
-                        <a href="{{ url($isNgo ? '/ngo/landing_pages' : '/manager/landing_pages') }}" class="action-chip">
-                            <i class="fas fa-file-alt"></i> Landing Page
-                        </a>
-                        <a href="{{ url('/social/posts/create') }}" class="action-chip">
-                            <i class="fas fa-image"></i> Criar Post
-                        </a>
-                        <a href="{{ url('/prospecting') }}" class="action-chip">
-                            <i class="fas fa-crosshairs"></i> Prospectar Parceiros
-                        </a>
-                        @if($isNgo)
-                        <a href="{{ url('/raffles') }}" class="action-chip">
-                            <i class="fas fa-ticket-alt"></i> Criar Rifa
-                        </a>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
 </div>
 
-{{-- D3 + Markmap (apenas o transformer para parse) --}}
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-lib@0.15.4/dist/browser/index.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-
-<style>
-/* ── Card styles (injetados aqui para funcionar no foreignObject) ── */
-.pm-card {
-    box-sizing: border-box;
-    border-radius: 12px;
-    border: 1.5px solid #e2e8f0;
-    background: #fff;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    box-shadow: 0 2px 8px rgba(15,23,42,.07);
-    transition: box-shadow .18s, transform .18s;
-    overflow: hidden;
-    user-select: none;
-    padding: 10px 14px;
-}
-.pm-card:hover { box-shadow: 0 6px 20px rgba(15,23,42,.13); transform: translateY(-1px); }
-.pm-inner  { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-.pm-label  { line-height: 1.45; flex: 1; word-break: break-word; }
-.pm-chevron{ flex-shrink: 0; opacity: .4; font-size: 10px; margin-top: 2px; transition: transform .2s; }
-.pm-chevron.open { transform: rotate(90deg); opacity: .6; }
-.pm-actions{ margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; }
-.pm-btn    { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
-             background: #6366f1; color: #fff !important; border-radius: 7px;
-             font-size: 10px; font-weight: 700; text-decoration: none !important;
-             line-height: 1.5; transition: background .15s; }
-.pm-btn:hover { background: #4f46e5; }
-/* depth styles */
-.pm-d0 { background: linear-gradient(135deg,#6366f1,#8b5cf6); border:none;
-          padding: 16px 22px; border-radius: 18px;
-          box-shadow: 0 8px 28px rgba(99,102,241,.35); }
-.pm-d0 .pm-label  { color:#fff; font-size:15px; font-weight:800; }
-.pm-d0 .pm-chevron{ color:#fff; }
-
-.pm-d1 { border-left: 3px solid #6366f1; }
-.pm-d1 .pm-label  { color:#1e293b; font-size:13px; font-weight:700; }
-
-.pm-d2 { background:#f5f3ff; border-color:#ddd6fe; border-left:3px solid #8b5cf6; }
-.pm-d2 .pm-label  { color:#3730a3; font-size:12px; font-weight:600; }
-
-.pm-d3 { background:#f0fdf4; border-color:#bbf7d0; border-left:3px solid #10b981; }
-.pm-d3 .pm-label  { color:#065f46; font-size:11.5px; font-weight:600; }
-
-.pm-d4 { background:#eff6ff; border-color:#bfdbfe; border-left:3px solid #3b82f6; }
-.pm-d4 .pm-label  { color:#1e40af; font-size:11px; font-weight:500; }
-
-.pm-d5 { background:#fff7ed; border-color:#fed7aa; border-left:3px solid #f97316; }
-.pm-d5 .pm-label  { color:#9a3412; font-size:10.5px; font-weight:500; }
-</style>
-
+@push('scripts')
 <script>
-const PLAN_STATUS = '{{ $marketing->status }}';
-const STATUS_URL  = '{{ route("marketing.status", $marketing->id) }}';
-@if($marketing->status === 'done' && $marketing->mindmap_data)
-const MINDMAP_MD = @json($marketing->mindmap_data['markdown'] ?? '');
-@else
-const MINDMAP_MD = null;
-@endif
+    const CSRF = document.querySelector('meta[name="csrf-token"]')?.content;
+    const PLAN_ID = {{ $marketing->id }};
+    const IS_DONE = @json($marketing->status === 'done');
+    const GUIDE_STATUS = @json($marketing->guide_status);
 
-// ── Configuração de cards por profundidade ────────────────────────────────────
-const DEPTH_CFG = [
-    { w: 290, padV: 16 }, // 0
-    { w: 240, padV: 10 }, // 1
-    { w: 220, padV: 10 }, // 2
-    { w: 210, padV: 10 }, // 3
-    { w: 200, padV:  9 }, // 4
-    { w: 195, padV:  8 }, // 5+
-];
-function dcfg(d) { return DEPTH_CFG[Math.min(d, 5)]; }
-
-// Estimativa de altura do card com base no texto + botões
-function cardH(node) {
-    const cfg = dcfg(node.depth);
-    const chars = (node.data.text || '').length;
-    const charsPerLine = Math.floor(cfg.w / 7.2);
-    const lines = Math.max(1, Math.ceil(chars / charsPerLine));
-    const textH = lines * 20;
-    const btnH  = (node.data.links?.length || 0) * 30;
-    return cfg.padV * 2 + textH + btnH + (btnH > 0 ? 8 : 0);
-}
-
-// ── State ─────────────────────────────────────────────────────────────────────
-let pmSvg, pmG, pmZoom, pmRoot;
-
-// ── Parser: Markdown → árvore simples ────────────────────────────────────────
-function parseMd(markdown) {
-    const transformer = new window.markmap.Transformer();
-    const { root: mmRoot } = transformer.transform(markdown);
-
-    function convert(n) {
-        const div = document.createElement('div');
-        div.innerHTML = n.content || '';
-        const links = [...div.querySelectorAll('a')].map(a => ({
-            label: a.textContent.trim(),
-            href:  a.getAttribute('href') || '#',
-        }));
-        div.querySelectorAll('a').forEach(a => a.replaceWith(document.createTextNode('')));
-        return {
-            text:     div.textContent.replace(/\s+/g, ' ').trim(),
-            links,
-            depth:    n.depth,
-            children: (n.children || []).map(convert),
-        };
+    function switchTab(name) {
+        document.querySelectorAll('.mkt-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        document.querySelectorAll('.mkt-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
     }
-    return convert(mmRoot);
-}
 
-// ── Renderer principal ────────────────────────────────────────────────────────
-function renderMarkmap(markdown) {
-    const svgEl = document.getElementById('mindmap-svg');
-    svgEl.innerHTML = '';
-    svgEl.style.visibility = 'visible';
-
-    // SVG setup
-    pmSvg = d3.select(svgEl);
-    pmSvg.append('defs').html(`
-        <filter id="pm-sh" x="-20%" y="-35%" width="140%" height="170%">
-            <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="rgba(15,23,42,.09)"/>
-        </filter>`);
-
-    pmG = pmSvg.append('g');
-
-    pmZoom = d3.zoom().scaleExtent([.1, 4])
-        .on('zoom', e => pmG.attr('transform', e.transform));
-    pmSvg.call(pmZoom).on('dblclick.zoom', null);
-
-    // Hierarquia D3
-    const data = parseMd(markdown);
-    pmRoot = d3.hierarchy(data);
-
-    // Colapsa nós a partir do nível 2
-    pmRoot.descendants().forEach(d => {
-        if (d.depth >= 2 && d.children) {
-            d._children = d.children;
-            d.children  = null;
+    function toggleCard(idx) {
+        const card = document.getElementById('card-' + idx);
+        if (!card) return;
+        card.classList.toggle('collapsed');
+        const btn = card.querySelector('.expand-text');
+        const ico = card.querySelector('.mkt-card-expand i');
+        if (card.classList.contains('collapsed')) {
+            btn.textContent = 'Ver todos';
+            ico.className = 'fas fa-chevron-down';
+        } else {
+            btn.textContent = 'Recolher';
+            ico.className = 'fas fa-chevron-up';
         }
-    });
-
-    pmDraw();
-    setTimeout(mmFit, 350);
-}
-
-// ── Desenho ───────────────────────────────────────────────────────────────────
-function pmDraw() {
-    // Layout
-    const layout = d3.tree()
-        .nodeSize([70, 310])
-        .separation((a, b) => {
-            const ah = cardH(a) / 2 + 12;
-            const bh = cardH(b) / 2 + 12;
-            return (ah + bh) / 70;
-        });
-    layout(pmRoot);
-
-    const nodes = pmRoot.descendants();
-    const links = pmRoot.links();
-
-    // Cores das linhas por profundidade da origem
-    const lineColors = ['#c7d2fe','#a7f3d0','#bfdbfe','#fde68a','#fbcfe8','#ddd6fe'];
-
-    // ── Links (curvas Bezier) ─────────────────────────────────────────────────
-    const linkPath = d3.linkHorizontal()
-        .x(d => d.y + dcfg(d.depth).w / 2)
-        .y(d => d.x);
-
-    pmG.selectAll('.pm-link')
-        .data(links, d => d.target.data.text + d.target.depth)
-        .join(
-            e => e.append('path').attr('class','pm-link')
-                    .attr('fill','none').attr('stroke-linecap','round'),
-            u => u,
-            x => x.remove()
-        )
-        .attr('stroke', d => lineColors[Math.min(d.source.depth, lineColors.length-1)])
-        .attr('stroke-width', d => Math.max(1.5, 3 - d.source.depth * .5))
-        .attr('stroke-opacity', .75)
-        .attr('d', linkPath);
-
-    // ── Nós (foreignObject com cards HTML) ────────────────────────────────────
-    const nodeSel = pmG.selectAll('.pm-fo')
-        .data(nodes, d => d.data.text + d.depth);
-
-    nodeSel.join(
-        enter => {
-            const fo = enter.append('foreignObject')
-                .attr('class', 'pm-fo')
-                .attr('overflow', 'visible');
-
-            fo.append('xhtml:div')
-                .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-                .on('click', (evt, d) => {
-                    if (evt.target.closest('a')) return;
-                    if (d.children)  { d._children = d.children;  d.children  = null; }
-                    else if (d._children) { d.children = d._children; d._children = null; }
-                    pmDraw();
-                });
-            return fo;
-        },
-        u => u,
-        x => x.remove()
-    )
-    .attr('x', d => d.y)
-    .attr('y', d => d.x - cardH(d) / 2)
-    .attr('width',  d => dcfg(d.depth).w)
-    .attr('height', d => cardH(d) + 4)
-    .select('div')
-    .attr('class', d => `pm-card pm-d${Math.min(d.depth, 5)}`)
-    .style('width',  d => dcfg(d.depth).w + 'px')
-    .style('min-height', d => cardH(d) + 'px')
-    .html(d => buildCard(d));
-}
-
-// ── HTML do card ─────────────────────────────────────────────────────────────
-function buildCard(d) {
-    const { text, links } = d.data;
-    const hasKids = d.children || d._children;
-    const open    = !!d.children;
-
-    const chevron = hasKids
-        ? `<span class="pm-chevron ${open ? 'open' : ''}">&#9654;</span>`
-        : '';
-
-    const btns = links?.length
-        ? `<div class="pm-actions">${links.map(l =>
-            `<a href="${l.href}" class="pm-btn" onclick="event.stopPropagation()">
-                <i class="fas fa-arrow-right" style="font-size:8px;"></i> ${l.label}
-             </a>`).join('')}
-           </div>`
-        : '';
-
-    return `<div class="pm-inner">
-                <span class="pm-label">${text}</span>
-                ${chevron}
-            </div>${btns}`;
-}
-
-// ── Controles ─────────────────────────────────────────────────────────────────
-function mmZoom(factor) {
-    pmSvg?.transition().duration(250).call(pmZoom.scaleBy, factor);
-}
-
-function mmFit() {
-    if (!pmG) return;
-    const svgEl = document.getElementById('mindmap-svg');
-    const W = svgEl.clientWidth, H = svgEl.clientHeight;
-    try {
-        const b = pmG.node().getBBox();
-        if (!b.width || !b.height) return;
-        const scale = Math.min(.95, .82 * Math.min(W / b.width, H / b.height));
-        const tx = (W - b.width * scale) / 2 - b.x * scale;
-        const ty = (H - b.height * scale) / 2 - b.y * scale;
-        pmSvg.transition().duration(420)
-            .call(pmZoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
-    } catch(e) {}
-}
-
-function toggleFullscreen() {
-    const el  = document.querySelector('.mindmap-shell');
-    const ico = document.getElementById('fs-icon');
-    if (!document.fullscreenElement) {
-        el.requestFullscreen().then(() => { ico.className = 'fas fa-compress'; setTimeout(mmFit, 300); });
-    } else {
-        document.exitFullscreen().then(() => { ico.className = 'fas fa-expand'; setTimeout(mmFit, 300); });
     }
-}
 
-// ── Poll ──────────────────────────────────────────────────────────────────────
-function pollStatus() {
-    fetch(STATUS_URL, { headers: {'X-Requested-With':'XMLHttpRequest'} })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'done' && data.mindmap_data?.markdown) {
-                document.getElementById('state-processing').classList.add('d-none');
-                setTimeout(() => renderMarkmap(data.mindmap_data.markdown), 100);
-            } else if (data.status === 'failed') {
-                document.getElementById('state-processing').classList.add('d-none');
-                document.getElementById('state-failed').classList.remove('d-none');
+    async function regenerateGuide() {
+        const btn = document.getElementById('btnRegenGuide');
+        if (!btn) return;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Gerando (30-60s)...';
+        try {
+            const res = await fetch('/marketing/{{ $marketing->id }}/regenerate-guide', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            });
+            const data = await res.json();
+            if (data.success) {
+                location.reload();
             } else {
-                setTimeout(pollStatus, 4000);
+                alert(data.message || 'Falha ao gerar o guia.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Tentar novamente';
             }
-        })
-        .catch(() => setTimeout(pollStatus, 6000));
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (PLAN_STATUS === 'done' && MINDMAP_MD) {
-        setTimeout(() => renderMarkmap(MINDMAP_MD), 200);
-    } else if (PLAN_STATUS === 'pending' || PLAN_STATUS === 'processing') {
-        setTimeout(pollStatus, 3000);
+        } catch (e) {
+            alert('Erro de comunicação. Tente de novo.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Tentar novamente';
+        }
     }
-});
 
-// ── Export ────────────────────────────────────────────────────────────────────
-function exportMarkdown() {
-    if (!MINDMAP_MD) return;
-    const blob = new Blob([MINDMAP_MD], {type:'text/markdown'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'plano-estrategico.md';
-    a.click();
-}
+    // Auto-refresh se plano ainda gerando ou se guide ainda pending
+    if (!IS_DONE || GUIDE_STATUS === 'pending') {
+        setTimeout(async () => {
+            try {
+                const res = await fetch('/marketing/{{ $marketing->id }}/status');
+                const data = await res.json();
+                if (data.status === 'done' && (data.guide_status === 'ready' || data.guide_status === 'failed')) {
+                    location.reload();
+                } else {
+                    // continua aguardando — refresh full após alguns segundos
+                    setTimeout(() => location.reload(), 8000);
+                }
+            } catch (e) {
+                setTimeout(() => location.reload(), 15000);
+            }
+        }, 6000);
+    }
 </script>
+@endpush
+
 @endsection

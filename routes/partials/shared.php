@@ -70,6 +70,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/marketing',                   [App\Http\Controllers\MarketingStrategyController::class, 'store'])->name('marketing.store')->middleware('throttle:web_ai');
         Route::get('/marketing/{marketing}',        [App\Http\Controllers\MarketingStrategyController::class, 'show'])->name('marketing.show');
         Route::get('/marketing/{marketing}/status', [App\Http\Controllers\MarketingStrategyController::class, 'status'])->name('marketing.status');
+        Route::post('/marketing/{marketing}/regenerate-guide', [App\Http\Controllers\MarketingStrategyController::class, 'regenerateGuide'])->name('marketing.regenerate-guide')->middleware('throttle:6,1');
         Route::delete('/marketing/{marketing}',     [App\Http\Controllers\MarketingStrategyController::class, 'destroy'])->name('marketing.destroy');
 
         Route::get('/prospecting',                  [App\Http\Controllers\ProspectingController::class, 'index'])->name('prospecting.index');

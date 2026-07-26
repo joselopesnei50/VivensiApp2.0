@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\ProcessMarketingPlan;
 use App\Models\MarketingPlan;
 use App\Models\Project;
+use App\Services\MarketingAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,10 +69,49 @@ class MarketingStrategyController extends Controller
     public function status(MarketingPlan $marketing)
     {
         return response()->json([
-            'status'       => $marketing->status,
-            'mindmap_data' => $marketing->mindmap_data,
-            'ai_provider'  => $marketing->ai_provider,
+            'status'          => $marketing->status,
+            'mindmap_data'    => $marketing->mindmap_data,
+            'ai_provider'     => $marketing->ai_provider,
+            'guide_status'    => $marketing->guide_status,
+            'execution_guide' => $marketing->execution_guide,
         ]);
+    }
+
+    /**
+     * Regenera o Guia do Bruce sob demanda (síncrono, ~30-60s).
+     * Útil quando a 1ª tentativa falhou ou quando o plano foi editado.
+     */
+    public function regenerateGuide(MarketingPlan $marketing, MarketingAIService $ai)
+    {
+        if ($marketing->status !== 'done') {
+            return response()->json([
+                'success' => false,
+                'message' => 'O plano ainda não foi gerado. Aguarde a IA finalizar antes de regenerar o guia.',
+            ], 422);
+        }
+
+        $marketing->update(['guide_status' => 'pending']);
+
+        $guide = $ai->generateExecutionGuide($marketing);
+
+        if ($guide) {
+            $marketing->update([
+                'execution_guide'    => $guide,
+                'guide_status'       => 'ready',
+                'guide_generated_at' => now(),
+            ]);
+            return response()->json(['success' => true, 'guide' => $guide]);
+        }
+
+        $marketing->update([
+            'guide_status'       => 'failed',
+            'guide_generated_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Não foi possível gerar o guia agora. Tente novamente em alguns instantes.',
+        ], 500);
     }
 
     public function destroy(MarketingPlan $marketing)
