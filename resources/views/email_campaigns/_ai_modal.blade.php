@@ -29,7 +29,7 @@
                 </div>
                 <div style="min-width:0;">
                     <div style="font-weight:900; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
-                        Bruce IA <span style="font-size:1rem;">🐶</span>
+                        Bruce IA
                         <span style="font-size:0.62rem; font-weight:800; background:rgba(16,185,129,0.25); color:#a7f3d0; padding:2px 8px; border-radius:10px; letter-spacing:0.5px; text-transform:uppercase;">Online</span>
                     </div>
                     <div style="font-size:0.8rem; opacity:0.85; margin-top:2px;">Seu redator de e-mail marketing</div>
