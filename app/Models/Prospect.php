@@ -17,6 +17,10 @@ class Prospect extends Model
         'address',
         'website',
         'phone',
+        'email',           // e-mail encontrado (scraping ou manual)
+        'email_opt_in',    // consentimento LGPD para envio (default false)
+        'email_source',    // 'scraped' | 'manual' | 'hunter'
+        'email_found_at',  // timestamp da última descoberta/edição
         'google_rating',
         'total_reviews',
         'lead_score',
@@ -25,6 +29,11 @@ class Prospect extends Model
         'status',
         'source',   // 'maps' | 'web'
         'snippet',  // trecho descritivo da busca web
+    ];
+
+    protected $casts = [
+        'email_opt_in'   => 'boolean',
+        'email_found_at' => 'datetime',
     ];
 
     public function tenant()

@@ -134,6 +134,16 @@
                 <i class="fas fa-paper-plane me-1"></i> Enviar pro Disparo em Massa
             </button>
         </form>
+        <form id="formSendToEmailCampaign" action="{{ route('prospecting.send-to-email-campaign') }}" method="POST" class="m-0">
+            @csrf
+            <input type="hidden" name="prospect_ids_raw" id="sendToEmailCampaignIdsInput" value="">
+            <button type="button" class="btn btn-sm rounded-pill px-4 fw-bold text-white"
+                    style="background:#7c3aed;"
+                    onclick="enviarParaEmailMarketing()"
+                    title="Cria rascunho de campanha de e-mail (Brevo) só com prospects que têm e-mail + opt-in LGPD">
+                <i class="fas fa-envelope me-1"></i> Campanha de E-mail Marketing
+            </button>
+        </form>
         <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold"
                 onclick="deletarSelecionados()">
             <i class="fas fa-trash-alt me-1"></i> Deletar Selecionados
@@ -169,10 +179,13 @@
                         <tr>
                             {{-- Checkbox --}}
                             <td class="px-4 py-3">
-                                @if($prospect->status === 'analyzed' && !empty($prospect->phone))
+                                @if($prospect->status === 'analyzed' && (!empty($prospect->phone) || !empty($prospect->email)))
                                     <input type="checkbox" class="prospect-cb"
                                            value="{{ $prospect->id }}"
                                            data-pitch="{{ e($prospect->personalized_pitch ?? '') }}"
+                                           data-has-phone="{{ !empty($prospect->phone) ? '1' : '0' }}"
+                                           data-has-email="{{ !empty($prospect->email) ? '1' : '0' }}"
+                                           data-email-optin="{{ !empty($prospect->email_opt_in) ? '1' : '0' }}"
                                            onchange="updateBulkBar()">
                                 @endif
                             </td>
@@ -205,6 +218,45 @@
                                         @if($prospect->phone)
                                             <div class="text-success small mt-1 fw-semibold"><i class="fab fa-whatsapp me-1"></i>{{ $prospect->phone }}</div>
                                         @endif
+
+                                        {{-- E-mail (scraped ou manual) + edição rápida --}}
+                                        <div class="small mt-1 d-flex align-items-center gap-1 flex-wrap">
+                                            @if($prospect->email)
+                                                @if($prospect->email_opt_in)
+                                                    <span class="badge" style="background:#dcfce7;color:#166534;font-weight:600;padding:4px 8px;">
+                                                        <i class="fas fa-envelope me-1"></i>{{ $prospect->email }}
+                                                        <i class="fas fa-check-circle ms-1" title="Consentimento LGPD marcado"></i>
+                                                    </span>
+                                                @else
+                                                    <span class="badge" style="background:#fef3c7;color:#78350f;font-weight:600;padding:4px 8px;">
+                                                        <i class="fas fa-envelope me-1"></i>{{ $prospect->email }}
+                                                        <i class="fas fa-exclamation-triangle ms-1" title="Sem consentimento LGPD marcado"></i>
+                                                    </span>
+                                                @endif
+                                                <button type="button" class="btn btn-link btn-sm p-0 text-primary"
+                                                        onclick="openEmailModal({{ $prospect->id }}, @json($prospect->email), {{ $prospect->email_opt_in ? 'true':'false' }}, @json($prospect->company_name))"
+                                                        title="Editar e-mail e opt-in">
+                                                    <i class="fas fa-pen small"></i>
+                                                </button>
+                                            @elseif($prospect->email_found_at)
+                                                <span class="text-muted small"><i class="fas fa-envelope-open me-1"></i>Sem e-mail encontrado no site</span>
+                                                <button type="button" class="btn btn-link btn-sm p-0 text-primary"
+                                                        onclick="openEmailModal({{ $prospect->id }}, '', false, @json($prospect->company_name))">
+                                                    <i class="fas fa-plus me-1"></i>Adicionar
+                                                </button>
+                                            @elseif($prospect->website)
+                                                <span class="text-muted small"><i class="fas fa-spinner fa-spin me-1"></i>Buscando e-mail no site...</span>
+                                                <button type="button" class="btn btn-link btn-sm p-0 text-primary"
+                                                        onclick="openEmailModal({{ $prospect->id }}, '', false, @json($prospect->company_name))">
+                                                    <i class="fas fa-plus me-1"></i>Adicionar manualmente
+                                                </button>
+                                            @else
+                                                <button type="button" class="btn btn-link btn-sm p-0 text-primary"
+                                                        onclick="openEmailModal({{ $prospect->id }}, '', false, @json($prospect->company_name))">
+                                                    <i class="fas fa-plus me-1"></i>Adicionar e-mail
+                                                </button>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -531,6 +583,54 @@
     }
 </style>
 
+{{-- ── MODAL: EDITAR E-MAIL + OPT-IN LGPD (compartilhado) ───────────────── --}}
+<div class="modal fade" id="emailEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 overflow-hidden">
+            <div class="modal-header" style="background:#f5f3ff;border-bottom:1px solid #ddd6fe;">
+                <h5 class="modal-title fw-bold" style="color:#5b21b6;">
+                    <i class="fas fa-envelope me-2"></i> E-mail do prospect
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="emailEditForm" action="" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <div class="text-muted small mb-1">Empresa</div>
+                        <div class="fw-bold text-dark" id="emailEditCompany"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-dark">E-mail de contato</label>
+                        <input type="email" name="email" id="emailEditInput"
+                               class="form-control" required
+                               placeholder="contato@empresa.com.br">
+                        <div class="small text-muted mt-1">
+                            Aceita 1 e-mail por prospect. Substitui o que estava salvo.
+                        </div>
+                    </div>
+
+                    <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:#fef9c3;border:1px solid #fde68a;border-radius:8px;cursor:pointer;">
+                        <input type="checkbox" name="email_opt_in" id="emailEditOptin" value="1" style="margin-top:2px;flex-shrink:0;">
+                        <span style="font-size:.8rem;color:#78350f;line-height:1.5;">
+                            <strong>Declaro (LGPD art. 7º)</strong> que possuo consentimento
+                            deste contato para envio de campanhas de e-mail marketing.
+                            <br><em style="font-size:.72rem;opacity:.8;">Sem esta marcação, o prospect é ignorado no envio.</em>
+                        </span>
+                    </label>
+                </div>
+                <div class="modal-footer" style="background:#fafafa;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn text-white fw-bold" style="background:#7c3aed;">
+                        <i class="fas fa-save me-1"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function setMode(mode) {
         document.getElementById('searchMode').value = mode;
@@ -628,6 +728,57 @@
         const ids = Array.from(checked).map(el => el.value).join(',');
         document.getElementById('sendToBroadcastIdsInput').value = ids;
         document.getElementById('formSendToBroadcast').submit();
+    }
+
+    // ── Campanha de E-mail Marketing (Brevo) ──────────────────────────────────
+    // Filtra os selecionados que TEM e-mail com opt-in LGPD e cria rascunho de
+    // EmailCampaign. Se nenhum tiver opt-in, avisa antes de submeter.
+    function enviarParaEmailMarketing() {
+        const checked = document.querySelectorAll('.prospect-cb:checked');
+        if (!checked.length) return;
+
+        const withEmailOptin = Array.from(checked).filter(el =>
+            el.dataset.hasEmail === '1' && el.dataset.emailOptin === '1'
+        );
+        const withoutOptin = Array.from(checked).filter(el =>
+            el.dataset.hasEmail === '1' && el.dataset.emailOptin !== '1'
+        );
+        const withoutEmail = Array.from(checked).filter(el =>
+            el.dataset.hasEmail !== '1'
+        );
+
+        if (withEmailOptin.length === 0) {
+            let msg = 'Nenhum dos leads selecionados tem e-mail com consentimento LGPD marcado.\n\n';
+            if (withoutOptin.length > 0) msg += `${withoutOptin.length} tem e-mail mas SEM opt-in — edite cada um e marque o checkbox.\n`;
+            if (withoutEmail.length > 0) msg += `${withoutEmail.length} não tem e-mail cadastrado.\n`;
+            alert(msg);
+            return;
+        }
+
+        let confirmMsg = `${withEmailOptin.length} destinatário(s) com e-mail + opt-in serão adicionados a um rascunho de Campanha de E-mail.`;
+        if (withoutOptin.length > 0) confirmMsg += `\n\n⚠️ ${withoutOptin.length} com e-mail SEM opt-in serão ignorados.`;
+        if (withoutEmail.length > 0) confirmMsg += `\n⚠️ ${withoutEmail.length} sem e-mail serão ignorados.`;
+        confirmMsg += '\n\nContinuar?';
+        if (!confirm(confirmMsg)) return;
+
+        // Envia TODOS os IDs — o backend filtra novamente por segurança.
+        const ids = Array.from(checked).map(el => el.value).join(',');
+        document.getElementById('sendToEmailCampaignIdsInput').value = ids;
+        document.getElementById('formSendToEmailCampaign').submit();
+    }
+
+    // ── Modal de edição de e-mail (compartilhado por todas as linhas) ─────────
+    function openEmailModal(prospectId, currentEmail, optIn, companyName) {
+        const modalEl = document.getElementById('emailEditModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+        document.getElementById('emailEditForm').action =
+            '{{ url("prospecting") }}/' + prospectId + '/email';
+        document.getElementById('emailEditCompany').textContent = companyName;
+        document.getElementById('emailEditInput').value = currentEmail || '';
+        document.getElementById('emailEditOptin').checked = !!optIn;
+
+        modal.show();
     }
 
     function openBroadcastModal() {

@@ -63,11 +63,13 @@ class LeadSearchService
 
             if ($prospect->wasRecentlyCreated) {
                 ProcessProspect::dispatch($prospect)->onQueue('default');
+                $this->dispatchEmailScrapeIfNeeded($prospect);
                 $created++;
             } else {
                 if ($prospect->status === 'raw') {
                     ProcessProspect::dispatch($prospect)->onQueue('default');
                 }
+                $this->dispatchEmailScrapeIfNeeded($prospect);
                 $updated++;
             }
         }
@@ -133,11 +135,13 @@ class LeadSearchService
 
             if ($prospect->wasRecentlyCreated) {
                 ProcessProspect::dispatch($prospect)->onQueue('default');
+                $this->dispatchEmailScrapeIfNeeded($prospect);
                 $created++;
             } else {
                 if ($prospect->status === 'raw') {
                     ProcessProspect::dispatch($prospect)->onQueue('default');
                 }
+                $this->dispatchEmailScrapeIfNeeded($prospect);
                 $updated++;
             }
         }
@@ -158,5 +162,20 @@ class LeadSearchService
         }
 
         return $apiKey;
+    }
+
+    /**
+     * Se o prospect tem site e ainda não tem e-mail, dispara scraping
+     * assíncrono na queue 'emails'. É best-effort — falha silenciosa se
+     * o site estiver fora do ar ou não expuser e-mail.
+     */
+    private function dispatchEmailScrapeIfNeeded(Prospect $prospect): void
+    {
+        if (empty($prospect->website) || !empty($prospect->email)) {
+            return;
+        }
+
+        \App\Jobs\ScrapeProspectEmailJob::dispatch($prospect->id)
+            ->onQueue('emails');
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ProcessProspect;
+use App\Jobs\ScrapeProspectEmailJob;
+use App\Models\EmailCampaign;
 use App\Models\Prospect;
 use App\Models\SponsorshipDeal;
 use App\Models\BroadcastCampaign;
@@ -297,6 +299,123 @@ class ProspectingController extends Controller
             sprintf(
                 'Rascunho criado com %d destinatário(s) da Prospecção IA. Edite a mensagem e dispare quando quiser.',
                 count($phones)
+            )
+        );
+    }
+
+    /**
+     * Salva/edita manualmente o e-mail de um prospect + registra opt-in LGPD.
+     *
+     * Chamado pelo modal/input da UI quando o scraping falhou ou o user quer
+     * substituir. O opt_in só vai para true se o user marcar explicitamente
+     * o checkbox de consentimento (LGPD art. 7º).
+     */
+    public function updateEmail(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'email'        => ['required', 'email', 'max:190'],
+            'email_opt_in' => ['nullable', 'boolean'],
+        ]);
+
+        $prospect = $this->findForTenant($id);
+
+        $prospect->update([
+            'email'          => strtolower(trim($validated['email'])),
+            'email_opt_in'   => (bool) $request->boolean('email_opt_in'),
+            'email_source'   => 'manual',
+            'email_found_at' => now(),
+        ]);
+
+        return back()->with('success', 'E-mail atualizado.' .
+            ($prospect->email_opt_in ? ' Consentimento LGPD registrado.' : ''));
+    }
+
+    /**
+     * Cria um rascunho de EmailCampaign com os prospects selecionados como
+     * destinatários manuais (apenas os que têm e-mail + opt_in_email = true).
+     *
+     * NÃO dispara — o user precisa abrir a campanha rascunho, editar subject
+     * e html_content, e clicar "enviar". Pipeline segue via SendEmailCampaignJob
+     * na queue 'emails' (Brevo).
+     */
+    public function sendToEmailCampaign(Request $request)
+    {
+        $request->validate([
+            'prospect_ids_raw' => 'required|string',
+        ]);
+
+        $ids = array_filter(array_map('intval', explode(',', $request->input('prospect_ids_raw'))));
+        if (empty($ids)) {
+            return back()->with('error', 'Nenhum lead selecionado.');
+        }
+
+        $tenantId = Auth::user()->tenant_id;
+
+        $prospects = Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $ids)
+            ->whereNotNull('email')
+            ->where('email', '!=', '')
+            ->where('email_opt_in', true)
+            ->get();
+
+        if ($prospects->isEmpty()) {
+            return back()->with(
+                'error',
+                'Nenhum dos leads selecionados tem e-mail com consentimento LGPD marcado. '
+                . 'Marque o checkbox "declaro consentimento" no e-mail antes de enviar.'
+            );
+        }
+
+        // Dedup + normaliza pra minúsculo
+        $emails = $prospects
+            ->pluck('email')
+            ->map(fn ($e) => strtolower(trim((string) $e)))
+            ->filter(fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL))
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($emails)) {
+            return back()->with('error', 'Nenhum e-mail válido entre os prospects selecionados.');
+        }
+
+        $campaign = EmailCampaign::create([
+            'tenant_id'     => $tenantId,
+            'created_by'    => Auth::id(),
+            'name'          => 'Prospecção IA — ' . now()->format('d/m/Y H:i'),
+            'subject'       => '[EDITE ANTES DE ENVIAR] Assunto da campanha',
+            'html_content'  => '<p>Edite este conteúdo antes de enviar a campanha.</p>'
+                             . '<p>Destinatários: ' . count($emails) . ' prospects com consentimento LGPD.</p>',
+            'audience_type' => 'manual',
+            'manual_emails' => json_encode($emails),
+            'status'        => 'draft',
+        ]);
+
+        // Marca os prospects como contatados pra não reenviar sem querer.
+        Prospect::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $prospects->pluck('id')->all())
+            ->update(['status' => 'contacted']);
+
+        // Escolhe a rota de destino baseada no perfil (NGO / Manager / Admin)
+        $user   = Auth::user();
+        $tenant = $user->tenant;
+        $isNgo  = in_array($tenant?->type ?? '', ['ngo']) || $user->isNgo();
+
+        if ($isNgo) {
+            $showRoute = 'ngo.email_campaigns.show';
+        } elseif (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
+            $showRoute = 'admin.email_campaigns.show';
+        } else {
+            $showRoute = 'manager.email_campaigns.show';
+        }
+
+        return redirect()->route($showRoute, $campaign)->with(
+            'success',
+            sprintf(
+                'Rascunho criado com %d destinatário(s) da Prospecção IA. Edite assunto e conteúdo, e clique em enviar.',
+                count($emails)
             )
         );
     }

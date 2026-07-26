@@ -76,10 +76,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/prospecting/search',          [App\Http\Controllers\ProspectingController::class, 'search'])->name('prospecting.search')->middleware('throttle:web_ai');
         Route::post('/prospecting/analyze-all',     [App\Http\Controllers\ProspectingController::class, 'analyzeAll'])->name('prospecting.analyze-all')->middleware('throttle:web_ai_bulk');
         Route::post('/prospecting/broadcast',       [App\Http\Controllers\ProspectingController::class, 'broadcastWhatsapp'])->name('prospecting.broadcast')->middleware('throttle:web_ai_bulk');
-        Route::post('/prospecting/send-to-broadcast', [App\Http\Controllers\ProspectingController::class, 'sendToBroadcast'])->name('prospecting.send-to-broadcast')->middleware('throttle:10,1');
+        Route::post('/prospecting/send-to-broadcast',      [App\Http\Controllers\ProspectingController::class, 'sendToBroadcast'])->name('prospecting.send-to-broadcast')->middleware('throttle:10,1');
+        Route::post('/prospecting/send-to-email-campaign', [App\Http\Controllers\ProspectingController::class, 'sendToEmailCampaign'])->name('prospecting.send-to-email-campaign')->middleware('throttle:10,1');
         Route::delete('/prospecting/bulk-delete',   [App\Http\Controllers\ProspectingController::class, 'bulkDestroy'])->name('prospecting.bulk-delete');
         Route::post('/prospecting/{id}/analyze',    [App\Http\Controllers\ProspectingController::class, 'analyze'])->name('prospecting.analyze')->middleware('throttle:web_ai');
         Route::post('/prospecting/{id}/convert',    [App\Http\Controllers\ProspectingController::class, 'convertToDeal'])->name('prospecting.convert');
+        Route::post('/prospecting/{id}/email',      [App\Http\Controllers\ProspectingController::class, 'updateEmail'])->name('prospecting.update-email')->middleware('throttle:30,1');
         Route::delete('/prospecting/{id}',          [App\Http\Controllers\ProspectingController::class, 'destroy'])->name('prospecting.destroy');
     });
 
