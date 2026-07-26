@@ -30,10 +30,28 @@ class SocialAIContentService
         }
     }
 
+    /** Estilos visuais aceitos + modificador de prompt em inglês pro FLUX.1. */
+    public const VISUAL_STYLES = [
+        'photorealistic' => 'high quality photography, cinematic lighting, sharp focus, professional composition',
+        'illustration'   => 'digital illustration, vibrant colors, clean vector art style',
+        'cartoon'        => 'playful cartoon style, bold outlines, expressive characters',
+        'corporate'      => 'professional corporate photography, minimalist background, neutral colors',
+        'minimalist'     => 'minimalist design, clean composition, lots of negative space, simple palette',
+        'watercolor'     => 'watercolor painting, artistic brushstrokes, soft edges',
+    ];
+
+    /** Formatos aceitos e suas dimensões (compatíveis com FLUX.1-schnell). */
+    public const FORMATS = [
+        'square' => ['width' => 1024, 'height' => 1024, 'label' => 'Feed 1:1'],
+        'story'  => ['width' => 768,  'height' => 1344, 'label' => 'Story 9:16'],
+    ];
+
     /**
-     * Gera o texto do post e o prompt da imagem usando DeepSeek.
+     * Gera 3 variações de legenda e 1 prompt de imagem usando DeepSeek.
+     *
+     * Retorno: ['captions' => [...3 strings], 'image_prompt' => string]
      */
-    public function generateContent(string $theme, ?string $userContext = null): array
+    public function generateContent(string $theme, ?string $userContext = null, ?string $visualStyle = null, string $format = 'square'): array
     {
         if (!$this->deepseekKey) {
             throw new Exception("DeepSeek API Key não configurada no sistema.");
@@ -43,12 +61,21 @@ class SocialAIContentService
             ? "\n\nInstruções adicionais fornecidas pelo usuário (siga-as com prioridade):\n\"{$userContext}\""
             : '';
 
-        $prompt = "Atue como um especialista em marketing digital. Crie um post para rede social sobre o tema: '{$theme}'.{$contextBlock}
+        $styleHint = $visualStyle && isset(self::VISUAL_STYLES[$visualStyle])
+            ? "\n\nEstilo visual escolhido pelo usuário: {$visualStyle}. Incorpore esse tom no prompt de imagem."
+            : '';
 
-        Retorne OBRIGATORIAMENTE um JSON com os seguintes campos:
-        'caption': A legenda do post em português, persuasiva e com emojis, respeitando qualquer instrução de tom, público ou detalhe fornecido.
-        'image_prompt': Um prompt descritivo detalhado em INGLÊS para gerar uma imagem fotorrealista de alta qualidade sobre este tema, também considerando as instruções adicionais.
-        Responda apenas o JSON puro, sem blocos de código markdown.";
+        $formatHint = ($format === 'story')
+            ? "\n\nO post será usado como Story vertical (9:16) do Instagram — pense em composição vertical."
+            : "\n\nO post será usado no feed quadrado (1:1) do Instagram/Facebook.";
+
+        $prompt = "Atue como um especialista em marketing digital. Crie um post para rede social sobre o tema: '{$theme}'.{$contextBlock}{$styleHint}{$formatHint}
+
+Retorne OBRIGATORIAMENTE um JSON com os seguintes campos:
+- 'captions': ARRAY com EXATAMENTE 3 variações de legenda em português, cada uma com abordagem diferente (ex: emocional, direta, informativa). Cada legenda deve ser persuasiva, com emojis e respeitar qualquer instrução de tom, público ou detalhe fornecido.
+- 'image_prompt': Um prompt descritivo detalhado em INGLÊS para gerar uma imagem de alta qualidade sobre este tema, considerando o estilo visual e formato escolhidos.
+
+Responda apenas o JSON puro, sem blocos de código markdown.";
 
         // deepseek-v4-flash: legenda + prompt de imagem em JSON eh task simples
         // e curta — flash entrega com qualidade suficiente e custo baixo.
@@ -72,21 +99,50 @@ class SocialAIContentService
         $data = $response->json();
         $content = json_decode($data['choices'][0]['message']['content'], true);
 
-        if (!isset($content['caption']) || !isset($content['image_prompt'])) {
+        // Compat: aceita tanto 'captions' (novo formato) quanto 'caption' (formato antigo)
+        if (isset($content['captions']) && is_array($content['captions'])) {
+            $captions = array_values(array_filter(array_map('strval', $content['captions'])));
+        } elseif (isset($content['caption'])) {
+            $captions = [(string) $content['caption']];
+        } else {
+            throw new Exception("Formato de resposta inválido do DeepSeek (sem captions).");
+        }
+
+        if (empty($captions) || !isset($content['image_prompt'])) {
             throw new Exception("Formato de resposta inválido do DeepSeek.");
         }
 
-        return $content;
+        // Garantir 3 legendas (se DeepSeek voltou menos, replica a última)
+        while (count($captions) < 3) {
+            $captions[] = end($captions);
+        }
+        $captions = array_slice($captions, 0, 3);
+
+        // Injetar modificador de estilo no image_prompt (por segurança — caso
+        // DeepSeek tenha ignorado a instrução).
+        $imagePrompt = (string) $content['image_prompt'];
+        if ($visualStyle && isset(self::VISUAL_STYLES[$visualStyle])) {
+            $imagePrompt .= '. Style: ' . self::VISUAL_STYLES[$visualStyle];
+        }
+
+        return [
+            'captions'     => $captions,
+            'image_prompt' => $imagePrompt,
+        ];
     }
 
     /**
      * Gera a imagem usando Together AI (FLUX.1-schnell).
+     *
+     * $format: 'square' (1024x1024) ou 'story' (768x1344).
      */
-    public function generateImage(string $imagePrompt): string
+    public function generateImage(string $imagePrompt, string $format = 'square'): string
     {
         if (!$this->togetherKey) {
             throw new Exception("Together AI API Key não configurada no sistema.");
         }
+
+        $dims = self::FORMATS[$format] ?? self::FORMATS['square'];
 
         $response = Http::timeout(120)->withHeaders([
             'Authorization' => 'Bearer ' . $this->togetherKey,
@@ -96,8 +152,8 @@ class SocialAIContentService
             'prompt' => $imagePrompt,
             'steps'  => 4,
             'n'      => 1,
-            'width'  => 1024,
-            'height' => 1024,
+            'width'  => $dims['width'],
+            'height' => $dims['height'],
         ]);
 
         if (!$response->successful()) {

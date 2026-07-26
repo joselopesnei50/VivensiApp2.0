@@ -32,6 +32,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/social-ai/{post}/status',        [App\Http\Controllers\SocialAIPostController::class, 'getStatus'])->name('social-ai.status');
     Route::get('/social-ai/{post}/to-broadcast',  [App\Http\Controllers\SocialAIPostController::class, 'toBroadcast'])->name('social-ai.to-broadcast');
     Route::post('/social-ai/{post}/schedule',     [App\Http\Controllers\SocialAIPostController::class, 'scheduleToCalendar'])->name('social-ai.schedule');
+    Route::post('/social-ai/{post}/regenerate-caption', [App\Http\Controllers\SocialAIPostController::class, 'regenerateCaption'])->name('social-ai.regenerate-caption')->middleware('throttle:20,1');
+    Route::post('/social-ai/{post}/regenerate-image',   [App\Http\Controllers\SocialAIPostController::class, 'regenerateImage'])->name('social-ai.regenerate-image')->middleware('throttle:10,1');
+    Route::post('/social-ai/{post}/choose-variation/{index}', [App\Http\Controllers\SocialAIPostController::class, 'chooseVariation'])->name('social-ai.choose-variation')->middleware('throttle:60,1');
     Route::delete('/social-ai/{post}',            [App\Http\Controllers\SocialAIPostController::class, 'destroy'])->name('social-ai.destroy');
 
     // Inteligência Territorial (IBGE)

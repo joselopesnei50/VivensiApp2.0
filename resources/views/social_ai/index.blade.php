@@ -708,6 +708,104 @@
     box-shadow: 0 2px 8px rgba(79,70,229,0.3);
 }
 .sai-pagination .page-link:hover { background: #F4F3FF; color: var(--primary-color, #4F46E5); border-color: #DDD6FE; }
+
+/* ── Options Panel (Formato + Estilo + Referência) ─────────────────────── */
+.sai-options-panel {
+    margin-top: 22px; padding: 20px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+}
+.sai-opt-row {
+    display: grid; grid-template-columns: 1fr 2fr; gap: 24px;
+    margin-bottom: 20px;
+}
+@media(max-width: 900px) { .sai-opt-row { grid-template-columns: 1fr; } }
+.sai-opt-block { }
+.sai-opt-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .75rem; font-weight: 700; color: rgba(255,255,255,.55);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px;
+}
+.sai-opt-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.sai-opt-btn {
+    background: rgba(255,255,255,.05); color: rgba(255,255,255,.75);
+    border: 1px solid rgba(255,255,255,.08);
+    padding: 7px 13px; border-radius: 8px;
+    font-size: .78rem; font-weight: 600; cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.sai-opt-btn:hover { background: rgba(255,255,255,.09); color: #fff; }
+.sai-opt-btn.active {
+    background: var(--primary-color, #4F46E5); color: #fff;
+    border-color: transparent;
+}
+.sai-ref-block { padding-top: 16px; border-top: 1px dashed rgba(255,255,255,.08); }
+.sai-ref-row { display: flex; align-items: stretch; gap: 12px; }
+.sai-ref-drop {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; min-height: 120px;
+    background: rgba(79,70,229,.06);
+    border: 2px dashed rgba(79,70,229,.35);
+    border-radius: 12px; cursor: pointer; padding: 16px;
+    color: rgba(255,255,255,.55); font-size: .8rem;
+    transition: background .15s, border-color .15s;
+    text-align: center; position: relative; overflow: hidden;
+}
+.sai-ref-drop:hover { background: rgba(79,70,229,.12); border-color: rgba(79,70,229,.6); }
+.sai-ref-drop-icon { font-size: 1.6rem; color: rgba(79,70,229,.7); }
+.sai-ref-drop img { max-height: 96px; max-width: 100%; border-radius: 8px; margin-top: 4px; }
+.sai-ref-drop.has-image { padding: 8px; }
+.sai-ref-drop.has-image .sai-ref-drop-icon,
+.sai-ref-drop.has-image #refDropText { display: none; }
+.sai-ref-opts {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: 14px; padding: 14px; background: rgba(255,255,255,.02);
+    border-radius: 10px; border: 1px solid rgba(255,255,255,.05);
+}
+.sai-ref-radio {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    background: rgba(255,255,255,.03); transition: background .15s;
+}
+.sai-ref-radio:hover { background: rgba(255,255,255,.06); }
+.sai-ref-radio input { margin-top: 4px; flex-shrink: 0; }
+.sai-ref-radio strong { display: block; font-size: .82rem; color: #fff; font-weight: 700; }
+.sai-ref-radio small { display: block; font-size: .72rem; color: rgba(255,255,255,.45); margin-top: 2px; }
+.sai-ref-remove {
+    background: transparent; border: 1px solid rgba(239,68,68,.3);
+    color: #f87171; font-size: .74rem; font-weight: 600;
+    padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    align-self: flex-start;
+}
+.sai-ref-remove:hover { background: rgba(239,68,68,.1); }
+
+/* ── Variações de legenda no card ──────────────────────────────────────── */
+.sai-variations {
+    display: flex; gap: 6px; margin-top: 10px; margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+.sai-var-pill {
+    background: rgba(79,70,229,.08); color: #a5b4fc;
+    border: 1px solid rgba(79,70,229,.25);
+    padding: 3px 9px; border-radius: 20px;
+    font-size: .68rem; font-weight: 700; cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.sai-var-pill:hover { background: rgba(79,70,229,.18); color: #c7d2fe; }
+.sai-var-pill.active {
+    background: var(--primary-color, #4F46E5); color: #fff;
+    border-color: transparent;
+}
+.sai-regen-btn {
+    background: rgba(255,255,255,.03); color: rgba(255,255,255,.65);
+    border: 1px solid rgba(255,255,255,.08);
+    font-size: .72rem; font-weight: 600;
+    padding: 6px 10px; border-radius: 6px; cursor: pointer;
+    transition: background .15s;
+}
+.sai-regen-btn:hover:not(:disabled) { background: rgba(255,255,255,.08); color: #fff; }
+.sai-regen-btn:disabled { opacity: .5; cursor: not-allowed; }
 </style>
 @endpush
 
@@ -768,6 +866,69 @@
                 <span class="sai-ctx-count" id="ctxCount">0 / 1000</span>
             </div>
         </div>
+        {{-- ── Formato + Estilo Visual + Referência (Rota 2) ──────────────── --}}
+        <div class="sai-options-panel">
+            <div class="sai-opt-row">
+                <div class="sai-opt-block">
+                    <div class="sai-opt-label"><i class="fas fa-image"></i> Formato</div>
+                    <div class="sai-opt-btns" data-group="format">
+                        <button type="button" class="sai-opt-btn active" data-value="square" onclick="pickOpt(this,'format')">
+                            <i class="fas fa-square"></i> Feed 1:1
+                        </button>
+                        <button type="button" class="sai-opt-btn" data-value="story" onclick="pickOpt(this,'format')">
+                            <i class="fas fa-mobile-screen"></i> Story 9:16
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sai-opt-block">
+                    <div class="sai-opt-label"><i class="fas fa-palette"></i> Estilo Visual</div>
+                    <div class="sai-opt-btns" data-group="visual_style">
+                        <button type="button" class="sai-opt-btn active" data-value="" onclick="pickOpt(this,'visual_style')">Padrão</button>
+                        <button type="button" class="sai-opt-btn" data-value="photorealistic" onclick="pickOpt(this,'visual_style')">📷 Foto</button>
+                        <button type="button" class="sai-opt-btn" data-value="illustration" onclick="pickOpt(this,'visual_style')">🎨 Ilustração</button>
+                        <button type="button" class="sai-opt-btn" data-value="cartoon" onclick="pickOpt(this,'visual_style')">🎭 Cartoon</button>
+                        <button type="button" class="sai-opt-btn" data-value="corporate" onclick="pickOpt(this,'visual_style')">💼 Corporativo</button>
+                        <button type="button" class="sai-opt-btn" data-value="minimalist" onclick="pickOpt(this,'visual_style')">◻️ Minimalista</button>
+                        <button type="button" class="sai-opt-btn" data-value="watercolor" onclick="pickOpt(this,'visual_style')">🖌️ Aquarela</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sai-ref-block">
+                <div class="sai-opt-label"><i class="fas fa-cloud-upload-alt"></i> Imagem de Referência (opcional)</div>
+                <div class="sai-ref-row">
+                    <label class="sai-ref-drop" for="referenceImage" id="refDropLabel">
+                        <i class="fas fa-image sai-ref-drop-icon"></i>
+                        <span id="refDropText">Clique para subir imagem (JPG/PNG/WEBP, máx 5MB)</span>
+                        <img id="refPreview" alt="preview" style="display:none;">
+                    </label>
+                    <input type="file" id="referenceImage" accept=".jpg,.jpeg,.png,.webp" class="d-none" onchange="onRefChange(this)">
+                </div>
+
+                {{-- Opções que aparecem só quando há upload --}}
+                <div class="sai-ref-opts" id="refOptsWrap" style="display:none;">
+                    <label class="sai-ref-radio">
+                        <input type="radio" name="ref_mode" value="reference" checked>
+                        <div>
+                            <strong>Usar como referência visual</strong>
+                            <small>Descreva o estilo no campo de instruções — a IA gera uma imagem inspirada.</small>
+                        </div>
+                    </label>
+                    <label class="sai-ref-radio">
+                        <input type="radio" name="ref_mode" value="final">
+                        <div>
+                            <strong>Usar como imagem final do post</strong>
+                            <small>Não gera imagem nova (economiza 1 crédito da cota). Só a legenda é gerada.</small>
+                        </div>
+                    </label>
+                    <button type="button" class="sai-ref-remove" onclick="removeRef()">
+                        <i class="fas fa-times"></i> Remover imagem
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="sai-tags">
             <span class="label-hint">Sugestões:</span>
             @php $role = auth()->user()->role ?? 'common'; @endphp
@@ -863,10 +1024,31 @@
 
                 {{-- Body --}}
                 <div class="sai-card-body">
-                    <div class="sai-card-theme">{{ $post->title_theme }}</div>
+                    <div class="sai-card-theme">
+                        {{ $post->title_theme }}
+                        @if($post->format === 'story')
+                            <span style="background:rgba(139,92,246,.2);color:#a78bfa;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:5px;margin-left:6px;letter-spacing:.05em;">STORY</span>
+                        @endif
+                        @if($post->use_reference_as_final)
+                            <span style="background:rgba(16,185,129,.2);color:#6ee7b7;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:5px;margin-left:6px;letter-spacing:.05em;">SUA FOTO</span>
+                        @endif
+                    </div>
+
+                    {{-- Variações de legenda (se DeepSeek gerou trio) --}}
+                    @if(!empty($post->caption_variations) && count($post->caption_variations) > 1)
+                    <div class="sai-variations" id="vars-{{ $post->id }}">
+                        @foreach($post->caption_variations as $idx => $capt)
+                            <button type="button"
+                                    class="sai-var-pill {{ $capt === $post->body_text ? 'active' : '' }}"
+                                    onclick="chooseVariation({{ $post->id }}, {{ $idx }})">
+                                Legenda {{ $idx + 1 }}
+                            </button>
+                        @endforeach
+                    </div>
+                    @endif
 
                     @if($post->body_text)
-                    <div class="sai-card-caption">{{ $post->body_text }}</div>
+                    <div class="sai-card-caption" id="caption-{{ $post->id }}">{{ $post->body_text }}</div>
                     @elseif($post->status === 'processing')
                     <div class="sai-card-caption" style="font-style:italic">Gerando legenda...</div>
                     @endif
@@ -874,12 +1056,22 @@
                     <div class="sai-card-actions">
                         @if($post->status === 'draft')
                         <div class="sai-card-row">
-                            <button class="sai-action-btn copy" onclick="copyCaption({{ $post->id }}, `{{ addslashes($post->body_text) }}`)" {{ !$post->body_text ? 'disabled' : '' }}>
+                            <button class="sai-action-btn copy" onclick="copyCaption({{ $post->id }}, document.getElementById('caption-{{ $post->id }}').textContent)" {{ !$post->body_text ? 'disabled' : '' }}>
                                 <i class="fas fa-copy"></i> Copiar
                             </button>
-                            <button class="sai-action-btn expand" onclick="openModal({{ $post->id }}, `{{ addslashes($post->title_theme) }}`, `{{ addslashes($post->body_text) }}`, `{{ $post->image_path ? Storage::disk('public')->url($post->image_path) : '' }}`)">
+                            <button class="sai-action-btn expand" onclick="openModal({{ $post->id }}, `{{ addslashes($post->title_theme) }}`, document.getElementById('caption-{{ $post->id }}').textContent, `{{ $post->image_path ? Storage::disk('public')->url($post->image_path) : '' }}`)">
                                 <i class="fas fa-expand"></i> Ver
                             </button>
+                        </div>
+                        <div class="sai-card-row">
+                            <button type="button" class="sai-regen-btn" onclick="regenerateCaption({{ $post->id }}, this)">
+                                <i class="fas fa-rotate-right"></i> Nova legenda
+                            </button>
+                            @if(!$post->use_reference_as_final)
+                            <button type="button" class="sai-regen-btn" onclick="regenerateImage({{ $post->id }}, this)">
+                                <i class="fas fa-image"></i> Nova imagem
+                            </button>
+                            @endif
                         </div>
                         <div class="sai-card-row">
                             <a href="{{ route('social-ai.to-broadcast', $post->id) }}" class="sai-action-btn whatsapp">
@@ -1022,6 +1214,44 @@ function setTheme(text) {
 }
 
 // ── Generate ───────────────────────────────────────
+// State das opções (formato / estilo visual)
+window._saiOpts = { format: 'square', visual_style: '' };
+
+function pickOpt(btn, group) {
+    const scope = btn.closest('.sai-opt-btns');
+    scope.querySelectorAll('.sai-opt-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    window._saiOpts[group] = btn.dataset.value;
+}
+
+// Upload de imagem de referência
+function onRefChange(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+        toast('Imagem muito grande (máx 5MB).', 'error');
+        input.value = '';
+        return;
+    }
+    const preview = document.getElementById('refPreview');
+    const drop    = document.getElementById('refDropLabel');
+    const reader = new FileReader();
+    reader.onload = e => {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        drop.classList.add('has-image');
+        document.getElementById('refOptsWrap').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeRef() {
+    document.getElementById('referenceImage').value = '';
+    document.getElementById('refPreview').style.display = 'none';
+    document.getElementById('refDropLabel').classList.remove('has-image');
+    document.getElementById('refOptsWrap').style.display = 'none';
+}
+
 async function generatePost() {
     const theme = document.getElementById('postTheme').value.trim();
     if (!theme) { toast('Digite um tema para gerar o post.', 'error'); return; }
@@ -1035,12 +1265,26 @@ async function generatePost() {
     text.textContent = 'Iniciando...';
 
     const userContext = document.getElementById('userContext').value.trim();
+    const refInput = document.getElementById('referenceImage');
+    const refFile = refInput.files[0] || null;
+    const refMode = document.querySelector('input[name="ref_mode"]:checked')?.value || 'reference';
+
+    // FormData pra suportar upload multipart
+    const fd = new FormData();
+    fd.append('theme', theme);
+    if (userContext) fd.append('user_context', userContext);
+    fd.append('format', window._saiOpts.format || 'square');
+    if (window._saiOpts.visual_style) fd.append('visual_style', window._saiOpts.visual_style);
+    if (refFile) {
+        fd.append('reference_image', refFile);
+        fd.append('use_reference_as_final', refMode === 'final' ? '1' : '0');
+    }
 
     try {
         const res  = await fetch(ROUTE_GENERATE, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-            body: JSON.stringify({ theme, user_context: userContext || null }),
+            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            body: fd,
         });
         const data = await res.json();
 
@@ -1049,6 +1293,7 @@ async function generatePost() {
             document.getElementById('postTheme').value  = '';
             document.getElementById('userContext').value = '';
             updateCtxCount();
+            removeRef();
             setTimeout(() => location.reload(), 1200);
         } else {
             toast(data.message || 'Erro ao iniciar geração.', 'error');
@@ -1059,6 +1304,72 @@ async function generatePost() {
         btn.disabled  = false;
         icon.className = 'fas fa-magic';
         text.textContent = 'Gerar Post';
+    }
+}
+
+// ── Regenerar só legenda / imagem / escolher variação ──────────────────
+async function regenerateCaption(postId, btn) {
+    btn.disabled = true;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Gerando...';
+    try {
+        const res = await fetch('/social-ai/' + postId + '/regenerate-caption', {
+            method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+            toast('Novas legendas geradas.', 'success');
+            setTimeout(() => location.reload(), 600);
+        } else {
+            toast(data.message || 'Falha ao regenerar.', 'error');
+            btn.innerHTML = original; btn.disabled = false;
+        }
+    } catch (e) {
+        toast('Falha na comunicação.', 'error');
+        btn.innerHTML = original; btn.disabled = false;
+    }
+}
+
+async function regenerateImage(postId, btn) {
+    if (!confirm('Gerar nova imagem consome 1 crédito da cota mensal. Continuar?')) return;
+    btn.disabled = true;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Gerando...';
+    try {
+        const res = await fetch('/social-ai/' + postId + '/regenerate-image', {
+            method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+            toast('Nova imagem gerada.', 'success');
+            setTimeout(() => location.reload(), 600);
+        } else {
+            toast(data.message || 'Falha ao regenerar imagem.', 'error');
+            btn.innerHTML = original; btn.disabled = false;
+        }
+    } catch (e) {
+        toast('Falha na comunicação.', 'error');
+        btn.innerHTML = original; btn.disabled = false;
+    }
+}
+
+async function chooseVariation(postId, index) {
+    try {
+        const res = await fetch('/social-ai/' + postId + '/choose-variation/' + index, {
+            method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('caption-' + postId).textContent = data.body_text;
+            // Atualiza pills active
+            document.querySelectorAll('#vars-' + postId + ' .sai-var-pill').forEach((p, i) => {
+                p.classList.toggle('active', i === index);
+            });
+        } else {
+            toast(data.message || 'Falha ao escolher.', 'error');
+        }
+    } catch (e) {
+        toast('Falha na comunicação.', 'error');
     }
 }
 
