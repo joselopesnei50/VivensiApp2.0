@@ -17,6 +17,11 @@ class MarketingStrategyController extends Controller
         return view('marketing.index', compact('plans'));
     }
 
+    public function about()
+    {
+        return view('marketing.about');
+    }
+
     public function create()
     {
         $projects = Project::where('tenant_id', Auth::user()->tenant_id)

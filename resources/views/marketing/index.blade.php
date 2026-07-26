@@ -20,6 +20,27 @@
         <div class="alert alert-success rounded-3 border-0 mb-4">{{ session('success') }}</div>
     @endif
 
+    {{-- ── BANNER BRUCE IA ── --}}
+    <div style="background:#0A0A0B; border:1px solid rgba(255,122,26,.2); border-radius:20px; padding:24px 32px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:260px;">
+            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,122,26,.12); border:1px solid rgba(255,122,26,.3); color:#FF7A1A; font-size:.65rem; font-weight:800; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:10px;">
+                <i class="fas fa-brain"></i>
+                <span>Bruce IA explica</span>
+            </div>
+            <h3 style="color:#fff; font-size:1.1rem; font-weight:800; margin:0 0 6px; letter-spacing:-.3px; line-height:1.3;">Como funciona o Hub Estratégico?</h3>
+            <p style="color:rgba(255,255,255,.55); font-size:.82rem; margin:0 0 16px; max-width:600px; line-height:1.55;">
+                Entenda como preencher o briefing, o que a IA gera em cada aba e como usar o "Guia do Bruce" para executar seu plano com 1 clique nas ferramentas do Vivensi.
+            </p>
+            <a href="{{ route('marketing.about') }}" style="display:inline-flex; align-items:center; gap:8px; background:#FF7A1A; color:#fff; font-size:.8rem; font-weight:800; padding:10px 22px; border-radius:10px; text-decoration:none;">
+                <i class="fas fa-book-open"></i> Entender como funciona
+            </a>
+        </div>
+        <div style="flex-shrink:0;">
+            <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA"
+                 style="width:90px; height:90px; border-radius:22px; background:#0f0f1e; border:1px solid rgba(255,255,255,.08);">
+        </div>
+    </div>
+
     @if($plans->isEmpty())
         <div class="card border-0 shadow-sm rounded-4 text-center py-5">
             <i class="fas fa-map fa-3x mb-3" style="color:#c7d2fe;"></i>

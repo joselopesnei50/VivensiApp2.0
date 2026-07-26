@@ -66,6 +66,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // ── Marketing & Prospecção ────────────────────────────────────────────────
     Route::middleware('can:access-manager')->group(function () {
         Route::get('/marketing',                    [App\Http\Controllers\MarketingStrategyController::class, 'index'])->name('marketing.index');
+        Route::get('/marketing/about',              [App\Http\Controllers\MarketingStrategyController::class, 'about'])->name('marketing.about');
         Route::get('/marketing/create',             [App\Http\Controllers\MarketingStrategyController::class, 'create'])->name('marketing.create');
         Route::post('/marketing',                   [App\Http\Controllers\MarketingStrategyController::class, 'store'])->name('marketing.store')->middleware('throttle:web_ai');
         Route::get('/marketing/{marketing}',        [App\Http\Controllers\MarketingStrategyController::class, 'show'])->name('marketing.show');
