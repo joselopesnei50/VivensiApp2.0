@@ -14,4 +14,12 @@ Route::middleware(['auth', 'subscription'])->prefix('credenciado')->name('creden
         ->where(['id' => '[0-9]+', 'taskId' => '[0-9]+'])
         ->middleware('throttle:web_write')
         ->name('task.status');
+    Route::post('/projeto/{id}/log', [App\Http\Controllers\CredenciadoController::class, 'storeLog'])
+        ->where('id', '[0-9]+')
+        ->middleware('throttle:web_write')
+        ->name('log.store');
+    Route::post('/projeto/{id}/marco', [App\Http\Controllers\CredenciadoController::class, 'storeTimeline'])
+        ->where('id', '[0-9]+')
+        ->middleware('throttle:web_write')
+        ->name('timeline.store');
 });

@@ -149,5 +149,135 @@
             </div>
         </div>
     </div>
+
+    {{-- Diario de Evolucao --}}
+    <div class="col-lg-7">
+        <div class="vivensi-card" style="padding:24px; border-radius:16px; height:100%;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <h5 style="margin:0; font-weight:800; color:#1e293b; font-size:0.95rem;">
+                    <i class="fas fa-book-open me-2" style="color:#6366f1;"></i>Diario de evolucao
+                </h5>
+                <span style="color:#94a3b8; font-size:0.75rem;">{{ $logs->count() }} recente(s)</span>
+            </div>
+
+            <form action="{{ route('credenciado.log.store', $project->id) }}" method="POST" style="margin-bottom:16px;">
+                @csrf
+                <textarea name="body" rows="3" required maxlength="3000"
+                          placeholder="Como foi hoje? Registre presenca, aprendizados, dificuldades, materiais que faltaram..."
+                          style="width:100%; padding:12px 14px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.85rem; box-sizing:border-box; resize:vertical; line-height:1.55;"></textarea>
+                @error('body')
+                    <div style="color:#dc2626; font-size:0.75rem; margin-top:4px;">{{ $message }}</div>
+                @enderror
+                <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                    <button type="submit" style="padding:8px 18px; border-radius:10px; border:none; background:#6366f1; color:white; font-weight:700; font-size:0.82rem; cursor:pointer;">
+                        <i class="fas fa-paper-plane me-1"></i>Registrar
+                    </button>
+                </div>
+            </form>
+
+            @forelse($logs as $log)
+                <div style="padding:12px 14px; background:#f8fafc; border-left:3px solid #6366f1; border-radius:8px; margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:6px; flex-wrap:wrap;">
+                        <div style="font-weight:700; color:#1e293b; font-size:0.8rem;">
+                            {{ $log->user->name ?? 'Anonimo' }}
+                            @if($log->user_id === auth()->id())
+                                <span style="background:#eef2ff; color:#4338ca; font-size:0.65rem; font-weight:700; padding:1px 6px; border-radius:6px; margin-left:4px;">Voce</span>
+                            @endif
+                        </div>
+                        <div style="color:#94a3b8; font-size:0.72rem;">{{ $log->created_at->format('d/m/Y H:i') }}</div>
+                    </div>
+                    <div style="color:#475569; font-size:0.85rem; line-height:1.55; white-space:pre-wrap;">{{ $log->body }}</div>
+                </div>
+            @empty
+                <div style="text-align:center; padding:24px 20px; color:#94a3b8;">
+                    <i class="fas fa-pen-clip" style="font-size:1.6rem; margin-bottom:8px; display:block; opacity:0.5;"></i>
+                    <p style="margin:0; font-size:0.82rem;">Nenhuma entrada ainda. Registre a primeira acima.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- Marcos do projeto --}}
+    <div class="col-lg-5">
+        <div class="vivensi-card" style="padding:24px; border-radius:16px; height:100%;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <h5 style="margin:0; font-weight:800; color:#1e293b; font-size:0.95rem;">
+                    <i class="fas fa-flag me-2" style="color:#6366f1;"></i>Marcos do projeto
+                </h5>
+                <span style="color:#94a3b8; font-size:0.75rem;">{{ $timeline->count() }} recente(s)</span>
+            </div>
+
+            <form action="{{ route('credenciado.timeline.store', $project->id) }}" method="POST" enctype="multipart/form-data" style="margin-bottom:16px;">
+                @csrf
+                <input type="text" name="title" required maxlength="255"
+                       placeholder="Titulo do marco (ex: Finalizamos o modulo 1)"
+                       style="width:100%; padding:10px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.85rem; box-sizing:border-box; margin-bottom:8px;">
+                <textarea name="content" rows="2" maxlength="3000"
+                          placeholder="Descricao (opcional)"
+                          style="width:100%; padding:10px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.82rem; box-sizing:border-box; resize:vertical; line-height:1.5; margin-bottom:8px;"></textarea>
+                <div class="row g-2" style="margin-bottom:8px;">
+                    <div class="col-6">
+                        <select name="type" required
+                                style="width:100%; padding:8px 10px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.8rem; box-sizing:border-box; background:white;">
+                            <option value="milestone">Marco / entrega</option>
+                            <option value="status">Status / atualizacao</option>
+                            <option value="photo">Foto / evidencia</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <input type="date" name="date" value="{{ now()->format('Y-m-d') }}"
+                               style="width:100%; padding:8px 10px; border:2px solid #e2e8f0; border-radius:10px; font-size:0.8rem; box-sizing:border-box;">
+                    </div>
+                </div>
+                <label style="display:block; font-size:0.75rem; color:#64748b; margin-bottom:4px;">Foto (opcional, ate 10MB)</label>
+                <input type="file" name="media" accept="image/*"
+                       style="width:100%; padding:6px; border:2px dashed #e2e8f0; border-radius:10px; font-size:0.78rem; box-sizing:border-box; background:#f8fafc; margin-bottom:8px;">
+                @error('media')
+                    <div style="color:#dc2626; font-size:0.75rem; margin-bottom:6px;">{{ $message }}</div>
+                @enderror
+                <div style="display:flex; justify-content:flex-end;">
+                    <button type="submit" style="padding:8px 18px; border-radius:10px; border:none; background:#6366f1; color:white; font-weight:700; font-size:0.82rem; cursor:pointer;">
+                        <i class="fas fa-flag-checkered me-1"></i>Registrar marco
+                    </button>
+                </div>
+            </form>
+
+            @php
+                $typeLabels = [
+                    'milestone' => ['label' => 'Marco',      'bg' => '#eef2ff', 'color' => '#4338ca', 'icon' => 'fa-flag-checkered'],
+                    'status'    => ['label' => 'Status',     'bg' => '#dbeafe', 'color' => '#1e40af', 'icon' => 'fa-circle-info'],
+                    'photo'     => ['label' => 'Foto',       'bg' => '#dcfce7', 'color' => '#166534', 'icon' => 'fa-camera'],
+                    'video'     => ['label' => 'Video',      'bg' => '#fef3c7', 'color' => '#92400e', 'icon' => 'fa-video'],
+                ];
+            @endphp
+            @forelse($timeline as $tr)
+                @php $tl = $typeLabels[$tr->type] ?? $typeLabels['status']; @endphp
+                <div style="padding:12px 14px; border:1px solid #f1f5f9; border-radius:12px; margin-bottom:8px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+                        <span style="background:{{ $tl['bg'] }}; color:{{ $tl['color'] }}; font-size:0.66rem; font-weight:800; padding:2px 8px; border-radius:6px; text-transform:uppercase; letter-spacing:0.5px;">
+                            <i class="fas {{ $tl['icon'] }} me-1"></i>{{ $tl['label'] }}
+                        </span>
+                        <span style="color:#94a3b8; font-size:0.72rem; margin-left:auto;">{{ optional($tr->date)->format('d/m/Y') }}</span>
+                    </div>
+                    <div style="font-weight:700; color:#1e293b; font-size:0.88rem;">{{ $tr->title }}</div>
+                    @if($tr->content)
+                        <div style="color:#64748b; font-size:0.78rem; margin-top:4px; line-height:1.5;">{{ Str::limit($tr->content, 140) }}</div>
+                    @endif
+                    @if($tr->media_path)
+                        <a href="{{ asset('storage/' . $tr->media_path) }}" target="_blank" rel="noopener"
+                           style="display:block; margin-top:8px;">
+                            <img src="{{ asset('storage/' . $tr->media_path) }}" alt="{{ $tr->title }}"
+                                 style="width:100%; max-height:180px; object-fit:cover; border-radius:8px;">
+                        </a>
+                    @endif
+                </div>
+            @empty
+                <div style="text-align:center; padding:24px 20px; color:#94a3b8;">
+                    <i class="fas fa-flag" style="font-size:1.6rem; margin-bottom:8px; display:block; opacity:0.5;"></i>
+                    <p style="margin:0; font-size:0.82rem;">Nenhum marco ainda. Comemore o primeiro passo acima.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
 </div>
 @endsection

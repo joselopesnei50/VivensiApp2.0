@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassSession;
 use App\Models\Project;
+use App\Models\ProjectLog;
 use App\Models\ProjectMember;
+use App\Models\ProjectTimelineRecord;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -82,15 +84,95 @@ class CredenciadoController extends Controller
             ->limit(20)
             ->get();
 
+        // Diario de evolucao — ultimos 10 registros do projeto (todos, nao so
+        // do credenciado). Ajuda ele a se contextualizar do que aconteceu.
+        $logs = ProjectLog::with('user:id,name')
+            ->where('project_id', $project->id)
+            ->where('tenant_id', $user->tenant_id)
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        // Marcos / timeline — ultimos 10 do projeto.
+        $timeline = ProjectTimelineRecord::where('project_id', $project->id)
+            ->where('tenant_id', $user->tenant_id)
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get();
+
         return view('credenciado.workspace', [
-            'project'  => $project,
-            'tasks'    => $tasks,
-            'sessions' => $sessions,
+            'project'    => $project,
+            'tasks'      => $tasks,
+            'sessions'   => $sessions,
+            'logs'       => $logs,
+            'timeline'   => $timeline,
             'membership' => ProjectMember::where('user_id', $user->id)
                 ->where('project_id', $project->id)
                 ->where('tenant_id', $user->tenant_id)
                 ->first(),
         ]);
+    }
+
+    /**
+     * Registra uma entrada no Diario de Evolucao do projeto.
+     * Auditoria: user_id fica gravado — coordenacao consegue rastrear quem
+     * escreveu no workspace normal do projeto.
+     */
+    public function storeLog(Request $request, int $projectId)
+    {
+        $user    = auth()->user();
+        $project = $this->authorizeProject($user, $projectId);
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:3000'],
+        ]);
+
+        ProjectLog::create([
+            'project_id' => $project->id,
+            'tenant_id'  => $user->tenant_id,
+            'user_id'    => $user->id,
+            'body'       => $validated['body'],
+            'created_at' => now(),
+        ]);
+
+        return back()->with('success', 'Entrada do diario registrada.');
+    }
+
+    /**
+     * Registra um marco/momento no timeline do projeto. Foto opcional (ate 10MB,
+     * so imagem). Persiste em storage/app/public/tenants/{tenantId}/projects/timeline.
+     */
+    public function storeTimeline(Request $request, int $projectId)
+    {
+        $user    = auth()->user();
+        $project = $this->authorizeProject($user, $projectId);
+
+        $validated = $request->validate([
+            'title'   => ['required', 'string', 'max:255'],
+            'content' => ['nullable', 'string', 'max:3000'],
+            'type'    => ['required', 'in:milestone,photo,status'],
+            'date'    => ['nullable', 'date'],
+            'media'   => ['nullable', 'image', 'max:10240'], // 10MB
+        ]);
+
+        $data = [
+            'project_id' => $project->id,
+            'tenant_id'  => $user->tenant_id,
+            'title'      => $validated['title'],
+            'content'    => $validated['content'] ?? null,
+            'type'       => $validated['type'],
+            'date'       => $validated['date'] ?? now()->toDateString(),
+        ];
+
+        if ($request->hasFile('media')) {
+            $data['media_path'] = $request->file('media')
+                ->store("tenants/{$user->tenant_id}/projects/timeline", 'public');
+        }
+
+        ProjectTimelineRecord::create($data);
+
+        return back()->with('success', 'Marco adicionado ao projeto.');
     }
 
     /**

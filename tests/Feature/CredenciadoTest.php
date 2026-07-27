@@ -197,6 +197,134 @@ it('credenciado atualiza status de tarefa propria', function () {
     expect($task->fresh()->status)->toBe('in_progress');
 });
 
+// ── Diario de evolucao (ProjectLog) ──────────────────────────────────────────
+
+it('credenciado registra entrada no diario do projeto', function () {
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+    $this->actingAs($user);
+
+    $r = $this->post(route('credenciado.log.store', $project->id), [
+        'body' => 'Aula fluiu bem, 8 alunos presentes. Faltou material do modulo 3.',
+    ]);
+    $r->assertRedirect();
+
+    $log = \App\Models\ProjectLog::where('project_id', $project->id)->first();
+    expect($log)->not->toBeNull();
+    expect($log->body)->toContain('Aula fluiu bem');
+    expect((int) $log->user_id)->toBe($user->id);
+    expect((int) $log->tenant_id)->toBe($tenant->id);
+});
+
+it('credenciado NAO pode registrar log em projeto onde nao e member', function () {
+    $tenant   = makeTenantForCred();
+    $projA    = makeProjectForCred($tenant, ['name' => 'Alfa']);
+    $projB    = makeProjectForCred($tenant, ['name' => 'Beta']);
+    $user     = makeUserForCred($tenant, 'credenciado', $projA->id);
+    linkMemberCred($tenant, $user, $projA); // so em A
+    $this->actingAs($user);
+
+    $r = $this->post(route('credenciado.log.store', $projB->id), [
+        'body' => 'Tentativa em projeto alheio',
+    ]);
+    $r->assertStatus(403);
+    expect(\App\Models\ProjectLog::where('project_id', $projB->id)->count())->toBe(0);
+});
+
+it('log valida body obrigatorio', function () {
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+    $this->actingAs($user);
+
+    $r = $this->post(route('credenciado.log.store', $project->id), ['body' => '']);
+    $r->assertSessionHasErrors(['body']);
+});
+
+// ── Marcos / Timeline (ProjectTimelineRecord) ───────────────────────────────
+
+it('credenciado registra marco no timeline', function () {
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+    $this->actingAs($user);
+
+    $r = $this->post(route('credenciado.timeline.store', $project->id), [
+        'title'   => 'Finalizamos modulo 1',
+        'content' => 'Encerramos com apresentacao dos alunos.',
+        'type'    => 'milestone',
+        'date'    => '2026-07-27',
+    ]);
+    $r->assertRedirect();
+
+    $tl = \App\Models\ProjectTimelineRecord::where('project_id', $project->id)->first();
+    expect($tl)->not->toBeNull();
+    expect($tl->title)->toBe('Finalizamos modulo 1');
+    expect($tl->type)->toBe('milestone');
+});
+
+it('credenciado NAO pode criar marco em projeto onde nao e member', function () {
+    $tenant   = makeTenantForCred();
+    $projA    = makeProjectForCred($tenant, ['name' => 'Alfa']);
+    $projB    = makeProjectForCred($tenant, ['name' => 'Beta']);
+    $user     = makeUserForCred($tenant, 'credenciado', $projA->id);
+    linkMemberCred($tenant, $user, $projA);
+    $this->actingAs($user);
+
+    $r = $this->post(route('credenciado.timeline.store', $projB->id), [
+        'title' => 'Invasao', 'type' => 'milestone',
+    ]);
+    $r->assertStatus(403);
+});
+
+it('marco com foto salva media_path e associa ao registro', function () {
+    // fake()->image usa GD (imagecreatetruecolor). Se a extensao nao esta
+    // instalada no PHP local, pula — o pipeline CI/prod tem GD habilitada.
+    if (!function_exists('imagecreatetruecolor')) {
+        $this->markTestSkipped('GD extension nao disponivel no PHP local.');
+    }
+
+    \Illuminate\Support\Facades\Storage::fake('public');
+
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+    $this->actingAs($user);
+
+    $file = \Illuminate\Http\UploadedFile::fake()->image('evidencia.jpg', 800, 600);
+
+    $r = $this->post(route('credenciado.timeline.store', $project->id), [
+        'title' => 'Apresentacao final',
+        'type'  => 'photo',
+        'media' => $file,
+    ]);
+    $r->assertRedirect();
+
+    $tl = \App\Models\ProjectTimelineRecord::where('project_id', $project->id)->first();
+    expect($tl)->not->toBeNull();
+    expect($tl->media_path)->not->toBeNull();
+    expect($tl->media_path)->toContain("tenants/{$tenant->id}/projects/timeline/");
+    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($tl->media_path);
+});
+
+it('marco rejeita tipo invalido', function () {
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+    $this->actingAs($user);
+
+    $r = $this->post(route('credenciado.timeline.store', $project->id), [
+        'title' => 'X', 'type' => 'video', // video nao esta na whitelist do credenciado
+    ]);
+    $r->assertSessionHasErrors(['type']);
+});
+
 it('credenciado NAO pode atualizar tarefa de outro membro', function () {
     $tenant   = makeTenantForCred();
     $project  = makeProjectForCred($tenant);
