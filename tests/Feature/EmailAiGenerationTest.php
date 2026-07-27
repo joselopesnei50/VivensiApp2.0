@@ -105,6 +105,25 @@ it('endpoint exige autenticacao', function () {
     $r->assertStatus(401);
 });
 
+it('endpoint bloqueia role employee (403)', function () {
+    // Politica: subordinados (employee) nao podem queimar cota de IA do tenant.
+    // Alinhado com /manager/email-campaigns e /ngo/email-campaigns.
+    $user = makeUserForAi('employee');
+    $this->actingAs($user);
+
+    $r = $this->postJson('/email-campaigns/ai/generate', [
+        'brief' => 'Descricao valida qualquer texto pra testar gate',
+    ]);
+    $r->assertStatus(403);
+});
+
+it('endpoint quota bloqueia role employee (403)', function () {
+    $user = makeUserForAi('employee');
+    $this->actingAs($user);
+    $r = $this->getJson('/email-campaigns/ai/quota');
+    $r->assertStatus(403);
+});
+
 it('endpoint valida brief minimo', function () {
     $user = makeUserForAi();
     $this->actingAs($user);

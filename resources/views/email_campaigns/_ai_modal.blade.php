@@ -125,7 +125,9 @@
                 </div>
                 <div style="margin-bottom:14px;">
                     <label style="display:block; font-weight:700; font-size:0.82rem; color:#1e293b; margin-bottom:6px;">Preview HTML</label>
-                    <iframe id="aiResultPreview" style="width:100%; height:360px; border:2px solid #e2e8f0; border-radius:10px; background:white;"></iframe>
+                    {{-- sandbox="" (vazio) bloqueia scripts, forms, popups e cookies do iframe. Defesa em
+                         profundidade caso a IA ignore a regra do system prompt e injete <script>. --}}
+                    <iframe id="aiResultPreview" sandbox="" style="width:100%; height:360px; border:2px solid #e2e8f0; border-radius:10px; background:white;"></iframe>
                 </div>
                 <div style="display:flex; gap:10px; justify-content:space-between;">
                     <button type="button" onclick="backToAiForm()"
@@ -175,6 +177,7 @@
                        || '';
     let lastResult     = null;
     let dotsTimer      = null;
+    let prevBodyOverflow = null; // guarda overflow anterior pra nao sobrescrever outro modal
 
     function showPane(pane) {
         formPane.style.display    = pane === 'form'    ? 'block' : 'none';
@@ -216,6 +219,8 @@
         errorBox.style.display = 'none';
         showPane('form');
         modal.style.display = 'flex';
+        // Salva o overflow anterior (pode nao ser '' — outro modal ativo tambem seta hidden).
+        if (prevBodyOverflow === null) prevBodyOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
 
         fetch(quotaUrl, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
@@ -226,7 +231,13 @@
 
     window.closeAiModal = function() {
         modal.style.display = 'none';
-        document.body.style.overflow = '';
+        // Restaura o valor anterior (nao assume que era '').
+        if (prevBodyOverflow !== null) {
+            document.body.style.overflow = prevBodyOverflow;
+            prevBodyOverflow = null;
+        }
+        // Cancela a animacao dos dots se o modal for fechado durante loading.
+        if (dotsTimer) { clearInterval(dotsTimer); dotsTimer = null; }
     };
 
     window.backToAiForm = function() {

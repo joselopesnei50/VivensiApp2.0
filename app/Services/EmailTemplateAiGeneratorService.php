@@ -75,9 +75,11 @@ class EmailTemplateAiGeneratorService
             ];
         }
 
+        // preg_replace pode retornar null em input com bytes invalidos (raro mas possivel
+        // com resposta corrompida da IA). ?? garante string sempre pra mb_substr.
         return [
-            'subject'   => mb_substr(preg_replace('/[\r\n]+/', ' ', $subject), 0, 255),
-            'preheader' => mb_substr(preg_replace('/[\r\n]+/', ' ', $preheader), 0, 150),
+            'subject'   => mb_substr(preg_replace('/[\r\n]+/', ' ', $subject)   ?? $subject,   0, 255),
+            'preheader' => mb_substr(preg_replace('/[\r\n]+/', ' ', $preheader) ?? $preheader, 0, 150),
             'html'      => $html,
         ];
     }

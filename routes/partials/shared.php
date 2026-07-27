@@ -62,8 +62,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // Disponivel para Manager E NGO (ambos criam campanhas de e-mail). Cota
     // mensal por tenant (10/mes default) em EmailAiTemplateQuotaService.
     // Throttle web_ai (10/min por usuario) protege contra loop no cliente.
-    Route::get( '/email-campaigns/ai/quota',    [App\Http\Controllers\EmailAiGenerationController::class, 'quota'])->name('email_campaigns.ai.quota');
-    Route::post('/email-campaigns/ai/generate', [App\Http\Controllers\EmailAiGenerationController::class, 'generate'])->middleware('throttle:web_ai')->name('email_campaigns.ai.generate');
+    // Gate access-manager (bloqueia role=employee) alinha com a politica ja
+    // aplicada as rotas /manager/email-campaigns e /ngo/email-campaigns —
+    // subordinados nao podem queimar cota de IA do tenant sem autorizacao.
+    Route::middleware('can:access-manager')->group(function () {
+        Route::get( '/email-campaigns/ai/quota',    [App\Http\Controllers\EmailAiGenerationController::class, 'quota'])->name('email_campaigns.ai.quota');
+        Route::post('/email-campaigns/ai/generate', [App\Http\Controllers\EmailAiGenerationController::class, 'generate'])->middleware('throttle:web_ai')->name('email_campaigns.ai.generate');
+    });
 
     // ── Radar de Editais (Manager) ────────────────────────────────────────────
     Route::get('/manager/radar', [App\Http\Controllers\Manager\RadarManagerController::class, 'index'])
