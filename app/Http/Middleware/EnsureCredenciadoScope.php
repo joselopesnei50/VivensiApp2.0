@@ -2,21 +2,31 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ProjectMember;
 use Closure;
 use Illuminate\Http\Request;
 
 /**
- * Restringe user com role=credenciado a um conjunto minimo de rotas.
+ * Restringe user com role=credenciado ao painel proprio /credenciado/*.
  *
- * Users com role=credenciado sao vinculados a um ou mais projetos (via
- * ProjectMember) e so podem interagir com:
- *   - Painel proprio /credenciado/*
- *   - Rotas /projects/{id}/... APENAS se ele tem ProjectMember daquele projeto
- *   - Perfil, logout, 2FA, redefinicao de senha, suporte, notificacoes
+ * O credenciado NUNCA acessa o workspace normal do projeto (/projects/{id}),
+ * porque essa view expoe financeiro, doadores, transacoes, membros da equipe
+ * interna e outros dados que sao segredo da entidade. Todo acesso do
+ * credenciado ao projeto passa por /credenciado/projeto/{id}, que renderiza
+ * uma view minimal so com o que ele precisa pra atuar (info + tarefas +
+ * presenca).
  *
- * Qualquer outra coisa (dashboard, doadores, financeiro, admin, email-campaigns,
- * whatsapp etc) e redirecionada pro /credenciado (com aviso) ou 403 em ajax.
+ * Whitelist minima:
+ *   - /credenciado/*        painel proprio (dashboard + workspace minimal)
+ *   - /logout               sair
+ *   - /profile*             perfil (editar dados pessoais)
+ *   - /2fa* + /password* + /reset-password/*  seguranca da propria conta
+ *   - /locale/*             troca de idioma
+ *   - /welcome/dismiss      dispensar modal de boas-vindas
+ *   - /support*             suporte
+ *   - /notifications*       ver notificacoes proprias
+ *   - /api/notifications*   idem via ajax
+ *
+ * Qualquer outra coisa -> redirect /credenciado (web) ou 403 (ajax).
  */
 class EnsureCredenciadoScope
 {
@@ -34,10 +44,6 @@ class EnsureCredenciadoScope
         '#^api/notifications(/.*)?$#',
     ];
 
-    // Padrao para rotas /projects/{id}/... — libera se ProjectMember existe.
-    // Group 1 captura o ID numerico do projeto.
-    private const PROJECT_PATH_PATTERN = '#^projects/(\d+)(/.*)?$#';
-
     public function handle(Request $request, Closure $next)
     {
         $user = auth()->user();
@@ -48,23 +54,8 @@ class EnsureCredenciadoScope
 
         $path = trim($request->path(), '/');
 
-        // Whitelist estatica primeiro.
         foreach (self::ALLOWED_PATH_PATTERNS as $pattern) {
             if (preg_match($pattern, $path)) {
-                return $next($request);
-            }
-        }
-
-        // Rota do projeto: libera SO se o credenciado for member do projeto.
-        // Consulta indexada em project_members(user_id, project_id) — leve.
-        if (preg_match(self::PROJECT_PATH_PATTERN, $path, $m)) {
-            $projectId = (int) $m[1];
-            $isMember = ProjectMember::where('user_id', $user->id)
-                ->where('project_id', $projectId)
-                ->where('tenant_id', $user->tenant_id)
-                ->exists();
-
-            if ($isMember) {
                 return $next($request);
             }
         }
@@ -78,6 +69,6 @@ class EnsureCredenciadoScope
         }
 
         return redirect('/credenciado')
-            ->with('warning', 'Sua conta tem acesso apenas aos projetos vinculados.');
+            ->with('warning', 'Sua conta tem acesso apenas ao painel de projetos vinculados.');
     }
 }

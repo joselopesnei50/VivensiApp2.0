@@ -65,18 +65,10 @@ it('middleware bloqueia credenciado de acessar /ngo/donors', function () {
     $r->assertRedirect('/credenciado');
 });
 
-it('middleware bloqueia credenciado de acessar projeto onde NAO e member (403 redirect)', function () {
-    $tenant  = makeTenantForCred();
-    $user    = makeUserForCred($tenant);
-    $project = makeProjectForCred($tenant);
-    // Nao cria ProjectMember — user nao tem acesso.
-    $this->actingAs($user);
-
-    $r = $this->get('/projects/' . $project->id);
-    $r->assertRedirect('/credenciado');
-});
-
-it('middleware libera credenciado em projeto onde e member', function () {
+it('middleware bloqueia credenciado no workspace normal /projects/{id} mesmo se e member', function () {
+    // POLITICA DE SEGURANCA: o workspace normal do projeto expoe financeiro,
+    // doadores, transacoes e membros da equipe interna. Credenciado NUNCA
+    // acessa essa URL — ele so entra via /credenciado/projeto/{id}.
     $tenant  = makeTenantForCred();
     $user    = makeUserForCred($tenant);
     $project = makeProjectForCred($tenant);
@@ -84,13 +76,30 @@ it('middleware libera credenciado em projeto onde e member', function () {
     $this->actingAs($user);
 
     $r = $this->get('/projects/' . $project->id);
-    // O middleware libera; o controller pode retornar 200 (workspace) ou 302
-    // pra outro destino. O ponto e: NAO pode redirecionar pro /credenciado
-    // (isso indicaria que o middleware bloqueou), e NAO pode retornar 403.
-    expect($r->getStatusCode())->not->toBe(403);
-    expect($r->getStatusCode())->not->toBe(401);
-    $location = (string) $r->headers->get('Location');
-    expect($location)->not->toContain('/credenciado');
+    $r->assertRedirect('/credenciado');
+});
+
+it('middleware bloqueia credenciado nas subrotas do projeto (financeiro/tarefas/etc)', function () {
+    $tenant  = makeTenantForCred();
+    $user    = makeUserForCred($tenant);
+    $project = makeProjectForCred($tenant);
+    linkMemberCred($tenant, $user, $project, 'admin');
+    $this->actingAs($user);
+
+    foreach ([
+        "/projects/{$project->id}/kanban",
+        "/projects/{$project->id}/planning",
+        "/projects/{$project->id}/stages",
+        "/transactions",
+        "/ngo/donors",
+        "/manager/team",
+        "/finance/import",
+        "/email-campaigns/ai/quota",
+    ] as $blocked) {
+        $r = $this->get($blocked);
+        expect($r->getStatusCode())->toBe(302);
+        expect((string) $r->headers->get('Location'))->toContain('/credenciado');
+    }
 });
 
 it('middleware retorna JSON 403 em requests ajax fora do escopo', function () {
@@ -136,7 +145,7 @@ it('login de credenciado redireciona para /credenciado', function () {
 
 // ── /credenciado index ───────────────────────────────────────────────────────
 
-it('credenciado com 1 projeto e redirecionado direto ao workspace', function () {
+it('credenciado com 1 projeto e redirecionado direto ao workspace minimal', function () {
     $tenant  = makeTenantForCred();
     $project = makeProjectForCred($tenant);
     $user    = makeUserForCred($tenant, 'credenciado', $project->id);
@@ -145,6 +154,71 @@ it('credenciado com 1 projeto e redirecionado direto ao workspace', function () 
 
     $r = $this->get('/credenciado');
     $r->assertRedirect(route('credenciado.project', $project->id));
+});
+
+it('workspace minimal do credenciado renderiza sem expor financeiro/doadores', function () {
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant, ['name' => 'Projeto Oficina', 'description' => 'Descricao do projeto']);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project, 'editor');
+    $this->actingAs($user);
+
+    $r = $this->get(route('credenciado.project', $project->id));
+    $r->assertOk()
+      ->assertSee('Projeto Oficina')
+      ->assertSee('Minhas tarefas')
+      ->assertSee('Aulas do projeto')
+      // Palavras que NAO devem aparecer (marcadores das seções sensíveis do
+      // workspace normal /projects/{id}):
+      ->assertDontSee('Dossiê Financeiro')
+      ->assertDontSee('Stakeholders')
+      ->assertDontSee('addMemberModal');
+});
+
+it('credenciado atualiza status de tarefa propria', function () {
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+    $task = \App\Models\Task::create([
+        'tenant_id'   => $tenant->id,
+        'project_id'  => $project->id,
+        'title'       => 'Preparar material da aula',
+        'status'      => 'todo',
+        'assigned_to' => $user->id,
+        'created_by'  => $user->id,
+    ]);
+    $this->actingAs($user);
+
+    $r = $this->post(route('credenciado.task.status', ['id' => $project->id, 'taskId' => $task->id]), [
+        'status' => 'in_progress',
+    ]);
+    $r->assertRedirect();
+    expect($task->fresh()->status)->toBe('in_progress');
+});
+
+it('credenciado NAO pode atualizar tarefa de outro membro', function () {
+    $tenant   = makeTenantForCred();
+    $project  = makeProjectForCred($tenant);
+    $cred     = makeUserForCred($tenant, 'credenciado', $project->id);
+    $outroUser = makeUserForCred($tenant, 'employee');
+    linkMemberCred($tenant, $cred, $project);
+    linkMemberCred($tenant, $outroUser, $project);
+    $tarefaAlheia = \App\Models\Task::create([
+        'tenant_id'   => $tenant->id,
+        'project_id'  => $project->id,
+        'title'       => 'Tarefa de outro',
+        'status'      => 'todo',
+        'assigned_to' => $outroUser->id,
+        'created_by'  => $outroUser->id,
+    ]);
+    $this->actingAs($cred);
+
+    $r = $this->post(route('credenciado.task.status', ['id' => $project->id, 'taskId' => $tarefaAlheia->id]), [
+        'status' => 'completed',
+    ]);
+    $r->assertStatus(404);
+    expect($tarefaAlheia->fresh()->status)->toBe('todo');
 });
 
 it('credenciado com N projetos ve seletor no /credenciado', function () {

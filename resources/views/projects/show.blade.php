@@ -1007,28 +1007,6 @@ async function generateProjectPdf(btn) {
                               data-url-credenciado="{{ $basePath . '/projects/'.$project->id.'/members/credenciado' }}">
                             @csrf
 
-                            {{-- Tipo de conta: Colaborador (acesso ao painel padrao) ou Credenciado
-                                 (restrito ao painel /credenciado, so ve projetos vinculados). --}}
-                            <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Tipo de Conta</label>
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label for="tpEmp" class="role-card w-100" id="card-tpEmp" style="min-height:100px;">
-                                        <input type="radio" name="account_type" id="tpEmp" value="employee" class="d-none" checked onchange="selectAccountType('employee')">
-                                        <i class="fas fa-user-tie mb-2" style="font-size:1.4rem; color:#64748b;"></i>
-                                        <div class="fw-900 mb-1">Colaborador</div>
-                                        <div class="small fw-bold" style="color:#94a3b8;">Acesso ao painel completo da organização</div>
-                                    </label>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="tpCred" class="role-card w-100" id="card-tpCred" style="min-height:100px;">
-                                        <input type="radio" name="account_type" id="tpCred" value="credenciado" class="d-none" onchange="selectAccountType('credenciado')">
-                                        <i class="fas fa-id-badge mb-2" style="font-size:1.4rem; color:#64748b;"></i>
-                                        <div class="fw-900 mb-1">Credenciado</div>
-                                        <div class="small fw-bold" style="color:#94a3b8;">Acesso restrito aos projetos vinculados</div>
-                                    </label>
-                                </div>
-                            </div>
-
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Nome</label>
@@ -1049,6 +1027,24 @@ async function generateProjectPdf(btn) {
                                         <div class="small opacity-50 fw-bold mt-1">Um e-mail sera enviado para o novo membro definir a propria senha.</div>
                                     </div>
                                 </div>
+                            </div>
+
+                            {{-- Toggle discreto: por padrao cria Colaborador (acesso ao painel
+                                 da organizacao). Marcado = Credenciado, restrito EXCLUSIVAMENTE
+                                 a este projeto (nao ve financeiro/doadores/etc). --}}
+                            <div class="mt-4 p-3 rounded-4" style="background:#fef3c7; border:1px solid #fcd34d;">
+                                <label class="d-flex align-items-start gap-3 m-0" style="cursor:pointer;">
+                                    <input type="checkbox" id="chkCredenciado" onchange="selectAccountType(this.checked ? 'credenciado' : 'employee')"
+                                           style="margin-top:4px; width:18px; height:18px; accent-color:#d97706;">
+                                    <div>
+                                        <div class="fw-800" style="color:#78350f; font-size:0.9rem;">
+                                            <i class="fas fa-lock me-1"></i>Acesso exclusivo a este projeto
+                                        </div>
+                                        <div class="small mt-1" style="color:#92400e; line-height:1.5;">
+                                            Marque quando for cadastrar oficineiro/professor/agente que <strong>so pode atuar neste projeto</strong>. A pessoa nao vera financeiro, doadores nem nenhuma outra area da entidade.
+                                        </div>
+                                    </div>
+                                </label>
                             </div>
 
                             <label class="fw-800 text-uppercase mt-5 mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Protocolo de Acesso</label>
@@ -1104,22 +1100,13 @@ async function generateProjectPdf(btn) {
 
     // Alterna entre "Colaborador" e "Credenciado" no form de novo membro,
     // trocando o action do form pra apontar pro endpoint correto.
+    // Chamado pelo checkbox #chkCredenciado (via onchange no HTML).
     function selectAccountType(type) {
         const form = document.getElementById('newMemberForm');
         if (!form) return;
         form.action = (type === 'credenciado')
             ? form.dataset.urlCredenciado
             : form.dataset.urlEmployee;
-
-        const cards = { employee: 'card-tpEmp', credenciado: 'card-tpCred' };
-        Object.entries(cards).forEach(([k, cardId]) => {
-            const c = document.getElementById(cardId);
-            if (!c) return;
-            const on = (k === type);
-            c.classList.toggle('role-card-active', on);
-            const icon = c.querySelector('i');
-            if (icon) icon.style.color = on ? 'var(--ds-brand)' : '#64748b';
-        });
     }
 
     document.addEventListener('DOMContentLoaded', function() {
