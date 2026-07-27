@@ -58,7 +58,7 @@ class ManagerController extends Controller
 
         // Membros da equipe para o filtro lateral
         $teamMembers = \App\Models\User::where('tenant_id', $tenantId)
-            ->whereIn('role', ['employee', 'manager'])
+            ->whereIn('role', ['employee', 'manager', 'credenciado'])
             ->select('id', 'name', 'role')
             ->orderBy('name')
             ->get();
@@ -111,7 +111,7 @@ class ManagerController extends Controller
         $tenantId = auth()->user()->tenant_id;
 
         $employees = \App\Models\User::where('tenant_id', $tenantId)
-            ->whereIn('role', ['employee', 'manager'])
+            ->whereIn('role', ['employee', 'manager', 'credenciado'])
             ->withCount('projectMembers')
             ->orderBy('name')
             ->get();
@@ -169,6 +169,42 @@ class ManagerController extends Controller
     }
 
 
+    /**
+     * Vincula um membro existente (incluindo credenciado) a um projeto.
+     * Reusa a mesma tabela ProjectMember que ProjectController::addMember,
+     * mas o entry-point aqui e a tela /manager/team/{id} (usado quando o
+     * gestor quer adicionar OUTROS projetos a um credenciado).
+     */
+    public function linkProject(Request $request, $id)
+    {
+        $this->guardManagerOnly();
+        $tenantId = auth()->user()->tenant_id;
+
+        $employee = \App\Models\User::where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'project_id' => [
+                'required', 'integer',
+                Rule::exists('projects', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
+            'access_level' => ['required', Rule::in(['viewer', 'editor', 'admin'])],
+        ]);
+
+        // Evita duplicidade — se ja e membro, atualiza access_level.
+        \App\Models\ProjectMember::updateOrCreate(
+            [
+                'tenant_id'  => $tenantId,
+                'project_id' => $validated['project_id'],
+                'user_id'    => $employee->id,
+            ],
+            ['access_level' => $validated['access_level']]
+        );
+
+        return back()->with('success', 'Projeto vinculado ao membro com sucesso.');
+    }
+
     public function teamDetail($id)
     {
         $this->guardManagerOnly();
@@ -188,7 +224,7 @@ class ManagerController extends Controller
                         ->get(['id', 'name']);
 
         $teamMembers = \App\Models\User::where('tenant_id', $tenantId)
-                        ->whereIn('role', ['employee', 'manager'])
+                        ->whereIn('role', ['employee', 'manager', 'credenciado'])
                         ->orderBy('name')
                         ->get(['id', 'name']);
 

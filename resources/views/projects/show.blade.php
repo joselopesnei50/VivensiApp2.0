@@ -1002,8 +1002,32 @@ async function generateProjectPdf(btn) {
                     </div>
 
                     <div class="tab-pane fade p-5" id="newMember">
-                        <form action="{{ $basePath . '/projects/'.$project->id.'/members/credential' }}" method="POST">
+                        <form id="newMemberForm" action="{{ $basePath . '/projects/'.$project->id.'/members/credential' }}" method="POST"
+                              data-url-employee="{{ $basePath . '/projects/'.$project->id.'/members/credential' }}"
+                              data-url-credenciado="{{ $basePath . '/projects/'.$project->id.'/members/credenciado' }}">
                             @csrf
+
+                            {{-- Tipo de conta: Colaborador (acesso ao painel padrao) ou Credenciado
+                                 (restrito ao painel /credenciado, so ve projetos vinculados). --}}
+                            <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Tipo de Conta</label>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label for="tpEmp" class="role-card w-100" id="card-tpEmp" style="min-height:100px;">
+                                        <input type="radio" name="account_type" id="tpEmp" value="employee" class="d-none" checked onchange="selectAccountType('employee')">
+                                        <i class="fas fa-user-tie mb-2" style="font-size:1.4rem; color:#64748b;"></i>
+                                        <div class="fw-900 mb-1">Colaborador</div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Acesso ao painel completo da organização</div>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="tpCred" class="role-card w-100" id="card-tpCred" style="min-height:100px;">
+                                        <input type="radio" name="account_type" id="tpCred" value="credenciado" class="d-none" onchange="selectAccountType('credenciado')">
+                                        <i class="fas fa-id-badge mb-2" style="font-size:1.4rem; color:#64748b;"></i>
+                                        <div class="fw-900 mb-1">Credenciado</div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Acesso restrito aos projetos vinculados</div>
+                                    </label>
+                                </div>
+                            </div>
 
                             <div class="row g-4">
                                 <div class="col-md-6">
@@ -1019,10 +1043,10 @@ async function generateProjectPdf(btn) {
                                     <input name="phone" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="(11) 99999-9999">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Perfil</label>
+                                    <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Senha</label>
                                     <div class="p-4 bg-light rounded-4 border-0 fw-800" style="color:#1e293b;">
-                                        Colaborador (Employee)
-                                        <div class="small opacity-50 fw-bold mt-1">A senha será definida via link de redefinição enviado por email.</div>
+                                        <i class="fas fa-envelope me-2" style="color:#6366f1;"></i>Link de definição de senha
+                                        <div class="small opacity-50 fw-bold mt-1">Um e-mail sera enviado para o novo membro definir a propria senha.</div>
                                     </div>
                                 </div>
                             </div>
@@ -1075,6 +1099,26 @@ async function generateProjectPdf(btn) {
             card.classList.toggle('role-card-active', isSelected);
             const icon = card.querySelector('i');
             if (icon) icon.style.color = isSelected ? 'var(--ds-brand)' : '#64748b';
+        });
+    }
+
+    // Alterna entre "Colaborador" e "Credenciado" no form de novo membro,
+    // trocando o action do form pra apontar pro endpoint correto.
+    function selectAccountType(type) {
+        const form = document.getElementById('newMemberForm');
+        if (!form) return;
+        form.action = (type === 'credenciado')
+            ? form.dataset.urlCredenciado
+            : form.dataset.urlEmployee;
+
+        const cards = { employee: 'card-tpEmp', credenciado: 'card-tpCred' };
+        Object.entries(cards).forEach(([k, cardId]) => {
+            const c = document.getElementById(cardId);
+            if (!c) return;
+            const on = (k === type);
+            c.classList.toggle('role-card-active', on);
+            const icon = c.querySelector('i');
+            if (icon) icon.style.color = on ? 'var(--ds-brand)' : '#64748b';
         });
     }
 

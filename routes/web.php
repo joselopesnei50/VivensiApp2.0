@@ -31,4 +31,5 @@ require __DIR__.'/partials/whatsapp.php';
 require __DIR__.'/partials/social.php';
 require __DIR__.'/partials/personal.php';
 require __DIR__.'/partials/admin.php';
+require __DIR__.'/partials/credenciado.php';
 require __DIR__.'/partials/shared.php';

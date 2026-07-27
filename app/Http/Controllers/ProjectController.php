@@ -179,13 +179,16 @@ class ProjectController extends Controller
 
     public function show($id)
     {
-        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'super_admin', 'ngo'], true), 403);
+        abort_unless(in_array(auth()->user()->role, ['manager', 'employee', 'credenciado', 'super_admin', 'ngo'], true), 403);
 
         $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
         $data = $this->projectService->getWithDetails((int) $id, $tenantId);
 
+        // Roles operacionais (employee, credenciado) so acessam projetos onde
+        // ha ProjectMember. Manager/ngo/super_admin veem qualquer projeto do
+        // tenant.
         if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
             abort_unless(
                 ProjectMember::where('tenant_id', $tenantId)
@@ -276,7 +279,28 @@ class ProjectController extends Controller
 
     public function addMemberCredential(Request $request, $id)
     {
+        return $this->createNewMember($request, $id, role: 'employee');
+    }
+
+    /**
+     * Cria conta de "Credenciado": user restrito ao painel /credenciado, com
+     * acesso APENAS a este projeto (e a outros que a entidade lhe atribuir
+     * depois). Reusa createNewMember internamente.
+     */
+    public function addMemberCredenciado(Request $request, $id)
+    {
+        return $this->createNewMember($request, $id, role: 'credenciado');
+    }
+
+    /**
+     * Fluxo comum de cadastro de novo user + ProjectMember + envio de link
+     * de definicao de senha. O role decide se o user tera acesso ao painel
+     * padrao (employee) ou fica restrito ao painel do Credenciado.
+     */
+    private function createNewMember(Request $request, $id, string $role)
+    {
         abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
+        abort_unless(in_array($role, ['employee', 'credenciado'], true), 400);
 
         $tenantId = auth()->user()->tenant_id;
 
@@ -299,9 +323,15 @@ class ProjectController extends Controller
         $newUser->name = $validated['name'];
         $newUser->email = $validated['email'];
         $newUser->phone = $validated['phone'] ?? null;
-        $newUser->role = 'employee';
+        $newUser->role = $role;
         $newUser->status = 'active';
         $newUser->password = Hash::make($tempPassword);
+        // Credenciado tem projeto default pra login redirect direto ao workspace
+        // quando so ha 1 vinculo. Se depois for atribuido a mais projetos, o
+        // seletor /credenciado assume o controle.
+        if ($role === 'credenciado') {
+            $newUser->default_project_id = $project->id;
+        }
         $newUser->save();
 
         ProjectMember::create([

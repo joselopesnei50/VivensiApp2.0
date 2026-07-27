@@ -42,6 +42,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\TrackUserActivity::class,
             \App\Http\Middleware\LogPageVisit::class,
             \App\Http\Middleware\RequireTwoFactor::class,
+            \App\Http\Middleware\EnsureCredenciadoScope::class,
         ],
 
         'api' => [

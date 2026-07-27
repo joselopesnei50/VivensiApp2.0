@@ -15,6 +15,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/projects/{id}/unarchive', [App\Http\Controllers\ProjectController::class, 'unarchive'])->name('projects.unarchive')->middleware('throttle:web_write');
     Route::post('/projects/{id}/members',             [App\Http\Controllers\ProjectController::class, 'addMember']);
     Route::post('/projects/{id}/members/credential',  [App\Http\Controllers\ProjectController::class, 'addMemberCredential']);
+    Route::post('/projects/{id}/members/credenciado', [App\Http\Controllers\ProjectController::class, 'addMemberCredenciado'])->name('projects.members.credenciado');
     Route::delete('/projects/{id}/members/{memberId}', [App\Http\Controllers\ProjectController::class, 'removeMember']);
     Route::post('/projects/people/global',            [App\Http\Controllers\ProjectController::class, 'storeGlobalPerson'])->name('projects.people.store.global');
     Route::post('/projects/people/import',            [App\Http\Controllers\ProjectController::class, 'importPeople'])->name('projects.people.import.global');

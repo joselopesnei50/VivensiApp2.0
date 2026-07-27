@@ -5,8 +5,11 @@
     $basePath     = rtrim(request()->getBaseUrl(), '/');
     $avatarColors = ['#4F46E5','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899'];
     $avatarColor  = $avatarColors[$employee->id % 6];
-    $isManager    = $employee->role === 'manager';
-    $isActive     = $employee->status === 'active';
+    $isManager     = $employee->role === 'manager';
+    $isCredenciado = $employee->role === 'credenciado';
+    $isActive      = $employee->status === 'active';
+    $roleLabel     = $isManager ? 'Gestor' : ($isCredenciado ? 'Credenciado' : 'Funcionário');
+    $rolePill      = $isManager ? 'pill-manager' : ($isCredenciado ? 'pill-ngo' : 'pill-employee');
 
     $statusMap = [
         'todo'        => ['label' => 'A fazer',      'bg' => 'rgba(99,102,241,.1)',  'color' => '#4f46e5'],
@@ -54,8 +57,8 @@
             <div style="flex:1;min-width:0;">
                 <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                     <span class="fw-bold" style="font-size:1.1rem;color:#0f172a;">{{ $employee->name }}</span>
-                    <span class="role-pill {{ $isManager ? 'pill-manager' : 'pill-employee' }}">
-                        {{ $isManager ? 'Gestor' : 'Funcionário' }}
+                    <span class="role-pill {{ $rolePill }}">
+                        {{ $roleLabel }}
                     </span>
                     <span class="role-pill {{ $isActive ? 'pill-active' : 'pill-inactive' }}">
                         {{ $isActive ? 'Ativo' : 'Inativo' }}
@@ -93,21 +96,35 @@
                         <i class="fas fa-layer-group" style="color:#6366f1;font-size:.8rem;"></i>
                     </span>
                     <h6 class="fw-bold mb-0" style="font-size:.9rem;color:#0f172a;">Projetos em que atua</h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-3 fw-bold ms-auto"
+                            style="font-size:.72rem;"
+                            data-bs-toggle="modal" data-bs-target="#linkProjectModal">
+                        <i class="fas fa-plus me-1"></i>Vincular
+                    </button>
                 </div>
 
                 @forelse($projects as $p)
                 @if($p->project)
-                <a href="{{ $basePath . '/projects/' . $p->project->id }}"
-                   class="project-row text-decoration-none">
-                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fas fa-folder-open" style="color:#6366f1;font-size:.8rem;"></i>
-                    </div>
-                    <div style="flex:1;min-width:0;">
-                        <div class="fw-bold text-truncate" style="font-size:.85rem;color:#0f172a;">{{ $p->project->name }}</div>
-                        <div style="font-size:.7rem;color:#94a3b8;">{{ ucfirst($p->access_level ?? 'membro') }}</div>
-                    </div>
-                    <i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.7rem;flex-shrink:0;"></i>
-                </a>
+                <div class="project-row" style="display:flex; align-items:center; gap:10px;">
+                    <a href="{{ $basePath . '/projects/' . $p->project->id }}"
+                       class="text-decoration-none" style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                        <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-folder-open" style="color:#6366f1;font-size:.8rem;"></i>
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="fw-bold text-truncate" style="font-size:.85rem;color:#0f172a;">{{ $p->project->name }}</div>
+                            <div style="font-size:.7rem;color:#94a3b8;">{{ ucfirst($p->access_level ?? 'membro') }}</div>
+                        </div>
+                    </a>
+                    <form action="{{ $basePath . '/projects/' . $p->project->id . '/members/' . $p->id }}"
+                          method="POST" onsubmit="return confirm('Remover este vinculo de projeto?');" class="m-0">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-link text-danger p-1" title="Remover vinculo">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    </form>
+                </div>
                 @endif
                 @empty
                 <div class="text-center py-4">
@@ -117,6 +134,59 @@
                     <p class="text-muted mb-0" style="font-size:.82rem;">Nenhum projeto alocado ainda.</p>
                 </div>
                 @endforelse
+
+                @if($isCredenciado)
+                <div style="margin-top:14px; padding:10px 12px; background:#eff6ff; border-left:3px solid #6366f1; border-radius:6px; font-size:.75rem; color:#1e40af; line-height:1.5;">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <strong>Credenciado:</strong> só enxerga os projetos listados acima. Vincule outros projetos aqui para dar acesso.
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal: vincular projeto existente ao membro --}}
+    <div class="modal fade" id="linkProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-800 mb-0" style="color:#0f172a;">Vincular projeto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form action="{{ $basePath . '/manager/team/' . $employee->id . '/link-project' }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="fw-bold mb-2" style="font-size:.82rem; color:#475569;">Projeto</label>
+                            @php
+                                $linkedIds = $projects->pluck('project_id')->all();
+                                $available = $allProjects->reject(fn($ap) => in_array($ap->id, $linkedIds))->values();
+                            @endphp
+                            <select name="project_id" class="form-select form-select-lg rounded-3 fw-700" required
+                                    @if($available->isEmpty()) disabled @endif>
+                                @if($available->isEmpty())
+                                    <option value="">Nenhum projeto disponível — ja vinculado a todos</option>
+                                @else
+                                    <option value="">Selecione um projeto...</option>
+                                    @foreach($available as $ap)
+                                        <option value="{{ $ap->id }}">{{ $ap->name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="fw-bold mb-2" style="font-size:.82rem; color:#475569;">Nivel de acesso</label>
+                            <select name="access_level" class="form-select form-select-lg rounded-3 fw-700" required>
+                                <option value="viewer">Leitor — auditagem</option>
+                                <option value="editor" selected>Editor — operacional</option>
+                                <option value="admin">Administrador — total</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-3" @if($available->isEmpty()) disabled @endif>
+                            Vincular ao projeto
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

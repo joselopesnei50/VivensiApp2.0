@@ -17,6 +17,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/manager/team',            [App\Http\Controllers\ManagerController::class, 'team'])->name('manager.team');
     Route::get('/manager/team/{id}',       [App\Http\Controllers\ManagerController::class, 'teamDetail'])->name('manager.team_detail');
     Route::post('/manager/team/store-quick', [App\Http\Controllers\ManagerController::class, 'storeQuick']);
+    Route::post('/manager/team/{id}/link-project', [App\Http\Controllers\ManagerController::class, 'linkProject'])
+        ->where('id', '[0-9]+')
+        ->name('manager.team.link_project')
+        ->middleware('throttle:web_write');
     Route::get('/manager/approvals',       [App\Http\Controllers\ManagerController::class, 'approvals'])->name('manager.approvals');
     Route::get('/manager/contracts',       [App\Http\Controllers\ManagerController::class, 'contracts'])->name('manager.contracts');
     Route::get('/manager/landing-pages',   [App\Http\Controllers\LandingPageController::class, 'index'])->name('manager.landing_pages');

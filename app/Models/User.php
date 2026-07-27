@@ -43,7 +43,28 @@ class User extends Authenticatable
         'two_factor_confirmed_at',
         'welcome_dismissed_at',
         'phone_bidx',
+        'default_project_id',
     ];
+
+    public function isCredenciado(): bool
+    {
+        return $this->role === 'credenciado';
+    }
+
+    public function defaultProject()
+    {
+        return $this->belongsTo(Project::class, 'default_project_id');
+    }
+
+    public function projectMemberships()
+    {
+        return $this->hasMany(ProjectMember::class);
+    }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_members')->withPivot('access_level');
+    }
 
     public function hasTwoFactorEnabled(): bool
     {

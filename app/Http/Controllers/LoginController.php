@@ -47,6 +47,13 @@ class LoginController extends Controller
                 return redirect('/admin');
             }
 
+            // Credenciado nao tem acesso ao dashboard nem a nenhum outro painel;
+            // vai direto pro painel proprio /credenciado (que auto-redireciona
+            // ao workspace se so ha 1 projeto vinculado).
+            if ($user->isCredenciado()) {
+                return redirect('/credenciado');
+            }
+
             return redirect('/dashboard');
         }
 

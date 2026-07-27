@@ -367,6 +367,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 'manager'     => ['label' => 'Gestão',         'icon' => 'fa-briefcase',      'cls' => 'panel-badge-manager'],
                 'common'      => ['label' => 'MEI / Pessoal',  'icon' => 'fa-store',          'cls' => 'panel-badge-mei'],
                 'super_admin' => ['label' => 'Admin',          'icon' => 'fa-shield-halved',  'cls' => 'panel-badge-admin'],
+                'credenciado' => ['label' => 'Credenciado',    'icon' => 'fa-id-badge',       'cls' => 'panel-badge-ngo'],
                 default       => ['label' => 'Vivensi',        'icon' => 'fa-circle',         'cls' => 'panel-badge-admin'],
             };
         @endphp
@@ -401,10 +402,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <nav class="sidebar-menu">
         <ul>
+            @if(auth()->user()->role === 'credenciado')
+                {{-- ═══ MENU CREDENCIADO — restrito a projetos vinculados ═══ --}}
+                <li>
+                    <a href="{{ url('/credenciado') }}" class="{{ request()->is('credenciado') || request()->is('credenciado/*') ? 'active' : '' }}">
+                        <i class="fas fa-folder-tree"></i> Meus Projetos
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url('/profile') }}" class="{{ request()->is('profile*') ? 'active' : '' }}">
+                        <i class="fas fa-user-circle"></i> Meu Perfil
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url('/support') }}" class="{{ request()->is('support*') ? 'active' : '' }}">
+                        <i class="fas fa-life-ring"></i> Suporte
+                    </a>
+                </li>
+            @else
             <li><a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}"><i class="fas fa-home"></i> Visão Geral</a></li>
-            
-            
-            {{-- Academy Access removed from global and moved to specific roles below --}}            
+
+
+            {{-- Academy Access removed from global and moved to specific roles below --}}
             @if (auth()->user()->role == 'super_admin')
                 {{-- ═══ MENU SUPER ADMIN — Executive Edition ═══ --}}
                 @php
@@ -997,6 +1016,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->routeIs('settings.api-tokens*') ? 'active' : '' }}"><i class="fas fa-plug"></i> API &amp; Integrações</a></li>
             <li><a href="{{ route('settings.webhooks') }}" class="{{ request()->routeIs('settings.webhooks*') ? 'active' : '' }}"><i class="fas fa-webhook"></i> Webhooks</a></li>
             @endif
+            @endif {{-- fim do @else do bloco credenciado --}}
         </ul>
     </nav>
     {{-- User Card (Linear-style) --}}
@@ -1008,6 +1028,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             'manager'     => 'Gestor',
             'ngo'         => 'ONG',
             'common'      => 'MEI',
+            'credenciado' => 'Credenciado',
             default       => 'Usuário',
         };
     @endphp
