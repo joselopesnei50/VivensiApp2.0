@@ -236,11 +236,16 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 });
 
 // ── Academy (LMS) — auth sem subscription ────────────────────────────────────
+// Throttle:
+//   lesson.complete — 60/min por user (evita loop no player)
+//   certificate.download — 20/min por user (evita brute-force do code)
 Route::group(['prefix' => 'academy', 'as' => 'academy.', 'middleware' => ['auth']], function () {
     Route::get('/',                    [App\Http\Controllers\AcademyController::class, 'index'])->name('index');
     Route::get('/{slug}',              [App\Http\Controllers\AcademyController::class, 'show'])->name('show');
-    Route::post('/lessons/{id}/complete', [App\Http\Controllers\AcademyController::class, 'markLessonAsViewed'])->name('lesson.complete');
-    Route::get('/certificate/{code}',  [App\Http\Controllers\AcademyController::class, 'downloadCertificate'])->name('certificate.download');
+    Route::post('/lessons/{id}/complete', [App\Http\Controllers\AcademyController::class, 'markLessonAsViewed'])
+        ->middleware('throttle:60,1')->name('lesson.complete');
+    Route::get('/certificate/{code}',  [App\Http\Controllers\AcademyController::class, 'downloadCertificate'])
+        ->middleware('throttle:20,1')->name('certificate.download');
 });
 
 // ── Testes de Integração (apenas auth) ───────────────────────────────────────
