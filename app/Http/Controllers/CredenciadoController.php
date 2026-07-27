@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClassSession;
+use App\Models\KanbanCard;
 use App\Models\Project;
 use App\Models\ProjectLog;
 use App\Models\ProjectMember;
@@ -63,15 +64,33 @@ class CredenciadoController extends Controller
         // de outros membros — mesmo do mesmo projeto — pra manter foco).
         // Ordena por status priority (in_progress > todo > done) via PHP —
         // evita FIELD() que nao funciona em SQLite (nos testes).
+        //
+        // IMPORTANTE: inclui tarefas SEM project_id (ex.: criadas pela Agenda
+        // sem projeto associado) atribuidas ao credenciado. Antes o filtro
+        // where('project_id', $project->id) escondia essas tarefas.
         $statusOrder = ['in_progress' => 1, 'todo' => 2, 'completed' => 3, 'done' => 3, 'cancelled' => 4];
-        $tasks = Task::where('project_id', $project->id)
-            ->where('tenant_id', $user->tenant_id)
+        $tasks = Task::where('tenant_id', $user->tenant_id)
             ->where('assigned_to', $user->id)
+            ->where(function ($q) use ($project) {
+                $q->where('project_id', $project->id)->orWhereNull('project_id');
+            })
             ->orderBy('due_date')
             ->limit(50)
             ->get()
             ->sortBy(fn ($t) => $statusOrder[$t->status] ?? 99)
             ->values();
+
+        // Cards do Kanban atribuidos ao credenciado. kanban_cards nao tem
+        // project_id (e transversal por tenant), entao mostramos TODOS os
+        // cards ativos dele. O eager load traz o nome da coluna (status
+        // visual do card no board).
+        $kanbanCards = KanbanCard::with('column:id,name,color')
+            ->where('tenant_id', $user->tenant_id)
+            ->where('assigned_to', $user->id)
+            ->whereNull('archived_at')
+            ->orderBy('due_date')
+            ->limit(30)
+            ->get();
 
         // Aulas/chamadas do projeto — proximas 20. Credenciado pode marcar
         // presenca em qualquer aula do projeto onde e membro. Se o negocio
@@ -102,12 +121,13 @@ class CredenciadoController extends Controller
             ->get();
 
         return view('credenciado.workspace', [
-            'project'    => $project,
-            'tasks'      => $tasks,
-            'sessions'   => $sessions,
-            'logs'       => $logs,
-            'timeline'   => $timeline,
-            'membership' => ProjectMember::where('user_id', $user->id)
+            'project'     => $project,
+            'tasks'       => $tasks,
+            'kanbanCards' => $kanbanCards,
+            'sessions'    => $sessions,
+            'logs'        => $logs,
+            'timeline'    => $timeline,
+            'membership'  => ProjectMember::where('user_id', $user->id)
                 ->where('project_id', $project->id)
                 ->where('tenant_id', $user->tenant_id)
                 ->first(),

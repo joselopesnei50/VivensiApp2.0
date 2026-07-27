@@ -197,6 +197,80 @@ it('credenciado atualiza status de tarefa propria', function () {
     expect($task->fresh()->status)->toBe('in_progress');
 });
 
+// ── Tarefas: workspace mostra tudo que foi atribuido ao credenciado ─────────
+
+it('workspace mostra tarefa avulsa (sem project_id) atribuida ao credenciado', function () {
+    // Bug reportado: agenda cria Task com project_id=null. Workspace filtrava
+    // por project_id e nao mostrava.
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+
+    \App\Models\Task::create([
+        'tenant_id'   => $tenant->id,
+        'project_id'  => null, // tarefa avulsa da agenda
+        'title'       => 'Ligar para o fornecedor de material',
+        'status'      => 'todo',
+        'assigned_to' => $user->id,
+        'created_by'  => $user->id,
+    ]);
+    $this->actingAs($user);
+
+    $r = $this->get(route('credenciado.project', $project->id));
+    $r->assertOk()->assertSee('Ligar para o fornecedor de material');
+});
+
+it('workspace mostra kanban card atribuido ao credenciado', function () {
+    // Bug reportado: manager distribui via Kanban -> kanban_cards.assigned_to.
+    // Tabela paralela, sem relacao com tasks. Workspace nao mostrava.
+    $tenant  = makeTenantForCred();
+    $project = makeProjectForCred($tenant);
+    $user    = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+
+    $board = \App\Models\KanbanBoard::create([
+        'tenant_id' => $tenant->id, 'created_by' => $user->id,
+        'name' => 'Board Geral', 'is_default' => true,
+    ]);
+    $column = \App\Models\KanbanColumn::create([
+        'tenant_id' => $tenant->id, 'board_id' => $board->id,
+        'name' => 'Em andamento', 'position' => 1,
+    ]);
+    \App\Models\KanbanCard::create([
+        'tenant_id' => $tenant->id, 'column_id' => $column->id,
+        'created_by' => $user->id, 'assigned_to' => $user->id,
+        'title' => 'Preparar apresentacao do modulo 2', 'position' => 1,
+    ]);
+    $this->actingAs($user);
+
+    $r = $this->get(route('credenciado.project', $project->id));
+    $r->assertOk()
+      ->assertSee('Preparar apresentacao do modulo 2')
+      ->assertSee('Em andamento'); // coluna aparece como badge
+});
+
+it('workspace NAO mostra kanban card de outro usuario', function () {
+    $tenant   = makeTenantForCred();
+    $project  = makeProjectForCred($tenant);
+    $user     = makeUserForCred($tenant, 'credenciado', $project->id);
+    $outroCred = makeUserForCred($tenant, 'credenciado', $project->id);
+    linkMemberCred($tenant, $user, $project);
+    linkMemberCred($tenant, $outroCred, $project);
+
+    $board = \App\Models\KanbanBoard::create(['tenant_id' => $tenant->id, 'created_by' => $user->id, 'name' => 'B', 'is_default' => true]);
+    $column = \App\Models\KanbanColumn::create(['tenant_id' => $tenant->id, 'board_id' => $board->id, 'name' => 'Todo', 'position' => 1]);
+    \App\Models\KanbanCard::create([
+        'tenant_id' => $tenant->id, 'column_id' => $column->id,
+        'created_by' => $user->id, 'assigned_to' => $outroCred->id,
+        'title' => 'Card do outro credenciado', 'position' => 1,
+    ]);
+    $this->actingAs($user);
+
+    $r = $this->get(route('credenciado.project', $project->id));
+    $r->assertOk()->assertDontSee('Card do outro credenciado');
+});
+
 // ── Diario de evolucao (ProjectLog) ──────────────────────────────────────────
 
 it('credenciado registra entrada no diario do projeto', function () {

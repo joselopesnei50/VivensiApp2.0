@@ -82,6 +82,12 @@
                             @if($t->description)
                                 <div style="color:#64748b; font-size:0.78rem; margin-top:4px; line-height:1.5;">{{ Str::limit($t->description, 140) }}</div>
                             @endif
+                            {{-- Badge de origem: distingue tarefa do projeto vs geral (Agenda) --}}
+                            @if($t->project_id === null)
+                                <span style="display:inline-block; margin-top:6px; background:#f1f5f9; color:#64748b; font-size:0.62rem; font-weight:800; padding:2px 7px; border-radius:6px; text-transform:uppercase; letter-spacing:0.5px;">
+                                    <i class="fas fa-calendar-days me-1"></i>Agenda geral
+                                </span>
+                            @endif
                         </div>
                         <span style="background:{{ $s['bg'] }}; color:{{ $s['color'] }}; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:8px; text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0;">
                             {{ $s['label'] }}
@@ -112,9 +118,44 @@
             @empty
                 <div style="text-align:center; padding:32px 20px; color:#94a3b8;">
                     <i class="fas fa-clipboard-list" style="font-size:1.8rem; margin-bottom:10px; display:block; opacity:0.5;"></i>
-                    <p style="margin:0; font-size:0.85rem;">Nenhuma tarefa atribuida a voce neste projeto.</p>
+                    <p style="margin:0; font-size:0.85rem;">Nenhuma tarefa atribuida a voce.</p>
                 </div>
             @endforelse
+
+            {{-- Cards do Kanban atribuidos ao credenciado (transversal por tenant,
+                 sem project_id — mostra os cards ativos onde ele foi marcado). --}}
+            @if($kanbanCards->isNotEmpty())
+                <div style="margin-top:22px; padding-top:16px; border-top:1px dashed #e2e8f0;">
+                    <div style="font-weight:800; color:#475569; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">
+                        <i class="fas fa-columns me-1" style="color:#6366f1;"></i>Meus cards do Kanban ({{ $kanbanCards->count() }})
+                    </div>
+                    @foreach($kanbanCards as $card)
+                        <div style="padding:12px 14px; border:1px solid #f1f5f9; border-radius:10px; margin-bottom:8px;">
+                            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-weight:700; color:#1e293b; font-size:0.85rem;">{{ $card->title }}</div>
+                                    @if($card->description)
+                                        <div style="color:#64748b; font-size:0.76rem; margin-top:4px; line-height:1.5;">{{ Str::limit($card->description, 120) }}</div>
+                                    @endif
+                                    @if($card->due_date)
+                                        <div style="color:#94a3b8; font-size:0.7rem; margin-top:4px;">
+                                            <i class="far fa-calendar me-1"></i>{{ \Illuminate\Support\Carbon::parse($card->due_date)->format('d/m/Y') }}
+                                        </div>
+                                    @endif
+                                </div>
+                                @if($card->column)
+                                    @php
+                                        $colColor = $card->column->color ?? '#6366f1';
+                                    @endphp
+                                    <span style="background:{{ $colColor }}22; color:{{ $colColor }}; font-size:0.66rem; font-weight:800; padding:3px 8px; border-radius:8px; text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0;">
+                                        {{ $card->column->name }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
 
