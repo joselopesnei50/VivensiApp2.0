@@ -906,6 +906,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         </ul>
                     </div>
                 </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Academy --}}
+                @php $ngo_acad_active = request()->is('academy*'); @endphp
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $ngo_acad_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-graduation-cap group-icon"></i> Vivensi Academy
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $ngo_acad_active ? '150px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-play-circle"></i> Acessar Academy</a></li>
+                        </ul>
+                    </div>
+                </div>
             @else
                 <!-- Menu Comum / MEI / Empresa -->
                 @php
@@ -1001,6 +1016,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             @if(config('strategy_room.enabled'))
                             <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
                             @endif
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Academy --}}
+                @php $mei_acad_active = request()->is('academy*'); @endphp
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_acad_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-graduation-cap group-icon"></i> Vivensi Academy
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_acad_active ? '150px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-play-circle"></i> Acessar Academy</a></li>
                         </ul>
                     </div>
                 </div>
