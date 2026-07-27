@@ -17,6 +17,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/manager/team',            [App\Http\Controllers\ManagerController::class, 'team'])->name('manager.team');
     Route::get('/manager/team/{id}',       [App\Http\Controllers\ManagerController::class, 'teamDetail'])->name('manager.team_detail');
     Route::post('/manager/team/store-quick', [App\Http\Controllers\ManagerController::class, 'storeQuick']);
+    // Guia estatico da tela "Expandir Stakeholders" (aberto em nova aba pelo
+    // banner do modal). Nao expoe dados sensiveis — so texto explicativo.
+    Route::view('/help/stakeholders', 'help.stakeholders')->name('help.stakeholders');
     Route::post('/manager/team/{id}/link-project', [App\Http\Controllers\ManagerController::class, 'linkProject'])
         ->where('id', '[0-9]+')
         ->name('manager.team.link_project')

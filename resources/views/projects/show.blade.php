@@ -951,6 +951,27 @@ async function generateProjectPdf(btn) {
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0">
+                {{-- Banner de ajuda: link pra guia com Bruce IA explicando a diferenca
+                     entre Colaborador e Credenciado, riscos de LGPD e boas praticas. --}}
+                <div class="px-5 pt-4">
+                    <a href="{{ route('help.stakeholders') }}" target="_blank" rel="noopener"
+                       class="text-decoration-none d-flex align-items-center gap-3 p-3 rounded-4"
+                       style="background:linear-gradient(135deg,#eef2ff,#f5f3ff); border:1px solid #ddd6fe;">
+                        <img src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce"
+                             style="width:38px; height:38px; border-radius:50%; background:white; padding:3px; box-shadow:0 2px 6px rgba(79,70,229,0.15); flex-shrink:0;">
+                        <div style="flex:1; min-width:0;">
+                            <div class="fw-800" style="color:#4338ca; font-size:0.85rem;">
+                                Precisa de ajuda? <span style="color:#0f172a;">Bruce explica como funciona.</span>
+                            </div>
+                            <div class="small" style="color:#6366f1; margin-top:2px;">
+                                Quando usar Colaborador vs Credenciado, o que cada um enxerga e boas praticas de LGPD.
+                            </div>
+                        </div>
+                        <span style="color:#4338ca; font-weight:800; font-size:0.82rem; flex-shrink:0;">
+                            Ver guia <i class="fas fa-external-link-alt ms-1" style="font-size:0.7rem;"></i>
+                        </span>
+                    </a>
+                </div>
                 <div class="px-5 pt-4">
                     <ul class="nav nav-pills nav-fill bg-light rounded-4 p-1" id="teamModalTabs" role="tablist">
                         <li class="nav-item"><button class="nav-link active rounded-4 fw-800 py-3" id="select-tab" data-bs-toggle="pill" data-bs-target="#selectMember" type="button">Vincular Ativo</button></li>
