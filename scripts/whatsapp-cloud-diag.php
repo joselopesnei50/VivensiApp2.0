@@ -18,7 +18,8 @@ $app = require __DIR__ . '/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 $INSTANCE_ID = 32;
-$TENANT_ID   = 6;
+// $TENANT_ID é derivado dinamicamente da instance abaixo — a mesma
+// instance pode ser movida entre tenants (foi realocada de 6 → 16).
 
 echo str_repeat('=', 70) . PHP_EOL;
 echo ' 1) SystemSettings meta_cloud_*' . PHP_EOL;
@@ -45,6 +46,8 @@ printf("  provider       : %s\n", $inst->provider);
 printf("  phone_number_id: %s\n", $inst->phone_number_id ?? '###vazio###');
 printf("  waba_id        : %s\n", $inst->waba_id ?? '###vazio###');
 printf("  has_token      : %s\n", $inst->graph_access_token ? 'sim' : 'NAO');
+
+$TENANT_ID = (int) $inst->tenant_id;
 
 echo PHP_EOL . str_repeat('=', 70) . PHP_EOL;
 echo ' 3) Chats do tenant ' . $TENANT_ID . ' (top 5 recentes)' . PHP_EOL;
@@ -98,5 +101,31 @@ foreach ($msgs as $m) {
 }
 
 echo str_repeat('=', 70) . PHP_EOL;
+echo ' 5) Últimos 5 registros de log do WhatsApp Cloud' . PHP_EOL;
+echo str_repeat('=', 70) . PHP_EOL;
+
+// Grep leve nos últimos logs pra pegar handshakes e falhas do webhook.
+$logFile = storage_path('logs/laravel-' . date('Y-m-d') . '.log');
+if (file_exists($logFile)) {
+    $lines = @file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+    $matches = [];
+    foreach (array_reverse($lines) as $line) {
+        if (stripos($line, 'CloudApi') !== false || stripos($line, 'cloud-webhook') !== false || stripos($line, 'meta_cloud') !== false) {
+            $matches[] = $line;
+            if (count($matches) >= 5) break;
+        }
+    }
+    if (empty($matches)) {
+        echo "  (nenhuma linha CloudApi/webhook/meta_cloud no log de hoje)\n";
+    } else {
+        foreach (array_reverse($matches) as $m) {
+            echo '  ' . mb_substr($m, 0, 200) . PHP_EOL;
+        }
+    }
+} else {
+    echo "  (log de hoje ainda nao criado: $logFile)\n";
+}
+
+echo PHP_EOL . str_repeat('=', 70) . PHP_EOL;
 echo ' Diagnostico completo.' . PHP_EOL;
 echo str_repeat('=', 70) . PHP_EOL;
