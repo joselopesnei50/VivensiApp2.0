@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class LandingPageController extends Controller
@@ -48,14 +49,23 @@ class LandingPageController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $tenantId = auth()->user()->tenant_id;
+
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
+            // Opção C — se o gestor está criando a partir de um Projeto,
+            // vem o id pra pré-vincular a landing automaticamente.
+            'link_project_id' => [
+                'nullable', 'integer',
+                \Illuminate\Validation\Rule::exists('projects', 'id')
+                    ->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
         ]);
 
-        $title = trim((string) $request->title);
+        $title = trim((string) $validated['title']);
 
         $page = LandingPage::create([
-            'tenant_id' => auth()->user()->tenant_id,
+            'tenant_id' => $tenantId,
             'title' => $title,
             'slug' => $this->generateUniqueSlug($title),
             'status' => 'draft',
@@ -70,7 +80,14 @@ class LandingPageController extends Controller
             ]
         ]);
 
-        return redirect()->route('landing-pages.builder', $page->id);
+        // Pré-vínculo com projeto (Opção C). Segurança: já validamos ownership
+        // via Rule::exists escopado ao tenant.
+        $params = [];
+        if (!empty($validated['link_project_id'])) {
+            $params['link_project'] = (int) $validated['link_project_id'];
+        }
+
+        return redirect()->route('landing-pages.builder', array_merge(['id' => $page->id], $params));
     }
 
     public function createMagic(Request $request)
@@ -150,17 +167,43 @@ class LandingPageController extends Controller
         return redirect()->route('landing-pages.builder', $page->id)->with('success', 'Página criada com IA! 🚀');
     }
 
-    public function builder($id)
+    public function builder($id, Request $request)
     {
-        $page = LandingPage::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+        $tenantId = auth()->user()->tenant_id;
+        $page = LandingPage::where('tenant_id', $tenantId)->findOrFail($id);
+
+        // Opção C — se veio ?link_project={id} e o projeto pertence ao tenant,
+        // pré-vincula automaticamente. Facilita o fluxo "criar landing a partir
+        // do projeto" sem exigir que o gestor abra Configurações e escolha.
+        $linkProject = (int) $request->query('link_project', 0);
+        if ($linkProject > 0 && !$page->target_project_id) {
+            $exists = \App\Models\Project::withoutGlobalScopes()
+                ->where('id', $linkProject)
+                ->where('tenant_id', $tenantId)
+                ->exists();
+            if ($exists) {
+                $page->target_project_id     = $linkProject;
+                $page->target_creates_person = true;
+                $page->save();
+            }
+        }
+
         $sections = $page->sections;
-        
-        return view('ngo.landing_pages.builder', compact('page', 'sections'));
+
+        // Lista enxuta de projetos p/ o dropdown "Destino do Cadastro".
+        // Só projetos ativos (não arquivados) do próprio tenant.
+        $projects = \App\Models\Project::where('tenant_id', $tenantId)
+            ->when(Schema::hasColumn('projects', 'archived_at'), fn ($q) => $q->whereNull('archived_at'))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('ngo.landing_pages.builder', compact('page', 'sections', 'projects'));
     }
 
     public function updateSettings(Request $request, $id)
     {
         $page = LandingPage::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+        $tenantId = (int) auth()->user()->tenant_id;
 
         $validated = $request->validate([
             'title' => 'nullable|string|max:255',
@@ -169,6 +212,14 @@ class LandingPageController extends Controller
             'seo_description' => 'nullable|string|max:255',
             'og_image_url' => 'nullable|string|max:2048',
             'favicon_url' => 'nullable|string|max:2048',
+            // Opção C — destino da landing (projeto). Nullable → desativa vínculo.
+            'target_project_id' => [
+                'nullable', 'integer',
+                \Illuminate\Validation\Rule::exists('projects', 'id')
+                    ->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
+            'target_creates_person'   => 'nullable|boolean',
+            'target_link_beneficiary' => 'nullable|boolean',
         ]);
 
         if (array_key_exists('title', $validated) && $validated['title'] !== null) {
@@ -198,6 +249,28 @@ class LandingPageController extends Controller
         }
 
         $page->settings = $settings;
+
+        // Opção C — grava vínculo com Projeto. Regra: se target_project_id
+        // for null (ou não veio), zeramos ambas as flags pra não deixar
+        // config órfã (flags ativas sem projeto de destino).
+        if (array_key_exists('target_project_id', $validated)) {
+            $page->target_project_id = $validated['target_project_id'] ?: null;
+        }
+        if (empty($page->target_project_id)) {
+            $page->target_creates_person   = false;
+            $page->target_link_beneficiary = false;
+        } else {
+            if (array_key_exists('target_creates_person', $validated)) {
+                $page->target_creates_person = (bool) $validated['target_creates_person'];
+            }
+            if (array_key_exists('target_link_beneficiary', $validated)) {
+                // Vincular ao Beneficiário só faz sentido se também for
+                // criar ProjectPerson — protege contra config incoerente.
+                $page->target_link_beneficiary = (bool) $validated['target_link_beneficiary']
+                    && (bool) $page->target_creates_person;
+            }
+        }
+
         $page->save();
 
         return response()->json([
@@ -208,6 +281,9 @@ class LandingPageController extends Controller
                 'slug' => $page->slug,
                 'status' => $page->status,
                 'settings' => $page->settings,
+                'target_project_id'       => $page->target_project_id,
+                'target_creates_person'   => (bool) $page->target_creates_person,
+                'target_link_beneficiary' => (bool) $page->target_link_beneficiary,
             ],
         ]);
     }
@@ -512,17 +588,30 @@ class LandingPageController extends Controller
 
         // LGPD Art. 7º/8º: consentimento explícito por página é obrigatório.
         // 'accepted' valida marcações de checkbox: "yes", "on", 1, true.
+        // Campos "extras" (cpf, birth_date, address, city, guardian_*) são
+        // aceitos mas todos opcionais — usados quando a landing está vinculada
+        // a um projeto (Opção C) pra alimentar ProjectPerson/Beneficiary.
         $validated = $request->validate([
             'name'           => 'nullable|string|max:255',
             'email'          => 'required|email:rfc,dns|max:255',
             'phone'          => 'nullable|string|max:30',
             'consent_given'  => 'accepted',
+            'cpf'            => 'nullable|string|max:20',
+            'birth_date'     => 'nullable|date',
+            'address'        => 'nullable|string|max:255',
+            'city'           => 'nullable|string|max:120',
+            'guardian_name'  => 'nullable|string|max:255',
+            'guardian_phone' => 'nullable|string|max:30',
         ], [
             'consent_given.accepted' => 'É necessário marcar o consentimento para receber comunicações.',
         ]);
 
-        // Limit extra fields to avoid abuse.
-        $extra = collect($request->except(['_token', 'name', 'email', 'phone', 'consent_given']))
+        // Limit extra fields to avoid abuse. Removemos os campos que já foram
+        // capturados explicitamente acima pra não duplicar no JSON extra_data.
+        $extra = collect($request->except([
+                '_token', 'name', 'email', 'phone', 'consent_given',
+                'cpf', 'birth_date', 'address', 'city', 'guardian_name', 'guardian_phone',
+            ]))
             ->take(20)
             ->map(function ($v) {
                 $s = is_scalar($v) ? (string) $v : json_encode($v);
@@ -581,7 +670,99 @@ class LandingPageController extends Controller
             }
         }
 
+        // Opção C: landing vinculada a Projeto → criar ProjectPerson (e
+        // opcionalmente Beneficiary). Falhas aqui não podem quebrar o lead.
+        if ($page->target_project_id && $page->target_creates_person) {
+            try {
+                $this->enrollFromLanding($page, $validated);
+            } catch (\Throwable $e) {
+                Log::warning('Landing project enrollment failed', [
+                    'landing_page_id'   => $page->id,
+                    'target_project_id' => $page->target_project_id,
+                    'tenant_id'         => $page->tenant_id,
+                    'error'             => $e->getMessage(),
+                ]);
+            }
+        }
+
         return back()->with('success', 'Dados enviados com sucesso! Entraremos em contato.');
+    }
+
+    /**
+     * Opção C — cria/vincula ProjectPerson (e Beneficiary, se habilitado) a
+     * partir de uma submissão de landing pública. Idempotente por CPF
+     * (via blind index) e por (project_id, beneficiary_id).
+     */
+    private function enrollFromLanding(LandingPage $page, array $data): void
+    {
+        $tenantId  = (int) $page->tenant_id;
+        $projectId = (int) $page->target_project_id;
+
+        // Garante que o projeto ainda existe no mesmo tenant (protege caso o
+        // gestor tenha arquivado/excluído depois de publicar a landing).
+        $project = \App\Models\Project::withoutGlobalScopes()
+            ->where('id', $projectId)
+            ->where('tenant_id', $tenantId)
+            ->first();
+        if (!$project) return;
+
+        $name = trim((string) ($data['name'] ?? ''));
+        if ($name === '') return; // sem nome não vira cadastro no projeto
+
+        $cpfRaw   = trim((string) ($data['cpf'] ?? ''));
+        $cpfDigits = preg_replace('/\D+/', '', $cpfRaw);
+
+        $beneficiaryId = null;
+
+        // Se habilitado: cria/reusa Beneficiary via blind index de CPF.
+        // Sem CPF, não dá pra deduplicar com segurança, então só criamos
+        // Beneficiary quando o CPF foi informado.
+        if ($page->target_link_beneficiary && strlen($cpfDigits) >= 11) {
+            $bidx = hash_hmac('sha256', $cpfDigits, config('app.key'));
+
+            $beneficiary = \App\Models\Beneficiary::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('cpf_bidx', $bidx)
+                ->first();
+
+            if (!$beneficiary) {
+                $beneficiary = new \App\Models\Beneficiary();
+                $beneficiary->tenant_id  = $tenantId;
+                $beneficiary->name       = $name;
+                $beneficiary->cpf        = $cpfDigits;   // mutator cifra + gera bidx
+                $beneficiary->phone      = $data['phone']      ?? null;
+                $beneficiary->address    = $data['address']    ?? null;
+                $beneficiary->birth_date = !empty($data['birth_date']) ? $data['birth_date'] : null;
+                $beneficiary->status     = 'ativo';
+                $beneficiary->save();
+            }
+
+            $beneficiaryId = (int) $beneficiary->id;
+        }
+
+        // Idempotência: se o mesmo beneficiário já está no projeto, não duplica.
+        if ($beneficiaryId) {
+            $exists = \App\Models\ProjectPerson::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('project_id', $projectId)
+                ->where('beneficiary_id', $beneficiaryId)
+                ->exists();
+            if ($exists) return;
+        }
+
+        \App\Models\ProjectPerson::create([
+            'tenant_id'         => $tenantId,
+            'project_id'        => $projectId,
+            'beneficiary_id'    => $beneficiaryId,
+            'name'              => $name,
+            'phone'             => $data['phone']          ?? null,
+            'address'           => $data['address']        ?? null,
+            'city'              => $data['city']           ?? null,
+            'birth_date'        => !empty($data['birth_date']) ? $data['birth_date'] : null,
+            'guardian_name'     => $data['guardian_name']  ?? null,
+            'guardian_phone'    => $data['guardian_phone'] ?? null,
+            'enrollment_status' => 'ativo',
+        ]);
     }
 
     private function getDefaultContent($type)

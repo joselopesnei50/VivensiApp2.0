@@ -477,6 +477,118 @@
         </div>
 </div>
 
+@if(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true))
+<!-- Página de Inscrição Pública (Landing Pages vinculadas) -->
+<div class="project-table-card mt-4" id="public-registration">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">
+                <i class="fas fa-link me-2" style="color:#4f46e5;"></i> Página de Inscrição Pública
+            </h4>
+            <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">
+                Formulário público onde qualquer pessoa se cadastra, matricula ou se inscreve neste projeto. As respostas viram <strong>Pessoas</strong> aqui em cima automaticamente.
+            </p>
+        </div>
+        <div style="display:flex; gap:10px;">
+            @if(($registrationLandings ?? collect())->isNotEmpty())
+                <a href="{{ url('/ngo/landing-pages') }}" class="btn-ds btn-ds-outline" style="padding: 12px 18px; font-weight: 800; font-size: 0.82rem;">
+                    <i class="fas fa-list me-2" style="color:#64748b;"></i> Todas as páginas
+                </a>
+            @endif
+            <form action="{{ url('/ngo/landing-pages') }}" method="POST" style="margin:0;">
+                @csrf
+                <input type="hidden" name="title" value="Inscrição — {{ $project->name }}">
+                <input type="hidden" name="link_project_id" value="{{ $project->id }}">
+                <button type="submit"
+                        class="btn-premium btn-premium-shine"
+                        style="background:#4f46e5; color:#fff; border:none; padding: 12px 20px; font-weight: 900; font-size: 0.85rem;">
+                    <i class="fas fa-plus me-2"></i> Criar página de inscrição
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if(($registrationLandings ?? collect())->isEmpty())
+        <div style="border:1px dashed #cbd5e1; border-radius: 14px; padding: 28px; text-align:center; color:#64748b;">
+            <div style="font-size: 1.6rem; color:#4f46e5; margin-bottom: 8px;">
+                <i class="fas fa-wand-magic-sparkles"></i>
+            </div>
+            <div style="font-weight: 800; color:#0f172a; margin-bottom: 4px;">Ainda não há página de inscrição vinculada.</div>
+            <div style="font-size: .88rem;">Clique em <strong>Criar página de inscrição</strong> pra montar uma landing com formulário e link público. Toda submissão será cadastrada aqui no projeto.</div>
+        </div>
+    @else
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;">
+            @foreach($registrationLandings as $lp)
+                @php
+                    $publicUrl = url('/lp/' . $lp->slug);
+                    $subs      = (int) ($registrationLandingsSubmissions[$lp->id] ?? 0);
+                    $isPub     = ($lp->status ?? 'draft') === 'published';
+                @endphp
+                <div style="border:1px solid #e2e8f0; border-radius: 14px; padding: 16px; background:#fff;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: 8px; margin-bottom: 10px;">
+                        <div style="font-weight: 900; color:#0f172a; line-height: 1.35; word-break: break-word;">{{ $lp->title }}</div>
+                        @if($isPub)
+                            <span style="font-size: .68rem; background: rgba(16,185,129,.14); color:#059669; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px;">Publicada</span>
+                        @else
+                            <span style="font-size: .68rem; background: rgba(100,116,139,.12); color:#475569; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px;">Rascunho</span>
+                        @endif
+                    </div>
+
+                    <div style="display:flex; gap: 14px; margin-bottom: 12px; font-size: .82rem; color:#64748b;">
+                        <div><i class="fas fa-users me-1" style="color:#4f46e5;"></i> <strong style="color:#0f172a;">{{ $subs }}</strong> {{ $subs === 1 ? 'inscrição' : 'inscrições' }}</div>
+                        @if($lp->target_link_beneficiary)
+                            <div><i class="fas fa-hand-holding-heart me-1" style="color:#10b981;"></i> Beneficiários</div>
+                        @endif
+                    </div>
+
+                    <div style="display:flex; gap: 6px; align-items:center; background:#f8fafc; border:1px dashed #e2e8f0; border-radius: 10px; padding: 8px 10px; margin-bottom: 12px;">
+                        <input type="text" readonly value="{{ $publicUrl }}"
+                               id="lp-url-{{ $lp->id }}"
+                               style="flex:1; border:none; background:transparent; font-size:.78rem; color:#334155; padding:0;">
+                        <button type="button" onclick="__lpCopyUrl('lp-url-{{ $lp->id }}', this)"
+                                title="Copiar link"
+                                style="border:none; background:transparent; color:#4f46e5; cursor:pointer; padding:2px 6px;">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+
+                    <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+                        <a href="{{ url('/ngo/landing-pages/builder/' . $lp->id) }}"
+                           class="btn-ds btn-ds-outline" style="flex:1; text-align:center; padding: 8px 10px; font-weight:800; font-size:.78rem;">
+                            <i class="fas fa-pen me-1"></i> Editar
+                        </a>
+                        <a href="{{ $publicUrl }}" target="_blank" rel="noopener"
+                           class="btn-ds btn-ds-outline" style="flex:1; text-align:center; padding: 8px 10px; font-weight:800; font-size:.78rem;">
+                            <i class="fas fa-external-link-alt me-1"></i> Abrir
+                        </a>
+                        <a href="{{ url('/ngo/landing-pages/' . $lp->id . '/leads') }}"
+                           class="btn-ds btn-ds-outline" style="flex:1; text-align:center; padding: 8px 10px; font-weight:800; font-size:.78rem;">
+                            <i class="fas fa-inbox me-1"></i> Respostas
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
+
+<script>
+    // Copiar URL da landing pro clipboard, com feedback visual rápido.
+    function __lpCopyUrl(inputId, btn) {
+        const el = document.getElementById(inputId);
+        if (!el) return;
+        el.select();
+        try {
+            document.execCommand('copy');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => { btn.innerHTML = orig; }, 1200);
+        } catch (e) {}
+    }
+
+</script>
+@endif
+
 <!-- Pessoas & Contatos Section -->
 <div class="project-table-card mt-4">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 15px;">

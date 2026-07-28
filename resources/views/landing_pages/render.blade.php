@@ -619,12 +619,44 @@
                             @endif
                         </div>
 
+                        @php
+                            // Toggles do content da seção — cada campo é opcional.
+                            // Se target_project_id da landing está ligado e o gestor
+                            // marcou "link_beneficiary", CPF é praticamente essencial.
+                            $ctaInputStyle = 'width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; margin-bottom: 12px; background: rgba(15,23,42,0.25); color: #fff;';
+                            $c = $section->content ?? [];
+                            $enCpf       = (bool) ($c['enable_cpf']            ?? false);
+                            $enBirth     = (bool) ($c['enable_birth_date']     ?? false);
+                            $enAddress   = (bool) ($c['enable_address']        ?? false);
+                            $enCity      = (bool) ($c['enable_city']           ?? false);
+                            $enGuardian  = (bool) ($c['enable_guardian']       ?? false);
+                            $reqName     = (bool) ($c['require_name']          ?? false);
+                            $reqPhone    = (bool) ($c['require_phone']         ?? false);
+                        @endphp
                         <div style="background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.22); border-radius: 26px; padding: 22px; backdrop-filter: blur(10px);">
                             <form action="{{ url('/lp/'.$page->slug.'/lead') }}" method="POST">
                                 @csrf
-                                <input type="text" name="name" style="width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; margin-bottom: 12px; background: rgba(15,23,42,0.25); color: #fff;" placeholder="Seu nome (opcional)">
-                                <input type="email" name="email" required style="width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; margin-bottom: 12px; background: rgba(15,23,42,0.25); color: #fff;" placeholder="Seu e-mail">
-                                <input type="text" name="phone" style="width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; margin-bottom: 12px; background: rgba(15,23,42,0.25); color: #fff;" placeholder="WhatsApp (opcional)">
+                                <input type="text"  name="name"  {{ $reqName ? 'required' : '' }} style="{{ $ctaInputStyle }}" placeholder="Seu nome{{ $reqName ? '' : ' (opcional)' }}">
+                                <input type="email" name="email" required style="{{ $ctaInputStyle }}" placeholder="Seu e-mail">
+                                <input type="text"  name="phone" {{ $reqPhone ? 'required' : '' }} style="{{ $ctaInputStyle }}" placeholder="WhatsApp{{ $reqPhone ? '' : ' (opcional)' }}">
+
+                                @if($enCpf)
+                                    <input type="text" name="cpf" inputmode="numeric" maxlength="14" style="{{ $ctaInputStyle }}" placeholder="CPF (somente números)">
+                                @endif
+                                @if($enBirth)
+                                    <input type="date" name="birth_date" style="{{ $ctaInputStyle }}" placeholder="Data de nascimento">
+                                @endif
+                                @if($enAddress)
+                                    <input type="text" name="address" maxlength="255" style="{{ $ctaInputStyle }}" placeholder="Endereço">
+                                @endif
+                                @if($enCity)
+                                    <input type="text" name="city" maxlength="120" style="{{ $ctaInputStyle }}" placeholder="Cidade">
+                                @endif
+                                @if($enGuardian)
+                                    <input type="text" name="guardian_name"  maxlength="255" style="{{ $ctaInputStyle }}" placeholder="Nome do responsável">
+                                    <input type="text" name="guardian_phone" maxlength="30"  style="{{ $ctaInputStyle }}" placeholder="Telefone do responsável">
+                                @endif
+
                                 <label style="display:flex; gap:10px; align-items:flex-start; margin-bottom: 14px; font-size: .85rem; opacity:.9; line-height:1.45;">
                                     <input type="checkbox" name="consent_given" value="1" required style="margin-top: 4px; flex-shrink:0;">
                                     <span>Autorizo o contato e o tratamento dos meus dados conforme a <a href="/privacidade" target="_blank" rel="noopener" style="color:inherit; text-decoration: underline;">Política de Privacidade</a> (LGPD). Você pode cancelar a qualquer momento.</span>

@@ -225,6 +225,23 @@ class ProjectController extends Controller
             ->unique()
             ->count();
 
+        // Opção C — landing pages públicas vinculadas a este projeto e o total
+        // de submissões (leads) capturadas em cada uma.
+        $data['registrationLandings'] = \App\Models\LandingPage::where('tenant_id', $tenantId)
+            ->where('target_project_id', (int) $id)
+            ->orderByDesc('updated_at')
+            ->get(['id', 'title', 'slug', 'status', 'target_creates_person', 'target_link_beneficiary']);
+
+        $data['registrationLandingsSubmissions'] = [];
+        if ($data['registrationLandings']->isNotEmpty()) {
+            $data['registrationLandingsSubmissions'] = \DB::table('landing_page_leads')
+                ->whereIn('landing_page_id', $data['registrationLandings']->pluck('id'))
+                ->select('landing_page_id', \DB::raw('COUNT(*) as total'))
+                ->groupBy('landing_page_id')
+                ->pluck('total', 'landing_page_id')
+                ->toArray();
+        }
+
         return view('projects.show', $data);
     }
 

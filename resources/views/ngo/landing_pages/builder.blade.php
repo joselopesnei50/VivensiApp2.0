@@ -336,6 +336,44 @@
                     </div>
                 </div>
 
+                <hr style="margin: 22px 0; border:none; border-top: 1px solid #f1f5f9;">
+
+                {{-- ─── Opção C — Destino do Cadastro (vínculo com Projeto) ─── --}}
+                <div style="display:grid; grid-template-columns: 1fr; gap: 12px;">
+                    <div>
+                        <div style="font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#4f46e5; margin-bottom: 8px;">
+                            <i class="fas fa-bullseye"></i> Destino do Cadastro
+                        </div>
+                        <div style="color:#64748b; font-size:.85rem; margin-bottom: 12px;">
+                            Vincule esta página a um <strong>Projeto</strong> pra que cada inscrição pública crie um cadastro dentro dele. Ideal pra matrículas, inscrições em oficinas ou coleta de beneficiários.
+                        </div>
+                        <select id="st_target_project" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff;">
+                            <option value="">— Sem vínculo (apenas lead no CRM) —</option>
+                            @foreach($projects ?? [] as $p)
+                                <option value="{{ $p->id }}">{{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div id="target-flags" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+                        <label style="display:flex; gap: 10px; align-items:flex-start; margin-bottom: 10px; cursor:pointer;">
+                            <input type="checkbox" id="st_target_creates_person" checked style="margin-top: 4px;">
+                            <span style="font-size:.9rem; color:#0f172a;">
+                                <strong>Criar pessoa dentro do projeto</strong>
+                                <div style="color:#64748b; font-size:.82rem; margin-top: 2px;">Cada envio do formulário público vira uma matrícula (ProjectPerson).</div>
+                            </span>
+                        </label>
+
+                        <label style="display:flex; gap: 10px; align-items:flex-start; cursor:pointer;">
+                            <input type="checkbox" id="st_target_link_beneficiary" style="margin-top: 4px;">
+                            <span style="font-size:.9rem; color:#0f172a;">
+                                <strong>Também cadastrar/vincular como Beneficiário</strong>
+                                <div style="color:#64748b; font-size:.82rem; margin-top: 2px;">Precisa que o CPF esteja marcado como campo do formulário. CPF já existente é reutilizado (não duplica).</div>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
                 <div style="margin-top: 18px; display:flex; gap: 10px; justify-content: space-between; align-items:center; flex-wrap: wrap;">
                     <div style="color:#64748b; font-weight:800; font-size:.9rem;">
                         Link público: <span style="color:#0f172a;">{{ request()->getSchemeAndHttpHost() . rtrim(request()->getBaseUrl(), '/') . '/lp/' . $page->slug }}</span>
@@ -396,6 +434,9 @@
             slug: @json($page->slug),
             status: @json($page->status ?? 'draft'),
             settings: @json($page->settings ?? []),
+            target_project_id:       @json($page->target_project_id),
+            target_creates_person:   @json((bool) $page->target_creates_person),
+            target_link_beneficiary: @json((bool) $page->target_link_beneficiary),
         };
 
         const __lpBaseUrl = @json(rtrim(request()->getBaseUrl(), '/'));
@@ -423,9 +464,38 @@
             document.getElementById('st_og_image').value = (st.og_image_url || '');
             document.getElementById('st_favicon').value = (st.favicon_url || '');
 
+            // Opção C — destino do cadastro
+            const sel = document.getElementById('st_target_project');
+            if (sel) sel.value = (__lpPage.target_project_id ? String(__lpPage.target_project_id) : '');
+            const chkP = document.getElementById('st_target_creates_person');
+            if (chkP) chkP.checked = !!__lpPage.target_creates_person;
+            const chkB = document.getElementById('st_target_link_beneficiary');
+            if (chkB) chkB.checked = !!__lpPage.target_link_beneficiary;
+            __lpToggleTargetFlags();
+
             updateSeoPreview();
             modal.style.display = 'flex';
         }
+
+        function __lpToggleTargetFlags() {
+            const sel = document.getElementById('st_target_project');
+            const box = document.getElementById('target-flags');
+            if (!sel || !box) return;
+            box.style.display = sel.value ? 'block' : 'none';
+            // Vincular beneficiário só faz sentido se também criar pessoa.
+            const chkP = document.getElementById('st_target_creates_person');
+            const chkB = document.getElementById('st_target_link_beneficiary');
+            if (chkP && chkB) {
+                chkB.disabled = !chkP.checked;
+                if (!chkP.checked) chkB.checked = false;
+            }
+        }
+        document.addEventListener('change', function (ev) {
+            const t = ev && ev.target ? ev.target.id : '';
+            if (t === 'st_target_project' || t === 'st_target_creates_person') {
+                __lpToggleTargetFlags();
+            }
+        });
 
         function closeSettings() {
             const modal = document.getElementById('settings-modal');
@@ -488,6 +558,7 @@
             const btn = document.getElementById('btn-save-settings');
             if (btn) btn.disabled = true;
 
+            const _tp = document.getElementById('st_target_project')?.value || '';
             const payload = {
                 title: document.getElementById('st_title').value || null,
                 theme_color: document.getElementById('st_theme_color_hex').value || null,
@@ -495,6 +566,9 @@
                 seo_description: document.getElementById('st_seo_desc').value || null,
                 og_image_url: document.getElementById('st_og_image').value || '',
                 favicon_url: document.getElementById('st_favicon').value || '',
+                target_project_id: _tp ? parseInt(_tp, 10) : null,
+                target_creates_person: !!document.getElementById('st_target_creates_person')?.checked,
+                target_link_beneficiary: !!document.getElementById('st_target_link_beneficiary')?.checked,
             };
 
             try {
@@ -523,6 +597,9 @@
                 if (j && j.page) {
                     __lpPage.title = j.page.title;
                     __lpPage.settings = j.page.settings || {};
+                    __lpPage.target_project_id       = j.page.target_project_id ?? null;
+                    __lpPage.target_creates_person   = !!j.page.target_creates_person;
+                    __lpPage.target_link_beneficiary = !!j.page.target_link_beneficiary;
                     const pt = document.getElementById('page-title');
                     if (pt) pt.innerText = __lpPage.title;
                     document.title = 'Builder: ' + __lpPage.title + ' | Vivensi LEGO';
@@ -666,10 +743,41 @@
             currentId = id;
             document.getElementById('editor-type-title').innerText = 'Editando: ' + type.toUpperCase();
             document.getElementById('editor-overlay').style.display = 'flex';
-            
+
             const container = document.getElementById('editor-fields');
             container.innerHTML = '';
-            
+
+            // Bloco especial: Formulário CTA final. Renderiza checkboxes p/ os
+            // campos opcionais (CPF, endereço, responsável…) antes do editor
+            // genérico e remove essas chaves de `content` p/ não duplicar como
+            // input de texto embaixo.
+            if (type === 'final_cta_form') {
+                const box = document.createElement('div');
+                box.style.cssText = 'background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; margin-bottom:16px;';
+                box.innerHTML = `
+                    <div style="font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#4f46e5; margin-bottom:10px;">
+                        <i class="fas fa-list-check"></i> Campos do formulário
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px 14px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="require_name" value="1" data-fcf-toggle="1" ${content.require_name ? 'checked' : ''}> Nome obrigatório</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="require_phone" value="1" data-fcf-toggle="1" ${content.require_phone ? 'checked' : ''}> WhatsApp obrigatório</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_cpf" value="1" data-fcf-toggle="1" ${content.enable_cpf ? 'checked' : ''}> Pedir CPF</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_birth_date" value="1" data-fcf-toggle="1" ${content.enable_birth_date ? 'checked' : ''}> Data de nascimento</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_address" value="1" data-fcf-toggle="1" ${content.enable_address ? 'checked' : ''}> Endereço</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_city" value="1" data-fcf-toggle="1" ${content.enable_city ? 'checked' : ''}> Cidade</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer; grid-column: 1 / -1;"><input type="checkbox" name="enable_guardian" value="1" data-fcf-toggle="1" ${content.enable_guardian ? 'checked' : ''}> Responsável (nome + telefone)</label>
+                    </div>
+                    <div style="margin-top:10px; color:#64748b; font-size:.78rem;">
+                        Se a landing está vinculada a um <strong>Projeto</strong> (em Configurações), estes campos alimentam o cadastro dentro do projeto. Pra vincular como Beneficiário, o CPF é essencial.
+                    </div>
+                `;
+                container.appendChild(box);
+
+                // Evita duplicar os toggles no editor genérico abaixo.
+                content = Object.assign({}, content);
+                ['require_name','require_phone','enable_cpf','enable_birth_date','enable_address','enable_city','enable_guardian'].forEach(k => { delete content[k]; });
+            }
+
             // Loop recursivo básico para lidar com objetos simples e arrays (Depoimentos/Itens)
             function createFields(data, prefix = '') {
                 for(const [key, value] of Object.entries(data)) {
