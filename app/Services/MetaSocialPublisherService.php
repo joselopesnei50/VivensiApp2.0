@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class MetaSocialPublisherService
 {
-    private string $graphVersion = 'v20.0';
+    private string $graphVersion = 'v22.0';
 
     /** Publica o post agendado nas plataformas configuradas */
     public function publish(ScheduledPost $post): bool

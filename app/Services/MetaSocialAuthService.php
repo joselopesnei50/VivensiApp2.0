@@ -12,7 +12,7 @@ class MetaSocialAuthService
     private string $appId;
     private string $appSecret;
     private string $redirectUri;
-    private string $graphVersion = 'v20.0';
+    private string $graphVersion = 'v22.0';
 
     public function __construct()
     {
@@ -26,7 +26,16 @@ class MetaSocialAuthService
         return !empty($this->appId) && !empty($this->appSecret);
     }
 
-    /** URL para redirecionar o cliente ao OAuth da Meta */
+    /**
+     * URL para redirecionar o cliente ao OAuth da Meta.
+     *
+     * Escopos alinhados ao pacote de App Review de 2026-07-28
+     * (NC5HUBDIGITAL-EMP, Tech Provider verificado):
+     *  - Pages: show_list + read_engagement + manage_posts
+     *  - Instagram Business: basic + content_publish
+     *  - business_management: obrigatório pro fluxo Embedded Signup
+     *    e pra listar assets do cliente
+     */
     public function getAuthUrl(): string
     {
         $scopes = implode(',', [
@@ -34,6 +43,9 @@ class MetaSocialAuthService
             'pages_show_list',
             'pages_read_engagement',
             'pages_manage_posts',
+            'instagram_basic',
+            'instagram_content_publish',
+            'business_management',
         ]);
 
         return "https://www.facebook.com/dialog/oauth?" . http_build_query([
