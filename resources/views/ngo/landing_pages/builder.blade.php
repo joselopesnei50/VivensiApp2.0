@@ -133,7 +133,7 @@
                                 @php
                                     $names = [
                                         'hero' => 'Hero Impacto',
-                                        'lead_capture' => 'Formulário Conversão',
+                                        'lead_capture' => 'Formulário de Inscrição',
                                         'stats' => 'Estatísticas',
                                         'testimonials' => 'Depoimentos',
                                         'features' => 'Recursos/Vantagens',
@@ -244,14 +244,14 @@
                 <div class="gallery-card" onclick="addBlock('pix_donation')"><i class="fas fa-qrcode"></i><span>Doação PIX</span><p>Copia e cola + QR Code.</p></div>
                 <div class="gallery-card" onclick="addBlock('cta_cards')"><i class="fas fa-layer-group"></i><span>Cards CTA</span><p>3 opções para ação.</p></div>
                 <div class="gallery-card" onclick="addBlock('map_embed')"><i class="fas fa-map-location-dot"></i><span>Mapa</span><p>Embed do Google Maps.</p></div>
-                <div class="gallery-card" onclick="addBlock('final_cta_form')"><i class="fas fa-rocket"></i><span>CTA Final</span><p>Fechamento com formulário.</p></div>
+                <div class="gallery-card" onclick="addBlock('final_cta_form')"><i class="fas fa-rocket"></i><span>CTA Final + Formulário</span><p>Fechamento com formulário de inscrição.</p></div>
                 <div class="gallery-card" onclick="addBlock('transparency_numbers')"><i class="fas fa-shield-heart"></i><span>Transparência</span><p>Números para confiança.</p></div>
                 <div class="gallery-card" onclick="addBlock('campaign_progress')"><i class="fas fa-chart-line"></i><span>Meta da Campanha</span><p>Barra de progresso/objetivo.</p></div>
                 <div class="gallery-card" onclick="addBlock('team_cards')"><i class="fas fa-people-group"></i><span>Equipe</span><p>Cards do time com redes.</p></div>
                 <div class="gallery-card" onclick="addBlock('link_bio')"><i class="fas fa-link"></i><span>Bio Instagram</span><p>Layout estilo Linktree.</p></div>
                 <div class="gallery-card" onclick="addBlock('products')"><i class="fas fa-shopping-bag"></i><span>Produtos</span><p>Venda produtos ou serviços.</p></div>
                 <div class="gallery-card" onclick="addBlock('video')"><i class="fas fa-play-circle"></i><span>Vídeo</span><p>Embed do YouTube ou Vimeo.</p></div>
-                <div class="gallery-card" onclick="addBlock('lead_capture')"><i class="fas fa-user-plus"></i><span>Conversão</span><p>Capture contatos e leads.</p></div>
+                <div class="gallery-card" onclick="addBlock('lead_capture')"><i class="fas fa-user-plus"></i><span>Formulário de Inscrição</span><p>Nome + e-mail e mais campos opcionais (CPF, endereço, responsável).</p></div>
                 <div class="gallery-card" onclick="addBlock('stats')"><i class="fas fa-chart-bar"></i><span>Números</span><p>Exiba seu impacto social.</p></div>
                 <div class="gallery-card" onclick="addBlock('testimonials')"><i class="fas fa-quote-right"></i><span>Depoimentos</span><p>Mostre o que dizem de você.</p></div>
                 <div class="gallery-card" onclick="addBlock('social_links')"><i class="fas fa-share-alt"></i><span>Redes Sociais</span><p>Links para seus perfis.</p></div>
@@ -747,11 +747,15 @@
             const container = document.getElementById('editor-fields');
             container.innerHTML = '';
 
-            // Bloco especial: Formulário CTA final. Renderiza checkboxes p/ os
-            // campos opcionais (CPF, endereço, responsável…) antes do editor
-            // genérico e remove essas chaves de `content` p/ não duplicar como
-            // input de texto embaixo.
-            if (type === 'final_cta_form') {
+            // Blocos com formulário — renderiza checkboxes p/ os campos
+            // opcionais (CPF, endereço, responsável…) antes do editor genérico
+            // e remove essas chaves de `content` p/ não duplicar como input
+            // de texto embaixo. Cobre BOTH final_cta_form E lead_capture.
+            if (type === 'final_cta_form' || type === 'lead_capture') {
+                // lead_capture já tem name e phone opcional; final_cta_form também.
+                // Toggle "require_name" só faz sentido no final_cta_form (no
+                // lead_capture o nome já é required por default).
+                const isFinal = type === 'final_cta_form';
                 const box = document.createElement('div');
                 box.style.cssText = 'background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; margin-bottom:16px;';
                 box.innerHTML = `
@@ -759,13 +763,14 @@
                         <i class="fas fa-list-check"></i> Campos do formulário
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px 14px;">
-                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="require_name" value="1" data-fcf-toggle="1" ${content.require_name ? 'checked' : ''}> Nome obrigatório</label>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="require_phone" value="1" data-fcf-toggle="1" ${content.require_phone ? 'checked' : ''}> WhatsApp obrigatório</label>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_cpf" value="1" data-fcf-toggle="1" ${content.enable_cpf ? 'checked' : ''}> Pedir CPF</label>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_birth_date" value="1" data-fcf-toggle="1" ${content.enable_birth_date ? 'checked' : ''}> Data de nascimento</label>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_address" value="1" data-fcf-toggle="1" ${content.enable_address ? 'checked' : ''}> Endereço</label>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_city" value="1" data-fcf-toggle="1" ${content.enable_city ? 'checked' : ''}> Cidade</label>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer; grid-column: 1 / -1;"><input type="checkbox" name="enable_guardian" value="1" data-fcf-toggle="1" ${content.enable_guardian ? 'checked' : ''}> Responsável (nome + telefone)</label>
+                        ${isFinal ? `<label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="require_name" value="1" ${content.require_name ? 'checked' : ''}> Nome obrigatório</label>` : ''}
+                        ${!isFinal ? `<label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_phone" value="1" ${content.enable_phone ? 'checked' : ''}> Mostrar WhatsApp</label>` : ''}
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="require_phone" value="1" ${content.require_phone ? 'checked' : ''}> WhatsApp obrigatório</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_cpf" value="1" ${content.enable_cpf ? 'checked' : ''}> Pedir CPF</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_birth_date" value="1" ${content.enable_birth_date ? 'checked' : ''}> Data de nascimento</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_address" value="1" ${content.enable_address ? 'checked' : ''}> Endereço</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer;"><input type="checkbox" name="enable_city" value="1" ${content.enable_city ? 'checked' : ''}> Cidade</label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:.88rem; color:#0f172a; cursor:pointer; grid-column: 1 / -1;"><input type="checkbox" name="enable_guardian" value="1" ${content.enable_guardian ? 'checked' : ''}> Responsável (nome + telefone)</label>
                     </div>
                     <div style="margin-top:10px; color:#64748b; font-size:.78rem;">
                         Se a landing está vinculada a um <strong>Projeto</strong> (em Configurações), estes campos alimentam o cadastro dentro do projeto. Pra vincular como Beneficiário, o CPF é essencial.
@@ -775,7 +780,7 @@
 
                 // Evita duplicar os toggles no editor genérico abaixo.
                 content = Object.assign({}, content);
-                ['require_name','require_phone','enable_cpf','enable_birth_date','enable_address','enable_city','enable_guardian'].forEach(k => { delete content[k]; });
+                ['require_name','require_phone','enable_phone','enable_cpf','enable_birth_date','enable_address','enable_city','enable_guardian'].forEach(k => { delete content[k]; });
             }
 
             // Loop recursivo básico para lidar com objetos simples e arrays (Depoimentos/Itens)

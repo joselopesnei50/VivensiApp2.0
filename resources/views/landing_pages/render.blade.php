@@ -810,6 +810,21 @@
         @endif
 
         @if($section->type == 'lead_capture')
+            @php
+                // Toggles do content — permitem estender o form de conversão pra
+                // capturar CPF/endereço/responsável quando a landing está
+                // vinculada a um Projeto (Opção C). Mantém o comportamento
+                // original quando nenhum toggle está marcado.
+                $c = $section->content ?? [];
+                $lcInputStyle = 'width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px;';
+                $lcEnCpf      = (bool) ($c['enable_cpf']        ?? false);
+                $lcEnBirth    = (bool) ($c['enable_birth_date'] ?? false);
+                $lcEnAddress  = (bool) ($c['enable_address']    ?? false);
+                $lcEnCity     = (bool) ($c['enable_city']       ?? false);
+                $lcEnGuardian = (bool) ($c['enable_guardian']   ?? false);
+                $lcEnPhone    = (bool) ($c['enable_phone']      ?? false);
+                $lcReqPhone   = (bool) ($c['require_phone']     ?? false);
+            @endphp
             <section class="section-lead" style="padding: 100px 0; background: {{ \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#ffffff') }};">
                 <div class="container" style="max-width: 1000px;">
                     <div style="display: flex; align-items: center; gap: 60px; flex-wrap: wrap;">
@@ -820,13 +835,33 @@
                         <div style="flex: 1; min-width: 300px;">
                             <form action="{{ url('/lp/'.$page->slug.'/lead') }}" method="POST" style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.06);">
                                 @csrf
-                                <input type="text" name="name" required style="width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px;" placeholder="Seu nome completo">
-                                <input type="email" name="email" required style="width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px;" placeholder="Seu melhor e-mail">
+                                <input type="text"  name="name"  required style="{{ $lcInputStyle }}" placeholder="Seu nome completo">
+                                <input type="email" name="email" required style="{{ $lcInputStyle }}" placeholder="Seu melhor e-mail">
+                                @if($lcEnPhone || $lcReqPhone)
+                                    <input type="text" name="phone" {{ $lcReqPhone ? 'required' : '' }} style="{{ $lcInputStyle }}" placeholder="WhatsApp{{ $lcReqPhone ? '' : ' (opcional)' }}">
+                                @endif
+                                @if($lcEnCpf)
+                                    <input type="text" name="cpf" inputmode="numeric" maxlength="14" style="{{ $lcInputStyle }}" placeholder="CPF (somente números)">
+                                @endif
+                                @if($lcEnBirth)
+                                    <input type="date" name="birth_date" style="{{ $lcInputStyle }}" placeholder="Data de nascimento">
+                                @endif
+                                @if($lcEnAddress)
+                                    <input type="text" name="address" maxlength="255" style="{{ $lcInputStyle }}" placeholder="Endereço">
+                                @endif
+                                @if($lcEnCity)
+                                    <input type="text" name="city" maxlength="120" style="{{ $lcInputStyle }}" placeholder="Cidade">
+                                @endif
+                                @if($lcEnGuardian)
+                                    <input type="text" name="guardian_name"  maxlength="255" style="{{ $lcInputStyle }}" placeholder="Nome do responsável">
+                                    <input type="text" name="guardian_phone" maxlength="30"  style="{{ $lcInputStyle }}" placeholder="Telefone do responsável">
+                                @endif
                                 <label style="display:flex; gap:10px; align-items:flex-start; margin-bottom: 18px; font-size: .9rem; color:#475569; line-height:1.45;">
                                     <input type="checkbox" name="consent_given" value="1" required style="margin-top: 4px; flex-shrink:0;">
                                     <span>Autorizo o contato e o tratamento dos meus dados conforme a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a> (LGPD). Você pode cancelar a qualquer momento.</span>
                                 </label>
                                 <button type="submit" class="btn-cta" style="width: 100%; border: none; cursor: pointer;">{{ $section->content['button_text'] ?? 'Enviar' }}</button>
+                                <input type="hidden" name="source" value="lead_capture">
                             </form>
                         </div>
                     </div>
