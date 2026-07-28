@@ -160,7 +160,9 @@
     let __wabaData = null;
 
     window.addEventListener('message', (event) => {
-        if (!event.origin.endsWith('facebook.com')) return;
+        // Origem estrita — antes usava endsWith('facebook.com'), o que aceitaria
+        // subdomínios não confiáveis. O Embedded Signup sempre vem de www.facebook.com.
+        if (event.origin !== 'https://www.facebook.com') return;
         dbg('postMessage recebido de facebook.com', event.data);
         try {
             const parsed = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
@@ -172,6 +174,16 @@
                         phone_number_id: parsed.data.phone_number_id,
                     };
                     dbg('WABA data capturada', __wabaData);
+                } else if (parsed.event === 'CANCEL') {
+                    // Usuário fechou o modal — mostrar em qual etapa desistiu ajuda no suporte.
+                    dbg('WA_EMBEDDED_SIGNUP CANCEL — usuário abandonou', {
+                        current_step: parsed.data && parsed.data.current_step,
+                    });
+                } else if (parsed.event === 'ERROR') {
+                    // Meta reportou erro interno do fluxo (número inválido, WABA já cadastrada, etc).
+                    dbg('WA_EMBEDDED_SIGNUP ERROR', {
+                        error_message: parsed.data && parsed.data.error_message,
+                    });
                 }
             }
         } catch (e) {
@@ -209,7 +221,10 @@
             config_id:                       CLOUD_CONFIG_ID,
             response_type:                   'code',
             override_default_response_type:  true,
-            extras: { setup: {} },
+            // sessionInfoVersion:'3' é obrigatório pra Meta enviar waba_id e
+            // phone_number_id via postMessage no formato esperado. Sem isso,
+            // FINISH chega vazio e __wabaData permanece null.
+            extras: { setup: {}, sessionInfoVersion: '3' },
         };
         dbg('Chamando FB.login com options', fbLoginOptions);
 

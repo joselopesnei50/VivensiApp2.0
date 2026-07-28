@@ -60,10 +60,55 @@ class CloudApiOnboardingService
         }
 
         $accessToken = $this->exchangeCodeForToken($code);
+        $this->inspectToken($accessToken);
         $this->registerPhoneNumber($phoneNumberId, $accessToken, $registrationPin);
         $this->subscribeAppToWaba($wabaId, $accessToken);
 
         return $this->persistInstance($tenantId, $wabaId, $phoneNumberId, $accessToken);
+    }
+
+    /**
+     * Diagnóstico: chama /debug_token pra saber se o token que recebemos é do
+     * tipo esperado (System-user, sem expiração) ou algo mais fraco (User
+     * access token, expira em ~1h). Só loga — não bloqueia o fluxo.
+     *
+     * Referência: https://developers.facebook.com/docs/graph-api/reference/debug_token/
+     */
+    private function inspectToken(string $token): array
+    {
+        try {
+            $response = Http::get("https://graph.facebook.com/{$this->apiVersion}/debug_token", [
+                'input_token'  => $token,
+                'access_token' => $this->appId . '|' . $this->appSecret,
+            ]);
+
+            if (!$response->successful()) {
+                Log::warning('CloudApi Onboarding: debug_token retornou erro (não bloqueia signup)', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+                return [];
+            }
+
+            $data = (array) $response->json('data', []);
+
+            Log::info('CloudApi Onboarding: token inspecionado', [
+                'type'                    => $data['type']                    ?? null,
+                'expires_at'              => $data['expires_at']              ?? null,
+                'data_access_expires_at'  => $data['data_access_expires_at']  ?? null,
+            ]);
+
+            if (!empty($data['expires_at']) && (int) $data['expires_at'] > 0) {
+                Log::warning('CloudApi Onboarding: token com expiração — verifique se a Configuration no painel Meta usa System-user access token');
+            }
+
+            return $data;
+        } catch (\Throwable $e) {
+            Log::warning('CloudApi Onboarding: debug_token exception (não bloqueia signup)', [
+                'error' => $e->getMessage(),
+            ]);
+            return [];
+        }
     }
 
     /**
@@ -102,13 +147,32 @@ class CloudApiOnboardingService
                 'pin'               => $pin,
             ]);
 
-        if (!$response->successful()) {
-            Log::error('CloudApi Onboarding: /register falhou', [
-                'phone_number_id' => $phoneNumberId,
-                'body'            => $response->body(),
-            ]);
-            throw new RuntimeException('Falha ao registrar phone_number_id na Meta Cloud API.');
+        if ($response->successful()) {
+            return;
         }
+
+        // Loga o corpo da Meta pra debug (não inclui o access_token, só body do erro).
+        Log::error('CloudApi Onboarding: /register falhou', [
+            'phone_number_id' => $phoneNumberId,
+            'body'            => $response->body(),
+        ]);
+
+        $err     = (array) $response->json('error', []);
+        $errCode = isset($err['code']) ? (int) $err['code'] : null;
+        $errMsg  = (string) ($err['message'] ?? '');
+
+        // Caso mais comum na prática: número já tem verificação em duas etapas
+        // ligada com PIN diferente do informado. UX exige mensagem acionável.
+        if ($errCode === 133005) {
+            throw new RuntimeException('PIN incorreto: este número já possui verificação em duas etapas com outro PIN. Use o PIN existente ou redefina-o no WhatsApp Business Manager.');
+        }
+
+        // Demais casos: expõe code + message da Meta pra o usuário (nunca token).
+        $suffix = $errCode !== null || $errMsg !== ''
+            ? sprintf(' (Meta code=%s: %s)', $errCode ?? '?', mb_substr($errMsg, 0, 300))
+            : '';
+
+        throw new RuntimeException('Falha ao registrar phone_number_id na Meta Cloud API.' . $suffix);
     }
 
     /**
