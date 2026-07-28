@@ -783,22 +783,37 @@
                 ['require_name','require_phone','enable_phone','enable_cpf','enable_birth_date','enable_address','enable_city','enable_guardian'].forEach(k => { delete content[k]; });
             }
 
+            // Nos blocos de formulário, os campos genéricos (título, subtítulo,
+            // botão, cor, etc) vão para um container irmão estilizado — assim
+            // não ficam "soltos" abaixo do box de toggles.
+            let dest = container;
+            if (type === 'final_cta_form' || type === 'lead_capture') {
+                const textBox = document.createElement('div');
+                textBox.style.cssText = 'background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px;';
+                const textHead = document.createElement('div');
+                textHead.style.cssText = 'font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#0f172a; margin-bottom:10px;';
+                textHead.innerHTML = '<i class="fas fa-pen"></i> Textos & visual';
+                textBox.appendChild(textHead);
+                container.appendChild(textBox);
+                dest = textBox;
+            }
+
             // Loop recursivo básico para lidar com objetos simples e arrays (Depoimentos/Itens)
             function createFields(data, prefix = '') {
                 for(const [key, value] of Object.entries(data)) {
                     const fieldName = prefix ? `${prefix}[${key}]` : key;
-                    
+
                     if(Array.isArray(value)) {
                         const subTitle = document.createElement('h5');
                         subTitle.style.color = 'var(--primary)';
                         subTitle.style.margin = '20px 0 10px';
                         subTitle.innerText = key.toUpperCase();
-                        container.appendChild(subTitle);
-                        
+                        dest.appendChild(subTitle);
+
                         value.forEach((item, index) => {
                             const hr = document.createElement('hr');
                             hr.style.opacity = '0.1';
-                            container.appendChild(hr);
+                            dest.appendChild(hr);
                             createFields(item, `${fieldName}[${index}]`);
                         });
                     } else if(typeof value === 'object' && value !== null) {
@@ -809,20 +824,20 @@
                         const label = document.createElement('label');
                         label.className = 'form-label';
                         label.innerText = key.replace('_', ' ');
-                        
+
                         const el = (typeof value === 'string' && value.length > 50) ? document.createElement('textarea') : document.createElement('input');
                         el.className = 'form-input';
                         el.name = fieldName;
                         el.value = value;
                         if(el.tagName === 'TEXTAREA') el.rows = 3;
-                        
+
                         group.appendChild(label);
                         group.appendChild(el);
-                        container.appendChild(group);
+                        dest.appendChild(group);
                     }
                 }
             }
-            
+
             createFields(content);
         }
 
