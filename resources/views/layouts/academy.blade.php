@@ -372,7 +372,8 @@
            class="{{ request()->routeIs('academy.index') ? 'active' : '' }}">
             <i class="fas fa-th-large nav-icon"></i> Meus Cursos
         </a>
-        <a href="#" onclick="return false;" style="cursor:default; opacity:.45;" title="Em breve">
+        <a href="{{ route('academy.certificates') }}"
+           class="{{ request()->routeIs('academy.certificates') ? 'active' : '' }}">
             <i class="fas fa-award nav-icon"></i> Certificados
         </a>
         <a href="#" onclick="return false;" style="cursor:default; opacity:.45;" title="Em breve">
@@ -411,6 +412,9 @@
                 <a href="{{ route('academy.index') }}" class="acad-dropdown-item">
                     <i class="fas fa-th-large"></i> Meus Cursos
                 </a>
+                <a href="{{ route('academy.certificates') }}" class="acad-dropdown-item">
+                    <i class="fas fa-award"></i> Meus Certificados
+                </a>
                 <a href="{{ url('/dashboard') }}" class="acad-dropdown-item">
                     <i class="fas fa-gauge-high"></i> Dashboard
                 </a>
@@ -434,6 +438,7 @@
 {{-- Mobile menu --}}
 <div class="acad-mobile-menu" id="acadMobileMenu">
     <a href="{{ route('academy.index') }}"><i class="fas fa-th-large"></i> Meus Cursos</a>
+    <a href="{{ route('academy.certificates') }}"><i class="fas fa-award"></i> Meus Certificados</a>
     <a href="{{ url('/dashboard') }}"><i class="fas fa-gauge-high"></i> Dashboard</a>
     <a href="{{ url('/profile') }}"><i class="fas fa-user-circle"></i> Perfil</a>
     <form method="POST" action="{{ route('logout') }}" style="margin-top:8px;">
@@ -484,7 +489,7 @@
         <div class="acad-footer-col">
             <h5>Recursos</h5>
             <ul>
-                <li><a href="#"><i class="fas fa-award"></i> Certificados</a></li>
+                <li><a href="{{ route('academy.certificates') }}"><i class="fas fa-award"></i> Certificados</a></li>
                 <li><a href="#"><i class="fas fa-chart-line"></i> Progresso</a></li>
                 <li><a href="#"><i class="fas fa-question-circle"></i> Suporte</a></li>
             </ul>

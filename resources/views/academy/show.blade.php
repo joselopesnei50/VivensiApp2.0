@@ -15,9 +15,15 @@
         <div style="display: flex; align-items: center; gap: 15px;">
             @if($certificate)
                 <!-- Certificate Download Button -->
-                <a href="{{ url('/academy/certificate/' . $certificate->code) }}" class="btn-premium" style="padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);">
+                <a href="{{ route('academy.certificate.download', $certificate->code) }}" class="btn-premium" style="padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);">
                     <i class="fas fa-certificate"></i>
                     Baixar Certificado
+                </a>
+                <a href="{{ route('academy.certificates') }}" title="Ver todos os certificados"
+                   style="color:#a5b4fc; text-decoration:none; font-size:.85rem; font-weight:600;
+                          padding:8px 12px; border:1px solid rgba(99,102,241,.35); border-radius:20px;
+                          background:rgba(99,102,241,.10);">
+                    <i class="fas fa-award"></i> Meus Certificados
                 </a>
             @endif
             

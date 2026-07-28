@@ -171,6 +171,19 @@ class AcademyController extends Controller
     }
 
     /**
+     * Lista todos os certificados do usuario autenticado.
+     */
+    public function certificates()
+    {
+        $certificates = Certificate::with('course:id,title,slug,thumbnail_url,teacher_name')
+            ->where('user_id', auth()->id())
+            ->orderByDesc('issued_at')
+            ->get();
+
+        return view('academy.certificates', compact('certificates'));
+    }
+
+    /**
      * Download do PDF do certificado.
      * Autorizacao: dono OR super_admin. Rate-limitado via rota (throttle:20,1).
      */

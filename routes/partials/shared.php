@@ -240,12 +240,15 @@ Route::middleware(['auth', 'subscription'])->group(function () {
 //   lesson.complete — 60/min por user (evita loop no player)
 //   certificate.download — 20/min por user (evita brute-force do code)
 Route::group(['prefix' => 'academy', 'as' => 'academy.', 'middleware' => ['auth']], function () {
-    Route::get('/',                    [App\Http\Controllers\AcademyController::class, 'index'])->name('index');
-    Route::get('/{slug}',              [App\Http\Controllers\AcademyController::class, 'show'])->name('show');
-    Route::post('/lessons/{id}/complete', [App\Http\Controllers\AcademyController::class, 'markLessonAsViewed'])
+    Route::get('/',                          [App\Http\Controllers\AcademyController::class, 'index'])->name('index');
+    // ATENÇÃO: rotas estáticas (certificados, lessons, certificate) devem vir
+    // ANTES de /{slug} — senão o wildcard captura e cai em 404 no show.
+    Route::get('/meus-certificados',         [App\Http\Controllers\AcademyController::class, 'certificates'])->name('certificates');
+    Route::post('/lessons/{id}/complete',    [App\Http\Controllers\AcademyController::class, 'markLessonAsViewed'])
         ->middleware('throttle:60,1')->name('lesson.complete');
-    Route::get('/certificate/{code}',  [App\Http\Controllers\AcademyController::class, 'downloadCertificate'])
+    Route::get('/certificate/{code}',        [App\Http\Controllers\AcademyController::class, 'downloadCertificate'])
         ->middleware('throttle:20,1')->name('certificate.download');
+    Route::get('/{slug}',                    [App\Http\Controllers\AcademyController::class, 'show'])->name('show');
 });
 
 // ── Testes de Integração (apenas auth) ───────────────────────────────────────
