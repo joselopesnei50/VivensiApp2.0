@@ -239,16 +239,44 @@ class MetaCloudApiService
                 ->post($url, $payload);
 
             if ($response->failed()) {
+                // Extrai error.message + error.code do body da Meta pra
+                // propagar até o usuário (antes ficava só no log — o
+                // controller devolvia string genérica "Failed to send").
+                $body     = $response->json() ?? [];
+                $metaErr  = $body['error'] ?? [];
+                $metaMsg  = trim((string) ($metaErr['message'] ?? ''));
+                $metaCode = isset($metaErr['code']) ? (int) $metaErr['code'] : null;
+
                 Log::error('Meta Cloud API Error: ', [
-                    'status' => $response->status(),
-                    'body' => $response->json() ?? $response->body(),
-                    'payload' => $payload
+                    'status'  => $response->status(),
+                    'code'    => $metaCode,
+                    'message' => $metaMsg,
+                    'body'    => $body ?: $response->body(),
+                    'payload' => $payload,
                 ]);
-                
+
+                // Traduzir os códigos mais frequentes pra mensagem acionável PT-BR.
+                // Referência: https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes
+                $friendly = match ($metaCode) {
+                    131047, 131051 => 'Não é possível enviar texto livre para este contato: a janela de 24 horas do WhatsApp fechou. Envie um template aprovado (ex: hello_world) para reabrir a conversa.',
+                    131026         => 'A Meta não conseguiu entregar a mensagem. Verifique se o número está correto e é WhatsApp Business.',
+                    131056         => 'Este par de números atingiu o limite temporário de mensagens. Aguarde alguns minutos e tente de novo.',
+                    132000, 132001 => 'Template inexistente ou parâmetros incompatíveis. Confira o nome/idioma do template.',
+                    default        => null,
+                };
+
+                $displayMsg = $friendly
+                    ?? ($metaMsg !== ''
+                        ? $metaMsg . ($metaCode ? " (Meta code {$metaCode})" : '')
+                        : 'Falha ao enviar mensagem.');
+
                 return [
-                    'error' => 'Failed to send message',
-                    'status' => $response->status(),
-                    'details' => $response->body()
+                    'error' => [
+                        'message' => $displayMsg,
+                        'code'    => $metaCode,
+                    ],
+                    'status'  => $response->status(),
+                    'details' => $response->body(),
                 ];
             }
 
