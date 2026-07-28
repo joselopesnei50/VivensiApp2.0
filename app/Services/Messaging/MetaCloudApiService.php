@@ -258,6 +258,7 @@ class MetaCloudApiService
                 // Traduzir os códigos mais frequentes pra mensagem acionável PT-BR.
                 // Referência: https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes
                 $friendly = match ($metaCode) {
+                    131030         => 'Este número não está na lista de destinatários permitidos da sua linha de teste da Meta. Adicione-o em Configuração da API → Números de destinatários (limite de 5). Para clientes reais, migre para um WABA de produção com número próprio.',
                     131047, 131051 => 'Não é possível enviar texto livre para este contato: a janela de 24 horas do WhatsApp fechou. Envie um template aprovado (ex: hello_world) para reabrir a conversa.',
                     131026         => 'A Meta não conseguiu entregar a mensagem. Verifique se o número está correto e é WhatsApp Business.',
                     131056         => 'Este par de números atingiu o limite temporário de mensagens. Aguarde alguns minutos e tente de novo.',
