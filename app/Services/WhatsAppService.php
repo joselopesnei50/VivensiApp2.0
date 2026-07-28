@@ -10,6 +10,7 @@ use App\Models\WhatsappInstance;
 use App\Models\WhatsappMessage;
 use App\Services\EvolutionApiService;
 use App\Services\Messaging\MetaCloudApiService;
+use App\Services\WhatsApp\WhatsAppSenderFactory;
 use App\Services\WhatsappOutboundPolicy;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -52,7 +53,42 @@ class WhatsAppService
         $messageId = 'MANUAL_' . uniqid();
         $provider  = 'evolution';
 
-        if (!empty($config->meta_phone_number_id) && !empty($config->meta_access_token)) {
+        // Prioridade: WhatsappInstance do tenant (modelo novo, resolve provider
+        // por coluna). Legado por WhatsappConfig só é usado se não existe
+        // instance no tenant — evita que instance cloud_api caia em Evolution
+        // pelo simples fato de config.meta_* estar vazio.
+        $instance = WhatsappInstance::where('tenant_id', $chat->tenant_id)
+            ->where('status', 'open')
+            ->first();
+
+        if ($instance) {
+            $sender   = WhatsAppSenderFactory::forInstance($instance);
+            $provider = $sender->providerName();
+
+            if ($isTemplate) {
+                $res = $sender->sendTemplate(
+                    $chat->wa_id,
+                    $templateData['template_name'] ?? 'hello_world',
+                    $templateData['language_code'] ?? 'pt_BR',
+                    $templateData['vars'] ?? []
+                );
+                $content = '[Template: ' . ($templateData['template_name'] ?? '') . ']';
+            } else {
+                $res = $sender->sendText($chat->wa_id, $content);
+            }
+
+            if (empty($res['ok'])) {
+                Log::error('WhatsAppService: sender falhou', [
+                    'provider' => $provider,
+                    'chat'     => $chat->wa_id,
+                    'error'    => $res['error'] ?? 'unknown',
+                ]);
+                throw new \RuntimeException('Falha ao enviar: ' . ($res['error'] ?? 'Erro desconhecido'), 500);
+            }
+            $messageId = $res['provider_message_id'] ?? $messageId;
+        } elseif (!empty($config->meta_phone_number_id) && !empty($config->meta_access_token)) {
+            // Fallback legado: tenant sem WhatsappInstance mas com config Meta
+            // preenchida (padrão antigo — nível tenant, não nível instance).
             $provider = 'meta';
             $meta     = new MetaCloudApiService($config);
 
@@ -73,15 +109,7 @@ class WhatsAppService
             }
             $messageId = $res['messages'][0]['id'] ?? $messageId;
         } else {
-            $instance = $this->requireInstance($chat->tenant_id);
-            $evo      = new EvolutionApiService($instance);
-            $res      = $evo->sendMessage($chat->wa_id, $content, null, 0);
-
-            if (isset($res['error'])) {
-                Log::error('WhatsAppService: Evolution sendMessage falhou', ['chat' => $chat->wa_id, 'error' => $res]);
-                throw new \RuntimeException('Falha ao enviar: ' . ($res['error'] ?? 'Erro desconhecido'), 500);
-            }
-            $messageId = $res['key']['id'] ?? ($res['messageId'] ?? $messageId);
+            throw new \RuntimeException('Nenhuma instância WhatsApp conectada para este tenant.', 422);
         }
 
         $policy->recordSend($config, $chat);
