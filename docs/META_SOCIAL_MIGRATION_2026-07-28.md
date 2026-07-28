@@ -1,40 +1,60 @@
-# Migração do sistema de posts sociais: NCHUBDIGITAL → NC5HUBDIGITAL-EMP
+# Configuração do sistema de posts sociais no NC5HUBDIGITAL-EMP
 
 **Data:** 2026-07-28
-**Motivo:** aproveitar a **Verificação de Tech Provider aprovada** para o app
-NC5HUBDIGITAL-EMP no reenvio de app review, submetendo em um único pacote as
-6 permissões pendentes (Pages + Instagram + `business_management`).
+**Contexto:** o Vivensi **nunca teve um app Meta real em produção** — a memória
+antiga citava um NCHUBDIGITAL, mas ele nunca chegou a ser usado (sem clientes
+conectados). O NC5HUBDIGITAL-EMP (App ID `1421767266445706`, Tech Provider
+verificado em 2026-07-28) é o **primeiro e único** app Meta do sistema.
+
+Este documento cobre a primeira configuração do sistema de posts sociais
+(FB Pages + Instagram Business) usando esse app, aproveitando o mesmo esforço
+de app review pra submeter em um único pacote as 6 permissões necessárias
+(Pages + Instagram + `business_management`).
+
+## Identificação oficial do app
+
+| Campo | Valor |
+|---|---|
+| Nome | **NC5HUBDIGITAL-EMP** |
+| App ID | `1421767266445706` |
+| Empresa (Business Portfolio) | Vivensi-NC5-BRUCEAI |
+| Modo | **Em desenvolvimento** *(precisa mudar pra Live mode antes de operar clientes reais)* |
+| Verificação de negócio | ✅ Aprovada |
+| Verificação de Tech Provider | ✅ Aprovada em 2026-07-28 |
+| Permissões WhatsApp aprovadas | `whatsapp_business_messaging`, `whatsapp_business_management` |
+| Permissões pendentes de reenvio | `business_management` (rejeitada) + 5 novas (Pages + IG) |
 
 ---
 
 ## Situação atual
 
-Sistema de posts (`SocialAccount`, `ScheduledPost`, `AiSocialPost`) aponta hoje
-para o app **NCHUBDIGITAL** (App ID `1046888724675814`, "Login com Facebook
-clássico"). Escopos pedidos no OAuth: `pages_show_list`,
-`pages_read_engagement`, `pages_manage_posts` — **nenhum aprovado**, sistema só
-funciona pra Testers cadastrados manualmente.
+Sistema de posts (`SocialAccount`, `ScheduledPost`, `AiSocialPost`) tem código
+pronto mas **nunca foi ativado em produção pra clientes**. Escopos pedidos hoje
+no OAuth (`MetaSocialAuthService::getAuthUrl`): `pages_show_list`,
+`pages_read_engagement`, `pages_manage_posts` — nenhum aprovado.
 
 O código do publisher (`MetaSocialPublisherService`) usa Instagram Graph API,
 mas o `MetaSocialAuthService` **não pede** os escopos `instagram_basic` nem
 `instagram_content_publish` — bug latente: mesmo se aprovar as permissões de
-Pages, IG continuaria falhando.
+Pages, IG continuaria falhando. Já corrigido no commit `e7c4bfe`.
 
 ## Alvo
 
-Migrar tudo para **NC5HUBDIGITAL-EMP** (App ID `1421767266445706`):
+Ativar tudo em **NC5HUBDIGITAL-EMP** (App ID `1421767266445706`):
 
 - **Tech Provider verificado** → aprovações Meta rodam mais rápido
 - Um único app pra WhatsApp Cloud + FB Pages + Instagram Business
 - Um único app review pra reenviar `business_management` + submeter Pages + IG
 
-## Boa notícia: é migração de **configuração**, não de código
+## Configuração de **credenciais**, não migração de código
 
-Toda a integração já lê `app_id` e `app_secret` de `SystemSetting`. O código
-estrutural fica intacto. As únicas alterações de código são:
+Toda a integração já lê `app_id` e `app_secret` de `SystemSetting`. Como não
+há dados de clientes reais em `social_accounts`, é primeira configuração
+limpa. O código estrutural já está no lugar. As únicas alterações de código
+que já foram feitas (commit `e7c4bfe`):
 
-1. Adicionar 3 escopos que faltam no `MetaSocialAuthService::getAuthUrl()`
-2. Bump da versão da Graph API (opcional, boa hora)
+1. 3 escopos novos no `MetaSocialAuthService::getAuthUrl()`
+2. Bump da versão da Graph API v20 → v22
 
 ---
 
@@ -110,21 +130,21 @@ echo 'OK';
 "
 ```
 
-### 4. Higienizar contas conectadas antigas
+### 4. Higienizar contas conectadas antigas — NÃO SE APLICA
 
-**Todos os tokens de FB Page atualmente em `social_accounts` param de funcionar**
-imediatamente após a troca do App Secret (tokens são vinculados ao app_id que
-os emitiu). Não deleta as linhas — só marca inativas pra o usuário reconectar:
+Como o Vivensi nunca teve app Meta ativo em produção, `social_accounts` está
+vazia (ou só com registros de teste do próprio dev). Nada pra higienizar,
+nenhum cliente pra comunicar. Passo pulado.
+
+Se por acaso houver algum registro de teste isolado, roda pra limpar:
 
 ```bash
 cd /var/www/vivensi && php artisan tinker --execute="
-\$n = \App\Models\SocialAccount::withoutGlobalScopes()->update(['is_active' => false, 'access_token' => '']);
-echo \"Desativadas: {\$n}\";
+echo 'Contas antes: ' . \App\Models\SocialAccount::withoutGlobalScopes()->count() . PHP_EOL;
 "
 ```
 
-Comunicar em banner no `/social/accounts`: *"Reconecte suas páginas — atualizamos
-nossa integração oficial com a Meta."*
+Se retornar `0`, nada a fazer. Se retornar > 0, avalia caso a caso.
 
 ### 5. Testar internamente antes do App Review
 
