@@ -68,6 +68,90 @@ class CloudApiOnboardingService
     }
 
     /**
+     * Onboarding manual/assistido — cliente já criou o WABA no Business
+     * Manager, gerou um System User Access Token e cola as 3 credenciais
+     * no Vivensi. Não passa por FB.login: valida direto via Graph API,
+     * inscreve app na WABA e persiste a instance.
+     *
+     * @param  int     $tenantId       Tenant que está conectando (auth user)
+     * @param  string  $wabaId         WABA ID copiado pelo cliente
+     * @param  string  $phoneNumberId  Phone Number ID copiado pelo cliente
+     * @param  string  $accessToken    System User Access Token gerado pelo cliente
+     * @param  ?string $registrationPin  PIN opcional — só usar se o cliente ainda
+     *                                   NÃO registrou o número no Business Manager
+     * @throws RuntimeException  Se validação falhar ou WABA já pertencer a outro tenant
+     */
+    public function completeManualSignup(
+        int $tenantId,
+        string $wabaId,
+        string $phoneNumberId,
+        string $accessToken,
+        ?string $registrationPin = null,
+    ): WhatsappInstance {
+        // Passo 1 — sanidade: valida token contra a WABA informada.
+        // Se retornar 200 com id igual ao wabaId, sabemos que:
+        //   (a) o token é válido
+        //   (b) o token tem escopo/permissão suficiente pra ler essa WABA
+        //   (c) o wabaId realmente existe
+        $probe = Http::withToken($accessToken)
+            ->get("https://graph.facebook.com/{$this->apiVersion}/{$wabaId}", [
+                'fields' => 'id,name,currency,timezone_id',
+            ]);
+
+        if (!$probe->successful()) {
+            $err     = (array) $probe->json('error', []);
+            $errMsg  = trim((string) ($err['message'] ?? ''));
+            $errCode = isset($err['code']) ? (int) $err['code'] : null;
+
+            Log::warning('CloudApi Manual Signup: validação da WABA falhou', [
+                'status'  => $probe->status(),
+                'code'    => $errCode,
+                'message' => $errMsg,
+            ]);
+
+            $friendly = match ($errCode) {
+                190     => 'Token inválido ou expirado. Gere um novo System User Access Token no Business Manager e cole aqui.',
+                100     => 'WABA ID não encontrado ou o token não tem acesso a essa WABA. Confira o ID no Business Manager.',
+                default => 'Não foi possível validar suas credenciais na Meta.'
+                    . ($errMsg !== '' ? " Detalhe: {$errMsg}" : ''),
+            };
+
+            throw new RuntimeException($friendly);
+        }
+
+        // Passo 2 — diagnóstico do tipo de token (não bloqueia).
+        $this->inspectToken($accessToken);
+
+        // Passo 3 — se o cliente forneceu PIN, tenta registrar o número.
+        // Sem PIN, assumimos que o cliente já registrou no Business Manager;
+        // se ele não registrou, o envio real vai falhar com error code claro.
+        if ($registrationPin !== null && $registrationPin !== '') {
+            $this->registerPhoneNumber($phoneNumberId, $accessToken, $registrationPin);
+        }
+
+        // Passo 4 — inscreve nosso app na WABA (webhook começa a fluir).
+        $this->subscribeAppToWaba($wabaId, $accessToken);
+
+        // Passo 5 — proteção cross-tenant: se já existe instance com esse
+        // phone_number_id em OUTRO tenant, bloqueia (evita hijack de número).
+        $conflict = WhatsappInstance::withoutGlobalScope('tenant')
+            ->where('phone_number_id', $phoneNumberId)
+            ->where('tenant_id', '!=', $tenantId)
+            ->first();
+
+        if ($conflict) {
+            Log::warning('CloudApi Manual Signup: conflito de phone_number_id em outro tenant', [
+                'phone_number_id'       => $phoneNumberId,
+                'requesting_tenant_id'  => $tenantId,
+                'existing_tenant_id'    => $conflict->tenant_id,
+            ]);
+            throw new RuntimeException('Este número WhatsApp já está conectado a outra conta Vivensi. Se você é o dono, contate o suporte.');
+        }
+
+        return $this->persistInstance($tenantId, $wabaId, $phoneNumberId, $accessToken);
+    }
+
+    /**
      * Diagnóstico: chama /debug_token pra saber se o token que recebemos é do
      * tipo esperado (System-user, sem expiração) ou algo mais fraco (User
      * access token, expira em ~1h). Só loga — não bloqueia o fluxo.

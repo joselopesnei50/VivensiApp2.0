@@ -38,6 +38,21 @@
         </div>
     @endif
 
+    <div class="cloud-alert warn" style="display:flex; justify-content:space-between; align-items:center; gap: 16px; flex-wrap: wrap;">
+        <div style="flex:1; min-width: 280px;">
+            <strong>Prefere um cadastro assistido?</strong>
+            Se o botão &quot;Conectar com Facebook&quot; falhar
+            (o Embedded Signup ainda está em revisão da Meta), você pode
+            colar suas 3 credenciais manualmente do Business Manager.
+        </div>
+        <a href="{{ route('whatsapp.cloud.manual.show') }}"
+           style="background:#128C7E; color:#fff; padding: 10px 18px;
+                  border-radius: 8px; font-weight: 700; text-decoration: none;
+                  white-space: nowrap;">
+            <i class="fas fa-key"></i> Onboarding assistido
+        </a>
+    </div>
+
     <div class="cloud-card">
         <h3 style="margin: 0 0 20px;">Como funciona</h3>
 

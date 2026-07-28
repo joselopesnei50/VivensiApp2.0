@@ -68,4 +68,61 @@ class WhatsappCloudSignupController extends Controller
             'redirect'    => route('whatsapp.instances'),
         ]);
     }
+
+    /**
+     * Onboarding assistido self-service — enquanto business_management não
+     * está aprovado (Embedded Signup indisponível), o cliente cola 3
+     * credenciais copiadas do próprio Business Manager e o Vivensi cadastra
+     * a instance sem depender do FB.login.
+     */
+    public function showManual()
+    {
+        Gate::authorize('access-whatsapp');
+
+        return view('whatsapp.cloud-manual-connect', [
+            'configured' => $this->onboarding->isConfigured(),
+        ]);
+    }
+
+    public function storeManual(Request $request)
+    {
+        Gate::authorize('access-whatsapp');
+
+        $data = $request->validate([
+            'waba_id'          => ['required', 'string', 'regex:/^\d{6,25}$/'],
+            'phone_number_id'  => ['required', 'string', 'regex:/^\d{6,25}$/'],
+            'access_token'     => ['required', 'string', 'min:100', 'max:500'],
+            // PIN é opcional; usar só se o cliente ainda não registrou o número
+            // no Business Manager. Se preenchido, precisa ter 6 dígitos.
+            'pin'              => ['nullable', 'string', 'regex:/^\d{6}$/'],
+        ], [
+            'waba_id.regex'         => 'O WABA ID deve conter apenas números.',
+            'phone_number_id.regex' => 'O Phone Number ID deve conter apenas números.',
+            'access_token.min'      => 'O System User Access Token parece incompleto (deve ter pelo menos 100 caracteres).',
+            'pin.regex'             => 'O PIN de verificação deve ter exatamente 6 dígitos numéricos.',
+        ]);
+
+        try {
+            $instance = $this->onboarding->completeManualSignup(
+                tenantId:        (int) auth()->user()->tenant_id,
+                wabaId:          $data['waba_id'],
+                phoneNumberId:   $data['phone_number_id'],
+                accessToken:     $data['access_token'],
+                registrationPin: $data['pin'] ?? null,
+            );
+        } catch (\Throwable $e) {
+            Log::error('WhatsApp Cloud manual signup falhou', [
+                'tenant_id' => auth()->user()->tenant_id,
+                'error'     => $e->getMessage(),
+            ]);
+
+            return back()
+                ->withInput($request->except('access_token', 'pin'))
+                ->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('whatsapp.chat')
+            ->with('success', "Número WhatsApp conectado com sucesso! (Instance #{$instance->id})");
+    }
 }

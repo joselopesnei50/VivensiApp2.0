@@ -97,6 +97,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/cloud/connect',              [App\Http\Controllers\WhatsappCloudSignupController::class, 'show'])->name('whatsapp.cloud.connect');
     Route::post('/whatsapp/cloud/callback',            [App\Http\Controllers\WhatsappCloudSignupController::class, 'callback'])->name('whatsapp.cloud.callback')->middleware('throttle:10,1');
 
+    // Meta Cloud API — Onboarding assistido (self-service, sem depender de business_management)
+    Route::get('/whatsapp/cloud/manual-connect',       [App\Http\Controllers\WhatsappCloudSignupController::class, 'showManual'])->name('whatsapp.cloud.manual.show');
+    Route::post('/whatsapp/cloud/manual-connect',      [App\Http\Controllers\WhatsappCloudSignupController::class, 'storeManual'])->name('whatsapp.cloud.manual.store')->middleware('throttle:5,1');
+
     // Meta Cloud API — Templates CRUD (per-tenant, cada tenant só vê seus templates)
     Route::get('/whatsapp/cloud/templates',                       [App\Http\Controllers\WhatsappTemplateController::class, 'index'])->name('whatsapp.templates.cloud.index');
     Route::get('/whatsapp/cloud/templates/create',                [App\Http\Controllers\WhatsappTemplateController::class, 'create'])->name('whatsapp.templates.cloud.create');
