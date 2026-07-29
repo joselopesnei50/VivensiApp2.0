@@ -658,8 +658,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
+                            @can('has-whatsapp-cloud')
+                                <li><a href="{{ route('whatsapp.cloud.connect') }}" class="{{ request()->is('whatsapp/cloud/connect') || request()->is('whatsapp/cloud/manual-connect') ? 'active' : '' }}"><i class="fab fa-facebook"></i> Conectar WhatsApp Cloud</a></li>
+                            @endcan
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
                             <li><a href="{{ url('/whatsapp/cloud/templates') }}" class="{{ request()->is('whatsapp/cloud/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            @can('has-whatsapp-cloud')
+                                <li><a href="{{ route('whatsapp.consumo') }}" class="{{ request()->routeIs('whatsapp.consumo') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Meu Consumo</a></li>
+                            @endcan
                             <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
@@ -765,8 +771,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
+                            @can('has-whatsapp-cloud')
+                                <li><a href="{{ route('whatsapp.cloud.connect') }}" class="{{ request()->is('whatsapp/cloud/connect') || request()->is('whatsapp/cloud/manual-connect') ? 'active' : '' }}"><i class="fab fa-facebook"></i> Conectar WhatsApp Cloud</a></li>
+                            @endcan
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
                             <li><a href="{{ url('/whatsapp/cloud/templates') }}" class="{{ request()->is('whatsapp/cloud/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            @can('has-whatsapp-cloud')
+                                <li><a href="{{ route('whatsapp.consumo') }}" class="{{ request()->routeIs('whatsapp.consumo') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Meu Consumo</a></li>
+                            @endcan
                             <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
@@ -964,7 +976,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
+                            @can('has-whatsapp-cloud')
+                                <li><a href="{{ route('whatsapp.cloud.connect') }}" class="{{ request()->is('whatsapp/cloud/connect') || request()->is('whatsapp/cloud/manual-connect') ? 'active' : '' }}"><i class="fab fa-facebook"></i> Conectar WhatsApp Cloud</a></li>
+                            @endcan
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
+                            <li><a href="{{ url('/whatsapp/cloud/templates') }}" class="{{ request()->is('whatsapp/cloud/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            @can('has-whatsapp-cloud')
+                                <li><a href="{{ route('whatsapp.consumo') }}" class="{{ request()->routeIs('whatsapp.consumo') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Meu Consumo</a></li>
+                            @endcan
                             <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
