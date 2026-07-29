@@ -10,7 +10,7 @@ class ScheduledPost extends Model
     use BelongsToTenant;
 
     protected $fillable = [
-        'tenant_id', 'social_account_id', 'user_id', 'platform',
+        'tenant_id', 'social_account_id', 'user_id', 'platform', 'format',
         'caption', 'media_url', 'media_items', 'media_type', 'scheduled_at',
         'status', 'facebook_post_id', 'instagram_post_id', 'error_message',
     ];

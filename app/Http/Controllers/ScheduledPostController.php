@@ -68,6 +68,7 @@ class ScheduledPostController extends Controller
         $data = $request->validate([
             'social_account_id' => 'nullable|integer',
             'platform'          => 'required|in:facebook,instagram,both',
+            'format'            => 'nullable|in:feed,story',
             'caption'           => 'required|string|max:2200',
             'scheduled_at'      => $publishNow ? 'nullable|date' : 'required|date|after:now',
             // Legado — 1 arquivo único (compat com uploads antigos e integrações
@@ -80,6 +81,13 @@ class ScheduledPostController extends Controller
             'media_files.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4|max:51200',
             'publish_now'       => 'nullable|boolean',
         ]);
+
+        // Story só publica no Instagram — Meta praticamente fechou FB Stories
+        // via API. Ajusta silenciosamente pra não confundir o publisher.
+        $format = $data['format'] ?? 'feed';
+        if ($format === 'story' && $data['platform'] === 'facebook') {
+            $data['platform'] = 'instagram';
+        }
 
         // Conta é opcional — sem conta o post fica como rascunho
         $account = $data['social_account_id']
@@ -131,6 +139,7 @@ class ScheduledPostController extends Controller
             'social_account_id' => $account?->id,
             'user_id'           => auth()->id(),
             'platform'          => $data['platform'],
+            'format'            => $format,
             'caption'           => $data['caption'],
             'media_url'         => $mediaUrl,
             'media_items'       => $mediaItems,

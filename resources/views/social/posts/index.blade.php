@@ -267,9 +267,14 @@
                             <div class="sp-thumb-placeholder"><i class="fas fa-image"></i></div>
                         @endif
 
-                        @if($isCarousel)
+                        @if($isCarousel && ($post->format ?? 'feed') !== 'story')
                             <span class="sp-thumb-video-badge" style="background:rgba(79,70,229,.9);">
                                 <i class="fas fa-images"></i> {{ count($mediaItems) }} mídias
+                            </span>
+                        @endif
+                        @if(($post->format ?? 'feed') === 'story')
+                            <span class="sp-thumb-video-badge" style="background:rgba(217,70,239,.9);">
+                                <i class="fas fa-clock-rotate-left"></i> STORY
                             </span>
                         @endif
 

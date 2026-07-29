@@ -52,10 +52,30 @@
                             @error('social_account_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 
+                        {{-- Formato — Feed padrão OR Story 24h --}}
                         <div class="mb-4">
+                            <label class="form-label fw-600">Formato</label>
+                            <div class="d-flex gap-2" id="formatOptions">
+                                <label class="platform-chip active" data-val="feed" onclick="wacSetFormat('feed')">
+                                    <input type="radio" name="format" value="feed" checked class="d-none">
+                                    <i class="fas fa-newspaper me-1"></i> Feed
+                                </label>
+                                <label class="platform-chip" data-val="story" onclick="wacSetFormat('story')">
+                                    <input type="radio" name="format" value="story" class="d-none">
+                                    <i class="fas fa-clock-rotate-left me-1"></i> Story (24h)
+                                </label>
+                            </div>
+                            <div class="form-text" id="wacFormatHint">
+                                Feed é o post normal. <strong>Story</strong> dura 24h no Instagram e some
+                                — só publica no Instagram (Facebook Stories não é suportado pela API oficial da Meta).
+                                Story usa <strong>apenas a primeira mídia</strong> (não faz carrossel).
+                            </div>
+                        </div>
+
+                        <div class="mb-4" id="platformSection">
                             <label for="platform" class="form-label fw-600">Publicar em <span class="text-danger">*</span></label>
                             <div class="d-flex gap-2" id="platformOptions">
-                                <label class="platform-chip active" data-val="facebook">
+                                <label class="platform-chip active" data-val="facebook" id="fbOption">
                                     <input type="radio" name="platform" value="facebook" checked class="d-none" id="platform">
                                     <i class="fab fa-facebook me-1"></i> Facebook
                                 </label>
@@ -69,6 +89,36 @@
                                 </label>
                             </div>
                         </div>
+
+                        <script>
+                            // Alterna Feed / Story: quando escolhe Story, força
+                            // Instagram (Facebook Story via API não é suportado).
+                            function wacSetFormat(f) {
+                                document.querySelectorAll('#formatOptions .platform-chip').forEach(el =>
+                                    el.classList.toggle('active', el.dataset.val === f));
+                                document.querySelector(`input[name="format"][value="${f}"]`).checked = true;
+
+                                const fbChip   = document.getElementById('fbOption');
+                                const igChip   = document.getElementById('igOption');
+                                const bothChip = document.getElementById('bothOption');
+
+                                if (f === 'story') {
+                                    // Story só no Instagram. Esconde FB/Ambos e força IG selecionado.
+                                    fbChip.style.display   = 'none';
+                                    bothChip.style.display = 'none';
+                                    igChip.style.display   = 'inline-flex';
+                                    document.querySelectorAll('#platformOptions .platform-chip').forEach(el =>
+                                        el.classList.toggle('active', el.dataset.val === 'instagram'));
+                                    igChip.querySelector('input').checked = true;
+                                } else {
+                                    // Feed: mostra tudo de novo (o script legado já lida com IG/Ambos
+                                    // baseado no account.instagram_business_id).
+                                    fbChip.style.display = 'inline-flex';
+                                    // igChip e bothChip são reexibidos pelo script legado quando
+                                    // account tem instagram_business_id.
+                                }
+                            }
+                        </script>
 
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-1">

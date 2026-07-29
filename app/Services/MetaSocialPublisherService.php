@@ -22,8 +22,14 @@ class MetaSocialPublisherService
         $token = $account->access_token;
         $success = false;
 
-        // Publicar no Facebook
-        if (in_array($post->platform, ['facebook', 'both'])) {
+        $format = $post->format ?? 'feed';
+        $isStory = $format === 'story';
+
+        // Publicar no Facebook — Story via API não é suportada de forma
+        // estável pela Meta pra third-parties, então pulamos silenciosamente
+        // quando format=story mesmo se o gestor marcou "Ambos" (a UI já
+        // avisa isso).
+        if (in_array($post->platform, ['facebook', 'both']) && !$isStory) {
             $fb = $this->publishToFacebook($post, $account->page_id, $token);
             if (!empty($fb['id'])) {
                 $post->facebook_post_id = $fb['id'];
@@ -52,6 +58,74 @@ class MetaSocialPublisherService
         }
 
         return $success;
+    }
+
+    /**
+     * Instagram Story — publica UMA mídia com media_type=STORIES.
+     * Story dura 24h, depois vai pro arquivo. Não suporta legenda visível
+     * no feed (caption é ignorada na renderização do story), nem carrossel
+     * (só single). Suporta imagem (JPG/PNG, ideal 1080×1920 aspect 9:16)
+     * ou vídeo (até 60s).
+     *
+     * Referência: https://developers.facebook.com/docs/instagram-api/guides/content-publishing#stories
+     *
+     * @param  array{url:string,type:string} $item
+     * @return array{id: ?string, error: ?string}
+     */
+    private function publishInstagramStory(ScheduledPost $post, string $igAccountId, string $token, array $item): array
+    {
+        $mediaUrl = $this->absoluteMediaUrl($item['url']);
+        $type     = $item['type'] ?? 'image';
+
+        $payload = [
+            'media_type'   => 'STORIES',
+            'access_token' => $token,
+        ];
+        if ($type === 'image') {
+            $payload['image_url'] = $mediaUrl;
+        } elseif ($type === 'video') {
+            $payload['video_url'] = $mediaUrl;
+        } else {
+            return ['id' => null, 'error' => 'Story precisa ser imagem ou vídeo.'];
+        }
+
+        // Passo 1 — cria container do Story.
+        $containerRes = Http::post(
+            "https://graph.facebook.com/{$this->graphVersion}/{$igAccountId}/media",
+            $payload
+        );
+
+        if (!$containerRes->successful()) {
+            $err = (array) ($containerRes->json('error') ?? []);
+            Log::error('Instagram story container failed', [
+                'post_id' => $post->id, 'status' => $containerRes->status(), 'error' => $err,
+            ]);
+            return ['id' => null, 'error' => $this->friendlyError($err)];
+        }
+
+        $containerId = $containerRes->json('id');
+
+        // Passo 2 — aguarda FINISHED.
+        $waitErr = $this->waitForInstagramContainer($containerId, $token);
+        if ($waitErr !== null) {
+            return ['id' => null, 'error' => $waitErr];
+        }
+
+        // Passo 3 — publica.
+        $publishRes = Http::post(
+            "https://graph.facebook.com/{$this->graphVersion}/{$igAccountId}/media_publish",
+            ['creation_id' => $containerId, 'access_token' => $token]
+        );
+
+        if (!$publishRes->successful()) {
+            $err = (array) ($publishRes->json('error') ?? []);
+            Log::error('Instagram story publish failed', [
+                'post_id' => $post->id, 'status' => $publishRes->status(), 'error' => $err,
+            ]);
+            return ['id' => null, 'error' => $this->friendlyError($err)];
+        }
+
+        return ['id' => $publishRes->json('id'), 'error' => null];
     }
 
     /**
@@ -320,7 +394,14 @@ class MetaSocialPublisherService
             return ['id' => null, 'error' => 'Instagram exige uma imagem ou vídeo — este post não tem mídia anexada.'];
         }
 
-        // 2+ mídias → carrossel. Meta permite até 10.
+        // Story tem fluxo próprio (independe de quantas mídias — só usa a
+        // primeira, story não suporta carrossel). Roteamos antes do check
+        // de carrossel abaixo pra não confundir.
+        if (($post->format ?? 'feed') === 'story') {
+            return $this->publishInstagramStory($post, $igAccountId, $token, $items[0]);
+        }
+
+        // 2+ mídias no feed → carrossel. Meta permite até 10.
         if (count($items) >= 2) {
             return $this->publishInstagramCarousel($post, $igAccountId, $token, $items);
         }
