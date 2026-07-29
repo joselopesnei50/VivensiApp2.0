@@ -210,10 +210,13 @@ class Kernel extends ConsoleKernel
                  ->when(fn() => config('radar.enabled'));
 
         // Radar de Editais: enriquece findings novos com IA às 07:00
+        // NOTA: schedule->job() cria um CallbackEvent que NÃO suporta
+        // runInBackground() — jogar isso aqui quebrava o schedule inteiro
+        // com "Scheduled closures can not be run in the background". Bug
+        // silencioso durante meses até descobrir em 2026-07-29.
         $schedule->job(new \App\Jobs\Radar\EnrichRadarFindings())
                  ->dailyAt('07:00')
                  ->withoutOverlapping()
-                 ->runInBackground()
                  ->when(fn() => config('radar.enabled'));
 
         // Radar de Editais: auto-aprovação após enriquecimento (07:30)
