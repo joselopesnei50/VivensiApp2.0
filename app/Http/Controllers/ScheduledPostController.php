@@ -69,7 +69,10 @@ class ScheduledPostController extends Controller
         if ($request->hasFile('media')) {
             $tenantId = auth()->user()->tenant_id;
             $path     = $request->file('media')->store("tenants/{$tenantId}/social-media", 'public');
-            $mediaUrl = Storage::url($path);
+            // IMPORTANTE: Meta exige URL absoluta pública pra baixar a mídia.
+            // Storage::url() retorna caminho relativo (/storage/...) — url()
+            // prefixa com APP_URL (https://vivensi.app.br).
+            $mediaUrl = url(Storage::url($path));
             $mediaType = str_starts_with($request->file('media')->getMimeType(), 'video') ? 'video' : 'image';
         } elseif (!empty($data['media_url_external'])) {
             // URL externa (ex: Unsplash) — usada quando gerado pelo Marketing Intelligence

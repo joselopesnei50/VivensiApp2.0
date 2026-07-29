@@ -55,6 +55,18 @@ class MetaSocialPublisherService
     }
 
     /**
+     * Garante que a URL da mídia é absoluta com esquema http(s). Meta rejeita
+     * caminho relativo (Storage::url() sozinho retorna /storage/... que não é
+     * "valid URL" segundo a Graph API — bug em prod 2026-07-29).
+     */
+    private function absoluteMediaUrl(?string $url): ?string
+    {
+        if (!$url) return null;
+        if (preg_match('#^https?://#i', $url)) return $url;
+        return url($url); // prefixa com APP_URL
+    }
+
+    /**
      * Traduz códigos de erro comuns da Graph API pra mensagem PT-BR acionável.
      * Referência: https://developers.facebook.com/docs/graph-api/guides/error-handling/
      */
@@ -85,13 +97,17 @@ class MetaSocialPublisherService
         $endpoint = "https://graph.facebook.com/{$this->graphVersion}/{$pageId}";
         $payload  = ['message' => $post->caption, 'access_token' => $token];
 
-        if ($post->media_url && $post->media_type === 'image') {
+        // Meta exige URL absoluta (http/https). Se veio relativa (/storage/...)
+        // prefixa com APP_URL. Defesa em profundidade — controller já faz isso.
+        $mediaUrl = $this->absoluteMediaUrl($post->media_url);
+
+        if ($mediaUrl && $post->media_type === 'image') {
             $endpoint .= '/photos';
-            $payload['url'] = $post->media_url;
+            $payload['url'] = $mediaUrl;
             $payload['published'] = true;
-        } elseif ($post->media_url && $post->media_type === 'video') {
+        } elseif ($mediaUrl && $post->media_type === 'video') {
             $endpoint .= '/videos';
-            $payload['file_url'] = $post->media_url;
+            $payload['file_url'] = $mediaUrl;
         } else {
             $endpoint .= '/feed';
         }
@@ -125,11 +141,13 @@ class MetaSocialPublisherService
             'access_token' => $token,
         ];
 
-        if ($post->media_url && $post->media_type === 'image') {
-            $containerPayload['image_url'] = $post->media_url;
+        $mediaUrl = $this->absoluteMediaUrl($post->media_url);
+
+        if ($mediaUrl && $post->media_type === 'image') {
+            $containerPayload['image_url'] = $mediaUrl;
             $containerPayload['media_type'] = 'IMAGE';
-        } elseif ($post->media_url && $post->media_type === 'video') {
-            $containerPayload['video_url'] = $post->media_url;
+        } elseif ($mediaUrl && $post->media_type === 'video') {
+            $containerPayload['video_url'] = $mediaUrl;
             $containerPayload['media_type'] = 'REELS';
         } else {
             // Instagram exige mídia — pula se não tiver
