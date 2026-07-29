@@ -79,20 +79,20 @@
     @endif
     @endauth
 
-    {{-- F2: Soketi / Laravel Echo Real-time dependencies --}}
+    {{-- Laravel Echo + Pusher (Pusher.com com cluster dinâmico via SystemSetting) --}}
     <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.0.1/dist/web/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.3/dist/echo.iife.js"></script>
     <script>
         window.Pusher = Pusher;
         window.Echo = new Echo({
             broadcaster: 'pusher',
-            key: '{{ config('broadcasting.connections.pusher.key') }}',
-            cluster: 'mt1',
-            wsHost: '{{ config('broadcasting.connections.pusher.options.host') }}',
-            wsPort: {{ config('broadcasting.connections.pusher.options.port') }},
-            forceTLS: {{ config('broadcasting.connections.pusher.options.useTLS') ? 'true' : 'false' }},
+            key:         '{{ config('broadcasting.connections.pusher.key') }}',
+            // Cluster dinâmico (era hardcoded 'mt1' — quebrava conexão quando
+            // o admin cadastrava cluster diferente em /admin/settings, ex: sa1
+            // do Brasil que a gente usa hoje).
+            cluster:     '{{ config('broadcasting.connections.pusher.options.cluster') ?: 'sa1' }}',
+            forceTLS:    true,
             disableStats: true,
-            enabledTransports: ['ws', 'wss'],
             @auth authEndpoint: '{{ url("/broadcasting/auth") }}', @endauth
         });
     </script>
