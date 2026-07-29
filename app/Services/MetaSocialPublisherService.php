@@ -55,6 +55,56 @@ class MetaSocialPublisherService
     }
 
     /**
+     * Aguarda o Instagram terminar de processar um container de mídia antes
+     * de publicar. Faz polling GET /{container_id}?fields=status_code.
+     *
+     * status_code possíveis:
+     *  - IN_PROGRESS: ainda baixando/processando → espera
+     *  - FINISHED:    pronto → OK, retorna null
+     *  - ERROR:       falhou → retorna mensagem
+     *  - EXPIRED:     passou de 24h → retorna mensagem
+     *  - PUBLISHED:   já foi publicado antes → OK
+     *
+     * @return string|null null em caso de sucesso, msg PT-BR em caso de falha.
+     */
+    private function waitForInstagramContainer(string $containerId, string $token, int $maxTries = 8): ?string
+    {
+        // Backoff crescente: 1s, 1s, 2s, 2s, 3s, 3s, 4s, 5s = até ~21s total.
+        // Cobre a maioria dos casos (imagem pequena processa em <5s).
+        $delays = [1, 1, 2, 2, 3, 3, 4, 5];
+
+        for ($i = 0; $i < $maxTries; $i++) {
+            sleep($delays[$i] ?? 3);
+
+            $res = Http::get(
+                "https://graph.facebook.com/{$this->graphVersion}/{$containerId}",
+                ['fields' => 'status_code', 'access_token' => $token]
+            );
+
+            if (!$res->successful()) {
+                // Erro de leitura do status — não bloqueia, tenta publicar
+                // mesmo assim (às vezes só a leitura falha).
+                return null;
+            }
+
+            $status = $res->json('status_code');
+
+            if ($status === 'FINISHED' || $status === 'PUBLISHED') {
+                return null; // pronto pra publicar
+            }
+            if ($status === 'ERROR') {
+                return 'O Instagram rejeitou a mídia. Verifique se o formato/proporção está correto (imagem quadrada JPG/PNG recomendada).';
+            }
+            if ($status === 'EXPIRED') {
+                return 'O container do Instagram expirou (24h). Crie o post novamente.';
+            }
+            // IN_PROGRESS → continua o loop
+        }
+
+        return 'O Instagram demorou muito pra processar a mídia. Tente com uma imagem menor ou tente novamente em alguns segundos.';
+    }
+
+    /**
      * Garante que a URL da mídia é absoluta com esquema http(s). Meta rejeita
      * caminho relativo (Storage::url() sozinho retorna /storage/... que não é
      * "valid URL" segundo a Graph API — bug em prod 2026-07-29).
@@ -84,6 +134,7 @@ class MetaSocialPublisherService
             $code === 4   => 'Limite de chamadas da Meta atingido temporariamente. Aguarde alguns minutos.',
             $code === 368 => 'Sua Página do Facebook está temporariamente bloqueada de publicar.',
             $code === 1487 => 'A URL da mídia não pôde ser baixada pela Meta. Confirme que o link é público.',
+            $code === 9007 => 'O Instagram ainda estava processando a mídia quando pedimos pra publicar. Tente novamente em alguns segundos.',
             default => null,
         };
 
@@ -173,6 +224,21 @@ class MetaSocialPublisherService
         }
 
         $containerId = $containerRes->json('id');
+
+        // Passo 1.5: aguardar Instagram terminar de processar a mídia.
+        // Sem esse polling, o /media_publish quase sempre volta code 9007
+        // "Media ID is not available" — o container existe mas a imagem/video
+        // ainda está sendo baixado da URL fornecida.
+        // Referência: https://developers.facebook.com/docs/instagram-api/guides/content-publishing#step-2--check-media-container-status
+        $waitError = $this->waitForInstagramContainer($containerId, $token);
+        if ($waitError !== null) {
+            Log::error('Instagram container timeout/error', [
+                'post_id'      => $post->id,
+                'container_id' => $containerId,
+                'reason'       => $waitError,
+            ]);
+            return ['id' => null, 'error' => $waitError];
+        }
 
         // Passo 2: publicar o container
         $publishRes = Http::post(
