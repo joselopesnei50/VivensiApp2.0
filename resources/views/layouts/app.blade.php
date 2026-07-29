@@ -1460,8 +1460,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </style>
 
 <script>
-    const __vivensiIsAuth  = {{ auth()->check() ? 'true' : 'false' }};
-    const __vivensiUserId  = {{ auth()->id() ?? 'null' }};
+    const __vivensiIsAuth   = {{ auth()->check() ? 'true' : 'false' }};
+    const __vivensiUserId   = {{ auth()->id() ?? 'null' }};
+    const __vivensiTenantId = {{ auth()->user()?->tenant_id ?? 'null' }};
     let __vivensiLastUnread = null;
     let __vivensiToastCooldownUntil = 0;
     let __vivensiEchoConnected = false;
@@ -1733,6 +1734,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     });
             } catch (err) {
                 console.warn('[Notificações] Echo indisponível, mantendo polling de 30s.', err);
+            }
+        }
+
+        // WhatsApp: toast em tempo real quando chega mensagem nova em qualquer
+        // chat do tenant. Escuta canal privado tenant.{tenantId}.whatsapp
+        // (autorizado em routes/channels.php por tenant match).
+        if (__vivensiTenantId && window.Echo) {
+            try {
+                window.Echo.private(`tenant.${__vivensiTenantId}.whatsapp`)
+                    .listen('.whatsapp.message.received', (e) => {
+                        // Não mostra toast se já está no /whatsapp/chat com esse
+                        // chat aberto — evita duplicar notificação (a lista/chat
+                        // já vai recarregar por outros meios).
+                        const isOnChatOfSameContact = window.location.pathname.startsWith('/whatsapp/chat')
+                            && document.querySelector(`[data-chat-id="${e.chat_id}"].active`);
+                        if (isOnChatOfSameContact) return;
+
+                        if (!document.hidden) {
+                            showToast({
+                                title:   'Nova mensagem WhatsApp',
+                                message: (e.contact_name ? e.contact_name + ': ' : '') + (e.preview || '(sem texto)'),
+                                link:    '/whatsapp/chat?chat=' + e.chat_id,
+                            });
+                        }
+                    })
+                    .error((err) => {
+                        console.warn('[WhatsApp] Canal em tempo real indisponível.', err);
+                    });
+            } catch (err) {
+                console.warn('[WhatsApp] Echo indisponível pro canal WhatsApp.', err);
             }
         }
     });

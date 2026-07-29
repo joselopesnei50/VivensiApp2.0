@@ -19,7 +19,11 @@ class PublishScheduledPostJob implements ShouldQueue
 
     public function __construct(public readonly int $postId)
     {
-        $this->onQueue('social');
+        // Usa a queue 'default' que já tem worker no supervisor
+        // (vivensi-worker-default). Se um dia o volume justificar worker
+        // dedicado, cria-se supervisor 'vivensi-worker-social' e volta pra
+        // ->onQueue('social').
+        $this->onQueue('default');
     }
 
     public function handle(MetaSocialPublisherService $publisher): void

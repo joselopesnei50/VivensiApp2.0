@@ -158,7 +158,7 @@ class ProcessCloudApiWebhook implements ShouldQueue
             ]
         );
 
-        WhatsappMessage::create([
+        $newMessage = WhatsappMessage::create([
             'tenant_id'     => $instance->tenant_id,
             'chat_id'       => $chat->id,
             'message_id'    => $messageId,
@@ -168,6 +168,18 @@ class ProcessCloudApiWebhook implements ShouldQueue
             'media_path'    => $mediaPath,
             'media_caption' => $mediaCaption,
         ]);
+
+        // Broadcast em tempo real pro front — toast + badge no /whatsapp/chat
+        // e qualquer outra tela aberta do mesmo tenant. Falha silenciosa se
+        // Pusher estiver fora (nunca bloqueia webhook).
+        try {
+            event(new \App\Events\WhatsappMessageReceived($newMessage, $chat));
+        } catch (\Throwable $e) {
+            Log::warning('WhatsappMessageReceived broadcast falhou (nao bloqueante)', [
+                'chat_id' => $chat->id,
+                'error'   => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
