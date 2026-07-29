@@ -101,6 +101,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/cloud/manual-connect',       [App\Http\Controllers\WhatsappCloudSignupController::class, 'showManual'])->name('whatsapp.cloud.manual.show');
     Route::post('/whatsapp/cloud/manual-connect',      [App\Http\Controllers\WhatsappCloudSignupController::class, 'storeManual'])->name('whatsapp.cloud.manual.store')->middleware('throttle:5,1');
 
+    // Consumo WhatsApp — dashboard pro cliente ver o próprio custo (modelo B)
+    Route::get('/whatsapp/consumo',                    [App\Http\Controllers\WhatsappConsumoController::class, 'index'])->name('whatsapp.consumo');
+
     // Meta Cloud API — Templates CRUD (per-tenant, cada tenant só vê seus templates)
     Route::get('/whatsapp/cloud/templates',                       [App\Http\Controllers\WhatsappTemplateController::class, 'index'])->name('whatsapp.templates.cloud.index');
     Route::get('/whatsapp/cloud/templates/create',                [App\Http\Controllers\WhatsappTemplateController::class, 'create'])->name('whatsapp.templates.cloud.create');

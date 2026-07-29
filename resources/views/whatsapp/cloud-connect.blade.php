@@ -1,118 +1,247 @@
 @extends('layouts.app')
 
-@section('title', 'Conectar WhatsApp Business — Meta Cloud API')
+@section('title', 'Conectar WhatsApp')
+
+@php
+    // Debug console só pra super admin — cliente comum não precisa ver
+    // stacktrace de JS. Se algo der errado, admin acessa a mesma URL e
+    // consegue diagnosticar.
+    $isSuperAdmin = auth()->user()->isSuperAdmin();
+@endphp
 
 @push('styles')
 <style>
-    .cloud-hero {
-        background: linear-gradient(135deg, #075E54 0%, #128C7E 100%);
-        color: #fff; padding: 32px; border-radius: 16px; margin-bottom: 24px;
+    .wac-page { max-width: 720px; margin: 32px auto; padding: 0 20px; }
+
+    /* Hero simples, sem jargão */
+    .wac-hero {
+        text-align: center;
+        padding: 40px 24px 32px;
     }
-    .cloud-hero h1 { margin: 0 0 8px; font-size: 1.6rem; }
-    .cloud-hero p { margin: 0; opacity: .95; }
-    .cloud-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 20px; }
-    .cloud-step { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
-    .cloud-step-num { background: #128C7E; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
-    .cloud-step p { margin: 4px 0 0; color: #444; }
-    .cloud-btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background: #1877F2; color: #fff !important; border: 0; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; text-decoration: none; }
-    .cloud-btn:hover { background: #145FBB; }
-    .cloud-btn:disabled { background: #94a3b8; cursor: not-allowed; }
-    .cloud-alert { padding: 14px 18px; border-radius: 10px; margin-bottom: 16px; }
-    .cloud-alert.warn { background: #FEF3C7; color: #92400E; border-left: 4px solid #F59E0B; }
-    .cloud-alert.err  { background: #FEE2E2; color: #991B1B; border-left: 4px solid #EF4444; }
-    .cloud-alert.ok   { background: #D1FAE5; color: #065F46; border-left: 4px solid #10B981; }
-    .cloud-pin-input { width: 140px; text-align: center; font-size: 1.4rem; padding: 10px; border: 2px solid #d1d5db; border-radius: 8px; letter-spacing: 4px; }
+    .wac-hero .wac-icon {
+        width: 84px; height: 84px; margin: 0 auto 18px;
+        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+        border-radius: 24px; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.6rem;
+        box-shadow: 0 12px 32px rgba(37, 211, 102, .35);
+    }
+    .wac-hero h1 {
+        font-size: 1.9rem; font-weight: 800; color: #0f172a;
+        margin: 0 0 10px; line-height: 1.2;
+    }
+    .wac-hero p {
+        font-size: 1.05rem; color: #475569; line-height: 1.55;
+        margin: 0 auto; max-width: 480px;
+    }
+
+    /* Card central com o CTA */
+    .wac-card {
+        background: #fff; border-radius: 20px;
+        padding: 32px 28px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 24px rgba(15,23,42,.05);
+        margin-bottom: 20px;
+    }
+
+    /* Passos visuais horizontais (números discretos) */
+    .wac-steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+    @media (max-width: 620px) {
+        .wac-steps { grid-template-columns: 1fr; }
+    }
+    .wac-step {
+        text-align: center;
+        padding: 14px 8px;
+    }
+    .wac-step-icon {
+        width: 44px; height: 44px; margin: 0 auto 8px;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: #128C7E; font-size: 1.15rem;
+    }
+    .wac-step-txt {
+        font-size: .88rem; color: #334155; line-height: 1.4; font-weight: 500;
+    }
+    .wac-step-txt strong { display: block; color: #0f172a; margin-bottom: 2px; }
+
+    /* Botão principal — grande, verde WhatsApp */
+    .wac-btn-primary {
+        display: flex; align-items: center; justify-content: center; gap: 12px;
+        width: 100%;
+        padding: 18px 24px;
+        background: #25D366; color: #fff !important;
+        border: 0; border-radius: 14px;
+        font-size: 1.1rem; font-weight: 800;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .15s;
+        box-shadow: 0 6px 20px rgba(37, 211, 102, .35);
+    }
+    .wac-btn-primary:hover { background: #1EBE5B; transform: translateY(-1px); }
+    .wac-btn-primary:disabled {
+        background: #94a3b8; cursor: not-allowed; transform: none;
+        box-shadow: none;
+    }
+
+    .wac-secure {
+        text-align: center; margin-top: 14px;
+        color: #64748b; font-size: .82rem;
+    }
+    .wac-secure i { color: #10b981; margin-right: 4px; }
+
+    /* PIN — só mostra opcional, sob "avançado" */
+    .wac-advanced {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px dashed #e2e8f0;
+    }
+    .wac-advanced-toggle {
+        color: #475569; font-size: .85rem; font-weight: 600;
+        background: none; border: 0; padding: 0; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+    .wac-advanced-body { display: none; margin-top: 14px; }
+    .wac-advanced-body.open { display: block; }
+    .wac-pin-input {
+        width: 140px; padding: 10px 12px;
+        border: 1.5px solid #cbd5e1; border-radius: 10px;
+        text-align: center; font-size: 1.1rem; letter-spacing: 4px;
+    }
+
+    /* Alerts */
+    .wac-alert {
+        padding: 14px 18px; border-radius: 12px; margin-bottom: 16px;
+        font-size: .93rem; line-height: 1.5;
+    }
+    .wac-alert.warn { background: #FEF3C7; color: #92400E; border-left: 4px solid #F59E0B; }
+    .wac-alert.err  { background: #FEE2E2; color: #991B1B; border-left: 4px solid #EF4444; }
+    .wac-alert.ok   { background: #D1FAE5; color: #065F46; border-left: 4px solid #10B981; }
+
+    /* Rodapé "precisa de ajuda?" — discreto */
+    .wac-help {
+        text-align: center; margin-top: 22px;
+        color: #64748b; font-size: .86rem;
+    }
+    .wac-help a {
+        color: #128C7E; font-weight: 600; text-decoration: none;
+    }
+    .wac-help a:hover { text-decoration: underline; }
+
+    /* Debug — SÓ pra super admin */
+    .wac-debug {
+        background:#0f172a; color:#cbd5e1;
+        border-radius: 12px; padding: 18px;
+        font-family: 'Courier New', monospace;
+        font-size: .8rem; margin-top: 24px;
+    }
+    .wac-debug pre {
+        background:#020617; color:#94a3b8; padding:12px;
+        border-radius:8px; max-height:260px; overflow-y:auto;
+        margin:8px 0 0; white-space:pre-wrap;
+    }
 </style>
 @endpush
 
 @section('content')
-<div class="container" style="max-width: 900px; margin: 24px auto;">
-    <div class="cloud-hero">
-        <h1><i class="fab fa-whatsapp"></i> Conectar WhatsApp Business — Meta Cloud API</h1>
-        <p>Integração oficial da Meta. Sem risco de bloqueio, escala ilimitada, custo por conversa. Você conecta seu número Business em minutos.</p>
+<div class="wac-page">
+
+    {{-- ─── Hero ─────────────────────────────────────────────────────── --}}
+    <div class="wac-hero">
+        <div class="wac-icon"><i class="fab fa-whatsapp"></i></div>
+        <h1>Conecte seu WhatsApp em segundos</h1>
+        <p>
+            Use a linha oficial da Meta pra atender seus contatos direto pelo Vivensi.
+            Sem app extra, sem risco de bloqueio.
+        </p>
     </div>
 
     @if (!$configured)
-        <div class="cloud-alert warn">
-            <strong>Configuração pendente.</strong> As credenciais do Meta App (App ID e Config ID) ainda não foram cadastradas pelo administrador. Contate o suporte antes de prosseguir.
+        <div class="wac-alert warn">
+            <strong>Ainda não está pronto.</strong>
+            O suporte Vivensi está finalizando a configuração da integração.
+            Volte em breve ou fale com a gente.
         </div>
     @endif
 
-    <div class="cloud-alert warn" style="display:flex; justify-content:space-between; align-items:center; gap: 16px; flex-wrap: wrap;">
-        <div style="flex:1; min-width: 280px;">
-            <strong>Prefere um cadastro assistido?</strong>
-            Se o botão &quot;Conectar com Facebook&quot; falhar
-            (o Embedded Signup ainda está em revisão da Meta), você pode
-            colar suas 3 credenciais manualmente do Business Manager.
-        </div>
-        <a href="{{ route('whatsapp.cloud.manual.show') }}"
-           style="background:#128C7E; color:#fff; padding: 10px 18px;
-                  border-radius: 8px; font-weight: 700; text-decoration: none;
-                  white-space: nowrap;">
-            <i class="fas fa-key"></i> Onboarding assistido
-        </a>
-    </div>
+    {{-- ─── Card principal com o CTA ────────────────────────────────── --}}
+    <div class="wac-card">
 
-    <div class="cloud-card">
-        <h3 style="margin: 0 0 20px;">Como funciona</h3>
-
-        <div class="cloud-step">
-            <div class="cloud-step-num">1</div>
-            <div>
-                <strong>Escolha um PIN de 6 dígitos</strong>
-                <p>Você vai precisar dele pra recuperar a conta caso mude de aparelho. Guarde em local seguro.</p>
+        <div class="wac-steps">
+            <div class="wac-step">
+                <div class="wac-step-icon"><i class="fas fa-mouse-pointer"></i></div>
+                <div class="wac-step-txt"><strong>1. Clique</strong>no botão abaixo</div>
+            </div>
+            <div class="wac-step">
+                <div class="wac-step-icon"><i class="fab fa-facebook"></i></div>
+                <div class="wac-step-txt"><strong>2. Entre</strong>com seu Facebook</div>
+            </div>
+            <div class="wac-step">
+                <div class="wac-step-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="wac-step-txt"><strong>3. Pronto!</strong>Já pode enviar mensagens</div>
             </div>
         </div>
 
-        <div class="cloud-step">
-            <div class="cloud-step-num">2</div>
-            <div>
-                <strong>Clique em "Conectar com Facebook"</strong>
-                <p>Você será redirecionado ao login da Meta pra autorizar o Vivensi como Provedor de Tecnologia.</p>
-            </div>
-        </div>
-
-        <div class="cloud-step">
-            <div class="cloud-step-num">3</div>
-            <div>
-                <strong>Escolha ou crie sua Conta Business + Número WhatsApp</strong>
-                <p>A Meta guia você por todo o processo, incluindo verificação de propriedade do número.</p>
-            </div>
-        </div>
-
-        <div class="cloud-step">
-            <div class="cloud-step-num">4</div>
-            <div>
-                <strong>Pronto — o Vivensi ativa sua conta e sincroniza contatos automaticamente</strong>
-                <p>Você pode começar a enviar mensagens imediatamente.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="cloud-card">
-        <h3 style="margin: 0 0 16px;">Iniciar conexão</h3>
-
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 6px;">PIN de segurança (6 dígitos)</label>
-            <input id="pin-input" type="text" maxlength="6" pattern="\d{6}" inputmode="numeric" placeholder="000000" class="cloud-pin-input" autocomplete="off">
-            <div style="color: #6b7280; font-size: .9rem; margin-top: 6px;">Só números. Ex: <code>142857</code></div>
-        </div>
-
-        <button id="fb-signup-btn" class="cloud-btn" @if(!$configured) disabled @endif>
-            <i class="fab fa-facebook"></i> Conectar com Facebook
+        <button id="fb-signup-btn" class="wac-btn-primary" @if(!$configured) disabled @endif>
+            <i class="fab fa-facebook" style="font-size:1.4rem;"></i>
+            Conectar com o Facebook
         </button>
 
-        <div id="signup-status" style="margin-top: 20px;"></div>
+        <div class="wac-secure">
+            <i class="fas fa-shield-alt"></i>
+            Conexão segura e criptografada. Você pode desconectar quando quiser.
+        </div>
+
+        <div id="signup-status" style="margin-top: 18px;"></div>
+
+        {{-- Configuração avançada — colapsada, opcional --}}
+        <div class="wac-advanced">
+            <button type="button" class="wac-advanced-toggle" onclick="wacToggleAdvanced()">
+                <i class="fas fa-chevron-right" id="wac-adv-chev"></i>
+                <span>Configuração avançada</span>
+            </button>
+            <div class="wac-advanced-body" id="wac-adv-body">
+                <label style="display:block; font-weight:600; margin-bottom:6px; color:#475569;">
+                    PIN de recuperação de 6 dígitos
+                </label>
+                <input id="pin-input" type="text" maxlength="6" pattern="\d{6}"
+                       inputmode="numeric" placeholder="000000"
+                       class="wac-pin-input" autocomplete="off"
+                       value="{{ substr(str_replace(['-', '.'], '', md5(auth()->id() . '-vivensi-pin')), 0, 6) }}">
+                <div style="color: #64748b; font-size: .82rem; margin-top: 6px;">
+                    Necessário só se você ainda não verificou o número.
+                    Preenchemos com um valor aleatório — <strong>anote se precisar recuperar depois</strong>.
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="cloud-card" style="background:#0f172a; color:#cbd5e1; font-family: monospace; font-size: .85rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <strong style="color:#e2e8f0;"><i class="fas fa-bug"></i> Console de debug ao vivo</strong>
-            <button id="clear-debug" style="background:#334155; color:#fff; border:0; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:.75rem;">Limpar</button>
+    {{-- Rodapé ajuda + link fallback discreto --}}
+    <div class="wac-help">
+        <div>Deu problema? <a href="https://wa.me/5516988392853?text=Olá, preciso de ajuda para conectar meu WhatsApp na Vivensi." target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Falar com o suporte</a></div>
+        <div style="margin-top: 6px;">
+            <a href="{{ route('whatsapp.cloud.manual.show') }}" style="color: #94a3b8; font-size: .78rem;">
+                Sou avançado, quero colar credenciais manualmente
+            </a>
         </div>
-        <pre id="debug-log" style="background:#020617; color:#94a3b8; padding:12px; border-radius:8px; max-height:300px; overflow-y:auto; margin:0; white-space:pre-wrap;">[aguardando eventos...]</pre>
-        <div style="color:#64748b; font-size:.75rem; margin-top:8px;">Se algo der errado, tire print dessa caixa e me mande.</div>
     </div>
+
+    {{-- Debug console — SÓ super admin --}}
+    @if($isSuperAdmin)
+        <div class="wac-debug">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color:#e2e8f0;"><i class="fas fa-bug"></i> Console de debug (super admin)</strong>
+                <button id="clear-debug" style="background:#334155; color:#fff; border:0; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:.75rem;">Limpar</button>
+            </div>
+            <pre id="debug-log">[aguardando eventos...]</pre>
+        </div>
+    @endif
+
 </div>
 
 @endsection
@@ -123,23 +252,31 @@
     const CLOUD_APP_ID    = @json($appId);
     const CLOUD_CONFIG_ID = @json($configId);
     const CLOUD_CSRF      = document.querySelector('meta[name="csrf-token"]').content;
+    const IS_SUPER_ADMIN  = @json($isSuperAdmin);
 
-    // ── Debug logger inline (não depende de F12) ─────────────────────────────
-    const debugBox = document.getElementById('debug-log');
+    // ── Debug logger — só faz console.log se não for super admin (evita
+    // erro quando debugBox não existe no DOM pro user comum) ─────────────
+    const debugBox = document.getElementById('debug-log'); // pode ser null
     function dbg(label, payload) {
-        const t = new Date().toISOString().substr(11, 12);
-        const line = payload === undefined
-            ? `[${t}] ${label}`
-            : `[${t}] ${label}\n${JSON.stringify(payload, null, 2)}`;
-        debugBox.textContent = debugBox.textContent === '[aguardando eventos...]'
-            ? line
-            : debugBox.textContent + '\n\n' + line;
-        debugBox.scrollTop = debugBox.scrollHeight;
+        if (IS_SUPER_ADMIN && debugBox) {
+            const t = new Date().toISOString().substr(11, 12);
+            const line = payload === undefined
+                ? `[${t}] ${label}`
+                : `[${t}] ${label}\n${JSON.stringify(payload, null, 2)}`;
+            debugBox.textContent = debugBox.textContent === '[aguardando eventos...]'
+                ? line
+                : debugBox.textContent + '\n\n' + line;
+            debugBox.scrollTop = debugBox.scrollHeight;
+        }
+        // Em qualquer caso, também loga no console do browser (F12 disponível pra dev)
         console.log('[VivensiCloud]', label, payload);
     }
-    document.getElementById('clear-debug').addEventListener('click', () => {
-        debugBox.textContent = '[aguardando eventos...]';
-    });
+    const clearBtn = document.getElementById('clear-debug');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            debugBox.textContent = '[aguardando eventos...]';
+        });
+    }
 
     dbg('Config injetado do backend:', {
         appId: CLOUD_APP_ID,
@@ -147,6 +284,14 @@
         appIdLen: (CLOUD_APP_ID || '').length,
         configIdLen: (CLOUD_CONFIG_ID || '').length,
     });
+
+    // Toggle da seção "Configuração avançada"
+    function wacToggleAdvanced() {
+        const body = document.getElementById('wac-adv-body');
+        const chev = document.getElementById('wac-adv-chev');
+        const isOpen = body.classList.toggle('open');
+        chev.className = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-right';
+    }
 
     // ── Facebook JS SDK ──────────────────────────────────────────────────────
     window.fbAsyncInit = function () {
@@ -190,12 +335,10 @@
                     };
                     dbg('WABA data capturada', __wabaData);
                 } else if (parsed.event === 'CANCEL') {
-                    // Usuário fechou o modal — mostrar em qual etapa desistiu ajuda no suporte.
                     dbg('WA_EMBEDDED_SIGNUP CANCEL — usuário abandonou', {
                         current_step: parsed.data && parsed.data.current_step,
                     });
                 } else if (parsed.event === 'ERROR') {
-                    // Meta reportou erro interno do fluxo (número inválido, WABA já cadastrada, etc).
                     dbg('WA_EMBEDDED_SIGNUP ERROR', {
                         error_message: parsed.data && parsed.data.error_message,
                     });
@@ -212,25 +355,27 @@
     const status = document.getElementById('signup-status');
 
     function alert(kind, msg) {
-        status.innerHTML = `<div class="cloud-alert ${kind}">${msg}</div>`;
+        status.innerHTML = `<div class="wac-alert ${kind}">${msg}</div>`;
     }
 
     btn.addEventListener('click', function () {
         const pin = (pinInp.value || '').trim();
         if (!/^\d{6}$/.test(pin)) {
-            alert('err', 'Informe um PIN de exatamente 6 dígitos numéricos.');
+            alert('err', 'O PIN de recuperação precisa ter 6 dígitos numéricos. Verifique em Configuração avançada.');
+            document.getElementById('wac-adv-body').classList.add('open');
+            document.getElementById('wac-adv-chev').className = 'fas fa-chevron-down';
             pinInp.focus();
             return;
         }
 
         if (typeof FB === 'undefined') {
-            alert('err', 'O SDK do Facebook ainda não carregou. Aguarde 3 segundos e tente de novo.');
+            alert('err', 'Ainda estamos carregando. Aguarde 3 segundos e tente novamente.');
             dbg('ERRO: FB é undefined no click');
             return;
         }
 
         __wabaData = null;
-        alert('ok', '<i class="fas fa-spinner fa-spin"></i> Aguardando autorização no popup do Facebook...');
+        alert('ok', '<i class="fas fa-spinner fa-spin"></i> Aguardando você autorizar no Facebook...');
 
         const fbLoginOptions = {
             config_id:                       CLOUD_CONFIG_ID,
@@ -247,27 +392,27 @@
             dbg('FB.login CALLBACK — resposta COMPLETA', response);
 
             if (!response) {
-                alert('err', 'FB.login retornou undefined. Provavelmente o popup foi bloqueado. Libera pop-ups pra vivensi.app.br e tenta de novo.');
+                alert('err', 'A janela do Facebook foi bloqueada pelo navegador. Libere pop-ups pra vivensi.app.br e tente de novo.');
                 return;
             }
 
             if (!response.authResponse) {
-                alert('err', 'Sem authResponse. Status: ' + (response.status || 'desconhecido') + '. Cola o log de debug abaixo pra suporte.');
+                alert('err', 'Você fechou a janela sem concluir. Tente de novo — leva menos de 1 minuto.');
                 return;
             }
 
             if (!response.authResponse.code) {
-                alert('err', 'authResponse sem code. Cola o log de debug.');
+                alert('err', 'Faltou um passo na autorização. Tente novamente e conclua até o final.');
                 return;
             }
 
             if (!__wabaData) {
-                alert('err', 'code obtido mas não recebemos WABA data do postMessage. Cola o log.');
+                alert('err', 'Não conseguimos identificar sua conta WhatsApp. Fale com o suporte pra ajudar você.');
                 return;
             }
 
             const code = response.authResponse.code;
-            alert('ok', '<i class="fas fa-spinner fa-spin"></i> Registrando seu número na Meta e ativando webhook...');
+            alert('ok', '<i class="fas fa-spinner fa-spin"></i> Ativando sua conta WhatsApp...');
             dbg('Enviando pro backend', { code_preview: code.substring(0, 20) + '...', waba: __wabaData });
 
             fetch('{{ route("whatsapp.cloud.callback") }}', {
@@ -289,15 +434,15 @@
             .then(({ ok, status: httpStatus, body }) => {
                 dbg('Resposta backend', { httpStatus, body });
                 if (!ok) {
-                    alert('err', 'Falha no cadastro: ' + (body.error || 'erro desconhecido'));
+                    alert('err', 'Não foi possível conectar: ' + (body.error || 'erro desconhecido. Fale com o suporte.'));
                     return;
                 }
-                alert('ok', '<i class="fas fa-check-circle"></i> Conta conectada com sucesso! Redirecionando...');
+                alert('ok', '<i class="fas fa-check-circle"></i> Pronto! Já pode começar a enviar mensagens.');
                 setTimeout(() => window.location.href = body.redirect, 1500);
             })
             .catch(err => {
                 dbg('ERRO fetch backend', String(err));
-                alert('err', 'Erro de comunicação com o servidor: ' + err.message);
+                alert('err', 'Erro de conexão. Verifique sua internet e tente de novo.');
             });
         }, fbLoginOptions);
     });
