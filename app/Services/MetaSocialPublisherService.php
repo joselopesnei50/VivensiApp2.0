@@ -24,24 +24,24 @@ class MetaSocialPublisherService
 
         // Publicar no Facebook
         if (in_array($post->platform, ['facebook', 'both'])) {
-            $fbId = $this->publishToFacebook($post, $account->page_id, $token);
-            if ($fbId) {
-                $post->facebook_post_id = $fbId;
+            $fb = $this->publishToFacebook($post, $account->page_id, $token);
+            if (!empty($fb['id'])) {
+                $post->facebook_post_id = $fb['id'];
                 $success = true;
             } else {
-                $this->fail($post, 'Falha ao publicar no Facebook.');
+                $this->fail($post, $fb['error'] ?? 'Falha ao publicar no Facebook.');
                 return false;
             }
         }
 
         // Publicar no Instagram
         if (in_array($post->platform, ['instagram', 'both']) && $account->instagram_business_id) {
-            $igId = $this->publishToInstagram($post, $account->instagram_business_id, $token);
-            if ($igId) {
-                $post->instagram_post_id = $igId;
+            $ig = $this->publishToInstagram($post, $account->instagram_business_id, $token);
+            if (!empty($ig['id'])) {
+                $post->instagram_post_id = $ig['id'];
                 $success = true;
             } else {
-                $this->fail($post, 'Falha ao publicar no Instagram.');
+                $this->fail($post, $ig['error'] ?? 'Falha ao publicar no Instagram.');
                 return false;
             }
         }
@@ -54,7 +54,33 @@ class MetaSocialPublisherService
         return $success;
     }
 
-    private function publishToFacebook(ScheduledPost $post, string $pageId, string $token): ?string
+    /**
+     * Traduz códigos de erro comuns da Graph API pra mensagem PT-BR acionável.
+     * Referência: https://developers.facebook.com/docs/graph-api/guides/error-handling/
+     */
+    private function friendlyError(array $err): string
+    {
+        $code    = isset($err['code']) ? (int) $err['code'] : null;
+        $subcode = isset($err['error_subcode']) ? (int) $err['error_subcode'] : null;
+        $msg     = trim((string) ($err['message'] ?? ''));
+
+        $friendly = match (true) {
+            $code === 190 => 'Sessão do Facebook expirou. Reconecte sua conta em Redes Sociais.',
+            $code === 200 || $code === 10 => 'O app não tem permissão para publicar nesta Página. Verifique se pages_manage_posts / instagram_content_publish foram aprovadas pela Meta, e se você (ou o cliente) autorizou essa permissão na conexão OAuth.',
+            $code === 100 && $subcode === 33 => 'O objeto solicitado não existe ou não pertence à Página conectada.',
+            $code === 100 => 'Parâmetro inválido na chamada Meta. Verifique se a mídia tem URL pública acessível e formato correto.',
+            $code === 4   => 'Limite de chamadas da Meta atingido temporariamente. Aguarde alguns minutos.',
+            $code === 368 => 'Sua Página do Facebook está temporariamente bloqueada de publicar.',
+            $code === 1487 => 'A URL da mídia não pôde ser baixada pela Meta. Confirme que o link é público.',
+            default => null,
+        };
+
+        return $friendly
+            ?? ($msg !== '' ? $msg . ($code ? " (code {$code})" : '') : 'Erro desconhecido da Meta.');
+    }
+
+    /** @return array{id: ?string, error: ?string} */
+    private function publishToFacebook(ScheduledPost $post, string $pageId, string $token): array
     {
         $endpoint = "https://graph.facebook.com/{$this->graphVersion}/{$pageId}";
         $payload  = ['message' => $post->caption, 'access_token' => $token];
@@ -73,14 +99,25 @@ class MetaSocialPublisherService
         $response = Http::post($endpoint, $payload);
 
         if (!$response->successful()) {
-            Log::error('Facebook publish failed', ['post_id' => $post->id, 'body' => $response->body()]);
-            return null;
+            $body = $response->json() ?? [];
+            $err  = (array) ($body['error'] ?? []);
+            Log::error('Facebook publish failed', [
+                'post_id' => $post->id,
+                'status'  => $response->status(),
+                'error'   => $err,
+                'body'    => $body ?: $response->body(),
+            ]);
+            return ['id' => null, 'error' => $this->friendlyError($err)];
         }
 
-        return $response->json('id') ?? $response->json('post_id');
+        return [
+            'id'    => $response->json('id') ?? $response->json('post_id'),
+            'error' => null,
+        ];
     }
 
-    private function publishToInstagram(ScheduledPost $post, string $igAccountId, string $token): ?string
+    /** @return array{id: ?string, error: ?string} */
+    private function publishToInstagram(ScheduledPost $post, string $igAccountId, string $token): array
     {
         // Passo 1: criar container de mídia
         $containerPayload = [
@@ -97,7 +134,7 @@ class MetaSocialPublisherService
         } else {
             // Instagram exige mídia — pula se não tiver
             Log::warning('Instagram publish skipped: no media', ['post_id' => $post->id]);
-            return null;
+            return ['id' => null, 'error' => 'Instagram exige uma imagem ou vídeo — este post não tem mídia anexada.'];
         }
 
         $containerRes = Http::post(
@@ -106,8 +143,15 @@ class MetaSocialPublisherService
         );
 
         if (!$containerRes->successful()) {
-            Log::error('Instagram container failed', ['body' => $containerRes->body()]);
-            return null;
+            $body = $containerRes->json() ?? [];
+            $err  = (array) ($body['error'] ?? []);
+            Log::error('Instagram container failed', [
+                'post_id' => $post->id,
+                'status'  => $containerRes->status(),
+                'error'   => $err,
+                'body'    => $body ?: $containerRes->body(),
+            ]);
+            return ['id' => null, 'error' => $this->friendlyError($err)];
         }
 
         $containerId = $containerRes->json('id');
@@ -119,11 +163,18 @@ class MetaSocialPublisherService
         );
 
         if (!$publishRes->successful()) {
-            Log::error('Instagram publish failed', ['body' => $publishRes->body()]);
-            return null;
+            $body = $publishRes->json() ?? [];
+            $err  = (array) ($body['error'] ?? []);
+            Log::error('Instagram publish failed', [
+                'post_id' => $post->id,
+                'status'  => $publishRes->status(),
+                'error'   => $err,
+                'body'    => $body ?: $publishRes->body(),
+            ]);
+            return ['id' => null, 'error' => $this->friendlyError($err)];
         }
 
-        return $publishRes->json('id');
+        return ['id' => $publishRes->json('id'), 'error' => null];
     }
 
     private function fail(ScheduledPost $post, string $message): void

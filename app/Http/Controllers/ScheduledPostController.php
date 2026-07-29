@@ -97,17 +97,22 @@ class ScheduledPostController extends Controller
         if ($publishNow && $account) {
             try {
                 $ok = app(MetaSocialPublisherService::class)->publish($post);
-                $msg = $ok
-                    ? 'Publicado com sucesso no Facebook/Instagram!'
-                    : 'Post criado, mas falhou ao publicar. Verifique em Redes Sociais.';
+                if ($ok) {
+                    return redirect()->route('social.posts.index')
+                        ->with('success', 'Publicado com sucesso no Facebook/Instagram!');
+                }
+                // Falha: publisher já gravou o motivo real em error_message
+                $post->refresh();
+                return redirect()->route('social.posts.index')
+                    ->with('error', 'Falha ao publicar: ' . ($post->error_message ?: 'motivo não registrado.'));
             } catch (\Throwable $e) {
                 Log::error('ScheduledPost publish_now failed', [
                     'post_id' => $post->id,
                     'error'   => $e->getMessage(),
                 ]);
-                $msg = 'Post criado, mas houve erro ao publicar: ' . $e->getMessage();
+                return redirect()->route('social.posts.index')
+                    ->with('error', 'Erro ao publicar: ' . $e->getMessage());
             }
-            return redirect()->route('social.posts.index')->with('success', $msg);
         }
 
         return redirect()->route('social.posts.index')
