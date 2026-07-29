@@ -170,7 +170,7 @@
             <a href="{{ route('social.accounts') }}" class="sp-btn sp-btn-ghost">
                 <i class="fas fa-plug"></i> Contas conectadas
             </a>
-            <a href="{{ route('marketing.index') }}" class="sp-btn sp-btn-ghost">
+            <a href="{{ route('social-ai.index') }}" class="sp-btn sp-btn-ghost">
                 <i class="fas fa-wand-magic-sparkles" style="color:#f59e0b;"></i> Criar com IA
             </a>
             <a href="{{ route('social.posts.create') }}" class="sp-btn sp-btn-primary">
