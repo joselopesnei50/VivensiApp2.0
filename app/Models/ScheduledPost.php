@@ -23,7 +23,32 @@ class ScheduledPost extends Model
     public function account()  { return $this->belongsTo(SocialAccount::class, 'social_account_id'); }
     public function author()   { return $this->belongsTo(User::class, 'user_id'); }
     public function tenant()   { return $this->belongsTo(Tenant::class); }
-    public function metrics()  { return $this->hasOne(PostMetric::class); }
+    // metrics agora é hasMany porque um post pode ter métricas de FB E IG separadas
+    // (uma linha por 'source'). Métrica antiga hasOne fica compatível via metric()
+    // que retorna a mais recente independente da fonte.
+    public function metrics()  { return $this->hasMany(PostMetric::class, 'scheduled_post_id'); }
+    public function metric()   { return $this->hasOne(PostMetric::class, 'scheduled_post_id')->latestOfMany('fetched_at'); }
+
+    /**
+     * Métricas agregadas de todas as fontes (FB + IG somadas). Útil pra
+     * mostrar um único total no card do post publicado em ambos.
+     */
+    public function metricsTotal(): array
+    {
+        $rows = $this->metrics;
+        return [
+            'impressions' => (int) $rows->sum('impressions'),
+            'reach'       => (int) $rows->sum('reach'),
+            'likes'       => (int) $rows->sum('likes'),
+            'comments'    => (int) $rows->sum('comments'),
+            'shares'      => (int) $rows->sum('shares'),
+            'clicks'      => (int) $rows->sum('clicks'),
+            'saved'       => (int) $rows->sum('saved'),
+            'engagement'  => (int) $rows->sum('engagement'),
+            'sources'     => $rows->pluck('source')->toArray(),
+            'fetched_at'  => optional($rows->max('fetched_at'))->toIso8601String(),
+        ];
+    }
 
     /**
      * Normaliza mídias em um array de {url, type}. Fonte de verdade única

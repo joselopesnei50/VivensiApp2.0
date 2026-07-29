@@ -19,7 +19,7 @@ class ScheduledPostController extends Controller
         $filter = in_array($request->query('status'), ['scheduled', 'published', 'failed', 'draft'], true)
             ? $request->query('status') : null;
 
-        $posts = ScheduledPost::with('account')
+        $posts = ScheduledPost::with(['account', 'metrics'])
             ->when($filter, fn ($q) => $q->where('status', $filter))
             ->orderByDesc('scheduled_at')
             ->paginate(12)
@@ -220,7 +220,7 @@ class ScheduledPostController extends Controller
     /** API: retorna posts para o calendário (JSON) */
     public function calendar()
     {
-        $posts = ScheduledPost::with('account')
+        $posts = ScheduledPost::with(['account', 'metrics'])
             ->whereIn('status', ['draft', 'scheduled', 'published', 'failed'])
             ->get()
             ->map(function ($p) {
@@ -230,6 +230,11 @@ class ScheduledPostController extends Controller
                 $igUrl = ($p->status === 'published' && $p->instagram_post_id)
                     ? 'https://www.instagram.com/p/' . $p->instagram_post_id . '/'
                     : null;
+
+                $metrics = null;
+                if ($p->status === 'published' && $p->metrics->isNotEmpty()) {
+                    $metrics = $p->metricsTotal();
+                }
 
                 return [
                     'id'    => $p->id,
@@ -253,6 +258,7 @@ class ScheduledPostController extends Controller
                             ? route('social.posts.edit', $p->id) : null,
                         'facebook_url'   => $fbUrl,
                         'instagram_url'  => $igUrl,
+                        'metrics'        => $metrics, // null se ainda não coletado
                     ],
                 ];
             });

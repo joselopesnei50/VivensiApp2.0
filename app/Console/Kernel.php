@@ -35,6 +35,15 @@ class Kernel extends ConsoleKernel
             $schedule->command("whatsapp:cleanup --days={$days}")->dailyAt('03:30');
         }
 
+        // Redes Sociais: sincroniza métricas dos posts publicados a cada hora
+        // (cheira Meta Insights: impressões, alcance, likes, saves, etc).
+        // Idempotente — updateOrCreate por (post_id, source).
+        $schedule->command('posts:sync-metrics --days=30')
+                 ->hourly()
+                 ->onFailure(function () {
+                     \Illuminate\Support\Facades\Log::error('posts:sync-metrics falhou no scheduler.');
+                 });
+
         // Redes Sociais: publica posts agendados a cada 5 minutos.
         // Removido withoutOverlapping() e runInBackground() porque:
         //   1) O comando é idempotente — filtra where status='scheduled' e cada

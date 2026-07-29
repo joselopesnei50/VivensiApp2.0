@@ -690,6 +690,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            <li><a href="{{ route('social.analytics.index') }}" class="{{ request()->routeIs('social.analytics.*') ? 'active' : '' }}"><i class="fas fa-chart-line" style="color:#10b981;"></i> Analytics Sociais</a></li>
                         </ul>
                     </div>
                 </div>
@@ -803,6 +804,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            <li><a href="{{ route('social.analytics.index') }}" class="{{ request()->routeIs('social.analytics.*') ? 'active' : '' }}"><i class="fas fa-chart-line" style="color:#10b981;"></i> Analytics Sociais</a></li>
                         </ul>
                     </div>
                 </div>
@@ -1005,6 +1007,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            <li><a href="{{ route('social.analytics.index') }}" class="{{ request()->routeIs('social.analytics.*') ? 'active' : '' }}"><i class="fas fa-chart-line" style="color:#10b981;"></i> Analytics Sociais</a></li>
                         </ul>
                     </div>
                 </div>

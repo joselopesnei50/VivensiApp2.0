@@ -98,6 +98,14 @@
         font-size:.75rem; margin-bottom:10px; display:flex; align-items:flex-start; gap:6px; }
     .sp-error i { flex-shrink:0; margin-top:2px; }
 
+    /* Barra de métricas — só posts publicados */
+    .sp-metrics { display:flex; gap:10px; padding:10px 0; margin:0 0 6px;
+        border-top:1px solid #f1f5f9; border-bottom:1px solid #f1f5f9; flex-wrap:wrap; }
+    .sp-metric { display:inline-flex; align-items:center; gap:5px; color:#475569;
+        font-size:.8rem; }
+    .sp-metric i { color:#94a3b8; font-size:.82rem; }
+    .sp-metric strong { color:#0f172a; font-weight:700; }
+
     /* Ações */
     .sp-actions { display:flex; gap:6px; margin-top:auto; padding-top:10px;
         border-top:1px solid #f1f5f9; flex-wrap:wrap; }
@@ -306,6 +314,35 @@
                             </div>
                         @endif
 
+                        {{-- Métricas — só pra posts publicados que já tem coleta --}}
+                        @if($post->status === 'published' && $post->metrics->isNotEmpty())
+                            @php $mt = $post->metricsTotal(); @endphp
+                            <div class="sp-metrics">
+                                <div class="sp-metric" title="Impressões (vezes visto)">
+                                    <i class="fas fa-eye"></i>
+                                    <strong>{{ number_format($mt['impressions'], 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="sp-metric" title="Alcance (pessoas únicas)">
+                                    <i class="fas fa-users"></i>
+                                    <strong>{{ number_format($mt['reach'], 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="sp-metric" title="Curtidas">
+                                    <i class="fas fa-heart" style="color:#ec4899;"></i>
+                                    <strong>{{ number_format($mt['likes'], 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="sp-metric" title="Comentários">
+                                    <i class="fas fa-comment" style="color:#3b82f6;"></i>
+                                    <strong>{{ number_format($mt['comments'], 0, ',', '.') }}</strong>
+                                </div>
+                                @if($mt['saved'] > 0)
+                                <div class="sp-metric" title="Salvos (Instagram)">
+                                    <i class="fas fa-bookmark" style="color:#8b5cf6;"></i>
+                                    <strong>{{ number_format($mt['saved'], 0, ',', '.') }}</strong>
+                                </div>
+                                @endif
+                            </div>
+                        @endif
+
                         {{-- Meta: conta + data --}}
                         <div class="sp-meta">
                             <div class="sp-account-avatar">
@@ -394,6 +431,13 @@
             <div id="spEvError" class="sp-modal-error" style="display:none;">
                 <i class="fas fa-triangle-exclamation"></i> <span id="spEvErrorText"></span>
             </div>
+            <div id="spEvMetrics" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+                <div style="font-size:.72rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase; color:#64748b; margin-bottom:8px;">
+                    <i class="fas fa-chart-line" style="color:#10b981;"></i> Métricas
+                </div>
+                <div id="spEvMetricsGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:8px;"></div>
+                <div id="spEvMetricsFetched" style="color:#94a3b8; font-size:.72rem; margin-top:6px;"></div>
+            </div>
             <div class="sp-modal-meta">
                 <div class="sp-modal-meta-item">
                     <span>Conta</span>
@@ -475,6 +519,38 @@
             err.style.display = 'flex';
         } else {
             err.style.display = 'none';
+        }
+
+        // Métricas — só se coletadas
+        const metricsBox = document.getElementById('spEvMetrics');
+        if (p.metrics) {
+            const m = p.metrics;
+            const fmt = n => (n || 0).toLocaleString('pt-BR');
+            const items = [
+                ['fas fa-eye', 'Impressões', fmt(m.impressions)],
+                ['fas fa-users', 'Alcance', fmt(m.reach)],
+                ['fas fa-heart', 'Curtidas', fmt(m.likes), '#ec4899'],
+                ['fas fa-comment', 'Comentários', fmt(m.comments), '#3b82f6'],
+                ['fas fa-share', 'Comp.', fmt(m.shares)],
+            ];
+            if (m.saved > 0)   items.push(['fas fa-bookmark', 'Salvos', fmt(m.saved), '#8b5cf6']);
+            if (m.clicks > 0)  items.push(['fas fa-hand-pointer', 'Cliques', fmt(m.clicks)]);
+
+            document.getElementById('spEvMetricsGrid').innerHTML = items.map(([icon, label, val, color]) => `
+                <div style="text-align:center; padding:6px; background:#fff; border-radius:8px;">
+                    <i class="${icon}" style="color:${color || '#94a3b8'}; font-size:.85rem;"></i>
+                    <div style="font-size:1.1rem; font-weight:800; color:#0f172a; margin-top:2px;">${val}</div>
+                    <div style="font-size:.68rem; color:#94a3b8; text-transform:uppercase;">${label}</div>
+                </div>
+            `).join('');
+            if (m.fetched_at) {
+                const d = new Date(m.fetched_at);
+                document.getElementById('spEvMetricsFetched').innerText =
+                    'Atualizado ' + d.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+            }
+            metricsBox.style.display = 'block';
+        } else {
+            metricsBox.style.display = 'none';
         }
 
         document.getElementById('spEvAccount').innerText  = p.account || '—';
