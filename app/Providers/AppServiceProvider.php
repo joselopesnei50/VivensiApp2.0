@@ -48,6 +48,8 @@ class AppServiceProvider extends ServiceProvider
             $pusherHost      = \App\Models\SystemSetting::getValue('pusher_host');
             $pusherPort      = \App\Models\SystemSetting::getValue('pusher_port');
             $pusherScheme    = \App\Models\SystemSetting::getValue('pusher_scheme');
+            $pusherCluster   = \App\Models\SystemSetting::getValue('pusher_app_cluster')
+                            ?: \App\Models\SystemSetting::getValue('pusher_cluster');
 
             if ($pusherAppId)     config(['broadcasting.connections.pusher.app_id' => $pusherAppId]);
             if ($pusherAppKey)    config(['broadcasting.connections.pusher.key'    => $pusherAppKey]);
@@ -62,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
                     'broadcasting.connections.pusher.options.useTLS'    => $isHttps,
                 ]);
             }
+            if ($pusherCluster) config(['broadcasting.connections.pusher.options.cluster' => $pusherCluster]);
         } catch (\Throwable $e) {
             // DB not ready (durante migrations, ou se a tabela system_settings
             // não existir ainda). Mantém fallback do .env.
