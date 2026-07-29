@@ -93,24 +93,30 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // Instâncias
     Route::get('/whatsapp/instances',                 [App\Http\Controllers\WhatsappController::class, 'instances'])->name('whatsapp.instances');
 
-    // Meta Cloud API — Embedded Signup (Tech Provider)
-    Route::get('/whatsapp/cloud/connect',              [App\Http\Controllers\WhatsappCloudSignupController::class, 'show'])->name('whatsapp.cloud.connect');
-    Route::post('/whatsapp/cloud/callback',            [App\Http\Controllers\WhatsappCloudSignupController::class, 'callback'])->name('whatsapp.cloud.callback')->middleware('throttle:10,1');
+    // ── Meta Cloud API — todas as rotas cloud/* exigem has-whatsapp-cloud
+    // (gate combina role + capability do plano do tenant). Planos legados
+    // sem capability definida continuam liberados por grace period.
+    Route::middleware('can:has-whatsapp-cloud')->group(function () {
 
-    // Meta Cloud API — Onboarding assistido (self-service, sem depender de business_management)
-    Route::get('/whatsapp/cloud/manual-connect',       [App\Http\Controllers\WhatsappCloudSignupController::class, 'showManual'])->name('whatsapp.cloud.manual.show');
-    Route::post('/whatsapp/cloud/manual-connect',      [App\Http\Controllers\WhatsappCloudSignupController::class, 'storeManual'])->name('whatsapp.cloud.manual.store')->middleware('throttle:5,1');
+        // Embedded Signup (Tech Provider) — depende de business_management aprovado
+        Route::get('/whatsapp/cloud/connect',              [App\Http\Controllers\WhatsappCloudSignupController::class, 'show'])->name('whatsapp.cloud.connect');
+        Route::post('/whatsapp/cloud/callback',            [App\Http\Controllers\WhatsappCloudSignupController::class, 'callback'])->name('whatsapp.cloud.callback')->middleware('throttle:10,1');
 
-    // Consumo WhatsApp — dashboard pro cliente ver o próprio custo (modelo B)
-    Route::get('/whatsapp/consumo',                    [App\Http\Controllers\WhatsappConsumoController::class, 'index'])->name('whatsapp.consumo');
+        // Onboarding assistido (self-service, sem depender de business_management)
+        Route::get('/whatsapp/cloud/manual-connect',       [App\Http\Controllers\WhatsappCloudSignupController::class, 'showManual'])->name('whatsapp.cloud.manual.show');
+        Route::post('/whatsapp/cloud/manual-connect',      [App\Http\Controllers\WhatsappCloudSignupController::class, 'storeManual'])->name('whatsapp.cloud.manual.store')->middleware('throttle:5,1');
 
-    // Meta Cloud API — Templates CRUD (per-tenant, cada tenant só vê seus templates)
-    Route::get('/whatsapp/cloud/templates',                       [App\Http\Controllers\WhatsappTemplateController::class, 'index'])->name('whatsapp.templates.cloud.index');
-    Route::get('/whatsapp/cloud/templates/create',                [App\Http\Controllers\WhatsappTemplateController::class, 'create'])->name('whatsapp.templates.cloud.create');
-    Route::post('/whatsapp/cloud/templates',                      [App\Http\Controllers\WhatsappTemplateController::class, 'store'])->name('whatsapp.templates.cloud.store')->middleware('throttle:20,1');
-    Route::delete('/whatsapp/cloud/templates/{template}',         [App\Http\Controllers\WhatsappTemplateController::class, 'destroy'])->name('whatsapp.templates.cloud.destroy')->middleware('throttle:20,1');
-    Route::post('/whatsapp/cloud/templates/sync',                 [App\Http\Controllers\WhatsappTemplateController::class, 'sync'])->name('whatsapp.templates.cloud.sync')->middleware('throttle:10,1');
-    Route::post('/whatsapp/cloud/templates/{template}/send-test', [App\Http\Controllers\WhatsappTemplateController::class, 'sendTest'])->name('whatsapp.templates.cloud.send-test')->middleware('throttle:5,1');
+        // Consumo WhatsApp — dashboard pro cliente ver o próprio custo (modelo B)
+        Route::get('/whatsapp/consumo',                    [App\Http\Controllers\WhatsappConsumoController::class, 'index'])->name('whatsapp.consumo');
+
+        // Templates CRUD (per-tenant, cada tenant só vê seus templates)
+        Route::get('/whatsapp/cloud/templates',                       [App\Http\Controllers\WhatsappTemplateController::class, 'index'])->name('whatsapp.templates.cloud.index');
+        Route::get('/whatsapp/cloud/templates/create',                [App\Http\Controllers\WhatsappTemplateController::class, 'create'])->name('whatsapp.templates.cloud.create');
+        Route::post('/whatsapp/cloud/templates',                      [App\Http\Controllers\WhatsappTemplateController::class, 'store'])->name('whatsapp.templates.cloud.store')->middleware('throttle:20,1');
+        Route::delete('/whatsapp/cloud/templates/{template}',         [App\Http\Controllers\WhatsappTemplateController::class, 'destroy'])->name('whatsapp.templates.cloud.destroy')->middleware('throttle:20,1');
+        Route::post('/whatsapp/cloud/templates/sync',                 [App\Http\Controllers\WhatsappTemplateController::class, 'sync'])->name('whatsapp.templates.cloud.sync')->middleware('throttle:10,1');
+        Route::post('/whatsapp/cloud/templates/{template}/send-test', [App\Http\Controllers\WhatsappTemplateController::class, 'sendTest'])->name('whatsapp.templates.cloud.send-test')->middleware('throttle:5,1');
+    });
     Route::post('/whatsapp/instances',                [App\Http\Controllers\Api\WhatsappInstanceController::class, 'store'])->name('whatsapp.instances.store')->middleware('throttle:5,1');
     Route::get('/whatsapp/instances/{id}/status',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'status'])->name('whatsapp.instances.status');
     Route::get('/whatsapp/instances/{id}/health',     [App\Http\Controllers\Api\WhatsappInstanceController::class, 'health'])->name('whatsapp.instances.health');

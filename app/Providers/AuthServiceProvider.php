@@ -41,6 +41,16 @@ class AuthServiceProvider extends ServiceProvider
             return $perm($user, 'access-whatsapp') || in_array($user->role, ['manager', 'ngo', 'common', 'client']);
         });
 
+        // Bloco 3 — Gate específico pra WhatsApp Cloud API (per-plano).
+        // Fica separado de access-whatsapp: quem NÃO tem esse gate ainda pode
+        // usar Evolution API (legado, gratuito). O gate combina role + plano.
+        Gate::define('has-whatsapp-cloud', function (User $user) {
+            if (!in_array($user->role, ['manager', 'ngo', 'common', 'client'], true)) {
+                return false;
+            }
+            return $user->tenant?->hasCapability('whatsapp_cloud') ?? true;
+        });
+
         Gate::define('access-manager', function (User $user) use ($perm) {
             return $perm($user, 'access-manager') || in_array($user->role, ['manager', 'ngo', 'common', 'client']);
         });

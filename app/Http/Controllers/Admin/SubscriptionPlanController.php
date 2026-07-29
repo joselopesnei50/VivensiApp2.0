@@ -29,8 +29,20 @@ class SubscriptionPlanController extends Controller
             'abacatepay_product_id'    => 'nullable|string|max:255',
             'interval'                 => 'required|in:monthly,yearly',
             'features'                 => 'nullable|array',
+            'capabilities'             => 'nullable|array',
+            'capabilities.whatsapp_cloud' => 'nullable|boolean',
             'is_active'                => 'boolean',
         ]);
+
+        // Normaliza capabilities pra manter só chaves conhecidas + booleanas.
+        // Evita usuário injetar chaves arbitrárias no JSON.
+        if (isset($validated['capabilities']) && is_array($validated['capabilities'])) {
+            $known = ['whatsapp_cloud'];
+            $validated['capabilities'] = array_intersect_key(
+                array_map(fn ($v) => (bool) $v, $validated['capabilities']),
+                array_flip($known)
+            );
+        }
 
         SubscriptionPlan::create($validated);
 
@@ -52,8 +64,20 @@ class SubscriptionPlanController extends Controller
             'abacatepay_product_id'    => 'nullable|string|max:255',
             'interval'                 => 'required|in:monthly,yearly',
             'features'                 => 'nullable|array',
+            'capabilities'             => 'nullable|array',
+            'capabilities.whatsapp_cloud' => 'nullable|boolean',
             'is_active'                => 'boolean',
         ]);
+
+        // Normaliza capabilities pra manter só chaves conhecidas + booleanas.
+        // Evita usuário injetar chaves arbitrárias no JSON.
+        if (isset($validated['capabilities']) && is_array($validated['capabilities'])) {
+            $known = ['whatsapp_cloud'];
+            $validated['capabilities'] = array_intersect_key(
+                array_map(fn ($v) => (bool) $v, $validated['capabilities']),
+                array_flip($known)
+            );
+        }
 
         $plan->update($validated);
 

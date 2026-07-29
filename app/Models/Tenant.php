@@ -74,6 +74,16 @@ class Tenant extends Model
         return $this->belongsTo(SubscriptionPlan::class);
     }
 
+    /**
+     * Confere se o plano deste tenant libera uma capability técnica.
+     * Se o tenant não tem plano vinculado (edge case), libera por default
+     * pra não quebrar operação — o admin resolve via UI.
+     */
+    public function hasCapability(string $key): bool
+    {
+        return $this->plan?->hasCapability($key) ?? true;
+    }
+
     public function users()
     {
         return $this->hasMany(User::class);

@@ -70,9 +70,44 @@
                         </div>
                     </div>
 
+                    {{-- Capabilities técnicas — bloco separado dos "benefícios de marketing" --}}
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold d-block mb-2">
+                            Recursos técnicos incluídos no plano
+                            <small class="text-muted fw-normal d-block mt-1" style="font-size:.8rem;">
+                                Controla o que o cliente pode usar no sistema (independente dos benefícios de marketing abaixo).
+                            </small>
+                        </label>
+
+                        <div class="border rounded-4 p-3 mb-4" style="background:#f8fafc;">
+                            @php
+                                $caps = $plan->capabilities ?? [];
+                                // Grace period: quando a chave não existe, consideramos true (compat).
+                                $whatsappCloudOn = array_key_exists('whatsapp_cloud', $caps) ? (bool) $caps['whatsapp_cloud'] : true;
+                            @endphp
+
+                            {{-- Envia 0 sempre, checkbox sobrescreve com 1 se marcado — evita "chave some se desmarcar" --}}
+                            <input type="hidden" name="capabilities[whatsapp_cloud]" value="0">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox"
+                                       id="cap_whatsapp_cloud"
+                                       name="capabilities[whatsapp_cloud]" value="1"
+                                       {{ $whatsappCloudOn ? 'checked' : '' }}>
+                                <label class="form-check-label ms-2" for="cap_whatsapp_cloud">
+                                    <strong>WhatsApp Cloud API (oficial Meta)</strong>
+                                    <div class="text-muted small">
+                                        Libera o cliente a conectar WhatsApp Business Cloud, receber/enviar
+                                        mensagens oficiais, gerenciar templates e ver dashboard de consumo.
+                                        Desligue pra planos gratuitos ou que só usam Evolution API.
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-md-12">
                         <label class="form-label fw-bold d-flex justify-content-between">
-                            Recursos / Benefícios
+                            Recursos / Benefícios <small class="text-muted fw-normal">(exibidos na landing page do plano)</small>
                             <button type="button" class="btn btn-sm btn-outline-primary border-0" onclick="addFeature()">
                                 <i class="fas fa-plus me-1"></i> Adicionar Item
                             </button>

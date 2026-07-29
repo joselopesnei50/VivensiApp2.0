@@ -62,6 +62,17 @@ class WhatsAppService
             ->first();
 
         if ($instance) {
+            // Defesa em profundidade: se a instance é Cloud API mas o plano
+            // do tenant NÃO libera essa capability (admin desmarcou depois),
+            // bloqueia envio com mensagem clara. Evolution API segue liberado
+            // pra todos os planos (é gratuito).
+            if ($instance->isCloudApi() && !$chat->tenant?->hasCapability('whatsapp_cloud')) {
+                throw new \RuntimeException(
+                    'O envio via WhatsApp Cloud API não está incluído no seu plano atual. Atualize sua assinatura ou contate o suporte.',
+                    402
+                );
+            }
+
             $sender   = WhatsAppSenderFactory::forInstance($instance);
             $provider = $sender->providerName();
 
