@@ -758,10 +758,11 @@
 }
 
 /* ── Options Panel (Formato + Estilo + Referência) ─────────────────────── */
+/* Ajustado pra fundo CLARO da página (era escuro no design original). */
 .sai-options-panel {
     margin-top: 22px; padding: 20px;
-    background: rgba(255,255,255,.03);
-    border: 1px solid rgba(255,255,255,.06);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 14px;
 }
 .sai-opt-row {
@@ -772,35 +773,39 @@
 .sai-opt-block { }
 .sai-opt-label {
     display: flex; align-items: center; gap: 8px;
-    font-size: .75rem; font-weight: 700; color: rgba(255,255,255,.55);
+    font-size: .75rem; font-weight: 700; color: #64748b;
     text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px;
 }
+.sai-opt-label i { color: #4F46E5; }
 .sai-opt-btns { display: flex; flex-wrap: wrap; gap: 6px; }
 .sai-opt-btn {
-    background: rgba(255,255,255,.05); color: rgba(255,255,255,.75);
-    border: 1px solid rgba(255,255,255,.08);
-    padding: 7px 13px; border-radius: 8px;
+    background: #ffffff; color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 8px 14px; border-radius: 8px;
     font-size: .78rem; font-weight: 600; cursor: pointer;
-    transition: background .15s, border-color .15s, color .15s;
+    transition: all .15s;
 }
-.sai-opt-btn:hover { background: rgba(255,255,255,.09); color: #fff; }
+.sai-opt-btn:hover {
+    background: #f1f5f9; color: #0f172a; border-color: #cbd5e1;
+}
 .sai-opt-btn.active {
     background: var(--primary-color, #4F46E5); color: #fff;
-    border-color: transparent;
+    border-color: var(--primary-color, #4F46E5);
+    box-shadow: 0 4px 10px rgba(79,70,229,.25);
 }
-.sai-ref-block { padding-top: 16px; border-top: 1px dashed rgba(255,255,255,.08); }
+.sai-ref-block { padding-top: 16px; border-top: 1px dashed #cbd5e1; }
 .sai-ref-row { display: flex; align-items: stretch; gap: 12px; }
 .sai-ref-drop {
     flex: 1; display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 8px; min-height: 120px;
-    background: rgba(79,70,229,.06);
+    background: rgba(79,70,229,.04);
     border: 2px dashed rgba(79,70,229,.35);
     border-radius: 12px; cursor: pointer; padding: 16px;
-    color: rgba(255,255,255,.55); font-size: .8rem;
+    color: #64748b; font-size: .82rem; font-weight: 500;
     transition: background .15s, border-color .15s;
     text-align: center; position: relative; overflow: hidden;
 }
-.sai-ref-drop:hover { background: rgba(79,70,229,.12); border-color: rgba(79,70,229,.6); }
+.sai-ref-drop:hover { background: rgba(79,70,229,.08); border-color: rgba(79,70,229,.6); color: #4F46E5; }
 .sai-ref-drop-icon { font-size: 1.6rem; color: rgba(79,70,229,.7); }
 .sai-ref-drop img { max-height: 96px; max-width: 100%; border-radius: 8px; margin-top: 4px; }
 .sai-ref-drop.has-image { padding: 8px; }
@@ -808,25 +813,26 @@
 .sai-ref-drop.has-image #refDropText { display: none; }
 .sai-ref-opts {
     display: flex; flex-direction: column; gap: 10px;
-    margin-top: 14px; padding: 14px; background: rgba(255,255,255,.02);
-    border-radius: 10px; border: 1px solid rgba(255,255,255,.05);
+    margin-top: 14px; padding: 14px; background: #ffffff;
+    border-radius: 10px; border: 1px solid #e2e8f0;
 }
 .sai-ref-radio {
     display: flex; align-items: flex-start; gap: 10px;
     padding: 10px 12px; border-radius: 8px; cursor: pointer;
-    background: rgba(255,255,255,.03); transition: background .15s;
+    background: #f8fafc; transition: background .15s;
+    border: 1px solid transparent;
 }
-.sai-ref-radio:hover { background: rgba(255,255,255,.06); }
-.sai-ref-radio input { margin-top: 4px; flex-shrink: 0; }
-.sai-ref-radio strong { display: block; font-size: .82rem; color: #fff; font-weight: 700; }
-.sai-ref-radio small { display: block; font-size: .72rem; color: rgba(255,255,255,.45); margin-top: 2px; }
+.sai-ref-radio:hover { background: #f1f5f9; border-color: #e2e8f0; }
+.sai-ref-radio input { margin-top: 4px; flex-shrink: 0; accent-color: #4F46E5; }
+.sai-ref-radio strong { display: block; font-size: .82rem; color: #0f172a; font-weight: 700; }
+.sai-ref-radio small { display: block; font-size: .72rem; color: #64748b; margin-top: 2px; }
 .sai-ref-remove {
-    background: transparent; border: 1px solid rgba(239,68,68,.3);
-    color: #f87171; font-size: .74rem; font-weight: 600;
+    background: #fff; border: 1px solid #fecaca;
+    color: #dc2626; font-size: .74rem; font-weight: 600;
     padding: 6px 12px; border-radius: 6px; cursor: pointer;
     align-self: flex-start;
 }
-.sai-ref-remove:hover { background: rgba(239,68,68,.1); }
+.sai-ref-remove:hover { background: #fef2f2; border-color: #fca5a5; }
 
 /* ── Variações de legenda no card ──────────────────────────────────────── */
 .sai-variations {
