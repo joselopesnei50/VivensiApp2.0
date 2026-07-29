@@ -109,6 +109,25 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // Consumo WhatsApp — dashboard pro cliente ver o próprio custo (modelo B)
         Route::get('/whatsapp/consumo',                    [App\Http\Controllers\WhatsappConsumoController::class, 'index'])->name('whatsapp.consumo');
 
+        // Debug do Pusher em tempo real (mostra conexão + eventos na tela, sem F12)
+        Route::get('/whatsapp/pusher-test', function () {
+            return view('whatsapp.pusher-test');
+        })->name('whatsapp.pusher-test');
+        Route::post('/whatsapp/pusher-test/fire', function () {
+            $chat = new \App\Models\WhatsappChat([
+                'tenant_id'    => auth()->user()->tenant_id,
+                'wa_id'        => '00000000',
+                'contact_name' => 'TESTE ' . date('H:i:s'),
+                'id'           => 0,
+            ]);
+            $msg = new \App\Models\WhatsappMessage([
+                'content' => 'Notificação de teste às ' . date('H:i:s'),
+                'type'    => 'text',
+            ]);
+            event(new \App\Events\WhatsappMessageReceived($msg, $chat));
+            return response()->json(['ok' => true, 'time' => now()->toIso8601String()]);
+        })->name('whatsapp.pusher-test.fire');
+
         // Templates CRUD (per-tenant, cada tenant só vê seus templates)
         Route::get('/whatsapp/cloud/templates',                       [App\Http\Controllers\WhatsappTemplateController::class, 'index'])->name('whatsapp.templates.cloud.index');
         Route::get('/whatsapp/cloud/templates/create',                [App\Http\Controllers\WhatsappTemplateController::class, 'create'])->name('whatsapp.templates.cloud.create');
