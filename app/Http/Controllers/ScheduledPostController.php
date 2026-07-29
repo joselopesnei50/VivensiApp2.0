@@ -14,11 +14,29 @@ use Illuminate\Support\Facades\Storage;
 
 class ScheduledPostController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $posts    = ScheduledPost::with('account')->orderByDesc('scheduled_at')->paginate(20);
+        $filter = in_array($request->query('status'), ['scheduled', 'published', 'failed', 'draft'], true)
+            ? $request->query('status') : null;
+
+        $posts = ScheduledPost::with('account')
+            ->when($filter, fn ($q) => $q->where('status', $filter))
+            ->orderByDesc('scheduled_at')
+            ->paginate(12)
+            ->withQueryString();
+
         $accounts = SocialAccount::where('is_active', true)->get();
-        return view('social.posts.index', compact('posts', 'accounts'));
+
+        // Contadores por status pros filtros no topo — usa withoutGlobalScopes
+        // não; queremos respeitar tenant (BelongsToTenant já filtra automático).
+        $counts = ScheduledPost::query()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+        $counts['all'] = array_sum($counts);
+
+        return view('social.posts.index', compact('posts', 'accounts', 'counts', 'filter'));
     }
 
     public function create()
@@ -169,24 +187,41 @@ class ScheduledPostController extends Controller
     public function calendar()
     {
         $posts = ScheduledPost::with('account')
-            ->whereIn('status', ['draft', 'scheduled', 'published'])
+            ->whereIn('status', ['draft', 'scheduled', 'published', 'failed'])
             ->get()
-            ->map(fn($p) => [
-                'id'    => $p->id,
-                'title' => substr($p->caption, 0, 40) . '...',
-                'start' => $p->scheduled_at->toIso8601String(),
-                'color' => match($p->status) {
-                    'published' => '#10b981',
-                    'failed'    => '#ef4444',
-                    'draft'     => '#f59e0b',
-                    default     => '#4f6ef7',
-                },
-                'extendedProps' => [
-                    'status'   => $p->status,
-                    'platform' => $p->platform,
-                    'account'  => $p->account?->page_name,
-                ],
-            ]);
+            ->map(function ($p) {
+                $fbUrl = ($p->status === 'published' && $p->facebook_post_id && $p->account)
+                    ? 'https://www.facebook.com/' . $p->facebook_post_id
+                    : null;
+                $igUrl = ($p->status === 'published' && $p->instagram_post_id)
+                    ? 'https://www.instagram.com/p/' . $p->instagram_post_id . '/'
+                    : null;
+
+                return [
+                    'id'    => $p->id,
+                    'title' => \Illuminate\Support\Str::limit($p->caption, 40),
+                    'start' => $p->scheduled_at->toIso8601String(),
+                    'color' => match ($p->status) {
+                        'published' => '#10b981',
+                        'failed'    => '#ef4444',
+                        'draft'     => '#f59e0b',
+                        default     => '#4f46e5',
+                    },
+                    'extendedProps' => [
+                        'status'         => $p->status,
+                        'platform'       => $p->platform,
+                        'account'        => $p->account?->page_name,
+                        'caption'        => $p->caption,
+                        'media_url'      => $p->media_url,
+                        'media_type'     => $p->media_type,
+                        'error_message'  => $p->error_message,
+                        'edit_url'       => $p->status === 'scheduled'
+                            ? route('social.posts.edit', $p->id) : null,
+                        'facebook_url'   => $fbUrl,
+                        'instagram_url'  => $igUrl,
+                    ],
+                ];
+            });
 
         return response()->json($posts);
     }
