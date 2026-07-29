@@ -109,20 +109,63 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
+                        {{-- Toggle "Publicar agora" — se marcado, esconde o campo de data e publica imediatamente --}}
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="publish_now" name="publish_now" value="1"
+                                       {{ old('publish_now') ? 'checked' : '' }}
+                                       onchange="wacTogglePublishNow(this.checked)">
+                                <label class="form-check-label fw-600" for="publish_now">
+                                    <i class="fas fa-bolt text-warning"></i> Publicar agora
+                                </label>
+                                <div class="text-muted small">Ao marcar, o post vai pro Facebook/Instagram imediatamente após salvar.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4" id="wac-schedule-field">
                             <label class="form-label fw-600">Data e hora de publicação <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="scheduled_at" class="form-control form-control-lg"
-                                   value="{{ old('scheduled_at') }}" required
-                                   min="{{ now()->addMinutes(5)->format('Y-m-d\TH:i') }}">
+                                   value="{{ old('scheduled_at') }}"
+                                   min="{{ now('America/Sao_Paulo')->addMinutes(5)->format('Y-m-d\TH:i') }}">
+                            <div class="form-text">Horário de Brasília (GMT-3).</div>
                             @error('scheduled_at') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg px-4 fw-bold">
-                                <i class="fas fa-calendar-check me-2"></i> Agendar Post
+                            <button type="submit" class="btn btn-primary btn-lg px-4 fw-bold" id="wac-submit-btn">
+                                <i class="fas fa-calendar-check me-2"></i>
+                                <span id="wac-submit-label">Agendar Post</span>
                             </button>
                             <a href="{{ route('social.posts.index') }}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
                         </div>
+
+                        <script>
+                            function wacTogglePublishNow(checked) {
+                                const field = document.getElementById('wac-schedule-field');
+                                const input = field.querySelector('input[name="scheduled_at"]');
+                                const label = document.getElementById('wac-submit-label');
+                                const btn   = document.getElementById('wac-submit-btn');
+                                if (checked) {
+                                    field.style.display = 'none';
+                                    input.required = false;
+                                    label.innerText = 'Publicar Agora';
+                                    btn.classList.remove('btn-primary');
+                                    btn.classList.add('btn-success');
+                                } else {
+                                    field.style.display = '';
+                                    input.required = true;
+                                    label.innerText = 'Agendar Post';
+                                    btn.classList.add('btn-primary');
+                                    btn.classList.remove('btn-success');
+                                }
+                            }
+                            // Inicializa no load caso venha do old()
+                            (function () {
+                                const cb = document.getElementById('publish_now');
+                                if (cb && cb.checked) wacTogglePublishNow(true);
+                            })();
+                        </script>
                     </form>
                 </div>
             </div>

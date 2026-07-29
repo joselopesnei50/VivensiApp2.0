@@ -80,8 +80,9 @@
                         <div class="mb-4">
                             <label class="form-label fw-600">Data e hora de publicação <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="scheduled_at" class="form-control form-control-lg"
-                                   value="{{ old('scheduled_at', $post->scheduled_at->format('Y-m-d\TH:i')) }}" required
-                                   min="{{ now()->addMinutes(5)->format('Y-m-d\TH:i') }}">
+                                   value="{{ old('scheduled_at', $post->scheduled_at->setTimezone('America/Sao_Paulo')->format('Y-m-d\TH:i')) }}" required
+                                   min="{{ now('America/Sao_Paulo')->addMinutes(5)->format('Y-m-d\TH:i') }}">
+                            <div class="form-text">Horário de Brasília (GMT-3).</div>
                             @error('scheduled_at') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 

@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\ScheduledPost;
 use App\Models\SocialAccount;
 use App\Services\DeepSeekService;
+use App\Services\MetaSocialPublisherService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ScheduledPostController extends Controller
@@ -26,14 +29,33 @@ class ScheduledPostController extends Controller
 
     public function store(Request $request)
     {
+        // Modo "publicar agora": pula validação de data futura e usa now() UTC.
+        // Caso contrário: converte scheduled_at do timezone do usuário (Brasília)
+        // pra UTC ANTES de validar — sem isso, "00:55 BRT" chega como "00:55 UTC"
+        // que é passado pra quem está no Brasil e o validator 'after:now' reprova.
+        $publishNow = $request->boolean('publish_now');
+
+        if (!$publishNow && $request->filled('scheduled_at')) {
+            try {
+                $request->merge([
+                    'scheduled_at' => Carbon::parse($request->input('scheduled_at'), 'America/Sao_Paulo')
+                        ->utc()
+                        ->format('Y-m-d H:i:s'),
+                ]);
+            } catch (\Throwable) {
+                // Deixa o validator abaixo pegar o formato inválido
+            }
+        }
+
         $data = $request->validate([
             'social_account_id' => 'nullable|integer',
             'platform'          => 'required|in:facebook,instagram,both',
             'caption'           => 'required|string|max:2200',
-            'scheduled_at'      => 'required|date|after:now',
+            'scheduled_at'      => $publishNow ? 'nullable|date' : 'required|date|after:now',
             'media'             => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4|max:51200',
             'media_type'        => 'nullable|in:none,image,video',
             'media_url_external'=> 'nullable|url|max:2048',
+            'publish_now'       => 'nullable|boolean',
         ]);
 
         // Conta é opcional — sem conta o post fica como rascunho
@@ -55,7 +77,11 @@ class ScheduledPostController extends Controller
             $mediaType = 'image';
         }
 
-        ScheduledPost::create([
+        // Se "publicar agora" marcado, scheduled_at vira now() UTC pro publisher
+        // pegar imediatamente. Status também.
+        $scheduledAt = $publishNow ? now()->utc() : $data['scheduled_at'];
+
+        $post = ScheduledPost::create([
             'tenant_id'         => auth()->user()->tenant_id,
             'social_account_id' => $account?->id,
             'user_id'           => auth()->id(),
@@ -63,9 +89,26 @@ class ScheduledPostController extends Controller
             'caption'           => $data['caption'],
             'media_url'         => $mediaUrl,
             'media_type'        => $mediaType,
-            'scheduled_at'      => $data['scheduled_at'],
+            'scheduled_at'      => $scheduledAt,
             'status'            => $account ? 'scheduled' : 'draft',
         ]);
+
+        // Publica imediatamente se "publicar agora" + conta vinculada.
+        if ($publishNow && $account) {
+            try {
+                $ok = app(MetaSocialPublisherService::class)->publish($post);
+                $msg = $ok
+                    ? 'Publicado com sucesso no Facebook/Instagram!'
+                    : 'Post criado, mas falhou ao publicar. Verifique em Redes Sociais.';
+            } catch (\Throwable $e) {
+                Log::error('ScheduledPost publish_now failed', [
+                    'post_id' => $post->id,
+                    'error'   => $e->getMessage(),
+                ]);
+                $msg = 'Post criado, mas houve erro ao publicar: ' . $e->getMessage();
+            }
+            return redirect()->route('social.posts.index')->with('success', $msg);
+        }
 
         return redirect()->route('social.posts.index')
             ->with('success', 'Post agendado com sucesso!');
@@ -81,6 +124,19 @@ class ScheduledPostController extends Controller
     public function update(Request $request, ScheduledPost $post)
     {
         abort_if($post->status !== 'scheduled', 403, 'Apenas posts agendados podem ser editados.');
+
+        // Mesma conversão BRT → UTC do store (timezone-safe).
+        if ($request->filled('scheduled_at')) {
+            try {
+                $request->merge([
+                    'scheduled_at' => Carbon::parse($request->input('scheduled_at'), 'America/Sao_Paulo')
+                        ->utc()
+                        ->format('Y-m-d H:i:s'),
+                ]);
+            } catch (\Throwable) {
+                // Deixa o validator abaixo pegar
+            }
+        }
 
         $data = $request->validate([
             'platform'     => 'required|in:facebook,instagram,both',
