@@ -35,11 +35,21 @@ class Kernel extends ConsoleKernel
             $schedule->command("whatsapp:cleanup --days={$days}")->dailyAt('03:30');
         }
 
-        // Redes Sociais: publica posts agendados a cada 5 minutos
+        // Redes Sociais: publica posts agendados a cada 5 minutos.
+        // Removido withoutOverlapping() e runInBackground() porque:
+        //   1) O comando é idempotente — filtra where status='scheduled' e cada
+        //      Job dispatchado só processa uma vez pelo (status, scheduled_at).
+        //   2) withoutOverlapping usa mutex em cache com TTL de 24h; se o
+        //      processo morreu antes de liberar o lock (deploy/restart/crash),
+        //      o scheduler PULA SILENCIOSAMENTE todas as execuções seguintes
+        //      até o mutex expirar. Foi essa a causa do bug em prod 2026-07-29.
+        //   3) runInBackground é útil quando o comando demora; aqui só dispatcha
+        //      jobs (poucas ms), não bloqueia o próximo tick.
         $schedule->command('posts:publish')
                  ->everyFiveMinutes()
-                 ->withoutOverlapping()
-                 ->runInBackground();
+                 ->onFailure(function () {
+                     \Illuminate\Support\Facades\Log::error('posts:publish falhou no scheduler.');
+                 });
 
         // WhatsApp: envia mensagens agendadas a cada minuto (ex: lembretes, follow-ups)
         $schedule->command('whatsapp:send-scheduled')
