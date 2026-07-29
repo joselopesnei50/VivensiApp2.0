@@ -99,15 +99,101 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="mediaInput" class="form-label fw-600">Mídia (opcional)</label>
-                            <input type="file" name="media" class="form-control" accept="image/*,video/mp4"
-                                   id="mediaInput" onchange="previewMedia(this)">
-                            <div class="form-text">JPG, PNG, GIF ou MP4. Máx 50 MB.</div>
-                            <div id="mediaPreview" class="mt-2" style="display:none;">
-                                <img loading="lazy" id="imgPreview" src="" alt="" class="rounded" style="max-height:200px;max-width:100%;object-fit:cover;display:none;">
-                                <video id="vidPreview" controls class="rounded" style="max-height:200px;max-width:100%;display:none;"></video>
+                            <label for="mediaFilesInput" class="form-label fw-600">
+                                Mídia (opcional — múltiplas = carrossel)
+                            </label>
+                            <input type="file" name="media_files[]" class="form-control"
+                                   accept="image/*,video/mp4" multiple
+                                   id="mediaFilesInput" onchange="wacHandleMediaFiles(this)">
+                            <div class="form-text">
+                                JPG, PNG, GIF ou MP4. Máx 50 MB por arquivo. Até 10 mídias.
+                                <strong>Selecione 2 ou mais imagens</strong> para publicar como
+                                <span class="text-primary fw-bold"><i class="fab fa-instagram"></i> carrossel no Instagram</span>.
+                                No Facebook aparece a primeira imagem.
+                            </div>
+                            <div id="mediaPreview" class="mt-3 d-flex flex-wrap gap-2" style="display:none;"></div>
+                            <div id="mediaCounter" class="mt-2 small text-muted" style="display:none;">
+                                <span id="mediaCount">0</span>/10 mídias selecionadas
+                                <span id="mediaCarouselHint" style="display:none;" class="badge bg-primary bg-opacity-10 text-primary ms-2">
+                                    <i class="fas fa-images"></i> Carrossel Instagram
+                                </span>
                             </div>
                         </div>
+
+                        <script>
+                            // Guardamos os arquivos selecionados manualmente pra permitir
+                            // remoção individual (input[type=file] não permite remover
+                            // arquivos individualmente após a seleção).
+                            const __wacMediaFiles = [];
+
+                            function wacHandleMediaFiles(input) {
+                                for (const f of input.files) {
+                                    if (__wacMediaFiles.length >= 10) break;
+                                    __wacMediaFiles.push(f);
+                                }
+                                input.value = ''; // reseta o input pra permitir reselecionar o mesmo arquivo
+                                wacRenderPreviews();
+                                wacRebuildFileInput();
+                            }
+
+                            function wacRebuildFileInput() {
+                                // Reconstroi o FileList do input a partir do array
+                                // interno (pra o form submitir os arquivos corretos)
+                                const dt = new DataTransfer();
+                                __wacMediaFiles.forEach(f => dt.items.add(f));
+                                document.getElementById('mediaFilesInput').files = dt.files;
+                            }
+
+                            function wacRemoveMedia(idx) {
+                                __wacMediaFiles.splice(idx, 1);
+                                wacRenderPreviews();
+                                wacRebuildFileInput();
+                            }
+
+                            function wacRenderPreviews() {
+                                const wrap = document.getElementById('mediaPreview');
+                                const counter = document.getElementById('mediaCounter');
+                                const countEl = document.getElementById('mediaCount');
+                                const hint = document.getElementById('mediaCarouselHint');
+
+                                wrap.innerHTML = '';
+                                if (__wacMediaFiles.length === 0) {
+                                    wrap.style.display = 'none';
+                                    counter.style.display = 'none';
+                                    return;
+                                }
+                                wrap.style.display = 'flex';
+                                counter.style.display = 'block';
+                                countEl.innerText = __wacMediaFiles.length;
+                                hint.style.display = __wacMediaFiles.length >= 2 ? 'inline-block' : 'none';
+
+                                if (typeof wacSyncSidePreview === 'function') wacSyncSidePreview();
+
+                                __wacMediaFiles.forEach((file, idx) => {
+                                    const url = URL.createObjectURL(file);
+                                    const isVideo = file.type.startsWith('video/');
+
+                                    const box = document.createElement('div');
+                                    box.style.cssText = 'position:relative; width:100px; height:100px; border-radius:10px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0;';
+                                    box.innerHTML = `
+                                        ${isVideo
+                                            ? `<video src="${url}" muted style="width:100%; height:100%; object-fit:cover;"></video>
+                                               <div style="position:absolute; top:4px; left:4px; background:rgba(15,23,42,.7); color:#fff; padding:2px 6px; border-radius:4px; font-size:.65rem;"><i class="fas fa-video"></i></div>`
+                                            : `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`
+                                        }
+                                        <div style="position:absolute; top:4px; right:4px;">
+                                            <button type="button" onclick="wacRemoveMedia(${idx})"
+                                                    style="background:rgba(220,38,38,.9); color:#fff; border:0; border-radius:50%; width:22px; height:22px; font-size:.7rem; line-height:1; cursor:pointer;"
+                                                    title="Remover">×</button>
+                                        </div>
+                                        <div style="position:absolute; bottom:4px; left:4px; background:rgba(15,23,42,.7); color:#fff; padding:2px 6px; border-radius:4px; font-size:.65rem; font-weight:700;">
+                                            ${idx + 1}
+                                        </div>
+                                    `;
+                                    wrap.appendChild(box);
+                                });
+                            }
+                        </script>
 
                         {{-- Toggle "Publicar agora" — se marcado, esconde o campo de data e publica imediatamente --}}
                         <div class="mb-3">
@@ -249,23 +335,20 @@ captionEl.addEventListener('input', () => {
     document.getElementById('previewCaption').textContent = captionEl.value || 'A legenda aparecerá aqui...';
 });
 
-// Media preview
-function previewMedia(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const isVideo = file.type.startsWith('video');
-    document.getElementById('mediaPreview').style.display = '';
-    document.getElementById('imgPreview').style.display  = isVideo ? 'none' : '';
-    document.getElementById('vidPreview').style.display  = isVideo ? '' : 'none';
-    document.getElementById('previewImg').style.display  = isVideo ? 'none' : '';
-    const url = URL.createObjectURL(file);
-    if (isVideo) {
-        document.getElementById('vidPreview').src = url;
-    } else {
-        document.getElementById('imgPreview').src = url;
-        document.getElementById('previewImgEl').src = url;
-        document.getElementById('previewImg').style.display = '';
+// Preview lateral (card estilo Facebook/Instagram) — usa a PRIMEIRA mídia
+// selecionada. wacRenderPreviews (definido junto ao input múltiplo) chama
+// esta função pra manter o preview lateral sincronizado.
+function wacSyncSidePreview() {
+    const box  = document.getElementById('previewImg');
+    const img  = document.getElementById('previewImgEl');
+    const first = (typeof __wacMediaFiles !== 'undefined' && __wacMediaFiles[0]) || null;
+    if (!first || first.type.startsWith('video')) {
+        // Sem imagem OU primeira é vídeo → esconde imagem do preview
+        box.style.display = 'none';
+        return;
     }
+    img.src = URL.createObjectURL(first);
+    box.style.display = '';
 }
 
 // AI caption

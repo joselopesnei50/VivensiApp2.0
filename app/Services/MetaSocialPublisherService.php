@@ -55,6 +55,133 @@ class MetaSocialPublisherService
     }
 
     /**
+     * Carrossel Instagram (2-10 mídias no mesmo post).
+     * Fluxo Meta em 3 fases:
+     *   1) Cria N child containers com is_carousel_item=true
+     *   2) Aguarda cada child ficar FINISHED (polling)
+     *   3) Cria container CAROUSEL com children=[ids] + caption
+     *   4) Aguarda o CAROUSEL ficar FINISHED
+     *   5) POST /media_publish com creation_id=carousel_id
+     *
+     * Limite Meta: máximo 10 itens. Suporta mix de imagem+video.
+     * Referência: https://developers.facebook.com/docs/instagram-api/guides/content-publishing#carousel-posts
+     *
+     * @param  array<int, array{url:string,type:string}> $items
+     * @return array{id: ?string, error: ?string}
+     */
+    private function publishInstagramCarousel(ScheduledPost $post, string $igAccountId, string $token, array $items): array
+    {
+        if (count($items) > 10) {
+            $items = array_slice($items, 0, 10);
+        }
+
+        $childIds = [];
+
+        // ── Fase 1 — cria cada child container ────────────────────────
+        foreach ($items as $idx => $item) {
+            $mediaUrl = $this->absoluteMediaUrl($item['url']);
+            $type     = $item['type'] ?? 'image';
+
+            $payload = [
+                'is_carousel_item' => true,
+                'access_token'     => $token,
+            ];
+            if ($type === 'image') {
+                $payload['image_url']  = $mediaUrl;
+                $payload['media_type'] = 'IMAGE';
+            } elseif ($type === 'video') {
+                $payload['video_url']  = $mediaUrl;
+                $payload['media_type'] = 'VIDEO'; // dentro de carrossel usa VIDEO, não REELS
+            } else {
+                Log::warning('Carousel item ignored: tipo desconhecido', [
+                    'post_id' => $post->id, 'idx' => $idx, 'type' => $type,
+                ]);
+                continue;
+            }
+
+            $res = Http::post(
+                "https://graph.facebook.com/{$this->graphVersion}/{$igAccountId}/media",
+                $payload
+            );
+
+            if (!$res->successful()) {
+                $err = (array) ($res->json('error') ?? []);
+                Log::error('Instagram carousel child container failed', [
+                    'post_id' => $post->id, 'idx' => $idx,
+                    'status'  => $res->status(), 'error' => $err,
+                ]);
+                return [
+                    'id'    => null,
+                    'error' => "Falha na mídia #" . ($idx + 1) . " do carrossel: " . $this->friendlyError($err),
+                ];
+            }
+
+            $childIds[] = $res->json('id');
+        }
+
+        if (empty($childIds)) {
+            return ['id' => null, 'error' => 'Nenhuma mídia do carrossel pôde ser processada.'];
+        }
+
+        // ── Fase 2 — aguarda cada child ficar FINISHED ────────────────
+        foreach ($childIds as $idx => $cid) {
+            $waitErr = $this->waitForInstagramContainer($cid, $token);
+            if ($waitErr !== null) {
+                Log::error('Instagram carousel child never finished', [
+                    'post_id' => $post->id, 'idx' => $idx, 'container_id' => $cid, 'reason' => $waitErr,
+                ]);
+                return [
+                    'id'    => null,
+                    'error' => "Mídia #" . ($idx + 1) . " do carrossel travou processando na Meta. " . $waitErr,
+                ];
+            }
+        }
+
+        // ── Fase 3 — cria container CAROUSEL agrupando os children ────
+        $carouselRes = Http::post(
+            "https://graph.facebook.com/{$this->graphVersion}/{$igAccountId}/media",
+            [
+                'media_type'   => 'CAROUSEL',
+                'caption'      => $post->caption,
+                'children'     => implode(',', $childIds),
+                'access_token' => $token,
+            ]
+        );
+
+        if (!$carouselRes->successful()) {
+            $err = (array) ($carouselRes->json('error') ?? []);
+            Log::error('Instagram carousel container failed', [
+                'post_id' => $post->id, 'status' => $carouselRes->status(), 'error' => $err,
+            ]);
+            return ['id' => null, 'error' => 'Falha ao montar carrossel: ' . $this->friendlyError($err)];
+        }
+
+        $carouselId = $carouselRes->json('id');
+
+        // ── Fase 4 — aguarda o CAROUSEL ficar FINISHED ────────────────
+        $waitErr = $this->waitForInstagramContainer($carouselId, $token);
+        if ($waitErr !== null) {
+            return ['id' => null, 'error' => $waitErr];
+        }
+
+        // ── Fase 5 — publica ──────────────────────────────────────────
+        $publishRes = Http::post(
+            "https://graph.facebook.com/{$this->graphVersion}/{$igAccountId}/media_publish",
+            ['creation_id' => $carouselId, 'access_token' => $token]
+        );
+
+        if (!$publishRes->successful()) {
+            $err = (array) ($publishRes->json('error') ?? []);
+            Log::error('Instagram carousel publish failed', [
+                'post_id' => $post->id, 'status' => $publishRes->status(), 'error' => $err,
+            ]);
+            return ['id' => null, 'error' => 'Falha no publish do carrossel: ' . $this->friendlyError($err)];
+        }
+
+        return ['id' => $publishRes->json('id'), 'error' => null];
+    }
+
+    /**
      * Aguarda o Instagram terminar de processar um container de mídia antes
      * de publicar. Faz polling GET /{container_id}?fields=status_code.
      *
@@ -186,24 +313,34 @@ class MetaSocialPublisherService
     /** @return array{id: ?string, error: ?string} */
     private function publishToInstagram(ScheduledPost $post, string $igAccountId, string $token): array
     {
-        // Passo 1: criar container de mídia
+        $items = $post->mediaList();
+
+        if (empty($items)) {
+            Log::warning('Instagram publish skipped: no media', ['post_id' => $post->id]);
+            return ['id' => null, 'error' => 'Instagram exige uma imagem ou vídeo — este post não tem mídia anexada.'];
+        }
+
+        // 2+ mídias → carrossel. Meta permite até 10.
+        if (count($items) >= 2) {
+            return $this->publishInstagramCarousel($post, $igAccountId, $token, $items);
+        }
+
+        // 1 mídia → fluxo simples (foto ou reel).
+        $only = $items[0];
+        $mediaUrl = $this->absoluteMediaUrl($only['url']);
+        $type     = $only['type'] ?? 'image';
+
         $containerPayload = [
             'caption'      => $post->caption,
             'access_token' => $token,
         ];
 
-        $mediaUrl = $this->absoluteMediaUrl($post->media_url);
-
-        if ($mediaUrl && $post->media_type === 'image') {
-            $containerPayload['image_url'] = $mediaUrl;
+        if ($type === 'image') {
+            $containerPayload['image_url']  = $mediaUrl;
             $containerPayload['media_type'] = 'IMAGE';
-        } elseif ($mediaUrl && $post->media_type === 'video') {
-            $containerPayload['video_url'] = $mediaUrl;
+        } elseif ($type === 'video') {
+            $containerPayload['video_url']  = $mediaUrl;
             $containerPayload['media_type'] = 'REELS';
-        } else {
-            // Instagram exige mídia — pula se não tiver
-            Log::warning('Instagram publish skipped: no media', ['post_id' => $post->id]);
-            return ['id' => null, 'error' => 'Instagram exige uma imagem ou vídeo — este post não tem mídia anexada.'];
         }
 
         $containerRes = Http::post(

@@ -70,9 +70,14 @@ class ScheduledPostController extends Controller
             'platform'          => 'required|in:facebook,instagram,both',
             'caption'           => 'required|string|max:2200',
             'scheduled_at'      => $publishNow ? 'nullable|date' : 'required|date|after:now',
+            // Legado — 1 arquivo único (compat com uploads antigos e integrações
+            // que não sabem enviar múltiplos).
             'media'             => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4|max:51200',
             'media_type'        => 'nullable|in:none,image,video',
             'media_url_external'=> 'nullable|url|max:2048',
+            // Novo — array de arquivos pra carrossel (até 10 pela regra Meta).
+            'media_files'       => 'nullable|array|max:10',
+            'media_files.*'     => 'file|mimes:jpg,jpeg,png,gif,mp4|max:51200',
             'publish_now'       => 'nullable|boolean',
         ]);
 
@@ -81,19 +86,38 @@ class ScheduledPostController extends Controller
             ? SocialAccount::findOrFail($data['social_account_id'])
             : null;
 
-        $mediaUrl  = null;
-        $mediaType = 'none';
+        $mediaUrl   = null;
+        $mediaType  = 'none';
+        $mediaItems = null;
+        $tenantId   = auth()->user()->tenant_id;
 
-        if ($request->hasFile('media')) {
-            $tenantId = auth()->user()->tenant_id;
-            $path     = $request->file('media')->store("tenants/{$tenantId}/social-media", 'public');
-            // IMPORTANTE: Meta exige URL absoluta pública pra baixar a mídia.
-            // Storage::url() retorna caminho relativo (/storage/...) — url()
-            // prefixa com APP_URL (https://vivensi.app.br).
-            $mediaUrl = url(Storage::url($path));
+        // Regra de precedência (do mais rico ao mais simples):
+        // 1) media_files[] (múltiplas mídias — pode virar carrossel)
+        // 2) media (arquivo único legado)
+        // 3) media_url_external (URL pronta — usado pelo Marketing IA)
+        if ($request->hasFile('media_files')) {
+            $items = [];
+            foreach ($request->file('media_files') as $file) {
+                if (!$file || !$file->isValid()) continue;
+                $path = $file->store("tenants/{$tenantId}/social-media", 'public');
+                $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
+                $items[] = [
+                    'url'  => url(Storage::url($path)),
+                    'type' => $type,
+                ];
+            }
+            if (!empty($items)) {
+                $mediaItems = $items;
+                // Primeira mídia também vira media_url pra fallback (Facebook
+                // hoje só posta 1 foto — publisher pega a primeira do carrossel).
+                $mediaUrl  = $items[0]['url'];
+                $mediaType = $items[0]['type'];
+            }
+        } elseif ($request->hasFile('media')) {
+            $path = $request->file('media')->store("tenants/{$tenantId}/social-media", 'public');
+            $mediaUrl  = url(Storage::url($path));
             $mediaType = str_starts_with($request->file('media')->getMimeType(), 'video') ? 'video' : 'image';
         } elseif (!empty($data['media_url_external'])) {
-            // URL externa (ex: Unsplash) — usada quando gerado pelo Marketing Intelligence
             $mediaUrl  = $data['media_url_external'];
             $mediaType = 'image';
         }
@@ -103,12 +127,13 @@ class ScheduledPostController extends Controller
         $scheduledAt = $publishNow ? now()->utc() : $data['scheduled_at'];
 
         $post = ScheduledPost::create([
-            'tenant_id'         => auth()->user()->tenant_id,
+            'tenant_id'         => $tenantId,
             'social_account_id' => $account?->id,
             'user_id'           => auth()->id(),
             'platform'          => $data['platform'],
             'caption'           => $data['caption'],
             'media_url'         => $mediaUrl,
+            'media_items'       => $mediaItems,
             'media_type'        => $mediaType,
             'scheduled_at'      => $scheduledAt,
             'status'            => $account ? 'scheduled' : 'draft',

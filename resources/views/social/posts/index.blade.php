@@ -251,15 +251,26 @@
                 @endphp
                 <div class="sp-card">
                     {{-- Thumbnail --}}
+                    @php
+                        $mediaItems = $post->mediaList();
+                        $isCarousel = count($mediaItems) >= 2;
+                        $firstMedia = $mediaItems[0] ?? null;
+                    @endphp
                     <div class="sp-thumb">
-                        @if($post->media_type === 'image' && $post->media_url)
-                            <img loading="lazy" src="{{ $post->media_url }}" alt="Mídia do post">
-                        @elseif($post->media_type === 'video' && $post->media_url)
-                            <img loading="lazy" src="{{ $post->media_url }}" alt="Frame do vídeo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                        @if($firstMedia && ($firstMedia['type'] ?? 'image') === 'image')
+                            <img loading="lazy" src="{{ $firstMedia['url'] }}" alt="Mídia do post">
+                        @elseif($firstMedia && ($firstMedia['type'] ?? '') === 'video')
+                            <img loading="lazy" src="{{ $firstMedia['url'] }}" alt="Frame do vídeo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                             <div class="sp-thumb-placeholder" style="display:none;"><i class="fas fa-film"></i></div>
                             <span class="sp-thumb-video-badge"><i class="fas fa-video"></i> VÍDEO</span>
                         @else
                             <div class="sp-thumb-placeholder"><i class="fas fa-image"></i></div>
+                        @endif
+
+                        @if($isCarousel)
+                            <span class="sp-thumb-video-badge" style="background:rgba(79,70,229,.9);">
+                                <i class="fas fa-images"></i> {{ count($mediaItems) }} mídias
+                            </span>
                         @endif
 
                         <span class="sp-thumb-status {{ $post->status }}">
