@@ -57,8 +57,16 @@ class WhatsAppService
         // por coluna). Legado por WhatsappConfig só é usado se não existe
         // instance no tenant — evita que instance cloud_api caia em Evolution
         // pelo simples fato de config.meta_* estar vazio.
+        //
+        // Se o tenant tem Cloud API habilitado no plano, preferimos Cloud
+        // sobre Evolution — evita que uma Evolution ativa em paralelo
+        // (por exemplo, remanescente de teste antes da migração) roube o
+        // envio e mande com token errado. Sem esse orderBy, era pega a mais
+        // antiga na tabela — comportamento imprevisível pós-migração.
         $instance = WhatsappInstance::where('tenant_id', $chat->tenant_id)
             ->where('status', 'open')
+            ->orderByRaw("CASE WHEN provider = ? THEN 0 ELSE 1 END", [WhatsappInstance::PROVIDER_CLOUD_API])
+            ->orderByDesc('id')
             ->first();
 
         if ($instance) {

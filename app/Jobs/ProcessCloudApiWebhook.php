@@ -131,8 +131,15 @@ class ProcessCloudApiWebhook implements ShouldQueue
             return;
         }
 
-        // Idempotência: message_id é unique.
-        if (WhatsappMessage::where('message_id', $messageId)->exists()) {
+        // Idempotência: message_id da Meta é único por conta, mas escopamos
+        // por tenant pra evitar que uma colisão cross-tenant (extremamente
+        // improvável, mas possível em testes/debug) descarte silenciosamente
+        // a segunda ocorrência num tenant diferente.
+        $exists = WhatsappMessage::withoutGlobalScope('tenant')
+            ->where('tenant_id', $instance->tenant_id)
+            ->where('message_id', $messageId)
+            ->exists();
+        if ($exists) {
             return;
         }
 

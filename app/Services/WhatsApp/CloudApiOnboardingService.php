@@ -59,12 +59,36 @@ class CloudApiOnboardingService
             throw new RuntimeException('Credenciais Meta Cloud (app_id/app_secret) não configuradas no sistema.');
         }
 
+        // Proteção cross-tenant ANTES de gastar chamadas na Meta: se esse
+        // phone_number_id já pertence a outro tenant, bloqueia. Simétrico
+        // ao check em completeManualSignup(). Índice único em whatsapp_
+        // instances.phone_number_id (migration 2026_07_30) é a rede final.
+        $this->assertNumberNotHijacked($tenantId, $phoneNumberId);
+
         $accessToken = $this->exchangeCodeForToken($code);
         $this->inspectToken($accessToken);
         $this->registerPhoneNumber($phoneNumberId, $accessToken, $registrationPin);
         $this->subscribeAppToWaba($wabaId, $accessToken);
 
         return $this->persistInstance($tenantId, $wabaId, $phoneNumberId, $accessToken);
+    }
+
+    /** Bloqueia signup se phone_number_id já está em outro tenant. */
+    private function assertNumberNotHijacked(int $tenantId, string $phoneNumberId): void
+    {
+        $conflict = WhatsappInstance::withoutGlobalScope('tenant')
+            ->where('phone_number_id', $phoneNumberId)
+            ->where('tenant_id', '!=', $tenantId)
+            ->first();
+
+        if ($conflict) {
+            Log::warning('CloudApi Signup: conflito de phone_number_id em outro tenant', [
+                'phone_number_id'      => $phoneNumberId,
+                'requesting_tenant_id' => $tenantId,
+                'existing_tenant_id'   => $conflict->tenant_id,
+            ]);
+            throw new RuntimeException('Este número WhatsApp já está conectado a outra conta Vivensi. Se você é o dono, contate o suporte.');
+        }
     }
 
     /**
@@ -132,21 +156,8 @@ class CloudApiOnboardingService
         // Passo 4 — inscreve nosso app na WABA (webhook começa a fluir).
         $this->subscribeAppToWaba($wabaId, $accessToken);
 
-        // Passo 5 — proteção cross-tenant: se já existe instance com esse
-        // phone_number_id em OUTRO tenant, bloqueia (evita hijack de número).
-        $conflict = WhatsappInstance::withoutGlobalScope('tenant')
-            ->where('phone_number_id', $phoneNumberId)
-            ->where('tenant_id', '!=', $tenantId)
-            ->first();
-
-        if ($conflict) {
-            Log::warning('CloudApi Manual Signup: conflito de phone_number_id em outro tenant', [
-                'phone_number_id'       => $phoneNumberId,
-                'requesting_tenant_id'  => $tenantId,
-                'existing_tenant_id'    => $conflict->tenant_id,
-            ]);
-            throw new RuntimeException('Este número WhatsApp já está conectado a outra conta Vivensi. Se você é o dono, contate o suporte.');
-        }
+        // Passo 5 — proteção cross-tenant (mesmo helper do Embedded).
+        $this->assertNumberNotHijacked($tenantId, $phoneNumberId);
 
         return $this->persistInstance($tenantId, $wabaId, $phoneNumberId, $accessToken);
     }
