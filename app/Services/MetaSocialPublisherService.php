@@ -378,8 +378,12 @@ class MetaSocialPublisherService
             return ['id' => null, 'error' => $this->friendlyError($err)];
         }
 
+        // IMPORTANTE: POST /photos retorna 'id' (photo_id) E 'post_id' (formato
+        // PAGEID_POSTID). Insights e engagement precisam do post_id — não do
+        // photo_id. POST /feed e /videos retornam só 'id' (que já é o post_id).
+        // Preferimos post_id sempre, com fallback pra id.
         return [
-            'id'    => $response->json('id') ?? $response->json('post_id'),
+            'id'    => $response->json('post_id') ?? $response->json('id'),
             'error' => null,
         ];
     }

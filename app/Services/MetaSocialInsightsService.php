@@ -69,7 +69,36 @@ class MetaSocialInsightsService
      */
     private function syncFacebook(ScheduledPost $post, string $token): bool
     {
-        $endpoint = "https://graph.facebook.com/{$this->graphVersion}/{$post->facebook_post_id}/insights";
+        // Backfill retroativo: posts publicados antes do fix do publisher
+        // salvaram photo_id (só dígitos) em vez de post_id (formato PAGEID_POSTID).
+        // Insights só aceita post_id — se detectar photo_id puro, busca o real
+        // via GET /{photo_id}?fields=post_id e atualiza o DB.
+        $fbId = $post->facebook_post_id;
+        if ($fbId && !str_contains($fbId, '_')) {
+            $lookup = Http::get("https://graph.facebook.com/{$this->graphVersion}/{$fbId}", [
+                'fields'       => 'post_id',
+                'access_token' => $token,
+            ]);
+            if ($lookup->successful() && $lookup->json('post_id')) {
+                $realPostId = $lookup->json('post_id');
+                Log::info('FB post_id backfill', [
+                    'post_id'  => $post->id,
+                    'photo_id' => $fbId,
+                    'real_id'  => $realPostId,
+                ]);
+                $post->facebook_post_id = $realPostId;
+                $post->save();
+                $fbId = $realPostId;
+            } else {
+                Log::warning('FB post_id backfill failed', [
+                    'post_id'  => $post->id,
+                    'photo_id' => $fbId,
+                    'body'     => $lookup->body(),
+                ]);
+            }
+        }
+
+        $endpoint = "https://graph.facebook.com/{$this->graphVersion}/{$fbId}/insights";
 
         // Tentativa 1: métricas atuais válidas em v22
         $res = Http::get($endpoint, [
