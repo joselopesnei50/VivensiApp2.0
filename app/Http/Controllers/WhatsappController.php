@@ -897,16 +897,48 @@ class WhatsappController extends Controller
 
     /**
      * Retorna os templates em JSON para o modal de chat.
+     *
+     * getContextModel() retorna User ou Tenant, mas MetaCloudApiService
+     * espera meta_waba_id/meta_phone_number_id/meta_access_token — colunas
+     * de WhatsappConfig (legado) ou de uma WhatsappInstance provider=cloud_api
+     * (padrão novo). Buscamos a instance primeiro, cai no config se legado,
+     * e monta objeto anônimo com as 3 chaves esperadas pelo service.
      */
     public function templatesJson()
     {
-        $contextModel = $this->getContextModel();
-        if (!$contextModel || empty($contextModel->meta_waba_id)) {
+        $tenantId = auth()->user()->tenant_id ?? null;
+        if (!$tenantId) {
             return response()->json(['templates' => []]);
         }
 
-        $service = new \App\Services\Messaging\MetaCloudApiService($contextModel);
+        // Padrão novo: WhatsappInstance provider=cloud_api
+        $instance = \App\Models\WhatsappInstance::where('tenant_id', $tenantId)
+            ->where('provider', \App\Models\WhatsappInstance::PROVIDER_CLOUD_API)
+            ->where('status', 'open')
+            ->first();
+
+        if ($instance) {
+            $ctx = (object) [
+                'meta_waba_id'         => $instance->waba_id,
+                'meta_phone_number_id' => $instance->phone_number_id,
+                'meta_access_token'    => $instance->graph_access_token,
+            ];
+        } else {
+            // Fallback legado: WhatsappConfig do tenant
+            $config = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
+            if (!$config || empty($config->meta_waba_id) || empty($config->meta_access_token)) {
+                return response()->json(['templates' => [], 'error' => 'Nenhuma conta Meta Cloud API conectada.']);
+            }
+            $ctx = $config;
+        }
+
+        $service = new \App\Services\Messaging\MetaCloudApiService($ctx);
         $res = $service->getTemplates();
+
+        if (isset($res['error'])) {
+            \Log::warning('templatesJson: Meta getTemplates falhou', ['tenant_id' => $tenantId, 'error' => $res['error']]);
+            return response()->json(['templates' => [], 'error' => is_string($res['error']) ? $res['error'] : 'Erro ao buscar templates na Meta.']);
+        }
 
         return response()->json(['templates' => $res['data'] ?? []]);
     }
