@@ -122,6 +122,18 @@ class MetaSocialInsightsService
                 'body'       => $body,
                 'is_orphan'  => $isOrphan,
             ]);
+
+            if ($isOrphan) {
+                // Órfão permanente: sem o id, o post sai da query do sync hourly.
+                // Preserva o id original em error_message (UI só exibe em status=failed).
+                $post->error_message = trim(
+                    ($post->error_message ? $post->error_message . ' | ' : '')
+                    . "FB órfão (foto pré-fix 2 fases, sem post no feed): id {$post->facebook_post_id}"
+                );
+                $post->facebook_post_id = null;
+                $post->save();
+            }
+
             return false;
         }
 

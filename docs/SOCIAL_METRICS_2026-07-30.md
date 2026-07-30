@@ -191,7 +191,7 @@ Fase 2: POST /{pageId}/feed com:
 | `app/Http/Controllers/SocialAnalyticsController.php` | **NOVO** |
 | `resources/views/social/analytics.blade.php` | **NOVO** |
 | `resources/views/layouts/app.blade.php` | link Analytics em 3 role blocks |
-| `routes/web.php` | rota `/social/analytics` |
+| `routes/partials/social.php` | rota `/social/analytics` (grupo `auth`+`subscription`, name `social.analytics.index`) |
 | `scripts/insights-test.php` | **NOVO** — diagnóstico manual |
 
 ---
@@ -209,7 +209,7 @@ Anteriores (implementação inicial da feature) — vários commits do dia com c
 
 | Cenário | Vai coletar métricas? |
 |---|---|
-| Posts publicados **antes** de `91fa66c` (ex: #10) | Não — são órfãos permanentes. Meta não indexa mais. |
+| Posts publicados **antes** de `91fa66c` (ex: #10) | Não — órfãos permanentes. O sync detecta (`is_orphan`), anula `facebook_post_id` (preservando o id original em `error_message`) e para de re-tentar. Sem isso, cada órfão geraria warning hourly por 30 dias. |
 | Posts publicados **depois** de `91fa66c` (fluxo 2 fases) | Sim — FB Insights básico (impressions/likes/clicks) funciona |
 | Comments/shares/reactions no FB | Só depois de aprovar `pages_read_user_content` |
 | IG (impressions/reach/likes/comments/saved) | Só depois de aprovar `instagram_manage_insights` |
@@ -219,8 +219,11 @@ Anteriores (implementação inicial da feature) — vários commits do dia com c
 ## 7. Como testar após deploy
 
 ```bash
-# 1) No VPS, atualizar
+# 1) No VPS, atualizar + aplicar migration (OBRIGATÓRIO antes de qualquer sync)
 cd /var/www/vivensi && git pull origin main
+sudo -u www-data php artisan migrate --force
+# confirmar: 2026_07_29_184645_add_extra_metrics_to_post_metrics deve constar como Ran
+sudo -u www-data php artisan migrate:status | grep extra_metrics
 
 # 2) Publicar UM POST NOVO pela UI (/social/posts)
 #    (posts antigos são órfãos — não vão retornar dados)
