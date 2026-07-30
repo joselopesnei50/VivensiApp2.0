@@ -36,12 +36,33 @@ $graphV  = 'v22.0';
 
 // ── Facebook ──
 if ($post->facebook_post_id) {
+    $fbId = $post->facebook_post_id;
+
+    // BACKFILL: se o ID salvo não tem '_', é photo_id (não post_id). Insights
+    // e engagement precisam do post_id (formato PAGEID_POSTID).
+    if (!str_contains($fbId, '_')) {
+        echo "-- Backfill: {$fbId} parece photo_id, buscando post_id real...\n";
+        $lookup = \Illuminate\Support\Facades\Http::get(
+            "https://graph.facebook.com/{$graphV}/{$fbId}",
+            ['fields' => 'post_id', 'access_token' => $token]
+        );
+        echo "   HTTP {$lookup->status()}: {$lookup->body()}\n";
+        $realId = $lookup->json('post_id');
+        if ($realId) {
+            $post->facebook_post_id = $realId;
+            $post->save();
+            $fbId = $realId;
+            echo "   ✅ Atualizado no DB: {$realId}\n";
+        }
+        echo "\n";
+    }
+
     echo str_repeat('=', 70) . "\n";
-    echo " FB Insights — GET /{$post->facebook_post_id}/insights\n";
+    echo " FB Insights — GET /{$fbId}/insights\n";
     echo str_repeat('=', 70) . "\n";
 
     $res = \Illuminate\Support\Facades\Http::get(
-        "https://graph.facebook.com/{$graphV}/{$post->facebook_post_id}/insights",
+        "https://graph.facebook.com/{$graphV}/{$fbId}/insights",
         [
             'metric'       => 'post_impressions,post_reactions_like_total,post_clicks',
             'access_token' => $token,
@@ -53,7 +74,7 @@ if ($post->facebook_post_id) {
     // Engagement summary (comments/shares/reactions) — endpoint separado
     echo "-- Engagement summary (comments/shares/reactions):\n";
     $res2 = \Illuminate\Support\Facades\Http::get(
-        "https://graph.facebook.com/{$graphV}/{$post->facebook_post_id}",
+        "https://graph.facebook.com/{$graphV}/{$fbId}",
         [
             'fields'       => 'comments.summary(true).limit(0),shares,reactions.summary(true).limit(0)',
             'access_token' => $token,
