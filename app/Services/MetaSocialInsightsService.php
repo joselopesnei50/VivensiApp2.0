@@ -56,21 +56,34 @@ class MetaSocialInsightsService
     /**
      * Facebook Page post insights.
      * https://developers.facebook.com/docs/graph-api/reference/post/insights
+     *
+     * Meta descontinuou várias métricas ao longo das versões. Em v22:
+     * - post_impressions_unique: DEPRECATED (deprecated em v10+)
+     * - post_engaged_users:      DEPRECATED
+     * - post_impressions:        OK
+     * - post_reactions_*_total:  OK (like/love/wow/haha/sorry/anger)
+     * - post_clicks:             OK
+     *
+     * Estratégia: tenta pedir set completo (com métricas atuais); se ainda
+     * falhar (mudança futura da Meta), cai pra set mínimo garantido.
      */
     private function syncFacebook(ScheduledPost $post, string $token): bool
     {
-        $metrics = implode(',', [
-            'post_impressions',        // total exibições
-            'post_impressions_unique', // pessoas únicas (reach)
-            'post_reactions_like_total',
-            'post_clicks',
-            'post_engaged_users',
-        ]);
+        $endpoint = "https://graph.facebook.com/{$this->graphVersion}/{$post->facebook_post_id}/insights";
 
-        $res = Http::get("https://graph.facebook.com/{$this->graphVersion}/{$post->facebook_post_id}/insights", [
-            'metric'       => $metrics,
+        // Tentativa 1: métricas atuais válidas em v22
+        $res = Http::get($endpoint, [
+            'metric'       => 'post_impressions,post_reactions_like_total,post_clicks',
             'access_token' => $token,
         ]);
+
+        // Tentativa 2 (fallback): apenas post_impressions — sempre válida
+        if (!$res->successful()) {
+            $res = Http::get($endpoint, [
+                'metric'       => 'post_impressions',
+                'access_token' => $token,
+            ]);
+        }
 
         if (!$res->successful()) {
             Log::warning('FB post insights failed', [
@@ -87,10 +100,12 @@ class MetaSocialInsightsService
             ->keyBy('name')
             ->map(fn ($m) => (int) ($m['values'][0]['value'] ?? 0));
 
-        // Comentários e shares vêm do endpoint principal do post, não do insights.
-        [$comments, $shares] = $this->fetchFacebookCommentsShares($post, $token);
+        // Comentários, shares e reactions/likes vêm de endpoints separados
+        // (não estão no insights). Um único fetch com summary.
+        [$comments, $shares, $likesFromSummary] = $this->fetchFacebookEngagement($post, $token);
 
-        $likes = (int) $values->get('post_reactions_like_total', 0);
+        // Likes: prefere insights (post_reactions_like_total), cai no summary
+        $likes = (int) $values->get('post_reactions_like_total', 0) ?: $likesFromSummary;
         $engagement = $likes + $comments + $shares + (int) $values->get('post_clicks', 0);
 
         PostMetric::withoutGlobalScope('tenant')->updateOrCreate(
@@ -101,7 +116,7 @@ class MetaSocialInsightsService
             [
                 'tenant_id'   => $post->tenant_id,
                 'impressions' => (int) $values->get('post_impressions', 0),
-                'reach'       => (int) $values->get('post_impressions_unique', 0),
+                'reach'       => 0, // post_impressions_unique deprecated em v10+
                 'likes'       => $likes,
                 'comments'    => $comments,
                 'shares'      => $shares,
@@ -116,27 +131,30 @@ class MetaSocialInsightsService
     }
 
     /**
-     * Comentários e shares vêm em endpoint separado do FB (não estão em insights).
-     * Retorna [comments, shares].
+     * Engagement do post do FB via endpoint principal (não insights):
+     * comments, shares e reactions com summary. Público — só requer o
+     * page access token, sem escopo insights.
+     * Retorna [comments, shares, likes_from_summary].
      */
-    private function fetchFacebookCommentsShares(ScheduledPost $post, string $token): array
+    private function fetchFacebookEngagement(ScheduledPost $post, string $token): array
     {
         try {
             $res = Http::get("https://graph.facebook.com/{$this->graphVersion}/{$post->facebook_post_id}", [
-                'fields'       => 'comments.summary(true).limit(0),shares',
+                'fields'       => 'comments.summary(true).limit(0),shares,reactions.summary(true).limit(0)',
                 'access_token' => $token,
             ]);
             if ($res->successful()) {
                 $body = $res->json();
                 return [
-                    (int) ($body['comments']['summary']['total_count'] ?? 0),
-                    (int) ($body['shares']['count'] ?? 0),
+                    (int) ($body['comments']['summary']['total_count']  ?? 0),
+                    (int) ($body['shares']['count']                     ?? 0),
+                    (int) ($body['reactions']['summary']['total_count'] ?? 0),
                 ];
             }
         } catch (\Throwable $e) {
-            Log::warning('FB comments/shares fetch failed', ['post_id' => $post->id, 'error' => $e->getMessage()]);
+            Log::warning('FB engagement fetch failed', ['post_id' => $post->id, 'error' => $e->getMessage()]);
         }
-        return [0, 0];
+        return [0, 0, 0];
     }
 
     /**

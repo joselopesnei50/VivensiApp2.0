@@ -43,12 +43,24 @@ if ($post->facebook_post_id) {
     $res = \Illuminate\Support\Facades\Http::get(
         "https://graph.facebook.com/{$graphV}/{$post->facebook_post_id}/insights",
         [
-            'metric'       => 'post_impressions,post_impressions_unique,post_reactions_like_total,post_clicks,post_engaged_users',
+            'metric'       => 'post_impressions,post_reactions_like_total,post_clicks',
             'access_token' => $token,
         ]
     );
     echo "HTTP {$res->status()}\n";
     echo $res->body() . "\n\n";
+
+    // Engagement summary (comments/shares/reactions) — endpoint separado
+    echo "-- Engagement summary (comments/shares/reactions):\n";
+    $res2 = \Illuminate\Support\Facades\Http::get(
+        "https://graph.facebook.com/{$graphV}/{$post->facebook_post_id}",
+        [
+            'fields'       => 'comments.summary(true).limit(0),shares,reactions.summary(true).limit(0)',
+            'access_token' => $token,
+        ]
+    );
+    echo "HTTP {$res2->status()}\n";
+    echo $res2->body() . "\n\n";
 }
 
 // ── Instagram ──
