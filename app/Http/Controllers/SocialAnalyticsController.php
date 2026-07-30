@@ -85,4 +85,10 @@ class SocialAnalyticsController extends Controller
             'byNetwork' => $byNetwork,
         ]);
     }
+
+    /** Passo-a-passo Bruce IA de como criar e agendar posts nas redes. */
+    public function guide(): View
+    {
+        return view('social.como-postar');
+    }
 }

@@ -10,6 +10,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::patch('/accounts/{account}/disconnect', [App\Http\Controllers\SocialAccountController::class, 'disconnect'])->name('accounts.disconnect');
         Route::delete('/accounts/{account}',          [App\Http\Controllers\SocialAccountController::class, 'destroy'])->name('accounts.destroy');
         Route::get('/analytics',                      [App\Http\Controllers\SocialAnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('/como-postar',                    [App\Http\Controllers\SocialAnalyticsController::class, 'guide'])->name('guide');
         Route::get('/posts',                          [App\Http\Controllers\ScheduledPostController::class, 'index'])->name('posts.index');
         Route::get('/posts/calendar',                 [App\Http\Controllers\ScheduledPostController::class, 'calendar'])->name('posts.calendar');
         Route::get('/posts/create',                   [App\Http\Controllers\ScheduledPostController::class, 'create'])->name('posts.create');

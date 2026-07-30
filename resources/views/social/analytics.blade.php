@@ -53,10 +53,23 @@
     .an-empty h3 { color:#0f172a; font-weight:700; margin:0 0 6px; }
     .an-empty p { color:#64748b; margin:0; }
 
-    .an-banner { background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border:1px solid #f59e0b; border-radius:12px; padding:18px 22px; margin-bottom:24px; display:flex; gap:14px; align-items:flex-start; }
-    .an-banner i { color:#b45309; font-size:1.4rem; flex-shrink:0; margin-top:2px; }
-    .an-banner strong { color:#78350f; display:block; margin-bottom:4px; font-size:.95rem; }
-    .an-banner p { color:#92400e; margin:0; font-size:.85rem; line-height:1.5; }
+    /* Banner Bruce IA — CTA pro passo-a-passo */
+    .bruce-banner { display:flex; align-items:center; gap:20px; background:#0A0A0B; border:1px solid rgba(255,122,26,.25); border-radius:18px; padding:22px 26px; margin-bottom:28px; text-decoration:none; color:#fff; transition:transform .15s, border-color .15s, box-shadow .15s; }
+    .bruce-banner:hover { transform:translateY(-2px); border-color:rgba(255,122,26,.5); box-shadow:0 12px 32px rgba(255,122,26,.15); color:#fff; text-decoration:none; }
+    .bruce-banner-icon { flex-shrink:0; width:72px; height:72px; border-radius:18px; background:#0f0f1e; border:1px solid rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; padding:8px; }
+    .bruce-banner-icon img { width:100%; height:100%; object-fit:contain; }
+    .bruce-banner-body { flex:1; min-width:0; }
+    .bruce-banner-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(255,122,26,.12); border:1px solid rgba(255,122,26,.3); border-radius:20px; padding:3px 10px; margin-bottom:8px; }
+    .bruce-banner-tag i { color:#FF7A1A; font-size:.7rem; }
+    .bruce-banner-tag span { color:#FF7A1A; font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:1.1px; }
+    .bruce-banner-body strong { display:block; color:#fff; font-size:1rem; font-weight:800; margin-bottom:4px; letter-spacing:-.2px; }
+    .bruce-banner-body p { color:rgba(255,255,255,.6); font-size:.82rem; margin:0; line-height:1.5; }
+    .bruce-banner-cta { flex-shrink:0; display:inline-flex; align-items:center; gap:8px; background:#FF7A1A; color:#fff; font-size:.78rem; font-weight:800; padding:11px 18px; border-radius:11px; white-space:nowrap; }
+    .bruce-banner-cta i { font-size:.75rem; }
+    @media (max-width: 720px) {
+        .bruce-banner { flex-direction:column; align-items:flex-start; text-align:left; }
+        .bruce-banner-cta { align-self:stretch; justify-content:center; }
+    }
 </style>
 @endpush
 
@@ -72,15 +85,22 @@
         <p>Métricas dos seus posts publicados no Facebook e Instagram.</p>
     </div>
 
-    <div class="an-banner">
-        <i class="fas fa-hourglass-half"></i>
-        <div>
-            <strong>Métricas em preparação — aguardando aprovação da Meta</strong>
-            <p>
-                O painel está pronto e o app já publica posts normalmente. A coleta automática de curtidas, alcance, impressões e comentários será ativada assim que a Meta aprovar as permissões <code>pages_read_user_content</code> e <code>instagram_manage_insights</code> no próximo App Review. Enquanto isso, os cards abaixo permanecem em zero.
-            </p>
+    <a href="{{ route('social.guide') }}" class="bruce-banner">
+        <div class="bruce-banner-icon">
+            <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA">
         </div>
-    </div>
+        <div class="bruce-banner-body">
+            <div class="bruce-banner-tag">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                <span>Guia Bruce IA</span>
+            </div>
+            <strong>Nunca publicou por aqui? O Bruce te ensina em 5 passos.</strong>
+            <p>Como conectar sua página, criar o post, publicar na hora ou deixar agendado pra sair sozinho. Passo a passo, com dicas e respostas rápidas.</p>
+        </div>
+        <span class="bruce-banner-cta">
+            Ver guia <i class="fas fa-arrow-right"></i>
+        </span>
+    </a>
 
     <div class="an-filter">
         <a href="{{ route('social.analytics.index', ['days' => 7]) }}"  class="{{ $days === 7  ? 'active' : '' }}">7 dias</a>
