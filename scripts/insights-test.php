@@ -33,6 +33,38 @@ echo "Token: " . substr($post->account?->access_token ?? '', 0, 14) . "...\n\n";
 
 $token   = $post->account->access_token;
 $graphV  = 'v22.0';
+$pageId  = $post->account->page_id;
+
+// ── Sondagem inicial: descobre o tipo do objeto e o formato real dos IDs ──
+echo str_repeat('=', 70) . "\n";
+echo " Sondagem: /{$post->facebook_post_id}?fields=id,object_id (sem post_id)\n";
+echo str_repeat('=', 70) . "\n";
+$probe = \Illuminate\Support\Facades\Http::get(
+    "https://graph.facebook.com/{$graphV}/{$post->facebook_post_id}",
+    ['fields' => 'id,object_id,parent_id,created_time,type', 'access_token' => $token]
+);
+echo "HTTP {$probe->status()}\n";
+echo $probe->body() . "\n\n";
+
+echo str_repeat('=', 70) . "\n";
+echo " Sondagem: /{$pageId}/posts?limit=3 (formato de IDs de posts da Page)\n";
+echo str_repeat('=', 70) . "\n";
+$posts = \Illuminate\Support\Facades\Http::get(
+    "https://graph.facebook.com/{$graphV}/{$pageId}/posts",
+    ['limit' => 3, 'access_token' => $token]
+);
+echo "HTTP {$posts->status()}\n";
+echo $posts->body() . "\n\n";
+
+echo str_repeat('=', 70) . "\n";
+echo " Sondagem: /{$pageId}/photos?limit=3 (formato de IDs de fotos)\n";
+echo str_repeat('=', 70) . "\n";
+$photos = \Illuminate\Support\Facades\Http::get(
+    "https://graph.facebook.com/{$graphV}/{$pageId}/photos",
+    ['limit' => 3, 'fields' => 'id,name,link,created_time', 'access_token' => $token]
+);
+echo "HTTP {$photos->status()}\n";
+echo $photos->body() . "\n\n";
 
 // ── Facebook ──
 if ($post->facebook_post_id) {
