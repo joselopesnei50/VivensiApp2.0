@@ -81,6 +81,21 @@ class WhatsAppService
                 );
             }
 
+            // Pré-pago: se ativado pra este tenant, bloqueia envio se saldo
+            // não cobre o pior cenário (categoria marketing BR). Só Cloud API
+            // gera cobrança — Evolution continua livre.
+            if ($instance->isCloudApi()) {
+                $creditService = app(\App\Services\WhatsAppService\WhatsappCreditService::class);
+                if ($creditService->isPrepaidEnabled($chat->tenant_id)
+                    && !$creditService->hasBalanceForSend($chat->tenant_id, 'BR')
+                ) {
+                    throw new \RuntimeException(
+                        'Saldo WhatsApp insuficiente. Acesse Consumo → Recarregar para adicionar créditos e voltar a enviar mensagens.',
+                        402
+                    );
+                }
+            }
+
             $sender   = WhatsAppSenderFactory::forInstance($instance);
             $provider = $sender->providerName();
 

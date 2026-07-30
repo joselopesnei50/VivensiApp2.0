@@ -31,10 +31,25 @@ return [
     'usd_brl_rate' => env('WHATSAPP_EXCHANGE_USD_BRL', 5.50),
 
     /*
-     * Markup padrao aplicado no repasse ao tenant (nao usado nesta fase 5.1,
-     * reservado pra fase de faturamento).
+     * Markup padrao aplicado no repasse ao tenant. Ex: 50 = Meta cobra $0.10,
+     * Vivensi cobra $0.15 do cliente (via débito em BRL do saldo pré-pago).
+     * Usado por WhatsappCreditService::debitForConversation.
      */
-    'default_markup_pct' => env('WHATSAPP_DEFAULT_MARKUP_PCT', 30),
+    'default_markup_pct' => env('WHATSAPP_DEFAULT_MARKUP_PCT', 50),
+
+    /*
+     * Configuração do modo pré-pago (Fase 1 do modelo comercial A).
+     */
+    'prepaid' => [
+        // Valor mínimo de recarga em BRL micros (1_000_000 = R$ 1,00).
+        'min_topup_brl_micros' => (int) env('WHATSAPP_MIN_TOPUP_BRL', 50) * 1_000_000,
+
+        // Threshold para alertar saldo baixo (% da última recarga).
+        'low_balance_threshold_pct' => (int) env('WHATSAPP_LOW_BALANCE_PCT', 20),
+
+        // Pacotes sugeridos pra recarga self-service (Fase 2). Em BRL.
+        'suggested_topups' => [50, 100, 250, 500],
+    ],
 
     /*
      * Preco por categoria em USD micros por pais.

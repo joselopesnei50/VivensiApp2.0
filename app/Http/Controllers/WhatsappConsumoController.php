@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\WhatsappConversation;
+use App\Models\WhatsappCreditTransaction;
+use App\Services\WhatsAppService\WhatsappCreditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -73,14 +75,28 @@ class WhatsappConsumoController extends Controller
                 return $row;
             });
 
+        // Saldo pré-pago + extrato (Fase 1 modelo comercial A).
+        // Se tenant não é pré-pago, balance está zero e prepaid_enabled_at
+        // null — a view mostra card cinza "modelo transparência".
+        $credit      = app(WhatsappCreditService::class);
+        $balance     = $credit->getBalance($tenantId);
+        $transactions = WhatsappCreditTransaction::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->latest('id')
+            ->limit(25)
+            ->get();
+
         return view('whatsapp.consumo', [
-            'summary'    => $summary,
-            'byCategory' => $byCategory,
-            'timeline'   => $timeline,
-            'days'       => $days,
-            'from'       => $from,
-            'to'         => $to,
-            'usdBrlRate' => (float) config('whatsapp_pricing.usd_brl_rate', 5.50),
+            'summary'      => $summary,
+            'byCategory'   => $byCategory,
+            'timeline'     => $timeline,
+            'days'         => $days,
+            'from'         => $from,
+            'to'           => $to,
+            'usdBrlRate'   => (float) config('whatsapp_pricing.usd_brl_rate', 5.50),
+            'balance'      => $balance,
+            'transactions' => $transactions,
+            'suggestedTopups' => (array) config('whatsapp_pricing.prepaid.suggested_topups', [50, 100, 250, 500]),
         ]);
     }
 }

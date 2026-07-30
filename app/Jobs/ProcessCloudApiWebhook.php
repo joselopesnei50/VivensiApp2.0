@@ -278,6 +278,23 @@ class ProcessCloudApiWebhook implements ShouldQueue
                 $updates['whatsapp_conversation_id'] = $conversation->id;
                 $updates['meta_pricing_category']    = $conversation->category;
             }
+
+            // Débito automático do saldo pré-pago (Fase 1 pré-pago).
+            // Idempotente por whatsapp_conversation_id — reenvio Meta não
+            // cobra 2x. Se tenant não tem pré-pago ativo, é no-op.
+            // Falha vira warning (webhook Meta nunca pode falhar).
+            if ($conversation) {
+                try {
+                    app(\App\Services\WhatsAppService\WhatsappCreditService::class)
+                        ->debitForConversation($conversation);
+                } catch (\Throwable $e) {
+                    Log::warning('CloudApi Job: débito pré-pago falhou (não bloqueante)', [
+                        'tenant_id'      => $conversation->tenant_id,
+                        'conversation'   => $conversation->id,
+                        'error'          => $e->getMessage(),
+                    ]);
+                }
+            }
         }
 
         if (!empty($updates)) {
