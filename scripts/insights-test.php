@@ -70,23 +70,13 @@ echo $photos->body() . "\n\n";
 if ($post->facebook_post_id) {
     $fbId = $post->facebook_post_id;
 
-    // BACKFILL: se o ID salvo não tem '_', é photo_id (não post_id). Insights
-    // e engagement precisam do post_id (formato PAGEID_POSTID).
+    // BACKFILL: se o ID salvo não tem '_', constroi PAGEID_OBJECTID manual.
     if (!str_contains($fbId, '_')) {
-        echo "-- Backfill: {$fbId} parece photo_id, buscando post_id real...\n";
-        $lookup = \Illuminate\Support\Facades\Http::get(
-            "https://graph.facebook.com/{$graphV}/{$fbId}",
-            ['fields' => 'post_id', 'access_token' => $token]
-        );
-        echo "   HTTP {$lookup->status()}: {$lookup->body()}\n";
-        $realId = $lookup->json('post_id');
-        if ($realId) {
-            $post->facebook_post_id = $realId;
-            $post->save();
-            $fbId = $realId;
-            echo "   ✅ Atualizado no DB: {$realId}\n";
-        }
-        echo "\n";
+        $fixed = "{$pageId}_{$fbId}";
+        echo "-- Backfill: {$fbId} -> {$fixed}\n\n";
+        $post->facebook_post_id = $fixed;
+        $post->save();
+        $fbId = $fixed;
     }
 
     echo str_repeat('=', 70) . "\n";

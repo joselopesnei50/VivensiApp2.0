@@ -378,12 +378,24 @@ class MetaSocialPublisherService
             return ['id' => null, 'error' => $this->friendlyError($err)];
         }
 
-        // IMPORTANTE: POST /photos retorna 'id' (photo_id) E 'post_id' (formato
-        // PAGEID_POSTID). Insights e engagement precisam do post_id — não do
-        // photo_id. POST /feed e /videos retornam só 'id' (que já é o post_id).
-        // Preferimos post_id sempre, com fallback pra id.
+        // IMPORTANTE: gravamos SEMPRE no formato PAGEID_OBJECTID.
+        // Razão: Meta Insights e engagement endpoints exigem esse formato.
+        // Meta v22 mudou o comportamento — POST /photos às vezes retorna:
+        //   - {"id": "PHOTOID", "post_id": "PAGEID_POSTID"} (formato antigo)
+        //   - {"id": "PHOTOID"} apenas (formato novo, sem post_id no response)
+        // Se pegarmos só o "id", ele é o photo_id orfão — insights rejeita.
+        // Solução: se "post_id" veio, usa direto. Senão, construimos manual:
+        // "{$pageId}_{$id}" — funciona pra qualquer tipo de objeto publicado.
+        $rawId  = $response->json('id');
+        $postId = $response->json('post_id');
+
+        if (!$postId && $rawId && !str_contains($rawId, '_')) {
+            // Meta retornou só o objectId puro — reconstroi formato composto
+            $postId = "{$pageId}_{$rawId}";
+        }
+
         return [
-            'id'    => $response->json('post_id') ?? $response->json('id'),
+            'id'    => $postId ?? $rawId,
             'error' => null,
         ];
     }
