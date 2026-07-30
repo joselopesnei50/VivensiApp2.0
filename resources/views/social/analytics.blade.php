@@ -52,6 +52,11 @@
     .an-empty i { font-size:3rem; color:#cbd5e1; margin-bottom:16px; }
     .an-empty h3 { color:#0f172a; font-weight:700; margin:0 0 6px; }
     .an-empty p { color:#64748b; margin:0; }
+
+    .an-banner { background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border:1px solid #f59e0b; border-radius:12px; padding:18px 22px; margin-bottom:24px; display:flex; gap:14px; align-items:flex-start; }
+    .an-banner i { color:#b45309; font-size:1.4rem; flex-shrink:0; margin-top:2px; }
+    .an-banner strong { color:#78350f; display:block; margin-bottom:4px; font-size:.95rem; }
+    .an-banner p { color:#92400e; margin:0; font-size:.85rem; line-height:1.5; }
 </style>
 @endpush
 
@@ -64,7 +69,17 @@
 
     <div class="an-hero">
         <h1><i class="fas fa-chart-line" style="color:#10b981;"></i> Analytics — Redes Sociais</h1>
-        <p>Métricas dos seus posts publicados no Facebook e Instagram. Atualizado a cada hora.</p>
+        <p>Métricas dos seus posts publicados no Facebook e Instagram.</p>
+    </div>
+
+    <div class="an-banner">
+        <i class="fas fa-hourglass-half"></i>
+        <div>
+            <strong>Métricas em preparação — aguardando aprovação da Meta</strong>
+            <p>
+                O painel está pronto e o app já publica posts normalmente. A coleta automática de curtidas, alcance, impressões e comentários será ativada assim que a Meta aprovar as permissões <code>pages_read_user_content</code> e <code>instagram_manage_insights</code> no próximo App Review. Enquanto isso, os cards abaixo permanecem em zero.
+            </p>
+        </div>
     </div>
 
     <div class="an-filter">

@@ -35,14 +35,20 @@ class Kernel extends ConsoleKernel
             $schedule->command("whatsapp:cleanup --days={$days}")->dailyAt('03:30');
         }
 
-        // Redes Sociais: sincroniza métricas dos posts publicados a cada hora
-        // (cheira Meta Insights: impressões, alcance, likes, saves, etc).
-        // Idempotente — updateOrCreate por (post_id, source).
-        $schedule->command('posts:sync-metrics --days=30')
-                 ->hourly()
-                 ->onFailure(function () {
-                     \Illuminate\Support\Facades\Log::error('posts:sync-metrics falhou no scheduler.');
-                 });
+        // Redes Sociais: sincroniza métricas dos posts publicados.
+        // DESLIGADO em 2026-07-30 até Meta App Review aprovar as permissões:
+        //   - pages_read_user_content (comments/shares/reactions do FB)
+        //   - instagram_manage_insights (tudo do IG)
+        //   - read_insights (impressions/clicks do FB — v22 endureceu)
+        // Sem essas 3, todas as chamadas retornam 400 e o hourly só polui
+        // o log com warnings. O código está pronto — quando aprovado no App
+        // Review, descomentar as 5 linhas abaixo e o dashboard passa a popular
+        // automaticamente. Ver docs/SOCIAL_METRICS_2026-07-30.md §4.
+        // $schedule->command('posts:sync-metrics --days=30')
+        //          ->hourly()
+        //          ->onFailure(function () {
+        //              \Illuminate\Support\Facades\Log::error('posts:sync-metrics falhou no scheduler.');
+        //          });
 
         // Redes Sociais: publica posts agendados a cada 5 minutos.
         // Removido withoutOverlapping() e runInBackground() porque:

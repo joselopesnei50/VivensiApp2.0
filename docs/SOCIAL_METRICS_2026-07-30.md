@@ -1,8 +1,24 @@
 # Métricas de Redes Sociais (Facebook + Instagram)
 
 **Data:** 2026-07-30
-**Status:** implementado e deployado; aguardando teste com post novo pós-deploy
+**Status:** ⏸️ **CONGELADO — aguardando App Review Meta**. Código pronto, scheduler desligado.
 **Escopo:** captura automática de impressões, alcance, curtidas, comentários, compartilhamentos, saves, cliques e engajamento total de posts publicados via Meta Graph API v22
+
+## ⚠️ Estado atual (2026-07-30 fim do dia)
+
+Após teste de fogo real no VPS com post publicado corretamente (fluxo 2 fases funcionou, id `PAGEID_POSTID` salvo com underscore), **Meta v22 continuou rejeitando Insights com 400** (`"The value must be a valid insights metric"`). Diagnóstico definitivo: mesmo `post_impressions` básico agora exige permissões que não temos.
+
+**Decisão:** modo "aguardando App Review":
+1. Scheduler `posts:sync-metrics` **comentado em `Kernel.php`** — não gera mais warning hourly
+2. Banner de aviso adicionado em `/social/analytics` explicando ao usuário
+3. Todo o resto do código continua funcional
+
+**Pra religar quando permissões forem aprovadas:** descomentar as 5 linhas em `app/Console/Kernel.php` (procurar por "DESLIGADO em 2026-07-30").
+
+**Permissões requeridas pra destravar:**
+- `pages_read_user_content` — comments/shares/reactions do FB
+- `instagram_manage_insights` — tudo do IG
+- `read_insights` — impressions/clicks do FB (Meta v22 endureceu esse endpoint)
 
 ---
 
