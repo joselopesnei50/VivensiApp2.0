@@ -103,11 +103,24 @@ class MetaSocialInsightsService
         }
 
         if (!$res->successful()) {
+            $body = $res->json() ?: $res->body();
+            $errMsg = is_array($body) ? ($body['error']['message'] ?? '') : (string) $body;
+
+            // Detecta posts órfãos (publicados antes do fix de 2 fases): a
+            // foto ficou no álbum mas nunca virou post real no feed. Meta
+            // rejeita insights com "The value must be a valid insights metric"
+            // ou "Object with ID X does not exist". Não adianta continuar
+            // tentando pra esses — não há métricas mesmo.
+            $isOrphan = str_contains($errMsg, 'valid insights metric')
+                     || str_contains($errMsg, 'does not exist')
+                     || str_contains($errMsg, 'Unsupported get request');
+
             Log::warning('FB post insights failed', [
                 'post_id'    => $post->id,
                 'fb_post_id' => $post->facebook_post_id,
                 'status'     => $res->status(),
-                'body'       => $res->json() ?: $res->body(),
+                'body'       => $body,
+                'is_orphan'  => $isOrphan,
             ]);
             return false;
         }

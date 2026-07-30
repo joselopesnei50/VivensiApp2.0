@@ -343,29 +343,104 @@ class MetaSocialPublisherService
             ?? ($msg !== '' ? $msg . ($code ? " (code {$code})" : '') : 'Erro desconhecido da Meta.');
     }
 
-    /** @return array{id: ?string, error: ?string} */
+    /**
+     * Publica no Facebook Page.
+     *
+     * Fluxo pra POST COM IMAGEM (Meta v22 mudou comportamento):
+     *   1) POST /{pageId}/photos com published=false → obtém media_fbid
+     *   2) POST /{pageId}/feed com attached_media=[{media_fbid}] + message
+     *      → obtém post_id real no formato PAGEID_POSTID
+     *
+     * Por quê o fluxo em 2 fases?
+     *   - POST /photos com published=true às vezes cria a foto SEM criar
+     *     post no feed. Fica órfã: id não é indexável em Insights nem
+     *     Engagement API. Bug confirmado em prod 2026-07-29 (post #10).
+     *   - Attached_media é o padrão oficial recomendado pela Meta pra
+     *     posts com foto e SEMPRE retorna um post_id real.
+     *
+     * Vídeo continua via /videos (não tem esse bug — sempre publica).
+     * Texto puro continua via /feed.
+     *
+     * @return array{id: ?string, error: ?string}
+     */
     private function publishToFacebook(ScheduledPost $post, string $pageId, string $token): array
     {
-        $endpoint = "https://graph.facebook.com/{$this->graphVersion}/{$pageId}";
-        $payload  = ['message' => $post->caption, 'access_token' => $token];
-
-        // Meta exige URL absoluta (http/https). Se veio relativa (/storage/...)
-        // prefixa com APP_URL. Defesa em profundidade — controller já faz isso.
         $mediaUrl = $this->absoluteMediaUrl($post->media_url);
 
+        // ── FLUXO 1: post com imagem — 2 fases (upload + attach) ──
         if ($mediaUrl && $post->media_type === 'image') {
-            $endpoint .= '/photos';
-            $payload['url'] = $mediaUrl;
-            $payload['published'] = true;
-        } elseif ($mediaUrl && $post->media_type === 'video') {
-            $endpoint .= '/videos';
-            $payload['file_url'] = $mediaUrl;
-        } else {
-            $endpoint .= '/feed';
+            return $this->publishFacebookPhotoPost($post, $pageId, $token, $mediaUrl);
         }
 
-        $response = Http::post($endpoint, $payload);
+        // ── FLUXO 2: vídeo — endpoint /videos ──
+        if ($mediaUrl && $post->media_type === 'video') {
+            $res = Http::post("https://graph.facebook.com/{$this->graphVersion}/{$pageId}/videos", [
+                'message'      => $post->caption,
+                'file_url'     => $mediaUrl,
+                'access_token' => $token,
+            ]);
+            return $this->parseFacebookPublishResponse($res, $post, $pageId);
+        }
 
+        // ── FLUXO 3: texto puro — /feed ──
+        $res = Http::post("https://graph.facebook.com/{$this->graphVersion}/{$pageId}/feed", [
+            'message'      => $post->caption,
+            'access_token' => $token,
+        ]);
+        return $this->parseFacebookPublishResponse($res, $post, $pageId);
+    }
+
+    /**
+     * Publica foto na Page em 2 fases (padrão oficial Meta).
+     * Fase 1: /photos published=false → media_fbid
+     * Fase 2: /feed attached_media=[{media_fbid}] → post_id real
+     */
+    private function publishFacebookPhotoPost(ScheduledPost $post, string $pageId, string $token, string $mediaUrl): array
+    {
+        // Fase 1: upload da foto SEM publicar (só cria o media_fbid)
+        $uploadRes = Http::post(
+            "https://graph.facebook.com/{$this->graphVersion}/{$pageId}/photos",
+            [
+                'url'          => $mediaUrl,
+                'published'    => false,
+                'access_token' => $token,
+            ]
+        );
+
+        if (!$uploadRes->successful()) {
+            $err = (array) ($uploadRes->json('error') ?? []);
+            Log::error('FB photo upload (unpublished) failed', [
+                'post_id' => $post->id, 'status' => $uploadRes->status(), 'error' => $err,
+            ]);
+            return ['id' => null, 'error' => $this->friendlyError($err)];
+        }
+
+        $mediaFbid = $uploadRes->json('id');
+        if (!$mediaFbid) {
+            return ['id' => null, 'error' => 'Meta não retornou id da foto no upload.'];
+        }
+
+        // Fase 2: cria post no feed com a foto anexada
+        // Meta espera attached_media como JSON string na v22
+        $feedRes = Http::post(
+            "https://graph.facebook.com/{$this->graphVersion}/{$pageId}/feed",
+            [
+                'message'        => $post->caption,
+                'attached_media' => json_encode([['media_fbid' => $mediaFbid]]),
+                'access_token'   => $token,
+            ]
+        );
+
+        return $this->parseFacebookPublishResponse($feedRes, $post, $pageId);
+    }
+
+    /**
+     * Extrai o id do response e normaliza pro formato PAGEID_POSTID.
+     * /feed sempre retorna 'id' já composto. Fallback constroi manualmente
+     * pra defesa em profundidade.
+     */
+    private function parseFacebookPublishResponse($response, ScheduledPost $post, string $pageId): array
+    {
         if (!$response->successful()) {
             $body = $response->json() ?? [];
             $err  = (array) ($body['error'] ?? []);
@@ -378,26 +453,14 @@ class MetaSocialPublisherService
             return ['id' => null, 'error' => $this->friendlyError($err)];
         }
 
-        // IMPORTANTE: gravamos SEMPRE no formato PAGEID_OBJECTID.
-        // Razão: Meta Insights e engagement endpoints exigem esse formato.
-        // Meta v22 mudou o comportamento — POST /photos às vezes retorna:
-        //   - {"id": "PHOTOID", "post_id": "PAGEID_POSTID"} (formato antigo)
-        //   - {"id": "PHOTOID"} apenas (formato novo, sem post_id no response)
-        // Se pegarmos só o "id", ele é o photo_id orfão — insights rejeita.
-        // Solução: se "post_id" veio, usa direto. Senão, construimos manual:
-        // "{$pageId}_{$id}" — funciona pra qualquer tipo de objeto publicado.
         $rawId  = $response->json('id');
         $postId = $response->json('post_id');
 
         if (!$postId && $rawId && !str_contains($rawId, '_')) {
-            // Meta retornou só o objectId puro — reconstroi formato composto
             $postId = "{$pageId}_{$rawId}";
         }
 
-        return [
-            'id'    => $postId ?? $rawId,
-            'error' => null,
-        ];
+        return ['id' => $postId ?? $rawId, 'error' => null];
     }
 
     /** @return array{id: ?string, error: ?string} */
