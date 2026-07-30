@@ -10,7 +10,13 @@ class WhatsappAutomationController extends Controller
 {
     public function index()
     {
-        $automations = WhatsappAutomation::withCount('logs')->latest()->get();
+        // Filtro explícito por tenant — defesa em profundidade sobre o global
+        // scope do BelongsToTenant (se alguém remover a trait no futuro, essa
+        // linha continua isolando).
+        $automations = WhatsappAutomation::where('tenant_id', auth()->user()->tenant_id)
+            ->withCount('logs')
+            ->latest()
+            ->get();
         return view('whatsapp.automations.index', compact('automations'));
     }
 
@@ -21,7 +27,12 @@ class WhatsappAutomationController extends Controller
 
     public function store(Request $request)
     {
-        WhatsappAutomation::create($this->validated($request));
+        // Força tenant do request no create — BelongsToTenant já faz isso via
+        // creating hook, mas garantir no controller impede spoofing por
+        // fillable/mass-assignment se o request incluir tenant_id.
+        $data = $this->validated($request);
+        $data['tenant_id'] = auth()->user()->tenant_id;
+        WhatsappAutomation::create($data);
         return redirect()->route('whatsapp.automations.index')->with('success', 'Automação criada com sucesso!');
     }
 

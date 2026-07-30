@@ -8,8 +8,10 @@ use App\Models\Tenant;
 use App\Models\WhatsappAutomation;
 use App\Models\WhatsappAutomationLog;
 use App\Models\WhatsappChat;
+use App\Models\WhatsappConfig;
 use App\Models\WhatsappInstance;
 use App\Services\EvolutionApiService;
+use App\Services\WhatsappOutboundPolicy;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -47,6 +49,16 @@ class ProcessWhatsappAutomations implements ShouldQueue
             $orgName  = $tenant?->name ?? 'nossa organização';
             $contacts = $this->resolveContacts($automation);
             $evo      = new EvolutionApiService($instance);
+
+            // Policy do tenant (janela 24h, opt-in, blacklist, throttle).
+            // Se não existe WhatsappConfig, pula silenciosamente — significa
+            // que o tenant nunca configurou nada, então nem faz sentido enviar.
+            $config = WhatsappConfig::where('tenant_id', $automation->tenant_id)->first();
+            if (!$config) {
+                Log::info("WhatsappAutomation [{$automation->id}]: sem WhatsappConfig no tenant, pulando.");
+                continue;
+            }
+            $policy = app(WhatsappOutboundPolicy::class);
 
             // Resolve JIDs corretos via WhatsApp (corrige 9º dígito brasileiro)
             $normalizedPhones = [];
@@ -89,6 +101,38 @@ class ProcessWhatsappAutomations implements ShouldQueue
 
                 if ($alreadySent) continue;
 
+                // Policy check: janela 24h WhatsApp, opt-in, blacklist, throttle
+                // per-tenant/per-recipient. Precisa de um WhatsappChat pra
+                // aplicar as regras — usa firstOrCreate normalizado.
+                $chat = WhatsappChat::withoutGlobalScope('tenant')->firstOrCreate(
+                    ['tenant_id' => $automation->tenant_id, 'wa_id' => $sendTo],
+                    [
+                        'contact_name'    => $contact['name'] ?? 'Contato WhatsApp',
+                        'contact_phone'   => $normalized,
+                        'status'          => 'open',
+                        'last_message_at' => now(),
+                    ]
+                );
+
+                $reason = null;
+                $code   = null;
+                if (!$policy->canSend($config, $chat, false, $reason, $code)) {
+                    Log::info("WhatsappAutomation [{$automation->id}]: policy bloqueou envio para {$sendTo} — {$code}: {$reason}");
+                    // enum status só aceita sent/failed → prefixa POLICY_BLOCK
+                    // no error_message pra distinguir de erro de envio real.
+                    WhatsappAutomationLog::create([
+                        'automation_id' => $automation->id,
+                        'tenant_id'     => $automation->tenant_id,
+                        'contact_phone' => $normalized,
+                        'contact_name'  => $contact['name'] ?? null,
+                        'message_sent'  => '',
+                        'status'        => 'failed',
+                        'error_message' => "POLICY_BLOCK [{$code}]: {$reason}",
+                        'sent_at'       => now(),
+                    ]);
+                    continue;
+                }
+
                 $message = $automation->renderMessage(
                     $contact['name'] ?? 'Olá',
                     $orgName,
@@ -97,6 +141,7 @@ class ProcessWhatsappAutomations implements ShouldQueue
 
                 try {
                     $evo->sendMessage($sendTo, $message, null, rand(2, 5));
+                    $policy->recordSend($config, $chat);
 
                     WhatsappAutomationLog::create([
                         'automation_id' => $automation->id,

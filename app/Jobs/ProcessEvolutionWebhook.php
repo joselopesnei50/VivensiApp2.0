@@ -338,6 +338,23 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
     private function processKeywordAutomations(int $tenantId, \App\Models\WhatsappChat $chat, string $content, WhatsappInstance $instance): bool
     {
+        // ── Anti-ping-pong: bloqueia disparo se este chat recebeu resposta de
+        // AUTOMAÇÃO nos últimos 5 minutos. Impede bounce quando duas keyword-
+        // automations têm gatilhos que se cruzam (A responde algo que casa a
+        // keyword de B, B responde algo que casa a keyword de A). O dedup
+        // per-automation (send_once/24h) já limita a 1x cada, mas em conjunto
+        // ainda gera 2-4 msgs em segundos — Meta pode marcar como spam.
+        $recentAutomationOutbound = \App\Models\WhatsappAutomationLog::where('tenant_id', $tenantId)
+            ->where('contact_phone', $chat->wa_id)
+            ->where('status', 'sent')
+            ->where('sent_at', '>=', now()->subMinutes(5))
+            ->exists();
+
+        if ($recentAutomationOutbound) {
+            Log::info("Keyword automations: chat {$chat->wa_id} teve resposta automatica <5min, pulando (anti ping-pong)");
+            return false;
+        }
+
         $automations = \App\Models\WhatsappAutomation::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('trigger', 'keyword_received')
