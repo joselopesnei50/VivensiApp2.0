@@ -83,7 +83,10 @@ class RadarController extends Controller
                 'radar_ibge_code'      => $request->input('radar_ibge_code') ?: null,
                 'radar_areas'          => array_values($areas) ?: null,
                 'radar_digest_channel' => $channel === 'desligado' ? null : $channel,
-                'radar_min_score'      => (int) $request->input('radar_min_score', 30),
+                // filled() distingue campo vazio ('' viraria 0) de zero explícito
+                'radar_min_score'      => $request->filled('radar_min_score')
+                    ? (int) $request->input('radar_min_score')
+                    : 30,
             ]);
 
         return back()->with('success', 'Configurações do Radar salvas.');

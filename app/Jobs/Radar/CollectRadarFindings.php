@@ -54,14 +54,13 @@ class CollectRadarFindings implements ShouldQueue
             $territory->update(['last_collected_at' => now()]);
         }
 
-        // ── Transferegov (global, sem filtro de território) ───────────────────
-        foreach ($keywords as $keyword) {
-            $findings = $tgov->fetchChamamentos($keyword, $since);
+        // ── Transferegov (global, sem território nem keyword — a API já traz
+        // só chamamentos abertos; 1 chamada cobre tudo) ───────────────────────
+        $findings = $tgov->fetchChamamentos($since);
 
-            foreach ($findings as $f) {
-                if ($this->persist($f)) {
-                    $saved++;
-                }
+        foreach ($findings as $f) {
+            if ($this->persist($f)) {
+                $saved++;
             }
         }
 

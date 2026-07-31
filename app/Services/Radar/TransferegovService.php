@@ -20,9 +20,13 @@ class TransferegovService
 
     /**
      * Busca chamamentos públicos abertos no Transferegov (PostgREST).
+     * A API não filtra por palavra-chave — a query traz todos os abertos do
+     * período, então uma única chamada basta. keyword_matched fixo em
+     * 'transferegov' pra não contaminar as estatísticas de qualidade das
+     * keywords do Querido Diário (que alimentam a auto-aprovação).
      * Retorna array normalizado; array vazio em caso de falha.
      */
-    public function fetchChamamentos(string $keyword, string $since): array
+    public function fetchChamamentos(string $since): array
     {
         try {
             $response = Http::timeout($this->timeout)
@@ -36,8 +40,7 @@ class TransferegovService
 
             if (! $response->successful()) {
                 Log::warning('TransferegovService: resposta não-2xx', [
-                    'status'  => $response->status(),
-                    'keyword' => $keyword,
+                    'status' => $response->status(),
                 ]);
                 return [];
             }
@@ -48,18 +51,17 @@ class TransferegovService
                 return [];
             }
 
-            return $this->normalize($items, $keyword);
+            return $this->normalize($items);
 
         } catch (\Throwable $e) {
             Log::warning('TransferegovService: falha na requisição', [
-                'error'   => $e->getMessage(),
-                'keyword' => $keyword,
+                'error' => $e->getMessage(),
             ]);
             return [];
         }
     }
 
-    private function normalize(array $items, string $keyword): array
+    private function normalize(array $items): array
     {
         $results = [];
 
@@ -84,7 +86,7 @@ class TransferegovService
                 'excerpt'         => $excerpt,
                 'source_url'      => $url,
                 'published_at'    => $publishedAt,
-                'keyword_matched' => $keyword,
+                'keyword_matched' => 'transferegov',
                 'raw_payload'     => $item,
             ];
         }

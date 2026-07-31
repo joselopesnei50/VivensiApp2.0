@@ -31,11 +31,15 @@ return [
     ],
 
     'auto_approve' => [
-        // Só keywords com comprovada precisão disparam auto-aprovação
+        // Só keywords com comprovada precisão disparam auto-aprovação.
+        // 'transferegov' é o keyword_matched fixo dos findings federais —
+        // eles qualificam pela própria taxa de feedback, sem contaminar
+        // as estatísticas das keywords do Querido Diário.
         'high_precision_keywords' => [
             '"chamamento público"',
             '"termo de fomento"',
             '"termo de colaboração"',
+            'transferegov',
         ],
         // Volume mínimo de feedbacks por keyword antes de confiar na automação
         'min_feedback_count' => env('RADAR_AUTO_MIN_FEEDBACK', 10),
