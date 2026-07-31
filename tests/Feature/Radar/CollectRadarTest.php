@@ -105,6 +105,8 @@ class CollectRadarTest extends TestCase
 
     public function test_transferegov_findings_are_persisted(): void
     {
+        config(['radar.transferegov.enabled' => true]);
+
         RadarTerritory::create([
             'ibge_code' => '3550308',
             'name'      => 'São Paulo',

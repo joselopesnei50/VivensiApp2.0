@@ -25,6 +25,13 @@ return [
     ],
 
     'transferegov' => [
+        // ESTACIONADO 2026-07-31: o endpoint abaixo retorna 404 desde a migração
+        // para api-publica.transferegov.gestao.gov.br (Comunicado nº 23/2026).
+        // A API de chamamentos MROSC ainda NÃO existe — módulo "Discricionárias
+        // e Legais", Entrega 1 "Atos Preparatórios" prevista para 31/10/2026.
+        // Revisitar ~11/2026: trocar base_url/endpoint, paginação passa a ser
+        // pagina/tamanho_da_pagina com envelope {data:[]} (sem PostgREST eq./gte.).
+        'enabled'  => env('RADAR_TRANSFEREGOV_ENABLED', false),
         'base_url' => 'https://api.transferegov.gestao.gov.br',
         'endpoint' => '/chamamentos/chamamento-publico',
         'timeout'  => 15,

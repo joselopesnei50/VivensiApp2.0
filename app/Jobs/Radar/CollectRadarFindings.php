@@ -56,11 +56,13 @@ class CollectRadarFindings implements ShouldQueue
 
         // ── Transferegov (global, sem território nem keyword — a API já traz
         // só chamamentos abertos; 1 chamada cobre tudo) ───────────────────────
-        $findings = $tgov->fetchChamamentos($since);
+        if (config('radar.transferegov.enabled')) {
+            $findings = $tgov->fetchChamamentos($since);
 
-        foreach ($findings as $f) {
-            if ($this->persist($f)) {
-                $saved++;
+            foreach ($findings as $f) {
+                if ($this->persist($f)) {
+                    $saved++;
+                }
             }
         }
 
