@@ -20,6 +20,9 @@ class SubscriptionPlan extends Model
         'is_active',
         'asaas_id',
         'abacatepay_product_id', // ID do produto na AbacatePay
+        'whatsapp_conversations_included',
+        'whatsapp_extra_pack_size',
+        'whatsapp_extra_pack_price_brl',
     ];
 
     protected $casts = [
@@ -28,6 +31,9 @@ class SubscriptionPlan extends Model
         'price'        => 'decimal:2',
         'price_yearly' => 'decimal:2',
         'is_active'    => 'boolean',
+        'whatsapp_conversations_included' => 'integer',
+        'whatsapp_extra_pack_size'        => 'integer',
+        'whatsapp_extra_pack_price_brl'   => 'decimal:2',
     ];
 
     /**

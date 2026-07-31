@@ -81,16 +81,16 @@ class WhatsAppService
                 );
             }
 
-            // Pré-pago: se ativado pra este tenant, bloqueia envio se saldo
-            // não cobre o pior cenário (categoria marketing BR). Só Cloud API
-            // gera cobrança — Evolution continua livre.
+            // Cota mensal (Modelo comercial C): se cliente estourou a cota
+            // inclusa no plano + packs extras, bloqueia envio Cloud API com
+            // mensagem clara. Evolution continua livre (não conta cota).
+            // Se o plano do tenant tem 0 conversas inclusas, considera
+            // "módulo desligado" e bloqueia — admin decide se libera.
             if ($instance->isCloudApi()) {
-                $creditService = app(\App\Services\WhatsAppService\WhatsappCreditService::class);
-                if ($creditService->isPrepaidEnabled($chat->tenant_id)
-                    && !$creditService->hasBalanceForSend($chat->tenant_id, 'BR')
-                ) {
+                $quotaService = app(\App\Services\WhatsAppService\WhatsappQuotaService::class);
+                if (!$quotaService->hasQuota($chat->tenant_id)) {
                     throw new \RuntimeException(
-                        'Saldo WhatsApp insuficiente. Acesse Consumo → Recarregar para adicionar créditos e voltar a enviar mensagens.',
+                        'Cota mensal de WhatsApp esgotada. Acesse Consumo para ver seu uso ou fale com o suporte para adquirir um pack extra.',
                         402
                     );
                 }

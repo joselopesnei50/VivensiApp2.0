@@ -35,6 +35,15 @@ class Kernel extends ConsoleKernel
             $schedule->command("whatsapp:cleanup --days={$days}")->dailyAt('03:30');
         }
 
+        // WhatsApp: reset mensal de cotas — dia 1 às 00:05 (Modelo comercial C)
+        // Zera conversations_used_month + extra_pack_conversations e atualiza
+        // period_start + plan_included_snapshot. Log de reset gerado por tenant.
+        $schedule->command('whatsapp:reset-monthly-quotas')
+                 ->monthlyOn(1, '00:05')
+                 ->onFailure(function () {
+                     \Illuminate\Support\Facades\Log::error('whatsapp:reset-monthly-quotas falhou no scheduler.');
+                 });
+
         // Redes Sociais: sincroniza métricas dos posts publicados.
         // DESLIGADO em 2026-07-30 até Meta App Review aprovar as permissões:
         //   - pages_read_user_content (comments/shares/reactions do FB)

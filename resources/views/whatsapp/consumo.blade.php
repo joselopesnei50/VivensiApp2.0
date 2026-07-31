@@ -162,40 +162,48 @@
         color: #94a3b8; font-size: .75rem; margin-top: 6px;
     }
 
-    /* ── Card de saldo pré-pago ── */
-    .wcs-balance {
-        display: grid; grid-template-columns: 1fr auto; gap: 20px;
-        padding: 26px 28px; border-radius: 18px; margin-bottom: 28px;
-        border: 1px solid #e2e8f0; background: #fff;
+    /* ── Card de cota mensal ── */
+    .wcs-quota {
+        display:grid; grid-template-columns:1fr auto; gap:20px;
+        padding:26px 28px; border-radius:18px; margin-bottom:28px;
+        border:1px solid #e2e8f0; background:#fff;
     }
-    .wcs-balance.state-ok { background: linear-gradient(135deg,#065f46 0%,#047857 100%); border-color:#047857; color:#fff; }
-    .wcs-balance.state-warn { background: linear-gradient(135deg,#b45309 0%,#d97706 100%); border-color:#d97706; color:#fff; }
-    .wcs-balance.state-danger { background: linear-gradient(135deg,#991b1b 0%,#dc2626 100%); border-color:#dc2626; color:#fff; }
-    .wcs-balance .lb { font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; opacity:.85; margin-bottom:6px; }
-    .wcs-balance .val { font-size:2.2rem; font-weight:900; letter-spacing:-.5px; margin:0 0 4px; }
-    .wcs-balance .hint { font-size:.82rem; opacity:.9; margin:0; }
-    .wcs-balance-cta { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28); color:#fff; padding:11px 22px; border-radius:11px; font-weight:800; font-size:.82rem; text-decoration:none; align-self:center; white-space:nowrap; }
-    .wcs-balance-cta:hover { background:rgba(255,255,255,.28); color:#fff; text-decoration:none; }
-    .wcs-balance.state-inactive { background:#f8fafc; color:#475569; }
-    .wcs-balance.state-inactive .val { color:#0f172a; }
+    .wcs-quota.state-ok      { background:linear-gradient(135deg,#065f46 0%,#047857 100%); border-color:#047857; color:#fff; }
+    .wcs-quota.state-warn    { background:linear-gradient(135deg,#b45309 0%,#d97706 100%); border-color:#d97706; color:#fff; }
+    .wcs-quota.state-danger  { background:linear-gradient(135deg,#991b1b 0%,#dc2626 100%); border-color:#dc2626; color:#fff; }
+    .wcs-quota.state-inactive{ background:#f8fafc; color:#475569; }
+    .wcs-quota.state-inactive .val { color:#0f172a; }
+    .wcs-quota .lb   { font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; opacity:.85; margin-bottom:6px; }
+    .wcs-quota .val  { font-size:1.7rem; font-weight:900; letter-spacing:-.5px; margin:0 0 4px; }
+    .wcs-quota .hint { font-size:.82rem; opacity:.9; margin:0 0 12px; }
 
-    /* ── Extrato ── */
+    /* Barra de progresso */
+    .wcs-bar { height:10px; background:rgba(255,255,255,.2); border-radius:99px; overflow:hidden; margin:8px 0 4px; }
+    .wcs-quota.state-inactive .wcs-bar { background:#e2e8f0; }
+    .wcs-bar-fill { height:100%; background:#fff; border-radius:99px; transition:width .4s; }
+    .wcs-quota.state-inactive .wcs-bar-fill { background:#94a3b8; }
+    .wcs-bar-legend { font-size:.72rem; opacity:.75; display:flex; justify-content:space-between; }
+
+    .wcs-quota-cta { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28); color:#fff; padding:11px 22px; border-radius:11px; font-weight:800; font-size:.82rem; text-decoration:none; align-self:center; white-space:nowrap; }
+    .wcs-quota-cta:hover { background:rgba(255,255,255,.28); color:#fff; text-decoration:none; }
+
+    /* ── Log de eventos ── */
     .wcs-tx-wrap { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:22px 24px; margin-bottom:28px; }
     .wcs-tx-title { font-size:1rem; font-weight:800; color:#0f172a; margin:0 0 14px; padding-left:12px; border-left:3px solid #128C7E; }
     .wcs-tx-list { display:flex; flex-direction:column; gap:0; }
     .wcs-tx-row { display:grid; grid-template-columns:32px 1fr auto auto; gap:12px; padding:12px 4px; border-bottom:1px solid #f1f5f9; align-items:center; }
     .wcs-tx-row:last-child { border-bottom:0; }
     .wcs-tx-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.85rem; }
-    .wcs-tx-icon.topup    { background:#dcfce7; color:#166534; }
-    .wcs-tx-icon.debit    { background:#fee2e2; color:#991b1b; }
-    .wcs-tx-icon.refund   { background:#dbeafe; color:#1e40af; }
+    .wcs-tx-icon.consume    { background:#fee2e2; color:#991b1b; }
+    .wcs-tx-icon.extra_pack { background:#dcfce7; color:#166534; }
+    .wcs-tx-icon.reset      { background:#dbeafe; color:#1e40af; }
     .wcs-tx-icon.adjustment { background:#fef3c7; color:#a16207; }
     .wcs-tx-desc { color:#0f172a; font-size:.85rem; }
     .wcs-tx-when { color:#94a3b8; font-size:.72rem; margin-top:2px; }
-    .wcs-tx-amount { font-weight:800; font-size:.9rem; text-align:right; white-space:nowrap; min-width:100px; }
-    .wcs-tx-amount.pos { color:#16a34a; }
-    .wcs-tx-amount.neg { color:#dc2626; }
-    .wcs-tx-balance { color:#94a3b8; font-size:.72rem; text-align:right; min-width:110px; white-space:nowrap; }
+    .wcs-tx-delta { font-weight:800; font-size:.9rem; text-align:right; white-space:nowrap; min-width:80px; }
+    .wcs-tx-delta.pos { color:#16a34a; }
+    .wcs-tx-delta.neg { color:#dc2626; }
+    .wcs-tx-after { color:#94a3b8; font-size:.72rem; text-align:right; min-width:110px; white-space:nowrap; }
     .wcs-tx-empty { color:#94a3b8; font-size:.85rem; text-align:center; padding:24px; }
 </style>
 @endpush
@@ -208,35 +216,56 @@
         <p>Acompanhe quantas conversas WhatsApp seu tenant iniciou e o custo estimado por período.</p>
     </div>
 
-    {{-- ── Card de saldo pré-pago ── --}}
+    {{-- ── Card de cota mensal (Modelo comercial C) ── --}}
     @php
-        $isPrepaid = $balance->isPrepaidEnabled();
-        $balBrl    = $balance->balance_brl;
-        $lowBal    = $balance->isLowBalance();
-        $state     = !$isPrepaid ? 'inactive'
-                    : ($balBrl <= 0 ? 'danger' : ($lowBal ? 'warn' : 'ok'));
-        $hint      = match($state) {
-            'inactive' => 'Você está no modelo transparência: paga a Meta direto pelo cartão vinculado à sua conta WhatsApp. Sem cobrança do Vivensi.',
-            'ok'       => 'Saldo suficiente para operar. Envios normais.',
-            'warn'     => 'Saldo baixo. Considere recarregar para evitar interrupção nos envios.',
-            'danger'   => 'Saldo esgotado. Envios pela API Meta estão bloqueados até nova recarga.',
+        $used     = $usage->conversations_used_month;
+        $planQt   = $usage->plan_included_snapshot;
+        $extraQt  = $usage->extra_pack_conversations;
+        $total    = $usage->totalAvailable();
+        $usagePct = $usage->usagePct();
+        $daysLeft = $usage->daysUntilReset();
+
+        $moduleOff = ($planQt === 0 && $extraQt === 0);
+        $state = $moduleOff ? 'inactive'
+               : ($usage->isOverQuota() ? 'danger'
+               : ($usage->isNearQuota() ? 'warn' : 'ok'));
+
+        $hint = match($state) {
+            'inactive' => 'O módulo WhatsApp não está incluído no seu plano atual. Fale com o suporte para conhecer os planos com WhatsApp.',
+            'ok'       => "Você tem {$total} conversas inclusas este mês. Renova em {$daysLeft} dias.",
+            'warn'     => "Você já usou " . $usagePct . "% da sua cota. Considere um pack extra para não interromper os envios.",
+            'danger'   => 'Cota esgotada. Envios via WhatsApp Cloud estão bloqueados até renovação mensal ou compra de pack extra.',
         };
+
+        $extraPackSize  = $plan?->whatsapp_extra_pack_size ?? 500;
+        $extraPackPrice = $plan?->whatsapp_extra_pack_price_brl ?? 49.90;
     @endphp
-    <div class="wcs-balance state-{{ $state }}">
+    <div class="wcs-quota state-{{ $state }}">
         <div>
             <div class="lb">
-                @if($isPrepaid)
-                    <i class="fas fa-wallet"></i> Saldo pré-pago
-                @else
-                    <i class="fas fa-eye"></i> Modelo Transparência
-                @endif
+                <i class="fas fa-chart-pie"></i> Cota mensal WhatsApp
             </div>
-            <p class="val">{{ $moneyBrl($balBrl) }}</p>
-            <p class="hint">{{ $hint }}</p>
+            @if(!$moduleOff)
+                <p class="val">{{ number_format($used, 0, ',', '.') }} / {{ number_format($total, 0, ',', '.') }} conversas</p>
+                <div class="wcs-bar">
+                    <div class="wcs-bar-fill" style="width: {{ min(100, $usagePct) }}%"></div>
+                </div>
+                <div class="wcs-bar-legend">
+                    <span>{{ $usagePct }}% usado</span>
+                    <span>Renova em {{ $daysLeft }} {{ $daysLeft === 1 ? 'dia' : 'dias' }}</span>
+                </div>
+                <p class="hint" style="margin-top:12px;">{{ $hint }}</p>
+                @if($extraQt > 0)
+                    <p style="margin:8px 0 0; font-size:.75rem; opacity:.85;"><i class="fas fa-plus-circle"></i> Inclui {{ $extraQt }} de pack{{ $extraQt !== 1 ? 's' : '' }} extra{{ $extraQt !== 1 ? 's' : '' }} ativo{{ $extraQt !== 1 ? 's' : '' }} este mês.</p>
+                @endif
+            @else
+                <p class="val">Módulo indisponível</p>
+                <p class="hint">{{ $hint }}</p>
+            @endif
         </div>
-        @if($isPrepaid)
-            <a href="https://wa.me/{{ config('app.support_whatsapp', '5511999999999') }}?text=Ola,%20quero%20recarregar%20meu%20saldo%20WhatsApp%20do%20Vivensi." target="_blank" rel="noopener" class="wcs-balance-cta">
-                <i class="fas fa-plus-circle"></i> Recarregar saldo
+        @if(!$moduleOff && $extraPackSize > 0)
+            <a href="https://wa.me/{{ config('app.support_whatsapp', '5511999999999') }}?text=Ola,%20quero%20comprar%20um%20pack%20extra%20de%20{{ $extraPackSize }}%20conversas%20WhatsApp%20por%20R$%20{{ number_format($extraPackPrice, 2, ',', '.') }}." target="_blank" rel="noopener" class="wcs-quota-cta">
+                <i class="fas fa-plus-circle"></i> Pack extra +{{ $extraPackSize }} por {{ $moneyBrl($extraPackPrice) }}
             </a>
         @endif
     </div>
@@ -350,34 +379,34 @@
         </div>
     @endif
 
-    {{-- ── Extrato de movimentações (só se pré-pago ativo) ── --}}
-    @if($isPrepaid)
+    {{-- ── Log de eventos de cota (últimos 25) ── --}}
+    @if(!$moduleOff)
     <div class="wcs-tx-wrap">
-        <h3 class="wcs-tx-title">Extrato de saldo — últimos 25 lançamentos</h3>
-        @if($transactions->isEmpty())
-            <div class="wcs-tx-empty">Nenhuma movimentação registrada ainda.</div>
+        <h3 class="wcs-tx-title">Histórico de consumo — últimos 25 eventos</h3>
+        @if($quotaEvents->isEmpty())
+            <div class="wcs-tx-empty">Nenhum consumo registrado neste ciclo.</div>
         @else
             <div class="wcs-tx-list">
-                @foreach($transactions as $tx)
+                @foreach($quotaEvents as $ev)
                 @php
-                    $icoClass = $tx->type;
-                    $ico = match($tx->type) {
-                        'topup'      => 'fa-arrow-down',
-                        'debit'      => 'fa-arrow-up',
-                        'refund'     => 'fa-rotate-left',
+                    $icoClass = $ev->type;
+                    $ico = match($ev->type) {
+                        'consume'    => 'fa-arrow-up',
+                        'extra_pack' => 'fa-plus',
+                        'reset'      => 'fa-rotate',
                         'adjustment' => 'fa-sliders',
                         default      => 'fa-circle',
                     };
-                    $amountClass = $tx->amount_brl_micros > 0 ? 'pos' : ($tx->amount_brl_micros < 0 ? 'neg' : '');
+                    $deltaClass = $ev->conversations_delta > 0 ? 'pos' : ($ev->conversations_delta < 0 ? 'neg' : '');
                 @endphp
                 <div class="wcs-tx-row">
                     <div class="wcs-tx-icon {{ $icoClass }}"><i class="fas {{ $ico }}"></i></div>
                     <div>
-                        <div class="wcs-tx-desc">{{ $tx->description ?: ucfirst($tx->type) }}</div>
-                        <div class="wcs-tx-when">{{ $tx->created_at->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</div>
+                        <div class="wcs-tx-desc">{{ $ev->description ?: ucfirst(str_replace('_', ' ', $ev->type)) }}</div>
+                        <div class="wcs-tx-when">{{ $ev->created_at->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</div>
                     </div>
-                    <div class="wcs-tx-amount {{ $amountClass }}">{{ $tx->signed_brl }}</div>
-                    <div class="wcs-tx-balance">Saldo: {{ $moneyBrl($tx->balance_after_brl) }}</div>
+                    <div class="wcs-tx-delta {{ $deltaClass }}">{{ $ev->signed_label }}</div>
+                    <div class="wcs-tx-after">Usadas: {{ $ev->used_after }}</div>
                 </div>
                 @endforeach
             </div>

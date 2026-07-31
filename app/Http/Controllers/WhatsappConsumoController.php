@@ -3,23 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\WhatsappConversation;
-use App\Models\WhatsappCreditTransaction;
-use App\Services\WhatsAppService\WhatsappCreditService;
+use App\Models\WhatsappQuotaEvent;
+use App\Services\WhatsAppService\WhatsappQuotaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Dashboard de consumo WhatsApp pro CLIENTE (tenant scope aplicado
- * automaticamente pela trait BelongsToTenant no WhatsappConversation).
+ * Dashboard de consumo WhatsApp pro CLIENTE (tenant scope automático).
  *
- * Modelo comercial B (default do Vivensi): cliente paga a Meta direto
- * pelo cartão vinculado à WABA dele — o Vivensi só mostra o consumo
- * pra transparência. Sem markup, sem cobrança nossa em cima.
- *
- * Se um dia migrar pra Modelo A (BSP com linha de crédito Vivensi),
- * basta trocar o `showMarkup` pra true no controller (a view já suporta).
+ * Modelo comercial C (2026-07-30): cliente paga Meta direto pelo cartão
+ * da WABA dele + paga assinatura mensal ao Vivensi (plano inclui X
+ * conversas). Se usar mais, compra pack extra do Vivensi via /consumo.
+ * Envio bloqueado quando estoura cota + packs.
  */
 class WhatsappConsumoController extends Controller
 {
@@ -75,28 +72,32 @@ class WhatsappConsumoController extends Controller
                 return $row;
             });
 
-        // Saldo pré-pago + extrato (Fase 1 modelo comercial A).
-        // Se tenant não é pré-pago, balance está zero e prepaid_enabled_at
-        // null — a view mostra card cinza "modelo transparência".
-        $credit      = app(WhatsappCreditService::class);
-        $balance     = $credit->getBalance($tenantId);
-        $transactions = WhatsappCreditTransaction::withoutGlobalScopes()
+        // Cota mensal (Modelo comercial C). getUsage cria on-demand com
+        // snapshot do plano atual. Se plano tem 0 conversas inclusas, view
+        // mostra card cinza "módulo indisponível no seu plano".
+        $quotaService = app(WhatsappQuotaService::class);
+        $usage        = $quotaService->getUsage($tenantId);
+        $quotaEvents  = WhatsappQuotaEvent::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->latest('id')
             ->limit(25)
             ->get();
 
+        // Info do plano pra card de pack extra
+        $tenant = auth()->user()->tenant;
+        $plan   = $tenant?->plan;
+
         return view('whatsapp.consumo', [
-            'summary'      => $summary,
-            'byCategory'   => $byCategory,
-            'timeline'     => $timeline,
-            'days'         => $days,
-            'from'         => $from,
-            'to'           => $to,
-            'usdBrlRate'   => (float) config('whatsapp_pricing.usd_brl_rate', 5.50),
-            'balance'      => $balance,
-            'transactions' => $transactions,
-            'suggestedTopups' => (array) config('whatsapp_pricing.prepaid.suggested_topups', [50, 100, 250, 500]),
+            'summary'     => $summary,
+            'byCategory'  => $byCategory,
+            'timeline'    => $timeline,
+            'days'        => $days,
+            'from'        => $from,
+            'to'          => $to,
+            'usdBrlRate'  => (float) config('whatsapp_pricing.usd_brl_rate', 5.50),
+            'usage'       => $usage,
+            'quotaEvents' => $quotaEvents,
+            'plan'        => $plan,
         ]);
     }
 }
