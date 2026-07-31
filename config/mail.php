@@ -77,6 +77,13 @@ return [
                 'log',
             ],
         ],
+
+        // Brevo API transport — registrado dinamicamente em AppServiceProvider::boot
+        // via symfony/brevo-mailer. Usado como MAIL_MAILER=brevo no .env.
+        'brevo' => [
+            'transport' => 'brevo',
+            'key'       => env('BREVO_KEY'),
+        ],
     ],
 
     /*
