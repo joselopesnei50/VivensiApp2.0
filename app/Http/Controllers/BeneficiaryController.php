@@ -835,7 +835,7 @@ class BeneficiaryController extends Controller
                 'to'             => $to,
                 'type'           => $type,
                 'q'              => $q,
-                'org_name'       => ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL',
+                'org_name'       => $this->orgName(),
                 'emitter'        => auth()->user()->name ?? '—',
             ],
         ]);
@@ -896,7 +896,7 @@ class BeneficiaryController extends Controller
         $beneficiaries = $beneficiariesQ->limit(500)->get();
         $truncated     = $beneficiaries->count() === 500;
 
-        $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $orgName = $this->orgName();
         $generatedAt = now()->format('d/m/Y H:i');
 
         // Alias q/status pro blade atual — o print.blade.php ainda le esses names
@@ -904,6 +904,12 @@ class BeneficiaryController extends Controller
         $status = $filters['status'];
 
         return view('ngo.beneficiaries.print', compact('beneficiaries', 'truncated', 'orgName', 'generatedAt', 'q', 'status'));
+    }
+
+    private function orgName(): string
+    {
+        $tenant = auth()->user()->tenant;
+        return mb_strtoupper($tenant?->brand_name ?: ($tenant?->name ?? 'Organização Social'));
     }
 
     private function composeAddress(array $data): ?string

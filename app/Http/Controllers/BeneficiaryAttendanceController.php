@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\Beneficiary;
 use App\Support\AuditDownload;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -82,8 +84,8 @@ class BeneficiaryAttendanceController extends Controller
                     fputcsv($out, [
                         $r->beneficiary_name,
                         $r->beneficiary_status,
-                        $r->beneficiary_nis,
-                        $r->beneficiary_cpf,
+                        $this->decryptPii($r->beneficiary_nis),
+                        $this->decryptPii($r->beneficiary_cpf),
                         $r->date,
                         $r->type,
                         $r->description,
@@ -243,7 +245,8 @@ class BeneficiaryAttendanceController extends Controller
 
         $attendances = $baseQ->get();
 
-        $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $tenant = auth()->user()->tenant;
+        $orgName = mb_strtoupper($tenant?->brand_name ?: ($tenant?->name ?? 'Organização Social'));
         $generatedAt = now()->format('d/m/Y H:i');
 
         return view('ngo.beneficiaries.attendance_print', compact(
@@ -256,5 +259,15 @@ class BeneficiaryAttendanceController extends Controller
             'type',
             'q'
         ));
+    }
+
+    /**
+     * CPF/NIS vem cifrado do banco (query builder pula o accessor do model).
+     * Fallback pro valor cru cobre linhas legadas ainda em plaintext.
+     */
+    private function decryptPii(?string $value): ?string
+    {
+        if ($value === null || $value === '') return $value;
+        try { return Crypt::decryptString($value); } catch (DecryptException) { return $value; }
     }
 }

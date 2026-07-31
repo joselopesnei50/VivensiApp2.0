@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Jobs\GeneratePdfJob;
 use App\Models\GeneratedReport;
+use App\Models\Tenant;
 use App\Support\AuditDownload;
 use Carbon\Carbon;
 use Closure;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -295,8 +298,8 @@ class BeneficiaryReportController extends Controller
                     fputcsv($out, [
                         $r->beneficiary_name,
                         $r->beneficiary_status,
-                        $r->beneficiary_nis,
-                        $r->beneficiary_cpf,
+                        $this->decryptPii($r->beneficiary_nis),
+                        $this->decryptPii($r->beneficiary_cpf),
                         $r->date,
                         $r->type,
                         $r->description,
@@ -537,6 +540,17 @@ class BeneficiaryReportController extends Controller
 
     private function orgName(int $tenantId): string
     {
-        return ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $tenant = Tenant::find($tenantId);
+        return mb_strtoupper($tenant?->brand_name ?: ($tenant?->name ?? 'Organização Social'));
+    }
+
+    /**
+     * CPF/NIS vem cifrado do banco (query builder pula o accessor do model).
+     * Fallback pro valor cru cobre linhas legadas ainda em plaintext.
+     */
+    private function decryptPii(?string $value): ?string
+    {
+        if ($value === null || $value === '') return $value;
+        try { return Crypt::decryptString($value); } catch (DecryptException) { return $value; }
     }
 }
