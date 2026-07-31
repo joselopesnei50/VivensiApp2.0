@@ -37,26 +37,6 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Pagination\Paginator::useBootstrapFive();
 
-        // Registra transport 'brevo' pro Laravel Mail — assim TODO Mail::to()/
-        // send()/queue() do sistema usa API Brevo em vez de SMTP. Sem isso, os
-        // 15 lugares que usam Mail:: nativo (StageOverdueAlert, NgoGrantDeadline
-        // Alert, ContractController, RaffleController, RegisterController, etc)
-        // caem no MAIL_HOST do .env — que em dev era mailhog (inexistente em
-        // prod) e explodia todos os jobs.
-        // BrevoService continua funcionando em paralelo pros fluxos específicos
-        // (welcome/payment/ticket) que precisam do template HTML premium.
-        // Config: BREVO_KEY no .env + MAIL_MAILER=brevo.
-        if (class_exists(\Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoApiTransportFactory::class)) {
-            \Illuminate\Support\Facades\Mail::extend('brevo', function ($config) {
-                $key = $config['key'] ?? env('BREVO_KEY');
-                if (!$key) {
-                    throw new \RuntimeException('BREVO_KEY não configurado no .env — necessário pro transport Brevo do Mail.');
-                }
-                $factory = new \Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoApiTransportFactory();
-                return $factory->create(new \Symfony\Component\Mailer\Transport\Dsn('brevo+api', 'default', $key));
-            });
-        }
-
         // Broadcasting dinâmico via SystemSetting — lê valores que o super_admin
         // salvou em /admin/settings e sobrescreve config('broadcasting.connections.pusher.*')
         // em runtime. Sem isso, o .env vence (e fica vazio no VPS), causando
