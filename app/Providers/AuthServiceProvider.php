@@ -82,5 +82,12 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-broadcast', function (User $user) use ($perm) {
             return $perm($user, 'manage-broadcast') || in_array($user->role, ['manager', 'ngo', 'super_admin', 'client']);
         });
+
+        // Deletar beneficiario (individual ou bulk) e restrito ao administrador
+        // da conta — employee opera o modulo (CRUD, atendimentos, exports) mas
+        // nao remove cadastros. Decisao do dono em 2026-07-31.
+        Gate::define('delete-beneficiaries', function (User $user) use ($perm) {
+            return $perm($user, 'delete-beneficiaries') || in_array($user->role, ['ngo', 'manager', 'common', 'client']);
+        });
     }
 }

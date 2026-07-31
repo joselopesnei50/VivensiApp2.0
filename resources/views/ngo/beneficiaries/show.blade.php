@@ -37,12 +37,14 @@
         <a href="{{ url('/ngo/beneficiaries') }}" class="btn-ds btn-ds-ghost">
             <i class="fas fa-arrow-left"></i> Voltar
         </a>
+        @can('delete-beneficiaries')
         <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" onsubmit="return confirm('Remover este beneficiário e todo o histórico?');" style="display:inline;">
             @csrf @method('DELETE')
             <button type="submit" class="btn-ds btn-ds-danger">
                 <i class="fas fa-trash"></i> Remover
             </button>
         </form>
+        @endcan
     </div>
 </div>
 

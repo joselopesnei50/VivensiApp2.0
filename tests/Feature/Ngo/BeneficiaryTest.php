@@ -323,6 +323,61 @@ class BeneficiaryTest extends TestCase
         ])->assertSessionHasErrors('ids');
     }
 
+    // ── Gate delete-beneficiaries (delete so admin da conta) ─────────────────
+
+    private function actingAsEmployee(): User
+    {
+        $employee = User::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'role'      => 'employee',
+            'email'     => 'emp_' . uniqid() . '@example.com',
+        ]);
+        $this->actingAs($employee);
+
+        return $employee;
+    }
+
+    /** @test */
+    public function employee_nao_pode_deletar_beneficiario(): void
+    {
+        $b = $this->makeBeneficiary(['name' => 'Protegida']);
+        $this->actingAsEmployee();
+
+        $this->delete('/ngo/beneficiaries/' . $b->id)->assertForbidden();
+
+        expect(Beneficiary::where('id', $b->id)->exists())->toBeTrue();
+    }
+
+    /** @test */
+    public function employee_nao_pode_bulk_delete(): void
+    {
+        $b = $this->makeBeneficiary(['name' => 'Protegida']);
+        $this->actingAsEmployee();
+
+        $this->post('/ngo/beneficiaries/bulk', [
+            'action' => 'delete',
+            'ids'    => [$b->id],
+        ])->assertForbidden();
+
+        expect(Beneficiary::where('id', $b->id)->exists())->toBeTrue();
+    }
+
+    /** @test */
+    public function employee_pode_bulk_status_e_exportar_csv(): void
+    {
+        $b = $this->makeBeneficiary(['name' => 'Operavel', 'status' => 'active']);
+        $this->actingAsEmployee();
+
+        $this->post('/ngo/beneficiaries/bulk', [
+            'action' => 'status',
+            'value'  => 'inactive',
+            'ids'    => [$b->id],
+        ])->assertRedirect();
+        expect($b->fresh()->status)->toBe('inactive');
+
+        $this->get('/ngo/beneficiaries/export')->assertOk();
+    }
+
     // ── Store (PII criptografada) ────────────────────────────────────────────
 
     /** @test */

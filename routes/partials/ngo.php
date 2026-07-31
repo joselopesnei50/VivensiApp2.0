@@ -118,7 +118,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/beneficiaries/print',     [App\Http\Controllers\BeneficiaryController::class, 'print']);
         Route::post('/beneficiaries',          [App\Http\Controllers\BeneficiaryController::class, 'store'])->middleware('throttle:web_write');
         Route::get('/beneficiaries/{id}',      [App\Http\Controllers\BeneficiaryController::class, 'show']);
-        Route::delete('/beneficiaries/{id}',   [App\Http\Controllers\BeneficiaryController::class, 'destroy']);
+        Route::delete('/beneficiaries/{id}',   [App\Http\Controllers\BeneficiaryController::class, 'destroy'])->middleware('can:delete-beneficiaries');
         Route::put('/beneficiaries/{id}',      [App\Http\Controllers\BeneficiaryController::class, 'update']);
         // Attendance CRUD — movido pra BeneficiaryAttendanceController em 2026-07-18
         Route::post('/beneficiaries/{id}/attendance',                 [App\Http\Controllers\BeneficiaryAttendanceController::class, 'storeAttendance']);

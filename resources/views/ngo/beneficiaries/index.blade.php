@@ -141,7 +141,9 @@
             <button type="button" onclick="bulkStatus('active','Ativo')"       class="btn-premium" style="background:#16a34a;">Marcar Ativo</button>
             <button type="button" onclick="bulkStatus('inactive','Inativo')"   class="btn-premium" style="background:#94a3b8;">Marcar Inativo</button>
             <button type="button" onclick="bulkStatus('graduated','Graduado')" class="btn-premium" style="background:#2563eb;">Marcar Graduado</button>
+            @can('delete-beneficiaries')
             <button type="button" onclick="bulkDelete()"                       class="btn-premium" style="background:#dc2626;">Remover</button>
+            @endcan
         </form>
     </div>
 </div>
@@ -197,6 +199,7 @@
                         <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" class="btn-premium" title="Ver detalhes" aria-label="Ver detalhes do beneficiário" style="padding: 6px 10px !important; font-size: 0.85rem !important; background: #475569 !important; color: #ffffff !important; box-shadow: none !important;">
                             <i class="fas fa-eye"></i>
                         </a>
+                        @can('delete-beneficiaries')
                         <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" onsubmit="return confirm('Remover este beneficiário e todo o histórico?');">
                             @csrf
                             @method('DELETE')
@@ -204,6 +207,7 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
+                        @endcan
                     </div>
                 </td>
             </tr>

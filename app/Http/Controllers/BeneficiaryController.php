@@ -765,6 +765,10 @@ class BeneficiaryController extends Controller
             'ids.*'  => 'integer|min:1',
         ]);
 
+        if ($validated['action'] === 'delete' && ! \Illuminate\Support\Facades\Gate::allows('delete-beneficiaries')) {
+            abort(403, 'Apenas o administrador da conta pode remover beneficiários.');
+        }
+
         $ids = array_values(array_unique(array_map('intval', $validated['ids'])));
 
         $found = Beneficiary::where('tenant_id', $tenantId)
