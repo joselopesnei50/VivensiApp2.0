@@ -3,18 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ProcessProspect;
-use App\Jobs\ScrapeProspectEmailJob;
 use App\Models\EmailCampaign;
 use App\Models\Prospect;
 use App\Models\SponsorshipDeal;
 use App\Models\BroadcastCampaign;
-use App\Models\WhatsappInstance;
 use App\Services\LeadSearchService;
 use App\Services\EvolutionApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class ProspectingController extends Controller
@@ -143,10 +140,18 @@ class ProspectingController extends Controller
 
     public function bulkDestroy(Request $request)
     {
-        $ids = array_filter(array_map('intval', explode(',', $request->input('prospect_ids_raw', ''))));
+        $request->validate([
+            'prospect_ids_raw' => 'required|string|max:5000',
+        ]);
+
+        $ids = array_filter(array_map('intval', explode(',', $request->input('prospect_ids_raw'))));
 
         if (empty($ids)) {
             return back()->with('error', 'Nenhum lead selecionado.');
+        }
+
+        if (count($ids) > 500) {
+            return back()->with('error', 'Máximo de 500 leads por exclusão em massa.');
         }
 
         $tenantId = Auth::user()->tenant_id;
@@ -156,74 +161,38 @@ class ProspectingController extends Controller
             ->whereIn('id', $ids)
             ->delete();
 
+        if ($deleted > 0) {
+            \App\Models\AuditLog::create([
+                'tenant_id'      => $tenantId,
+                'user_id'        => Auth::id(),
+                'event'          => 'bulk_deleted',
+                'auditable_type' => Prospect::class,
+                'auditable_id'   => 0,
+                'old_values'     => ['ids' => array_values($ids), 'count' => $deleted],
+                'new_values'     => null,
+                'url'            => $request->fullUrl(),
+                'ip_address'     => $request->ip(),
+                'user_agent'     => (string) $request->userAgent(),
+            ]);
+        }
+
         return back()->with('success', "{$deleted} lead(s) deletado(s) com sucesso.");
     }
 
+    /**
+     * Antes disparava SendProspectWhatsapp DIRETO (sem cota, sem anti-ban,
+     * e gravando opt_in_at em número frio que nunca consentiu). Desde
+     * 2026-07-31 cria um rascunho no módulo formal de Disparo em Massa com
+     * a mensagem já preenchida — o envio passa por revisão, cota e anti-ban.
+     */
     public function broadcastWhatsapp(Request $request)
     {
         $request->validate([
-            'prospect_ids_raw' => 'required|string',
+            'prospect_ids_raw' => 'required|string|max:5000',
             'message'          => 'required|string|max:4000',
         ]);
 
-        $ids = array_filter(array_map('intval', explode(',', $request->input('prospect_ids_raw'))));
-
-        if (empty($ids)) {
-            return back()->with('error', 'Nenhum lead selecionado.');
-        }
-
-        $tenantId = Auth::user()->tenant_id;
-
-        $instance = WhatsappInstance::where('tenant_id', $tenantId)
-            ->where('status', 'open')
-            ->first();
-
-        if (!$instance) {
-            return back()->with('error', 'Nenhuma instância WhatsApp conectada. Configure em Aparelhos Conectados.');
-        }
-
-        $prospects = Prospect::withoutGlobalScope('tenant')
-            ->where('tenant_id', $tenantId)
-            ->whereIn('id', $ids)
-            ->whereNotNull('phone')
-            ->where('phone', '!=', '')
-            ->get();
-
-        if ($prospects->isEmpty()) {
-            return back()->with('error', 'Nenhum lead selecionado possui número de telefone.');
-        }
-
-        $message    = $request->input('message');
-        $instanceId = $instance->id;
-        $total      = $prospects->count();
-
-        foreach ($prospects as $prospect) {
-            \App\Jobs\SendProspectWhatsapp::dispatch(
-                $prospect->id,
-                $tenantId,
-                $instanceId,
-                $message
-            )->onQueue('default')->delay(now()->addSeconds($prospects->search($prospect) * 3));
-
-            $prospect->update(['status' => 'contacted']);
-        }
-
-        if (Schema::hasTable('broadcast_campaigns')) {
-            try {
-                BroadcastCampaign::create([
-                    'tenant_id'     => $tenantId,
-                    'message'       => $message,
-                    'has_image'     => false,
-                    'audience_type' => 'selected',
-                    'total_sent'    => $total,
-                    'total_failed'  => 0,
-                ]);
-            } catch (\Exception $e) {
-                Log::warning('BroadcastCampaign log failed: ' . $e->getMessage());
-            }
-        }
-
-        return back()->with('success', "{$total} mensagem(ns) agendada(s) para envio via WhatsApp. Processando em segundo plano.");
+        return $this->createBroadcastDraft($request, $request->input('message'));
     }
 
     /**
@@ -232,15 +201,21 @@ class ProspectingController extends Controller
      * pré-populados — o cliente conclui a campanha em /whatsapp/broadcast
      * usando a infra completa (templates, agendamento, anti-ban, cota).
      *
-     * Diferença vs broadcastWhatsapp: aquele dispara DIRETO (sem revisão,
-     * cota, agendamento). Esse aqui prepara o terreno pro fluxo formal.
+     * Diferença vs broadcastWhatsapp: esse aqui cria o rascunho sem mensagem;
+     * aquele pré-preenche a mensagem digitada no modal. Ambos passam pelo
+     * fluxo formal — não existe mais disparo direto na Prospecção.
      */
     public function sendToBroadcast(Request $request)
     {
         $request->validate([
-            'prospect_ids_raw' => 'required|string',
+            'prospect_ids_raw' => 'required|string|max:5000',
         ]);
 
+        return $this->createBroadcastDraft($request, '');
+    }
+
+    private function createBroadcastDraft(Request $request, string $message)
+    {
         $ids = array_filter(array_map('intval', explode(',', $request->input('prospect_ids_raw'))));
         if (empty($ids)) {
             return back()->with('error', 'Nenhum lead selecionado.');
@@ -279,7 +254,7 @@ class ProspectingController extends Controller
             'tenant_id'         => $tenantId,
             'created_by'        => Auth::id(),
             'name'              => 'Prospecção IA — ' . now()->format('d/m/Y H:i'),
-            'message'           => '',
+            'message'           => $message,
             'has_image'         => false,
             'audience_type'     => 'selected',
             'status'            => 'draft',

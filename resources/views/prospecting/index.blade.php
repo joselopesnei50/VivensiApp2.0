@@ -802,7 +802,7 @@
         <div class="modal-content border-0 rounded-4 overflow-hidden shadow-lg">
             <div style="background:linear-gradient(135deg,#25d366,#128c7e);padding:24px 28px 18px;">
                 <h5 class="mb-1 fw-800 text-white"><i class="fab fa-whatsapp me-2"></i> Disparar WhatsApp</h5>
-                <p class="mb-0 text-white opacity-75 small">Enviar mensagem para os leads selecionados</p>
+                <p class="mb-0 text-white opacity-75 small">Preparar mensagem para os leads selecionados</p>
             </div>
             <form id="formBroadcast" action="{{ route('prospecting.broadcast') }}" method="POST">
                 @csrf
@@ -818,14 +818,14 @@
                     </div>
                     <div class="alert alert-warning py-2 small mb-0">
                         <i class="fas fa-shield-alt me-1"></i>
-                        Cadência de 3 segundos entre envios para proteger o número.
+                        A mensagem vira um rascunho no Disparo em Massa — você revisa e dispara de lá, com a proteção anti-ban ativa.
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 px-4 pb-4 gap-2">
                     <button type="button" class="btn btn-light rounded-pill flex-fill" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" id="btnEnviarBroadcast" class="btn btn-success rounded-pill flex-fill fw-bold"
-                            onclick="this.disabled=true;this.innerHTML='<i class=\'fas fa-spinner fa-spin me-1\'></i> Enviando...';this.form.submit();">
-                        <i class="fab fa-whatsapp me-1"></i> Enviar
+                            onclick="this.disabled=true;this.innerHTML='<i class=\'fas fa-spinner fa-spin me-1\'></i> Criando rascunho...';this.form.submit();">
+                        <i class="fab fa-whatsapp me-1"></i> Criar rascunho
                     </button>
                 </div>
             </form>
