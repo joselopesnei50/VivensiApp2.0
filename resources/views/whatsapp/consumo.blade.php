@@ -264,7 +264,7 @@
             @endif
         </div>
         @if(!$moduleOff && $extraPackSize > 0)
-            <a href="https://wa.me/{{ config('app.support_whatsapp', '5511999999999') }}?text=Ola,%20quero%20comprar%20um%20pack%20extra%20de%20{{ $extraPackSize }}%20conversas%20WhatsApp%20por%20R$%20{{ number_format($extraPackPrice, 2, ',', '.') }}." target="_blank" rel="noopener" class="wcs-quota-cta">
+            <a href="https://wa.me/5516997618695?text=Ola,%20quero%20comprar%20um%20pack%20extra%20de%20{{ $extraPackSize }}%20conversas%20WhatsApp%20por%20R$%20{{ number_format($extraPackPrice, 2, ',', '.') }}." target="_blank" rel="noopener" class="wcs-quota-cta">
                 <i class="fas fa-plus-circle"></i> Pack extra +{{ $extraPackSize }} por {{ $moneyBrl($extraPackPrice) }}
             </a>
         @endif
@@ -421,7 +421,7 @@
             <li><strong>Respondam dentro de 24h</strong> — se o cliente puxa a conversa e você responde na janela, o Meta considera "atendimento" e não cobra.</li>
             <li><strong>Use templates de utilidade</strong> pra confirmações e alertas (mais barato que promocional).</li>
             <li><strong>Guarde o promocional pra momentos-chave</strong> — campanhas custam mais mas convertem melhor quando bem segmentadas.</li>
-            <li>Precisa de mais orientação? <a href="https://wa.me/5516988392853?text=Olá,%20quero%20ajuda%20com%20consumo%20WhatsApp." target="_blank" rel="noopener" style="color:#128C7E;font-weight:600;">Fale com o suporte Vivensi</a>.</li>
+            <li>Precisa de mais orientação? <a href="https://wa.me/5516997618695?text=Olá,%20quero%20ajuda%20com%20consumo%20WhatsApp." target="_blank" rel="noopener" style="color:#128C7E;font-weight:600;">Fale com o suporte Vivensi</a>.</li>
         </ul>
     </div>
 
