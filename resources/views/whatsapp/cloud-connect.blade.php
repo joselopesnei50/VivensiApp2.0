@@ -223,7 +223,7 @@
 
     {{-- Rodapé ajuda + link fallback discreto --}}
     <div class="wac-help">
-        <div>Deu problema? <a href="https://wa.me/5516988392853?text=Olá, preciso de ajuda para conectar meu WhatsApp na Vivensi." target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Falar com o suporte</a></div>
+        <div>Deu problema? <a href="https://wa.me/5516997618695?text=Olá, preciso de ajuda para conectar meu WhatsApp na Vivensi." target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Falar com o suporte</a></div>
         <div style="margin-top: 6px;">
             <a href="{{ route('whatsapp.cloud.manual.show') }}" style="color: #94a3b8; font-size: .78rem;">
                 Sou avançado, quero colar credenciais manualmente

@@ -180,7 +180,7 @@
         <label for="stm-to">Número destinatário (E.164)</label>
         <input id="stm-to" type="text" placeholder="+5511987654321" autocomplete="off">
         <div style="font-size:.75rem; color:#6b7280; margin: -6px 0 12px;">
-            Cadastrado como testador na Meta. Ex: <code>+5516988392853</code>
+            Cadastrado como testador na Meta. Ex: <code>+5516997618695</code>
         </div>
 
         <div id="stm-vars-container"></div>
