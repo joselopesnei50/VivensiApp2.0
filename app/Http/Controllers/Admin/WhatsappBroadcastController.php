@@ -714,6 +714,7 @@ class WhatsappBroadcastController extends Controller
      */
     public function labelRecipientsCount(\Illuminate\Http\Request $request)
     {
+        Gate::authorize('access-whatsapp');
         $tenantId = auth()->user()->tenant_id;
 
         $ids = (array) $request->input('ids', []);

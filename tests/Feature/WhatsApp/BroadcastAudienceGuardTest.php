@@ -77,6 +77,38 @@ it('job com selected e phones vazio retorna zero destinatarios (nao cai na base 
     expect($recipients)->toBeEmpty();
 });
 
+it('employee recebe 403 no label-count (gate access-whatsapp)', function () {
+    $tenant   = Tenant::factory()->create(['subscription_status' => 'active']);
+    $employee = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'employee']);
+
+    $this->actingAs($employee)
+        ->getJson('/whatsapp/broadcast/label-count?ids[]=1')
+        ->assertStatus(403);
+});
+
+it('fallback de audience desconhecida exige opt-in', function () {
+    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+
+    WhatsappChat::factory()->create(['tenant_id' => $tenant->id, 'opt_in_at' => now()->subDay()]);
+    WhatsappChat::factory()->create(['tenant_id' => $tenant->id, 'opt_in_at' => null]);
+
+    $campaign = BroadcastCampaign::create([
+        'tenant_id'     => $tenant->id,
+        'audience_type' => 'legacy_desconhecido',
+        'message'       => 'Teste',
+        'status'        => 'queued',
+    ]);
+
+    $job = new ProcessBroadcastCampaignJob($campaign->id, $tenant->id);
+    $m   = new ReflectionMethod($job, 'getRecipients');
+    $m->setAccessible(true);
+
+    $recipients = $m->invoke($job, $campaign);
+
+    expect($recipients)->toHaveCount(1);
+    expect($recipients->first()->opt_in_at)->not->toBeNull();
+});
+
 it('job com selected e phones preenchido retorna apenas os selecionados', function () {
     $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
 

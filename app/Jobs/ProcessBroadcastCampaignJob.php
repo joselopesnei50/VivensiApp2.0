@@ -578,7 +578,10 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             })->values();
         }
 
+        // Fallback (audience_type legado/desconhecido): exige opt-in como o
+        // caminho 'all' — nunca dispara pra número frio por engano.
         return WhatsappChat::where('tenant_id', $campaign->tenant_id)
+            ->whereNotNull('opt_in_at')
             ->whereNull('opt_out_at')->whereNull('blocked_at')
             ->get(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at']);
     }
