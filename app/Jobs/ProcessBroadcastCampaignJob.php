@@ -548,6 +548,12 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 ->get(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at']);
         }
 
+        // Selected sem phones NUNCA pode cair no fallback (base inteira do
+        // tenant) — campanha legada/malformada encerra vazia.
+        if ($campaign->audience_type === 'selected' && !$campaign->phones) {
+            return collect();
+        }
+
         if ($campaign->audience_type === 'selected' && $campaign->phones) {
             $phones = array_map(
                 fn($p) => preg_replace('/\D+/', '', $p),

@@ -26,8 +26,11 @@ use Illuminate\View\View;
  */
 class ProjectClassController extends Controller
 {
+    private const ROLES_WRITE = ['manager', 'super_admin', 'ngo'];
+
     public function index(Project $project): View
     {
+        $this->assertCanView($project);
         $classes = ProjectClass::where('project_id', $project->id)
             ->with('teacher:id,name')
             ->withCount(['activeEnrollments as students_count', 'sessions as sessions_count'])
@@ -40,12 +43,14 @@ class ProjectClassController extends Controller
 
     public function create(Project $project): View
     {
+        $this->assertCanWrite($project);
         $teachers = $this->teachersFor($project);
         return view('projects.classes.create', compact('project', 'teachers'));
     }
 
     public function store(Request $request, Project $project): RedirectResponse
     {
+        $this->assertCanWrite($project);
         $validated = $this->validateClass($request);
 
         $class = ProjectClass::create(array_merge($validated, [
@@ -66,6 +71,7 @@ class ProjectClassController extends Controller
 
     public function show(Project $project, int $classId): View
     {
+        $this->assertCanView($project);
         $class = $this->resolveClass($project, $classId);
 
         $class->load(['teacher:id,name', 'enrollments.person:id,name']);
@@ -91,6 +97,7 @@ class ProjectClassController extends Controller
 
     public function edit(Project $project, int $classId): View
     {
+        $this->assertCanWrite($project);
         $class = $this->resolveClass($project, $classId);
         $teachers = $this->teachersFor($project);
         return view('projects.classes.edit', compact('project', 'class', 'teachers'));
@@ -98,6 +105,7 @@ class ProjectClassController extends Controller
 
     public function update(Request $request, Project $project, int $classId): RedirectResponse
     {
+        $this->assertCanWrite($project);
         $class = $this->resolveClass($project, $classId);
         $validated = $this->validateClass($request);
         $class->update($validated);
@@ -109,6 +117,7 @@ class ProjectClassController extends Controller
 
     public function destroy(Project $project, int $classId): RedirectResponse
     {
+        $this->assertCanWrite($project);
         $class = $this->resolveClass($project, $classId);
         $class->delete();
 
@@ -121,6 +130,7 @@ class ProjectClassController extends Controller
 
     public function enrollBulk(Request $request, Project $project, int $classId): RedirectResponse
     {
+        $this->assertCanWrite($project);
         $class = $this->resolveClass($project, $classId);
 
         $validated = $request->validate([
@@ -166,6 +176,7 @@ class ProjectClassController extends Controller
 
     public function unenroll(Project $project, int $classId, int $enrollmentId): RedirectResponse
     {
+        $this->assertCanWrite($project);
         $class = $this->resolveClass($project, $classId);
 
         $enrollment = ProjectClassEnrollment::withoutGlobalScope('tenant')
@@ -188,6 +199,7 @@ class ProjectClassController extends Controller
 
     public function generateSessions(Request $request, Project $project, int $classId): RedirectResponse
     {
+        $this->assertCanWrite($project);
         $class = $this->resolveClass($project, $classId);
 
         $validated = $request->validate([
@@ -253,6 +265,34 @@ class ProjectClassController extends Controller
      * — em contexto teste (runningInConsole) o global scope de BelongsToTenant
      * e bypassado, entao Project::find nao filtra cross-tenant.
      */
+    /**
+     * Leitura: gestores veem qualquer projeto do tenant; demais roles só se
+     * forem ProjectMember — mesmo padrão de ProjectController::show.
+     */
+    private function assertCanView(Project $project): void
+    {
+        abort_unless((int) auth()->user()->tenant_id === (int) $project->tenant_id, 404);
+
+        $user = auth()->user();
+        if (in_array($user->role, self::ROLES_WRITE, true)) {
+            return;
+        }
+
+        abort_unless(
+            \App\Models\ProjectMember::where('tenant_id', $project->tenant_id)
+                ->where('project_id', $project->id)
+                ->where('user_id', $user->id)
+                ->exists(),
+            403
+        );
+    }
+
+    private function assertCanWrite(Project $project): void
+    {
+        abort_unless((int) auth()->user()->tenant_id === (int) $project->tenant_id, 404);
+        abort_unless(in_array(auth()->user()->role, self::ROLES_WRITE, true), 403);
+    }
+
     private function resolveClass(Project $project, int $classId): ProjectClass
     {
         // Defense: user autenticado nao pode ver project de outro tenant.
@@ -281,7 +321,14 @@ class ProjectClassController extends Controller
         return $request->validate([
             'name'                    => 'required|string|max:200',
             'description'             => 'nullable|string|max:2000',
-            'default_teacher_user_id' => 'nullable|integer|exists:users,id',
+            'default_teacher_user_id' => [
+                'nullable',
+                'integer',
+                // Sem o filtro de tenant dava pra apontar user de outro tenant
+                // como professor (e vazar o nome dele via teacher:id,name).
+                \Illuminate\Validation\Rule::exists('users', 'id')
+                    ->where(fn ($q) => $q->where('tenant_id', auth()->user()->tenant_id)),
+            ],
             'default_mode'            => 'nullable|in:fechada,aberta',
             'default_start_time'      => 'nullable|date_format:H:i',
             'default_end_time'        => 'nullable|date_format:H:i|after:default_start_time',

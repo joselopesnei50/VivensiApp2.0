@@ -27,9 +27,11 @@ class ProjectStageController extends Controller
 {
     private const ALLOWED_STATUSES = ['pending', 'in_progress', 'completed', 'cancelled'];
 
+    private const ROLES_WRITE = ['manager', 'super_admin', 'ngo'];
+
     public function index(Request $request, Project $project)
     {
-        $this->assertProjectTenant($project);
+        $this->assertCanView($project);
 
         $stagesModels = $project->stages()->get();
         $stages       = $stagesModels->map(fn (ProjectStage $s) => $this->present($s));
@@ -53,7 +55,7 @@ class ProjectStageController extends Controller
 
     public function store(Request $request, Project $project): JsonResponse
     {
-        $this->assertProjectTenant($project);
+        $this->assertCanWrite($project);
         $validated = $this->validateStage($request);
 
         $stage = DB::transaction(function () use ($project, $validated) {
@@ -83,6 +85,7 @@ class ProjectStageController extends Controller
      */
     public function show(Request $request, Project $project, int $stageId)
     {
+        $this->assertCanView($project);
         $stage = $this->resolveStage($project, $stageId);
 
         // CASE cross-DB (MySQL + SQLite): FIELD() e so MySQL.
@@ -146,6 +149,7 @@ class ProjectStageController extends Controller
 
     public function update(Request $request, Project $project, int $stageId): JsonResponse
     {
+        $this->assertCanWrite($project);
         $stage = $this->resolveStage($project, $stageId);
         $validated = $this->validateStage($request);
 
@@ -156,6 +160,7 @@ class ProjectStageController extends Controller
 
     public function destroy(Project $project, int $stageId): JsonResponse
     {
+        $this->assertCanWrite($project);
         $stage = $this->resolveStage($project, $stageId);
         $stage->delete();
 
@@ -174,7 +179,7 @@ class ProjectStageController extends Controller
      */
     public function reorder(Request $request, Project $project): JsonResponse
     {
-        $this->assertProjectTenant($project);
+        $this->assertCanWrite($project);
 
         $validated = $request->validate([
             'stages'         => 'required|array|min:1|max:100',
@@ -203,6 +208,7 @@ class ProjectStageController extends Controller
      */
     public function complete(Project $project, int $stageId): JsonResponse
     {
+        $this->assertCanWrite($project);
         $stage = $this->resolveStage($project, $stageId);
 
         $suggestedTransactionId = null;
@@ -251,6 +257,35 @@ class ProjectStageController extends Controller
             (int) auth()->user()->tenant_id === (int) $project->tenant_id,
             404
         );
+    }
+
+    /**
+     * Leitura: gestores veem qualquer projeto do tenant; demais roles só se
+     * forem ProjectMember — mesmo padrão de ProjectController::show. Sem isso
+     * qualquer user do tenant lia financeiro da etapa e lista de usuários.
+     */
+    private function assertCanView(Project $project): void
+    {
+        $this->assertProjectTenant($project);
+
+        $user = auth()->user();
+        if (in_array($user->role, self::ROLES_WRITE, true)) {
+            return;
+        }
+
+        abort_unless(
+            \App\Models\ProjectMember::where('tenant_id', $project->tenant_id)
+                ->where('project_id', $project->id)
+                ->where('user_id', $user->id)
+                ->exists(),
+            403
+        );
+    }
+
+    private function assertCanWrite(Project $project): void
+    {
+        $this->assertProjectTenant($project);
+        abort_unless(in_array(auth()->user()->role, self::ROLES_WRITE, true), 403);
     }
 
     private function resolveStage(Project $project, int $stageId): ProjectStage

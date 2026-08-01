@@ -338,13 +338,17 @@ class WhatsappBroadcastController extends Controller
             return response()->json($mapped, 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
         } catch (\Throwable $e) {
             try {
-                Log::error("Erro ao buscar grupos no Broadcast: " . $e->getMessage());
+                Log::error('Erro ao buscar grupos no Broadcast', [
+                    'tenant_id' => $tenantId,
+                    'error'     => $e->getMessage(),
+                    'file'      => $e->getFile() . ':' . $e->getLine(),
+                ]);
             } catch (\Throwable $logEx) {
                 // Ignore log errors (e.g. permission denied)
             }
             return response()->json([
-                'error' => 'Erro fatal interno: ' . $e->getMessage() . ' no arquivo ' . basename($e->getFile()) . ':' . $e->getLine()
-            ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+                'error' => 'Não foi possível carregar os grupos agora. Tente novamente em instantes.',
+            ], 502, [], JSON_INVALID_UTF8_SUBSTITUTE);
         }
     }
 
@@ -507,6 +511,9 @@ class WhatsappBroadcastController extends Controller
         $request->validate([
             'message'         => 'nullable|string|max:4000',
             'audience'        => 'required|in:all,selected,groups,labels',
+            // Sem required_if aqui, audience=selected com phones vazio caía no
+            // fallback do job que devolve a base inteira do tenant sem opt-in.
+            'phones'          => 'required_if:audience,selected|nullable|string|max:20000',
             'cadence'         => 'nullable|integer|in:1,3,5,10,30',
             'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
             'scheduled_at'    => 'nullable|date|after:now',
