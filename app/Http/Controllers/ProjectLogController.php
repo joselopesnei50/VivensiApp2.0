@@ -95,7 +95,20 @@ class ProjectLogController extends Controller
     public function summaryStatus(int $projectId)
     {
         $tenantId = auth()->user()->tenant_id;
+        $user     = auth()->user();
         $project  = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
+
+        // Mesmo padrão de leitura do projeto: gestor OU membro. Sem isso
+        // qualquer user do tenant lia o resumo de IA do projeto.
+        if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
+            abort_unless(
+                \App\Models\ProjectMember::where('tenant_id', $tenantId)
+                    ->where('project_id', $project->id)
+                    ->where('user_id', $user->id)
+                    ->exists(),
+                403
+            );
+        }
 
         return response()->json([
             'status'     => $project->ai_summary_status,

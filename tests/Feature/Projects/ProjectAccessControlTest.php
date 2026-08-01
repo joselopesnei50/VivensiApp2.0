@@ -157,6 +157,90 @@ it('ngo continua criando turmas', function () {
     expect(ProjectClass::withoutGlobalScope('tenant')->where('tenant_id', $tenant->id)->count())->toBe(1);
 });
 
+// ── storePerson / summaryStatus / importPeople ───────────────────────────────
+
+it('employee nao-membro nao cadastra pessoa no projeto', function () {
+    $tenant   = pacTenant();
+    $employee = pacUser($tenant, 'employee');
+    $project  = pacProject($tenant);
+
+    $this->actingAs($employee)->postJson("/projects/{$project->id}/people", [
+        'name' => 'Fulano',
+    ])->assertStatus(403);
+});
+
+it('employee membro cadastra pessoa no projeto', function () {
+    $tenant   = pacTenant();
+    $employee = pacUser($tenant, 'employee');
+    $project  = pacProject($tenant);
+
+    ProjectMember::create([
+        'tenant_id'    => $tenant->id,
+        'project_id'   => $project->id,
+        'user_id'      => $employee->id,
+        'access_level' => 'editor',
+    ]);
+
+    $this->actingAs($employee)->post("/projects/{$project->id}/people", [
+        'name' => 'Fulano',
+    ])->assertRedirect();
+
+    expect(\App\Models\ProjectPerson::withoutGlobalScope('tenant')
+        ->where('tenant_id', $tenant->id)->count())->toBe(1);
+});
+
+it('employee nao-membro recebe 403 no summary-status', function () {
+    $tenant   = pacTenant();
+    $employee = pacUser($tenant, 'employee');
+    $project  = pacProject($tenant);
+
+    $this->actingAs($employee)
+        ->getJson("/projects/{$project->id}/logs/summary-status")
+        ->assertStatus(403);
+});
+
+it('employee membro le o summary-status', function () {
+    $tenant   = pacTenant();
+    $employee = pacUser($tenant, 'employee');
+    $project  = pacProject($tenant);
+
+    ProjectMember::create([
+        'tenant_id'    => $tenant->id,
+        'project_id'   => $project->id,
+        'user_id'      => $employee->id,
+        'access_level' => 'viewer',
+    ]);
+
+    $this->actingAs($employee)
+        ->getJson("/projects/{$project->id}/logs/summary-status")
+        ->assertOk();
+});
+
+it('importPeople trunca campos acima do limite das colunas', function () {
+    $tenant  = pacTenant();
+    $ngo     = pacUser($tenant, 'ngo');
+    $project = pacProject($tenant);
+
+    $longName  = str_repeat('A', 400);
+    $longPhone = str_repeat('9', 60);
+    $csv       = "nome,telefone,endereco,cidade\n{$longName},{$longPhone},Rua X,Cidade Y\nJoao,11999990000,,\n";
+
+    $file = \Illuminate\Http\UploadedFile::fake()->createWithContent('pessoas.csv', $csv);
+
+    $this->actingAs($ngo)->post('/projects/people/import', [
+        'project_id' => $project->id,
+        'csv_file'   => $file,
+    ])->assertRedirect();
+
+    $people = \App\Models\ProjectPerson::withoutGlobalScope('tenant')
+        ->where('tenant_id', $tenant->id)->orderBy('id')->get();
+
+    expect($people)->toHaveCount(2);
+    expect(mb_strlen($people[0]->name))->toBe(255);
+    expect(mb_strlen($people[0]->phone))->toBe(30);
+    expect($people[1]->name)->toBe('Joao');
+});
+
 it('rejeita professor de outro tenant em default_teacher_user_id', function () {
     $tenantA = pacTenant();
     $tenantB = pacTenant();

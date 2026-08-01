@@ -431,6 +431,19 @@ class ProjectController extends Controller
                           ->where('tenant_id', $tenantId)
                           ->firstOrFail();
 
+        // Employee só cadastra pessoas (dados pessoais) em projeto onde é
+        // membro — mesmo padrão do show/planning.
+        $user = auth()->user();
+        if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
+            abort_unless(
+                ProjectMember::where('tenant_id', $tenantId)
+                    ->where('project_id', $project->id)
+                    ->where('user_id', $user->id)
+                    ->exists(),
+                403
+            );
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:30',
@@ -531,27 +544,31 @@ class ProjectController extends Controller
             return back()->withErrors(['csv_file' => 'O CSV pode ter no máximo 500 linhas por importação.']);
         }
 
+        // Trunca nos limites das colunas — campo estourado dava SQL error no
+        // meio do loop e deixava importação parcial. Transação fecha o resto.
+        $cap = fn (?string $v, int $max) => $v === null || $v === ''
+            ? null
+            : mb_substr($v, 0, $max);
+
         $imported = 0;
-        foreach ($data as $row) {
-            if (count($row) >= 1) {
-                $name  = trim($row[0] ?? '');
-                if (!$name) continue;
+        DB::transaction(function () use ($data, $project, $cap, &$imported) {
+            foreach ($data as $row) {
+                if (count($row) >= 1) {
+                    $name = trim($row[0] ?? '');
+                    if (!$name) continue;
 
-                $phone = isset($row[1]) ? trim($row[1]) : null;
-                $address = isset($row[2]) ? trim($row[2]) : null;
-                $city = isset($row[3]) ? trim($row[3]) : null;
-
-                \App\Models\ProjectPerson::create([
-                    'tenant_id' => auth()->user()->tenant_id,
-                    'project_id' => $project->id,
-                    'name' => $name,
-                    'phone' => $phone,
-                    'address' => $address,
-                    'city' => $city,
-                ]);
-                $imported++;
+                    \App\Models\ProjectPerson::create([
+                        'tenant_id'  => auth()->user()->tenant_id,
+                        'project_id' => $project->id,
+                        'name'       => $cap($name, 255),
+                        'phone'      => $cap(isset($row[1]) ? trim($row[1]) : null, 30),
+                        'address'    => $cap(isset($row[2]) ? trim($row[2]) : null, 255),
+                        'city'       => $cap(isset($row[3]) ? trim($row[3]) : null, 255),
+                    ]);
+                    $imported++;
+                }
             }
-        }
+        });
 
         return back()->with('success', "{$imported} contatos importados com sucesso para o projeto!");
     }
