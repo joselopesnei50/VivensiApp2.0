@@ -84,6 +84,7 @@ class WhatsappController extends Controller
 
     public function markRead(Request $request, $chatId)
     {
+        Gate::authorize('access-whatsapp');
         $tenantId = auth()->user()->tenant_id;
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
         $chat->update(['last_read_at' => now()]);
@@ -748,8 +749,12 @@ class WhatsappController extends Controller
 
     public function saveSettings(Request $request)
     {
+        // Mesmo gate do GET — sem ele qualquer employee alterava PIX do
+        // tenant, treinamento do bot e credenciais Meta via POST direto.
+        Gate::authorize('access-whatsapp');
+
         $contextModel = $this->getContextModel();
-        $config = WhatsappConfig::where('tenant_id', auth()->user()->tenant_id)->first();
+        $config = WhatsappConfig::firstOrCreate(['tenant_id' => auth()->user()->tenant_id]);
         
         $validated = $request->validate([
             'ai_training'    => 'nullable|string|max:10000',
@@ -906,6 +911,8 @@ class WhatsappController extends Controller
      */
     public function templatesJson()
     {
+        Gate::authorize('access-whatsapp');
+
         $tenantId = auth()->user()->tenant_id ?? null;
         if (!$tenantId) {
             return response()->json(['templates' => []]);
@@ -1120,6 +1127,8 @@ class WhatsappController extends Controller
 
     public function chatList(Request $request)
     {
+        Gate::authorize('access-whatsapp');
+
         $tenantId = auth()->user()->tenant_id;
         $search   = trim((string) $request->query('q', ''));
         // Fase 3.A: filtro de propriedade — 'mine' | 'unassigned' | 'all' (default).
@@ -1171,6 +1180,8 @@ class WhatsappController extends Controller
 
     public function getChatMessages(Request $request, $chatId)
     {
+        Gate::authorize('access-whatsapp');
+
         $tenantId = auth()->user()->tenant_id;
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
         
@@ -1282,6 +1293,8 @@ class WhatsappController extends Controller
 
     public function startChat(Request $request)
     {
+        Gate::authorize('access-whatsapp');
+
         $tenantId = auth()->user()->tenant_id;
 
         $validated = $request->validate([
@@ -1339,6 +1352,8 @@ class WhatsappController extends Controller
 
     public function addNote(Request $request)
     {
+        Gate::authorize('access-whatsapp');
+
         $tenantId = auth()->user()->tenant_id;
         $chatId = $request->input('chat_id');
         
@@ -1360,12 +1375,16 @@ class WhatsappController extends Controller
 
     public function getCannedResponses()
     {
+        Gate::authorize('access-whatsapp');
+
         $responses = CannedResponse::where('tenant_id', auth()->user()->tenant_id)->get();
         return response()->json($responses);
     }
 
     public function saveCannedResponse(Request $request)
     {
+        Gate::authorize('access-whatsapp');
+
         $response = CannedResponse::create([
             'tenant_id' => auth()->user()->tenant_id,
             'title' => $request->input('title'),
@@ -1419,7 +1438,8 @@ class WhatsappController extends Controller
     public function getStatus(Request $request)
     {
         abort_unless(auth()->check(), 401, 'Unauthorized');
-        
+        Gate::authorize('access-whatsapp');
+
         $contextModel = $this->getContextModel();
         if (!$contextModel) {
             return response()->json(['error' => 'Context model not found'], 404);
@@ -1437,7 +1457,8 @@ class WhatsappController extends Controller
     public function getQrCode(Request $request)
     {
         abort_unless(auth()->check(), 401, 'Unauthorized');
-        
+        Gate::authorize('access-whatsapp');
+
         $contextModel = $this->getContextModel();
         if (!$contextModel) {
             return response()->json(['error' => 'Context model not found'], 404);
@@ -1455,7 +1476,8 @@ class WhatsappController extends Controller
     public function generatePairingCode(Request $request)
     {
         abort_unless(auth()->check(), 401, 'Unauthorized');
-        
+        Gate::authorize('access-whatsapp');
+
         $validated = $request->validate([
             'phone_number' => 'required|string|max:20',
         ]);
