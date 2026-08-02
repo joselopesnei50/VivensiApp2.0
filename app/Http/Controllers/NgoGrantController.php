@@ -200,6 +200,11 @@ class NgoGrantController extends Controller
             return response()->json(['proposal' => $grant->ai_proposal]);
         }
 
+        // Job já em andamento — não despachar outro (cada job é pago)
+        if ($grant->ai_proposal_status === 'processing') {
+            return response()->json(['status' => 'processing']);
+        }
+
         $grant->update(['ai_proposal_status' => 'processing', 'ai_proposal' => null]);
         GenerateGrantProposalJob::dispatch($grant->id, $tenantId)->onQueue('ai');
 
@@ -227,6 +232,11 @@ class NgoGrantController extends Controller
         // Return cached result if available
         if ($grant->ai_analysis_status === 'done' && $grant->ai_analysis) {
             return response()->json(['analysis' => $grant->ai_analysis]);
+        }
+
+        // Job já em andamento — não despachar outro (cada job é pago)
+        if ($grant->ai_analysis_status === 'processing') {
+            return response()->json(['status' => 'processing']);
         }
 
         $grant->update(['ai_analysis_status' => 'processing', 'ai_analysis' => null]);
@@ -458,9 +468,15 @@ class NgoGrantController extends Controller
     {
         $grant = NgoGrant::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
 
-        // Delete associated stored files (DB cascade won't trigger Eloquent events for docs).
+        // Uploads vivem no disco 'local' (privado) e o cascade de FK não
+        // dispara o hook deleting dos documents — deletar via Eloquent (que
+        // apaga cada arquivo) e varrer os dois discos pra não deixar órfão.
         try {
             $tenantId = auth()->user()->tenant_id;
+            foreach ($grant->documents as $doc) {
+                $doc->delete();
+            }
+            Storage::disk('local')->deleteDirectory("ngo_grants/{$tenantId}/{$grant->id}");
             Storage::disk('public')->deleteDirectory("ngo_grants/{$tenantId}/{$grant->id}");
         } catch (\Throwable $e) {
             // Keep flow stable.

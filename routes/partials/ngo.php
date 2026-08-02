@@ -55,22 +55,27 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::patch('/sponsorships/{id}',       [App\Http\Controllers\SponsorshipDealController::class, 'update']);
         Route::delete('/sponsorships/{id}',      [App\Http\Controllers\SponsorshipDealController::class, 'destroy']);
 
-        // Editais (Grants)
-        Route::get('/grants',                  [App\Http\Controllers\NgoGrantController::class, 'index']);
-        Route::get('/grants/create',           [App\Http\Controllers\NgoGrantController::class, 'create']);
-        Route::get('/grants/create-ai',        [App\Http\Controllers\NgoGrantController::class, 'createFromAi']);
-        Route::post('/grants/analyze',         [App\Http\Controllers\NgoGrantController::class, 'analyze'])->middleware('throttle:web_ai');
-        Route::post('/grants',                 [App\Http\Controllers\NgoGrantController::class, 'store'])->middleware('throttle:web_write');
-        Route::get('/grants/{id}/generate-proposal', [App\Http\Controllers\NgoGrantController::class, 'generateProposal'])->name('ngo.grants.generate-proposal')->middleware('throttle:web_ai');
-        Route::get('/grants/{id}/ai-analyze',        [App\Http\Controllers\NgoGrantController::class, 'aiAnalyze'])->name('ngo.grants.ai-analyze')->middleware('throttle:web_ai');
-        Route::get('/grants/{id}/ai-status',         [App\Http\Controllers\NgoGrantController::class, 'aiStatus'])->name('ngo.grants.ai-status');
-        Route::get('/grants/{id}',             [App\Http\Controllers\NgoGrantController::class, 'show'])->name('ngo.grants.show');
-        Route::put('/grants/{id}',             [App\Http\Controllers\NgoGrantController::class, 'update'])->name('ngo.grants.update');
-        Route::delete('/grants/{id}',          [App\Http\Controllers\NgoGrantController::class, 'destroy'])->name('ngo.grants.destroy');
-        Route::post('/grants/{id}/status',     [App\Http\Controllers\NgoGrantController::class, 'updateStatus'])->name('ngo.grants.status');
-        Route::post('/grants/{id}/documents',                       [App\Http\Controllers\NgoGrantController::class, 'uploadDocument'])->name('ngo.grants.documents.upload');
-        Route::get('/grants/{id}/documents/{docId}/download',       [App\Http\Controllers\NgoGrantController::class, 'downloadDocument'])->name('ngo.grants.documents.download');
-        Route::delete('/grants/{id}/documents/{docId}',             [App\Http\Controllers\NgoGrantController::class, 'deleteDocument'])->name('ngo.grants.documents.delete');
+        // Editais (Grants) — gate manage-grants (role ngo/super_admin ou
+        // permissão spatie); sem ele qualquer user do tenant lia/excluía
+        // convênios e disparava jobs de IA pagos.
+        Route::middleware('can:manage-grants')->group(function () {
+            Route::get('/grants',                  [App\Http\Controllers\NgoGrantController::class, 'index']);
+            Route::get('/grants/create',           [App\Http\Controllers\NgoGrantController::class, 'create']);
+            Route::get('/grants/create-ai',        [App\Http\Controllers\NgoGrantController::class, 'createFromAi']);
+            Route::post('/grants/analyze',         [App\Http\Controllers\NgoGrantController::class, 'analyze'])->middleware('throttle:web_ai');
+            Route::post('/grants',                 [App\Http\Controllers\NgoGrantController::class, 'store'])->middleware('throttle:web_write');
+            // POST: mutam estado (status + dispatch de job pago) — GET dispensava CSRF
+            Route::post('/grants/{id}/generate-proposal', [App\Http\Controllers\NgoGrantController::class, 'generateProposal'])->name('ngo.grants.generate-proposal')->middleware('throttle:web_ai');
+            Route::post('/grants/{id}/ai-analyze',        [App\Http\Controllers\NgoGrantController::class, 'aiAnalyze'])->name('ngo.grants.ai-analyze')->middleware('throttle:web_ai');
+            Route::get('/grants/{id}/ai-status',         [App\Http\Controllers\NgoGrantController::class, 'aiStatus'])->name('ngo.grants.ai-status');
+            Route::get('/grants/{id}',             [App\Http\Controllers\NgoGrantController::class, 'show'])->name('ngo.grants.show');
+            Route::put('/grants/{id}',             [App\Http\Controllers\NgoGrantController::class, 'update'])->name('ngo.grants.update');
+            Route::delete('/grants/{id}',          [App\Http\Controllers\NgoGrantController::class, 'destroy'])->name('ngo.grants.destroy');
+            Route::post('/grants/{id}/status',     [App\Http\Controllers\NgoGrantController::class, 'updateStatus'])->name('ngo.grants.status');
+            Route::post('/grants/{id}/documents',                       [App\Http\Controllers\NgoGrantController::class, 'uploadDocument'])->name('ngo.grants.documents.upload');
+            Route::get('/grants/{id}/documents/{docId}/download',       [App\Http\Controllers\NgoGrantController::class, 'downloadDocument'])->name('ngo.grants.documents.download');
+            Route::delete('/grants/{id}/documents/{docId}',             [App\Http\Controllers\NgoGrantController::class, 'deleteDocument'])->name('ngo.grants.documents.delete');
+        });
 
         // Transparência (módulo interno)
         Route::get('/transparency', [App\Http\Controllers\TransparencyController::class, 'index']);

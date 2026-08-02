@@ -598,7 +598,13 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 <script>
+    // marked não sanitiza — a IA ecoa notes (input de user), então todo
+    // markdown renderizado passa pelo DOMPurify antes do innerHTML.
+    function vvRenderMd(text) {
+        return DOMPurify.sanitize(marked.parse(text || ''));
+    }
     document.addEventListener('DOMContentLoaded', function() {
         const btnGenerate = document.getElementById('btnGenerateAiProposal');
         const modal = new bootstrap.Modal(document.getElementById('aiProposalModal'));
@@ -613,7 +619,7 @@
         if (btnLoadSaved) {
             btnLoadSaved.addEventListener('click', function() {
                 currentProposal = savedProposal;
-                content.innerHTML = marked.parse(savedProposal);
+                content.innerHTML = vvRenderMd(savedProposal);
                 loading.style.display = 'none';
                 content.style.display = 'block';
                 btnCopy.style.display = 'block';
@@ -649,7 +655,10 @@
             btnCopy.style.display = 'none';
 
             try {
-                const response = await fetch("{{ route('ngo.grants.generate-proposal', $grant->id) }}");
+                const response = await fetch("{{ route('ngo.grants.generate-proposal', $grant->id) }}", {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+                });
                 const data = await response.json();
 
                 if (data.error) { alert(data.error); modal.hide(); return; }
@@ -657,7 +666,7 @@
                 if (data.proposal) {
                     // Returned cached result immediately
                     currentProposal = data.proposal;
-                    content.innerHTML = marked.parse(currentProposal);
+                    content.innerHTML = vvRenderMd(currentProposal);
                     loading.style.display = 'none';
                     content.style.display = 'block';
                     btnCopy.style.display = 'block';
@@ -665,7 +674,7 @@
                     // Job dispatched — poll for completion
                     pollGrantAiStatus('proposal', function(proposal) {
                         currentProposal = proposal;
-                        content.innerHTML = marked.parse(proposal);
+                        content.innerHTML = vvRenderMd(proposal);
                         loading.style.display = 'none';
                         content.style.display = 'block';
                         btnCopy.style.display = 'block';
@@ -713,7 +722,8 @@
             analysisContent.style.display = 'none';
 
             fetch("{{ route('ngo.grants.ai-analyze', $grant->id) }}", {
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             })
             .then(r => r.json())
             .then(function (data) {
@@ -733,7 +743,7 @@
 
         function showAnalysis(text) {
             currentAnalysis = text;
-            analysisContent.innerHTML = marked.parse(text);
+            analysisContent.innerHTML = vvRenderMd(text);
             analysisLoading.style.display = 'none';
             analysisContent.style.display = 'block';
         }
