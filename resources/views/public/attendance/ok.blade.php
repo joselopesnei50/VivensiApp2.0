@@ -19,9 +19,15 @@
 </head>
 <body>
 <div class="wrap">
-    <i class="fas fa-circle-check check"></i>
-    <h1>Presença registrada!</h1>
-    <p>{{ $session->title }} — {{ $session->date->format('d/m/Y') }}</p>
+    @if(!empty($jaRegistrado))
+        <i class="fas fa-circle-info check" style="color:#f59e0b;"></i>
+        <h1>Presença já registrada</h1>
+        <p>Você já marcou presença nesta chamada. <br><strong>{{ $session->title }} — {{ $session->date->format('d/m/Y') }}</strong></p>
+    @else
+        <i class="fas fa-circle-check check"></i>
+        <h1>Presença registrada!</h1>
+        <p>{{ $session->title }} — {{ $session->date->format('d/m/Y') }}</p>
+    @endif
     <div class="actions">
         <a class="btn btn-primary" href="/chamada/{{ $token }}"><i class="fas fa-plus"></i>&nbsp; Nova Presença</a>
         <a class="btn btn-ghost" href="#" onclick="window.close(); return false;">Fechar</a>

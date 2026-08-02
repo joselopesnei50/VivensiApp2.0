@@ -27,6 +27,23 @@ class AttendanceReportController extends Controller
             ->firstOrFail();
     }
 
+    /**
+     * Sanitiza célula CSV contra injection de fórmula do Excel.
+     * Se começar com =, +, @, -, |, %, tab ou CR — prefixa apóstrofo pra
+     * Excel/LibreOffice/Sheets tratarem como texto literal e não executar.
+     * https://owasp.org/www-community/attacks/CSV_Injection
+     */
+    private function csvSafe(?string $value): string
+    {
+        $value = (string) ($value ?? '');
+        if ($value === '') return '';
+        $first = mb_substr($value, 0, 1);
+        if (in_array($first, ['=', '+', '@', '-', '|', '%'], true) || $first === "\t" || $first === "\r") {
+            return "'" . $value;
+        }
+        return $value;
+    }
+
     // Dashboard de frequencia por projeto.
     public function show(Request $request, int $projectId)
     {
@@ -62,7 +79,7 @@ class AttendanceReportController extends Controller
 
             // Cabecalho de auditoria — uso interno, alinhado com politica LGPD do projeto.
             fputcsv($out, ['# Relatorio de frequencia — uso interno']);
-            fputcsv($out, ['# Projeto', $project->name]);
+            fputcsv($out, ['# Projeto', $this->csvSafe($project->name)]);
             fputcsv($out, ['# Periodo', $from->format('d/m/Y') . ' a ' . $to->format('d/m/Y')]);
             fputcsv($out, ['# Gerado em', now()->format('d/m/Y H:i')]);
             fputcsv($out, []);
@@ -79,7 +96,7 @@ class AttendanceReportController extends Controller
 
             foreach ($data['rows'] as $r) {
                 fputcsv($out, [
-                    $r['name'],
+                    $this->csvSafe($r['name']),
                     $r['eligible'],
                     $r['presences'],
                     $r['absences'],
@@ -119,8 +136,8 @@ class AttendanceReportController extends Controller
             fwrite($out, "\xEF\xBB\xBF");
 
             fputcsv($out, ['# Chamada — uso interno']);
-            fputcsv($out, ['# Projeto', $project->name]);
-            fputcsv($out, ['# Sessao', $session->title]);
+            fputcsv($out, ['# Projeto', $this->csvSafe($project->name)]);
+            fputcsv($out, ['# Sessao', $this->csvSafe($session->title)]);
             fputcsv($out, ['# Data', $session->date->format('d/m/Y')]);
             fputcsv($out, ['# Gerado em', now()->format('d/m/Y H:i')]);
             fputcsv($out, []);
@@ -129,12 +146,12 @@ class AttendanceReportController extends Controller
 
             foreach ($attendances as $a) {
                 fputcsv($out, [
-                    $a->student->name ?? '(removido)',
-                    $a->student->phone ?? '',
+                    $this->csvSafe($a->student->name ?? '(removido)'),
+                    $this->csvSafe($a->student->phone ?? ''),
                     $this->statusLabel($a->status),
                     $this->channelLabel($a->checked_in_via),
                     $a->checked_in_at?->format('d/m/Y H:i') ?? '',
-                    $a->justification ?? '',
+                    $this->csvSafe($a->justification ?? ''),
                 ]);
             }
 
