@@ -40,6 +40,7 @@ class Invoice extends Model
         'paid_via',
         'abacatepay_charge_id',
         'abacatepay_pix_url',
+        'abacatepay_pix_qr_base64',
         'abacatepay_billing_url',
         'actor_user_id',
     ];

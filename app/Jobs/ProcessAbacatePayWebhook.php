@@ -33,13 +33,97 @@ class ProcessAbacatePayWebhook implements ShouldQueue
     public function handle(): void
     {
         match ($this->event) {
-            'checkout.completed'     => $this->handleCheckoutCompleted($this->payload),
-            'checkout.refunded'      => $this->handleCheckoutRefunded($this->payload),
-            'subscription.completed' => $this->handleSubscriptionCompleted($this->payload),
-            'subscription.renewed'   => $this->handleSubscriptionCompleted($this->payload),
-            'subscription.cancelled' => $this->handleSubscriptionCancelled($this->payload),
-            default                  => Log::info("AbacatePay: evento '{$this->event}' ignorado."),
+            'checkout.completed'      => $this->handleCheckoutCompleted($this->payload),
+            'checkout.refunded'       => $this->handleCheckoutRefunded($this->payload),
+            'transparent.completed'   => $this->handleTransparentCompleted($this->payload),
+            'transparent.refunded'    => $this->handleTransparentRefunded($this->payload),
+            'subscription.completed'  => $this->handleSubscriptionCompleted($this->payload),
+            'subscription.renewed'    => $this->handleSubscriptionCompleted($this->payload),
+            'subscription.cancelled'  => $this->handleSubscriptionCancelled($this->payload),
+            default                   => Log::info("AbacatePay: evento '{$this->event}' ignorado."),
         };
+    }
+
+    /**
+     * Handler pra cobranças PIX Transparent (endpoint /transparents/create).
+     * Nossa fatura mensal (InvoiceService) usa esse fluxo — cada invoice
+     * gera 1 pixQrCode com metadata.invoice_id populada.
+     *
+     * Payload esperado (Meta): { data: { pixQrCode: { id, status, metadata } } }
+     */
+    private function handleTransparentCompleted(array $payload): void
+    {
+        $pix       = $payload['data']['pixQrCode'] ?? $payload['data']['transparent'] ?? null;
+        $webhookId = $payload['id'] ?? null;
+
+        if (!$pix) {
+            Log::warning('AbacatePay transparent.completed: payload sem pixQrCode');
+            return;
+        }
+
+        // Idempotência
+        if (!$this->markProcessed($webhookId, 'transparent.completed')) {
+            return;
+        }
+
+        $chargeId = $pix['id'] ?? null;
+        $metadata = $pix['metadata'] ?? [];
+        $invoiceId = (int) ($metadata['invoice_id'] ?? 0);
+
+        if (!$invoiceId) {
+            Log::warning('AbacatePay transparent.completed: metadata.invoice_id ausente', ['charge_id' => $chargeId]);
+            return;
+        }
+
+        $invoice = \App\Models\Invoice::withoutGlobalScopes()->find($invoiceId);
+        if (!$invoice) {
+            Log::warning('AbacatePay transparent.completed: invoice não encontrada', ['invoice_id' => $invoiceId]);
+            return;
+        }
+
+        try {
+            app(\App\Services\Billing\InvoiceService::class)->markAsPaid(
+                $invoice,
+                \App\Models\Invoice::PAID_VIA_ABACATEPAY,
+                null,
+                $chargeId
+            );
+            Log::info('AbacatePay transparent.completed: invoice marcada paga', [
+                'invoice_id' => $invoice->id,
+                'tenant_id'  => $invoice->tenant_id,
+                'charge_id'  => $chargeId,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('AbacatePay transparent.completed: markAsPaid falhou', [
+                'invoice_id' => $invoice->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Handler pra reembolso/estorno de PIX Transparent. Marca a Invoice
+     * como cancelada (não devolvemos ao status open).
+     */
+    private function handleTransparentRefunded(array $payload): void
+    {
+        $pix       = $payload['data']['pixQrCode'] ?? $payload['data']['transparent'] ?? null;
+        $webhookId = $payload['id'] ?? null;
+
+        if (!$pix || !$this->markProcessed($webhookId, 'transparent.refunded')) {
+            return;
+        }
+
+        $metadata = $pix['metadata'] ?? [];
+        $invoiceId = (int) ($metadata['invoice_id'] ?? 0);
+        if (!$invoiceId) return;
+
+        $invoice = \App\Models\Invoice::withoutGlobalScopes()->find($invoiceId);
+        if (!$invoice) return;
+
+        $invoice->status = \App\Models\Invoice::STATUS_CANCELED;
+        $invoice->save();
+        Log::info('AbacatePay transparent.refunded: invoice cancelada', ['invoice_id' => $invoice->id]);
     }
 
     private function handleCheckoutCompleted(array $payload): void

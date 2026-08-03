@@ -84,6 +84,80 @@ class AbacatePayService
         return ($response['success'] ?? false) ? $response['data'] : null;
     }
 
+    // ─── PIX Transparente (Checkout Transparente) ────────────────────────────
+
+    /**
+     * Cria uma cobrança PIX embutida com QR code gerado direto — sem redirect,
+     * sem precisar Produto pré-cadastrado. Ideal pra invoices com valor
+     * arbitrário. Só PIX (não suporta cartão).
+     *
+     * Endpoint: POST /transparents/create
+     * Docs: https://docs.abacatepay.com/pages/pix-qrcode/create
+     *
+     * @param int    $amountCents  Valor em centavos (ex: 10000 = R$ 100,00)
+     * @param string $description  Descrição que aparece no app do banco do pagador
+     * @param array  $customer     [name, email, taxId?, cellphone?] — opcional
+     * @param array  $metadata     Dados extras retornados no webhook (invoice_id, tenant_id, etc)
+     * @param int    $expiresIn    Segundos até QR code expirar (default: 24h)
+     * @return array|null   ['id' => 'pix_xxx', 'brCode' => '000201...', 'brCodeBase64' => 'iVBOR...']
+     */
+    public function createPixCharge(
+        int    $amountCents,
+        string $description,
+        array  $customer  = [],
+        array  $metadata  = [],
+        int    $expiresIn = 86400
+    ): ?array {
+        $payload = [
+            'amount'      => $amountCents,
+            'description' => mb_substr($description, 0, 140),
+            'expiresIn'   => $expiresIn,
+        ];
+
+        if (!empty($customer)) {
+            $payload['customer'] = array_filter([
+                'name'      => $customer['name']      ?? null,
+                'email'     => $customer['email']     ?? null,
+                'taxId'     => $customer['taxId']     ?? null,
+                'cellphone' => $customer['cellphone'] ?? null,
+            ]);
+        }
+
+        if (!empty($metadata)) {
+            $payload['metadata'] = $metadata;
+        }
+
+        Log::info('AbacatePay: createPixCharge', [
+            'amount'   => $amountCents,
+            'metadata' => $metadata,
+            'devMode'  => $this->devMode,
+        ]);
+
+        $response = $this->post('/transparents/create', $payload);
+
+        if ($response && ($response['success'] ?? false)) {
+            return $response['data'];
+        }
+
+        Log::error('AbacatePay: createPixCharge falhou', [
+            'error'      => $response['error']   ?? null,
+            'error_code' => $response['code']    ?? null,
+            'success'    => $response['success'] ?? null,
+            'metadata'   => $metadata,
+        ]);
+        return null;
+    }
+
+    /**
+     * Verifica status de pagamento de um PIX pelo ID.
+     * Endpoint: GET /transparents/check
+     */
+    public function checkPixCharge(string $pixId): ?array
+    {
+        $response = $this->get('/transparents/check', ['id' => $pixId]);
+        return ($response['success'] ?? false) ? $response['data'] : null;
+    }
+
     /**
      * Lista todos os checkouts.
      */

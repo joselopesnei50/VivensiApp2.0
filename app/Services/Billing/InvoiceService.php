@@ -147,38 +147,52 @@ class InvoiceService
     }
 
     /**
-     * Tenta gerar checkout AbacatePay e popula links na invoice.
-     * Falha silenciosa — cliente sempre pode pagar via PIX manual como fallback.
+     * Tenta gerar cobrança PIX Transparent na AbacatePay e salva brCode +
+     * brCodeBase64 na invoice. Falha silenciosa — cliente sempre pode pagar
+     * via PIX manual (chave Vivensi) como fallback.
+     *
+     * Usa /transparents/create em vez de /checkouts/create porque:
+     *  - AbacatePay exige Produto pré-cadastrado pra checkouts (não temos)
+     *  - Transparent aceita valor arbitrário direto (ideal pra invoice)
+     *  - Retorna QR code embutido (melhor UX que redirect)
+     *  - Só PIX (que é o modelo comercial do Vivensi hoje)
      */
     private function tryGenerateAbacateCheckout(Invoice $invoice, Tenant $tenant): void
     {
         try {
             $service = app(AbacatePayService::class);
 
-            $items = [[
-                'name'        => $invoice->description,
-                'description' => "Assinatura mensal - {$tenant->name}",
-                'quantity'    => 1,
-                'price'       => $invoice->amount_cents,
-            ]];
+            $customer = array_filter([
+                'name'  => $tenant->name,
+                'email' => $tenant->email ?? null,
+                'taxId' => $tenant->tax_id ?? $tenant->document ?? null,
+            ]);
 
-            $externalId = 'invoice_' . $invoice->id;
-            $metadata   = [
-                'invoice_id' => $invoice->id,
-                'tenant_id'  => $tenant->id,
-                'plan_id'    => $invoice->plan_id,
-                'period'     => (string) $invoice->period_start,
+            $metadata = [
+                'invoice_id'  => $invoice->id,
+                'tenant_id'   => $tenant->id,
+                'plan_id'     => $invoice->plan_id,
+                'period'      => (string) $invoice->period_start,
+                'external_id' => 'invoice_' . $invoice->id,
             ];
 
-            $data = $service->createCheckout($items, $externalId, '', '', ['PIX', 'CARD'], $metadata);
+            $data = $service->createPixCharge(
+                $invoice->amount_cents,
+                $invoice->description,
+                $customer,
+                $metadata,
+                86400 * 5 // QR válido por 5 dias (bate com due_date)
+            );
+
             if (!$data) return;
 
-            $invoice->abacatepay_charge_id   = $data['id']  ?? null;
-            $invoice->abacatepay_pix_url     = $data['brCode']    ?? $data['pix']['brCode'] ?? null;
-            $invoice->abacatepay_billing_url = $data['url']       ?? null;
+            $invoice->abacatepay_charge_id      = $data['id']           ?? null;
+            $invoice->abacatepay_pix_url        = $data['brCode']       ?? null; // copia-e-cola
+            $invoice->abacatepay_pix_qr_base64  = $data['brCodeBase64'] ?? null; // PNG base64
+            $invoice->abacatepay_billing_url    = $data['url']          ?? null; // pode não vir em transparent
             $invoice->save();
         } catch (\Throwable $e) {
-            Log::warning('InvoiceService: pré-gerar checkout AbacatePay falhou (não bloqueante)', [
+            Log::warning('InvoiceService: pré-gerar cobrança PIX AbacatePay falhou (não bloqueante)', [
                 'invoice_id' => $invoice->id,
                 'error'      => $e->getMessage(),
             ]);

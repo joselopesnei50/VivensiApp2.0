@@ -57,6 +57,22 @@
         font-size: .72rem; font-weight: 700; cursor: pointer;
     }
     .inv-pix-copy:hover { background: #059669; }
+
+    /* Modal QR PIX */
+    .pix-modal { display:none; position:fixed; inset:0; background:rgba(15,23,42,.6); z-index:9999; align-items:center; justify-content:center; padding:20px; }
+    .pix-modal.open { display:flex; }
+    .pix-modal-box { background:#fff; border-radius:20px; padding:32px; max-width:440px; width:100%; text-align:center; box-shadow:0 25px 60px rgba(0,0,0,.15); }
+    .pix-modal-box h3 { color:#0f172a; font-weight:800; margin:0 0 6px; font-size:1.15rem; }
+    .pix-modal-box p.sub { color:#64748b; font-size:.85rem; margin:0 0 20px; }
+    .pix-modal-box img.qr { width:280px; height:280px; margin:0 auto 16px; display:block; border:1px solid #e2e8f0; border-radius:12px; }
+    .pix-modal-code { background:#f1f5f9; border:1px dashed #cbd5e1; border-radius:10px; padding:12px; font-family:ui-monospace,monospace; font-size:.72rem; color:#0f172a; word-break:break-all; text-align:left; max-height:100px; overflow-y:auto; }
+    .pix-modal-actions { display:flex; gap:10px; margin-top:16px; }
+    .pix-modal-actions button { flex:1; padding:12px; border-radius:10px; border:0; font-weight:800; font-size:.85rem; cursor:pointer; }
+    .pix-btn-copy { background:#10b981; color:#fff; }
+    .pix-btn-copy:hover { background:#059669; }
+    .pix-btn-close { background:#f1f5f9; color:#334155; }
+    .pix-btn-close:hover { background:#e2e8f0; }
+    .pix-modal-info { margin-top:14px; padding:10px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; color:#1e40af; font-size:.78rem; }
 </style>
 @endpush
 
@@ -109,14 +125,20 @@
                                     </span>
                                 </td>
                                 <td style="text-align:right; white-space:nowrap;">
-                                    @if($inv->abacatepay_billing_url)
+                                    @if($inv->abacatepay_pix_qr_base64 || $inv->abacatepay_pix_url)
+                                        {{-- QR code embutido do AbacatePay --}}
+                                        <button type="button" class="inv-cta primary" onclick="openPixModal({{ $inv->id }})">
+                                            <i class="fas fa-qrcode"></i> Pagar com PIX
+                                        </button>
+                                    @elseif($inv->abacatepay_billing_url)
+                                        {{-- Fallback pra link hospedado --}}
                                         <a href="{{ $inv->abacatepay_billing_url }}" target="_blank" rel="noopener" class="inv-cta primary">
                                             <i class="fas fa-external-link-alt"></i> Pagar
                                         </a>
                                     @endif
                                     @if($pixKey)
                                         <a href="#pix-info" class="inv-cta ghost" onclick="document.getElementById('pix-info').scrollIntoView({behavior:'smooth'}); return false;">
-                                            <i class="fas fa-qrcode"></i> PIX
+                                            <i class="fas fa-key"></i> PIX manual
                                         </a>
                                     @endif
                                 </td>
@@ -174,6 +196,52 @@
                 </table>
             </div>
         @endif
+
+        {{-- ── Modais QR PIX (1 por fatura com QR gerado) ── --}}
+        @foreach($unpaid as $inv)
+            @if($inv->abacatepay_pix_qr_base64 || $inv->abacatepay_pix_url)
+                <div class="pix-modal" id="pixModal-{{ $inv->id }}" onclick="if(event.target===this) closePixModal({{ $inv->id }})">
+                    <div class="pix-modal-box">
+                        <h3><i class="fas fa-qrcode" style="color:#4f46e5;"></i> Pagar {{ $inv->formatted_amount }}</h3>
+                        <p class="sub">{{ $inv->description }} · vence em {{ $inv->due_date->format('d/m/Y') }}</p>
+
+                        @if($inv->abacatepay_pix_qr_base64)
+                            <img class="qr" src="data:image/png;base64,{{ $inv->abacatepay_pix_qr_base64 }}" alt="QR Code PIX">
+                        @endif
+
+                        @if($inv->abacatepay_pix_url)
+                            <div class="pix-modal-code" id="pix-code-{{ $inv->id }}">{{ $inv->abacatepay_pix_url }}</div>
+                        @endif
+
+                        <div class="pix-modal-actions">
+                            @if($inv->abacatepay_pix_url)
+                                <button type="button" class="pix-btn-copy" onclick="copyPixCode({{ $inv->id }}, this)">
+                                    <i class="fas fa-copy"></i> Copiar código
+                                </button>
+                            @endif
+                            <button type="button" class="pix-btn-close" onclick="closePixModal({{ $inv->id }})">Fechar</button>
+                        </div>
+
+                        <div class="pix-modal-info">
+                            <i class="fas fa-info-circle"></i> Abra o app do seu banco, escaneie o QR ou cole o código. O pagamento é confirmado automaticamente em segundos.
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endforeach
+
+        <script>
+            function openPixModal(id) { document.getElementById('pixModal-'+id).classList.add('open'); }
+            function closePixModal(id) { document.getElementById('pixModal-'+id).classList.remove('open'); }
+            function copyPixCode(id, btn) {
+                const el = document.getElementById('pix-code-'+id);
+                if (!el) return;
+                navigator.clipboard.writeText(el.innerText.trim()).then(() => {
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> Copiar código', 2500);
+                });
+            }
+        </script>
     @endif
 
 </div>
