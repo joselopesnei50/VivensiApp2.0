@@ -44,6 +44,19 @@ class Kernel extends ConsoleKernel
                      \Illuminate\Support\Facades\Log::error('whatsapp:reset-monthly-quotas falhou no scheduler.');
                  });
 
+        // Billing: gera invoices mensais recorrentes — dia 1 às 00:10.
+        // Idempotente por (tenant, period_start). Skipa tenants inativos e
+        // planos com is_courtesy=true.
+        $schedule->command('invoices:generate-recurring')
+                 ->monthlyOn(1, '00:10')
+                 ->onFailure(function () {
+                     \Illuminate\Support\Facades\Log::error('invoices:generate-recurring falhou no scheduler.');
+                 });
+
+        // Billing: marca invoices open vencidas há >3d como overdue — diário 06:00.
+        $schedule->command('invoices:mark-overdue')
+                 ->dailyAt('06:00');
+
         // Redes Sociais: sincroniza métricas dos posts publicados.
         // DESLIGADO em 2026-07-30 até Meta App Review aprovar as permissões:
         //   - pages_read_user_content (comments/shares/reactions do FB)

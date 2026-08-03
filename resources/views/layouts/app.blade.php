@@ -414,6 +414,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-user-circle"></i> Meu Perfil
                     </a>
                 </li>
+                @auth
+                @if(!auth()->user()->isSuperAdmin())
+                <li>
+                    <a href="{{ route('client.invoices.index') }}" class="{{ request()->routeIs('client.invoices.*') ? 'active' : '' }}">
+                        <i class="fas fa-file-invoice-dollar"></i> Minhas Faturas
+                    </a>
+                </li>
+                @endif
+                @endauth
                 <li>
                     <a href="{{ url('/support') }}" class="{{ request()->is('support*') ? 'active' : '' }}">
                         <i class="fas fa-life-ring"></i> Suporte
@@ -571,6 +580,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno — Métricas</a></li>
                             <li><a href="{{ route('admin.whatsapp.billing') }}" class="{{ request()->routeIs('admin.whatsapp.billing') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> WhatsApp — Consumo Cloud</a></li>
                             <li><a href="{{ route('admin.whatsapp.quotas.index') }}" class="{{ request()->routeIs('admin.whatsapp.quotas.*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> WhatsApp — Cotas mensais</a></li>
+                            <li><a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Faturas</a></li>
                             <li><a href="{{ route('admin.lgpd.index') }}" class="{{ request()->routeIs('admin.lgpd.*') ? 'active' : '' }}">
                                 <i class="fas fa-scale-balanced"></i> Painel LGPD / DPO
                                 @if($sa_badge_lgpd > 0)<span class="sa-badge sa-amber">{{ $sa_badge_lgpd }}</span>@endif

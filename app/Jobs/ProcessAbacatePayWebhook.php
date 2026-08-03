@@ -79,6 +79,43 @@ class ProcessAbacatePayWebhook implements ShouldQueue
             return;
         }
 
+        // Se externalId é 'invoice_<id>', marca a Invoice como paga.
+        // Idempotente — markAsPaid retorna sem mudar se já pago.
+        if (str_starts_with($externalId, 'invoice_')) {
+            $invoiceId = (int) substr($externalId, strlen('invoice_'));
+            $invoice   = \App\Models\Invoice::withoutGlobalScopes()
+                ->where('id', $invoiceId)
+                ->where('tenant_id', $tenant->id)
+                ->first();
+
+            if ($invoice) {
+                try {
+                    app(\App\Services\Billing\InvoiceService::class)->markAsPaid(
+                        $invoice,
+                        \App\Models\Invoice::PAID_VIA_ABACATEPAY,
+                        null,
+                        $checkout['id'] ?? null
+                    );
+                    Log::info('AbacatePay: invoice marcada como paga via webhook', [
+                        'invoice_id' => $invoice->id,
+                        'tenant_id'  => $tenant->id,
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::warning('AbacatePay: falha ao marcar invoice paga (não bloqueia)', [
+                        'invoice_id' => $invoice->id,
+                        'error'      => $e->getMessage(),
+                    ]);
+                }
+            } else {
+                Log::warning('AbacatePay: invoice_id do externalId não encontrado', [
+                    'external_id' => $externalId,
+                    'tenant_id'   => $tenant->id,
+                ]);
+            }
+            // Retorna — invoices não geram Transaction (fluxo de doação/produto).
+            return;
+        }
+
         $planId = $checkout['metadata']['plan_id'] ?? null;
 
         DB::transaction(function () use ($externalId, $tenant, $planId, $checkout) {

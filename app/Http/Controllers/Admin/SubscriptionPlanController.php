@@ -32,6 +32,10 @@ class SubscriptionPlanController extends Controller
             'capabilities'             => 'nullable|array',
             'capabilities.whatsapp_cloud' => 'nullable|boolean',
             'is_active'                => 'boolean',
+            'is_courtesy'              => 'boolean',
+            'whatsapp_conversations_included' => 'nullable|integer|min:0|max:1000000',
+            'whatsapp_extra_pack_size'        => 'nullable|integer|min:0|max:1000000',
+            'whatsapp_extra_pack_price_brl'   => 'nullable|numeric|min:0|max:100000',
         ]);
 
         // Normaliza capabilities pra manter só chaves conhecidas + booleanas.
@@ -67,6 +71,10 @@ class SubscriptionPlanController extends Controller
             'capabilities'             => 'nullable|array',
             'capabilities.whatsapp_cloud' => 'nullable|boolean',
             'is_active'                => 'boolean',
+            'is_courtesy'              => 'boolean',
+            'whatsapp_conversations_included' => 'nullable|integer|min:0|max:1000000',
+            'whatsapp_extra_pack_size'        => 'nullable|integer|min:0|max:1000000',
+            'whatsapp_extra_pack_price_brl'   => 'nullable|numeric|min:0|max:100000',
         ]);
 
         // Normaliza capabilities pra manter só chaves conhecidas + booleanas.

@@ -60,9 +60,17 @@
                     </div>
 
                     <div class="col-md-6 d-flex align-items-center">
-                        <div class="form-check form-switch mt-4">
-                            <input class="form-check-input" type="checkbox" name="is_active" value="1" checked id="isActive">
-                            <label class="form-check-label fw-bold ms-2" for="isActive">Plano Ativo para Vendas</label>
+                        <div>
+                            <div class="form-check form-switch mt-4">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="1" checked id="isActive">
+                                <label class="form-check-label fw-bold ms-2" for="isActive">Plano Ativo para Vendas</label>
+                            </div>
+                            <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="is_courtesy" value="0">
+                                <input class="form-check-input" type="checkbox" name="is_courtesy" value="1" id="isCourtesy">
+                                <label class="form-check-label fw-bold ms-2" for="isCourtesy">Plano de Cortesia</label>
+                                <div class="form-text small">Se marcado, tenants nesse plano <strong>não recebem faturas mensais</strong>.</div>
+                            </div>
                         </div>
                     </div>
 

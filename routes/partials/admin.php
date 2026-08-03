@@ -23,6 +23,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/whatsapp-cotas/{tenant}/pack',        [App\Http\Controllers\Admin\WhatsappQuotasController::class, 'addExtraPack'])->name('admin.whatsapp.quotas.pack');
         Route::post('/whatsapp-cotas/{tenant}/adjustment',  [App\Http\Controllers\Admin\WhatsappQuotasController::class, 'adjustment'])->name('admin.whatsapp.quotas.adjustment');
 
+        // Faturas — gestão consolidada
+        Route::get( '/faturas',                     [App\Http\Controllers\Admin\InvoicesController::class, 'index'])->name('admin.invoices.index');
+        Route::post('/faturas/{invoice}/pay',       [App\Http\Controllers\Admin\InvoicesController::class, 'markPaid'])->name('admin.invoices.mark-paid');
+        Route::post('/faturas/{invoice}/cancel',    [App\Http\Controllers\Admin\InvoicesController::class, 'cancel'])->name('admin.invoices.cancel');
+
         // Conformidade: editor de thresholds globais
         Route::get('/conformidade', [App\Http\Controllers\Admin\ConformidadeAdminController::class, 'index'])->name('admin.conformidade.index');
         Route::put('/conformidade/regra/{regra}', [App\Http\Controllers\Admin\ConformidadeAdminController::class, 'update'])->name('admin.conformidade.regra.update');
