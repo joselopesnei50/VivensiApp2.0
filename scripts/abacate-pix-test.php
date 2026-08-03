@@ -57,41 +57,60 @@ try {
     exit(1);
 }
 
-// ── 3. POST cru pra /transparents/create ──────────────────────────
-echo "3) POST CRU — /transparents/create (bypass service)\n";
-try {
-    // Payload wrappado em 'data' — exigência da AbacatePay pro endpoint transparents
-    $r = Http::withToken($apiKey)->timeout(30)->post('https://api.abacatepay.com/v2/transparents/create', [
-        'data' => [
-            'amount'      => 500, // R$ 5,00
-            'description' => 'Teste diagnostico PIX',
-            'expiresIn'   => 3600,
-            'customer'    => [
-                'name'  => 'Teste Diagnostico',
-                'email' => 'diag@vivensi.app.br',
-            ],
-            'metadata'    => ['origin' => 'diagnostic_script'],
-        ],
-    ]);
-    echo "   HTTP {$r->status()}\n";
-    echo "   BODY:\n";
-    echo "   " . str_replace("\n", "\n   ", $r->body()) . "\n\n";
+// ── 3. POST cru — testa 4 variações incrementais pra isolar campo quebrado ──
+echo "3) POST CRU — /transparents/create (4 variações)\n\n";
 
-    if ($r->successful()) {
-        $data = $r->json('data');
-        if ($data) {
-            echo "   ✅ SUCESSO — resposta parseada:\n";
-            echo "      id:           " . ($data['id'] ?? '(none)') . "\n";
-            echo "      brCode:       " . (isset($data['brCode']) ? substr($data['brCode'], 0, 50) . '...' : '(none)') . "\n";
-            echo "      brCodeBase64: " . (isset($data['brCodeBase64']) ? 'setado (len ' . strlen($data['brCodeBase64']) . ')' : '(none)') . "\n";
-            echo "      status:       " . ($data['status'] ?? '(none)') . "\n\n";
-        }
-    } else {
-        echo "❌ Response não foi 2xx. Vê o BODY acima pra motivo real.\n\n";
+$variacoes = [
+    'A: sem wrap, minimo (amount+desc)' => [
+        'amount' => 500,
+        'description' => 'Teste A',
+    ],
+    'B: sem wrap, completo' => [
+        'amount' => 500,
+        'description' => 'Teste B',
+        'expiresIn' => 3600,
+        'customer' => ['name' => 'Teste', 'email' => 'diag@vivensi.app.br'],
+    ],
+    'C: com wrap data, minimo' => [
+        'data' => [
+            'amount' => 500,
+            'description' => 'Teste C',
+        ],
+    ],
+    'D: com wrap data, completo (nosso payload atual)' => [
+        'data' => [
+            'amount' => 500,
+            'description' => 'Teste D',
+            'expiresIn' => 3600,
+            'customer' => ['name' => 'Teste', 'email' => 'diag@vivensi.app.br'],
+            'metadata' => ['origin' => 'test'],
+        ],
+    ],
+];
+
+foreach ($variacoes as $label => $payload) {
+    echo "   ── {$label} ──\n";
+    try {
+        $r = Http::withToken($apiKey)->timeout(15)->post('https://api.abacatepay.com/v2/transparents/create', $payload);
+        echo "   HTTP {$r->status()}\n";
+        echo "   BODY: " . substr($r->body(), 0, 250) . "\n\n";
+    } catch (\Throwable $e) {
+        echo "   EXCEPTION: " . $e->getMessage() . "\n\n";
     }
-} catch (\Throwable $e) {
-    echo "   EXCEPTION: " . $e->getMessage() . "\n\n";
 }
+
+// Reroda o cenário atual pro diagnóstico continuar
+$r = Http::withToken($apiKey)->timeout(30)->post('https://api.abacatepay.com/v2/transparents/create', [
+    'data' => [
+        'amount' => 500,
+        'description' => 'Teste diagnostico',
+        'expiresIn' => 3600,
+        'customer' => ['name' => 'Teste', 'email' => 'diag@vivensi.app.br'],
+    ],
+]);
+echo "   ── Payload final usado no service (só pra ver body) ──\n";
+echo "   HTTP {$r->status()}\n";
+echo "   BODY: " . substr($r->body(), 0, 300) . "\n\n";
 
 // ── 4. AbacatePayService::createPixCharge (nosso wrapper) ─────────
 echo "4) VIA SERVICE — AbacatePayService::createPixCharge\n";
