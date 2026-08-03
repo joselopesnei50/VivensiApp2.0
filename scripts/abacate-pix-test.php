@@ -60,15 +60,18 @@ try {
 // ── 3. POST cru pra /transparents/create ──────────────────────────
 echo "3) POST CRU — /transparents/create (bypass service)\n";
 try {
+    // Payload wrappado em 'data' — exigência da AbacatePay pro endpoint transparents
     $r = Http::withToken($apiKey)->timeout(30)->post('https://api.abacatepay.com/v2/transparents/create', [
-        'amount'      => 500, // R$ 5,00
-        'description' => 'Teste diagnostico PIX',
-        'expiresIn'   => 3600,
-        'customer'    => [
-            'name'  => 'Teste Diagnostico',
-            'email' => 'diag@vivensi.app.br',
+        'data' => [
+            'amount'      => 500, // R$ 5,00
+            'description' => 'Teste diagnostico PIX',
+            'expiresIn'   => 3600,
+            'customer'    => [
+                'name'  => 'Teste Diagnostico',
+                'email' => 'diag@vivensi.app.br',
+            ],
+            'metadata'    => ['origin' => 'diagnostic_script'],
         ],
-        'metadata'    => ['origin' => 'diagnostic_script'],
     ]);
     echo "   HTTP {$r->status()}\n";
     echo "   BODY:\n";

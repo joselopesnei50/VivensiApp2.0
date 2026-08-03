@@ -108,14 +108,17 @@ class AbacatePayService
         array  $metadata  = [],
         int    $expiresIn = 86400
     ): ?array {
-        $payload = [
+        // ⚠️ AbacatePay exige payload wrappado em 'data' pra este endpoint.
+        // Doc: "Campo obrigatório: data.amount" — é literal, não notação.
+        // Sem o wrapper, API retorna HTTP 422 "Value should be one of 'object', 'object'".
+        $inner = [
             'amount'      => $amountCents,
             'description' => mb_substr($description, 0, 140),
             'expiresIn'   => $expiresIn,
         ];
 
         if (!empty($customer)) {
-            $payload['customer'] = array_filter([
+            $inner['customer'] = array_filter([
                 'name'      => $customer['name']      ?? null,
                 'email'     => $customer['email']     ?? null,
                 'taxId'     => $customer['taxId']     ?? null,
@@ -124,8 +127,10 @@ class AbacatePayService
         }
 
         if (!empty($metadata)) {
-            $payload['metadata'] = $metadata;
+            $inner['metadata'] = $metadata;
         }
+
+        $payload = ['data' => $inner];
 
         Log::info('AbacatePay: createPixCharge', [
             'amount'   => $amountCents,
