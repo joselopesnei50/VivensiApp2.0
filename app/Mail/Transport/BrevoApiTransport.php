@@ -66,9 +66,17 @@ class BrevoApiTransport extends AbstractTransport
      */
     private function buildPayload(Email $email, Envelope $envelope): array
     {
-        $sender     = $email->getFrom()[0] ?? null;
-        $senderAddr = $sender?->getAddress() ?: SystemSetting::getValue('email_from', 'noreply@vivensi.com.br');
-        $senderName = $sender?->getName()    ?: SystemSetting::getValue('email_from_name', 'Vivensi 2.0');
+        // SystemSetting.email_from é a fonte da verdade — sender do Symfony
+        // Email so' e' usado como fallback (caso SystemSetting nao esteja setado).
+        // Motivo: Brevo rejeita qualquer sender nao verificado, e o Laravel injeta
+        // MAIL_FROM_ADDRESS ('hello@example.com' se nao setado no .env) no Symfony
+        // Email antes do transport rodar. Confiar no SystemSetting garante que sempre
+        // usamos o mesmo sender verificado que o BrevoService (welcome, tickets, etc).
+        $sender         = $email->getFrom()[0] ?? null;
+        $configuredAddr = SystemSetting::getValue('email_from');
+        $configuredName = SystemSetting::getValue('email_from_name');
+        $senderAddr     = $configuredAddr ?: ($sender?->getAddress() ?: 'noreply@vivensi.app.br');
+        $senderName     = $configuredName ?: ($sender?->getName()    ?: 'Vivensi');
 
         $payload = [
             'sender'  => ['email' => $senderAddr, 'name' => $senderName],

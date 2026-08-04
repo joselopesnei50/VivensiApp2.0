@@ -76,3 +76,19 @@ it('lanca excecao quando brevo_api_key nao esta configurada', function () {
 
     Mail::raw('teste', fn ($m) => $m->to('x@x.com')->subject('sem chave'));
 })->throws(\RuntimeException::class, 'brevo_api_key nao configurada');
+
+it('sobrescreve o sender do Symfony pelo SystemSetting (nunca deixa hello@example.com escapar)', function () {
+    // Laravel injeta MAIL_FROM_ADDRESS = 'hello@example.com' quando .env nao seta
+    config(['mail.from' => ['address' => 'hello@example.com', 'name' => 'Example']]);
+
+    Http::fake(['https://api.brevo.com/v3/smtp/email' => Http::response([], 201)]);
+
+    Mail::raw('teste', fn ($m) => $m->to('cliente@exemplo.com')->subject('sender override'));
+
+    Http::assertSent(function ($request) {
+        $body = $request->data();
+        // SystemSetting.email_from (do beforeEach) tem prioridade sobre o do Symfony
+        return $body['sender']['email'] === 'noreply@vivensi.app.br'
+            && $body['sender']['name']  === 'Vivensi Testes';
+    });
+});
