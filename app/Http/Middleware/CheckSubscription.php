@@ -35,7 +35,7 @@ class CheckSubscription
         }
 
         // 4. Exception routes (to avoid infinite redirect loops)
-        if ($request->routeIs('checkout.*') || $request->routeIs('logout') || $request->is('support*') || $request->routeIs('register.interest')) {
+        if ($request->routeIs('checkout.*') || $request->routeIs('logout') || $request->is('support*')) {
             return $next($request);
         }
 

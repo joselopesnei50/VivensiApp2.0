@@ -29,4 +29,3 @@ Route::middleware('guest')->group(function () {
 // ── Registro ──────────────────────────────────────────────────────────────────
 Route::get('/register',             [App\Http\Controllers\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register',            [App\Http\Controllers\RegisterController::class, 'register'])->middleware('throttle:10,1');
-Route::get('/interesse-registrado', [App\Http\Controllers\RegisterController::class, 'interestPage'])->name('register.interest');
