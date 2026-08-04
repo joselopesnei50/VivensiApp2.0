@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\ProcessAbacatePayWebhook;
+use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Services\AbacatePayService;
 use Illuminate\Console\Command;
@@ -53,10 +54,6 @@ class AbacatePayReconcile extends Command
 
         $this->info("Encontradas {$pending->count()} transactions pendentes há > {$minutesOld} min" . ($dryRun ? ' [DRY-RUN]' : ''));
 
-        if ($pending->isEmpty()) {
-            return self::SUCCESS;
-        }
-
         $reconciled = 0;
         $stillPending = 0;
         $expired = 0;
@@ -102,13 +99,79 @@ class AbacatePayReconcile extends Command
             }
         }
 
-        $this->newLine();
-        $this->info("== Resumo ==");
-        $this->info("Reconciliadas (paid): {$reconciled}");
-        $this->info("Ainda pendentes:      {$stillPending}");
-        $this->info("Expiradas/canceladas: {$expired}");
-        $this->info("Erros de API:         {$errors}");
+        if ($pending->isNotEmpty()) {
+            $this->newLine();
+            $this->info("== Resumo ==");
+            $this->info("Reconciliadas (paid): {$reconciled}");
+            $this->info("Ainda pendentes:      {$stillPending}");
+            $this->info("Expiradas/canceladas: {$expired}");
+            $this->info("Erros de API:         {$errors}");
+        }
+
+        $this->reconcileInvoices($abacate, $cutoff, $limit, $dryRun);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Segunda varredura: invoices mensais (externalId invoice_<id>_<ts>) não
+     * geram Transaction, então precisam de reconciliação própria. Consulta o
+     * checkout salvo em abacatepay_charge_id e, se pago, dispara o mesmo job
+     * sintético checkout.completed — o handler reconhece o prefixo invoice_.
+     */
+    private function reconcileInvoices(AbacatePayService $abacate, Carbon $cutoff, int $limit, bool $dryRun): void
+    {
+        $pending = Invoice::withoutGlobalScopes()
+            ->whereIn('status', [Invoice::STATUS_OPEN, Invoice::STATUS_OVERDUE])
+            ->whereNotNull('abacatepay_charge_id')
+            ->where('created_at', '<', $cutoff)
+            ->orderBy('created_at')
+            ->limit($limit)
+            ->get(['id', 'tenant_id', 'abacatepay_charge_id', 'status', 'created_at']);
+
+        $this->newLine();
+        $this->info("Invoices abertas com checkout AbacatePay: {$pending->count()}" . ($dryRun ? ' [DRY-RUN]' : ''));
+
+        if ($pending->isEmpty()) {
+            return;
+        }
+
+        $reconciled = 0;
+
+        foreach ($pending as $invoice) {
+            try {
+                $checkout = $abacate->getCheckout((string) $invoice->abacatepay_charge_id);
+            } catch (\Throwable $e) {
+                $this->warn("Invoice #{$invoice->id}: erro ao consultar API — " . $e->getMessage());
+                continue;
+            }
+
+            if (!$checkout) {
+                $this->warn("Invoice #{$invoice->id}: API não devolveu checkout.");
+                continue;
+            }
+
+            $status = strtoupper((string) ($checkout['status'] ?? ''));
+
+            if (in_array($status, ['PAID', 'COMPLETED', 'APPROVED'], true)) {
+                $reconciled++;
+                $this->info("Invoice #{$invoice->id}: PAGA no gateway. " . ($dryRun ? 'Pulando dispatch (dry-run).' : 'Disparando job sintético.'));
+
+                if (!$dryRun) {
+                    // Garante externalId no payload sintético — o handler resolve
+                    // tenant e invoice a partir dele.
+                    $checkout['externalId'] = $checkout['externalId'] ?? ('invoice_' . $invoice->id);
+
+                    ProcessAbacatePayWebhook::dispatch('checkout.completed', [
+                        'id'   => 'reconcile_invoice_' . $invoice->id . '_' . time(),
+                        'data' => ['checkout' => $checkout],
+                    ]);
+                }
+            } else {
+                $this->line("Invoice #{$invoice->id}: ainda {$status} no gateway.");
+            }
+        }
+
+        $this->info("Invoices reconciliadas (paid): {$reconciled}");
     }
 }

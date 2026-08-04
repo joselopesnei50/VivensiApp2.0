@@ -504,6 +504,14 @@ class ProcessAbacatePayWebhook implements ShouldQueue
         if (preg_match('/^VIVENSI_(\d+)_/', $externalId, $matches)) {
             return Tenant::find((int) $matches[1]);
         }
+
+        // Checkouts de invoice mensal usam externalId 'invoice_<id>_<ts>' —
+        // o tenant vem da própria invoice.
+        if (preg_match('/^invoice_(\d+)/', $externalId, $matches)) {
+            $invoice = \App\Models\Invoice::withoutGlobalScopes()->find((int) $matches[1]);
+            return $invoice ? Tenant::find($invoice->tenant_id) : null;
+        }
+
         return null;
     }
 }
