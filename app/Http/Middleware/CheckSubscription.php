@@ -39,12 +39,10 @@ class CheckSubscription
             return $next($request);
         }
 
-        // 4b. Se vendas fechadas, contas são ativadas manualmente — deixa passar
-        $salesOpen = \App\Models\SystemSetting::getValue('sales_open', '0');
-        if (!$salesOpen || $salesOpen === '0') {
+        // 4b. Planos de cortesia — não exigem pagamento, liberação total.
+        if ($tenant->plan && $tenant->plan->is_courtesy) {
             return $next($request);
         }
-
 
         // 5. Check if suspended
         if ($tenant->subscription_status === 'suspended') {
@@ -74,21 +72,21 @@ class CheckSubscription
                 ->with('error', 'Sua assinatura está pendente de pagamento.');
         }
 
-        // 7. If no plan selected, redirect to checkout to choose one (Defaulting to Plan 1 - Basic)
+        // 7. Sem plano vinculado — mostra tela de escolha de plano.
+        // Nada de forçar plan_id=1 (pode nem existir/estar inativo).
         if (!$tenant->plan_id) {
-            // Ideally we should have a 'plans' page, but checkout/1 serves as a prompt
-            // We set plan_id to 1 provisionally
-            $tenant->update(['plan_id' => 1]); 
-            return redirect()->route('checkout.index', ['plan_id' => 1])
-                ->with('warning', 'Sua conta não possui um plano ativo. Por favor, confirme sua assinatura.');
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect('/')->with('error', 'Sua conta ainda não tem plano vinculado. Escolha um plano para acessar.');
         }
 
         if ($tenant->subscription_status === 'trialing' && optional($tenant->trial_ends_at)->isPast()) {
-            return redirect()->route('checkout.index', ['plan_id' => $tenant->plan_id ?? 1])
-                ->with('error', 'Seu período de teste de 7 dias chegou ao fim. Realize o pagamento para desbloquear seu acesso completo.');
+            return redirect()->route('checkout.index', ['plan_id' => $tenant->plan_id])
+                ->with('error', 'Seu período de teste chegou ao fim. Realize o pagamento para desbloquear o acesso.');
         }
 
-        return redirect()->route('checkout.index', ['plan_id' => $tenant->plan_id ?? 1])
-            ->with('error', 'Assinatura necessária para acessar este recurso.');
+        return redirect()->route('checkout.index', ['plan_id' => $tenant->plan_id])
+            ->with('error', 'Pagamento necessário para acessar o sistema.');
     }
 }

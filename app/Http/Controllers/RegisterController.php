@@ -32,10 +32,16 @@ class RegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'string', 'confirmed', \Illuminate\Validation\Rules\Password::min(12)->mixedCase()->numbers()],
-            'plan_id' => 'nullable|exists:subscription_plans,id',
+            'plan_id' => 'required|exists:subscription_plans,id', // OBRIGATÓRIO — sem plano ninguém entra
             'account_type' => 'required|in:project_manager,ngo_admin,client',
             'terms' => 'required|accepted',
         ]);
+
+        // Verifica se o plano está ativo antes de criar conta
+        $selectedPlan = SubscriptionPlan::find($request->plan_id);
+        if (!$selectedPlan || !$selectedPlan->is_active) {
+            return back()->with('error', 'O plano selecionado não está disponível. Escolha outro plano.')->withInput();
+        }
 
         try {
             DB::beginTransaction();
@@ -83,22 +89,26 @@ class RegisterController extends Controller
                 \App\Models\LandingPageMetric::track(session('lp_source'), 'registration');
             }
 
-            Auth::login($user);
-
-            // 📧 Send Welcome Email (Premium Mailable)
+            // Welcome Email
             try {
-                $plan = SubscriptionPlan::find($request->plan_id);
-                $planName = $plan ? $plan->name : 'Plano Básico';
-                Mail::to($user->email)->send(new WelcomeMail($user, $planName));
+                Mail::to($user->email)->send(new WelcomeMail($user, $selectedPlan->name));
             } catch (\Exception $e) {
                 \Log::error('Erro ao enviar e-mail de boas-vindas: ' . $e->getMessage());
             }
 
-            if ($request->plan_id) {
-                return redirect('/checkout/' . $request->plan_id)->with('success', 'Conta criada! Conclua o pagamento para acessar o sistema.');
+            // Plano de cortesia: ativa direto e loga
+            if ($selectedPlan->is_courtesy) {
+                $tenant->update(['subscription_status' => 'active']);
+                Auth::login($user);
+                return redirect('/dashboard')->with('success', "Bem-vindo! Sua conta está ativa no plano cortesia {$selectedPlan->name}.");
             }
 
-            return redirect('/dashboard');
+            // Plano pago: loga E redireciona pro checkout. Middleware CheckSubscription
+            // vai forçar pagamento antes de deixar entrar em qualquer outra tela
+            // (subscription_status='pending' + plan_id preenchido → sempre cai em /checkout).
+            Auth::login($user);
+            return redirect('/checkout/' . $selectedPlan->id)
+                ->with('success', 'Conta criada! Conclua o pagamento para começar a usar o sistema.');
 
         } catch (\Exception $e) {
             DB::rollback();
