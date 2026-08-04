@@ -1111,6 +1111,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="suc-dropdown" id="sucDropdown">
             <a href="{{ url('/profile') }}"><i class="fas fa-user-circle"></i> {{ __('ui.profile') }}</a>
             <a href="{{ url('/profile') }}#settings"><i class="fas fa-cog"></i> {{ __('ui.settings') }}</a>
+            <a href="{{ route('client.invoices.index') }}"><i class="fas fa-file-invoice-dollar"></i> Minhas Faturas</a>
             <a href="{{ route('lgpd.self.index') }}"><i class="fas fa-shield-halved"></i> Meus dados (LGPD)</a>
             <div class="suc-divider"></div>
             <a href="#" class="danger" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();">
@@ -2142,6 +2143,7 @@ const CMD_ITEMS = [
     { label: 'Etiquetas WhatsApp', url: '{{ route("whatsapp.labels.index") }}', icon: 'fa-tags' },
     { label: 'Clientes',         url: '{{ url("/clients") }}',                  icon: 'fa-users' },
     { label: 'Meu Perfil',       url: '{{ url("/profile") }}',                  icon: 'fa-user-circle' },
+    { label: 'Minhas Faturas',   url: '{{ route("client.invoices.index") }}',   icon: 'fa-file-invoice-dollar' },
     @if(auth()->user()->role === 'ngo')
     { label: 'Beneficiários',    url: '{{ url("/ngo/beneficiaries") }}',        icon: 'fa-heart' },
     { label: 'Doadores',         url: '{{ url("/ngo/donors") }}',               icon: 'fa-hand-holding-heart' },
