@@ -76,7 +76,17 @@ class CheckoutController extends Controller
 
     private function processAbacatePay(Request $request, Tenant $tenant, SubscriptionPlan $plan, $user)
     {
+        // Log SEMPRE — usa warning pra passar por LOG_LEVEL=warning (production)
+        Log::warning('AbacatePay checkout: iniciando processAbacatePay', [
+            'tenant_id'  => $tenant->id,
+            'plan_id'    => $plan->id,
+            'plan_name'  => $plan->name,
+            'product_id' => $plan->abacatepay_product_id ?: 'VAZIO',
+            'method'     => $request->input('payment_method', 'PIX'),
+        ]);
+
         if (empty($plan->abacatepay_product_id)) {
+            Log::warning('AbacatePay checkout: BLOCKED — plano sem abacatepay_product_id', ['plan_id' => $plan->id]);
             return back()->with('error',
                 'Este plano ainda não está configurado para pagamento via AbacatePay. Entre em contato com o suporte.'
             );
@@ -115,14 +125,22 @@ class CheckoutController extends Controller
 
         if (!$checkout || empty($checkout['url'])) {
             $transaction->update(['status' => 'canceled']);
-            Log::error('AbacatePay subscription checkout falhou', [
-                'plan'   => $plan->id,
-                'tenant' => $tenant->id,
-                'product_id' => $plan->abacatepay_product_id,
-                'method' => $paymentMethod,
+            Log::warning('AbacatePay subscription checkout falhou', [
+                'plan'          => $plan->id,
+                'tenant'        => $tenant->id,
+                'product_id'    => $plan->abacatepay_product_id,
+                'method'        => $paymentMethod,
+                'checkout_ret'  => $checkout, // ver o que o service devolveu
             ]);
             return back()->with('error', 'Não foi possível iniciar o pagamento. Tente novamente.');
         }
+
+        Log::warning('AbacatePay checkout: SUCESSO — redirecionando', [
+            'tenant'   => $tenant->id,
+            'plan'     => $plan->id,
+            'checkout_id' => $checkout['id'] ?? null,
+            'url'      => $checkout['url'] ?? null,
+        ]);
 
         $transaction->update(['gateway_id' => $checkout['id'] ?? null]);
 

@@ -104,15 +104,25 @@ class AbacatePayService
             'metadata'      => $metadata,
         ];
 
-        Log::info('AbacatePay: createSubscriptionCheckout', ['externalId' => $externalId, 'devMode' => $this->devMode]);
+        Log::warning('AbacatePay: createSubscriptionCheckout REQUEST', [
+            'endpoint'   => '/subscriptions/create',
+            'externalId' => $externalId,
+            'payload'    => $payload,
+            'devMode'    => $this->devMode,
+        ]);
 
         $response = $this->post('/subscriptions/create', $payload);
+
+        Log::warning('AbacatePay: createSubscriptionCheckout RESPONSE', [
+            'externalId' => $externalId,
+            'response'   => $response,
+        ]);
 
         if ($response && ($response['success'] ?? false)) {
             return $response['data'];
         }
 
-        Log::error('AbacatePay: createSubscriptionCheckout falhou', [
+        Log::warning('AbacatePay: createSubscriptionCheckout falhou', [
             'error'       => $response['error']   ?? null,
             'error_code'  => $response['code']    ?? null,
             'success'     => $response['success'] ?? null,
