@@ -77,6 +77,12 @@ return [
                 'log',
             ],
         ],
+
+        // Brevo via API (POST /v3/smtp/email). Sem SMTP — chave lida de
+        // SystemSetting.brevo_api_key. Ativado com MAIL_MAILER=brevo.
+        'brevo' => [
+            'transport' => 'brevo',
+        ],
     ],
 
     /*

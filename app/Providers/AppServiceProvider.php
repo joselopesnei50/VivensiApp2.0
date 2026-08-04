@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -36,6 +37,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         \Illuminate\Pagination\Paginator::useBootstrapFive();
+
+        // Driver 'brevo' pro Laravel Mailer — todo Mail::send / Mailable / Notification
+        // que rodar com MAIL_MAILER=brevo vai pela API (SystemSetting.brevo_api_key)
+        // em vez de SMTP. Elimina risco de credencial SMTP expirar em prod.
+        Mail::extend('brevo', function () {
+            return new \App\Mail\Transport\BrevoApiTransport();
+        });
 
         // Broadcasting dinâmico via SystemSetting — lê valores que o super_admin
         // salvou em /admin/settings e sobrescreve config('broadcasting.connections.pusher.*')
