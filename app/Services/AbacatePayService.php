@@ -130,7 +130,12 @@ class AbacatePayService
             $inner['metadata'] = $metadata;
         }
 
-        $payload = ['data' => $inner];
+        // Wrapper final: 'method' no top-level + 'data' com os campos.
+        // A API roteia por 'method' — hoje só suporta 'PIX' mas prevê expansão.
+        $payload = [
+            'method' => 'PIX',
+            'data'   => $inner,
+        ];
 
         Log::info('AbacatePay: createPixCharge', [
             'amount'   => $amountCents,
