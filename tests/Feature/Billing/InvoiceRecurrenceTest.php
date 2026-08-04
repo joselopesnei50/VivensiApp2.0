@@ -92,6 +92,37 @@ it('não chama createCheckout quando plano não tem abacatepay_product_id', func
     expect($invoice->abacatepay_billing_url)->toBeNull();
 });
 
+it('recupera link em invoice pre-existente sem billing_url', function () {
+    $plan   = irtPaidPlan();
+    $tenant = irtActiveTenant($plan);
+
+    // Invoice antiga sem link (simula: nasceu quando AbacatePay estava fora)
+    $orphan = Invoice::create([
+        'tenant_id'    => $tenant->id,
+        'plan_id'      => $plan->id,
+        'amount_cents' => 12990,
+        'description'  => 'Antiga',
+        'status'       => Invoice::STATUS_OPEN,
+        'period_start' => now()->startOfMonth()->toDateString(),
+        'period_end'   => now()->endOfMonth()->toDateString(),
+        'due_date'     => now()->addDays(5)->toDateString(),
+    ]);
+
+    $svc = Mockery::mock(AbacatePayService::class);
+    $svc->shouldReceive('createCheckout')->once()->andReturn([
+        'id'  => 'chk_recovered',
+        'url' => 'https://pay.abacate.io/chk_recovered',
+    ]);
+    app()->instance(AbacatePayService::class, $svc);
+
+    $result = app(InvoiceService::class)->generateForTenant($tenant->fresh('plan'));
+
+    expect($result->id)->toBe($orphan->id);
+    $orphan->refresh();
+    expect($orphan->abacatepay_charge_id)->toBe('chk_recovered');
+    expect($orphan->abacatepay_billing_url)->toBe('https://pay.abacate.io/chk_recovered');
+});
+
 it('mantém invoice mesmo se createCheckout falhar (não bloqueante)', function () {
     $plan   = irtPaidPlan();
     $tenant = irtActiveTenant($plan);

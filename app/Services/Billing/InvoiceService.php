@@ -54,10 +54,16 @@ class InvoiceService
         return DB::transaction(function () use ($tenant, $plan, $periodStart, $periodEnd, $dueDate, $amountCents) {
             $existing = Invoice::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
-                ->where('period_start', $periodStart)
+                ->whereDate('period_start', $periodStart)
                 ->first();
 
             if ($existing) {
+                // Invoice ja existe. Se nao tem link AbacatePay (nasceu quando a
+                // API estava fora do ar, ou foi criada por versao antiga do code),
+                // tenta recuperar agora — senao cliente fica com fatura sem botao.
+                if ($existing->isPayable() && empty($existing->abacatepay_billing_url)) {
+                    $this->tryGenerateAbacateCheckout($existing, $tenant, $plan);
+                }
                 return $existing;
             }
 
