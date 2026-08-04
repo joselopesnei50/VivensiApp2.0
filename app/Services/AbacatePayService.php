@@ -108,39 +108,42 @@ class AbacatePayService
         array  $metadata  = [],
         int    $expiresIn = 86400
     ): ?array {
-        // ⚠️ AbacatePay exige payload wrappado em 'data' pra este endpoint.
-        // Doc: "Campo obrigatório: data.amount" — é literal, não notação.
-        // Sem o wrapper, API retorna HTTP 422 "Value should be one of 'object', 'object'".
-        $inner = [
+        // Payload PLANO (sem wrapper data/method) — conforme repo oficial
+        // github.com/abacatepay/skills → tools/api-reference.md
+        //
+        // ATENÇÃO: se incluir 'customer', a AbacatePay exige TODOS os 4
+        // campos preenchidos (name, cellphone, email, taxId). Se faltar
+        // qualquer um, retorna 422. Aqui só passamos customer se tenant
+        // tem TODOS os dados — senão omitimos e o pagador digita no PIX.
+        $payload = [
             'amount'      => $amountCents,
             'description' => mb_substr($description, 0, 140),
             'expiresIn'   => $expiresIn,
         ];
 
-        if (!empty($customer)) {
-            $inner['customer'] = array_filter([
-                'name'      => $customer['name']      ?? null,
-                'email'     => $customer['email']     ?? null,
-                'taxId'     => $customer['taxId']     ?? null,
-                'cellphone' => $customer['cellphone'] ?? null,
-            ]);
+        $hasFullCustomer = !empty($customer['name'])
+                       && !empty($customer['email'])
+                       && !empty($customer['taxId'])
+                       && !empty($customer['cellphone']);
+
+        if ($hasFullCustomer) {
+            $payload['customer'] = [
+                'name'      => $customer['name'],
+                'email'     => $customer['email'],
+                'taxId'     => $customer['taxId'],
+                'cellphone' => $customer['cellphone'],
+            ];
         }
 
         if (!empty($metadata)) {
-            $inner['metadata'] = $metadata;
+            $payload['metadata'] = $metadata;
         }
 
-        // Wrapper final: 'method' no top-level + 'data' com os campos.
-        // A API roteia por 'method' — hoje só suporta 'PIX' mas prevê expansão.
-        $payload = [
-            'method' => 'PIX',
-            'data'   => $inner,
-        ];
-
         Log::info('AbacatePay: createPixCharge', [
-            'amount'   => $amountCents,
-            'metadata' => $metadata,
-            'devMode'  => $this->devMode,
+            'amount'       => $amountCents,
+            'has_customer' => $hasFullCustomer,
+            'metadata'     => $metadata,
+            'devMode'      => $this->devMode,
         ]);
 
         $response = $this->post('/transparents/create', $payload);
