@@ -74,20 +74,17 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="payment_method" class="form-label small fw-bold text-muted text-uppercase">Forma de Pagamento</label>
+                            <label class="form-label small fw-bold text-muted text-uppercase">Forma de Pagamento</label>
                             <div class="d-flex gap-3">
-                                <label class="payment-method-card flex-fill text-center p-3 border rounded-3 cursor-pointer" id="label-pix">
-                                    <input type="radio" name="payment_method" value="PIX" class="d-none" checked id="payment_method">
+                                <label class="payment-method-card flex-fill text-center p-3 border rounded-3 cursor-pointer active" id="label-pix" style="border-color:#10b981; background:#ecfdf5;">
+                                    <input type="radio" name="payment_method" value="PIX" class="d-none" checked>
                                     <i class="fas fa-qrcode fs-4 text-success d-block mb-1"></i>
                                     <span class="fw-bold small">PIX</span>
                                     <div class="text-muted" style="font-size:.7rem;">Instantâneo</div>
                                 </label>
-                                <label class="payment-method-card flex-fill text-center p-3 border rounded-3 cursor-pointer" id="label-card">
-                                    <input type="radio" name="payment_method" value="CARD" class="d-none" id="payment_method">
-                                    <i class="fas fa-credit-card fs-4 text-primary d-block mb-1"></i>
-                                    <span class="fw-bold small">Cartão</span>
-                                    <div class="text-muted" style="font-size:.7rem;">Crédito/Débito</div>
-                                </label>
+                            </div>
+                            <div class="text-muted small mt-2">
+                                <i class="fas fa-info-circle"></i> Cartão de crédito em breve.
                             </div>
                         </div>
 

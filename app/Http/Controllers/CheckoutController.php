@@ -107,15 +107,23 @@ class CheckoutController extends Controller
             'external_id' => $externalId,
         ]);
 
-        // Criar checkout de ASSINATURA na AbacatePay (endpoint /subscriptions/create).
-        // Requer produto no painel Abacate com cycle=MONTHLY — recorrência automática.
-        // Ver commit bb8cd0d.
-        $checkout = $this->abacate->createSubscriptionCheckout(
+        // Usa createCheckout (endpoint /checkouts/create) — cria cobrança avulsa
+        // que sabemos que funciona nesta conta AbacatePay hoje (provado pelas
+        // cobranças de teste bem-sucedidas em 04/08 madrugada).
+        //
+        // /subscriptions/create foi tentado mas exige produto com cycle=MONTHLY
+        // que a conta Abacate atual não permite cadastrar (modalidade assinatura
+        // provavelmente não habilitada). Recorrência mensal fica manual (Vivensi
+        // gera invoice mensal + cria novo checkout + envia link — Fase 2 futura).
+        //
+        // Força methods=['PIX'] porque CARD retorna "not available for this store"
+        // na conta atual. Quando Abacate liberar cartão, adicionar 'CARD' aqui.
+        $checkout = $this->abacate->createCheckout(
             items: [['id' => $plan->abacatepay_product_id, 'quantity' => 1]],
             externalId: $externalId,
             returnUrl: route('dashboard'),
             completionUrl: route('checkout.success'),
-            methods: [$paymentMethod],
+            methods: ['PIX'],
             metadata: [
                 'tenant_id'  => $tenant->id,
                 'plan_id'    => $plan->id,
