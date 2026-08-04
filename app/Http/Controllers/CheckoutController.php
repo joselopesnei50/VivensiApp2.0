@@ -97,9 +97,10 @@ class CheckoutController extends Controller
             'external_id' => $externalId,
         ]);
 
-        // Criar checkout na AbacatePay
-        // items[].id = ID do produto cadastrado no painel AbacatePay (campo obrigatório)
-        $checkout = $this->abacate->createCheckout(
+        // Criar checkout de ASSINATURA na AbacatePay (endpoint /subscriptions/create).
+        // Requer produto no painel Abacate com cycle=MONTHLY — recorrência automática.
+        // Ver commit bb8cd0d.
+        $checkout = $this->abacate->createSubscriptionCheckout(
             items: [['id' => $plan->abacatepay_product_id, 'quantity' => 1]],
             externalId: $externalId,
             returnUrl: route('dashboard'),
@@ -114,7 +115,12 @@ class CheckoutController extends Controller
 
         if (!$checkout || empty($checkout['url'])) {
             $transaction->update(['status' => 'canceled']);
-            Log::error('AbacatePay checkout falhou', ['plan' => $plan->id, 'tenant' => $tenant->id]);
+            Log::error('AbacatePay subscription checkout falhou', [
+                'plan'   => $plan->id,
+                'tenant' => $tenant->id,
+                'product_id' => $plan->abacatepay_product_id,
+                'method' => $paymentMethod,
+            ]);
             return back()->with('error', 'Não foi possível iniciar o pagamento. Tente novamente.');
         }
 
