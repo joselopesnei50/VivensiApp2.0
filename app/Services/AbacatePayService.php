@@ -103,24 +103,28 @@ class AbacatePayService
      */
     public function createPixCharge(
         int    $amountCents,
-        string $description,
-        array  $customer  = [],
-        array  $metadata  = [],
-        int    $expiresIn = 86400
+        string $description  = '',
+        array  $customer     = [],
+        array  $metadata     = [],
+        int    $expiresIn    = 86400
     ): ?array {
-        // Payload PLANO (sem wrapper data/method) — conforme repo oficial
-        // github.com/abacatepay/skills → tools/api-reference.md
-        //
-        // ATENÇÃO: se incluir 'customer', a AbacatePay exige TODOS os 4
-        // campos preenchidos (name, cellphone, email, taxId). Se faltar
-        // qualquer um, retorna 422. Aqui só passamos customer se tenant
-        // tem TODOS os dados — senão omitimos e o pagador digita no PIX.
-        $payload = [
-            'amount'      => $amountCents,
-            'description' => mb_substr($description, 0, 140),
-            'expiresIn'   => $expiresIn,
-        ];
+        // Payload conforme curl oficial do repo github.com/abacatepay/skills
+        // (rules/agent.md):
+        //   curl -d '{"amount": 1000}' /v2/transparents/create
+        // ou seja: SÓ 'amount' no root é obrigatório. Outros campos
+        // (description, customer, metadata, expiresIn) são opcionais e
+        // adicionados só quando fornecidos.
+        $payload = ['amount' => $amountCents];
 
+        if ($description !== '') {
+            $payload['description'] = mb_substr($description, 0, 140);
+        }
+        if ($expiresIn > 0) {
+            $payload['expiresIn'] = $expiresIn;
+        }
+
+        // Se incluir 'customer' na chamada, a AbacatePay exige os 4 campos.
+        // Só incluímos se tenant tem TODOS preenchidos.
         $hasFullCustomer = !empty($customer['name'])
                        && !empty($customer['email'])
                        && !empty($customer['taxId'])

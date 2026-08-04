@@ -58,34 +58,20 @@ try {
 }
 
 // ── 3. POST cru pra /transparents/create ──────────────────────────
-echo "3) POST CRU — /transparents/create (3 variações do repo skills)\n\n";
-
-$vars = [
-    'A: MINIMO — só data.amount (formato Go example)' => [
-        'data' => ['amount' => 500],
-    ],
-    'B: data.amount + metadata separado' => [
-        'data'     => ['amount' => 500],
-        'metadata' => ['origin' => 'diagnostic'],
-    ],
-    'C: data completo (description dentro do data)' => [
-        'data' => [
-            'amount'      => 500,
-            'description' => 'Teste',
-            'expiresIn'   => 3600,
-        ],
-    ],
-];
-
-foreach ($vars as $label => $payload) {
-    echo "   ── {$label} ──\n";
-    try {
-        $r = Http::withToken($apiKey)->timeout(15)->post('https://api.abacatepay.com/v2/transparents/create', $payload);
-        echo "   HTTP {$r->status()}\n";
-        echo "   BODY: " . substr($r->body(), 0, 300) . "\n\n";
-    } catch (\Throwable $e) {
-        echo "   EXCEPTION: " . $e->getMessage() . "\n\n";
-    }
+echo "3) POST CRU — /transparents/create (formato oficial do curl agent.md)\n";
+try {
+    // Curl oficial do repo (rules/agent.md):
+    //   curl -d '{"amount": 1000}' /v2/transparents/create
+    // Root: só amount. Outros campos opcionais.
+    $r = Http::withToken($apiKey)->timeout(30)
+        ->asJson()
+        ->post('https://api.abacatepay.com/v2/transparents/create', [
+            'amount' => 500,
+        ]);
+    echo "   HTTP {$r->status()}\n";
+    echo "   BODY: " . substr($r->body(), 0, 400) . "\n\n";
+} catch (\Throwable $e) {
+    echo "   EXCEPTION: " . $e->getMessage() . "\n\n";
 }
 
 // ── 4. AbacatePayService::createPixCharge (nosso wrapper) ─────────
