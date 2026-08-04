@@ -57,28 +57,35 @@ try {
     exit(1);
 }
 
-// ── 3. POST cru pra /transparents/create (formato oficial do repo skills) ──
-echo "3) POST CRU — /transparents/create (payload plano sem wrapper)\n";
-try {
-    // Formato oficial do repo github.com/abacatepay/skills tools/api-reference.md
-    // Sem 'method' no top, sem wrapper 'data'. Se incluir customer, os 4 campos
-    // (name/cellphone/email/taxId) são obrigatórios.
-    $r = Http::withToken($apiKey)->timeout(30)->post('https://api.abacatepay.com/v2/transparents/create', [
-        'amount'      => 500,
-        'description' => 'Teste diagnostico PIX',
-        'expiresIn'   => 3600,
-        'customer'    => [
-            'name'      => 'Teste Diagnostico',
-            'email'     => 'diag@vivensi.app.br',
-            'taxId'     => '123.456.789-01',
-            'cellphone' => '(11) 4002-8922',
+// ── 3. POST cru pra /transparents/create ──────────────────────────
+echo "3) POST CRU — /transparents/create (3 variações do repo skills)\n\n";
+
+$vars = [
+    'A: MINIMO — só data.amount (formato Go example)' => [
+        'data' => ['amount' => 500],
+    ],
+    'B: data.amount + metadata separado' => [
+        'data'     => ['amount' => 500],
+        'metadata' => ['origin' => 'diagnostic'],
+    ],
+    'C: data completo (description dentro do data)' => [
+        'data' => [
+            'amount'      => 500,
+            'description' => 'Teste',
+            'expiresIn'   => 3600,
         ],
-        'metadata'    => ['origin' => 'diagnostic_script'],
-    ]);
-    echo "   HTTP {$r->status()}\n";
-    echo "   BODY: " . substr($r->body(), 0, 400) . "\n\n";
-} catch (\Throwable $e) {
-    echo "   EXCEPTION: " . $e->getMessage() . "\n\n";
+    ],
+];
+
+foreach ($vars as $label => $payload) {
+    echo "   ── {$label} ──\n";
+    try {
+        $r = Http::withToken($apiKey)->timeout(15)->post('https://api.abacatepay.com/v2/transparents/create', $payload);
+        echo "   HTTP {$r->status()}\n";
+        echo "   BODY: " . substr($r->body(), 0, 300) . "\n\n";
+    } catch (\Throwable $e) {
+        echo "   EXCEPTION: " . $e->getMessage() . "\n\n";
+    }
 }
 
 // ── 4. AbacatePayService::createPixCharge (nosso wrapper) ─────────
