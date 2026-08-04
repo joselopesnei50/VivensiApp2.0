@@ -76,6 +76,53 @@ class AbacatePayService
     }
 
     /**
+     * Cria um checkout de assinatura.
+     * Endpoint: POST /subscriptions/create
+     *
+     * @param array $items       [['id' => '...', 'quantity' => 1]]
+     * @param string $externalId  Referência do seu sistema (ex: TENANT_5_1234567)
+     * @param string $returnUrl   URL de retorno após pagamento
+     * @param string $completionUrl URL de sucesso após pagamento
+     * @param array  $methods     ['PIX', 'CARD'] — padrão ambos
+     * @param array  $metadata    Dados extras (ex: tenant_id, plan_id)
+     * @return array|null         ['url' => '...', 'id' => '...', 'status' => '...']
+     */
+    public function createSubscriptionCheckout(
+        array  $items,
+        string $externalId,
+        string $returnUrl     = '',
+        string $completionUrl = '',
+        array  $methods       = ['PIX', 'CARD'],
+        array  $metadata      = []
+    ): ?array {
+        $payload = [
+            'items'         => $items,
+            'externalId'    => $externalId,
+            'returnUrl'     => $returnUrl ?: config('app.url') . '/dashboard',
+            'completionUrl' => $completionUrl ?: config('app.url') . '/checkout/sucesso',
+            'methods'       => $methods,
+            'metadata'      => $metadata,
+        ];
+
+        Log::info('AbacatePay: createSubscriptionCheckout', ['externalId' => $externalId, 'devMode' => $this->devMode]);
+
+        $response = $this->post('/subscriptions/create', $payload);
+
+        if ($response && ($response['success'] ?? false)) {
+            return $response['data'];
+        }
+
+        Log::error('AbacatePay: createSubscriptionCheckout falhou', [
+            'error'       => $response['error']   ?? null,
+            'error_code'  => $response['code']    ?? null,
+            'success'     => $response['success'] ?? null,
+            'externalId'  => $externalId,
+            'payload'     => $payload,
+        ]);
+        return null;
+    }
+
+    /**
      * Busca um checkout pelo ID.
      */
     public function getCheckout(string $checkoutId): ?array
@@ -108,12 +155,17 @@ class AbacatePayService
         array  $metadata     = [],
         int    $expiresIn    = 86400
     ): ?array {
-        // Payload conforme curl oficial do repo github.com/abacatepay/skills
-        // (rules/agent.md):
-        //   curl -d '{"amount": 1000}' /v2/transparents/create
-        // ou seja: SÓ 'amount' no root é obrigatório. Outros campos
-        // (description, customer, metadata, expiresIn) são opcionais e
-        // adicionados só quando fornecidos.
+        // ⚠️ ENDPOINT COM PROBLEMA — SEM USO ATIVO desde 2026-08-03.
+        //
+        // 6 formatos de payload testados retornaram HTTP 422 com msg
+        // 'Value should be one of object, object'. Ver dossier completo
+        // em docs/ABACATEPAY_INTEGRATION_STUCK.md.
+        //
+        // Solução adotada: usar /subscriptions/create (createSubscriptionCheckout)
+        // com produto cadastrado no painel Abacate (cycle=MONTHLY) — AbacatePay
+        // cuida da recorrência automática, dispensa esse endpoint.
+        //
+        // Este método fica aqui pra caso o suporte AbacatePay resolva o 422.
         $payload = ['amount' => $amountCents];
 
         if ($description !== '') {
@@ -123,8 +175,6 @@ class AbacatePayService
             $payload['expiresIn'] = $expiresIn;
         }
 
-        // Se incluir 'customer' na chamada, a AbacatePay exige os 4 campos.
-        // Só incluímos se tenant tem TODOS preenchidos.
         $hasFullCustomer = !empty($customer['name'])
                        && !empty($customer['email'])
                        && !empty($customer['taxId'])
@@ -134,8 +184,8 @@ class AbacatePayService
             $payload['customer'] = [
                 'name'      => $customer['name'],
                 'email'     => $customer['email'],
-                'taxId'     => $customer['taxId'],
-                'cellphone' => $customer['cellphone'],
+                'taxId'     => preg_replace('/\D/', '', $customer['taxId']),
+                'cellphone' => preg_replace('/\D/', '', $customer['cellphone']),
             ];
         }
 

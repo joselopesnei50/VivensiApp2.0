@@ -63,9 +63,9 @@ class AbacatePayCheckoutController extends Controller
             'external_id' => $externalId,
         ]);
 
-        // Criar checkout na AbacatePay
-        // items[].id = ID do produto cadastrado no painel AbacatePay (obrigatório)
-        $checkout = $this->abacate->createCheckout(
+        // Criar checkout de assinatura na AbacatePay
+        // items[].id = ID do produto cadastrado no painel AbacatePay (obrigatório, e DEVE ter ciclo configurado)
+        $checkout = $this->abacate->createSubscriptionCheckout(
             items: [
                 [
                     'id'       => $plan->abacatepay_product_id, // ✅ campo correto conforme docs
