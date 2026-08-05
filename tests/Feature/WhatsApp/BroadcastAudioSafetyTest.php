@@ -64,7 +64,7 @@ it('rejeita broadcast de audio sem aceite do termo anti-ban', function () {
     expect(BroadcastCampaign::count())->toBe(0);
 });
 
-it('rejeita broadcast de audio com audience=groups mesmo com aceite', function () {
+it('aceita broadcast de audio para grupos ate o cap de 10 grupos', function () {
     Queue::fake();
     $user = basManager();
     basAcceptAntiBan($user);
@@ -72,13 +72,33 @@ it('rejeita broadcast de audio com audience=groups mesmo com aceite', function (
 
     $resp = $this->actingAs($user)->from('/whatsapp/broadcast')->post('/whatsapp/broadcast', [
         'audience'  => 'groups',
-        'group_ids' => ['123@g.us'],
+        'group_ids' => ['1@g.us', '2@g.us', '3@g.us'],
+        'cadence'   => 20,
+        'broadcast_audio' => basAudioFile(),
+    ]);
+
+    $resp->assertSessionHasNoErrors();
+    expect(BroadcastCampaign::count())->toBe(1);
+    expect(BroadcastCampaign::first()->has_audio)->toBeTrue();
+});
+
+it('rejeita broadcast de audio para mais de 10 grupos', function () {
+    Queue::fake();
+    $user = basManager();
+    basAcceptAntiBan($user);
+    WhatsappInstance::factory()->create(['tenant_id' => $user->tenant_id, 'status' => 'open']);
+
+    $groupIds = array_map(fn($i) => "{$i}@g.us", range(1, 11)); // 11 grupos
+
+    $resp = $this->actingAs($user)->from('/whatsapp/broadcast')->post('/whatsapp/broadcast', [
+        'audience'  => 'groups',
+        'group_ids' => $groupIds,
         'cadence'   => 20,
         'broadcast_audio' => basAudioFile(),
     ]);
 
     $resp->assertRedirect('/whatsapp/broadcast');
-    expect(session('error'))->toContain('grupos');
+    expect(session('error'))->toContain('10 grupos');
     expect(BroadcastCampaign::count())->toBe(0);
 });
 

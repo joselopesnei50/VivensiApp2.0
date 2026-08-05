@@ -477,23 +477,22 @@
                 <form action="{{ route('whatsapp.broadcast.send') }}" method="POST" id="broadcastForm" enctype="multipart/form-data">
                     @csrf
 
-                    {{-- Banner de segurança pra broadcast de áudio (2026-08-05). Fica sempre visivel;
-                         `#audioSafetyBanner` ganha destaque quando o audio e anexado (JS). --}}
+                    {{-- Banner de segurança pra broadcast de áudio (2026-08-05 rev 2).
+                         Regras diferentes por tipo de audiência — grupos aceitos com cap. --}}
                     <div id="audioSafetyBanner" style="background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid #f59e0b;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
                             <i class="fas fa-shield-alt" style="color:#b45309;"></i>
                             <strong style="color:#92400e;font-size:.9rem;">Regras de segurança do áudio em massa</strong>
                         </div>
                         <ul style="margin:0 0 0 20px;padding:0;font-size:.78rem;color:#78350f;line-height:1.6;">
-                            <li><strong>Só contatos ativos (últimas 24h):</strong> áudios só vão pra quem enviou mensagem inbound nas últimas 24 horas.</li>
-                            <li><strong>Máx. 100 destinatários</strong> por campanha de áudio (texto pode até 500).</li>
-                            <li><strong>Cadência mínima 20s</strong> entre envios de áudio (imita gravação humana e reduz ban).</li>
-                            <li><strong>Máx. 3 disparos do mesmo áudio por dia</strong> por instância (fingerprint sha256 do arquivo).</li>
-                            <li><strong>Não vale pra grupos:</strong> áudio broadcast é bloqueado para audiência “grupos”.</li>
                             <li><strong>Termo Anti-Ban obrigatório:</strong> sem aceite vigente, o disparo é rejeitado.</li>
+                            <li><strong>Cadência mínima 20s</strong> entre envios (imita gravação humana e reduz ban).</li>
+                            <li><strong>Máx. 3 disparos do mesmo áudio por dia</strong> por instância (fingerprint sha256).</li>
+                            <li><strong>Audiência individual</strong> (Todos, Selecionados, Etiquetas): só contatos com inbound nas últimas 24h + máx. 100 destinatários.</li>
+                            <li><strong>Audiência de grupos</strong>: máx. 10 grupos por campanha (membros já opted-in — sem janela 24h).</li>
                         </ul>
                         <div style="margin-top:8px;font-size:.72rem;color:#92400e;">
-                            Áudio em massa é o vetor mais punido pela Meta/Evolution — mesmo com todas as travas, use com moderação.
+                            Áudio 1:1 pra muitos contatos frios é o vetor mais punido pela Meta/Evolution. Áudio em grupo próprio é comportamento normal.
                         </div>
                     </div>
 
@@ -1378,16 +1377,8 @@
             if (c20 && !document.querySelector('input[name="cadence"]:checked')) c20.checked = true;
         }
 
-        // Audience=groups: desabilita quando ha audio.
-        const grpRadio = document.querySelector('input[name="audience"][value="groups"]');
-        if (grpRadio) {
-            grpRadio.disabled = active;
-            grpRadio.closest('.audience-option')?.style && (grpRadio.closest('.audience-option').style.opacity = active ? '.4' : '');
-            if (active && grpRadio.checked) {
-                const allRadio = document.querySelector('input[name="audience"][value="all"]');
-                if (allRadio) { allRadio.checked = true; onAudienceChange('all'); }
-            }
-        }
+        // Audience=groups agora ACEITA audio (cap 10 grupos, validado no server).
+        // Sem manipulacao do radio "groups".
     }
 
     function applySpintaxPreview(text) {

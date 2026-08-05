@@ -94,10 +94,19 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
         $policy = app(\App\Services\WhatsappOutboundPolicy::class);
 
-        // Broadcast de audio: forca cap 100 e janela ativa 24h em qualquer audience.
-        $isAudioBroadcast   = (bool) $campaign->has_audio;
-        $effectiveMaxRecips = $isAudioBroadcast ? self::AUDIO_MAX_RECIPIENTS : self::MAX_RECIPIENTS;
-        $audioWindowStart   = $isAudioBroadcast
+        // Broadcast de audio: cap e janela 24h dependem do tipo de audience.
+        // Individual: cap 100 + so contatos com inbound recente (evita spam frio).
+        // Groups: cap 10 grupos + sem janela (membros ja opted-in ao entrar).
+        $isAudioBroadcast    = (bool) $campaign->has_audio;
+        $isAudioIndividual   = $isAudioBroadcast && $campaign->audience_type !== 'groups';
+        $isAudioToGroups     = $isAudioBroadcast && $campaign->audience_type === 'groups';
+        $effectiveMaxRecips  = self::MAX_RECIPIENTS;
+        if ($isAudioIndividual) {
+            $effectiveMaxRecips = self::AUDIO_MAX_RECIPIENTS;
+        } elseif ($isAudioToGroups) {
+            $effectiveMaxRecips = BroadcastCampaign::AUDIO_MAX_GROUPS_PER_CAMPAIGN;
+        }
+        $audioWindowStart = $isAudioIndividual
             ? now()->subHours(BroadcastCampaign::AUDIO_ACTIVE_WINDOW_HOURS)
             : null;
 
@@ -107,7 +116,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 ->whereNotNull('opt_in_at')
                 ->whereNull('opt_out_at')->whereNull('blocked_at');
 
-            if ($isAudioBroadcast) {
+            if ($isAudioIndividual) {
                 // Janela ativa: so contatos que enviaram inbound nas ultimas 24h.
                 // Reduz drasticamente a chance de o audio soar como spam frio.
                 $baseQuery->whereNotNull('last_inbound_at')
@@ -134,8 +143,9 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         } else {
             $fullCollection = $this->getRecipients($campaign, $evo);
 
-            if ($isAudioBroadcast) {
+            if ($isAudioIndividual) {
                 // Filtra fora da janela 24h APOS montar (getRecipients tem forma variavel).
+                // NAO aplicavel a groups (grupos nao tem last_inbound_at por participante).
                 $fullCollection = $fullCollection->filter(function ($r) use ($audioWindowStart) {
                     $li = $r->last_inbound_at ?? null;
                     return $li && \Illuminate\Support\Carbon::parse($li)->gte($audioWindowStart);

@@ -532,13 +532,14 @@ class WhatsappBroadcastController extends Controller
             return redirect()->back()->with('error', 'Digite uma mensagem, anexe uma imagem ou grave/envie um áudio.');
         }
 
-        // Travas de seguranca do broadcast de audio (2026-08-05).
-        // Audio em massa = vetor classico de ban Meta/Evolution. Aplicamos:
-        //   1) audience != groups (grupos amplificam ban)
-        //   2) aceite anti-ban vigente obrigatorio
-        //   3) cadencia minima 20s
-        //   4) volume maximo por campanha (100)
-        //   5) fingerprint sha256 (limite diario aplicado no job)
+        // Travas de seguranca do broadcast de audio (2026-08-05 revisao 2).
+        // Audio 1:1 pra contatos frios e vetor de ban; audio em GRUPO ja opted-in
+        // e comportamento normal (aviso, aula, ministerio). Regras aplicadas:
+        //   1) aceite anti-ban vigente obrigatorio (ambos)
+        //   2) cadencia minima 20s (ambos)
+        //   3) fingerprint sha256 diario (aplicado no job)
+        //   4) audience individual: max 100 destinatarios + janela 24h (no job)
+        //   5) audience=groups: max 10 grupos por campanha (sem janela — grupos nao tem inbound)
         if ($hasAudioUpload) {
             $tenantModel = Tenant::find(auth()->user()->tenant_id);
             $antiTerm    = app(\App\Services\AntiBanTermService::class);
@@ -547,16 +548,20 @@ class WhatsappBroadcastController extends Controller
                     ->with('error', 'Aceite o Termo Anti-Ban vigente antes de disparar áudio em massa.');
             }
 
-            if ($request->input('audience') === 'groups') {
-                return redirect()->back()->withInput()->with('error',
-                    'Áudio em massa é bloqueado para audiência "grupos" (amplifica risco de ban).');
-            }
-
             $minCadence = \App\Models\BroadcastCampaign::AUDIO_MIN_CADENCE_SECONDS;
             $cadence    = (int) $request->input('cadence', 3);
             if ($cadence < $minCadence) {
                 return redirect()->back()->withInput()->with('error',
                     "Áudio em massa exige cadência mínima de {$minCadence} segundos.");
+            }
+
+            if ($request->input('audience') === 'groups') {
+                $maxGroups = \App\Models\BroadcastCampaign::AUDIO_MAX_GROUPS_PER_CAMPAIGN;
+                $groupCount = count((array) $request->input('group_ids', []));
+                if ($groupCount > $maxGroups) {
+                    return redirect()->back()->withInput()->with('error',
+                        "Áudio em massa aceita no máximo {$maxGroups} grupos por campanha (selecionados: {$groupCount}).");
+                }
             }
         }
 
