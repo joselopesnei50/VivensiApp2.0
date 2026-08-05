@@ -514,8 +514,9 @@ class WhatsappBroadcastController extends Controller
             // Sem required_if aqui, audience=selected com phones vazio caía no
             // fallback do job que devolve a base inteira do tenant sem opt-in.
             'phones'          => 'required_if:audience,selected|nullable|string|max:20000',
-            'cadence'         => 'nullable|integer|in:1,3,5,10,30',
+            'cadence'         => 'nullable|integer|in:1,3,5,10,20,30',
             'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
+            'broadcast_audio' => 'nullable|file|mimes:mp3,ogg,oga,opus,m4a,mp4,aac,webm|max:' . \App\Models\BroadcastCampaign::AUDIO_MAX_FILE_KB,
             'scheduled_at'    => 'nullable|date|after:now',
             'group_send_mode' => 'nullable|in:group,members',
             'group_ids'       => 'required_if:audience,groups|array|min:1',
@@ -524,8 +525,39 @@ class WhatsappBroadcastController extends Controller
             'label_ids.*'     => 'integer',
         ]);
 
-        if (!$request->filled('message') && !$request->hasFile('broadcast_image')) {
-            return redirect()->back()->with('error', 'Digite uma mensagem ou anexe uma imagem.');
+        // `hasFile` cobre — o validator ja rejeitou upload invalido pelo mimes.
+        $hasAudioUpload = $request->hasFile('broadcast_audio');
+
+        if (!$request->filled('message') && !$request->hasFile('broadcast_image') && !$hasAudioUpload) {
+            return redirect()->back()->with('error', 'Digite uma mensagem, anexe uma imagem ou grave/envie um áudio.');
+        }
+
+        // Travas de seguranca do broadcast de audio (2026-08-05).
+        // Audio em massa = vetor classico de ban Meta/Evolution. Aplicamos:
+        //   1) audience != groups (grupos amplificam ban)
+        //   2) aceite anti-ban vigente obrigatorio
+        //   3) cadencia minima 20s
+        //   4) volume maximo por campanha (100)
+        //   5) fingerprint sha256 (limite diario aplicado no job)
+        if ($hasAudioUpload) {
+            $tenantModel = Tenant::find(auth()->user()->tenant_id);
+            $antiTerm    = app(\App\Services\AntiBanTermService::class);
+            if (!$tenantModel || !$antiTerm->hasAcceptedCurrent($tenantModel)) {
+                return redirect()->route('whatsapp.anti_ban.show')
+                    ->with('error', 'Aceite o Termo Anti-Ban vigente antes de disparar áudio em massa.');
+            }
+
+            if ($request->input('audience') === 'groups') {
+                return redirect()->back()->withInput()->with('error',
+                    'Áudio em massa é bloqueado para audiência "grupos" (amplifica risco de ban).');
+            }
+
+            $minCadence = \App\Models\BroadcastCampaign::AUDIO_MIN_CADENCE_SECONDS;
+            $cadence    = (int) $request->input('cadence', 3);
+            if ($cadence < $minCadence) {
+                return redirect()->back()->withInput()->with('error',
+                    "Áudio em massa exige cadência mínima de {$minCadence} segundos.");
+            }
         }
 
         if ($request->input('audience') === 'groups' && empty($request->input('group_ids'))) {
@@ -573,6 +605,31 @@ class WhatsappBroadcastController extends Controller
             $hasImage  = true;
         }
 
+        // Persistencia do audio (privado — nunca vira URL publica; job le do storage e envia base64).
+        $audioPath        = null;
+        $audioMime        = null;
+        $audioFingerprint = null;
+        $hasAudio         = false;
+        if ($hasAudioUpload) {
+            $file     = $request->file('broadcast_audio');
+            $realMime = $file->getMimeType();
+            $allowedAudioMimes = [
+                'audio/mpeg', 'audio/mp3',
+                'audio/ogg', 'audio/oga', 'audio/opus',
+                'audio/webm', 'audio/mp4', 'audio/x-m4a', 'audio/aac',
+                // alguns browsers reportam video/webm ao gravar so audio via MediaRecorder
+                'video/webm', 'video/mp4',
+            ];
+            if (!in_array($realMime, $allowedAudioMimes, true)) {
+                return redirect()->back()->withInput()->with('error',
+                    "Formato de áudio não aceito ({$realMime}). Use OGG/Opus, MP3, M4A ou WebM.");
+            }
+            $audioFingerprint = hash_file('sha256', $file->getRealPath());
+            $audioPath        = $file->store('broadcasts/audio');
+            $audioMime        = $realMime;
+            $hasAudio         = true;
+        }
+
         $groupSendMode = ($audience === 'groups')
             ? $request->input('group_send_mode', 'group')
             : 'group';
@@ -591,19 +648,23 @@ class WhatsappBroadcastController extends Controller
         }
 
         $payload = [
-            'tenant_id'       => $tenantId,
-            'created_by'      => auth()->id(),
-            'message'         => $message ?: null,
-            'has_image'       => $hasImage,
-            'image_path'      => $imagePath,
-            'audience_type'   => $audience,
-            'cadence'         => $cadenceSeconds,
-            'scheduled_at'    => $scheduledAt,
-            'status'          => $scheduledAt ? 'scheduled' : 'queued',
-            'group_ids'       => $audience === 'groups' ? $request->input('group_ids', []) : null,
-            'group_send_mode' => $groupSendMode,
-            'phones'          => $audience === 'selected' ? $request->input('phones') : null,
-            'label_ids'       => $labelIds,
+            'tenant_id'         => $tenantId,
+            'created_by'        => auth()->id(),
+            'message'           => $message ?: null,
+            'has_image'         => $hasImage,
+            'image_path'        => $imagePath,
+            'has_audio'         => $hasAudio,
+            'audio_path'        => $audioPath,
+            'audio_mime'        => $audioMime,
+            'audio_fingerprint' => $audioFingerprint,
+            'audience_type'     => $audience,
+            'cadence'           => $cadenceSeconds,
+            'scheduled_at'      => $scheduledAt,
+            'status'            => $scheduledAt ? 'scheduled' : 'queued',
+            'group_ids'         => $audience === 'groups' ? $request->input('group_ids', []) : null,
+            'group_send_mode'   => $groupSendMode,
+            'phones'            => $audience === 'selected' ? $request->input('phones') : null,
+            'label_ids'         => $labelIds,
         ];
 
         // Se o usuario veio da fila "Continuar edicao" de um rascunho, atualiza

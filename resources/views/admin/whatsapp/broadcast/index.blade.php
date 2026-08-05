@@ -477,6 +477,26 @@
                 <form action="{{ route('whatsapp.broadcast.send') }}" method="POST" id="broadcastForm" enctype="multipart/form-data">
                     @csrf
 
+                    {{-- Banner de segurança pra broadcast de áudio (2026-08-05). Fica sempre visivel;
+                         `#audioSafetyBanner` ganha destaque quando o audio e anexado (JS). --}}
+                    <div id="audioSafetyBanner" style="background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid #f59e0b;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <i class="fas fa-shield-alt" style="color:#b45309;"></i>
+                            <strong style="color:#92400e;font-size:.9rem;">Regras de segurança do áudio em massa</strong>
+                        </div>
+                        <ul style="margin:0 0 0 20px;padding:0;font-size:.78rem;color:#78350f;line-height:1.6;">
+                            <li><strong>Só contatos ativos (últimas 24h):</strong> áudios só vão pra quem enviou mensagem inbound nas últimas 24 horas.</li>
+                            <li><strong>Máx. 100 destinatários</strong> por campanha de áudio (texto pode até 500).</li>
+                            <li><strong>Cadência mínima 20s</strong> entre envios de áudio (imita gravação humana e reduz ban).</li>
+                            <li><strong>Máx. 3 disparos do mesmo áudio por dia</strong> por instância (fingerprint sha256 do arquivo).</li>
+                            <li><strong>Não vale pra grupos:</strong> áudio broadcast é bloqueado para audiência “grupos”.</li>
+                            <li><strong>Termo Anti-Ban obrigatório:</strong> sem aceite vigente, o disparo é rejeitado.</li>
+                        </ul>
+                        <div style="margin-top:8px;font-size:.72rem;color:#92400e;">
+                            Áudio em massa é o vetor mais punido pela Meta/Evolution — mesmo com todas as travas, use com moderação.
+                        </div>
+                    </div>
+
                     {{-- Importações recentes: atalho de 1 clique pra disparar só pra planilha subida --}}
                     @if(isset($recentImports) && $recentImports->isNotEmpty())
                     <div class="mb-4 p-3 rounded-3" style="background:#f5f3ff;border:1px solid #e9d5ff;">
@@ -659,6 +679,31 @@
                         @enderror
                     </div>
 
+                    {{-- Áudio (opcional, com travas anti-ban) --}}
+                    <div class="mb-4">
+                        <div class="section-label">Áudio <span style="font-weight:400;color:#94a3b8;text-transform:none;letter-spacing:0;">(opcional — leia as regras acima)</span></div>
+                        <div id="audioDropZone" class="import-zone" onclick="document.getElementById('broadcastAudioInput').click()"
+                             ondragover="event.preventDefault();this.style.borderColor='#f59e0b'"
+                             ondragleave="this.style.borderColor=''"
+                             ondrop="handleAudioDrop(event)">
+                            <i class="fas fa-microphone fa-2x mb-2" style="color:#f59e0b;"></i>
+                            <div style="font-size:0.8rem;color:#64748b;">Clique ou arraste um áudio aqui</div>
+                            <div style="font-size:0.72rem;color:#94a3b8;margin-top:2px;">OGG, MP3, M4A, WEBM — máx. 16 MB</div>
+                        </div>
+                        <input type="file" id="broadcastAudioInput" name="broadcast_audio" accept="audio/*,.ogg,.oga,.opus,.mp3,.m4a,.mp4,.webm,.aac" class="d-none" onchange="handleAudioSelect(this)">
+                        <div id="audioPreviewWrap" class="d-none mt-2" style="position:relative;display:flex;align-items:center;gap:12px;background:#fff7ed;padding:10px 14px;border-radius:10px;border:1px solid #fed7aa;">
+                            <i class="fas fa-file-audio" style="color:#c2410c;font-size:1.4rem;"></i>
+                            <div style="flex:1;">
+                                <div id="audioFileName" style="font-size:.85rem;font-weight:600;color:#7c2d12;"></div>
+                                <audio id="audioPreviewPlayer" controls style="width:100%;margin-top:4px;height:32px;"></audio>
+                            </div>
+                            <button type="button" onclick="removeAudio()" style="background:#ef4444;color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="fas fa-times"></i></button>
+                        </div>
+                        @error('broadcast_audio')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- Mensagem --}}
                     <div class="mb-3">
                         <div class="d-flex align-items-center justify-content-between mb-2">
@@ -736,6 +781,12 @@
                                 <label class="cadence-option">
                                     <div><input type="radio" name="cadence" value="10" class="me-2">10 segundos</div>
                                     <span class="cadence-risk risk-low">Muito seguro</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <label class="cadence-option">
+                                    <div><input type="radio" name="cadence" value="20" class="me-2">20 segundos</div>
+                                    <span class="cadence-risk risk-low">Mínimo p/ áudio</span>
                                 </label>
                             </div>
                             <div class="col-6 col-md-4">
@@ -1258,6 +1309,85 @@
         document.getElementById('messageSectionLabel').textContent = 'Mensagem';
         document.getElementById('messageInput').placeholder = 'Digite sua mensagem aqui...';
         updatePreview();
+    }
+
+    // ── Broadcast de audio (2026-08-05) ──────────────────────────────────────
+    // Ao anexar audio, forca cadencia >=20s e bloqueia audience=groups no client
+    // (server tambem valida — dupla trava).
+    const AUDIO_MIN_CADENCE = 20;
+    let previewAudioBlobUrl = null;
+
+    function handleAudioSelect(input) {
+        if (!input.files || !input.files[0]) return;
+        setAudioPreview(input.files[0]);
+    }
+
+    function handleAudioDrop(e) {
+        e.preventDefault();
+        document.getElementById('audioDropZone').style.borderColor = '';
+        const file = e.dataTransfer.files[0];
+        if (file && (file.type.startsWith('audio/') || file.type === 'video/webm' || file.type === 'video/mp4')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('broadcastAudioInput').files = dt.files;
+            setAudioPreview(file);
+        }
+    }
+
+    function setAudioPreview(file) {
+        if (previewAudioBlobUrl) URL.revokeObjectURL(previewAudioBlobUrl);
+        previewAudioBlobUrl = URL.createObjectURL(file);
+        document.getElementById('audioFileName').textContent = `${file.name} — ${(file.size/1024/1024).toFixed(2)} MB`;
+        document.getElementById('audioPreviewPlayer').src = previewAudioBlobUrl;
+        document.getElementById('audioPreviewWrap').classList.remove('d-none');
+        document.getElementById('audioDropZone').style.display = 'none';
+
+        enforceAudioRestrictions(true);
+        const banner = document.getElementById('audioSafetyBanner');
+        if (banner) banner.style.boxShadow = '0 0 0 3px rgba(245,158,11,.25)';
+    }
+
+    function removeAudio() {
+        if (previewAudioBlobUrl) URL.revokeObjectURL(previewAudioBlobUrl);
+        previewAudioBlobUrl = null;
+        document.getElementById('broadcastAudioInput').value = '';
+        document.getElementById('audioPreviewPlayer').src = '';
+        document.getElementById('audioPreviewWrap').classList.add('d-none');
+        document.getElementById('audioDropZone').style.display = '';
+        enforceAudioRestrictions(false);
+        const banner = document.getElementById('audioSafetyBanner');
+        if (banner) banner.style.boxShadow = '';
+    }
+
+    function enforceAudioRestrictions(active) {
+        // Cadencia: desabilita 1/3/5/10 quando ha audio; salta pra 20 se estava menor.
+        document.querySelectorAll('input[name="cadence"]').forEach(r => {
+            const v = parseInt(r.value, 10);
+            if (active && v < AUDIO_MIN_CADENCE) {
+                r.disabled = true;
+                if (r.checked) r.checked = false;
+                r.closest('.cadence-option')?.style && (r.closest('.cadence-option').style.opacity = '.4');
+            } else {
+                r.disabled = false;
+                r.closest('.cadence-option')?.style && (r.closest('.cadence-option').style.opacity = '');
+            }
+        });
+        if (active) {
+            const c20 = document.querySelector('input[name="cadence"][value="20"]')
+                     || document.querySelector('input[name="cadence"][value="30"]');
+            if (c20 && !document.querySelector('input[name="cadence"]:checked')) c20.checked = true;
+        }
+
+        // Audience=groups: desabilita quando ha audio.
+        const grpRadio = document.querySelector('input[name="audience"][value="groups"]');
+        if (grpRadio) {
+            grpRadio.disabled = active;
+            grpRadio.closest('.audience-option')?.style && (grpRadio.closest('.audience-option').style.opacity = active ? '.4' : '');
+            if (active && grpRadio.checked) {
+                const allRadio = document.querySelector('input[name="audience"][value="all"]');
+                if (allRadio) { allRadio.checked = true; onAudienceChange('all'); }
+            }
+        }
     }
 
     function applySpintaxPreview(text) {

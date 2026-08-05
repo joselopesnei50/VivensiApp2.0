@@ -24,6 +24,13 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
     const MAX_RECIPIENTS = 500;
     const CHUNK_SIZE     = 20;   // mensagens por execução de job
 
+    /**
+     * Volume maximo por campanha quando ha audio. Broadcast de audio identico
+     * pra muitos contatos e vetor classico de ban Meta/Evolution — trava
+     * espelhada em BroadcastCampaign::AUDIO_MAX_RECIPIENTS_PER_CAMPAIGN.
+     */
+    const AUDIO_MAX_RECIPIENTS = 100;
+
     public $campaignId;
     public $tenantId;
     public $offset   = 0;    // posição no array de destinatários
@@ -87,13 +94,27 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
         $policy = app(\App\Services\WhatsappOutboundPolicy::class);
 
+        // Broadcast de audio: forca cap 100 e janela ativa 24h em qualquer audience.
+        $isAudioBroadcast   = (bool) $campaign->has_audio;
+        $effectiveMaxRecips = $isAudioBroadcast ? self::AUDIO_MAX_RECIPIENTS : self::MAX_RECIPIENTS;
+        $audioWindowStart   = $isAudioBroadcast
+            ? now()->subHours(BroadcastCampaign::AUDIO_ACTIVE_WINDOW_HOURS)
+            : null;
+
         // ── Carrega apenas o chunk atual de destinatários ──────────────────────
         if ($campaign->audience_type === 'all') {
             $baseQuery = WhatsappChat::where('tenant_id', $campaign->tenant_id)
                 ->whereNotNull('opt_in_at')
                 ->whereNull('opt_out_at')->whereNull('blocked_at');
 
-            $recipientCount = min((clone $baseQuery)->count(), self::MAX_RECIPIENTS);
+            if ($isAudioBroadcast) {
+                // Janela ativa: so contatos que enviaram inbound nas ultimas 24h.
+                // Reduz drasticamente a chance de o audio soar como spam frio.
+                $baseQuery->whereNotNull('last_inbound_at')
+                          ->where('last_inbound_at', '>=', $audioWindowStart);
+            }
+
+            $recipientCount = min((clone $baseQuery)->count(), $effectiveMaxRecips);
 
             if ($recipientCount === 0) {
                 $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
@@ -105,13 +126,23 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             }
 
             $recipientsIterable = (clone $baseQuery)
-                ->select(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at'])
+                ->select(['id', 'wa_id', 'opt_in_at', 'opt_out_at', 'blocked_at', 'last_inbound_at'])
                 ->orderBy('id')
                 ->offset($this->offset)
                 ->limit(self::CHUNK_SIZE)
                 ->get();
         } else {
-            $fullCollection = $this->getRecipients($campaign, $evo)->take(self::MAX_RECIPIENTS);
+            $fullCollection = $this->getRecipients($campaign, $evo);
+
+            if ($isAudioBroadcast) {
+                // Filtra fora da janela 24h APOS montar (getRecipients tem forma variavel).
+                $fullCollection = $fullCollection->filter(function ($r) use ($audioWindowStart) {
+                    $li = $r->last_inbound_at ?? null;
+                    return $li && \Illuminate\Support\Carbon::parse($li)->gte($audioWindowStart);
+                })->values();
+            }
+
+            $fullCollection = $fullCollection->take($effectiveMaxRecips);
 
             if ($fullCollection->isEmpty()) {
                 $campaign->update(['status' => 'completed', 'completed_at' => now(), 'actual_recipients' => 0]);
@@ -148,6 +179,22 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         $failedCount       = 0;
         $skippedCount      = 0;
         $consecutiveErrors = 0;
+
+        // Pre-carrega binario do audio uma unica vez fora do loop (base64 pesado —
+        // Evolution API aceita audio em base64 direto via sendWhatsAppAudio).
+        $audioBase64 = null;
+        if ($isAudioBroadcast && $campaign->audio_path) {
+            if (Storage::disk('local')->exists($campaign->audio_path)) {
+                $audioBase64 = base64_encode(Storage::disk('local')->get($campaign->audio_path));
+            } else {
+                $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+                Log::error("Broadcast audio failed: arquivo nao encontrado no storage", [
+                    'campaign_id' => $campaign->id,
+                    'audio_path'  => $campaign->audio_path,
+                ]);
+                return;
+            }
+        }
 
         $mediaToSend = null;
         $imageMime   = 'image/jpeg';
@@ -256,6 +303,29 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 return;
             }
 
+            // Anti-ban: fingerprint de audio (mesmo hash sha256 do binario ja salvo).
+            // Trata o `audio_fingerprint` como se fosse um "conteudo" pro cache do
+            // AntiBanManager — reusa a mesma logica de limite diario (MAX_SAME_CONTENT_PER_DAY),
+            // mas com trava propria mais estrita (AUDIO_MAX_SAME_FINGERPRINT_DAY) aplicada
+            // ao final via contagem separada da chave de audio.
+            if ($isAudioBroadcast) {
+                $audioKey  = 'wa:audio_fp:' . $instance->id . ':' . $campaign->audio_fingerprint;
+                $audioSent = (int) \Illuminate\Support\Facades\Cache::get($audioKey, 0);
+                if ($audioSent >= BroadcastCampaign::AUDIO_MAX_SAME_FINGERPRINT_DAY) {
+                    Log::warning('AntiBan: fingerprint de audio atingiu limite diario — campanha pausada', [
+                        'campaign_id' => $campaign->id,
+                        'instance_id' => $instance->id,
+                    ]);
+                    $campaign->update([
+                        'status'       => 'paused',
+                        'completed_at' => now(),
+                        'total_sent'   => $baseSent + $sentCount,
+                        'total_failed' => $baseFailed + $failedCount,
+                    ]);
+                    return;
+                }
+            }
+
             // Anti-ban: verifica janela de horário e limite diário
             if (!$antiBan->canSendMessage($instance)) {
                 $instance->refresh();
@@ -333,18 +403,26 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
                 $delayForApi = $isGroupChatMode ? rand(2, 5) : 0;
 
-                $res = $mediaToSend
-                    ? $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime)
-                    : $evo->sendMessage($waId, $campaign->message, null, $delayForApi);
+                if ($isAudioBroadcast) {
+                    $res = $evo->sendAudio($waId, $audioBase64);
+                } elseif ($mediaToSend) {
+                    $res = $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime);
+                } else {
+                    $res = $evo->sendMessage($waId, $campaign->message, null, $delayForApi);
+                }
 
                 if (!isset($res['error']) && !empty($res)) {
                     if (isset($recipient->id)) {
                         WhatsappMessage::create([
                             'chat_id'    => $recipient->id,
                             'message_id' => $res['key']['id'] ?? ($res['messageId'] ?? ('BROADCAST_' . uniqid())),
-                            'content'    => $campaign->has_image ? ('[imagem] ' . $campaign->message) : $campaign->message,
+                            'content'    => $isAudioBroadcast
+                                ? '[áudio enviado via broadcast]'
+                                : ($campaign->has_image ? ('[imagem] ' . $campaign->message) : $campaign->message),
                             'direction'  => 'outbound',
-                            'type'       => $campaign->has_image ? 'image' : 'text',
+                            'type'       => $isAudioBroadcast
+                                ? 'audio'
+                                : ($campaign->has_image ? 'image' : 'text'),
                         ]);
                     }
                     $sentCount++;
@@ -352,6 +430,13 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     $antiBan->recordSent($instance);
                     if (!empty($campaign->message)) {
                         $antiBan->recordContentSent($instance, $campaign->message);
+                    }
+                    if ($isAudioBroadcast) {
+                        // Incrementa contador diario do fingerprint do audio (TTL ate fim do dia).
+                        $audioKey = 'wa:audio_fp:' . $instance->id . ':' . $campaign->audio_fingerprint;
+                        $ttl      = max(1, (int) now()->diffInSeconds(now()->endOfDay()));
+                        \Illuminate\Support\Facades\Cache::add($audioKey, 0, $ttl);
+                        \Illuminate\Support\Facades\Cache::increment($audioKey);
                     }
 
                     // Marker pro Bruno: quando este contato responder no WhatsApp,

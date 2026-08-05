@@ -10,6 +10,7 @@ class BroadcastCampaign extends Model
     use BelongsToTenant;
     protected $fillable = [
         'tenant_id', 'created_by', 'name', 'message', 'has_image', 'image_path',
+        'has_audio', 'audio_path', 'audio_mime', 'audio_fingerprint',
         'audience_type', 'status', 'scheduled_at', 'cadence',
         'group_ids', 'group_send_mode', 'phones', 'label_ids',
         'total_sent', 'total_failed', 'total_skipped', 'actual_recipients',
@@ -18,14 +19,23 @@ class BroadcastCampaign extends Model
 
     protected $casts = [
         'has_image'    => 'boolean',
+        'has_audio'    => 'boolean',
         'group_ids'    => 'array',
         'label_ids'    => 'array',
+        'cadence'      => 'integer',
         'scheduled_at' => 'datetime',
         'started_at'   => 'datetime',
         'completed_at' => 'datetime',
         'created_at'   => 'datetime',
         'updated_at'   => 'datetime',
     ];
+
+    /** Regras de seguranca do broadcast de audio (2026-08-05). */
+    public const AUDIO_MIN_CADENCE_SECONDS      = 20;
+    public const AUDIO_MAX_RECIPIENTS_PER_CAMPAIGN = 100;
+    public const AUDIO_MAX_FILE_KB              = 16384; // 16 MB (limite Meta)
+    public const AUDIO_MAX_SAME_FINGERPRINT_DAY = 3;
+    public const AUDIO_ACTIVE_WINDOW_HOURS      = 24; // so contatos com inbound recente
 
     public function getDurationAttribute(): ?string
     {
