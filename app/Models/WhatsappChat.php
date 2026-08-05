@@ -20,6 +20,8 @@ class WhatsappChat extends Model
         'opt_out_at'       => 'datetime',
         'blocked_at'       => 'datetime',
         'labels'           => 'array',
+        'assigned_to'      => 'integer',
+        'is_bot_active'    => 'boolean',
     ];
 
     protected $fillable = [

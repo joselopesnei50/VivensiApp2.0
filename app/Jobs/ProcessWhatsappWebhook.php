@@ -159,7 +159,9 @@ class ProcessWhatsappWebhook implements ShouldQueue
 
             // 5. Bot de Atendimento: FAQ + off-hours + AI
             $atendEnabled = SystemSetting::getValue('atend_enabled', '0') === '1';
-            $canAutoReply = !$chat->assigned_to || $chat->status === 'open';
+            // Bot só responde se ninguém assumiu E o kill-switch por chat estiver ligado.
+            // Antes era `|| status=='open'`, que reativava o bot depois de release.
+            $canAutoReply = !$chat->assigned_to && $chat->is_bot_active;
 
             if (!$keywordFired && $atendEnabled && $canAutoReply && !$chat->opt_out_at && !$chat->blocked_at) {
                 // 4a. Verificar horário de atendimento

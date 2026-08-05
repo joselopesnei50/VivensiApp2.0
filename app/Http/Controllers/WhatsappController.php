@@ -186,22 +186,55 @@ class WhatsappController extends Controller
     {
         Gate::authorize('access-whatsapp');
 
-        $tenantId = auth()->user()->tenant_id;
+        $user     = auth()->user();
+        $tenantId = $user->tenant_id;
+
+        // Role guard: espelha ChatTransferService::AGENT_ROLES — impede que
+        // usuário fora do conjunto de agentes se auto-atribua (o transfer já
+        // bloqueava, o assign não bloqueava e virava inconsistência).
+        if (!in_array($user->role, ChatTransferService::AGENT_ROLES, true)) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Seu perfil não pode assumir atendimentos.',
+            ], 403);
+        }
+
         $chat = WhatsappChat::where('tenant_id', $tenantId)->findOrFail($chatId);
 
-        $chat->update([
-            'assigned_to' => auth()->id(),
-            'is_bot_active' => false, // Ao assumir, o bot é desligado automaticamente
-            'status' => 'human_attending'
-        ]);
+        // Race guard atômico: só assume se ainda não tiver dono. Dois agentes
+        // clicando "Assumir" ao mesmo tempo — o segundo recebe 409 em vez de
+        // sobrescrever silenciosamente. Idempotente pro próprio user.
+        $affected = WhatsappChat::where('id', $chat->id)
+            ->where('tenant_id', $tenantId)
+            ->whereNull('assigned_to')
+            ->update([
+                'assigned_to'   => $user->id,
+                'is_bot_active' => false,
+                'status'        => 'human_attending',
+                'updated_at'    => now(),
+            ]);
+
+        if ($affected === 0) {
+            $chat->refresh();
+            if ($chat->assigned_to === $user->id) {
+                return response()->json(['success' => true, 'chat' => $chat]);
+            }
+            return response()->json([
+                'success' => false,
+                'error'   => 'Este atendimento já foi assumido por outro agente.',
+                'chat'    => $chat,
+            ], 409);
+        }
+
+        $chat->refresh();
 
         WhatsappAuditLog::create([
-            'tenant_id' => $tenantId,
-            'chat_id' => $chat->id,
-            'actor_user_id' => auth()->id(),
-            'actor_type' => 'user',
-            'event' => 'chat_assigned',
-            'details' => ['action' => 'take_over'],
+            'tenant_id'     => $tenantId,
+            'chat_id'       => $chat->id,
+            'actor_user_id' => $user->id,
+            'actor_type'    => 'user',
+            'event'         => 'chat_assigned',
+            'details'       => ['action' => 'take_over'],
         ]);
 
         return response()->json(['success' => true, 'chat' => $chat]);
@@ -623,8 +656,11 @@ class WhatsappController extends Controller
             'direction' => 'inbound'
         ]);
 
-        // 3. Se a IA estiver ativada e não houver atendente humano fixo, responder com IA
-        if ($config->ai_enabled && (!$chat->assigned_to || $chat->status == 'open') && !$chat->opt_out_at && !$chat->blocked_at) {
+        // 3. Se a IA estiver ativada, o bot ainda estiver ligado e não houver
+        //    atendente humano assumido — dispara a resposta. A condição antiga
+        //    usava `|| status=='open'` e deixava o bot responder mesmo com
+        //    assigned_to setado se o status ainda estivesse 'open' (fluxo pós-release).
+        if ($config->ai_enabled && $chat->is_bot_active && !$chat->assigned_to && !$chat->opt_out_at && !$chat->blocked_at) {
             ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content)
                 ->onQueue('whatsapp');
         }
