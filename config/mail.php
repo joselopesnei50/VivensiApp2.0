@@ -13,7 +13,11 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'smtp'),
+    // Fallback e 'brevo' (driver custom via API registrado em AppServiceProvider)
+    // para evitar cair em SMTP sem auth quando o .env do VPS perde a variavel.
+    // Failed jobs 2026-08-05 (StageOverdueAlertMail) caiam com 530 Authentication
+    // required porque o worker resolvia default como 'smtp'.
+    'default' => env('MAIL_MAILER', 'brevo'),
 
     /*
     |--------------------------------------------------------------------------

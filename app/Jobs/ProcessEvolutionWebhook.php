@@ -221,7 +221,10 @@ class ProcessEvolutionWebhook implements ShouldQueue
             'direction'     => 'inbound',
             'type'          => $type,
             'media_path'    => $mediaPath,
-            'media_caption' => $mediaCaption,
+            // Defesa em profundidade: mesmo com media_caption em TEXT (65k),
+            // truncamos a 60k. Meta limita legenda a ~1024, valores maiores
+            // sao anomalia (2026-08-05: falhas 1406 no VPS por VARCHAR(255) antigo).
+            'media_caption' => $mediaCaption !== null ? mb_substr($mediaCaption, 0, 60000) : null,
         ]);
 
         WhatsappAuditLog::create([
