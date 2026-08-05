@@ -478,23 +478,78 @@
                     @csrf
 
                     {{-- Banner de segurança pra broadcast de áudio (2026-08-05 rev 2).
-                         Regras diferentes por tipo de audiência — grupos aceitos com cap. --}}
-                    <div id="audioSafetyBanner" style="background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid #f59e0b;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                            <i class="fas fa-shield-alt" style="color:#b45309;"></i>
-                            <strong style="color:#92400e;font-size:.9rem;">Regras de segurança do áudio em massa</strong>
+                         Identidade Bruce IA: fundo #0A0A0B + accent #FF7A1A. --}}
+                    <div id="audioSafetyBanner" class="bruce-audio-banner">
+                        <div class="bruce-audio-icon-wrap">
+                            <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA" width="72" height="72">
                         </div>
-                        <ul style="margin:0 0 0 20px;padding:0;font-size:.78rem;color:#78350f;line-height:1.6;">
-                            <li><strong>Termo Anti-Ban obrigatório:</strong> sem aceite vigente, o disparo é rejeitado.</li>
-                            <li><strong>Cadência mínima 20s</strong> entre envios (imita gravação humana e reduz ban).</li>
-                            <li><strong>Máx. 3 disparos do mesmo áudio por dia</strong> por instância (fingerprint sha256).</li>
-                            <li><strong>Audiência individual</strong> (Todos, Selecionados, Etiquetas): só contatos com inbound nas últimas 24h + máx. 100 destinatários.</li>
-                            <li><strong>Audiência de grupos</strong>: máx. 10 grupos por campanha (membros já opted-in — sem janela 24h).</li>
-                        </ul>
-                        <div style="margin-top:8px;font-size:.72rem;color:#92400e;">
-                            Áudio 1:1 pra muitos contatos frios é o vetor mais punido pela Meta/Evolution. Áudio em grupo próprio é comportamento normal.
+                        <div class="bruce-audio-body">
+                            <span class="bruce-audio-tag">Bruce avisa</span>
+                            <h4 class="bruce-audio-title">Áudio em massa tem regras próprias</h4>
+                            <p class="bruce-audio-desc">Sigo essas travas para proteger sua instância de ban. Elas viram bloqueio automático se você tentar fugir.</p>
+                            <ul class="bruce-audio-list">
+                                <li><strong>Termo Anti-Ban vigente</strong> — sem aceite, disparo rejeitado.</li>
+                                <li><strong>Cadência mínima 20s</strong> — imita gravação humana.</li>
+                                <li><strong>Máx. 3 disparos do mesmo áudio/dia</strong> por instância (fingerprint sha256).</li>
+                                <li><strong>Audiência individual</strong>: só contatos com inbound nas últimas 24h + máx. 100 destinatários.</li>
+                                <li><strong>Audiência de grupos</strong>: máx. 10 grupos por campanha (sem janela 24h — membros já opted-in).</li>
+                            </ul>
+                            <div class="bruce-audio-footer">Áudio 1:1 para contatos frios é o vetor mais punido pela Meta. Áudio em grupo próprio é comportamento normal.</div>
                         </div>
                     </div>
+                    <style>
+                        .bruce-audio-banner {
+                            display: flex; align-items: flex-start; gap: 18px;
+                            padding: 20px 22px; margin-bottom: 22px;
+                            background: #0A0A0B;
+                            border: 1px solid rgba(255,122,26,.22);
+                            border-radius: 16px;
+                        }
+                        .bruce-audio-icon-wrap {
+                            flex-shrink: 0;
+                            width: 72px; height: 72px;
+                            border-radius: 16px;
+                            background: #0f0f1e;
+                            border: 1px solid rgba(255,255,255,.08);
+                            display: flex; align-items: center; justify-content: center;
+                        }
+                        .bruce-audio-icon-wrap img { width: 60px; height: 60px; display: block; }
+                        .bruce-audio-body { flex: 1; min-width: 240px; }
+                        .bruce-audio-tag {
+                            display: inline-flex; align-items: center;
+                            background: rgba(255,122,26,.12);
+                            border: 1px solid rgba(255,122,26,.3);
+                            color: #FF7A1A; font-size: .62rem; font-weight: 800;
+                            padding: 3px 10px; border-radius: 20px;
+                            text-transform: uppercase; letter-spacing: 1.2px;
+                            margin-bottom: 8px;
+                        }
+                        .bruce-audio-title {
+                            color: #fff; font-size: 1.02rem; font-weight: 800;
+                            margin: 0 0 4px; letter-spacing: -.2px;
+                        }
+                        .bruce-audio-desc {
+                            color: rgba(255,255,255,.6); font-size: .78rem;
+                            margin: 0 0 10px; line-height: 1.5;
+                        }
+                        .bruce-audio-list {
+                            margin: 0 0 10px 18px; padding: 0;
+                            color: rgba(255,255,255,.78);
+                            font-size: .76rem; line-height: 1.6;
+                        }
+                        .bruce-audio-list li { margin-bottom: 2px; }
+                        .bruce-audio-list strong { color: #fff; font-weight: 700; }
+                        .bruce-audio-footer {
+                            font-size: .7rem; color: rgba(255,255,255,.4);
+                            border-top: 1px solid rgba(255,255,255,.06);
+                            padding-top: 8px; margin-top: 4px;
+                        }
+                        @media (max-width: 640px) {
+                            .bruce-audio-banner { flex-direction: column; padding: 18px; }
+                            .bruce-audio-icon-wrap { width: 60px; height: 60px; }
+                            .bruce-audio-icon-wrap img { width: 48px; height: 48px; }
+                        }
+                    </style>
 
                     {{-- Importações recentes: atalho de 1 clique pra disparar só pra planilha subida --}}
                     @if(isset($recentImports) && $recentImports->isNotEmpty())
