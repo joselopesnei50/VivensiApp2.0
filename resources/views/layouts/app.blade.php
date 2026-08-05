@@ -1100,15 +1100,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             'credenciado' => 'Credenciado',
             default       => 'Usuário',
         };
+        $ucIsAgent    = in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin'], true);
+        $ucAvail      = auth()->user()->agent_availability ?? 'available';
+        $ucAvailColor = ['available' => '#22c55e', 'away' => '#f59e0b', 'offline' => '#94a3b8'][$ucAvail] ?? '#22c55e';
+        $ucAvailLabel = ['available' => 'Disponível', 'away' => 'Ausente', 'offline' => 'Offline'][$ucAvail] ?? 'Disponível';
     @endphp
     <div class="sidebar-user-card" id="sucTrigger" onclick="toggleSucDropdown()">
-        <div class="suc-avatar user-avatar-wrap">{{ $ucInitials }}</div>
+        <div class="suc-avatar user-avatar-wrap" style="position:relative;">
+            {{ $ucInitials }}
+            @if($ucIsAgent)
+                <span id="sucAvailDot" title="{{ $ucAvailLabel }}"
+                      style="position:absolute; bottom:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:{{ $ucAvailColor }}; border:2px solid var(--sidebar-bg, #fff);"></span>
+            @endif
+        </div>
         <div class="suc-info">
             <div class="suc-name">{{ $ucName }}</div>
             <div class="suc-role">{{ $ucRoleLabel }}</div>
         </div>
         <i class="fas fa-chevron-up suc-arrow"></i>
         <div class="suc-dropdown" id="sucDropdown">
+            @if($ucIsAgent)
+                <div style="padding:6px 12px 4px; font-size:.65rem; font-weight:700; color:var(--text-secondary,#94a3b8); text-transform:uppercase; letter-spacing:.05em;">Disponibilidade</div>
+                @foreach(['available' => ['Disponível', '#22c55e'], 'away' => ['Ausente', '#f59e0b'], 'offline' => ['Offline', '#94a3b8']] as $key => $meta)
+                    <a href="#" class="suc-avail-item" data-avail="{{ $key }}"
+                       onclick="event.preventDefault(); setAgentAvailability('{{ $key }}');"
+                       style="display:flex; align-items:center; gap:8px;">
+                        <span style="width:8px; height:8px; border-radius:50%; background:{{ $meta[1] }}; display:inline-block;"></span>
+                        <span>{{ $meta[0] }}</span>
+                        @if($ucAvail === $key)
+                            <i class="fas fa-check" style="margin-left:auto; color:#22c55e; font-size:.7rem;"></i>
+                        @endif
+                    </a>
+                @endforeach
+                <div class="suc-divider"></div>
+            @endif
             <a href="{{ url('/profile') }}"><i class="fas fa-user-circle"></i> {{ __('ui.profile') }}</a>
             <a href="{{ url('/profile') }}#settings"><i class="fas fa-cog"></i> {{ __('ui.settings') }}</a>
             <a href="{{ route('client.invoices.index') }}"><i class="fas fa-file-invoice-dollar"></i> Minhas Faturas</a>
@@ -1119,6 +1144,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </a>
         </div>
     </div>
+    @if($ucIsAgent)
+        <script>
+        (function () {
+            const AVAIL_COLORS = { available: '#22c55e', away: '#f59e0b', offline: '#94a3b8' };
+            window.setAgentAvailability = async function (status) {
+                try {
+                    const r = await fetch('{{ route('me.agent-availability') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ availability: status }),
+                    });
+                    if (!r.ok) return;
+                    const dot = document.getElementById('sucAvailDot');
+                    if (dot) dot.style.background = AVAIL_COLORS[status] ?? AVAIL_COLORS.available;
+                    document.querySelectorAll('.suc-avail-item').forEach(el => {
+                        el.querySelector('i.fa-check')?.remove();
+                        if (el.dataset.avail === status) {
+                            const check = document.createElement('i');
+                            check.className = 'fas fa-check';
+                            check.style.cssText = 'margin-left:auto; color:#22c55e; font-size:.7rem;';
+                            el.appendChild(check);
+                        }
+                    });
+                } catch (e) { /* silencioso */ }
+            };
+        })();
+        </script>
+    @endif
 </aside>
 @endauth
 

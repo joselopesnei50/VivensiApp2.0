@@ -44,6 +44,18 @@ class User extends Authenticatable
         'welcome_dismissed_at',
         'phone_bidx',
         'default_project_id',
+        'agent_availability',
+        'availability_changed_at',
+    ];
+
+    /** Estados aceitos em agent_availability (P2 WhatsApp 2026-08-05). */
+    public const AVAILABILITY_AVAILABLE = 'available';
+    public const AVAILABILITY_AWAY      = 'away';
+    public const AVAILABILITY_OFFLINE   = 'offline';
+    public const AVAILABILITIES = [
+        self::AVAILABILITY_AVAILABLE,
+        self::AVAILABILITY_AWAY,
+        self::AVAILABILITY_OFFLINE,
     ];
 
     public function isCredenciado(): bool
@@ -123,6 +135,7 @@ class User extends Authenticatable
         'terms_accepted_at'          => 'datetime',
         'onboarding_steps'           => 'array',
         'welcome_dismissed_at'       => 'datetime',
+        'availability_changed_at'    => 'datetime',
     ];
 
     public function tenant()

@@ -141,7 +141,7 @@ class ChatTransferService
             ->whereIn('role', self::AGENT_ROLES)
             ->when(static fn ($q) => $q->where('status', 'active'), fn ($q) => $q->where('status', 'active'))
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'role']);
+            ->get(['id', 'name', 'email', 'role', 'agent_availability', 'availability_changed_at']);
     }
 
     /**
