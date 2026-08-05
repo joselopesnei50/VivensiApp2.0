@@ -32,7 +32,10 @@ class SecurityHeaders
             }
             $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
             $response->header('Content-Security-Policy', $this->buildCsp());
-            $response->header('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+            // microphone=(self) libera gravação de audio no chat WhatsApp
+            // (Permissions-Policy `()` vazio bloqueia inclusive o proprio site,
+            // resultando em Permission denied no getUserMedia).
+            $response->header('Permissions-Policy', 'geolocation=(), microphone=(self), camera=(), payment=()');
         }
 
         return $response;
