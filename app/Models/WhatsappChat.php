@@ -22,6 +22,7 @@ class WhatsappChat extends Model
         'labels'           => 'array',
         'assigned_to'      => 'integer',
         'is_bot_active'    => 'boolean',
+        'is_group'         => 'boolean',
     ];
 
     protected $fillable = [
@@ -29,6 +30,7 @@ class WhatsappChat extends Model
         'wa_id',
         'contact_name',
         'contact_phone',
+        'is_group',
         'status',
         'labels',
         'assigned_to',

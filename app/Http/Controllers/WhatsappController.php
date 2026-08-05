@@ -1262,6 +1262,8 @@ class WhatsappController extends Controller
             'chat'             => $chat,
             'messages'         => $messages->map(fn($m) => [
                 'id'            => $m->id,
+                'sender_wa_id'  => $m->sender_wa_id,
+                'sender_name'   => $m->sender_name,
                 'content'       => $m->content,
                 'direction'     => $m->direction,
                 'type'          => $m->type,

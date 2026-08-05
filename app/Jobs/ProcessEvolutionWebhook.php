@@ -94,18 +94,24 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
         $remoteJid = $key['remoteJid'] ?? '';
         $chatLid   = $messageData['chatLid'] ?? ($key['chatLid'] ?? null);
+        $isGroup   = str_ends_with($remoteJid, '@g.us');
 
-        // Se remoteJid for @lid (identificador de privacidade do WhatsApp),
-        // usa o chatLid como identificador estável. Caso contrário extrai o número.
-        if (str_ends_with($remoteJid, '@lid')) {
-            // Usa chatLid se disponível, senão usa o próprio @lid como fallback
+        // Grupo: mantem o remoteJid completo como wa_id (id do grupo). Individual:
+        // extrai o numero limpo. @lid usa chatLid como identificador estavel.
+        if ($isGroup) {
+            $phone = $remoteJid; // ex: 120363xxxxxxx@g.us
+        } elseif (str_ends_with($remoteJid, '@lid')) {
             $phone = $chatLid ?? $remoteJid;
         } else {
-            // Extrai número limpo do JID (ex: 5511999999999@s.whatsapp.net → 5511999999999)
             $phone = preg_replace('/@.*/', '', $remoteJid);
         }
 
         if (empty($phone)) return;
+
+        // Em grupo, `key.participant` traz o wa_id de QUEM falou dentro do grupo
+        // (fica separado do chat, que representa o grupo em si).
+        $participantJid = $isGroup ? ($key['participant'] ?? null) : null;
+        $senderWaId     = $participantJid ? preg_replace('/@.*/', '', $participantJid) : null;
 
         // Extrair conteúdo da mensagem cobrindo todos os tipos do Baileys.
         // Regra Fase 0: histórico nunca pode persistir vazio. Mídia sem legenda
@@ -137,18 +143,41 @@ class ProcessEvolutionWebhook implements ShouldQueue
             return;
         }
 
-        // 2. Localizar ou criar conversa — updateOrCreate evita duplicate key em concorrência
-        $chat = WhatsappChat::updateOrCreate(
-            ['tenant_id' => $tenantId, 'wa_id' => $phone],
-            [
-                'contact_name'   => $senderName,
-                'contact_phone'  => $phone,
-                'status'         => 'open',
-                'opt_in_at'      => now(),
+        // 2. Localizar ou criar conversa — updateOrCreate evita duplicate key em concorrência.
+        // Em grupo, contact_name = "Grupo" ate ganharmos metadata; nao sobrescreve com pushName
+        // do participante (senao o titulo do chat vira o nome de quem falou por ultimo).
+        if ($isGroup) {
+            $chat = WhatsappChat::firstOrCreate(
+                ['tenant_id' => $tenantId, 'wa_id' => $phone],
+                [
+                    'contact_name'    => 'Grupo WhatsApp',
+                    'contact_phone'   => $phone,
+                    'is_group'        => true,
+                    'status'          => 'open',
+                    'opt_in_at'       => now(),
+                    'last_message_at' => now(),
+                    'last_inbound_at' => now(),
+                ]
+            );
+            // Atualiza so os timestamps — nao sobrescreve nome do grupo.
+            $chat->forceFill([
                 'last_message_at' => now(),
                 'last_inbound_at' => now(),
-            ]
-        );
+                'is_group'        => true,
+            ])->save();
+        } else {
+            $chat = WhatsappChat::updateOrCreate(
+                ['tenant_id' => $tenantId, 'wa_id' => $phone],
+                [
+                    'contact_name'    => $senderName,
+                    'contact_phone'   => $phone,
+                    'status'          => 'open',
+                    'opt_in_at'       => now(),
+                    'last_message_at' => now(),
+                    'last_inbound_at' => now(),
+                ]
+            );
+        }
 
         // 3. Verificar palavras de opt-out (STOP compliance) — só vale para texto real
         $normalized   = $userText !== null ? mb_strtolower(trim($userText)) : '';
@@ -185,6 +214,8 @@ class ProcessEvolutionWebhook implements ShouldQueue
         WhatsappMessage::create([
             'tenant_id'     => $tenantId,
             'chat_id'       => $chat->id,
+            'sender_wa_id'  => $senderWaId,
+            'sender_name'   => $isGroup ? $senderName : null,
             'message_id'    => $messageId,
             'content'       => $content,
             'direction'     => 'inbound',
@@ -256,7 +287,8 @@ class ProcessEvolutionWebhook implements ShouldQueue
         //    Áudio segue para STT no próprio job da IA. Mídia sem texto e tipos
         //    não suportados ficam só no histórico (sem disparar IA).
         $config = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
-        $isBotAllowed = $chat->is_bot_active && is_null($chat->assigned_to);
+        // Bot nao responde em grupo — evita floodar conversa coletiva.
+        $isBotAllowed = $chat->is_bot_active && is_null($chat->assigned_to) && !$isGroup;
         $shouldFireAi = !$keywordFired
             && $config?->ai_enabled
             && $isBotAllowed

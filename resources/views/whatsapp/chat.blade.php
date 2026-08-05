@@ -826,12 +826,21 @@
                      data-waiting="{{ $isWaiting ? 'true' : 'false' }}">
 
                     <div class="avatar" style="background: {{ $avatarColor }};">
-                        {{ strtoupper(substr($chat->contact_name ?? '?', 0, 1)) }}
+                        @if($chat->is_group)
+                            <i class="fas fa-users" style="color:#fff; font-size:0.9rem;"></i>
+                        @else
+                            {{ strtoupper(substr($chat->contact_name ?? '?', 0, 1)) }}
+                        @endif
                         <span class="status-dot {{ $statusClass }}"></span>
                     </div>
                     <div class="contact-info">
                         <div class="contact-top">
-                            <span class="contact-name">{{ $chat->contact_name ?? 'Sem Nome' }}</span>
+                            <span class="contact-name">
+                                @if($chat->is_group)
+                                    <i class="fas fa-users" style="color:#64748b; font-size:0.7rem; margin-right:3px;" title="Grupo"></i>
+                                @endif
+                                {{ $chat->contact_name ?? 'Sem Nome' }}
+                            </span>
                             <span class="contact-time">{{ $lastTime }}</span>
                         </div>
                         <div class="contact-bottom">
@@ -1487,6 +1496,15 @@
                 '`': '&#96;'
             }[c]));
         }
+
+        // Cor deterministica por sender no grupo — hash simples do wa_id/nome.
+        function senderColorFor(key) {
+            const palette = ['#059669','#0ea5e9','#8b5cf6','#f43f5e','#f59e0b','#14b8a6','#ec4899','#4f46e5','#84cc16','#f97316'];
+            const s = String(key ?? '');
+            let h = 0;
+            for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+            return palette[h % palette.length];
+        }
         let currentChatId = {{ count($chats) > 0 ? $chats[0]->id : 'null' }};
         const csrfToken = '{{ csrf_token() }}';
         let cannedResponses = [];
@@ -1917,10 +1935,16 @@
 
                 const body = renderBubbleBody(msg);
 
+                // Em grupo, mostra "Nome (99999-9999)" acima do texto pra distinguir
+                // quem falou. Cor deterministica por sender_wa_id pra facilitar leitura.
+                const senderHeader = (!isOut && msg.sender_name)
+                    ? `<div class="bubble-sender" style="font-size:.72rem;font-weight:700;color:${senderColorFor(msg.sender_wa_id || msg.sender_name)};margin-bottom:2px;">${escapeHtml(msg.sender_name)}</div>`
+                    : '';
+
                 html += `
                     <div class="message-row ${isOut ? 'message-out' : 'message-in'}${extraClass}">
                         <div class="bubble ${isOut ? 'out' : 'in'}">
-                            ${body}
+                            ${senderHeader}${body}
                             <div class="meta">
                                 ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                 ${isOut ? '<i class="fas fa-check-double"></i>' : ''}
