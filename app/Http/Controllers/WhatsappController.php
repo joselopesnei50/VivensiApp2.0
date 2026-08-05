@@ -21,6 +21,7 @@ use App\Models\KanbanColumn;
 use App\Models\WhatsappForm;
 use App\Services\KanbanService;
 use App\Services\Messaging\AudioTranscriptionService;
+use App\Services\Messaging\ChatAssignmentRecorder;
 use App\Services\Messaging\ChatTransferService;
 use App\Services\Messaging\LeadQualificationService;
 use App\Services\Messaging\MetaCloudApiService;
@@ -236,6 +237,17 @@ class WhatsappController extends Controller
             'event'         => 'chat_assigned',
             'details'       => ['action' => 'take_over'],
         ]);
+
+        // Historico dedicado (P1 2026-08-05) — abre novo assignment aberto.
+        // Como so chegamos aqui quando o chat estava livre (whereNull no update),
+        // previous = null.
+        app(ChatAssignmentRecorder::class)->record(
+            $chat,
+            $user->id,
+            $user,
+            ChatAssignmentRecorder::ACTION_TAKE_OVER,
+            null
+        );
 
         return response()->json(['success' => true, 'chat' => $chat]);
     }

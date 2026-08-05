@@ -59,6 +59,15 @@ class ChatTransferService
                 ],
             ]);
 
+            // Historico dedicado (P1 2026-08-05).
+            app(ChatAssignmentRecorder::class)->record(
+                $chat,
+                $target->id,
+                $actor,
+                ChatAssignmentRecorder::ACTION_TRANSFER,
+                $previousAssigneeId
+            );
+
             Notification::create([
                 'tenant_id' => $chat->tenant_id,
                 'user_id'   => $target->id,
@@ -107,6 +116,15 @@ class ChatTransferService
                     'mode'         => $previousAssigneeId === $actor->id ? 'self_release' : 'override',
                 ],
             ]);
+
+            // Historico dedicado (P1 2026-08-05) — release so fecha o aberto.
+            app(ChatAssignmentRecorder::class)->record(
+                $chat,
+                null,
+                $actor,
+                ChatAssignmentRecorder::ACTION_RELEASE,
+                $previousAssigneeId
+            );
         });
 
         return $chat->fresh();
@@ -147,7 +165,11 @@ class ChatTransferService
 
     private function ensureSameTenant(WhatsappChat $chat, User $a, User $b): void
     {
-        if ($chat->tenant_id !== $a->tenant_id || $chat->tenant_id !== $b->tenant_id) {
+        // Cast int: em SQLite/MySQL tenant_id pode voltar como string ou int
+        // dependendo do driver — comparação strict falharia por tipo, não
+        // por valor real. A intenção é comparar o ID numerico.
+        $chatT = (int) $chat->tenant_id;
+        if ($chatT !== (int) $a->tenant_id || $chatT !== (int) $b->tenant_id) {
             throw new RuntimeException('Operação cross-tenant negada.');
         }
     }
