@@ -46,6 +46,7 @@ class User extends Authenticatable
         'default_project_id',
         'agent_availability',
         'availability_changed_at',
+        'last_auto_assigned_at',
     ];
 
     /** Estados aceitos em agent_availability (P2 WhatsApp 2026-08-05). */
@@ -136,6 +137,7 @@ class User extends Authenticatable
         'onboarding_steps'           => 'array',
         'welcome_dismissed_at'       => 'datetime',
         'availability_changed_at'    => 'datetime',
+        'last_auto_assigned_at'      => 'datetime',
     ];
 
     public function tenant()

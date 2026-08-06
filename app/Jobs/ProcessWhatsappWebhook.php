@@ -120,6 +120,15 @@ class ProcessWhatsappWebhook implements ShouldQueue
                 ]
             );
 
+            // P3 (2026-08-05) — auto-assign round-robin em chat NOVO individual.
+            // Meta Cloud API nao envia mensagens de grupo (feature limitada), entao
+            // nao precisa checar is_group aqui.
+            if ($chat->wasRecentlyCreated && $chat->assigned_to === null
+                && $config->auto_assign_mode === \App\Services\Messaging\ChatAutoAssignRouter::MODE_ROUND_ROBIN) {
+                app(\App\Services\Messaging\ChatAutoAssignRouter::class)->assign($chat);
+                $chat->refresh();
+            }
+
             // 2. Salvar Mensagem
             WhatsappMessage::create([
                 'chat_id' => $chat->id,

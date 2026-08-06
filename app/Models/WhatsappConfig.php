@@ -41,6 +41,7 @@ class WhatsappConfig extends Model
         'ai_provider',
         'is_active',
         'ai_enabled',
+        'auto_assign_mode',
         'outbound_enabled',
         'require_opt_in',
         'max_outbound_per_minute',

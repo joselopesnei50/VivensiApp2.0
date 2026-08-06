@@ -30,7 +30,7 @@ class ChatAssignmentRecorder
      *
      * @param  WhatsappChat $chat            chat afetado
      * @param  int|null     $newAssigneeId   novo dono (null = release)
-     * @param  User         $actor           quem executou a acao
+     * @param  User|null    $actor           quem executou (null = sistema/auto-assign P3)
      * @param  string       $action          take_over | transfer | release
      * @param  int|null     $previousAssigneeId  dono anterior (evita leitura extra)
      * @return WhatsappChatAssignment|null  novo assignment aberto, ou null em release
@@ -38,7 +38,7 @@ class ChatAssignmentRecorder
     public function record(
         WhatsappChat $chat,
         ?int $newAssigneeId,
-        User $actor,
+        ?User $actor,
         string $action,
         ?int $previousAssigneeId = null
     ): ?WhatsappChatAssignment {
@@ -68,7 +68,7 @@ class ChatAssignmentRecorder
                 'chat_id'             => $chat->id,
                 'from_user_id'        => $previousAssigneeId,
                 'to_user_id'          => $newAssigneeId,
-                'assigned_by_user_id' => $actor->id,
+                'assigned_by_user_id' => $actor?->id, // null = sistema (P3 auto-assign)
                 'action'              => $action,
                 'started_at'          => $now,
             ]);

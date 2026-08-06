@@ -177,6 +177,15 @@ class ProcessEvolutionWebhook implements ShouldQueue
                     'last_inbound_at' => now(),
                 ]
             );
+
+            // P3 (2026-08-05) — auto-assign round-robin em chat NOVO individual.
+            if ($chat->wasRecentlyCreated && $chat->assigned_to === null) {
+                $cfg = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
+                if ($cfg && $cfg->auto_assign_mode === \App\Services\Messaging\ChatAutoAssignRouter::MODE_ROUND_ROBIN) {
+                    app(\App\Services\Messaging\ChatAutoAssignRouter::class)->assign($chat);
+                    $chat->refresh();
+                }
+            }
         }
 
         // 3. Verificar palavras de opt-out (STOP compliance) — só vale para texto real
