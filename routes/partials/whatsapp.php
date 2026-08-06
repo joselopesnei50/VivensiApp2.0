@@ -39,6 +39,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     // Disponibilidade do agente (P2 2026-08-05) — toggle available|away|offline.
     Route::post(  '/me/agent-availability',       [App\Http\Controllers\AgentAvailabilityController::class, 'update'])->name('me.agent-availability')->middleware('throttle:30,1');
 
+    // Dashboard de produtividade do chat (2026-08-05) — le whatsapp_chat_assignments.
+    Route::get(   '/whatsapp/dashboard',          [App\Http\Controllers\WhatsappDashboardController::class, 'index'])->name('whatsapp.dashboard')->middleware('can:access-manager');
+
     // Qualificação de lead via IA (Fase 4 — item 2.3) — chama LLM, custo de tokens.
     Route::post('/whatsapp/chat/{id}/qualify-with-ai', [App\Http\Controllers\WhatsappController::class, 'qualifyChatWithAi'])
         ->name('whatsapp.chat.qualify_with_ai')->middleware('throttle:20,1');
