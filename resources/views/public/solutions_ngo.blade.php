@@ -104,6 +104,72 @@
         .hero-mini span { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
         @media (max-width: 768px) { .hero-mini-grid { grid-template-columns: 1fr; } }
 
+        /* ── Destaque Bruce IA (identidade #0A0A0B + #FF7A1A) ────────────── */
+        .bruce-highlight { padding: 60px 0; background: #ffffff; }
+        .bruce-card { display:flex; align-items:center; gap:32px; background:#0A0A0B; border:1px solid rgba(255,122,26,.22); border-radius:20px; padding:40px 44px; }
+        .bruce-card-icon { flex-shrink:0; width:120px; height:120px; border-radius:24px; background:#0f0f1e; border:1px solid rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; }
+        .bruce-card-icon img { width:90px; height:90px; display:block; }
+        .bruce-card-body { flex:1; min-width:0; }
+        .bruce-tag { display:inline-flex; align-items:center; background:rgba(255,122,26,.14); border:1px solid rgba(255,122,26,.35); color:#FF7A1A; font-size:.68rem; font-weight:800; padding:5px 12px; border-radius:100px; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:14px; }
+        .bruce-h { color:#fff; font-size:clamp(1.4rem,2.6vw,1.9rem); font-weight:800; line-height:1.2; letter-spacing:-.5px; margin:0 0 10px; }
+        .bruce-h em { font-style:normal; color:#FF7A1A; }
+        .bruce-p { color:rgba(255,255,255,.78); font-size:.95rem; line-height:1.65; margin:0 0 18px; max-width:640px; }
+        .bruce-p strong { color:#fff; }
+        .bruce-ulist { list-style:none; padding:0; margin:0 0 22px; display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; }
+        .bruce-ulist li { color:rgba(255,255,255,.82); font-size:.85rem; display:flex; align-items:flex-start; gap:8px; line-height:1.5; }
+        .bruce-ulist li i { color:#FF7A1A; margin-top:3px; font-size:.78rem; }
+        .bruce-ulist li strong { color:#fff; font-weight:700; }
+        .bruce-ctas { display:flex; gap:12px; flex-wrap:wrap; }
+        .bruce-cta-main { display:inline-flex; align-items:center; gap:8px; background:#FF7A1A; color:#fff; font-size:.9rem; font-weight:800; padding:12px 22px; border-radius:10px; transition:background .15s; }
+        .bruce-cta-main:hover { background:#ea580c; color:#fff; }
+        .bruce-cta-out { display:inline-flex; align-items:center; gap:8px; color:rgba(255,255,255,.75); font-size:.85rem; font-weight:600; padding:12px 18px; border-radius:10px; border:1px solid rgba(255,255,255,.14); transition:color .15s,background .15s; }
+        .bruce-cta-out:hover { color:#fff; background:rgba(255,255,255,.06); }
+        @media (max-width:860px) {
+            .bruce-card { flex-direction:column; align-items:flex-start; padding:32px 24px; gap:20px; }
+            .bruce-card-icon { width:80px; height:80px; border-radius:18px; }
+            .bruce-card-icon img { width:64px; height:64px; }
+            .bruce-ulist { grid-template-columns:1fr; }
+        }
+
+        /* ── Modulos NGO (6 blocos tematicos + extras) ─────────────────────── */
+        .ngo-modules { padding:90px 0; background:linear-gradient(180deg,#0a0e1a 0%,#131830 100%); }
+        .mkt-head { max-width:820px; margin:0 auto 44px; text-align:center; }
+        .mkt-eyebrow { display:inline-block; font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:1.4px; color:#FF7A1A; background:rgba(255,122,26,.12); border:1px solid rgba(255,122,26,.28); padding:6px 14px; border-radius:100px; margin-bottom:16px; }
+        .mkt-title { font-size:clamp(1.7rem,3.2vw,2.4rem); font-weight:800; color:#fff; line-height:1.2; letter-spacing:-.8px; margin:0 0 12px; }
+        .mkt-title em { font-style:normal; color:#FF7A1A; }
+        .mkt-sub { font-size:1rem; color:rgba(255,255,255,.72); line-height:1.65; margin:0; }
+
+        .ngo-blocks { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; margin-bottom:32px; }
+        @media (max-width:820px) { .ngo-blocks { grid-template-columns:1fr; } }
+
+        .ngo-block { position:relative; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:26px 24px; transition:border-color .15s,transform .15s; }
+        .ngo-block:hover { border-color:rgba(255,122,26,.35); transform:translateY(-2px); }
+        .ngo-block-hot { border-color:rgba(255,122,26,.5); background:rgba(255,122,26,.06); }
+        .ngo-hot-tag { position:absolute; top:-10px; right:16px; background:#FF7A1A; color:#fff; font-size:.6rem; font-weight:800; padding:3px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:1px; }
+        .ngo-block-hd { display:flex; align-items:flex-start; gap:14px; margin-bottom:14px; }
+        .ngo-block-ico { flex-shrink:0; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
+        .ngo-block-hd h3 { color:#fff; font-size:1.02rem; font-weight:800; line-height:1.3; margin:0 0 4px; }
+        .ngo-block-hd p { color:rgba(255,255,255,.72); font-size:.82rem; line-height:1.55; margin:0; }
+        .ngo-block-list { list-style:none; padding:0; margin:0; display:grid; grid-template-columns:1fr 1fr; gap:6px 14px; }
+        @media (max-width:520px) { .ngo-block-list { grid-template-columns:1fr; } }
+        .ngo-block-list li { color:rgba(255,255,255,.82); font-size:.8rem; display:flex; align-items:flex-start; gap:6px; line-height:1.5; }
+        .ngo-block-list li i { color:#22c55e; margin-top:3px; font-size:.7rem; }
+        .ngo-block-list li strong { color:#fff; font-weight:700; }
+
+        .ngo-extras { background:rgba(255,255,255,.02); border:1px dashed rgba(255,255,255,.12); border-radius:14px; padding:22px 24px; margin-bottom:24px; }
+        .ngo-extras h3 { color:rgba(255,255,255,.82); font-size:.85rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin:0 0 14px; }
+        .ngo-extras-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px 20px; }
+        @media (max-width:820px) { .ngo-extras-grid { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:520px) { .ngo-extras-grid { grid-template-columns:1fr; } }
+        .ngo-extras-grid div { color:rgba(255,255,255,.75); font-size:.82rem; display:flex; align-items:center; gap:8px; }
+        .ngo-extras-grid i { color:#FF7A1A; font-size:.85rem; width:16px; }
+
+        .mkt-cta-box { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:20px 24px; }
+        .mkt-cta-box strong { display:block; color:#fff; font-size:1.02rem; font-weight:800; margin-bottom:4px; }
+        .mkt-cta-box span { color:rgba(255,255,255,.7); font-size:.85rem; }
+        .mkt-cta-box .btn-primary { background:#FF7A1A; border-color:#FF7A1A; color:#fff; }
+        .mkt-cta-box .btn-primary:hover { background:#ea580c; }
+
         .section { padding: 90px 0; }
         .section-soft { background: var(--bg-soft); }
         .section-eyebrow { font-size: 0.72rem; font-weight: 800; color: var(--brand-dark); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
@@ -204,7 +270,7 @@
             <a href="#bruce">Bruce IA</a>
             <a href="#conformidade">Conformidade</a>
             <a href="#footer">Base legal</a>
-            <a href="{{ route('register') }}" class="nav-cta">Entrar na lista de espera</a>
+            <a href="{{ route('register') }}" class="nav-cta">Criar conta</a>
         </div>
     </div>
 </nav>
@@ -212,24 +278,24 @@
 <section class="hero">
     <div class="container" style="text-align: center;">
         <div class="hero-eyebrow"><i class="fas fa-arrow-right"></i> Vivensi Terceiro Setor</div>
-        <h1 class="hero-title">Gestão completa para sua ONG, em <span class="mark">um só lugar</span>.</h1>
-        <p class="hero-sub">A plataforma integrada de gestão para o terceiro setor: doadores, voluntários, projetos, prestação de contas e captação de editais — com transparência LGPD e Bruce IA do seu lado.</p>
+        <h1 class="hero-title">O sistema que sua ONG precisa — com <span class="mark">IA aplicada ao terceiro setor</span>.</h1>
+        <p class="hero-sub">Doadores, editais, beneficiários, prestação de contas, WhatsApp, marketing e conformidade CEBAS/MROSC/SUAS em uma só plataforma. Com Bruce IA treinado pra falar a língua da sua causa — não jargão de startup.</p>
         <div class="hero-ctas">
-            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
-            <a href="#fluxo" class="btn-ghost">Explorar fluxo de trabalho</a>
+            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Criar minha conta</a>
+            <a href="#modulos" class="btn-ghost"><i class="fas fa-th-large"></i> Ver todos os módulos</a>
         </div>
         <div class="hero-mini-grid">
             <div class="hero-mini">
+                <strong>Radar de Editais</strong>
+                <span>Bruce vasculha diários oficiais e chamamentos MROSC. Você recebe só o que combina com sua ONG.</span>
+            </div>
+            <div class="hero-mini">
+                <strong>Conformidade Contínua</strong>
+                <span>CEBAS · MROSC · SUAS calculados em tempo real. Alerta antes de vencer, não depois.</span>
+            </div>
+            <div class="hero-mini">
                 <strong>Portal de Doadores</strong>
-                <span>Recibo, histórico, informe IR e transparência em URL própria da ONG.</span>
-            </div>
-            <div class="hero-mini">
-                <strong>Bruce IA</strong>
-                <span>Análise contextual de projetos, propostas para editais e estratégia de marketing.</span>
-            </div>
-            <div class="hero-mini">
-                <strong>Prestação de Contas</strong>
-                <span>DRE, conciliação bancária e portal público de transparência LGPD.</span>
+                <span>Recibo automático, informe IR e transparência LGPD em URL própria da ONG.</span>
             </div>
         </div>
     </div>
@@ -269,93 +335,182 @@
     </div>
 </section>
 
-<section class="section" id="gratuito">
+{{-- Destaque Bruce IA para Terceiro Setor — identidade visual do Bruce contextualizada. --}}
+<section class="bruce-highlight" id="ia">
     <div class="container">
-        <div class="access-grid">
-            <div>
-                <div class="section-eyebrow">Acesso gratuito</div>
-                <h2 class="section-title">Feito para a rotina da sua ONG. Sem custar nada.</h2>
-                <p style="font-size: 1rem; color: var(--muted); margin-bottom: 18px;">A Vivensi foi desenhada para as ONGs brasileiras reais — com foco em fluxo, documentos e desafios do dia a dia. Acesso 100% gratuito durante o programa de lançamento.</p>
-                <ul class="access-list" style="color: var(--ink);">
-                    <li><i class="fas fa-check"></i><span>Bruce IA integrado ao painel</span></li>
-                    <li><i class="fas fa-check"></i><span>Atendimentos ilimitados</span></li>
-                    <li><i class="fas fa-check"></i><span>Rede de serviços integrada</span></li>
-                    <li><i class="fas fa-check"></i><span>Escola Vivensi com certificado</span></li>
-                    <li><i class="fas fa-check"></i><span>Documentos automáticos</span></li>
-                    <li><i class="fas fa-check"></i><span>Sem cartão de crédito</span></li>
+        <div class="bruce-card">
+            <div class="bruce-card-icon">
+                <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA" width="88" height="88">
+            </div>
+            <div class="bruce-card-body">
+                <span class="bruce-tag">Bruce IA · treinado para o terceiro setor</span>
+                <h2 class="bruce-h">Uma IA que fala <em>doador, edital e beneficiário</em>. Não startup.</h2>
+                <p class="bruce-p">Bruce lê seus projetos, transações, cadastros de doadores e chamamentos públicos — e devolve <strong>decisão prática</strong>, não relatório com 40 gráficos. Sem addon, sem mensalidade extra de IA. Dentro do plano.</p>
+                <ul class="bruce-ulist">
+                    <li><i class="fas fa-check"></i> <strong>Radar de Editais</strong> — Bruce vasculha diários oficiais e alerta o que combina com sua causa</li>
+                    <li><i class="fas fa-check"></i> <strong>Gera propostas para editais</strong> — puxa dados reais dos seus projetos e escreve a submissão</li>
+                    <li><i class="fas fa-check"></i> <strong>Smart Analysis</strong> — lê fluxo de caixa em linguagem de ONG (custeio, contrapartida, patrocínio)</li>
+                    <li><i class="fas fa-check"></i> <strong>Sala de Estratégia</strong> — 5 agentes debatem e entregam UMA ação prioritária</li>
+                    <li><i class="fas fa-check"></i> <strong>Marketing IA</strong> — post pra rede social, calendário editorial e e-mail pra doadores</li>
+                    <li><i class="fas fa-check"></i> <strong>Qualifica lead no WhatsApp</strong> — IA lê a conversa e classifica se é doador em potencial</li>
                 </ul>
-                <div style="margin-top: 32px;">
-                    <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Começar agora</a>
+                <div class="bruce-ctas">
+                    <a href="{{ route('register') }}" class="bruce-cta-main"><i class="fas fa-arrow-right"></i> Ativar o Bruce na minha ONG</a>
+                    <a href="#modulos" class="bruce-cta-out">Ver todos os módulos <i class="fas fa-chevron-down"></i></a>
                 </div>
-            </div>
-            @php
-                $featuredPlan = ($plans ?? collect())->where('interval', 'monthly')->first() ?? ($plans ?? collect())->first();
-            @endphp
-            @if($featuredPlan)
-                <div class="access-form-card">
-                    <h3>{{ $featuredPlan->name }} <small>{{ $featuredPlan->interval === 'yearly' ? 'ANUAL' : 'MENSAL' }}</small></h3>
-                    <div class="price">R$ <strong>{{ rtrim(rtrim(number_format((float) $featuredPlan->price, 2, ',', '.'), '0'), ',') }}</strong><small>/{{ $featuredPlan->interval === 'yearly' ? 'ano' : 'mês' }}</small></div>
-                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">{{ $featuredPlan->description ?? 'Acesso completo à plataforma — Bruce IA, gestão de doadores, prestação de contas.' }}</p>
-                    <ul>
-                        <li><i class="fas fa-check"></i> Bruce IA incluso</li>
-                        <li><i class="fas fa-check"></i> Doadores e relatórios</li>
-                        <li><i class="fas fa-check"></i> Conforme LGPD e MROSC</li>
-                        <li><i class="fas fa-check"></i> Atualizações incluídas</li>
-                    </ul>
-                    <button type="button" class="btn-fill" onclick="window.location='{{ route('register', ['plan_id' => $featuredPlan->id]) }}'">Assinar agora</button>
-                </div>
-            @else
-                {{-- Fallback: nenhum plano ativo cadastrado — captura interesse via lista de espera --}}
-                <div class="access-form-card">
-                    <h3>Plano Lançamento <small>GRATUITO</small></h3>
-                    <div class="price">R$ <strong>0</strong><small>/mês</small></div>
-                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">Para sua ONG aderir ao programa de lançamento. Sem letras miúdas.</p>
-                    <ul>
-                        <li><i class="fas fa-check"></i> Bruce IA incluso</li>
-                        <li><i class="fas fa-check"></i> Doadores e relatórios</li>
-                        <li><i class="fas fa-check"></i> Conforme LGPD e MROSC</li>
-                        <li><i class="fas fa-check"></i> Atualizações incluídas</li>
-                    </ul>
-                    <button type="button" class="btn-fill" onclick="window.location='{{ route('register') }}'">Entrar na lista</button>
-                </div>
-            @endif
-        </div>
-    </div>
-</section>
-
-<section class="dark" id="bruce">
-    <div class="container">
-        <div class="section-eyebrow">Bruce IA</div>
-        <h2 class="section-title" style="max-width: 760px;">Bruce IA <span class="mark">não substitui</span> a sua equipe. Apoia decisões com mais organização e contexto.</h2>
-        <p class="section-sub" style="max-width: 720px;">Treinado com fluxos do terceiro setor, Bruce auxilia no cadastro de projetos, organização das informações dos doadores e geração de propostas para editais — mantendo a sua ONG no centro da decisão.</p>
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-card-icon"><i class="fas fa-life-ring"></i></div>
-                <h4>Apoio técnico</h4>
-                <p>Ajuda a estruturar relatos e organizar informações de projetos com base em fluxos do terceiro setor.</p>
-            </div>
-            <div class="info-card">
-                <div class="info-card-icon"><i class="fas fa-clock"></i></div>
-                <h4>Menos retrabalho</h4>
-                <p>Auxilia na geração de documentos, propostas para editais e resumos de projeto — reduz tempo gasto em formatação manual.</p>
-            </div>
-            <div class="info-card">
-                <div class="info-card-icon"><i class="fas fa-shield-halved"></i></div>
-                <h4>IA responsável</h4>
-                <p>O gestor mantém controle total sobre decisões. A IA sugere, a equipe decide e assina.</p>
             </div>
         </div>
     </div>
 </section>
 
-<section class="dark" style="padding-top: 0;">
+{{-- 6 blocos tematicos com modulos reais do menu NGO — foco em conversao. --}}
+<section class="ngo-modules" id="modulos">
     <div class="container">
-        <div class="free-block">
-            <span class="free-pill"><i class="fas fa-gift"></i> Acesso gratuito</span>
+        <div class="mkt-head">
+            <span class="mkt-eyebrow">Módulos exclusivos do terceiro setor</span>
+            <h2 class="mkt-title">Tudo que sua ONG faz — em um sistema <em>desenhado pra ONG</em>.</h2>
+            <p class="mkt-sub">Você não precisa juntar 6 ferramentas (planilha, MailChimp, plataforma de doação, ChatGPT, Trello, sistema de conformidade). Vivensi entrega o pacote inteiro, integrado.</p>
+        </div>
+
+        <div class="ngo-blocks">
+            {{-- Bloco 1 · Captacao --}}
+            <article class="ngo-block">
+                <div class="ngo-block-hd">
+                    <div class="ngo-block-ico" style="background:rgba(239,68,68,.14);color:#ef4444;"><i class="fas fa-heart"></i></div>
+                    <div>
+                        <h3>Captação, Doadores &amp; Recibos</h3>
+                        <p>CRM de doadores, portal público, recibo automático, informe IR anual e rifas online. Sem intermediário engolindo taxa.</p>
+                    </div>
+                </div>
+                <ul class="ngo-block-list">
+                    <li><i class="fas fa-check"></i> CRM de Doadores</li>
+                    <li><i class="fas fa-check"></i> Portal de Recibos com link privado</li>
+                    <li><i class="fas fa-check"></i> Informe IR anual (PDF pronto)</li>
+                    <li><i class="fas fa-check"></i> CRM de Patrocínios</li>
+                    <li><i class="fas fa-check"></i> Rifas Online</li>
+                    <li><i class="fas fa-check"></i> Landing Pages de captação (builder)</li>
+                </ul>
+            </article>
+
+            {{-- Bloco 2 · Editais --}}
+            <article class="ngo-block ngo-block-hot">
+                <span class="ngo-hot-tag">Diferencial Vivensi</span>
+                <div class="ngo-block-hd">
+                    <div class="ngo-block-ico" style="background:rgba(255,122,26,.16);color:#FF7A1A;"><i class="fas fa-satellite-dish"></i></div>
+                    <div>
+                        <h3>Editais &amp; Convênios com IA</h3>
+                        <p>Bruce vasculha Querido Diário e chamamentos MROSC. Analisa relevância. Gera a proposta. Sua ONG só decide se submete.</p>
+                    </div>
+                </div>
+                <ul class="ngo-block-list">
+                    <li><i class="fas fa-check"></i> <strong>Radar automático</strong> (Querido Diário integrado)</li>
+                    <li><i class="fas fa-check"></i> Análise de relevância pelo Bruce IA</li>
+                    <li><i class="fas fa-check"></i> Gerador de proposta com dados reais do projeto</li>
+                    <li><i class="fas fa-check"></i> Workspace por edital (upload docs, prazos)</li>
+                    <li><i class="fas fa-check"></i> Alertas de vencimento</li>
+                    <li><i class="fas fa-check"></i> Histórico completo de submissões</li>
+                </ul>
+            </article>
+
+            {{-- Bloco 3 · Conformidade --}}
+            <article class="ngo-block ngo-block-hot">
+                <span class="ngo-hot-tag">Único no mercado</span>
+                <div class="ngo-block-hd">
+                    <div class="ngo-block-ico" style="background:rgba(16,185,129,.14);color:#10b981;"><i class="fas fa-shield-halved"></i></div>
+                    <div>
+                        <h3>Conformidade Contínua CEBAS/MROSC/SUAS</h3>
+                        <p>Motor que calcula seus índices em tempo real cruzando projetos, atendimentos e financeiro. Nunca mais chegar em auditoria despreparada.</p>
+                    </div>
+                </div>
+                <ul class="ngo-block-list">
+                    <li><i class="fas fa-check"></i> Dashboard de conformidade em tempo real</li>
+                    <li><i class="fas fa-check"></i> Eixos CEBAS · SUAS · MROSC calculados</li>
+                    <li><i class="fas fa-check"></i> Planos de ação rastreáveis</li>
+                    <li><i class="fas fa-check"></i> Ciclos anuais + snapshot para auditoria</li>
+                    <li><i class="fas fa-check"></i> Alertas de documento vencendo</li>
+                    <li><i class="fas fa-check"></i> Relatório PDF pronto pro conselho</li>
+                </ul>
+            </article>
+
+            {{-- Bloco 4 · Beneficiarios --}}
+            <article class="ngo-block">
+                <div class="ngo-block-hd">
+                    <div class="ngo-block-ico" style="background:rgba(139,92,246,.14);color:#8b5cf6;"><i class="fas fa-hand-holding-heart"></i></div>
+                    <div>
+                        <h3>Beneficiários &amp; Impacto Social</h3>
+                        <p>Cadastro com PII cifrado at-rest (LGPD nativo), lista de presença, indicadores sociais e relatório anual de impacto pronto pra apresentar.</p>
+                    </div>
+                </div>
+                <ul class="ngo-block-list">
+                    <li><i class="fas fa-check"></i> Cadastro LGPD-compliant (encryption at-rest)</li>
+                    <li><i class="fas fa-check"></i> Importação massiva via CSV</li>
+                    <li><i class="fas fa-check"></i> Lista de Presença por turma/atividade</li>
+                    <li><i class="fas fa-check"></i> Indicadores Sociais automáticos</li>
+                    <li><i class="fas fa-check"></i> Relatório Anual de Impacto</li>
+                    <li><i class="fas fa-check"></i> Fluxo self-service /eu/dados (art. 15/18 LGPD)</li>
+                </ul>
+            </article>
+
+            {{-- Bloco 5 · WhatsApp/Marketing --}}
+            <article class="ngo-block">
+                <div class="ngo-block-hd">
+                    <div class="ngo-block-ico" style="background:rgba(34,197,94,.14);color:#22c55e;"><i class="fab fa-whatsapp"></i></div>
+                    <div>
+                        <h3>WhatsApp &amp; Marketing com IA</h3>
+                        <p>API oficial Meta + Bruce respondendo doadores 24/7 + calendário editorial + e-mail marketing + disparo em massa com opt-in. Tudo integrado.</p>
+                    </div>
+                </div>
+                <ul class="ngo-block-list">
+                    <li><i class="fas fa-check"></i> API Oficial Meta WhatsApp Cloud</li>
+                    <li><i class="fas fa-check"></i> Disparo em massa (texto, imagem, áudio) com anti-ban</li>
+                    <li><i class="fas fa-check"></i> Qualificação de lead via IA</li>
+                    <li><i class="fas fa-check"></i> Formulários conversacionais</li>
+                    <li><i class="fas fa-check"></i> E-mail marketing com Brevo integrado</li>
+                    <li><i class="fas fa-check"></i> Social AI Hub (posts + calendário editorial)</li>
+                </ul>
+            </article>
+
+            {{-- Bloco 6 · Financeiro/Transparencia --}}
+            <article class="ngo-block">
+                <div class="ngo-block-hd">
+                    <div class="ngo-block-ico" style="background:rgba(59,130,246,.14);color:#3b82f6;"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <div>
+                        <h3>Financeiro &amp; Prestação de Contas</h3>
+                        <p>Fluxo de caixa por projeto, DRE, conciliação bancária, orçamento anual e Portal de Transparência público — sem depender de contador terceirizado pra tudo.</p>
+                    </div>
+                </div>
+                <ul class="ngo-block-list">
+                    <li><i class="fas fa-check"></i> Fluxo de Caixa por projeto</li>
+                    <li><i class="fas fa-check"></i> DRE automático</li>
+                    <li><i class="fas fa-check"></i> Conciliação Bancária</li>
+                    <li><i class="fas fa-check"></i> Orçamento Anual</li>
+                    <li><i class="fas fa-check"></i> Importação de planilhas CSV</li>
+                    <li><i class="fas fa-check"></i> Portal Público de Transparência</li>
+                </ul>
+            </article>
+        </div>
+
+        {{-- Modulos complementares --}}
+        <div class="ngo-extras">
+            <h3>E ainda inclui:</h3>
+            <div class="ngo-extras-grid">
+                <div><i class="fas fa-project-diagram"></i> Gestão de Projetos + Kanban + Turmas</div>
+                <div><i class="fas fa-id-badge"></i> RH &amp; Voluntariado com certificados</div>
+                <div><i class="fas fa-building"></i> Patrimônio &amp; Almoxarifado</div>
+                <div><i class="fas fa-file-contract"></i> Contratos Digitais</div>
+                <div><i class="fas fa-eye"></i> Central de Auditoria</div>
+                <div><i class="fas fa-landmark"></i> Portal de Transparência</div>
+                <div><i class="fas fa-graduation-cap"></i> Vivensi Academy (LMS interno)</div>
+                <div><i class="fas fa-map-location-dot"></i> Inteligência Territorial</div>
+            </div>
+        </div>
+
+        <div class="mkt-cta-box">
             <div>
-                <h3>Tecnologia acessível para gestão social.</h3>
-                <p>A Vivensi oferece acesso gratuito porque acredita que ONGs brasileiras devem ter ferramentas modernas de gestão, documentação e apoio técnico — independente do porte do orçamento.</p>
+                <strong>Todos os módulos incluídos no seu plano.</strong>
+                <span>Sem addon de IA. Sem cobrança por doador cadastrado. Sem tarifa escondida.</span>
             </div>
+            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-rocket"></i> Começar agora</a>
         </div>
     </div>
 </section>
@@ -461,9 +616,9 @@
 
 <section class="final-cta">
     <div class="container">
-        <h2>Centralize a rotina de gestão da sua ONG em uma experiência simples.</h2>
-        <p>Cadastre sua organização, entre na lista de espera gratuita e receba acesso ao painel completo assim que sua conta for liberada.</p>
-        <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
+        <h2>Centralize a rotina da sua ONG em uma plataforma feita pra terceiro setor.</h2>
+        <p>Cadastre sua organização em minutos e comece a usar hoje mesmo — doadores, editais, WhatsApp, conformidade e Bruce IA já disponíveis desde a primeira sessão.</p>
+        <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Criar conta da ONG</a>
     </div>
 </section>
 
