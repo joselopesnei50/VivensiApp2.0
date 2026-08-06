@@ -104,6 +104,141 @@
         .hero-mini span { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
         @media (max-width: 768px) { .hero-mini-grid { grid-template-columns: 1fr; } }
 
+        /* ── Destaque Bruce IA (identidade #0A0A0B + #FF7A1A) ────────────── */
+        .bruce-highlight { padding: 60px 0; background: #ffffff; }
+        .bruce-card {
+            display: flex; align-items: center; gap: 32px;
+            background: #0A0A0B;
+            border: 1px solid rgba(255,122,26,.22);
+            border-radius: 20px;
+            padding: 40px 44px;
+        }
+        .bruce-card-icon {
+            flex-shrink: 0;
+            width: 120px; height: 120px;
+            border-radius: 24px;
+            background: #0f0f1e;
+            border: 1px solid rgba(255,255,255,.08);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .bruce-card-icon img { width: 90px; height: 90px; display: block; }
+        .bruce-card-body { flex: 1; min-width: 0; }
+        .bruce-tag {
+            display: inline-flex; align-items: center;
+            background: rgba(255,122,26,.14);
+            border: 1px solid rgba(255,122,26,.35);
+            color: #FF7A1A;
+            font-size: .68rem; font-weight: 800;
+            padding: 5px 12px; border-radius: 100px;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            margin-bottom: 14px;
+        }
+        .bruce-h {
+            color: #fff; font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+            font-weight: 800; line-height: 1.2; letter-spacing: -.5px;
+            margin: 0 0 10px;
+        }
+        .bruce-h em { font-style: normal; color: #FF7A1A; }
+        .bruce-p {
+            color: rgba(255,255,255,.78); font-size: .95rem;
+            line-height: 1.65; margin: 0 0 18px; max-width: 640px;
+        }
+        .bruce-ulist { list-style: none; padding: 0; margin: 0 0 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+        .bruce-ulist li { color: rgba(255,255,255,.82); font-size: .85rem; display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+        .bruce-ulist li i { color: #FF7A1A; margin-top: 3px; font-size: .78rem; }
+        .bruce-ulist li strong { color: #fff; font-weight: 700; }
+        .bruce-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+        .bruce-cta-main {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #FF7A1A; color: #fff;
+            font-size: .9rem; font-weight: 800;
+            padding: 12px 22px; border-radius: 10px;
+            transition: background .15s;
+        }
+        .bruce-cta-main:hover { background: #ea580c; color: #fff; }
+        .bruce-cta-out {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: rgba(255,255,255,.75); font-size: .85rem; font-weight: 600;
+            padding: 12px 18px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,.14);
+            transition: color .15s, background .15s;
+        }
+        .bruce-cta-out:hover { color: #fff; background: rgba(255,255,255,.06); }
+        @media (max-width: 860px) {
+            .bruce-card { flex-direction: column; align-items: flex-start; padding: 32px 24px; gap: 20px; }
+            .bruce-card-icon { width: 80px; height: 80px; border-radius: 18px; }
+            .bruce-card-icon img { width: 64px; height: 64px; }
+            .bruce-ulist { grid-template-columns: 1fr; }
+        }
+
+        /* ── Destaque Marketing (grid de 8 servicos, fundo escuro) ────────── */
+        .mkt-highlight {
+            padding: 90px 0;
+            background: linear-gradient(180deg, #0a0e1a 0%, #131830 100%);
+        }
+        .mkt-head { max-width: 780px; margin: 0 auto 44px; text-align: center; }
+        .mkt-eyebrow {
+            display: inline-block; font-size: .68rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1.4px;
+            color: #FF7A1A;
+            background: rgba(255,122,26,.12);
+            border: 1px solid rgba(255,122,26,.28);
+            padding: 6px 14px; border-radius: 100px; margin-bottom: 16px;
+        }
+        .mkt-title { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; color: #fff; line-height: 1.2; letter-spacing: -.8px; margin: 0 0 12px; }
+        .mkt-title em { font-style: normal; color: #FF7A1A; }
+        .mkt-sub { font-size: 1rem; color: rgba(255,255,255,.72); line-height: 1.65; margin: 0; }
+
+        .mkt-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+        @media (max-width: 1024px) { .mkt-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 540px)  { .mkt-grid { grid-template-columns: 1fr; } }
+
+        .mkt-card {
+            background: rgba(255,255,255,.03);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 14px; padding: 22px 20px;
+            transition: border-color .15s, transform .15s;
+            position: relative;
+        }
+        .mkt-card:hover { border-color: rgba(255,122,26,.4); transform: translateY(-2px); }
+        .mkt-card-hot { border-color: rgba(255,122,26,.5); background: rgba(255,122,26,.06); }
+        .mkt-hot-tag {
+            position: absolute; top: -10px; right: 14px;
+            background: #FF7A1A; color: #fff;
+            font-size: .58rem; font-weight: 800;
+            padding: 3px 10px; border-radius: 100px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .mkt-ico {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: rgba(255,255,255,.06);
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,.82); font-size: 1.05rem;
+            margin-bottom: 14px;
+        }
+        .mkt-ico-brand { background: rgba(255,122,26,.14); color: #FF7A1A; }
+        .mkt-ico-wa    { background: rgba(34,197,94,.14);  color: #22c55e; }
+        .mkt-card h4 {
+            color: #fff; font-size: .92rem; font-weight: 800;
+            line-height: 1.3; margin: 0 0 6px;
+        }
+        .mkt-card p {
+            color: rgba(255,255,255,.7); font-size: .8rem;
+            line-height: 1.55; margin: 0;
+        }
+
+        .mkt-cta-box {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 20px; flex-wrap: wrap;
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 14px; padding: 20px 24px;
+        }
+        .mkt-cta-box strong { display: block; color: #fff; font-size: 1.02rem; font-weight: 800; margin-bottom: 4px; }
+        .mkt-cta-box span   { color: rgba(255,255,255,.7); font-size: .85rem; }
+        .mkt-cta-box .btn-primary { background: #FF7A1A; border-color: #FF7A1A; color: #fff; }
+        .mkt-cta-box .btn-primary:hover { background: #ea580c; }
+
         .section { padding: 90px 0; }
         .section-soft { background: var(--bg-soft); }
         .section-eyebrow { font-size: 0.72rem; font-weight: 800; color: var(--brand-dark); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
@@ -266,6 +401,32 @@
     </div>
 </section>
 
+{{-- Destaque Bruce IA — chamada com identidade visual do Bruce (fundo escuro + accent laranja). --}}
+<section class="bruce-highlight" id="ia">
+    <div class="container">
+        <div class="bruce-card">
+            <div class="bruce-card-icon">
+                <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA" width="88" height="88">
+            </div>
+            <div class="bruce-card-body">
+                <span class="bruce-tag">Bruce IA · aplicada ao seu negócio</span>
+                <h2 class="bruce-h">Não é chatbot. É IA que <em>entende de negócio</em>.</h2>
+                <p class="bruce-p">O Bruce IA é o copiloto do seu painel: lê seus dados reais (clientes, vendas, WhatsApp, caixa), sugere a próxima ação e ainda escreve pra você. Sem custo extra, sem addon, dentro do plano.</p>
+                <ul class="bruce-ulist">
+                    <li><i class="fas fa-check"></i> <strong>Copywriting comercial</strong> — responde cliente no WhatsApp com o tom do seu negócio</li>
+                    <li><i class="fas fa-check"></i> <strong>Análise de dados</strong> — lê seu fluxo de caixa e diz onde tem dinheiro parado</li>
+                    <li><i class="fas fa-check"></i> <strong>Sala de Estratégia</strong> — 5 agentes debatem e entregam UMA decisão</li>
+                    <li><i class="fas fa-check"></i> <strong>Marketing pronto</strong> — post, calendário editorial e plano em minutos</li>
+                </ul>
+                <div class="bruce-ctas">
+                    <a href="{{ route('register') }}" class="bruce-cta-main"><i class="fas fa-arrow-right"></i> Ativar o Bruce no meu negócio</a>
+                    <a href="#marketing" class="bruce-cta-out">Ver o que o Bruce faz por você <i class="fas fa-chevron-down"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="section section-soft" id="fluxo">
     <div class="container">
         <div class="section-head-split">
@@ -364,6 +525,69 @@
                     <li><i class="fas fa-check"></i>Sem addon, sem mensalidade extra de IA</li>
                 </ul>
             </div>
+        </div>
+    </div>
+</section>
+
+{{-- Destaque Marketing — 8 serviços em grid escuro, foco em conversão. --}}
+<section class="mkt-highlight" id="marketing">
+    <div class="container">
+        <div class="mkt-head">
+            <span class="mkt-eyebrow">Marketing &amp; Atendimento com IA</span>
+            <h2 class="mkt-title">Do post que sai hoje ao WhatsApp que responde <em>sozinho</em>.</h2>
+            <p class="mkt-sub">Você não precisa contratar agência, social media, redator, plataforma de e-mail e disparo de WhatsApp separados. O Vivensi entrega tudo integrado — e o Bruce IA faz o trabalho pesado por você.</p>
+        </div>
+
+        <div class="mkt-grid">
+            <div class="mkt-card">
+                <div class="mkt-ico"><i class="fas fa-image"></i></div>
+                <h4>Criação de post para rede social</h4>
+                <p>Texto + imagem prontos em minutos. Você dá o tema, o Bruce escreve com o tom do seu negócio e sugere criativo.</p>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-ico"><i class="fas fa-calendar-alt"></i></div>
+                <h4>Calendário editorial</h4>
+                <p>Pauta mensal automática por segmento, datas comemorativas e sazonalidade. Vê o mês inteiro em um clique.</p>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-ico"><i class="fas fa-clock"></i></div>
+                <h4>Agendamento de post</h4>
+                <p>Programa Instagram, Facebook e outras redes direto do painel. Publica no horário que engaja mais.</p>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-ico"><i class="fas fa-bullseye"></i></div>
+                <h4>Plano de marketing</h4>
+                <p>Objetivos, canais, metas e cronograma organizados pelo Bruce. Sai do "e-mail pontual" pra estratégia.</p>
+            </div>
+            <div class="mkt-card mkt-card-hot">
+                <span class="mkt-hot-tag">Destaque</span>
+                <div class="mkt-ico mkt-ico-brand"><i class="fas fa-brain"></i></div>
+                <h4>Sala de Estratégia</h4>
+                <p>5 agentes de IA analisam seus números e entregam UMA ação prioritária. Direção, não relatório.</p>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-ico"><i class="fas fa-envelope-open-text"></i></div>
+                <h4>E-mail marketing</h4>
+                <p>Campanhas, templates, listas segmentadas e disparo via Brevo API — sem SMTP pra configurar.</p>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-ico mkt-ico-wa"><i class="fab fa-whatsapp"></i></div>
+                <h4>API Oficial Meta WhatsApp</h4>
+                <p>Cloud API homologada com Meta. Número Business verificado, templates aprovados, zero risco de ban.</p>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-ico"><i class="fas fa-plug"></i></div>
+                <h4>API nativa Vivensi</h4>
+                <p>Integre seu site, e-commerce ou app com o painel. Webhooks, tokens per-tenant, tudo documentado.</p>
+            </div>
+        </div>
+
+        <div class="mkt-cta-box">
+            <div>
+                <strong>Tudo isso incluído no seu plano.</strong>
+                <span>Sem addon, sem contrato de agência, sem tarifa por mensagem escondida.</span>
+            </div>
+            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-rocket"></i> Começar agora</a>
         </div>
     </div>
 </section>
