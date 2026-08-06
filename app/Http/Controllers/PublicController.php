@@ -10,6 +10,12 @@ class PublicController extends Controller
     public function welcome()
     {
         $plans = \App\Models\SubscriptionPlan::where('is_active', true)->get();
+
+        // Ancoragem de preco no hero — remove friccao "quanto custa" sem exigir
+        // registro. Pega o menor plano ativo; null se nao houver plano cadastrado.
+        $cheapestPlan = $plans->filter(fn ($p) => (float) $p->price > 0)
+                              ->sortBy('price')
+                              ->first();
         $posts = \App\Models\Post::where('is_published', 1)
                     ->where('published_at', '<=', now())
                     ->orderBy('published_at', 'desc')
@@ -36,7 +42,7 @@ class PublicController extends Controller
             'impact_label'  => \App\Models\SystemSetting::getValue('stat_impact_label',  'Crescendo a cada dia'),
         ];
 
-        return view('welcome', compact('plans', 'posts', 'videoUrl', 'testimonials', 'siteStats'));
+        return view('welcome', compact('plans', 'posts', 'videoUrl', 'testimonials', 'siteStats', 'cheapestPlan'));
     }
 
     // ...
