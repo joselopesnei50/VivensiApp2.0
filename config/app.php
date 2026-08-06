@@ -69,7 +69,10 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Vivensi opera 100% no Brasil (BR). Antes era UTC — deixava toda data
+    // exibida 3h atrasada e schedules dailyAt('09:00') rodavam as 6h no BR.
+    // Env override respeitada (testing usa UTC no phpunit.xml pra reprodutibilidade).
+    'timezone' => env('APP_TIMEZONE', 'America/Sao_Paulo'),
 
     /*
     |--------------------------------------------------------------------------
