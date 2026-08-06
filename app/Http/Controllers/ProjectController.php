@@ -650,6 +650,22 @@ class ProjectController extends Controller
         // landing associada" vs "Landing enviada sem campos personalizados").
         $origin = $lead ? 'landing' : 'manual';
 
+        // Diagnostico (2026-08-06) — ajuda a entender por que custom_fields
+        // pode aparecer vazio (bug de retro, custom_fields nao configurados,
+        // section errada, etc). Retornado sempre; front so exibe quando ha
+        // duvida (custom_fields vazio).
+        $debug = [
+            'person_landing_lead_id' => $person->landing_lead_id,
+            'lead_match'             => $leadSource,
+        ];
+        if ($lead) {
+            $extraKeys = is_array($extra ?? null) ? array_keys($extra) : [];
+            $customKeys = is_array($customFields) ? array_keys($customFields) : [];
+            $debug['lead_extra_top_keys'] = $extraKeys;
+            $debug['lead_custom_keys']    = $customKeys;
+            $debug['lead_created_at']     = $lead->created_at ?? null;
+        }
+
         return response()->json([
             'id'                => (int) $person->id,
             'name'              => $person->name,
@@ -666,6 +682,7 @@ class ProjectController extends Controller
             'custom_fields'     => $customFields,
             'origin'            => $origin,         // 'landing' | 'manual'
             'lead_match'        => $leadSource,     // 'fk' | 'phone_match' | null
+            'debug'             => $debug,
         ]);
     }
 

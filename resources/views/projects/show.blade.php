@@ -762,6 +762,27 @@
                     ? '<i class="fas fa-user-pen"></i> Cadastro manual — não veio de landing page.'
                     : '<i class="fas fa-info-circle"></i> Este inscrito veio de landing page, mas o formulário não tinha campos personalizados configurados.';
                 html += `<div style="margin-top:22px; padding:12px 14px; background:#f8fafc; border:1px dashed #e2e8f0; border-radius:10px; color:#64748b; font-size:.82rem;">${note}</div>`;
+
+                // Diagnostico visual (2026-08-06) — mostra o que esta gravado
+                // pro user diferenciar retro/bug/config.
+                if (d.debug) {
+                    const dbg = d.debug;
+                    let dbgHtml = '<div style="margin-top:10px; padding:10px 12px; background:#0f172a; color:#94a3b8; border-radius:8px; font-family:ui-monospace,monospace; font-size:.72rem; line-height:1.5;">';
+                    dbgHtml += '<div style="color:#f59e0b; font-weight:800; margin-bottom:4px;">🔍 Diagnóstico técnico</div>';
+                    dbgHtml += 'ProjectPerson.landing_lead_id: <span style="color:#fff;">' + (dbg.person_landing_lead_id ?? 'null (não vinculado ao lead)') + '</span><br>';
+                    dbgHtml += 'lead_match: <span style="color:#fff;">' + (dbg.lead_match ?? 'nenhum lead encontrado') + '</span><br>';
+                    if (dbg.lead_extra_top_keys) {
+                        dbgHtml += 'extra_data keys: <span style="color:#fff;">[' + dbg.lead_extra_top_keys.join(', ') + ']</span><br>';
+                    }
+                    if (dbg.lead_custom_keys) {
+                        dbgHtml += 'extra_data.custom keys: <span style="color:#fff;">[' + (dbg.lead_custom_keys.length ? dbg.lead_custom_keys.join(', ') : 'VAZIO') + ']</span><br>';
+                    }
+                    if (dbg.lead_created_at) {
+                        dbgHtml += 'lead criado em: <span style="color:#fff;">' + dbg.lead_created_at + '</span>';
+                    }
+                    dbgHtml += '</div>';
+                    html += dbgHtml;
+                }
             }
             html += '</div>';
             document.getElementById('pdmBody').innerHTML = html;
