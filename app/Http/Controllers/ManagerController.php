@@ -159,10 +159,31 @@ class ManagerController extends Controller
                 ->pluck('cnt', 'assigned_to');
         }
 
+        // WhatsApp insights (2026-08-05) — so pra roles em AGENT_ROLES.
+        // Contagem de atendimentos nos ultimos 7d via whatsapp_chat_assignments.
+        $waCounts = collect();
+        if ($userIds->isNotEmpty()) {
+            $agentRoles = \App\Services\Messaging\ChatTransferService::AGENT_ROLES;
+            $agentIds   = $employees->whereIn('role', $agentRoles)->pluck('id')->values();
+
+            if ($agentIds->isNotEmpty()) {
+                $waCounts = DB::table('whatsapp_chat_assignments')
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('to_user_id', $agentIds)
+                    ->where('started_at', '>=', now()->subDays(7))
+                    ->groupBy('to_user_id')
+                    ->selectRaw('to_user_id, COUNT(*) as cnt')
+                    ->pluck('cnt', 'to_user_id');
+            }
+        }
+
+        $agentRoles = \App\Services\Messaging\ChatTransferService::AGENT_ROLES;
         foreach ($employees as $e) {
             $e->tasks_open_count = (int) ($openCounts[$e->id] ?? 0);
             $e->tasks_overdue_count = (int) ($overdueCounts[$e->id] ?? 0);
             $e->tasks_due_soon_count = (int) ($dueSoonCounts[$e->id] ?? 0);
+            $e->is_wa_agent          = in_array($e->role, $agentRoles, true);
+            $e->wa_chats_7d          = (int) ($waCounts[$e->id] ?? 0);
         }
 
         return view('manager.team', compact('employees', 'projects'));

@@ -19,10 +19,16 @@
         <h2 class="fw-800 mb-0" style="font-size:1.6rem;color:#0f172a;line-height:1.2;">Capital Humano</h2>
         <p class="text-muted mb-0 mt-1" style="font-size:.85rem;">Gerencie colaboradores, papéis e performance da equipe.</p>
     </div>
-    <button class="btn btn-primary fw-bold rounded-3 d-flex align-items-center gap-2 flex-shrink-0"
-            data-bs-toggle="modal" data-bs-target="#addEmployeeModal" style="margin-top:4px;">
-        <i class="fas fa-user-plus"></i> Adicionar Colaborador
-    </button>
+    <div class="d-flex gap-2 flex-shrink-0" style="margin-top:4px;">
+        <a href="{{ route('whatsapp.dashboard') }}" class="btn btn-outline-secondary fw-bold rounded-3 d-flex align-items-center gap-2"
+           title="Dashboard de atendimento WhatsApp">
+            <i class="fab fa-whatsapp" style="color:#22c55e;"></i> Dashboard WhatsApp
+        </a>
+        <button class="btn btn-primary fw-bold rounded-3 d-flex align-items-center gap-2"
+                data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+            <i class="fas fa-user-plus"></i> Adicionar Colaborador
+        </button>
+    </div>
 </div>
 
 @if(session('success'))
@@ -120,6 +126,11 @@
         $bg         = $avatarColors[$colorIdx];
         $isActive   = $status === 'active';
         $isManager  = $role === 'manager';
+        $isWaAgent  = (bool) ($e->is_wa_agent ?? false);
+        $waCount    = (int) ($e->wa_chats_7d ?? 0);
+        $avail      = (string) ($e->agent_availability ?? 'available');
+        $availColor = ['available' => '#22c55e', 'away' => '#f59e0b', 'offline' => '#94a3b8'][$avail] ?? '#22c55e';
+        $availLabel = ['available' => 'Disponível', 'away' => 'Ausente', 'offline' => 'Offline'][$avail] ?? 'Disponível';
     @endphp
     <div class="col-xl-3 col-lg-4 col-md-6">
         <a href="{{ $basePath . '/manager/team/' . $e->id }}"
@@ -133,8 +144,13 @@
 
             {{-- Card top: avatar + name --}}
             <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="emp-avatar" style="background:{{ $bg }};">
+                <div class="emp-avatar" style="background:{{ $bg }}; position:relative;">
                     {{ strtoupper(substr($e->name, 0, 1)) }}
+                    @if($isWaAgent)
+                        {{-- Bolinha de agent_availability (P2 WhatsApp) — so pra role em AGENT_ROLES --}}
+                        <span title="WhatsApp: {{ $availLabel }}"
+                              style="position:absolute;bottom:-2px;right:-2px;width:12px;height:12px;border-radius:50%;background:{{ $availColor }};border:2px solid #fff;"></span>
+                    @endif
                 </div>
                 <div style="min-width:0;flex:1;">
                     <div class="fw-bold text-truncate" style="font-size:.92rem;color:#0f172a;">{{ $e->name }}</div>
@@ -175,9 +191,19 @@
                     <div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;">Tarefas</div>
                 </div>
                 <div style="width:1px;background:#f1f5f9;"></div>
-                <div class="d-flex align-items-center justify-content-center" style="flex:1;">
-                    <i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.75rem;"></i>
-                </div>
+                @if($isWaAgent)
+                    <div class="text-center" style="flex:1;" title="Atendimentos WhatsApp nos últimos 7 dias">
+                        <div class="fw-800" style="font-size:1.1rem;color:#0f172a;">
+                            {{ $waCount }}
+                            <i class="fab fa-whatsapp" style="color:#22c55e;font-size:.85rem;margin-left:2px;"></i>
+                        </div>
+                        <div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;">Chats 7d</div>
+                    </div>
+                @else
+                    <div class="d-flex align-items-center justify-content-center" style="flex:1;">
+                        <i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.75rem;"></i>
+                    </div>
+                @endif
             </div>
 
         </a>
