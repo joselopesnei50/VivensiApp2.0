@@ -589,6 +589,67 @@ class ProjectController extends Controller
         return back()->with('success', 'Pessoa removida.');
     }
 
+    /**
+     * Detalhe completo do inscrito (2026-08-06) — usado no modal AJAX
+     * "Ver detalhes" na tabela de inscritos de /projects/{id}. Endpoint
+     * proprio pra Manager (que nao tem modulo /ngo/beneficiaries).
+     *
+     * Tenta enriquecer com custom_fields do landing lead: casa por phone
+     * normalizado (mais confiavel que email — ProjectPerson nao tem email).
+     */
+    public function showPerson($projectId, $personId)
+    {
+        abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);
+
+        $tenantId = auth()->user()->tenant_id;
+
+        $person = \App\Models\ProjectPerson::where('id', $personId)
+            ->where('project_id', $projectId)
+            ->where('tenant_id', $tenantId)
+            ->with(['beneficiary:id,name', 'project:id,name'])
+            ->firstOrFail();
+
+        // Match com landing_page_leads por phone normalizado (so digitos) —
+        // pra recuperar email + custom fields que foram preenchidos na landing.
+        $lead = null;
+        if (!empty($person->phone)) {
+            $normalizedPhone = preg_replace('/\D+/', '', (string) $person->phone);
+            if ($normalizedPhone !== '') {
+                $lead = \Illuminate\Support\Facades\DB::table('landing_page_leads as l')
+                    ->join('landing_pages as p', 'p.id', '=', 'l.landing_page_id')
+                    ->where('p.tenant_id', $tenantId)
+                    ->whereRaw("REPLACE(REPLACE(REPLACE(REPLACE(l.phone,'(',''),')',''),'-',''),' ','') LIKE ?", ['%' . $normalizedPhone])
+                    ->orderByDesc('l.created_at')
+                    ->select('l.email', 'l.extra_data', 'l.created_at')
+                    ->first();
+            }
+        }
+
+        $customFields = [];
+        $leadEmail    = null;
+        if ($lead) {
+            $leadEmail = $lead->email;
+            $extra     = json_decode($lead->extra_data ?? '[]', true) ?: [];
+            $customFields = is_array($extra['custom'] ?? null) ? $extra['custom'] : [];
+        }
+
+        return response()->json([
+            'id'                => (int) $person->id,
+            'name'              => $person->name,
+            'phone'             => $person->phone,
+            'email'             => $leadEmail,
+            'address'           => $person->address,
+            'city'              => $person->city,
+            'birth_date'        => optional($person->birth_date)->format('d/m/Y'),
+            'guardian_name'     => $person->guardian_name,
+            'guardian_phone'    => $person->guardian_phone,
+            'enrollment_status' => $person->enrollment_status,
+            'beneficiary'       => $person->beneficiary?->only(['id', 'name']),
+            'project_name'      => $person->project?->name,
+            'custom_fields'     => $customFields,
+        ]);
+    }
+
     public function createBroadcastList($id)
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true), 403);

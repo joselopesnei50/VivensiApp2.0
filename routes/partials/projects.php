@@ -21,6 +21,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/projects/people/import',            [App\Http\Controllers\ProjectController::class, 'importPeople'])->name('projects.people.import.global');
     Route::post('/projects/{id}/people',              [App\Http\Controllers\ProjectController::class, 'storePerson'])->name('projects.people.store');
     Route::delete('/projects/{id}/people/{personId}', [App\Http\Controllers\ProjectController::class, 'destroyPerson'])->name('projects.people.destroy');
+    // Detalhes completos do inscrito (2026-08-06) — Manager nao tem modulo
+    // Beneficiarios, entao precisa de endpoint proprio pra ver todos os campos
+    // + custom fields do landing lead (match por phone).
+    Route::get('/projects/{id}/people/{personId}',    [App\Http\Controllers\ProjectController::class, 'showPerson'])->name('projects.people.show');
     Route::post('/projects/{id}/broadcast',           [App\Http\Controllers\ProjectController::class, 'createBroadcastList'])->name('projects.broadcast.create');
     Route::get('/projects/{id}/kanban',               [App\Http\Controllers\TaskController::class, 'kanban']);
     Route::get('/projects/{id}/export-pdf',           [App\Http\Controllers\ProjectController::class, 'exportPdf'])->name('projects.export.pdf')->middleware('throttle:web_export');

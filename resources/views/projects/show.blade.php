@@ -655,6 +655,11 @@
                         </div>
                     </td>
                     <td style="padding: 15px; text-align: right;">
+                        <button type="button" class="btn btn-sm btn-light" style="border-radius: 8px; color:#4f46e5;"
+                                onclick="showPersonDetails({{ $project->id }}, {{ $person->id }})"
+                                title="Ver detalhes do inscrito">
+                            <i class="fas fa-eye"></i>
+                        </button>
                         @if($canManageProject)
                         <form action="{{ route('projects.people.destroy', [$project->id, $person->id]) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Excluir esta pessoa?');">
                             @csrf
@@ -678,6 +683,87 @@
         </table>
     </div>
 </div>
+
+{{-- Modal detalhes do inscrito (2026-08-06) — usa /projects/{id}/people/{personId} --}}
+<div class="modal fade" id="personDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius:16px; border:none;">
+            <div class="modal-header" style="border-bottom:1px solid #f1f5f9;">
+                <h5 class="modal-title" style="font-weight:800; color:#0f172a;">
+                    <i class="fas fa-user-circle" style="color:#4f46e5;"></i>
+                    <span id="pdmName">Detalhes do inscrito</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="pdmBody" style="padding:24px;">
+                <div style="text-align:center; padding:32px; color:#94a3b8;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:1.4rem;"></i>
+                    <div style="margin-top:8px; font-size:.85rem;">Carregando dados...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function pdmRow(label, value) {
+        if (value === null || value === undefined || value === '') return '';
+        return `<div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+                    <div style="flex:0 0 40%; font-size:.78rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.03em;">${label}</div>
+                    <div style="flex:1; font-size:.9rem; color:#0f172a; word-break:break-word;">${value}</div>
+                </div>`;
+    }
+    function pdmEsc(v) {
+        return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    async function showPersonDetails(projectId, personId) {
+        const modalEl = document.getElementById('personDetailsModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        document.getElementById('pdmName').textContent = 'Detalhes do inscrito';
+        document.getElementById('pdmBody').innerHTML = '<div style="text-align:center; padding:32px; color:#94a3b8;"><i class="fas fa-spinner fa-spin" style="font-size:1.4rem;"></i><div style="margin-top:8px; font-size:.85rem;">Carregando dados...</div></div>';
+        modal.show();
+
+        try {
+            const r = await fetch(`/projects/${projectId}/people/${personId}`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const d = await r.json();
+
+            document.getElementById('pdmName').textContent = d.name || 'Detalhes do inscrito';
+
+            let html = '<div>';
+            html += pdmRow('Nome',            pdmEsc(d.name));
+            html += pdmRow('WhatsApp',        pdmEsc(d.phone));
+            html += pdmRow('E-mail',          pdmEsc(d.email));
+            html += pdmRow('Endereço',        pdmEsc(d.address));
+            html += pdmRow('Cidade',          pdmEsc(d.city));
+            html += pdmRow('Data nascimento', pdmEsc(d.birth_date));
+            html += pdmRow('Responsável',     d.guardian_name ? pdmEsc(d.guardian_name) + (d.guardian_phone ? ' — ' + pdmEsc(d.guardian_phone) : '') : '');
+            html += pdmRow('Status',          pdmEsc(d.enrollment_status));
+            if (d.beneficiary && d.beneficiary.id) {
+                html += pdmRow('Beneficiário',
+                    `<a href="/ngo/beneficiaries/${d.beneficiary.id}" style="color:#4f46e5; font-weight:600;">${pdmEsc(d.beneficiary.name)} <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i></a>`);
+            }
+
+            const cfKeys = d.custom_fields ? Object.keys(d.custom_fields) : [];
+            if (cfKeys.length > 0) {
+                html += `<div style="margin-top:22px; margin-bottom:8px; font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#4f46e5;">
+                            <i class="fas fa-sliders"></i> Campos personalizados (via landing page)
+                         </div>`;
+                cfKeys.forEach(k => {
+                    const pretty = k.replace(/_/g, ' ');
+                    html += pdmRow(pretty, pdmEsc(d.custom_fields[k]));
+                });
+            }
+            html += '</div>';
+            document.getElementById('pdmBody').innerHTML = html;
+        } catch (e) {
+            document.getElementById('pdmBody').innerHTML =
+                '<div style="text-align:center; padding:32px; color:#ef4444;">Não foi possível carregar os detalhes. Tente novamente.</div>';
+        }
+    }
+</script>
 
 <!-- Impact Timeline Section -->
 <div class="project-table-card mt-4">
