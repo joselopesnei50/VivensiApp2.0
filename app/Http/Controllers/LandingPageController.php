@@ -714,7 +714,34 @@ class LandingPageController extends Controller
             }
         }
 
-        return back()->with('success', 'Dados enviados com sucesso! Entraremos em contato.');
+        // Email transacional de confirmacao (2026-08-06). Usa driver 'brevo' (default).
+        // Falha silenciosa — nao pode quebrar a submissao do lead.
+        try {
+            $tenantName = ($tenant?->name ?? config('app.name', 'Vivensi'));
+            \Illuminate\Support\Facades\Mail::to($validated['email'])->send(
+                new \App\Mail\LandingPageLeadConfirmationMail(
+                    $page,
+                    (string) ($validated['name'] ?? ''),
+                    $validated['email'],
+                    $tenantName
+                )
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Landing confirmation email failed', [
+                'landing_page_id' => $page->id,
+                'tenant_id'       => $page->tenant_id,
+                'error'           => $e->getMessage(),
+            ]);
+        }
+
+        // Mantem 'success' legado (usado por PublicOptInTest e afins) alem do
+        // 'lp_lead_success' novo que carrega dados pro toast na render.
+        return back()
+            ->with('success', 'Inscrição enviada com sucesso! Enviamos um e-mail de confirmação.')
+            ->with('lp_lead_success', [
+                'name'  => $validated['name'] ?? null,
+                'email' => $validated['email'],
+            ]);
     }
 
     /**

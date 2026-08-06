@@ -126,6 +126,27 @@
 </head>
 <body>
 
+    {{-- Toast de confirmacao apos submissao (2026-08-06) --}}
+    @if(session('lp_lead_success'))
+        @php $lpSucc = session('lp_lead_success'); @endphp
+        <div id="lp-success-toast" role="status" aria-live="polite" style="position:fixed; top:20px; right:20px; z-index:9999; max-width:380px; background:#ffffff; border:1px solid #86efac; border-left:4px solid #22c55e; border-radius:12px; padding:16px 18px 16px 16px; box-shadow:0 12px 30px rgba(15,23,42,.15); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <div style="display:flex; align-items:flex-start; gap:12px;">
+                <div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#dcfce7; display:flex; align-items:center; justify-content:center; color:#15803d; font-weight:900;">✓</div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:800; color:#0f172a; font-size:.9rem; margin-bottom:2px;">
+                        Inscrição enviada com sucesso!
+                    </div>
+                    <div style="color:#475569; font-size:.82rem; line-height:1.5;">
+                        Enviamos um e-mail de confirmação para <strong>{{ $lpSucc['email'] ?? '' }}</strong>. Verifique também a caixa de spam.
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('lp-success-toast').remove()" aria-label="Fechar"
+                        style="background:transparent; border:none; color:#94a3b8; cursor:pointer; font-size:1.2rem; line-height:1; padding:0 4px;">×</button>
+            </div>
+        </div>
+        <script>setTimeout(function(){var t=document.getElementById('lp-success-toast');if(t)t.remove();},10000);</script>
+    @endif
+
     @foreach($sections as $section)
 
 
@@ -644,7 +665,9 @@
                                     <input type="text" name="cpf" inputmode="numeric" maxlength="14" style="{{ $ctaInputStyle }}" placeholder="CPF (somente números)">
                                 @endif
                                 @if($enBirth)
-                                    <input type="date" name="birth_date" style="{{ $ctaInputStyle }}" placeholder="Data de nascimento">
+                                    {{-- input[type=date] ignora placeholder — label acima resolve --}}
+                                    <label style="display:block; font-size:.78rem; color:rgba(255,255,255,.85); margin:2px 4px 4px; font-weight:600;">Data de nascimento</label>
+                                    <input type="date" name="birth_date" style="{{ $ctaInputStyle }}" aria-label="Data de nascimento">
                                 @endif
                                 @if($enAddress)
                                     <input type="text" name="address" maxlength="255" style="{{ $ctaInputStyle }}" placeholder="Endereço">
@@ -847,7 +870,9 @@
                                     <input type="text" name="cpf" inputmode="numeric" maxlength="14" style="{{ $lcInputStyle }}" placeholder="CPF (somente números)">
                                 @endif
                                 @if($lcEnBirth)
-                                    <input type="date" name="birth_date" style="{{ $lcInputStyle }}" placeholder="Data de nascimento">
+                                    {{-- input[type=date] ignora placeholder — label acima resolve --}}
+                                    <label style="display:block; font-size:.78rem; color:#475569; margin:2px 4px 4px; font-weight:600;">Data de nascimento</label>
+                                    <input type="date" name="birth_date" style="{{ $lcInputStyle }}" aria-label="Data de nascimento">
                                 @endif
                                 @if($lcEnAddress)
                                     <input type="text" name="address" maxlength="255" style="{{ $lcInputStyle }}" placeholder="Endereço">

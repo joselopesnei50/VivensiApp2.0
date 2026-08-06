@@ -34,6 +34,11 @@
         $cfName = 'custom[' . $cfKey . ']';
     @endphp
 
+    {{-- inputs date/select/textarea sem placeholder visivel — emite label acima --}}
+    @if(in_array($cfType, ['date','select','textarea'], true))
+        <label style="display:block; font-size:.78rem; margin:2px 4px 4px; font-weight:600; opacity:.85;">{{ $cfLabel }}{{ $cfRequired ? ' *' : '' }}</label>
+    @endif
+
     @if($cfType === 'textarea')
         <textarea
             name="{{ $cfName }}"
