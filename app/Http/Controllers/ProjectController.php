@@ -609,10 +609,21 @@ class ProjectController extends Controller
             ->with(['beneficiary:id,name', 'project:id,name'])
             ->firstOrFail();
 
-        // Match com landing_page_leads por phone normalizado (so digitos) —
-        // pra recuperar email + custom fields que foram preenchidos na landing.
+        // Recupera lead da landing pra enriquecer com email + custom_fields.
+        // Ordem: (1) FK explicito landing_lead_id (novo); (2) fallback por phone
+        // normalizado (retrocompat pra registros criados antes da migration).
         $lead = null;
-        if (!empty($person->phone)) {
+        $leadSource = null;
+        if (!empty($person->landing_lead_id)) {
+            $lead = \Illuminate\Support\Facades\DB::table('landing_page_leads as l')
+                ->join('landing_pages as p', 'p.id', '=', 'l.landing_page_id')
+                ->where('l.id', $person->landing_lead_id)
+                ->where('p.tenant_id', $tenantId)
+                ->select('l.email', 'l.extra_data', 'l.created_at')
+                ->first();
+            if ($lead) $leadSource = 'fk';
+        }
+        if (!$lead && !empty($person->phone)) {
             $normalizedPhone = preg_replace('/\D+/', '', (string) $person->phone);
             if ($normalizedPhone !== '') {
                 $lead = \Illuminate\Support\Facades\DB::table('landing_page_leads as l')
@@ -622,6 +633,7 @@ class ProjectController extends Controller
                     ->orderByDesc('l.created_at')
                     ->select('l.email', 'l.extra_data', 'l.created_at')
                     ->first();
+                if ($lead) $leadSource = 'phone_match';
             }
         }
 
@@ -632,6 +644,11 @@ class ProjectController extends Controller
             $extra     = json_decode($lead->extra_data ?? '[]', true) ?: [];
             $customFields = is_array($extra['custom'] ?? null) ? $extra['custom'] : [];
         }
+
+        // Origem: 'landing' se veio de landing page (com ou sem custom), 'manual'
+        // caso contrario. Front usa pra mensagem clara ("Cadastro manual — sem
+        // landing associada" vs "Landing enviada sem campos personalizados").
+        $origin = $lead ? 'landing' : 'manual';
 
         return response()->json([
             'id'                => (int) $person->id,
@@ -647,6 +664,8 @@ class ProjectController extends Controller
             'beneficiary'       => $person->beneficiary?->only(['id', 'name']),
             'project_name'      => $person->project?->name,
             'custom_fields'     => $customFields,
+            'origin'            => $origin,         // 'landing' | 'manual'
+            'lead_match'        => $leadSource,     // 'fk' | 'phone_match' | null
         ]);
     }
 

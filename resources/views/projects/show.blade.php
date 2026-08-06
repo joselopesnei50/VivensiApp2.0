@@ -755,6 +755,13 @@
                     const pretty = k.replace(/_/g, ' ');
                     html += pdmRow(pretty, pdmEsc(d.custom_fields[k]));
                 });
+            } else {
+                // Mensagem explicativa quando nao ha custom_fields — evita duvida
+                // "cade os campos personalizados?".
+                const note = d.origin === 'manual'
+                    ? '<i class="fas fa-user-pen"></i> Cadastro manual — não veio de landing page.'
+                    : '<i class="fas fa-info-circle"></i> Este inscrito veio de landing page, mas o formulário não tinha campos personalizados configurados.';
+                html += `<div style="margin-top:22px; padding:12px 14px; background:#f8fafc; border:1px dashed #e2e8f0; border-radius:10px; color:#64748b; font-size:.82rem;">${note}</div>`;
             }
             html += '</div>';
             document.getElementById('pdmBody').innerHTML = html;

@@ -104,7 +104,7 @@ it('retorna custom_fields do landing lead quando bate por phone', function () {
     $resp->assertJsonPath('custom_fields.escolaridade', 'Superior');
 });
 
-it('sem lead correspondente retorna custom_fields vazio + email null', function () {
+it('sem lead correspondente retorna custom_fields vazio + email null + origin=manual', function () {
     [$tenant, $user, $project, $person] = spdSetup('manager');
 
     $resp = $this->actingAs($user)
@@ -113,4 +113,38 @@ it('sem lead correspondente retorna custom_fields vazio + email null', function 
 
     $resp->assertJsonPath('email', null);
     $resp->assertJsonPath('custom_fields', []);
+    $resp->assertJsonPath('origin', 'manual');
+    $resp->assertJsonPath('lead_match', null);
+});
+
+it('FK explicito landing_lead_id traz email + custom_fields (novo fluxo)', function () {
+    [$tenant, $user, $project, $person] = spdSetup('manager');
+
+    $lp = LandingPage::create([
+        'tenant_id' => $tenant->id,
+        'title'     => 'LP',
+        'slug'      => 'lp-fk-' . uniqid(),
+        'status'    => 'published',
+    ]);
+    $leadId = DB::table('landing_page_leads')->insertGetId([
+        'landing_page_id' => $lp->id,
+        'name'  => 'Outro nome qualquer',   // phone e nome diferentes de proposito
+        'email' => 'fk@teste.com',          // pra provar que so o FK importa
+        'phone' => '00000000000',
+        'extra_data' => json_encode([
+            'custom' => ['profissao' => 'Advogada'],
+        ]),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $person->update(['landing_lead_id' => $leadId]);
+
+    $resp = $this->actingAs($user)
+        ->getJson("/projects/{$project->id}/people/{$person->id}")
+        ->assertStatus(200);
+
+    $resp->assertJsonPath('email', 'fk@teste.com');
+    $resp->assertJsonPath('custom_fields.profissao', 'Advogada');
+    $resp->assertJsonPath('origin', 'landing');
+    $resp->assertJsonPath('lead_match', 'fk');
 });

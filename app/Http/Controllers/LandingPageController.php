@@ -648,7 +648,7 @@ class LandingPageController extends Controller
             $extra['custom'] = $customPayload;
         }
 
-        DB::table('landing_page_leads')->insert([
+        $landingLeadId = DB::table('landing_page_leads')->insertGetId([
             'landing_page_id' => $page->id,
             'name' => $validated['name'] ?? null,
             'email' => $validated['email'],
@@ -703,7 +703,7 @@ class LandingPageController extends Controller
         // opcionalmente Beneficiary). Falhas aqui não podem quebrar o lead.
         if ($page->target_project_id && $page->target_creates_person) {
             try {
-                $this->enrollFromLanding($page, $validated);
+                $this->enrollFromLanding($page, $validated, $landingLeadId);
             } catch (\Throwable $e) {
                 Log::warning('Landing project enrollment failed', [
                     'landing_page_id'   => $page->id,
@@ -794,8 +794,12 @@ class LandingPageController extends Controller
      * Opção C — cria/vincula ProjectPerson (e Beneficiary, se habilitado) a
      * partir de uma submissão de landing pública. Idempotente por CPF
      * (via blind index) e por (project_id, beneficiary_id).
+     *
+     * `$landingLeadId` (2026-08-06) grava FK explicito no ProjectPerson pra
+     * ProjectController::showPerson recuperar custom_fields sem depender de
+     * match por telefone (fragil quando cadastro e manual ou formatacao muda).
      */
-    private function enrollFromLanding(LandingPage $page, array $data): void
+    private function enrollFromLanding(LandingPage $page, array $data, ?int $landingLeadId = null): void
     {
         $tenantId  = (int) $page->tenant_id;
         $projectId = (int) $page->target_project_id;
@@ -856,6 +860,7 @@ class LandingPageController extends Controller
             'tenant_id'         => $tenantId,
             'project_id'        => $projectId,
             'beneficiary_id'    => $beneficiaryId,
+            'landing_lead_id'   => $landingLeadId,
             'name'              => $name,
             'phone'             => $data['phone']          ?? null,
             'address'           => $data['address']        ?? null,

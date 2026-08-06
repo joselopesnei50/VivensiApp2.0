@@ -14,6 +14,7 @@ class ProjectPerson extends Model
         'tenant_id',
         'project_id',
         'beneficiary_id',
+        'landing_lead_id',
         'name',
         'address',
         'city',
