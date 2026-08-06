@@ -591,7 +591,24 @@ class LandingPageController extends Controller
         // Campos "extras" (cpf, birth_date, address, city, guardian_*) são
         // aceitos mas todos opcionais — usados quando a landing está vinculada
         // a um projeto (Opção C) pra alimentar ProjectPerson/Beneficiary.
-        $validated = $request->validate([
+        // Custom fields (2026-08-06) — coleta schema de TODAS as sections
+        // lead_capture/final_cta_form desta landing e valida dinamicamente.
+        // Key -> config, com defesa em profundidade (whitelist + tipo).
+        $customSchema = $this->buildCustomFieldsSchema($page);
+        $customRules  = [];
+        foreach ($customSchema as $key => $cf) {
+            $rules = [$cf['required'] ? 'required' : 'nullable', 'max:500'];
+            $rules[] = match ($cf['type']) {
+                'email'    => 'email:rfc',
+                'number'   => 'numeric',
+                'date'     => 'date',
+                'select'   => empty($cf['options']) ? 'string' : ('in:' . implode(',', $cf['options'])),
+                default    => 'string',
+            };
+            $customRules['custom.' . $key] = $rules;
+        }
+
+        $validated = $request->validate(array_merge([
             'name'           => 'nullable|string|max:255',
             'email'          => 'required|email:rfc,dns|max:255',
             'phone'          => 'nullable|string|max:30',
@@ -602,15 +619,23 @@ class LandingPageController extends Controller
             'city'           => 'nullable|string|max:120',
             'guardian_name'  => 'nullable|string|max:255',
             'guardian_phone' => 'nullable|string|max:30',
-        ], [
+            'custom'         => 'nullable|array',
+        ], $customRules), [
             'consent_given.accepted' => 'É necessário marcar o consentimento para receber comunicações.',
         ]);
+
+        // Filtra o array custom pra deixar so keys do schema (evita lixo no JSON).
+        $customPayload = collect($validated['custom'] ?? [])
+            ->only(array_keys($customSchema))
+            ->map(fn ($v) => mb_substr((string) (is_scalar($v) ? $v : json_encode($v)), 0, 500))
+            ->toArray();
 
         // Limit extra fields to avoid abuse. Removemos os campos que já foram
         // capturados explicitamente acima pra não duplicar no JSON extra_data.
         $extra = collect($request->except([
                 '_token', 'name', 'email', 'phone', 'consent_given',
                 'cpf', 'birth_date', 'address', 'city', 'guardian_name', 'guardian_phone',
+                'custom',
             ]))
             ->take(20)
             ->map(function ($v) {
@@ -618,6 +643,10 @@ class LandingPageController extends Controller
                 return mb_substr((string) $s, 0, 500);
             })
             ->toArray();
+
+        if (!empty($customPayload)) {
+            $extra['custom'] = $customPayload;
+        }
 
         DB::table('landing_page_leads')->insert([
             'landing_page_id' => $page->id,
@@ -686,6 +715,52 @@ class LandingPageController extends Controller
         }
 
         return back()->with('success', 'Dados enviados com sucesso! Entraremos em contato.');
+    }
+
+    /**
+     * Custom fields (2026-08-06) — le TODAS as sections lead_capture/final_cta_form
+     * da landing e agrega os campos personalizados por key (sem duplicar). Retorna
+     * ['key' => ['label','type','required','options'(array)]] pra usar em validacao
+     * dinamica no submitLead.
+     */
+    private function buildCustomFieldsSchema(LandingPage $page): array
+    {
+        $sections = $page->sections()
+            ->whereIn('type', ['lead_capture', 'final_cta_form'])
+            ->get(['content']);
+
+        $schema = [];
+        foreach ($sections as $section) {
+            $fields = $section->content['custom_fields'] ?? [];
+            if (!is_array($fields)) continue;
+
+            foreach ($fields as $f) {
+                if (!is_array($f) || empty($f['label'])) continue;
+
+                $key = trim((string) ($f['key'] ?? ''));
+                if ($key === '') continue;
+                $key = preg_replace('/[^a-z0-9_]+/', '_', mb_strtolower($key));
+                $key = trim($key, '_');
+                if ($key === '' || isset($schema[$key])) continue;
+
+                $type = in_array($f['type'] ?? 'text', ['text','email','tel','number','date','textarea','select'], true)
+                    ? $f['type'] : 'text';
+
+                $options = $f['options'] ?? [];
+                if (is_string($options)) {
+                    $options = array_values(array_filter(array_map('trim', explode(',', $options))));
+                }
+
+                $schema[$key] = [
+                    'label'    => (string) $f['label'],
+                    'type'     => $type,
+                    'required' => !empty($f['required']),
+                    'options'  => is_array($options) ? $options : [],
+                ];
+            }
+        }
+
+        return $schema;
     }
 
     /**

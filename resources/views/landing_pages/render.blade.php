@@ -657,6 +657,9 @@
                                     <input type="text" name="guardian_phone" maxlength="30"  style="{{ $ctaInputStyle }}" placeholder="Telefone do responsável">
                                 @endif
 
+                                {{-- Custom fields (2026-08-06) — configurados no builder da landing --}}
+                                @include('landing_pages._custom_fields', ['customFields' => $c['custom_fields'] ?? [], 'cfStyle' => $ctaInputStyle])
+
                                 <label style="display:flex; gap:10px; align-items:flex-start; margin-bottom: 14px; font-size: .85rem; opacity:.9; line-height:1.45;">
                                     <input type="checkbox" name="consent_given" value="1" required style="margin-top: 4px; flex-shrink:0;">
                                     <span>Autorizo o contato e o tratamento dos meus dados conforme a <a href="/privacidade" target="_blank" rel="noopener" style="color:inherit; text-decoration: underline;">Política de Privacidade</a> (LGPD). Você pode cancelar a qualquer momento.</span>
@@ -856,6 +859,10 @@
                                     <input type="text" name="guardian_name"  maxlength="255" style="{{ $lcInputStyle }}" placeholder="Nome do responsável">
                                     <input type="text" name="guardian_phone" maxlength="30"  style="{{ $lcInputStyle }}" placeholder="Telefone do responsável">
                                 @endif
+
+                                {{-- Custom fields (2026-08-06) — configurados no builder da landing --}}
+                                @include('landing_pages._custom_fields', ['customFields' => $section->content['custom_fields'] ?? [], 'cfStyle' => $lcInputStyle])
+
                                 <label style="display:flex; gap:10px; align-items:flex-start; margin-bottom: 18px; font-size: .9rem; color:#475569; line-height:1.45;">
                                     <input type="checkbox" name="consent_given" value="1" required style="margin-top: 4px; flex-shrink:0;">
                                     <span>Autorizo o contato e o tratamento dos meus dados conforme a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a> (LGPD). Você pode cancelar a qualquer momento.</span>

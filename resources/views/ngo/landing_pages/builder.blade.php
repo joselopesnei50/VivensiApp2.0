@@ -778,9 +778,38 @@
                 `;
                 container.appendChild(box);
 
-                // Evita duplicar os toggles no editor genérico abaixo.
+                // ── Custom fields (2026-08-06) — repeater pra campos personalizados
+                //    além dos pré-prontos. Salvos em content.custom_fields[] e vão
+                //    pra landing_page_leads.extra_data.custom.<key> na submissao.
+                const cfBox = document.createElement('div');
+                cfBox.style.cssText = 'background:#fefce8; border:1px solid #fde68a; border-radius:12px; padding:14px 16px; margin-bottom:16px;';
+                cfBox.innerHTML = `
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                        <div style="font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#b45309;">
+                            <i class="fas fa-sliders"></i> Campos personalizados
+                        </div>
+                        <button type="button" onclick="cfAddRow(this)" style="background:#f59e0b; color:#fff; border:none; border-radius:8px; padding:6px 12px; font-size:.75rem; font-weight:700; cursor:pointer;">
+                            <i class="fas fa-plus"></i> Adicionar campo
+                        </button>
+                    </div>
+                    <div class="cf-list" data-cf-list></div>
+                    <div style="margin-top:8px; color:#78350f; font-size:.72rem;">
+                        Tipos aceitos: texto, email, telefone, número, data, área de texto, seleção (options separadas por vírgula). As respostas vão pro CRM da landing em <code>extra_data.custom</code>.
+                    </div>
+                `;
+                container.appendChild(cfBox);
+
+                const cfList = cfBox.querySelector('[data-cf-list]');
+                const existing = Array.isArray(content.custom_fields) ? content.custom_fields : [];
+                if (existing.length === 0) {
+                    cfEmpty(cfList);
+                } else {
+                    existing.forEach((f, i) => cfRenderRow(cfList, i, f));
+                }
+
+                // Evita duplicar toggles + custom_fields no editor genérico abaixo.
                 content = Object.assign({}, content);
-                ['require_name','require_phone','enable_phone','enable_cpf','enable_birth_date','enable_address','enable_city','enable_guardian'].forEach(k => { delete content[k]; });
+                ['require_name','require_phone','enable_phone','enable_cpf','enable_birth_date','enable_address','enable_city','enable_guardian','custom_fields'].forEach(k => { delete content[k]; });
             }
 
             // Nos blocos de formulário, os campos genéricos (título, subtítulo,
@@ -839,6 +868,80 @@
             }
 
             createFields(content);
+        }
+
+        // ── Custom fields repeater (2026-08-06) ──────────────────────────────
+        function cfEmpty(list) {
+            list.innerHTML = '<div style="padding:12px 4px; color:#78350f; font-size:.78rem; opacity:.7;">Nenhum campo personalizado. Clique em "Adicionar campo" pra criar.</div>';
+        }
+        function cfNextIndex(list) {
+            return list.querySelectorAll('[data-cf-row]').length;
+        }
+        function cfAddRow(btn) {
+            const list = btn.closest('div').parentElement.querySelector('[data-cf-list]');
+            if (list.querySelector('[data-cf-empty]') || !list.querySelector('[data-cf-row]')) {
+                list.innerHTML = '';
+            }
+            cfRenderRow(list, cfNextIndex(list), { key: '', label: '', type: 'text', required: false, placeholder: '', options: '' });
+        }
+        function cfRenderRow(list, index, f) {
+            const optsStr = Array.isArray(f.options) ? f.options.join(', ') : (f.options || '');
+            const row = document.createElement('div');
+            row.setAttribute('data-cf-row', '');
+            row.style.cssText = 'background:#fff; border:1px solid #fde68a; border-radius:10px; padding:12px; margin-bottom:8px; display:grid; grid-template-columns: 2fr 2fr 1.2fr 1fr auto; gap:8px; align-items:end;';
+            row.innerHTML = `
+                <div>
+                    <label style="font-size:.68rem; font-weight:700; color:#78350f; text-transform:uppercase; letter-spacing:.05em;">Rótulo *</label>
+                    <input type="text" name="custom_fields[${index}][label]" value="${cfEsc(f.label)}" placeholder="Ex: Instituição" required style="width:100%; padding:6px 8px; border:1px solid #e2e8f0; border-radius:6px; font-size:.85rem;">
+                </div>
+                <div>
+                    <label style="font-size:.68rem; font-weight:700; color:#78350f; text-transform:uppercase; letter-spacing:.05em;">Chave (slug)</label>
+                    <input type="text" name="custom_fields[${index}][key]" value="${cfEsc(f.key)}" placeholder="ex: instituicao" pattern="[a-z0-9_]{2,40}" title="Só letras minúsculas, números e _" style="width:100%; padding:6px 8px; border:1px solid #e2e8f0; border-radius:6px; font-size:.85rem;">
+                </div>
+                <div>
+                    <label style="font-size:.68rem; font-weight:700; color:#78350f; text-transform:uppercase; letter-spacing:.05em;">Tipo</label>
+                    <select name="custom_fields[${index}][type]" onchange="cfToggleOptions(this)" style="width:100%; padding:6px 8px; border:1px solid #e2e8f0; border-radius:6px; font-size:.85rem;">
+                        <option value="text"     ${f.type==='text'?'selected':''}>Texto</option>
+                        <option value="email"    ${f.type==='email'?'selected':''}>Email</option>
+                        <option value="tel"      ${f.type==='tel'?'selected':''}>Telefone</option>
+                        <option value="number"   ${f.type==='number'?'selected':''}>Número</option>
+                        <option value="date"     ${f.type==='date'?'selected':''}>Data</option>
+                        <option value="textarea" ${f.type==='textarea'?'selected':''}>Área de texto</option>
+                        <option value="select"   ${f.type==='select'?'selected':''}>Seleção</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:.78rem; color:#0f172a; cursor:pointer; margin-top:18px;">
+                        <input type="checkbox" name="custom_fields[${index}][required]" value="1" ${f.required?'checked':''}> Obrig.
+                    </label>
+                </div>
+                <button type="button" onclick="cfRemoveRow(this)" title="Remover" style="background:#ef4444; color:#fff; border:none; border-radius:6px; width:32px; height:32px; cursor:pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div style="grid-column: 1 / 3;">
+                    <label style="font-size:.68rem; font-weight:700; color:#78350f; text-transform:uppercase; letter-spacing:.05em;">Placeholder</label>
+                    <input type="text" name="custom_fields[${index}][placeholder]" value="${cfEsc(f.placeholder)}" style="width:100%; padding:6px 8px; border:1px solid #e2e8f0; border-radius:6px; font-size:.85rem;">
+                </div>
+                <div data-cf-opts style="grid-column: 3 / 6; display:${f.type==='select'?'block':'none'};">
+                    <label style="font-size:.68rem; font-weight:700; color:#78350f; text-transform:uppercase; letter-spacing:.05em;">Opções (vírgula)</label>
+                    <input type="text" name="custom_fields[${index}][options]" value="${cfEsc(optsStr)}" placeholder="Opção A, Opção B, Opção C" style="width:100%; padding:6px 8px; border:1px solid #e2e8f0; border-radius:6px; font-size:.85rem;">
+                </div>
+            `;
+            list.appendChild(row);
+        }
+        function cfRemoveRow(btn) {
+            const row = btn.closest('[data-cf-row]');
+            const list = row.parentElement;
+            row.remove();
+            if (list.querySelectorAll('[data-cf-row]').length === 0) cfEmpty(list);
+        }
+        function cfToggleOptions(sel) {
+            const row = sel.closest('[data-cf-row]');
+            const opts = row.querySelector('[data-cf-opts]');
+            if (opts) opts.style.display = sel.value === 'select' ? 'block' : 'none';
+        }
+        function cfEsc(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
         function closeEditor() { document.getElementById('editor-overlay').style.display = 'none'; }
