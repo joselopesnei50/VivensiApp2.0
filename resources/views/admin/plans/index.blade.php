@@ -4,7 +4,7 @@
 <div class="header-page d-flex justify-content-between align-items-center" style="margin-bottom: 30px;">
     <div>
         <h2 style="margin: 0; color: #2c3e50;">Planos de Assinatura</h2>
-        <p style="color: #64748b; margin: 5px 0 0 0;">Gerencie os planos para ONGs, Gestores e Pessoa Comum.</p>
+        <p style="color: #64748b; margin: 5px 0 0 0;">Gerencie os planos para Terceiro Setor (principal), Gestor de Projetos e TopEmpresas.</p>
     </div>
     <a href="{{ route('admin.plans.create') }}" class="btn-premium text-decoration-none">
         <i class="fas fa-plus me-2"></i> Criar Novo Plano
@@ -19,10 +19,12 @@
 
 <div class="row g-4">
     @php
+        // Labels centralizados em SubscriptionPlan::AUDIENCE_LABELS_SHORT
+        // (2026-08-07). Aqui so complementamos com icone + cor de badge.
         $audiences = [
-            'ngo' => ['label' => 'Terceiro Setor (ONG)', 'icon' => 'fa-landmark', 'color' => '#6366f1'],
-            'manager' => ['label' => 'Gestor de Empresas', 'icon' => 'fa-user-shield', 'color' => '#10b981'],
-            'common' => ['label' => 'Pessoa Comum', 'icon' => 'fa-user', 'color' => '#f59e0b']
+            'ngo'     => ['label' => \App\Models\SubscriptionPlan::AUDIENCE_LABELS_SHORT['ngo'],     'icon' => 'fa-landmark',    'color' => '#6366f1'],
+            'manager' => ['label' => \App\Models\SubscriptionPlan::AUDIENCE_LABELS_SHORT['manager'], 'icon' => 'fa-user-shield', 'color' => '#10b981'],
+            'common'  => ['label' => \App\Models\SubscriptionPlan::AUDIENCE_LABELS_SHORT['common'],  'icon' => 'fa-building',    'color' => '#f59e0b'],
         ];
     @endphp
 

@@ -24,9 +24,9 @@
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Público Alvo</label>
                         <select name="target_audience" class="form-select border-0 bg-light rounded-3 py-3" required>
-                            <option value="ngo" {{ old('target_audience', $plan->target_audience) == 'ngo' ? 'selected' : '' }}>Terceiro Setor (ONG)</option>
-                            <option value="manager" {{ old('target_audience', $plan->target_audience) == 'manager' ? 'selected' : '' }}>Gestor de Empresas</option>
-                            <option value="common" {{ old('target_audience', $plan->target_audience) == 'common' ? 'selected' : '' }}>Pessoa Comum</option>
+                            @foreach(\App\Models\SubscriptionPlan::AUDIENCE_LABELS as $slug => $label)
+                                <option value="{{ $slug }}" {{ old('target_audience', $plan->target_audience) === $slug ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
 

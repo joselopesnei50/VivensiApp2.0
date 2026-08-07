@@ -9,7 +9,12 @@ class PublicController extends Controller
 {
     public function welcome()
     {
-        $plans = \App\Models\SubscriptionPlan::where('is_active', true)->get();
+        // Landing principal e focada em Terceiro Setor (produto principal).
+        // Planos de Gestor de Projetos e TopEmpresas vivem nas landings
+        // dedicadas (/solucoes/gestor-projetos e /solucoes/pessoa-comum).
+        $plans = \App\Models\SubscriptionPlan::where('is_active', true)
+                    ->where('target_audience', 'ngo')
+                    ->get();
 
         // Ancoragem de preco no hero — remove friccao "quanto custa" sem exigir
         // registro. Pega o menor plano ativo; null se nao houver plano cadastrado.

@@ -9,6 +9,24 @@ class SubscriptionPlan extends Model
 {
     use HasFactory;
 
+    /**
+     * Rotulos oficiais dos painels (2026-08-07). Fonte unica pra evitar
+     * dispersao entre admin, landings e filtros. Ordem = ordem de exibicao
+     * (Terceiro Setor primeiro porque e o principal do produto).
+     */
+    public const AUDIENCE_LABELS = [
+        'ngo'     => 'Terceiro Setor (ONG) — Principal',
+        'manager' => 'Gestor de Projetos',
+        'common'  => 'TopEmpresas',
+    ];
+
+    /** Rotulo curto por audience (sem sufixo "Principal") — util em badges. */
+    public const AUDIENCE_LABELS_SHORT = [
+        'ngo'     => 'Terceiro Setor',
+        'manager' => 'Gestor de Projetos',
+        'common'  => 'TopEmpresas',
+    ];
+
     protected $fillable = [
         'name',
         'target_audience',
