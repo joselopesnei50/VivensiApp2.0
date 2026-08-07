@@ -168,9 +168,14 @@ class EvolutionApiService
      * Tempo médio esperado por mensagem na pipeline anti-ban:
      *   simulateHumanTyping (6-14s) + sleep no job (5-15s) + delay nativo (0s) = ~11-29s.
      */
-    public function sendMessage(string $to, string $message, ?string $idempotencyKey = null, int $delaySeconds = 0): array
+    public function sendMessage(string $to, ?string $message, ?string $idempotencyKey = null, int $delaySeconds = 0): array
     {
         if (!$this->instanceName || !$this->apiKey) return ['error' => 'Evolution API Missing Config'];
+
+        // Defesa em profundidade — chamador (job broadcast) pode passar null
+        // se message ficou null no banco por qualquer motivo. Antes: TypeError.
+        $message = (string) ($message ?? '');
+        if ($message === '') return ['error' => 'Empty message rejected'];
 
         $renderedMessage = $this->applySpintax($message);
 
@@ -202,11 +207,14 @@ class EvolutionApiService
         }
     }
 
-    public function sendMedia(string $to, string $media, string $caption = '', string $mimetype = 'image/jpeg'): array
+    public function sendMedia(string $to, string $media, ?string $caption = '', string $mimetype = 'image/jpeg'): array
     {
         if (!$this->instanceName) return ['error' => 'No instance configured'];
 
-        $renderedCaption = $caption ? $this->applySpintax($caption) : '';
+        // Defesa: broadcast pode passar $campaign->message null quando so ha
+        // imagem sem legenda. Antes explodia TypeError.
+        $caption = (string) ($caption ?? '');
+        $renderedCaption = $caption !== '' ? $this->applySpintax($caption) : '';
 
         // Derive mediatype (image/video/document) from mimetype
         $mediaType = explode('/', $mimetype)[0];

@@ -413,12 +413,16 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
                 $delayForApi = $isGroupChatMode ? rand(2, 5) : 0;
 
+                // Coerce null -> '' aqui pra intencao ficar explicita no chamador
+                // (defesa 1 — sendMedia/sendMessage tambem toleram null como defesa 2).
+                $captionOrText = (string) ($campaign->message ?? '');
+
                 if ($isAudioBroadcast) {
                     $res = $evo->sendAudio($waId, $audioBase64);
                 } elseif ($mediaToSend) {
-                    $res = $evo->sendMedia($waId, $mediaToSend, $campaign->message, $imageMime);
+                    $res = $evo->sendMedia($waId, $mediaToSend, $captionOrText, $imageMime);
                 } else {
-                    $res = $evo->sendMessage($waId, $campaign->message, null, $delayForApi);
+                    $res = $evo->sendMessage($waId, $captionOrText, null, $delayForApi);
                 }
 
                 if (!isset($res['error']) && !empty($res)) {
