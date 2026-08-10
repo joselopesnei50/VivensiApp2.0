@@ -458,11 +458,18 @@
     </div>
 </section>
 
+@include('public._plans_section', [
+    'accentColor'   => '#10b981',
+    'bgColor'       => '#f8fafc',
+    'wppMessage'    => 'Ol%C3%A1%21%20Quero%20conhecer%20os%20planos%20de%20Gestor%20de%20Projetos%20do%20Vivensi.',
+    'fallbackTitle' => 'Planos para gestores de projetos',
+])
+
 <section class="final-cta">
     <div class="container">
         <h2>Centralize a rotina da sua equipe em uma só plataforma.</h2>
-        <p>Cadastre sua empresa, entre na lista de espera gratuita e receba acesso ao painel completo assim que sua conta for liberada.</p>
-        <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
+        <p>Cadastre sua empresa e comece a usar hoje mesmo — projetos, Kanban, WhatsApp, marketing e Bruce IA disponíveis desde a primeira sessão.</p>
+        <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Criar conta</a>
     </div>
 </section>
 

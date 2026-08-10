@@ -614,6 +614,13 @@
     </div>
 </section>
 
+@include('public._plans_section', [
+    'accentColor'   => '#4f46e5',
+    'bgColor'       => '#f8fafc',
+    'wppMessage'    => 'Ol%C3%A1%21%20Quero%20conhecer%20os%20planos%20de%20Terceiro%20Setor%20do%20Vivensi.',
+    'fallbackTitle' => 'Planos para ONGs de todos os portes',
+])
+
 <section class="final-cta">
     <div class="container">
         <h2>Centralize a rotina da sua ONG em uma plataforma feita pra terceiro setor.</h2>

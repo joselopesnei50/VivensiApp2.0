@@ -654,58 +654,12 @@
     </div>
 </section>
 
-<section class="section" id="plano">
-    <div class="container">
-        <div class="access-grid">
-            <div>
-                <div class="section-eyebrow">Plano MEI &amp; Empresas</div>
-                <h2 class="section-title">Um preço em reais. Tudo incluso.</h2>
-                <p style="font-size: 1rem; color: var(--muted); margin-bottom: 18px;">Assinatura única com o painel completo — sem cobrança por módulo, sem surpresa em dólar, sem taxa extra de IA. Cancele quando quiser.</p>
-                <ul class="access-list" style="color: var(--ink);">
-                    <li><i class="fas fa-check"></i><span>CRM de clientes completo</span></li>
-                    <li><i class="fas fa-check"></i><span>WhatsApp com chatbot IA</span></li>
-                    <li><i class="fas fa-check"></i><span>Fluxo de caixa, recibos e NFS-e</span></li>
-                    <li><i class="fas fa-check"></i><span>Teto MEI e lembrete de DAS</span></li>
-                    <li><i class="fas fa-check"></i><span>Sala de Estratégia inclusa</span></li>
-                    <li><i class="fas fa-check"></i><span>Marketing e redes com IA</span></li>
-                </ul>
-                <div style="margin-top: 32px;">
-                    <a href="{{ url('/agendar') }}" class="btn-primary"><i class="fas fa-calendar-check"></i> Agendar demonstração de 20 min</a>
-                </div>
-            </div>
-            @php
-                $featuredPlan = ($plans ?? collect())->where('interval', 'monthly')->first() ?? ($plans ?? collect())->first();
-            @endphp
-            @if($featuredPlan)
-                <div class="access-form-card">
-                    <h3>{{ $featuredPlan->name }} <small>{{ $featuredPlan->interval === 'yearly' ? 'ANUAL' : 'MENSAL' }}</small></h3>
-                    <div class="price">R$ <strong>{{ rtrim(rtrim(number_format((float) $featuredPlan->price, 2, ',', '.'), '0'), ',') }}</strong><small>/{{ $featuredPlan->interval === 'yearly' ? 'ano' : 'mês' }}</small></div>
-                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">{{ $featuredPlan->description ?? 'Painel completo MEI & Empresas — clientes, WhatsApp, finanças, rotina fiscal e Sala de Estratégia.' }}</p>
-                    <ul>
-                        <li><i class="fas fa-check"></i> Todos os serviços do painel</li>
-                        <li><i class="fas fa-check"></i> Sala de Estratégia inclusa</li>
-                        <li><i class="fas fa-check"></i> Bruce IA sem custo extra</li>
-                        <li><i class="fas fa-check"></i> Conforme LGPD</li>
-                    </ul>
-                    <button type="button" class="btn-fill" onclick="window.location='{{ route('register', ['plan_id' => $featuredPlan->id]) }}'">Assinar agora</button>
-                </div>
-            @else
-                <div class="access-form-card">
-                    <h3>Plano MEI &amp; Empresas <small>SOB CONSULTA</small></h3>
-                    <div class="price" style="font-size: 2.2rem; letter-spacing: -1px;">Fale com a gente</div>
-                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">Agende uma demonstração de 20 minutos e receba o valor do plano completo direto com o nosso time.</p>
-                    <ul>
-                        <li><i class="fas fa-check"></i> Todos os serviços do painel</li>
-                        <li><i class="fas fa-check"></i> Sala de Estratégia inclusa</li>
-                        <li><i class="fas fa-check"></i> Bruce IA sem custo extra</li>
-                        <li><i class="fas fa-check"></i> Conforme LGPD</li>
-                    </ul>
-                    <a href="{{ url('/agendar') }}" class="btn-fill">Agendar demonstração</a>
-                </div>
-            @endif
-        </div>
-    </div>
-</section>
+@include('public._plans_section', [
+    'accentColor'   => '#f59e0b',
+    'bgColor'       => '#f8fafc',
+    'wppMessage'    => 'Ol%C3%A1%21%20Quero%20conhecer%20os%20planos%20TopEmpresas%20do%20Vivensi.',
+    'fallbackTitle' => 'Planos TopEmpresas — MEI e Pequenas Empresas',
+])
 
 <section class="dark" id="escola" style="padding-top: 60px;">
     <div class="container">
