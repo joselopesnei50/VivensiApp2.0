@@ -446,14 +446,35 @@ class AntiBanManager
     public function isBanSignal(mixed $response): bool
     {
         $details = strtolower(is_string($response) ? $response : (json_encode($response) ?: ''));
+
+        // Sinais de restricao da INSTANCIA (afeta broadcast inteiro).
+        // Rate-limit HTTP, conta banida/suspensa, token invalidado.
+        // Refinado 2026-08-11: antes contava tambem "blocked"/"spam" que sao
+        // erros por-destinatario (usuario final bloqueou o tenant) — isso
+        // marcava a instancia inteira como restricted 24h por falso positivo.
         return str_contains($details, '429')
             || str_contains($details, 'rate limit')
             || str_contains($details, 'rate_limit')
+            || str_contains($details, 'too many requests')
             || str_contains($details, 'banned')
-            || str_contains($details, 'suspended')
-            || str_contains($details, 'blocked')
+            || str_contains($details, 'account suspended')
+            || str_contains($details, 'unauthorized')
+            || str_contains($details, 'token invalid');
+    }
+
+    /**
+     * Erros que sao especificos do destinatario (nao da instancia).
+     * Marcam a mensagem individual como failed mas NAO restringem a instancia.
+     * Ex: usuario final bloqueou tenant, numero nao existe, spam report do
+     * destinatario contra este contato pontual.
+     */
+    public function isRecipientBlockSignal(mixed $response): bool
+    {
+        $details = strtolower(is_string($response) ? $response : (json_encode($response) ?: ''));
+        return str_contains($details, 'blocked')
             || str_contains($details, 'spam')
-            || str_contains($details, 'unauthorized');
+            || str_contains($details, 'not-authorized')
+            || str_contains($details, 'recipient not found');
     }
 
     // ── Gerenciamento de restrição ────────────────────────────────────────────

@@ -236,7 +236,10 @@ class EvolutionApiService
         }
 
         try {
-            $response = $this->http()->timeout(20)->withHeaders([
+            // 45s: Evolution baixa a URL publica (nossa) sincrono. Com imagem
+            // maior/rede pior, 20s original estourava intermitente. Alinha com
+            // os outros endpoints do mesmo servico que ja usam 45.
+            $response = $this->http()->timeout(45)->withHeaders([
                 'apikey' => $this->globalApiKey,
             ])->post("{$this->baseUrl}/message/sendMedia/{$this->instanceName}", $payload);
 

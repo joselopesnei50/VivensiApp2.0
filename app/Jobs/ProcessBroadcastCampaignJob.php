@@ -209,13 +209,42 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         $mediaToSend = null;
         $imageMime   = 'image/jpeg';
 
-        if ($campaign->has_image && $campaign->image_path) {
+        // Fix 2026-08-11: sem silent fallback pra texto quando a imagem sumiu.
+        // Antes: has_image=1 + arquivo ausente => enviava so texto e marcava
+        // como sucesso (cliente via "OK" mas destinatario recebia sem imagem).
+        // Agora falha explicito com log critico no primeiro chunk.
+        if ($campaign->has_image) {
+            if (!$campaign->image_path) {
+                Log::critical('Broadcast: has_image=true mas image_path e NULL — DB inconsistente', [
+                    'campaign_id' => $campaign->id,
+                    'tenant_id'   => $campaign->tenant_id,
+                ]);
+                $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+                return;
+            }
+
+            if (!Storage::disk('public')->exists($campaign->image_path)) {
+                Log::critical('Broadcast: imagem configurada mas arquivo nao existe no disk public', [
+                    'campaign_id' => $campaign->id,
+                    'tenant_id'   => $campaign->tenant_id,
+                    'image_path'  => $campaign->image_path,
+                ]);
+                $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+                return;
+            }
+
             $mediaToSend = Storage::disk('public')->url($campaign->image_path);
             if (!str_starts_with($mediaToSend, 'http')) {
                 $mediaToSend = rtrim(config('app.url'), '/') . $mediaToSend;
             }
-            if (Storage::disk('public')->exists($campaign->image_path)) {
-                $imageMime = Storage::disk('public')->mimeType($campaign->image_path);
+
+            // Deriva mime real; fallback pela extensao do path se leitura falhar.
+            try {
+                $imageMime = Storage::disk('public')->mimeType($campaign->image_path) ?: $imageMime;
+            } catch (\Throwable) {
+                $ext = strtolower(pathinfo($campaign->image_path, PATHINFO_EXTENSION));
+                $extMap = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp'];
+                $imageMime = $extMap[$ext] ?? 'image/jpeg';
             }
         }
 
