@@ -16,27 +16,47 @@ class LeadSearchService
      * Busca estabelecimentos físicos no Google Maps via Serper /maps.
      * Retorna nome, endereço, telefone, site e avaliação.
      *
+     * $limit: 20/40/60/80/100. Serper Maps devolve 20 por página — para
+     * >20 fazemos N chamadas (page=1..N) e deduplicamos por title+address.
+     *
      * @return array{new: int, updated: int}
      */
-    public function search(string $term, string $location, ?int $tenantId): array
+    public function search(string $term, string $location, ?int $tenantId, int $limit = 20): array
     {
         $apiKey = $this->getApiKey();
+        $limit  = max(20, min(100, $limit));
+        $pages  = (int) ceil($limit / 20);
+
+        $places = [];
+        $seen   = [];
 
         try {
-            $response = Http::withHeaders(['X-API-KEY' => $apiKey])
-                ->timeout(15)
-                ->post('https://google.serper.dev/maps', [
-                    'q'   => "$term em $location",
-                    'gl'  => 'br',
-                    'hl'  => 'pt-br',
-                    'num' => 20,
-                ]);
+            for ($page = 1; $page <= $pages; $page++) {
+                $response = Http::withHeaders(['X-API-KEY' => $apiKey])
+                    ->timeout(15)
+                    ->post('https://google.serper.dev/maps', [
+                        'q'    => "$term em $location",
+                        'gl'   => 'br',
+                        'hl'   => 'pt-br',
+                        'num'  => 20,
+                        'page' => $page,
+                    ]);
 
-            if ($response->failed()) {
-                throw new \Exception('Erro na busca do Serper Maps: ' . $response->body());
+                if ($response->failed()) {
+                    throw new \Exception('Erro na busca do Serper Maps: ' . $response->body());
+                }
+
+                $batch = $response->json()['places'] ?? [];
+                if (empty($batch)) break;
+
+                foreach ($batch as $item) {
+                    $key = mb_strtolower(($item['title'] ?? '') . '|' . ($item['address'] ?? ''));
+                    if (isset($seen[$key])) continue;
+                    $seen[$key] = true;
+                    $places[]   = $item;
+                    if (count($places) >= $limit) break 2;
+                }
             }
-
-            $results = $response->json();
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             throw new \Exception('O serviço Serper demorou muito para responder. Tente novamente.');
         }
@@ -44,7 +64,7 @@ class LeadSearchService
         $created = 0;
         $updated = 0;
 
-        foreach ($results['places'] ?? [] as $item) {
+        foreach ($places as $item) {
             if (empty($item['title'])) continue;
 
             $prospect = Prospect::updateOrCreate(
@@ -86,20 +106,23 @@ class LeadSearchService
      * Ideal para encontrar empresas online, negócios digitais, e-commerces,
      * ONGs, associações e qualquer entidade sem endereço físico no Maps.
      *
+     * $limit: 10..100. Serper Search aceita num até 100 numa única chamada.
+     *
      * @return array{new: int, updated: int}
      */
-    public function searchWeb(string $term, ?int $tenantId): array
+    public function searchWeb(string $term, ?int $tenantId, int $limit = 20): array
     {
         $apiKey = $this->getApiKey();
+        $limit  = max(10, min(100, $limit));
 
         try {
             $response = Http::withHeaders(['X-API-KEY' => $apiKey])
-                ->timeout(15)
+                ->timeout(20)
                 ->post('https://google.serper.dev/search', [
                     'q'   => $term,
                     'gl'  => 'br',
                     'hl'  => 'pt-br',
-                    'num' => 10,
+                    'num' => $limit,
                 ]);
 
             if ($response->failed()) {

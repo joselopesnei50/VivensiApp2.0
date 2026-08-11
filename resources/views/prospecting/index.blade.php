@@ -158,6 +158,23 @@
         </form>
     </div>
 
+    {{-- Header da tabela: total + selector de itens por pagina --}}
+    <div class="d-flex align-items-center justify-content-between mb-2 px-1" style="font-size:.85rem; color:#64748b;">
+        <div>
+            Mostrando <strong>{{ $prospects->firstItem() ?? 0 }}–{{ $prospects->lastItem() ?? 0 }}</strong>
+            de <strong>{{ $prospects->total() }}</strong> lead(s)
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <label for="perPageSelect" style="font-size:.8rem; margin:0;">Itens por página:</label>
+            <select id="perPageSelect" class="form-select form-select-sm" style="width:auto; min-width:80px;"
+                    onchange="changePerPage(this.value)">
+                @foreach([20, 50, 100, 200] as $opt)
+                    <option value="{{ $opt }}" {{ (($perPage ?? 20) == $opt) ? 'selected' : '' }}>{{ $opt }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
     {{-- ── TABELA DE LEADS ─────────────────────────────────────────────────── --}}
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
@@ -165,7 +182,7 @@
                 <thead class="bg-light">
                     <tr>
                         <th class="px-4 py-3 border-0" style="width:40px;">
-                            <input type="checkbox" id="selectAll" onchange="toggleAll(this)" title="Selecionar analisados com telefone">
+                            <input type="checkbox" id="selectAll" onchange="toggleAll(this)" title="Selecionar todos desta página">
                         </th>
                         <th class="px-4 py-3 border-0">Empresa / Contato</th>
                         <th class="py-3 border-0 text-center" style="width:130px;">Score IA</th>
@@ -177,17 +194,18 @@
                 <tbody>
                     @forelse($prospects as $prospect)
                         <tr>
-                            {{-- Checkbox --}}
+                            {{-- Checkbox — visivel pra TODOS (2026-08-07) pra permitir bulk delete
+                                 de raw/sem-contato. Ações de broadcast/email filtram por has-phone/email
+                                 no JS antes de submeter. --}}
                             <td class="px-4 py-3">
-                                @if($prospect->status === 'analyzed' && (!empty($prospect->phone) || !empty($prospect->email)))
-                                    <input type="checkbox" class="prospect-cb"
-                                           value="{{ $prospect->id }}"
-                                           data-pitch="{{ e($prospect->personalized_pitch ?? '') }}"
-                                           data-has-phone="{{ !empty($prospect->phone) ? '1' : '0' }}"
-                                           data-has-email="{{ !empty($prospect->email) ? '1' : '0' }}"
-                                           data-email-optin="{{ !empty($prospect->email_opt_in) ? '1' : '0' }}"
-                                           onchange="updateBulkBar()">
-                                @endif
+                                <input type="checkbox" class="prospect-cb"
+                                       value="{{ $prospect->id }}"
+                                       data-pitch="{{ e($prospect->personalized_pitch ?? '') }}"
+                                       data-status="{{ $prospect->status }}"
+                                       data-has-phone="{{ !empty($prospect->phone) ? '1' : '0' }}"
+                                       data-has-email="{{ !empty($prospect->email) ? '1' : '0' }}"
+                                       data-email-optin="{{ !empty($prospect->email_opt_in) ? '1' : '0' }}"
+                                       onchange="updateBulkBar()">
                             </td>
                             {{-- Empresa --}}
                             <td class="px-4 py-3">
@@ -520,13 +538,29 @@
                         <div class="form-text" id="termHint">Categoria / nicho a ser buscado.</div>
                     </div>
 
-                    <div id="locationField" class="mb-0">
+                    <div id="locationField" class="mb-3">
                         <label class="form-label fw-bold small">
                             Onde? <span class="text-danger">*</span>
                         </label>
                         <input type="text" name="location" class="form-control form-control-lg rounded-3"
                                placeholder="Ex: Araraquara SP, São Paulo capital...">
                         <div class="form-text">Cidade e estado para refinar a busca.</div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="searchLimit" class="form-label fw-bold small">
+                            Quantidade de resultados
+                        </label>
+                        <select name="limit" id="searchLimit" class="form-select form-select-lg rounded-3">
+                            <option value="20" selected>20 leads (rápido — 1 chamada)</option>
+                            <option value="40">40 leads (2 páginas)</option>
+                            <option value="60">60 leads (3 páginas)</option>
+                            <option value="80">80 leads (4 páginas)</option>
+                            <option value="100">100 leads (5 páginas — mais lento)</option>
+                        </select>
+                        <div class="form-text">
+                            Cada 20 leads = 1 chamada Serper. Buscas grandes demoram mais e consomem mais créditos da API.
+                        </div>
                     </div>
                 </div>
 
@@ -686,6 +720,14 @@
         }
     }
 
+    // ── Per-page selector (2026-08-07) ─────────────────────────────────────
+    function changePerPage(val) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('per_page', val);
+        url.searchParams.delete('page'); // reseta pra pagina 1
+        window.location.href = url.toString();
+    }
+
     // ── Bulk Selection ────────────────────────────────────────────────────────
     function updateBulkBar() {
         const checked = document.querySelectorAll('.prospect-cb:checked');
@@ -724,8 +766,17 @@
     function enviarParaDisparoEmMassa() {
         const checked = document.querySelectorAll('.prospect-cb:checked');
         if (!checked.length) return;
-        if (!confirm(checked.length + ' contato(s) serão enviados como rascunho no módulo de Disparo em Massa. Continuar?')) return;
-        const ids = Array.from(checked).map(el => el.value).join(',');
+        // Filtra so os com phone — nao adianta mandar contato sem WhatsApp.
+        const withPhone = Array.from(checked).filter(el => el.dataset.hasPhone === '1');
+        if (withPhone.length === 0) {
+            alert('Nenhum dos leads selecionados tem telefone. Selecione leads com WhatsApp cadastrado.');
+            return;
+        }
+        const ignored = checked.length - withPhone.length;
+        let msg = withPhone.length + ' contato(s) serão enviados como rascunho no módulo de Disparo em Massa.';
+        if (ignored > 0) msg += '\n\n(' + ignored + ' selecionado(s) sem telefone serão ignorados.)';
+        if (!confirm(msg + '\n\nContinuar?')) return;
+        const ids = withPhone.map(el => el.value).join(',');
         document.getElementById('sendToBroadcastIdsInput').value = ids;
         document.getElementById('formSendToBroadcast').submit();
     }

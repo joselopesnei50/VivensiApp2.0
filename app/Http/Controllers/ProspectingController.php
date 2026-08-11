@@ -21,6 +21,12 @@ class ProspectingController extends Controller
         $tenantId = Auth::user()->tenant_id;
         $status   = $request->query('status');
 
+        // Whitelist per_page (2026-08-07) — antes ficava capado em 20 fixo.
+        $perPage = (int) $request->query('per_page', 20);
+        if (!in_array($perPage, [20, 50, 100, 200], true)) {
+            $perPage = 20;
+        }
+
         $base = Prospect::withoutGlobalScope('tenant')
             ->where('tenant_id', $tenantId);
 
@@ -29,7 +35,7 @@ class ProspectingController extends Controller
             ->orderByRaw("CASE status WHEN 'analyzed' THEN 0 WHEN 'raw' THEN 1 ELSE 2 END")
             ->orderBy('lead_score', 'desc')
             ->orderBy('created_at', 'desc')
-            ->paginate(20)
+            ->paginate($perPage)
             ->withQueryString();
 
         $stats = [
@@ -40,7 +46,7 @@ class ProspectingController extends Controller
             'hot'       => (clone $base)->where('lead_score', '>=', 80)->count(),
         ];
 
-        return view('prospecting.index', compact('prospects', 'stats', 'status'));
+        return view('prospecting.index', compact('prospects', 'stats', 'status', 'perPage'));
     }
 
     public function search(Request $request, LeadSearchService $searchService)
@@ -50,14 +56,17 @@ class ProspectingController extends Controller
         $request->validate([
             'term'     => 'required|string|max:100',
             'location' => ($mode === 'maps') ? 'required|string|max:100' : 'nullable|string|max:100',
+            'limit'    => 'nullable|integer|in:20,40,60,80,100',
         ]);
+
+        $limit = (int) $request->input('limit', 20);
 
         try {
             if ($mode === 'web') {
-                $result    = $searchService->searchWeb($request->term, Auth::user()->tenant_id);
+                $result    = $searchService->searchWeb($request->term, Auth::user()->tenant_id, $limit);
                 $modeLabel = 'Busca Web';
             } else {
-                $result    = $searchService->search($request->term, $request->location, Auth::user()->tenant_id);
+                $result    = $searchService->search($request->term, $request->location, Auth::user()->tenant_id, $limit);
                 $modeLabel = 'Google Maps';
             }
 
