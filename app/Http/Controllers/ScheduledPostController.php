@@ -47,17 +47,16 @@ class ScheduledPostController extends Controller
 
     public function store(Request $request)
     {
-        // Modo "publicar agora": pula validação de data futura e usa now() UTC.
-        // Caso contrário: converte scheduled_at do timezone do usuário (Brasília)
-        // pra UTC ANTES de validar — sem isso, "00:55 BRT" chega como "00:55 UTC"
-        // que é passado pra quem está no Brasil e o validator 'after:now' reprova.
+        // app.timezone = America/Sao_Paulo, então gravamos em BRT direto.
+        // Antes convertia pra UTC (->utc()) mas na leitura o Carbon interpretava
+        // a string UTC como BRT — sumiam 3h no display e o cron posts:publish
+        // publicava 3h atrasado. Fix 2026-08-11.
         $publishNow = $request->boolean('publish_now');
 
         if (!$publishNow && $request->filled('scheduled_at')) {
             try {
                 $request->merge([
                     'scheduled_at' => Carbon::parse($request->input('scheduled_at'), 'America/Sao_Paulo')
-                        ->utc()
                         ->format('Y-m-d H:i:s'),
                 ]);
             } catch (\Throwable) {
@@ -90,9 +89,8 @@ class ScheduledPostController extends Controller
         }
 
         // Conta é opcional — sem conta o post fica como rascunho
-        $account = $data['social_account_id']
-            ? SocialAccount::findOrFail($data['social_account_id'])
-            : null;
+        $accountId = $data['social_account_id'] ?? null;
+        $account   = $accountId ? SocialAccount::findOrFail($accountId) : null;
 
         $mediaUrl   = null;
         $mediaType  = 'none';
@@ -130,9 +128,9 @@ class ScheduledPostController extends Controller
             $mediaType = 'image';
         }
 
-        // Se "publicar agora" marcado, scheduled_at vira now() UTC pro publisher
-        // pegar imediatamente. Status também.
-        $scheduledAt = $publishNow ? now()->utc() : $data['scheduled_at'];
+        // Se "publicar agora" marcado, scheduled_at vira now() (BRT) pro publisher
+        // pegar na próxima passagem do cron posts:publish.
+        $scheduledAt = $publishNow ? now() : $data['scheduled_at'];
 
         $post = ScheduledPost::create([
             'tenant_id'         => $tenantId,
@@ -185,12 +183,11 @@ class ScheduledPostController extends Controller
     {
         abort_if($post->status !== 'scheduled', 403, 'Apenas posts agendados podem ser editados.');
 
-        // Mesma conversão BRT → UTC do store (timezone-safe).
+        // Grava BRT direto (app.timezone = America/Sao_Paulo). Ver comentário no store().
         if ($request->filled('scheduled_at')) {
             try {
                 $request->merge([
                     'scheduled_at' => Carbon::parse($request->input('scheduled_at'), 'America/Sao_Paulo')
-                        ->utc()
                         ->format('Y-m-d H:i:s'),
                 ]);
             } catch (\Throwable) {

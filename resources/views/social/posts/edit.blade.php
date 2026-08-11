@@ -121,7 +121,7 @@
                         </div>
                         <div>
                             <div class="fw-bold" style="font-size:.85rem;">{{ $post->account?->page_name ?? 'Sua Página' }}</div>
-                            <div class="text-muted" style="font-size:.7rem;">Agendado para {{ $post->scheduled_at->format('d/m/Y H:i') }}</div>
+                            <div class="text-muted" style="font-size:.7rem;">Agendado para {{ $post->scheduled_at->setTimezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</div>
                         </div>
                     </div>
                     <p class="mb-2" style="font-size:.88rem;white-space:pre-wrap;" id="previewCaption">{{ $post->caption }}</p>
