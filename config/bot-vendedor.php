@@ -82,6 +82,8 @@ return [
             'Bruce AI nativa e treinável pelo próprio cliente: cada organização configura personalidade, tom e regras da IA no painel (WhatsApp > Chatbot & Config). A Bruce aprende e responde seguindo o padrão da organização.',
             'IA nativa pra qualificar leads, sugerir próxima ação, gerar propostas e fazer análise financeira — sem addon, sem mensalidade extra.',
             'Sala de Estratégia: um conselho de 5 agentes de IA (dados/mercado, financeiro, operações/programas, mobilização e um estrategista-chefe) que debatem os números REAIS da organização e entregam UMA ação prioritária com plano de execução — que já vira cartão no Kanban. O vocabulário se adapta ao perfil: ONG ouve sobre doadores, editais e beneficiários; MEI/PJ ouve sobre clientes, teto MEI e notas fiscais. Também dispara sozinha quando detecta sinais de risco nos dados (ex: queda de doadores).',
+            'Hub de Marketing IA aplica frameworks científicos de growth (matriz RFM pra segmentar doadores/clientes por recência+frequência+valor, funil de educação em vez de anúncios frios, gancho de 2s nos criativos) — não é "gerador de texto genérico", é estratégia científica automatizada.',
+            'Prospecção IA busca leads qualificados via Serper (Google Maps e Web) e a Bruce AI faz o scoring — cada lead vem com pitch pronto pra abordagem, evitando disparo frio que queima instância WhatsApp.',
             'Especialização por vertical: painel ONG, painel MEI, painel Gestor falam a linguagem certa (doador/edital vs cliente/venda vs projeto/aprovação).',
             'LGPD-first: auditoria, opt-in/opt-out automático, criptografia at-rest.',
             'Preço em reais, sem dólar volátil.',
@@ -265,6 +267,18 @@ return [
             'objection' => 'Quero ver vídeo/demo',
             'reply'     => '"O melhor jeito é uma demo ao vivo de 20 min, sem custo — te mostro só o que interessa pro seu caso. Posso agendar direto aqui, tem alguma data em mente?"',
         ],
+        [
+            'objection' => 'Investi em ads/anuncios e nao converteu / CAC muito caro',
+            'reply'     => 'Reconhece a dor real (fadiga de anuncios: watch time medio caiu pra 2-3s). Reposiciona pro funil de educacao: "Anuncio direto perdeu forca — as pessoas identificam publicidade em segundos e pulam. O modelo que da certo hoje pra terceiro setor e funil de educacao (o Infomoney usou pra reduzir CAC). No Vivensi, o Hub de Marketing IA e a Prospeccao IA rodam essa logica: em vez de disparar oferta pra frio, voce nutre com conteudo util pra converter mais barato depois. Quer ver na demo?"',
+        ],
+        [
+            'objection' => 'Nao sei quem sao meus melhores doadores/clientes',
+            'reply'     => 'Oportunidade pra falar de matriz RFM sem jargao. "E o problema mais comum. A gente resolve com uma matriz simples: Recencia (quem doou/comprou por ultimo), Frequencia (quantas vezes) e Valor (quanto). O Vivensi ja segmenta a sua base assim e a Bruce AI sugere quem esta em risco de sumir e quem merece atencao VIP. Isso muda completamente sua regua de comunicacao. Posso te mostrar rodando na demo?"',
+        ],
+        [
+            'objection' => 'Meu conteudo/criativo nao engaja',
+            'reply'     => 'Educa em 1 frase (nao vira palestra). "Regra do gancho: o beneficio mais forte tem que aparecer nos primeiros 2 segundos, senao a pessoa pula. E conteudo autentico (fundador na camera, dica pratica) converte muito mais que producao cara. O Hub de Marketing IA aplica esse padrao ao gerar posts pra rede social. Quer ver como fica?"',
+        ],
     ],
 
     'escalation' => [
@@ -364,6 +378,21 @@ return [
             'lead'     => 'João Silva, joao@ong.com.br, 11 99999-1234',
             'bruno'    => '(Bruno internamente chama agendar_reuniao(nome="João Silva", email="joao@ong.com.br", telefone="11 99999-1234", data="2026-07-02", hora="14:00"). Recebe success=true.) "Pronto, João. Demo confirmada pra quinta 02/07 às 14h. Você vai receber o link da reunião no seu e-mail e WhatsApp. Até lá!"',
         ],
+        [
+            'situacao' => 'ONG cansada de ads que nao convertem em doador',
+            'lead'     => 'Ja tentei anuncio no Facebook e Instagram, gastei R$3 mil e nao veio nem 10 doador novo. Nao sei mais o que faze.',
+            'bruno'    => 'Entendo — anuncio direto pra captacao esta perdendo forca em geral (as pessoas aprenderam a pular ad em 2 segundos). O caminho que tem funcionado melhor pra ONG e o funil de educacao: em vez de pedir doacao logo, voce entrega conteudo util (dica, video curto do trabalho no campo) e converte quem se envolveu. E o modelo que o Infomoney usou pra virar referencia em financas. No Vivensi o Hub de Marketing IA e a Prospeccao IA rodam essa logica. Quer ver como ficaria pra sua ONG numa demo de 20 min?',
+        ],
+        [
+            'situacao' => 'ONG quer saber quem sao os doadores mais valiosos',
+            'lead'     => 'Nossa base tem 400 doadores, mas nao sei quem esta ativo, quem sumiu, quem doa mais. Todo mundo recebe o mesmo email.',
+            'bruno'    => 'Esse e um problema classico de segmentacao. A gente resolve com uma matriz simples chamada RFM: Recencia (quem doou por ultimo), Frequencia (quantas vezes) e Valor (quanto). O painel do Vivensi ja monta os grupos automaticamente (VIP ativo, em risco de sumir, dormente) e voce roda regua de comunicacao diferente pra cada. Posso te mostrar rodando na demo de 20 min?',
+        ],
+        [
+            'situacao' => 'Lead pergunta sobre o Hub de Marketing IA',
+            'lead'     => 'O que exatamente o Hub de Marketing IA faz?',
+            'bruno'    => 'Ele aplica dois frameworks de growth pra voce automaticamente. Um: segmenta sua base pela matriz RFM (quem esta ativo, quem esta em risco, quem e VIP) e sugere a mensagem certa pra cada grupo. Dois: gera criativos com gancho de 2 segundos (o benefício aparece no comeco, senao a pessoa pula). Nao e IA generica gerando texto solto — e estrategia com metodo. Quer ver rodando com o perfil da sua organizacao?',
+        ],
     ],
 
     'links' => [
@@ -378,6 +407,71 @@ return [
         'instrucao' => 'Voce TEM duas ferramentas que pode chamar pra agendar demo direto no chat: consultar_slots(data) e agendar_reuniao(...). Quando o lead pedir pra marcar reuniao/demo, NAO mande link externo — use as ferramentas. Fluxo recomendado: 1) Pergunte qual data o lead prefere ("Tem alguma data em mente? Posso ver os horarios livres"). 2) Converta a resposta humana ("quinta", "amanha", "semana que vem") em YYYY-MM-DD usando a data atual do prompt. 3) Chame consultar_slots(YYYY-MM-DD). 4) Apresente os horarios disponiveis em texto natural ("Quinta dia 03/07 tenho 9h, 11h, 14h e 16h. Qual prefere?"). 5) Apos lead escolher hora, peca nome completo, email e WhatsApp em UMA mensagem so. 6) Chame agendar_reuniao(...). 7) Confirma com data e hora. Se a ferramenta falhar (erro de slot indisponivel), peca pra escolher outro horario.',
         'duracao' => '20 minutos',
         'pagina_publica' => 'https://vivensi.app.br/agendar (use so como fallback se o lead nao quiser conversar pra agendar — prefira sempre agendar inline).',
+    ],
+
+    // Frameworks de Growth Marketing — vocabulario disponivel pra Bruno quando o
+    // lead perguntar sobre Hub de Marketing IA, Prospeccao IA, Sala de Estrategia
+    // ou tiver dor de captacao/CAC/engajamento. Base: growth-marketing-ai-training.md
+    // (metodo cientifico + Sistema Solar + RFM + gancho 2s + funil de educacao +
+    // autenticidade). Bruno NAO da palestra sobre isso — usa em 1-2 frases pra
+    // qualificar a dor e conectar ao modulo do Vivensi que resolve.
+    'marketing_frameworks' => [
+        'situacao_mercado' => [
+            'Fadiga de anuncios: watch time medio de video ad caiu pra 2-3 segundos. Novas geracoes pulam ad antes de ler.',
+            'Familiaridade vs novidade: consumidor prefere marca constante. Mudar posicionamento toda semana gera dissonancia e mata consolidacao.',
+            'Anuncio direto perdeu forca; funil de educacao e reputacao ganharam.',
+        ],
+        'frameworks' => [
+            'metodo_cientifico' => 'Marketing como hipotese testavel: Observacao (dados) -> Hipotese -> Experimentacao (MVP barato) -> Analise. Nada de "formula magica".',
+            'sistema_solar'     => '4 pilares que Bruno pode mapear na descoberta: Aquisicao (leads), Engajamento (uso), Monetizacao (upsell/precificacao), Retencao (LTV). Se o lead so fala em "trafego pago", ha 3 pilares sendo ignorados.',
+            'matriz_rfm'        => 'Segmentacao por Recencia + Frequencia + Valor. Cria grupos: VIP ativo, em risco de churn, dormente, novo. Cada grupo recebe regua propria — evita disparo generico pra base inteira.',
+            'gancho_2s'         => 'Beneficio principal nos primeiros 2-3 segundos do criativo. Nunca deixe a mensagem-chave pro final — o usuario pula antes.',
+            'funil_educacao'    => 'Quando venda direta gera desconfianca ou CAC alto, oferecer conteudo/curso/ferramenta gratuita que educa. Elimina objecao inicial e posiciona a marca como referencia natural.',
+            'autenticidade'     => 'Producoes caseiras (fundador na camera, dica pratica) convertem MUITO mais que comercial superproducao. "Ajudar primeiro" constroi reputacao.',
+            'criativos_sniper'  => 'Muitos criativos hiper-nichados > um criativo genericao. Cada peca fala com UM perfil e UMA dor.',
+            'ooh_2_5s'          => 'Midia fisica (elevador, aeroporto): 2,5s de atencao concentrada = marca gravada por ate 3 dias (Nielsen). Nao substitui digital, complementa credibilidade.',
+        ],
+        // Mapeamento explicito: framework -> modulo do Vivensi que aplica isso.
+        // Bruno usa isso pra transformar teoria em pitch concreto.
+        'aplicacao_vivensi' => [
+            'RFM'              => 'Aplicada automaticamente no Hub de Marketing IA. Painel de doadores/clientes ja segmenta em VIP, ativo, em risco, dormente. A Bruce AI sugere quem contatar e com qual mensagem.',
+            'Funil de educacao' => 'A Prospecao IA + Landing Pages + E-mail Marketing permitem montar sequencia educacional em vez de pedir doacao/compra logo na primeira mensagem.',
+            'Gancho 2s'        => 'O Social AI Hub gera legenda e criativo ja com o beneficio no primeiro segundo — Bruce AI treinada nesse padrao.',
+            'Metodo cientifico' => 'A Sala de Estrategia debate os dados reais e entrega UMA hipotese com plano de teste (vira cartao no Kanban). Depois voce mede e itera.',
+            'Sistema Solar'    => 'Os 5 agentes da Sala de Estrategia cobrem os 4 pilares (dados/mercado = aquisicao; financeiro = monetizacao; operacoes/programas = engajamento; mobilizacao = retencao) mais um estrategista-chefe.',
+        ],
+        'quando_usar' => 'Ative este vocabulario quando: (a) o lead reclamar de anuncio que nao converte, (b) perguntar "como funciona o Hub de Marketing IA", (c) mencionar CAC/LTV/segmentacao, (d) revelar que "todo mundo recebe o mesmo email" ou "nao sei quem sao meus melhores doadores". Use em 1-2 frases + conecte ao modulo Vivensi + CTA de demo. NUNCA vire palestra.',
+    ],
+
+    // Analogias de referencia (NAO sao cases do Vivensi — sao empresas conhecidas
+    // que ilustram os frameworks). Bruno pode citar por analogia quando a dor
+    // do lead casa exatamente com o que o case resolveu. NUNCA dizer "somos como
+    // o Infomoney" — usar como "o modelo que o Infomoney usou".
+    'analogias_referencia' => [
+        [
+            'nome'      => 'Minimal (D2C moda masculina)',
+            'framework' => 'Autenticidade + conteudo util',
+            'usar_quando' => 'Lead diz que producao cara nao esta funcionando, ou pergunta como criar conteudo pra rede social sem estudio.',
+            'como_citar'  => '"O fundador da Minimal comecou gravando videos simples dando dica pratica de camisa (o que evitar comprar, tecido que nao encolhe) — virou fa clube e o LTV explodiu. E o padrao que o Social AI Hub aplica: autenticidade > producao."',
+        ],
+        [
+            'nome'      => 'Infomoney/XP (financas)',
+            'framework' => 'Funil de educacao',
+            'usar_quando' => 'Lead tem CAC alto, anuncio direto nao converte, publico desconfia de venda dura.',
+            'como_citar'  => '"O Infomoney nao vende conta XP com anuncio — cria minicurso gratuito ensinando o primeiro passo. Educa o publico, reduz CAC, e vira escolha natural quando a pessoa decide investir. E a logica do Hub de Marketing IA + Landing Pages no Vivensi pra terceiro setor."',
+        ],
+        [
+            'nome'      => 'Lugano (franquia high-ticket)',
+            'framework' => 'Aquisicao qualificada + SDR + Closer',
+            'usar_quando' => 'Lead vende produto/servico de alto valor (patrocinio corporativo grande, projeto de alto orcamento, franquia), ou reclama que anuncio digital nao fecha sozinho.',
+            'como_citar'  => '"Ninguem clica em anuncio e assina franquia de R$500 mil. A Lugano usa anuncio pra atrair investidor certo, SDR pra triar, e Closer humano pra fechar. Pra captacao de grande doador ou patrocinio corporativo funciona igual — o Vivensi organiza esse funil no CRM de Patrocinios."',
+        ],
+        [
+            'nome'      => 'Dropbox (indicacao viral)',
+            'framework' => 'Metodo cientifico + mecanismo de escala embutido no produto',
+            'usar_quando' => 'Lead pergunta como crescer base sem depender so de mais anuncio.',
+            'como_citar'  => '"O Dropbox testou dezenas de canais, mediu, e descobriu que indicacao (voce ganha espaco, seu amigo tambem) escalava sem custo de midia. E a mentalidade cientifica que a Sala de Estrategia aplica: testa hipotese, mede, escala o que funciona."',
+        ],
     ],
 
     // Conformidade e Proteção de Dados (LGPD) — diferencial importante pra ONGs

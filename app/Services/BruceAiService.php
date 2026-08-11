@@ -474,6 +474,8 @@ PROMPT;
         $links         = $kb['links']               ?? [];
         $lgpd          = $kb['lgpd']                ?? [];
         $agendamento   = $kb['agendamento']         ?? [];
+        $growth        = $kb['marketing_frameworks'] ?? [];
+        $analogias     = $kb['analogias_referencia'] ?? [];
 
         $personaRules = isset($persona['rules']) && is_array($persona['rules'])
             ? implode("\n", array_map(fn ($r) => "- {$r}", $persona['rules']))
@@ -639,6 +641,44 @@ PROMPT;
             }
         }
 
+        // Growth Marketing frameworks (base: growth-marketing-ai-training.md)
+        // Vocabulario disponivel — Bruno usa em 1-2 frases, NUNCA vira palestra.
+        $growthBlock = '';
+        if (!empty($growth)) {
+            if (!empty($growth['situacao_mercado'])) {
+                $growthBlock .= "\nSituacao do mercado (contexto):\n";
+                foreach ($growth['situacao_mercado'] as $s) {
+                    $growthBlock .= "- {$s}\n";
+                }
+            }
+            if (!empty($growth['frameworks'])) {
+                $growthBlock .= "\nFrameworks:\n";
+                foreach ($growth['frameworks'] as $k => $v) {
+                    $growthBlock .= "- **{$k}**: {$v}\n";
+                }
+            }
+            if (!empty($growth['aplicacao_vivensi'])) {
+                $growthBlock .= "\nComo cada framework vira modulo do Vivensi (use isso pra conectar teoria -> produto):\n";
+                foreach ($growth['aplicacao_vivensi'] as $k => $v) {
+                    $growthBlock .= "- **{$k}** -> {$v}\n";
+                }
+            }
+            if (!empty($growth['quando_usar'])) {
+                $growthBlock .= "\nQuando ativar: {$growth['quando_usar']}\n";
+            }
+        }
+
+        // Analogias de referencia — casos externos que Bruno pode citar
+        // como analogia, NUNCA como case da Vivensi.
+        $analogiasBlock = '';
+        if (!empty($analogias)) {
+            foreach ($analogias as $a) {
+                $analogiasBlock .= "\n- **{$a['nome']}** ({$a['framework']})\n";
+                $analogiasBlock .= "  Quando usar: {$a['usar_quando']}\n";
+                $analogiasBlock .= "  Como citar: {$a['como_citar']}\n";
+            }
+        }
+
         return <<<PROMPT
 {$campaignBlock}
 Você é {$persona['name']}, {$persona['role']}.
@@ -667,6 +707,14 @@ O cliente escolhe entre Evolution API (nativa, sem custo extra) e WhatsApp Ofici
 
 ### LGPD e Proteção de Dados (importante pra ONGs, empresas e qualquer lead que lida com dados pessoais — mencione PROATIVAMENTE)
 {$lgpdBlock}
+
+### GROWTH MARKETING — vocabulario e frameworks (use quando lead falar de captacao, ads, engajamento, segmentacao, CAC/LTV)
+Regra de ouro: NAO vire palestra. Use 1-2 frases + conecte ao modulo do Vivensi que resolve + CTA de demo. Se voce vai citar RFM, gancho 2s, funil de educacao — sempre traduza pra dor do lead ANTES de mostrar como o Vivensi aplica.
+{$growthBlock}
+
+### ANALOGIAS DE REFERENCIA (empresas conhecidas — NUNCA diga que sao case da Vivensi)
+Use SO como analogia, quando a dor do lead casa exatamente com o padrao. Formato correto: "o modelo que o [empresa] usou". Formato PROIBIDO: "somos como o [empresa]" ou "temos [empresa] como cliente".
+{$analogiasBlock}
 
 ### AGENDAMENTO INLINE (você TEM ferramentas pra agendar diretamente no chat)
 Duração da demo: {$agendamento['duracao']}
