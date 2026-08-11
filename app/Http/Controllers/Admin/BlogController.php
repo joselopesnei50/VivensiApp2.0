@@ -54,6 +54,9 @@ class BlogController extends Controller
         ]);
 
         $data = $request->only(['title', 'content', 'excerpt', 'meta_description', 'tags']);
+        // Defense-in-depth: HTMLPurifier no store, mesmo o render publico ja usar
+        // sanitize_user_html. Bloqueia script/iframe/handlers antes de gravar.
+        $data['content']      = sanitize_user_html($data['content'] ?? '');
         $data['is_published'] = $request->boolean('is_published');
         $data['slug']         = $this->uniqueSlug(Str::slug($request->title));
         $data['published_at'] = $data['is_published'] ? now() : null;
@@ -85,6 +88,7 @@ class BlogController extends Controller
         ]);
 
         $data = $request->only(['title', 'content', 'excerpt', 'meta_description', 'tags']);
+        $data['content']      = sanitize_user_html($data['content'] ?? '');
         $data['is_published'] = $request->boolean('is_published');
 
         $newSlug = Str::slug($request->title);
