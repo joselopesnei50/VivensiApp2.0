@@ -28,7 +28,7 @@
     <x-meta-pixel />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Vivensi - GestÃ£o Inteligente')</title>
+    <title>@yield('title', 'Vivensi - Gestão Inteligente')</title>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -167,13 +167,13 @@
             <a href="{{ route('solutions.ngo') }}">ONGs</a>
             <a href="{{ route('solutions.manager') }}">Gestores</a>
             <a href="{{ route('solutions.common') }}">Pessoal</a>
-            <a href="{{ url('/#pricing') }}">PreÃ§os</a>
+            <a href="{{ url('/#pricing') }}">Preços</a>
             <a href="{{ route('public.blog.index') }}">Blog</a>
         </div>
 
         <div style="display: flex; gap: 15px;">
             <a href="{{ route('login') }}" class="btn-outline">Entrar</a>
-            <a href="{{ url('/#pricing') }}" class="btn-cta">ComeÃ§ar Agora</a>
+            <a href="{{ url('/#pricing') }}" class="btn-cta">Começar Agora</a>
         </div>
     </nav>
 
@@ -188,7 +188,7 @@
                 <a href="{{ url('/') }}" class="footer-brand">
                     <x-application-logo style="height: 35px; width: auto; filter: brightness(0) invert(1);" />
                 </a>
-                <p>Transformando a gestÃ£o financeira e operacional com tecnologia e propÃ³sito.</p>
+                <p>Transformando a gestão financeira e operacional com tecnologia e propósito.</p>
                 <div style="display: flex; gap: 15px; margin-top: 20px;">
                     <a href="#" style="color: white;"><i class="fab fa-instagram"></i></a>
                     <a href="#" style="color: white;"><i class="fab fa-linkedin"></i></a>
@@ -199,14 +199,14 @@
                 <h4 style="color: white; margin-bottom: 20px;">Produto</h4>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <a href="#" style="color: #94a3b8; text-decoration: none;">Recursos</a>
-                    <a href="#" style="color: #94a3b8; text-decoration: none;">IntegraÃ§Ãµes</a>
-                    <a href="{{ url('/#pricing') }}" style="color: #94a3b8; text-decoration: none;">PreÃ§os</a>
+                    <a href="#" style="color: #94a3b8; text-decoration: none;">Integrações</a>
+                    <a href="{{ url('/#pricing') }}" style="color: #94a3b8; text-decoration: none;">Preços</a>
                 </div>
             </div>
             <div>
                 <h4 style="color: white; margin-bottom: 20px;">Empresa</h4>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{{ route('public.page', 'sobre') }}" style="color: #94a3b8; text-decoration: none;">Sobre NÃ³s</a>
+                    <a href="{{ route('public.page', 'sobre') }}" style="color: #94a3b8; text-decoration: none;">Sobre Nós</a>
                     <a href="{{ route('public.blog.index') }}" style="color: #94a3b8; text-decoration: none;">Blog</a>
                     <a href="#" style="color: #94a3b8; text-decoration: none;">Contato</a>
                 </div>
@@ -221,14 +221,14 @@
         </div>
         <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;">
             <p>&copy; 2026 VIVENSIAPP. Todos os direitos reservados.</p>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">VivensiApp Ã© um produto da <strong style="color:#cbd5e1;">NC5 HUB DIGITAL LTDA</strong> &middot; CNPJ: 67.848.807/0001-50</p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">VivensiApp é um produto da <strong style="color:#cbd5e1;">NC5 HUB DIGITAL LTDA</strong> &middot; CNPJ: 67.848.807/0001-50</p>
         </div>
     </footer>
 
     @include('partials.whatsapp-button')
     <!-- Cookie Consent Banner (LGPD) -->
     @include('partials.cookie-banner')
-    <!-- Popup pÃºblico BruceIA (canto inferior direito, aparece apÃ³s 6s) -->
+    <!-- Popup público BruceIA (canto inferior direito, aparece após 6s) -->
     @include('partials.bruce_public_popup')
 
 </body>

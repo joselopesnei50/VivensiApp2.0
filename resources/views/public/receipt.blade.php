@@ -182,7 +182,7 @@
                     <span class="info-value">{{ \Carbon\Carbon::parse($transaction->date)->format('d/m/Y') }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">HORÃRIO</span>
+                    <span class="info-label">HORÁRIO</span>
                     <span class="info-value">{{ $transaction->created_at->format('H:i:s') }}</span>
                 </div>
                 <div class="info-row" style="margin-top: 15px; border-top: 1px dotted #e2e8f0; padding-top: 15px;">
@@ -197,11 +197,11 @@
             </div>
 
             <p class="receipt-text">
-                Confirmamos o recebimento da importÃ¢ncia acima de <strong>{{ $transaction->description }}</strong>, referente ao aporte/pagamento processado pelo ecossistema Vivensi.
+                Confirmamos o recebimento da importância acima de <strong>{{ $transaction->description }}</strong>, referente ao aporte/pagamento processado pelo ecossistema Vivensi.
             </p>
 
             <div class="receipt-footer">
-                <div style="font-weight: 800; color: #94a3b8; margin-bottom: 5px;">CÃ“DIGO DE VALIDAÃ‡ÃƒO</div>
+                <div style="font-weight: 800; color: #94a3b8; margin-bottom: 5px;">CÓDIGO DE VALIDAÇÃO</div>
                 <div class="auth-code">{{ $transaction->receipt_auth_code }}</div>
                 <div style="margin-top: 12px; font-weight: 800; font-size: 0.75rem;">
                     <a href="{{ url('/validar-recibo') . '?query=' . urlencode($transaction->receipt_auth_code) }}" style="color: var(--primary-color); text-decoration: none;">
@@ -210,11 +210,11 @@
                 </div>
                 @if($transaction->public_receipt_expires_at)
                     <div style="margin-top: 14px; font-weight: 900; color: #64748b; letter-spacing: 1px; font-size: 0.65rem; text-transform: uppercase;">
-                        Link vÃ¡lido atÃ© {{ $transaction->public_receipt_expires_at->format('d/m/Y') }}
+                        Link válido até {{ $transaction->public_receipt_expires_at->format('d/m/Y') }}
                     </div>
                 @else
                     <div style="margin-top: 14px; font-weight: 900; color: #64748b; letter-spacing: 1px; font-size: 0.65rem; text-transform: uppercase;">
-                        Link sem expiraÃ§Ã£o
+                        Link sem expiração
                     </div>
                 @endif
                 <p style="margin-top: 20px; font-weight: 700; color: var(--primary-color);">Tecnologia Vivensi 2.0</p>

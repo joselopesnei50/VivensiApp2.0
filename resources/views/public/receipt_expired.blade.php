@@ -20,10 +20,10 @@
 <body>
     <div class="card">
         <h1>Este link de recibo expirou</h1>
-        <p>Por seguranÃ§a, o recibo pÃºblico possui um prazo de validade. Solicite um novo link Ã  organizaÃ§Ã£o que emitiu o recibo.</p>
-        <p class="hint">Se vocÃª Ã© o gestor, gere um novo recibo ou reenvie o link atualizado pelo painel.</p>
-        <p class="hint">Se vocÃª possui o <strong>cÃ³digo de validaÃ§Ã£o</strong>, ainda pode consultar o status em <a href="{{ url('/validar-recibo') }}">Validar recibo</a>.</p>
-        <p class="hint"><a href="{{ url('/') }}">Voltar para a pÃ¡gina inicial</a></p>
+        <p>Por segurança, o recibo público possui um prazo de validade. Solicite um novo link à organização que emitiu o recibo.</p>
+        <p class="hint">Se você é o gestor, gere um novo recibo ou reenvie o link atualizado pelo painel.</p>
+        <p class="hint">Se você possui o <strong>código de validação</strong>, ainda pode consultar o status em <a href="{{ url('/validar-recibo') }}">Validar recibo</a>.</p>
+        <p class="hint"><a href="{{ url('/') }}">Voltar para a página inicial</a></p>
     </div>
 </body>
 </html>

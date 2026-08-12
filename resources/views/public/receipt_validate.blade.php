@@ -34,12 +34,12 @@
 <body>
     <div class="card">
         <h1>Validar recibo</h1>
-        <p>Cole o <strong>link</strong> do recibo (ex.: <span class="muted">/r/UUID</span>) ou o <strong>cÃ³digo de validaÃ§Ã£o</strong> (16 caracteres) para confirmar autenticidade.</p>
+        <p>Cole o <strong>link</strong> do recibo (ex.: <span class="muted">/r/UUID</span>) ou o <strong>código de validação</strong> (16 caracteres) para confirmar autenticidade.</p>
 
         <form method="POST" action="{{ url('/validar-recibo') }}">
             @csrf
-            <label for="query">Link ou cÃ³digo</label>
-            <input id="query" name="query" value="{{ old('query', request('query')) }}" placeholder="Cole aqui o link /r/... ou o cÃ³digo (ex.: 1A2B3C4D5E6F7A8B)" required>
+            <label for="query">Link ou código</label>
+            <input id="query" name="query" value="{{ old('query', request('query')) }}" placeholder="Cole aqui o link /r/... ou o código (ex.: 1A2B3C4D5E6F7A8B)" required>
             <div class="row">
                 <button type="submit">Validar</button>
                 <a href="{{ url('/') }}" style="display:flex; align-items:center;">Voltar</a>
@@ -51,7 +51,7 @@
                 @php
                     $status = $result['status'] ?? 'invalid';
                     $badgeClass = $status === 'valid' ? 'ok' : ($status === 'expired' ? 'warn' : 'bad');
-                    $badgeText = $status === 'valid' ? 'VÃ¡lido' : ($status === 'expired' ? 'Expirado' : ($status === 'error' ? 'Erro' : 'NÃ£o encontrado'));
+                    $badgeText = $status === 'valid' ? 'Válido' : ($status === 'expired' ? 'Expirado' : ($status === 'error' ? 'Erro' : 'Não encontrado'));
                 @endphp
                 <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px;">
                     <span class="badge {{ $badgeClass }}">{{ $badgeText }}</span>
@@ -64,8 +64,8 @@
                 @if(($result['transaction'] ?? null) && ($result['tenant'] ?? null))
                     <div class="grid">
                         <div class="kv">
-                            <div class="k">InstituiÃ§Ã£o</div>
-                            <div class="v">{{ $result['tenant']->name ?? 'â€”' }}</div>
+                            <div class="k">Instituição</div>
+                            <div class="v">{{ $result['tenant']->name ?? '—' }}</div>
                         </div>
                         <div class="kv">
                             <div class="k">Data</div>
@@ -81,7 +81,7 @@
                                 @if($result['transaction']->public_receipt_expires_at)
                                     {{ $result['transaction']->public_receipt_expires_at->format('d/m/Y') }}
                                 @else
-                                    Sem expiraÃ§Ã£o
+                                    Sem expiração
                                 @endif
                             </div>
                         </div>

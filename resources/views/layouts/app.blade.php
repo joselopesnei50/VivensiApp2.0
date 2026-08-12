@@ -30,11 +30,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>try{var _adm={{ (auth()->check()&&auth()->user()->role==='super_admin')?'true':'false' }};var _k=_adm?'vivensi-admin-theme':'vivensi-theme';var _df=_adm?'light':'dark';document.documentElement.setAttribute('data-theme',localStorage.getItem(_k)||_df);}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
-    <title>{{ $title ?? config('app.name', 'Vivensi') }} â€” {{ __('ui.app_tagline') }}</title>
+    <title>{{ $title ?? config('app.name', 'Vivensi') }} — {{ __('ui.app_tagline') }}</title>
     
     <!-- SEO & Social Sharing -->
-    <meta name="description" content="Vivensi App - A plataforma de gestÃ£o definitiva para ONGs, empresas e gestores. Controle financeiro, projetos e transparÃªncia com auxÃ­lio de IA.">
-    <meta name="keywords" content="gestÃ£o financeira, ongs, projetos, saas, vivensi, transparÃªncia pÃºblica, lgpd financeiro">
+    <meta name="description" content="Vivensi App - A plataforma de gestão definitiva para ONGs, empresas e gestores. Controle financeiro, projetos e transparência com auxílio de IA.">
+    <meta name="keywords" content="gestão financeira, ongs, projetos, saas, vivensi, transparência pública, lgpd financeiro">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
@@ -50,7 +50,7 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/design-system.css') }}">
 
-    {{-- F7: Cor de marca dinÃ¢mica por tenant --}}
+    {{-- F7: Cor de marca dinâmica por tenant --}}
     @auth
     @php $tenantBrand = auth()->user()->tenant; @endphp
     @if($tenantBrand?->brand_color)
@@ -63,7 +63,7 @@
     @endif
     @endauth
 
-    {{-- Laravel Echo + Pusher (Pusher.com com cluster dinÃ¢mico via SystemSetting) --}}
+    {{-- Laravel Echo + Pusher (Pusher.com com cluster dinâmico via SystemSetting) --}}
     <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.0.1/dist/web/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.3/dist/echo.iife.js"></script>
     <script>
@@ -71,7 +71,7 @@
         window.Echo = new Echo({
             broadcaster: 'pusher',
             key:         '{{ config('broadcasting.connections.pusher.key') }}',
-            // Cluster dinÃ¢mico (era hardcoded 'mt1' â€” quebrava conexÃ£o quando
+            // Cluster dinâmico (era hardcoded 'mt1' — quebrava conexão quando
             // o admin cadastrava cluster diferente em /admin/settings, ex: sa1
             // do Brasil que a gente usa hoje).
             cluster:     '{{ config('broadcasting.connections.pusher.options.cluster') ?: 'sa1' }}',
@@ -104,7 +104,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 @endif
 
-<a href="#main-content" class="skip-link">Pular para o conteÃºdo principal</a>
+<a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
 
 <!-- Mobile Sidebar Overlay -->
 <div id="sidebarOverlay" class="sidebar-overlay" style="display: none;" onclick="toggleSidebar()"></div>
@@ -126,7 +126,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         .sidebar.mobile-open { z-index: 1050 !important; }
     }
 
-    /* â”€â”€ Accordion Menu Groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Accordion Menu Groups ─────────────────────────── */
     .menu-group { margin-bottom: 2px; }
     .menu-group-header {
         display: flex;
@@ -164,7 +164,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         background: rgba(255,255,255,0.06);
         margin: 6px 14px;
     }
-    /* â”€â”€ Language Switcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Language Switcher ──────────────────────────────── */
     .lang-switcher { display: flex; justify-content: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.07); }
     .lang-btn {
         display: flex; align-items: center; gap: 6px;
@@ -179,9 +179,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     .lang-btn span { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.5px; }
     .lang-btn-active { background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.3) !important; }
     .lang-btn-active span { color: white !important; }
-    /* â”€â”€ Sub-menu indent items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Sub-menu indent items ──────────────────────────── */
     .menu-sub-item { margin-left: 10px; }
-    /* â”€â”€ Sidebar user-view â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Sidebar user-view ──────────────────────────────── */
     .user-view {
         padding: 12px 16px;
         border-top: 1px solid rgba(255,255,255,0.07);
@@ -204,20 +204,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     .user-view .user-settings:hover { opacity: 0.7; }
     .user-view .user-settings i { font-size: 0.7rem; color: var(--text-secondary); }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       Executive Sidebar â€” Super Admin Only  (.sidebar-sa)
-       Scoped 100% â€” zero impacto em menus de clientes
-       PadrÃ£o: Linear / Vercel / Stripe â€” contraste WCAG AA
-    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    /* ═══════════════════════════════════════════════════════════════════════
+       Executive Sidebar — Super Admin Only  (.sidebar-sa)
+       Scoped 100% — zero impacto em menus de clientes
+       Padrão: Linear / Vercel / Stripe — contraste WCAG AA
+    ══════════════════════════════════════════════════════════════════════ */
 
-    /* â”€â”€ CabeÃ§alhos de seÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Cabeçalhos de seção ──────────────────────────────────────────── */
     .sidebar-sa .menu-group-header {
         padding: 14px 16px 4px;
         font-size: 0.62rem;
         font-weight: 800;
         letter-spacing: 1.2px;
         text-transform: uppercase;
-        color: #64748b !important;    /* slate-500 â€” cinza mÃ©dio sobre fundo branco */
+        color: #64748b !important;    /* slate-500 — cinza médio sobre fundo branco */
         border-radius: 0;
         margin: 0;
         cursor: pointer;
@@ -237,7 +237,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
     .sidebar-sa .menu-group-header.collapsed .group-arrow { transform: rotate(-90deg); }
 
-    /* â”€â”€ Itens do menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Itens do menu ────────────────────────────────────────────────── */
     .sidebar-sa .sidebar-menu ul { margin: 0; padding: 0; list-style: none; }
     .sidebar-sa .sidebar-menu ul li a {
         display: flex !important;
@@ -248,7 +248,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         border-radius: 8px !important;
         font-size: 0.82rem !important;
         font-weight: 500 !important;
-        color: #334155 !important;       /* slate-700 â€” cinza escuro sobre fundo branco */
+        color: #334155 !important;       /* slate-700 — cinza escuro sobre fundo branco */
         text-decoration: none !important;
         transition: background 0.12s, color 0.12s, border-color 0.12s !important;
         border-left: 2px solid transparent !important;
@@ -256,7 +256,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    /* ForÃ§a Ã­cones com cor consistente â€” remove inline colors */
+    /* Força ícones com cor consistente — remove inline colors */
     .sidebar-sa .sidebar-menu ul li a i,
     .sidebar-sa .sidebar-menu ul li a .fab,
     .sidebar-sa .sidebar-menu ul li a .fas,
@@ -265,7 +265,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         text-align: center !important;
         font-size: 0.78rem !important;
         flex-shrink: 0 !important;
-        color: #64748b !important;       /* slate-500 â€” Ã­cone cinza sobre fundo branco */
+        color: #64748b !important;       /* slate-500 — ícone cinza sobre fundo branco */
         transition: color 0.12s !important;
     }
     .sidebar-sa .sidebar-menu ul li a:hover {
@@ -286,14 +286,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     .sidebar-sa .sidebar-menu ul li a.active .fab,
     .sidebar-sa .sidebar-menu ul li a.active .fas { color: #818cf8 !important; }
 
-    /* â”€â”€ Divisores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Divisores ────────────────────────────────────────────────────── */
     .sidebar-sa .menu-divider {
         height: 1px;
         background: rgba(255,255,255,0.06);
         margin: 2px 0;
     }
 
-    /* â”€â”€ Badges de notificaÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Badges de notificação ────────────────────────────────────────── */
     .sa-badge {
         margin-left: auto;
         font-size: 0.6rem;
@@ -309,7 +309,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     .sa-badge.sa-amber { background: rgba(251,191,36,0.2);  color: #fde68a; }
     .sa-badge.sa-green { background: rgba(34,197,94,0.2);   color: #bbf7d0; }
 
-    /* â”€â”€ Widget Ao Vivo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Widget Ao Vivo ───────────────────────────────────────────────── */
     .sa-live-pill {
         display: flex;
         align-items: center;
@@ -348,7 +348,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         @php
             $panelMeta = match(auth()->user()->role) {
                 'ngo'         => ['label' => 'Terceiro Setor', 'icon' => 'fa-heart',          'cls' => 'panel-badge-ngo'],
-                'manager'     => ['label' => 'GestÃ£o',         'icon' => 'fa-briefcase',      'cls' => 'panel-badge-manager'],
+                'manager'     => ['label' => 'Gestão',         'icon' => 'fa-briefcase',      'cls' => 'panel-badge-manager'],
                 'common'      => ['label' => 'MEI / Pessoal',  'icon' => 'fa-store',          'cls' => 'panel-badge-mei'],
                 'super_admin' => ['label' => 'Admin',          'icon' => 'fa-shield-halved',  'cls' => 'panel-badge-admin'],
                 'credenciado' => ['label' => 'Credenciado',    'icon' => 'fa-id-badge',       'cls' => 'panel-badge-ngo'],
@@ -365,7 +365,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         @php $currentLocale = app()->getLocale(); @endphp
         <div class="lang-switcher">
             <form method="POST" action="{{ route('locale.set', 'pt_BR') }}" style="display:inline">@csrf
-                <button type="submit" title="PortuguÃªs (Brasil)" class="lang-btn {{ $currentLocale === 'pt_BR' ? 'lang-btn-active' : '' }}">
+                <button type="submit" title="Português (Brasil)" class="lang-btn {{ $currentLocale === 'pt_BR' ? 'lang-btn-active' : '' }}">
                     <img loading="lazy" src="https://flagcdn.com/w40/br.png" width="22" height="15" alt="Brasil">
                     <span>PT</span>
                 </button>
@@ -377,8 +377,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </button>
             </form>
             <form method="POST" action="{{ route('locale.set', 'es') }}" style="display:inline">@csrf
-                <button type="submit" title="EspaÃ±ol" class="lang-btn {{ $currentLocale === 'es' ? 'lang-btn-active' : '' }}">
-                    <img loading="lazy" src="https://flagcdn.com/w40/es.png" width="22" height="15" alt="EspaÃ±a">
+                <button type="submit" title="Español" class="lang-btn {{ $currentLocale === 'es' ? 'lang-btn-active' : '' }}">
+                    <img loading="lazy" src="https://flagcdn.com/w40/es.png" width="22" height="15" alt="España">
                     <span>ES</span>
                 </button>
             </form>
@@ -387,7 +387,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <nav class="sidebar-menu">
         <ul>
             @if(auth()->user()->role === 'credenciado')
-                {{-- â•â•â• MENU CREDENCIADO â€” restrito a projetos vinculados â•â•â• --}}
+                {{-- ═══ MENU CREDENCIADO — restrito a projetos vinculados ═══ --}}
                 <li>
                     <a href="{{ url('/credenciado') }}" class="{{ request()->is('credenciado') || request()->is('credenciado/*') ? 'active' : '' }}">
                         <i class="fas fa-folder-tree"></i> Meus Projetos
@@ -413,12 +413,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </a>
                 </li>
             @else
-            <li><a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}"><i class="fas fa-home"></i> VisÃ£o Geral</a></li>
+            <li><a href="{{ url('/dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}"><i class="fas fa-home"></i> Visão Geral</a></li>
 
 
             {{-- Academy Access removed from global and moved to specific roles below --}}
             @if (auth()->user()->role == 'super_admin')
-                {{-- â•â•â• MENU SUPER ADMIN â€” Executive Edition â•â•â• --}}
+                {{-- ═══ MENU SUPER ADMIN — Executive Edition ═══ --}}
                 @php
                     $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
@@ -427,7 +427,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*');
                     $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.bruno.*') || request()->routeIs('admin.audit_logs') || request()->routeIs('admin.failed-jobs.*') || request()->routeIs('admin.radar.*');
                     $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*') || request()->is('admin/dev*');
-                    // Badges de notificaÃ§Ã£o
+                    // Badges de notificação
                     try {
                         $sa_badge_bookings = \App\Models\MeetingBooking::where('status','confirmed')->where('meeting_date','>=',today())->count();
                         $sa_badge_lgpd     = \App\Models\LgpdDataRequest::where('status','pending')->count();
@@ -438,26 +438,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     }
                 @endphp
 
-                {{-- â”€â”€ SaaS & MÃ©tricas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+                {{-- ── SaaS & Métricas ──────────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_saas_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-chart-line group-icon"></i> SaaS &amp; MÃ©tricas
+                        <i class="fas fa-chart-line group-icon"></i> SaaS &amp; Métricas
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_saas_active ? '300px' : '0' }};">
                         <ul>
-                            <li><a href="{{ url('/admin') }}" class="{{ request()->is('admin') ? 'active' : '' }}"><i class="fas fa-gauge-high"></i> VisÃ£o Geral</a></li>
-                            <li><a href="{{ url('/admin/tenants') }}" class="{{ request()->is('admin/tenants*') ? 'active' : '' }}"><i class="fas fa-building"></i> OrganizaÃ§Ãµes</a></li>
+                            <li><a href="{{ url('/admin') }}" class="{{ request()->is('admin') ? 'active' : '' }}"><i class="fas fa-gauge-high"></i> Visão Geral</a></li>
+                            <li><a href="{{ url('/admin/tenants') }}" class="{{ request()->is('admin/tenants*') ? 'active' : '' }}"><i class="fas fa-building"></i> Organizações</a></li>
                             <li><a href="{{ route('admin.plans.index') }}" class="{{ request()->routeIs('admin.plans.index') ? 'active' : '' }}"><i class="fas fa-tags"></i> Planos</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- â”€â”€ Equipe & OperaÃ§Ãµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+                {{-- ── Equipe & Operações ───────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_team_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-users-cog group-icon"></i> Equipe &amp; OperaÃ§Ãµes
+                        <i class="fas fa-users-cog group-icon"></i> Equipe &amp; Operações
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_team_active ? '280px' : '0' }};">
@@ -470,7 +470,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('admin.chat') }}" class="{{ request()->routeIs('admin.chat') ? 'active' : '' }}"><i class="fas fa-comments"></i> Chat Interno</a></li>
                             <li><a href="{{ url('/admin/support') }}" class="{{ request()->is('admin/support*') ? 'active' : '' }}"><i class="fas fa-headset"></i> Suporte &amp; Tickets</a></li>
                             <li><a href="{{ route('admin.bookings.index') }}" class="{{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
-                                <i class="fas fa-calendar-check"></i> Agenda de ReuniÃµes
+                                <i class="fas fa-calendar-check"></i> Agenda de Reuniões
                                 @if($sa_badge_bookings > 0)<span class="sa-badge sa-green">{{ $sa_badge_bookings }}</span>@endif
                             </a></li>
                         </ul>
@@ -478,23 +478,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- â”€â”€ ConteÃºdo & CMS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+                {{-- ── Conteúdo & CMS ───────────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_cms_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-layer-group group-icon"></i> ConteÃºdo &amp; CMS
+                        <i class="fas fa-layer-group group-icon"></i> Conteúdo &amp; CMS
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_cms_active ? '620px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.blog.index') }}" class="{{ request()->routeIs('admin.blog.index') ? 'active' : '' }}"><i class="fas fa-blog"></i> Blog CMS</a></li>
-                            <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot"></i> InteligÃªncia Territorial</a></li>
+                            <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot"></i> Inteligência Territorial</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Social AI Hub</a></li>
                             <li><a href="{{ route('social.posts.create') }}" class="{{ request()->routeIs('social.posts.create') ? 'active' : '' }}"><i class="fas fa-share-nodes"></i> Publicar em Redes</a></li>
                             <li><a href="{{ route('social.posts.index') }}" class="{{ request()->routeIs('social.posts.index') || request()->routeIs('social.posts.edit') ? 'active' : '' }}"><i class="fas fa-calendar-days"></i> Agenda de Posts</a></li>
                             <li><a href="{{ route('social.analytics.index') }}" class="{{ request()->routeIs('social.analytics.index') ? 'active' : '' }}"><i class="fas fa-chart-simple"></i> Analytics Redes</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->routeIs('social.accounts') ? 'active' : '' }}"><i class="fab fa-facebook"></i> Contas Meta</a></li>
                             <li><a href="{{ route('admin.testimonials.index') }}" class="{{ request()->routeIs('admin.testimonials.index') ? 'active' : '' }}"><i class="fas fa-quote-left"></i> Depoimentos</a></li>
-                            <li><a href="{{ route('admin.pages.index') }}" class="{{ request()->routeIs('admin.pages.index') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> PÃ¡ginas (CMS)</a></li>
+                            <li><a href="{{ route('admin.pages.index') }}" class="{{ request()->routeIs('admin.pages.index') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Páginas (CMS)</a></li>
                             <li><a href="{{ route('admin.academy.index') }}" class="{{ request()->routeIs('admin.academy.index') ? 'active' : '' }}"><i class="fas fa-graduation-cap"></i> Academy</a></li>
                             <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-play-circle"></i> Ver como Aluno</a></li>
                         </ul>
@@ -502,7 +502,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- â”€â”€ WhatsApp â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+                {{-- ── WhatsApp ──────────────────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_wa_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fab fa-whatsapp group-icon" style="color:#25d366;"></i> WhatsApp
@@ -514,7 +514,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->routeIs('whatsapp.broadcast.*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
-                            <li><a href="{{ route('whatsapp.instances') }}" class="{{ request()->routeIs('whatsapp.instances') ? 'active' : '' }}"><i class="fas fa-plug"></i> InstÃ¢ncias WA</a></li>
+                            <li><a href="{{ route('whatsapp.instances') }}" class="{{ request()->routeIs('whatsapp.instances') ? 'active' : '' }}"><i class="fas fa-plug"></i> Instâncias WA</a></li>
                             @can('has-whatsapp-cloud')
                                 <li><a href="{{ route('whatsapp.cloud.connect') }}" class="{{ request()->is('whatsapp/cloud/connect') || request()->is('whatsapp/cloud/manual-connect') ? 'active' : '' }}"><i class="fab fa-facebook"></i> Conectar WhatsApp Cloud</a></li>
                             @endcan
@@ -523,14 +523,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             @can('has-whatsapp-cloud')
                                 <li><a href="{{ route('whatsapp.consumo') }}" class="{{ request()->routeIs('whatsapp.consumo') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Meu Consumo</a></li>
                             @endcan
-                            <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->routeIs('whatsapp.forms.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> FormulÃ¡rios</a></li>
-                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->routeIs('whatsapp.automations.*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> AutomaÃ§Ãµes</a></li>
+                            <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->routeIs('whatsapp.forms.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
+                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->routeIs('whatsapp.automations.*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- â”€â”€ Marketing & Growth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+                {{-- ── Marketing & Growth ───────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_growth_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-rocket group-icon"></i> Marketing &amp; Growth
@@ -539,7 +539,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $sa_growth_active ? '260px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.sales.board') }}" class="{{ request()->is('admin/sales*') ? 'active' : '' }}"><i class="fas fa-funnel-dollar"></i> Funil Comercial</a></li>
-                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> ProspecÃ§Ã£o Global</a></li>
+                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
                             <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Campanhas de E-mail</a></li>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
                         </ul>
@@ -547,7 +547,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- â”€â”€ Infraestrutura & Compliance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+                {{-- ── Infraestrutura & Compliance ──────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_infra_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-shield-halved group-icon"></i> Infra &amp; Compliance
@@ -556,31 +556,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '520px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.analytics') }}" class="{{ request()->routeIs('admin.analytics') ? 'active' : '' }}"><i class="fas fa-chart-bar"></i> Analytics</a></li>
-                            <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> SaÃºde do Servidor</a></li>
+                            <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
                             <li><a href="{{ route('admin.failed-jobs.index') }}" class="{{ request()->routeIs('admin.failed-jobs.*') ? 'active' : '' }}">
                                 <i class="fas fa-circle-exclamation"></i> Jobs Falhados
                                 @if($sa_badge_failed > 0)<span class="sa-badge sa-red">{{ $sa_badge_failed }}</span>@endif
                             </a></li>
                             <li><a href="{{ route('admin.audit_logs') }}" class="{{ request()->routeIs('admin.audit_logs') ? 'active' : '' }}"><i class="fas fa-clipboard-check"></i> Auditoria</a></li>
-                            <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-sliders"></i> ConfiguraÃ§Ãµes Globais</a></li>
+                            <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurações Globais</a></li>
                             <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fas fa-robot"></i> Bot de Atendimento</a></li>
-                            <li><a href="{{ route('admin.bruno.index') }}" class="{{ request()->routeIs('admin.bruno.index') ? 'active' : '' }}"><i class="fas fa-handshake"></i> Bruno â€” Sandbox Vendedor</a></li>
-                            <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno â€” MÃ©tricas</a></li>
-                            <li><a href="{{ route('admin.whatsapp.billing') }}" class="{{ request()->routeIs('admin.whatsapp.billing') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> WhatsApp â€” Consumo Cloud</a></li>
-                            <li><a href="{{ route('admin.whatsapp.quotas.index') }}" class="{{ request()->routeIs('admin.whatsapp.quotas.*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> WhatsApp â€” Cotas mensais</a></li>
+                            <li><a href="{{ route('admin.bruno.index') }}" class="{{ request()->routeIs('admin.bruno.index') ? 'active' : '' }}"><i class="fas fa-handshake"></i> Bruno — Sandbox Vendedor</a></li>
+                            <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno — Métricas</a></li>
+                            <li><a href="{{ route('admin.whatsapp.billing') }}" class="{{ request()->routeIs('admin.whatsapp.billing') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> WhatsApp — Consumo Cloud</a></li>
+                            <li><a href="{{ route('admin.whatsapp.quotas.index') }}" class="{{ request()->routeIs('admin.whatsapp.quotas.*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> WhatsApp — Cotas mensais</a></li>
                             <li><a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Faturas</a></li>
                             <li><a href="{{ route('admin.lgpd.index') }}" class="{{ request()->routeIs('admin.lgpd.*') ? 'active' : '' }}">
                                 <i class="fas fa-scale-balanced"></i> Painel LGPD / DPO
                                 @if($sa_badge_lgpd > 0)<span class="sa-badge sa-amber">{{ $sa_badge_lgpd }}</span>@endif
                             </a></li>
                             <li><a href="{{ route('admin.radar.index') }}" class="{{ request()->is('admin/radar') && !request()->is('admin/radar/qualidade') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
-                            <li><a href="{{ route('admin.radar.qualidade') }}" class="{{ request()->routeIs('admin.radar.qualidade') ? 'active' : '' }}"><i class="fas fa-chart-bar" style="color:#6366f1;"></i> Radar â€” Qualidade</a></li>
+                            <li><a href="{{ route('admin.radar.qualidade') }}" class="{{ request()->routeIs('admin.radar.qualidade') ? 'active' : '' }}"><i class="fas fa-chart-bar" style="color:#6366f1;"></i> Radar — Qualidade</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- â”€â”€ API & Dev â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+                {{-- ── API & Dev ────────────────────────────────────────── --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $sa_api_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-code group-icon"></i> API &amp; Dev
@@ -588,8 +588,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $sa_api_active ? '280px' : '0' }};">
                         <ul>
-                            <li><a href="{{ route('api.docs') }}" class="{{ request()->is('api-docs*') ? 'active' : '' }}"><i class="fas fa-book"></i> DocumentaÃ§Ã£o API</a></li>
-                            <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->is('settings/api-tokens*') ? 'active' : '' }}"><i class="fas fa-key"></i> API &amp; IntegraÃ§Ãµes</a></li>
+                            <li><a href="{{ route('api.docs') }}" class="{{ request()->is('api-docs*') ? 'active' : '' }}"><i class="fas fa-book"></i> Documentação API</a></li>
+                            <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->is('settings/api-tokens*') ? 'active' : '' }}"><i class="fas fa-key"></i> API &amp; Integrações</a></li>
                             <li><a href="{{ route('settings.webhooks') }}" class="{{ request()->is('settings/webhooks*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Webhooks</a></li>
                             <li><a href="{{ route('admin.dev.dashboard') }}" class="{{ request()->is('admin/dev*') ? 'active' : '' }}"><i class="fas fa-terminal"></i> Portal Dev</a></li>
                         </ul>
@@ -597,7 +597,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
 
             @elseif (auth()->user()->role == 'manager')
-                {{-- â•â•â• MENU GESTOR â€” Agrupado â•â•â• --}}
+                {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
                 @php
                     $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*','manager/perfil-operacional*','manager/kanban*','class-sessions*','ngo/inventory*','manager/radar*');
                     $mgr_fin_active  = request()->is('manager/contracts*','manager/reconciliation*');
@@ -607,10 +607,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $mgr_acad_active = request()->is('academy*');
                 @endphp
 
-                {{-- Grupo: Projetos & OperaÃ§Ãµes --}}
+                {{-- Grupo: Projetos & Operações --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mgr_ops_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-briefcase group-icon"></i> Projetos &amp; OperaÃ§Ãµes
+                        <i class="fas fa-briefcase group-icon"></i> Projetos &amp; Operações
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mgr_ops_active ? '340px' : '0' }};">
@@ -620,7 +620,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/manager/team') }}" class="{{ request()->is('manager/team*') ? 'active' : '' }}"><i class="fas fa-users"></i> Equipe &amp; RH</a></li>
                             <li><a href="{{ url('/ngo/inventory') }}" class="{{ request()->is('ngo/inventory*') ? 'active' : '' }}"><i class="fas fa-boxes-stacked"></i> Almoxarifado &amp; Estoque</a></li>
                             <li><a href="{{ url('/manager/schedule') }}" class="{{ request()->is('manager/schedule*') ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Agenda Corporativa</a></li>
-                            <li><a href="{{ url('/manager/approvals') }}" class="{{ request()->is('manager/approvals*') ? 'active' : '' }}"><i class="fas fa-check-double"></i> Central de AprovaÃ§Ãµes</a></li>
+                            <li><a href="{{ url('/manager/approvals') }}" class="{{ request()->is('manager/approvals*') ? 'active' : '' }}"><i class="fas fa-check-double"></i> Central de Aprovações</a></li>
                             <li><a href="{{ url('/manager/perfil-operacional') }}" class="{{ request()->is('manager/perfil-operacional*') ? 'active' : '' }}"><i class="fas fa-compass"></i> Perfil Operacional</a></li>
                             <li><a href="{{ url('/manager/kanban') }}" class="{{ request()->is('manager/kanban*') ? 'active' : '' }}"><i class="fas fa-columns"></i> Kanban Geral</a></li>
                             <li><a href="{{ route('manager.radar.index') }}" class="{{ request()->is('manager/radar*') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
@@ -638,7 +638,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $mgr_fin_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/manager/contracts') }}" class="{{ request()->is('manager/contracts*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Contratos Digitais</a></li>
-                            <li><a href="{{ url('/manager/reconciliation') }}" class="{{ request()->is('manager/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> ConciliaÃ§Ã£o BancÃ¡ria</a></li>
+                            <li><a href="{{ url('/manager/reconciliation') }}" class="{{ request()->is('manager/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
                             <li><a href="{{ url('/finance/import') }}" class="{{ request()->is('finance/import*') ? 'active' : '' }}"><i class="fas fa-file-import" style="color:#10b981;"></i> Importar Planilha</a></li>
                         </ul>
                     </div>
@@ -665,28 +665,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             @can('has-whatsapp-cloud')
                                 <li><a href="{{ route('whatsapp.consumo') }}" class="{{ request()->routeIs('whatsapp.consumo') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Meu Consumo</a></li>
                             @endcan
-                            <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> FormulÃ¡rios</a></li>
-                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> AutomaÃ§Ãµes</a></li>
+                            <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
+                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Marketing & ComunicaÃ§Ã£o --}}
+                {{-- Grupo: Marketing & Comunicação --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mgr_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; ComunicaÃ§Ã£o
+                        <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mgr_mkt_active ? '440px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('manager.email_campaigns.index') }}" class="{{ request()->is('manager/email-campaigns*') ? 'active' : '' }}"><i class="fas fa-envelope" style="color:#6366f1;"></i> E-mail Marketing</a></li>
                             <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
-                            <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> InteligÃªncia Territorial</a></li>
+                            <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
-                            <li><a href="{{ url('/social/posts') }}" class="{{ request()->is('social/posts*') ? 'active' : '' }}"><i class="fas fa-calendar-plus" style="color:#e11d48;"></i> CalendÃ¡rio Editorial</a></li>
+                            <li><a href="{{ url('/social/posts') }}" class="{{ request()->is('social/posts*') ? 'active' : '' }}"><i class="fas fa-calendar-plus" style="color:#e11d48;"></i> Calendário Editorial</a></li>
                             <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
-                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> ProspecÃ§Ã£o IA</a></li>
+                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                             <li><a href="{{ route('social.analytics.index') }}" class="{{ request()->routeIs('social.analytics.*') ? 'active' : '' }}"><i class="fas fa-chart-line" style="color:#10b981;"></i> Analytics Sociais</a></li>
@@ -695,17 +695,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: InteligÃªncia Artificial --}}
+                {{-- Grupo: Inteligência Artificial --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mgr_ai_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-robot group-icon"></i> InteligÃªncia Artificial
+                        <i class="fas fa-robot group-icon"></i> Inteligência Artificial
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mgr_ai_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                             @if(config('strategy_room.enabled'))
-                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de EstratÃ©gia</a></li>
+                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
                             @endif
                         </ul>
                     </div>
@@ -725,7 +725,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                 </div>
             @elseif (auth()->user()->role == 'ngo' || (auth()->user()->tenant && auth()->user()->tenant->type == 'ngo'))
-                {{-- â•â•â• MENU TERCEIRO SETOR (ONG) â€” Agrupado â•â•â• --}}
+                {{-- ═══ MENU TERCEIRO SETOR (ONG) — Agrupado ═══ --}}
                 @php
                     $ngo_capt_active   = request()->is('ngo/donors*','ngo/receipts*','ngo/grants*','ngo/sponsorship*','projects*','class-sessions*','ngo/radar*');
                     $ngo_wa_active     = request()->is('whatsapp*');
@@ -739,10 +739,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $ngo_ai_active     = request()->is('smart-analysis*','strategy-room*');
                 @endphp
 
-                {{-- Grupo: Projetos & CaptaÃ§Ã£o --}}
+                {{-- Grupo: Projetos & Captação --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_capt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-hand-holding-heart group-icon"></i> Projetos &amp; CaptaÃ§Ã£o
+                        <i class="fas fa-hand-holding-heart group-icon"></i> Projetos &amp; Captação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_capt_active ? '350px' : '0' }};">
@@ -751,8 +751,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/class-sessions') }}" class="{{ request()->is('class-sessions*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Chamada</a></li>
                             <li><a href="{{ url('/ngo/donors') }}" class="{{ request()->is('ngo/donors*') ? 'active' : '' }}"><i class="fas fa-heart"></i> Doadores</a></li>
                             <li><a href="{{ url('/ngo/receipts') }}" class="{{ request()->is('ngo/receipts*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Recibos</a></li>
-                            <li><a href="{{ url('/ngo/grants') }}" class="{{ request()->is('ngo/grants*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Editais &amp; ConvÃªnios</a></li>
-                            <li><a href="{{ url('/ngo/sponsorships') }}" class="{{ request()->is('ngo/sponsorships*') ? 'active' : '' }}"><i class="fas fa-handshake"></i> CRM PatrocÃ­nios</a></li>
+                            <li><a href="{{ url('/ngo/grants') }}" class="{{ request()->is('ngo/grants*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Editais &amp; Convênios</a></li>
+                            <li><a href="{{ url('/ngo/sponsorships') }}" class="{{ request()->is('ngo/sponsorships*') ? 'active' : '' }}"><i class="fas fa-handshake"></i> CRM Patrocínios</a></li>
                             <li><a href="{{ route('ngo.radar.index') }}" class="{{ request()->is('ngo/radar*') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
                         </ul>
                     </div>
@@ -779,28 +779,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             @can('has-whatsapp-cloud')
                                 <li><a href="{{ route('whatsapp.consumo') }}" class="{{ request()->routeIs('whatsapp.consumo') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Meu Consumo</a></li>
                             @endcan
-                            <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> FormulÃ¡rios</a></li>
-                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> AutomaÃ§Ãµes</a></li>
+                            <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
+                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Marketing & ComunicaÃ§Ã£o --}}
+                {{-- Grupo: Marketing & Comunicação --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; ComunicaÃ§Ã£o
+                        <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '440px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('ngo.email_campaigns.index') }}" class="{{ request()->is('ngo/email-campaigns*') ? 'active' : '' }}"><i class="fas fa-envelope" style="color:#6366f1;"></i> E-mail Marketing</a></li>
                             <li><a href="{{ url('/ngo/landing-pages') }}" class="{{ request()->is('ngo/landing-pages*') ? 'active' : '' }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
-                            <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> InteligÃªncia Territorial</a></li>
+                            <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
-                            <li><a href="{{ url('/social/posts') }}" class="{{ request()->is('social/posts*') ? 'active' : '' }}"><i class="fas fa-calendar-plus" style="color:#e11d48;"></i> CalendÃ¡rio Editorial</a></li>
+                            <li><a href="{{ url('/social/posts') }}" class="{{ request()->is('social/posts*') ? 'active' : '' }}"><i class="fas fa-calendar-plus" style="color:#e11d48;"></i> Calendário Editorial</a></li>
                             <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
-                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> ProspecÃ§Ã£o IA</a></li>
+                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                             <li><a href="{{ route('social.analytics.index') }}" class="{{ request()->routeIs('social.analytics.*') ? 'active' : '' }}"><i class="fas fa-chart-line" style="color:#10b981;"></i> Analytics Sociais</a></li>
@@ -818,52 +818,52 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="menu-group-items" style="max-height: {{ $ngo_fin_active ? '300px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/transactions') }}" class="{{ request()->is('transactions') ? 'active' : '' }}"><i class="fas fa-exchange-alt"></i> Fluxo de Caixa</a></li>
-                            <li><a href="{{ url('/transactions/create') }}" class="{{ request()->is('transactions/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Nova TransaÃ§Ã£o</a></li>
-                            <li><a href="{{ url('/ngo/budget') }}" class="{{ request()->is('ngo/budget*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> OrÃ§amento Anual</a></li>
-                            <li><a href="{{ url('/ngo/reconciliation') }}" class="{{ request()->is('ngo/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> ConciliaÃ§Ã£o BancÃ¡ria</a></li>
+                            <li><a href="{{ url('/transactions/create') }}" class="{{ request()->is('transactions/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Nova Transação</a></li>
+                            <li><a href="{{ url('/ngo/budget') }}" class="{{ request()->is('ngo/budget*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> Orçamento Anual</a></li>
+                            <li><a href="{{ url('/ngo/reconciliation') }}" class="{{ request()->is('ngo/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
                             <li><a href="{{ url('/finance/import') }}" class="{{ request()->is('finance/import*') ? 'active' : '' }}"><i class="fas fa-file-import" style="color:#10b981;"></i> Importar Planilha</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Pessoas & BeneficiÃ¡rios --}}
+                {{-- Grupo: Pessoas & Beneficiários --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_people_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-users group-icon"></i> Pessoas &amp; BeneficiÃ¡rios
+                        <i class="fas fa-users group-icon"></i> Pessoas &amp; Beneficiários
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_people_active ? '400px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/ngo/team') }}" class="{{ request()->is('ngo/team*') ? 'active' : '' }}"><i class="fas fa-id-card"></i> Equipe da ONG</a></li>
-                            <li><a href="{{ url('/ngo/hr') }}" class="{{ request()->is('ngo/hr*') ? 'active' : '' }}"><i class="fas fa-id-badge"></i> RH &amp; VoluntÃ¡rios</a></li>
-                            <li><a href="{{ url('/ngo/beneficiaries') }}" class="{{ request()->is('ngo/beneficiaries') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> BeneficiÃ¡rios</a></li>
+                            <li><a href="{{ url('/ngo/hr') }}" class="{{ request()->is('ngo/hr*') ? 'active' : '' }}"><i class="fas fa-id-badge"></i> RH &amp; Voluntários</a></li>
+                            <li><a href="{{ url('/ngo/beneficiaries') }}" class="{{ request()->is('ngo/beneficiaries') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> Beneficiários</a></li>
                             <li class="menu-sub-item"><a href="{{ url('/ngo/beneficiaries/insights') }}" class="{{ request()->is('ngo/beneficiaries/insights*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Indicadores Sociais</a></li>
-                            <li class="menu-sub-item"><a href="{{ url('/ngo/beneficiaries/reports/annual') }}" class="{{ request()->is('ngo/beneficiaries/reports/annual*') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> RelatÃ³rio Anual</a></li>
+                            <li class="menu-sub-item"><a href="{{ url('/ngo/beneficiaries/reports/annual') }}" class="{{ request()->is('ngo/beneficiaries/reports/annual*') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Relatório Anual</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: PatrimÃ´nio & Estoque --}}
+                {{-- Grupo: Patrimônio & Estoque --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_pat_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-boxes group-icon"></i> PatrimÃ´nio &amp; Estoque
+                        <i class="fas fa-boxes group-icon"></i> Patrimônio &amp; Estoque
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_pat_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/ngo/inventory') }}" class="{{ request()->is('ngo/inventory*') ? 'active' : '' }}"><i class="fas fa-box-open"></i> Almoxarifado e Estoque</a></li>
-                            <li><a href="{{ url('/ngo/assets') }}" class="{{ request()->is('ngo/assets*') ? 'active' : '' }}"><i class="fas fa-building"></i> PatrimÃ´nio</a></li>
+                            <li><a href="{{ url('/ngo/assets') }}" class="{{ request()->is('ngo/assets*') ? 'active' : '' }}"><i class="fas fa-building"></i> Patrimônio</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Contratos & JurÃ­dico --}}
+                {{-- Grupo: Contratos & Jurídico --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_jur_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-file-contract group-icon"></i> Contratos &amp; JurÃ­dico
+                        <i class="fas fa-file-contract group-icon"></i> Contratos &amp; Jurídico
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_jur_active ? '150px' : '0' }};">
@@ -874,26 +874,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: RelatÃ³rios & Auditoria --}}
+                {{-- Grupo: Relatórios & Auditoria --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_rep_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-chart-bar group-icon"></i> RelatÃ³rios &amp; Auditoria
+                        <i class="fas fa-chart-bar group-icon"></i> Relatórios &amp; Auditoria
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_rep_active ? '250px' : '0' }};">
                         <ul>
-                            <li><a href="{{ url('/ngo/reports/dre') }}" class="{{ request()->is('ngo/reports*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> RelatÃ³rios (DRE)</a></li>
+                            <li><a href="{{ url('/ngo/reports/dre') }}" class="{{ request()->is('ngo/reports*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Relatórios (DRE)</a></li>
                             <li><a href="{{ url('/ngo/audit') }}" class="{{ request()->is('ngo/audit*') ? 'active' : '' }}"><i class="fas fa-eye"></i> Central de Auditoria</a></li>
-                            <li><a href="{{ url('/ngo/transparencia') }}" class="{{ request()->is('ngo/transparencia*') ? 'active' : '' }}"><i class="fas fa-landmark"></i> Portal TransparÃªncia</a></li>
+                            <li><a href="{{ url('/ngo/transparencia') }}" class="{{ request()->is('ngo/transparencia*') ? 'active' : '' }}"><i class="fas fa-landmark"></i> Portal Transparência</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Conformidade ContÃ­nua --}}
+                {{-- Grupo: Conformidade Contínua --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_conf_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-shield-check group-icon" style="color:#10b981;"></i> Conformidade ContÃ­nua
+                        <i class="fas fa-shield-check group-icon" style="color:#10b981;"></i> Conformidade Contínua
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_conf_active ? '420px' : '0' }};">
@@ -902,7 +902,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('ngo.conformidade.eixo', 'cebas_as') }}" class="{{ request()->is('ngo/conformidade/eixo/cebas*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> CEBAS</a></li>
                             <li><a href="{{ route('ngo.conformidade.eixo', 'suas') }}" class="{{ request()->is('ngo/conformidade/eixo/suas*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> SUAS</a></li>
                             <li><a href="{{ route('ngo.conformidade.eixo', 'mrosc') }}" class="{{ request()->is('ngo/conformidade/eixo/mrosc*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> MROSC</a></li>
-                            <li><a href="{{ route('ngo.conformidade.planos.index') }}" class="{{ request()->is('ngo/conformidade/planos-acao*') ? 'active' : '' }}"><i class="fas fa-tasks"></i> Planos de AÃ§Ã£o</a></li>
+                            <li><a href="{{ route('ngo.conformidade.planos.index') }}" class="{{ request()->is('ngo/conformidade/planos-acao*') ? 'active' : '' }}"><i class="fas fa-tasks"></i> Planos de Ação</a></li>
                             <li><a href="{{ route('ngo.conformidade.ciclos') }}" class="{{ request()->is('ngo/conformidade/ciclos') ? 'active' : '' }}"><i class="fas fa-rotate"></i> Ciclos</a></li>
                             <li><a href="{{ route('ngo.conformidade.configurar') }}" class="{{ request()->is('ngo/conformidade/configurar') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurar</a></li>
                         </ul>
@@ -910,17 +910,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: InteligÃªncia Artificial --}}
+                {{-- Grupo: Inteligência Artificial --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_ai_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-robot group-icon"></i> InteligÃªncia Artificial
+                        <i class="fas fa-robot group-icon"></i> Inteligência Artificial
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_ai_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                             @if(config('strategy_room.enabled'))
-                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de EstratÃ©gia</a></li>
+                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
                             @endif
                         </ul>
                     </div>
@@ -985,26 +985,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             @can('has-whatsapp-cloud')
                                 <li><a href="{{ route('whatsapp.consumo') }}" class="{{ request()->routeIs('whatsapp.consumo') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Meu Consumo</a></li>
                             @endcan
-                            <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> FormulÃ¡rios</a></li>
-                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> AutomaÃ§Ãµes</a></li>
+                            <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
+                            <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: Marketing & ComunicaÃ§Ã£o --}}
+                {{-- Grupo: Marketing & Comunicação --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mei_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; ComunicaÃ§Ã£o
+                        <i class="fas fa-bullhorn group-icon"></i> Marketing &amp; Comunicação
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mei_mkt_active ? '300px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/manager/landing-pages') }}" class="{{ request()->is('manager/landing-pages*') ? 'active' : '' }}"><i class="fas fa-laptop-code"></i> Landing Pages</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
-                            <li><a href="{{ url('/social/posts') }}" class="{{ request()->is('social/posts*') ? 'active' : '' }}"><i class="fas fa-calendar-plus" style="color:#e11d48;"></i> CalendÃ¡rio Editorial</a></li>
+                            <li><a href="{{ url('/social/posts') }}" class="{{ request()->is('social/posts*') ? 'active' : '' }}"><i class="fas fa-calendar-plus" style="color:#e11d48;"></i> Calendário Editorial</a></li>
                             <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
-                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> ProspecÃ§Ã£o IA</a></li>
+                            <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
                             <li><a href="{{ route('social.analytics.index') }}" class="{{ request()->routeIs('social.analytics.*') ? 'active' : '' }}"><i class="fas fa-chart-line" style="color:#10b981;"></i> Analytics Sociais</a></li>
                         </ul>
@@ -1012,10 +1012,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: GestÃ£o Financeira --}}
+                {{-- Grupo: Gestão Financeira --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mei_fin_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-coins group-icon"></i> GestÃ£o Financeira
+                        <i class="fas fa-coins group-icon"></i> Gestão Financeira
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mei_fin_active ? '260px' : '0' }};">
@@ -1023,7 +1023,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/transactions') }}" class="{{ request()->is('transactions*') ? 'active' : '' }}"><i class="fas fa-exchange-alt"></i> Fluxo de Caixa</a></li>
                             <li><a href="{{ url('/personal/receipts') }}" class="{{ request()->is('personal/receipts*') && !request()->is('personal/receipts/create') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Recibos &amp; NFS-e</a></li>
                             <li><a href="{{ url('/personal/receipts/create') }}" class="{{ request()->is('personal/receipts/create') ? 'active' : '' }}"><i class="fas fa-file-circle-plus" style="color:#10b981;"></i> Emitir Recibo</a></li>
-                            <li><a href="{{ url('/personal/reconciliation') }}" class="{{ request()->is('personal/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> ConciliaÃ§Ã£o BancÃ¡ria</a></li>
+                            <li><a href="{{ url('/personal/reconciliation') }}" class="{{ request()->is('personal/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
                             <li><a href="{{ url('/finance/import') }}" class="{{ request()->is('finance/import*') ? 'active' : '' }}"><i class="fas fa-file-import" style="color:#10b981;"></i> Importar Planilha</a></li>
                             <li><a href="{{ url('/personal/budget') }}" class="{{ request()->is('personal/budget*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Planejamento Anual</a></li>
                         </ul>
@@ -1031,17 +1031,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- Grupo: InteligÃªncia Artificial --}}
+                {{-- Grupo: Inteligência Artificial --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mei_ai_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-robot group-icon"></i> InteligÃªncia Artificial
+                        <i class="fas fa-robot group-icon"></i> Inteligência Artificial
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $mei_ai_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
                             @if(config('strategy_room.enabled'))
-                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de EstratÃ©gia</a></li>
+                            <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
                             @endif
                         </ul>
                     </div>
@@ -1066,11 +1066,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
             <li><a href="{{ url('/support') }}" class="{{ request()->is('support') ? 'active' : '' }}"><i class="fas fa-life-ring"></i> Suporte</a></li>
-            <li><a href="{{ url('/profile') }}" class="{{ request()->is('profile') ? 'active' : '' }}"><i class="fas fa-cog"></i> ConfiguraÃ§Ãµes</a></li>
+            <li><a href="{{ url('/profile') }}" class="{{ request()->is('profile') ? 'active' : '' }}"><i class="fas fa-cog"></i> Configurações</a></li>
             @if(in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin']))
             <li><a href="{{ route('settings.branding') }}" class="{{ request()->routeIs('settings.branding') ? 'active' : '' }}"><i class="fas fa-palette"></i> Identidade Visual</a></li>
-            <li><a href="{{ route('api.docs') }}" class="{{ request()->routeIs('api.docs') ? 'active' : '' }}"><i class="fas fa-book-open"></i> DocumentaÃ§Ã£o API</a></li>
-            <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->routeIs('settings.api-tokens*') ? 'active' : '' }}"><i class="fas fa-plug"></i> API &amp; IntegraÃ§Ãµes</a></li>
+            <li><a href="{{ route('api.docs') }}" class="{{ request()->routeIs('api.docs') ? 'active' : '' }}"><i class="fas fa-book-open"></i> Documentação API</a></li>
+            <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->routeIs('settings.api-tokens*') ? 'active' : '' }}"><i class="fas fa-plug"></i> API &amp; Integrações</a></li>
             <li><a href="{{ route('settings.webhooks') }}" class="{{ request()->routeIs('settings.webhooks*') ? 'active' : '' }}"><i class="fas fa-webhook"></i> Webhooks</a></li>
             @endif
             @endif {{-- fim do @else do bloco credenciado --}}
@@ -1078,7 +1078,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </nav>
     {{-- User Card (Linear-style) --}}
     @php
-        $ucName    = auth()->user()->name ?? 'UsuÃ¡rio';
+        $ucName    = auth()->user()->name ?? 'Usuário';
         $ucInitials = strtoupper(implode('', array_map(fn($w) => substr($w,0,1), array_slice(explode(' ', $ucName), 0, 2))));
         $ucRoleLabel = match(auth()->user()->role) {
             'super_admin' => 'Admin',
@@ -1086,12 +1086,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             'ngo'         => 'ONG',
             'common'      => 'MEI',
             'credenciado' => 'Credenciado',
-            default       => 'UsuÃ¡rio',
+            default       => 'Usuário',
         };
         $ucIsAgent    = in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin'], true);
         $ucAvail      = auth()->user()->agent_availability ?? 'available';
         $ucAvailColor = ['available' => '#22c55e', 'away' => '#f59e0b', 'offline' => '#94a3b8'][$ucAvail] ?? '#22c55e';
-        $ucAvailLabel = ['available' => 'DisponÃ­vel', 'away' => 'Ausente', 'offline' => 'Offline'][$ucAvail] ?? 'DisponÃ­vel';
+        $ucAvailLabel = ['available' => 'Disponível', 'away' => 'Ausente', 'offline' => 'Offline'][$ucAvail] ?? 'Disponível';
     @endphp
     <div class="sidebar-user-card" id="sucTrigger" onclick="toggleSucDropdown()">
         <div class="suc-avatar user-avatar-wrap" style="position:relative;">
@@ -1109,7 +1109,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="suc-dropdown" id="sucDropdown">
             @if($ucIsAgent)
                 <div style="padding:6px 12px 4px; font-size:.65rem; font-weight:700; color:var(--text-secondary,#94a3b8); text-transform:uppercase; letter-spacing:.05em;">Disponibilidade</div>
-                @foreach(['available' => ['DisponÃ­vel', '#22c55e'], 'away' => ['Ausente', '#f59e0b'], 'offline' => ['Offline', '#94a3b8']] as $key => $meta)
+                @foreach(['available' => ['Disponível', '#22c55e'], 'away' => ['Ausente', '#f59e0b'], 'offline' => ['Offline', '#94a3b8']] as $key => $meta)
                     <a href="#" class="suc-avail-item" data-avail="{{ $key }}"
                        onclick="event.preventDefault(); setAgentAvailability('{{ $key }}');"
                        style="display:flex; align-items:center; gap:8px;">
@@ -1169,7 +1169,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <main id="main-content" class="main-content" style="{{ !auth()->check() ? 'margin-left: 0; width: 100%;' : '' }}">
     
-    <!-- â•â• COMMAND TOPBAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ══ COMMAND TOPBAR ══════════════════════════════════════════════ -->
     <div id="topbar" style="display: flex; align-items: center; justify-content: space-between; padding: 0 36px; height: 68px; background: var(--topbar-bg, #0f172a); border-bottom: 1px solid var(--topbar-border, rgba(255,255,255,0.06)); position: sticky; top: 0; z-index: 900; margin: -32px -32px 32px -32px;">
 
         <!-- Esquerda: Menu mobile + Identidade do painel -->
@@ -1190,7 +1190,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         margin: -20px -20px 20px -20px !important;
                         height: 60px !important;
                     }
-                    /* Esconde elementos que ocupam espaÃ§o desnecessÃ¡rio na topbar mobile */
+                    /* Esconde elementos que ocupam espaço desnecessário na topbar mobile */
                     #topbar-title { display: none !important; }
                     #live-clock { display: none !important; }
                     #topbar-search-cmd { display: none !important; }
@@ -1198,7 +1198,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     #topbar-trial { display: none !important; }
                     #export-container { display: none !important; }
                     #user-profile-trigger { display: none !important; }
-                    /* Dropdown de notificaÃ§Ãµes: posiÃ§Ã£o fixa em mobile para nÃ£o sair da tela */
+                    /* Dropdown de notificações: posição fixa em mobile para não sair da tela */
                     #notif-dropdown {
                         position: fixed !important;
                         top: 62px !important;
@@ -1218,16 +1218,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <div>
                     @php $role = auth()->user()?->role; @endphp
                     <div style="font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px;">
-                        @if($role == 'manager') GestÃ£o de Projetos
+                        @if($role == 'manager') Gestão de Projetos
                         @elseif($role == 'ngo') Terceiro Setor
                         @elseif($role == 'super_admin') Super Administrador
                         @else Vivensi App
                         @endif
                     </div>
                     <div style="font-size: 1rem; font-weight: 800; color: white; letter-spacing: -0.3px; line-height: 1;">
-                        @if($role == 'manager') Central de Comando â€” Projetos
-                        @elseif($role == 'ngo') Central de Comando â€” ONG
-                        @elseif($role == 'super_admin') Central de Comando â€” Admin
+                        @if($role == 'manager') Central de Comando — Projetos
+                        @elseif($role == 'ngo') Central de Comando — ONG
+                        @elseif($role == 'super_admin') Central de Comando — Admin
                         @else Vivensi Platform
                         @endif
                     </div>
@@ -1244,7 +1244,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <div style="display: flex; align-items: center; gap: 12px; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); padding: 8px 16px; border-radius: 10px;">
                     <i class="fas fa-clock" style="color: #fbbf24; font-size: 0.85rem;"></i>
                     <span style="color: #fbbf24; font-size: 0.8rem; font-weight: 700;">
-                        {{ $daysLeft > 0 ? "$daysLeft dias de teste grÃ¡tis" : "Teste encerrado hoje!" }}
+                        {{ $daysLeft > 0 ? "$daysLeft dias de teste grátis" : "Teste encerrado hoje!" }}
                     </span>
                     @if($tenant->plan_id)
                         <a href="{{ route('checkout.index', ['plan_id' => $tenant->plan_id]) }}" style="background: #fbbf24; color: #0f172a; font-size: 0.7rem; font-weight: 900; padding: 4px 12px; border-radius: 8px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;">Ativar</a>
@@ -1254,10 +1254,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @endif
         @endauth
 
-        <!-- Direita: AÃ§Ãµes -->
+        <!-- Direita: Ações -->
         <div style="display: flex; align-items: center; gap: 8px;">
 
-            <!-- RelÃ³gio ao vivo -->
+            <!-- Relógio ao vivo -->
             <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 10px; font-size: 0.78rem; color: rgba(255,255,255,0.4); font-weight: 700; letter-spacing: 0.5px; font-family: 'JetBrains Mono', monospace;" id="live-clock">
                 <i class="fas fa-circle" style="font-size: 0.4rem; color: #10b981; animation: pulse-green 2s infinite;"></i>
                 <span id="clock-time">--:--</span>
@@ -1268,10 +1268,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 7px 14px; cursor: pointer; transition: background 0.2s; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 600;"
                     onmouseover="this.style.background='rgba(255,255,255,0.09)'"
                     onmouseout="this.style.background='rgba(255,255,255,0.04)'"
-                    title="Busca rÃ¡pida (Ctrl+K)">
+                    title="Busca rápida (Ctrl+K)">
                 <i class="fas fa-search" style="font-size: 0.7rem;"></i>
                 <span class="d-none d-md-inline">Buscar</span>
-                <kbd style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 1px 5px; font-size: 0.6rem; font-family: inherit; color: rgba(255,255,255,0.3);">âŒ˜K</kbd>
+                <kbd style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 1px 5px; font-size: 0.6rem; font-family: inherit; color: rgba(255,255,255,0.3);">⌘K</kbd>
             </button>
 
             <!-- F5: Dark Mode Toggle -->
@@ -1293,11 +1293,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     title="Busca Global (Ctrl+K)">
                 <i class="fas fa-magnifying-glass" style="font-size: 0.8rem; color: rgba(255,255,255,0.4);"></i>
                 <span style="font-size: 0.72rem; color: rgba(255,255,255,0.3); font-weight: 700;">Buscar</span>
-                <kbd style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; padding: 1px 6px; font-size: 0.6rem; color: rgba(255,255,255,0.3); font-family: monospace;">âŒ˜K</kbd>
+                <kbd style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; padding: 1px 6px; font-size: 0.6rem; color: rgba(255,255,255,0.3); font-family: monospace;">⌘K</kbd>
             </button>
             @endauth
 
-            <!-- NotificaÃ§Ãµes -->
+            <!-- Notificações -->
             <div style="position: relative; cursor: pointer;" id="notification-bell" onclick="toggleNotifications()">
                 <div id="notification-bell-btn" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer;"
                      onmouseover="this.style.background='rgba(255,255,255,0.1)'"
@@ -1307,10 +1307,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <span id="notif-badge" style="position: absolute; top: 4px; right: 4px; background: #ef4444; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; display: {{ $unreadCount > 0 ? 'flex' : 'none' }}; align-items: center; justify-content: center; border: 2px solid #0f172a; font-weight: 900;">{{ $unreadCount }}</span>
                 </div>
 
-                <!-- Dropdown NotificaÃ§Ãµes -->
+                <!-- Dropdown Notificações -->
                 <div id="notif-dropdown" style="display: none; position: absolute; top: 50px; right: 0; width: 340px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); z-index: 1060; border: 1px solid rgba(255,255,255,0.08); overflow: hidden;">
                     <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="color: white; font-size: 0.9rem; font-weight: 800;">NotificaÃ§Ãµes</strong>
+                        <strong style="color: white; font-size: 0.9rem; font-weight: 800;">Notificações</strong>
                         <button onclick="markAllRead()" style="background: none; border: none; color: #818cf8; font-size: 0.72rem; cursor: pointer; font-weight: 700;">Marcar todas como lidas</button>
                     </div>
                     <div id="notif-list" style="max-height: 340px; overflow-y: auto;">
@@ -1322,7 +1322,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
             </div>
 
-            <!-- F4: Exportar RelatÃ³rios -->
+            <!-- F4: Exportar Relatórios -->
             <div style="position: relative;" id="export-container">
                 <button id="export-dropdown-trigger"
                         style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
@@ -1344,7 +1344,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
             </div>
 
-            <!-- ConfiguraÃ§Ãµes -->
+            <!-- Configurações -->
             @auth
             <a id="topbar-settings" href="{{ url('/profile') }}" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;"
                onmouseover="this.style.background='rgba(255,255,255,0.1)'"
@@ -1352,7 +1352,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <i class="fas fa-cog" style="color: rgba(255,255,255,0.5); font-size: 1rem;"></i>
             </a>
 
-            <!-- Avatar do usuÃ¡rio -->
+            <!-- Avatar do usuário -->
             <div id="user-profile-trigger"
                  style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 6px 12px 6px 6px; cursor: pointer;"
                  onmouseover="this.style.background='rgba(255,255,255,0.08)'"
@@ -1361,7 +1361,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                 </div>
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 800; color: white; line-height: 1;">{{ explode(' ', auth()->user()->name ?? 'UsuÃ¡rio')[0] }}</div>
+                    <div style="font-size: 0.75rem; font-weight: 800; color: white; line-height: 1;">{{ explode(' ', auth()->user()->name ?? 'Usuário')[0] }}</div>
                     <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();" style="font-size: 0.65rem; color: rgba(255,255,255,0.35); text-decoration: none; font-weight: 600; display: block; line-height: 1; margin-top: 2px;">Sair</a>
                 </div>
             </div>
@@ -1631,7 +1631,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             }
 
             if (notifications.length === 0) {
-                list.innerHTML = '<div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 0.9rem;">Nenhuma notificaÃ§Ã£o nova.</div>';
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 0.9rem;">Nenhuma notificação nova.</div>';
                 return;
             }
 
@@ -1653,7 +1653,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 list.appendChild(item);
             });
         } catch (e) {
-            list.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444; font-size: 0.8rem;">Erro ao carregar notificaÃ§Ãµes.</div>';
+            list.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444; font-size: 0.8rem;">Erro ao carregar notificações.</div>';
         }
     }
 
@@ -1722,7 +1722,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             if (!n) return;
 
             showToast({
-                title: n.title || 'Nova notificaÃ§Ã£o',
+                title: n.title || 'Nova notificação',
                 message: n.message || '',
                 link: n.link || null
             });
@@ -1803,7 +1803,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                         if (!document.hidden) {
                             showToast({
-                                title:   e.title   || 'Nova notificaÃ§Ã£o',
+                                title:   e.title   || 'Nova notificação',
                                 message: e.message || '',
                                 link:    e.link    || null
                             });
@@ -1815,10 +1815,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         }
                     })
                     .error((err) => {
-                        console.warn('[NotificaÃ§Ãµes] WebSocket falhou, mantendo polling de 30s.', err);
+                        console.warn('[Notificações] WebSocket falhou, mantendo polling de 30s.', err);
                     });
             } catch (err) {
-                console.warn('[NotificaÃ§Ãµes] Echo indisponÃ­vel, mantendo polling de 30s.', err);
+                console.warn('[Notificações] Echo indisponível, mantendo polling de 30s.', err);
             }
         }
 
@@ -1829,9 +1829,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             try {
                 window.Echo.private(`tenant.${__vivensiTenantId}.whatsapp`)
                     .listen('.whatsapp.message.received', (e) => {
-                        // NÃ£o mostra toast se jÃ¡ estÃ¡ no /whatsapp/chat com esse
-                        // chat aberto â€” evita duplicar notificaÃ§Ã£o (a lista/chat
-                        // jÃ¡ vai recarregar por outros meios).
+                        // Não mostra toast se já está no /whatsapp/chat com esse
+                        // chat aberto — evita duplicar notificação (a lista/chat
+                        // já vai recarregar por outros meios).
                         const isOnChatOfSameContact = window.location.pathname.startsWith('/whatsapp/chat')
                             && document.querySelector(`[data-chat-id="${e.chat_id}"].active`);
                         if (isOnChatOfSameContact) return;
@@ -1845,10 +1845,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         }
                     })
                     .error((err) => {
-                        console.warn('[WhatsApp] Canal em tempo real indisponÃ­vel.', err);
+                        console.warn('[WhatsApp] Canal em tempo real indisponível.', err);
                     });
             } catch (err) {
-                console.warn('[WhatsApp] Echo indisponÃ­vel pro canal WhatsApp.', err);
+                console.warn('[WhatsApp] Echo indisponível pro canal WhatsApp.', err);
             }
         }
     });
@@ -1875,7 +1875,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
 
 
-    // â”€â”€ Accordion Sidebar Groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Accordion Sidebar Groups ────────────────────────────────
     function toggleGroup(header) {
         const items = header.nextElementSibling;
         const isCollapsed = header.classList.contains('collapsed');
@@ -1930,7 +1930,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <div id="vivensi-toast-wrap" class="vivensi-toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
-{{-- â”€â”€ Bruce AI Floating Chat (Phase 5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+{{-- ── Bruce AI Floating Chat (Phase 5) ──────────────────── --}}
 @auth
 <style>
 .bruce-fab{position:fixed;bottom:28px;right:28px;z-index:8000;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
@@ -1976,20 +1976,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce" onerror="this.style.display='none'">
             <div class="bruce-info">
                 <div class="bruce-name">Bruce AI</div>
-                <div class="bruce-status">â— Online â€” DeepSeek</div>
+                <div class="bruce-status">● Online — DeepSeek</div>
             </div>
             <button class="bruce-clear" onclick="bruceClear()" title="Limpar conversa"><i class="fas fa-trash-alt"></i></button>
             <button class="bruce-close" onclick="bruceToggle()" title="Fechar"><i class="fas fa-times"></i></button>
         </div>
         <div class="bruce-messages" id="bruceMessages">
-            <div class="bruce-msg bot">OlÃ¡! Sou o Bruce, assistente do Vivensi. Tenho acesso aos dados da sua conta em tempo real â€” finanÃ§as, projetos, tarefas e muito mais. Como posso ajudar?</div>
+            <div class="bruce-msg bot">Olá! Sou o Bruce, assistente do Vivensi. Tenho acesso aos dados da sua conta em tempo real — finanças, projetos, tarefas e muito mais. Como posso ajudar?</div>
         </div>
         <div class="bruce-input-row">
-            <textarea class="bruce-input" id="bruceInput" placeholder="Pergunte sobre suas finanÃ§as, projetos..." rows="1" onkeydown="bruceKeydown(event)"></textarea>
+            <textarea class="bruce-input" id="bruceInput" placeholder="Pergunte sobre suas finanças, projetos..." rows="1" onkeydown="bruceKeydown(event)"></textarea>
             <button class="bruce-send" id="bruceSend" onclick="bruceSend()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
-    <button class="bruce-fab-btn" onclick="bruceToggle()" title="Bruce AI â€” Assistente Inteligente" style="position:relative">
+    <button class="bruce-fab-btn" onclick="bruceToggle()" title="Bruce AI — Assistente Inteligente" style="position:relative">
         <i class="fas fa-robot"></i>
         <span class="bruce-notif"></span>
     </button>
@@ -2031,11 +2031,11 @@ async function bruceSend(){
         });
         const data=await res.json();
         document.getElementById('bruceTyping')?.remove();
-        if(data.error){bruceAddMsg('âš ï¸ '+data.error,'bot');}
+        if(data.error){bruceAddMsg('⚠️ '+data.error,'bot');}
         else{bruceAddMsg(data.reply,'bot');}
     }catch(e){
         document.getElementById('bruceTyping')?.remove();
-        bruceAddMsg('Erro de conexÃ£o. Tente novamente.','bot');
+        bruceAddMsg('Erro de conexão. Tente novamente.','bot');
     }finally{
         sendBtn.disabled=false;
         input.focus();
@@ -2044,7 +2044,7 @@ async function bruceSend(){
 function bruceAddMsg(text,role){
     const div=document.createElement('div');
     div.className='bruce-msg '+role;
-    // Markdown bÃ¡sico: **bold** e \n â†’ <br>
+    // Markdown básico: **bold** e \n → <br>
     div.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
     document.getElementById('bruceMessages').appendChild(div);
     bruceScroll();
@@ -2065,16 +2065,16 @@ document.getElementById('bruceInput')?.addEventListener('input',function(){
 </script>
 @endauth
 
-{{-- â”€â”€ Command Palette (Ctrl+K) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+{{-- ── Command Palette (Ctrl+K) ──────────────────────────── --}}
 <div class="cmd-overlay" id="cmdOverlay" onclick="closeCmdPalette(event)">
     <div class="cmd-palette" onclick="event.stopPropagation()">
         <div class="cmd-input-wrap">
             <i class="fas fa-search"></i>
-            <input class="cmd-input" id="cmdInput" type="text" placeholder="Buscar pÃ¡gina, aÃ§Ã£o..." autocomplete="off">
+            <input class="cmd-input" id="cmdInput" type="text" placeholder="Buscar página, ação..." autocomplete="off">
         </div>
         <div class="cmd-results" id="cmdResults"></div>
         <div class="cmd-footer">
-            <span class="cmd-key"><kbd>â†‘</kbd><kbd>â†“</kbd> navegar</span>
+            <span class="cmd-key"><kbd>↑</kbd><kbd>↓</kbd> navegar</span>
             <span class="cmd-key"><kbd>Enter</kbd> abrir</span>
             <span class="cmd-key"><kbd>Esc</kbd> fechar</span>
         </div>
@@ -2140,7 +2140,7 @@ document.getElementById('bruceInput')?.addEventListener('input',function(){
     @stack('scripts')
 
 <script>
-// â”€â”€ Sidebar collapse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sidebar collapse ───────────────────────────────────────────────────
 (function() {
     const sidebar = document.getElementById('mainSidebar');
     const main    = document.querySelector('.main-content');
@@ -2171,7 +2171,7 @@ document.getElementById('bruceInput')?.addEventListener('input',function(){
     });
 })();
 
-// â”€â”€ User card dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── User card dropdown ─────────────────────────────────────────────────
 function toggleSucDropdown() {
     const dropdown = document.getElementById('sucDropdown');
     const trigger  = document.getElementById('sucTrigger');
@@ -2187,12 +2187,12 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// â”€â”€ Command Palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Command Palette ────────────────────────────────────────────────────
 const CMD_ITEMS = [
     @auth
     { label: 'Dashboard',        url: '{{ url("/dashboard") }}',               icon: 'fa-home' },
-    { label: 'TransaÃ§Ãµes',       url: '{{ url("/transactions") }}',             icon: 'fa-wallet' },
-    { label: 'Nova TransaÃ§Ã£o',   url: '{{ url("/transactions/create") }}',      icon: 'fa-plus-circle' },
+    { label: 'Transações',       url: '{{ url("/transactions") }}',             icon: 'fa-wallet' },
+    { label: 'Nova Transação',   url: '{{ url("/transactions/create") }}',      icon: 'fa-plus-circle' },
     { label: 'Projetos',         url: '{{ url("/projects") }}',                 icon: 'fa-folder-open' },
     { label: 'Tarefas',          url: '{{ url("/tasks") }}',                    icon: 'fa-check-square' },
     { label: 'WhatsApp CRM',     url: '{{ url("/whatsapp/chat") }}',            icon: 'fa-comment-dots' },
@@ -2201,7 +2201,7 @@ const CMD_ITEMS = [
     { label: 'Meu Perfil',       url: '{{ url("/profile") }}',                  icon: 'fa-user-circle' },
     { label: 'Minhas Faturas',   url: '{{ route("client.invoices.index") }}',   icon: 'fa-file-invoice-dollar' },
     @if(auth()->user()->role === 'ngo')
-    { label: 'BeneficiÃ¡rios',    url: '{{ url("/ngo/beneficiaries") }}',        icon: 'fa-heart' },
+    { label: 'Beneficiários',    url: '{{ url("/ngo/beneficiaries") }}',        icon: 'fa-heart' },
     { label: 'Doadores',         url: '{{ url("/ngo/donors") }}',               icon: 'fa-hand-holding-heart' },
     { label: 'Editais',          url: '{{ url("/ngo/grants") }}',               icon: 'fa-file-contract' },
     @endif
@@ -2211,7 +2211,7 @@ const CMD_ITEMS = [
     @endif
     @if(auth()->user()->role === 'super_admin')
     { label: 'Painel Admin',     url: '{{ url("/admin") }}',                    icon: 'fa-shield-halved' },
-    { label: 'OrganizaÃ§Ãµes',     url: '{{ url("/admin/tenants") }}',            icon: 'fa-building' },
+    { label: 'Organizações',     url: '{{ url("/admin/tenants") }}',            icon: 'fa-building' },
     @endif
     @endauth
 ];

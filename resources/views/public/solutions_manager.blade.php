@@ -28,8 +28,8 @@
     <x-meta-pixel />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vivensi para Gestores de Projetos | Produtividade e Caixa em um sÃ³ lugar</title>
-    <meta name="description" content="Plataforma de gestÃ£o para times: projetos, tarefas Kanban, aprovaÃ§Ãµes financeiras, fluxo de caixa em tempo real e Bruce IA contextual. Sem planilha solta.">
+    <title>Vivensi para Gestores de Projetos | Produtividade e Caixa em um só lugar</title>
+    <meta name="description" content="Plataforma de gestão para times: projetos, tarefas Kanban, aprovações financeiras, fluxo de caixa em tempo real e Bruce IA contextual. Sem planilha solta.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
@@ -197,23 +197,23 @@
     <div class="container" style="text-align: center;">
         <div class="hero-eyebrow"><i class="fas fa-arrow-right"></i> Vivensi Gestor de Projetos</div>
         <h1 class="hero-title">Produtividade da equipe sem perder <span class="mark">o controle do caixa</span>.</h1>
-        <p class="hero-sub">Projetos, tarefas, aprovaÃ§Ãµes e fluxo de caixa em uma sÃ³ plataforma. Bruce IA contextual te ajuda a decidir o que priorizar â€” sem trocar 4 ferramentas.</p>
+        <p class="hero-sub">Projetos, tarefas, aprovações e fluxo de caixa em uma só plataforma. Bruce IA contextual te ajuda a decidir o que priorizar — sem trocar 4 ferramentas.</p>
         <div class="hero-ctas">
             <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Entrar na lista de espera</a>
             <a href="#fluxo" class="btn-ghost">Explorar fluxo de trabalho</a>
         </div>
         <div class="hero-mini-grid">
             <div class="hero-mini">
-                <strong>Kanban + CalendÃ¡rio</strong>
-                <span>Projetos com tarefas, prazos, responsÃ¡veis e dependÃªncias â€” em fluxo visual.</span>
+                <strong>Kanban + Calendário</strong>
+                <span>Projetos com tarefas, prazos, responsáveis e dependências — em fluxo visual.</span>
             </div>
             <div class="hero-mini">
                 <strong>Bruce IA contextual</strong>
-                <span>Pergunta sobre runway, saÃºde do projeto e recebe resposta com base nos dados reais.</span>
+                <span>Pergunta sobre runway, saúde do projeto e recebe resposta com base nos dados reais.</span>
             </div>
             <div class="hero-mini">
-                <strong>AprovaÃ§Ãµes & caixa</strong>
-                <span>Despesas em fluxo de aprovaÃ§Ã£o, conciliaÃ§Ã£o bancÃ¡ria e DRE em tempo real.</span>
+                <strong>Aprovações & caixa</strong>
+                <span>Despesas em fluxo de aprovação, conciliação bancária e DRE em tempo real.</span>
             </div>
         </div>
     </div>
@@ -224,29 +224,29 @@
         <div class="section-head-split">
             <div>
                 <div class="section-eyebrow">Fluxo Integrado</div>
-                <h2 class="section-title">Da pauta da semana ao fechamento financeiro do mÃªs.</h2>
+                <h2 class="section-title">Da pauta da semana ao fechamento financeiro do mês.</h2>
             </div>
-            <p class="section-sub" style="margin: 0;">A Vivensi foi pensada para times que precisam executar com previsibilidade. Cada etapa conversa com a prÃ³xima â€” projeto, tarefa, lanÃ§amento, aprovaÃ§Ã£o e relatÃ³rio no mesmo lugar.</p>
+            <p class="section-sub" style="margin: 0;">A Vivensi foi pensada para times que precisam executar com previsibilidade. Cada etapa conversa com a próxima — projeto, tarefa, lançamento, aprovação e relatório no mesmo lugar.</p>
         </div>
         <div class="step-grid">
             <div class="step-card">
                 <div class="step-num">01</div>
                 <div class="step-title">Cria projeto</div>
-                <div class="step-text">OrÃ§amento, equipe, metas, marcos planejados e DiÃ¡rio com resumo automÃ¡tico por IA.</div>
+                <div class="step-text">Orçamento, equipe, metas, marcos planejados e Diário com resumo automático por IA.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">02</div>
                 <div class="step-title">Equipe executa</div>
-                <div class="step-text">Tarefas no Kanban com prioridade, prazo e responsÃ¡vel â€” sincronizadas com o calendÃ¡rio.</div>
+                <div class="step-text">Tarefas no Kanban com prioridade, prazo e responsável — sincronizadas com o calendário.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">03</div>
-                <div class="step-title">AprovaÃ§Ãµes fluem</div>
-                <div class="step-text">Despesas vÃ£o para o gestor, conciliaÃ§Ã£o bancÃ¡ria por OFX e auditoria imutÃ¡vel.</div>
+                <div class="step-title">Aprovações fluem</div>
+                <div class="step-text">Despesas vão para o gestor, conciliação bancária por OFX e auditoria imutável.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">04</div>
-                <div class="step-title">RelatÃ³rios prontos</div>
+                <div class="step-title">Relatórios prontos</div>
                 <div class="step-text">DRE por projeto, fluxo de caixa, custo por equipe e PDFs gerados automaticamente.</div>
             </div>
         </div>
@@ -259,17 +259,17 @@
             <div>
                 <div class="section-eyebrow">Acesso gratuito</div>
                 <h2 class="section-title">Feito para times que entregam. Sem custar nada.</h2>
-                <p style="font-size: 1rem; color: var(--muted); margin-bottom: 18px;">A Vivensi foi desenhada para empresas e times que valorizam previsibilidade â€” projetos rolando, caixa controlado, equipe alinhada. Acesso 100% gratuito durante o programa de lanÃ§amento.</p>
+                <p style="font-size: 1rem; color: var(--muted); margin-bottom: 18px;">A Vivensi foi desenhada para empresas e times que valorizam previsibilidade — projetos rolando, caixa controlado, equipe alinhada. Acesso 100% gratuito durante o programa de lançamento.</p>
                 <ul class="access-list" style="color: var(--ink);">
                     <li><i class="fas fa-check"></i><span>Bruce IA contextual por projeto</span></li>
-                    <li><i class="fas fa-check"></i><span>Kanban e calendÃ¡rio ilimitados</span></li>
-                    <li><i class="fas fa-check"></i><span>Fluxo de aprovaÃ§Ã£o de despesas</span></li>
-                    <li><i class="fas fa-check"></i><span>ConciliaÃ§Ã£o bancÃ¡ria (OFX)</span></li>
+                    <li><i class="fas fa-check"></i><span>Kanban e calendário ilimitados</span></li>
+                    <li><i class="fas fa-check"></i><span>Fluxo de aprovação de despesas</span></li>
+                    <li><i class="fas fa-check"></i><span>Conciliação bancária (OFX)</span></li>
                     <li><i class="fas fa-check"></i><span>DRE por projeto em PDF</span></li>
-                    <li><i class="fas fa-check"></i><span>Sem cartÃ£o de crÃ©dito</span></li>
+                    <li><i class="fas fa-check"></i><span>Sem cartão de crédito</span></li>
                 </ul>
                 <div style="margin-top: 32px;">
-                    <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> ComeÃ§ar agora</a>
+                    <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Começar agora</a>
                 </div>
             </div>
             @php
@@ -278,26 +278,26 @@
             @if($featuredPlan)
                 <div class="access-form-card">
                     <h3>{{ $featuredPlan->name }} <small>{{ $featuredPlan->interval === 'yearly' ? 'ANUAL' : 'MENSAL' }}</small></h3>
-                    <div class="price">R$ <strong>{{ rtrim(rtrim(number_format((float) $featuredPlan->price, 2, ',', '.'), '0'), ',') }}</strong><small>/{{ $featuredPlan->interval === 'yearly' ? 'ano' : 'mÃªs' }}</small></div>
-                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">{{ $featuredPlan->description ?? 'Acesso completo Ã  plataforma â€” Bruce IA, Kanban, aprovaÃ§Ãµes de despesa, DRE por projeto.' }}</p>
+                    <div class="price">R$ <strong>{{ rtrim(rtrim(number_format((float) $featuredPlan->price, 2, ',', '.'), '0'), ',') }}</strong><small>/{{ $featuredPlan->interval === 'yearly' ? 'ano' : 'mês' }}</small></div>
+                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">{{ $featuredPlan->description ?? 'Acesso completo à plataforma — Bruce IA, Kanban, aprovações de despesa, DRE por projeto.' }}</p>
                     <ul>
                         <li><i class="fas fa-check"></i> Bruce IA incluso</li>
                         <li><i class="fas fa-check"></i> Projetos e tarefas ilimitados</li>
                         <li><i class="fas fa-check"></i> Conforme LGPD</li>
-                        <li><i class="fas fa-check"></i> AtualizaÃ§Ãµes incluÃ­das</li>
+                        <li><i class="fas fa-check"></i> Atualizações incluídas</li>
                     </ul>
                     <button type="button" class="btn-fill" onclick="window.location='{{ route('register', ['plan_id' => $featuredPlan->id]) }}'">Assinar agora</button>
                 </div>
             @else
                 <div class="access-form-card">
-                    <h3>Plano LanÃ§amento <small>GRATUITO</small></h3>
-                    <div class="price">R$ <strong>0</strong><small>/mÃªs</small></div>
-                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">Para sua equipe testar todas as funcionalidades. Sem letras miÃºdas.</p>
+                    <h3>Plano Lançamento <small>GRATUITO</small></h3>
+                    <div class="price">R$ <strong>0</strong><small>/mês</small></div>
+                    <p style="color: var(--dark-muted); font-size: 0.85rem; margin-bottom: 22px;">Para sua equipe testar todas as funcionalidades. Sem letras miúdas.</p>
                     <ul>
                         <li><i class="fas fa-check"></i> Bruce IA incluso</li>
                         <li><i class="fas fa-check"></i> Projetos e tarefas ilimitados</li>
                         <li><i class="fas fa-check"></i> Conforme LGPD</li>
-                        <li><i class="fas fa-check"></i> AtualizaÃ§Ãµes incluÃ­das</li>
+                        <li><i class="fas fa-check"></i> Atualizações incluídas</li>
                     </ul>
                     <button type="button" class="btn-fill" onclick="window.location='{{ route('register') }}'">Entrar na lista</button>
                 </div>
@@ -309,23 +309,23 @@
 <section class="dark" id="bruce">
     <div class="container">
         <div class="section-eyebrow">Bruce IA</div>
-        <h2 class="section-title" style="max-width: 760px;">Bruce IA <span class="mark">nÃ£o substitui</span> o gestor. Apoia decisÃµes com contexto e dados em tempo real.</h2>
-        <p class="section-sub" style="max-width: 720px;">Bruce lÃª o estado do projeto (orÃ§amento usado, tarefas atrasadas, marcos vencendo) e responde perguntas operacionais sem que vocÃª precise abrir 5 relatÃ³rios. A decisÃ£o fica com vocÃª.</p>
+        <h2 class="section-title" style="max-width: 760px;">Bruce IA <span class="mark">não substitui</span> o gestor. Apoia decisões com contexto e dados em tempo real.</h2>
+        <p class="section-sub" style="max-width: 720px;">Bruce lê o estado do projeto (orçamento usado, tarefas atrasadas, marcos vencendo) e responde perguntas operacionais sem que você precise abrir 5 relatórios. A decisão fica com você.</p>
         <div class="info-grid">
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-bolt"></i></div>
                 <h4>Resposta contextual</h4>
-                <p>"Como estÃ¡ esse projeto?" â€” Bruce responde com base nos dados reais: % gasto, tarefas concluÃ­das, prÃ³ximo marco e atrasos.</p>
+                <p>"Como está esse projeto?" — Bruce responde com base nos dados reais: % gasto, tarefas concluídas, próximo marco e atrasos.</p>
             </div>
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-chart-line"></i></div>
                 <h4>Smart Analysis</h4>
-                <p>AnÃ¡lise financeira profunda com runway, burn rate e recomendaÃ§Ãµes estratÃ©gicas â€” gerada sob demanda.</p>
+                <p>Análise financeira profunda com runway, burn rate e recomendações estratégicas — gerada sob demanda.</p>
             </div>
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-shield-halved"></i></div>
-                <h4>IA responsÃ¡vel</h4>
-                <p>SugestÃµes registradas, dados isolados por tenant, sem treinamento cruzado entre empresas.</p>
+                <h4>IA responsável</h4>
+                <p>Sugestões registradas, dados isolados por tenant, sem treinamento cruzado entre empresas.</p>
             </div>
         </div>
     </div>
@@ -336,8 +336,8 @@
         <div class="free-block">
             <span class="free-pill"><i class="fas fa-gift"></i> Acesso gratuito</span>
             <div>
-                <h3>Tecnologia de gestÃ£o sem barreira de entrada.</h3>
-                <p>A Vivensi oferece acesso gratuito porque acredita que times pequenos e mÃ©dios devem ter ferramentas profissionais de produtividade e financeiro â€” sem licenÃ§a cara, sem onboarding de semanas.</p>
+                <h3>Tecnologia de gestão sem barreira de entrada.</h3>
+                <p>A Vivensi oferece acesso gratuito porque acredita que times pequenos e médios devem ter ferramentas profissionais de produtividade e financeiro — sem licença cara, sem onboarding de semanas.</p>
             </div>
         </div>
     </div>
@@ -346,25 +346,25 @@
 <section class="dark" id="escola" style="padding-top: 60px;">
     <div class="container">
         <div class="section-eyebrow">Escola Vivensi</div>
-        <h2 class="section-title" style="max-width: 640px;">FormaÃ§Ã£o continuada dentro do painel.</h2>
-        <p class="section-sub" style="max-width: 640px;">VÃ­deos, e-books, playbooks de gestÃ£o e plantÃµes com especialistas â€” para o time inteiro evoluir na execuÃ§Ã£o de projetos e leitura financeira.</p>
+        <h2 class="section-title" style="max-width: 640px;">Formação continuada dentro do painel.</h2>
+        <p class="section-sub" style="max-width: 640px;">Vídeos, e-books, playbooks de gestão e plantões com especialistas — para o time inteiro evoluir na execução de projetos e leitura financeira.</p>
         <div class="training-grid">
             <div class="training-card">
                 <div class="training-card-left">
                     <span class="training-tag">VID</span>
                     <div>
-                        <h5>GestÃ£o de equipes remotas na prÃ¡tica</h5>
-                        <span>MÃ³dulo bÃ¡sico Â· 32 min</span>
+                        <h5>Gestão de equipes remotas na prática</h5>
+                        <span>Módulo básico · 32 min</span>
                     </div>
                 </div>
-                <span class="training-badge">DisponÃ­vel</span>
+                <span class="training-badge">Disponível</span>
             </div>
             <div class="training-card">
                 <div class="training-card-left">
                     <span class="training-tag">PDF</span>
                     <div>
                         <h5>Como ler um DRE em 10 minutos</h5>
-                        <span>E-book Â· leitura orientada</span>
+                        <span>E-book · leitura orientada</span>
                     </div>
                 </div>
                 <span class="training-badge">Novo</span>
@@ -373,8 +373,8 @@
                 <div class="training-card-left">
                     <span class="training-tag">LIVE</span>
                     <div>
-                        <h5>PlantÃ£o de Bruce IA para gestores</h5>
-                        <span>SessÃ£o semanal Â· ao vivo</span>
+                        <h5>Plantão de Bruce IA para gestores</h5>
+                        <span>Sessão semanal · ao vivo</span>
                     </div>
                 </div>
                 <span class="training-badge">Ao vivo</span>
@@ -386,28 +386,28 @@
 <section class="section" id="conformidade">
     <div class="container">
         <div class="section-eyebrow">Base legal</div>
-        <h2 class="section-title">ConstruÃ­do com referÃªncias legais para empresas.</h2>
-        <p class="section-sub">O sistema apoia a operaÃ§Ã£o com base em LGPD, contabilidade brasileira e melhores prÃ¡ticas de governanÃ§a â€” sem deixar o time travado em formulÃ¡rio.</p>
+        <h2 class="section-title">Construído com referências legais para empresas.</h2>
+        <p class="section-sub">O sistema apoia a operação com base em LGPD, contabilidade brasileira e melhores práticas de governança — sem deixar o time travado em formulário.</p>
         <div class="step-grid">
             <div class="step-card">
                 <div class="step-num">LGPD</div>
-                <div class="step-title">ProteÃ§Ã£o de dados</div>
+                <div class="step-title">Proteção de dados</div>
                 <div class="step-text">Criptografia AES-256, blind index para CPF e tokens, auditoria de acessos.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">SOX</div>
-                <div class="step-title">AprovaÃ§Ãµes auditÃ¡veis</div>
-                <div class="step-text">Cada despesa registra autor, aprovador, anexo e timestamp imutÃ¡vel.</div>
+                <div class="step-title">Aprovações auditáveis</div>
+                <div class="step-text">Cada despesa registra autor, aprovador, anexo e timestamp imutável.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">OFX</div>
-                <div class="step-title">ConciliaÃ§Ã£o bancÃ¡ria</div>
+                <div class="step-title">Conciliação bancária</div>
                 <div class="step-text">Import direto de extrato OFX dos principais bancos brasileiros.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">NF-e</div>
                 <div class="step-title">Receita Federal</div>
-                <div class="step-text">RelatÃ³rios prontos para contador e exportaÃ§Ã£o CSV para SPED.</div>
+                <div class="step-text">Relatórios prontos para contador e exportação CSV para SPED.</div>
             </div>
         </div>
     </div>
@@ -417,26 +417,26 @@
     <div class="container">
         <div class="section-head-split">
             <div>
-                <div class="section-eyebrow">ProteÃ§Ã£o de dados</div>
+                <div class="section-eyebrow">Proteção de dados</div>
                 <h2 class="section-title">Projetado para times que valorizam confidencialidade.</h2>
             </div>
-            <p class="section-sub" style="margin: 0;">A Vivensi trata dados de clientes, equipe e operaÃ§Ã£o financeira com foco em LGPD, seguranÃ§a operacional e rastreabilidade. O isolamento por empresa Ã© absoluto â€” zero cross-tenant em nenhuma superfÃ­cie.</p>
+            <p class="section-sub" style="margin: 0;">A Vivensi trata dados de clientes, equipe e operação financeira com foco em LGPD, segurança operacional e rastreabilidade. O isolamento por empresa é absoluto — zero cross-tenant em nenhuma superfície.</p>
         </div>
         <div class="info-grid">
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-lock"></i></div>
                 <h4>Criptografia</h4>
-                <p>Dados sensÃ­veis (CPF, documentos, anexos financeiros) protegidos em repouso. Tokens pÃºblicos com blind index.</p>
+                <p>Dados sensíveis (CPF, documentos, anexos financeiros) protegidos em repouso. Tokens públicos com blind index.</p>
             </div>
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-eye"></i></div>
                 <h4>Auditoria</h4>
-                <p>Cada aÃ§Ã£o crÃ­tica Ã© registrada com autor, IP e timestamp. Logs imutÃ¡veis acessÃ­veis via API e PDF.</p>
+                <p>Cada ação crítica é registrada com autor, IP e timestamp. Logs imutáveis acessíveis via API e PDF.</p>
             </div>
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-network-wired"></i></div>
                 <h4>Isolamento</h4>
-                <p>Cada empresa em seu prÃ³prio escopo de dados. Documentos, anexos e API tokens vivem isolados por organizaÃ§Ã£o.</p>
+                <p>Cada empresa em seu próprio escopo de dados. Documentos, anexos e API tokens vivem isolados por organização.</p>
             </div>
         </div>
     </div>
@@ -451,8 +451,8 @@
 
 <section class="final-cta">
     <div class="container">
-        <h2>Centralize a rotina da sua equipe em uma sÃ³ plataforma.</h2>
-        <p>Cadastre sua empresa e comece a usar hoje mesmo â€” projetos, Kanban, WhatsApp, marketing e Bruce IA disponÃ­veis desde a primeira sessÃ£o.</p>
+        <h2>Centralize a rotina da sua equipe em uma só plataforma.</h2>
+        <p>Cadastre sua empresa e comece a usar hoje mesmo — projetos, Kanban, WhatsApp, marketing e Bruce IA disponíveis desde a primeira sessão.</p>
         <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Criar conta</a>
     </div>
 </section>
@@ -463,14 +463,14 @@
             <div>
                 <div class="footer-brand">
                     <span class="nav-logo-mark">V</span>
-                    <strong>Vivensi Â· Gestor de Projetos</strong>
+                    <strong>Vivensi · Gestor de Projetos</strong>
                 </div>
-                <p class="footer-text">Plataforma integrada de projetos, equipe e financeiro para empresas brasileiras. SeguranÃ§a LGPD, IA contextual e isolamento por organizaÃ§Ã£o.</p>
+                <p class="footer-text">Plataforma integrada de projetos, equipe e financeiro para empresas brasileiras. Segurança LGPD, IA contextual e isolamento por organização.</p>
             </div>
             <div class="footer-col">
                 <h6>Sistema</h6>
                 <ul>
-                    <li><a href="#fluxo">Fluxo de gestÃ£o</a></li>
+                    <li><a href="#fluxo">Fluxo de gestão</a></li>
                     <li><a href="#bruce">Bruce IA</a></li>
                     <li><a href="#escola">Escola Vivensi</a></li>
                     <li><a href="#conformidade">Base legal</a></li>
@@ -481,22 +481,22 @@
                 <ul>
                     <li><a href="{{ route('register') }}">Cadastro gratuito</a></li>
                     <li><a href="{{ route('login') }}">Entrar no sistema</a></li>
-                    <li><a href="{{ url('/legal/privacidade') }}">PolÃ­tica de Privacidade</a></li>
+                    <li><a href="{{ url('/legal/privacidade') }}">Política de Privacidade</a></li>
                     <li><a href="{{ url('/legal/termos') }}">Termos de Uso</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h6>Compromissos</h6>
                 <ul>
-                    <li><a href="#">ProteÃ§Ã£o de dados</a></li>
+                    <li><a href="#">Proteção de dados</a></li>
                     <li><a href="#">LGPD e auditoria</a></li>
                     <li><a href="#">Isolamento por empresa</a></li>
-                    <li><a href="#">Uso responsÃ¡vel de IA</a></li>
+                    <li><a href="#">Uso responsável de IA</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <span>Â© {{ date('Y') }} VIVENSIAPP. Todos os direitos reservados. Feito para times que entregam.</span>
+            <span>© {{ date('Y') }} VIVENSIAPP. Todos os direitos reservados. Feito para times que entregam.</span>
             <div class="footer-bottom-tags">
                 <span>LGPD</span>
                 <span>OFX</span>
@@ -504,7 +504,7 @@
             </div>
         </div>
         <div class="footer-owner" style="text-align:center; padding:16px 0 0; margin-top:16px; border-top:1px solid rgba(255,255,255,0.08); font-size:.82rem; color:rgba(255,255,255,0.55);">
-            VivensiApp Ã© um produto da <strong>NC5 HUB DIGITAL LTDA</strong> Â· CNPJ: 67.848.807/0001-50
+            VivensiApp é um produto da <strong>NC5 HUB DIGITAL LTDA</strong> · CNPJ: 67.848.807/0001-50
         </div>
     </div>
 </footer>

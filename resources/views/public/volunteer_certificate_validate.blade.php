@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ValidaÃ§Ã£o de Certificado</title>
+    <title>Validação de Certificado</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f8fafc; margin: 0; color: #0f172a; }
         .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px; }
@@ -32,32 +32,32 @@
         <div class="card">
             <div style="display:flex; justify-content: space-between; align-items:center; gap: 12px; flex-wrap: wrap;">
                 <div>
-                    <h1>ValidaÃ§Ã£o de Certificado</h1>
+                    <h1>Validação de Certificado</h1>
                     <div class="muted">{{ $orgName }}</div>
                 </div>
                 @if($isValid)
-                    <div class="badge ok">VÃLIDO</div>
+                    <div class="badge ok">VÁLIDO</div>
                 @else
-                    <div class="badge bad">NÃƒO VALIDADO</div>
+                    <div class="badge bad">NÃO VALIDADO</div>
                 @endif
             </div>
 
             <div class="grid">
                 <div class="kv">
-                    <b>NÂº do certificado</b>
+                    <b>Nº do certificado</b>
                     <div class="code">{{ $certificateNo }}</div>
                 </div>
                 <div class="kv">
-                    <b>CÃ³digo informado</b>
-                    <div class="code">{{ $providedCode !== '' ? $providedCode : 'â€”' }}</div>
+                    <b>Código informado</b>
+                    <div class="code">{{ $providedCode !== '' ? $providedCode : '—' }}</div>
                 </div>
                 <div class="kv">
-                    <b>VoluntÃ¡rio(a)</b>
-                    <div>{{ $cert->volunteer_name ?? 'â€”' }}</div>
+                    <b>Voluntário(a)</b>
+                    <div>{{ $cert->volunteer_name ?? '—' }}</div>
                 </div>
                 <div class="kv">
-                    <b>EmissÃ£o</b>
-                    <div>{{ optional($cert->issued_at)->format('d/m/Y') ?? 'â€”' }}</div>
+                    <b>Emissão</b>
+                    <div>{{ optional($cert->issued_at)->format('d/m/Y') ?? '—' }}</div>
                 </div>
                 <div class="kv" style="grid-column: 1 / -1;">
                     <b>Atividade</b>
@@ -68,18 +68,18 @@
                     <div><strong>{{ number_format((int) ($cert->hours ?? 0)) }}</strong></div>
                 </div>
                 <div class="kv">
-                    <b>Status da validaÃ§Ã£o</b>
+                    <b>Status da validação</b>
                     @if($isValid)
-                        <div><strong style="color:#166534;">CÃ³digo confere com o certificado.</strong></div>
+                        <div><strong style="color:#166534;">Código confere com o certificado.</strong></div>
                     @else
-                        <div><strong style="color:#991b1b;">CÃ³digo nÃ£o confere.</strong></div>
+                        <div><strong style="color:#991b1b;">Código não confere.</strong></div>
                     @endif
                 </div>
             </div>
 
             <form class="form" method="GET" action="">
                 <div>
-                    <div class="muted" style="font-size: 12px; font-weight: 800; margin-bottom: 6px;">Informe o cÃ³digo de autenticidade</div>
+                    <div class="muted" style="font-size: 12px; font-weight: 800; margin-bottom: 6px;">Informe o código de autenticidade</div>
                     <input name="code" value="{{ $providedCode }}" placeholder="Ex: 1A2B3C4D5E6F7G8H" maxlength="64">
                 </div>
                 <div>
@@ -88,7 +88,7 @@
             </form>
 
             <div class="foot">
-                Dica: se vocÃª recebeu um PDF, o cÃ³digo de autenticidade estÃ¡ impresso no documento.
+                Dica: se você recebeu um PDF, o código de autenticidade está impresso no documento.
             </div>
         </div>
     </div>

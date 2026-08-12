@@ -28,7 +28,7 @@
             flex-direction: column;
         }
 
-        /* â”€â”€â”€ NAVBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── NAVBAR ─────────────────────────────────── */
         .acad-navbar {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -232,13 +232,13 @@
         }
         .acad-mobile-menu a:hover { background: rgba(99,102,241,.12); color: #fff; }
 
-        /* â”€â”€â”€ CONTENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── CONTENT ─────────────────────────────────── */
         .academy-content {
             margin-top: 68px;
             flex: 1;
         }
 
-        /* â”€â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── FOOTER ─────────────────────────────────── */
         .acad-footer {
             background: #080d1c;
             border-top: 1px solid rgba(99,102,241,.15);
@@ -315,7 +315,7 @@
         .acad-footer-stat .stat-num { font-size: 1.1rem; font-weight: 800; color: #818cf8; }
         .acad-footer-stat .stat-lbl { font-size: .7rem; color: #475569; font-weight: 500; letter-spacing: .5px; }
 
-        /* â”€â”€â”€ RESPONSIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── RESPONSIVE ───────────────────────────────── */
         @media (max-width: 900px) {
             .acad-nav-links,
             .acad-nav-sep,
@@ -335,7 +335,7 @@
 </head>
 <body>
 
-{{-- â•â•â• TOP NAVBAR â•â•â• --}}
+{{-- ═══ TOP NAVBAR ═══ --}}
 <nav class="acad-navbar">
 
     {{-- Logo --}}
@@ -379,7 +379,7 @@
             <div class="acad-user-trigger" onclick="toggleAcadMenu()" id="acadUserTrigger">
                 <div class="acad-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
                 <div class="acad-user-info">
-                    <span class="acad-user-name">{{ explode(' ', auth()->user()->name ?? 'UsuÃ¡rio')[0] }}</span>
+                    <span class="acad-user-name">{{ explode(' ', auth()->user()->name ?? 'Usuário')[0] }}</span>
                     <span class="acad-user-role">Aluno</span>
                 </div>
                 <i class="fas fa-chevron-down acad-caret"></i>
@@ -388,7 +388,7 @@
             <div class="acad-dropdown" id="acadDropdown">
                 <div class="acad-dropdown-header">
                     <p>Logado como</p>
-                    <strong>{{ auth()->user()->name ?? 'UsuÃ¡rio' }}</strong>
+                    <strong>{{ auth()->user()->name ?? 'Usuário' }}</strong>
                 </div>
                 <a href="{{ url('/profile') }}" class="acad-dropdown-item">
                     <i class="fas fa-user-circle"></i> Meu Perfil
@@ -433,12 +433,12 @@
     </form>
 </div>
 
-{{-- â•â•â• PAGE CONTENT â•â•â• --}}
+{{-- ═══ PAGE CONTENT ═══ --}}
 <main class="academy-content">
     @yield('content')
 </main>
 
-{{-- â•â•â• FOOTER â•â•â• --}}
+{{-- ═══ FOOTER ═══ --}}
 <footer class="acad-footer">
     <div class="acad-footer-grid">
 
@@ -449,7 +449,7 @@
                 <span class="acad-footer-logo-text">Vivensi Academy</span>
             </a>
             <p class="acad-footer-desc">
-                CapacitaÃ§Ã£o especializada para gestores, colaboradores e voluntÃ¡rios do Terceiro Setor.
+                Capacitação especializada para gestores, colaboradores e voluntários do Terceiro Setor.
                 Aprenda no seu ritmo e conquiste certificados reconhecidos.
             </p>
             <div class="acad-footer-badges">

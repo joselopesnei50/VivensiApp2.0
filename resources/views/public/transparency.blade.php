@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal TransparÃªncia - Vivensi</title>
+    <title>Portal Transparência - Vivensi</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -26,17 +26,17 @@
     <div class="container">
         <div class="header">
             <i class="fas fa-landmark" style="font-size: 3rem; color: #4f46e5; margin-bottom: 15px;"></i>
-            <h1>Portal da TransparÃªncia</h1>
-            <p>PrestaÃ§Ã£o de contas pÃºblica realizada via Vivensi Platform.</p>
+            <h1>Portal da Transparência</h1>
+            <p>Prestação de contas pública realizada via Vivensi Platform.</p>
         </div>
 
         <div class="card">
-            <h3><i class="fas fa-list"></i> Ãšltimas Despesas Realizadas</h3>
+            <h3><i class="fas fa-list"></i> Últimas Despesas Realizadas</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Data</th>
-                        <th>DescriÃ§Ã£o</th>
+                        <th>Descrição</th>
                         <th>Categoria</th>
                         <th style="text-align: right;">Valor</th>
                         <th style="text-align: center;">Status</th>

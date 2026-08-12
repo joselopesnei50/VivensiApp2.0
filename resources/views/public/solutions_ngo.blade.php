@@ -28,8 +28,8 @@
     <x-meta-pixel />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vivensi para o Terceiro Setor | GestÃ£o Completa para sua ONG</title>
-    <meta name="description" content="A plataforma completa para ONGs brasileiras: prestaÃ§Ã£o de contas, doadores, voluntÃ¡rios, editais com IA, transparÃªncia LGPD. Sem complicaÃ§Ã£o.">
+    <title>Vivensi para o Terceiro Setor | Gestão Completa para sua ONG</title>
+    <meta name="description" content="A plataforma completa para ONGs brasileiras: prestação de contas, doadores, voluntários, editais com IA, transparência LGPD. Sem complicação.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
@@ -88,7 +88,7 @@
         .hero-mini span { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
         @media (max-width: 768px) { .hero-mini-grid { grid-template-columns: 1fr; } }
 
-        /* â”€â”€ Destaque Bruce IA (identidade #0A0A0B + #FF7A1A) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ── Destaque Bruce IA (identidade #0A0A0B + #FF7A1A) ────────────── */
         .bruce-highlight { padding: 60px 0; background: #ffffff; }
         .bruce-card { display:flex; align-items:center; gap:32px; background:#0A0A0B; border:1px solid rgba(255,122,26,.22); border-radius:20px; padding:40px 44px; }
         .bruce-card-icon { flex-shrink:0; width:120px; height:120px; border-radius:24px; background:#0f0f1e; border:1px solid rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; }
@@ -115,7 +115,7 @@
             .bruce-ulist { grid-template-columns:1fr; }
         }
 
-        /* â”€â”€ Modulos NGO (6 blocos tematicos + extras) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ── Modulos NGO (6 blocos tematicos + extras) ─────────────────────── */
         .ngo-modules { padding:90px 0; background:linear-gradient(180deg,#0a0e1a 0%,#131830 100%); }
         .mkt-head { max-width:820px; margin:0 auto 44px; text-align:center; }
         .mkt-eyebrow { display:inline-block; font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:1.4px; color:#FF7A1A; background:rgba(255,122,26,.12); border:1px solid rgba(255,122,26,.28); padding:6px 14px; border-radius:100px; margin-bottom:16px; }
@@ -262,24 +262,24 @@
 <section class="hero">
     <div class="container" style="text-align: center;">
         <div class="hero-eyebrow"><i class="fas fa-arrow-right"></i> Vivensi Terceiro Setor</div>
-        <h1 class="hero-title">O sistema que sua ONG precisa â€” com <span class="mark">IA aplicada ao terceiro setor</span>.</h1>
-        <p class="hero-sub">Doadores, editais, beneficiÃ¡rios, prestaÃ§Ã£o de contas, WhatsApp, marketing e conformidade CEBAS/MROSC/SUAS em uma sÃ³ plataforma. Com Bruce IA treinado pra falar a lÃ­ngua da sua causa â€” nÃ£o jargÃ£o de startup.</p>
+        <h1 class="hero-title">O sistema que sua ONG precisa — com <span class="mark">IA aplicada ao terceiro setor</span>.</h1>
+        <p class="hero-sub">Doadores, editais, beneficiários, prestação de contas, WhatsApp, marketing e conformidade CEBAS/MROSC/SUAS em uma só plataforma. Com Bruce IA treinado pra falar a língua da sua causa — não jargão de startup.</p>
         <div class="hero-ctas">
             <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Criar minha conta</a>
-            <a href="#modulos" class="btn-ghost"><i class="fas fa-th-large"></i> Ver todos os mÃ³dulos</a>
+            <a href="#modulos" class="btn-ghost"><i class="fas fa-th-large"></i> Ver todos os módulos</a>
         </div>
         <div class="hero-mini-grid">
             <div class="hero-mini">
                 <strong>Radar de Editais</strong>
-                <span>Bruce vasculha diÃ¡rios oficiais e chamamentos MROSC. VocÃª recebe sÃ³ o que combina com sua ONG.</span>
+                <span>Bruce vasculha diários oficiais e chamamentos MROSC. Você recebe só o que combina com sua ONG.</span>
             </div>
             <div class="hero-mini">
-                <strong>Conformidade ContÃ­nua</strong>
-                <span>CEBAS Â· MROSC Â· SUAS calculados em tempo real. Alerta antes de vencer, nÃ£o depois.</span>
+                <strong>Conformidade Contínua</strong>
+                <span>CEBAS · MROSC · SUAS calculados em tempo real. Alerta antes de vencer, não depois.</span>
             </div>
             <div class="hero-mini">
                 <strong>Portal de Doadores</strong>
-                <span>Recibo automÃ¡tico, informe IR e transparÃªncia LGPD em URL prÃ³pria da ONG.</span>
+                <span>Recibo automático, informe IR e transparência LGPD em URL própria da ONG.</span>
             </div>
         </div>
     </div>
@@ -290,36 +290,36 @@
         <div class="section-head-split">
             <div>
                 <div class="section-eyebrow">Fluxo Integrado</div>
-                <h2 class="section-title">Uma experiÃªncia guiada do cadastro Ã  prestaÃ§Ã£o de contas.</h2>
+                <h2 class="section-title">Uma experiência guiada do cadastro à prestação de contas.</h2>
             </div>
-            <p class="section-sub" style="margin: 0;">A Vivensi foi pensada para ONGs brasileiras de qualquer porte. Cada etapa gera um registro auditÃ¡vel e conectado â€” nada fica perdido entre planilhas, e-mails e WhatsApp.</p>
+            <p class="section-sub" style="margin: 0;">A Vivensi foi pensada para ONGs brasileiras de qualquer porte. Cada etapa gera um registro auditável e conectado — nada fica perdido entre planilhas, e-mails e WhatsApp.</p>
         </div>
         <div class="step-grid">
             <div class="step-card">
                 <div class="step-num">01</div>
                 <div class="step-title">Cadastra projetos</div>
-                <div class="step-text">Nome, orÃ§amento, equipe, metas, marcos planejados e DiÃ¡rio de EvoluÃ§Ã£o com resumo por IA.</div>
+                <div class="step-text">Nome, orçamento, equipe, metas, marcos planejados e Diário de Evolução com resumo por IA.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">02</div>
                 <div class="step-title">Bruce IA analisa</div>
-                <div class="step-text">Sugere aÃ§Ãµes, gera propostas para editais e responde sobre dados do projeto em tempo real.</div>
+                <div class="step-text">Sugere ações, gera propostas para editais e responde sobre dados do projeto em tempo real.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">03</div>
-                <div class="step-title">CaptaÃ§Ã£o e doadores</div>
-                <div class="step-text">Portal de doadores com recibo automÃ¡tico, informe IR, campanhas e Pix integrado.</div>
+                <div class="step-title">Captação e doadores</div>
+                <div class="step-text">Portal de doadores com recibo automático, informe IR, campanhas e Pix integrado.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">04</div>
                 <div class="step-title">Presta contas</div>
-                <div class="step-text">DRE, conciliaÃ§Ã£o bancÃ¡ria, relatÃ³rios em PDF e portal pÃºblico de transparÃªncia.</div>
+                <div class="step-text">DRE, conciliação bancária, relatórios em PDF e portal público de transparência.</div>
             </div>
         </div>
     </div>
 </section>
 
-{{-- Destaque Bruce IA para Terceiro Setor â€” identidade visual do Bruce contextualizada. --}}
+{{-- Destaque Bruce IA para Terceiro Setor — identidade visual do Bruce contextualizada. --}}
 <section class="bruce-highlight" id="ia">
     <div class="container">
         <div class="bruce-card">
@@ -327,149 +327,149 @@
                 <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA" width="88" height="88">
             </div>
             <div class="bruce-card-body">
-                <span class="bruce-tag">Bruce IA Â· treinado para o terceiro setor</span>
-                <h2 class="bruce-h">Uma IA que fala <em>doador, edital e beneficiÃ¡rio</em>. NÃ£o startup.</h2>
-                <p class="bruce-p">Bruce lÃª seus projetos, transaÃ§Ãµes, cadastros de doadores e chamamentos pÃºblicos â€” e devolve <strong>decisÃ£o prÃ¡tica</strong>, nÃ£o relatÃ³rio com 40 grÃ¡ficos. Sem addon, sem mensalidade extra de IA. Dentro do plano.</p>
+                <span class="bruce-tag">Bruce IA · treinado para o terceiro setor</span>
+                <h2 class="bruce-h">Uma IA que fala <em>doador, edital e beneficiário</em>. Não startup.</h2>
+                <p class="bruce-p">Bruce lê seus projetos, transações, cadastros de doadores e chamamentos públicos — e devolve <strong>decisão prática</strong>, não relatório com 40 gráficos. Sem addon, sem mensalidade extra de IA. Dentro do plano.</p>
                 <ul class="bruce-ulist">
-                    <li><i class="fas fa-check"></i> <strong>Radar de Editais</strong> â€” Bruce vasculha diÃ¡rios oficiais e alerta o que combina com sua causa</li>
-                    <li><i class="fas fa-check"></i> <strong>Gera propostas para editais</strong> â€” puxa dados reais dos seus projetos e escreve a submissÃ£o</li>
-                    <li><i class="fas fa-check"></i> <strong>Smart Analysis</strong> â€” lÃª fluxo de caixa em linguagem de ONG (custeio, contrapartida, patrocÃ­nio)</li>
-                    <li><i class="fas fa-check"></i> <strong>Sala de EstratÃ©gia</strong> â€” 5 agentes debatem e entregam UMA aÃ§Ã£o prioritÃ¡ria</li>
-                    <li><i class="fas fa-check"></i> <strong>Marketing IA</strong> â€” post pra rede social, calendÃ¡rio editorial e e-mail pra doadores</li>
-                    <li><i class="fas fa-check"></i> <strong>Qualifica lead no WhatsApp</strong> â€” IA lÃª a conversa e classifica se Ã© doador em potencial</li>
+                    <li><i class="fas fa-check"></i> <strong>Radar de Editais</strong> — Bruce vasculha diários oficiais e alerta o que combina com sua causa</li>
+                    <li><i class="fas fa-check"></i> <strong>Gera propostas para editais</strong> — puxa dados reais dos seus projetos e escreve a submissão</li>
+                    <li><i class="fas fa-check"></i> <strong>Smart Analysis</strong> — lê fluxo de caixa em linguagem de ONG (custeio, contrapartida, patrocínio)</li>
+                    <li><i class="fas fa-check"></i> <strong>Sala de Estratégia</strong> — 5 agentes debatem e entregam UMA ação prioritária</li>
+                    <li><i class="fas fa-check"></i> <strong>Marketing IA</strong> — post pra rede social, calendário editorial e e-mail pra doadores</li>
+                    <li><i class="fas fa-check"></i> <strong>Qualifica lead no WhatsApp</strong> — IA lê a conversa e classifica se é doador em potencial</li>
                 </ul>
                 <div class="bruce-ctas">
                     <a href="{{ route('register') }}" class="bruce-cta-main"><i class="fas fa-arrow-right"></i> Ativar o Bruce na minha ONG</a>
-                    <a href="#modulos" class="bruce-cta-out">Ver todos os mÃ³dulos <i class="fas fa-chevron-down"></i></a>
+                    <a href="#modulos" class="bruce-cta-out">Ver todos os módulos <i class="fas fa-chevron-down"></i></a>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-{{-- 6 blocos tematicos com modulos reais do menu NGO â€” foco em conversao. --}}
+{{-- 6 blocos tematicos com modulos reais do menu NGO — foco em conversao. --}}
 <section class="ngo-modules" id="modulos">
     <div class="container">
         <div class="mkt-head">
-            <span class="mkt-eyebrow">MÃ³dulos exclusivos do terceiro setor</span>
-            <h2 class="mkt-title">Tudo que sua ONG faz â€” em um sistema <em>desenhado pra ONG</em>.</h2>
-            <p class="mkt-sub">VocÃª nÃ£o precisa juntar 6 ferramentas (planilha, MailChimp, plataforma de doaÃ§Ã£o, ChatGPT, Trello, sistema de conformidade). Vivensi entrega o pacote inteiro, integrado.</p>
+            <span class="mkt-eyebrow">Módulos exclusivos do terceiro setor</span>
+            <h2 class="mkt-title">Tudo que sua ONG faz — em um sistema <em>desenhado pra ONG</em>.</h2>
+            <p class="mkt-sub">Você não precisa juntar 6 ferramentas (planilha, MailChimp, plataforma de doação, ChatGPT, Trello, sistema de conformidade). Vivensi entrega o pacote inteiro, integrado.</p>
         </div>
 
         <div class="ngo-blocks">
-            {{-- Bloco 1 Â· Captacao --}}
+            {{-- Bloco 1 · Captacao --}}
             <article class="ngo-block">
                 <div class="ngo-block-hd">
                     <div class="ngo-block-ico" style="background:rgba(239,68,68,.14);color:#ef4444;"><i class="fas fa-heart"></i></div>
                     <div>
-                        <h3>CaptaÃ§Ã£o, Doadores &amp; Recibos</h3>
-                        <p>CRM de doadores, portal pÃºblico, recibo automÃ¡tico, informe IR anual e rifas online. Sem intermediÃ¡rio engolindo taxa.</p>
+                        <h3>Captação, Doadores &amp; Recibos</h3>
+                        <p>CRM de doadores, portal público, recibo automático, informe IR anual e rifas online. Sem intermediário engolindo taxa.</p>
                     </div>
                 </div>
                 <ul class="ngo-block-list">
                     <li><i class="fas fa-check"></i> CRM de Doadores</li>
                     <li><i class="fas fa-check"></i> Portal de Recibos com link privado</li>
                     <li><i class="fas fa-check"></i> Informe IR anual (PDF pronto)</li>
-                    <li><i class="fas fa-check"></i> CRM de PatrocÃ­nios</li>
+                    <li><i class="fas fa-check"></i> CRM de Patrocínios</li>
                     <li><i class="fas fa-check"></i> Rifas Online</li>
-                    <li><i class="fas fa-check"></i> Landing Pages de captaÃ§Ã£o (builder)</li>
+                    <li><i class="fas fa-check"></i> Landing Pages de captação (builder)</li>
                 </ul>
             </article>
 
-            {{-- Bloco 2 Â· Editais --}}
+            {{-- Bloco 2 · Editais --}}
             <article class="ngo-block ngo-block-hot">
                 <span class="ngo-hot-tag">Diferencial Vivensi</span>
                 <div class="ngo-block-hd">
                     <div class="ngo-block-ico" style="background:rgba(255,122,26,.16);color:#FF7A1A;"><i class="fas fa-satellite-dish"></i></div>
                     <div>
-                        <h3>Editais &amp; ConvÃªnios com IA</h3>
-                        <p>Bruce vasculha Querido DiÃ¡rio e chamamentos MROSC. Analisa relevÃ¢ncia. Gera a proposta. Sua ONG sÃ³ decide se submete.</p>
+                        <h3>Editais &amp; Convênios com IA</h3>
+                        <p>Bruce vasculha Querido Diário e chamamentos MROSC. Analisa relevância. Gera a proposta. Sua ONG só decide se submete.</p>
                     </div>
                 </div>
                 <ul class="ngo-block-list">
-                    <li><i class="fas fa-check"></i> <strong>Radar automÃ¡tico</strong> (Querido DiÃ¡rio integrado)</li>
-                    <li><i class="fas fa-check"></i> AnÃ¡lise de relevÃ¢ncia pelo Bruce IA</li>
+                    <li><i class="fas fa-check"></i> <strong>Radar automático</strong> (Querido Diário integrado)</li>
+                    <li><i class="fas fa-check"></i> Análise de relevância pelo Bruce IA</li>
                     <li><i class="fas fa-check"></i> Gerador de proposta com dados reais do projeto</li>
                     <li><i class="fas fa-check"></i> Workspace por edital (upload docs, prazos)</li>
                     <li><i class="fas fa-check"></i> Alertas de vencimento</li>
-                    <li><i class="fas fa-check"></i> HistÃ³rico completo de submissÃµes</li>
+                    <li><i class="fas fa-check"></i> Histórico completo de submissões</li>
                 </ul>
             </article>
 
-            {{-- Bloco 3 Â· Conformidade --}}
+            {{-- Bloco 3 · Conformidade --}}
             <article class="ngo-block ngo-block-hot">
-                <span class="ngo-hot-tag">Ãšnico no mercado</span>
+                <span class="ngo-hot-tag">Único no mercado</span>
                 <div class="ngo-block-hd">
                     <div class="ngo-block-ico" style="background:rgba(16,185,129,.14);color:#10b981;"><i class="fas fa-shield-halved"></i></div>
                     <div>
-                        <h3>Conformidade ContÃ­nua CEBAS/MROSC/SUAS</h3>
-                        <p>Motor que calcula seus Ã­ndices em tempo real cruzando projetos, atendimentos e financeiro. Nunca mais chegar em auditoria despreparada.</p>
+                        <h3>Conformidade Contínua CEBAS/MROSC/SUAS</h3>
+                        <p>Motor que calcula seus índices em tempo real cruzando projetos, atendimentos e financeiro. Nunca mais chegar em auditoria despreparada.</p>
                     </div>
                 </div>
                 <ul class="ngo-block-list">
                     <li><i class="fas fa-check"></i> Dashboard de conformidade em tempo real</li>
-                    <li><i class="fas fa-check"></i> Eixos CEBAS Â· SUAS Â· MROSC calculados</li>
-                    <li><i class="fas fa-check"></i> Planos de aÃ§Ã£o rastreÃ¡veis</li>
+                    <li><i class="fas fa-check"></i> Eixos CEBAS · SUAS · MROSC calculados</li>
+                    <li><i class="fas fa-check"></i> Planos de ação rastreáveis</li>
                     <li><i class="fas fa-check"></i> Ciclos anuais + snapshot para auditoria</li>
                     <li><i class="fas fa-check"></i> Alertas de documento vencendo</li>
-                    <li><i class="fas fa-check"></i> RelatÃ³rio PDF pronto pro conselho</li>
+                    <li><i class="fas fa-check"></i> Relatório PDF pronto pro conselho</li>
                 </ul>
             </article>
 
-            {{-- Bloco 4 Â· Beneficiarios --}}
+            {{-- Bloco 4 · Beneficiarios --}}
             <article class="ngo-block">
                 <div class="ngo-block-hd">
                     <div class="ngo-block-ico" style="background:rgba(139,92,246,.14);color:#8b5cf6;"><i class="fas fa-hand-holding-heart"></i></div>
                     <div>
-                        <h3>BeneficiÃ¡rios &amp; Impacto Social</h3>
-                        <p>Cadastro com PII cifrado at-rest (LGPD nativo), lista de presenÃ§a, indicadores sociais e relatÃ³rio anual de impacto pronto pra apresentar.</p>
+                        <h3>Beneficiários &amp; Impacto Social</h3>
+                        <p>Cadastro com PII cifrado at-rest (LGPD nativo), lista de presença, indicadores sociais e relatório anual de impacto pronto pra apresentar.</p>
                     </div>
                 </div>
                 <ul class="ngo-block-list">
                     <li><i class="fas fa-check"></i> Cadastro LGPD-compliant (encryption at-rest)</li>
-                    <li><i class="fas fa-check"></i> ImportaÃ§Ã£o massiva via CSV</li>
-                    <li><i class="fas fa-check"></i> Lista de PresenÃ§a por turma/atividade</li>
-                    <li><i class="fas fa-check"></i> Indicadores Sociais automÃ¡ticos</li>
-                    <li><i class="fas fa-check"></i> RelatÃ³rio Anual de Impacto</li>
+                    <li><i class="fas fa-check"></i> Importação massiva via CSV</li>
+                    <li><i class="fas fa-check"></i> Lista de Presença por turma/atividade</li>
+                    <li><i class="fas fa-check"></i> Indicadores Sociais automáticos</li>
+                    <li><i class="fas fa-check"></i> Relatório Anual de Impacto</li>
                     <li><i class="fas fa-check"></i> Fluxo self-service /eu/dados (art. 15/18 LGPD)</li>
                 </ul>
             </article>
 
-            {{-- Bloco 5 Â· WhatsApp/Marketing --}}
+            {{-- Bloco 5 · WhatsApp/Marketing --}}
             <article class="ngo-block">
                 <div class="ngo-block-hd">
                     <div class="ngo-block-ico" style="background:rgba(34,197,94,.14);color:#22c55e;"><i class="fab fa-whatsapp"></i></div>
                     <div>
                         <h3>WhatsApp &amp; Marketing com IA</h3>
-                        <p>API oficial Meta + Bruce respondendo doadores 24/7 + calendÃ¡rio editorial + e-mail marketing + disparo em massa com opt-in. Tudo integrado.</p>
+                        <p>API oficial Meta + Bruce respondendo doadores 24/7 + calendário editorial + e-mail marketing + disparo em massa com opt-in. Tudo integrado.</p>
                     </div>
                 </div>
                 <ul class="ngo-block-list">
                     <li><i class="fas fa-check"></i> API Oficial Meta WhatsApp Cloud</li>
-                    <li><i class="fas fa-check"></i> Disparo em massa (texto, imagem, Ã¡udio) com anti-ban</li>
-                    <li><i class="fas fa-check"></i> QualificaÃ§Ã£o de lead via IA</li>
-                    <li><i class="fas fa-check"></i> FormulÃ¡rios conversacionais</li>
+                    <li><i class="fas fa-check"></i> Disparo em massa (texto, imagem, áudio) com anti-ban</li>
+                    <li><i class="fas fa-check"></i> Qualificação de lead via IA</li>
+                    <li><i class="fas fa-check"></i> Formulários conversacionais</li>
                     <li><i class="fas fa-check"></i> E-mail marketing com Brevo integrado</li>
-                    <li><i class="fas fa-check"></i> Social AI Hub (posts + calendÃ¡rio editorial)</li>
+                    <li><i class="fas fa-check"></i> Social AI Hub (posts + calendário editorial)</li>
                 </ul>
             </article>
 
-            {{-- Bloco 6 Â· Financeiro/Transparencia --}}
+            {{-- Bloco 6 · Financeiro/Transparencia --}}
             <article class="ngo-block">
                 <div class="ngo-block-hd">
                     <div class="ngo-block-ico" style="background:rgba(59,130,246,.14);color:#3b82f6;"><i class="fas fa-file-invoice-dollar"></i></div>
                     <div>
-                        <h3>Financeiro &amp; PrestaÃ§Ã£o de Contas</h3>
-                        <p>Fluxo de caixa por projeto, DRE, conciliaÃ§Ã£o bancÃ¡ria, orÃ§amento anual e Portal de TransparÃªncia pÃºblico â€” sem depender de contador terceirizado pra tudo.</p>
+                        <h3>Financeiro &amp; Prestação de Contas</h3>
+                        <p>Fluxo de caixa por projeto, DRE, conciliação bancária, orçamento anual e Portal de Transparência público — sem depender de contador terceirizado pra tudo.</p>
                     </div>
                 </div>
                 <ul class="ngo-block-list">
                     <li><i class="fas fa-check"></i> Fluxo de Caixa por projeto</li>
-                    <li><i class="fas fa-check"></i> DRE automÃ¡tico</li>
-                    <li><i class="fas fa-check"></i> ConciliaÃ§Ã£o BancÃ¡ria</li>
-                    <li><i class="fas fa-check"></i> OrÃ§amento Anual</li>
-                    <li><i class="fas fa-check"></i> ImportaÃ§Ã£o de planilhas CSV</li>
-                    <li><i class="fas fa-check"></i> Portal PÃºblico de TransparÃªncia</li>
+                    <li><i class="fas fa-check"></i> DRE automático</li>
+                    <li><i class="fas fa-check"></i> Conciliação Bancária</li>
+                    <li><i class="fas fa-check"></i> Orçamento Anual</li>
+                    <li><i class="fas fa-check"></i> Importação de planilhas CSV</li>
+                    <li><i class="fas fa-check"></i> Portal Público de Transparência</li>
                 </ul>
             </article>
         </div>
@@ -478,23 +478,23 @@
         <div class="ngo-extras">
             <h3>E ainda inclui:</h3>
             <div class="ngo-extras-grid">
-                <div><i class="fas fa-project-diagram"></i> GestÃ£o de Projetos + Kanban + Turmas</div>
+                <div><i class="fas fa-project-diagram"></i> Gestão de Projetos + Kanban + Turmas</div>
                 <div><i class="fas fa-id-badge"></i> RH &amp; Voluntariado com certificados</div>
-                <div><i class="fas fa-building"></i> PatrimÃ´nio &amp; Almoxarifado</div>
+                <div><i class="fas fa-building"></i> Patrimônio &amp; Almoxarifado</div>
                 <div><i class="fas fa-file-contract"></i> Contratos Digitais</div>
                 <div><i class="fas fa-eye"></i> Central de Auditoria</div>
-                <div><i class="fas fa-landmark"></i> Portal de TransparÃªncia</div>
+                <div><i class="fas fa-landmark"></i> Portal de Transparência</div>
                 <div><i class="fas fa-graduation-cap"></i> Vivensi Academy (LMS interno)</div>
-                <div><i class="fas fa-map-location-dot"></i> InteligÃªncia Territorial</div>
+                <div><i class="fas fa-map-location-dot"></i> Inteligência Territorial</div>
             </div>
         </div>
 
         <div class="mkt-cta-box">
             <div>
-                <strong>Todos os mÃ³dulos incluÃ­dos no seu plano.</strong>
-                <span>Sem addon de IA. Sem cobranÃ§a por doador cadastrado. Sem tarifa escondida.</span>
+                <strong>Todos os módulos incluídos no seu plano.</strong>
+                <span>Sem addon de IA. Sem cobrança por doador cadastrado. Sem tarifa escondida.</span>
             </div>
-            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-rocket"></i> ComeÃ§ar agora</a>
+            <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-rocket"></i> Começar agora</a>
         </div>
     </div>
 </section>
@@ -502,25 +502,25 @@
 <section class="dark" id="escola" style="padding-top: 60px;">
     <div class="container">
         <div class="section-eyebrow">Escola Vivensi</div>
-        <h2 class="section-title" style="max-width: 640px;">FormaÃ§Ã£o continuada dentro do painel.</h2>
-        <p class="section-sub" style="max-width: 640px;">VÃ­deos, e-books, mÃ³dulos, conteÃºdos diÃ¡rios, fÃ³rum de aprendizagem e emissÃ£o de certificado para a equipe da ONG concluir a trilha.</p>
+        <h2 class="section-title" style="max-width: 640px;">Formação continuada dentro do painel.</h2>
+        <p class="section-sub" style="max-width: 640px;">Vídeos, e-books, módulos, conteúdos diários, fórum de aprendizagem e emissão de certificado para a equipe da ONG concluir a trilha.</p>
         <div class="training-grid">
             <div class="training-card">
                 <div class="training-card-left">
                     <span class="training-tag">VID</span>
                     <div>
-                        <h5>CaptaÃ§Ã£o de recursos na prÃ¡tica</h5>
-                        <span>MÃ³dulo bÃ¡sico Â· 24 min</span>
+                        <h5>Captação de recursos na prática</h5>
+                        <span>Módulo básico · 24 min</span>
                     </div>
                 </div>
-                <span class="training-badge">DisponÃ­vel</span>
+                <span class="training-badge">Disponível</span>
             </div>
             <div class="training-card">
                 <div class="training-card-left">
                     <span class="training-tag">PDF</span>
                     <div>
-                        <h5>Guia de prestaÃ§Ã£o de contas para o conselho fiscal</h5>
-                        <span>E-book Â· leitura orientada</span>
+                        <h5>Guia de prestação de contas para o conselho fiscal</h5>
+                        <span>E-book · leitura orientada</span>
                     </div>
                 </div>
                 <span class="training-badge">Novo</span>
@@ -529,8 +529,8 @@
                 <div class="training-card-left">
                     <span class="training-tag">LIVE</span>
                     <div>
-                        <h5>PlantÃ£o de dÃºvidas com especialistas</h5>
-                        <span>FÃ³rum semanal Â· certificado</span>
+                        <h5>Plantão de dúvidas com especialistas</h5>
+                        <span>Fórum semanal · certificado</span>
                     </div>
                 </div>
                 <span class="training-badge">Ao vivo</span>
@@ -542,23 +542,23 @@
 <section class="section" id="conformidade">
     <div class="container">
         <div class="section-eyebrow">Base legal</div>
-        <h2 class="section-title">ConstruÃ­do com referÃªncias legais do terceiro setor.</h2>
-        <p class="section-sub">O sistema apoia a ONG com base em LGPD, MROSC, Marco RegulatÃ³rio das OSCs e exigÃªncias da Receita Federal â€” sem deixar a operaÃ§Ã£o travada.</p>
+        <h2 class="section-title">Construído com referências legais do terceiro setor.</h2>
+        <p class="section-sub">O sistema apoia a ONG com base em LGPD, MROSC, Marco Regulatório das OSCs e exigências da Receita Federal — sem deixar a operação travada.</p>
         <div class="step-grid">
             <div class="step-card">
                 <div class="step-num">LGPD</div>
-                <div class="step-title">ProteÃ§Ã£o de dados</div>
+                <div class="step-title">Proteção de dados</div>
                 <div class="step-text">Criptografia AES-256, blind index para CPF e tokens, auditoria de acessos.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">MROSC</div>
-                <div class="step-title">Marco RegulatÃ³rio</div>
-                <div class="step-text">Termo de fomento, colaboraÃ§Ã£o e parceria â€” gestÃ£o centralizada por edital.</div>
+                <div class="step-title">Marco Regulatório</div>
+                <div class="step-text">Termo de fomento, colaboração e parceria — gestão centralizada por edital.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">RF</div>
                 <div class="step-title">Receita Federal</div>
-                <div class="step-text">Informe de Rendimentos para doadores e relatÃ³rios prontos para auditoria.</div>
+                <div class="step-text">Informe de Rendimentos para doadores e relatórios prontos para auditoria.</div>
             </div>
             <div class="step-card">
                 <div class="step-num">CONANDA</div>
@@ -573,26 +573,26 @@
     <div class="container">
         <div class="section-head-split">
             <div>
-                <div class="section-eyebrow">ProteÃ§Ã£o de dados</div>
-                <h2 class="section-title">Projetado para proteger informaÃ§Ãµes sensÃ­veis.</h2>
+                <div class="section-eyebrow">Proteção de dados</div>
+                <h2 class="section-title">Projetado para proteger informações sensíveis.</h2>
             </div>
-            <p class="section-sub" style="margin: 0;">A Vivensi trata dados de doadores, voluntÃ¡rios e beneficiÃ¡rios com foco em LGPD, seguranÃ§a operacional e rastreabilidade. A experiÃªncia foi pensada para que a equipe da ONG nunca exponha informaÃ§Ãµes alÃ©m do necessÃ¡rio.</p>
+            <p class="section-sub" style="margin: 0;">A Vivensi trata dados de doadores, voluntários e beneficiários com foco em LGPD, segurança operacional e rastreabilidade. A experiência foi pensada para que a equipe da ONG nunca exponha informações além do necessário.</p>
         </div>
         <div class="info-grid">
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-lock"></i></div>
                 <h4>Criptografia</h4>
-                <p>Dados sensÃ­veis sÃ£o protegidos em repouso com chave prÃ³pria do ambiente. Tokens pÃºblicos com blind index pesquisÃ¡vel.</p>
+                <p>Dados sensíveis são protegidos em repouso com chave própria do ambiente. Tokens públicos com blind index pesquisável.</p>
             </div>
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-eye"></i></div>
                 <h4>Auditoria</h4>
-                <p>AÃ§Ãµes crÃ­ticas sÃ£o registradas para acompanhamento e responsabilizaÃ§Ã£o. Logs imutÃ¡veis disponÃ­veis por API.</p>
+                <p>Ações críticas são registradas para acompanhamento e responsabilização. Logs imutáveis disponíveis por API.</p>
             </div>
             <div class="info-card">
                 <div class="info-card-icon"><i class="fas fa-network-wired"></i></div>
                 <h4>Isolamento</h4>
-                <p>Documentos, anexos e tokens vivem isolados por ONG. Sem cross-tenant em nenhuma superfÃ­cie da plataforma.</p>
+                <p>Documentos, anexos e tokens vivem isolados por ONG. Sem cross-tenant em nenhuma superfície da plataforma.</p>
             </div>
         </div>
     </div>
@@ -608,7 +608,7 @@
 <section class="final-cta">
     <div class="container">
         <h2>Centralize a rotina da sua ONG em uma plataforma feita pra terceiro setor.</h2>
-        <p>Cadastre sua organizaÃ§Ã£o em minutos e comece a usar hoje mesmo â€” doadores, editais, WhatsApp, conformidade e Bruce IA jÃ¡ disponÃ­veis desde a primeira sessÃ£o.</p>
+        <p>Cadastre sua organização em minutos e comece a usar hoje mesmo — doadores, editais, WhatsApp, conformidade e Bruce IA já disponíveis desde a primeira sessão.</p>
         <a href="{{ route('register') }}" class="btn-primary"><i class="fas fa-arrow-right"></i> Criar conta da ONG</a>
     </div>
 </section>
@@ -619,14 +619,14 @@
             <div>
                 <div class="footer-brand">
                     <span class="nav-logo-mark">V</span>
-                    <strong>Vivensi Â· Terceiro Setor</strong>
+                    <strong>Vivensi · Terceiro Setor</strong>
                 </div>
-                <p class="footer-text">Sistema de gestÃ£o integrado para ONGs brasileiras. SeguranÃ§a LGPD, IA contextual e isolamento por organizaÃ§Ã£o.</p>
+                <p class="footer-text">Sistema de gestão integrado para ONGs brasileiras. Segurança LGPD, IA contextual e isolamento por organização.</p>
             </div>
             <div class="footer-col">
                 <h6>Sistema</h6>
                 <ul>
-                    <li><a href="#fluxo">Fluxo de gestÃ£o</a></li>
+                    <li><a href="#fluxo">Fluxo de gestão</a></li>
                     <li><a href="#bruce">Bruce IA</a></li>
                     <li><a href="#escola">Escola Vivensi</a></li>
                     <li><a href="#conformidade">Base legal</a></li>
@@ -637,22 +637,22 @@
                 <ul>
                     <li><a href="{{ route('register') }}">Cadastro gratuito</a></li>
                     <li><a href="{{ route('login') }}">Entrar no sistema</a></li>
-                    <li><a href="{{ url('/legal/privacidade') }}">PolÃ­tica de Privacidade</a></li>
+                    <li><a href="{{ url('/legal/privacidade') }}">Política de Privacidade</a></li>
                     <li><a href="{{ url('/legal/termos') }}">Termos de Uso</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h6>Compromissos</h6>
                 <ul>
-                    <li><a href="#">ProteÃ§Ã£o de dados</a></li>
+                    <li><a href="#">Proteção de dados</a></li>
                     <li><a href="#">LGPD e auditoria</a></li>
                     <li><a href="#">Isolamento por ONG</a></li>
-                    <li><a href="#">Uso responsÃ¡vel de IA</a></li>
+                    <li><a href="#">Uso responsável de IA</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <span>Â© {{ date('Y') }} VIVENSIAPP. Todos os direitos reservados. Feito para o terceiro setor brasileiro.</span>
+            <span>© {{ date('Y') }} VIVENSIAPP. Todos os direitos reservados. Feito para o terceiro setor brasileiro.</span>
             <div class="footer-bottom-tags">
                 <span>MROSC</span>
                 <span>LGPD</span>
@@ -660,7 +660,7 @@
             </div>
         </div>
         <div class="footer-owner" style="text-align:center; padding:16px 0 0; margin-top:16px; border-top:1px solid rgba(255,255,255,0.08); font-size:.82rem; color:rgba(255,255,255,0.55);">
-            VivensiApp Ã© um produto da <strong>NC5 HUB DIGITAL LTDA</strong> Â· CNPJ: 67.848.807/0001-50
+            VivensiApp é um produto da <strong>NC5 HUB DIGITAL LTDA</strong> · CNPJ: 67.848.807/0001-50
         </div>
     </div>
 </footer>
