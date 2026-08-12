@@ -96,6 +96,14 @@ class RegisterController extends Controller
                 \Log::error('Erro ao enviar e-mail de boas-vindas: ' . $e->getMessage());
             }
 
+            // Meta Pixel: sinal de cadastro concluido — vai pra sessao flash e o
+            // proximo layout (checkout ou app) dispara CompleteRegistration.
+            session()->flash('meta_pixel_register', [
+                'plan_id'   => $selectedPlan->id,
+                'plan_name' => $selectedPlan->name,
+                'value'     => (float) ($selectedPlan->price ?? 0),
+            ]);
+
             // Plano de cortesia: ativa direto e loga
             if ($selectedPlan->is_courtesy) {
                 $tenant->update(['subscription_status' => 'active']);

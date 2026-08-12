@@ -2126,6 +2126,17 @@ document.getElementById('bruceInput')?.addEventListener('input',function(){
     <!-- Cookie Consent Banner (LGPD) -->
     @include('partials.cookie-banner')
 
+    {{-- Meta Pixel: CompleteRegistration disparado uma vez apos criar conta --}}
+    @if(session('meta_pixel_register'))
+        @php($_reg = session('meta_pixel_register'))
+        <x-meta-pixel-event
+            event="CompleteRegistration"
+            :value="$_reg['value'] ?? null"
+            currency="BRL"
+            :params="['content_name' => $_reg['plan_name'] ?? '', 'content_ids' => [(string) ($_reg['plan_id'] ?? '')]]"
+        />
+    @endif
+
     @stack('scripts')
 
 <script>

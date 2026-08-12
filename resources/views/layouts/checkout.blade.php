@@ -44,6 +44,18 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{{-- Meta Pixel: CompleteRegistration disparado uma vez apos criar conta --}}
+@if(session('meta_pixel_register'))
+    @php($_reg = session('meta_pixel_register'))
+    <x-meta-pixel-event
+        event="CompleteRegistration"
+        :value="$_reg['value'] ?? null"
+        currency="BRL"
+        :params="['content_name' => $_reg['plan_name'] ?? '', 'content_ids' => [(string) ($_reg['plan_id'] ?? '')]]"
+    />
+@endif
+
 @stack('scripts')
 </body>
 </html>

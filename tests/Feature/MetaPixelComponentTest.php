@@ -72,7 +72,8 @@ it('meta-pixel-event aceita params extras (content_ids etc)', function () {
 
 it('config services.php declara meta.pixel_id com default hardcoded', function () {
     // Le direto do arquivo pra nao depender de config mutada por outros testes.
+    // Tolera alinhamento por espacos (=> pode ter N espacos antes).
     $file = file_get_contents(config_path('services.php'));
-    expect($file)->toContain("'pixel_id' => env('META_PIXEL_ID'");
+    expect($file)->toMatch("/'pixel_id'\s+=>\s+env\('META_PIXEL_ID'/");
     expect($file)->toContain("'493025661075925'");
 });
