@@ -25,26 +25,10 @@
     </script>
     <!-- End Google Analytics -->
     @endif
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '493025661075925');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=493025661075925&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code -->
+    <x-meta-pixel />
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Vivensi - Gestão Inteligente')</title>
+    <title>@yield('title', 'Vivensi - GestÃ£o Inteligente')</title>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -183,13 +167,13 @@
             <a href="{{ route('solutions.ngo') }}">ONGs</a>
             <a href="{{ route('solutions.manager') }}">Gestores</a>
             <a href="{{ route('solutions.common') }}">Pessoal</a>
-            <a href="{{ url('/#pricing') }}">Preços</a>
+            <a href="{{ url('/#pricing') }}">PreÃ§os</a>
             <a href="{{ route('public.blog.index') }}">Blog</a>
         </div>
 
         <div style="display: flex; gap: 15px;">
             <a href="{{ route('login') }}" class="btn-outline">Entrar</a>
-            <a href="{{ url('/#pricing') }}" class="btn-cta">Começar Agora</a>
+            <a href="{{ url('/#pricing') }}" class="btn-cta">ComeÃ§ar Agora</a>
         </div>
     </nav>
 
@@ -204,7 +188,7 @@
                 <a href="{{ url('/') }}" class="footer-brand">
                     <x-application-logo style="height: 35px; width: auto; filter: brightness(0) invert(1);" />
                 </a>
-                <p>Transformando a gestão financeira e operacional com tecnologia e propósito.</p>
+                <p>Transformando a gestÃ£o financeira e operacional com tecnologia e propÃ³sito.</p>
                 <div style="display: flex; gap: 15px; margin-top: 20px;">
                     <a href="#" style="color: white;"><i class="fab fa-instagram"></i></a>
                     <a href="#" style="color: white;"><i class="fab fa-linkedin"></i></a>
@@ -215,14 +199,14 @@
                 <h4 style="color: white; margin-bottom: 20px;">Produto</h4>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <a href="#" style="color: #94a3b8; text-decoration: none;">Recursos</a>
-                    <a href="#" style="color: #94a3b8; text-decoration: none;">Integrações</a>
-                    <a href="{{ url('/#pricing') }}" style="color: #94a3b8; text-decoration: none;">Preços</a>
+                    <a href="#" style="color: #94a3b8; text-decoration: none;">IntegraÃ§Ãµes</a>
+                    <a href="{{ url('/#pricing') }}" style="color: #94a3b8; text-decoration: none;">PreÃ§os</a>
                 </div>
             </div>
             <div>
                 <h4 style="color: white; margin-bottom: 20px;">Empresa</h4>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{{ route('public.page', 'sobre') }}" style="color: #94a3b8; text-decoration: none;">Sobre Nós</a>
+                    <a href="{{ route('public.page', 'sobre') }}" style="color: #94a3b8; text-decoration: none;">Sobre NÃ³s</a>
                     <a href="{{ route('public.blog.index') }}" style="color: #94a3b8; text-decoration: none;">Blog</a>
                     <a href="#" style="color: #94a3b8; text-decoration: none;">Contato</a>
                 </div>
@@ -237,14 +221,14 @@
         </div>
         <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;">
             <p>&copy; 2026 VIVENSIAPP. Todos os direitos reservados.</p>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">VivensiApp é um produto da <strong style="color:#cbd5e1;">NC5 HUB DIGITAL LTDA</strong> &middot; CNPJ: 67.848.807/0001-50</p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">VivensiApp Ã© um produto da <strong style="color:#cbd5e1;">NC5 HUB DIGITAL LTDA</strong> &middot; CNPJ: 67.848.807/0001-50</p>
         </div>
     </footer>
 
     @include('partials.whatsapp-button')
     <!-- Cookie Consent Banner (LGPD) -->
     @include('partials.cookie-banner')
-    <!-- Popup público BruceIA (canto inferior direito, aparece após 6s) -->
+    <!-- Popup pÃºblico BruceIA (canto inferior direito, aparece apÃ³s 6s) -->
     @include('partials.bruce_public_popup')
 
 </body>

@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Validação de Certificado</title>
+    <title>ValidaÃ§Ã£o de Certificado</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f8fafc; margin: 0; color: #0f172a; }
         .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px; }
@@ -25,55 +25,39 @@
         .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .5px; }
         .foot { margin-top: 12px; font-size: 12px; color:#64748b; }
     </style>
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '493025661075925');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=493025661075925&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code -->
+    <x-meta-pixel />
 </head>
 <body>
     <div class="wrap">
         <div class="card">
             <div style="display:flex; justify-content: space-between; align-items:center; gap: 12px; flex-wrap: wrap;">
                 <div>
-                    <h1>Validação de Certificado</h1>
+                    <h1>ValidaÃ§Ã£o de Certificado</h1>
                     <div class="muted">{{ $orgName }}</div>
                 </div>
                 @if($isValid)
-                    <div class="badge ok">VÁLIDO</div>
+                    <div class="badge ok">VÃLIDO</div>
                 @else
-                    <div class="badge bad">NÃO VALIDADO</div>
+                    <div class="badge bad">NÃƒO VALIDADO</div>
                 @endif
             </div>
 
             <div class="grid">
                 <div class="kv">
-                    <b>Nº do certificado</b>
+                    <b>NÂº do certificado</b>
                     <div class="code">{{ $certificateNo }}</div>
                 </div>
                 <div class="kv">
-                    <b>Código informado</b>
-                    <div class="code">{{ $providedCode !== '' ? $providedCode : '—' }}</div>
+                    <b>CÃ³digo informado</b>
+                    <div class="code">{{ $providedCode !== '' ? $providedCode : 'â€”' }}</div>
                 </div>
                 <div class="kv">
-                    <b>Voluntário(a)</b>
-                    <div>{{ $cert->volunteer_name ?? '—' }}</div>
+                    <b>VoluntÃ¡rio(a)</b>
+                    <div>{{ $cert->volunteer_name ?? 'â€”' }}</div>
                 </div>
                 <div class="kv">
-                    <b>Emissão</b>
-                    <div>{{ optional($cert->issued_at)->format('d/m/Y') ?? '—' }}</div>
+                    <b>EmissÃ£o</b>
+                    <div>{{ optional($cert->issued_at)->format('d/m/Y') ?? 'â€”' }}</div>
                 </div>
                 <div class="kv" style="grid-column: 1 / -1;">
                     <b>Atividade</b>
@@ -84,18 +68,18 @@
                     <div><strong>{{ number_format((int) ($cert->hours ?? 0)) }}</strong></div>
                 </div>
                 <div class="kv">
-                    <b>Status da validação</b>
+                    <b>Status da validaÃ§Ã£o</b>
                     @if($isValid)
-                        <div><strong style="color:#166534;">Código confere com o certificado.</strong></div>
+                        <div><strong style="color:#166534;">CÃ³digo confere com o certificado.</strong></div>
                     @else
-                        <div><strong style="color:#991b1b;">Código não confere.</strong></div>
+                        <div><strong style="color:#991b1b;">CÃ³digo nÃ£o confere.</strong></div>
                     @endif
                 </div>
             </div>
 
             <form class="form" method="GET" action="">
                 <div>
-                    <div class="muted" style="font-size: 12px; font-weight: 800; margin-bottom: 6px;">Informe o código de autenticidade</div>
+                    <div class="muted" style="font-size: 12px; font-weight: 800; margin-bottom: 6px;">Informe o cÃ³digo de autenticidade</div>
                     <input name="code" value="{{ $providedCode }}" placeholder="Ex: 1A2B3C4D5E6F7G8H" maxlength="64">
                 </div>
                 <div>
@@ -104,7 +88,7 @@
             </form>
 
             <div class="foot">
-                Dica: se você recebeu um PDF, o código de autenticidade está impresso no documento.
+                Dica: se vocÃª recebeu um PDF, o cÃ³digo de autenticidade estÃ¡ impresso no documento.
             </div>
         </div>
     </div>

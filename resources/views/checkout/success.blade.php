@@ -1,5 +1,16 @@
 @extends('layouts.checkout')
 
+@push('scripts')
+    {{-- Meta Pixel: evento Purchase. Value real do plano quando disponivel; --}}
+    {{-- content_ids/content_name pra otimizacao de campanha por catalogo Meta. --}}
+    <x-meta-pixel-event
+        event="Purchase"
+        :value="$plan?->price"
+        currency="BRL"
+        :params="$plan ? ['content_ids' => [(string) $plan->id], 'content_name' => $plan->name, 'content_type' => 'product'] : []"
+    />
+@endpush
+
 @section('content')
 <div class="row justify-content-center py-5">
     <div class="col-lg-5">

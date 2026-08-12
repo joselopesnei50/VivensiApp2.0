@@ -1,23 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '493025661075925');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=493025661075925&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code -->
+    <x-meta-pixel />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -44,7 +28,7 @@
             flex-direction: column;
         }
 
-        /* ─── NAVBAR ─────────────────────────────────── */
+        /* â”€â”€â”€ NAVBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         .acad-navbar {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -248,13 +232,13 @@
         }
         .acad-mobile-menu a:hover { background: rgba(99,102,241,.12); color: #fff; }
 
-        /* ─── CONTENT ─────────────────────────────────── */
+        /* â”€â”€â”€ CONTENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         .academy-content {
             margin-top: 68px;
             flex: 1;
         }
 
-        /* ─── FOOTER ─────────────────────────────────── */
+        /* â”€â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         .acad-footer {
             background: #080d1c;
             border-top: 1px solid rgba(99,102,241,.15);
@@ -331,7 +315,7 @@
         .acad-footer-stat .stat-num { font-size: 1.1rem; font-weight: 800; color: #818cf8; }
         .acad-footer-stat .stat-lbl { font-size: .7rem; color: #475569; font-weight: 500; letter-spacing: .5px; }
 
-        /* ─── RESPONSIVE ───────────────────────────────── */
+        /* â”€â”€â”€ RESPONSIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
         @media (max-width: 900px) {
             .acad-nav-links,
             .acad-nav-sep,
@@ -351,7 +335,7 @@
 </head>
 <body>
 
-{{-- ═══ TOP NAVBAR ═══ --}}
+{{-- â•â•â• TOP NAVBAR â•â•â• --}}
 <nav class="acad-navbar">
 
     {{-- Logo --}}
@@ -395,7 +379,7 @@
             <div class="acad-user-trigger" onclick="toggleAcadMenu()" id="acadUserTrigger">
                 <div class="acad-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
                 <div class="acad-user-info">
-                    <span class="acad-user-name">{{ explode(' ', auth()->user()->name ?? 'Usuário')[0] }}</span>
+                    <span class="acad-user-name">{{ explode(' ', auth()->user()->name ?? 'UsuÃ¡rio')[0] }}</span>
                     <span class="acad-user-role">Aluno</span>
                 </div>
                 <i class="fas fa-chevron-down acad-caret"></i>
@@ -404,7 +388,7 @@
             <div class="acad-dropdown" id="acadDropdown">
                 <div class="acad-dropdown-header">
                     <p>Logado como</p>
-                    <strong>{{ auth()->user()->name ?? 'Usuário' }}</strong>
+                    <strong>{{ auth()->user()->name ?? 'UsuÃ¡rio' }}</strong>
                 </div>
                 <a href="{{ url('/profile') }}" class="acad-dropdown-item">
                     <i class="fas fa-user-circle"></i> Meu Perfil
@@ -449,12 +433,12 @@
     </form>
 </div>
 
-{{-- ═══ PAGE CONTENT ═══ --}}
+{{-- â•â•â• PAGE CONTENT â•â•â• --}}
 <main class="academy-content">
     @yield('content')
 </main>
 
-{{-- ═══ FOOTER ═══ --}}
+{{-- â•â•â• FOOTER â•â•â• --}}
 <footer class="acad-footer">
     <div class="acad-footer-grid">
 
@@ -465,7 +449,7 @@
                 <span class="acad-footer-logo-text">Vivensi Academy</span>
             </a>
             <p class="acad-footer-desc">
-                Capacitação especializada para gestores, colaboradores e voluntários do Terceiro Setor.
+                CapacitaÃ§Ã£o especializada para gestores, colaboradores e voluntÃ¡rios do Terceiro Setor.
                 Aprenda no seu ritmo e conquiste certificados reconhecidos.
             </p>
             <div class="acad-footer-badges">

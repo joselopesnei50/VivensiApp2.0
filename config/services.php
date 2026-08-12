@@ -20,6 +20,13 @@ return [
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
     ],
 
+    // Meta Pixel — usado nos components <x-meta-pixel /> e <x-meta-pixel-event />.
+    // Override via .env META_PIXEL_ID; se vazio, os components nao renderizam
+    // nenhum snippet (permite desligar tracking em dev/testes).
+    'meta' => [
+        'pixel_id' => env('META_PIXEL_ID', '493025661075925'),
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

@@ -371,6 +371,7 @@
             .slots-wrap { width: 100%; max-height: 200px; flex-direction: row; flex-wrap: wrap; }
         }
     </style>
+    <x-meta-pixel />
 </head>
 <body>
 <div style="position:relative; width:100%; max-width:860px;">
@@ -731,6 +732,11 @@ async function submitBooking(e) {
             showError('errGeneral', msg);
             document.getElementById('errGeneral').style.display = 'block';
         } else {
+            // Meta Pixel: agendamento confirmado = lead qualificado (demo booked).
+            // Meta usa isso pra otimizar campanha de aquisicao.
+            if (typeof fbq === 'function') {
+                fbq('track', 'Lead', {content_name: 'demo_booking', currency: 'BRL'});
+            }
             goToStep3(data);
         }
     } catch (err) {

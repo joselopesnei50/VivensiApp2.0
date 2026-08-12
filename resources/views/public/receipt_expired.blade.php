@@ -15,31 +15,15 @@
         .hint { font-size: 0.9rem; color: #64748b; }
         a { color: #4f46e5; font-weight: 800; text-decoration: none; }
     </style>
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '493025661075925');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=493025661075925&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code -->
+    <x-meta-pixel />
 </head>
 <body>
     <div class="card">
         <h1>Este link de recibo expirou</h1>
-        <p>Por segurança, o recibo público possui um prazo de validade. Solicite um novo link à organização que emitiu o recibo.</p>
-        <p class="hint">Se você é o gestor, gere um novo recibo ou reenvie o link atualizado pelo painel.</p>
-        <p class="hint">Se você possui o <strong>código de validação</strong>, ainda pode consultar o status em <a href="{{ url('/validar-recibo') }}">Validar recibo</a>.</p>
-        <p class="hint"><a href="{{ url('/') }}">Voltar para a página inicial</a></p>
+        <p>Por seguranÃ§a, o recibo pÃºblico possui um prazo de validade. Solicite um novo link Ã  organizaÃ§Ã£o que emitiu o recibo.</p>
+        <p class="hint">Se vocÃª Ã© o gestor, gere um novo recibo ou reenvie o link atualizado pelo painel.</p>
+        <p class="hint">Se vocÃª possui o <strong>cÃ³digo de validaÃ§Ã£o</strong>, ainda pode consultar o status em <a href="{{ url('/validar-recibo') }}">Validar recibo</a>.</p>
+        <p class="hint"><a href="{{ url('/') }}">Voltar para a pÃ¡gina inicial</a></p>
     </div>
 </body>
 </html>

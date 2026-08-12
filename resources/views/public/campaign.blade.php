@@ -1,23 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '493025661075925');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=493025661075925&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code -->
+    <x-meta-pixel />
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
@@ -202,17 +186,17 @@
             </div>
 
             <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                <h3 style="margin-top: 0;">Transparência do Projeto</h3>
+                <h3 style="margin-top: 0;">TransparÃªncia do Projeto</h3>
                 <div style="display: flex; gap: 20px;">
                     <div style="flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px;">
                         <i class="fas fa-file-invoice-dollar" style="color: #64748b; font-size: 1.2rem; margin-bottom: 8px;"></i>
-                        <div style="font-weight: 700; font-size: 0.9rem;">Prestação de Contas</div>
-                        <div style="font-size: 0.8rem; color: #64748b;">Disponível mensalmente</div>
+                        <div style="font-weight: 700; font-size: 0.9rem;">PrestaÃ§Ã£o de Contas</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">DisponÃ­vel mensalmente</div>
                     </div>
                      <div style="flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px;">
                         <i class="fas fa-users" style="color: #64748b; font-size: 1.2rem; margin-bottom: 8px;"></i>
                         <div style="font-weight: 700; font-size: 0.9rem;">Impacto Social</div>
-                        <div style="font-size: 0.8rem; color: #64748b;">Relatórios de visita</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">RelatÃ³rios de visita</div>
                     </div>
                 </div>
             </div>
@@ -237,7 +221,7 @@
                 <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 25px 0;">
 
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #334155;">Valor da Doação</label>
+                    <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #334155;">Valor da DoaÃ§Ã£o</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <button style="flex: 1; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600;">R$ 50</button>
                         <button style="flex: 1; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600;">R$ 100</button>
@@ -247,7 +231,7 @@
                 </div>
 
                 <button class="btn-donate">
-                    <i class="fas fa-heart"></i> Fazer Doação
+                    <i class="fas fa-heart"></i> Fazer DoaÃ§Ã£o
                 </button>
                 
                 <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: #94a3b8;">
@@ -260,8 +244,8 @@
     <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
         <div style="background: white; width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center;">
             <div id="step1">
-                <h3 style="margin-top: 0; color: #1e293b;">Finalizar Doação</h3>
-                <p style="color: #64748b; margin-bottom: 20px;">Você está doando para <strong>{{ $campaign->title }}</strong></p>
+                <h3 style="margin-top: 0; color: #1e293b;">Finalizar DoaÃ§Ã£o</h3>
+                <p style="color: #64748b; margin-bottom: 20px;">VocÃª estÃ¡ doando para <strong>{{ $campaign->title }}</strong></p>
                 
                 <div style="background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
                     <div style="font-size: 0.9rem; color: #64748b;">Valor total</div>
@@ -278,7 +262,7 @@
                 <div style="margin-bottom: 20px;">
                     <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: #4f46e5;"></i>
                 </div>
-                <p style="color: #64748b;">Gerando cobrança segura...</p>
+                <p style="color: #64748b;">Gerando cobranÃ§a segura...</p>
             </div>
 
             <div id="step3" style="display: none;">
@@ -294,7 +278,7 @@
                 <div style="color: #16a34a; font-size: 4rem; margin-bottom: 10px;">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <h3 style="color: #1e293b; margin: 0;">Doação Confirmada!</h3>
+                <h3 style="color: #1e293b; margin: 0;">DoaÃ§Ã£o Confirmada!</h3>
                 <p style="color: #64748b;">Obrigado por apoiar esta causa.</p>
                 <button onclick="closeModal()" class="btn-donate" style="background: #1e293b;">Fechar</button>
             </div>
@@ -338,7 +322,7 @@
         // Main Donate Button
         document.querySelector('.btn-donate').addEventListener('click', () => {
              if(selectedAmount <= 0 || isNaN(selectedAmount)) {
-                 alert('Por favor, selecione ou digite um valor para doação.');
+                 alert('Por favor, selecione ou digite um valor para doaÃ§Ã£o.');
                  return;
              }
              document.getElementById('modalAmount').innerText = 'R$ ' + selectedAmount.toFixed(2).replace('.', ',');

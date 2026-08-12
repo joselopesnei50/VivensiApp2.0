@@ -13,6 +13,7 @@
         p { font-size:.88rem; color:#64748b; line-height:1.65; }
         a { display:inline-block; margin-top:24px; padding:11px 24px; background:#4f6ef7; color:#fff; border-radius:8px; font-size:.85rem; font-weight:700; text-decoration:none; }
     </style>
+    <x-meta-pixel />
 </head>
 <body>
     <div class="card">

@@ -29,33 +29,17 @@
         .v { font-weight: 900; color: #0f172a; }
         @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
     </style>
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '493025661075925');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=493025661075925&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code -->
+    <x-meta-pixel />
 </head>
 <body>
     <div class="card">
         <h1>Validar recibo</h1>
-        <p>Cole o <strong>link</strong> do recibo (ex.: <span class="muted">/r/UUID</span>) ou o <strong>código de validação</strong> (16 caracteres) para confirmar autenticidade.</p>
+        <p>Cole o <strong>link</strong> do recibo (ex.: <span class="muted">/r/UUID</span>) ou o <strong>cÃ³digo de validaÃ§Ã£o</strong> (16 caracteres) para confirmar autenticidade.</p>
 
         <form method="POST" action="{{ url('/validar-recibo') }}">
             @csrf
-            <label for="query">Link ou código</label>
-            <input id="query" name="query" value="{{ old('query', request('query')) }}" placeholder="Cole aqui o link /r/... ou o código (ex.: 1A2B3C4D5E6F7A8B)" required>
+            <label for="query">Link ou cÃ³digo</label>
+            <input id="query" name="query" value="{{ old('query', request('query')) }}" placeholder="Cole aqui o link /r/... ou o cÃ³digo (ex.: 1A2B3C4D5E6F7A8B)" required>
             <div class="row">
                 <button type="submit">Validar</button>
                 <a href="{{ url('/') }}" style="display:flex; align-items:center;">Voltar</a>
@@ -67,7 +51,7 @@
                 @php
                     $status = $result['status'] ?? 'invalid';
                     $badgeClass = $status === 'valid' ? 'ok' : ($status === 'expired' ? 'warn' : 'bad');
-                    $badgeText = $status === 'valid' ? 'Válido' : ($status === 'expired' ? 'Expirado' : ($status === 'error' ? 'Erro' : 'Não encontrado'));
+                    $badgeText = $status === 'valid' ? 'VÃ¡lido' : ($status === 'expired' ? 'Expirado' : ($status === 'error' ? 'Erro' : 'NÃ£o encontrado'));
                 @endphp
                 <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px;">
                     <span class="badge {{ $badgeClass }}">{{ $badgeText }}</span>
@@ -80,8 +64,8 @@
                 @if(($result['transaction'] ?? null) && ($result['tenant'] ?? null))
                     <div class="grid">
                         <div class="kv">
-                            <div class="k">Instituição</div>
-                            <div class="v">{{ $result['tenant']->name ?? '—' }}</div>
+                            <div class="k">InstituiÃ§Ã£o</div>
+                            <div class="v">{{ $result['tenant']->name ?? 'â€”' }}</div>
                         </div>
                         <div class="kv">
                             <div class="k">Data</div>
@@ -97,7 +81,7 @@
                                 @if($result['transaction']->public_receipt_expires_at)
                                     {{ $result['transaction']->public_receipt_expires_at->format('d/m/Y') }}
                                 @else
-                                    Sem expiração
+                                    Sem expiraÃ§Ã£o
                                 @endif
                             </div>
                         </div>

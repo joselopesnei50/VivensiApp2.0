@@ -122,7 +122,7 @@ class CheckoutController extends Controller
             items: [['id' => $plan->abacatepay_product_id, 'quantity' => 1]],
             externalId: $externalId,
             returnUrl: route('dashboard'),
-            completionUrl: route('checkout.success'),
+            completionUrl: route('checkout.success', ['plan' => $plan->id]),
             methods: ['PIX'],
             metadata: [
                 'tenant_id'  => $tenant->id,
@@ -158,9 +158,12 @@ class CheckoutController extends Controller
 
     /**
      * Página de sucesso após pagamento.
+     * Recebe ?plan=ID via completionUrl pra disparar Meta Pixel Purchase com value real.
      */
-    public function success()
+    public function success(\Illuminate\Http\Request $request)
     {
-        return view('checkout.success');
+        $planId = (int) $request->query('plan');
+        $plan   = $planId ? \App\Models\SubscriptionPlan::find($planId) : null;
+        return view('checkout.success', compact('plan'));
     }
 }

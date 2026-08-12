@@ -1,28 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '493025661075925');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=493025661075925&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code -->
+    <x-meta-pixel />
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Transparência - Vivensi</title>
+    <title>Portal TransparÃªncia - Vivensi</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -42,17 +26,17 @@
     <div class="container">
         <div class="header">
             <i class="fas fa-landmark" style="font-size: 3rem; color: #4f46e5; margin-bottom: 15px;"></i>
-            <h1>Portal da Transparência</h1>
-            <p>Prestação de contas pública realizada via Vivensi Platform.</p>
+            <h1>Portal da TransparÃªncia</h1>
+            <p>PrestaÃ§Ã£o de contas pÃºblica realizada via Vivensi Platform.</p>
         </div>
 
         <div class="card">
-            <h3><i class="fas fa-list"></i> Últimas Despesas Realizadas</h3>
+            <h3><i class="fas fa-list"></i> Ãšltimas Despesas Realizadas</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Data</th>
-                        <th>Descrição</th>
+                        <th>DescriÃ§Ã£o</th>
                         <th>Categoria</th>
                         <th style="text-align: right;">Valor</th>
                         <th style="text-align: center;">Status</th>

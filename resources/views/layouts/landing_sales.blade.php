@@ -25,45 +25,29 @@
     </script>
     <!-- End Google Analytics -->
     @endif
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '493025661075925');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=493025661075925&ev=PageView&noscript=1"
-    /></noscript>
-    <!-- End Meta Pixel Code -->
+    <x-meta-pixel />
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') - Vivensi 2.0</title>
     
-    <!-- Meta Tags Dinâmicas -->
-    <meta name="description" content="@yield('meta_description', 'A plataforma definitiva para ONGs, Gestores e Finanças Pessoais.')">
-    <meta name="keywords" content="gestão ongs, gestão de projetos, finanças pessoais, ia financeira, vivensi">
+    <!-- Meta Tags DinÃ¢micas -->
+    <meta name="description" content="@yield('meta_description', 'A plataforma definitiva para ONGs, Gestores e FinanÃ§as Pessoais.')">
+    <meta name="keywords" content="gestÃ£o ongs, gestÃ£o de projetos, finanÃ§as pessoais, ia financeira, vivensi">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="@yield('title') - Vivensi 2.0">
-    <meta property="og:description" content="@yield('meta_description', 'A plataforma definitiva para ONGs, Gestores e Finanças Pessoais.')">
+    <meta property="og:description" content="@yield('meta_description', 'A plataforma definitiva para ONGs, Gestores e FinanÃ§as Pessoais.')">
     <meta property="og:image" content="{{ asset('img/social-preview.png') }}">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="{{ url()->current() }}">
     <meta property="twitter:title" content="@yield('title') - Vivensi 2.0">
-    <meta property="twitter:description" content="@yield('meta_description', 'A plataforma definitiva para ONGs, Gestores e Finanças Pessoais.')">
+    <meta property="twitter:description" content="@yield('meta_description', 'A plataforma definitiva para ONGs, Gestores e FinanÃ§as Pessoais.')">
     <meta property="twitter:image" content="{{ asset('img/social-preview.png') }}">
     
     <!-- Fonts -->
@@ -209,9 +193,9 @@
         </a>
         <div style="display: flex; gap: 20px; align-items: center;">
             <div style="display: flex; gap: 10px; margin-right: 15px; font-size: 0.9rem;">
-                <a href="{{ route('lang.switch', 'pt_BR') }}" title="Português" style="text-decoration: none; opacity: {{ app()->getLocale() == 'pt_BR' ? '1' : '0.5' }}">🇧🇷</a>
-                <a href="{{ route('lang.switch', 'es') }}" title="Español" style="text-decoration: none; opacity: {{ app()->getLocale() == 'es' ? '1' : '0.5' }}">🇪🇸</a>
-                <a href="{{ route('lang.switch', 'en') }}" title="English" style="text-decoration: none; opacity: {{ app()->getLocale() == 'en' ? '1' : '0.5' }}">🇺🇸</a>
+                <a href="{{ route('lang.switch', 'pt_BR') }}" title="PortuguÃªs" style="text-decoration: none; opacity: {{ app()->getLocale() == 'pt_BR' ? '1' : '0.5' }}">ðŸ‡§ðŸ‡·</a>
+                <a href="{{ route('lang.switch', 'es') }}" title="EspaÃ±ol" style="text-decoration: none; opacity: {{ app()->getLocale() == 'es' ? '1' : '0.5' }}">ðŸ‡ªðŸ‡¸</a>
+                <a href="{{ route('lang.switch', 'en') }}" title="English" style="text-decoration: none; opacity: {{ app()->getLocale() == 'en' ? '1' : '0.5' }}">ðŸ‡ºðŸ‡¸</a>
             </div>
             <a href="{{ route('login') }}" style="color: #64748b; font-weight: 700; text-decoration: none;">Login</a>
             <a href="#pricing" class="btn-cta">Assinar Agora</a>
@@ -224,11 +208,11 @@
         <div style="margin-bottom: 30px;">
             <x-application-logo style="height: 35px; width: auto; filter: brightness(0) invert(1);" />
         </div>
-        <p style="color: #94a3b8; font-size: 0.9rem;">&copy; {{ date('Y') }} VIVENSIAPP. Todos os direitos reservados. Orgulhosamente Brasileiro 🇧🇷</p>
-        <p style="color: #94a3b8; font-size: 0.82rem; margin-top: 10px;">VivensiApp é um produto da <strong style="color:#cbd5e1;">NC5 HUB DIGITAL LTDA</strong> &middot; CNPJ: 67.848.807/0001-50</p>
+        <p style="color: #94a3b8; font-size: 0.9rem;">&copy; {{ date('Y') }} VIVENSIAPP. Todos os direitos reservados. Orgulhosamente Brasileiro ðŸ‡§ðŸ‡·</p>
+        <p style="color: #94a3b8; font-size: 0.82rem; margin-top: 10px;">VivensiApp Ã© um produto da <strong style="color:#cbd5e1;">NC5 HUB DIGITAL LTDA</strong> &middot; CNPJ: 67.848.807/0001-50</p>
     </footer>
 
-    <a href="https://wa.me/5581999999999?text=Olá! Vim da página de vendas e quero saber mais sobre o Vivensi." class="whatsapp-float" target="_blank">
+    <a href="https://wa.me/5581999999999?text=OlÃ¡! Vim da pÃ¡gina de vendas e quero saber mais sobre o Vivensi." class="whatsapp-float" target="_blank">
         <i class="fab fa-whatsapp"></i>
     </a>
 
