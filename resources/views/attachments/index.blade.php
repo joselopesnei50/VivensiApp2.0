@@ -39,6 +39,13 @@
 
 <div class="vivensi-card" style="margin-bottom: 25px;">
     <h3 style="margin: 0 0 15px 0; color: #2c3e50;"><i class="fas fa-upload" style="color: #4f46e5;"></i> Enviar novo anexo</h3>
+    @if($morphType === 'beneficiary' && !$temTermoLgpd)
+        <div style="background:#fef3c7; border:1px solid #fcd34d; color:#78350f; padding:10px 14px; border-radius:6px; margin-bottom:14px; font-size:0.9rem;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Consentimento LGPD pendente.</strong>
+            Anexe primeiro o <em>Termo de Consentimento LGPD</em> assinado. Só depois será possível subir RG, CPF, comprovantes ou laudos.
+        </div>
+    @endif
     <form action="{{ route('attachments.store', ['morphType' => $morphType, 'morphId' => $morphId]) }}"
           method="POST" enctype="multipart/form-data">
         @csrf

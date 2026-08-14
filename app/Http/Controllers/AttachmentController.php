@@ -98,6 +98,10 @@ class AttachmentController extends Controller
         $backBase = self::BACK_URLS[$morphType] ?? '/';
         $backUrl  = $morphType === 'beneficiary' ? "{$backBase}/{$morphId}" : $backBase;
 
+        $temTermoLgpd = $morphType === 'beneficiary'
+            ? $attachments->contains(fn ($a) => $a->tipo_documento === 'termo_lgpd')
+            : true;
+
         return view('attachments.index', [
             'owner'         => $owner,
             'morphType'     => $morphType,
@@ -110,6 +114,7 @@ class AttachmentController extends Controller
             'canDelete'     => $morphType === 'beneficiary'
                 ? Gate::allows('delete-beneficiaries')
                 : true,
+            'temTermoLgpd'  => $temTermoLgpd,
         ]);
     }
 
@@ -133,6 +138,23 @@ class AttachmentController extends Controller
         }
 
         $validated = $request->validate($rules);
+
+        // Gate LGPD: qualquer documento com PII de beneficiario (RG, CPF,
+        // comprovante, NIS, laudo, certidao, outros) exige termo_lgpd previo
+        // anexado ao mesmo beneficiario. So termo_lgpd pode ser subido "vazio".
+        // Nao precisa de flag em coluna — usa o proprio anexo como consent.
+        if ($morphType === 'beneficiary' && $validated['tipo_documento'] !== 'termo_lgpd') {
+            $temTermo = $owner->attachments()
+                ->where('tipo_documento', 'termo_lgpd')
+                ->exists();
+            if (! $temTermo) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'tipo_documento' => 'Anexe primeiro o Termo de Consentimento LGPD deste beneficiário. Sem consent registrado, não é permitido armazenar documentos com dados pessoais.',
+                    ]);
+            }
+        }
 
         $file      = $request->file('file');
         $tenantId  = (int) auth()->user()->tenant_id;

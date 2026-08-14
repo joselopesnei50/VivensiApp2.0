@@ -281,16 +281,17 @@ it('sobe anexo de beneficiario e grava AuditLog', function () {
     $user  = attTenantUser();
     $benef = makeBeneficiary($user->tenant_id);
 
+    // termo_lgpd nao exige consent previo — cabe pro cenario base do AuditLog
     $this->actingAs($user)
         ->post("/attachments/beneficiary/{$benef->id}", [
-            'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
-            'tipo_documento' => 'rg',
+            'file'           => UploadedFile::fake()->create('termo.pdf', 100, 'application/pdf'),
+            'tipo_documento' => 'termo_lgpd',
         ])
         ->assertRedirect();
 
     $att = Attachment::withoutGlobalScope('tenant')->first();
     expect($att->attachable_type)->toBe(Beneficiary::class);
-    expect($att->tipo_documento)->toBe('rg');
+    expect($att->tipo_documento)->toBe('termo_lgpd');
 
     $audit = AuditLog::withoutGlobalScope('tenant')
         ->where('event', 'BENEFICIARY_ATTACHMENT_UPLOADED')->first();
@@ -306,8 +307,8 @@ it('download de anexo de beneficiario grava AuditLog', function () {
     $benef = makeBeneficiary($user->tenant_id);
 
     $this->actingAs($user)->post("/attachments/beneficiary/{$benef->id}", [
-        'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
-        'tipo_documento' => 'rg',
+        'file'           => UploadedFile::fake()->create('termo.pdf', 100, 'application/pdf'),
+        'tipo_documento' => 'termo_lgpd',
     ]);
     $att = Attachment::withoutGlobalScope('tenant')->first();
 
@@ -327,8 +328,8 @@ it('employee nao consegue deletar anexo de beneficiario (gate)', function () {
     $benef = makeBeneficiary($owner->tenant_id);
 
     $this->actingAs($owner)->post("/attachments/beneficiary/{$benef->id}", [
-        'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
-        'tipo_documento' => 'rg',
+        'file'           => UploadedFile::fake()->create('termo.pdf', 100, 'application/pdf'),
+        'tipo_documento' => 'termo_lgpd',
     ]);
     $att = Attachment::withoutGlobalScope('tenant')->first();
 
@@ -345,13 +346,49 @@ it('employee nao consegue deletar anexo de beneficiario (gate)', function () {
     expect(Attachment::withoutGlobalScope('tenant')->whereNull('deleted_at')->count())->toBe(1);
 });
 
+it('bloqueia upload de RG sem termo_lgpd previo', function () {
+    $user  = attTenantUser();
+    $benef = makeBeneficiary($user->tenant_id);
+
+    $this->actingAs($user)
+        ->post("/attachments/beneficiary/{$benef->id}", [
+            'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
+            'tipo_documento' => 'rg',
+        ])
+        ->assertSessionHasErrors('tipo_documento');
+
+    expect(Attachment::withoutGlobalScope('tenant')->count())->toBe(0);
+});
+
+it('libera upload de RG apos anexar termo_lgpd', function () {
+    $user  = attTenantUser();
+    $benef = makeBeneficiary($user->tenant_id);
+
+    // Sobe o termo primeiro (sempre permitido)
+    $this->actingAs($user)->post("/attachments/beneficiary/{$benef->id}", [
+        'file'           => UploadedFile::fake()->create('termo.pdf', 100, 'application/pdf'),
+        'tipo_documento' => 'termo_lgpd',
+    ])->assertRedirect();
+
+    // Agora RG passa
+    $this->actingAs($user)
+        ->post("/attachments/beneficiary/{$benef->id}", [
+            'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
+            'tipo_documento' => 'rg',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect(Attachment::withoutGlobalScope('tenant')->count())->toBe(2);
+});
+
 it('destroy de anexo de beneficiario grava AuditLog', function () {
     $user  = attTenantUser();
     $benef = makeBeneficiary($user->tenant_id);
 
     $this->actingAs($user)->post("/attachments/beneficiary/{$benef->id}", [
-        'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
-        'tipo_documento' => 'rg',
+        'file'           => UploadedFile::fake()->create('termo.pdf', 100, 'application/pdf'),
+        'tipo_documento' => 'termo_lgpd',
     ]);
     $att = Attachment::withoutGlobalScope('tenant')->first();
 
