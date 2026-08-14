@@ -54,6 +54,18 @@ class AttachmentController extends Controller
     ];
 
     /**
+     * URL de retorno por morphType — deterministico (nao usar url()->previous()
+     * porque apos POST+back() o referer vira a propria pagina de anexos e o
+     * "Voltar" cai em loop).
+     */
+    private const BACK_URLS = [
+        'asset'       => '/ngo/assets',
+        'inv_item'    => '/ngo/inventory',
+        'inv_move'    => '/ngo/inventory',
+        'beneficiary' => '/ngo/beneficiaries',
+    ];
+
+    /**
      * Lista de anexos de um registro dono (+ formulario upload).
      * GET /attachments/{morphType}/{morphId}
      */
@@ -62,6 +74,11 @@ class AttachmentController extends Controller
         $owner       = $this->resolveOwner($morphType, $morphId);
         $attachments = $owner->attachments()->latest()->get();
 
+        // Beneficiario volta pro show do proprio registro; os demais voltam
+        // pra listagem (que ja mostra o item no contexto certo).
+        $backBase = self::BACK_URLS[$morphType] ?? '/';
+        $backUrl  = $morphType === 'beneficiary' ? "{$backBase}/{$morphId}" : $backBase;
+
         return view('attachments.index', [
             'owner'       => $owner,
             'morphType'   => $morphType,
@@ -69,6 +86,7 @@ class AttachmentController extends Controller
             'label'       => self::LABELS[$morphType] ?? 'Registro',
             'attachments' => $attachments,
             'maxSizeMb'   => (int) (self::MAX_SIZE_KB / 1024),
+            'backUrl'     => $backUrl,
         ]);
     }
 

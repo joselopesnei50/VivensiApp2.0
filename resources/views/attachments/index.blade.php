@@ -15,7 +15,7 @@
         </p>
     </div>
     <div>
-        <a href="{{ url()->previous() }}" class="btn-premium" style="background:#64748b;">
+        <a href="{{ url($backUrl) }}" class="btn-premium" style="background:#64748b;">
             <i class="fas fa-arrow-left"></i> Voltar
         </a>
     </div>
