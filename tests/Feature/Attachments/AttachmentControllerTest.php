@@ -2,6 +2,8 @@
 
 use App\Models\Asset;
 use App\Models\Attachment;
+use App\Models\AuditLog;
+use App\Models\Beneficiary;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use App\Models\Tenant;
@@ -234,4 +236,131 @@ it('destroy soft-deleta anexo proprio', function () {
     // Soft delete: linha existe mas deleted_at preenchido
     expect(Attachment::withoutGlobalScope('tenant')->whereNull('deleted_at')->count())->toBe(0);
     expect(Attachment::withoutGlobalScope('tenant')->withTrashed()->count())->toBe(1);
+});
+
+// ── Beneficiary: PII / LGPD ───────────────────────────────────────────────────
+
+function makeBeneficiary(int $tenantId): Beneficiary
+{
+    return Beneficiary::create([
+        'tenant_id' => $tenantId,
+        'name'      => 'Maria Silva',
+        'status'    => 'active',
+    ]);
+}
+
+it('exige tipo_documento no upload de anexo de beneficiario', function () {
+    $user  = attTenantUser();
+    $benef = makeBeneficiary($user->tenant_id);
+
+    $this->actingAs($user)
+        ->post("/attachments/beneficiary/{$benef->id}", [
+            'file' => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
+            // tipo_documento ausente de proposito
+        ])
+        ->assertSessionHasErrors('tipo_documento');
+
+    expect(Attachment::withoutGlobalScope('tenant')->count())->toBe(0);
+});
+
+it('rejeita tipo_documento fora da whitelist', function () {
+    $user  = attTenantUser();
+    $benef = makeBeneficiary($user->tenant_id);
+
+    $this->actingAs($user)
+        ->post("/attachments/beneficiary/{$benef->id}", [
+            'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
+            'tipo_documento' => 'foto_pet',
+        ])
+        ->assertSessionHasErrors('tipo_documento');
+
+    expect(Attachment::withoutGlobalScope('tenant')->count())->toBe(0);
+});
+
+it('sobe anexo de beneficiario e grava AuditLog', function () {
+    $user  = attTenantUser();
+    $benef = makeBeneficiary($user->tenant_id);
+
+    $this->actingAs($user)
+        ->post("/attachments/beneficiary/{$benef->id}", [
+            'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
+            'tipo_documento' => 'rg',
+        ])
+        ->assertRedirect();
+
+    $att = Attachment::withoutGlobalScope('tenant')->first();
+    expect($att->attachable_type)->toBe(Beneficiary::class);
+    expect($att->tipo_documento)->toBe('rg');
+
+    $audit = AuditLog::withoutGlobalScope('tenant')
+        ->where('event', 'BENEFICIARY_ATTACHMENT_UPLOADED')->first();
+    expect($audit)->not->toBeNull();
+    expect((int) $audit->tenant_id)->toBe($user->tenant_id);
+    expect((int) $audit->user_id)->toBe($user->id);
+    expect($audit->auditable_type)->toBe(Attachment::class);
+    expect((int) $audit->auditable_id)->toBe($att->id);
+});
+
+it('download de anexo de beneficiario grava AuditLog', function () {
+    $user  = attTenantUser();
+    $benef = makeBeneficiary($user->tenant_id);
+
+    $this->actingAs($user)->post("/attachments/beneficiary/{$benef->id}", [
+        'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
+        'tipo_documento' => 'rg',
+    ]);
+    $att = Attachment::withoutGlobalScope('tenant')->first();
+
+    // Zera log de upload pra isolar o evento de download
+    AuditLog::withoutGlobalScope('tenant')->delete();
+
+    $this->actingAs($user)->get("/attachments/{$att->id}/download")->assertOk();
+
+    $audit = AuditLog::withoutGlobalScope('tenant')
+        ->where('event', 'BENEFICIARY_ATTACHMENT_DOWNLOADED')->first();
+    expect($audit)->not->toBeNull();
+    expect((int) $audit->auditable_id)->toBe($att->id);
+});
+
+it('employee nao consegue deletar anexo de beneficiario (gate)', function () {
+    $owner = attTenantUser(); // role=ngo sobe
+    $benef = makeBeneficiary($owner->tenant_id);
+
+    $this->actingAs($owner)->post("/attachments/beneficiary/{$benef->id}", [
+        'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
+        'tipo_documento' => 'rg',
+    ]);
+    $att = Attachment::withoutGlobalScope('tenant')->first();
+
+    $employee = User::factory()->create([
+        'tenant_id' => $owner->tenant_id,
+        'role'      => 'employee',
+    ]);
+
+    $this->actingAs($employee)
+        ->delete("/attachments/{$att->id}")
+        ->assertForbidden();
+
+    // Anexo permanece
+    expect(Attachment::withoutGlobalScope('tenant')->whereNull('deleted_at')->count())->toBe(1);
+});
+
+it('destroy de anexo de beneficiario grava AuditLog', function () {
+    $user  = attTenantUser();
+    $benef = makeBeneficiary($user->tenant_id);
+
+    $this->actingAs($user)->post("/attachments/beneficiary/{$benef->id}", [
+        'file'           => UploadedFile::fake()->create('rg.pdf', 100, 'application/pdf'),
+        'tipo_documento' => 'rg',
+    ]);
+    $att = Attachment::withoutGlobalScope('tenant')->first();
+
+    AuditLog::withoutGlobalScope('tenant')->delete();
+
+    $this->actingAs($user)->delete("/attachments/{$att->id}")->assertRedirect();
+
+    $audit = AuditLog::withoutGlobalScope('tenant')
+        ->where('event', 'BENEFICIARY_ATTACHMENT_DELETED')->first();
+    expect($audit)->not->toBeNull();
+    expect((int) $audit->auditable_id)->toBe($att->id);
 });

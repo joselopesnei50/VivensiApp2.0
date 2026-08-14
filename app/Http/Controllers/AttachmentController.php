@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\Attachment;
+use App\Models\AuditLog;
 use App\Models\Beneficiary;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -66,6 +68,23 @@ class AttachmentController extends Controller
     ];
 
     /**
+     * Tipos de documento aceitos em anexos de beneficiario. Lista fechada
+     * (LGPD art. 6, principio da finalidade) — evita "documento.pdf" sem
+     * contexto e alimenta filtro do relatorio anual. Mudanca aqui exige
+     * revisar `attachments.tipo_documento` na base + view.
+     */
+    private const TIPOS_DOCUMENTO_BENEFICIARY = [
+        'rg'                     => 'RG',
+        'cpf'                    => 'CPF',
+        'comprovante_residencia' => 'Comprovante de Residência',
+        'nis_cadunico'           => 'NIS / CadÚnico',
+        'laudo_medico'           => 'Laudo Médico',
+        'certidao'               => 'Certidão',
+        'termo_lgpd'             => 'Termo de Consentimento LGPD',
+        'outros'                 => 'Outros',
+    ];
+
+    /**
      * Lista de anexos de um registro dono (+ formulario upload).
      * GET /attachments/{morphType}/{morphId}
      */
@@ -80,13 +99,17 @@ class AttachmentController extends Controller
         $backUrl  = $morphType === 'beneficiary' ? "{$backBase}/{$morphId}" : $backBase;
 
         return view('attachments.index', [
-            'owner'       => $owner,
-            'morphType'   => $morphType,
-            'morphId'     => $morphId,
-            'label'       => self::LABELS[$morphType] ?? 'Registro',
-            'attachments' => $attachments,
-            'maxSizeMb'   => (int) (self::MAX_SIZE_KB / 1024),
-            'backUrl'     => $backUrl,
+            'owner'         => $owner,
+            'morphType'     => $morphType,
+            'morphId'       => $morphId,
+            'label'         => self::LABELS[$morphType] ?? 'Registro',
+            'attachments'   => $attachments,
+            'maxSizeMb'     => (int) (self::MAX_SIZE_KB / 1024),
+            'backUrl'       => $backUrl,
+            'tiposDocumento'=> $morphType === 'beneficiary' ? self::TIPOS_DOCUMENTO_BENEFICIARY : [],
+            'canDelete'     => $morphType === 'beneficiary'
+                ? Gate::allows('delete-beneficiaries')
+                : true,
         ]);
     }
 
@@ -98,9 +121,18 @@ class AttachmentController extends Controller
     {
         $owner = $this->resolveOwner($morphType, $morphId);
 
-        $request->validate([
+        $rules = [
             'file' => 'required|file|mimes:' . self::ACCEPTED_MIMES . '|max:' . self::MAX_SIZE_KB,
-        ]);
+        ];
+
+        // Beneficiario exige tipo_documento (lista fechada, LGPD principio da
+        // finalidade). Demais morphs continuam livres — Conformidade tem fluxo
+        // proprio (ConformidadeController) que ja preenche o campo.
+        if ($morphType === 'beneficiary') {
+            $rules['tipo_documento'] = 'required|in:' . implode(',', array_keys(self::TIPOS_DOCUMENTO_BENEFICIARY));
+        }
+
+        $validated = $request->validate($rules);
 
         $file      = $request->file('file');
         $tenantId  = (int) auth()->user()->tenant_id;
@@ -121,6 +153,7 @@ class AttachmentController extends Controller
             'mime_type'       => (string) $file->getMimeType(),
             'size_bytes'      => (int) $file->getSize(),
             'uploaded_by'     => auth()->id(),
+            'tipo_documento'  => $validated['tipo_documento'] ?? null,
         ]);
 
         Log::info('ATTACHMENT_UPLOADED', [
@@ -132,6 +165,16 @@ class AttachmentController extends Controller
             'user_id'       => auth()->id(),
         ]);
 
+        if ($morphType === 'beneficiary') {
+            $this->auditBeneficiary($request, 'BENEFICIARY_ATTACHMENT_UPLOADED', $attachment, [
+                'morph_id'       => $morphId,
+                'tipo_documento' => $attachment->tipo_documento,
+                'size_bytes'     => $attachment->size_bytes,
+                'mime_type'      => $attachment->mime_type,
+                'original_name'  => $attachment->original_name,
+            ]);
+        }
+
         return back()->with('success', 'Anexo enviado.');
     }
 
@@ -139,7 +182,7 @@ class AttachmentController extends Controller
      * Stream do anexo com tenant check.
      * GET /attachments/{id}/download
      */
-    public function download(int $id): Response
+    public function download(Request $request, int $id): Response
     {
         $tenantId = (int) auth()->user()->tenant_id;
 
@@ -147,6 +190,17 @@ class AttachmentController extends Controller
         $att = Attachment::where('id', $id)
             ->where('tenant_id', $tenantId)
             ->firstOrFail();
+
+        // AuditLog: download de PII de terceiros (LGPD art. 37, registro de
+        // operacoes). So loga quando o dono do anexo e Beneficiary — os demais
+        // morphs (asset/inv_item/inv_move) nao contem PII pessoal.
+        if ($att->attachable_type === Beneficiary::class) {
+            $this->auditBeneficiary($request, 'BENEFICIARY_ATTACHMENT_DOWNLOADED', $att, [
+                'morph_id'       => $att->attachable_id,
+                'tipo_documento' => $att->tipo_documento,
+                'original_name'  => $att->original_name,
+            ]);
+        }
 
         abort_unless(Storage::disk('local')->exists($att->path), 404);
 
@@ -163,13 +217,20 @@ class AttachmentController extends Controller
      * Soft-delete do anexo. Arquivo fisico fica ate purge (roadmap futuro).
      * DELETE /attachments/{id}
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse
     {
         $tenantId = (int) auth()->user()->tenant_id;
 
         $att = Attachment::where('id', $id)
             ->where('tenant_id', $tenantId)
             ->firstOrFail();
+
+        // Anexo de Beneficiary so pode ser removido por quem tem gate
+        // delete-beneficiaries (mesma regra da remocao do proprio cadastro).
+        // Employee opera o modulo mas nao deleta PII.
+        if ($att->attachable_type === Beneficiary::class && ! Gate::allows('delete-beneficiaries')) {
+            abort(403, 'Sem permissão para remover anexos de beneficiário.');
+        }
 
         $att->delete();
 
@@ -179,7 +240,41 @@ class AttachmentController extends Controller
             'user_id'       => auth()->id(),
         ]);
 
+        if ($att->attachable_type === Beneficiary::class) {
+            $this->auditBeneficiary($request, 'BENEFICIARY_ATTACHMENT_DELETED', $att, [
+                'morph_id'       => $att->attachable_id,
+                'tipo_documento' => $att->tipo_documento,
+                'original_name'  => $att->original_name,
+            ]);
+        }
+
         return back()->with('success', 'Anexo removido.');
+    }
+
+    /**
+     * Registra evento sensivel de PII no AuditLog (LGPD art. 37). Usado apenas
+     * pra anexos de Beneficiary — os demais morphs (asset/inv_item/inv_move)
+     * seguem so com Log::info.
+     */
+    private function auditBeneficiary(Request $request, string $event, Attachment $att, array $extra = []): void
+    {
+        try {
+            AuditLog::create([
+                'tenant_id'      => $att->tenant_id,
+                'user_id'        => auth()->id(),
+                'event'          => $event,
+                'auditable_type' => Attachment::class,
+                'auditable_id'   => $att->id,
+                'new_values'     => $extra,
+                'ip_address'     => $request->ip(),
+                'user_agent'     => Str::limit((string) $request->userAgent(), 500, ''),
+                'url'            => Str::limit((string) $request->fullUrl(), 500, ''),
+                'session_id'     => $request->hasSession() ? $request->session()->getId() : null,
+            ]);
+        } catch (\Throwable $e) {
+            // AuditLog nao pode quebrar fluxo do usuario — so registra e segue.
+            Log::warning('AUDITLOG_FAILED', ['event' => $event, 'error' => $e->getMessage()]);
+        }
     }
 
     /**
