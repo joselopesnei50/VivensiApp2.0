@@ -34,6 +34,10 @@
            class="btn-ds btn-ds-outline">
             <i class="fas fa-print"></i> Imprimir
         </a>
+        <a href="{{ route('attachments.index', ['morphType' => 'beneficiary', 'morphId' => $beneficiary->id]) }}"
+           class="btn-ds btn-ds-outline" style="background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;">
+            <i class="fas fa-paperclip"></i> Documentos ({{ $beneficiary->attachments()->count() }})
+        </a>
         <a href="{{ url('/ngo/beneficiaries') }}" class="btn-ds btn-ds-ghost">
             <i class="fas fa-arrow-left"></i> Voltar
         </a>

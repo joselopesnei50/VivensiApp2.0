@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use App\Traits\BelongsToTenant;
+use App\Traits\HasAttachments;
 
 class Beneficiary extends Model
 {
     use \App\Traits\Auditable;
-    use HasFactory, BelongsToTenant;
+    use HasFactory, BelongsToTenant, HasAttachments;
 
     protected $fillable = [
         'tenant_id',

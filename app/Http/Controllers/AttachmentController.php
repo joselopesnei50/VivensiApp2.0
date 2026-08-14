@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\Attachment;
+use App\Models\Beneficiary;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use Illuminate\Database\Eloquent\Model;
@@ -36,18 +37,20 @@ class AttachmentController extends Controller
      * o class name apenas internamente pra polimorfismo do Eloquent.
      */
     private const MORPH_MAP = [
-        'asset'    => Asset::class,
-        'inv_item' => InventoryItem::class,
-        'inv_move' => InventoryMovement::class,
+        'asset'       => Asset::class,
+        'inv_item'    => InventoryItem::class,
+        'inv_move'    => InventoryMovement::class,
+        'beneficiary' => Beneficiary::class,
     ];
 
     /**
      * Rotulos amigaveis por morphType — usados no titulo da view.
      */
     private const LABELS = [
-        'asset'    => 'Patrimônio',
-        'inv_item' => 'Item de Estoque',
-        'inv_move' => 'Movimento de Estoque',
+        'asset'       => 'Patrimônio',
+        'inv_item'    => 'Item de Estoque',
+        'inv_move'    => 'Movimento de Estoque',
+        'beneficiary' => 'Beneficiário',
     ];
 
     /**
