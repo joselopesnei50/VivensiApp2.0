@@ -217,27 +217,31 @@ class WhatsAppBotController extends Controller
             ?? $data['key']
             ?? [];
 
-        // Prioridade 1: senderPn (participant phone number) — Evolution v2
-        // popula esse campo quando o remoteJid vem como @lid (Linked Identity,
-        // alias de privacidade do Meta 2024+). Sem essa prioridade, tentamos
-        // resolver o @lid direto e falha com 'exists:false' + user_not_found.
+        // Prioridade 1: remoteJidAlt — Evolution v2.3+ popula esse campo com
+        // o numero REAL (@s.whatsapp.net) quando addressingMode=lid. LID
+        // (Linked Identity, Meta 2024+) eh alias sintetico usado por usuarios
+        // com privacidade avancada; sem remoteJidAlt findUserByPhone falha.
+        if (!empty($key['remoteJidAlt']) && !str_contains($key['remoteJidAlt'], '@lid')) {
+            return $key['remoteJidAlt'];
+        }
+
+        // Prioridade 2: senderPn (participant phone number — alguns builds)
         if (!empty($key['senderPn'])) {
             return $key['senderPn'];
         }
 
-        // Prioridade 2: participant (em grupos, quem realmente enviou)
+        // Prioridade 3: participant (em grupos, quem enviou)
         if (!empty($key['participant']) && !str_contains($key['participant'], '@lid')) {
             return $key['participant'];
         }
 
-        // Prioridade 3: remoteJid — só usa se NAO for @lid (nao ajuda encontrar user)
+        // Prioridade 4: remoteJid — só usa se NAO for @lid
         $remoteJid = $key['remoteJid'] ?? null;
         if ($remoteJid && !str_contains($remoteJid, '@lid')) {
             return $remoteJid;
         }
 
-        // Fallback: retorna o @lid mesmo (pra logging), mas findUserByPhone
-        // provavelmente vai falhar
+        // Fallback: retorna @lid mesmo (pra logging), mas findUser vai falhar
         return $remoteJid;
     }
 
