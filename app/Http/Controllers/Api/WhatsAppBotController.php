@@ -33,9 +33,24 @@ class WhatsAppBotController extends Controller
      */
     public function handle(Request $request): \Illuminate\Http\JsonResponse
     {
-        // Diagnostico 2026-08-17: log WARNING sempre no start pra rastrear
-        // por que webhook do Evolution vira 200 mas bot nao responde.
-        // Level warning porque produção usa LOG_LEVEL=error e info some.
+        // Debug 2026-08-17: escreve DIRETO no arquivo (bypass Log/stack/level)
+        // pra confirmar se o request chega a executar este metodo. Se este file
+        // NAO aparecer apos webhook, o request morre antes (middleware, cache
+        // de rota, outro handler). Remover apos diagnostico.
+        @file_put_contents(
+            storage_path('logs/bot_debug.txt'),
+            sprintf(
+                "[%s] HIT ip=%s ua=%s event=%s tok=%s bkeys=%s\n",
+                date('c'),
+                $request->ip(),
+                substr((string) $request->userAgent(), 0, 40),
+                $request->input('event') ?? $request->input('type') ?? '(none)',
+                $request->query('bot_token') ? 'yes' : 'no',
+                implode(',', array_keys($request->all()))
+            ),
+            FILE_APPEND
+        );
+
         Log::warning('WhatsApp Bot: request recebido', [
             'ip'         => $request->ip(),
             'event'      => $request->input('event') ?? $request->input('type'),
