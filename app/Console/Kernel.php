@@ -153,6 +153,16 @@ class Kernel extends ConsoleKernel
                  ->dailyAt('08:00')
                  ->withoutOverlapping();
 
+        // Blog: rascunho semanal via IA — segunda 08:00, tema sorteado dentre os
+        // curados (evita repetir tema usado nos últimos 60 dias). NUNCA publica
+        // sozinho: sempre is_published=false pra revisão do super admin.
+        $schedule->command('blog:generate-draft')
+                 ->weeklyOn(1, '08:00')
+                 ->withoutOverlapping()
+                 ->onFailure(function () {
+                     \Illuminate\Support\Facades\Log::error('❌ blog:generate-draft falhou no scheduler.');
+                 });
+
         // CRM Doadores: régua de reativação — toda segunda-feira às 10:30
         // Envia mensagem de WhatsApp para doadores que não doam há 60+ dias
         $schedule->command('donors:send-reactivation --days=60')
