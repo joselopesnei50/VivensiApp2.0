@@ -392,7 +392,18 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             'common'      => 'bot_msg_welcome_common',
         ];
         $key  = $keyMap[$role] ?? 'bot_msg_welcome_common';
-        $menu = SystemSetting::getValue($key, "1️⃣ Ver saldo\n2️⃣ Minhas tarefas\n5️⃣ Ajuda");
+
+        // Fallbacks alinhados com App\Http\Controllers\Admin\BotController::DEFAULTS.
+        // Antes: fallback tinha so 3 itens ("1 saldo, 2 tarefas, 5 ajuda") e
+        // NGO com SystemSetting vazio via um menu truncado no WhatsApp.
+        $defaults = [
+            'bot_msg_welcome_ngo'      => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Registrar atendimento\n4️⃣ Consultar beneficiário\n5️⃣ Ajuda\n6️⃣ Atendimentos recentes\n7️⃣ Registrar evolução",
+            'bot_msg_welcome_manager'  => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Concluir tarefa\n4️⃣ Lançar despesa\n5️⃣ Ajuda",
+            'bot_msg_welcome_employee' => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Concluir tarefa\n4️⃣ Lançar despesa (aguarda aprovação)\n5️⃣ Ajuda",
+            'bot_msg_welcome_common'   => "1️⃣ Ver meu saldo pessoal\n2️⃣ Minhas tarefas\n3️⃣ Lançar receita\n4️⃣ Lançar despesa\n5️⃣ Ajuda",
+        ];
+
+        $menu = SystemSetting::getValue($key, $defaults[$key] ?? $defaults['bot_msg_welcome_common']);
 
         return "👋 Olá, *{$name}*!\n\n{$menu}";
     }
