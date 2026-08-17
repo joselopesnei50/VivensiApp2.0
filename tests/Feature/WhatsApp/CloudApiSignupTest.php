@@ -167,6 +167,6 @@ it('POST callback exige autenticacao', function () {
 it('GET connect page renderiza pra usuario autenticado', function () {
     $this->actingAs($this->user)->get('/whatsapp/cloud/connect')
         ->assertStatus(200)
-        ->assertSee('Meta Cloud API')
-        ->assertSee('Conectar com Facebook');
+        ->assertSee('Conecte seu WhatsApp')
+        ->assertSee('Conectar com o Facebook');
 });
