@@ -343,7 +343,10 @@
                                 <i class="fas fa-copy"></i> Copiar
                             </button>
                         </div>
-                        <div class="field-hint">Configure este URL no webhook da instância na Evolution API.</div>
+                        <div class="field-hint">
+                            Configure este URL <strong>exatamente como está</strong> (com <code>?bot_token=</code>) no webhook da instância na Evolution API.
+                            Sem o token, o webhook chega e é rejeitado com 401 silencioso.
+                        </div>
                     </div>
 
                     <button type="submit" class="btn-save">

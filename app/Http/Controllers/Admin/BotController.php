@@ -87,7 +87,12 @@ class BotController extends Controller
             }
         }
 
-        $webhookUrl = rtrim(config('app.url'), '/') . '/api/whatsapp/bot';
+        // Query string com bot_token e obrigatoria quando services.whatsapp.bot_secret
+        // esta setado (WhatsAppBotController::handle rejeita com 401 sem ela).
+        // Se copiado sem, webhook Evolution fica batendo e recebendo 401 silencioso.
+        $botSecret  = config('services.whatsapp.bot_secret');
+        $webhookUrl = rtrim(config('app.url'), '/') . '/api/whatsapp/bot'
+            . ($botSecret ? '?bot_token=' . urlencode($botSecret) : '');
         $activeTab  = request()->get('tab', 'config');
 
         return view('admin.bot.index', compact(
