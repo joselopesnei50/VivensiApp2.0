@@ -309,7 +309,7 @@ class BotController extends Controller
             'faq_response.*'     => 'nullable|string|max:1000',
             'ai_enabled'         => 'nullable|boolean',
             'ai_provider'        => 'nullable|in:deepseek,gemini',
-            'ai_training'        => 'nullable|string|max:5000',
+            'ai_training'        => 'nullable|string|max:50000',
             'bot_name'           => 'nullable|string|max:80',
             'bot_tone'           => 'nullable|in:formal,amigavel,tecnico,descontraido',
             'org_info'           => 'nullable|string|max:1000',
