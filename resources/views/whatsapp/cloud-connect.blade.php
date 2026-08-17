@@ -212,7 +212,7 @@
                 <input id="pin-input" type="text" maxlength="6" pattern="\d{6}"
                        inputmode="numeric" placeholder="000000"
                        class="wac-pin-input" autocomplete="off"
-                       value="{{ substr(str_replace(['-', '.'], '', md5(auth()->id() . '-vivensi-pin')), 0, 6) }}">
+                       value="{{ str_pad((string) (crc32(auth()->id() . '-vivensi-pin') % 1000000), 6, '0', STR_PAD_LEFT) }}">
                 <div style="color: #64748b; font-size: .82rem; margin-top: 6px;">
                     Necessário só se você ainda não verificou o número.
                     Preenchemos com um valor aleatório — <strong>anote se precisar recuperar depois</strong>.
