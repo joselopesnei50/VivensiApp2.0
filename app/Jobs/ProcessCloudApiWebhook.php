@@ -2,7 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Jobs\ProcessWhatsappAiResponse;
 use App\Models\WhatsappChat;
+use App\Models\WhatsappConfig;
 use App\Models\WhatsappConversation;
 use App\Models\WhatsappInstance;
 use App\Models\WhatsappMessage;
@@ -165,6 +167,10 @@ class ProcessCloudApiWebhook implements ShouldQueue
             ]
         );
 
+        // updateOrCreate nao popula defaults da DB (is_bot_active=true) em memoria;
+        // sem refresh, o dispatch da IA veria null e nao dispararia.
+        $chat->refresh();
+
         $newMessage = WhatsappMessage::create([
             'tenant_id'     => $instance->tenant_id,
             'chat_id'       => $chat->id,
@@ -187,6 +193,49 @@ class ProcessCloudApiWebhook implements ShouldQueue
                 'error'   => $e->getMessage(),
             ]);
         }
+
+        // Dispatch da IA (Bruno pro tenant comercial ou Bruce para os demais).
+        // Espelha os guards do ProcessEvolutionWebhook — sem isso, mensagens
+        // inbound via Cloud ficam sem resposta automatica (bug 2026-08-17).
+        $this->dispatchAiIfEligible($instance, $chat, $type, $content);
+    }
+
+    /**
+     * Roteia inbound Cloud pro pipeline de IA (ProcessWhatsappAiResponse).
+     * Job unico responde por Bruno (bot vendedor) e Bruce (bot atendimento)
+     * conforme SystemSetting bruno_sales_bot_tenant_id === config.tenant_id.
+     *
+     * Skippa audio/sticker/reaction/location — precisariam de STT/parser
+     * dedicado que a Cloud API ainda nao tem (Evolution tem base64Audio no
+     * payload, Cloud so tem media_id que exige download antes).
+     */
+    private function dispatchAiIfEligible(WhatsappInstance $instance, WhatsappChat $chat, string $type, string $content): void
+    {
+        $textualTypes = ['text', 'image', 'video', 'document', 'button', 'interactive'];
+        if (!in_array($type, $textualTypes, true)) {
+            return;
+        }
+
+        $content = trim($content);
+        if ($content === '' || $content[0] === '[') {
+            // Placeholders tipo "[imagem]" sem caption — nada pro LLM responder
+            return;
+        }
+
+        $config = WhatsappConfig::withoutGlobalScopes()
+            ->where('tenant_id', $instance->tenant_id)
+            ->first();
+
+        if (!$config
+            || !$config->ai_enabled
+            || !$chat->is_bot_active
+            || $chat->assigned_to !== null
+            || $chat->opt_out_at
+            || $chat->blocked_at) {
+            return;
+        }
+
+        ProcessWhatsappAiResponse::dispatch((int) $config->id, (int) $chat->id, $content);
     }
 
     /**
