@@ -17,15 +17,81 @@
         <h2 class="fw-800 mb-0" style="font-size:1.6rem;color:#0f172a;line-height:1.2;">Blog CMS</h2>
         <p class="text-muted mb-0 mt-1" style="font-size:.85rem;">Gerencie os artigos publicados na página inicial.</p>
     </div>
-    <a href="{{ route('admin.blog.create') }}"
-       class="btn btn-primary fw-bold rounded-3 d-flex align-items-center gap-2 flex-shrink-0"
-       style="margin-top:4px;">
-        <i class="fas fa-plus"></i> Novo Artigo
-    </a>
+    <div class="d-flex align-items-center gap-2 flex-shrink-0" style="margin-top:4px;">
+        <button type="button"
+                class="btn btn-outline-primary fw-bold rounded-3 d-flex align-items-center gap-2"
+                data-bs-toggle="modal" data-bs-target="#aiDraftModal"
+                title="Gerar rascunho automático via IA">
+            <i class="fas fa-wand-magic-sparkles"></i> Gerar com IA
+        </button>
+        <a href="{{ route('admin.blog.create') }}"
+           class="btn btn-primary fw-bold rounded-3 d-flex align-items-center gap-2">
+            <i class="fas fa-plus"></i> Novo Artigo
+        </a>
+    </div>
 </div>
+
+{{-- Modal: gerar rascunho via IA (só super admin — rota já protegida) --}}
+<div class="modal fade" id="aiDraftModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content border-0 rounded-4 shadow"
+              method="POST" action="{{ route('admin.blog.ai-draft') }}"
+              id="aiDraftForm">
+            @csrf
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-800" style="color:#0f172a;">
+                    <i class="fas fa-wand-magic-sparkles me-2" style="color:#6366f1;"></i>
+                    Gerar post com IA
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">
+                    Escolha um tema curado ou digite um tema livre. O post é salvo como <strong>rascunho</strong> pra você revisar antes de publicar.
+                </p>
+
+                <div class="mb-3">
+                    <label for="ai-theme" class="form-label fw-bold small">Tema curado</label>
+                    <select class="form-select" name="theme" id="ai-theme">
+                        <option value="">— selecione —</option>
+                        @foreach(\App\Services\Blog\BlogPostGeneratorService::themeChoices() as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-2">
+                    <label for="ai-custom" class="form-label fw-bold small">Ou tema livre</label>
+                    <input type="text" class="form-control" name="custom_theme" id="ai-custom"
+                           maxlength="255" placeholder="Ex: Como preparar sua ONG pra edital do BNDES">
+                    <div class="form-text small">Se preenchido, ignora o tema curado.</div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary fw-bold rounded-3" id="aiDraftSubmit">
+                    <i class="fas fa-wand-magic-sparkles me-1"></i> Gerar rascunho
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.getElementById('aiDraftForm')?.addEventListener('submit', function() {
+    const btn = document.getElementById('aiDraftSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Gerando (~10s)...';
+});
+</script>
+@endpush
 
 @if(session('success'))
     <div class="alert alert-success border-0 shadow-sm rounded-4 mb-4">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4">{{ session('error') }}</div>
 @endif
 
 {{-- Stats --}}

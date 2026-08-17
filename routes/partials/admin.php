@@ -101,6 +101,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
             'update'  => 'admin.blog.update',
             'destroy' => 'admin.blog.destroy',
         ]);
+        Route::post('/blog/ai-draft', [App\Http\Controllers\Admin\BlogAiController::class, 'store'])
+            ->name('admin.blog.ai-draft')
+            ->middleware('throttle:6,1');
 
         // CMS Páginas
         Route::resource('/pages', App\Http\Controllers\Admin\PageController::class)->only(['index', 'edit', 'update'])->names([
