@@ -294,7 +294,7 @@ class CloudApiOnboardingService
      */
     public function persistInstance(int $tenantId, string $wabaId, string $phoneNumberId, string $accessToken): WhatsappInstance
     {
-        return WhatsappInstance::withoutGlobalScope('tenant')->updateOrCreate(
+        $instance = WhatsappInstance::withoutGlobalScope('tenant')->updateOrCreate(
             ['tenant_id' => $tenantId, 'phone_number_id' => $phoneNumberId],
             [
                 'provider'           => WhatsappInstance::PROVIDER_CLOUD_API,
@@ -305,5 +305,21 @@ class CloudApiOnboardingService
                 'status'             => 'open',
             ]
         );
+
+        // Espelha creds no WhatsappConfig legado — ProcessWhatsappAiResponse::sendAndSync()
+        // ainda le meta_phone_number_id/meta_access_token dele pra decidir se usa
+        // Cloud ou fallback Evolution. Sem esse mirror, Bruno/Bruce geram resposta
+        // mas caem no fallback e nao enviam de volta. Nao toca ai_enabled/ai_training
+        // que sao configuraveis pelo usuario em /whatsapp/settings.
+        \App\Models\WhatsappConfig::withoutGlobalScopes()->updateOrCreate(
+            ['tenant_id' => $tenantId],
+            [
+                'meta_waba_id'         => $wabaId,
+                'meta_phone_number_id' => $phoneNumberId,
+                'meta_access_token'    => $accessToken,
+            ]
+        );
+
+        return $instance;
     }
 }

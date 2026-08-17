@@ -89,6 +89,37 @@ it('persistInstance cria WhatsappInstance provider=cloud_api com credenciais cif
     $raw = \DB::table('whatsapp_instances')->where('id', $instance->id)->value('graph_access_token');
     expect($raw)->not->toBe('EAAG_LONG_TOKEN_zzz');
     expect($raw)->toStartWith('eyJ');
+
+    // Mirror pro WhatsappConfig legado — ProcessWhatsappAiResponse::sendAndSync
+    // le meta_* dele pra escolher Cloud vs Evolution
+    $config = \App\Models\WhatsappConfig::withoutGlobalScopes()
+        ->where('tenant_id', $this->tenant->id)->first();
+    expect($config)->not->toBeNull()
+        ->and($config->meta_waba_id)->toBe('waba_ABC')
+        ->and($config->meta_phone_number_id)->toBe('phone_XYZ')
+        ->and($config->meta_access_token)->toBe('EAAG_LONG_TOKEN_zzz');
+});
+
+it('persistInstance NAO sobrescreve ai_enabled/ai_training quando WhatsappConfig ja existe', function () {
+    \App\Models\WhatsappConfig::create([
+        'tenant_id'    => $this->tenant->id,
+        'is_active'    => true,
+        'ai_enabled'   => false,
+        'ai_training'  => 'Prompt customizado do cliente',
+    ]);
+
+    (new CloudApiOnboardingService())->persistInstance(
+        tenantId: $this->tenant->id, wabaId: 'W1', phoneNumberId: 'P1', accessToken: 'T1'
+    );
+
+    $config = \App\Models\WhatsappConfig::withoutGlobalScopes()
+        ->where('tenant_id', $this->tenant->id)->first();
+
+    expect($config->meta_waba_id)->toBe('W1')
+        ->and($config->meta_phone_number_id)->toBe('P1')
+        ->and($config->meta_access_token)->toBe('T1')
+        ->and((bool) $config->ai_enabled)->toBeFalse()  // preservado
+        ->and($config->ai_training)->toBe('Prompt customizado do cliente'); // preservado
 });
 
 it('completeSignup executa fluxo full e cria WhatsappInstance', function () {
