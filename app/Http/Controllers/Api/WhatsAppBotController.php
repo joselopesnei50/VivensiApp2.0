@@ -156,39 +156,87 @@ class WhatsAppBotController extends Controller
 
     private function findUserByPhone(string $phone): ?User
     {
-        // 1. Match EXATO do telefone normalizado (caminho seguro e preferencial).
-        $exact = User::where('status', 'active')
-            ->whereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') = ?", [$phone])
-            ->get();
+        // NOTA 2026-08-17: users.phone eh AES-256 encrypted e phone_bidx eh
+        // HMAC do valor exato cadastrado (com formatacao). REGEXP_REPLACE no
+        // ciphertext nao funciona — busca correta eh via bidx.
 
-        if ($exact->count() === 1) {
-            return $exact->first();
+        // 1. Tenta bidx pra formatos comuns do numero (fastpath, indice).
+        $variants = $this->phoneVariants($phone);
+        $key      = (string) config('app.key');
+
+        foreach ($variants as $variant) {
+            $bidx = hash_hmac('sha256', $variant, $key);
+            $u    = User::where('status', 'active')
+                ->where('phone_bidx', $bidx)
+                ->first();
+            if ($u) {
+                return $u;
+            }
         }
-        if ($exact->count() > 1) {
-            // Telefones idênticos em mais de um usuário: não arriscar autenticar o tenant errado.
-            Log::warning('WhatsApp Bot: telefone exato ambíguo entre múltiplos usuários', [
+
+        // 2. Fallback lento: itera users ativos, descriptografa via accessor,
+        // compara digitos limpos. O(n) mas ok pra bot interno (poucos users).
+        $matches = collect();
+        User::where('status', 'active')
+            ->whereNotNull('phone')
+            ->select(['id', 'name', 'phone', 'phone_bidx', 'role', 'tenant_id', 'status'])
+            ->chunk(500, function ($chunk) use ($phone, &$matches) {
+                foreach ($chunk as $u) {
+                    $plain = $u->phone; // accessor descriptografa
+                    if (!$plain) continue;
+                    $clean = preg_replace('/\D/', '', (string) $plain);
+                    // Match exato OU sufixo (ultimos 8 digitos — cobre casos
+                    // sem DDI 55 ou com 9 digito celular ausente)
+                    if ($clean === $phone || substr($clean, -8) === substr($phone, -8)) {
+                        $matches->push($u);
+                    }
+                }
+            });
+
+        if ($matches->count() === 1) {
+            return $matches->first();
+        }
+        if ($matches->count() > 1) {
+            Log::warning('WhatsApp Bot: telefone ambiguo entre multiplos users', [
                 'phone_suffix' => substr($phone, -4),
-            ]);
-            return null;
-        }
-
-        // 2. Fallback por sufixo (últimos 8 dígitos) — SÓ se houver UM único candidato.
-        //    Antes o LIKE retornava o primeiro match, o que podia confundir usuários de
-        //    tenants diferentes com final de número igual. Agora, se for ambíguo, recusamos.
-        $candidates = User::where('status', 'active')
-            ->whereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", ['%' . substr($phone, -8)])
-            ->get();
-
-        if ($candidates->count() === 1) {
-            return $candidates->first();
-        }
-        if ($candidates->count() > 1) {
-            Log::warning('WhatsApp Bot: sufixo de telefone ambíguo entre múltiplos usuários', [
-                'phone_suffix' => substr($phone, -4),
+                'match_count'  => $matches->count(),
             ]);
         }
 
         return null;
+    }
+
+    /**
+     * Gera variantes plausiveis do telefone pra tentar match direto no bidx
+     * (evita fullscan). Cobre com/sem DDI 55, com/sem 9 do celular, com
+     * mascara padrao BR.
+     */
+    private function phoneVariants(string $phone): array
+    {
+        $phone = preg_replace('/\D/', '', $phone);
+        $variants = [$phone];
+
+        // Remove DDI 55 se presente
+        if (str_starts_with($phone, '55') && strlen($phone) >= 12) {
+            $variants[] = substr($phone, 2);
+        }
+        // Adiciona DDI 55 se ausente
+        if (!str_starts_with($phone, '55')) {
+            $variants[] = '55' . $phone;
+        }
+
+        // Mascaras comuns cadastradas manualmente
+        if (strlen($phone) >= 10) {
+            $local = str_starts_with($phone, '55') ? substr($phone, 2) : $phone;
+            if (strlen($local) === 11) {
+                $ddd = substr($local, 0, 2);
+                $num = substr($local, 2);
+                $variants[] = "($ddd) " . substr($num, 0, 5) . '-' . substr($num, 5);
+                $variants[] = "$ddd " . substr($num, 0, 5) . '-' . substr($num, 5);
+            }
+        }
+
+        return array_unique($variants);
     }
 
     private function sendDirect(string $waId, string $text): void
