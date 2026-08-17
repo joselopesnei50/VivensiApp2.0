@@ -131,7 +131,11 @@ class WhatsAppBotController extends Controller
         $user = $this->findUserByPhone($cleanPhone);
 
         if (!$user) {
-            $trace('user_not_found', ['phone_suffix' => substr($cleanPhone, -4)]);
+            $trace('user_not_found', [
+                'phone_suffix' => substr($cleanPhone, -4),
+                'wa_id_used'   => $waId,
+                'key_dump'     => $data['data']['key'] ?? $data['key'] ?? null,
+            ]);
             Log::warning('WhatsApp Bot: USER NAO ENCONTRADO', [
                 'phone_suffix' => substr($cleanPhone, -4),
             ]);
@@ -206,10 +210,35 @@ class WhatsAppBotController extends Controller
 
     private function extractWaId(array $data): ?string
     {
-        return $data['data']['key']['remoteJid']
-            ?? $data['data']['message']['key']['remoteJid']
-            ?? $data['key']['remoteJid']
-            ?? null;
+        // Coleta a estrutura 'key' de onde ela tipicamente aparece nos
+        // payloads Evolution v2.
+        $key = $data['data']['key']
+            ?? $data['data']['message']['key']
+            ?? $data['key']
+            ?? [];
+
+        // Prioridade 1: senderPn (participant phone number) — Evolution v2
+        // popula esse campo quando o remoteJid vem como @lid (Linked Identity,
+        // alias de privacidade do Meta 2024+). Sem essa prioridade, tentamos
+        // resolver o @lid direto e falha com 'exists:false' + user_not_found.
+        if (!empty($key['senderPn'])) {
+            return $key['senderPn'];
+        }
+
+        // Prioridade 2: participant (em grupos, quem realmente enviou)
+        if (!empty($key['participant']) && !str_contains($key['participant'], '@lid')) {
+            return $key['participant'];
+        }
+
+        // Prioridade 3: remoteJid — só usa se NAO for @lid (nao ajuda encontrar user)
+        $remoteJid = $key['remoteJid'] ?? null;
+        if ($remoteJid && !str_contains($remoteJid, '@lid')) {
+            return $remoteJid;
+        }
+
+        // Fallback: retorna o @lid mesmo (pra logging), mas findUserByPhone
+        // provavelmente vai falhar
+        return $remoteJid;
     }
 
     private function extractText(array $data): ?string
