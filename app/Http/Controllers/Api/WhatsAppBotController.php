@@ -33,45 +33,8 @@ class WhatsAppBotController extends Controller
      */
     public function handle(Request $request): \Illuminate\Http\JsonResponse
     {
-        // Debug 2026-08-17: escreve DIRETO no arquivo (bypass Log/stack/level)
-        // pra confirmar se o request chega a executar este metodo. Se este file
-        // NAO aparecer apos webhook, o request morre antes (middleware, cache
-        // de rota, outro handler). Remover apos diagnostico.
-        @file_put_contents(
-            storage_path('logs/bot_debug.txt'),
-            sprintf(
-                "[%s] HIT ip=%s ua=%s event=%s tok=%s bkeys=%s\n",
-                date('c'),
-                $request->ip(),
-                substr((string) $request->userAgent(), 0, 40),
-                $request->input('event') ?? $request->input('type') ?? '(none)',
-                $request->query('bot_token') ? 'yes' : 'no',
-                implode(',', array_keys($request->all()))
-            ),
-            FILE_APPEND
-        );
-
-        Log::warning('WhatsApp Bot: request recebido', [
-            'ip'         => $request->ip(),
-            'event'      => $request->input('event') ?? $request->input('type'),
-            'has_token'  => $request->query('bot_token') ? 'yes' : 'no',
-            'body_keys'  => array_keys($request->all()),
-            'data_keys'  => is_array($request->input('data')) ? array_keys($request->input('data')) : null,
-        ]);
-
-        // Debug helper — grava a saída em bot_debug.txt junto com o Log::warning
-        $trace = function (string $tag, array $ctx = []) {
-            @file_put_contents(
-                storage_path('logs/bot_debug.txt'),
-                sprintf("  → [%s] EXIT=%s %s\n", date('H:i:s'), $tag, json_encode($ctx, JSON_UNESCAPED_UNICODE)),
-                FILE_APPEND
-            );
-        };
-
         // 1. Verificação de status
         if (!$this->botEnabled) {
-            $trace('disabled');
-            Log::warning('WhatsApp Bot: DISABLED - retornando 200 sem processar');
             return response()->json(['status' => 'disabled'], 200);
         }
 
@@ -81,7 +44,6 @@ class WhatsAppBotController extends Controller
         if ($secret) {
             $provided = $request->query('bot_token') ?? $request->header('X-Bot-Secret');
             if (!is_string($provided) || !hash_equals((string) $secret, $provided)) {
-                $trace('unauthorized_token', ['has_provided' => (bool) $provided]);
                 Log::warning('WhatsApp Bot: token inválido', ['ip' => $request->ip()]);
                 return response()->json(['status' => 'unauthorized'], 401);
             }
@@ -90,40 +52,21 @@ class WhatsAppBotController extends Controller
         $data = $request->all();
         $event = $data['event'] ?? ($data['type'] ?? '');
 
-        // 3. Filtragem de eventos
+        // 3. Filtragem de eventos — Evolution manda muitos tipos (connection.
+        // update, etc.), so processamos messages.
         if (!in_array($event, ['messages.upsert', 'MESSAGES_UPSERT', 'message'])) {
-            $trace('event_not_recognized', ['event' => $event]);
-            Log::warning('WhatsApp Bot: EVENT NAO RECONHECIDO', ['event' => $event]);
             return response()->json(['status' => 'ignored', 'reason' => 'event_type'], 200);
         }
 
         $waId = $this->extractWaId($data);
         $text = $this->extractText($data);
 
-        $trace('after_extract', [
-            'wa_id_full'   => $waId,
-            'text_preview' => $text ? mb_substr($text, 0, 30) : null,
-            'text_len'     => $text ? mb_strlen($text) : 0,
-        ]);
-
         if (!$waId || !$text || str_contains($waId, '@g.us')) {
-            $trace('ignored_payload', [
-                'has_wa_id' => (bool) $waId,
-                'has_text'  => (bool) $text,
-                'is_group'  => $waId ? str_contains($waId, '@g.us') : null,
-            ]);
-            Log::warning('WhatsApp Bot: PAYLOAD SEM waId/text OU eh grupo', [
-                'wa_id_present' => (bool) $waId,
-                'text_present'  => (bool) $text,
-                'is_group'      => $waId ? str_contains($waId, '@g.us') : null,
-            ]);
             return response()->json(['status' => 'ignored', 'reason' => 'payload'], 200);
         }
 
         $cleanPhone = preg_replace('/\D/', '', explode('@', $waId)[0]);
         if ($cleanPhone === $this->botPhone) {
-            $trace('self_ignored', ['phone_suffix' => substr($cleanPhone, -4)]);
-            Log::warning('WhatsApp Bot: self (mensagem do proprio bot) - ignorando');
             return response()->json(['status' => 'self'], 200);
         }
 
@@ -131,22 +74,15 @@ class WhatsAppBotController extends Controller
         $user = $this->findUserByPhone($cleanPhone);
 
         if (!$user) {
-            $trace('user_not_found', [
-                'phone_suffix' => substr($cleanPhone, -4),
-                'wa_id_used'   => $waId,
-                'key_dump'     => $data['data']['key'] ?? $data['key'] ?? null,
-            ]);
-            Log::warning('WhatsApp Bot: USER NAO ENCONTRADO', [
+            Log::warning('WhatsApp Bot: user não encontrado', [
                 'phone_suffix' => substr($cleanPhone, -4),
             ]);
             $this->sendDirect($waId, "❌ *Número não cadastrado no Vivensi.*\n\nPeça ao administrador para vincular seu WhatsApp ao sistema.");
             return response()->json(['status' => 'unauthorized'], 200);
         }
 
-        // 5. Despacho Assíncrono (Melhoria de Performance)
-        $trace('queued', ['user' => $user->name, 'user_id' => $user->id]);
-        Log::warning("WhatsApp Bot: Mensagem de [{$user->name}] enviada para fila.");
-
+        // 5. Despacho assíncrono
+        Log::info("WhatsApp Bot: Mensagem de [{$user->name}] enviada para fila.");
         ProcessWhatsAppBotMessage::dispatch($user, $waId, $text);
 
         return response()->json(['status' => 'queued'], 200);
