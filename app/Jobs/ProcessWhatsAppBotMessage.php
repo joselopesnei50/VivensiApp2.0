@@ -8,6 +8,7 @@ use App\Models\SystemSetting;
 use App\Models\Task;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\BeneficiaryLookupService;
 use App\Services\EvolutionApiService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -232,8 +233,10 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             $tipo = $session['tipo'];
             $desc = strip_tags($raw);
 
-            $beneficiary = Beneficiary::where('tenant_id', $this->user->tenant_id)
-                ->where('name', 'like', "%{$nome}%")
+            // Usa lookup unificado (nome LIKE + cpf_bidx/nis_bidx). Se digitar
+            // um CPF exato aqui, tambem casa.
+            $beneficiary = (new BeneficiaryLookupService())
+                ->search($this->user->tenant_id, $nome, 1)
                 ->first();
 
             Cache::put($sessionKey, [
@@ -247,7 +250,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
             $benefInfo = $beneficiary
                 ? "Beneficiário: *{$beneficiary->name}* ✓"
-                : "Beneficiário: _{$nome}_ (não cadastrado — será registrado como nota)";
+                : "Beneficiário: _{$nome}_ ⚠️ *não localizado* — o registro não será salvo se confirmar";
 
             return "📋 *Confirmar atendimento?*\n\n"
                 . "{$benefInfo}\n"
@@ -552,13 +555,11 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
     {
         if (!$query) return "❌ Informe o nome ou CPF. Ex: *BENEF: João Silva*";
 
-        $results = Beneficiary::where('tenant_id', $this->user->tenant_id)
-            ->where(function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('cpf', 'like', "%{$query}%");
-            })
-            ->limit(3)
-            ->get();
+        // Bug historico (fixado 2026-08-19): antes fazia WHERE cpf LIKE contra
+        // ciphertext AES — nunca casava. Agora usa BeneficiaryLookupService que
+        // busca via cpf_bidx/nis_bidx (HMAC-SHA256) — mesmo padrao do phone_bidx.
+        $lookup  = new BeneficiaryLookupService();
+        $results = $lookup->search($this->user->tenant_id, $query, 3);
 
         if ($results->isEmpty()) {
             return "❌ Nenhum beneficiário encontrado para *\"{$query}\"*.\n\n_Digite *menu* para voltar._";
@@ -566,7 +567,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         $lines = ["🔍 *Resultado para \"{$query}\":*\n"];
         foreach ($results as $b) {
-            $cpf    = $b->cpf ? ' | CPF: ' . preg_replace('/^(\d{3})\.\d{3}\.\d{3}-(\d{2})$/', '$1.***.***-$2', $b->cpf) : '';
+            $cpf    = $b->cpf ? ' | CPF: ' . $lookup->obfuscateCpf($b->cpf) : '';
             $status = $b->status ? " [{$b->status}]" : '';
             $lines[] = "• *{$b->name}*{$cpf}{$status}";
         }
