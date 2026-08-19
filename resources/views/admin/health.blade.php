@@ -1,9 +1,6 @@
 @extends('layouts.app')
 
 @push('styles')
-{{-- Auto-refresh silencioso a cada 60s. Cache no controller garante que
-     recarregar nao gera carga (bater 2x na mesma janela reusa snapshot). --}}
-<meta http-equiv="refresh" content="60">
 <style>
 /* ── Health Dashboard ─────────────────────────────────────────────── */
 .health-page { background: #f1f5f9; min-height: 100vh; }
@@ -294,11 +291,10 @@
         <div class="health-actions">
             <div class="health-timestamp">
                 <i class="fas fa-clock" style="color:#6366f1;font-size:.7rem;"></i>
-                Snapshot: {{ $cachedAt ? \Carbon\Carbon::parse($cachedAt)->format('d/m/Y H:i:s') : now()->format('d/m/Y H:i:s') }}
-                <span style="color:#94a3b8;">· cache 30s · auto 60s</span>
+                Atualizado em {{ now()->format('d/m/Y H:i:s') }}
             </div>
-            <a href="{{ route('admin.health', ['refresh' => 1]) }}" class="btn-refresh">
-                <i class="fas fa-rotate-right"></i> Forçar Atualização
+            <a href="{{ route('admin.health') }}" class="btn-refresh">
+                <i class="fas fa-rotate-right"></i> Atualizar
             </a>
         </div>
     </div>
@@ -477,54 +473,12 @@
         </div>
     </div>
 
-    {{-- ── FILAS & JOBS ────────────────────────────────────────────────────── --}}
-    <div class="section-label">Filas &amp; Jobs</div>
-    <div class="stats-block" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 32px;">
-
-        <div class="stat-card {{ $jobsPending > 500 ? 'yellow' : 'green' }}">
-            <div class="stat-icon-wrap"><i class="fas fa-list-check"></i></div>
-            <div class="stat-kicker">Jobs pendentes</div>
-            <div class="stat-desc">Aguardando processamento na fila</div>
-            <div class="stat-number">{{ number_format($jobsPending) }}</div>
-            <span class="stat-badge {{ $jobsPending > 500 ? 'warn' : 'live' }}">
-                <span class="dot"></span> {{ $jobsPending > 500 ? 'ATENÇÃO' : 'OK' }}
-            </span>
-        </div>
-
-        <div class="stat-card {{ $jobsFailed > 0 ? 'red' : 'green' }}">
-            <div class="stat-icon-wrap"><i class="fas fa-circle-exclamation"></i></div>
-            <div class="stat-kicker">Jobs falhados</div>
-            <div class="stat-desc">
-                @if($jobsLastActivity) Último há {{ $jobsLastActivity }} @else Nenhum registrado @endif
-            </div>
-            <div class="stat-number">{{ number_format($jobsFailed) }}</div>
-            @if($jobsFailed > 0)
-                <a href="{{ route('admin.failed-jobs.index') }}" class="stat-badge danger" style="text-decoration:none;">
-                    <span class="dot"></span> VER DETALHES
-                </a>
-            @else
-                <span class="stat-badge live"><span class="dot"></span> ZERADO</span>
-            @endif
-        </div>
-
-        <div class="stat-card blue">
-            <div class="stat-icon-wrap"><i class="fas fa-database"></i></div>
-            <div class="stat-kicker">Redis (cache & filas)</div>
-            <div class="stat-desc">Backend de cache e sessão</div>
-            <div class="stat-number" style="font-size:1.4rem;">{{ $redisOk ? 'CONECTADO' : 'OFFLINE' }}</div>
-            <span class="stat-badge {{ $redisOk ? 'live' : 'danger' }}">
-                <span class="dot"></span> {{ $redisOk ? 'HEALTHY' : 'ALERTA' }}
-            </span>
-        </div>
-
-    </div>
-
     {{-- ── STATS REAIS DA PLATAFORMA ─────────────────────────────────────── --}}
     <div class="section-label">Dados da Plataforma</div>
     <div class="stats-block">
 
         <div class="stat-card blue">
-            <div class="stat-icon-wrap"><i class="fas fa-hands-holding-heart"></i></div>
+            <div class="stat-icon-wrap"><i class="fas fa-building-ngo"></i></div>
             <div class="stat-kicker">ONGs</div>
             <div class="stat-desc">Organizações cadastradas no SaaS</div>
             <div class="stat-number">{{ number_format($statTenants) }}</div>
