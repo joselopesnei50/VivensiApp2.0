@@ -47,6 +47,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/tenants/{id}/activate', [App\Http\Controllers\AdminController::class, 'activateTenant'])->name('admin.tenants.activate');
         Route::delete('/tenants/{id}',     [App\Http\Controllers\AdminController::class, 'destroyTenant'])->name('admin.tenants.destroy');
         Route::post('/tenants/{id}/email-quota', [App\Http\Controllers\AdminController::class, 'updateEmailQuota'])->name('admin.tenants.email_quota');
+        Route::post('/tenants/{id}/change-plan',  [App\Http\Controllers\AdminController::class, 'changeTenantPlan'])->name('admin.tenants.change_plan');
 
         // Academy
         Route::resource('academy', App\Http\Controllers\Admin\AcademyController::class, ['as' => 'admin']);

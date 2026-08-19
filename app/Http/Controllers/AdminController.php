@@ -310,11 +310,82 @@ class AdminController extends Controller
         $emailSentToday      = $emailQuota->getSentToday($tenant);
         $emailRemainingToday = $emailQuota->getRemainingToday($tenant);
 
+        // Planos ativos para o card "Alterar Plano" (dropdown do super admin).
+        $plans = SubscriptionPlan::where('is_active', true)
+            ->orderBy('is_courtesy', 'desc')
+            ->orderBy('price', 'asc')
+            ->get();
+
         return view('admin.tenants.show', compact(
-            'tenant', 'user', 'plan',
+            'tenant', 'user', 'plan', 'plans',
             'antiBanCurrentVersion', 'antiBanCurrentAccepted', 'antiBanAcceptances',
             'emailDailyQuota', 'emailSentToday', 'emailRemainingToday'
         ));
+    }
+
+    /**
+     * Super admin troca o plano de um tenant existente.
+     *
+     * Regras:
+     *  - Se plan_id mudou OU checkbox 'require_contract' marcado
+     *    -> subscription_status='awaiting_contract' + contract_signed_at=null
+     *    (proximo login do cliente cai em /register/contrato e o AdesaoController
+     *     define o proximo passo: cortesia->dashboard, pago->checkout)
+     *  - Se novo plano e cortesia E checkbox desmarcado E era plano diferente
+     *    -> forca awaiting_contract mesmo assim (usuario deve assinar a mudanca)
+     *  - Se novo plano == plano atual E checkbox desmarcado -> no-op
+     */
+    public function changeTenantPlan(Request $request, $id)
+    {
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'plan_id'          => ['required', 'integer', 'exists:subscription_plans,id'],
+            'require_contract' => ['nullable'],
+        ]);
+
+        $newPlan = SubscriptionPlan::find($data['plan_id']);
+        if (!$newPlan || !$newPlan->is_active) {
+            return back()->withErrors(['plan_id' => 'Plano selecionado nao esta ativo.'])->withInput();
+        }
+
+        $tenant        = Tenant::findOrFail($id);
+        $previousPlan  = $tenant->plan_id;
+        $planChanged   = (int) $previousPlan !== (int) $newPlan->id;
+        $forceContract = $request->boolean('require_contract');
+        $newPlanPaid   = !$newPlan->is_courtesy;
+
+        $updates = ['plan_id' => $newPlan->id];
+
+        // Regra: NOVO contrato/pagamento e obrigatorio quando (a) admin marcou
+        // "Exigir novo contrato" OU (b) o novo plano e PAGO e mudou de plano.
+        // Cortesia -> cortesia sem checkbox e pago -> cortesia sem checkbox
+        // ficam active direto (super admin manda).
+        if ($forceContract || ($planChanged && $newPlanPaid)) {
+            $updates['subscription_status'] = 'awaiting_contract';
+            $updates['contract_signed_at']  = null;
+        }
+
+        $tenant->update($updates);
+        Cache::forget("tenant.{$tenant->id}");
+
+        AdminAuditLog::record('tenant.plan_changed', [
+            'target_id'        => $tenant->id,
+            'target_name'      => $tenant->name,
+            'previous_plan_id' => $previousPlan,
+            'new_plan_id'      => $newPlan->id,
+            'new_plan_name'    => $newPlan->name,
+            'is_courtesy'      => (bool) $newPlan->is_courtesy,
+            'force_contract'   => $forceContract,
+        ]);
+
+        $msg = $planChanged || $forceContract
+            ? "Plano alterado para \"{$newPlan->name}\". Tenant vai ao contrato de adesao no proximo acesso."
+            : "Plano mantido: \"{$newPlan->name}\".";
+
+        return back()->with('success', $msg);
     }
 
     /**

@@ -214,6 +214,58 @@
             @enderror
         </div>
 
+        {{-- Alterar Plano — Fluxo Adesão (2026-08-19) --}}
+        <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
+            <h4 style="color:#1e293b; margin-top:0;">
+                <i class="fas fa-arrows-rotate me-2" style="color:#6366f1;"></i>Alterar Plano
+            </h4>
+            <p style="font-size:.85rem; color:#64748b; margin:8px 0 16px;">
+                Troca o plano do tenant. Se o novo plano for <strong>pago</strong> ou se marcar
+                <strong>Exigir novo contrato</strong>, o cliente sera redirecionado ao contrato
+                de adesao no proximo acesso.
+            </p>
+
+            @error('plan_id')
+                <div style="background:#fee2e2;border:1px solid #fecaca;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:12px;">
+                    {{ $message }}
+                </div>
+            @enderror
+
+            <form action="{{ route('admin.tenants.change_plan', $tenant->id) }}" method="POST"
+                  onsubmit="return confirm('Confirmar troca de plano deste tenant?');">
+                @csrf
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:.8rem; font-weight:700; color:#475569; display:block; margin-bottom:6px;">
+                        Novo plano
+                    </label>
+                    <select name="plan_id" required
+                            style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:.9rem; background:white;">
+                        @foreach($plans as $p)
+                            <option value="{{ $p->id }}" @selected($p->id == $tenant->plan_id)>
+                                {{ $p->name }}
+                                @if($p->is_courtesy)
+                                    — CORTESIA
+                                @else
+                                    — R$ {{ number_format((float) $p->price, 2, ',', '.') }}
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <label style="display:flex; align-items:center; gap:8px; font-size:.85rem; color:#334155; margin:12px 0 16px; cursor:pointer;">
+                    <input type="checkbox" name="require_contract" value="1"
+                           style="width:16px; height:16px; cursor:pointer;">
+                    <span>Exigir novo contrato de adesao (mesmo mantendo cortesia)</span>
+                </label>
+
+                <button type="submit"
+                        style="width:100%; background:#6366f1; color:white; border:0; padding:12px; border-radius:8px; font-weight:700; font-size:.9rem; cursor:pointer;">
+                    <i class="fas fa-check me-1"></i>Aplicar alteracao
+                </button>
+            </form>
+        </div>
+
         <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
             <h4 style="color: #1e293b; margin-top: 0;">Ações Administrativas</h4>
             <p style="font-size: 0.85rem; color: #64748b;">Gerencie o acesso desta organização.</p>
