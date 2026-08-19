@@ -232,11 +232,31 @@
                     </div>
 
                     @if($campaign->total_skipped > 0)
-                    <div class="bc-metric">
+                    @php
+                        $reasons = $skipReasons[$campaign->id] ?? [];
+                        $reasonLabels = [
+                            'OPTIN_REQUIRED'      => 'sem opt-in',
+                            'CONTACT_OPTOUT'      => 'opt-out',
+                            'CONTACT_BLOCKED'     => 'bloqueados',
+                            'CONTACT_BLACKLISTED' => 'blacklist',
+                        ];
+                        $reasonTooltip = '';
+                        foreach ($reasons as $code => $qty) {
+                            $label = $reasonLabels[$code] ?? $code;
+                            $reasonTooltip .= "{$qty} {$label}, ";
+                        }
+                        $reasonTooltip = rtrim($reasonTooltip, ', ');
+                    @endphp
+                    <div class="bc-metric" @if($reasonTooltip) title="{{ $reasonTooltip }}" @endif>
                         <div class="bc-metric-val" style="color:#f59e0b;">
                             {{ number_format($campaign->total_skipped) }}
                         </div>
-                        <div class="bc-metric-lbl">ignorados</div>
+                        <div class="bc-metric-lbl">
+                            ignorados
+                            @if($reasonTooltip)
+                                <br><small style="color:#94a3b8; font-size:.65rem; font-weight:600;">{{ $reasonTooltip }}</small>
+                            @endif
+                        </div>
                     </div>
                     @endif
 

@@ -344,6 +344,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 @endif
+@if(session('warning_optin'))
+    <div class="alert alert-warning alert-dismissible fade show rounded-3 mb-4" role="alert">
+        <i class="fas fa-user-slash me-2"></i> {{ session('warning_optin') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
 
 {{-- Page Header --}}
 <div class="d-flex align-items-center justify-content-between mb-4">

@@ -414,17 +414,24 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                             'wa_id'       => substr($waId, 0, -4) . '****',
                             'reason'      => $blockCode,
                         ]);
-                        if (!empty($recipient->id)) {
-                            try {
-                                \App\Models\WhatsappAuditLog::create([
-                                    'tenant_id'  => $campaign->tenant_id,
-                                    'chat_id'    => $recipient->id,
-                                    'actor_type' => 'system',
-                                    'event'      => 'broadcast_skipped',
-                                    'details'    => ['reason' => $blockCode, 'campaign_id' => $campaign->id],
-                                ]);
-                            } catch (\Throwable) {}
-                        }
+                        // Fix 2026-08-19: sempre grava audit log, mesmo quando recipient
+                        // e numero avulso (audience=selected sem chat cadastrado). Antes
+                        // o `if (!empty($recipient->id))` engolia esses skips e cliente
+                        // via "N ignorados" sem rastro. wa_id vai em details pra
+                        // rastreabilidade sem depender do chat_id.
+                        try {
+                            \App\Models\WhatsappAuditLog::create([
+                                'tenant_id'  => $campaign->tenant_id,
+                                'chat_id'    => $recipient->id ?? null,
+                                'actor_type' => 'system',
+                                'event'      => 'broadcast_skipped',
+                                'details'    => [
+                                    'reason'      => $blockCode,
+                                    'campaign_id' => $campaign->id,
+                                    'wa_id'       => $waId,
+                                ],
+                            ]);
+                        } catch (\Throwable) {}
                         $skippedCount++;
                         $campaign->update([
                             'total_skipped' => $baseSkipped + $skippedCount,

@@ -387,8 +387,28 @@ class WhatsappBroadcastController extends Controller
         $totalMessages = $totalSent + $totalFailed;
         $successRate   = $totalMessages > 0 ? round(($totalSent / $totalMessages) * 100) : 0;
 
+        // Fix 2026-08-19: breakdown de motivos dos "ignorados" pra cada campanha
+        // visivel. Antes o cliente via so "N ignorados" sem saber por que.
+        // Agregacao em PHP (evita JSON_UNQUOTE que so existe em MySQL — SQLite
+        // usado em teste quebra). Custa 1 query + loop em ate 25 campanhas.
+        $skipReasons = [];
+        if ($campaigns->isNotEmpty()) {
+            $ids  = $campaigns->pluck('id')->all();
+            $logs = \App\Models\WhatsappAuditLog::where('tenant_id', $tenantId)
+                ->where('event', 'broadcast_skipped')
+                ->get(['details']);
+            foreach ($logs as $log) {
+                $details = is_array($log->details) ? $log->details : (array) $log->details;
+                $cid     = isset($details['campaign_id']) ? (int) $details['campaign_id'] : null;
+                $reason  = $details['reason'] ?? null;
+                if ($cid !== null && $reason !== null && in_array($cid, $ids, true)) {
+                    $skipReasons[$cid][$reason] = ($skipReasons[$cid][$reason] ?? 0) + 1;
+                }
+            }
+        }
+
         return view('admin.whatsapp.broadcast.campaigns',
-            compact('campaigns', 'totalSent', 'totalFailed', 'completed', 'successRate'));
+            compact('campaigns', 'totalSent', 'totalFailed', 'completed', 'successRate', 'skipReasons'));
     }
 
     /**
@@ -716,6 +736,36 @@ class WhatsappBroadcastController extends Controller
                     "Risco de detecção elevado pela Meta em 2026. " .
                     "Considere usar spintax nas mensagens (exemplo: {Olá|Oi|E aí}) para variar o conteúdo entre envios."
                 );
+            }
+        }
+
+        // Fix 2026-08-19: aviso preventivo quando cliente digita numeros avulsos
+        // (audience=selected) e o tenant exige opt-in. Sem esse aviso, o cliente ve
+        // "N ignorados" depois do disparo sem entender o motivo. Contamos aqui
+        // quantos dos numeros digitados NAO estao em whatsapp_chats com opt_in valido.
+        if ($audience === 'selected' && !empty($request->input('phones'))) {
+            $cfg = \App\Models\WhatsappConfig::where('tenant_id', $tenantId)->first();
+            if ($cfg && $cfg->require_opt_in) {
+                $phonesArr = array_filter(array_map(
+                    fn ($p) => preg_replace('/\D+/', '', $p),
+                    explode(',', $request->input('phones'))
+                ), fn ($p) => strlen($p) >= 10);
+                if (!empty($phonesArr)) {
+                    $comOptin = \App\Models\WhatsappChat::where('tenant_id', $tenantId)
+                        ->whereIn('wa_id', $phonesArr)
+                        ->whereNotNull('opt_in_at')
+                        ->whereNull('opt_out_at')
+                        ->whereNull('blocked_at')
+                        ->count();
+                    $frios = count($phonesArr) - $comOptin;
+                    if ($frios > 0) {
+                        session()->flash('warning_optin',
+                            "⚠️ {$frios} de " . count($phonesArr) . " número(s) digitado(s) não têm opt-in cadastrado " .
+                            "e serão IGNORADOS pelo compliance LGPD. Para disparar, cadastre o contato primeiro " .
+                            "e colete o opt-in via campanha, ou desative 'Exigir opt-in' nas configurações do WhatsApp."
+                        );
+                    }
+                }
             }
         }
 
