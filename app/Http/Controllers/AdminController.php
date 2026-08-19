@@ -154,11 +154,27 @@ class AdminController extends Controller
         return response()->json(['count' => $users->count(), 'users' => $users]);
     }
 
-    public function serverHealth()
+    public function serverHealth(Request $request)
     {
         if (!auth()->user()->isSuperAdmin()) {
             abort(403);
         }
+
+        // Botao "Atualizar" invalida o cache (?refresh=1). Senao, cachea 30s.
+        if ($request->boolean('refresh')) {
+            Cache::forget('admin.health.snapshot');
+        }
+
+        $snapshot = Cache::remember('admin.health.snapshot', 30, function () {
+            return $this->buildHealthSnapshot();
+        });
+
+        return view('admin.health', $snapshot + ['cachedAt' => Cache::get('admin.health.snapshot_at')]);
+    }
+
+    private function buildHealthSnapshot(): array
+    {
+        Cache::put('admin.health.snapshot_at', now()->toDateTimeString(), 60);
 
         $isLinux = strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN';
 
@@ -248,6 +264,16 @@ class AdminController extends Controller
         $securityTotal = count($checks);
         $securityPct   = $securityTotal > 0 ? round($securityScore / $securityTotal * 100) : 0;
 
+        // ── Filas & Jobs ──────────────────────────────────────────────────────
+        $jobsPending = $jobsFailed = 0;
+        $jobsLastActivity = null;
+        try {
+            $jobsPending = DB::table('jobs')->count();
+            $jobsFailed  = DB::table('failed_jobs')->count();
+            $lastFailed  = DB::table('failed_jobs')->latest('failed_at')->value('failed_at');
+            $jobsLastActivity = $lastFailed ? Carbon::parse($lastFailed)->diffForHumans() : null;
+        } catch (\Throwable $e) {}
+
         // ── Stats reais da plataforma ─────────────────────────────────────────
         $statTenants = $statUsers = $statTransactions = 0;
         $statWppMsgs = $statBeneficiaries = $statOpenTickets = 0;
@@ -260,15 +286,16 @@ class AdminController extends Controller
             $statOpenTickets   = DB::table('support_tickets')->where('status', 'open')->count();
         } catch (\Throwable $e) {}
 
-        return view('admin.health', compact(
+        return compact(
             'isLinux', 'load',
             'memTotal', 'memUsed', 'memFree', 'memPct',
             'diskTotal', 'diskUsed', 'diskFree', 'diskPct',
             'uptime', 'dbVersion', 'redisOk',
             'checks', 'securityScore', 'securityTotal', 'securityPct',
+            'jobsPending', 'jobsFailed', 'jobsLastActivity',
             'statTenants', 'statUsers', 'statTransactions',
             'statWppMsgs', 'statBeneficiaries', 'statOpenTickets'
-        ));
+        );
     }
 
     public function tenants()
