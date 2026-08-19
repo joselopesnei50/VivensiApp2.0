@@ -34,7 +34,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
     public $campaignId;
     public $tenantId;
     public $offset   = 0;    // posição no array de destinatários
-    public $timeout  = 900;  // 15min por chunk — cobre até 20 msgs × 30s (modo conservador) + margem
+    public $timeout  = 1800; // 30min por chunk — cobre até 20 msgs × 60s (Evolution lenta)
     public $tries    = 3;    // retenta o chunk em falhas transitórias
     public $failOnTimeout = true;
 
