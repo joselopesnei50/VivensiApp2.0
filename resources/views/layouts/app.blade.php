@@ -420,12 +420,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @if (auth()->user()->role == 'super_admin')
                 {{-- ═══ MENU SUPER ADMIN — Executive Edition ═══ --}}
                 @php
-                    $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index');
+                    // Reorg 2026-08-18: 8 grupos (era 7). Faturas/WA billing/cotas -> SaaS.
+                    // Bruno -> Marketing. LGPD/Conformidade/Auditoria/Radar -> novo grupo
+                    // LGPD & Compliance. Infra limpo (Analytics/Saude/Jobs/Config/Bot).
+                    $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index') || request()->routeIs('admin.invoices.*') || request()->routeIs('admin.whatsapp.billing') || request()->routeIs('admin.whatsapp.quotas.*');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*') || request()->is('social/posts*') || request()->routeIs('social.analytics.index');
                     $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.templates.cloud.*') || request()->is('whatsapp/cloud/*') || request()->routeIs('whatsapp.consumo') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
-                    $sa_growth_active = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*');
-                    $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.bruno.*') || request()->routeIs('admin.audit_logs') || request()->routeIs('admin.failed-jobs.*') || request()->routeIs('admin.radar.*');
+                    $sa_mkt_active    = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*') || request()->routeIs('admin.bruno.*');
+                    $sa_lgpd_active   = request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.conformidade.*') || request()->routeIs('admin.audit_logs') || request()->routeIs('admin.radar.*');
+                    $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.failed-jobs.*');
                     $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*') || request()->is('admin/dev*');
                     // Badges de notificação
                     try {
@@ -444,11 +448,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-chart-line group-icon"></i> SaaS &amp; Métricas
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_saas_active ? '300px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_saas_active ? '380px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/admin') }}" class="{{ request()->is('admin') ? 'active' : '' }}"><i class="fas fa-gauge-high"></i> Visão Geral</a></li>
                             <li><a href="{{ url('/admin/tenants') }}" class="{{ request()->is('admin/tenants*') ? 'active' : '' }}"><i class="fas fa-building"></i> Organizações</a></li>
                             <li><a href="{{ route('admin.plans.index') }}" class="{{ request()->routeIs('admin.plans.index') ? 'active' : '' }}"><i class="fas fa-tags"></i> Planos</a></li>
+                            <li><a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Faturas</a></li>
+                            <li><a href="{{ route('admin.whatsapp.billing') }}" class="{{ request()->routeIs('admin.whatsapp.billing') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> WhatsApp — Consumo Cloud</a></li>
+                            <li><a href="{{ route('admin.whatsapp.quotas.index') }}" class="{{ request()->routeIs('admin.whatsapp.quotas.*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> WhatsApp — Cotas mensais</a></li>
                         </ul>
                     </div>
                 </div>
@@ -530,16 +537,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- ── Marketing & Growth ───────────────────────────────── --}}
+                {{-- ── Marketing & Vendas ───────────────────────────────── --}}
                 <div class="menu-group">
-                    <div class="menu-group-header {{ $sa_growth_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-rocket group-icon"></i> Marketing &amp; Growth
+                    <div class="menu-group-header {{ $sa_mkt_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-rocket group-icon"></i> Marketing &amp; Vendas
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_growth_active ? '260px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '360px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.sales.board') }}" class="{{ request()->is('admin/sales*') ? 'active' : '' }}"><i class="fas fa-funnel-dollar"></i> Funil Comercial</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
+                            <li><a href="{{ route('admin.bruno.index') }}" class="{{ request()->routeIs('admin.bruno.index') ? 'active' : '' }}"><i class="fas fa-handshake"></i> Bruno — Sandbox Vendedor</a></li>
+                            <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno — Métricas</a></li>
                             <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Campanhas de E-mail</a></li>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
                         </ul>
@@ -547,13 +556,34 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="menu-divider"></div>
 
-                {{-- ── Infraestrutura & Compliance ──────────────────────── --}}
+                {{-- ── LGPD & Compliance ────────────────────────────────── --}}
                 <div class="menu-group">
-                    <div class="menu-group-header {{ $sa_infra_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-shield-halved group-icon"></i> Infra &amp; Compliance
+                    <div class="menu-group-header {{ $sa_lgpd_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-scale-balanced group-icon"></i> LGPD &amp; Compliance
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '520px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_lgpd_active ? '340px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ route('admin.lgpd.index') }}" class="{{ request()->routeIs('admin.lgpd.*') ? 'active' : '' }}">
+                                <i class="fas fa-scale-balanced"></i> Painel LGPD / DPO
+                                @if($sa_badge_lgpd > 0)<span class="sa-badge sa-amber">{{ $sa_badge_lgpd }}</span>@endif
+                            </a></li>
+                            <li><a href="{{ route('admin.conformidade.index') }}" class="{{ request()->routeIs('admin.conformidade.*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> Motor de Conformidade</a></li>
+                            <li><a href="{{ route('admin.audit_logs') }}" class="{{ request()->routeIs('admin.audit_logs') ? 'active' : '' }}"><i class="fas fa-clipboard-check"></i> Auditoria</a></li>
+                            <li><a href="{{ route('admin.radar.index') }}" class="{{ request()->is('admin/radar') && !request()->is('admin/radar/qualidade') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
+                            <li><a href="{{ route('admin.radar.qualidade') }}" class="{{ request()->routeIs('admin.radar.qualidade') ? 'active' : '' }}"><i class="fas fa-chart-bar" style="color:#6366f1;"></i> Radar — Qualidade</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- ── Infraestrutura ───────────────────────────────────── --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $sa_infra_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-shield-halved group-icon"></i> Infraestrutura
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $sa_infra_active ? '340px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.analytics') }}" class="{{ request()->routeIs('admin.analytics') ? 'active' : '' }}"><i class="fas fa-chart-bar"></i> Analytics</a></li>
                             <li><a href="{{ route('admin.health') }}" class="{{ request()->routeIs('admin.health') ? 'active' : '' }}"><i class="fas fa-heart-pulse"></i> Saúde do Servidor</a></li>
@@ -561,20 +591,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 <i class="fas fa-circle-exclamation"></i> Jobs Falhados
                                 @if($sa_badge_failed > 0)<span class="sa-badge sa-red">{{ $sa_badge_failed }}</span>@endif
                             </a></li>
-                            <li><a href="{{ route('admin.audit_logs') }}" class="{{ request()->routeIs('admin.audit_logs') ? 'active' : '' }}"><i class="fas fa-clipboard-check"></i> Auditoria</a></li>
                             <li><a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurações Globais</a></li>
                             <li><a href="{{ route('admin.bot') }}" class="{{ request()->routeIs('admin.bot') ? 'active' : '' }}"><i class="fas fa-robot"></i> Bot de Atendimento</a></li>
-                            <li><a href="{{ route('admin.bruno.index') }}" class="{{ request()->routeIs('admin.bruno.index') ? 'active' : '' }}"><i class="fas fa-handshake"></i> Bruno — Sandbox Vendedor</a></li>
-                            <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno — Métricas</a></li>
-                            <li><a href="{{ route('admin.whatsapp.billing') }}" class="{{ request()->routeIs('admin.whatsapp.billing') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> WhatsApp — Consumo Cloud</a></li>
-                            <li><a href="{{ route('admin.whatsapp.quotas.index') }}" class="{{ request()->routeIs('admin.whatsapp.quotas.*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> WhatsApp — Cotas mensais</a></li>
-                            <li><a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Faturas</a></li>
-                            <li><a href="{{ route('admin.lgpd.index') }}" class="{{ request()->routeIs('admin.lgpd.*') ? 'active' : '' }}">
-                                <i class="fas fa-scale-balanced"></i> Painel LGPD / DPO
-                                @if($sa_badge_lgpd > 0)<span class="sa-badge sa-amber">{{ $sa_badge_lgpd }}</span>@endif
-                            </a></li>
-                            <li><a href="{{ route('admin.radar.index') }}" class="{{ request()->is('admin/radar') && !request()->is('admin/radar/qualidade') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
-                            <li><a href="{{ route('admin.radar.qualidade') }}" class="{{ request()->routeIs('admin.radar.qualidade') ? 'active' : '' }}"><i class="fas fa-chart-bar" style="color:#6366f1;"></i> Radar — Qualidade</a></li>
                         </ul>
                     </div>
                 </div>
