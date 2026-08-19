@@ -15,6 +15,7 @@ class Contract extends Model
     protected $fillable = [
         'tenant_id',
         'title',
+        'kind',
         'content',
         'signer_name',
         'signer_email',

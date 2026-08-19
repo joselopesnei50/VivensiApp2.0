@@ -35,8 +35,16 @@ class CheckSubscription
         }
 
         // 4. Exception routes (to avoid infinite redirect loops)
-        if ($request->routeIs('checkout.*') || $request->routeIs('logout') || $request->is('support*')) {
+        if ($request->routeIs('adesao.*') || $request->routeIs('checkout.*') || $request->routeIs('logout') || $request->is('support*')) {
             return $next($request);
+        }
+
+        // 4a. Contrato de adesao pendente — precede qualquer decisao de plano.
+        // So novos cadastros ficam com awaiting_contract; contas legadas (active/pending
+        // criadas antes desse fluxo) NAO sao afetadas.
+        if ($tenant->subscription_status === 'awaiting_contract') {
+            return redirect()->route('adesao.show')
+                ->with('error', 'Assine o contrato de adesao para acessar a plataforma.');
         }
 
         // 4b. Planos de cortesia — não exigem pagamento, liberação total.

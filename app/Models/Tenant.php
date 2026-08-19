@@ -11,7 +11,16 @@ class Tenant extends Model
 
     protected $fillable = [
         'name',
+        'razao_social',
         'document',
+        'endereco',
+        'numero_endereco',
+        'complemento',
+        'bairro',
+        'cidade',
+        'estado',
+        'cep',
+        'contract_signed_at',
         'type',
         'business_type',
         'asaas_customer_id',
@@ -56,6 +65,7 @@ class Tenant extends Model
 
     protected $casts = [
         'trial_ends_at'           => 'date',
+        'contract_signed_at'      => 'datetime',
         'weekly_report_enabled'   => 'boolean',
         'pix_key'                 => 'encrypted',
         'pix_key_type'            => 'encrypted',

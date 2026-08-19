@@ -29,3 +29,13 @@ Route::middleware('guest')->group(function () {
 // ── Registro ──────────────────────────────────────────────────────────────────
 Route::get('/register',             [App\Http\Controllers\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register',            [App\Http\Controllers\RegisterController::class, 'register'])->middleware('throttle:10,1');
+
+// ── Contrato de Adesao (post-registro, pre-pagamento) ────────────────────────
+// Middleware 'subscription' NAO se aplica aqui (bypass explicito no CheckSubscription).
+Route::middleware(['auth'])->group(function () {
+    Route::get('/register/contrato',                         [App\Http\Controllers\AdesaoController::class, 'show'])->name('adesao.show');
+    Route::post('/register/contrato/dados',                  [App\Http\Controllers\AdesaoController::class, 'storeData'])->middleware('throttle:10,1')->name('adesao.store-data');
+    Route::get('/register/contrato/{contract}/revisar',      [App\Http\Controllers\AdesaoController::class, 'review'])->name('adesao.review');
+    Route::post('/register/contrato/{contract}/assinar',     [App\Http\Controllers\AdesaoController::class, 'sign'])->middleware('throttle:10,1')->name('adesao.sign');
+    Route::get('/register/contrato/{contract}/download',     [App\Http\Controllers\AdesaoController::class, 'download'])->name('adesao.download');
+});

@@ -61,7 +61,10 @@ class RegisterController extends Controller
                 'name' => $request->organization_name,
                 'type' => $tenantType,
                 'plan_id' => $request->plan_id,
-                'subscription_status' => 'pending', // No more trial
+                // Fluxo: sempre passa pelo contrato de adesao antes de pagar/acessar.
+                // Cortesia e paga tem o mesmo entrypoint — CheckSubscription/AdesaoController
+                // decide o proximo destino apos assinatura.
+                'subscription_status' => 'awaiting_contract',
                 'trial_ends_at' => null,
                 'billing_cycle' => $billingCycle,
             ]);
@@ -104,19 +107,13 @@ class RegisterController extends Controller
                 'value'     => (float) ($selectedPlan->price ?? 0),
             ]);
 
-            // Plano de cortesia: ativa direto e loga
-            if ($selectedPlan->is_courtesy) {
-                $tenant->update(['subscription_status' => 'active']);
-                Auth::login($user);
-                return redirect('/dashboard')->with('success', "Bem-vindo! Sua conta está ativa no plano cortesia {$selectedPlan->name}.");
-            }
-
-            // Plano pago: loga E redireciona pro checkout. Middleware CheckSubscription
-            // vai forçar pagamento antes de deixar entrar em qualquer outra tela
-            // (subscription_status='pending' + plan_id preenchido → sempre cai em /checkout).
+            // Cortesia OU pago: ambos passam pelo contrato de adesao.
+            // Apos assinatura, AdesaoController redireciona:
+            //   is_courtesy -> subscription_status='active' -> /dashboard
+            //   pago        -> subscription_status='pending' -> /checkout/{plan}
             Auth::login($user);
-            return redirect('/checkout/' . $selectedPlan->id)
-                ->with('success', 'Conta criada! Conclua o pagamento para começar a usar o sistema.');
+            return redirect()->route('adesao.show')
+                ->with('success', 'Cadastro criado! Complete os dados da entidade e assine o contrato de adesao.');
 
         } catch (\Exception $e) {
             DB::rollback();

@@ -490,11 +490,14 @@ class AdminController extends Controller
                 default          => 'common'
             };
 
+            // Todo tenant novo — inclusive cortesia — comeca em awaiting_contract.
+            // O cliente assina no primeiro login e o AdesaoController define o proximo
+            // status (active pra cortesia, pending pra pago). Trial preserva legado.
             $status = match($request->billing_mode) {
-                'courtesy' => 'active',
-                'manual_pay' => 'pending',
-                'trial' => 'trialing',
-                default => 'trialing'
+                'courtesy'   => 'awaiting_contract',
+                'manual_pay' => 'awaiting_contract',
+                'trial'      => 'trialing',
+                default      => 'trialing'
             };
 
             $trialEndsAt = $request->billing_mode === 'trial' ? now()->addDays(7) : null;
