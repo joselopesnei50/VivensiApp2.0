@@ -386,6 +386,49 @@ class EvolutionApiService
     }
 
     /**
+     * Apaga uma mensagem para todos (Evolution DB + WhatsApp do destinatario).
+     * Usado no bot interno pra que nenhum atendente/admin com acesso a instancia
+     * consiga ler os dados que o cliente enviou ou consultou.
+     *
+     * Falhas nao quebram o fluxo — se nao apagar, o operador humano foi avisado
+     * na welcome message de que os dados podem estar visiveis por algum tempo.
+     *
+     * @param  array  $key  Estrutura ['id' => msg_id, 'remoteJid' => jid,
+     *                                 'fromMe' => bool, 'participant' => jid?]
+     */
+    public function deleteMessageForEveryone(array $key): array
+    {
+        if (!$this->instanceName) return ['error' => 'No instance'];
+        if (empty($key['id']) || empty($key['remoteJid'])) {
+            return ['error' => 'Missing id or remoteJid'];
+        }
+
+        try {
+            $response = $this->http()->timeout(8)
+                ->withHeaders(['apikey' => $this->globalApiKey])
+                ->delete("{$this->baseUrl}/chat/deleteMessageForEveryone/{$this->instanceName}", [
+                    'id'          => $key['id'],
+                    'remoteJid'   => $key['remoteJid'],
+                    'fromMe'      => (bool) ($key['fromMe'] ?? false),
+                    'participant' => $key['participant'] ?? null,
+                ]);
+
+            if ($response->failed()) {
+                Log::warning('EVO deleteMessageForEveryone falhou', [
+                    'status' => $response->status(),
+                    'msg_id' => $key['id'],
+                ]);
+                return ['error' => 'Failed status ' . $response->status()];
+            }
+
+            return $response->json() ?? [];
+        } catch (\Throwable $e) {
+            Log::warning('EVO deleteMessageForEveryone exception', ['msg' => $e->getMessage()]);
+            return ['error' => 'Exception: ' . $e->getMessage()];
+        }
+    }
+
+    /**
      * Remove completamente a instância da Evolution API.
      */
     public function deleteInstance(): array

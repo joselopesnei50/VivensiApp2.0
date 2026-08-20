@@ -60,6 +60,7 @@ class WhatsAppBotController extends Controller
 
         $waId = $this->extractWaId($data);
         $text = $this->extractText($data);
+        $key  = $this->extractMessageKey($data);
 
         if (!$waId || !$text || str_contains($waId, '@g.us')) {
             return response()->json(['status' => 'ignored', 'reason' => 'payload'], 200);
@@ -74,18 +75,40 @@ class WhatsAppBotController extends Controller
         $user = $this->findUserByPhone($cleanPhone);
 
         if (!$user) {
-            Log::warning('WhatsApp Bot: user não encontrado', [
+            // Nao loga user_name — pode nao existir; ip ja sai por http log.
+            Log::warning('WhatsApp Bot: user nao encontrado', [
                 'phone_suffix' => substr($cleanPhone, -4),
             ]);
             $this->sendDirect($waId, "❌ *Número não cadastrado no Vivensi.*\n\nPeça ao administrador para vincular seu WhatsApp ao sistema.");
             return response()->json(['status' => 'unauthorized'], 200);
         }
 
-        // 5. Despacho assíncrono
-        Log::info("WhatsApp Bot: Mensagem de [{$user->name}] enviada para fila.");
-        ProcessWhatsAppBotMessage::dispatch($user, $waId, $text);
+        // 5. Despacho assincrono. Loga apenas user_id — nome/telefone sao PII.
+        Log::info('WhatsApp Bot: mensagem despachada', ['user_id' => $user->id]);
+        ProcessWhatsAppBotMessage::dispatch($user, $waId, $text, $key);
 
         return response()->json(['status' => 'queued'], 200);
+    }
+
+    /**
+     * Extrai a chave completa da mensagem (id + remoteJid + fromMe).
+     * Necessaria pra apagar a mensagem da Evolution API depois de processar,
+     * garantindo que nenhum operador com acesso a instancia leia o conteudo
+     * enviado pelo cliente.
+     */
+    private function extractMessageKey(array $data): array
+    {
+        $key = $data['data']['key']
+            ?? $data['data']['message']['key']
+            ?? $data['key']
+            ?? [];
+
+        return [
+            'id'          => $key['id'] ?? null,
+            'remoteJid'   => $key['remoteJid'] ?? null,
+            'fromMe'      => (bool) ($key['fromMe'] ?? false),
+            'participant' => $key['participant'] ?? null,
+        ];
     }
 
     // ─── Auxiliares ───────────────────────────────────────────────────────────

@@ -28,17 +28,26 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
     private const SESSION_TTL = 30; // minutos
 
+    /**
+     * Aviso curto anexado a mensagens terminais (confirmacoes de sucesso e
+     * respostas de consulta) pra reforcar ao cliente que os dados foram
+     * apagados. Ao final do fluxo (helpers::finalize), tambem pergunta se
+     * o usuario terminou pra convidar a fechar a sessao com sucesso.
+     */
+    private const SECURITY_TAG = "🔒 _Suas mensagens são apagadas automaticamente após o processamento._";
+
     public function __construct(
         protected User   $user,
         protected string $waId,
-        protected string $text
+        protected string $text,
+        protected array  $inboundKey = []
     ) {}
 
     public function handle(): void
     {
         $instanceName = SystemSetting::getValue('bot_instance_name', '');
         if (!$instanceName) {
-            Log::error('ProcessWhatsAppBotMessage: bot_instance_name não configurado');
+            Log::error('ProcessWhatsAppBotMessage: bot_instance_name nao configurado');
             return;
         }
 
@@ -57,15 +66,60 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             $response = $this->processCommand($lower, $text, $session, $sessionKey);
         } catch (\Throwable $e) {
             Log::error('ProcessWhatsAppBotMessage Error', [
-                'user'  => $this->user->id,
-                'error' => $e->getMessage(),
+                'user_id' => $this->user->id,
+                'error'   => $e->getMessage(),
             ]);
             $response = "⚠️ Erro ao processar seu comando. Digite *menu* para recomeçar.";
         }
 
+        $sendResult = null;
         if ($response) {
-            $evo->sendMessage($phone, $response);
+            $sendResult = $evo->sendMessage($phone, $response);
         }
+
+        // Privacidade: apaga a mensagem inbound (o que o cliente digitou) e a
+        // resposta outbound (que pode revelar dados consultados) do lado da
+        // Evolution + WhatsApp do cliente. Falha nao interrompe fluxo — o
+        // aviso na welcome message ja preveniu o usuario da janela residual.
+        $this->purgeMessagesFromEvolution($evo, $sendResult);
+    }
+
+    /**
+     * Deleta inbound + outbound da Evolution API pra que nenhum operador
+     * com acesso a instancia (Evolution UI, WhatsApp Web conectado, etc.)
+     * consiga ler os dados que o cliente enviou ou consultou.
+     */
+    private function purgeMessagesFromEvolution(EvolutionApiService $evo, ?array $sendResult): void
+    {
+        if (!empty($this->inboundKey['id']) && !empty($this->inboundKey['remoteJid'])) {
+            $evo->deleteMessageForEveryone($this->inboundKey);
+        }
+
+        $outboundKey = $this->extractOutboundKey($sendResult);
+        if (!empty($outboundKey['id']) && !empty($outboundKey['remoteJid'])) {
+            $evo->deleteMessageForEveryone($outboundKey);
+        }
+    }
+
+    /**
+     * A Evolution v2 devolve a key da mensagem enviada em formatos variaveis.
+     * Aceita as estruturas conhecidas ({key: {...}} ou raiz).
+     */
+    private function extractOutboundKey(?array $sendResult): array
+    {
+        if (!is_array($sendResult)) return [];
+
+        $key = $sendResult['key']
+            ?? $sendResult['data']['key']
+            ?? $sendResult['message']['key']
+            ?? [];
+
+        return [
+            'id'          => $key['id'] ?? null,
+            'remoteJid'   => $key['remoteJid'] ?? null,
+            'fromMe'      => (bool) ($key['fromMe'] ?? true),
+            'participant' => $key['participant'] ?? null,
+        ];
     }
 
     // ─── Command Router ───────────────────────────────────────────────────────
@@ -78,9 +132,10 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             return $this->welcomeMessage();
         }
 
-        if (in_array($lower, ['cancelar', 'cancel', 'sair'])) {
+        if (in_array($lower, ['cancelar', 'cancel', 'sair', 'encerrar', 'fim', 'terminar'])) {
             Cache::forget($sessionKey);
-            return "✅ Operação cancelada. Digite *menu* para ver as opções.";
+            return "✅ Sessão encerrada.\n\n" . self::SECURITY_TAG
+                 . "\n\n_Digite *menu* pra recomeçar quando precisar._";
         }
 
         if (in_array($lower, ['5', 'ajuda', 'help', '?'])) {
@@ -177,8 +232,10 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             Cache::forget($sessionKey);
             if (in_array($lower, ['sim', 's', 'yes', '1'])) {
                 $this->createTransaction('expense', $session['valor'], $session['desc']);
-                return "✅ Despesa de *R\$ " . number_format($session['valor'], 2, ',', '.') . "* registrada!\n"
-                    . "_{$session['desc']}_\n_Status: Aguardando aprovação._\n\nDigite *menu* para continuar.";
+                return $this->finalize(
+                    "✅ Despesa de *R\$ " . number_format($session['valor'], 2, ',', '.') . "* registrada!\n"
+                    . "_{$session['desc']}_\n_Status: Aguardando aprovação._"
+                );
             }
             return "❌ Despesa cancelada.\n\nDigite *menu* para continuar.";
         }
@@ -206,8 +263,10 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             Cache::forget($sessionKey);
             if (in_array($lower, ['sim', 's', 'yes', '1'])) {
                 $this->createTransaction('income', $session['valor'], $session['desc']);
-                return "✅ Receita de *R\$ " . number_format($session['valor'], 2, ',', '.') . "* registrada!\n"
-                    . "_{$session['desc']}_\n\nDigite *menu* para continuar.";
+                return $this->finalize(
+                    "✅ Receita de *R\$ " . number_format($session['valor'], 2, ',', '.') . "* registrada!\n"
+                    . "_{$session['desc']}_"
+                );
             }
             return "❌ Receita cancelada.\n\nDigite *menu* para continuar.";
         }
@@ -275,9 +334,16 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
                     'created_at'     => now(),
                     'updated_at'     => now(),
                 ]);
-                return "✅ Atendimento registrado!\n👤 *{$session['beneficiary_name']}* — {$session['tipo']}\n\nDigite *menu* para continuar.";
+                return $this->finalize(
+                    "✅ Atendimento registrado!\n👤 *{$session['beneficiary_name']}* — {$session['tipo']}"
+                );
             }
-            Log::info("Bot ATEND: Beneficiário '{$session['nome']}' não encontrado. Tenant: {$this->user->tenant_id}");
+            // Nao loga nome do beneficiario — PII do cliente. tenant_id + hash
+            // cobrem debug sem vazar identidade no storage/logs/laravel.log.
+            Log::info('Bot ATEND: beneficiario nao encontrado', [
+                'tenant_id'  => $this->user->tenant_id,
+                'query_hash' => substr(hash('sha256', mb_strtolower(trim($session['nome']))), 0, 12),
+            ]);
             return "⚠️ Beneficiário *\"{$session['nome']}\"* não encontrado no cadastro.\n\nUse *BENEF: {$session['nome']}* para confirmar o nome exato ou cadastre-o primeiro no sistema.\n\nDigite *menu* para continuar.";
         }
 
@@ -310,7 +376,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
                     ->first();
                 if ($task) {
                     $task->update(['status' => 'done']);
-                    return "✅ Tarefa *\"{$task->title}\"* marcada como concluída!\n\nDigite *menu* para continuar.";
+                    return $this->finalize("✅ Tarefa *\"{$task->title}\"* marcada como concluída!");
                 }
             }
             return "❌ Operação cancelada.\n\nDigite *menu* para continuar.";
@@ -367,7 +433,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
                 'created_at'     => now(),
                 'updated_at'     => now(),
             ]);
-            return "✅ Evolução registrada!\n👤 *{$session['beneficiary_name']}*\n\nDigite *menu* para continuar.";
+            return $this->finalize("✅ Evolução registrada!\n👤 *{$session['beneficiary_name']}*");
         }
 
         // ── BENEFICIÁRIO ──────────────────────────────────────────────────────
@@ -408,7 +474,26 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         $menu = SystemSetting::getValue($key, $defaults[$key] ?? $defaults['bot_msg_welcome_common']);
 
-        return "👋 Olá, *{$name}*!\n\n{$menu}";
+        // Aviso de privacidade sempre na abertura: cliente entende que
+        // conversa e efemera antes de digitar qualquer dado. Palavra-chave
+        // "apagadas" e proposital pra deixar claro que nao ha historico
+        // acessivel do lado da Vivensi.
+        $privacy = "🔒 *Privacidade dos seus dados*\n"
+                 . "As mensagens desta conversa são apagadas automaticamente após o processamento. "
+                 . "Nenhum atendente da Vivensi consegue ler o que você envia ou consulta aqui.\n";
+
+        return "👋 Olá, *{$name}*!\n\n{$privacy}\n{$menu}";
+    }
+
+    /**
+     * Anexa o aviso de privacidade + pergunta de fim a mensagens terminais
+     * (confirmacao de operacao gravada ou resposta de consulta). Convida o
+     * usuario a confirmar que terminou, reforcando o descarte dos dados.
+     */
+    private function finalize(string $body): string
+    {
+        return $body . "\n\n" . self::SECURITY_TAG
+             . "\n\n_Você finalizou? Digite *menu* pra recomeçar ou *sair* pra encerrar._";
     }
 
     private function cmdSaldo(): string
@@ -428,11 +513,12 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         $balance = $income - $expense;
         $icon    = $balance >= 0 ? '📈' : '📉';
 
-        return "💰 *Resumo — " . now()->translatedFormat('F/Y') . "*\n\n"
+        return $this->finalize(
+            "💰 *Resumo — " . now()->translatedFormat('F/Y') . "*\n\n"
             . "✅ Entradas: R\$ " . number_format($income, 2, ',', '.') . "\n"
             . "❌ Saídas:   R\$ " . number_format($expense, 2, ',', '.') . "\n"
-            . "{$icon} Saldo:    R\$ " . number_format($balance, 2, ',', '.') . "\n\n"
-            . "_Digite *menu* para voltar._";
+            . "{$icon} Saldo:    R\$ " . number_format($balance, 2, ',', '.')
+        );
     }
 
     private function cmdTarefas(): string
@@ -446,7 +532,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             ->get();
 
         if ($tasks->isEmpty()) {
-            return "✅ *Nenhuma tarefa pendente!* Tudo em dia.\n\n_Digite *menu* para voltar._";
+            return $this->finalize("✅ *Nenhuma tarefa pendente!* Tudo em dia.");
         }
 
         $lines = ["📋 *Suas próximas tarefas:*\n"];
@@ -455,9 +541,8 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             $overdue = $task->due_date && Carbon::parse($task->due_date)->isPast() ? ' ⚠️' : '';
             $lines[] = ($i + 1) . ". {$task->title} ({$due}){$overdue}";
         }
-        $lines[] = "\n_Digite *menu* para voltar._";
 
-        return implode("\n", $lines);
+        return $this->finalize(implode("\n", $lines));
     }
 
     private function startConcluirTarefa(string $sessionKey): string
@@ -500,7 +585,10 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         $this->createTransaction('expense', $val, $desc);
 
-        return "✅ Despesa de *R\$ " . number_format($val, 2, ',', '.') . "* registrada!\n_{$desc}_\n_Status: Aguardando aprovação._\n\n_Digite *menu* para continuar._";
+        return $this->finalize(
+            "✅ Despesa de *R\$ " . number_format($val, 2, ',', '.') . "* registrada!\n"
+            . "_{$desc}_\n_Status: Aguardando aprovação._"
+        );
     }
 
     private function cmdReceita(string $raw): string
@@ -515,7 +603,9 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         $this->createTransaction('income', $val, $desc);
 
-        return "✅ Receita de *R\$ " . number_format($val, 2, ',', '.') . "* registrada!\n_{$desc}_\n\n_Digite *menu* para continuar._";
+        return $this->finalize(
+            "✅ Receita de *R\$ " . number_format($val, 2, ',', '.') . "* registrada!\n_{$desc}_"
+        );
     }
 
     private function cmdAtendimento(string $raw): string
@@ -544,10 +634,15 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
                 'created_at'     => now(),
                 'updated_at'     => now(),
             ]);
-            return "✅ Atendimento registrado!\n👤 *{$beneficiary->name}* — {$tipo}\n\n_Digite *menu* para continuar._";
+            return $this->finalize(
+                "✅ Atendimento registrado!\n👤 *{$beneficiary->name}* — {$tipo}"
+            );
         }
 
-        Log::info("Bot ATEND: Beneficiário '{$nome}' não encontrado. Tenant: {$this->user->tenant_id}");
+        Log::info('Bot ATEND: beneficiario nao encontrado (comando rapido)', [
+            'tenant_id'  => $this->user->tenant_id,
+            'query_hash' => substr(hash('sha256', mb_strtolower(trim($nome))), 0, 12),
+        ]);
         return "⚠️ Beneficiário *\"{$nome}\"* não encontrado no cadastro.\n\nUse *BENEF: {$nome}* para confirmar o nome exato, ou cadastre-o primeiro no sistema.\n\n_Digite *menu* para continuar._";
     }
 
@@ -562,7 +657,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         $results = $lookup->search($this->user->tenant_id, $query, 3);
 
         if ($results->isEmpty()) {
-            return "❌ Nenhum beneficiário encontrado para *\"{$query}\"*.\n\n_Digite *menu* para voltar._";
+            return $this->finalize("❌ Nenhum beneficiário encontrado para *\"{$query}\"*.");
         }
 
         $lines = ["🔍 *Resultado para \"{$query}\":*\n"];
@@ -571,9 +666,8 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             $status = $b->status ? " [{$b->status}]" : '';
             $lines[] = "• *{$b->name}*{$cpf}{$status}";
         }
-        $lines[] = "\n_Digite *menu* para voltar._";
 
-        return implode("\n", $lines);
+        return $this->finalize(implode("\n", $lines));
     }
 
     private function cmdAtendimentos(): string
@@ -592,7 +686,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             ->get();
 
         if ($rows->isEmpty()) {
-            return "📋 Nenhum atendimento registrado em {$month}.\n\n_Digite *menu* para voltar._";
+            return $this->finalize("📋 Nenhum atendimento registrado em {$month}.");
         }
 
         $lines = ["📋 *Atendimentos — {$month}*\n"];
@@ -611,9 +705,8 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         $lines[] = "\n_Total no mês: {$total} atendimento(s)_";
         $lines[] = "_HIST: [nome] para histórico individual_";
-        $lines[] = "_Digite *menu* para voltar._";
 
-        return implode("\n", $lines);
+        return $this->finalize(implode("\n", $lines));
     }
 
     private function cmdHistoricoAtendimentos(string $query): string
@@ -638,7 +731,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             ->get();
 
         if ($rows->isEmpty()) {
-            return "📋 *{$beneficiary->name}*\n\nNenhum registro encontrado.\n\n_Digite *menu* para voltar._";
+            return $this->finalize("📋 *{$beneficiary->name}*\n\nNenhum registro encontrado.");
         }
 
         $lines = ["📋 *Histórico: {$beneficiary->name}*\n"];
@@ -657,9 +750,8 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             ->where('type', 'Evolução')->count();
 
         $lines[] = "\n_Total: {$total} registro(s) | {$totalEvol} evolução(ões)_";
-        $lines[] = "_Digite *menu* para voltar._";
 
-        return implode("\n", $lines);
+        return $this->finalize(implode("\n", $lines));
     }
 
     private function cmdEvolucaoRapida(string $raw): string
@@ -694,7 +786,9 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             'updated_at'     => now(),
         ]);
 
-        return "✅ Evolução registrada!\n👤 *{$beneficiary->name}*\n_{$texto}_\n\n_Digite *menu* para continuar._";
+        return $this->finalize(
+            "✅ Evolução registrada!\n👤 *{$beneficiary->name}*\n_{$texto}_"
+        );
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
