@@ -403,10 +403,11 @@ class EvolutionApiService
             return ['error' => 'Missing id or remoteJid'];
         }
 
-        // Evolution v2.3.6 aceita a acao como POST (outros endpoints chat/*
-        // no service ja usam POST — chat/sendPresence, chat/getBase64FromMedia).
-        // Tentativa inicial de DELETE (2026-08-20 primeiro deploy) foi rejeitada
-        // silenciosa e as mensagens do bot ficaram visiveis na Evolution.
+        // Evolution v2.3.6 aceita SO o verbo DELETE nesse endpoint (diagnostico
+        // scripts/test-bot-evo-delete.php: DELETE => 201 REVOKE PENDING;
+        // POST => 404). O Http::delete($url, $body) do Laravel 9 nao enviava
+        // o body de forma confiavel — por isso usamos withBody() + send() pra
+        // garantir que o JSON chegue no request body igual ao curl.
         $body = [
             'id'          => $key['id'],
             'remoteJid'   => $key['remoteJid'],
@@ -417,7 +418,8 @@ class EvolutionApiService
         try {
             $response = $this->http()->timeout(8)
                 ->withHeaders(['apikey' => $this->globalApiKey])
-                ->post("{$this->baseUrl}/chat/deleteMessageForEveryone/{$this->instanceName}", $body);
+                ->withBody(json_encode($body), 'application/json')
+                ->send('DELETE', "{$this->baseUrl}/chat/deleteMessageForEveryone/{$this->instanceName}");
 
             if ($response->failed()) {
                 // Log::error garante visibilidade mesmo com LOG_LEVEL=error em

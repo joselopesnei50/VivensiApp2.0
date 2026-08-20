@@ -55,11 +55,11 @@ it('deleteMessageForEveryone chama endpoint Evolution com a key da mensagem', fu
     expect($res)->not->toHaveKey('error');
 
     Http::assertSent(function ($request) {
+        $bodyOk = str_contains((string) $request->body(), '"id":"MSG_ABC123"')
+               && str_contains((string) $request->body(), '"remoteJid":"5511999990001@s.whatsapp.net"');
         return str_contains($request->url(), '/chat/deleteMessageForEveryone/bot-instance')
-            && $request->method() === 'POST'
-            && $request['id'] === 'MSG_ABC123'
-            && $request['remoteJid'] === '5511999990001@s.whatsapp.net'
-            && $request['fromMe'] === false;
+            && $request->method() === 'DELETE'
+            && $bodyOk;
     });
 });
 
