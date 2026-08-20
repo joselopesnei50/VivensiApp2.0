@@ -129,8 +129,8 @@ it('welcome message inclui aviso de privacidade dos dados', function () {
         ['id' => 'IN', 'remoteJid' => '5511@s.whatsapp.net', 'fromMe' => false]
     ))->handle();
 
-    expect($sentBody)->toContain('Privacidade dos seus dados');
-    expect($sentBody)->toContain('apagadas automaticamente');
+    expect($sentBody)->toContain('Canal seguro');
+    expect($sentBody)->toContain('tratadas com sigilo');
 });
 
 it('comando sair mostra aviso de descarte e encerra sessao', function () {
@@ -154,7 +154,7 @@ it('comando sair mostra aviso de descarte e encerra sessao', function () {
     ))->handle();
 
     expect($sentBody)->toContain('Sessão encerrada');
-    expect($sentBody)->toContain('apagadas automaticamente');
+    expect($sentBody)->toContain('Canal seguro');
 });
 
 it('log de beneficiario nao encontrado nao contem nome da consulta', function () {

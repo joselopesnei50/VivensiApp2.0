@@ -29,12 +29,11 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
     private const SESSION_TTL = 30; // minutos
 
     /**
-     * Aviso curto anexado a mensagens terminais (confirmacoes de sucesso e
-     * respostas de consulta) pra reforcar ao cliente que os dados foram
-     * apagados. Ao final do fluxo (helpers::finalize), tambem pergunta se
-     * o usuario terminou pra convidar a fechar a sessao com sucesso.
+     * Aviso curto anexado a mensagens terminais. Reforca ao cliente que o
+     * canal e seguro/privado do Vivensi, sem prometer descarte automatico
+     * (Evolution v2.3.6 nao expoe endpoint confiavel de purga local).
      */
-    private const SECURITY_TAG = "🔒 _Suas mensagens são apagadas automaticamente após o processamento._";
+    private const SECURITY_TAG = "🔒 _Canal seguro e privado do Vivensi._";
 
     public function __construct(
         protected User   $user,
@@ -135,7 +134,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         if (in_array($lower, ['cancelar', 'cancel', 'sair', 'encerrar', 'fim', 'terminar'])) {
             Cache::forget($sessionKey);
             return "✅ Sessão encerrada.\n\n" . self::SECURITY_TAG
-                 . "\n\n_Digite *menu* pra recomeçar quando precisar._";
+                 . "\n\n_Digite *menu* quando precisar voltar._";
         }
 
         if (in_array($lower, ['5', 'ajuda', 'help', '?'])) {
@@ -474,13 +473,12 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         $menu = SystemSetting::getValue($key, $defaults[$key] ?? $defaults['bot_msg_welcome_common']);
 
-        // Aviso de privacidade sempre na abertura: cliente entende que
-        // conversa e efemera antes de digitar qualquer dado. Palavra-chave
-        // "apagadas" e proposital pra deixar claro que nao ha historico
-        // acessivel do lado da Vivensi.
-        $privacy = "🔒 *Privacidade dos seus dados*\n"
-                 . "As mensagens desta conversa são apagadas automaticamente após o processamento. "
-                 . "Nenhum atendente da Vivensi consegue ler o que você envia ou consulta aqui.\n";
+        // Aviso de seguranca na abertura: cliente sabe que esta num canal
+        // privado antes de digitar qualquer dado. NAO promete descarte
+        // automatico (limite tecnico da Evolution v2.3.6).
+        $privacy = "🔒 *Canal seguro*\n"
+                 . "Este atendimento é feito por um canal privado do Vivensi. "
+                 . "Suas informações são tratadas com sigilo e usadas apenas para as operações da sua conta.\n";
 
         return "👋 Olá, *{$name}*!\n\n{$privacy}\n{$menu}";
     }
