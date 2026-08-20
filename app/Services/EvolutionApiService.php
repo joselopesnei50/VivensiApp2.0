@@ -403,19 +403,28 @@ class EvolutionApiService
             return ['error' => 'Missing id or remoteJid'];
         }
 
+        // Evolution v2.3.6 aceita a acao como POST (outros endpoints chat/*
+        // no service ja usam POST — chat/sendPresence, chat/getBase64FromMedia).
+        // Tentativa inicial de DELETE (2026-08-20 primeiro deploy) foi rejeitada
+        // silenciosa e as mensagens do bot ficaram visiveis na Evolution.
+        $body = [
+            'id'          => $key['id'],
+            'remoteJid'   => $key['remoteJid'],
+            'fromMe'      => (bool) ($key['fromMe'] ?? false),
+            'participant' => $key['participant'] ?? null,
+        ];
+
         try {
             $response = $this->http()->timeout(8)
                 ->withHeaders(['apikey' => $this->globalApiKey])
-                ->delete("{$this->baseUrl}/chat/deleteMessageForEveryone/{$this->instanceName}", [
-                    'id'          => $key['id'],
-                    'remoteJid'   => $key['remoteJid'],
-                    'fromMe'      => (bool) ($key['fromMe'] ?? false),
-                    'participant' => $key['participant'] ?? null,
-                ]);
+                ->post("{$this->baseUrl}/chat/deleteMessageForEveryone/{$this->instanceName}", $body);
 
             if ($response->failed()) {
-                Log::warning('EVO deleteMessageForEveryone falhou', [
+                // Log::error garante visibilidade mesmo com LOG_LEVEL=error em
+                // prod — se falhar, PII do cliente esta visivel na Evolution.
+                Log::error('EVO deleteMessageForEveryone falhou', [
                     'status' => $response->status(),
+                    'body'   => mb_substr($response->body(), 0, 300),
                     'msg_id' => $key['id'],
                 ]);
                 return ['error' => 'Failed status ' . $response->status()];
@@ -423,7 +432,7 @@ class EvolutionApiService
 
             return $response->json() ?? [];
         } catch (\Throwable $e) {
-            Log::warning('EVO deleteMessageForEveryone exception', ['msg' => $e->getMessage()]);
+            Log::error('EVO deleteMessageForEveryone exception', ['msg' => $e->getMessage()]);
             return ['error' => 'Exception: ' . $e->getMessage()];
         }
     }
