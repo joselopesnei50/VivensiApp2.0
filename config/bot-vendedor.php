@@ -282,7 +282,7 @@ return [
         // ─── ONG-especificas (campanha vivensi_ongs_apresentacao_2026) ───
         [
             'objection' => 'Somos uma ONG pequena, nao temos verba pra sistema',
-            'reply'     => 'Entendo. E justamente ONG pequena que mais ganha com automacao — voce nao tem equipe pra planilha, precisa que o sistema faca o trabalho. O plano ONG comeca em R$ 149/mes e substitui pelo menos 3 ferramentas soltas. Se voces estao em captacao inicial ou com projeto validado, avaliamos condicao especial caso a caso — quer que eu passe pra Cristiane analisar?',
+            'reply'     => 'Entendo. E justamente ONG pequena que mais ganha com automacao — voce nao tem equipe pra planilha, precisa que o sistema faca o trabalho. O plano Terceiro Setor e R$ 429,90/mes e substitui pelo menos 3 ferramentas soltas. Se voces estao em captacao inicial ou com projeto validado, avaliamos condicao especial caso a caso — quer que eu passe pra Cristiane analisar?',
         ],
         [
             'objection' => 'Vamos esperar o edital cair pra decidir',
@@ -415,7 +415,12 @@ return [
         [
             'situacao' => 'Lead ONG clicou em "Como funciona o preço?" no template MARKETING de campanha',
             'lead'     => 'Como funciona o preço?',
-            'bruno'    => 'Boa. O plano ONG comeca em R$ 149/mes e ja inclui beneficiarios, atendimentos, evolucoes, Radar de Editais, WhatsApp e Bruce IA. Antes de fechar preco, me conta: qual o tamanho da sua ONG hoje (quantidade de beneficiarios ativos e pessoas no time)? Assim confirmo se esse plano cabe ou se voces precisam de algo maior.',
+            'bruno'    => 'Boa. Antes de eu te passar o valor no vazio, o que costuma fazer diferenca e voce ver o Vivensi rodando com o perfil da sua ONG — sao 20 min de demo ao vivo, sem custo, e ali eu ja te confirmo o plano certo pro seu tamanho. Tem alguma data essa semana que fica boa?',
+        ],
+        [
+            'situacao' => 'Lead ONG insiste em ver o preco antes da demo',
+            'lead'     => 'Nao quero demo agora, so me manda o valor',
+            'bruno'    => 'Tranquilo. O plano Terceiro Setor e R$ 429,90/mes com todos os modulos da vertical ONG inclusos (beneficiarios, atendimentos, evolucoes, Radar de Editais, WhatsApp Oficial Meta e Bruce IA). Se quiser depois ver rodando com o perfil da sua organizacao, agendo 20 min a qualquer momento.',
         ],
         [
             'situacao' => 'ONG resposta pos-campanha revela que é pequena / em captacao inicial',
