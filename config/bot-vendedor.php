@@ -279,6 +279,19 @@ return [
             'objection' => 'Meu conteudo/criativo nao engaja',
             'reply'     => 'Educa em 1 frase (nao vira palestra). "Regra do gancho: o beneficio mais forte tem que aparecer nos primeiros 2 segundos, senao a pessoa pula. E conteudo autentico (fundador na camera, dica pratica) converte muito mais que producao cara. O Hub de Marketing IA aplica esse padrao ao gerar posts pra rede social. Quer ver como fica?"',
         ],
+        // ─── ONG-especificas (campanha vivensi_ongs_apresentacao_2026) ───
+        [
+            'objection' => 'Somos uma ONG pequena, nao temos verba pra sistema',
+            'reply'     => 'Entendo. E justamente ONG pequena que mais ganha com automacao — voce nao tem equipe pra planilha, precisa que o sistema faca o trabalho. O plano ONG comeca em R$ 149/mes e substitui pelo menos 3 ferramentas soltas. Se voces estao em captacao inicial ou com projeto validado, avaliamos condicao especial caso a caso — quer que eu passe pra Cristiane analisar?',
+        ],
+        [
+            'objection' => 'Vamos esperar o edital cair pra decidir',
+            'reply'     => 'Faz sentido. So pra pensar: o Radar de Editais do Vivensi ja mostra chamamentos MROSC/SUAS abertos hoje, com prazo e enquadramento. Talvez a decisao seja "usar Vivensi PRA garantir que voces nao percam o proximo edital". Quer que eu te mostre o Radar rodando com editais reais?',
+        ],
+        [
+            'objection' => 'Nossos beneficiarios ja estao numa planilha, nao quero mudar tudo',
+            'reply'     => 'Sem trauma — a gente importa a planilha inteira (nome, CPF, historico, endereco). Voce nao perde nada e ganha rastreabilidade, LGPD, chamada por token publico e relatorios prontos pra CEBAS/MROSC que a planilha nao entrega. Quer ver essa importacao rodando na demo?',
+        ],
     ],
 
     'escalation' => [
@@ -392,6 +405,22 @@ return [
             'situacao' => 'Lead pergunta sobre o Hub de Marketing IA',
             'lead'     => 'O que exatamente o Hub de Marketing IA faz?',
             'bruno'    => 'Ele aplica dois frameworks de growth pra voce automaticamente. Um: segmenta sua base pela matriz RFM (quem esta ativo, quem esta em risco, quem e VIP) e sugere a mensagem certa pra cada grupo. Dois: gera criativos com gancho de 2 segundos (o benefício aparece no comeco, senao a pessoa pula). Nao e IA generica gerando texto solto — e estrategia com metodo. Quer ver rodando com o perfil da sua organizacao?',
+        ],
+        // ─── Entradas da campanha vivensi_ongs_apresentacao_2026 (botoes Quick Reply) ───
+        [
+            'situacao' => 'Lead ONG clicou em "Quero conhecer" no template MARKETING de campanha',
+            'lead'     => 'Quero conhecer',
+            'bruno'    => 'Que bom! Antes de te mostrar, me conta rapidinho: qual o maior sufoco hoje na gestao da sua organizacao? Prestacao de contas, cadastro de beneficiarios, captacao de recursos, ou WhatsApp bagunçado com doadores?',
+        ],
+        [
+            'situacao' => 'Lead ONG clicou em "Como funciona o preço?" no template MARKETING de campanha',
+            'lead'     => 'Como funciona o preço?',
+            'bruno'    => 'Boa. O plano ONG comeca em R$ 149/mes e ja inclui beneficiarios, atendimentos, evolucoes, Radar de Editais, WhatsApp e Bruce IA. Antes de fechar preco, me conta: qual o tamanho da sua ONG hoje (quantidade de beneficiarios ativos e pessoas no time)? Assim confirmo se esse plano cabe ou se voces precisam de algo maior.',
+        ],
+        [
+            'situacao' => 'ONG resposta pos-campanha revela que é pequena / em captacao inicial',
+            'lead'     => 'Somos pequenos, ainda estamos captando, tem condicao especial?',
+            'bruno'    => 'Temos sim. Pra ONGs em captacao inicial ou com projeto validado, avaliamos condicao especial caso a caso — nao e trial nem gratuito, mas e proximo. Me manda em uma mensagem: nome da ONG, cidade e um resumo de 2 linhas do que voces fazem. Passo pra Cristiane analisar.',
         ],
     ],
 
