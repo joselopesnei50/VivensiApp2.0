@@ -81,7 +81,7 @@ class CloudApiTemplateService
      * Cria template na Meta e persiste local com status PENDING.
      * Meta responde com id + status. Aprovação real chega via webhook depois.
      *
-     * @param  array $data ['name', 'language', 'category', 'components']
+     * @param  array $data ['name', 'language', 'category', 'components', 'variable_samples' (opcional)]
      */
     public function create(WhatsappInstance $instance, array $data): WhatsappTemplate
     {
@@ -104,8 +104,7 @@ class CloudApiTemplateService
                 'body'        => $response->body(),
             ]);
 
-            $err = $response->json('error.message') ?? 'Erro desconhecido';
-            throw new RuntimeException("Meta rejeitou o template: {$err}");
+            throw new RuntimeException($this->formatMetaError($response->json('error', [])));
         }
 
         return WhatsappTemplate::withoutGlobalScope('tenant')->updateOrCreate(
@@ -121,9 +120,133 @@ class CloudApiTemplateService
                 'category'          => $data['category'],
                 'status'            => $response->json('status', WhatsappTemplate::STATUS_PENDING),
                 'components'        => $data['components'],
+                'variable_samples'  => $data['variable_samples'] ?? null,
                 'synced_at'         => now(),
             ]
         );
+    }
+
+    /**
+     * Extrai as variaveis {{n}} do corpo em ordem crescente, sem duplicatas.
+     * Exemplo: "Ola {{1}}, sua {{2}} chegou. Obrigado {{1}}!" => [1, 2]
+     *
+     * @return int[]
+     */
+    public function extractVariables(string $body): array
+    {
+        preg_match_all('/\{\{(\d+)\}\}/', $body, $matches);
+        if (empty($matches[1])) return [];
+
+        $ints = array_map('intval', $matches[1]);
+        $unique = array_values(array_unique($ints));
+        sort($unique);
+        return $unique;
+    }
+
+    /**
+     * Valida corpo + amostras contra as regras da Meta pra evitar rejeicao.
+     * Retorna array vazio se OK, ou array associativo campo => mensagem.
+     *
+     * @param  int[]                  $variables  Retorno de extractVariables()
+     * @param  array<int|string,mixed>$samples    Amostras indexadas pelo numero da var (1, 2, ...)
+     * @return array<string,string>
+     */
+    public function validateBodyAndSamples(string $body, array $variables, array $samples): array
+    {
+        $errors = [];
+
+        // Corpo nao pode comecar/terminar com variavel — Meta bloqueia.
+        $trimmed = trim($body);
+        if (preg_match('/^\{\{\d+\}\}/', $trimmed)) {
+            $errors['body'] = 'O corpo nao pode comecar com uma variavel. Coloque texto antes.';
+        }
+        if (preg_match('/\{\{\d+\}\}$/', $trimmed)) {
+            $errors['body'] = 'O corpo nao pode terminar com uma variavel. Coloque texto depois.';
+        }
+
+        // Variaveis adjacentes — Meta bloqueia.
+        if (preg_match('/\}\}\s*\{\{/', $body)) {
+            $errors['body'] = 'Variaveis nao podem ficar coladas ({{1}}{{2}}). Coloque um espaco ou palavra entre elas.';
+        }
+
+        // Sequencia sem lacunas: se tem N variaveis distintas, elas devem ser 1..N.
+        $count = count($variables);
+        if ($count > 0) {
+            $expected = range(1, $count);
+            if ($variables !== $expected) {
+                $errors['body'] = 'As variaveis devem ser sequenciais comecando em {{1}} (sem pular numero). Encontradas: {{' . implode('}}, {{', $variables) . '}}.';
+            }
+        }
+
+        // Amostras: precisam existir e ser validas pra cada variavel.
+        foreach ($variables as $n) {
+            $field = "variable_samples.{$n}";
+            $val = $samples[$n] ?? $samples[(string) $n] ?? null;
+
+            if ($val === null || trim((string) $val) === '') {
+                $errors[$field] = "Preencha uma amostra para a variavel {{{$n}}}.";
+                continue;
+            }
+            $val = (string) $val;
+            if (preg_match('/[\r\n\t]/', $val)) {
+                $errors[$field] = "A amostra da variavel {{{$n}}} nao pode ter quebras de linha ou tabulacoes.";
+                continue;
+            }
+            if (preg_match('/ {5,}/', $val)) {
+                $errors[$field] = "A amostra da variavel {{{$n}}} nao pode ter 5 ou mais espacos consecutivos.";
+                continue;
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Monta o componente BODY do payload da Meta, incluindo 'example.body_text'
+     * quando ha variaveis. Passar exemplo em corpo sem variavel causa erro na Meta,
+     * entao so injeta se necessario.
+     *
+     * @param  array<int|string,mixed> $samples  ja validado por validateBodyAndSamples()
+     */
+    public function buildBodyComponent(string $body, array $samples = []): array
+    {
+        $component = ['type' => 'BODY', 'text' => $body];
+
+        $variables = $this->extractVariables($body);
+        if (!empty($variables)) {
+            // Ordena samples pela sequencia de variaveis pra garantir posicao correta
+            // (Meta le por indice: [0] = {{1}}, [1] = {{2}}, ...).
+            $ordered = [];
+            foreach ($variables as $n) {
+                $ordered[] = (string) ($samples[$n] ?? $samples[(string) $n] ?? '');
+            }
+            $component['example'] = [
+                'body_text' => [$ordered], // array externo aninhado — pattern exigido pela Meta.
+            ];
+        }
+
+        return $component;
+    }
+
+    /**
+     * Formata a mensagem de erro da Meta pra algo util pro operador ler
+     * sem precisar abrir o Business Manager. Usa error_user_title +
+     * error_user_msg quando existem (versao human-friendly), caindo pro
+     * error.message padrao caso contrario.
+     */
+    private function formatMetaError(array $errorData): string
+    {
+        $userTitle = $errorData['error_user_title'] ?? null;
+        $userMsg   = $errorData['error_user_msg']   ?? null;
+        $message   = $errorData['message']          ?? 'Erro desconhecido';
+
+        if ($userTitle && $userMsg) {
+            return "Meta rejeitou: {$userTitle}. {$userMsg}";
+        }
+        if ($userMsg) {
+            return "Meta rejeitou: {$userMsg}";
+        }
+        return "Meta rejeitou o template: {$message}";
     }
 
     /**

@@ -75,6 +75,8 @@ class WhatsappTemplateController extends Controller
             'category'             => ['required', 'in:MARKETING,UTILITY,AUTHENTICATION'],
             'body'                 => ['required', 'string', 'max:1024'],
             'footer'               => ['nullable', 'string', 'max:60'],
+            'variable_samples'     => ['nullable', 'array'],
+            'variable_samples.*'   => ['nullable', 'string', 'max:255'],
         ], [
             'name.regex' => 'Use apenas letras minúsculas, números e underscore (ex: order_confirmation).',
         ]);
@@ -83,20 +85,32 @@ class WhatsappTemplateController extends Controller
             ->where('id', $data['whatsapp_instance_id'])
             ->firstOrFail();
 
-        // Componentes no formato Meta
-        $components = [
-            ['type' => 'BODY', 'text' => $data['body']],
-        ];
+        // Regras Meta especificas de variaveis + amostras (bloqueia antes de
+        // chamar a Graph API pra nao gastar rate limit em template que ja sabemos
+        // que sera rejeitado).
+        $samples   = $data['variable_samples'] ?? [];
+        $variables = $this->templates->extractVariables($data['body']);
+        $errors    = $this->templates->validateBodyAndSamples($data['body'], $variables, $samples);
+
+        if (!empty($errors)) {
+            return back()->withInput()->withErrors($errors);
+        }
+
+        // Componentes no formato Meta — buildBodyComponent injeta example.body_text
+        // quando ha variaveis (obrigatorio pela Meta) e omite quando nao ha
+        // (passar example em corpo sem variavel tambem causa erro).
+        $components = [$this->templates->buildBodyComponent($data['body'], $samples)];
         if (!empty($data['footer'])) {
             $components[] = ['type' => 'FOOTER', 'text' => $data['footer']];
         }
 
         try {
             $template = $this->templates->create($instance, [
-                'name'       => $data['name'],
-                'language'   => $data['language'],
-                'category'   => $data['category'],
-                'components' => $components,
+                'name'             => $data['name'],
+                'language'         => $data['language'],
+                'category'         => $data['category'],
+                'components'       => $components,
+                'variable_samples' => !empty($variables) ? $samples : null,
             ]);
         } catch (Throwable $e) {
             Log::warning('WhatsappTemplateController.store falhou', [

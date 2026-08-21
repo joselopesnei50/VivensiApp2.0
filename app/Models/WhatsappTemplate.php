@@ -40,11 +40,13 @@ class WhatsappTemplate extends Model
         'rejection_reason',
         'synced_at',
         'components',
+        'variable_samples',
     ];
 
     protected $casts = [
-        'components' => 'array',
-        'synced_at'  => 'datetime',
+        'components'       => 'array',
+        'variable_samples' => 'array',
+        'synced_at'        => 'datetime',
     ];
 
     public function instance()
