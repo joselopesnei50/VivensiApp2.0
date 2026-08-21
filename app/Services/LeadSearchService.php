@@ -29,24 +29,58 @@ class LeadSearchService
 
         $places = [];
         $seen   = [];
+        // Serper Maps exige o parametro 'll' (@lat,lng,zoom) a partir da
+        // page=2 — sem ele responde 400 e ja consome o credito da chamada.
+        // Capturamos o ll na resposta da page=1 e reenviamos nas seguintes.
+        $ll = null;
 
         try {
             for ($page = 1; $page <= $pages; $page++) {
+                if ($page > 1 && $ll === null) {
+                    Log::warning('Serper Maps: sem ll apos page 1, paginacao abortada', [
+                        'term'     => $term,
+                        'location' => $location,
+                    ]);
+                    break;
+                }
+
+                $payload = [
+                    'q'    => "$term em $location",
+                    'gl'   => 'br',
+                    'hl'   => 'pt-br',
+                    'num'  => 20,
+                    'page' => $page,
+                ];
+                if ($ll !== null) {
+                    $payload['ll'] = $ll;
+                }
+
                 $response = Http::withHeaders(['X-API-KEY' => $apiKey])
                     ->timeout(15)
-                    ->post('https://google.serper.dev/maps', [
-                        'q'    => "$term em $location",
-                        'gl'   => 'br',
-                        'hl'   => 'pt-br',
-                        'num'  => 20,
-                        'page' => $page,
-                    ]);
+                    ->post('https://google.serper.dev/maps', $payload);
 
                 if ($response->failed()) {
                     throw new \Exception('Erro na busca do Serper Maps: ' . $response->body());
                 }
 
-                $batch = $response->json()['places'] ?? [];
+                $data = $response->json();
+
+                if ($ll === null) {
+                    // Preferencia: searchParameters.ll devolvido pelo Serper.
+                    // Fallback: procura o primeiro place com lat/lng (nem todos
+                    // trazem coord — evita pegar o place[0] "vazio" e abortar).
+                    $ll = $data['searchParameters']['ll'] ?? null;
+                    if ($ll === null) {
+                        foreach ($data['places'] ?? [] as $p) {
+                            if (!empty($p['latitude']) && !empty($p['longitude'])) {
+                                $ll = '@' . $p['latitude'] . ',' . $p['longitude'] . ',14z';
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                $batch = $data['places'] ?? [];
                 if (empty($batch)) break;
 
                 foreach ($batch as $item) {

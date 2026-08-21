@@ -30,6 +30,10 @@ function fakeMapsPage(int $page, int $count, string $prefix = 'Loja'): array
         'phoneNumber' => '1199999' . str_pad((string)($page * 100 + $i), 4, '0', STR_PAD_LEFT),
         'rating'      => 4.5,
         'ratingCount' => 100,
+        // Serper Maps devolve lat/lng em cada place. Necessario pro
+        // LeadSearchService::search extrair 'll' e paginar (page > 1).
+        'latitude'    => -23.5505,
+        'longitude'   => -46.6333,
     ], range(1, $count));
 }
 
@@ -141,6 +145,71 @@ it('endpoint /prospecting/search aceita limit e repassa pro service', function (
 
     $resp->assertRedirect();
     expect(Prospect::where('tenant_id', $tenant->id)->count())->toBe(40);
+});
+
+it('search extrai ll de searchParameters e passa nas paginas seguintes (fix 2026-08-21)', function () {
+    Http::fake([
+        'google.serper.dev/maps' => Http::sequence()
+            ->push([
+                'searchParameters' => ['ll' => '@-23.5505,-46.6333,14z'],
+                'places' => fakeMapsPage(1, 20),
+            ], 200)
+            ->push(['places' => fakeMapsPage(2, 20)], 200),
+    ]);
+
+    $tenant = Tenant::factory()->create();
+    $service = app(LeadSearchService::class);
+    $r = $service->search('restaurante', 'Sao Paulo', $tenant->id, 40);
+
+    // Page 1 sem ll, page 2 COM ll = '@-23.5505,-46.6333,14z' (searchParameters)
+    Http::assertSent(function ($req) {
+        $d = $req->data();
+        return $d['page'] === 1 && !isset($d['ll']);
+    });
+    Http::assertSent(function ($req) {
+        $d = $req->data();
+        return $d['page'] === 2 && ($d['ll'] ?? null) === '@-23.5505,-46.6333,14z';
+    });
+    expect($r['new'])->toBe(40);
+});
+
+it('search monta ll a partir do primeiro place quando searchParameters.ll ausente', function () {
+    // Serper as vezes nao devolve searchParameters.ll — cai pro fallback
+    // via places[0].latitude/longitude
+    Http::fake([
+        'google.serper.dev/maps' => Http::sequence()
+            ->push(['places' => fakeMapsPage(1, 20)], 200)
+            ->push(['places' => fakeMapsPage(2, 20)], 200),
+    ]);
+
+    $tenant = Tenant::factory()->create();
+    $service = app(LeadSearchService::class);
+    $service->search('restaurante', 'Sao Paulo', $tenant->id, 40);
+
+    Http::assertSent(function ($req) {
+        $d = $req->data();
+        return $d['page'] === 2 && ($d['ll'] ?? null) === '@-23.5505,-46.6333,14z';
+    });
+});
+
+it('search aborta paginacao se page 1 nao devolver ll nem lat/lng', function () {
+    Http::fake([
+        'google.serper.dev/maps' => Http::sequence()
+            ->push(['places' => [
+                ['title' => 'Sem coords 1', 'address' => 'Rua X'],
+                ['title' => 'Sem coords 2', 'address' => 'Rua Y'],
+            ]], 200)
+            // Nunca deve chegar aqui — se chegar teste passa mas HTTP count vai falhar
+            ->push(['places' => fakeMapsPage(2, 20)], 200),
+    ]);
+
+    $tenant = Tenant::factory()->create();
+    $service = app(LeadSearchService::class);
+    $r = $service->search('restaurante', 'Sao Paulo', $tenant->id, 40);
+
+    // So a page 1 deve ter sido chamada — page 2 abortada por falta de ll
+    Http::assertSentCount(1);
+    expect($r['new'])->toBe(2);
 });
 
 it('endpoint /prospecting/search rejeita limit fora da whitelist', function () {
