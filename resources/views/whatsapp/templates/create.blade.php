@@ -130,10 +130,9 @@
 @endsection
 
 @push('scripts')
-{{-- @verbatim desliga a interpretacao Blade dentro do <script>. Sem isso o
-     Blade tenta compilar {{n}} que aparece em comentarios/regex do JS. --}}
-@verbatim
 <script>
+// NOTA: nao use chaves duplas nem simbolo arroba+palavra em comentarios deste
+// script — Blade tenta compilar como directive e quebra o build.
 (function () {
     const body      = document.getElementById('body');
     const footer    = document.getElementById('footer');
@@ -151,7 +150,7 @@
     };
 
     /**
-     * Extrai variaveis {{n}} do corpo em ordem crescente, sem duplicatas.
+     * Extrai variaveis {n} do corpo em ordem crescente, sem duplicatas.
      * Espelho do CloudApiTemplateService::extractVariables (backend). Se
      * mudar aqui, mude la — as duas regexes precisam bater.
      */
@@ -176,7 +175,7 @@
      * — Variavel removida: remove o input correspondente
      * — Amostra ja digitada: preserva (nao apaga o que o operador digitou)
      *
-     * Usa document.createElement pra evitar template literals com {{...}}
+     * Usa document.createElement pra evitar template literals com chaves duplas
      * que colidiriam com a sintaxe de echo do Blade na compilacao.
      */
     function syncSamples() {
@@ -197,7 +196,7 @@
 
             const badge = document.createElement('div');
             badge.className = 'fvar-badge';
-            badge.textContent = '{' + '{' + n + '}' + '}'; // literal {{n}} sem chamar Blade
+            badge.textContent = '{' + '{' + n + '}' + '}'; // literal chaves duplas
             row.appendChild(badge);
 
             const input = document.createElement('input');
@@ -218,7 +217,7 @@
     }
 
     /**
-     * Renderiza preview substituindo {{n}} pela amostra ou por marca de pendencia.
+     * Renderiza preview substituindo variavel pela amostra ou por marca de pendencia.
      */
     function updatePreview() {
         const text = body.value;
@@ -234,7 +233,7 @@
         let html = escapeHtml(text).replace(/\{\{(\d+)\}\}/g, (_, n) => {
             const v = samples[n];
             if (v) return escapeHtml(v);
-            // Concat manual pra evitar {{...}} literal dentro do Blade
+            // Concat manual pra evitar chaves duplas literais dentro do Blade
             return '<mark>' + '{' + '{' + n + '}' + '}' + '</mark>';
         });
 
@@ -263,5 +262,4 @@
     updatePreview();
 })();
 </script>
-@endverbatim
 @endpush
