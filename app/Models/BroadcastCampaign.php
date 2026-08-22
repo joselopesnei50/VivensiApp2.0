@@ -13,22 +13,28 @@ class BroadcastCampaign extends Model
         'has_audio', 'audio_path', 'audio_mime', 'audio_fingerprint',
         'audience_type', 'status', 'scheduled_at', 'cadence',
         'group_ids', 'group_send_mode', 'phones', 'label_ids',
+        'send_channel', 'template_id', 'template_variables',
         'total_sent', 'total_failed', 'total_skipped', 'actual_recipients',
         'started_at', 'completed_at',
     ];
 
     protected $casts = [
-        'has_image'    => 'boolean',
-        'has_audio'    => 'boolean',
-        'group_ids'    => 'array',
-        'label_ids'    => 'array',
-        'cadence'      => 'integer',
-        'scheduled_at' => 'datetime',
-        'started_at'   => 'datetime',
-        'completed_at' => 'datetime',
-        'created_at'   => 'datetime',
-        'updated_at'   => 'datetime',
+        'has_image'          => 'boolean',
+        'has_audio'          => 'boolean',
+        'group_ids'          => 'array',
+        'label_ids'          => 'array',
+        'template_variables' => 'array',
+        'cadence'            => 'integer',
+        'scheduled_at'       => 'datetime',
+        'started_at'         => 'datetime',
+        'completed_at'       => 'datetime',
+        'created_at'         => 'datetime',
+        'updated_at'         => 'datetime',
     ];
+
+    /** Canais de envio suportados. */
+    public const CHANNEL_EVOLUTION         = 'evolution';
+    public const CHANNEL_CLOUD_API_TEMPLATE = 'cloud_api_template';
 
     /** Regras de seguranca do broadcast de audio (2026-08-05, revisao 2). */
     public const AUDIO_MIN_CADENCE_SECONDS      = 20;
@@ -51,5 +57,10 @@ class BroadcastCampaign extends Model
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
+
+    public function template()
+    {
+        return $this->belongsTo(\App\Models\WhatsappTemplate::class, 'template_id');
     }
 }

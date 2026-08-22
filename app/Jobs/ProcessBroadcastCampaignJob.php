@@ -71,13 +71,50 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             return;
         }
 
-        $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
-            ->where('status', 'open')->first();
+        // Broadcast v1 Cloud API template (2026-08-21): resolve a instancia
+        // Cloud da tenant (nao depende de status='open' — a Cloud API nao tem
+        // sessao WhatsApp Web, so credenciais Graph API).
+        $isCloudTemplate = $campaign->send_channel === BroadcastCampaign::CHANNEL_CLOUD_API_TEMPLATE;
+        $template        = null;
+        $cloudSender     = null;
 
-        if (!$instance) {
-            $campaign->update(['status' => 'failed', 'completed_at' => now()]);
-            Log::error("Broadcast failed: No active instance for tenant {$campaign->tenant_id}");
-            return;
+        if ($isCloudTemplate) {
+            $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
+                ->whereNotNull('waba_id')
+                ->whereNotNull('graph_access_token')
+                ->first();
+
+            if (!$instance) {
+                $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+                Log::error("Broadcast Cloud template failed: no Cloud API instance for tenant {$campaign->tenant_id}");
+                return;
+            }
+
+            $template = \App\Models\WhatsappTemplate::withoutGlobalScope('tenant')
+                ->where('id', $campaign->template_id)
+                ->where('tenant_id', $campaign->tenant_id)
+                ->where('status', \App\Models\WhatsappTemplate::STATUS_APPROVED)
+                ->first();
+
+            if (!$template) {
+                $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+                Log::error("Broadcast Cloud template failed: template {$campaign->template_id} nao encontrado/APPROVED", [
+                    'campaign_id' => $campaign->id,
+                    'tenant_id'   => $campaign->tenant_id,
+                ]);
+                return;
+            }
+
+            $cloudSender = \App\Services\WhatsApp\WhatsAppSenderFactory::forInstance($instance);
+        } else {
+            $instance = WhatsappInstance::where('tenant_id', $campaign->tenant_id)
+                ->where('status', 'open')->first();
+
+            if (!$instance) {
+                $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+                Log::error("Broadcast failed: No active instance for tenant {$campaign->tenant_id}");
+                return;
+            }
         }
 
         $evo     = new EvolutionApiService($instance);
@@ -251,10 +288,11 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         $isGroupChatMode = ($campaign->audience_type === 'groups')
             && (($campaign->group_send_mode ?? 'group') === 'group');
 
-        // Anti-ban: avalia diversidade no lote completo ANTES de reduzir o chunk
+        // Anti-ban: avalia diversidade no lote completo ANTES de reduzir o chunk.
+        // Cloud API template dispensa (Meta faz rate limiting proprio + template aprovado).
         $waIdsChunk       = $recipientsIterable->pluck('wa_id')->all();
         $conservativeMode = false;
-        if (!$isGroupChatMode && !empty($waIdsChunk)) {
+        if (!$isGroupChatMode && !$isCloudTemplate && !empty($waIdsChunk)) {
             $newRatio = $antiBan->getNewRecipientRatio($instance, $waIdsChunk);
             if ($newRatio > AntiBanManager::NEW_RECIPIENT_RISK_THRESHOLD) {
                 $conservativeMode = true;
@@ -287,7 +325,7 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         $waIdsChunk = $recipientsIterable->pluck('wa_id')->all();
         $jidMap     = [];
 
-        if (!$isGroupChatMode) {
+        if (!$isGroupChatMode && !$isCloudTemplate) {
             $normalizedNumbers = collect($waIdsChunk)
                 ->map(fn($n) => EvolutionApiService::normalizeBrazilianPhone((string) $n))
                 ->filter()
@@ -327,8 +365,9 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             $campaign->refresh();
             if ($campaign->status !== 'processing') break;
 
-            // Anti-ban: fingerprint de conteúdo (Fase 1 2026)
-            if (!empty($campaign->message) && !$antiBan->contentFingerprintAllowed($instance, $campaign->message)) {
+            // Anti-ban: fingerprint de conteúdo (Fase 1 2026).
+            // Cloud template dispensa — Meta valida template previamente na aprovacao.
+            if (!$isCloudTemplate && !empty($campaign->message) && !$antiBan->contentFingerprintAllowed($instance, $campaign->message)) {
                 Log::warning('AntiBan: fingerprint de conteúdo atingiu limite diário — campanha pausada', [
                     'campaign_id' => $campaign->id,
                     'instance_id' => $instance->id,
@@ -365,8 +404,10 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 }
             }
 
-            // Anti-ban: verifica janela de horário e limite diário
-            if (!$antiBan->canSendMessage($instance)) {
+            // Anti-ban: verifica janela de horário e limite diário.
+            // Cloud template pula esse gate — a Meta Cloud API tem rate limit
+            // proprio e nao tem sessao WhatsApp Web pra "adormecer".
+            if (!$isCloudTemplate && !$antiBan->canSendMessage($instance)) {
                 $instance->refresh();
                 $statusMsg = $instance->isWithinSafeWindow() ? 'limite diário/horário atingido' : 'fora da janela horária';
                 $campaign->update([
@@ -384,6 +425,36 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
                 if ($isGroupChatMode) {
                     $waId = $rawWaId;
+                } elseif ($isCloudTemplate) {
+                    // Cloud API aceita numero E.164 direto (sem checar via Evolution).
+                    // Compliance LGPD (opt-in, blacklist) continua valendo.
+                    $normalized = preg_replace('/\D+/', '', (string) $rawWaId);
+                    if (!$normalized) {
+                        $failedCount++;
+                        continue;
+                    }
+                    $waId = $normalized;
+
+                    $blockCode = $policy->complianceStatus(
+                        $requireOptIn,
+                        $recipient->opt_in_at ?? null,
+                        $recipient->opt_out_at ?? null,
+                        $recipient->blocked_at ?? null,
+                        isset($blacklistSet[$normalized]) || isset($blacklistSet[$waId])
+                    );
+                    if ($blockCode) {
+                        Log::info('Broadcast Cloud template: contato bloqueado por compliance — pulando', [
+                            'campaign_id' => $campaign->id,
+                            'reason'      => $blockCode,
+                        ]);
+                        $skippedCount++;
+                        $campaign->update([
+                            'total_skipped' => $baseSkipped + $skippedCount,
+                            'total_sent'    => $baseSent + $sentCount,
+                            'total_failed'  => $baseFailed + $failedCount,
+                        ]);
+                        continue;
+                    }
                 } else {
                     $normalized = EvolutionApiService::normalizeBrazilianPhone((string) $rawWaId);
                     if (!$normalized || !isset($jidMap[$normalized])) {
@@ -442,8 +513,9 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     }
                 }
 
-                // Anti-ban: simula digitação antes do envio (apenas individuais)
-                if (!$isGroupChatMode) {
+                // Anti-ban: simula digitação antes do envio (apenas individuais Evolution).
+                // Cloud API template nao precisa (Meta oficial + sem sessao Web).
+                if (!$isGroupChatMode && !$isCloudTemplate) {
                     $antiBan->simulateHumanTyping($instance, $waId, $campaign->message);
                 }
 
@@ -453,7 +525,22 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                 // (defesa 1 — sendMedia/sendMessage tambem toleram null como defesa 2).
                 $captionOrText = (string) ($campaign->message ?? '');
 
-                if ($isAudioBroadcast) {
+                if ($isCloudTemplate) {
+                    // sendTemplate espera lista ordenada, nao assoc (Meta pareia
+                    // por indice: [0] = {{1}}, [1] = {{2}}...).
+                    $vars = array_values($campaign->template_variables ?? []);
+                    $res  = $cloudSender->sendTemplate(
+                        $waId,
+                        $template->name,
+                        $template->language,
+                        $vars
+                    );
+                    // Adapta pro contrato "success = !isset(error) && !empty(res)"
+                    // usado abaixo. CloudApiWhatsAppSender ja normaliza 'ok'.
+                    if (($res['ok'] ?? false) === false && !isset($res['error'])) {
+                        $res['error'] = $res['error'] ?? 'send_failed';
+                    }
+                } elseif ($isAudioBroadcast) {
                     $res = $evo->sendAudio($waId, $audioBase64);
                 } elseif ($mediaToSend) {
                     $res = $evo->sendMedia($waId, $mediaToSend, $captionOrText, $imageMime);
@@ -463,16 +550,33 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
                 if (!isset($res['error']) && !empty($res)) {
                     if (isset($recipient->id)) {
+                        // provider_message_id (Cloud API normalizado) OU key.id (Evolution).
+                        $providerMsgId = $res['provider_message_id']
+                            ?? $res['key']['id']
+                            ?? $res['messageId']
+                            ?? ('BROADCAST_' . uniqid());
+
+                        if ($isCloudTemplate) {
+                            $content = '[template ' . $template->name . '] '
+                                . mb_substr((string) ($template->bodyText() ?? ''), 0, 200);
+                            $type    = 'template';
+                        } elseif ($isAudioBroadcast) {
+                            $content = '[áudio enviado via broadcast]';
+                            $type    = 'audio';
+                        } elseif ($campaign->has_image) {
+                            $content = '[imagem] ' . $campaign->message;
+                            $type    = 'image';
+                        } else {
+                            $content = $campaign->message;
+                            $type    = 'text';
+                        }
+
                         WhatsappMessage::create([
                             'chat_id'    => $recipient->id,
-                            'message_id' => $res['key']['id'] ?? ($res['messageId'] ?? ('BROADCAST_' . uniqid())),
-                            'content'    => $isAudioBroadcast
-                                ? '[áudio enviado via broadcast]'
-                                : ($campaign->has_image ? ('[imagem] ' . $campaign->message) : $campaign->message),
+                            'message_id' => $providerMsgId,
+                            'content'    => $content,
                             'direction'  => 'outbound',
-                            'type'       => $isAudioBroadcast
-                                ? 'audio'
-                                : ($campaign->has_image ? 'image' : 'text'),
+                            'type'       => $type,
                         ]);
                     }
                     $sentCount++;

@@ -483,6 +483,77 @@
                 <form action="{{ route('whatsapp.broadcast.send') }}" method="POST" id="broadcastForm" enctype="multipart/form-data">
                     @csrf
 
+                    {{-- Toggle canal de envio (2026-08-21).
+                         Evolution (texto livre / imagem / audio) OU Template Cloud API
+                         aprovado. Sao mutuamente exclusivos e reordenam o form via JS. --}}
+                    <div class="mb-4">
+                        <div class="section-label">Canal de Envio</div>
+                        <div class="channel-toggle d-flex gap-3 flex-wrap">
+                            <label class="audience-option" style="flex:1;min-width:220px;">
+                                <input type="radio" name="send_channel" value="evolution" checked onchange="onChannelChange('evolution')">
+                                <div>
+                                    <div style="font-weight:700;font-size:0.85rem;color:#334155;">
+                                        <i class="fas fa-bolt me-1" style="color:#f59e0b;"></i> Texto livre (Evolution)
+                                    </div>
+                                    <div style="font-size:0.75rem;color:#94a3b8;">Nao-oficial. Texto, imagem, audio.</div>
+                                </div>
+                            </label>
+                            <label class="audience-option" style="flex:1;min-width:220px;">
+                                <input type="radio" name="send_channel" value="cloud_api_template" onchange="onChannelChange('cloud_api_template')" {{ $approvedTemplates->isEmpty() ? 'disabled' : '' }}>
+                                <div>
+                                    <div style="font-weight:700;font-size:0.85rem;color:#334155;">
+                                        <i class="fab fa-meta me-1" style="color:#0866ff;"></i> Template aprovado (Cloud API Meta)
+                                    </div>
+                                    <div style="font-size:0.75rem;color:#94a3b8;">
+                                        @if($approvedTemplates->isEmpty())
+                                            Nenhum template APPROVED. <a href="{{ route('whatsapp.templates.cloud.index') }}" style="color:#4f46e5;">Crie um template.</a>
+                                        @else
+                                            Oficial. Variaveis com valor fixo por campanha.
+                                        @endif
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- Bloco de configuracao do template (aparece so quando canal = cloud_api_template) --}}
+                    <div class="mb-4 d-none" id="templateWrapper">
+                        <div class="section-label">Template</div>
+                        <select name="template_id" id="templateSelect" class="form-select" onchange="onTemplateChange()" style="border-radius:10px;border:1.5px solid #e2e8f0;padding:10px 14px;">
+                            <option value="">— Escolha um template APPROVED —</option>
+                            @foreach($approvedTemplates as $t)
+                                <option value="{{ $t->id }}"
+                                        data-body="{{ $t->bodyText() }}"
+                                        data-name="{{ $t->name }}"
+                                        data-language="{{ $t->language }}">
+                                    {{ $t->name }} ({{ $t->language }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('template_id')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+
+                        <div id="templateVarsWrapper" class="mt-3 d-none">
+                            <div class="section-label">Variaveis (valor fixo pra todos os destinatarios)</div>
+                            <div id="templateVarsFields" class="d-flex flex-column gap-2"></div>
+                            @error('variable_samples.1')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div id="templatePreviewWrapper" class="mt-3 d-none">
+                            <div class="section-label">Preview do corpo</div>
+                            <div id="templatePreviewBox" class="p-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0;font-size:.88rem;color:#166534;white-space:pre-wrap;"></div>
+                        </div>
+
+                        <div class="mt-3 p-3 rounded-3" style="background:#eff6ff;border:1px solid #bfdbfe;font-size:.8rem;color:#1e40af;">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>V1:</strong> disparo de template Cloud API aceita apenas os publicos <strong>Todos os contatos</strong> ou <strong>Etiquetas</strong>.
+                            Imagem e audio nao sao suportados. Cabecalho e botoes ficam pra proxima versao.
+                        </div>
+                    </div>
+
                     {{-- Banner de segurança pra broadcast de áudio (2026-08-05 rev 2).
                          Identidade Bruce IA: fundo #0A0A0B + accent #FF7A1A. --}}
                     <div id="audioSafetyBanner" class="bruce-audio-banner">
@@ -1136,6 +1207,119 @@
 <script>
     let allGroups = [];
 
+    // ── Toggle canal Evolution vs Template Cloud API (2026-08-21) ─────────────
+    // NAO uso template literals com {{ }} aqui — Blade compila esse @push, entao
+    // qualquer { { seria expandido. Uso concat de string e createElement.
+    function onChannelChange(channel) {
+        const isTpl = channel === 'cloud_api_template';
+        const tplWrap = document.getElementById('templateWrapper');
+        if (tplWrap) tplWrap.classList.toggle('d-none', !isTpl);
+
+        // Bloqueia textarea/imagem/audio quando template
+        const msgInput   = document.getElementById('messageInput');
+        const imgInput   = document.getElementById('broadcastImageInput');
+        const imgZone    = document.getElementById('imageDropZone');
+        const audioInput = document.getElementById('broadcastAudioInput');
+        const audioZone  = document.getElementById('audioDropZone');
+        if (msgInput) { msgInput.disabled = isTpl; msgInput.closest('.mb-3').style.opacity = isTpl ? '.4' : ''; }
+        if (imgInput) { imgInput.disabled = isTpl; }
+        if (imgZone)  { imgZone.style.pointerEvents = isTpl ? 'none' : ''; imgZone.style.opacity = isTpl ? '.4' : ''; }
+        if (audioInput) { audioInput.disabled = isTpl; }
+        if (audioZone)  { audioZone.style.pointerEvents = isTpl ? 'none' : ''; audioZone.style.opacity = isTpl ? '.4' : ''; }
+
+        // Restringe audience: template so aceita 'all' ou 'labels'.
+        document.querySelectorAll('input[name="audience"]').forEach(function (r) {
+            const restricted = (r.value === 'selected' || r.value === 'groups');
+            r.disabled = isTpl && restricted;
+            const wrap = r.closest('.audience-option');
+            if (wrap) wrap.style.opacity = (isTpl && restricted) ? '.4' : '';
+            if (isTpl && restricted && r.checked) {
+                const allRadio = document.querySelector('input[name="audience"][value="all"]');
+                if (allRadio) { allRadio.checked = true; onAudienceChange('all'); }
+            }
+        });
+    }
+
+    function onTemplateChange() {
+        const sel = document.getElementById('templateSelect');
+        const opt = sel.options[sel.selectedIndex];
+        const body = opt ? (opt.getAttribute('data-body') || '') : '';
+
+        const varsWrap = document.getElementById('templateVarsWrapper');
+        const previewWrap = document.getElementById('templatePreviewWrapper');
+        const previewBox = document.getElementById('templatePreviewBox');
+        const fields = document.getElementById('templateVarsFields');
+        fields.innerHTML = '';
+
+        if (!body) {
+            varsWrap.classList.add('d-none');
+            previewWrap.classList.add('d-none');
+            return;
+        }
+
+        // Extrai numeros de variaveis com regex — evito literal de chaves duplas em JS.
+        const openBrace = String.fromCharCode(123);
+        const closeBrace = String.fromCharCode(125);
+        const pattern = new RegExp(openBrace + openBrace + '(\\d+)' + closeBrace + closeBrace, 'g');
+        const found = new Set();
+        let m;
+        while ((m = pattern.exec(body)) !== null) { found.add(parseInt(m[1], 10)); }
+        const vars = Array.from(found).sort(function (a, b) { return a - b; });
+
+        if (vars.length === 0) {
+            varsWrap.classList.add('d-none');
+        } else {
+            varsWrap.classList.remove('d-none');
+            vars.forEach(function (n) {
+                const wrap = document.createElement('div');
+                wrap.className = 'd-flex align-items-center gap-2';
+
+                const label = document.createElement('label');
+                label.style.minWidth = '80px';
+                label.style.fontSize = '.85rem';
+                label.style.fontWeight = '600';
+                label.style.color = '#334155';
+                label.textContent = 'Variavel ' + n;
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = 'template_variables[' + n + ']';
+                input.className = 'form-control form-control-sm';
+                input.setAttribute('data-var', String(n));
+                input.placeholder = 'Valor fixo para ' + openBrace + openBrace + n + closeBrace + closeBrace;
+                input.style.borderRadius = '8px';
+                input.oninput = renderTemplatePreview;
+
+                wrap.appendChild(label);
+                wrap.appendChild(input);
+                fields.appendChild(wrap);
+            });
+        }
+
+        previewWrap.classList.remove('d-none');
+        previewBox.textContent = body;
+        renderTemplatePreview();
+    }
+
+    function renderTemplatePreview() {
+        const sel = document.getElementById('templateSelect');
+        const opt = sel.options[sel.selectedIndex];
+        const body = opt ? (opt.getAttribute('data-body') || '') : '';
+        const previewBox = document.getElementById('templatePreviewBox');
+        if (!body || !previewBox) return;
+
+        let out = body;
+        document.querySelectorAll('#templateVarsFields input[data-var]').forEach(function (i) {
+            const n = i.getAttribute('data-var');
+            const val = i.value || ('{' + '{' + n + '}' + '}');
+            const openBrace = String.fromCharCode(123);
+            const closeBrace = String.fromCharCode(125);
+            const re = new RegExp(openBrace + openBrace + n + closeBrace + closeBrace, 'g');
+            out = out.replace(re, val);
+        });
+        previewBox.textContent = out;
+    }
+
     function onAudienceChange(val) {
         document.getElementById('manualPhonesWrapper').classList.toggle('d-none', val !== 'selected');
         document.getElementById('groupsWrapper').classList.toggle('d-none', val !== 'groups');
@@ -1467,7 +1651,22 @@
     function confirmDisparo() {
         const msg       = document.getElementById('messageInput').value.trim();
         const hasImage  = !!document.getElementById('broadcastImageInput').files.length;
-        if (!msg && !hasImage) {
+        const channel   = document.querySelector('input[name="send_channel"]:checked')?.value || 'evolution';
+        const isTpl     = channel === 'cloud_api_template';
+        const tplId     = document.getElementById('templateSelect')?.value || '';
+
+        if (isTpl && !tplId) {
+            const btn = document.querySelector('.launch-btn');
+            btn.style.background = '#ef4444';
+            btn.innerHTML = '<i class="fas fa-exclamation-circle"></i> Escolha um template APPROVED';
+            setTimeout(() => {
+                btn.style.background = '';
+                btn.innerHTML = '<i class="fas fa-rocket"></i> Iniciar Disparo';
+            }, 2500);
+            return;
+        }
+
+        if (!isTpl && !msg && !hasImage) {
             // Small inline toast instead of alert
             const btn = document.querySelector('.launch-btn');
             btn.style.background = '#ef4444';

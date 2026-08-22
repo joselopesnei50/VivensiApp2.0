@@ -64,8 +64,19 @@ class WhatsappBroadcastController extends Controller
             ->limit(5)
             ->get();
 
+        // Templates Cloud API APPROVED do tenant — alimenta o toggle "Template
+        // aprovado (Cloud API Meta)" no form de disparo (v1: sem header, sem
+        // botoes, variaveis com valor fixo por campanha).
+        $approvedTemplates = collect();
+        if (Schema::hasTable('whatsapp_templates')) {
+            $approvedTemplates = \App\Models\WhatsappTemplate::where('tenant_id', $tenantId)
+                ->where('status', \App\Models\WhatsappTemplate::STATUS_APPROVED)
+                ->orderBy('name')
+                ->get();
+        }
+
         return view('admin.whatsapp.broadcast.index',
-            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'scheduled', 'preMessage', 'labels', 'recentImports'));
+            compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'scheduled', 'preMessage', 'labels', 'recentImports', 'approvedTemplates'));
     }
 
     public function importContacts(Request $request)
@@ -543,12 +554,76 @@ class WhatsappBroadcastController extends Controller
             'group_ids.*'     => 'string',
             'label_ids'       => 'required_if:audience,labels|array|min:1',
             'label_ids.*'     => 'integer',
+            // Broadcast v1 Cloud API template (2026-08-21): template com body + footer,
+            // variaveis com valor fixo por campanha. Sem header, sem botoes, sem imagem.
+            'send_channel'         => 'nullable|in:evolution,cloud_api_template',
+            'template_id'          => 'required_if:send_channel,cloud_api_template|nullable|integer',
+            'template_variables'   => 'nullable|array',
+            'template_variables.*' => 'nullable|string|max:255',
         ]);
 
         // `hasFile` cobre — o validator ja rejeitou upload invalido pelo mimes.
         $hasAudioUpload = $request->hasFile('broadcast_audio');
+        $sendChannel    = $request->input('send_channel', \App\Models\BroadcastCampaign::CHANNEL_EVOLUTION);
+        $isTemplate     = $sendChannel === \App\Models\BroadcastCampaign::CHANNEL_CLOUD_API_TEMPLATE;
 
-        if (!$request->filled('message') && !$request->hasFile('broadcast_image') && !$hasAudioUpload) {
+        // ── Broadcast v1 via Template Cloud API (2026-08-21) ──────────────────
+        // Coexistir com Evolution: template so aceita audience all/labels,
+        // sem imagem/audio, e checa consistencia body <> variaveis.
+        $chosenTemplate       = null;
+        $normalizedTemplateVars = null;
+        if ($isTemplate) {
+            $tenantIdCheck = auth()->user()->tenant_id;
+
+            if (in_array($request->input('audience'), ['selected', 'groups'], true)) {
+                return redirect()->back()->withInput()->with('error',
+                    'Disparo via template Cloud API aceita apenas os públicos "Todos os contatos" ou "Etiquetas".');
+            }
+
+            if ($request->hasFile('broadcast_image') || $hasAudioUpload) {
+                return redirect()->back()->withInput()->with('error',
+                    'Disparo via template v1 não suporta anexo de imagem ou áudio (envie apenas o template).');
+            }
+
+            $chosenTemplate = \App\Models\WhatsappTemplate::where('tenant_id', $tenantIdCheck)
+                ->where('id', (int) $request->input('template_id'))
+                ->where('status', \App\Models\WhatsappTemplate::STATUS_APPROVED)
+                ->firstOrFail();
+
+            $cloudInstance = \App\Models\WhatsappInstance::where('tenant_id', $tenantIdCheck)
+                ->whereNotNull('waba_id')
+                ->whereNotNull('graph_access_token')
+                ->first();
+
+            if (!$cloudInstance) {
+                return redirect()->back()->withInput()->with('error',
+                    'Nenhuma instância WhatsApp Cloud API configurada. Conecte a Cloud API antes de disparar templates.');
+            }
+
+            $tplService = app(\App\Services\WhatsApp\CloudApiTemplateService::class);
+            $bodyText   = (string) ($chosenTemplate->bodyText() ?? '');
+            $variables  = $tplService->extractVariables($bodyText);
+
+            // Normaliza chaves das variaveis (o form manda template_variables[1]=X).
+            $rawVars = (array) $request->input('template_variables', []);
+            $samples = [];
+            foreach ($rawVars as $k => $v) {
+                $samples[(int) $k] = (string) $v;
+            }
+
+            $errors = $tplService->validateBodyAndSamples($bodyText, $variables, $samples);
+            if (!empty($errors)) {
+                return redirect()->back()->withInput()->withErrors($errors);
+            }
+
+            // Guarda so as chaves declaradas no body — descarta lixo do form.
+            $normalizedTemplateVars = [];
+            foreach ($variables as $n) {
+                $normalizedTemplateVars[(string) $n] = $samples[$n];
+            }
+        }
+
+        if (!$isTemplate && !$request->filled('message') && !$request->hasFile('broadcast_image') && !$hasAudioUpload) {
             return redirect()->back()->with('error', 'Digite uma mensagem, anexe uma imagem ou grave/envie um áudio.');
         }
 
@@ -604,11 +679,16 @@ class WhatsappBroadcastController extends Controller
             )->utc();
         }
 
-        $instance = WhatsappInstance::where('tenant_id', $tenantId)
-            ->where('status', 'open')->first();
+        // Template Cloud API nao depende da instancia Evolution ('open'); ele usa
+        // a cloudInstance ja validada acima. Evolution continua exigindo instancia
+        // 'open' porque o EvolutionApiService precisa de sessao ativa.
+        if (!$isTemplate) {
+            $instance = WhatsappInstance::where('tenant_id', $tenantId)
+                ->where('status', 'open')->first();
 
-        if (!$instance) {
-            return redirect()->back()->with('error', 'Nenhuma instância WhatsApp conectada.');
+            if (!$instance) {
+                return redirect()->back()->with('error', 'Nenhuma instância WhatsApp conectada.');
+            }
         }
 
         $imagePath = null;
@@ -673,23 +753,26 @@ class WhatsappBroadcastController extends Controller
         }
 
         $payload = [
-            'tenant_id'         => $tenantId,
-            'created_by'        => auth()->id(),
-            'message'           => $message ?: null,
-            'has_image'         => $hasImage,
-            'image_path'        => $imagePath,
-            'has_audio'         => $hasAudio,
-            'audio_path'        => $audioPath,
-            'audio_mime'        => $audioMime,
-            'audio_fingerprint' => $audioFingerprint,
-            'audience_type'     => $audience,
-            'cadence'           => $cadenceSeconds,
-            'scheduled_at'      => $scheduledAt,
-            'status'            => $scheduledAt ? 'scheduled' : 'queued',
-            'group_ids'         => $audience === 'groups' ? $request->input('group_ids', []) : null,
-            'group_send_mode'   => $groupSendMode,
-            'phones'            => $audience === 'selected' ? $request->input('phones') : null,
-            'label_ids'         => $labelIds,
+            'tenant_id'          => $tenantId,
+            'created_by'         => auth()->id(),
+            'message'            => $message ?: null,
+            'has_image'          => $hasImage,
+            'image_path'         => $imagePath,
+            'has_audio'          => $hasAudio,
+            'audio_path'         => $audioPath,
+            'audio_mime'         => $audioMime,
+            'audio_fingerprint'  => $audioFingerprint,
+            'audience_type'      => $audience,
+            'cadence'            => $cadenceSeconds,
+            'scheduled_at'       => $scheduledAt,
+            'status'             => $scheduledAt ? 'scheduled' : 'queued',
+            'group_ids'          => $audience === 'groups' ? $request->input('group_ids', []) : null,
+            'group_send_mode'    => $groupSendMode,
+            'phones'             => $audience === 'selected' ? $request->input('phones') : null,
+            'label_ids'          => $labelIds,
+            'send_channel'       => $sendChannel,
+            'template_id'        => $chosenTemplate?->id,
+            'template_variables' => $normalizedTemplateVars,
         ];
 
         // Se o usuario veio da fila "Continuar edicao" de um rascunho, atualiza
