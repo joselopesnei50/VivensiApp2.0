@@ -522,14 +522,13 @@
                         <select name="template_id" id="templateSelect" class="form-select" onchange="onTemplateChange()" style="border-radius:10px;border:1.5px solid #e2e8f0;padding:10px 14px;">
                             <option value="">— Escolha um template APPROVED —</option>
                             @foreach($approvedTemplates as $t)
-                                <option value="{{ $t->id }}"
-                                        data-body="{{ $t->bodyText() }}"
-                                        data-name="{{ $t->name }}"
-                                        data-language="{{ $t->language }}">
-                                    {{ $t->name }} ({{ $t->language }})
-                                </option>
+                                <option value="{{ $t->id }}">{{ $t->name }} ({{ $t->language }})</option>
                             @endforeach
                         </select>
+                        {{-- Blob JSON com dados dos templates. Usar atributo data-body no <option>
+                             quebrava com corpos que tinham \r\n + caracteres especiais. JSON escapado
+                             via @json e' confiavel — JS le por id. --}}
+                        <script id="templatesData" type="application/json">@json($approvedTemplates->keyBy('id')->map(fn($t) => ['body' => $t->bodyText() ?? '', 'name' => $t->name, 'language' => $t->language]))</script>
                         @error('template_id')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -1240,10 +1239,23 @@
         });
     }
 
+    // Blob de templates carregado uma vez do <script id="templatesData">.
+    // Estrutura: { "42": { body: "...", name: "...", language: "..." }, ... }
+    let TPL_DATA = {};
+    try {
+        const el = document.getElementById('templatesData');
+        if (el && el.textContent) TPL_DATA = JSON.parse(el.textContent);
+    } catch (e) { console.error('TemplatesData parse falhou', e); }
+
+    function tplBodyById(id) {
+        if (!id) return '';
+        const t = TPL_DATA[String(id)];
+        return t ? (t.body || '') : '';
+    }
+
     function onTemplateChange() {
         const sel = document.getElementById('templateSelect');
-        const opt = sel.options[sel.selectedIndex];
-        const body = opt ? (opt.getAttribute('data-body') || '') : '';
+        const body = tplBodyById(sel.value);
 
         const varsWrap = document.getElementById('templateVarsWrapper');
         const previewWrap = document.getElementById('templatePreviewWrapper');
@@ -1303,8 +1315,7 @@
 
     function renderTemplatePreview() {
         const sel = document.getElementById('templateSelect');
-        const opt = sel.options[sel.selectedIndex];
-        const body = opt ? (opt.getAttribute('data-body') || '') : '';
+        const body = tplBodyById(sel.value);
         const previewBox = document.getElementById('templatePreviewBox');
         if (!body || !previewBox) return;
 
