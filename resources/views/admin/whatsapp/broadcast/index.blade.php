@@ -1208,8 +1208,8 @@
     let allGroups = [];
 
     // ── Toggle canal Evolution vs Template Cloud API (2026-08-21) ─────────────
-    // NAO uso template literals com {{ }} aqui — Blade compila esse @push, entao
-    // qualquer { { seria expandido. Uso concat de string e createElement.
+    // Evite chaves duplas e arroba-diretiva em comentarios deste script — mesmo
+    // dentro do push de scripts o Blade compila. Uso concat + createElement.
     function onChannelChange(channel) {
         const isTpl = channel === 'cloud_api_template';
         const tplWrap = document.getElementById('templateWrapper');
