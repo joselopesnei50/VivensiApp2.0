@@ -24,8 +24,8 @@ use Illuminate\Support\Facades\Log;
  */
 class BruceAiService
 {
-    const HISTORY_TTL = 3600; // 1 hora
-    const MAX_HISTORY = 20;   // mensagens mantidas por tenant
+    const HISTORY_TTL = 604800; // 7 dias — lead volta depois de dias e Bruno lembra
+    const MAX_HISTORY = 40;     // 20 pares user/assistant — contexto sem estourar tokens
 
     public function __construct(
         private DeepSeekService $deepSeek,
@@ -932,7 +932,50 @@ PCTX;
 
     private function getHistory(int $tenantId, int $userId, ?string $contextType = null, ?int $contextId = null): array
     {
-        return Cache::get($this->historyKey($tenantId, $userId, $contextType, $contextId), []);
+        $cached = Cache::get($this->historyKey($tenantId, $userId, $contextType, $contextId), []);
+        if (!empty($cached)) {
+            return $cached;
+        }
+
+        // Cache vazio (expirou ou primeiro contato) — hydrata do WhatsApp
+        // pra Bruno reconhecer leads que voltaram depois de dias/semanas.
+        if ($contextType === 'whatsapp_chat' && $contextId) {
+            return $this->hydrateHistoryFromWhatsAppChat($contextId);
+        }
+
+        return [];
+    }
+
+    /**
+     * Reconstroi o history a partir das ultimas mensagens do chat WhatsApp.
+     * Usado quando cache expirou pra Bruno nao tratar lead recorrente como frio.
+     * Limita ao MAX_HISTORY.
+     */
+    private function hydrateHistoryFromWhatsAppChat(int $chatId): array
+    {
+        try {
+            $rows = \App\Models\WhatsappMessage::where('chat_id', $chatId)
+                ->orderByDesc('created_at')
+                ->limit(self::MAX_HISTORY)
+                ->get(['direction', 'content'])
+                ->reverse() // cronologica pro contexto fazer sentido
+                ->values();
+
+            $out = [];
+            foreach ($rows as $m) {
+                $content = trim((string) $m->content);
+                if ($content === '') continue;
+                $out[] = [
+                    // inbound (do lead) = user; outbound (do Bruno) = assistant
+                    'role'    => $m->direction === 'inbound' ? 'user' : 'assistant',
+                    'content' => $content,
+                ];
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            Log::warning('Bruno hydrateHistory falhou', ['chat_id' => $chatId, 'err' => $e->getMessage()]);
+            return [];
+        }
     }
 
     private function saveHistory(int $tenantId, int $userId, array $messages, ?string $contextType = null, ?int $contextId = null): void
