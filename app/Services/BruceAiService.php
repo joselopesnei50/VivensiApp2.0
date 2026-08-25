@@ -76,8 +76,17 @@ class BruceAiService
             }
         }
 
+        // Fase 3 (RAG lite): detectar tags da situacao atual e retrieve
+        // das licoes cadastradas mais relevantes. Injeta no prompt como
+        // few_shots dinamicos so pra sales_bot.
+        $lessons = [];
+        if ($role === 'sales_bot') {
+            $situationTags = $this->detectLessonTags($userMessage, $history, $segment, $leadContext);
+            $lessons = \App\Models\BrunoLesson::retrieveRelevant($tenantId, $situationTags, 3)->all();
+        }
+
         $systemPrompt = $role === 'sales_bot'
-            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment, $businessType, $campaignContext, $leadContext)
+            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment, $businessType, $campaignContext, $leadContext, $lessons)
             : $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId);
 
         $messages = array_merge(
@@ -432,7 +441,58 @@ PROMPT;
      * System prompt do Bot Vendedor "Bruno" (vide docs/bot-vendedor.md).
      * Lê KB de config/prompts/bot-vendedor.php — editável sem deploy de código.
      */
-    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null, ?string $businessType = null, ?array $campaignContext = null, ?array $leadContext = null): string
+    /**
+     * Detecta tags da situacao atual baseado em palavras-chave da mensagem
+     * do lead + historico + segmento + contexto. Serve pra retrieve das
+     * BrunoLesson mais relevantes.
+     *
+     * @return string[]
+     */
+    private function detectLessonTags(string $userMessage, array $history = [], ?string $segment = null, ?array $leadContext = null): array
+    {
+        $text = mb_strtolower($userMessage);
+        // considera as ultimas 5 mensagens do lead pra ganhar contexto
+        foreach (array_slice($history, -10) as $m) {
+            if (($m['role'] ?? '') === 'user') {
+                $text .= ' ' . mb_strtolower((string) ($m['content'] ?? ''));
+            }
+        }
+
+        $tags = [];
+
+        // Segmento
+        if ($segment === 'ong')       $tags[] = 'ong-pequena'; // default; pode virar consolidada se leadContext indicar
+        if ($segment === 'mei')       $tags[] = 'empresa-mei';
+
+        // Perfil pelo tamanho / contexto
+        if (preg_match('/\b(pequen|começ|start|inicial|comeca)/', $text)) $tags[] = 'ong-pequena';
+        if (preg_match('/\b(grande|consolidad|estabelecid)/', $text))    $tags[] = 'ong-consolidada';
+        if (preg_match('/\b(captacao|captando|arrecad)/', $text))        $tags[] = 'ong-em-captacao';
+
+        // Objecoes
+        if (preg_match('/\b(preco|valor|custo|quanto custa|caro|barato)/', $text))   $tags[] = 'objecao-preco';
+        if (preg_match('/\b(verba|orcamento|nao tem grana|sem dinheiro)/', $text))   $tags[] = 'objecao-verba';
+        if (preg_match('/\b(tempo|correr|pressa|depois|mais tarde)/', $text))        $tags[] = 'objecao-tempo';
+        if (preg_match('/\b(mudar|migracao|migrar|trocar sistema)/', $text))         $tags[] = 'objecao-mudanca';
+        if (preg_match('/\b(nunca funcion|desconf|todos prometem|ja tentei)/', $text)) $tags[] = 'desconfianca-vendor';
+        if (preg_match('/\b(uso outro|ja tenho|estou com [a-z]+)/', $text))          $tags[] = 'concorrente-atual';
+
+        // Contexto do produto mencionado
+        if (preg_match('/\b(edital|editais|mrosc|suas|cebas)/', $text))              $tags[] = 'radar-editais';
+        if (preg_match('/\b(prestacao de contas|contabil|financeiro)/', $text))      $tags[] = 'prestacao-contas';
+        if (preg_match('/\b(lgpd|privacidade|dados pessoais)/', $text))              $tags[] = 'lgpd';
+        if (preg_match('/\b(whatsapp|zap|bot|automacao)/', $text))                   $tags[] = 'whatsapp-integrado';
+        if (preg_match('/\b(bruce|ia|inteligencia artificial)/', $text))             $tags[] = 'bruce-ia';
+
+        // Momento do funil (baseado em leadContext se disponivel)
+        if (empty($leadContext) || empty($leadContext['days_since'])) {
+            $tags[] = 'primeiro-contato';
+        }
+
+        return array_values(array_unique($tags));
+    }
+
+    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null, ?string $businessType = null, ?array $campaignContext = null, ?array $leadContext = null, array $lessons = []): string
     {
         $kb = config('bot-vendedor');
         if (!is_array($kb)) {
@@ -692,6 +752,20 @@ PROMPT;
             }
         }
 
+        // Bruno lessons (RAG lite) — passagens de conversas fechadas relevantes
+        // pra situacao atual, retrieved por match de tag. Bruno usa como few_shot
+        // dinamico complementar aos few_shot fixos do KB.
+        $lessonsBlock = '';
+        if (!empty($lessons)) {
+            foreach ($lessons as $l) {
+                $lessonsBlock .= "\n### Licao: {$l->title}\n";
+                if (!empty($l->tags))       $lessonsBlock .= "Tags: " . implode(', ', (array) $l->tags) . "\n";
+                if (!empty($l->situation))  $lessonsBlock .= "Quando aplica: {$l->situation}\n";
+                if (!empty($l->lead_said))  $lessonsBlock .= "Lead disse: \"{$l->lead_said}\"\n";
+                if (!empty($l->bruno_replied)) $lessonsBlock .= "Voce respondeu: \"{$l->bruno_replied}\"\n";
+            }
+        }
+
         // Origem da Vivensi — storytelling pra quebrar objecao emocional.
         // Bruno usa quando lead demonstra desconfianca, cansaco de vendor,
         // ou objecao dura tipo "nao temos verba". Sempre DEPOIS de ouvir a
@@ -812,6 +886,12 @@ Humano de plantão: {$humanName} (responde em até {$humanEta}h, horário comerc
 
 ## CTAs (1 por resposta relevante — NUNCA pergunta vaga tipo "posso ajudar em algo mais?")
 {$ctasBlock}
+
+## LICOES DE CONVERSAS QUE FECHARAM (RAG — situacoes similares)
+Aprenda com estas passagens de vendas reais fechadas — se a situacao atual
+for parecida, adapte a abordagem (nunca copie literal). Se nao houver
+licao aqui, siga os few-shots fixos abaixo.
+{$lessonsBlock}
 
 ## EXEMPLOS DE CONVERSAS (few-shot — siga o estilo)
 

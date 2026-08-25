@@ -15,6 +15,14 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/bruno/clear',   [App\Http\Controllers\Admin\BrunoSandboxController::class, 'clear'])->name('admin.bruno.clear');
         Route::get('/bruno/metrics',  [App\Http\Controllers\Admin\BrunoMetricsController::class, 'index'])->name('admin.bruno.metrics');
 
+        // Bruno Lessons — CRUD manual de conversas fechadas pra RAG lite
+        Route::get('/bruno/lessons',          [App\Http\Controllers\Admin\BrunoLessonController::class, 'index'])->name('admin.bruno.lessons.index');
+        Route::get('/bruno/lessons/create',   [App\Http\Controllers\Admin\BrunoLessonController::class, 'create'])->name('admin.bruno.lessons.create');
+        Route::post('/bruno/lessons',         [App\Http\Controllers\Admin\BrunoLessonController::class, 'store'])->name('admin.bruno.lessons.store')->middleware('throttle:20,1');
+        Route::get('/bruno/lessons/{lesson}/edit', [App\Http\Controllers\Admin\BrunoLessonController::class, 'edit'])->name('admin.bruno.lessons.edit');
+        Route::put('/bruno/lessons/{lesson}', [App\Http\Controllers\Admin\BrunoLessonController::class, 'update'])->name('admin.bruno.lessons.update')->middleware('throttle:30,1');
+        Route::delete('/bruno/lessons/{lesson}', [App\Http\Controllers\Admin\BrunoLessonController::class, 'destroy'])->name('admin.bruno.lessons.destroy')->middleware('throttle:20,1');
+
         // WhatsApp Cloud API — Consumo / Faturamento (Fase 5.1 tracking)
         Route::get('/whatsapp-billing', [App\Http\Controllers\Admin\WhatsappBillingController::class, 'index'])->name('admin.whatsapp.billing');
 
