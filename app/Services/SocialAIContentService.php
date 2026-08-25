@@ -216,7 +216,7 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
 
         // SONDA TEMPORARIA 2026-08-25 — remover apos identificar por que o
         // request as vezes sai com FLUX.1-schnell puro em vez de SDXL/Free.
-        Log::info('DEBUG modelo Together', [
+        Log::error('DEBUG modelo Together', [
             'model_resolvido' => $model,
             'db_valor_cru'    => DB::table('system_settings')->where('key', 'together_image_model')->value('value'),
             'cache_store'     => config('cache.default'),
