@@ -25,9 +25,10 @@ class SocialAIPostController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(12);
 
-        $quotaUsed = AiImageUsageLog::getCurrentUsage($userId);
+        $quotaUsed  = AiImageUsageLog::getCurrentUsage($userId);
+        $quotaLimit = \App\Services\SocialAIContentService::getMonthlyQuota();
 
-        return view('social_ai.index', compact('posts', 'quotaUsed'));
+        return view('social_ai.index', compact('posts', 'quotaUsed', 'quotaLimit'));
     }
 
     public function about()

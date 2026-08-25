@@ -875,10 +875,10 @@
         <div class="sai-quota-card">
             <div>
                 <div class="label">Imagens / mês</div>
-                <div class="numbers">{{ $quotaUsed }} <small>/ 60</small></div>
+                <div class="numbers">{{ $quotaUsed }} <small>/ {{ $quotaLimit }}</small></div>
             </div>
             <div class="sai-quota-bar">
-                <div class="sai-quota-bar-fill" style="width: {{ min(($quotaUsed / 60) * 100, 100) }}%"></div>
+                <div class="sai-quota-bar-fill" style="width: {{ min(($quotaUsed / max($quotaLimit, 1)) * 100, 100) }}%"></div>
             </div>
         </div>
     </div>
