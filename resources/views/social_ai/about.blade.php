@@ -184,7 +184,7 @@
         </div>
         <div style="padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px;">
             <div style="font-size:.75rem; color:#166534; line-height:1.55;">
-                <strong>Cota mensal:</strong> 60 imagens geradas por IA, por usuário. Renova todo dia 1º do mês.
+                <strong>Cota mensal:</strong> {{ \App\Services\SocialAIContentService::getMonthlyQuota() }} imagens geradas por IA, por usuário. Renova todo dia 1º do mês.
             </div>
         </div>
     </div>

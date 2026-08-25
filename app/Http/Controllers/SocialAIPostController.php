@@ -53,13 +53,14 @@ class SocialAIPostController extends Controller
         $tenantId = auth()->user()->tenant_id;
         $useReferenceAsFinal = (bool) $request->boolean('use_reference_as_final');
 
-        // Cota só é consumida se FLUX.1 vai gerar imagem (referência final não gasta)
+        // Cota só é consumida se o modelo vai gerar imagem (referência final não gasta)
         if (!$useReferenceAsFinal) {
+            $limit = \App\Services\SocialAIContentService::getMonthlyQuota();
             $currentUsage = AiImageUsageLog::getCurrentUsage($userId);
-            if ($currentUsage >= 60) {
+            if ($currentUsage >= $limit) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Limite mensal de 60 imagens atingido. Sua cota renova no próximo mês.',
+                    'message' => "Limite mensal de {$limit} imagens atingido. Sua cota renova no próximo mês.",
                 ], 422);
             }
         }
@@ -153,11 +154,12 @@ class SocialAIPostController extends Controller
         }
 
         $userId = auth()->id();
+        $limit = \App\Services\SocialAIContentService::getMonthlyQuota();
         $currentUsage = AiImageUsageLog::getCurrentUsage($userId);
-        if ($currentUsage >= 60) {
+        if ($currentUsage >= $limit) {
             return response()->json([
                 'success' => false,
-                'message' => 'Limite mensal de 60 imagens atingido.',
+                'message' => "Limite mensal de {$limit} imagens atingido.",
             ], 422);
         }
 

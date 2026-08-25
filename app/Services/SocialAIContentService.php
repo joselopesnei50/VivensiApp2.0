@@ -22,13 +22,30 @@ class SocialAIContentService
     }
 
     /**
+     * Cota mensal padrao de imagens por usuario. Configuravel via
+     * SystemSetting 'social_ai_monthly_quota' sem precisar de deploy.
+     */
+    public const DEFAULT_MONTHLY_QUOTA = 30;
+
+    /**
+     * Retorna a cota mensal vigente — SystemSetting override + fallback const.
+     */
+    public static function getMonthlyQuota(): int
+    {
+        $configured = SystemSetting::getValue('social_ai_monthly_quota');
+        $q = is_numeric($configured) ? (int) $configured : self::DEFAULT_MONTHLY_QUOTA;
+        return $q > 0 ? $q : self::DEFAULT_MONTHLY_QUOTA;
+    }
+
+    /**
      * Valida se o usuário ainda possui cota para o mês atual.
      */
     public function validateQuota(int $userId)
     {
+        $limit = self::getMonthlyQuota();
         $currentUsage = AiImageUsageLog::getCurrentUsage($userId);
-        if ($currentUsage >= 60) {
-            throw new Exception("Limite mensal de 60 imagens atingido. Sua cota será renovada no próximo mês.");
+        if ($currentUsage >= $limit) {
+            throw new Exception("Limite mensal de {$limit} imagens atingido. Sua cota será renovada no próximo mês.");
         }
     }
 
