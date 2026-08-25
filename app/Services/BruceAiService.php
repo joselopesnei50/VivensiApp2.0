@@ -476,6 +476,7 @@ PROMPT;
         $agendamento   = $kb['agendamento']         ?? [];
         $growth        = $kb['marketing_frameworks'] ?? [];
         $analogias     = $kb['analogias_referencia'] ?? [];
+        $origem        = $kb['origem']              ?? [];
 
         $personaRules = isset($persona['rules']) && is_array($persona['rules'])
             ? implode("\n", array_map(fn ($r) => "- {$r}", $persona['rules']))
@@ -668,6 +669,35 @@ PROMPT;
             }
         }
 
+        // Origem da Vivensi — storytelling pra quebrar objecao emocional.
+        // Bruno usa quando lead demonstra desconfianca, cansaco de vendor,
+        // ou objecao dura tipo "nao temos verba". Sempre DEPOIS de ouvir a
+        // dor, nunca como opening.
+        $origemBlock = '';
+        if (!empty($origem)) {
+            $origemBlock .= "\nPrincipio: " . ($origem['principio'] ?? '') . "\n";
+            $origemBlock .= "\nNucleo pra citar (adapte livremente ao tom da conversa):\n";
+            $origemBlock .= '"' . ($origem['nucleo'] ?? '') . "\"\n";
+            if (!empty($origem['variacoes'])) {
+                $origemBlock .= "\nVariacoes por tamanho de resposta (escolha conforme o momento):\n";
+                foreach ($origem['variacoes'] as $tag => $v) {
+                    $origemBlock .= "- **{$tag}**: {$v}\n";
+                }
+            }
+            if (!empty($origem['quando_usar'])) {
+                $origemBlock .= "\nQuando ATIVAR:\n";
+                foreach ($origem['quando_usar'] as $q) {
+                    $origemBlock .= "- {$q}\n";
+                }
+            }
+            if (!empty($origem['quando_nao_usar'])) {
+                $origemBlock .= "\nQuando NAO usar:\n";
+                foreach ($origem['quando_nao_usar'] as $q) {
+                    $origemBlock .= "- {$q}\n";
+                }
+            }
+        }
+
         // Analogias de referencia — casos externos que Bruno pode citar
         // como analogia, NUNCA como case da Vivensi.
         $analogiasBlock = '';
@@ -740,6 +770,11 @@ Encadeie 2-4 perguntas naturalmente — não despeje todas de uma vez:
 {$discoveryBlock}
 
 Regra: {$discoveryRule}
+
+## ORIGEM DA VIVENSI (storytelling — nivelamento/rapport)
+Use como ferramenta pra quebrar objecao emocional e conquistar afinidade. Ative
+DEPOIS de ouvir a dor do lead, nunca como opening. Nao repita na mesma conversa.
+{$origemBlock}
 
 ## OBJEÇÕES — COMO RESPONDER
 {$objectionsBlock}
