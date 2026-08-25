@@ -214,16 +214,9 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
         $dims  = self::FORMATS[$format] ?? self::FORMATS['square'];
         $model = SystemSetting::getValue('together_image_model') ?: self::DEFAULT_IMAGE_MODEL;
 
-        // SONDA TEMPORARIA 2026-08-25 — remover apos identificar por que o
-        // request as vezes sai com FLUX.1-schnell puro em vez de SDXL/Free.
-        Log::error('DEBUG modelo Together', [
-            'model_resolvido' => $model,
-            'db_valor_cru'    => DB::table('system_settings')->where('key', 'together_image_model')->value('value'),
-            'cache_store'     => config('cache.default'),
-            'cache_valor'     => Cache::get('system_setting.together_image_model'),
-            'worker_pid'      => getmypid(),
-            'default_const'   => self::DEFAULT_IMAGE_MODEL,
-        ]);
+        // steps otimizado por familia — FLUX Schnell foi treinado pra 4 steps;
+        // SDXL e outros precisam de 25-30 pra nao sair borrado.
+        $steps = str_contains($model, 'FLUX.1-schnell') ? 4 : 30;
 
         $response = Http::timeout(120)->withHeaders([
             'Authorization' => 'Bearer ' . $this->togetherKey,
@@ -231,7 +224,7 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
         ])->post('https://api.together.xyz/v1/images/generations', [
             'model'  => $model,
             'prompt' => $imagePrompt,
-            'steps'  => 4,
+            'steps'  => $steps,
             'n'      => 1,
             'width'  => $dims['width'],
             'height' => $dims['height'],
