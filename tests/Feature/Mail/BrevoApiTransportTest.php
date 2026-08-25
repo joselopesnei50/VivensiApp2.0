@@ -92,3 +92,29 @@ it('sobrescreve o sender do Symfony pelo SystemSetting (nunca deixa hello@exampl
             && $body['sender']['name']  === 'Vivensi Testes';
     });
 });
+
+// 2026-08-24: regressao pra bug prod que barrava StageOverdueAlertMail (e outros
+// mailables sem ->from() explicito) com 'An email must have a From or Sender header'.
+// AppServiceProvider agora seta mail.from.address a partir de SystemSetting.email_from
+// no boot — o teste abaixo simula um Mailable que NAO chama ->from() e espera que
+// o envio Brevo aconteca (sem explodir na ensureValidity do Symfony).
+it('envia mailable sem ->from() explicito quando mail.from.address esta configurado', function () {
+    Http::fake(['https://api.brevo.com/v3/smtp/email' => Http::response([], 201)]);
+
+    // Mailable anonimo minimo — nao chama ->from(), depende do default do config
+    $mailable = new class extends \Illuminate\Mail\Mailable {
+        public function build(): self
+        {
+            // Sem ->from() proposital — o teste valida que o default do config nao deixa vazar
+            return $this->subject('Alerta sem from explicito')
+                        ->html('<p>corpo teste</p>');
+        }
+    };
+
+    Mail::to('cliente@exemplo.com')->send($mailable);
+
+    Http::assertSent(function ($request) {
+        $body = $request->data();
+        return $body['sender']['email'] === 'noreply@vivensi.app.br';
+    });
+});

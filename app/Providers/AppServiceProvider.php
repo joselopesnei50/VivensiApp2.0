@@ -45,6 +45,33 @@ class AppServiceProvider extends ServiceProvider
             return new \App\Mail\Transport\BrevoApiTransport();
         });
 
+        // Force mail.from.address a partir de SystemSetting.email_from ANTES do
+        // Symfony rodar ensureValidity(). O BrevoApiTransport injeta o sender
+        // do lado dele tambem, mas a validacao do Symfony Email roda ANTES do
+        // transport — se mail.from.address estiver vazio ou 'hello@example.com',
+        // mailables sem ->from() explicito (ex: StageOverdueAlertMail) explodem
+        // com 'An email must have a From or Sender header'.
+        try {
+            $emailFrom     = \App\Models\SystemSetting::getValue('email_from');
+            $emailFromName = \App\Models\SystemSetting::getValue('email_from_name');
+            $current       = config('mail.from.address');
+            if ($emailFrom) {
+                config([
+                    'mail.from.address' => $emailFrom,
+                    'mail.from.name'    => $emailFromName ?: (config('mail.from.name') ?: 'Vivensi'),
+                ]);
+            } elseif (!$current || $current === 'hello@example.com') {
+                // Ultimo fallback: nunca deixa placeholder Laravel escapar.
+                config([
+                    'mail.from.address' => 'noreply@vivensi.app.br',
+                    'mail.from.name'    => 'Vivensi',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Boot resiliente: DB pode nao estar disponivel (migrate:fresh, artisan
+            // rodando antes de db up). Mantem o que vier do .env nesse caso.
+        }
+
         // Broadcasting dinâmico via SystemSetting — lê valores que o super_admin
         // salvou em /admin/settings e sobrescreve config('broadcasting.connections.pusher.*')
         // em runtime. Sem isso, o .env vence (e fica vazio no VPS), causando
