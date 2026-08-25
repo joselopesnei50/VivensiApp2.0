@@ -41,7 +41,8 @@ class BruceAiService
         int $userId = 0,
         ?string $contextType = null,
         ?int $contextId = null,
-        ?array $campaignContext = null
+        ?array $campaignContext = null,
+        ?array $leadContext = null
     ): array {
         $history = $this->getHistory($tenantId, $userId, $contextType, $contextId);
 
@@ -76,7 +77,7 @@ class BruceAiService
         }
 
         $systemPrompt = $role === 'sales_bot'
-            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment, $businessType, $campaignContext)
+            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment, $businessType, $campaignContext, $leadContext)
             : $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId);
 
         $messages = array_merge(
@@ -431,7 +432,7 @@ PROMPT;
      * System prompt do Bot Vendedor "Bruno" (vide docs/bot-vendedor.md).
      * Lê KB de config/prompts/bot-vendedor.php — editável sem deploy de código.
      */
-    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null, ?string $businessType = null, ?array $campaignContext = null): string
+    private function buildSalesBotPrompt(int $tenantId, ?array $qualification = null, ?string $segment = null, ?string $businessType = null, ?array $campaignContext = null, ?array $leadContext = null): string
     {
         $kb = config('bot-vendedor');
         if (!is_array($kb)) {
@@ -462,6 +463,28 @@ PROMPT;
                 . ($summary ? "- Resumo: {$summary}\n" : '')
                 . ($action ? "- Próxima ação sugerida: {$action}\n" : '')
                 . "- Estratégia recomendada: {$estrategia}\n";
+        }
+
+        // Bloco de contexto persistente do lead — quem eh, onde ta no funil,
+        // ultima interacao. Vem do Lead + WhatsappChat carregados pelo caller
+        // (ProcessWhatsappAiResponse). Bruno usa pra personalizar tratamento
+        // (nome real, referencia a interacoes anteriores, evitar tratar
+        // lead recorrente como frio).
+        $leadCtxBlock = '';
+        if (!empty($leadContext)) {
+            $leadCtxBlock .= "\n### CONTEXTO DO LEAD (dados persistidos — use pra personalizar)\n";
+            if (!empty($leadContext['name']))         $leadCtxBlock .= "- Nome: {$leadContext['name']}\n";
+            if (!empty($leadContext['organization'])) $leadCtxBlock .= "- Organizacao: {$leadContext['organization']}\n";
+            if (!empty($leadContext['city']))         $leadCtxBlock .= "- Cidade: {$leadContext['city']}\n";
+            if (!empty($leadContext['tags']))         $leadCtxBlock .= "- Tags: " . implode(', ', $leadContext['tags']) . "\n";
+            if (!empty($leadContext['status']))       $leadCtxBlock .= "- Status: {$leadContext['status']}\n";
+            if (!empty($leadContext['last_interaction']) && !empty($leadContext['days_since']))
+                $leadCtxBlock .= "- Ultima interacao: {$leadContext['last_interaction']} (ha {$leadContext['days_since']} dia(s))\n";
+            if (!empty($leadContext['first_contact']))
+                $leadCtxBlock .= "- Primeiro contato: {$leadContext['first_contact']}\n";
+            if (!empty($leadContext['origin']))       $leadCtxBlock .= "- Origem: {$leadContext['origin']}\n";
+            if (!empty($leadContext['note']))         $leadCtxBlock .= "- Nota: {$leadContext['note']}\n";
+            $leadCtxBlock .= "\nUSE esse contexto: chame a pessoa pelo nome quando fizer sentido, referencie a organizacao dela, reconheca continuidade se ela ja teve interacao anterior. NAO se apresenta de novo pra lead que ja voltou.\n";
         }
 
         $persona       = $kb['persona']             ?? [];
@@ -718,6 +741,7 @@ Você é {$persona['name']}, {$persona['role']}.
 
 {$personaRules}
 {$segmentBlock}
+{$leadCtxBlock}
 {$qualBlock}
 ## PRODUTO — VIVENSI
 {$product['short_pitch']}

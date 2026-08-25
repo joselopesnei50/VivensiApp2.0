@@ -95,6 +95,17 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                     "bruno:campaign_ctx:{$tenantId}:{$chat->wa_id}"
                 );
 
+                // Contexto persistente do lead — Bruno personaliza tratamento
+                // com nome real, organizacao, cidade, tags, tempo desde ultima
+                // interacao. Cache 30 min pra evitar hit em DB toda mensagem.
+                $leadContext = \Illuminate\Support\Facades\Cache::remember(
+                    "bruno:lead_ctx:{$chat->id}",
+                    1800,
+                    function () use ($chat, $tenantId) {
+                        return $this->buildLeadContext($chat, $tenantId);
+                    }
+                );
+
                 /** @var \App\Services\BruceAiService $bruce */
                 $bruce = app(\App\Services\BruceAiService::class);
                 $bResult = $bruce->chat(
@@ -105,6 +116,7 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                     contextType: 'whatsapp_chat',
                     contextId: $chat->id,
                     campaignContext: $campaignContext,
+                    leadContext: $leadContext,
                 );
                 if (empty($bResult['error'])) {
                     $replyText          = trim((string) ($bResult['reply'] ?? ''));
@@ -537,6 +549,53 @@ class ProcessWhatsappAiResponse implements ShouldQueue
             $lines[] = "{$who}: {$m['content']}";
         }
         return implode("\n", $lines);
+    }
+
+    /**
+     * Monta o contexto persistente do lead pra Bruno personalizar tratamento.
+     * Prefere dados do Lead (nome real, cidade, tags) e completa com dados
+     * do WhatsappChat (contact_name, wa_id, primeiro contato). Retorna null
+     * se nao tem info util (evita bloco vazio no prompt).
+     */
+    protected function buildLeadContext(\App\Models\WhatsappChat $chat, int $tenantId): ?array
+    {
+        $lead = \App\Models\Lead::where('tenant_id', $tenantId)
+            ->where('whatsapp_chat_id', $chat->id)
+            ->first();
+
+        // Nome: prioridade Lead.name, fallback WhatsappChat.contact_name
+        $name = $lead?->name ?: ($chat->contact_name ?: null);
+        $city = $lead?->city ?: null;
+        $tags = $lead && is_array($lead->tags) ? array_filter($lead->tags) : [];
+
+        // Meta do Lead pode conter organization/organizacao
+        $organization = null;
+        if ($lead && is_array($lead->meta)) {
+            $organization = $lead->meta['organization']
+                ?? $lead->meta['organizacao']
+                ?? $lead->meta['ong']
+                ?? null;
+        }
+
+        $lastInteraction = $lead?->last_interaction_at ?: $chat->updated_at;
+        $daysSince       = $lastInteraction ? (int) $lastInteraction->diffInDays(now()) : null;
+        $firstContact    = $chat->created_at?->translatedFormat('d/m/Y');
+        $origin          = $lead?->consent_origin ?: null;
+        $status          = $lead?->status ?: null;
+
+        $ctx = array_filter([
+            'name'             => $name,
+            'organization'     => $organization,
+            'city'             => $city,
+            'tags'             => !empty($tags) ? array_values($tags) : null,
+            'status'           => $status,
+            'last_interaction' => $lastInteraction?->translatedFormat('d/m/Y H:i'),
+            'days_since'       => $daysSince,
+            'first_contact'    => $firstContact,
+            'origin'           => $origin,
+        ], fn ($v) => $v !== null && $v !== '' && $v !== []);
+
+        return !empty($ctx) ? $ctx : null;
     }
 }
 
