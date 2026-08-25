@@ -99,11 +99,17 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
         $data = $response->json();
         $content = json_decode($data['choices'][0]['message']['content'], true);
 
-        // Compat: aceita tanto 'captions' (novo formato) quanto 'caption' (formato antigo)
+        // Compat: aceita tanto 'captions' (novo formato) quanto 'caption' (formato antigo).
+        // NORMALIZA cada item — DeepSeek as vezes devolve elemento como objeto aninhado
+        // ({"text":"..."} em vez de string), o que fazia (string) trigger "Array to string
+        // conversion" e virar literal "Array". self::flattenToString() cuida disso.
         if (isset($content['captions']) && is_array($content['captions'])) {
-            $captions = array_values(array_filter(array_map('strval', $content['captions'])));
+            $captions = array_values(array_filter(array_map(
+                fn ($v) => self::flattenToString($v),
+                $content['captions']
+            )));
         } elseif (isset($content['caption'])) {
-            $captions = [(string) $content['caption']];
+            $captions = array_filter([self::flattenToString($content['caption'])]);
         } else {
             throw new Exception("Formato de resposta inválido do DeepSeek (sem captions).");
         }
@@ -119,8 +125,12 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
         $captions = array_slice($captions, 0, 3);
 
         // Injetar modificador de estilo no image_prompt (por segurança — caso
-        // DeepSeek tenha ignorado a instrução).
-        $imagePrompt = (string) $content['image_prompt'];
+        // DeepSeek tenha ignorado a instrução). Normaliza tb pra evitar cast
+        // de array (bug reportado 2026-08-24).
+        $imagePrompt = self::flattenToString($content['image_prompt']);
+        if ($imagePrompt === '') {
+            throw new Exception("Formato de resposta inválido do DeepSeek (image_prompt vazio).");
+        }
         if ($visualStyle && isset(self::VISUAL_STYLES[$visualStyle])) {
             $imagePrompt .= '. Style: ' . self::VISUAL_STYLES[$visualStyle];
         }
@@ -129,6 +139,52 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
             'captions'     => $captions,
             'image_prompt' => $imagePrompt,
         ];
+    }
+
+    /**
+     * Converte qualquer valor do JSON do DeepSeek pra string segura, mesmo
+     * quando o modelo devolveu objeto aninhado em vez do string esperado.
+     *
+     * Heuristicas: preferencia por chaves conhecidas (text, caption, content,
+     * description, prompt); fallback: concatena strings escalares do array;
+     * ultimo caso: json_encode.
+     */
+    public static function flattenToString(mixed $value): string
+    {
+        if (is_string($value)) {
+            return trim($value);
+        }
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+        if (is_array($value)) {
+            // Array vazio nao tem string a extrair — devolve '' pra que o caller
+            // detecte como invalido em vez de gerar prompt "[]" pra Together AI.
+            if (empty($value)) {
+                return '';
+            }
+            // Chaves comuns que o DeepSeek costuma usar quando aninha
+            foreach (['text', 'caption', 'content', 'description', 'prompt', 'value'] as $k) {
+                if (isset($value[$k]) && (is_string($value[$k]) || is_scalar($value[$k]))) {
+                    return trim((string) $value[$k]);
+                }
+            }
+            // Sem chave conhecida: junta strings escalares do array
+            $parts = [];
+            array_walk_recursive($value, function ($v) use (&$parts) {
+                if (is_string($v) && trim($v) !== '') {
+                    $parts[] = trim($v);
+                } elseif (is_scalar($v)) {
+                    $parts[] = (string) $v;
+                }
+            });
+            if (!empty($parts)) {
+                return implode(' ', $parts);
+            }
+            // Ultimo caso: json (evita "Array" literal chegar no modelo de imagem)
+            return json_encode($value, JSON_UNESCAPED_UNICODE) ?: '';
+        }
+        return '';
     }
 
     /**
