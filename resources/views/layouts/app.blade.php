@@ -549,6 +549,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
                             <li><a href="{{ route('admin.bruno.index') }}" class="{{ request()->routeIs('admin.bruno.index') ? 'active' : '' }}"><i class="fas fa-handshake"></i> Bruno — Sandbox Vendedor</a></li>
                             <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno — Métricas</a></li>
+                            <li><a href="{{ route('admin.bruno.lessons.index') }}" class="{{ request()->routeIs('admin.bruno.lessons.*') ? 'active' : '' }}"><i class="fas fa-book"></i> Bruno — Lições</a></li>
                             <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.*') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Campanhas de E-mail</a></li>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
                         </ul>
