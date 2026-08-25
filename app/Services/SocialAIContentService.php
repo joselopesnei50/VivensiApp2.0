@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\SystemSetting;
 use App\Models\AiImageUsageLog;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -211,6 +213,17 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
 
         $dims  = self::FORMATS[$format] ?? self::FORMATS['square'];
         $model = SystemSetting::getValue('together_image_model') ?: self::DEFAULT_IMAGE_MODEL;
+
+        // SONDA TEMPORARIA 2026-08-25 — remover apos identificar por que o
+        // request as vezes sai com FLUX.1-schnell puro em vez de SDXL/Free.
+        Log::info('DEBUG modelo Together', [
+            'model_resolvido' => $model,
+            'db_valor_cru'    => DB::table('system_settings')->where('key', 'together_image_model')->value('value'),
+            'cache_store'     => config('cache.default'),
+            'cache_valor'     => Cache::get('system_setting.together_image_model'),
+            'worker_pid'      => getmypid(),
+            'default_const'   => self::DEFAULT_IMAGE_MODEL,
+        ]);
 
         $response = Http::timeout(120)->withHeaders([
             'Authorization' => 'Bearer ' . $this->togetherKey,
