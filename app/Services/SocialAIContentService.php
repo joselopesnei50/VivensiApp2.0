@@ -188,7 +188,18 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
     }
 
     /**
-     * Gera a imagem usando Together AI (FLUX.1-schnell).
+     * Modelo default de geracao de imagem no Together AI.
+     *
+     * NOTA (2026-08-24): a Together removeu 'black-forest-labs/FLUX.1-schnell'
+     * do tier serverless — hoje devolve 'model_not_available' com pedido pra
+     * criar endpoint dedicado (caro). A versao '-Free' continua serverless
+     * e gratuita. Configuravel via SystemSetting 'together_image_model' pra
+     * caso a Together mude o nome/tier de novo sem exigir redeploy.
+     */
+    public const DEFAULT_IMAGE_MODEL = 'black-forest-labs/FLUX.1-schnell-Free';
+
+    /**
+     * Gera a imagem usando Together AI (default FLUX.1-schnell-Free serverless).
      *
      * $format: 'square' (1024x1024) ou 'story' (768x1344).
      */
@@ -198,13 +209,14 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
             throw new Exception("Together AI API Key não configurada no sistema.");
         }
 
-        $dims = self::FORMATS[$format] ?? self::FORMATS['square'];
+        $dims  = self::FORMATS[$format] ?? self::FORMATS['square'];
+        $model = SystemSetting::getValue('together_image_model') ?: self::DEFAULT_IMAGE_MODEL;
 
         $response = Http::timeout(120)->withHeaders([
             'Authorization' => 'Bearer ' . $this->togetherKey,
             'Content-Type'  => 'application/json',
         ])->post('https://api.together.xyz/v1/images/generations', [
-            'model'  => 'black-forest-labs/FLUX.1-schnell',
+            'model'  => $model,
             'prompt' => $imagePrompt,
             'steps'  => 4,
             'n'      => 1,
@@ -213,7 +225,17 @@ Responda apenas o JSON puro, sem blocos de código markdown.";
         ]);
 
         if (!$response->successful()) {
-            Log::error("Together AI API Error", ['response' => $response->body()]);
+            Log::error("Together AI API Error", ['response' => $response->body(), 'model' => $model]);
+            // Mensagem mais util pro user quando o modelo saiu do tier serverless
+            $body = $response->json();
+            $code = $body['error']['code'] ?? null;
+            if ($code === 'model_not_available') {
+                throw new Exception(
+                    "Modelo de imagem {$model} nao esta mais disponivel na Together AI. " .
+                    "Configure outro em /admin/settings (chave 'together_image_model') " .
+                    "— sugestao: black-forest-labs/FLUX.1-schnell-Free."
+                );
+            }
             throw new Exception("Falha ao gerar imagem com Together AI.");
         }
 
