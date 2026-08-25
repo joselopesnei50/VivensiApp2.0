@@ -46,6 +46,10 @@ class AdminSettingsController extends Controller
         $ga4_measurement_id = SystemSetting::getValue('ga4_measurement_id');
         $gtm_container_id   = SystemSetting::getValue('gtm_container_id');
 
+        // Social AI (modulo /social-ai) — cota + modelo Together
+        $social_ai_monthly_quota = (int) (SystemSetting::getValue('social_ai_monthly_quota') ?: \App\Services\SocialAIContentService::DEFAULT_MONTHLY_QUOTA);
+        $together_image_model    = SystemSetting::getValue('together_image_model') ?: '';
+
         $deepseek_key = null;
         $gemini_key = null;
         $brevo_key = null;
@@ -152,7 +156,9 @@ class AdminSettingsController extends Controller
             'ga4_measurement_id',
             'gtm_container_id',
             'bruno_sales_bot_tenant_id',
-            'bruno_tenants'
+            'bruno_tenants',
+            'social_ai_monthly_quota',
+            'together_image_model'
         ));
 
     }
@@ -207,6 +213,8 @@ class AdminSettingsController extends Controller
             'ga4_measurement_id'        => 'nullable|string|max:50|regex:/^G-[A-Z0-9]+$/',
             'gtm_container_id'          => 'nullable|string|max:50|regex:/^GTM-[A-Z0-9]+$/',
             'bruno_sales_bot_tenant_id' => 'nullable|integer|min:0',
+            'social_ai_monthly_quota'   => 'nullable|integer|min:1|max:500',
+            'together_image_model'      => 'nullable|string|max:200',
         ]);
 
         // Only overwrite secret keys if user provided a non-empty value.
@@ -334,6 +342,19 @@ class AdminSettingsController extends Controller
         // Bruno — tenant id designado (0 = desligado, integer > 0 = tenant ativo)
         $brunoTid = (int) ($validated['bruno_sales_bot_tenant_id'] ?? 0);
         SystemSetting::setValue('bruno_sales_bot_tenant_id', $brunoTid, 'bruno');
+
+        // Social AI: cota (obrigatorio ter valor pos-validation) + modelo Together (opcional)
+        if (isset($validated['social_ai_monthly_quota'])) {
+            SystemSetting::setValue('social_ai_monthly_quota', (string) (int) $validated['social_ai_monthly_quota'], 'social_ai');
+        }
+        $tim = trim((string) ($validated['together_image_model'] ?? ''));
+        if ($tim !== '') {
+            SystemSetting::setValue('together_image_model', $tim, 'social_ai');
+        } else {
+            // Campo vazio = usar default do codigo. Remove chave pra respeitar fallback.
+            \App\Models\SystemSetting::where('key', 'together_image_model')->delete();
+            \Illuminate\Support\Facades\Cache::forget('system_setting.together_image_model');
+        }
 
         // Auditoria: registra APENAS as chaves alteradas, NUNCA os valores.
         // Secrets rotacionadas (API keys, senhas, tokens) precisam trilha, mas o

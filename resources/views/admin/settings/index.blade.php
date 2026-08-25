@@ -86,7 +86,29 @@
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-magic text-muted"></i></span>
                                 <input type="password" name="together_ai_api_key" value="" class="form-control border-start-0 ps-0 form-control-lg" placeholder="Cole aqui para definir / atualizar" autocomplete="off">
                             </div>
-                            <div class="form-text">Necessário para o módulo de criação de posts para redes sociais (FLUX.1).</div>
+                            <div class="form-text">Necessário para o módulo de criação de posts para redes sociais.</div>
+                        </div>
+
+                        {{-- Social AI: parametros do modulo /social-ai (cota + modelo Together) --}}
+                        <div class="mb-0 mt-4">
+                            <label class="form-label fw-600 text-dark" for="social_ai_monthly_quota">Cota mensal Social AI (imagens/usuário)</label>
+                            <input type="number" min="1" max="500" step="1" name="social_ai_monthly_quota"
+                                   id="social_ai_monthly_quota"
+                                   value="{{ $social_ai_monthly_quota ?? 30 }}"
+                                   class="form-control form-control-lg">
+                            <div class="form-text">Quantas imagens IA cada usuário pode gerar por mês em <code>/social-ai</code>. Padrão: 30. Renova todo dia 1º.</div>
+                        </div>
+
+                        <div class="mb-0 mt-4">
+                            <label class="form-label fw-600 text-dark" for="together_image_model">Modelo Together AI (imagens)</label>
+                            <input type="text" name="together_image_model" id="together_image_model"
+                                   value="{{ $together_image_model ?? '' }}"
+                                   placeholder="stabilityai/stable-diffusion-xl-base-1.0"
+                                   class="form-control form-control-lg">
+                            <div class="form-text">
+                                Deixe em branco pra usar o padrão <code>black-forest-labs/FLUX.1-schnell-Free</code>.
+                                Se a conta Together não tiver acesso a FLUX, use <code>stabilityai/stable-diffusion-xl-base-1.0</code>.
+                            </div>
                         </div>
 
                         <div class="mb-0 mt-4">
