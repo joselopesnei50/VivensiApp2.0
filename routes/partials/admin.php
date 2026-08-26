@@ -168,6 +168,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // E-mail Marketing (Brevo Campaigns)
         Route::get('/email-campaigns',               [App\Http\Controllers\Admin\EmailCampaignController::class, 'index'])->name('admin.email_campaigns.index');
         Route::get('/email-campaigns/create',        [App\Http\Controllers\Admin\EmailCampaignController::class, 'create'])->name('admin.email_campaigns.create');
+        Route::post('/email-campaigns/upload-image', [App\Http\Controllers\Admin\EmailCampaignController::class, 'uploadImage'])->name('admin.email_campaigns.upload_image')->middleware('throttle:30,1');
         Route::post('/email-campaigns',              [App\Http\Controllers\Admin\EmailCampaignController::class, 'store'])->name('admin.email_campaigns.store');
         Route::get('/email-campaigns/{emailCampaign}',        [App\Http\Controllers\Admin\EmailCampaignController::class, 'show'])->name('admin.email_campaigns.show');
         Route::post('/email-campaigns/{emailCampaign}/send',  [App\Http\Controllers\Admin\EmailCampaignController::class, 'send'])->name('admin.email_campaigns.send');

@@ -23,6 +23,36 @@ class EmailCampaignController extends Controller
         return view('admin.email_campaigns.create');
     }
 
+    /**
+     * Upload de imagem pra usar no HTML da campanha.
+     * Devolve URL publica absoluta (Brevo precisa buscar a imagem por HTTP).
+     * Aceita jpg/png/webp/gif, max 5MB. Isolado por tenant no path.
+     */
+    public function uploadImage(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = $request->user();
+        if (!$user || !$user->tenant_id) {
+            return response()->json(['error' => 'Sessão sem tenant.'], 401);
+        }
+
+        $request->validate([
+            // NAO usar mimes: — Excel/apps as vezes mandam mime errado.
+            // extensions basta pra o filtro razoavel + finfo checa bytes reais depois.
+            'image' => ['required', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,gif'],
+        ]);
+
+        $file = $request->file('image');
+
+        // Filename previsivel-mas-unico: {tenant}_{uniqid}.{ext}
+        $ext  = $file->getClientOriginalExtension();
+        $name = $user->tenant_id . '_' . uniqid() . '.' . $ext;
+        $path = $file->storeAs('email_campaigns_uploads', $name, 'public');
+
+        return response()->json([
+            'url' => asset('storage/' . $path),
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

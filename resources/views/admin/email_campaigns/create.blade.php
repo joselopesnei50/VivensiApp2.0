@@ -90,11 +90,16 @@
                 <h4 style="margin:0; font-weight:900; color:#1e293b; font-size:1.05rem;">
                     <i class="fas fa-code me-2" style="color:#6366f1;"></i>Conteúdo HTML
                 </h4>
-                <div style="display:flex; gap:8px;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <button type="button" onclick="togglePreview()"
                             style="padding:8px 16px; border-radius:10px; border:2px solid #e2e8f0; background:white; font-weight:700; font-size:0.8rem; cursor:pointer; color:#475569;">
                         <i class="fas fa-eye me-1"></i>Preview
                     </button>
+                    <button type="button" onclick="document.getElementById('emailImgUpload').click()"
+                            style="padding:8px 16px; border-radius:10px; border:2px solid #e2e8f0; background:white; font-weight:700; font-size:0.8rem; cursor:pointer; color:#475569;">
+                        <i class="fas fa-image me-1"></i>Inserir imagem
+                    </button>
+                    <input type="file" id="emailImgUpload" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
                     <button type="button" onclick="insertTemplate()"
                             style="padding:8px 16px; border-radius:10px; border:none; background:#6366f1; color:white; font-weight:700; font-size:0.8rem; cursor:pointer;">
                         <i class="fas fa-magic me-1"></i>Inserir template
@@ -273,6 +278,58 @@ function insertTemplate() {
 </body></html>`;
     document.getElementById('htmlContent').value = tpl;
 }
+
+// ── Upload de imagem — insere <img> no cursor do textarea ────────────────
+document.getElementById('emailImgUpload').addEventListener('change', async function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Imagem maior que 5MB. Reduza antes de subir.');
+        e.target.value = '';
+        return;
+    }
+
+    var textarea = document.getElementById('htmlContent');
+    var originalPlaceholder = textarea.placeholder;
+    textarea.placeholder = 'Enviando imagem...';
+
+    var form = new FormData();
+    form.append('image', file);
+
+    try {
+        var r = await fetch('{{ route("admin.email_campaigns.upload_image") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+            },
+            body: form,
+        });
+        var data = await r.json();
+        if (!r.ok || !data.url) {
+            alert('Falha ao enviar: ' + (data.error || 'erro desconhecido'));
+            return;
+        }
+
+        // Insere <img> no cursor (se cursor perdido, no fim do texto)
+        var imgTag = '<img src="' + data.url + '" alt="" style="max-width:100%; height:auto; display:block;">';
+        var start = textarea.selectionStart;
+        var end   = textarea.selectionEnd;
+        var before = textarea.value.substring(0, start);
+        var after  = textarea.value.substring(end);
+        textarea.value = before + imgTag + after;
+        // move cursor pra depois do <img>
+        var newPos = start + imgTag.length;
+        textarea.setSelectionRange(newPos, newPos);
+        textarea.focus();
+    } catch (err) {
+        alert('Falha de rede ao enviar imagem.');
+    } finally {
+        textarea.placeholder = originalPlaceholder;
+        e.target.value = ''; // permite subir a mesma imagem de novo se quiser
+    }
+});
 
 // ── Bruce IA F1: analise pre-envio ────────────────────────────────────────
 document.getElementById('btnBruceAnalyze').addEventListener('click', async function () {
