@@ -39,8 +39,8 @@ echo "→ [4/6] migrations"
 php artisan migrate --force
 echo ""
 
-# 5. Storage
-php artisan storage:link 2>/dev/null || true
+# 5. Storage (--force recria se ja existe, evita erro cosmetico "link already exists")
+php artisan storage:link --force 2>/dev/null || true
 
 # 6. Reiniciar TODOS os workers (mais seguro que listar um a um)
 #    'restart all' inclui: scheduler, worker-ai, worker-default, worker-emails,
