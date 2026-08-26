@@ -37,7 +37,8 @@ class SendEmailCampaignJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 1;
-    public int $timeout = 900; // 15min pra caber campanhas com milhares de contatos
+    public int $timeout = 1800; // 30min: bulk /contacts/import (~2min pra 20K) + polling + margem
+                                // antigo 15min quebrava com 20K contatos porque o import era 1-a-1
 
     /**
      * @param int      $campaignId Id da EmailCampaign a disparar.

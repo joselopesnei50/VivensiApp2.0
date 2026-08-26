@@ -352,18 +352,159 @@ class BrevoService
     }
 
     /**
-     * Importa contatos na lista usando chamadas individuais síncronas.
-     * O endpoint /contacts/batch pode ser assíncrono no Brevo, causando race condition
-     * onde a campanha é enviada antes dos contatos estarem na lista.
-     * Usando POST /contacts individualmente garantimos que cada contato está na lista
-     * antes de prosseguir.
+     * Importa contatos na lista via POST /contacts/import (bulk async) + polling
+     * do process ate concluir. Substitui a versao antiga que fazia 1 HTTP call
+     * por contato (20K contatos = ~50min, estourava o timeout de 15min do job).
      *
-     * Retorna o número de contatos adicionados com sucesso.
+     * Agora: chunks de 5K -> 4 calls pra 20K contatos, cada uma retorna processId
+     * que a gente polla ate 'completed'. Total ~1-3min pra 20K.
+     *
+     * Race condition antiga (campanha enviada antes dos contatos estarem na
+     * lista) esta resolvida pelo polling: so retornamos DEPOIS que Brevo
+     * confirmou que todos os processes viraram 'completed'.
+     *
+     * Fallback: se um process falhar ou timeout, tenta importContactsSequential
+     * (metodo antigo, lento mas 1-a-1) apenas pros contatos do chunk que falhou.
+     *
+     * @param  array<int,array{email:string,name?:string}>  $contacts
+     * @return int  Numero de contatos adicionados com sucesso
      */
     public function importContacts(int $listId, array $contacts): int
     {
         if (empty($contacts)) return 0;
 
+        $total     = count($contacts);
+        $added     = 0;
+        $failedChunks = []; // pra fallback sequencial
+
+        // Chunks de 5K pra ficar bem abaixo do limite JSON body da Brevo (10MB)
+        $chunks = array_chunk($contacts, 5000);
+
+        foreach ($chunks as $chunkIdx => $chunk) {
+            $jsonBody = array_map(fn ($c) => [
+                'email'      => $c['email'],
+                'attributes' => ['FIRSTNAME' => $c['name'] ?? ''],
+            ], $chunk);
+
+            $response = Http::withHeaders($this->apiHeaders())
+                ->timeout(60)
+                ->post("{$this->baseApiUrl}/contacts/import", [
+                    'jsonBody'                => array_values($jsonBody),
+                    'listIds'                 => [$listId],
+                    'updateExistingContacts'  => true,
+                    'emptyContactsAttributes' => false,
+                ]);
+
+            if (!$response->successful()) {
+                Log::warning('Brevo importContacts (bulk) chunk falhou — cai pra sequencial', [
+                    'listId'    => $listId,
+                    'chunk_idx' => $chunkIdx,
+                    'chunk_len' => count($chunk),
+                    'status'    => $response->status(),
+                    'body'      => mb_substr($response->body(), 0, 300),
+                ]);
+                $failedChunks[] = $chunk;
+                continue;
+            }
+
+            $processId = $response->json('processId');
+            if (!$processId) {
+                Log::warning('Brevo importContacts: sem processId no response — cai pra sequencial', [
+                    'body' => mb_substr($response->body(), 0, 300),
+                ]);
+                $failedChunks[] = $chunk;
+                continue;
+            }
+
+            $ok = $this->waitForImportCompletion((int) $processId, 300);
+            if ($ok) {
+                $added += count($chunk);
+                Log::info('Brevo importContacts (bulk) chunk ok', [
+                    'listId'     => $listId,
+                    'chunk_idx'  => $chunkIdx,
+                    'chunk_len'  => count($chunk),
+                    'process_id' => $processId,
+                ]);
+            } else {
+                Log::warning('Brevo importContacts: polling falhou — cai pra sequencial', [
+                    'process_id' => $processId,
+                ]);
+                $failedChunks[] = $chunk;
+            }
+        }
+
+        // Fallback: pros chunks que falharam, tenta o metodo antigo (1-a-1)
+        // Ajuda em ambientes onde o bulk import tem instabilidade transitoria.
+        foreach ($failedChunks as $chunk) {
+            $added += $this->importContactsSequential($listId, $chunk);
+        }
+
+        Log::info('Brevo importContacts concluido', [
+            'listId'         => $listId,
+            'total'          => $total,
+            'added'          => $added,
+            'chunks_total'   => count($chunks),
+            'chunks_failed'  => count($failedChunks),
+        ]);
+
+        return $added;
+    }
+
+    /**
+     * Polla o status de um process do Brevo (import async) ate concluir ou
+     * timeout. Retorna true se completou com sucesso.
+     */
+    protected function waitForImportCompletion(int $processId, int $maxSeconds = 300): bool
+    {
+        $start = time();
+        $intervalSec = 3; // poll a cada 3s
+
+        while ((time() - $start) < $maxSeconds) {
+            $response = Http::withHeaders($this->apiHeaders())
+                ->timeout(15)
+                ->get("{$this->baseApiUrl}/processes/{$processId}");
+
+            if (!$response->successful()) {
+                Log::warning('Brevo waitForImportCompletion: erro ao ler process', [
+                    'process_id' => $processId,
+                    'status'     => $response->status(),
+                ]);
+                // Nao aborta imediato — pode ser flap transitorio, tenta de novo
+                sleep($intervalSec);
+                continue;
+            }
+
+            $status = $response->json('status');
+            if ($status === 'completed') {
+                return true;
+            }
+            if ($status === 'failed') {
+                Log::warning('Brevo waitForImportCompletion: process falhou', [
+                    'process_id' => $processId,
+                    'body'       => mb_substr($response->body(), 0, 300),
+                ]);
+                return false;
+            }
+            // status = 'queued' | 'in_process' — aguarda
+            sleep($intervalSec);
+        }
+
+        Log::warning('Brevo waitForImportCompletion: timeout aguardando process', [
+            'process_id' => $processId,
+            'max_sec'    => $maxSeconds,
+        ]);
+        return false;
+    }
+
+    /**
+     * Fallback: importa contatos 1-a-1 via POST /contacts. Chamado quando
+     * bulk import falha. Lento (20K = ~50min) mas robusto.
+     *
+     * @param  array<int,array{email:string,name?:string}>  $contacts
+     * @return int
+     */
+    protected function importContactsSequential(int $listId, array $contacts): int
+    {
         $added  = 0;
         $errors = 0;
 
@@ -376,30 +517,22 @@ class BrevoService
                     'updateEnabled' => true,
                 ]);
 
-            // 201 = criado, 204 = atualizado, 400 c/ "Contact already exist" = já existe (conta como ok)
             if ($response->successful()) {
                 $added++;
             } elseif ($response->status() === 400) {
                 $body = $response->json('message') ?? '';
                 if (str_contains(strtolower($body), 'already exist') || str_contains(strtolower($body), 'duplicate')) {
-                    // Contato já existe no Brevo — garante que está na lista
                     $this->addContactToList($c['email'], $listId);
                     $added++;
                 } else {
                     $errors++;
-                    Log::warning('Brevo importContacts: contato rejeitado', ['email' => $c['email'], 'msg' => $body]);
                 }
             } else {
                 $errors++;
-                Log::warning('Brevo importContacts: erro ao adicionar contato', [
-                    'email'  => $c['email'],
-                    'status' => $response->status(),
-                    'body'   => $response->body(),
-                ]);
             }
         }
 
-        Log::info('Brevo importContacts concluído', [
+        Log::info('Brevo importContactsSequential concluido (fallback)', [
             'listId' => $listId,
             'total'  => count($contacts),
             'added'  => $added,
