@@ -110,6 +110,23 @@
                 </div>
                 <iframe id="previewFrame" style="width:100%; height:500px; border:none;"></iframe>
             </div>
+
+            {{-- Bruce IA — analise pre-envio (F1) --}}
+            <div style="margin-top:20px; padding:20px; background:linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); border-radius:14px; border:2px solid #dbeafe;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div>
+                        <strong style="color:#1e40af; font-size:.95rem;">🤖 Bruce analisa antes de enviar</strong>
+                        <div style="font-size:.78rem; color:#64748b; margin-top:2px;">
+                            Score anti-spam + sugestoes contextuais
+                        </div>
+                    </div>
+                    <button type="button" id="btnBruceAnalyze"
+                            style="padding:8px 16px; background:#3b82f6; color:#fff; border:0; border-radius:8px; font-weight:600; cursor:pointer;">
+                        Analisar
+                    </button>
+                </div>
+                <div id="bruceAnalyzeResult" style="display:none; margin-top:12px;"></div>
+            </div>
         </div>
     </div>
 
@@ -256,5 +273,80 @@ function insertTemplate() {
 </body></html>`;
     document.getElementById('htmlContent').value = tpl;
 }
+
+// ── Bruce IA F1: analise pre-envio ────────────────────────────────────────
+document.getElementById('btnBruceAnalyze').addEventListener('click', async function () {
+    var btn = this;
+    var box = document.getElementById('bruceAnalyzeResult');
+    var subject = document.querySelector('input[name="subject"]').value.trim();
+    var html    = document.getElementById('htmlContent').value.trim();
+
+    if (!subject || !html) {
+        box.style.display = 'block';
+        box.innerHTML = '<div style="padding:12px; background:#fee2e2; color:#991b1b; border-radius:8px;">Preencha assunto e corpo antes de analisar.</div>';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Analisando...';
+    box.style.display = 'block';
+    box.innerHTML = '<div style="padding:12px; background:#eff6ff; color:#1e40af; border-radius:8px;">🤖 Bruce esta analisando...</div>';
+
+    try {
+        var r = await fetch('{{ route("admin.email_campaigns.ai.analyze") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify({ subject: subject, html_content: html }),
+        });
+        var data = await r.json();
+
+        if (!r.ok || data.error) {
+            box.innerHTML = '<div style="padding:12px; background:#fee2e2; color:#991b1b; border-radius:8px;">Erro: ' + (data.error || 'falha') + '</div>';
+            return;
+        }
+
+        var scoreColor = data.score >= 85 ? '#16a34a' : (data.score >= 70 ? '#3b82f6' : (data.score >= 50 ? '#f59e0b' : '#dc2626'));
+        var levelLabel = { excelente: 'Excelente', bom: 'Bom', atencao: 'Atencao', ruim: 'Ruim' }[data.level] || data.level;
+
+        var html_out = '<div style="padding:16px; background:#fff; border-radius:10px;">';
+        html_out += '<div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">';
+        html_out += '<div style="width:70px; height:70px; border-radius:50%; background:' + scoreColor + '; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:800;">' + data.score + '</div>';
+        html_out += '<div><div style="font-weight:700; color:#0f172a;">' + levelLabel + '</div><div style="font-size:.85rem; color:#64748b;">Score anti-spam / entregabilidade</div></div>';
+        html_out += '</div>';
+
+        if (data.risks && data.risks.length) {
+            html_out += '<div style="margin-bottom:12px;"><strong style="font-size:.9rem; color:#0f172a;">Riscos identificados</strong>';
+            data.risks.forEach(function (risk) {
+                var sevColor = risk.severity === 'high' ? '#dc2626' : (risk.severity === 'medium' ? '#f59e0b' : '#64748b');
+                html_out += '<div style="padding:8px 12px; margin-top:6px; background:#f8fafc; border-left:3px solid ' + sevColor + '; border-radius:4px; font-size:.85rem; color:#334155;">' + risk.msg + '</div>';
+            });
+            html_out += '</div>';
+        } else {
+            html_out += '<div style="padding:8px 12px; background:#dcfce7; color:#166534; border-radius:6px; font-size:.85rem; margin-bottom:12px;">Nenhum risco identificado.</div>';
+        }
+
+        if (data.suggestions && data.suggestions.length) {
+            html_out += '<div style="margin-bottom:8px;"><strong style="font-size:.9rem; color:#0f172a;">Sugestoes</strong><ul style="margin:6px 0 0 20px; font-size:.85rem; color:#334155;">';
+            data.suggestions.forEach(function (s) { html_out += '<li style="margin:3px 0;">' + s + '</li>'; });
+            html_out += '</ul></div>';
+        }
+
+        if (data.ai_notes) {
+            html_out += '<div style="padding:10px 12px; background:#eff6ff; border-radius:6px; font-size:.82rem; color:#1e40af; font-style:italic;">🤖 ' + data.ai_notes + '</div>';
+        }
+
+        html_out += '</div>';
+        box.innerHTML = html_out;
+    } catch (e) {
+        box.innerHTML = '<div style="padding:12px; background:#fee2e2; color:#991b1b; border-radius:8px;">Falha de rede.</div>';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Analisar de novo';
+    }
+});
 </script>
 @endsection

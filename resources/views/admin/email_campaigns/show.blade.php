@@ -78,6 +78,26 @@
         Métricas atualizadas em {{ $campaign->stats_fetched_at->format('d/m/Y H:i') }}
     </p>
 @endif
+
+{{-- Bruce IA — insight pos-envio (F2). So aparece pra campanhas ja enviadas. --}}
+@if($campaign->status === 'sent')
+<div style="padding:20px; background:linear-gradient(135deg, #f0f9ff 0%, #eff6ff 100%); border:2px solid #dbeafe; border-radius:14px; margin-bottom:24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div>
+            <strong style="color:#1e40af;">🤖 Bruce analisa esta campanha</strong>
+            <div style="font-size:.78rem; color:#64748b; margin-top:2px;">
+                Interpretacao das metricas + proxima acao recomendada
+            </div>
+        </div>
+        <button type="button" id="btnBruceInsight"
+                data-url="{{ route('admin.email_campaigns.ai.insight', $campaign) }}"
+                style="padding:8px 16px; background:#3b82f6; color:#fff; border:0; border-radius:8px; font-weight:600; cursor:pointer;">
+            Gerar insight
+        </button>
+    </div>
+    <div id="bruceInsightResult" style="display:none; margin-top:12px;"></div>
+</div>
+@endif
 @endif
 
 <div class="row g-4">
@@ -191,5 +211,51 @@ function confirmarDisparar() {
     document.getElementById('formDispararCampanha').submit();
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModalDisparar(); });
+
+// ── Bruce IA F2: insight pos-envio ────────────────────────────────────────
+var btnInsight = document.getElementById('btnBruceInsight');
+if (btnInsight) {
+    btnInsight.addEventListener('click', async function () {
+        var btn = this;
+        var box = document.getElementById('bruceInsightResult');
+        var url = btn.getAttribute('data-url');
+
+        btn.disabled = true;
+        btn.textContent = 'Analisando...';
+        box.style.display = 'block';
+        box.innerHTML = '<div style="padding:12px; background:#eff6ff; color:#1e40af; border-radius:8px;">🤖 Bruce esta interpretando os dados...</div>';
+
+        try {
+            var r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            var data = await r.json();
+            if (!r.ok || data.error) {
+                box.innerHTML = '<div style="padding:12px; background:#fee2e2; color:#991b1b; border-radius:8px;">' + (data.error || 'Falha') + '</div>';
+                return;
+            }
+            var b = data.benchmark || {};
+            var me = b.this_campaign || {};
+            var avg = b.tenant_avg || {};
+
+            var html = '<div style="padding:16px; background:#fff; border-radius:10px;">';
+            html += '<div style="font-size:.95rem; color:#0f172a; line-height:1.55; margin-bottom:14px;">' + (data.insight || '—') + '</div>';
+            html += '<div style="padding:10px 12px; background:#fefce8; border-left:3px solid #eab308; border-radius:4px; font-size:.88rem; color:#713f12; margin-bottom:14px;"><strong>Proxima acao:</strong> ' + (data.next_action || '—') + '</div>';
+            if (b.sample_size > 0) {
+                html += '<div style="font-size:.78rem; color:#64748b;">Comparacao com media das ultimas ' + b.sample_size + ' campanhas do tenant:';
+                html += '<table style="width:100%; margin-top:6px; font-size:.82rem;"><tr><th style="text-align:left;">Metrica</th><th style="text-align:right;">Esta</th><th style="text-align:right;">Media</th></tr>';
+                html += '<tr><td>Abertura</td><td style="text-align:right;">' + me.openRate + '%</td><td style="text-align:right; color:#94a3b8;">' + avg.open + '%</td></tr>';
+                html += '<tr><td>Clique</td><td style="text-align:right;">' + me.clickRate + '%</td><td style="text-align:right; color:#94a3b8;">' + avg.click + '%</td></tr>';
+                html += '<tr><td>Bounce</td><td style="text-align:right;">' + me.bounceRate + '%</td><td style="text-align:right; color:#94a3b8;">' + avg.bounce + '%</td></tr>';
+                html += '</table></div>';
+            }
+            html += '</div>';
+            box.innerHTML = html;
+        } catch (e) {
+            box.innerHTML = '<div style="padding:12px; background:#fee2e2; color:#991b1b; border-radius:8px;">Falha de rede.</div>';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Gerar de novo';
+        }
+    });
+}
 </script>
 @endsection
