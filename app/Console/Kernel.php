@@ -35,6 +35,12 @@ class Kernel extends ConsoleKernel
             $schedule->command("whatsapp:cleanup --days={$days}")->dailyAt('03:30');
         }
 
+        // Email campaigns: limpeza semanal de imagens uploaded orfas (nao
+        // referenciadas em nenhum html_content, mais velhas que 7 dias).
+        // Domingo 04:00 pra nao bater com outros crons pesados.
+        $schedule->command('email:cleanup-unused-images --confirm --min-days=7')
+                 ->weeklyOn(0, '04:00');
+
         // WhatsApp: reset mensal de cotas — dia 1 às 00:05 (Modelo comercial C)
         // Zera conversations_used_month + extra_pack_conversations e atualiza
         // period_start + plan_included_snapshot. Log de reset gerado por tenant.
