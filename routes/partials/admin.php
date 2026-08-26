@@ -175,6 +175,10 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/email-campaigns/{emailCampaign}/debug-stats', [App\Http\Controllers\Admin\EmailCampaignController::class, 'debugStats'])->name('admin.email_campaigns.debug_stats');
         Route::delete('/email-campaigns/{emailCampaign}',     [App\Http\Controllers\Admin\EmailCampaignController::class, 'destroy'])->name('admin.email_campaigns.destroy');
 
+        // Bruce IA — analise pre-envio (F1) e insight pos-envio (F2)
+        Route::post('/email-campaigns/ai/analyze',                [App\Http\Controllers\EmailCampaignAiController::class, 'analyze'])->name('admin.email_campaigns.ai.analyze')->middleware('throttle:20,1');
+        Route::get('/email-campaigns/{campaign}/ai/insight',      [App\Http\Controllers\EmailCampaignAiController::class, 'insight'])->name('admin.email_campaigns.ai.insight')->middleware('throttle:30,1');
+
         // Funil Comercial (dados da plataforma — sem tenant_id)
         Route::get('/sales',                              [App\Http\Controllers\Admin\SalesPipelineController::class, 'board'])->name('admin.sales.board');
         Route::post('/sales/leads',                       [App\Http\Controllers\Admin\SalesPipelineController::class, 'store'])->name('admin.sales.leads.store');
