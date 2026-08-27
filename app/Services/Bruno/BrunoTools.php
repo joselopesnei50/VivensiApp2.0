@@ -151,7 +151,7 @@ class BrunoTools
                 'total'   => 0,
                 'escopo'  => $painel ?? 'todos os perfis',
                 'planos'  => [],
-                'instrucao_llm' => 'Nenhum plano ativo cadastrado pra esse perfil. NAO invente preço — diga que o valor é "sob consulta" e ofereça agendar demo de 20 min ou conectar com a Cristiane.',
+                'instrucao_llm' => 'Nenhum plano ativo cadastrado pra esse perfil. NAO invente preço — diga que o valor é "sob consulta" e ofereça agendar demo de 20 min ou conectar com o nosso atendimento humano.',
             ];
         }
 
@@ -266,7 +266,7 @@ class BrunoTools
             'escopo'   => $painel ?? 'todos os painéis',
             'sugestoes' => $sugestoes,
             'instrucao_llm' => empty($sugestoes)
-                ? 'Feature nao existe no catalogo. Seja honesto com o lead ("hoje nao temos"), pergunte pra que ele precisaria e ofereca escalar pra humano (Cristiane) se for critico.'
+                ? 'Feature nao existe no catalogo. Seja honesto com o lead ("hoje nao temos"), pergunte pra que ele precisaria e ofereca escalar pro nosso atendimento humano se for critico.'
                 : 'Feature exata NAO existe. Ofereca as sugestoes se forem relacionadas ("Temos X e Y, resolveria seu caso?"). Se nada bater, seja honesto: nao temos + escale pra humano.',
         ];
     }

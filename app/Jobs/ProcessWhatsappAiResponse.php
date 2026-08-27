@@ -367,7 +367,8 @@ class ProcessWhatsappAiResponse implements ShouldQueue
                 'tenant_id' => $tenantId,
                 'chat_id'   => $chat->id,
             ]);
-            $replyText = "Olá! Vou pedir pra Cristiane te chamar — costuma ser em até 2h em horário comercial. 🙏";
+            $replyText = "Olá! Vou pedir pro nosso atendimento humano te chamar — costuma ser em até 2h em horário comercial. 🙏";
+            $this->triggerHandoff($chat, 'Bruno falhou em gerar resposta');
         }
 
         try {
@@ -429,6 +430,24 @@ class ProcessWhatsappAiResponse implements ShouldQueue
 
             $chat->update(['last_message_at' => now()]);
             $policy->recordSend($config, $chat);
+
+            // Detecta escalation na resposta do Bruno — se ele disse que vai
+            // acionar o atendimento humano, cria handoff + desativa bot pra nao
+            // continuar respondendo. Frase canonica vem do KB (escalation.action).
+            if ($this->replyIndicatesEscalation($replyText)) {
+                $chat->update(['is_bot_active' => false]);
+                $this->triggerHandoff($chat, 'Bruno decidiu escalar (frase canonica detectada)');
+                try {
+                    WhatsappAuditLog::create([
+                        'tenant_id'  => (int) $tenantId,
+                        'chat_id'    => (int) $chat->id,
+                        'actor_type' => 'ai',
+                        'event'      => 'ai_escalated_to_human',
+                        'details'    => ['reason' => 'Frase de escalation detectada no reply do Bruno'],
+                    ]);
+                } catch (\Throwable $ignore) {
+                }
+            }
 
             WhatsappAuditLog::create([
                 'tenant_id'  => (int) $tenantId,
@@ -596,6 +615,58 @@ class ProcessWhatsappAiResponse implements ShouldQueue
         ], fn ($v) => $v !== null && $v !== '' && $v !== []);
 
         return !empty($ctx) ? $ctx : null;
+    }
+
+    /**
+     * Detecta se o reply do Bruno anuncia que ele esta passando a conversa
+     * pro atendimento humano. Base: `config('bot-vendedor.escalation.action')`
+     * mais variacoes tolerantes (acentos, "vou pedir pro atendimento").
+     *
+     * Conservador de proposito — se Bruno improvisar demais na frase, o handoff
+     * nao dispara. O KB instrui a usar a frase canonica quando escala.
+     */
+    private function replyIndicatesEscalation(string $reply): bool
+    {
+        $normalized = mb_strtolower($reply);
+        $normalized = str_replace(['á','é','í','ó','ú','â','ê','ô','ã','õ','ç'],
+                                  ['a','e','i','o','u','a','e','o','a','o','c'], $normalized);
+
+        // Padroes canonicos (KB): "acionar o atendimento humano", "pedir pro
+        // atendimento humano te chamar", "vou pedir pro nosso atendimento
+        // humano". "cristiane" fica como retencao histórica caso alguma
+        // conversa antiga ainda escape.
+        $patterns = [
+            'atendimento humano',
+            'acionar o atendimento',
+            'passar pra humano',
+            'passar pro humano',
+            'conectar com um humano',
+        ];
+
+        foreach ($patterns as $p) {
+            if (mb_strpos($normalized, $p) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Dispara BrunoHandoffService::createHandoff — isolado num try/catch pra
+     * NUNCA quebrar o job de resposta ao lead se a geracao de briefing falhar.
+     */
+    private function triggerHandoff(WhatsappChat $chat, string $reason): void
+    {
+        try {
+            $handoffService = app(\App\Services\Bruno\BrunoHandoffService::class);
+            $handoffService->createHandoff($chat, $reason);
+        } catch (\Throwable $e) {
+            Log::warning('BrunoHandoff: falha silenciosa ao criar handoff', [
+                'chat_id' => $chat->id,
+                'error'   => $e->getMessage(),
+            ]);
+        }
     }
 }
 

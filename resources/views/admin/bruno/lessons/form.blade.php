@@ -58,7 +58,7 @@
         <div style="margin-bottom:16px;">
             <label style="display:block; font-weight:600; margin-bottom:6px;">Sua resposta que fechou <span style="color:#dc2626;">*</span></label>
             <textarea name="bruno_replied" required maxlength="4000" rows="4"
-                      placeholder="A resposta que quebrou a objecao. Ex: puxou a origem de Araraquara + propos condicao especial via Cristiane"
+                      placeholder="A resposta que quebrou a objecao. Ex: puxou a origem de Araraquara + propos condicao especial via atendimento humano"
                       style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px;">{{ old('bruno_replied', $lesson?->bruno_replied) }}</textarea>
         </div>
 

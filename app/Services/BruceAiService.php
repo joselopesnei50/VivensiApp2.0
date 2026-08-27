@@ -672,7 +672,7 @@ PROMPT;
             : [];
         $casesBlock = !empty($cases)
             ? implode("\n", array_map(fn ($c) => "- {$c}", $cases))
-            : 'Ainda não temos cases publicáveis. NUNCA invente números, nomes ou histórias de clientes. Se o lead pedir referências, ofereça conectar com a Cristiane.';
+            : 'Ainda não temos cases publicáveis. NUNCA invente números, nomes ou histórias de clientes. Se o lead pedir referências, ofereça conectar com o nosso atendimento humano.';
 
         $notForBlock = isset($product['not_for']) && is_array($product['not_for'])
             ? implode("\n", array_map(fn ($n) => "- {$n}", $product['not_for']))
@@ -855,7 +855,7 @@ Instrução:
 {$differentials}
 
 ### Planos e Preços (você TEM a ferramenta consultar_planos)
-REGRA DE PREÇO: você NÃO sabe os preços de memória. Quando o lead perguntar preço, valor, plano ou "quanto custa", CHAME a ferramenta consultar_planos(painel) — ela retorna os planos reais e atualizados (nome, preço mensal, anual e recursos). Se o segmento do lead já foi identificado, passe o painel dele. Cite os valores EXATAMENTE como retornados. Se a ferramenta não retornar plano pro perfil, diga "sob consulta" e ofereça demo ou a Cristiane. NUNCA invente preço, desconto ou promoção.
+REGRA DE PREÇO: você NÃO sabe os preços de memória. Quando o lead perguntar preço, valor, plano ou "quanto custa", CHAME a ferramenta consultar_planos(painel) — ela retorna os planos reais e atualizados (nome, preço mensal, anual e recursos). Se o segmento do lead já foi identificado, passe o painel dele. Cite os valores EXATAMENTE como retornados. Se a ferramenta não retornar plano pro perfil, diga "sob consulta" e ofereça demo ou o nosso atendimento humano. NUNCA invente preço, desconto ou promoção.
 
 ### Cases reais (prova social)
 {$casesBlock}

@@ -23,6 +23,12 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::put('/bruno/lessons/{lesson}', [App\Http\Controllers\Admin\BrunoLessonController::class, 'update'])->name('admin.bruno.lessons.update')->middleware('throttle:30,1');
         Route::delete('/bruno/lessons/{lesson}', [App\Http\Controllers\Admin\BrunoLessonController::class, 'destroy'])->name('admin.bruno.lessons.destroy')->middleware('throttle:20,1');
 
+        // Bruno Handoffs — inbox pro time humano assumir leads escalados pelo Bruno
+        Route::get('/bruno/handoffs',                     [App\Http\Controllers\Admin\BrunoHandoffController::class, 'index'])->name('admin.bruno.handoffs.index');
+        Route::get('/bruno/handoffs/{handoff}',           [App\Http\Controllers\Admin\BrunoHandoffController::class, 'show'])->name('admin.bruno.handoffs.show');
+        Route::post('/bruno/handoffs/{handoff}/assume',   [App\Http\Controllers\Admin\BrunoHandoffController::class, 'assume'])->name('admin.bruno.handoffs.assume')->middleware('throttle:30,1');
+        Route::post('/bruno/handoffs/{handoff}/resolve',  [App\Http\Controllers\Admin\BrunoHandoffController::class, 'resolve'])->name('admin.bruno.handoffs.resolve')->middleware('throttle:30,1');
+
         // WhatsApp Cloud API — Consumo / Faturamento (Fase 5.1 tracking)
         Route::get('/whatsapp-billing', [App\Http\Controllers\Admin\WhatsappBillingController::class, 'index'])->name('admin.whatsapp.billing');
 

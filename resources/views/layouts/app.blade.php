@@ -543,13 +543,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-rocket group-icon"></i> Marketing &amp; Vendas
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '360px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '420px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.sales.board') }}" class="{{ request()->is('admin/sales*') ? 'active' : '' }}"><i class="fas fa-funnel-dollar"></i> Funil Comercial</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
                             <li><a href="{{ route('admin.bruno.index') }}" class="{{ request()->routeIs('admin.bruno.index') ? 'active' : '' }}"><i class="fas fa-handshake"></i> Bruno — Sandbox Vendedor</a></li>
                             <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno — Métricas</a></li>
                             <li><a href="{{ route('admin.bruno.lessons.index') }}" class="{{ request()->routeIs('admin.bruno.lessons.*') ? 'active' : '' }}"><i class="fas fa-book"></i> Bruno — Lições</a></li>
+                            <li><a href="{{ route('admin.bruno.handoffs.index') }}" class="{{ request()->routeIs('admin.bruno.handoffs.*') ? 'active' : '' }}"><i class="fas fa-user-headset"></i> Bruno — Handoffs</a></li>
                             <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.index') || request()->routeIs('admin.email_campaigns.create') || request()->routeIs('admin.email_campaigns.show') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Campanhas de E-mail</a></li>
                             <li><a href="{{ route('admin.email_campaigns.lists.index') }}" class="{{ request()->routeIs('admin.email_campaigns.lists.*') ? 'active' : '' }}"><i class="fas fa-address-book"></i> Listas de Contatos</a></li>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>
