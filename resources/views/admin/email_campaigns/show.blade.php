@@ -49,53 +49,166 @@
 
 {{-- Métricas --}}
 @if($campaign->status === 'sent')
-<div class="row g-4 mb-4">
-    @php
-        $metrics = [
-            ['label'=>'Destinatários','value'=> number_format($campaign->recipient_count),'icon'=>'fa-users','color'=>'#6366f1','bg'=>'#eff6ff'],
-            ['label'=>'Entregues','value'=> $campaign->stat_delivered ? number_format($campaign->stat_delivered) : '—','icon'=>'fa-inbox','color'=>'#059669','bg'=>'#ecfdf5'],
-            ['label'=>'Aberturas','value'=> $campaign->openRate() !== null ? $campaign->openRate().'%' : '—','sub'=> $campaign->stat_opens ? number_format($campaign->stat_opens).' únicos' : null,'icon'=>'fa-envelope-open','color'=>'#d97706','bg'=>'#fffbeb'],
-            ['label'=>'Cliques','value'=> $campaign->clickRate() !== null ? $campaign->clickRate().'%' : '—','sub'=> $campaign->stat_clicks ? number_format($campaign->stat_clicks).' únicos' : null,'icon'=>'fa-arrow-pointer','color'=>'#3b82f6','bg'=>'#eff6ff'],
-            ['label'=>'Bounces','value'=> $campaign->bounceRate() !== null ? $campaign->bounceRate().'%' : ($campaign->stat_bounces !== null ? number_format($campaign->stat_bounces) : '—'),'icon'=>'fa-circle-xmark','color'=>'#ef4444','bg'=>'#fef2f2'],
-            ['label'=>'Descadastros','value'=> $campaign->stat_unsubscribes !== null ? number_format($campaign->stat_unsubscribes) : '—','icon'=>'fa-user-minus','color'=>'#64748b','bg'=>'#f1f5f9'],
-        ];
-    @endphp
-    @foreach($metrics as $m)
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="vivensi-card" style="padding:22px; border-radius:16px; text-align:center;">
-            <div style="width:42px; height:42px; background:{{ $m['bg'] }}; border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:{{ $m['color'] }}; font-size:1rem;">
-                <i class="fas {{ $m['icon'] }}"></i>
+@php
+    // Semaforo: benchmarks de email marketing BR
+    $openRate   = $campaign->openRate();   // %
+    $clickRate  = $campaign->clickRate();  // %
+    $bounceRate = $campaign->bounceRate(); // %
+    // Cores por thresholds
+    $openColor   = $openRate === null ? '#94a3b8' : ($openRate >= 22 ? '#059669' : ($openRate >= 15 ? '#d97706' : '#ef4444'));
+    $clickColor  = $clickRate === null ? '#94a3b8' : ($clickRate >= 3 ? '#059669' : ($clickRate >= 1.5 ? '#d97706' : '#ef4444'));
+    $bounceColor = $bounceRate === null ? '#94a3b8' : ($bounceRate <= 2 ? '#059669' : ($bounceRate <= 5 ? '#d97706' : '#ef4444'));
+    // Benchmarks BR (media)
+    $benchOpen   = 22;
+    $benchClick  = 3;
+    $benchBounce = 3;
+@endphp
+
+{{-- Cards com barra + benchmark inline --}}
+<div class="row g-4 mb-3">
+    {{-- Destinatários --}}
+    <div class="col-md-4">
+        <div class="vivensi-card" style="padding:22px; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Destinatários</div>
+                    <div style="font-size:1.8rem; font-weight:900; color:#0f172a; margin-top:4px;">{{ number_format($campaign->recipient_count) }}</div>
+                </div>
+                <div style="width:44px; height:44px; background:#eff6ff; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#6366f1; font-size:1rem;">
+                    <i class="fas fa-users"></i>
+                </div>
             </div>
-            <div style="font-size:1.5rem; font-weight:900; color:#1e293b; letter-spacing:-0.5px;">{{ $m['value'] }}</div>
-            @if(!empty($m['sub']))<div style="font-size:0.7rem; color:#94a3b8; margin-top:2px;">{{ $m['sub'] }}</div>@endif
-            <div style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-top:6px;">{{ $m['label'] }}</div>
+            @if($campaign->stat_delivered)
+                <div style="font-size:0.78rem; color:#64748b; margin-top:8px;">
+                    <span style="color:#059669; font-weight:700;">{{ number_format($campaign->stat_delivered) }}</span> entregues
+                </div>
+            @endif
         </div>
     </div>
-    @endforeach
+
+    {{-- Aberturas --}}
+    <div class="col-md-4">
+        <div class="vivensi-card" style="padding:22px; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Aberturas</div>
+                    <div style="font-size:1.8rem; font-weight:900; color:{{ $openColor }}; margin-top:4px;">{{ $openRate !== null ? $openRate.'%' : '—' }}</div>
+                </div>
+                <div style="width:44px; height:44px; background:#fffbeb; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#d97706; font-size:1rem;">
+                    <i class="fas fa-envelope-open"></i>
+                </div>
+            </div>
+            @if($openRate !== null)
+                <div style="height:6px; background:#f1f5f9; border-radius:99px; margin-top:10px; overflow:hidden;">
+                    <div style="height:100%; width:{{ min($openRate, 100) }}%; background:{{ $openColor }}; border-radius:99px; transition:width .3s;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#64748b; margin-top:6px;">
+                    <span>{{ number_format($campaign->stat_opens ?? 0) }} únicos</span>
+                    <span>Média BR: {{ $benchOpen }}%</span>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Cliques --}}
+    <div class="col-md-4">
+        <div class="vivensi-card" style="padding:22px; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Cliques</div>
+                    <div style="font-size:1.8rem; font-weight:900; color:{{ $clickColor }}; margin-top:4px;">{{ $clickRate !== null ? $clickRate.'%' : '—' }}</div>
+                </div>
+                <div style="width:44px; height:44px; background:#eff6ff; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1rem;">
+                    <i class="fas fa-arrow-pointer"></i>
+                </div>
+            </div>
+            @if($clickRate !== null)
+                <div style="height:6px; background:#f1f5f9; border-radius:99px; margin-top:10px; overflow:hidden;">
+                    <div style="height:100%; width:{{ min($clickRate * 5, 100) }}%; background:{{ $clickColor }}; border-radius:99px; transition:width .3s;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#64748b; margin-top:6px;">
+                    <span>{{ number_format($campaign->stat_clicks ?? 0) }} únicos</span>
+                    <span>Média BR: {{ $benchClick }}%</span>
+                </div>
+            @endif
+        </div>
+    </div>
 </div>
+
+{{-- Bounces + Descadastros --}}
+<div class="row g-4 mb-3">
+    <div class="col-md-6">
+        <div class="vivensi-card" style="padding:22px; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Bounces</div>
+                    <div style="font-size:1.5rem; font-weight:900; color:{{ $bounceColor }}; margin-top:4px;">
+                        {{ $bounceRate !== null ? $bounceRate.'%' : ($campaign->stat_bounces !== null ? number_format($campaign->stat_bounces) : '—') }}
+                        @if($bounceRate !== null && $bounceRate > 5)
+                            <span style="display:inline-block; background:#fef2f2; color:#dc2626; font-size:0.65rem; padding:2px 8px; border-radius:6px; margin-left:6px; letter-spacing:0.3px; vertical-align:middle;">ATENÇÃO</span>
+                        @endif
+                    </div>
+                </div>
+                <div style="width:44px; height:44px; background:#fef2f2; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1rem;">
+                    <i class="fas fa-circle-xmark"></i>
+                </div>
+            </div>
+            @if($bounceRate !== null)
+                <div style="font-size:0.72rem; color:#64748b; margin-top:6px;">
+                    Ideal: &lt; {{ $benchBounce }}%. {{ $bounceRate > 5 ? 'Limpe a lista antes da próxima campanha.' : ($bounceRate > 2 ? 'Aceitável, mas monitore.' : 'Excelente.') }}
+                </div>
+            @endif
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="vivensi-card" style="padding:22px; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Descadastros</div>
+                    <div style="font-size:1.5rem; font-weight:900; color:#0f172a; margin-top:4px;">
+                        {{ $campaign->stat_unsubscribes !== null ? number_format($campaign->stat_unsubscribes) : '—' }}
+                    </div>
+                </div>
+                <div style="width:44px; height:44px; background:#f1f5f9; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:1rem;">
+                    <i class="fas fa-user-minus"></i>
+                </div>
+            </div>
+            @if($campaign->stat_unsubscribes !== null && $campaign->recipient_count)
+                @php $unsubRate = round(($campaign->stat_unsubscribes / max($campaign->recipient_count, 1)) * 100, 2); @endphp
+                <div style="font-size:0.72rem; color:#64748b; margin-top:6px;">
+                    Taxa: {{ $unsubRate }}%. Ideal: &lt; 0.5%.
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
 @if($campaign->stats_fetched_at)
     <p style="color:#94a3b8; font-size:0.75rem; text-align:right; margin:-8px 0 24px;">
         Métricas atualizadas em {{ $campaign->stats_fetched_at->format('d/m/Y H:i') }}
     </p>
 @endif
 
-{{-- Bruce IA — insight pos-envio (F2). So aparece pra campanhas ja enviadas. --}}
+{{-- Bruce IA — insight pos-envio (F2). Identidade oficial Bruce: fundo #0A0A0B, accent #FF7A1A. --}}
 @if($campaign->status === 'sent')
-<div style="padding:20px; background:linear-gradient(135deg, #f0f9ff 0%, #eff6ff 100%); border:2px solid #dbeafe; border-radius:14px; margin-bottom:24px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <div>
-            <strong style="color:#1e40af;">🤖 Bruce analisa esta campanha</strong>
-            <div style="font-size:.78rem; color:#64748b; margin-top:2px;">
-                Interpretacao das metricas + proxima acao recomendada
+<div style="background:#0A0A0B; border-radius:18px; overflow:hidden; margin-bottom:24px; box-shadow:0 8px 30px rgba(10,10,11,.15);">
+    <div style="padding:22px 26px; display:flex; justify-content:space-between; align-items:center; gap:18px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:16px; flex:1; min-width:280px;">
+            <img src="{{ asset('img/bruce/bruceia-icone-fundo-escuro.svg') }}" alt="Bruce IA" width="52" height="52" style="flex-shrink:0;">
+            <div>
+                <div style="color:#F4F4F5; font-weight:800; font-size:1.05rem; letter-spacing:-.3px;">Bruce analisa esta campanha</div>
+                <div style="color:#9a9a9e; font-size:0.85rem; margin-top:3px; line-height:1.4;">
+                    Interpretação das métricas + próxima ação recomendada
+                </div>
             </div>
         </div>
         <button type="button" id="btnBruceInsight"
                 data-url="{{ route('admin.email_campaigns.ai.insight', $campaign) }}"
-                style="padding:8px 16px; background:#3b82f6; color:#fff; border:0; border-radius:8px; font-weight:600; cursor:pointer;">
+                style="padding:12px 22px; background:#FF7A1A; color:#0A0A0B; border:0; border-radius:12px; font-weight:800; font-size:.9rem; cursor:pointer; letter-spacing:.2px; box-shadow:0 4px 12px rgba(255,122,26,.35); transition:transform .15s;">
             Gerar insight
         </button>
     </div>
-    <div id="bruceInsightResult" style="display:none; margin-top:12px;"></div>
+    <div id="bruceInsightResult" style="display:none; padding:0 26px 26px;"></div>
 </div>
 @endif
 @endif
@@ -221,39 +334,66 @@ if (btnInsight) {
         var url = btn.getAttribute('data-url');
 
         btn.disabled = true;
-        btn.textContent = 'Analisando...';
+        btn.textContent = 'Analisando…';
+        btn.style.opacity = '.7';
         box.style.display = 'block';
-        box.innerHTML = '<div style="padding:12px; background:#eff6ff; color:#1e40af; border-radius:8px;">🤖 Bruce esta interpretando os dados...</div>';
+        box.innerHTML = '<div style="padding:14px 16px; background:#3A3A3C; color:#F4F4F5; border-radius:12px; font-size:.9rem;">Bruce está interpretando os dados…</div>';
 
         try {
             var r = await fetch(url, { headers: { 'Accept': 'application/json' } });
             var data = await r.json();
             if (!r.ok || data.error) {
-                box.innerHTML = '<div style="padding:12px; background:#fee2e2; color:#991b1b; border-radius:8px;">' + (data.error || 'Falha') + '</div>';
+                box.innerHTML = '<div style="padding:14px 16px; background:#3A3A3C; color:#ff9a5a; border-radius:12px; font-size:.9rem;">' + (data.error || 'Falha') + '</div>';
                 return;
             }
             var b = data.benchmark || {};
             var me = b.this_campaign || {};
             var avg = b.tenant_avg || {};
 
-            var html = '<div style="padding:16px; background:#fff; border-radius:10px;">';
-            html += '<div style="font-size:.95rem; color:#0f172a; line-height:1.55; margin-bottom:14px;">' + (data.insight || '—') + '</div>';
-            html += '<div style="padding:10px 12px; background:#fefce8; border-left:3px solid #eab308; border-radius:4px; font-size:.88rem; color:#713f12; margin-bottom:14px;"><strong>Proxima acao:</strong> ' + (data.next_action || '—') + '</div>';
+            var html = '';
+            // Insight text
+            html += '<div style="padding:18px 22px; background:#3A3A3C; border-radius:14px; color:#F4F4F5; font-size:.95rem; line-height:1.6; margin-bottom:14px;">';
+            html += (data.insight || '—');
+            html += '</div>';
+
+            // Next action com barra accent
+            html += '<div style="padding:16px 22px; background:#F4F4F5; border-left:4px solid #FF7A1A; border-radius:12px; margin-bottom:14px;">';
+            html += '<div style="font-size:.7rem; text-transform:uppercase; letter-spacing:1.2px; color:#FF7A1A; font-weight:800; margin-bottom:6px;">Próxima ação</div>';
+            html += '<div style="color:#0A0A0B; font-size:.92rem; line-height:1.55;">' + (data.next_action || '—') + '</div>';
+            html += '</div>';
+
+            // Comparativo
             if (b.sample_size > 0) {
-                html += '<div style="font-size:.78rem; color:#64748b;">Comparacao com media das ultimas ' + b.sample_size + ' campanhas do tenant:';
-                html += '<table style="width:100%; margin-top:6px; font-size:.82rem;"><tr><th style="text-align:left;">Metrica</th><th style="text-align:right;">Esta</th><th style="text-align:right;">Media</th></tr>';
-                html += '<tr><td>Abertura</td><td style="text-align:right;">' + me.openRate + '%</td><td style="text-align:right; color:#94a3b8;">' + avg.open + '%</td></tr>';
-                html += '<tr><td>Clique</td><td style="text-align:right;">' + me.clickRate + '%</td><td style="text-align:right; color:#94a3b8;">' + avg.click + '%</td></tr>';
-                html += '<tr><td>Bounce</td><td style="text-align:right;">' + me.bounceRate + '%</td><td style="text-align:right; color:#94a3b8;">' + avg.bounce + '%</td></tr>';
+                html += '<div style="padding:16px 22px; background:#F4F4F5; border-radius:12px;">';
+                html += '<div style="font-size:.7rem; text-transform:uppercase; letter-spacing:1.2px; color:#6b6b6f; font-weight:800; margin-bottom:10px;">Comparativo — últimas ' + b.sample_size + ' campanhas</div>';
+                html += '<table style="width:100%; font-size:.85rem; border-collapse:collapse;">';
+                html += '<tr style="color:#6b6b6f;"><th style="text-align:left; padding:6px 0; font-weight:700;">Métrica</th><th style="text-align:right; padding:6px 0; font-weight:700;">Esta</th><th style="text-align:right; padding:6px 0; font-weight:700;">Média</th></tr>';
+                var rows = [
+                    ['Abertura', me.openRate,  avg.open],
+                    ['Clique',   me.clickRate, avg.click],
+                    ['Bounce',   me.bounceRate, avg.bounce],
+                ];
+                rows.forEach(function (row) {
+                    var diff = row[1] - row[2];
+                    var diffColor = row[0] === 'Bounce' ? (diff <= 0 ? '#059669' : '#dc2626') : (diff >= 0 ? '#059669' : '#dc2626');
+                    var sign = diff > 0 ? '+' : '';
+                    html += '<tr style="border-top:1px solid #d9d9dc;">';
+                    html += '<td style="padding:8px 0; color:#0A0A0B; font-weight:600;">' + row[0] + '</td>';
+                    html += '<td style="padding:8px 0; text-align:right; color:#0A0A0B; font-weight:800;">' + row[1] + '%</td>';
+                    html += '<td style="padding:8px 0; text-align:right; color:#6b6b6f;">' + row[2] + '% ';
+                    html += '<span style="color:' + diffColor + '; font-weight:700; margin-left:4px;">(' + sign + diff.toFixed(1) + ')</span></td>';
+                    html += '</tr>';
+                });
                 html += '</table></div>';
             }
-            html += '</div>';
+
             box.innerHTML = html;
         } catch (e) {
-            box.innerHTML = '<div style="padding:12px; background:#fee2e2; color:#991b1b; border-radius:8px;">Falha de rede.</div>';
+            box.innerHTML = '<div style="padding:14px 16px; background:#3A3A3C; color:#ff9a5a; border-radius:12px; font-size:.9rem;">Falha de rede.</div>';
         } finally {
             btn.disabled = false;
             btn.textContent = 'Gerar de novo';
+            btn.style.opacity = '1';
         }
     });
 }
