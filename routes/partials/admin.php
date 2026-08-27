@@ -169,6 +169,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/email-campaigns',               [App\Http\Controllers\Admin\EmailCampaignController::class, 'index'])->name('admin.email_campaigns.index');
         Route::get('/email-campaigns/create',        [App\Http\Controllers\Admin\EmailCampaignController::class, 'create'])->name('admin.email_campaigns.create');
         Route::post('/email-campaigns/upload-image', [App\Http\Controllers\Admin\EmailCampaignController::class, 'uploadImage'])->name('admin.email_campaigns.upload_image')->middleware('throttle:30,1');
+
+        // Listas de contatos reusaveis (Opcao B — completa)
+        Route::get('/email-campaigns/lists',                                 [App\Http\Controllers\Admin\EmailContactListController::class, 'index'])->name('admin.email_campaigns.lists.index');
+        Route::get('/email-campaigns/lists/create',                          [App\Http\Controllers\Admin\EmailContactListController::class, 'create'])->name('admin.email_campaigns.lists.create');
+        Route::post('/email-campaigns/lists',                                [App\Http\Controllers\Admin\EmailContactListController::class, 'store'])->name('admin.email_campaigns.lists.store')->middleware('throttle:20,1');
+        Route::get('/email-campaigns/lists/{list}',                          [App\Http\Controllers\Admin\EmailContactListController::class, 'show'])->name('admin.email_campaigns.lists.show');
+        Route::post('/email-campaigns/lists/{list}/import-csv',              [App\Http\Controllers\Admin\EmailContactListController::class, 'importCsv'])->name('admin.email_campaigns.lists.import_csv')->middleware('throttle:10,1');
+        Route::post('/email-campaigns/lists/{list}/contacts',                [App\Http\Controllers\Admin\EmailContactListController::class, 'addContact'])->name('admin.email_campaigns.lists.contacts.add')->middleware('throttle:60,1');
+        Route::delete('/email-campaigns/lists/{list}/contacts/{contact}',    [App\Http\Controllers\Admin\EmailContactListController::class, 'removeContact'])->name('admin.email_campaigns.lists.contacts.remove')->middleware('throttle:60,1');
+        Route::get('/email-campaigns/lists/{list}/export',                   [App\Http\Controllers\Admin\EmailContactListController::class, 'exportCsv'])->name('admin.email_campaigns.lists.export');
+        Route::delete('/email-campaigns/lists/{list}',                       [App\Http\Controllers\Admin\EmailContactListController::class, 'destroy'])->name('admin.email_campaigns.lists.destroy')->middleware('throttle:10,1');
         Route::post('/email-campaigns',              [App\Http\Controllers\Admin\EmailCampaignController::class, 'store'])->name('admin.email_campaigns.store');
         Route::get('/email-campaigns/{emailCampaign}',        [App\Http\Controllers\Admin\EmailCampaignController::class, 'show'])->name('admin.email_campaigns.show');
         Route::post('/email-campaigns/{emailCampaign}/send',  [App\Http\Controllers\Admin\EmailCampaignController::class, 'send'])->name('admin.email_campaigns.send');

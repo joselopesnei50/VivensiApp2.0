@@ -20,7 +20,12 @@ class EmailCampaignController extends Controller
 
     public function create()
     {
-        return view('admin.email_campaigns.create');
+        // Listas salvas do tenant pra dropdown "Destinatarios"
+        $contactLists = \App\Models\EmailContactList::where('tenant_id', auth()->user()->tenant_id)
+            ->withCount('activeContacts')
+            ->orderBy('name')
+            ->get();
+        return view('admin.email_campaigns.create', compact('contactLists'));
     }
 
     /**
@@ -63,23 +68,41 @@ class EmailCampaignController extends Controller
             'sender_name'    => ['nullable', 'string', 'max:100', 'not_regex:/[\r\n]/'],
             'sender_email'   => ['nullable', 'email', 'max:150'],
             'reply_to_email' => ['nullable', 'email', 'max:150'],
-            'audience_type'  => ['required', 'in:tenant_admins,all_users,leads,all,manual,none'],
-            'manual_emails_raw' => ['nullable', 'string'],
+            'audience_type'  => ['required', 'in:tenant_admins,all_users,leads,all,manual,none,contact_list'],
+            'manual_emails_raw'     => ['nullable', 'string'],
+            'email_contact_list_id' => ['nullable', 'integer', 'required_if:audience_type,contact_list'],
         ]);
+
+        // Guard: lista precisa ser do mesmo tenant + ter contatos ativos
+        $contactListId = null;
+        if ($validated['audience_type'] === 'contact_list') {
+            $list = \App\Models\EmailContactList::where('tenant_id', auth()->user()->tenant_id)
+                ->where('id', $validated['email_contact_list_id'])
+                ->first();
+            if (!$list) {
+                return back()->withInput()->withErrors(['email_contact_list_id' => 'Lista não encontrada.']);
+            }
+            $activeCount = $list->activeContacts()->count();
+            if ($activeCount === 0) {
+                return back()->withInput()->withErrors(['email_contact_list_id' => 'Esta lista não tem contatos ativos.']);
+            }
+            $contactListId = $list->id;
+        }
 
         $manualEmails = $this->parseManualEmailsInput($request->input('manual_emails_raw', ''));
 
         $campaign = EmailCampaign::create([
-            'created_by'     => auth()->id(),
-            'name'           => $validated['name'],
-            'subject'        => $validated['subject'],
-            'html_content'   => $validated['html_content'],
-            'sender_name'    => $validated['sender_name'] ?? null,
-            'sender_email'   => $validated['sender_email'] ?? null,
-            'reply_to_email' => $validated['reply_to_email'] ?? null,
-            'audience_type'  => $validated['audience_type'],
-            'manual_emails'  => !empty($manualEmails) ? json_encode($manualEmails) : null,
-            'status'         => 'draft',
+            'created_by'            => auth()->id(),
+            'name'                  => $validated['name'],
+            'subject'               => $validated['subject'],
+            'html_content'          => $validated['html_content'],
+            'sender_name'           => $validated['sender_name'] ?? null,
+            'sender_email'          => $validated['sender_email'] ?? null,
+            'reply_to_email'        => $validated['reply_to_email'] ?? null,
+            'audience_type'         => $validated['audience_type'],
+            'manual_emails'         => !empty($manualEmails) ? json_encode($manualEmails) : null,
+            'email_contact_list_id' => $contactListId,
+            'status'                => 'draft',
         ]);
 
         return redirect()->route('admin.email_campaigns.index')
@@ -148,7 +171,7 @@ class EmailCampaignController extends Controller
 
         // Colhe destinatarios agora (rapido) e enfileira o disparo lento
         // pro worker de emails — evita nginx 504 em campanhas grandes.
-        $contacts = $this->resolveRecipients($emailCampaign->audience_type, $emailCampaign->manual_emails);
+        $contacts = $this->resolveRecipients($emailCampaign->audience_type, $emailCampaign->manual_emails, $emailCampaign->email_contact_list_id);
 
         if (empty($contacts)) {
             $emailCampaign->update(['status' => 'error', 'error_message' => 'Nenhum destinatário encontrado para o público selecionado.']);
@@ -222,9 +245,19 @@ class EmailCampaignController extends Controller
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
-    private function resolveRecipients(string $type, ?string $manualEmailsJson = null): array
+    private function resolveRecipients(string $type, ?string $manualEmailsJson = null, ?int $contactListId = null): array
     {
         $contacts = collect();
+
+        // Lista salva escolhida
+        if ($type === 'contact_list' && $contactListId) {
+            $rows = \App\Models\EmailContact::where('email_contact_list_id', $contactListId)
+                ->where('status', \App\Models\EmailContact::STATUS_ACTIVE)
+                ->get(['email', 'name']);
+            $contacts = $contacts->merge(
+                $rows->map(fn ($c) => ['email' => $c->email, 'name' => $c->name ?? ''])
+            );
+        }
 
         // Público baseado em tipo
         if (in_array($type, ['tenant_admins', 'all_users', 'all', 'manual'])) {

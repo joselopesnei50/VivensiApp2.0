@@ -145,6 +145,7 @@
             </h4>
             @php
                 $audiences = [
+                    'contact_list'  => ['icon'=>'fa-address-book','label'=>'Lista de contatos salva','desc'=>'Escolha uma lista cadastrada em /email-campaigns/lists'],
                     'tenant_admins' => ['icon'=>'fa-building','label'=>'Administradores de Clientes','desc'=>'1 usuário admin por organização cadastrada'],
                     'all_users'     => ['icon'=>'fa-users','label'=>'Todos os Usuários Ativos','desc'=>'Todos os usuários com status ativo no sistema'],
                     'leads'         => ['icon'=>'fa-user-plus','label'=>'Leads (Landing Pages)','desc'=>'Contatos capturados pelas páginas de captura'],
@@ -165,6 +166,30 @@
                 </div>
             </label>
             @endforeach
+
+            {{-- Dropdown de lista salva — aparece so quando audience=contact_list --}}
+            <div id="contactListPicker" style="margin-top:10px; padding:14px; background:#f8fafc; border-radius:10px; display:none;">
+                <label style="font-size:.78rem; font-weight:700; color:#475569; display:block; margin-bottom:6px;">Selecione a lista</label>
+                <select name="email_contact_list_id"
+                        style="width:100%; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px; background:#fff;">
+                    <option value="">— Escolha uma lista —</option>
+                    @foreach($contactLists ?? [] as $cl)
+                        <option value="{{ $cl->id }}" {{ old('email_contact_list_id') == $cl->id ? 'selected' : '' }}>
+                            {{ $cl->name }} ({{ number_format($cl->active_contacts_count) }} ativos)
+                        </option>
+                    @endforeach
+                </select>
+                @if(($contactLists ?? collect())->isEmpty())
+                    <div style="font-size:.78rem; color:#dc2626; margin-top:6px;">
+                        Nenhuma lista salva ainda.
+                        <a href="{{ route('admin.email_campaigns.lists.create') }}" style="color:#6366f1;">Crie uma agora →</a>
+                    </div>
+                @else
+                    <div style="font-size:.78rem; color:#64748b; margin-top:6px;">
+                        <a href="{{ route('admin.email_campaigns.lists.index') }}" style="color:#6366f1;">Gerenciar listas →</a>
+                    </div>
+                @endif
+            </div>
         </div>
 
         {{-- Info box --}}
@@ -231,7 +256,18 @@ function togglePreview() {
 function selectAudience(label, val) {
     document.querySelectorAll('[onclick^="selectAudience"]').forEach(l => l.style.borderColor = '#f1f5f9');
     label.style.borderColor = '#6366f1';
+    // Mostra dropdown de lista salva SO quando audience=contact_list
+    var picker = document.getElementById('contactListPicker');
+    if (picker) picker.style.display = (val === 'contact_list') ? 'block' : 'none';
 }
+// Bootstrap inicial: se old('audience_type') for contact_list, ja mostra o picker
+document.addEventListener('DOMContentLoaded', function () {
+    var checked = document.querySelector('input[name="audience_type"]:checked');
+    if (checked && checked.value === 'contact_list') {
+        var picker = document.getElementById('contactListPicker');
+        if (picker) picker.style.display = 'block';
+    }
+});
 
 function countEmails(textarea) {
     const lines = textarea.value.split(/[\n,;]+/).map(l => l.trim()).filter(l => l.length > 0);
