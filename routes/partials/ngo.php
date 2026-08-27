@@ -183,6 +183,19 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // E-mail Marketing (CRM)
         Route::get('/email-campaigns',                          [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'index'])->name('ngo.email_campaigns.index');
         Route::get('/email-campaigns/create',                   [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'create'])->name('ngo.email_campaigns.create');
+        Route::post('/email-campaigns/upload-image',            [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'uploadImage'])->name('ngo.email_campaigns.upload_image')->middleware('throttle:30,1');
+
+        // Listas de contatos (reutilizaveis em varias campanhas)
+        Route::get('/email-campaigns/lists',                                        [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'index'])->name('ngo.email_campaigns.lists.index');
+        Route::get('/email-campaigns/lists/create',                                 [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'create'])->name('ngo.email_campaigns.lists.create');
+        Route::post('/email-campaigns/lists',                                       [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'store'])->name('ngo.email_campaigns.lists.store')->middleware('throttle:10,1');
+        Route::get('/email-campaigns/lists/{list}',                                 [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'show'])->name('ngo.email_campaigns.lists.show');
+        Route::post('/email-campaigns/lists/{list}/import-csv',                     [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'importCsv'])->name('ngo.email_campaigns.lists.import_csv')->middleware('throttle:10,1');
+        Route::post('/email-campaigns/lists/{list}/contacts',                       [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'addContact'])->name('ngo.email_campaigns.lists.contacts.add')->middleware('throttle:60,1');
+        Route::delete('/email-campaigns/lists/{list}/contacts/{contact}',           [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'removeContact'])->name('ngo.email_campaigns.lists.contacts.remove')->middleware('throttle:60,1');
+        Route::get('/email-campaigns/lists/{list}/export',                          [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'exportCsv'])->name('ngo.email_campaigns.lists.export');
+        Route::delete('/email-campaigns/lists/{list}',                              [App\Http\Controllers\Ngo\NgoEmailContactListController::class, 'destroy'])->name('ngo.email_campaigns.lists.destroy')->middleware('throttle:10,1');
+
         Route::post('/email-campaigns',                         [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'store'])->name('ngo.email_campaigns.store');
         Route::get('/email-campaigns/{emailCampaign}',          [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'show'])->name('ngo.email_campaigns.show');
         Route::post('/email-campaigns/{emailCampaign}/send',    [App\Http\Controllers\Ngo\NgoEmailCampaignController::class, 'send'])->name('ngo.email_campaigns.send');

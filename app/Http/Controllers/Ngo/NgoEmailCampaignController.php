@@ -23,37 +23,83 @@ class NgoEmailCampaignController extends Controller
 
     public function create()
     {
-        return view('ngo.email_campaigns.create');
+        $lists = \App\Models\EmailContactList::where('tenant_id', auth()->user()->tenant_id)
+            ->withCount('activeContacts')
+            ->orderByDesc('updated_at')
+            ->get();
+        return view('ngo.email_campaigns.create', compact('lists'));
+    }
+
+    /**
+     * Upload de imagem pra usar no HTML da campanha.
+     * Devolve URL publica absoluta (Brevo busca por HTTP).
+     * Aceita jpg/png/webp/gif, max 5MB. Isolado por tenant no filename.
+     */
+    public function uploadImage(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = $request->user();
+        if (!$user || !$user->tenant_id) {
+            return response()->json(['error' => 'Sessão sem tenant.'], 401);
+        }
+
+        $request->validate([
+            'image' => ['required', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,gif'],
+        ]);
+
+        $file = $request->file('image');
+        $ext  = $file->getClientOriginalExtension();
+        $name = $user->tenant_id . '_' . uniqid() . '.' . $ext;
+        $path = $file->storeAs('email_campaigns_uploads', $name, 'public');
+
+        return response()->json([
+            'url' => asset('storage/' . $path),
+        ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'              => ['required', 'string', 'max:255'],
-            // not_regex bloqueia CRLF injection em headers SMTP (Bcc:, From: forjados).
-            'subject'           => ['required', 'string', 'max:255', 'not_regex:/[\r\n]/'],
-            'html_content'      => ['required', 'string'],
-            'sender_name'       => ['nullable', 'string', 'max:100', 'not_regex:/[\r\n]/'],
-            'sender_email'      => ['nullable', 'email', 'max:150'],
-            'reply_to_email'    => ['nullable', 'email', 'max:150'],
-            'audience_type'     => ['required', 'in:donors,donors_optins,leads,manual'],
-            'manual_emails_raw' => ['nullable', 'string'],
+            'name'                  => ['required', 'string', 'max:255'],
+            'subject'               => ['required', 'string', 'max:255', 'not_regex:/[\r\n]/'],
+            'html_content'          => ['required', 'string'],
+            'sender_name'           => ['nullable', 'string', 'max:100', 'not_regex:/[\r\n]/'],
+            'sender_email'          => ['nullable', 'email', 'max:150'],
+            'reply_to_email'        => ['nullable', 'email', 'max:150'],
+            'audience_type'         => ['required', 'in:donors,donors_optins,leads,manual,contact_list'],
+            'manual_emails_raw'     => ['nullable', 'string'],
+            'email_contact_list_id' => ['nullable', 'integer', 'required_if:audience_type,contact_list'],
         ]);
+
+        // Guard: lista precisa ser do mesmo tenant + ter contatos ativos
+        $contactListId = null;
+        if ($validated['audience_type'] === 'contact_list') {
+            $list = \App\Models\EmailContactList::where('tenant_id', auth()->user()->tenant_id)
+                ->where('id', $validated['email_contact_list_id'])
+                ->first();
+            if (!$list) {
+                return back()->withInput()->withErrors(['email_contact_list_id' => 'Lista não encontrada.']);
+            }
+            if ($list->activeContacts()->count() === 0) {
+                return back()->withInput()->withErrors(['email_contact_list_id' => 'Esta lista não tem contatos ativos.']);
+            }
+            $contactListId = $list->id;
+        }
 
         $manualEmails = $this->parseManualEmailsInput($request->input('manual_emails_raw', ''));
 
         $campaign = EmailCampaign::create([
-            'tenant_id'      => auth()->user()->tenant_id,
-            'created_by'     => auth()->id(),
-            'name'           => $validated['name'],
-            'subject'        => $validated['subject'],
-            'html_content'   => $validated['html_content'],
-            'sender_name'    => $validated['sender_name'] ?? null,
-            'sender_email'   => $validated['sender_email'] ?? null,
-            'reply_to_email' => $validated['reply_to_email'] ?? null,
-            'audience_type'  => $validated['audience_type'],
-            'manual_emails'  => !empty($manualEmails) ? json_encode($manualEmails) : null,
-            'status'         => 'draft',
+            'tenant_id'             => auth()->user()->tenant_id,
+            'created_by'            => auth()->id(),
+            'name'                  => $validated['name'],
+            'subject'               => $validated['subject'],
+            'html_content'          => $validated['html_content'],
+            'sender_name'           => $validated['sender_name'] ?? null,
+            'sender_email'          => $validated['sender_email'] ?? null,
+            'reply_to_email'        => $validated['reply_to_email'] ?? null,
+            'audience_type'         => $validated['audience_type'],
+            'manual_emails'         => !empty($manualEmails) ? json_encode($manualEmails) : null,
+            'email_contact_list_id' => $contactListId,
+            'status'                => 'draft',
         ]);
 
         return redirect()->route('ngo.email_campaigns.show', $campaign)
@@ -115,7 +161,7 @@ class NgoEmailCampaignController extends Controller
 
         // Etapa rapida: resolve destinatarios + valida cota (sincrono).
         // Parte lenta (Brevo importContacts loop) vai pro worker de emails.
-        $contacts = $this->resolveRecipients($emailCampaign->audience_type, $emailCampaign->manual_emails);
+        $contacts = $this->resolveRecipients($emailCampaign);
 
         if (empty($contacts)) {
             $emailCampaign->update([
@@ -187,10 +233,27 @@ class NgoEmailCampaignController extends Controller
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
-    private function resolveRecipients(string $type, ?string $manualEmailsJson = null): array
+    private function resolveRecipients(EmailCampaign $campaign): array
     {
+        $type = $campaign->audience_type;
+        $manualEmailsJson = $campaign->manual_emails;
         $tenantId = auth()->user()->tenant_id;
         $contacts = collect();
+
+        if ($type === 'contact_list' && $campaign->email_contact_list_id) {
+            $list = \App\Models\EmailContactList::where('tenant_id', $tenantId)
+                ->where('id', $campaign->email_contact_list_id)
+                ->first();
+            if ($list) {
+                $list->activeContacts()
+                    ->select(['email', 'name'])
+                    ->chunk(500, function ($chunk) use (&$contacts) {
+                        $contacts = $contacts->merge(
+                            $chunk->map(fn($c) => ['email' => $c->email, 'name' => $c->name ?? ''])
+                        );
+                    });
+            }
+        }
 
         if (in_array($type, ['donors', 'donors_optins'])) {
             // LGPD art. 8: consentimento sempre obrigatorio para marketing.

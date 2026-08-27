@@ -87,11 +87,16 @@
                 <h4 style="margin:0; font-weight:900; color:#1e293b; font-size:1rem;">
                     <i class="fas fa-code me-2" style="color:var(--ds-brand);"></i>Conteúdo HTML
                 </h4>
-                <div style="display:flex; gap:8px;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <button type="button" onclick="togglePreview()"
                             style="padding:8px 16px; border-radius:10px; border:2px solid #e2e8f0; background:white; font-weight:700; font-size:0.8rem; cursor:pointer; color:#475569;">
                         <i class="fas fa-eye me-1"></i>Preview
                     </button>
+                    <button type="button" onclick="document.getElementById('emailImgUpload').click()"
+                            style="padding:8px 16px; border-radius:10px; border:2px solid #e2e8f0; background:white; font-weight:700; font-size:0.8rem; cursor:pointer; color:#475569;">
+                        <i class="fas fa-image me-1"></i>Inserir imagem
+                    </button>
+                    <input type="file" id="emailImgUpload" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
                     <button type="button" onclick="insertTemplate()"
                             style="padding:8px 16px; border-radius:10px; border:2px solid #e2e8f0; background:white; color:#475569; font-weight:700; font-size:0.8rem; cursor:pointer;">
                         <i class="fas fa-magic me-1"></i>Template base
@@ -117,13 +122,26 @@
 
         {{-- Público --}}
         <div class="vivensi-card" style="padding:28px; border-radius:20px; margin-bottom:20px;">
-            <h4 style="margin:0 0 6px; font-weight:900; color:#1e293b; font-size:1rem;">
-                <i class="fas fa-users me-2" style="color:var(--ds-brand);"></i>Público-alvo *
-            </h4>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                <h4 style="margin:0; font-weight:900; color:#1e293b; font-size:1rem;">
+                    <i class="fas fa-users me-2" style="color:var(--ds-brand);"></i>Público-alvo *
+                </h4>
+                <a href="{{ route('ngo.email_campaigns.lists.index') }}"
+                   style="font-size:.75rem; color:var(--ds-brand); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="fas fa-cog"></i> Gerenciar listas
+                </a>
+            </div>
             <p style="color:#64748b; font-size:0.78rem; margin:0 0 18px;">Selecione quem receberá este e-mail.</p>
 
             @php
                 $audiences = [
+                    'contact_list' => [
+                        'icon'  => 'fa-address-book',
+                        'label' => 'Lista de contatos',
+                        'desc'  => 'Escolha uma lista reutilizável que você cadastrou',
+                        'color' => 'var(--ds-brand)',
+                        'bg'    => '#ecfdf5',
+                    ],
                     'donors' => [
                         'icon'  => 'fa-hand-holding-heart',
                         'label' => 'Todos os Doadores',
@@ -153,22 +171,45 @@
                         'bg'    => '#f1f5f9',
                     ],
                 ];
+                $defaultAud = ($lists ?? collect())->isNotEmpty() ? 'contact_list' : 'donors_optins';
             @endphp
 
             @foreach($audiences as $val => $aud)
-            @php $isSelected = old('audience_type', 'donors_optins') === $val; @endphp
+            @php $isSelected = old('audience_type', $defaultAud) === $val; @endphp
             <label id="lbl_{{ $val }}"
                    style="display:flex; align-items:flex-start; gap:12px; padding:14px; border-radius:12px; border:2px solid {{ $isSelected ? 'var(--ds-brand)' : '#f1f5f9' }}; margin-bottom:10px; cursor:pointer; transition:border-color 0.2s;"
                    onclick="selectAudience(this, '{{ $val }}')">
                 <input type="radio" name="audience_type" value="{{ $val }}" {{ $isSelected ? 'checked' : '' }}
                        style="margin-top:3px; accent-color:var(--ds-brand);">
-                <div>
+                <div style="flex:1;">
                     <div style="font-weight:800; color:#1e293b; font-size:0.88rem; margin-bottom:3px;">
                         <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:{{ $aud['bg'] }}; border-radius:6px; margin-right:6px; color:{{ $aud['color'] }};">
                             <i class="fas {{ $aud['icon'] }}" style="font-size:0.7rem;"></i>
                         </span>{{ $aud['label'] }}
                     </div>
                     <div style="color:#64748b; font-size:0.75rem; margin-left:28px;">{{ $aud['desc'] }}</div>
+
+                    @if($val === 'contact_list')
+                        <div id="listPicker" style="margin-left:28px; margin-top:10px; display:{{ $isSelected ? 'block' : 'none' }};">
+                            @if(($lists ?? collect())->isEmpty())
+                                <div style="padding:10px 14px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; font-size:.78rem; color:#92400e;">
+                                    Você ainda não tem nenhuma lista.
+                                    <a href="{{ route('ngo.email_campaigns.lists.create') }}" style="color:#b45309; font-weight:700; text-decoration:underline;">Criar agora →</a>
+                                </div>
+                            @else
+                                <select name="email_contact_list_id"
+                                        style="width:100%; padding:10px 12px; border:2px solid #f1f5f9; border-radius:10px; font-size:.88rem; background:white;"
+                                        onfocus="this.style.borderColor='var(--ds-brand)'" onblur="this.style.borderColor='#f1f5f9'">
+                                    <option value="">— escolha uma lista —</option>
+                                    @foreach($lists as $l)
+                                        <option value="{{ $l->id }}" {{ (int) old('email_contact_list_id') === (int) $l->id ? 'selected' : '' }}>
+                                            {{ $l->name }} ({{ number_format($l->active_contacts_count) }} ativos)
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </label>
             @endforeach
@@ -237,7 +278,57 @@
 function selectAudience(label, val) {
     document.querySelectorAll('[id^="lbl_"]').forEach(l => l.style.borderColor = '#f1f5f9');
     label.style.borderColor = 'var(--ds-brand)';
+    var picker = document.getElementById('listPicker');
+    if (picker) picker.style.display = (val === 'contact_list') ? 'block' : 'none';
 }
+
+// ── Upload de imagem — insere <img> no cursor do textarea ────────────────
+document.getElementById('emailImgUpload').addEventListener('change', async function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Imagem maior que 5MB. Reduza antes de subir.');
+        e.target.value = '';
+        return;
+    }
+
+    var textarea = document.getElementById('htmlContent');
+    var originalPlaceholder = textarea.placeholder;
+    textarea.placeholder = 'Enviando imagem...';
+
+    var form = new FormData();
+    form.append('image', file);
+
+    try {
+        var r = await fetch('{{ route("ngo.email_campaigns.upload_image") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+            },
+            body: form,
+        });
+        var data = await r.json();
+        if (!r.ok || !data.url) {
+            alert('Falha ao enviar: ' + (data.error || 'erro desconhecido'));
+            return;
+        }
+        var imgTag = '<img src="' + data.url + '" alt="" style="max-width:100%; height:auto; display:block;">';
+        var start = textarea.selectionStart;
+        var end   = textarea.selectionEnd;
+        var before = textarea.value.substring(0, start);
+        var after  = textarea.value.substring(end);
+        textarea.value = before + imgTag + after;
+        var newPos = start + imgTag.length;
+        textarea.setSelectionRange(newPos, newPos);
+        textarea.focus();
+    } catch (err) {
+        alert('Falha de rede ao enviar imagem.');
+    } finally {
+        textarea.placeholder = originalPlaceholder;
+        e.target.value = '';
+    }
+});
 
 function togglePreview() {
     const pane  = document.getElementById('previewPane');

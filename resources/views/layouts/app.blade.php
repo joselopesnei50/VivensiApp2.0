@@ -815,7 +815,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '440px' : '0' }};">
                         <ul>
-                            <li><a href="{{ route('ngo.email_campaigns.index') }}" class="{{ request()->is('ngo/email-campaigns*') ? 'active' : '' }}"><i class="fas fa-envelope" style="color:#6366f1;"></i> E-mail Marketing</a></li>
+                            <li><a href="{{ route('ngo.email_campaigns.index') }}" class="{{ request()->routeIs('ngo.email_campaigns.index') || request()->routeIs('ngo.email_campaigns.create') || request()->routeIs('ngo.email_campaigns.show') ? 'active' : '' }}"><i class="fas fa-envelope" style="color:#6366f1;"></i> E-mail Marketing</a></li>
+                            <li><a href="{{ route('ngo.email_campaigns.lists.index') }}" class="{{ request()->routeIs('ngo.email_campaigns.lists.*') ? 'active' : '' }}"><i class="fas fa-address-book" style="color:#059669;"></i> Listas de Contatos</a></li>
                             <li><a href="{{ url('/ngo/landing-pages') }}" class="{{ request()->is('ngo/landing-pages*') ? 'active' : '' }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
                             <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
