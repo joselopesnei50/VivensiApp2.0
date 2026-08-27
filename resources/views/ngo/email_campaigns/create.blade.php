@@ -122,16 +122,30 @@
 
         {{-- Público --}}
         <div class="vivensi-card" style="padding:28px; border-radius:20px; margin-bottom:20px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
-                <h4 style="margin:0; font-weight:900; color:#1e293b; font-size:1rem;">
-                    <i class="fas fa-users me-2" style="color:var(--ds-brand);"></i>Público-alvo *
-                </h4>
-                <a href="{{ route('ngo.email_campaigns.lists.index') }}"
-                   style="font-size:.75rem; color:var(--ds-brand); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
-                    <i class="fas fa-cog"></i> Gerenciar listas
-                </a>
-            </div>
-            <p style="color:#64748b; font-size:0.78rem; margin:0 0 18px;">Selecione quem receberá este e-mail.</p>
+            <h4 style="margin:0 0 6px; font-weight:900; color:#1e293b; font-size:1rem;">
+                <i class="fas fa-users me-2" style="color:var(--ds-brand);"></i>Público-alvo *
+            </h4>
+            <p style="color:#64748b; font-size:0.78rem; margin:0 0 14px;">Selecione quem receberá este e-mail.</p>
+
+            <a href="{{ route('ngo.email_campaigns.lists.index') }}"
+               style="display:flex; align-items:center; justify-content:space-between; gap:12px;
+                      padding:14px 18px; margin-bottom:18px; border-radius:12px; text-decoration:none;
+                      background:linear-gradient(135deg,#059669,#047857); color:white;
+                      box-shadow:0 6px 18px rgba(5,150,105,.28); transition:transform .15s, box-shadow .15s;"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 22px rgba(5,150,105,.35)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 18px rgba(5,150,105,.28)';">
+                <span style="display:flex; align-items:center; gap:12px; min-width:0;">
+                    <span style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,.18);
+                                 display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fas fa-address-book" style="font-size:1rem;"></i>
+                    </span>
+                    <span style="min-width:0;">
+                        <span style="display:block; font-weight:800; font-size:.9rem; letter-spacing:.2px;">Gerenciar listas de contatos</span>
+                        <span style="display:block; font-size:.72rem; opacity:.85; margin-top:1px;">Cadastre uma vez, use em quantas campanhas quiser</span>
+                    </span>
+                </span>
+                <i class="fas fa-arrow-right" style="opacity:.9; flex-shrink:0;"></i>
+            </a>
 
             @php
                 $audiences = [
