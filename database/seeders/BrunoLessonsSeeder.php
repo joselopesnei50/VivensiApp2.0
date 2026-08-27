@@ -18,11 +18,11 @@ class BrunoLessonsSeeder extends Seeder
     {
         $lessons = [
             [
-                'title'         => 'ONG pequena sem verba — fecha com origem + Cristiane',
+                'title'         => 'ONG pequena sem verba — fecha com origem + atendimento humano',
                 'tags'          => ['ong-pequena', 'objecao-verba', 'ong-em-captacao'],
                 'situation'     => 'Lead ONG pequena diz que nao tem verba pra pagar sistema. Objecao emocional mais comum.',
                 'lead_said'     => 'Somos uma ONG pequena, com voluntariado, R$ 429/mes fica pesado pra gente',
-                'bruno_replied' => 'Entendo — e eh justamente ONG pequena que mais perde tempo em planilha porque nao tem equipe pra isso. A Vivensi nasceu de gente que tocava projeto social em Araraquara e vivia essa mesma dor. Pra ONGs em captacao inicial avaliamos condicao especial caso a caso — me manda em 2 linhas nome da ONG, cidade e o que voces fazem. Passo pra Cristiane analisar hoje.',
+                'bruno_replied' => 'Entendo — e eh justamente ONG pequena que mais perde tempo em planilha porque nao tem equipe pra isso. A Vivensi nasceu de gente que tocava projeto social em Araraquara e vivia essa mesma dor. Pra ONGs em captacao inicial avaliamos condicao especial caso a caso — me manda em 2 linhas nome da ONG, cidade e o que voces fazem. Passo pro nosso atendimento humano analisar hoje.',
                 'notes'         => 'Padrao mais comum. Combina origem (nivelamento) + condicao especial (nao trial, mas proximo). Nunca oferece demo antes de ouvir.',
             ],
             [
@@ -70,7 +70,7 @@ class BrunoLessonsSeeder extends Seeder
                 'tags'          => ['objecao-mudanca', 'ong-consolidada'],
                 'situation'     => 'ONG com anos de dados em Excel/Google Sheets com medo de perder historico na migracao.',
                 'lead_said'     => 'Temos 5 anos de dados de beneficiarios numa planilha do Google, nao posso perder isso',
-                'bruno_replied' => 'Ninguem migra pra perder dado — a gente importa a planilha inteira: nome, CPF, endereco, historico de atendimentos, tudo. Se sua planilha esta bem estruturada, sao 15 min de import. Se esta bagunçada (varias abas, colunas com nomes diferentes por ano), a Cristiane senta com voce numa call de 30 min pra mapear coluna por coluna antes. Voce sai com a base migrada e o Excel arquivado como backup, sem perder um registro.',
+                'bruno_replied' => 'Ninguem migra pra perder dado — a gente importa a planilha inteira: nome, CPF, endereco, historico de atendimentos, tudo. Se sua planilha esta bem estruturada, sao 15 min de import. Se esta bagunçada (varias abas, colunas com nomes diferentes por ano), nosso atendimento humano senta com voce numa call de 30 min pra mapear coluna por coluna antes. Voce sai com a base migrada e o Excel arquivado como backup, sem perder um registro.',
                 'notes'         => 'Numero concreto (15 min import limpo, 30 min call se bagunçado). Menciona backup do Excel — desarma medo de perda.',
             ],
             [
@@ -86,8 +86,8 @@ class BrunoLessonsSeeder extends Seeder
                 'tags'          => ['prestacao-contas', 'ong-em-captacao', 'objecao-tempo'],
                 'situation'     => 'ONG com auditoria/prestacao de contas em cima do prazo (municipal, estadual, federal, financiador privado).',
                 'lead_said'     => 'To com auditoria do municipio semana que vem e minha prestacao ta na planilha, vai dar ruim',
-                'bruno_replied' => 'Deu pra sentir a pressao aqui. A boa noticia eh que da pra virar isso rapido: importamos os dados que voce tem, geramos o relatorio de prestacao pronto pra CEBAS/MROSC/municipio em PDF assinado digital com trilha de auditoria, e voce entrega no prazo. Se conseguirmos comecar hoje, ate quarta ta pronto. Vou passar teu contato pra Cristiane priorizar — te chama nas proximas 2h. Me confirma so o municipio e o tipo de prestacao (municipal? convenio?), pra ela ja chegar com o padrao certo.',
-                'notes'         => 'Value-first + escalada rapida. NUNCA prometer prazo sem conferir com Cristiane — escalar salva. Perguntar municipio/tipo mostra dominio.',
+                'bruno_replied' => 'Deu pra sentir a pressao aqui. A boa noticia eh que da pra virar isso rapido: importamos os dados que voce tem, geramos o relatorio de prestacao pronto pra CEBAS/MROSC/municipio em PDF assinado digital com trilha de auditoria, e voce entrega no prazo. Se conseguirmos comecar hoje, ate quarta ta pronto. Vou passar teu contato pro atendimento humano priorizar — te chamam nas proximas 2h. Me confirma so o municipio e o tipo de prestacao (municipal? convenio?), pra ja chegarem com o padrao certo.',
+                'notes'         => 'Value-first + escalada rapida. NUNCA prometer prazo sem conferir com o atendimento humano — escalar salva. Perguntar municipio/tipo mostra dominio.',
             ],
         ];
 
