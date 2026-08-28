@@ -41,6 +41,16 @@ class Kernel extends ConsoleKernel
         $schedule->command('email:cleanup-unused-images --confirm --min-days=7')
                  ->weeklyOn(0, '04:00');
 
+        // Email campaigns: destrava campanhas em status='sending' ha mais de 60min.
+        // Cenario: worker morto no meio do disparo (deploy supervisorctl restart all,
+        // OOM kill, host reboot) — failed() nao roda, campanha fica orfa em sending.
+        // Consulta Brevo pra decidir: se a campanha existe la, marca 'sent';
+        // senao, marca 'error' + refunda cota. Roda a cada 15min.
+        $schedule->command('emails:unstuck-campaigns')
+                 ->everyFifteenMinutes()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         // WhatsApp: reset mensal de cotas — dia 1 às 00:05 (Modelo comercial C)
         // Zera conversations_used_month + extra_pack_conversations e atualiza
         // period_start + plan_included_snapshot. Log de reset gerado por tenant.
