@@ -212,7 +212,11 @@ class AdesaoController extends Controller
 
     private function renderContractHtml(Tenant $tenant, ?SubscriptionPlan $plan, Contract $contract): string
     {
-        return View::make('adesao.contract-content', [
+        $view = $tenant->type === 'ngo'
+            ? 'adesao.contract-content-ngo'
+            : 'adesao.contract-content';
+
+        return View::make($view, [
             'tenant'   => $tenant,
             'plan'     => $plan,
             'contract' => $contract,
