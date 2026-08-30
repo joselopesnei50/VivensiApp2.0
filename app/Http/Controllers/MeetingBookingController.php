@@ -68,12 +68,23 @@ class MeetingBookingController extends Controller
         ]);
     }
 
-    /** Link de cancelamento (via e-mail) */
+    /** Link de cancelamento (via e-mail).
+     * Auditoria 2026-08-29 P3.b.3: lookup por bidx (HMAC) + hash_equals
+     * no compare final. Backwards-compat: mesma URL, mesmo token — so
+     * a comparacao ficou timing-safe e o token plaintext do DB para de
+     * servir se um dump vazar (attacker precisa da app.key tambem).
+     */
     public function cancel(string $token)
     {
-        $booking = MeetingBooking::where('confirmation_token', $token)
+        $bidx = MeetingBooking::hashToken($token);
+
+        $booking = MeetingBooking::where('confirmation_token_bidx', $bidx)
             ->where('status', 'confirmed')
             ->firstOrFail();
+
+        // Belt+suspenders contra colisao/bug de hash — compara plaintext em
+        // tempo constante.
+        abort_unless(hash_equals((string) $booking->confirmation_token, $token), 404);
 
         $booking->update(['status' => 'cancelled']);
 

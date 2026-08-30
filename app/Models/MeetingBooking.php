@@ -14,7 +14,7 @@ class MeetingBooking extends Model
     protected $fillable = [
         'name', 'email', 'phone', 'notes',
         'meeting_date', 'meeting_time',
-        'status', 'confirmation_token',
+        'status', 'confirmation_token', 'confirmation_token_bidx',
         'meeting_link', 'admin_notes',
     ];
 
@@ -22,10 +22,25 @@ class MeetingBooking extends Model
         'meeting_date' => 'date',
     ];
 
+    /**
+     * Auditoria 2026-08-29 P3.b.3 — HMAC do token com app.key. Serve pra
+     * lookup em vez de comparar plaintext (evita timing attacks + protege
+     * caso o DB vaze). Use com `hash_equals` no compare final.
+     */
+    public static function hashToken(string $token): string
+    {
+        $key = (string) config('app.key');
+        if (str_starts_with($key, 'base64:')) {
+            $key = base64_decode(substr($key, 7)) ?: $key;
+        }
+        return hash_hmac('sha256', $token, $key);
+    }
+
     protected static function booted(): void
     {
-        static::creating(function ($booking) {
-            $booking->confirmation_token = Str::random(40);
+        static::creating(function (self $booking) {
+            $booking->confirmation_token      = Str::random(40);
+            $booking->confirmation_token_bidx = self::hashToken($booking->confirmation_token);
         });
     }
 
