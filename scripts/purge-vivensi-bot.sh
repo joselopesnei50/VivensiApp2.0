@@ -7,7 +7,23 @@
 # Deploy: rodar como root a cada 1 minuto (cron ou systemd timer).
 #   * * * * * root /opt/evolution-api/purge-vivensi-bot.sh
 #
-export PGPASSWORD='evolution@2026'
+# ── Credenciais ───────────────────────────────────────────────────────────────
+# Auditoria 2026-08-29: PGPASSWORD NUNCA no repo. Le de /etc/vivensi/purge.env
+# (chmod 600, dono root) ou de PGPASSWORD ja no ambiente do cron.
+# Formato do arquivo:
+#   PGPASSWORD=<senha-rotacionada>
+#
+CONF=/etc/vivensi/purge.env
+if [ -f "$CONF" ]; then
+  # shellcheck disable=SC1090
+  set -a; . "$CONF"; set +a
+fi
+if [ -z "$PGPASSWORD" ]; then
+  echo "$(date -Is) purge-vivensi-bot: PGPASSWORD ausente (esperado em $CONF ou no ambiente). Abortando." >&2
+  exit 2
+fi
+export PGPASSWORD
+
 IID='7ac50e73-330a-4746-b8c7-e16b2133e8df'
 CUT=$(($(date +%s) - 60))
 LOG=/var/log/vivensi-bot-purge.log
