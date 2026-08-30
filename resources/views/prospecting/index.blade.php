@@ -397,10 +397,11 @@
                                                     <div class="small fw-bold text-dark mb-1"><i class="fab fa-whatsapp text-success me-1"></i>Contato</div>
                                                     <p class="small text-muted mb-0">{{ $prospect->phone ?? 'Não disponível' }}</p>
                                                 </div>
-                                                @if($prospect->website)
+                                                @php $safeWebsite = \App\Services\LeadSearchService::sanitizeExternalUrl($prospect->website); @endphp
+                                                @if($safeWebsite)
                                                     <div class="mb-3 p-3 rounded-3 bg-light">
                                                         <div class="small fw-bold text-dark mb-1"><i class="fas fa-globe text-primary me-1"></i>Website</div>
-                                                        <a href="{{ $prospect->website }}" target="_blank" class="small text-primary text-truncate d-block">{{ $prospect->website }}</a>
+                                                        <a href="{{ $safeWebsite }}" target="_blank" rel="noopener noreferrer" class="small text-primary text-truncate d-block">{{ $safeWebsite }}</a>
                                                     </div>
                                                 @endif
                                                 @if($prospect->google_rating)

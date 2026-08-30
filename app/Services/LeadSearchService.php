@@ -10,6 +10,23 @@ use Illuminate\Support\Facades\Log;
 
 class LeadSearchService
 {
+    /**
+     * Aceita apenas http(s):// pra bloquear javascript:, data:, file:, // etc
+     * antes de gravar. Auditoria 2026-08-29 P2 (media): dono de perfil no
+     * Google Maps controla o campo `website` — sem esse filtro, um
+     * `javascript:alert(document.cookie)` renderiza como href e executa
+     * quando admin clica no painel /prospecting.
+     */
+    public static function sanitizeExternalUrl(?string $url): ?string
+    {
+        if ($url === null) return null;
+        $url = trim($url);
+        if ($url === '') return null;
+        if (!preg_match('~^https?://~i', $url)) return null;
+        if (!filter_var($url, FILTER_VALIDATE_URL)) return null;
+        return $url;
+    }
+
     // ── Busca por Localização (Google Maps) ───────────────────────────────────
 
     /**
@@ -106,7 +123,7 @@ class LeadSearchService
                 [
                     'phone'         => $item['phoneNumber'] ?? null,
                     'address'       => $item['address']     ?? null,
-                    'website'       => $item['website']      ?? null,
+                    'website'       => self::sanitizeExternalUrl($item['website'] ?? null),
                     'google_rating' => $item['rating']       ?? 0,
                     'total_reviews' => $item['ratingCount']  ?? 0,
                     'category'      => $term,
@@ -174,15 +191,20 @@ class LeadSearchService
         foreach ($results['organic'] ?? [] as $item) {
             if (empty($item['title']) || empty($item['link'])) continue;
 
+            // Rejeita URL com scheme != http(s) antes de tudo — bloqueia
+            // javascript:/data:/file: que passariam pelo dominio vazio abaixo.
+            $safeLink = self::sanitizeExternalUrl($item['link']);
+            if ($safeLink === null) continue;
+
             // Filtrar resultados que claramente não são empresas (redes sociais genéricas, gov)
             $blacklistDomains = ['wikipedia.org', 'facebook.com', 'instagram.com', 'youtube.com'];
-            $domain = parse_url($item['link'], PHP_URL_HOST) ?? '';
+            $domain = parse_url($safeLink, PHP_URL_HOST) ?? '';
             if (collect($blacklistDomains)->contains(fn ($d) => str_contains($domain, $d))) continue;
 
             $prospect = Prospect::updateOrCreate(
                 ['company_name' => $item['title'], 'tenant_id' => $tenantId],
                 [
-                    'website'  => $item['link'],
+                    'website'  => $safeLink,
                     'snippet'  => $item['snippet'] ?? null,
                     'category' => $term,
                     'source'   => 'web',
