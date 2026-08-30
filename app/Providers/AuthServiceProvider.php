@@ -89,5 +89,12 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('delete-beneficiaries', function (User $user) use ($perm) {
             return $perm($user, 'delete-beneficiaries') || in_array($user->role, ['ngo', 'manager', 'common', 'client']);
         });
+
+        // Gerenciar equipe (criar/editar/remover usuarios do tenant e definir
+        // role deles) — restrito ao administrador da conta pra fechar bypass
+        // de privilege escalation (auditoria 2026-08-29, achado critico #1).
+        Gate::define('manage-team', function (User $user) use ($perm) {
+            return $perm($user, 'manage-team') || $user->role === 'ngo';
+        });
     }
 }

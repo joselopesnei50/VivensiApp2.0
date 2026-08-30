@@ -4,11 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class TeamController extends Controller
 {
+    public function __construct()
+    {
+        // Defense-in-depth: mesmo se alguma rota for adicionada sem
+        // middleware('can:manage-team'), o gate barra aqui.
+        $this->middleware(function ($request, $next) {
+            abort_unless(Gate::allows('manage-team'), 403);
+            return $next($request);
+        });
+    }
+
     public function index()
     {
         $tenant_id = auth()->user()->tenant_id;

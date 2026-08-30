@@ -25,11 +25,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/budget/pdf',              [App\Http\Controllers\BudgetController::class, 'pdf'])->middleware('throttle:web_export');
         Route::post('/budget',                 [App\Http\Controllers\BudgetController::class, 'store'])->middleware('throttle:web_write');
 
-        // Equipe
-        Route::get('/team',                    [App\Http\Controllers\TeamController::class, 'index']);
-        Route::post('/team',                   [App\Http\Controllers\TeamController::class, 'store']);
-        Route::put('/team/{id}',               [App\Http\Controllers\TeamController::class, 'update']);
-        Route::delete('/team/{id}',            [App\Http\Controllers\TeamController::class, 'destroy']);
+        // Equipe — gate manage-team fecha privilege escalation (auditoria 2026-08-29)
+        Route::get('/team',                    [App\Http\Controllers\TeamController::class, 'index'])->middleware('can:manage-team');
+        Route::post('/team',                   [App\Http\Controllers\TeamController::class, 'store'])->middleware('can:manage-team');
+        Route::put('/team/{id}',               [App\Http\Controllers\TeamController::class, 'update'])->middleware('can:manage-team');
+        Route::delete('/team/{id}',            [App\Http\Controllers\TeamController::class, 'destroy'])->middleware('can:manage-team');
 
         // Smart Analysis
         Route::get('/smart-analysis',          [App\Http\Controllers\SmartAnalysisController::class, 'index']);
