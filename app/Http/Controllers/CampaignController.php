@@ -8,6 +8,13 @@ use Illuminate\Support\Str;
 
 class CampaignController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 P2 (media): fecha bypass de role em Campanhas.
+        // Rota publica /c/{slug} (show) NAO exige auth.
+        $this->middleware('can:manage-campaigns')->except(['show']);
+    }
+
     public function index()
     {
         $campaigns = Campaign::where('tenant_id', auth()->user()->tenant_id)

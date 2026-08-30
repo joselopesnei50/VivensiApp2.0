@@ -10,6 +10,16 @@ use Illuminate\Validation\Rule;
 
 class ReceiptController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 P2 (media): fecha bypass de role. Rotas publicas
+        // (show via /r/{token}, validateForm/validateSubmit em /validar-recibo)
+        // NAO exigem auth — ficam de fora do gate.
+        $this->middleware('can:manage-receipts')->except([
+            'show', 'validateForm', 'validateSubmit',
+        ]);
+    }
+
     private function publicLinkTtlDays(): ?int
     {
         $ttl = config('receipts.public_link_ttl_days', 30);

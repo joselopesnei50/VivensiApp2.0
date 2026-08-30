@@ -11,6 +11,12 @@ use App\Support\AuditDownload;
 
 class BudgetController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 P2 (media): fecha bypass de role em Orcamento.
+        $this->middleware('can:manage-budget');
+    }
+
     public function index(Request $request)
     {
         $year = $request->get('year', date('Y'));

@@ -9,6 +9,12 @@ use App\Support\AuditDownload;
 
 class AssetController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 P2 (media): fecha bypass de role em Patrimonio.
+        $this->middleware('can:manage-assets');
+    }
+
     public function term(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;

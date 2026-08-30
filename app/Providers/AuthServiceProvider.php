@@ -114,5 +114,31 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-sic', function (User $user) use ($perm) {
             return $perm($user, 'manage-sic') || $user->role === 'ngo';
         });
+
+        // ── Gates P2 (media severidade) — auditoria 2026-08-29 ────────────────
+        // Padrao: apenas 'ngo' (admin do tenant NGO); super_admin passa via
+        // Gate::before. Widen pra 'manager' se area operacional exigir.
+
+        Gate::define('manage-contracts', function (User $user) use ($perm) {
+            return $perm($user, 'manage-contracts') || $user->role === 'ngo';
+        });
+
+        // Compartilhado por AssetController + InventoryController (patrimonio
+        // e almoxarifado sao gestao patrimonial da OSC).
+        Gate::define('manage-assets', function (User $user) use ($perm) {
+            return $perm($user, 'manage-assets') || $user->role === 'ngo';
+        });
+
+        Gate::define('manage-campaigns', function (User $user) use ($perm) {
+            return $perm($user, 'manage-campaigns') || $user->role === 'ngo';
+        });
+
+        Gate::define('manage-budget', function (User $user) use ($perm) {
+            return $perm($user, 'manage-budget') || $user->role === 'ngo';
+        });
+
+        Gate::define('manage-receipts', function (User $user) use ($perm) {
+            return $perm($user, 'manage-receipts') || $user->role === 'ngo';
+        });
     }
 }

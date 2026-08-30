@@ -12,6 +12,12 @@ use Illuminate\Support\Str;
 
 class NgoDonorController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 P2 (media): fecha bypass de role em Doadores.
+        $this->middleware('can:manage-donors');
+    }
+
     public function index(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;

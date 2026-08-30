@@ -18,6 +18,13 @@ use Illuminate\Support\Facades\Log;
 
 class ContractController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 P2 (media): fecha bypass de role. Rotas publicas
+        // de assinatura (showPublic/sign via /sign/{token}) NAO exigem auth.
+        $this->middleware('can:manage-contracts')->except(['showPublic', 'sign']);
+    }
+
     private function publicSignTtlDays(): ?int
     {
         $ttl = config('contracts.public_sign_ttl_days', 30);
