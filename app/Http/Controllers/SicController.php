@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 
 class SicController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 #4 (alta): fecha bypass de role em SIC/LAI.
+        // Rotas publicas (publicForm/publicStore/publicStatus) sao para o
+        // cidadao, NAO exigem auth — excluidas do gate.
+        $this->middleware('can:manage-sic')->except([
+            'publicForm', 'publicStore', 'publicStatus',
+        ]);
+    }
+
     // ── Public ────────────────────────────────────────────────────────────────
 
     public function publicForm(string $slug)

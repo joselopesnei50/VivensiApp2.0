@@ -96,5 +96,23 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-team', function (User $user) use ($perm) {
             return $perm($user, 'manage-team') || $user->role === 'ngo';
         });
+
+        // RH da OSC — folha, funcionarios com CPF/PIS/salario, voluntarios,
+        // certificados. Auditoria 2026-08-29 achado #2 (alta).
+        Gate::define('manage-hr', function (User $user) use ($perm) {
+            return $perm($user, 'manage-hr') || $user->role === 'ngo';
+        });
+
+        // Portal publico de Transparencia (conselho, docs, parcerias). Afeta
+        // pagina externa. Auditoria 2026-08-29 achado #3 (alta).
+        Gate::define('manage-transparency', function (User $user) use ($perm) {
+            return $perm($user, 'manage-transparency') || $user->role === 'ngo';
+        });
+
+        // SIC — Servico de Informacao ao Cidadao (LAI). Responder e mudar
+        // status de chamado oficial. Auditoria 2026-08-29 achado #4 (alta).
+        Gate::define('manage-sic', function (User $user) use ($perm) {
+            return $perm($user, 'manage-sic') || $user->role === 'ngo';
+        });
     }
 }

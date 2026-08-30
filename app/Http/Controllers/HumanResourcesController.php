@@ -18,6 +18,12 @@ use Carbon\Carbon;
 
 class HumanResourcesController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 #2 (alta): fecha bypass de role em RH.
+        $this->middleware('can:manage-hr');
+    }
+
     private function certAuthCode(int $tenantId, int $volunteerId, int $certId, int $timestamp): string
     {
         return strtoupper(substr(hash('sha256', $tenantId . '|' . $volunteerId . '|' . $certId . '|' . $timestamp), 0, 16));

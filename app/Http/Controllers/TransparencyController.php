@@ -21,6 +21,17 @@ use Illuminate\Support\Facades\Cache;
 
 class TransparencyController extends Controller
 {
+    public function __construct()
+    {
+        // Auditoria 2026-08-29 #3 (alta): fecha bypass de role no portal
+        // interno. Rotas publicas (renderPortal/downloadDocument/openDataCsv/
+        // publicReportPdf/publicView) NAO exigem auth — excluidas do gate.
+        $this->middleware('can:manage-transparency')->except([
+            'renderPortal', 'downloadDocument', 'openDataCsv',
+            'publicReportPdf', 'publicView',
+        ]);
+    }
+
     private function clearPortalCache(int $tenantId): void
     {
         $currentYear = (int) now()->year;
