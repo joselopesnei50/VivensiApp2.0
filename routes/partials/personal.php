@@ -1,7 +1,9 @@
 <?php
 
 // ── Módulo Pessoal (MEI / Pessoa Física) ──────────────────────────────────────
-Route::middleware(['auth', 'subscription'])->prefix('personal')->group(function () {
+// Auditoria 2026-08-29 P3.a: gate access-personal fecha o prefix pra role
+// != common (ngo/manager/employee do mesmo tenant nao acessa clientes MEI).
+Route::middleware(['auth', 'subscription', 'can:access-personal'])->prefix('personal')->group(function () {
     Route::get('/reconciliation',         [App\Http\Controllers\PersonalReconciliationController::class, 'index']);
     Route::post('/reconciliation/upload', [App\Http\Controllers\PersonalReconciliationController::class, 'upload'])->middleware('throttle:web_ai_bulk');
     Route::post('/reconciliation/store',  [App\Http\Controllers\PersonalReconciliationController::class, 'store'])->middleware('throttle:web_write');

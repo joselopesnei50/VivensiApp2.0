@@ -140,5 +140,13 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-receipts', function (User $user) use ($perm) {
             return $perm($user, 'manage-receipts') || $user->role === 'ngo';
         });
+
+        // Prefix /personal/* — painel MEI/autonomo/PJ. So role=common (dono
+        // do tenant common) e super_admin devem acessar. Fecha vetor onde
+        // user role=ngo/manager/employee do mesmo tenant acessava clientes
+        // MEI e recibos NFS-e. Auditoria 2026-08-29 P3.a.
+        Gate::define('access-personal', function (User $user) use ($perm) {
+            return $perm($user, 'access-personal') || $user->role === 'common';
+        });
     }
 }
