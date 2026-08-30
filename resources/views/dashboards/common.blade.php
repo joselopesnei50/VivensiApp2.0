@@ -616,7 +616,9 @@
                     const data = await res.json();
                     const text = data.insight || '';
                     if (text) {
-                        container.innerHTML = `<p style="color:#e2e8f0;font-size:0.875rem;line-height:1.6;font-weight:500;margin:0;">${text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</p>`;
+                        // Auditoria 2026-08-29 P2: sanitiza resposta de LLM antes do innerHTML
+                        const html = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+                        container.innerHTML = `<p style="color:#e2e8f0;font-size:0.875rem;line-height:1.6;font-weight:500;margin:0;">${DOMPurify.sanitize(html)}</p>`;
                     } else {
                         container.innerHTML = '<p style="font-size:0.8rem;color:#94a3b8;">Adicione mais transações para gerar insights.</p>';
                     }

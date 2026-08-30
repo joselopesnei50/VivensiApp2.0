@@ -1,4 +1,5 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 <div id="vivensi-floating-dock" class="vivensi-dock">
     <style>
         .vivensi-dock {
@@ -188,8 +189,10 @@
             div.style.color = '#334155';
             div.style.borderRadius = '12px 12px 12px 0';
             div.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
-            // Parse Markdown for system messages
-            div.innerHTML = marked.parse(text);
+            // Parse Markdown for system messages — resposta do LLM passa por
+            // DOMPurify pra bloquear prompt injection (dado do tenant reflete
+            // em <script> ou <img onerror=>). Auditoria 2026-08-29 P2.
+            div.innerHTML = DOMPurify.sanitize(marked.parse(text));
         }
         
         container.appendChild(div);

@@ -573,7 +573,9 @@
         const data = await res.json();
         const el   = document.getElementById('bruce-manager-insight');
         if (el && data.insight) {
-            el.innerHTML = `<p class="mb-0" style="font-size:0.85rem;color:#e2e8f0;line-height:1.6;">${data.insight.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</p>`;
+            // Auditoria 2026-08-29 P2: sanitiza resposta de LLM antes do innerHTML
+            const html = data.insight.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+            el.innerHTML = `<p class="mb-0" style="font-size:0.85rem;color:#e2e8f0;line-height:1.6;">${DOMPurify.sanitize(html)}</p>`;
         }
     } catch(e) {}
 })();

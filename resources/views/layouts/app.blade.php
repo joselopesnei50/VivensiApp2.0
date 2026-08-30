@@ -83,6 +83,8 @@
     {{-- F1: Onboarding Tour (Shepherd.js) --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
+    {{-- Auditoria 2026-08-29 P2 — sanitiza resposta de LLM antes de innerHTML (Bruce AI etc). --}}
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 
     @stack('styles')
 </head>
