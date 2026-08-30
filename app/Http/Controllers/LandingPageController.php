@@ -423,14 +423,6 @@ class LandingPageController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function updateOrder(Request $request)
-    {
-        foreach ($request->order as $item) {
-            LandingPageSection::where('id', $item['id'])->update(['sort_order' => $item['position']]);
-        }
-        return response()->json(['success' => true]);
-    }
-
     public function renderPage($slug)
     {
         // Public route: ignore tenant scopes. Access is controlled by status and ownership below.

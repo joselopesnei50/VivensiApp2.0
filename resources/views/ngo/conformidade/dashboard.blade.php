@@ -295,9 +295,13 @@
                 </h6>
                 @if($historico->count() > 0)
                     @php
-                        $chartSnaps = $historico->take(12)->reverse()->values();
-                        $chartLabels = $chartSnaps->map(fn($s) => \Carbon\Carbon::parse($s->snapshotado_em)->format('d/m'))->toJson();
-                        $chartData   = $chartSnaps->map(fn($s) => (float)$s->indice_geral)->toJson();
+                        // Auditoria 2026-08-29 P3: JSON_HEX_* uniformiza com outras views
+                        // (dashboards/{ngo,common,manager}, admin/dashboard, booking) —
+                        // blindagem XSS caso label passe a vir de campo user-controlled.
+                        $jsonFlags   = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+                        $chartSnaps  = $historico->take(12)->reverse()->values();
+                        $chartLabels = $chartSnaps->map(fn($s) => \Carbon\Carbon::parse($s->snapshotado_em)->format('d/m'))->toJson($jsonFlags);
+                        $chartData   = $chartSnaps->map(fn($s) => (float)$s->indice_geral)->toJson($jsonFlags);
                     @endphp
                     <canvas id="chartIndice" height="130"></canvas>
                 @push('scripts')
