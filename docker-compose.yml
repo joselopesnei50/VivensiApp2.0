@@ -15,7 +15,7 @@ services:
       DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE:-vivensi}
       DB_USERNAME: ${DB_USERNAME:-vivensi}
-      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required — set no .env local antes de subir}
       REDIS_HOST: redis
       CACHE_DRIVER: redis
       SESSION_DRIVER: redis
@@ -32,10 +32,10 @@ services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD required — set no .env local}
       MYSQL_DATABASE: ${DB_DATABASE:-vivensi}
       MYSQL_USER: ${DB_USERNAME:-vivensi}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required — set no .env local}
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:

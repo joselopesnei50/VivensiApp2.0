@@ -34,8 +34,6 @@ regexes = [
     # META_WEBHOOK_VERIFY_TOKEN histórico (WhatsappController.php em commit c3a21cf)
     # — token só usado no handshake inicial de setup do webhook Meta
     '''vivensi_seguro_2026''',
-    # APP_KEY exposta em .github/workflows/laravel.yml — fixo pro ambiente de CI
-    '''base64:kZ1GflhBe1nqNVSJNDZ9FWJMFG7rJ1XLuMoFBJFWjXc=''',
     # Placeholders públicos do soketi/pusher em dev local
     '''vivensi-key''',
     '''vivensi-secret''',
