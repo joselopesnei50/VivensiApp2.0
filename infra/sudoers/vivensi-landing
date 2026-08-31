@@ -1,0 +1,19 @@
+# Sudoers pra custom domain de landing pages (Fase 2 do add-on).
+# Deploy: sudo wget -O /etc/sudoers.d/vivensi-landing <URL_RAW>
+# Valida:  sudo visudo -c
+# Permissoes: 0440 root:root (o sudo aplica sozinho ao mover)
+#
+# Regra: user www-data (php-fpm) roda comandos privilegiados especificos
+# sem senha. Whitelist estreita — nao permite `sudo su`, `sudo rm -rf /`,
+# nem qualquer comando fora dos 8 abaixo. Curinga `lp-*` limita escopo
+# aos arquivos que o comando artisan gera.
+
+Cmnd_Alias VIVENSI_LP_CERT = /usr/bin/certbot
+Cmnd_Alias VIVENSI_LP_NGINX = /usr/sbin/nginx, /bin/systemctl reload nginx
+Cmnd_Alias VIVENSI_LP_CONF = /usr/bin/tee /etc/nginx/sites-available/lp-*, \
+                             /usr/bin/tee /etc/nginx/sites-enabled/lp-*, \
+                             /bin/ln -sf /etc/nginx/sites-available/lp-* /etc/nginx/sites-enabled/lp-*, \
+                             /bin/rm -f /etc/nginx/sites-enabled/lp-*, \
+                             /bin/rm -f /etc/nginx/sites-available/lp-*
+
+www-data ALL=(root) NOPASSWD: VIVENSI_LP_CERT, VIVENSI_LP_NGINX, VIVENSI_LP_CONF
