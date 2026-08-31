@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Ngo\NgoEmailCampaignController;
+use App\Models\EmailCampaign;
 use App\Models\NgoDonor;
 use App\Models\Tenant;
 use App\Models\User;
@@ -31,14 +32,19 @@ beforeEach(function () {
 });
 
 // ── Helper: invoca resolveRecipients() (metodo private) ─────────────────────
+// Refactor de NgoEmailCampaignController::resolveRecipients em algum commit
+// anterior mudou a assinatura de (string $type, $extra) pra (EmailCampaign
+// $campaign). Helper monta EmailCampaign em memoria (sem save) com o
+// audience_type — que e o unico campo que o metodo le pra este cenario.
 
 function invokeResolveRecipients(User $user, string $type): array
 {
     Auth::login($user);
+    $campaign = new EmailCampaign(['audience_type' => $type]);
     $ctrl = new NgoEmailCampaignController();
     $ref  = new ReflectionMethod($ctrl, 'resolveRecipients');
     $ref->setAccessible(true);
-    return $ref->invoke($ctrl, $type, null);
+    return $ref->invoke($ctrl, $campaign);
 }
 
 function makeTenantAndUser(): array
