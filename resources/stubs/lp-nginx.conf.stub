@@ -1,0 +1,53 @@
+# Auto-gerado por `php artisan landing:provision-domain` (LP #{ID})
+# NAO EDITAR MANUALMENTE — sobrescrito na renovacao/re-provisionamento.
+# Domain: {DOMAIN}
+# Vivensi custom domain add-on — gerado em {GENERATED_AT}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {DOMAIN};
+
+    # ACME challenge (renovacao Let's Encrypt via webroot)
+    location /.well-known/acme-challenge/ {
+        root /var/www/vivensi/public;
+        try_files $uri =404;
+    }
+
+    # Redirect HTTP -> HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name {DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/{DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{DOMAIN}/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    root  /var/www/vivensi/public;
+    index index.php;
+
+    access_log /var/log/nginx/lp-{ID}-access.log;
+    error_log  /var/log/nginx/lp-{ID}-error.log;
+
+    client_max_body_size 25M;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}

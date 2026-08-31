@@ -51,6 +51,13 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Landing pages custom domain: renova certs Let's Encrypt (30d antes de
+        // expirar). Certbot decide o que ta perto de expirar; comando notifica
+        // super_admins via bell se algum cert falhar.
+        $schedule->command('landing:renew-ssl-certs')
+                 ->dailyAt('03:00')
+                 ->withoutOverlapping();
+
         // WhatsApp: reset mensal de cotas — dia 1 às 00:05 (Modelo comercial C)
         // Zera conversations_used_month + extra_pack_conversations e atualiza
         // period_start + plan_included_snapshot. Log de reset gerado por tenant.
