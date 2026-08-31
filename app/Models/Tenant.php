@@ -55,6 +55,8 @@ class Tenant extends Model
         'radar_digest_channel',
         'radar_min_score',
         'radar_last_digest_at',
+        // Landing page custom domain add-on (Fase 1 — 2026-08-31)
+        'custom_domain_addon_active',
     ];
 
     protected $hidden = [
@@ -77,6 +79,7 @@ class Tenant extends Model
         'radar_areas'             => 'array',
         'radar_min_score'         => 'integer',
         'radar_last_digest_at'    => 'datetime',
+        'custom_domain_addon_active' => 'boolean',
     ];
 
     public function plan()

@@ -14,6 +14,10 @@ class LandingPage extends Model
         'tenant_id',
         'title',
         'slug',
+        'custom_domain',
+        'custom_domain_status',
+        'custom_domain_ssl_expires_at',
+        'custom_domain_error',
         'status',
         'settings',
         'target_project_id',
@@ -22,9 +26,10 @@ class LandingPage extends Model
     ];
 
     protected $casts = [
-        'settings'                => 'array',
-        'target_creates_person'   => 'boolean',
-        'target_link_beneficiary' => 'boolean',
+        'settings'                     => 'array',
+        'target_creates_person'        => 'boolean',
+        'target_link_beneficiary'      => 'boolean',
+        'custom_domain_ssl_expires_at' => 'datetime',
     ];
 
     public function sections()

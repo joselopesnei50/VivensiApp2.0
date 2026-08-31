@@ -31,6 +31,9 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
+            // Fase 1 custom domain — resolve Host header antes de tudo. Se
+            // for dominio custom whitelistado, curto-circuita pra renderPage.
+            \App\Http\Middleware\ResolveCustomDomainLanding::class,
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
