@@ -90,7 +90,9 @@ Route::get('/chamada/{token}/ok',       [App\Http\Controllers\PublicAttendanceCo
 // ── Rifas públicas ────────────────────────────────────────────────────────────
 Route::get('/rifa/{slug}',                       [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');
 Route::post('/rifa/{slug}/reserve',              [App\Http\Controllers\PublicRaffleController::class, 'reserve'])->middleware('throttle:20,1')->name('public.raffle.reserve');
-Route::post('/rifa/ticket/{ticket}/comprovante', [App\Http\Controllers\PublicRaffleController::class, 'uploadReceipt'])->middleware('throttle:10,1')->name('public.raffle.receipt');
+// Rota /rifa/ticket/{ticket}/comprovante removida em 2026-08-31 — dead code
+// (nenhuma view/email chamava). Fluxo real de comprovante e via WhatsApp
+// direto pro NGO. Auditoria 2026-08-29 P3.b.2.
 
 // ── Webhooks de pagamento ─────────────────────────────────────────────────────
 Route::post('/openpix/webhook', [App\Http\Controllers\OpenPixWebhookController::class, 'receive'])->name('openpix.webhook');

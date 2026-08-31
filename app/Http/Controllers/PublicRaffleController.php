@@ -130,39 +130,13 @@ class PublicRaffleController extends Controller
         }
     }
 
-    /**
-     * Handle receipt upload
-     */
-    public function uploadReceipt(Request $request, $ticketId)
-    {
-        $ticket = RaffleTicket::findOrFail($ticketId);
-
-        $request->validate([
-            'receipt'      => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'buyer_email'  => 'required|email',
-        ]);
-
-        // Validação de ownership: email do comprador deve coincidir com o bilhete
-        if (strtolower(trim($ticket->buyer_email ?? '')) !== strtolower(trim($request->buyer_email))) {
-            abort(403, 'Acesso negado: este bilhete não pertence ao e-mail informado.');
-        }
-
-        if ($ticket->status !== 'pending') {
-            return back()->with('error', 'Este bilhete não está aguardando pagamento.');
-        }
-        if ($ticket->reserved_at && \Carbon\Carbon::parse($ticket->reserved_at)->lt(now()->subMinutes(30))) {
-            return back()->with('error', 'Sua reserva expirou. Por favor, realize uma nova reserva.');
-        }
-
-        if ($request->hasFile('receipt')) {
-            $path = $request->file('receipt')->store('raffle_receipts', 'public');
-            $ticket->update([
-                'payment_receipt_path' => $path,
-            ]);
-        }
-
-        return back()->with('success', 'Comprovante enviado com sucesso! Aguarde a validação da nossa equipe.');
-    }
+    // uploadReceipt removido em 2026-08-31 — dead code (nenhuma view/email
+    // chamava a rota /rifa/ticket/{ticket}/comprovante). Fluxo real de
+    // comprovante e via WhatsApp direto pro NGO (link na checkout blade).
+    // Auditoria 2026-08-29 P3.b.2 flagou IDOR baixa (guard so por buyer_email
+    // nao-secreto). Fix escolhido: deletar > blindar com HMAC, ja que ninguem
+    // legitimo usava. Se algum dia o upload no site voltar a ser necessario,
+    // implementar com token opaco HMAC bidx desde o inicio.
 
     /**
      * BRCode (PIX Static) Generator — EMV QRCPS Merchant Presented Mode.
