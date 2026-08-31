@@ -393,7 +393,7 @@
                     @endif
                 </div>
 
-                <button id="btnCreateInstance" class="btn-create w-100 mb-3" onclick="createInstance()">
+                <button id="btnCreateInstance" class="btn-create w-100 mb-4" onclick="createInstance()">
                     <i class="fas fa-plus me-2"></i>Criar Instância na Evolution API
                 </button>
 
@@ -411,19 +411,6 @@
                             <i class="fas fa-magnifying-glass me-1"></i>Verificar Conexão
                         </button>
                     </div>
-                </div>
-
-                {{-- Alternativa: Meta Cloud API oficial --}}
-                <div class="text-center my-3" style="color:#94a3b8; font-size:.8rem; text-transform:uppercase; letter-spacing:.1em;">ou</div>
-
-                <a href="{{ route('whatsapp.cloud.connect') }}"
-                   class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2"
-                   style="padding:14px; border-radius:12px; font-weight:600;">
-                    <i class="fab fa-facebook"></i>
-                    Conectar via WhatsApp Cloud API (Meta oficial)
-                </a>
-                <div class="field-hint text-center mt-2" style="font-size:.8rem;">
-                    Oficial, com SLA. Custo por conversa via BSP.
                 </div>
 
             </div>
