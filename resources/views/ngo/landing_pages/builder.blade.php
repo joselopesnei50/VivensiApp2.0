@@ -38,7 +38,10 @@
         }
         .block-item:hover { transform: translateX(5px); border-color: var(--primary); background: #334155; }
         .block-item .info { display: flex; align-items: center; gap: 12px; }
-        .block-item i.drag { color: #475569; cursor: grab; }
+        .block-item i.drag { color: #475569; cursor: grab; padding: 4px; }
+        .block-item i.drag:active { cursor: grabbing; }
+        .sortable-ghost { opacity: 0.4; background: #e0e7ff; border: 2px dashed #6366f1 !important; }
+        .sortable-chosen { cursor: grabbing !important; }
         .block-item span { font-size: 0.85rem; font-weight: 500; }
         
         .btn-add-main { 
@@ -1390,6 +1393,52 @@
                 alert('Falha de conexão ao atualizar status.');
             }
         }
+
+    </script>
+
+    {{-- SortableJS pra drag-drop dos blocos --}}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        // Re-inicializa Sortable apos o script CDN carregar (fim do body)
+        document.addEventListener('DOMContentLoaded', function () {
+            const list = document.getElementById('active-blocks');
+            if (!list || !window.Sortable) return;
+            if (list.__vivensiSortable) return; // ja inicializou
+
+            list.__vivensiSortable = new Sortable(list, {
+                handle: '.drag',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: async function () {
+                    const ids = Array.from(list.querySelectorAll('.block-item'))
+                        .map(el => parseInt(el.dataset.editorId, 10))
+                        .filter(Boolean);
+                    if (ids.length === 0) return;
+                    try {
+                        const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/reorder'), {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({ order: ids }),
+                        });
+                        const j = await res.json();
+                        if (!res.ok || !j.success) {
+                            alert('Falha ao salvar nova ordem: ' + (j.error || res.status));
+                        }
+                    } catch (e) {
+                        alert('Erro de rede ao salvar ordem: ' + e.message);
+                    }
+                },
+            });
+
+            list.querySelectorAll('.drag').forEach(el => {
+                el.addEventListener('click', e => e.stopPropagation());
+                el.addEventListener('mousedown', e => e.stopPropagation());
+            });
+        });
     </script>
 </body>
 </html>

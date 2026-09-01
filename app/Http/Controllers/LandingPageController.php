@@ -548,6 +548,48 @@ class LandingPageController extends Controller
         });
     }
 
+    /**
+     * Reordena as sections de uma landing page (drag-drop no builder).
+     * Body: {order: [sectionId1, sectionId2, ...]} — indice = novo sort_order.
+     * Valida que todas as sections pertencem a LP do tenant. Transacao atomica.
+     */
+    public function reorderSections(Request $request, $id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $page = LandingPage::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $validated = $request->validate([
+            'order'   => 'required|array|min:1|max:100',
+            'order.*' => 'required|integer|min:1',
+        ]);
+
+        $incoming = array_values(array_unique(array_map('intval', $validated['order'])));
+
+        // Todas as sections do payload precisam pertencer a essa LP.
+        // Fail-closed: se alguma nao bater, aborta sem tocar nada.
+        $ownedIds = LandingPageSection::where('landing_page_id', $page->id)
+            ->whereIn('id', $incoming)
+            ->pluck('id')
+            ->all();
+
+        if (count($ownedIds) !== count($incoming)) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Alguma section do payload nao pertence a essa landing page.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($incoming, $page) {
+            foreach ($incoming as $index => $sectionId) {
+                LandingPageSection::where('id', $sectionId)
+                    ->where('landing_page_id', $page->id)
+                    ->update(['sort_order' => $index + 1]);
+            }
+        });
+
+        return response()->json(['success' => true, 'count' => count($incoming)]);
+    }
+
     public function destroy($id)
     {
         $tenantId = auth()->user()->tenant_id;
