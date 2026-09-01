@@ -150,6 +150,40 @@
     @foreach($sections as $section)
 
 
+        @if($section->type == 'hero_image')
+            @php
+                $hiBg      = \App\Support\LandingPageSanitizer::url($section->content['background_url'] ?? null, '');
+                $hiOvColor = \App\Support\LandingPageSanitizer::cssColor($section->content['overlay_color'] ?? null, '#0f172a');
+                $hiOvOp    = is_numeric($section->content['overlay_opacity'] ?? null) ? max(0, min(1, (float) $section->content['overlay_opacity'])) : 0.55;
+                $hiText    = \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#ffffff');
+                $hiAlign   = in_array($section->content['align'] ?? '', ['left','center','right'], true) ? $section->content['align'] : 'center';
+                $hiHeight  = ['small' => '360px', 'medium' => '540px', 'large' => '720px', 'full' => '100vh'][$section->content['height'] ?? 'medium'] ?? '540px';
+                $hiBtnText = $section->content['button_text'] ?? '';
+                $hiBtnUrl  = \App\Support\LandingPageSanitizer::url($section->content['button_url'] ?? null, '#');
+            @endphp
+            <section style="position: relative; min-height: {{ $hiHeight }}; display: flex; align-items: center; overflow: hidden;
+                @if($hiBg)
+                background-image: url('{{ $hiBg }}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                @else
+                background: {{ $hiOvColor }};
+                @endif
+            ">
+                @if($hiBg)
+                    <div style="position: absolute; inset: 0; background: {{ $hiOvColor }}; opacity: {{ $hiOvOp }}; z-index: 1;"></div>
+                @endif
+                <div class="container" style="position: relative; z-index: 2; text-align: {{ $hiAlign }}; padding: 60px 20px; width: 100%;">
+                    <h1 style="color: {{ $hiText }}; font-size: clamp(1.8rem, 4vw, 3.4rem); font-weight: 900; margin: 0 0 18px; line-height: 1.15; text-shadow: 0 2px 12px rgba(0,0,0,.35);">{{ $section->content['title'] ?? 'Título' }}</h1>
+                    <p style="color: {{ $hiText }}; opacity: 0.92; font-size: clamp(1rem, 1.6vw, 1.25rem); line-height: 1.6; max-width: 720px; margin: 0 {{ $hiAlign === 'center' ? 'auto' : '0' }} 28px; text-shadow: 0 1px 8px rgba(0,0,0,.3);">{{ $section->content['subtitle'] ?? '' }}</p>
+                    @if($hiBtnText)
+                        <a href="{{ $hiBtnUrl }}" class="btn-cta" style="display: inline-block; padding: 14px 32px; background: rgba(255,255,255,0.15); color: {{ $hiText }}; border: 2px solid {{ $hiText }}; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 1.05rem; backdrop-filter: blur(6px); transition: all .3s;">{{ $hiBtnText }}</a>
+                    @endif
+                </div>
+            </section>
+        @endif
+
         @if($section->type == 'hero')
             <section class="section-hero" style="background: {{ \App\Support\LandingPageSanitizer::cssBg($section->content['bg_gradient'] ?? $section->content['bg_color'] ?? null, '#f8fafc') }}; color: {{ \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#ffffff') }}; position: relative; overflow: hidden;">
                 <!-- Efeito de Fundo -->

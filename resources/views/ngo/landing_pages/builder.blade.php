@@ -136,6 +136,7 @@
                                 @php
                                     $names = [
                                         'hero' => 'Hero Impacto',
+                                        'hero_image' => 'Hero com Imagem',
                                         'lead_capture' => 'Formulário de Inscrição',
                                         'stats' => 'Estatísticas',
                                         'testimonials' => 'Depoimentos',
@@ -234,6 +235,7 @@
             <div class="modal-body">
                 <div class="gallery-card" onclick="addBlock('header_nav')"><i class="fas fa-window-maximize"></i><span>Header / Menu</span><p>Menu de navegação superior.</p></div>
                 <div class="gallery-card" onclick="addBlock('hero')"><i class="fas fa-id-card"></i><span>Hero / Início</span><p>Cabeçalho principal com CTA.</p></div>
+                <div class="gallery-card" onclick="addBlock('hero_image')"><i class="fas fa-image"></i><span>Hero com Imagem</span><p>Cabeçalho com imagem de fundo + overlay.</p></div>
                 <div class="gallery-card" onclick="addBlock('who_we_are')"><i class="fas fa-users"></i><span>Quem Somos</span><p>Seção sobre a instituição.</p></div>
                 <div class="gallery-card" onclick="addBlock('services_grid')"><i class="fas fa-th"></i><span>Serviços (3 col)</span><p>Grade de serviços com imagens.</p></div>
                 <div class="gallery-card" onclick="addBlock('cta_banner')"><i class="fas fa-bullhorn"></i><span>Banner CTA</span><p>Chamada forte para ação.</p></div>
@@ -927,6 +929,52 @@
             }
         }
 
+        // ── Upload de background do hero_image (P3 melhorias builder) ───────
+        async function hiUploadBg(sectionId) {
+            const input = document.getElementById('hi-bg-file');
+            const btn   = document.getElementById('hi-bg-upload-btn');
+            const file  = input && input.files ? input.files[0] : null;
+            if (!file) return alert('Selecione uma imagem primeiro.');
+            if (btn) btn.disabled = true;
+
+            const fd = new FormData();
+            fd.append('file', file);
+            try {
+                const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/sections/' + sectionId + '/asset/background'), {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                    body: fd,
+                });
+                let j = {}; try { j = await res.json(); } catch (_) {}
+                if (!res.ok || !j.success) {
+                    alert((j && j.errors && j.errors.file) ? j.errors.file[0] : (j.error || 'Falha no upload'));
+                    if (btn) btn.disabled = false;
+                    return;
+                }
+                const wrap = document.getElementById('hi-bg-preview-wrap');
+                const img  = document.getElementById('hi-bg-preview');
+                if (img) img.src = j.url + '?t=' + Date.now();
+                if (wrap) wrap.style.display = 'block';
+                const hidden = document.querySelector('input[name="background_url"]');
+                if (hidden) hidden.value = j.url;
+                if (btn) btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Enviado!';
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-upload"></i> Enviar'; }, 1500);
+            } catch (e) {
+                alert('Erro de rede: ' + e.message);
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        function hiClearBg() {
+            if (!confirm('Remover imagem de fundo? O hero volta a mostrar so a cor overlay.')) return;
+            const hidden = document.querySelector('input[name="background_url"]');
+            const wrap   = document.getElementById('hi-bg-preview-wrap');
+            if (hidden) hidden.value = '';
+            if (wrap)   wrap.style.display = 'none';
+            alert('Imagem marcada pra remover. Clique em Salvar Bloco pra confirmar.');
+        }
+
         // ── Upload de logo do header_nav (P2 melhorias builder) ──────────────
         async function hnUploadLogo(sectionId) {
             const input = document.getElementById('hn-logo-file');
@@ -1163,6 +1211,42 @@
                 // Evita duplicar toggles + custom_fields no editor genérico abaixo.
                 content = Object.assign({}, content);
                 ['require_name','require_phone','enable_phone','enable_cpf','enable_birth_date','enable_address','enable_city','enable_guardian','custom_fields'].forEach(k => { delete content[k]; });
+            }
+
+            // ── Hero com Imagem — upload de background (P3 melhorias builder)
+            if (type === 'hero_image') {
+                const bgBox = document.createElement('div');
+                bgBox.style.cssText = 'background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:14px 16px; margin-bottom:16px;';
+                bgBox.innerHTML = `
+                    <div style="font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#15803d; margin-bottom:10px;">
+                        <i class="fas fa-image"></i> Imagem de fundo
+                    </div>
+                    <div id="hi-bg-preview-wrap" style="margin-bottom:12px; ${content.background_url ? '' : 'display:none;'}">
+                        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:10px; display:inline-block; max-width:100%;">
+                            <img id="hi-bg-preview" src="${content.background_url || ''}" alt="Fundo atual" style="max-height:140px; max-width:400px; display:block; border-radius:6px;">
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <input type="file" id="hi-bg-file" accept="image/*" style="flex:1; min-width:200px;">
+                        <button type="button" id="hi-bg-upload-btn" onclick="hiUploadBg(${id})"
+                                style="background:#10b981; color:#fff; border:none; padding:10px 16px; border-radius:10px; font-weight:900; cursor:pointer;">
+                            <i class="fas fa-upload"></i> Enviar
+                        </button>
+                        ${content.background_url ? `<button type="button" onclick="hiClearBg()"
+                                style="background:#fff; color:#dc2626; border:1px solid #fecaca; padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer;">
+                            Remover
+                        </button>` : ''}
+                    </div>
+                    <div style="margin-top:8px; color:#64748b; font-size:.78rem;">
+                        JPG/PNG/WebP, max 4MB. Recomendado 1920x1080. Use overlay (abaixo) pra escurecer e melhorar leitura do texto.
+                    </div>
+                    <input type="hidden" name="background_url" value="${content.background_url || ''}">
+                </div>`;
+                container.appendChild(bgBox);
+
+                content = Object.assign({}, content);
+                delete content.background_url;
+                delete content.background_storage_path;
             }
 
             // ── Header/Menu — upload de logo dedicado (P2 melhorias builder)

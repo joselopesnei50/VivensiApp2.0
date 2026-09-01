@@ -339,41 +339,61 @@ class LandingPageController extends Controller
     }
 
     /**
-     * Upload de logo do header_nav (ou qualquer section com campo logo_url).
-     * Atualiza section->content['logo_url'] direto e retorna URL nova.
+     * Upload de logo do header_nav — delega ao uploadSectionAsset com kind=logo.
+     * Mantida como endpoint separado por compat com deploys anteriores.
      */
     public function uploadSectionLogo(Request $request, $id, $sectionId)
     {
+        return $this->uploadSectionAsset($request, $id, $sectionId, 'logo');
+    }
+
+    /**
+     * Upload generico de asset (imagem) associado a uma section. Grava em
+     * content[{kind}_url] + content[{kind}_storage_path], remove arquivo
+     * antigo se existir. Kind vem do path (whitelist), max 4MB.
+     */
+    public function uploadSectionAsset(Request $request, $id, $sectionId, $kind)
+    {
+        // Whitelist de kinds pra evitar escrita em campos arbitrarios.
+        $allowedKinds = ['logo', 'background', 'image'];
+        if (!in_array($kind, $allowedKinds, true)) {
+            abort(422, 'Kind invalido. Use: ' . implode(', ', $allowedKinds));
+        }
+
         $tenantId = auth()->user()->tenant_id;
         $page = LandingPage::where('tenant_id', $tenantId)->findOrFail($id);
         $section = LandingPageSection::where('landing_page_id', $page->id)->findOrFail($sectionId);
 
+        $maxKb = $kind === 'logo' ? 2048 : 4096; // logo 2MB, outros 4MB
         $validated = $request->validate([
-            'file' => 'required|file|image|max:2048', // 2MB pra logo
+            'file' => "required|file|image|max:{$maxKb}",
         ]);
 
         $file = $validated['file'];
         $disk = Storage::disk('public');
         $ext = strtolower((string) $file->extension()) ?: 'png';
         $dir = 'landing-pages/' . $page->tenant_id . '/' . $page->id;
-        $name = 'section-' . $section->id . '-logo-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
+        $name = 'section-' . $section->id . '-' . $kind . '-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
         $path = $file->storeAs($dir, $name, 'public');
         $url = $disk->url($path);
 
-        // Remove logo antigo do storage se existia
+        $urlKey  = $kind . '_url';
+        $pathKey = $kind . '_storage_path';
+
         $content = is_array($section->content) ? $section->content : [];
-        $oldPath = (string) ($content['logo_storage_path'] ?? '');
+        $oldPath = (string) ($content[$pathKey] ?? '');
         if ($oldPath !== '' && $oldPath !== $path) {
             try { $disk->delete($oldPath); } catch (\Throwable $e) { /* ignore */ }
         }
 
-        $content['logo_url'] = $url;
-        $content['logo_storage_path'] = $path;
+        $content[$urlKey]  = $url;
+        $content[$pathKey] = $path;
         $section->update(['content' => $content]);
 
         return response()->json([
             'success' => true,
             'url'     => $url,
+            'kind'    => $kind,
             'section' => ['id' => $section->id, 'content' => $content],
         ]);
     }
@@ -1133,6 +1153,18 @@ class LandingPageController extends Controller
                 'button_text' => 'Quero Ajudar Agora',
                 'bg_gradient' => 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
                 'text_color' => '#ffffff'
+            ],
+            'hero_image' => [
+                'title'         => 'Sua causa começa aqui',
+                'subtitle'      => 'Uma frase de impacto sobre o que você faz e por que importa.',
+                'button_text'   => 'Quero Ajudar',
+                'button_url'    => '#doar',
+                'background_url'=> '',
+                'overlay_color' => '#0f172a',
+                'overlay_opacity' => 0.55,
+                'text_color'    => '#ffffff',
+                'align'         => 'center',
+                'height'        => 'medium',
             ],
             'products' => [
                 'title' => 'Nossos Produtos / Serviços',
