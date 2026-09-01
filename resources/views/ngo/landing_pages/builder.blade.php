@@ -521,7 +521,11 @@
         function __lpAbs(path) { return window.location.origin + (__lpBaseUrl || '') + path; }
 
         // ── Custom Domain (add-on) ────────────────────────────────────────────
-        const __cdCsrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        // Blade interpola o token direto — mesmo padrao das outras fetches do
+        // builder (saveSettings/uploadOgImage/etc). Meta tag foi caindo em
+        // CSRF mismatch em alguns clients; interpolacao direta e o padrao
+        // que funciona no resto do arquivo.
+        const __cdCsrf = '{{ csrf_token() }}';
         let __cdPollTimer = null;
 
         function cdStatusLabel(status) {
