@@ -576,65 +576,95 @@
 
         @if($section->type == 'pix_donation')
             @php
-                $pixBg = \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#ffffff');
-                $pixText = \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#0f172a');
-                $qr = \App\Support\LandingPageSanitizer::url($section->content['qr_image_url'] ?? null, '');
-                $payload = (string) ($section->content['pix_key_or_payload'] ?? '');
+                $pixBg     = \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#f8fafc');
+                $pixText   = \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#0f172a');
+                $accent    = \App\Support\LandingPageSanitizer::cssColor($section->content['accent_color'] ?? null, '#25D366');
+                $qrUser    = \App\Support\LandingPageSanitizer::url($section->content['qr_image_url'] ?? null, '');
+                $payload   = (string) ($section->content['pix_key_or_payload'] ?? '');
+                // Fallback: se user nao subiu QR, gera via api.qrserver.com com o proprio payload
+                $qrSrc     = $qrUser !== ''
+                    ? $qrUser
+                    : ($payload !== '' ? 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=6&data=' . rawurlencode($payload) : '');
                 $payloadId = 'pix-payload-' . $section->id;
+                $toastId   = 'pix-toast-' . $section->id;
+                $amounts   = array_filter(array_map('trim', explode(',', (string) ($section->content['suggested_amounts'] ?? ''))));
             @endphp
-            <section style="padding: 100px 0; background: {{ $pixBg }}; color: {{ $pixText }};">
-                <div class="container" style="max-width: 1050px;">
-                    <div style="text-align:center; margin-bottom: 40px;">
-                        <h2 style="margin-bottom: 10px;">{{ $section->content['title'] ?? 'Doe via PIX' }}</h2>
+            <section style="padding: 80px 0; background: {{ $pixBg }}; color: {{ $pixText }};">
+                <div class="container" style="max-width: 1080px;">
+                    <div style="text-align:center; margin-bottom: 36px;">
+                        <div style="display:inline-flex; align-items:center; gap:8px; background:{{ $accent }}22; color:{{ $accent }}; padding:6px 14px; border-radius:99px; font-weight:800; font-size:.78rem; letter-spacing:.05em; text-transform:uppercase; margin-bottom:14px;">
+                            <i class="fas fa-bolt"></i> PIX Instantâneo
+                        </div>
+                        <h2 style="margin:0 0 12px; font-size:clamp(1.6rem,3.2vw,2.4rem); font-weight:900;">{{ $section->content['title'] ?? 'Doe via PIX' }}</h2>
                         @if(!empty($section->content['subtitle']))
-                            <p style="margin:0; color:#64748b; max-width: 820px; margin-inline:auto;">{{ $section->content['subtitle'] }}</p>
+                            <p style="margin:0; color:#64748b; max-width: 640px; margin-inline:auto; font-size:1.05rem; line-height:1.6;">{{ $section->content['subtitle'] }}</p>
                         @endif
                     </div>
 
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; align-items: start;">
-                        <div style="border:1px solid #e2e8f0; border-radius: 24px; padding: 22px; background:#fff; box-shadow: 0 24px 60px rgba(15,23,42,.06);">
-                            <div style="font-weight: 900; color:#0f172a; margin-bottom: 10px;">
-                                <i class="fas fa-copy me-1"></i> PIX Copia e Cola
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; align-items: stretch;">
+                        {{-- QR Code — hero visual da doacao --}}
+                        <div style="border-radius: 24px; padding: 28px; background:#fff; box-shadow: 0 20px 50px rgba(15,23,42,.08); text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <div style="font-weight: 800; color:#0f172a; margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-qrcode" style="color:{{ $accent }};"></i>
+                                Aponte a câmera do seu banco
                             </div>
+                            @if($qrSrc !== '')
+                                <div style="padding:16px; background:#fff; border-radius:20px; border:3px solid {{ $accent }}; box-shadow: 0 8px 24px rgba(37,211,102,.15);">
+                                    <img loading="lazy" src="{{ $qrSrc }}" alt="QR Code PIX" style="width: 220px; height: 220px; object-fit: contain; display:block;">
+                                </div>
+                            @else
+                                <div style="width: 240px; height: 240px; border-radius: 18px; border: 2px dashed #cbd5e1; display:flex; align-items:center; justify-content:center; color:#94a3b8; text-align:center; padding: 20px;">
+                                    Configure a chave PIX ou o QR pra ativar
+                                </div>
+                            @endif
                             @if(!empty($section->content['recipient_name']))
-                                <div style="color:#475569; font-weight:700; margin-bottom: 10px;">
-                                    Destinatário: {{ $section->content['recipient_name'] }}
+                                <div style="margin-top:16px; color:#0f172a; font-weight:800; font-size:.95rem;">
+                                    <i class="fas fa-heart" style="color:{{ $accent }};"></i>
+                                    {{ $section->content['recipient_name'] }}
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Copia e cola + valores sugeridos --}}
+                        <div style="border-radius: 24px; padding: 28px; background:#fff; box-shadow: 0 20px 50px rgba(15,23,42,.08); display:flex; flex-direction:column;">
+                            <div style="font-weight: 800; color:#0f172a; margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-copy" style="color:{{ $accent }};"></i>
+                                Ou copie e cole
+                            </div>
+
+                            @if(count($amounts) > 0)
+                                <div style="margin-bottom: 16px;">
+                                    <div style="font-size:.78rem; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px;">Valores sugeridos:</div>
+                                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                        @foreach($amounts as $amt)
+                                            <span style="background:{{ $accent }}11; color:{{ $accent }}; padding:8px 14px; border-radius:10px; font-weight:800; border:1px solid {{ $accent }}44;">R$ {{ $amt }}</span>
+                                        @endforeach
+                                    </div>
                                 </div>
                             @endif
 
                             <textarea id="{{ $payloadId }}" readonly
-                                      style="width:100%; min-height: 110px; padding: 14px; border-radius: 16px; border:1px solid #e2e8f0; background:#f8fafc; color:#0f172a; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: .85rem; line-height:1.4; resize: vertical;">{{ $payload }}</textarea>
+                                      style="width:100%; min-height: 100px; padding: 14px; border-radius: 14px; border:1px solid #e2e8f0; background:#f8fafc; color:#0f172a; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem; line-height:1.5; resize: vertical; margin-bottom:14px;">{{ $payload }}</textarea>
 
-                            <div style="display:flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
-                                <button type="button"
-                                        onclick="(function(){var el=document.getElementById('{{ $payloadId }}'); if(!el) return; el.select(); try{document.execCommand('copy');}catch(e){} if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(el.value).catch(()=>{});} })();"
-                                        style="background:#4f46e5; color:#fff; border:none; padding: 12px 16px; border-radius: 14px; font-weight: 900; cursor:pointer;">
-                                    Copiar código PIX
-                                </button>
-                                @if(!empty($section->content['help_text']))
-                                    <div style="color:#64748b; font-size:.9rem; align-self:center;">
-                                        {{ $section->content['help_text'] }}
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
+                            <button type="button"
+                                    onclick="(function(){var el=document.getElementById('{{ $payloadId }}'); if(!el) return; var v=el.value; try{ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v);}else{el.select();document.execCommand('copy');} var t=document.getElementById('{{ $toastId }}'); if(t){t.style.opacity='1';t.style.transform='translateY(0)';clearTimeout(window.__pixT);window.__pixT=setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(20px)';},2200);} }catch(e){} })();"
+                                    style="background:{{ $accent }}; color:#fff; border:none; padding: 14px 20px; border-radius: 14px; font-weight: 900; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow: 0 6px 16px {{ $accent }}55; transition: transform .15s ease;"
+                                    onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <i class="fas fa-copy"></i> Copiar código PIX
+                            </button>
 
-                        <div style="border:1px solid #e2e8f0; border-radius: 24px; padding: 22px; background:#fff; box-shadow: 0 24px 60px rgba(15,23,42,.06); text-align:center;">
-                            <div style="font-weight: 900; color:#0f172a; margin-bottom: 12px;">
-                                <i class="fas fa-qrcode me-1"></i> QR Code
-                            </div>
-                            @if($qr !== '')
-                                <img loading="lazy" src="{{ $qr }}" alt="QR Code PIX" style="width: 220px; height: 220px; object-fit: cover; border-radius: 18px; border: 1px solid #e2e8f0;">
-                            @else
-                                <div style="width: 220px; height: 220px; margin: 0 auto; border-radius: 18px; border: 1px dashed #cbd5e1; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
-                                    Sem QR
+                            @if(!empty($section->content['help_text']))
+                                <div style="margin-top: 14px; color:#64748b; font-size:.85rem; line-height:1.5;">
+                                    <i class="fas fa-info-circle" style="color:{{ $accent }};"></i> {{ $section->content['help_text'] }}
                                 </div>
                             @endif
-                            <div style="margin-top: 12px; color:#64748b; font-size:.9rem;">
-                                Aponte a câmera do app do seu banco para doar.
-                            </div>
                         </div>
                     </div>
+                </div>
+
+                {{-- Toast copiado --}}
+                <div id="{{ $toastId }}" style="position:fixed; bottom:30px; left:50%; transform:translate(-50%, 20px); background:{{ $accent }}; color:#fff; padding:14px 24px; border-radius:14px; font-weight:800; box-shadow:0 12px 32px {{ $accent }}66; z-index:100000; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;">
+                    <i class="fas fa-check-circle"></i> Código PIX copiado!
                 </div>
             </section>
         @endif

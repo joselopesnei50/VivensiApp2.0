@@ -1346,14 +1346,16 @@ class LandingPageController extends Controller
             ],
             'pix_donation' => [
                 'title' => 'Doe via PIX',
-                'subtitle' => 'Use o PIX Copia e Cola abaixo. Se preferir, aponte a câmera para o QR Code.',
+                'subtitle' => 'Escaneie o QR Code ou use o Copia e Cola abaixo. Sua doação chega na hora.',
                 'recipient_name' => 'Sua Organização',
                 // Pode ser uma chave PIX simples (telefone/email/cnpj) ou o payload "copia e cola".
                 'pix_key_or_payload' => '00020126360014BR.GOV.BCB.PIX0114+5500000000005204000053039865802BR5920Sua Organizacao6009SAO PAULO62070503***6304ABCD',
-                'qr_image_url' => 'https://via.placeholder.com/220x220?text=QR+PIX',
-                'bg_color' => '#ffffff',
+                'qr_image_url' => '', // Se vazio, gera automatico via api.qrserver.com
+                'suggested_amounts' => '30,50,100,200', // Botoes de valor sugerido (informativo)
+                'bg_color' => '#f8fafc',
                 'text_color' => '#0f172a',
-                'help_text' => 'Dica: no app do banco, escolha PIX > Copia e Cola.'
+                'accent_color' => '#25D366', // Verde PIX/WA
+                'help_text' => 'Após copiar, abra o app do seu banco → PIX → Copia e Cola.'
             ],
             'cta_cards' => [
                 'title' => 'Como você pode ajudar',
