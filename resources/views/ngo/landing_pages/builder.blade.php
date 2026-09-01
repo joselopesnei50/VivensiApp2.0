@@ -420,41 +420,94 @@
 
                             {{-- Estado: dominio configurado --}}
                             <div id="cd-info" style="display: {{ $page->custom_domain ? 'block' : 'none' }};">
-                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
                                     <div style="display:flex; justify-content:space-between; align-items:center; gap: 12px; flex-wrap:wrap;">
                                         <div>
-                                            <div style="font-weight:900; color:#0f172a; font-size: 1rem;" id="cd-domain-display">{{ $page->custom_domain }}</div>
+                                            <div style="font-weight:900; color:#0f172a; font-size: 1.05rem;" id="cd-domain-display">{{ $page->custom_domain }}</div>
                                             <div id="cd-status-line" style="margin-top:4px; font-size:.85rem;">
                                                 {{-- Preenchido via JS --}}
                                             </div>
                                         </div>
                                         <div style="display:flex; gap: 8px;">
                                             <button type="button" id="cd-btn-provision" onclick="cdProvision()"
-                                                    style="background:#10b981; color:#fff; border:none; padding: 8px 14px; border-radius: 10px; font-weight:900; cursor:pointer;">
+                                                    style="background:#10b981; color:#fff; border:none; padding: 10px 16px; border-radius: 10px; font-weight:900; cursor:pointer;">
                                                 Verificar e ativar
                                             </button>
                                             <button type="button" onclick="cdRemove()"
-                                                    style="background:#fff; color:#dc2626; border:1px solid #fecaca; padding: 8px 14px; border-radius: 10px; font-weight:900; cursor:pointer;">
+                                                    style="background:#fff; color:#dc2626; border:1px solid #fecaca; padding: 10px 16px; border-radius: 10px; font-weight:900; cursor:pointer;">
                                                 Remover
                                             </button>
                                         </div>
                                     </div>
 
-                                    {{-- Instruções DNS --}}
-                                    <div style="margin-top: 14px; padding: 12px; background:#fff; border-radius: 10px; border:1px solid #e2e8f0;">
-                                        <div style="font-weight:800; color:#0f172a; margin-bottom: 6px; font-size:.9rem;">📌 DNS necessário:</div>
-                                        <div style="font-family: 'Courier New', monospace; font-size:.85rem; color:#334155;">
-                                            <div>Tipo: <strong>A</strong></div>
-                                            <div>Nome: <strong id="cd-dns-name">(seu domínio)</strong></div>
-                                            <div>Valor: <strong>{{ \App\Services\LandingDomainProvisioner::VPS_IP }}</strong></div>
+                                    {{-- Passo-a-passo com card visual (substitui o alert feio) --}}
+                                    <div style="margin-top: 18px; padding: 18px; background: linear-gradient(135deg, #eef2ff 0%, #ffffff 100%); border-radius: 14px; border:1px solid #c7d2fe;">
+                                        <div style="font-weight:900; color:#3730a3; font-size:1rem; margin-bottom: 14px; display:flex; align-items:center; gap: 8px;">
+                                            <span style="background:#4f46e5; color:#fff; width: 28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:.85rem;">1</span>
+                                            Configure o DNS no seu provedor
                                         </div>
-                                        <div style="margin-top: 8px; color:#64748b; font-size:.8rem;">
-                                            Aponte no painel do seu provedor (Registro.br, GoDaddy, Hostgator, Cloudflare). Após criar, aguarde a propagação (5-30min) antes de clicar em <strong>Verificar e ativar</strong>.
+
+                                        <div style="background:#fff; border:1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+                                            <div style="font-size:.78rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-bottom: 10px;">
+                                                Registro DNS a criar:
+                                            </div>
+                                            <div style="display:grid; grid-template-columns: 100px 1fr auto; gap: 8px 12px; align-items:center; font-size:.92rem;">
+                                                <div style="color:#64748b; font-weight:700;">Tipo</div>
+                                                <div style="font-family:'Courier New', monospace; font-weight:900; color:#0f172a;">A</div>
+                                                <div></div>
+
+                                                <div style="color:#64748b; font-weight:700;">Nome / Host</div>
+                                                <div style="font-family:'Courier New', monospace; font-weight:900; color:#0f172a; word-break:break-all;" id="cd-dns-name">(seu domínio)</div>
+                                                <button type="button" onclick="cdCopy(document.getElementById('cd-dns-name').textContent)" title="Copiar" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; padding: 4px 10px; border-radius: 6px; font-size:.75rem; cursor:pointer; font-weight:700;">📋 Copiar</button>
+
+                                                <div style="color:#64748b; font-weight:700;">Valor / IP</div>
+                                                <div style="font-family:'Courier New', monospace; font-weight:900; color:#0f172a;">{{ \App\Services\LandingDomainProvisioner::VPS_IP }}</div>
+                                                <button type="button" onclick="cdCopy('{{ \App\Services\LandingDomainProvisioner::VPS_IP }}')" title="Copiar" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; padding: 4px 10px; border-radius: 6px; font-size:.75rem; cursor:pointer; font-weight:700;">📋 Copiar</button>
+
+                                                <div style="color:#64748b; font-weight:700;">TTL</div>
+                                                <div style="font-family:'Courier New', monospace; font-weight:900; color:#0f172a;">3600 <span style="color:#94a3b8; font-weight:600;">(ou o padrão do seu provedor)</span></div>
+                                                <div></div>
+                                            </div>
                                         </div>
+
+                                        <div style="font-weight:800; color:#334155; font-size:.9rem; margin-bottom: 8px;">
+                                            Como fazer no seu provedor:
+                                        </div>
+                                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 12px;">
+                                            <a href="https://registro.br/painel/" target="_blank" rel="noopener" style="background:#fff; border:1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; text-decoration:none; color:#0f172a; font-size:.85rem; font-weight:700; display:flex; align-items:center; gap: 6px;">
+                                                🇧🇷 Registro.br <span style="color:#64748b; font-size:.8rem;">→</span>
+                                            </a>
+                                            <a href="https://dcc.godaddy.com/manage/dns" target="_blank" rel="noopener" style="background:#fff; border:1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; text-decoration:none; color:#0f172a; font-size:.85rem; font-weight:700; display:flex; align-items:center; gap: 6px;">
+                                                GoDaddy <span style="color:#64748b; font-size:.8rem;">→</span>
+                                            </a>
+                                            <a href="https://cp.hostgator.com.br/" target="_blank" rel="noopener" style="background:#fff; border:1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; text-decoration:none; color:#0f172a; font-size:.85rem; font-weight:700; display:flex; align-items:center; gap: 6px;">
+                                                HostGator <span style="color:#64748b; font-size:.8rem;">→</span>
+                                            </a>
+                                            <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener" style="background:#fff; border:1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; text-decoration:none; color:#0f172a; font-size:.85rem; font-weight:700; display:flex; align-items:center; gap: 6px;">
+                                                Cloudflare <span style="color:#64748b; font-size:.8rem;">→</span>
+                                            </a>
+                                        </div>
+
+                                        <div style="background:#fef3c7; border:1px solid #fde68a; border-radius: 10px; padding: 10px 12px; color:#78350f; font-size:.85rem; line-height:1.5;">
+                                            <strong>⏱ Propagação:</strong> após criar o registro, o DNS leva de <strong>5 a 30 minutos</strong> pra propagar (raramente até 24h). Depois clique em <strong>"Verificar e ativar"</strong> no topo desta caixa.
+                                        </div>
+
+                                        <div id="cd-verify-instr" style="display:none; margin-top:12px; padding: 10px 12px; background:#dbeafe; border:1px solid #93c5fd; border-radius: 10px; color:#1e3a8a; font-size:.85rem;">
+                                            <strong>💡 Como testar se o DNS já propagou:</strong> abra <a href="https://dnschecker.org/" target="_blank" rel="noopener" style="color:#1e40af;">dnschecker.org</a> e coloque seu domínio + tipo A. Se aparecer <strong>{{ \App\Services\LandingDomainProvisioner::VPS_IP }}</strong> na maioria dos servidores, pode clicar "Verificar e ativar".
+                                        </div>
+                                        <button type="button" onclick="document.getElementById('cd-verify-instr').style.display = document.getElementById('cd-verify-instr').style.display === 'none' ? 'block' : 'none'"
+                                                style="background:transparent; border:none; color:#4f46e5; font-size:.82rem; font-weight:700; cursor:pointer; margin-top: 8px; padding: 0; text-decoration:underline;">
+                                            Como testar se o DNS já propagou?
+                                        </button>
+                                    </div>
+
+                                    {{-- Toast de copiado --}}
+                                    <div id="cd-toast" style="display:none; position: fixed; bottom: 30px; right: 30px; background:#10b981; color:#fff; padding: 12px 20px; border-radius: 10px; font-weight:800; box-shadow: 0 10px 30px rgba(16,185,129,.3); z-index: 100000;">
+                                        ✓ Copiado!
                                     </div>
 
                                     {{-- Erro (se houver) --}}
-                                    <div id="cd-error" style="display:none; margin-top:10px; padding:10px 12px; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; color:#991b1b; font-size:.85rem;"></div>
+                                    <div id="cd-error" style="display:none; margin-top:14px; padding:12px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; color:#991b1b; font-size:.9rem; line-height:1.5;"></div>
                                 </div>
                             </div>
                         </div>
@@ -603,8 +656,30 @@
                 let j = {}; try { j = await res.json(); } catch (_) {}
                 if (!res.ok || !j.success) { alert(cdErrMsg(res, j)); return; }
                 cdRefreshUI(j.page);
-                if (j.dns_hint?.note) alert(j.dns_hint.note);
+                // Nao mostra alert do dns_hint — o card visual ja explica tudo.
+                // Scroll suave pro card DNS pra chamar atencao.
+                setTimeout(() => {
+                    document.getElementById('cd-info')?.scrollIntoView({behavior: 'smooth', block: 'start'});
+                }, 200);
             } catch (e) { alert('Erro de rede: ' + e.message); }
+        }
+
+        // Copia texto pro clipboard + toast visual (nada de alert)
+        async function cdCopy(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (_) {
+                // Fallback pra browsers antigos
+                const ta = document.createElement('textarea');
+                ta.value = text; document.body.appendChild(ta);
+                ta.select(); document.execCommand('copy'); ta.remove();
+            }
+            const toast = document.getElementById('cd-toast');
+            if (toast) {
+                toast.style.display = 'block';
+                clearTimeout(window.__cdToastTimer);
+                window.__cdToastTimer = setTimeout(() => { toast.style.display = 'none'; }, 1600);
+            }
         }
 
         async function cdProvision() {
