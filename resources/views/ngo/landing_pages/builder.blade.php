@@ -138,6 +138,7 @@
                                         'hero' => 'Hero Impacto',
                                         'hero_image' => 'Hero com Imagem',
                                         'whatsapp_float' => 'Botão WhatsApp Flutuante',
+                                        'transparency_portal' => 'Portal Transparência (link dinâmico)',
                                         'lead_capture' => 'Formulário de Inscrição',
                                         'stats' => 'Estatísticas',
                                         'testimonials' => 'Depoimentos',
@@ -238,6 +239,7 @@
                 <div class="gallery-card" onclick="addBlock('hero')"><i class="fas fa-id-card"></i><span>Hero / Início</span><p>Cabeçalho principal com CTA.</p></div>
                 <div class="gallery-card" onclick="addBlock('hero_image')"><i class="fas fa-image"></i><span>Hero com Imagem</span><p>Cabeçalho com imagem de fundo + overlay.</p></div>
                 <div class="gallery-card" onclick="addBlock('whatsapp_float')"><i class="fab fa-whatsapp"></i><span>WhatsApp Flutuante</span><p>Botão fixo no canto que abre conversa.</p></div>
+                <div class="gallery-card" onclick="addBlock('transparency_portal')"><i class="fas fa-shield-heart"></i><span>Portal Transparência</span><p>Link dinâmico pro Portal da Transparência da sua OSC.</p></div>
                 <div class="gallery-card" onclick="addBlock('who_we_are')"><i class="fas fa-users"></i><span>Quem Somos</span><p>Seção sobre a instituição.</p></div>
                 <div class="gallery-card" onclick="addBlock('services_grid')"><i class="fas fa-th"></i><span>Serviços (3 col)</span><p>Grade de serviços com imagens.</p></div>
                 <div class="gallery-card" onclick="addBlock('cta_banner')"><i class="fas fa-bullhorn"></i><span>Banner CTA</span><p>Chamada forte para ação.</p></div>

@@ -1174,6 +1174,16 @@ class LandingPageController extends Controller
                 'button_color'  => '#25D366',
                 'show_tooltip'  => 'yes',
             ],
+            'transparency_portal' => [
+                'title'        => 'Transparência é compromisso nosso',
+                'subtitle'     => 'Prestamos contas publicamente de tudo que fazemos. Acesse nosso Portal da Transparência com relatórios, doações, projetos e mais.',
+                'button_text'  => 'Ver Portal da Transparência',
+                'bg_color'     => '#f0f9ff',
+                'text_color'   => '#0c4a6e',
+                'accent_color' => '#0284c7',
+                // Se o Portal do tenant nao estiver publicado, o bloco esconde
+                // (fail-safe: nao linka pra pagina 404). Ver render.
+            ],
             'products' => [
                 'title' => 'Nossos Produtos / Serviços',
                 'bg_color' => '#ffffff',

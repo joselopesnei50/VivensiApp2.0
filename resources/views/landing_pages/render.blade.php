@@ -150,6 +150,64 @@
     @foreach($sections as $section)
 
 
+        @if($section->type == 'transparency_portal')
+            @php
+                // Puxa portal do proprio tenant da LP. Se nao existir ou nao
+                // estiver publicado, o bloco simplesmente nao renderiza
+                // (fail-safe: nao vira botao dead link 404).
+                $tpPortal = \App\Models\TransparencyPortal::withoutGlobalScope('tenant')
+                    ->where('tenant_id', $page->tenant_id)
+                    ->where('is_published', true)
+                    ->whereNotNull('slug')
+                    ->first();
+            @endphp
+            @if($tpPortal)
+                @php
+                    $tpBg     = \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#f0f9ff');
+                    $tpText   = \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#0c4a6e');
+                    $tpAccent = \App\Support\LandingPageSanitizer::cssColor($section->content['accent_color'] ?? null, '#0284c7');
+                    $tpUrl    = url('/transparencia/' . $tpPortal->slug);
+                @endphp
+                <section style="padding: 70px 0; background: {{ $tpBg }}; color: {{ $tpText }};">
+                    <div class="container" style="max-width: 900px;">
+                        <div style="background:#fff; border-radius: 24px; padding: 40px; box-shadow: 0 20px 50px rgba(15,23,42,.08); text-align: center;">
+                            <div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:{{ $tpAccent }}22; color:{{ $tpAccent }}; font-size:1.8rem; margin-bottom:18px;">
+                                <i class="fas fa-shield-heart"></i>
+                            </div>
+                            <h2 style="margin: 0 0 12px; color: {{ $tpText }}; font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 900;">{{ $section->content['title'] ?? 'Transparência' }}</h2>
+                            @if(!empty($section->content['subtitle']))
+                                <p style="margin: 0 0 28px; color:#475569; max-width:640px; margin-inline:auto; line-height:1.6; font-size:1.02rem;">{{ $section->content['subtitle'] }}</p>
+                            @endif
+
+                            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;">
+                                <div style="display:flex; align-items:center; gap:6px; padding:6px 12px; background:{{ $tpAccent }}11; color:{{ $tpAccent }}; border-radius:99px; font-size:.82rem; font-weight:700;">
+                                    <i class="fas fa-file-invoice-dollar"></i> Prestação de contas
+                                </div>
+                                <div style="display:flex; align-items:center; gap:6px; padding:6px 12px; background:{{ $tpAccent }}11; color:{{ $tpAccent }}; border-radius:99px; font-size:.82rem; font-weight:700;">
+                                    <i class="fas fa-users"></i> Conselho e equipe
+                                </div>
+                                <div style="display:flex; align-items:center; gap:6px; padding:6px 12px; background:{{ $tpAccent }}11; color:{{ $tpAccent }}; border-radius:99px; font-size:.82rem; font-weight:700;">
+                                    <i class="fas fa-handshake"></i> Parcerias
+                                </div>
+                            </div>
+
+                            <a href="{{ $tpUrl }}" target="_blank" rel="noopener"
+                               style="display:inline-flex; align-items:center; gap:10px; background: {{ $tpAccent }}; color:#fff; padding:14px 28px; border-radius:14px; text-decoration:none; font-weight:900; font-size:1.05rem; box-shadow: 0 8px 20px {{ $tpAccent }}44; transition: transform .15s;"
+                               onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                {{ $section->content['button_text'] ?? 'Ver Portal da Transparência' }}
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+
+                            <div style="margin-top:18px; color:#94a3b8; font-size:.82rem;">
+                                Portal público em {{ parse_url($tpUrl, PHP_URL_HOST) }}/transparencia/{{ $tpPortal->slug }}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            @endif
+            {{-- Se portal nao publicado, bloco nao renderiza nada — evita link quebrado --}}
+        @endif
+
         @if($section->type == 'whatsapp_float')
             @php
                 $wfPhone   = preg_replace('/\D+/', '', (string) ($section->content['phone'] ?? ''));
