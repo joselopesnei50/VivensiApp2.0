@@ -217,6 +217,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/ngo/landing-pages/{id}/upload-og-image', [App\Http\Controllers\LandingPageController::class, 'uploadOgImage']);
     Route::post('/ngo/landing-pages/{id}/upload-favicon',  [App\Http\Controllers\LandingPageController::class, 'uploadFavicon']);
     Route::post('/ngo/landing-pages/{id}/reorder',       [App\Http\Controllers\LandingPageController::class, 'reorderSections'])->name('ngo.landing-pages.reorder');
+    Route::post('/ngo/landing-pages/{id}/sections/{sectionId}/logo', [App\Http\Controllers\LandingPageController::class, 'uploadSectionLogo'])->name('ngo.landing-pages.section-logo');
     Route::delete('/ngo/landing-pages/{id}',             [App\Http\Controllers\LandingPageController::class, 'destroy']);
 
     // Custom domain add-on (Fase 3) — gate use-custom-domain

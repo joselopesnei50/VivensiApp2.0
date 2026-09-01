@@ -179,15 +179,56 @@
         @endif
 
         @if($section->type == 'header_nav')
-            <nav style="background: {{ \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#ffffff') }}; padding: 20px 0; border-bottom: 1px solid rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);">
-                <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-                    <img loading="lazy" src="{{ \App\Support\LandingPageSanitizer::url($section->content['logo_url'] ?? null, '') }}" alt="Logo" style="height: 40px;">
-                    <div style="display: flex; gap: 30px;">
+            @php
+                $hnBg    = \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#ffffff');
+                $hnColor = \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#1e293b');
+                $hnLogo  = \App\Support\LandingPageSanitizer::url($section->content['logo_url'] ?? null, '');
+                $hnBrand = $section->content['brand_text'] ?? ($page->title ?? '');
+                $hnId    = 'hn-' . $section->id;
+            @endphp
+            <nav style="background: {{ $hnBg }}; padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);">
+                <div class="container" style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+                    <a href="#" style="display:flex; align-items:center; gap:10px; text-decoration:none; color: {{ $hnColor }};">
+                        @if($hnLogo)
+                            <img loading="lazy" src="{{ $hnLogo }}" alt="Logo" style="height: 40px; max-width: 180px; object-fit: contain;">
+                        @endif
+                        @if($hnBrand && !$hnLogo)
+                            <span style="font-weight: 900; font-size: 1.1rem;">{{ $hnBrand }}</span>
+                        @endif
+                    </a>
+
+                    {{-- Botao hamburger — visivel so mobile via media query --}}
+                    <button type="button" id="{{ $hnId }}-toggle" aria-label="Menu" aria-expanded="false"
+                            style="display:none; background: transparent; border: 1px solid rgba(0,0,0,0.1); color: {{ $hnColor }}; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;"
+                            class="{{ $hnId }}-mobile-only"
+                            onclick="var m=document.getElementById('{{ $hnId }}-menu');var b=this;var open=m.getAttribute('data-open')==='1';m.setAttribute('data-open',open?'0':'1');m.style.display=open?'none':'flex';b.setAttribute('aria-expanded',open?'false':'true');">
+                        &#9776;
+                    </button>
+
+                    <div id="{{ $hnId }}-menu" data-open="0" class="{{ $hnId }}-links"
+                         style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
                         @foreach($section->content['links'] ?? [] as $link)
-                            <a href="{{ \App\Support\LandingPageSanitizer::url($link['url'] ?? null, '#') }}" style="text-decoration: none; color: {{ \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#1e293b') }}; font-weight: 600; font-size: 0.9rem; transition: color 0.3s;">{{ $link['label'] ?? 'Link' }}</a>
+                            <a href="{{ \App\Support\LandingPageSanitizer::url($link['url'] ?? null, '#') }}"
+                               style="text-decoration: none; color: {{ $hnColor }}; font-weight: 600; font-size: 0.95rem; transition: color 0.3s; padding: 6px 0;">{{ $link['label'] ?? 'Link' }}</a>
                         @endforeach
                     </div>
                 </div>
+                <style>
+                    @media (max-width: 768px) {
+                        .{{ $hnId }}-mobile-only { display: inline-flex !important; }
+                        .{{ $hnId }}-links {
+                            display: none !important;
+                            flex-direction: column;
+                            align-items: flex-start !important;
+                            gap: 8px !important;
+                            width: 100%;
+                            padding: 12px 20px !important;
+                            border-top: 1px solid rgba(0,0,0,0.06);
+                            margin-top: 12px;
+                        }
+                        .{{ $hnId }}-links[data-open="1"] { display: flex !important; }
+                    }
+                </style>
             </nav>
         @endif
 

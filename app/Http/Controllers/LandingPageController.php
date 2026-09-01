@@ -338,6 +338,46 @@ class LandingPageController extends Controller
         ]);
     }
 
+    /**
+     * Upload de logo do header_nav (ou qualquer section com campo logo_url).
+     * Atualiza section->content['logo_url'] direto e retorna URL nova.
+     */
+    public function uploadSectionLogo(Request $request, $id, $sectionId)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $page = LandingPage::where('tenant_id', $tenantId)->findOrFail($id);
+        $section = LandingPageSection::where('landing_page_id', $page->id)->findOrFail($sectionId);
+
+        $validated = $request->validate([
+            'file' => 'required|file|image|max:2048', // 2MB pra logo
+        ]);
+
+        $file = $validated['file'];
+        $disk = Storage::disk('public');
+        $ext = strtolower((string) $file->extension()) ?: 'png';
+        $dir = 'landing-pages/' . $page->tenant_id . '/' . $page->id;
+        $name = 'section-' . $section->id . '-logo-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
+        $path = $file->storeAs($dir, $name, 'public');
+        $url = $disk->url($path);
+
+        // Remove logo antigo do storage se existia
+        $content = is_array($section->content) ? $section->content : [];
+        $oldPath = (string) ($content['logo_storage_path'] ?? '');
+        if ($oldPath !== '' && $oldPath !== $path) {
+            try { $disk->delete($oldPath); } catch (\Throwable $e) { /* ignore */ }
+        }
+
+        $content['logo_url'] = $url;
+        $content['logo_storage_path'] = $path;
+        $section->update(['content' => $content]);
+
+        return response()->json([
+            'success' => true,
+            'url'     => $url,
+            'section' => ['id' => $section->id, 'content' => $content],
+        ]);
+    }
+
     private function storeLpAsset(LandingPage $page, \Illuminate\Http\UploadedFile $file, string $kind): array
     {
         $disk = Storage::disk('public');

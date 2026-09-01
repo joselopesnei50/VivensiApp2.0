@@ -927,6 +927,55 @@
             }
         }
 
+        // ── Upload de logo do header_nav (P2 melhorias builder) ──────────────
+        async function hnUploadLogo(sectionId) {
+            const input = document.getElementById('hn-logo-file');
+            const btn = document.getElementById('hn-logo-upload-btn');
+            const file = input && input.files ? input.files[0] : null;
+            if (!file) return alert('Selecione uma imagem primeiro.');
+            if (btn) btn.disabled = true;
+
+            const fd = new FormData();
+            fd.append('file', file);
+            try {
+                const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/sections/' + sectionId + '/logo'), {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                    body: fd,
+                });
+                let j = {}; try { j = await res.json(); } catch (_) {}
+                if (!res.ok || !j.success) {
+                    alert((j && j.errors && j.errors.file) ? j.errors.file[0] : (j.error || 'Falha no upload'));
+                    if (btn) btn.disabled = false;
+                    return;
+                }
+                // Atualiza preview + hidden field
+                const wrap = document.getElementById('hn-logo-preview-wrap');
+                const img  = document.getElementById('hn-logo-preview');
+                if (img) img.src = j.url + '?t=' + Date.now(); // cache-bust
+                if (wrap) wrap.style.display = 'block';
+                const hidden = document.querySelector('input[name="logo_url"]');
+                if (hidden) hidden.value = j.url;
+                if (btn) btn.disabled = false;
+                // Feedback rapido
+                btn.innerHTML = '<i class="fas fa-check"></i> Enviado!';
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-upload"></i> Enviar'; }, 1500);
+            } catch (e) {
+                alert('Erro de rede: ' + e.message);
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        function hnClearLogo() {
+            if (!confirm('Remover o logo? A landing volta a mostrar o titulo em texto.')) return;
+            const hidden = document.querySelector('input[name="logo_url"]');
+            const wrap   = document.getElementById('hn-logo-preview-wrap');
+            if (hidden) hidden.value = '';
+            if (wrap)   wrap.style.display = 'none';
+            // Precisa salvar section pra propagar; user clica Salvar depois
+            alert('Logo marcado pra remover. Clique em Salvar Bloco pra confirmar.');
+        }
+
         async function uploadOgImage() {
             const input = document.getElementById('st_og_file');
             const btn = document.getElementById('btn-upload-og');
@@ -1114,6 +1163,43 @@
                 // Evita duplicar toggles + custom_fields no editor genérico abaixo.
                 content = Object.assign({}, content);
                 ['require_name','require_phone','enable_phone','enable_cpf','enable_birth_date','enable_address','enable_city','enable_guardian','custom_fields'].forEach(k => { delete content[k]; });
+            }
+
+            // ── Header/Menu — upload de logo dedicado (P2 melhorias builder)
+            if (type === 'header_nav') {
+                const logoBox = document.createElement('div');
+                logoBox.style.cssText = 'background:#eef2ff; border:1px solid #c7d2fe; border-radius:12px; padding:14px 16px; margin-bottom:16px;';
+                logoBox.innerHTML = `
+                    <div style="font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#4f46e5; margin-bottom:10px;">
+                        <i class="fas fa-image"></i> Logo do menu
+                    </div>
+                    <div id="hn-logo-preview-wrap" style="margin-bottom:12px; ${content.logo_url ? '' : 'display:none;'}">
+                        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:10px; display:inline-block;">
+                            <img id="hn-logo-preview" src="${content.logo_url || ''}" alt="Logo atual" style="max-height:60px; max-width:220px; display:block;">
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <input type="file" id="hn-logo-file" accept="image/*" style="flex:1; min-width:200px;">
+                        <button type="button" id="hn-logo-upload-btn" onclick="hnUploadLogo(${id})"
+                                style="background:#4f46e5; color:#fff; border:none; padding:10px 16px; border-radius:10px; font-weight:900; cursor:pointer;">
+                            <i class="fas fa-upload"></i> Enviar
+                        </button>
+                        ${content.logo_url ? `<button type="button" onclick="hnClearLogo()"
+                                style="background:#fff; color:#dc2626; border:1px solid #fecaca; padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer;">
+                            Remover
+                        </button>` : ''}
+                    </div>
+                    <div style="margin-top:8px; color:#64748b; font-size:.78rem;">
+                        PNG/JPG/SVG, max 2MB. Recomendado 200x60px transparente. Se não enviar, mostra o título da landing no lugar.
+                    </div>
+                    <input type="hidden" name="logo_url" value="${content.logo_url || ''}">
+                </div>`;
+                container.appendChild(logoBox);
+
+                // Remove logo_url do content pra não duplicar como input texto embaixo
+                content = Object.assign({}, content);
+                delete content.logo_url;
+                delete content.logo_storage_path;
             }
 
             // Nos blocos de formulário, os campos genéricos (título, subtítulo,
