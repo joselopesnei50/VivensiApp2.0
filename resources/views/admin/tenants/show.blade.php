@@ -214,6 +214,40 @@
             @enderror
         </div>
 
+        {{-- Add-on: Domínio Próprio (Fase 3 do custom domain) --}}
+        <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
+            <h4 style="color:#1e293b; margin-top:0;">
+                <i class="fas fa-globe me-2" style="color:#4f46e5;"></i>Add-on: Domínio Próprio (Landing Pages)
+            </h4>
+            <p style="font-size:.85rem; color:#64748b; margin:8px 0 16px;">
+                Quando ativo, o cliente pode configurar seu próprio domínio (ex: <code>www.suaong.org.br</code>)
+                nas landing pages em <code>/ngo/landing-pages</code>. SSL Let's Encrypt automático.
+                Desativar não derruba landings já ativas — elas continuam até o cert expirar (90d).
+            </p>
+
+            <form action="{{ route('admin.tenants.custom_domain_addon', $tenant->id) }}" method="POST" style="display:flex; gap:10px; align-items:center;">
+                @csrf
+                <div style="flex:1;">
+                    <label style="display:flex; align-items:center; gap:10px; font-size:.9rem; color:#0f172a; cursor:pointer;">
+                        <input type="checkbox" name="active" value="1" {{ $tenant->custom_domain_addon_active ? 'checked' : '' }}
+                               style="width:20px; height:20px; cursor:pointer;">
+                        <span>
+                            <strong>Add-on ativo</strong>
+                            <span style="color:#64748b; font-size:.85rem; margin-left:8px;">
+                                Status atual:
+                                <span style="color:{{ $tenant->custom_domain_addon_active ? '#059669' : '#dc2626' }}; font-weight:700;">
+                                    {{ $tenant->custom_domain_addon_active ? 'ATIVO' : 'INATIVO' }}
+                                </span>
+                            </span>
+                        </span>
+                    </label>
+                </div>
+                <button type="submit" style="background:#4f46e5; color:white; border:none; padding:10px 18px; border-radius:8px; font-weight:700; font-size:.85rem; cursor:pointer;">
+                    <i class="fas fa-save me-1"></i>Salvar
+                </button>
+            </form>
+        </div>
+
         {{-- Alterar Plano — Fluxo Adesão (2026-08-19) --}}
         <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
             <h4 style="color:#1e293b; margin-top:0;">

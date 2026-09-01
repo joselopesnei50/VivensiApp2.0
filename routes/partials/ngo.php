@@ -217,6 +217,13 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::post('/ngo/landing-pages/{id}/upload-og-image', [App\Http\Controllers\LandingPageController::class, 'uploadOgImage']);
     Route::post('/ngo/landing-pages/{id}/upload-favicon',  [App\Http\Controllers\LandingPageController::class, 'uploadFavicon']);
     Route::delete('/ngo/landing-pages/{id}',             [App\Http\Controllers\LandingPageController::class, 'destroy']);
+
+    // Custom domain add-on (Fase 3) — gate use-custom-domain
+    Route::post('/ngo/landing-pages/{id}/custom-domain',           [App\Http\Controllers\LandingPageController::class, 'setCustomDomain'])->middleware('can:use-custom-domain')->name('ngo.landing-pages.custom-domain.set');
+    Route::post('/ngo/landing-pages/{id}/custom-domain/provision', [App\Http\Controllers\LandingPageController::class, 'provisionCustomDomain'])->middleware('can:use-custom-domain', 'throttle:5,1')->name('ngo.landing-pages.custom-domain.provision');
+    Route::get('/ngo/landing-pages/{id}/custom-domain/status',     [App\Http\Controllers\LandingPageController::class, 'customDomainStatus'])->middleware('can:use-custom-domain')->name('ngo.landing-pages.custom-domain.status');
+    Route::delete('/ngo/landing-pages/{id}/custom-domain',         [App\Http\Controllers\LandingPageController::class, 'removeCustomDomain'])->middleware('can:use-custom-domain')->name('ngo.landing-pages.custom-domain.remove');
+
     Route::get('/ngo/landing-pages/{id}/leads',          [App\Http\Controllers\LandingPageLeadController::class, 'index']);
     Route::get('/ngo/landing-pages/{id}/leads/export',   [App\Http\Controllers\LandingPageLeadController::class, 'exportCsv']);
 

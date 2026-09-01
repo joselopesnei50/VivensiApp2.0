@@ -62,6 +62,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::delete('/tenants/{id}',     [App\Http\Controllers\AdminController::class, 'destroyTenant'])->name('admin.tenants.destroy');
         Route::post('/tenants/{id}/email-quota', [App\Http\Controllers\AdminController::class, 'updateEmailQuota'])->name('admin.tenants.email_quota');
         Route::post('/tenants/{id}/change-plan',  [App\Http\Controllers\AdminController::class, 'changeTenantPlan'])->name('admin.tenants.change_plan');
+        Route::post('/tenants/{id}/custom-domain-addon', [App\Http\Controllers\AdminController::class, 'toggleCustomDomainAddon'])->name('admin.tenants.custom_domain_addon');
 
         // Academy
         Route::resource('academy', App\Http\Controllers\Admin\AcademyController::class, ['as' => 'admin']);

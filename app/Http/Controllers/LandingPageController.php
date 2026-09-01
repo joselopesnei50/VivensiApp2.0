@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProvisionLandingDomainJob;
 use App\Models\LandingPage;
 use App\Models\LandingPageSection;
 use App\Models\LeadConsent;
 use App\Models\Tenant;
 use App\Services\LeadService;
+use App\Services\LandingDomainProvisioner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -567,6 +569,145 @@ class LandingPageController extends Controller
 
             return response()->json(['success' => true]);
         });
+    }
+
+    // ─── Custom domain add-on (Fase 3) ─────────────────────────────────────────
+
+    /**
+     * Salva/atualiza o custom_domain da LP. Reseta status pra 'pending'
+     * (aguardando provisionamento). Nao dispara certbot aqui — dispara em
+     * provisionCustomDomain().
+     */
+    public function setCustomDomain(Request $request, $id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $page = LandingPage::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $validated = $request->validate([
+            'custom_domain' => [
+                'required',
+                'string',
+                'min:4',
+                'max:253',
+                'regex:/^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)+$/i',
+            ],
+        ], [
+            'custom_domain.regex' => 'Dominio invalido. Ex: www.suaong.org.br ou suaong.org.br',
+        ]);
+
+        $domain = strtolower(trim($validated['custom_domain']));
+
+        // Bloqueia dominios proprios da Vivensi (defesa contra tomada de conta)
+        $appHost = strtolower(parse_url((string) config('app.url'), PHP_URL_HOST) ?? '');
+        if ($appHost && ($domain === $appHost || str_ends_with($domain, '.' . $appHost))) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Nao e permitido usar dominio proprio da Vivensi.',
+            ], 422);
+        }
+
+        // Check unicidade (index unique no schema pega, mas erro amigavel aqui)
+        $taken = LandingPage::withoutGlobalScopes()
+            ->where('custom_domain', $domain)
+            ->where('id', '!=', $page->id)
+            ->exists();
+        if ($taken) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Este dominio ja esta em uso em outra landing page.',
+            ], 422);
+        }
+
+        $page->update([
+            'custom_domain'                => $domain,
+            'custom_domain_status'         => 'pending',
+            'custom_domain_error'          => null,
+            'custom_domain_ssl_expires_at' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'page'    => $page->only(['id', 'custom_domain', 'custom_domain_status', 'custom_domain_error']),
+            'dns_hint' => [
+                'type'  => 'A',
+                'value' => LandingDomainProvisioner::VPS_IP,
+                'note'  => "Crie um registro A pra {$domain} apontando pra " . LandingDomainProvisioner::VPS_IP . ". Espere a propagacao (5-30min) antes de clicar em 'Verificar e ativar'.",
+            ],
+        ]);
+    }
+
+    /**
+     * Enfileira job pra provisionar cert + nginx (assincrono, certbot demora).
+     */
+    public function provisionCustomDomain($id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $page = LandingPage::where('tenant_id', $tenantId)->findOrFail($id);
+
+        if (!$page->custom_domain) {
+            return response()->json(['success' => false, 'error' => 'Sem custom_domain configurado.'], 422);
+        }
+
+        if ($page->custom_domain_status === 'verifying') {
+            return response()->json(['success' => false, 'error' => 'Ja em andamento. Aguarde.'], 429);
+        }
+
+        $page->update(['custom_domain_status' => 'verifying', 'custom_domain_error' => null]);
+        ProvisionLandingDomainJob::dispatch($page->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Provisionamento iniciado. Isso pode levar 1-3 minutos.',
+            'page'    => $page->only(['id', 'custom_domain', 'custom_domain_status']),
+        ]);
+    }
+
+    /**
+     * Polling do frontend pra atualizar UI enquanto job roda.
+     */
+    public function customDomainStatus($id)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $page = LandingPage::where('tenant_id', $tenantId)->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'page'    => $page->only([
+                'id',
+                'custom_domain',
+                'custom_domain_status',
+                'custom_domain_error',
+                'custom_domain_ssl_expires_at',
+            ]),
+        ]);
+    }
+
+    /**
+     * Remove custom_domain e desprovisiona nginx (cliente cancelou add-on ou
+     * trocou de dominio).
+     */
+    public function removeCustomDomain($id, LandingDomainProvisioner $p)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $page = LandingPage::where('tenant_id', $tenantId)->findOrFail($id);
+
+        // Best effort: remove nginx config + reload. Nao bloqueia se falhar
+        // (job diario limpa depois).
+        try {
+            $p->removeNginxConfig((int) $page->id);
+            $p->reloadNginx();
+        } catch (\Throwable $e) {
+            Log::warning('[cd] removeCustomDomain nginx cleanup falhou: ' . $e->getMessage());
+        }
+
+        $page->update([
+            'custom_domain'                => null,
+            'custom_domain_status'         => null,
+            'custom_domain_error'          => null,
+            'custom_domain_ssl_expires_at' => null,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     public function submitLead(Request $request, $slug, LeadService $leadService)

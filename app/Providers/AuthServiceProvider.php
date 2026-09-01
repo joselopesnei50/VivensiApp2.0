@@ -148,5 +148,15 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('access-personal', function (User $user) use ($perm) {
             return $perm($user, 'access-personal') || $user->role === 'common';
         });
+
+        // Landing page custom domain (add-on pago). Cliente so acessa se o
+        // super_admin ativou tenants.custom_domain_addon_active. Alem disso,
+        // exige role ngo (dono da OSC/tenant) — outros papeis nao configuram.
+        Gate::define('use-custom-domain', function (User $user) {
+            if ($user->role !== 'ngo') {
+                return false;
+            }
+            return (bool) ($user->tenant?->custom_domain_addon_active ?? false);
+        });
     }
 }

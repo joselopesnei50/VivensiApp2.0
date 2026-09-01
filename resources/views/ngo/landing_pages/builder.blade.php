@@ -386,6 +386,83 @@
 
                 <hr style="margin: 22px 0; border:none; border-top: 1px solid #f1f5f9;">
 
+                {{-- ─── Domínio Próprio (add-on) ─────────────────────────────── --}}
+                @php
+                    $addonActive = (bool) (auth()->user()->tenant?->custom_domain_addon_active ?? false);
+                @endphp
+                <div>
+                    <div style="font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#4f46e5; margin-bottom: 8px;">
+                        <i class="fas fa-globe"></i> Domínio Próprio (add-on)
+                    </div>
+
+                    @if(!$addonActive)
+                        <div style="background:#fef3c7; border:1px solid #fde68a; border-radius: 12px; padding: 14px 16px; color:#78350f; font-size:.9rem; line-height:1.55;">
+                            <strong>Add-on não contratado.</strong> Use seu próprio domínio (ex: <code>www.suaong.org.br</code>) em vez de <code>{{ parse_url(config('app.url'), PHP_URL_HOST) }}/lp/{{ $page->slug }}</code>.
+                            Fala com nosso comercial pra ativar em sua conta.
+                        </div>
+                    @else
+                        <div id="cd-panel" data-status="{{ $page->custom_domain_status ?? '' }}" data-domain="{{ $page->custom_domain ?? '' }}">
+
+                            {{-- Estado: nenhum dominio configurado --}}
+                            <div id="cd-form" style="display: {{ $page->custom_domain ? 'none' : 'block' }};">
+                                <div style="color:#64748b; font-size:.85rem; margin-bottom: 10px;">
+                                    Digite o domínio (raiz ou <code>www.</code>) e siga as instruções de DNS.
+                                </div>
+                                <div style="display:flex; gap: 10px;">
+                                    <input id="cd_input" type="text" placeholder="www.suaong.org.br"
+                                           style="flex:1; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0;">
+                                    <button type="button" onclick="cdSaveDomain()"
+                                            style="background:#4f46e5; color:#fff; border:none; padding: 10px 16px; border-radius: 12px; font-weight:900; cursor:pointer;">
+                                        Salvar domínio
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Estado: dominio configurado --}}
+                            <div id="cd-info" style="display: {{ $page->custom_domain ? 'block' : 'none' }};">
+                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; gap: 12px; flex-wrap:wrap;">
+                                        <div>
+                                            <div style="font-weight:900; color:#0f172a; font-size: 1rem;" id="cd-domain-display">{{ $page->custom_domain }}</div>
+                                            <div id="cd-status-line" style="margin-top:4px; font-size:.85rem;">
+                                                {{-- Preenchido via JS --}}
+                                            </div>
+                                        </div>
+                                        <div style="display:flex; gap: 8px;">
+                                            <button type="button" id="cd-btn-provision" onclick="cdProvision()"
+                                                    style="background:#10b981; color:#fff; border:none; padding: 8px 14px; border-radius: 10px; font-weight:900; cursor:pointer;">
+                                                Verificar e ativar
+                                            </button>
+                                            <button type="button" onclick="cdRemove()"
+                                                    style="background:#fff; color:#dc2626; border:1px solid #fecaca; padding: 8px 14px; border-radius: 10px; font-weight:900; cursor:pointer;">
+                                                Remover
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {{-- Instruções DNS --}}
+                                    <div style="margin-top: 14px; padding: 12px; background:#fff; border-radius: 10px; border:1px solid #e2e8f0;">
+                                        <div style="font-weight:800; color:#0f172a; margin-bottom: 6px; font-size:.9rem;">📌 DNS necessário:</div>
+                                        <div style="font-family: 'Courier New', monospace; font-size:.85rem; color:#334155;">
+                                            <div>Tipo: <strong>A</strong></div>
+                                            <div>Nome: <strong id="cd-dns-name">(seu domínio)</strong></div>
+                                            <div>Valor: <strong>{{ \App\Services\LandingDomainProvisioner::VPS_IP }}</strong></div>
+                                        </div>
+                                        <div style="margin-top: 8px; color:#64748b; font-size:.8rem;">
+                                            Aponte no painel do seu provedor (Registro.br, GoDaddy, Hostgator, Cloudflare). Após criar, aguarde a propagação (5-30min) antes de clicar em <strong>Verificar e ativar</strong>.
+                                        </div>
+                                    </div>
+
+                                    {{-- Erro (se houver) --}}
+                                    <div id="cd-error" style="display:none; margin-top:10px; padding:10px 12px; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; color:#991b1b; font-size:.85rem;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <hr style="margin: 22px 0; border:none; border-top: 1px solid #f1f5f9;">
+
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items:start;">
                     <div style="grid-column: 1 / -1;">
                         <div style="display:flex; justify-content: space-between; align-items:center; gap: 10px; flex-wrap: wrap;">
@@ -442,6 +519,143 @@
         const __lpBaseUrl = @json(rtrim(request()->getBaseUrl(), '/'));
         function __lpUrl(path) { return (__lpBaseUrl || '') + path; }
         function __lpAbs(path) { return window.location.origin + (__lpBaseUrl || '') + path; }
+
+        // ── Custom Domain (add-on) ────────────────────────────────────────────
+        const __cdCsrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        let __cdPollTimer = null;
+
+        function cdStatusLabel(status) {
+            const map = {
+                'pending':   {t: 'Aguardando ativação', bg: '#fef3c7', fg: '#78350f'},
+                'verifying': {t: 'Verificando/provisionando...', bg: '#dbeafe', fg: '#1e3a8a'},
+                'active':    {t: 'Ativo ✓ (SSL válido)',  bg: '#dcfce7', fg: '#166534'},
+                'failed':    {t: 'Falhou — corrija DNS e tente de novo', bg: '#fee2e2', fg: '#991b1b'},
+                '':          {t: 'Não configurado', bg: '#f1f5f9', fg: '#64748b'},
+            };
+            return map[status] || map[''];
+        }
+
+        function cdRefreshUI(page) {
+            const panel = document.getElementById('cd-panel');
+            if (!panel) return;
+            const status = page.custom_domain_status || '';
+            const domain = page.custom_domain || '';
+            panel.dataset.status = status;
+            panel.dataset.domain = domain;
+
+            document.getElementById('cd-form').style.display   = domain ? 'none' : 'block';
+            document.getElementById('cd-info').style.display   = domain ? 'block' : 'none';
+
+            if (domain) {
+                document.getElementById('cd-domain-display').textContent = domain;
+                document.getElementById('cd-dns-name').textContent = domain;
+
+                const l = cdStatusLabel(status);
+                const line = document.getElementById('cd-status-line');
+                line.innerHTML = `<span style="display:inline-block; padding:3px 10px; border-radius:20px; background:${l.bg}; color:${l.fg}; font-weight:800; font-size:.8rem;">${l.t}</span>`;
+
+                const btn = document.getElementById('cd-btn-provision');
+                if (status === 'verifying') {
+                    btn.disabled = true;
+                    btn.textContent = 'Provisionando...';
+                    btn.style.opacity = '0.6';
+                } else if (status === 'active') {
+                    btn.textContent = 'Renovar cert';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                } else {
+                    btn.textContent = 'Verificar e ativar';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+
+                const errBox = document.getElementById('cd-error');
+                if (page.custom_domain_error) {
+                    errBox.style.display = 'block';
+                    errBox.textContent = page.custom_domain_error;
+                } else {
+                    errBox.style.display = 'none';
+                }
+            }
+        }
+
+        async function cdSaveDomain() {
+            const val = (document.getElementById('cd_input').value || '').trim().toLowerCase();
+            if (!val) { alert('Digite o domínio'); return; }
+            try {
+                const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/custom-domain'), {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json','X-CSRF-TOKEN':__cdCsrf,'Accept':'application/json'},
+                    body: JSON.stringify({ custom_domain: val }),
+                });
+                const j = await res.json();
+                if (!res.ok || !j.success) { alert(j.error || 'Falhou'); return; }
+                cdRefreshUI(j.page);
+                if (j.dns_hint?.note) alert(j.dns_hint.note);
+            } catch (e) { alert('Erro de rede'); }
+        }
+
+        async function cdProvision() {
+            try {
+                const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/custom-domain/provision'), {
+                    method: 'POST',
+                    headers: {'X-CSRF-TOKEN':__cdCsrf,'Accept':'application/json'},
+                });
+                const j = await res.json();
+                if (!res.ok || !j.success) { alert(j.error || 'Falhou'); return; }
+                cdRefreshUI(j.page);
+                cdStartPolling();
+            } catch (e) { alert('Erro de rede'); }
+        }
+
+        async function cdRemove() {
+            if (!confirm('Remover domínio próprio? A landing volta a responder só pela URL do Vivensi.')) return;
+            try {
+                const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/custom-domain'), {
+                    method: 'DELETE',
+                    headers: {'X-CSRF-TOKEN':__cdCsrf,'Accept':'application/json'},
+                });
+                const j = await res.json();
+                if (!res.ok || !j.success) { alert('Falhou'); return; }
+                cdRefreshUI({custom_domain: null, custom_domain_status: null, custom_domain_error: null});
+                cdStopPolling();
+            } catch (e) { alert('Erro de rede'); }
+        }
+
+        async function cdPollStatus() {
+            try {
+                const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/custom-domain/status'), {
+                    headers: {'Accept':'application/json'},
+                });
+                const j = await res.json();
+                if (j.success) {
+                    cdRefreshUI(j.page);
+                    if (j.page.custom_domain_status !== 'verifying') cdStopPolling();
+                }
+            } catch (e) { /* silent */ }
+        }
+
+        function cdStartPolling() {
+            cdStopPolling();
+            __cdPollTimer = setInterval(cdPollStatus, 4000);
+        }
+        function cdStopPolling() {
+            if (__cdPollTimer) { clearInterval(__cdPollTimer); __cdPollTimer = null; }
+        }
+
+        // Init: preenche UI com dados do server-side (via data-* no panel)
+        document.addEventListener('DOMContentLoaded', function() {
+            const p = document.getElementById('cd-panel');
+            if (!p) return;
+            const status = p.dataset.status || '';
+            const domain = p.dataset.domain || '';
+            cdRefreshUI({
+                custom_domain: domain,
+                custom_domain_status: status,
+                custom_domain_error: @json($page->custom_domain_error ?? null),
+            });
+            if (status === 'verifying') cdStartPolling();
+        });
 
         let currentId = null;
 

@@ -420,6 +420,37 @@ class AdminController extends Controller
         return back()->with('success', "Cota diária de e-mails atualizada para {$new}.");
     }
 
+    /**
+     * Toggle do add-on de custom domain de landing page (super_admin ativa
+     * por tenant conforme contratacao comercial). Ver
+     * infra/README-CUSTOM-DOMAIN.md pra fluxo completo.
+     */
+    public function toggleCustomDomainAddon(Request $request, $id)
+    {
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403);
+        }
+
+        $tenant = Tenant::findOrFail($id);
+        $old = (bool) ($tenant->custom_domain_addon_active ?? false);
+        $new = $request->boolean('active');
+
+        if ($old !== $new) {
+            $tenant->update(['custom_domain_addon_active' => $new]);
+            AdminAuditLog::record('tenant.custom_domain_addon_toggled', [
+                'target_type' => 'tenant',
+                'target_id'   => $tenant->id,
+                'target_name' => $tenant->name,
+                'from'        => $old,
+                'to'          => $new,
+            ]);
+        }
+
+        return back()->with('success', $new
+            ? 'Add-on de dominio proprio ATIVADO. Cliente pode configurar em /ngo/landing-pages.'
+            : 'Add-on de dominio proprio DESATIVADO. Landings custom continuam servindo ate cert expirar.');
+    }
+
     public function auditLogs()
     {
         if (!auth()->user()->isSuperAdmin()) {
