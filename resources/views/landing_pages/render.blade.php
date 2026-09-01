@@ -150,6 +150,47 @@
     @foreach($sections as $section)
 
 
+        @if($section->type == 'whatsapp_float')
+            @php
+                $wfPhone   = preg_replace('/\D+/', '', (string) ($section->content['phone'] ?? ''));
+                $wfMsg     = trim((string) ($section->content['message'] ?? ''));
+                $wfTooltip = trim((string) ($section->content['tooltip'] ?? ''));
+                $wfPos     = in_array($section->content['position'] ?? '', ['left','right'], true) ? $section->content['position'] : 'right';
+                $wfColor   = \App\Support\LandingPageSanitizer::cssColor($section->content['button_color'] ?? null, '#25D366');
+                $wfShow    = ($section->content['show_tooltip'] ?? 'yes') === 'yes';
+                $wfHref    = 'https://wa.me/' . $wfPhone . ($wfMsg !== '' ? '?text=' . rawurlencode($wfMsg) : '');
+                $wfId      = 'wf-' . $section->id;
+            @endphp
+            @if($wfPhone !== '')
+                <a id="{{ $wfId }}" href="{{ $wfHref }}" target="_blank" rel="noopener"
+                   aria-label="Falar no WhatsApp"
+                   style="position: fixed; bottom: 24px; {{ $wfPos }}: 24px; z-index: 9998;
+                          width: 60px; height: 60px; border-radius: 50%;
+                          background: {{ $wfColor }}; color: #fff;
+                          display: flex; align-items: center; justify-content: center;
+                          font-size: 30px; text-decoration: none;
+                          box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+                          transition: transform .2s ease, box-shadow .2s ease;">
+                    <i class="fab fa-whatsapp"></i>
+                    @if($wfShow && $wfTooltip !== '')
+                        <span class="{{ $wfId }}-tip" style="
+                            position: absolute; bottom: 50%; transform: translateY(50%);
+                            {{ $wfPos === 'right' ? 'right: 74px;' : 'left: 74px;' }}
+                            background: #0f172a; color: #fff; padding: 8px 14px;
+                            border-radius: 8px; font-size: .85rem; font-weight: 700; white-space: nowrap;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                            opacity: 0; pointer-events: none; transition: opacity .2s;">{{ $wfTooltip }}</span>
+                    @endif
+                </a>
+                <style>
+                    #{{ $wfId }}:hover { transform: scale(1.08); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+                    @if($wfShow && $wfTooltip !== '')
+                    #{{ $wfId }}:hover .{{ $wfId }}-tip { opacity: 1; }
+                    @endif
+                </style>
+            @endif
+        @endif
+
         @if($section->type == 'hero_image')
             @php
                 $hiBg      = \App\Support\LandingPageSanitizer::url($section->content['background_url'] ?? null, '');

@@ -1166,6 +1166,14 @@ class LandingPageController extends Controller
                 'align'         => 'center',
                 'height'        => 'medium',
             ],
+            'whatsapp_float' => [
+                'phone'         => '5511999999999',
+                'message'       => 'Olá! Vim pela landing page e gostaria de saber mais.',
+                'tooltip'       => 'Fale conosco',
+                'position'      => 'right',
+                'button_color'  => '#25D366',
+                'show_tooltip'  => 'yes',
+            ],
             'products' => [
                 'title' => 'Nossos Produtos / Serviços',
                 'bg_color' => '#ffffff',
