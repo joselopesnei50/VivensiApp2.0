@@ -707,6 +707,8 @@ class LandingPageController extends Controller
             'custom_domain_ssl_expires_at' => null,
         ]);
 
+        \Illuminate\Support\Facades\Cache::forget('trust_hosts_custom_domains');
+
         return response()->json(['success' => true]);
     }
 

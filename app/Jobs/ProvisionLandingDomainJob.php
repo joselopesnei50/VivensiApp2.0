@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -44,6 +45,9 @@ class ProvisionLandingDomainJob implements ShouldQueue
         }
 
         $success = $exitCode === 0 && $lp->custom_domain_status === 'active';
+
+        // Invalida cache do TrustHosts pra novo dominio entrar na whitelist imediato
+        Cache::forget('trust_hosts_custom_domains');
 
         try {
             $recipients = User::withoutGlobalScopes()
