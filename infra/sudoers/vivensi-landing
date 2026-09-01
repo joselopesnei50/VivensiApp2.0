@@ -1,19 +1,12 @@
 # Sudoers pra custom domain de landing pages (Fase 2 do add-on).
 # Deploy: sudo wget -O /etc/sudoers.d/vivensi-landing <URL_RAW>
-# Valida:  sudo visudo -c
-# Permissoes: 0440 root:root (o sudo aplica sozinho ao mover)
+# Valida: sudo visudo -c
 #
-# Regra: user www-data (php-fpm) roda comandos privilegiados especificos
-# sem senha. Whitelist estreita — nao permite `sudo su`, `sudo rm -rf /`,
-# nem qualquer comando fora dos 8 abaixo. Curinga `lp-*` limita escopo
-# aos arquivos que o comando artisan gera.
+# Whitelist minima: certbot + nginx test + reload. Os arquivos de config
+# nginx sao escritos direto pelo PHP em /etc/nginx/sites-available/
+# vivensi-landings/ (dir owned by www-data), sem sudo. Include desse
+# dir no nginx.conf principal e feito uma vez no setup do VPS.
 
-Cmnd_Alias VIVENSI_LP_CERT = /usr/bin/certbot
-Cmnd_Alias VIVENSI_LP_NGINX = /usr/sbin/nginx, /bin/systemctl reload nginx
-Cmnd_Alias VIVENSI_LP_CONF = /usr/bin/tee /etc/nginx/sites-available/lp-*, \
-                             /usr/bin/tee /etc/nginx/sites-enabled/lp-*, \
-                             /bin/ln -sf /etc/nginx/sites-available/lp-* /etc/nginx/sites-enabled/lp-*, \
-                             /bin/rm -f /etc/nginx/sites-enabled/lp-*, \
-                             /bin/rm -f /etc/nginx/sites-available/lp-*
-
-www-data ALL=(root) NOPASSWD: VIVENSI_LP_CERT, VIVENSI_LP_NGINX, VIVENSI_LP_CONF
+www-data ALL=(root) NOPASSWD: /usr/bin/certbot
+www-data ALL=(root) NOPASSWD: /usr/sbin/nginx -t
+www-data ALL=(root) NOPASSWD: /bin/systemctl reload nginx

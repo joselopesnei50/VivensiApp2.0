@@ -30,6 +30,13 @@ class LandingDomainProvisioner
     public const NGINX_STUB = 'resources/stubs/lp-nginx.conf.stub';
 
     /**
+     * Diretorio onde escrever os configs nginx dos custom domains. Deve ser
+     * owned by www-data (setup one-time no VPS) e ser incluido no nginx.conf
+     * principal via `include /etc/nginx/sites-available/vivensi-landings/*.conf;`.
+     */
+    public const NGINX_DIR = '/etc/nginx/sites-available/vivensi-landings';
+
+    /**
      * Verifica se o dominio aponta pro IP do VPS via DNS publico (@8.8.8.8).
      * Retorna array [ok => bool, resolved => string, message => string].
      */
@@ -85,6 +92,7 @@ class LandingDomainProvisioner
 
     /**
      * Escreve o server block nginx do dominio a partir do stub.
+     * Direto em NGINX_DIR/lp-{id}.conf (sem sudo — dir e owned by www-data).
      * NAO faz reload (chame reloadNginx() depois).
      */
     public function writeNginxConfig(int $landingId, string $domain): array
@@ -94,28 +102,27 @@ class LandingDomainProvisioner
             return ['ok' => false, 'message' => "Stub nao encontrado em {$stubPath}"];
         }
 
+        if (!is_dir(self::NGINX_DIR)) {
+            return ['ok' => false, 'message' => 'Dir ' . self::NGINX_DIR . ' nao existe. Setup one-time do VPS pendente (ver infra/README-CUSTOM-DOMAIN.md).'];
+        }
+
+        if (!is_writable(self::NGINX_DIR)) {
+            return ['ok' => false, 'message' => 'Sem permissao de escrita em ' . self::NGINX_DIR . '. Chown pra www-data pendente.'];
+        }
+
         $conf = str_replace(
             ['{ID}', '{DOMAIN}', '{GENERATED_AT}'],
             [(string) $landingId, $domain, now()->toIso8601String()],
             file_get_contents($stubPath)
         );
 
-        $availPath  = "/etc/nginx/sites-available/lp-{$landingId}.conf";
-        $enablePath = "/etc/nginx/sites-enabled/lp-{$landingId}.conf";
-
-        // tee via sudo pra escapar do permission denied (www-data nao escreve em /etc/nginx)
-        $safeConf = escapeshellarg($conf);
-        exec("echo {$safeConf} | sudo tee " . escapeshellarg($availPath) . " > /dev/null 2>&1", $_, $teeCode);
-        if ($teeCode !== 0) {
-            return ['ok' => false, 'message' => "Falha ao escrever {$availPath}"];
+        $path = self::NGINX_DIR . "/lp-{$landingId}.conf";
+        $bytes = @file_put_contents($path, $conf);
+        if ($bytes === false) {
+            return ['ok' => false, 'message' => "Falha ao escrever {$path}"];
         }
 
-        exec('sudo ln -sf ' . escapeshellarg($availPath) . ' ' . escapeshellarg($enablePath), $_, $lnCode);
-        if ($lnCode !== 0) {
-            return ['ok' => false, 'message' => "Falha ao criar symlink {$enablePath}"];
-        }
-
-        return ['ok' => true, 'message' => "Config escrito em {$availPath} e habilitado."];
+        return ['ok' => true, 'message' => "Config escrito em {$path}."];
     }
 
     /**
@@ -123,11 +130,12 @@ class LandingDomainProvisioner
      */
     public function removeNginxConfig(int $landingId): array
     {
-        $availPath  = "/etc/nginx/sites-available/lp-{$landingId}.conf";
-        $enablePath = "/etc/nginx/sites-enabled/lp-{$landingId}.conf";
-
-        exec('sudo rm -f ' . escapeshellarg($enablePath) . ' ' . escapeshellarg($availPath), $_, $code);
-        return ['ok' => $code === 0, 'message' => "Configs removidos."];
+        $path = self::NGINX_DIR . "/lp-{$landingId}.conf";
+        if (!file_exists($path)) {
+            return ['ok' => true, 'message' => "Config ja nao existia."];
+        }
+        $ok = @unlink($path);
+        return ['ok' => $ok, 'message' => $ok ? 'Config removido.' : "Falha ao remover {$path}."];
     }
 
     /**
