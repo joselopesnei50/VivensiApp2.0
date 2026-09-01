@@ -579,20 +579,28 @@
             }
         }
 
+        // Helper: extrai a msg real de erro do response Laravel (validation, custom, generic)
+        function cdErrMsg(response, json) {
+            if (json?.error)   return json.error;                                    // custom da API
+            if (json?.errors)  return Object.values(json.errors).flat().join('\n'); // validation 422
+            if (json?.message) return json.message;                                  // exception Laravel
+            return `Falhou (HTTP ${response.status}). Se persistir, verifique se o dominio esta no formato correto (ex: www.suaong.org.br) e recarregue a pagina.`;
+        }
+
         async function cdSaveDomain() {
             const val = (document.getElementById('cd_input').value || '').trim().toLowerCase();
-            if (!val) { alert('Digite o domínio'); return; }
+            if (!val) { alert('Digite o dominio (ex: www.suaong.org.br)'); return; }
             try {
                 const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/custom-domain'), {
                     method: 'POST',
                     headers: {'Content-Type':'application/json','X-CSRF-TOKEN':__cdCsrf,'Accept':'application/json'},
                     body: JSON.stringify({ custom_domain: val }),
                 });
-                const j = await res.json();
-                if (!res.ok || !j.success) { alert(j.error || 'Falhou'); return; }
+                let j = {}; try { j = await res.json(); } catch (_) {}
+                if (!res.ok || !j.success) { alert(cdErrMsg(res, j)); return; }
                 cdRefreshUI(j.page);
                 if (j.dns_hint?.note) alert(j.dns_hint.note);
-            } catch (e) { alert('Erro de rede'); }
+            } catch (e) { alert('Erro de rede: ' + e.message); }
         }
 
         async function cdProvision() {
@@ -601,25 +609,25 @@
                     method: 'POST',
                     headers: {'X-CSRF-TOKEN':__cdCsrf,'Accept':'application/json'},
                 });
-                const j = await res.json();
-                if (!res.ok || !j.success) { alert(j.error || 'Falhou'); return; }
+                let j = {}; try { j = await res.json(); } catch (_) {}
+                if (!res.ok || !j.success) { alert(cdErrMsg(res, j)); return; }
                 cdRefreshUI(j.page);
                 cdStartPolling();
-            } catch (e) { alert('Erro de rede'); }
+            } catch (e) { alert('Erro de rede: ' + e.message); }
         }
 
         async function cdRemove() {
-            if (!confirm('Remover domínio próprio? A landing volta a responder só pela URL do Vivensi.')) return;
+            if (!confirm('Remover dominio proprio? A landing volta a responder so pela URL do Vivensi.')) return;
             try {
                 const res = await fetch(__lpUrl('/ngo/landing-pages/' + __lpPage.id + '/custom-domain'), {
                     method: 'DELETE',
                     headers: {'X-CSRF-TOKEN':__cdCsrf,'Accept':'application/json'},
                 });
-                const j = await res.json();
-                if (!res.ok || !j.success) { alert('Falhou'); return; }
+                let j = {}; try { j = await res.json(); } catch (_) {}
+                if (!res.ok || !j.success) { alert(cdErrMsg(res, j)); return; }
                 cdRefreshUI({custom_domain: null, custom_domain_status: null, custom_domain_error: null});
                 cdStopPolling();
-            } catch (e) { alert('Erro de rede'); }
+            } catch (e) { alert('Erro de rede: ' + e.message); }
         }
 
         async function cdPollStatus() {
