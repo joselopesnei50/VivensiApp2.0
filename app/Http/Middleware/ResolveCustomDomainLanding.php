@@ -30,19 +30,31 @@ class ResolveCustomDomainLanding
     {
         $host = strtolower($request->getHost());
 
+        // DEBUG TEMPORARIO — remover apos diagnosticar bug de 404 em coletivobases.com.br
+        $isOwn = $this->isOwnHost($host);
+        $foundLp = null;
+        if (!$isOwn) {
+            $foundLp = LandingPage::withoutGlobalScopes()
+                ->where('custom_domain', $host)
+                ->where('custom_domain_status', 'active')
+                ->where('status', 'published')
+                ->first();
+        }
+        @file_put_contents('/tmp/cd-mw-debug.log',
+            date('c') . " host=[{$host}] isOwn=" . ($isOwn ? 'y' : 'n')
+            . " lpFound=" . ($foundLp ? $foundLp->id : 'null')
+            . " path=" . $request->path()
+            . " userAgent=" . substr($request->userAgent() ?? '', 0, 40)
+            . "\n",
+            FILE_APPEND
+        );
+
         // Hosts internos passam direto (site principal + IPs locais)
-        if ($this->isOwnHost($host)) {
+        if ($isOwn) {
             return $next($request);
         }
 
-        // Busca LP com custom_domain que casa. Fail-closed: whitelist DB.
-        $page = LandingPage::withoutGlobalScopes()
-            ->where('custom_domain', $host)
-            ->where('custom_domain_status', 'active')
-            ->where('status', 'published')
-            ->first();
-
-        if (!$page) {
+        if (!$foundLp) {
             // Nao vaza qual tenant existe. Attacker que force Host arbitrario
             // sempre recebe 404, identico a rota inexistente.
             abort(404);
@@ -50,7 +62,7 @@ class ResolveCustomDomainLanding
 
         // Dispatch direto pro handler. Rota original nao e usada — resolvemos
         // aqui pra deixar o URL do cliente (path /) apontar direto pra LP dele.
-        return app(LandingPageController::class)->renderPage($page->slug);
+        return app(LandingPageController::class)->renderPage($foundLp->slug);
     }
 
     private function isOwnHost(string $host): bool
