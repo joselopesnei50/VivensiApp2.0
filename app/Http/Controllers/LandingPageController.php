@@ -1184,6 +1184,19 @@ class LandingPageController extends Controller
                 // Se o Portal do tenant nao estiver publicado, o bloco esconde
                 // (fail-safe: nao linka pra pagina 404). Ver render.
             ],
+            'impact_dynamic' => [
+                'title'        => 'Nosso impacto em números',
+                'subtitle'     => 'Dados atualizados em tempo real com o trabalho da nossa organização.',
+                'bg_color'     => '#ffffff',
+                'text_color'   => '#0f172a',
+                'accent_color' => '#4f46e5',
+                'metrics'      => [
+                    ['type' => 'beneficiaries',   'enabled' => 'yes', 'label' => 'Vidas transformadas', 'icon' => 'fa-users'],
+                    ['type' => 'projects_active', 'enabled' => 'yes', 'label' => 'Projetos ativos',     'icon' => 'fa-project-diagram'],
+                    ['type' => 'donations_month', 'enabled' => 'yes', 'label' => 'Doações este mês',    'icon' => 'fa-heart'],
+                    ['type' => 'years_active',    'enabled' => 'yes', 'label' => 'Anos de atuação',     'icon' => 'fa-award'],
+                ],
+            ],
             'products' => [
                 'title' => 'Nossos Produtos / Serviços',
                 'bg_color' => '#ffffff',

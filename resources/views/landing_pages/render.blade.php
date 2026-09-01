@@ -150,6 +150,80 @@
     @foreach($sections as $section)
 
 
+        @if($section->type == 'impact_dynamic')
+            @php
+                $idBg     = \App\Support\LandingPageSanitizer::cssBg($section->content['bg_color'] ?? null, '#ffffff');
+                $idText   = \App\Support\LandingPageSanitizer::cssColor($section->content['text_color'] ?? null, '#0f172a');
+                $idAccent = \App\Support\LandingPageSanitizer::cssColor($section->content['accent_color'] ?? null, '#4f46e5');
+                $idMetrics = is_array($section->content['metrics'] ?? null) ? $section->content['metrics'] : [];
+
+                // Cache 5min por tenant — impacto nao precisa ser real-time e
+                // essa pagina pode receber tráfego alto. Chave inclui timestamp
+                // do inicio do mes pra invalidar contador de doacoes mensais
+                // automaticamente na virada.
+                $cacheKey = 'lp_impact_' . $page->tenant_id . '_' . date('Ym');
+                $counts   = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($page) {
+                    $tid = $page->tenant_id;
+                    $benefTable   = \Illuminate\Support\Facades\Schema::hasTable('beneficiaries') ? \Illuminate\Support\Facades\DB::table('beneficiaries')->where('tenant_id', $tid)->count() : 0;
+                    $projTable    = \Illuminate\Support\Facades\Schema::hasTable('projects') ? \Illuminate\Support\Facades\DB::table('projects')->where('tenant_id', $tid)->whereIn('status', ['active','ativo','em_andamento','in_progress'])->count() : 0;
+                    $donMonth     = \Illuminate\Support\Facades\Schema::hasTable('transactions') ? \Illuminate\Support\Facades\DB::table('transactions')->where('tenant_id', $tid)->where('type', 'income')->whereMonth('date', now()->month)->whereYear('date', now()->year)->count() : 0;
+                    $tenantRow    = \Illuminate\Support\Facades\DB::table('tenants')->where('id', $tid)->first(['data_fundacao', 'created_at']);
+                    $foundedAt    = $tenantRow?->data_fundacao ?? $tenantRow?->created_at;
+                    $years        = 0;
+                    if ($foundedAt) {
+                        try { $years = max(1, (int) \Carbon\Carbon::parse($foundedAt)->diffInYears(now())); } catch (\Throwable $e) {}
+                    }
+                    return [
+                        'beneficiaries'   => $benefTable,
+                        'projects_active' => $projTable,
+                        'donations_month' => $donMonth,
+                        'years_active'    => $years,
+                    ];
+                });
+
+                $iconWhitelist = ['fa-users','fa-project-diagram','fa-heart','fa-award','fa-hand-holding-heart','fa-globe','fa-tree','fa-graduation-cap','fa-house','fa-utensils','fa-child','fa-star'];
+                $visibleMetrics = array_values(array_filter($idMetrics, fn($m) => ($m['enabled'] ?? 'yes') === 'yes'));
+            @endphp
+            @if(count($visibleMetrics) > 0)
+                <section style="padding: 70px 0; background: {{ $idBg }}; color: {{ $idText }};">
+                    <div class="container" style="max-width: 1080px;">
+                        <div style="text-align:center; margin-bottom: 44px;">
+                            <div style="display:inline-flex; align-items:center; gap:8px; background:{{ $idAccent }}15; color:{{ $idAccent }}; padding:6px 14px; border-radius:99px; font-weight:800; font-size:.78rem; letter-spacing:.05em; text-transform:uppercase; margin-bottom:12px;">
+                                <i class="fas fa-chart-line"></i> Dados ao vivo
+                            </div>
+                            <h2 style="margin:0 0 10px; font-size:clamp(1.6rem,3.2vw,2.4rem); font-weight:900;">{{ $section->content['title'] ?? 'Nosso Impacto' }}</h2>
+                            @if(!empty($section->content['subtitle']))
+                                <p style="margin:0; color:#64748b; max-width: 640px; margin-inline:auto; font-size:1.02rem; line-height:1.6;">{{ $section->content['subtitle'] }}</p>
+                            @endif
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
+                            @foreach($visibleMetrics as $metric)
+                                @php
+                                    $mType  = $metric['type']  ?? 'beneficiaries';
+                                    $mLabel = $metric['label'] ?? 'Métrica';
+                                    $mIcon  = in_array($metric['icon'] ?? '', $iconWhitelist, true) ? $metric['icon'] : 'fa-chart-simple';
+                                    $mValue = (int) ($counts[$mType] ?? 0);
+                                @endphp
+                                <div style="background:#fff; border-radius:20px; padding:28px 22px; text-align:center; border:1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(15,23,42,.04); transition: transform .2s;"
+                                     onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                                    <div style="display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; background:{{ $idAccent }}15; color:{{ $idAccent }}; font-size:1.5rem; margin-bottom:16px;">
+                                        <i class="fas {{ $mIcon }}"></i>
+                                    </div>
+                                    <div style="font-size:clamp(2rem,4vw,2.8rem); font-weight:900; color:{{ $idAccent }}; line-height:1; margin-bottom:8px;">
+                                        {{ number_format($mValue, 0, ',', '.') }}{{ $mType === 'years_active' && $mValue > 0 ? '+' : '' }}
+                                    </div>
+                                    <div style="color:#475569; font-size:.92rem; font-weight:700;">
+                                        {{ $mLabel }}
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </section>
+            @endif
+        @endif
+
         @if($section->type == 'transparency_portal')
             @php
                 // Puxa portal do proprio tenant da LP. Se nao existir ou nao
