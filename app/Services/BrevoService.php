@@ -381,10 +381,13 @@ class BrevoService
         $chunks = array_chunk($contacts, 5000);
 
         foreach ($chunks as $chunkIdx => $chunk) {
-            $jsonBody = array_map(fn ($c) => [
-                'email'      => $c['email'],
-                'attributes' => ['FIRSTNAME' => $c['name'] ?? ''],
-            ], $chunk);
+            $jsonBody = array_map(function ($c) {
+                $attrs = ['FIRSTNAME' => $c['name'] ?? ''];
+                if (!empty($c['unsub_token'])) {
+                    $attrs['UNSUB_TOKEN'] = $c['unsub_token'];
+                }
+                return ['email' => $c['email'], 'attributes' => $attrs];
+            }, $chunk);
 
             $response = Http::withHeaders($this->apiHeaders())
                 ->timeout(60)
@@ -509,11 +512,16 @@ class BrevoService
         $errors = 0;
 
         foreach ($contacts as $c) {
+            $attrs = ['FIRSTNAME' => $c['name'] ?? ''];
+            if (!empty($c['unsub_token'])) {
+                $attrs['UNSUB_TOKEN'] = $c['unsub_token'];
+            }
+
             $response = Http::withHeaders($this->apiHeaders())
                 ->post("{$this->baseApiUrl}/contacts", [
                     'email'         => $c['email'],
                     'listIds'       => [$listId],
-                    'attributes'    => ['FIRSTNAME' => $c['name'] ?? ''],
+                    'attributes'    => $attrs,
                     'updateEnabled' => true,
                 ]);
 

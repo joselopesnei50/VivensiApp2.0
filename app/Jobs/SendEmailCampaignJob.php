@@ -6,6 +6,7 @@ use App\Models\EmailCampaign;
 use App\Models\Tenant;
 use App\Services\BrevoService;
 use App\Services\EmailQuotaService;
+use App\Services\EmailUnsubscribeTokenService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -54,7 +55,7 @@ class SendEmailCampaignJob implements ShouldQueue
     ) {
     }
 
-    public function handle(BrevoService $brevo, EmailQuotaService $quota): void
+    public function handle(BrevoService $brevo, EmailQuotaService $quota, EmailUnsubscribeTokenService $unsub): void
     {
         $campaign = EmailCampaign::withoutGlobalScopes()->find($this->campaignId);
         if (!$campaign) {
@@ -87,8 +88,19 @@ class SendEmailCampaignJob implements ShouldQueue
                 return;
             }
 
+            // Gera UNSUB_TOKEN per-contato (HMAC do email+tenant) pra virar merge tag
+            // {{contact.UNSUB_TOKEN}} na landing de descadastro. Sem tenant_id nao
+            // temos como descadastrar cruzando listas — pula token.
+            $tenantIdForToken = $campaign->tenant_id ?? $this->quotaTenantId;
+            $contactsWithToken = $tenantIdForToken
+                ? array_map(function ($c) use ($unsub, $tenantIdForToken) {
+                    $c['unsub_token'] = $unsub->generate($c['email'], $tenantIdForToken);
+                    return $c;
+                }, $this->contacts)
+                : $this->contacts;
+
             // 2. Importa contatos (loop HTTP lento)
-            $imported = $brevo->importContacts($listId, $this->contacts);
+            $imported = $brevo->importContacts($listId, $contactsWithToken);
 
             if ($imported === 0) {
                 $this->refundQuota($quota);
@@ -106,11 +118,13 @@ class SendEmailCampaignJob implements ShouldQueue
                 'total'       => count($this->contacts),
             ]);
 
-            // 3. Cria campanha no Brevo
+            // 3. Cria campanha no Brevo — HTML enriquecido com link de descadastro
+            $htmlWithUnsub = $this->injectUnsubscribeLink($campaign->html_content, $tenantIdForToken);
+
             $brevoCampaignId = $brevo->createBrevoEmailCampaign([
                 'name'           => $campaign->name,
                 'subject'        => $campaign->subject,
-                'html_content'   => $campaign->html_content,
+                'html_content'   => $htmlWithUnsub,
                 'sender_name'    => $campaign->sender_name,
                 'sender_email'   => $campaign->sender_email,
                 'reply_to_email' => $campaign->reply_to_email,
@@ -189,5 +203,30 @@ class SendEmailCampaignJob implements ShouldQueue
         $tenant = Tenant::withoutGlobalScopes()->find($this->quotaTenantId);
         if (!$tenant) return;
         $quota->refund($tenant, count($this->contacts));
+    }
+
+    /**
+     * Substitui {unsubscribe_url} pelo link real. Se ausente, adiciona footer
+     * automatico antes do </body> — LGPD art. 18 exige canal explicito.
+     * URL usa merge tag {{contact.UNSUB_TOKEN}} — Brevo substitui per-recipient.
+     */
+    private function injectUnsubscribeLink(string $html, ?int $tenantId): string
+    {
+        if (!$tenantId) return $html; // sem tenant, nao da pra descadastrar
+        $unsubUrl = url('/email/descadastro/{{contact.UNSUB_TOKEN}}');
+
+        if (str_contains($html, '{unsubscribe_url}')) {
+            return str_replace('{unsubscribe_url}', $unsubUrl, $html);
+        }
+
+        $footer = '<div style="margin-top:32px;padding:20px 0;border-top:1px solid #e2e8f0;text-align:center;font-family:Arial,sans-serif;font-size:12px;color:#94a3b8;line-height:1.6;">'
+                . 'Você recebeu este e-mail porque está cadastrado em nossa lista de contatos.<br>'
+                . '<a href="' . $unsubUrl . '" style="color:#059669;text-decoration:underline;font-weight:600;">Cancelar inscrição</a>'
+                . '</div>';
+
+        if (stripos($html, '</body>') !== false) {
+            return str_ireplace('</body>', $footer . '</body>', $html);
+        }
+        return $html . $footer;
     }
 }

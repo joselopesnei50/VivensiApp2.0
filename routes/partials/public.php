@@ -49,6 +49,14 @@ Route::middleware(['throttle:10,1', 'no.referrer'])->group(function () {
 // ── Campanha pública ──────────────────────────────────────────────────────────
 Route::get('/c/{slug}', [App\Http\Controllers\CampaignController::class, 'show']);
 
+// ── Descadastro de e-mail marketing (LGPD art. 18) ────────────────────────────
+// Token HMAC deterministico do e-mail + tenant. Sem auth. no.referrer evita
+// vazar o token no Referer quando o usuario navegar depois.
+Route::middleware(['throttle:30,1', 'no.referrer'])->group(function () {
+    Route::get('/email/descadastro/{token}',            [App\Http\Controllers\EmailUnsubscribeController::class, 'show'])->name('public.email.unsubscribe');
+    Route::post('/email/descadastro/{token}/reativar',  [App\Http\Controllers\EmailUnsubscribeController::class, 'reactivate'])->name('public.email.unsubscribe.reactivate');
+});
+
 // ── Blog ──────────────────────────────────────────────────────────────────────
 Route::get('/blog',        [App\Http\Controllers\PublicController::class, 'blogIndex'])->name('public.blog.index');
 Route::get('/blog/{slug}', [App\Http\Controllers\PublicController::class, 'blogShow'])->name('public.blog.show');
