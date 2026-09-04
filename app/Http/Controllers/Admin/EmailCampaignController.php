@@ -89,7 +89,9 @@ class EmailCampaignController extends Controller
             $contactListId = $list->id;
         }
 
-        $manualEmails = $this->parseManualEmailsInput($request->input('manual_emails_raw', ''));
+        // Cast defensivo: ConvertEmptyStringsToNull middleware transforma campo vazio
+        // em null, e $request->input(key, default) so usa default se a chave AUSENTE.
+        $manualEmails = $this->parseManualEmailsInput((string) $request->input('manual_emails_raw', ''));
 
         $campaign = EmailCampaign::create([
             'created_by'            => auth()->id(),
