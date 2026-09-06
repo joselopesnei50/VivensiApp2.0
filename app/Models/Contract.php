@@ -16,6 +16,7 @@ class Contract extends Model
         'tenant_id',
         'title',
         'kind',
+        'version',
         'content',
         'signer_name',
         'signer_email',

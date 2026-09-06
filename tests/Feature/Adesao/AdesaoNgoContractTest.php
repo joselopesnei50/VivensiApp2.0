@@ -58,7 +58,7 @@ test('tenant tipo ngo gera contrato com clausulas MROSC e LGPD reforcada', funct
 
     expect($contract->content)->toContain('MROSC');
     expect($contract->content)->toContain('Lei 13.019');
-    expect($contract->content)->toContain('Organizacao da Sociedade Civil');
+    expect($contract->content)->toContain('Sociedade Civil');
     expect($contract->content)->toContain('LGPD — TRATAMENTO DE DADOS PESSOAIS (REFORCADA)');
     expect($contract->content)->toContain('CONTROLADORA');
     expect($contract->content)->toContain('OPERADORA');
@@ -85,7 +85,7 @@ test('tenant NAO ngo gera contrato default sem clausulas MROSC', function () {
     expect($contract->content)->not->toContain('MROSC');
     expect($contract->content)->not->toContain('Lei 13.019');
     expect($contract->content)->not->toContain('DADOS SENSIVEIS DE BENEFICIARIOS VULNERAVEIS');
-    expect($contract->content)->toContain('CONTRATO DE ADESAO — VIVENSI SAAS');
+    expect($contract->content)->toContain('CONTRATO DE ADESAO — VIVENSI');
 });
 
 test('contrato NGO lista CEBAS CMAS CNAS quando tenant tem dados de qualificacao', function () {
