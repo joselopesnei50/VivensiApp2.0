@@ -20,6 +20,21 @@ class User extends Authenticatable
     // Conectando à tabela existente do sistema atual
     protected $table = 'users';
 
+    // ── Tenant isolation (AUDIT #6) ───────────────────────────────────────────
+    // NAO usar o trait BelongsToTenant aqui: o global scope fail-closed dessa
+    // trait bloquearia (whereRaw 1=0) as queries que o Auth::attempt faz na
+    // tabela users ANTES de existir sessao autenticada, quebrando o login.
+    // Aplicamos apenas a auto-atribuicao de tenant_id na criacao, sem scope
+    // de leitura, conforme CORRECTION_PLAN.md (secao "C6 — User model").
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if (auth()->check() && !$user->tenant_id && auth()->user()->tenant_id) {
+                $user->tenant_id = auth()->user()->tenant_id;
+            }
+        });
+    }
+
     protected $fillable = [
         'tenant_id',
         'name',
