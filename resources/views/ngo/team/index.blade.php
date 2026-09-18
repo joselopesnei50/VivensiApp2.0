@@ -51,15 +51,8 @@
 <div class="grid-3">
     @foreach($users as $user)
     <div class="vivensi-card team-card" data-q="{{ strtolower(($user->name ?? '').' '.($user->email ?? '').' '.($user->role ?? '').' '.($user->status ?? '')) }}" style="text-align: center; position: relative;">
-        <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 8px;">
-            <button class="btn-edit-user" data-user="{{ json_encode($user) }}" style="background: none; border: none; color: #4f46e5; cursor: pointer; font-size: 1rem;"><i class="fas fa-edit"></i></button>
-            @if($user->id != auth()->id() && $user->role !== 'super_admin')
-            <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST" onsubmit="return confirm('Remover {{ addslashes($user->name) }} ({{ $user->email }})?\n\nEsta ação será registrada na auditoria.');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" title="Remover membro" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem;"><i class="fas fa-trash-alt"></i></button>
-            </form>
-            @endif
+        <div style="position: absolute; top: 15px; right: 15px;">
+            <button class="btn-edit-user" data-user="{{ json_encode($user) }}" title="Editar" style="background: none; border: none; color: #4f46e5; cursor: pointer; font-size: 1rem;"><i class="fas fa-edit"></i></button>
         </div>
 
         <div style="width: 80px; height: 80px; background: #e0e7ff; color: #4f46e5; border-radius: 50%; font-size: 2rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
@@ -86,6 +79,21 @@
                 {{ strtoupper($user->status ?? 'active') }}
             </span>
         </div>
+
+        @if($user->id != auth()->id() && $user->role !== 'super_admin')
+        <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST"
+              onsubmit="return confirm('Remover {{ addslashes($user->name) }} ({{ $user->email }})?\n\nEsta ação será registrada na auditoria.');"
+              style="margin-top:16px;">
+            @csrf
+            @method('DELETE')
+            <button type="submit"
+                    style="display:inline-flex; align-items:center; gap:8px; background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; font-weight:800; font-size:.82rem; padding:8px 18px; border-radius:10px; cursor:pointer; transition:all .15s;"
+                    onmouseover="this.style.background='#fecaca';"
+                    onmouseout="this.style.background='#fee2e2';">
+                <i class="fas fa-trash-alt"></i> Remover membro
+            </button>
+        </form>
+        @endif
     </div>
     @endforeach
 </div>

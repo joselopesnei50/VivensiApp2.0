@@ -118,10 +118,13 @@
                             )'>
                             <i class="fas fa-pen"></i>
                         </button>
-                        <form method="POST" action="{{ url('/ngo/hr/employees/'.$employee->id) }}" style="display:inline;" onsubmit="return confirm('Remover funcionário {{ addslashes($employee->name) }}?')">
+                        <form method="POST" action="{{ url('/ngo/hr/employees/'.$employee->id) }}" style="display:inline;" onsubmit="return confirm('Remover funcionário {{ addslashes($employee->name) }}?\n\nEsta ação será registrada na auditoria.')">
                             @csrf @method('DELETE')
-                            <button type="submit" title="Excluir" style="border: none; background: none; color: #ef4444; cursor: pointer; font-size: 1rem; padding: 4px 8px;">
-                                <i class="fas fa-trash"></i>
+                            <button type="submit"
+                                    style="display:inline-flex; align-items:center; gap:6px; background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; font-weight:800; font-size:.78rem; padding:6px 12px; border-radius:8px; cursor:pointer;"
+                                    onmouseover="this.style.background='#fecaca';"
+                                    onmouseout="this.style.background='#fee2e2';">
+                                <i class="fas fa-trash-alt"></i> Remover
                             </button>
                         </form>
                     </td>
@@ -276,9 +279,12 @@
                     @endif
                 </form>
                 {{-- Delete with cert-count warning --}}
-                <button type="button" class="btn-premium" style="font-size: 0.8rem; background: #fee2e2 !important; color: #dc2626 !important; padding: 5px 10px;"
+                <button type="button"
+                    style="display:inline-flex; align-items:center; gap:6px; background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; font-weight:800; font-size:.78rem; padding:6px 12px; border-radius:8px; cursor:pointer;"
+                    onmouseover="this.style.background='#fecaca';"
+                    onmouseout="this.style.background='#fee2e2';"
                     onclick='confirmDeleteVolunteer({{ (int) $volunteer->id }}, @json($volunteer->name), {{ $vCertCount }})'>
-                    <i class="fas fa-trash"></i>
+                    <i class="fas fa-trash-alt"></i> Remover
                 </button>
             </div>
         </div>
