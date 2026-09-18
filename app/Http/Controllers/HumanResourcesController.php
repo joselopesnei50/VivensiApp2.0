@@ -179,11 +179,37 @@ class HumanResourcesController extends Controller
         return redirect()->back()->with('success', 'Funcionário atualizado com sucesso!');
     }
 
-    public function destroyEmployee($id)
+    public function destroyEmployee(Request $request, $id)
     {
         $tenantId = auth()->user()->tenant_id;
         $employee = Employee::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $snapshot = [
+            'id'       => $employee->id,
+            'name'     => $employee->name ?? null,
+            'email'    => $employee->email ?? null,
+            'role'     => $employee->role ?? null,
+            'position' => $employee->position ?? null,
+        ];
+
         $employee->delete();
+
+        try {
+            AuditLog::create([
+                'tenant_id'      => $tenantId,
+                'user_id'        => auth()->id(),
+                'event'          => 'hr.employee.deleted',
+                'auditable_type' => Employee::class,
+                'auditable_id'   => $snapshot['id'],
+                'old_values'     => $snapshot,
+                'new_values'     => null,
+                'ip_address'     => $request->ip(),
+                'user_agent'     => $request->userAgent(),
+                'url'            => $request->fullUrl(),
+            ]);
+        } catch (\Throwable $e) {
+            // Audit e melhor esforco — nao bloqueia a remocao.
+        }
 
         return redirect()->back()->with('success', 'Funcionário removido.');
     }
@@ -206,11 +232,36 @@ class HumanResourcesController extends Controller
         return redirect()->back()->with('success', 'Voluntário atualizado com sucesso!');
     }
 
-    public function destroyVolunteer($id)
+    public function destroyVolunteer(Request $request, $id)
     {
-        $tenantId = auth()->user()->tenant_id;
+        $tenantId  = auth()->user()->tenant_id;
         $volunteer = Volunteer::where('tenant_id', $tenantId)->findOrFail($id);
+
+        $snapshot = [
+            'id'    => $volunteer->id,
+            'name'  => $volunteer->name ?? null,
+            'email' => $volunteer->email ?? null,
+            'phone' => $volunteer->phone ?? null,
+        ];
+
         $volunteer->delete();
+
+        try {
+            AuditLog::create([
+                'tenant_id'      => $tenantId,
+                'user_id'        => auth()->id(),
+                'event'          => 'hr.volunteer.deleted',
+                'auditable_type' => Volunteer::class,
+                'auditable_id'   => $snapshot['id'],
+                'old_values'     => $snapshot,
+                'new_values'     => null,
+                'ip_address'     => $request->ip(),
+                'user_agent'     => $request->userAgent(),
+                'url'            => $request->fullUrl(),
+            ]);
+        } catch (\Throwable $e) {
+            // Audit e melhor esforco — nao bloqueia a remocao.
+        }
 
         return redirect()->back()->with('success', 'Voluntário removido.');
     }

@@ -31,6 +31,8 @@
             <span style="color:#4f46e5; font-weight: 900;">{{ number_format((int)($st['manager'] ?? 0)) }}</span> Gestor
             <span style="color:#94a3b8;"> · </span>
             <span style="color:#64748b; font-weight: 900;">{{ number_format((int)($st['employee'] ?? 0)) }}</span> Colab
+            <span style="color:#94a3b8;"> · </span>
+            <span style="color:#92400e; font-weight: 900;">{{ number_format((int)($st['credenciado'] ?? 0)) }}</span> Credenc.
         </h3>
         <p style="font-size: 0.9rem; color:#64748b; margin:0;">Busca rápida disponível abaixo.</p>
     </div>
@@ -51,11 +53,11 @@
     <div class="vivensi-card team-card" data-q="{{ strtolower(($user->name ?? '').' '.($user->email ?? '').' '.($user->role ?? '').' '.($user->status ?? '')) }}" style="text-align: center; position: relative;">
         <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 8px;">
             <button class="btn-edit-user" data-user="{{ json_encode($user) }}" style="background: none; border: none; color: #4f46e5; cursor: pointer; font-size: 1rem;"><i class="fas fa-edit"></i></button>
-            @if($user->id != auth()->id())
-            <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover este usuário?');">
+            @if($user->id != auth()->id() && $user->role !== 'super_admin')
+            <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST" onsubmit="return confirm('Remover {{ addslashes($user->name) }} ({{ $user->email }})?\n\nEsta ação será registrada na auditoria.');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem;"><i class="fas fa-trash-alt"></i></button>
+                <button type="submit" title="Remover membro" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem;"><i class="fas fa-trash-alt"></i></button>
             </form>
             @endif
         </div>
@@ -66,12 +68,14 @@
         <h3 style="font-size: 1.2rem; margin-bottom: 5px;">{{ $user->name }}</h3>
         <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">{{ $user->email }}</p>
         
-        <div style="display: inline-block; padding: 5px 15px; border-radius: 999px; font-size: 0.8rem; font-weight: 800; 
-            @if($user->role == 'ngo') background: #dcfce7; color: #16a34a; 
+        <div style="display: inline-block; padding: 5px 15px; border-radius: 999px; font-size: 0.8rem; font-weight: 800;
+            @if($user->role == 'ngo') background: #dcfce7; color: #16a34a;
             @elseif($user->role == 'manager') background: #e0e7ff; color: #4f46e5;
+            @elseif($user->role == 'credenciado') background: #fef3c7; color: #92400e;
             @else background: #f1f5f9; color: #64748b; @endif">
             @if($user->role == 'ngo') Administrador (ONG)
             @elseif($user->role == 'manager') Gestor de Projetos
+            @elseif($user->role == 'credenciado') Credenciado
             @else Colaborador
             @endif
         </div>
