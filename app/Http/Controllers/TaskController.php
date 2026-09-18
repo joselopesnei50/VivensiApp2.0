@@ -44,7 +44,7 @@ class TaskController extends Controller
             $usersQ = User::where('tenant_id', $user->tenant_id);
 
             if ($user->isManager()) {
-                $usersQ->whereIn('role', ['employee', 'manager']);
+                $usersQ->whereIn('role', ['employee', 'manager', 'credenciado']);
             } elseif ($user->isNgo() || (($user->tenant?->type ?? null) === 'ngo')) {
                 $usersQ->whereNotIn('role', ['super_admin']);
             }
@@ -103,8 +103,23 @@ class TaskController extends Controller
             'done'  => $tasks->whereIn('status', ['done', 'completed']),
         ];
 
+        // No kanban do projeto so listamos: staff regular (employee/manager) do
+        // tenant + credenciados que sao MEMBROS deste projeto (evita expor
+        // credenciados de outros projetos).
         $users = User::where('tenant_id', $tenantId)
-            ->whereIn('role', ['employee', 'manager'])
+            ->where(function ($q) use ($project) {
+                $q->whereIn('role', ['employee', 'manager'])
+                  ->orWhere(function ($q2) use ($project) {
+                      $q2->where('role', 'credenciado')
+                         ->whereExists(function ($sub) use ($project) {
+                             $sub->select(\DB::raw(1))
+                                 ->from('project_members')
+                                 ->whereColumn('project_members.user_id', 'users.id')
+                                 ->where('project_members.project_id', $project->id)
+                                 ->where('project_members.tenant_id', $project->tenant_id);
+                         });
+                  });
+            })
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -192,15 +207,33 @@ class TaskController extends Controller
             if ($validated['assigned_to'] === null || $validated['assigned_to'] === '') {
                 $task->assigned_to = null;
             } else {
-                $assigneeOk = User::where('tenant_id', $tenantId)
-                    ->whereIn('role', ['employee', 'manager', 'ngo'])
-                    ->where('id', (int) $validated['assigned_to'])
-                    ->exists();
+                $assigneeId = (int) $validated['assigned_to'];
+                $assignee   = User::where('tenant_id', $tenantId)
+                    ->whereIn('role', ['employee', 'manager', 'ngo', 'credenciado'])
+                    ->where('id', $assigneeId)
+                    ->first(['id', 'role']);
 
-                if (!$assigneeOk) {
+                if (!$assignee) {
                     return response()->json(['message' => 'Responsável inválido para este tenant.'], 422);
                 }
-                $task->assigned_to = (int) $validated['assigned_to'];
+
+                // Credenciado so aceita tarefa de projeto onde e membro — evita
+                // vazar credenciado do projeto A pra tarefa do projeto B (dados
+                // sensiveis da entidade nao devem cruzar projetos).
+                if ($assignee->role === 'credenciado') {
+                    if (!$task->project_id) {
+                        return response()->json(['message' => 'Credenciado só pode receber tarefas vinculadas a um projeto.'], 422);
+                    }
+                    $isMember = ProjectMember::where('tenant_id', $tenantId)
+                        ->where('project_id', $task->project_id)
+                        ->where('user_id', $assigneeId)
+                        ->exists();
+                    if (!$isMember) {
+                        return response()->json(['message' => 'Este credenciado não é membro do projeto desta tarefa.'], 422);
+                    }
+                }
+
+                $task->assigned_to = $assigneeId;
             }
         }
 
@@ -353,8 +386,12 @@ class TaskController extends Controller
         $assigneeExistsRule = Rule::exists('users', 'id')
             ->where(fn ($q) => $q->where('tenant_id', $tenantId));
 
+        // Credenciado e assignable por manager/ngo (colaborador exclusivo de
+        // projeto). A regra de "so aceitar credenciado se for membro do
+        // project_id da tarefa" fica em makeTask() pra ter acesso ao
+        // project_id ja validado.
         if ($user->isManager()) {
-            $assigneeExistsRule = $assigneeExistsRule->whereIn('role', ['employee', 'manager']);
+            $assigneeExistsRule = $assigneeExistsRule->whereIn('role', ['employee', 'manager', 'credenciado']);
         } elseif ($user->isNgo() || (($user->tenant?->type ?? null) === 'ngo')) {
             $assigneeExistsRule = $assigneeExistsRule->whereNotIn('role', ['super_admin']);
         }
@@ -405,7 +442,34 @@ class TaskController extends Controller
         $task->title       = $validated['title'];
         $task->description = $validated['description'] ?? null;
         $task->status      = $validated['status'];
-        $task->assigned_to = $isPrivileged ? ($validated['assigned_to'] ?? null) : $userId;
+
+        // Trava anti-cross-project: credenciado so aceita como assignee se for
+        // ProjectMember do project_id da tarefa. Sem project_id, credenciado
+        // e recusado (o painel dele so lista tarefas via workspace de projeto).
+        $assignedTo = $isPrivileged ? ($validated['assigned_to'] ?? null) : $userId;
+        if ($isPrivileged && $assignedTo) {
+            $assigneeRole = User::where('id', (int) $assignedTo)
+                ->where('tenant_id', $tenantId)
+                ->value('role');
+            if ($assigneeRole === 'credenciado') {
+                if (!$task->project_id) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'assigned_to' => 'Credenciado só pode receber tarefas vinculadas a um projeto.',
+                    ]);
+                }
+                $isMember = ProjectMember::where('tenant_id', $tenantId)
+                    ->where('project_id', $task->project_id)
+                    ->where('user_id', (int) $assignedTo)
+                    ->exists();
+                if (!$isMember) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'assigned_to' => 'Este credenciado não é membro do projeto selecionado.',
+                    ]);
+                }
+            }
+        }
+
+        $task->assigned_to = $assignedTo;
         $task->priority    = $validated['priority'] ?? 'medium';
         $task->due_date    = $validated['due_date'] ?? null;
         $task->created_by  = $userId;

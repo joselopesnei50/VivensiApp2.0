@@ -23,8 +23,9 @@ Route::get('/pagina/{slug}', [App\Http\Controllers\PageController::class, 'show'
 Route::view('/termos',       'legal.terms')->name('legal.terms');
 Route::view('/privacidade',  'legal.privacy')->name('legal.privacy');
 Route::get('/lgpd/status/{code}', [App\Http\Controllers\PublicLgpdController::class, 'status'])->middleware('throttle:30,1')->name('lgpd.public-status');
-Route::post('/cookie/accept', [App\Http\Controllers\CookieConsentController::class, 'accept'])->name('cookie.accept');
-Route::post('/cookie/revoke', [App\Http\Controllers\CookieConsentController::class, 'revoke'])->name('cookie.revoke');
+Route::post('/cookie/accept',  [App\Http\Controllers\CookieConsentController::class, 'accept'])->name('cookie.accept');
+Route::post('/cookie/dismiss', [App\Http\Controllers\CookieConsentController::class, 'dismiss'])->name('cookie.dismiss');
+Route::post('/cookie/revoke',  [App\Http\Controllers\CookieConsentController::class, 'revoke'])->name('cookie.revoke');
 
 // ── Idioma ────────────────────────────────────────────────────────────────────
 Route::get('/lang/{locale}', function ($locale) {

@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassSession;
 use App\Models\KanbanCard;
+use App\Models\LandingPage;
 use App\Models\Project;
 use App\Models\ProjectLog;
 use App\Models\ProjectMember;
 use App\Models\ProjectTimelineRecord;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Painel do Credenciado.
@@ -120,14 +122,28 @@ class CredenciadoController extends Controller
             ->limit(10)
             ->get();
 
+        // Landing pages publicadas que apontam pra este projeto — se houver,
+        // o credenciado ve quantos inscritos ja chegaram pela pagina publica.
+        // A soma cruza landing_pages.target_project_id -> landing_page_leads.
+        $landingPageIds = LandingPage::where('tenant_id', $user->tenant_id)
+            ->where('target_project_id', $project->id)
+            ->where('status', 'published')
+            ->pluck('id');
+
+        $subscriberCount = $landingPageIds->isEmpty() ? 0 : (int) DB::table('landing_page_leads')
+            ->whereIn('landing_page_id', $landingPageIds)
+            ->count();
+
         return view('credenciado.workspace', [
-            'project'     => $project,
-            'tasks'       => $tasks,
-            'kanbanCards' => $kanbanCards,
-            'sessions'    => $sessions,
-            'logs'        => $logs,
-            'timeline'    => $timeline,
-            'membership'  => ProjectMember::where('user_id', $user->id)
+            'project'         => $project,
+            'tasks'           => $tasks,
+            'kanbanCards'     => $kanbanCards,
+            'sessions'        => $sessions,
+            'logs'            => $logs,
+            'timeline'        => $timeline,
+            'subscriberCount' => $subscriberCount,
+            'landingPagesCount' => $landingPageIds->count(),
+            'membership'      => ProjectMember::where('user_id', $user->id)
                 ->where('project_id', $project->id)
                 ->where('tenant_id', $user->tenant_id)
                 ->first(),

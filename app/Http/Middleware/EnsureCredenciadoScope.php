@@ -39,6 +39,8 @@ class EnsureCredenciadoScope
         '#^reset-password(/.*)?$#',
         '#^locale/.+$#',
         '#^welcome/dismiss$#',
+        '#^cookie/(accept|revoke|dismiss)$#',
+        '#^onboarding/complete/[^/]+$#',
         '#^support(/.*)?$#',
         '#^notifications(/.*)?$#',
         '#^api/notifications(/.*)?$#',

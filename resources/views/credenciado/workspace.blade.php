@@ -63,6 +63,33 @@
     </div>
     @endif
 
+    {{-- Inscritos via landing page — so aparece se o projeto tem alguma
+         landing publicada apontando pra ele. Da ao credenciado a nocao de
+         quantos ja se cadastraram. --}}
+    @if(($landingPagesCount ?? 0) > 0)
+    <div class="col-12">
+        <div class="vivensi-card" style="padding:24px; border-radius:16px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div style="width:52px; height:52px; border-radius:14px; background:rgba(16,185,129,0.12); display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-user-plus" style="color:#10b981; font-size:1.15rem;"></i>
+            </div>
+            <div style="flex:1; min-width:180px;">
+                <div style="font-size:0.72rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:1px;">
+                    Inscritos via landing page
+                </div>
+                <div style="display:flex; align-items:baseline; gap:10px; margin-top:4px;">
+                    <span style="font-size:1.9rem; font-weight:900; color:#1e293b; line-height:1;">{{ $subscriberCount ?? 0 }}</span>
+                    <span style="font-size:0.78rem; color:#64748b; font-weight:600;">
+                        {{ $subscriberCount == 1 ? 'pessoa cadastrada' : 'pessoas cadastradas' }}
+                        @if($landingPagesCount > 1)
+                            · {{ $landingPagesCount }} páginas ativas
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Suas tarefas --}}
     <div class="col-lg-7">
         <div class="vivensi-card" style="padding:24px; border-radius:16px; height:100%;">

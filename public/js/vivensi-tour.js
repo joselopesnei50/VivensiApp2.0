@@ -14,6 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Marca como completo em qualquer forma de encerramento (X, ESC, backdrop
+    // click, finalizar). Antes so o botao "Finalizar Tour" gravava — quem
+    // fechava pelo X reabria o tour a cada page load. Isso, combinado com o
+    // useModalOverlay:true, prendia o user (especialmente credenciados) num
+    // loop de overlay bloqueante.
+    const markTourCompleted = () => {
+        try { localStorage.setItem('vivensi-tour-completed', 'true'); } catch (e) {}
+    };
+    tour.on('cancel',   markTourCompleted);
+    tour.on('complete', markTourCompleted);
+
     // Add Styles for the tour
     const style = document.createElement('style');
     style.innerHTML = `
