@@ -88,6 +88,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/whatsapp/broadcast',                 [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'index'])->name('whatsapp.broadcast.index');
     Route::post('/whatsapp/broadcast',                [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'sendBroadcast'])->name('whatsapp.broadcast.send')->middleware('throttle:10,1');
     Route::post('/whatsapp/broadcast/import',         [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'importContacts'])->name('whatsapp.broadcast.import')->middleware('throttle:5,1');
+    Route::get('/whatsapp/broadcast/import/modelo.csv', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'downloadImportModel'])->name('whatsapp.broadcast.import.model');
     Route::get('/whatsapp/broadcast/groups',          [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'getGroups'])->name('whatsapp.broadcast.groups');
     Route::get('/whatsapp/broadcast/label-count',     [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'labelRecipientsCount'])->name('whatsapp.broadcast.label-count');
     Route::get('/whatsapp/broadcast/campaigns',       [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'campaigns'])->name('whatsapp.broadcast.campaigns');

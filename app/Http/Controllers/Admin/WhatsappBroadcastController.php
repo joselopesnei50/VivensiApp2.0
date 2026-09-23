@@ -79,6 +79,40 @@ class WhatsappBroadcastController extends Controller
             compact('contactsCount', 'config', 'activeInstance', 'campaigns', 'scheduled', 'preMessage', 'labels', 'recentImports', 'approvedTemplates'));
     }
 
+    /**
+     * Serve um CSV modelo pra o cliente baixar, editar e reenviar.
+     * Formato aceito pelo importContacts: Nome,Telefone,Data de Consentimento (opcional).
+     * BOM UTF-8 garante que Excel-BR abra com acentos corretos.
+     */
+    public function downloadImportModel()
+    {
+        Gate::authorize('access-whatsapp');
+
+        $rows = [
+            ['Nome', 'Telefone', 'Data de Consentimento'],
+            ['Maria Silva',    '5511999998888', now()->format('Y-m-d')],
+            ['João Souza',     '5521988887777', now()->subDays(3)->format('Y-m-d')],
+            ['Ana Oliveira',   '5531977776666', ''],
+            ['Carlos Pereira', '5541966665555', ''],
+        ];
+
+        $csv = "\xEF\xBB\xBF"; // BOM UTF-8 pra Excel-BR abrir com acento
+        foreach ($rows as $row) {
+            $csv .= implode(';', array_map(function ($v) {
+                $v = str_replace('"', '""', (string) $v);
+                return (str_contains($v, ';') || str_contains($v, '"') || str_contains($v, "\n"))
+                    ? '"' . $v . '"'
+                    : $v;
+            }, $row)) . "\r\n";
+        }
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="vivensi-modelo-contatos.csv"',
+            'Cache-Control'       => 'no-store',
+        ]);
+    }
+
     public function importContacts(Request $request)
     {
         Gate::authorize('access-whatsapp');

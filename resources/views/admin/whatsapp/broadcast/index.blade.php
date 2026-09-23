@@ -402,6 +402,14 @@
         {{-- Importar CSV --}}
         <div class="broadcast-sidebar-card">
             <h6><i class="fas fa-file-csv me-1"></i> Importar Contatos</h6>
+
+            <a href="{{ route('whatsapp.broadcast.import.model') }}"
+               style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;text-decoration:none;color:#4338ca;font-size:.78rem;font-weight:700;margin-bottom:10px;">
+                <i class="fas fa-download"></i>
+                <span style="flex:1;">Baixar modelo CSV</span>
+                <span style="font-size:.68rem;color:#6366f1;font-weight:600;">.csv</span>
+            </a>
+
             <form action="{{ route('whatsapp.broadcast.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
