@@ -112,6 +112,8 @@ class WhatsappBroadcastController extends Controller
         } else {
             $labelName = 'Importação: ' . mb_substr($labelName, 0, 60);
         }
+        // Coluna e VARCHAR(80) — trunca aqui como defesa em profundidade.
+        $labelName = mb_substr($labelName, 0, 80);
 
         $importLabel = \App\Models\WhatsappLabel::create([
             'tenant_id'  => $tenantId,
