@@ -20,6 +20,38 @@
     </div>
 </div>
 
+<div class="row g-2" style="margin-bottom:20px;">
+    @php
+        $stageMeta = [
+            'lead'     => ['bg'=>'#e0e7ff','fg'=>'#4338ca','icon'=>'fa-magnifying-glass'],
+            'prospect' => ['bg'=>'#fef3c7','fg'=>'#92400e','icon'=>'fa-handshake'],
+            'active'   => ['bg'=>'#dcfce7','fg'=>'#166534','icon'=>'fa-circle-check'],
+            'churned'  => ['bg'=>'#fee2e2','fg'=>'#991b1b','icon'=>'fa-user-slash'],
+        ];
+        $currentStage = request('stage');
+    @endphp
+    <div class="col">
+        <a href="{{ route('clients.index') }}" style="text-decoration:none;">
+            <div class="vivensi-card" style="padding:16px; text-align:center; border:2px solid {{ !$currentStage ? '#4f46e5' : '#f1f5f9' }}; background: {{ !$currentStage ? '#eef2ff' : 'white' }};">
+                <div style="font-size:.7rem; color:#64748b; font-weight:900; text-transform:uppercase;">Todos</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#1e293b; margin-top:4px;">{{ $stageCounts->sum() }}</div>
+            </div>
+        </a>
+    </div>
+    @foreach(\App\Models\Client::STAGES as $key => $label)
+    <div class="col">
+        <a href="{{ route('clients.index', ['stage' => $key]) }}" style="text-decoration:none;">
+            <div class="vivensi-card" style="padding:16px; text-align:center; border:2px solid {{ $currentStage === $key ? $stageMeta[$key]['fg'] : '#f1f5f9' }}; background: {{ $currentStage === $key ? $stageMeta[$key]['bg'] : 'white' }};">
+                <div style="font-size:.7rem; color:{{ $stageMeta[$key]['fg'] }}; font-weight:900; text-transform:uppercase;">
+                    <i class="fas {{ $stageMeta[$key]['icon'] }}"></i> {{ $label }}
+                </div>
+                <div style="font-size:1.5rem; font-weight:900; color:#1e293b; margin-top:4px;">{{ $stageCounts[$key] ?? 0 }}</div>
+            </div>
+        </a>
+    </div>
+    @endforeach
+</div>
+
 <div class="row">
     <div class="col-12">
         <div class="vivensi-card p-4" style="background: white; border-radius: 24px; border: 1px solid #f1f5f9;">
@@ -29,6 +61,7 @@
                         <tr style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
                             <th style="border: none;">Nome do Cliente</th>
                             <th style="border: none;">Contato</th>
+                            <th style="border: none;">Estágio</th>
                             <th style="border: none;">Tipo</th>
                             <th style="border: none;">Último Registro</th>
                             <th style="border: none; text-align: right;">Ações</th>
@@ -53,6 +86,12 @@
                                 <div style="font-size: 0.85rem; color: #475569;"><i class="fab fa-whatsapp text-muted me-1"></i> {{ $client->phone ?: '-' }}</div>
                             </td>
                             <td style="border: none;">
+                                @php $sm = $stageMeta[$client->stage] ?? $stageMeta['active']; @endphp
+                                <span class="badge" style="background: {{ $sm['bg'] }}; color: {{ $sm['fg'] }}; padding: 6px 10px; border-radius: 8px; font-weight:800;">
+                                    <i class="fas {{ $sm['icon'] }}"></i> {{ $client->stage_label }}
+                                </span>
+                            </td>
+                            <td style="border: none;">
                                 <span class="badge" style="background: {{ $client->type == 'company' ? '#fef3c7; color: #d97706;' : '#e0f2fe; color: #0284c7;' }}; padding: 6px 10px; border-radius: 8px;">
                                     {{ $client->type == 'company' ? 'Pessoa Jurídica' : 'Pessoa Física' }}
                                 </span>
@@ -72,7 +111,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" style="padding: 0; border: none;">
+                            <td colspan="6" style="padding: 0; border: none;">
                                 <x-empty-state
                                     icon="fa-address-card"
                                     title="Nenhum cliente cadastrado"

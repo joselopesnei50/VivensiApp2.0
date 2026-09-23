@@ -18,15 +18,23 @@
                 @method('PUT')
                 
                 <div class="row mb-4">
-                    <div class="col-md-8">
+                    <div class="col-md-6">
                         <label class="form-label" style="font-weight: 700; color: #475569;">Nome Completo / Razão Social</label>
                         <input type="text" name="name" class="form-control" required value="{{ old('name', $client->name) }}" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;">
                     </div>
-                    <div class="col-md-4">
-                        <label for="type" class="form-label" style="font-weight: 700; color: #475569;">Tipo de Pessoa</label>
+                    <div class="col-md-3">
+                        <label for="type" class="form-label" style="font-weight: 700; color: #475569;">Tipo</label>
                         <select name="type" class="form-select" required style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="type">
-                            <option value="individual" {{ $client->type == 'individual' ? 'selected' : '' }}>Pessoa Física (CPF)</option>
-                            <option value="company" {{ $client->type == 'company' ? 'selected' : '' }}>Pessoa Jurídica (CNPJ)</option>
+                            <option value="individual" {{ $client->type == 'individual' ? 'selected' : '' }}>Pessoa Física</option>
+                            <option value="company" {{ $client->type == 'company' ? 'selected' : '' }}>Pessoa Jurídica</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="stage" class="form-label" style="font-weight: 700; color: #475569;">Estágio</label>
+                        <select name="stage" class="form-select" style="border-radius: 12px; padding: 12px 15px; border-color: #cbd5e1;" id="stage">
+                            @foreach(\App\Models\Client::STAGES as $key => $label)
+                                <option value="{{ $key }}" @selected($key === old('stage', $client->stage))>{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>

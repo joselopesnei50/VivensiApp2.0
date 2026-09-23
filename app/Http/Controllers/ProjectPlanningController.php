@@ -35,7 +35,7 @@ class ProjectPlanningController extends Controller
         // Employees so podem ver se forem membros do projeto — mesmo
         // padrao de ProjectController::show.
         $user = auth()->user();
-        if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
+        if (!in_array($user->role, ['manager', 'super_admin', 'ngo', 'common'], true)) {
             abort_unless(
                 ProjectMember::where('tenant_id', $tenantId)
                     ->where('project_id', $project->id)
@@ -51,7 +51,7 @@ class ProjectPlanningController extends Controller
     private function abortIfCannotWrite(): void
     {
         abort_unless(
-            in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true),
+            in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo', 'common'], true),
             403
         );
     }

@@ -21,7 +21,7 @@ class ProjectLogController extends Controller
         $project = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
 
         // Employees só podem escrever logs se forem membros do projeto
-        if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
+        if (!in_array($user->role, ['manager', 'super_admin', 'ngo', 'common'], true)) {
             abort_unless(
                 \App\Models\ProjectMember::where('tenant_id', $tenantId)
                     ->where('project_id', $project->id)
@@ -59,7 +59,7 @@ class ProjectLogController extends Controller
 
         // Só manager/super_admin ou o próprio autor pode excluir
         abort_unless(
-            in_array($user->role, ['manager', 'super_admin'], true) || $log->user_id === $user->id,
+            in_array($user->role, ['manager', 'super_admin', 'common'], true) || $log->user_id === $user->id,
             403
         );
 
@@ -77,7 +77,7 @@ class ProjectLogController extends Controller
 
         // Disparar um job de IA tem custo. Manter na mesma regra das outras ações
         // operacionais do projeto (manager/super_admin/ngo).
-        abort_unless(in_array($user->role, ['manager', 'super_admin', 'ngo'], true), 403);
+        abort_unless(in_array($user->role, ['manager', 'super_admin', 'ngo', 'common'], true), 403);
 
         $project  = Project::where('id', $projectId)->where('tenant_id', $tenantId)->firstOrFail();
 
@@ -100,7 +100,7 @@ class ProjectLogController extends Controller
 
         // Mesmo padrão de leitura do projeto: gestor OU membro. Sem isso
         // qualquer user do tenant lia o resumo de IA do projeto.
-        if (!in_array($user->role, ['manager', 'super_admin', 'ngo'], true)) {
+        if (!in_array($user->role, ['manager', 'super_admin', 'ngo', 'common'], true)) {
             abort_unless(
                 \App\Models\ProjectMember::where('tenant_id', $tenantId)
                     ->where('project_id', $project->id)

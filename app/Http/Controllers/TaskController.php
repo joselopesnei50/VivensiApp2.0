@@ -33,7 +33,7 @@ class TaskController extends Controller
     {
         $user = auth()->user();
 
-        if (!in_array($user->role, ['manager', 'ngo', 'super_admin'])) {
+        if (!in_array($user->role, ['manager', 'ngo', 'super_admin', 'common'])) {
             $projects = collect();
             $users    = collect([$user]);
         } else {
@@ -65,7 +65,7 @@ class TaskController extends Controller
                           ->where('tenant_id', $tenantId)
                           ->firstOrFail();
 
-        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo'], true);
+        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo', 'common'], true);
         if (!$canManageAll) {
             $isMember = ProjectMember::where('tenant_id', $tenantId)
                 ->where('project_id', $project->id)
@@ -140,7 +140,7 @@ class TaskController extends Controller
                     ->where('tenant_id', $tenantId)
                     ->firstOrFail();
 
-        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo'], true);
+        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo', 'common'], true);
         if (!$canManageAll) {
             abort_unless(
                 ((int) $task->assigned_to === (int) $user->id) || ((int) $task->created_by === (int) $user->id),
@@ -170,7 +170,7 @@ class TaskController extends Controller
         $user     = auth()->user();
         $tenantId = $user->tenant_id;
 
-        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo'], true);
+        $canManageAll = in_array($user->role, ['manager', 'super_admin', 'ngo', 'common'], true);
 
         $validator = Validator::make($request->all(), [
             'id'          => ['required', 'integer'],
@@ -332,7 +332,7 @@ class TaskController extends Controller
         $this->makeTask($validated, $isPrivileged, $tenantId, (int) $user->id);
 
         if ($request->has('redirect_to_schedule')) {
-            if (!in_array($user->role, ['manager', 'ngo', 'super_admin'])) {
+            if (!in_array($user->role, ['manager', 'ngo', 'super_admin', 'common'])) {
                 return redirect('/tasks/calendar')->with('success', 'Evento/Lembrete criado com sucesso!');
             }
             return redirect('/manager/schedule')->with('success', 'Evento/Tarefa criado com sucesso!');
@@ -396,7 +396,7 @@ class TaskController extends Controller
             $assigneeExistsRule = $assigneeExistsRule->whereNotIn('role', ['super_admin']);
         }
 
-        $isPrivileged = in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
+        $isPrivileged = in_array($user->role, ['manager', 'ngo', 'super_admin', 'common'], true);
 
         // stage_id so vale se veio com project_id valido; validacao de cross-project
         // (stage precisa pertencer ao mesmo projeto) fica no makeTask() pra ter acesso

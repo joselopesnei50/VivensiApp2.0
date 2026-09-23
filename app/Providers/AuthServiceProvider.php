@@ -76,7 +76,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-projects', function (User $user) use ($perm) {
-            return $perm($user, 'manage-projects') || in_array($user->role, ['manager', 'super_admin']);
+            return $perm($user, 'manage-projects') || in_array($user->role, ['manager', 'super_admin', 'common']);
         });
 
         Gate::define('manage-broadcast', function (User $user) use ($perm) {
@@ -120,7 +120,7 @@ class AuthServiceProvider extends ServiceProvider
         // Gate::before. Widen pra 'manager' se area operacional exigir.
 
         Gate::define('manage-contracts', function (User $user) use ($perm) {
-            return $perm($user, 'manage-contracts') || $user->role === 'ngo';
+            return $perm($user, 'manage-contracts') || in_array($user->role, ['ngo', 'common'], true);
         });
 
         // Compartilhado por AssetController + InventoryController (patrimonio

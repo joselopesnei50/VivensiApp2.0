@@ -971,19 +971,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $mei_wa_active   = request()->is('whatsapp*');
                     $mei_mkt_active  = request()->is('marketing*','prospecting*','social/accounts*','social-ai*','manager/landing-pages*');
                     $mei_crm_active  = request()->is('personal/clients*');
+                    $mei_proj_active = request()->is('projects*','tasks*');
                     $mei_ai_active   = request()->is('smart-analysis*','strategy-room*');
                 @endphp
 
+                @php $mei_crm_active = $mei_crm_active || request()->is('ngo/contracts*'); @endphp
                 {{-- Grupo: CRM & Clientes --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $mei_crm_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
                         <i class="fas fa-users group-icon"></i> CRM &amp; Clientes
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mei_crm_active ? '150px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mei_crm_active ? '200px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/personal/clients') }}" class="{{ request()->is('personal/clients*') ? 'active' : '' }}"><i class="fas fa-address-book"></i> Meus Clientes</a></li>
                             <li><a href="{{ url('/personal/clients/create') }}" class="{{ request()->is('personal/clients/create') ? 'active' : '' }}"><i class="fas fa-user-plus" style="color:#10b981;"></i> Novo Cliente</a></li>
+                            <li><a href="{{ url('/ngo/contracts') }}" class="{{ request()->is('ngo/contracts') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Contratos</a></li>
+                            <li><a href="{{ url('/ngo/contracts/create') }}" class="{{ request()->is('ngo/contracts/create') ? 'active' : '' }}"><i class="fas fa-file-circle-plus" style="color:#10b981;"></i> Novo Contrato</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Projetos & Tarefas --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_proj_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-briefcase group-icon"></i> Projetos &amp; Tarefas
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_proj_active ? '200px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/projects') }}" class="{{ request()->is('projects') || request()->is('projects/details/*') || request()->is('projects/*/edit') ? 'active' : '' }}"><i class="fas fa-project-diagram"></i> Projetos</a></li>
+                            <li><a href="{{ url('/projects/create') }}" class="{{ request()->is('projects/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Novo Projeto</a></li>
+                            <li><a href="{{ url('/tasks') }}" class="{{ request()->is('tasks') && !request()->is('tasks/calendar') ? 'active' : '' }}"><i class="fas fa-check-square"></i> Tarefas</a></li>
+                            <li><a href="{{ url('/tasks/calendar') }}" class="{{ request()->is('tasks/calendar') ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Calendário</a></li>
                         </ul>
                     </div>
                 </div>

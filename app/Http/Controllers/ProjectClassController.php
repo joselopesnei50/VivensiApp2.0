@@ -26,7 +26,7 @@ use Illuminate\View\View;
  */
 class ProjectClassController extends Controller
 {
-    private const ROLES_WRITE = ['manager', 'super_admin', 'ngo'];
+    private const ROLES_WRITE = ['manager', 'super_admin', 'ngo', 'common'];
 
     public function index(Project $project): View
     {

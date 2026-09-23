@@ -121,7 +121,7 @@ class TransactionController extends Controller
         $user = auth()->user();
         
         // Se for usuário comum, não deve ver projetos de jeito nenhum
-        if (!in_array($user->role, ['manager', 'ngo', 'super_admin'])) {
+        if (!in_array($user->role, ['manager', 'ngo', 'super_admin', 'common'])) {
             $projects = collect();
         } else {
             $projects = Project::where('tenant_id', $user->tenant_id)
@@ -182,7 +182,7 @@ class TransactionController extends Controller
         // Despesas lançadas por colaborador devem passar por aprovação do gestor
         $user = auth()->user();
         $isExpense = (($validated['type'] ?? null) === 'expense');
-        $needsApproval = $isExpense && !in_array($user->role, ['manager', 'ngo', 'super_admin'], true);
+        $needsApproval = $isExpense && !in_array($user->role, ['manager', 'ngo', 'super_admin', 'common'], true);
 
         $transaction->status = $needsApproval ? 'pending' : 'paid';
         $transaction->approval_status = $needsApproval ? 'pending' : 'approved';
@@ -205,7 +205,7 @@ class TransactionController extends Controller
         if ($needsApproval) {
             try {
                 $managers = User::where('tenant_id', auth()->user()->tenant_id)
-                    ->whereIn('role', ['manager', 'ngo', 'super_admin'])
+                    ->whereIn('role', ['manager', 'ngo', 'super_admin', 'common'])
                     ->whereNotNull('email')
                     ->get();
 
@@ -332,7 +332,7 @@ class TransactionController extends Controller
         // Security Logic: If amount changed and user is NOT manager, reset to pending
         if (isset($validated['amount']) && $validated['amount'] != $transaction->amount) {
              $user = auth()->user();
-             if (!in_array($user->role, ['manager', 'ngo', 'super_admin'], true)) {
+             if (!in_array($user->role, ['manager', 'ngo', 'super_admin', 'common'], true)) {
                  $transaction->status = 'pending';
                  $transaction->approval_status = 'pending';
              }
@@ -357,7 +357,7 @@ class TransactionController extends Controller
     public function approve($id)
     {
         // Security Check: Only Managers/Admins can approve
-        if (!in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin'], true)) {
+        if (!in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin', 'common'], true)) {
             abort(403, 'Apenas gestores podem aprovar transações.');
         }
 
@@ -385,7 +385,7 @@ class TransactionController extends Controller
     public function reject($id)
     {
         // Security Check: Only Managers/Admins can reject
-        if (!in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin'], true)) {
+        if (!in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin', 'common'], true)) {
             abort(403, 'Apenas gestores podem rejeitar transações.');
         }
 

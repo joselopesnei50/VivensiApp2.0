@@ -24,9 +24,20 @@ class ClientController extends Controller
             $query->where('type', $type);
         }
 
+        if ($stage = $request->input('stage')) {
+            if (array_key_exists($stage, \App\Models\Client::STAGES)) {
+                $query->where('stage', $stage);
+            }
+        }
+
         $clients = $query->paginate(25)->withQueryString();
 
-        return view('personal.clients.index', compact('clients'));
+        $stageCounts = \App\Models\Client::where('tenant_id', $tenantId)
+            ->selectRaw('stage, COUNT(*) as total')
+            ->groupBy('stage')
+            ->pluck('total', 'stage');
+
+        return view('personal.clients.index', compact('clients', 'stageCounts'));
     }
 
     public function create()
@@ -34,15 +45,23 @@ class ClientController extends Controller
         return view('personal.clients.create');
     }
 
+    private function validationRules(): array
+    {
+        return [
+            'name'  => 'required|string|max:255',
+            'type'  => 'required|in:individual,company',
+            'stage' => 'nullable|in:' . implode(',', array_keys(\App\Models\Client::STAGES)),
+        ];
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:individual,company',
-        ]);
+        $request->validate($this->validationRules());
 
-        $data = $request->only(['name', 'type', 'document', 'email', 'phone', 'purchase_history', 'relationship_notes']);
-        $data['tenant_id'] = auth()->user()->tenant_id;
+        $data = $request->only(['name', 'type', 'stage', 'document', 'email', 'phone', 'purchase_history', 'relationship_notes']);
+        $data['tenant_id']       = auth()->user()->tenant_id;
+        $data['stage']           = $data['stage'] ?? 'active';
+        $data['last_contact_at'] = now();
 
         \App\Models\Client::create($data);
 
@@ -54,7 +73,20 @@ class ClientController extends Controller
         if ($client->tenant_id !== auth()->user()->tenant_id) {
             abort(403);
         }
-        return view('personal.clients.show', compact('client'));
+
+        $transactions = $client->transactions()
+            ->orderBy('date', 'desc')
+            ->limit(50)
+            ->get();
+
+        $stats = [
+            'ltv'              => $client->ltv,
+            'pending'          => $client->pending_amount,
+            'count'            => $client->transaction_count,
+            'last_transaction' => $client->last_transaction_at,
+        ];
+
+        return view('personal.clients.show', compact('client', 'transactions', 'stats'));
     }
 
     public function edit(\App\Models\Client $client)
@@ -71,12 +103,9 @@ class ClientController extends Controller
             abort(403);
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:individual,company',
-        ]);
+        $request->validate($this->validationRules());
 
-        $client->update($request->only(['name', 'type', 'document', 'email', 'phone', 'purchase_history', 'relationship_notes']));
+        $client->update($request->only(['name', 'type', 'stage', 'document', 'email', 'phone', 'purchase_history', 'relationship_notes']));
 
         return redirect()->route('clients.index')->with('success', 'Cliente atualizado com sucesso!');
     }

@@ -464,6 +464,84 @@
 </script>
 
 
+@if(!empty($upcomingBills ?? null))
+<div class="row g-4" style="margin-bottom: 24px;">
+    <div class="col-md-6">
+        <div class="vivensi-card" style="padding: 30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div>
+                    <h4 style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:900;">Contas a Pagar</h4>
+                    <span style="font-size:.75rem; color:#94a3b8; font-weight:700;">Próximos 7 dias</span>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:1.4rem; font-weight:900; color:#ef4444; letter-spacing:-.5px;">
+                        R$ {{ number_format($upcomingBills['payables_total'], 2, ',', '.') }}
+                    </div>
+                    @if($upcomingBills['overdue_payables_total'] > 0)
+                    <span style="font-size:.7rem; font-weight:800; color:#ef4444; background:#fef2f2; padding:3px 8px; border-radius:99px;">
+                        <i class="fas fa-triangle-exclamation"></i> R$ {{ number_format($upcomingBills['overdue_payables_total'], 2, ',', '.') }} vencido
+                    </span>
+                    @endif
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                @forelse($upcomingBills['payables'] as $bill)
+                <a href="{{ url('/transactions/' . $bill->id) }}" style="display:flex; align-items:center; padding:12px 16px; background:#fef2f2; border:1px solid #fee2e2; border-radius:14px; text-decoration:none; color:inherit;">
+                    <div style="flex:1;">
+                        <div style="font-weight:700; color:#1e293b; font-size:.9rem;">{{ $bill->description }}</div>
+                        <div style="font-size:.72rem; color:#64748b; font-weight:600;">Vence {{ \Carbon\Carbon::parse($bill->date)->translatedFormat('d/m') }} ({{ \Carbon\Carbon::parse($bill->date)->diffForHumans() }})</div>
+                    </div>
+                    <div style="font-weight:900; color:#ef4444; font-size:.95rem;">R$ {{ number_format($bill->amount, 2, ',', '.') }}</div>
+                </a>
+                @empty
+                <div style="text-align:center; padding:20px; color:#94a3b8; font-size:.85rem; font-weight:600;">
+                    <i class="fas fa-check-circle" style="color:#10b981; font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+                    Nenhuma conta a pagar nos próximos 7 dias.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="vivensi-card" style="padding: 30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div>
+                    <h4 style="margin:0; font-size:1.1rem; color:#1e293b; font-weight:900;">Contas a Receber</h4>
+                    <span style="font-size:.75rem; color:#94a3b8; font-weight:700;">Próximos 7 dias</span>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:1.4rem; font-weight:900; color:#10b981; letter-spacing:-.5px;">
+                        R$ {{ number_format($upcomingBills['receivables_total'], 2, ',', '.') }}
+                    </div>
+                    @if($upcomingBills['overdue_receivables_total'] > 0)
+                    <span style="font-size:.7rem; font-weight:800; color:#f59e0b; background:#fef3c7; padding:3px 8px; border-radius:99px;">
+                        <i class="fas fa-clock"></i> R$ {{ number_format($upcomingBills['overdue_receivables_total'], 2, ',', '.') }} atrasado
+                    </span>
+                    @endif
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                @forelse($upcomingBills['receivables'] as $bill)
+                <a href="{{ url('/transactions/' . $bill->id) }}" style="display:flex; align-items:center; padding:12px 16px; background:#ecfdf5; border:1px solid #d1fae5; border-radius:14px; text-decoration:none; color:inherit;">
+                    <div style="flex:1;">
+                        <div style="font-weight:700; color:#1e293b; font-size:.9rem;">{{ $bill->description }}</div>
+                        <div style="font-size:.72rem; color:#64748b; font-weight:600;">Vence {{ \Carbon\Carbon::parse($bill->date)->translatedFormat('d/m') }} ({{ \Carbon\Carbon::parse($bill->date)->diffForHumans() }})</div>
+                    </div>
+                    <div style="font-weight:900; color:#10b981; font-size:.95rem;">R$ {{ number_format($bill->amount, 2, ',', '.') }}</div>
+                </a>
+                @empty
+                <div style="text-align:center; padding:20px; color:#94a3b8; font-size:.85rem; font-weight:600;">
+                    <i class="fas fa-inbox" style="color:#cbd5e1; font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+                    Nenhuma receita prevista nos próximos 7 dias.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="row g-4">
     <!-- Últimas Transações -->
     <div class="col-md-7">

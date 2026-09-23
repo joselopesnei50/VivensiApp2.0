@@ -27,7 +27,7 @@ class ProjectStageController extends Controller
 {
     private const ALLOWED_STATUSES = ['pending', 'in_progress', 'completed', 'cancelled'];
 
-    private const ROLES_WRITE = ['manager', 'super_admin', 'ngo'];
+    private const ROLES_WRITE = ['manager', 'super_admin', 'ngo', 'common'];
 
     public function index(Request $request, Project $project)
     {

@@ -15,7 +15,7 @@ class ProjectTimelineController extends Controller
     public function store(Request $request, $projectId)
     {
         abort_unless(
-            in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true),
+            in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo', 'common'], true),
             403
         );
 
@@ -51,7 +51,7 @@ class ProjectTimelineController extends Controller
     public function destroy($projectId, $id)
     {
         abort_unless(
-            in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true),
+            in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo', 'common'], true),
             403
         );
 

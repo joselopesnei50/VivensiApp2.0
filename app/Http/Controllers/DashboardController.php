@@ -772,6 +772,31 @@ class DashboardController extends Controller
         $recentTransactions = Transaction::where('tenant_id', $tenantId)
             ->orderBy('date', 'desc')->limit(5)->get();
 
+        // ── Contas a Vencer (proximos 7 dias) + Vencidas ──────────────────
+        $today       = now()->toDateString();
+        $sevenDays   = now()->addDays(7)->toDateString();
+        $upcomingRaw = Transaction::where('tenant_id', $tenantId)
+            ->where('status', 'pending')
+            ->where('date', '<=', $sevenDays)
+            ->orderBy('date', 'asc')
+            ->limit(20)
+            ->get(['id', 'description', 'amount', 'type', 'date', 'client_id']);
+
+        $upcomingPayables    = $upcomingRaw->where('type', 'expense')->where('date', '>=', $today)->values();
+        $upcomingReceivables = $upcomingRaw->where('type', 'income')->where('date', '>=', $today)->values();
+        $overduePayables     = $upcomingRaw->where('type', 'expense')->where('date', '<', $today)->values();
+        $overdueReceivables  = $upcomingRaw->where('type', 'income')->where('date', '<', $today)->values();
+
+        $upcomingBills = [
+            'payables_total'    => (float) $upcomingPayables->sum('amount'),
+            'receivables_total' => (float) $upcomingReceivables->sum('amount'),
+            'overdue_payables_total'    => (float) $overduePayables->sum('amount'),
+            'overdue_receivables_total' => (float) $overdueReceivables->sum('amount'),
+            'payables'    => $upcomingPayables->take(5),
+            'receivables' => $upcomingReceivables->take(5),
+            'overdue_count' => $overduePayables->count() + $overdueReceivables->count(),
+        ];
+
         $pendingTasks = Task::where('tenant_id', $tenantId)
             ->where('assigned_to', $userId)
             ->whereNotIn('status', ['done', 'completed'])
@@ -797,6 +822,7 @@ class DashboardController extends Controller
             'recentTransactions', 'pendingTasks',
             'chartLabels', 'chartIncome', 'chartExpense',
             'impactFeed',
+            'upcomingBills',
             'meiTeto', 'meiDas', 'meiDre', 'meiNfse'
         ));
     }
