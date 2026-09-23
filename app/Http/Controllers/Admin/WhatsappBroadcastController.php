@@ -502,6 +502,37 @@ class WhatsappBroadcastController extends Controller
             ->with('success', 'Rascunho carregado. Complete a mensagem e dispare quando quiser.');
     }
 
+    /**
+     * Reabre uma campanha status=failed no formulario pra o user corrigir e reenviar.
+     * NAO reutiliza o registro antigo (mantem historico); marca como 'cancelled' e
+     * pre-preenche o form com message + phones. Motivo tipico: URL encurtada
+     * bloqueada pelo Anti-Ban ou instancia offline no momento do disparo.
+     */
+    public function editFailed(int $id)
+    {
+        Gate::authorize('access-whatsapp');
+        $tenantId = auth()->user()->tenant_id;
+
+        $failed = \App\Models\BroadcastCampaign::where('tenant_id', $tenantId)
+            ->where('id', $id)
+            ->whereIn('status', ['failed', 'cancelled'])
+            ->firstOrFail();
+
+        $phonesRaw = (string) ($failed->phones ?? '');
+        if ($phonesRaw !== '' && str_starts_with(trim($phonesRaw), '[')) {
+            $decoded = json_decode($phonesRaw, true);
+            if (is_array($decoded)) {
+                $phonesRaw = implode(',', $decoded);
+            }
+        }
+
+        session()->flash('prefilled_phones', $phonesRaw);
+        session()->flash('ai_broadcast_message', (string) ($failed->message ?? ''));
+
+        return redirect()->route('whatsapp.broadcast.index')
+            ->with('success', 'Campanha #' . $failed->id . ' carregada pra edicao. Corrija a mensagem e dispare novamente.');
+    }
+
     public function discardDraft(int $id)
     {
         Gate::authorize('access-whatsapp');
@@ -576,6 +607,21 @@ class WhatsappBroadcastController extends Controller
             return redirect()->back()->withErrors([
                 'broadcast_image' => "A imagem não pôde ser enviada. Verifique se o arquivo é menor que {$maxMb}MB e tente novamente.",
             ])->withInput();
+        }
+
+        // Bloqueio amigavel pra URL encurtada — antes existia so no job, o que gerava
+        // campanha status=failed sem UX de correcao. Devolve pra tela com erro claro
+        // preservando message/phones (withInput).
+        $rawMessage = (string) $request->input('message', '');
+        if ($rawMessage !== '' && app(\App\Services\Messaging\AntiBanManager::class)->containsBlockedShortener($rawMessage)) {
+            $blocked = \App\Services\Messaging\AntiBanManager::BLOCKED_SHORTENERS;
+            $hit = null;
+            foreach ($blocked as $sh) {
+                if (stripos($rawMessage, $sh) !== false) { $hit = $sh; break; }
+            }
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Bloqueado (Anti-Ban): sua mensagem contem um encurtador de URL (' . ($hit ?? 'bit.ly, tinyurl, etc') . '). Substitua pela URL completa do destino antes de disparar — o WhatsApp bane em massa quem envia encurtadores.');
         }
 
         $request->validate([

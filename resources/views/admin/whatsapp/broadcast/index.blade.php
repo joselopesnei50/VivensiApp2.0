@@ -1141,6 +1141,19 @@
                 @endif
             </div>
 
+            {{-- Acoes contextuais quando campanha falhou/foi cancelada --}}
+            @if(in_array($campaign->status, ['failed', 'cancelled']) && trim((string) $campaign->message) !== '')
+                <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;flex-wrap:wrap;">
+                    <span style="font-size:.65rem;color:#7f1d1d;background:#fee2e2;padding:3px 8px;border-radius:6px;">
+                        <i class="fas fa-circle-info"></i> Reabra pra corrigir a mensagem (ex: trocar bit.ly por URL completa) e reenviar.
+                    </span>
+                    <a href="{{ route('whatsapp.broadcast.failed.edit', $campaign->id) }}"
+                       style="background:transparent;border:1px solid #4f46e5;color:#4338ca;font-size:.7rem;font-weight:700;padding:4px 10px;border-radius:8px;text-decoration:none;margin-left:auto;">
+                        <i class="fas fa-pen me-1" style="font-size:.6rem;"></i> Editar &amp; reenviar
+                    </a>
+                </div>
+            @endif
+
             {{-- Acoes contextuais por status (Retomar / Cancelar) --}}
             @if(in_array($campaign->status, ['scheduled', 'queued', 'paused', 'processing']))
                 <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;flex-wrap:wrap;">

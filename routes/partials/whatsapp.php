@@ -95,6 +95,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::delete('/whatsapp/broadcast/{id}/cancel',  [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'cancelScheduled'])->name('whatsapp.broadcast.cancel');
     Route::post('/whatsapp/broadcast/{id}/resume',   [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'resumeCampaign'])->name('whatsapp.broadcast.resume')->middleware('throttle:5,1');
     Route::get('/whatsapp/broadcast/draft/{id}/edit', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'editDraft'])->name('whatsapp.broadcast.draft.edit');
+    Route::get('/whatsapp/broadcast/failed/{id}/edit', [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'editFailed'])->name('whatsapp.broadcast.failed.edit');
     Route::delete('/whatsapp/broadcast/draft/{id}',   [App\Http\Controllers\Admin\WhatsappBroadcastController::class, 'discardDraft'])->name('whatsapp.broadcast.draft.discard')->middleware('throttle:web_write');
 
     // Instâncias
