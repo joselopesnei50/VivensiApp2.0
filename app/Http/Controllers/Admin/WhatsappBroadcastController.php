@@ -115,10 +115,13 @@ class WhatsappBroadcastController extends Controller
         // Coluna e VARCHAR(80) — trunca aqui como defesa em profundidade.
         $labelName = mb_substr($labelName, 0, 80);
 
+        // Coluna slug e VARCHAR(150) — trunca aqui como defesa em profundidade.
+        $slug = mb_substr(\Illuminate\Support\Str::slug($labelName . '-' . now()->timestamp), 0, 150);
+
         $importLabel = \App\Models\WhatsappLabel::create([
             'tenant_id'  => $tenantId,
             'name'       => $labelName,
-            'slug'       => \Illuminate\Support\Str::slug($labelName . '-' . now()->timestamp),
+            'slug'       => $slug,
             'color'      => '#7c3aed',
             'background' => '#f5f3ff',
             'created_by' => $userId,
