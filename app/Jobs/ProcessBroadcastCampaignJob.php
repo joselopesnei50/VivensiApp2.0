@@ -22,7 +22,10 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     const MAX_RECIPIENTS = 500;
-    const CHUNK_SIZE     = 20;   // mensagens por execução de job
+    // Reduzido de 20 -> 10 em 2026-09-23 apos camp 130 timeout: com Evolution
+    // lenta (30-45s HTTP send + typing + delay) chunks de 20 estouravam os 1800s
+    // do timeout. Chunks menores + retomada automatica no failed() cobrem o caso.
+    const CHUNK_SIZE     = 10;   // mensagens por execução de job
 
     /**
      * Volume maximo por campanha quando ha audio. Broadcast de audio identico
@@ -304,12 +307,16 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             }
         }
 
-        // Chunk size dinâmico: garante que o chunk cabe no $timeout=900s com margem
-        // Fórmula: 800s disponíveis ÷ delay máximo por mensagem
+        // Chunk size dinâmico: garante que o chunk cabe no $timeout=1800s com folga.
+        // Formula considera: sleep entre msgs + HTTP send Evolution (ate 45s p95) +
+        // typing simulation. Divisor 1200s (nao 1800) = 33% de folga pra retry.
+        // Ajustado 2026-09-23 apos camp 130 timeout (7/57 msgs em 30min).
         $minDelay           = max(5, $campaign->cadence ?: 5);
         $multiplier         = $conservativeMode ? 2 : 1;
-        $maxMsgDelay        = ($minDelay + 10) * $multiplier;
-        $effectiveChunkSize = min(self::CHUNK_SIZE, max(3, (int) floor(800 / max(1, $maxMsgDelay))));
+        $sleepMaxPerMsg     = ($minDelay + 10) * $multiplier;
+        $httpAndTypingPerMsg = 50; // estimativa: 40s HTTP + 10s typing (worst case observado)
+        $maxMsgDelay        = $sleepMaxPerMsg + $httpAndTypingPerMsg;
+        $effectiveChunkSize = min(self::CHUNK_SIZE, max(3, (int) floor(1200 / max(1, $maxMsgDelay))));
 
         if ($effectiveChunkSize < self::CHUNK_SIZE) {
             $recipientsIterable = $recipientsIterable->take($effectiveChunkSize);
@@ -701,12 +708,43 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
             ->where('tenant_id', $this->tenantId)
             ->first();
 
-        if ($campaign && in_array($campaign->status, ['queued', 'processing'])) {
-            $campaign->update([
-                'status'       => 'failed',
-                'completed_at' => now(),
-            ]);
+        if (!$campaign || !in_array($campaign->status, ['queued', 'processing'])) {
+            return;
         }
+
+        // Retomada automatica no chunk seguinte quando o timeout do chunk atual
+        // matou o worker — antes marcava tudo como failed e o cliente perdia
+        // a campanha inteira. Agora avanca CHUNK_SIZE msgs (pior caso: pula ate
+        // 10 msgs que ja podem ter sido enviadas mas nao contabilizadas) e
+        // continua. Se ja mandamos todas, marca como completed.
+        $isTimeout = str_contains(strtolower($exception->getMessage()), 'attempted too many times')
+            || str_contains(strtolower($exception->getMessage()), 'timed out');
+
+        if (!$isTimeout) {
+            $campaign->update(['status' => 'failed', 'completed_at' => now()]);
+            return;
+        }
+
+        $totalRecipients = (int) ($campaign->actual_recipients ?? 0);
+        $nextOffset      = $this->offset + self::CHUNK_SIZE;
+
+        if ($totalRecipients > 0 && $nextOffset >= $totalRecipients) {
+            $campaign->update(['status' => 'completed', 'completed_at' => now()]);
+            Log::info("Broadcast concluido (retomada apos timeout do chunk final)", [
+                'campaign_id' => $campaign->id,
+                'total_sent'  => $campaign->total_sent,
+            ]);
+            return;
+        }
+
+        Log::warning("Broadcast: retomando chunk seguinte apos timeout", [
+            'campaign_id' => $campaign->id,
+            'from_offset' => $this->offset,
+            'next_offset' => $nextOffset,
+        ]);
+
+        static::dispatch($this->campaignId, $this->tenantId, $nextOffset)
+            ->delay(now()->addSeconds(30));
     }
 
     protected function getRecipients($campaign, EvolutionApiService $evo = null)
