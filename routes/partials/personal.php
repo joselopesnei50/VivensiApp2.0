@@ -15,6 +15,9 @@ Route::middleware(['auth', 'subscription', 'can:access-personal'])->prefix('pers
     // CRM MEI (Clientes)
     Route::resource('clients', \App\Http\Controllers\ClientController::class);
 
+    // Catalogo de produtos e servicos (base pra Orcamentos e Recibos)
+    Route::resource('catalog', \App\Http\Controllers\CatalogProductController::class);
+
     // MEI — botão "Marcar DAS como pago" do widget no dashboard common
     Route::post('/das/pago',
         [\App\Http\Controllers\Mei\MeiDasController::class, 'marcarPago'])

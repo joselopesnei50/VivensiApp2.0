@@ -972,6 +972,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $mei_mkt_active  = request()->is('marketing*','prospecting*','social/accounts*','social-ai*','manager/landing-pages*');
                     $mei_crm_active  = request()->is('personal/clients*');
                     $mei_proj_active = request()->is('projects*','tasks*');
+                    $mei_sales_active = request()->is('personal/catalog*');
                     $mei_ai_active   = request()->is('smart-analysis*','strategy-room*');
                 @endphp
 
@@ -1005,6 +1006,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/projects/create') }}" class="{{ request()->is('projects/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Novo Projeto</a></li>
                             <li><a href="{{ url('/tasks') }}" class="{{ request()->is('tasks') && !request()->is('tasks/calendar') ? 'active' : '' }}"><i class="fas fa-check-square"></i> Tarefas</a></li>
                             <li><a href="{{ url('/tasks/calendar') }}" class="{{ request()->is('tasks/calendar') ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Calendário</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Vendas (Catalogo, Orcamentos futuros) --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_sales_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-tags group-icon"></i> Vendas
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_sales_active ? '150px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/personal/catalog') }}" class="{{ request()->is('personal/catalog') || request()->is('personal/catalog/*') && !request()->is('personal/catalog/create') ? 'active' : '' }}"><i class="fas fa-boxes-stacked"></i> Catálogo</a></li>
+                            <li><a href="{{ url('/personal/catalog/create') }}" class="{{ request()->is('personal/catalog/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Novo Item</a></li>
                         </ul>
                     </div>
                 </div>
