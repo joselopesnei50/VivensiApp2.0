@@ -972,7 +972,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $mei_mkt_active  = request()->is('marketing*','prospecting*','social/accounts*','social-ai*','manager/landing-pages*');
                     $mei_crm_active  = request()->is('personal/clients*');
                     $mei_proj_active = request()->is('projects*','tasks*');
-                    $mei_sales_active = request()->is('personal/catalog*');
+                    $mei_sales_active = request()->is('personal/catalog*','personal/quotes*');
                     $mei_ai_active   = request()->is('smart-analysis*','strategy-room*');
                 @endphp
 
@@ -1017,8 +1017,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-tags group-icon"></i> Vendas
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mei_sales_active ? '150px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mei_sales_active ? '250px' : '0' }};">
                         <ul>
+                            <li><a href="{{ url('/personal/quotes') }}" class="{{ request()->is('personal/quotes') || request()->is('personal/quotes/*') && !request()->is('personal/quotes/create') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Orçamentos</a></li>
+                            <li><a href="{{ url('/personal/quotes/create') }}" class="{{ request()->is('personal/quotes/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Novo Orçamento</a></li>
                             <li><a href="{{ url('/personal/catalog') }}" class="{{ request()->is('personal/catalog') || request()->is('personal/catalog/*') && !request()->is('personal/catalog/create') ? 'active' : '' }}"><i class="fas fa-boxes-stacked"></i> Catálogo</a></li>
                             <li><a href="{{ url('/personal/catalog/create') }}" class="{{ request()->is('personal/catalog/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Novo Item</a></li>
                         </ul>

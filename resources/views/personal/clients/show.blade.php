@@ -40,6 +40,9 @@
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
             @endif
+            <a href="{{ url('/personal/quotes/create?client_id=' . $client->id) }}" class="btn-premium" style="background: #eef2ff; color: #4338ca; border: none;">
+                <i class="fas fa-file-invoice-dollar"></i> Novo Orçamento
+            </a>
             <a href="{{ route('clients.edit', $client) }}" class="btn-premium" style="background: #fef3c7 !important; color: #92400e !important; border: none;">
                 <i class="fas fa-pen"></i> Editar
             </a>

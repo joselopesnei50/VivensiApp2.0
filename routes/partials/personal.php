@@ -18,6 +18,15 @@ Route::middleware(['auth', 'subscription', 'can:access-personal'])->prefix('pers
     // Catalogo de produtos e servicos (base pra Orcamentos e Recibos)
     Route::resource('catalog', \App\Http\Controllers\CatalogProductController::class);
 
+    // Orcamentos / Propostas (Onda 2)
+    Route::resource('quotes', \App\Http\Controllers\QuoteController::class);
+    Route::post('/quotes/{quote}/send',      [\App\Http\Controllers\QuoteController::class, 'markSent'])->name('quotes.send')->middleware('throttle:web_write');
+    Route::post('/quotes/{quote}/accept',    [\App\Http\Controllers\QuoteController::class, 'markAccepted'])->name('quotes.accept')->middleware('throttle:web_write');
+    Route::post('/quotes/{quote}/reject',    [\App\Http\Controllers\QuoteController::class, 'markRejected'])->name('quotes.reject')->middleware('throttle:web_write');
+    Route::post('/quotes/{quote}/duplicate', [\App\Http\Controllers\QuoteController::class, 'duplicate'])->name('quotes.duplicate')->middleware('throttle:web_write');
+    Route::post('/quotes/{quote}/convert',   [\App\Http\Controllers\QuoteController::class, 'convert'])->name('quotes.convert')->middleware('throttle:web_write');
+    Route::get('/quotes/{quote}/pdf',        [\App\Http\Controllers\QuoteController::class, 'pdf'])->name('quotes.pdf')->middleware('throttle:web_export');
+
     // MEI — botão "Marcar DAS como pago" do widget no dashboard common
     Route::post('/das/pago',
         [\App\Http\Controllers\Mei\MeiDasController::class, 'marcarPago'])
