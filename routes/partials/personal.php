@@ -18,6 +18,9 @@ Route::middleware(['auth', 'subscription', 'can:access-personal'])->prefix('pers
     // Catalogo de produtos e servicos (base pra Orcamentos e Recibos)
     Route::resource('catalog', \App\Http\Controllers\CatalogProductController::class);
 
+    // DRE + analise por cliente/categoria (Onda 2)
+    Route::get('/dre', [\App\Http\Controllers\DreController::class, 'index'])->name('personal.dre.index');
+
     // Orcamentos / Propostas (Onda 2)
     Route::resource('quotes', \App\Http\Controllers\QuoteController::class);
     Route::post('/quotes/{quote}/send',      [\App\Http\Controllers\QuoteController::class, 'markSent'])->name('quotes.send')->middleware('throttle:web_write');

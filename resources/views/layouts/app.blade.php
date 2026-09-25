@@ -967,7 +967,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @else
                 <!-- Menu Comum / MEI / Empresa -->
                 @php
-                    $mei_fin_active  = request()->is('personal/reconciliation*','personal/budget*','personal/receipts*','transactions*');
+                    $mei_fin_active  = request()->is('personal/reconciliation*','personal/budget*','personal/receipts*','transactions*','personal/dre*');
                     $mei_wa_active   = request()->is('whatsapp*');
                     $mei_mkt_active  = request()->is('marketing*','prospecting*','social/accounts*','social-ai*','manager/landing-pages*');
                     $mei_crm_active  = request()->is('personal/clients*');
@@ -1081,9 +1081,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-coins group-icon"></i> Gestão Financeira
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $mei_fin_active ? '260px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $mei_fin_active ? '300px' : '0' }};">
                         <ul>
                             <li><a href="{{ url('/transactions') }}" class="{{ request()->is('transactions*') ? 'active' : '' }}"><i class="fas fa-exchange-alt"></i> Fluxo de Caixa</a></li>
+                            <li><a href="{{ url('/personal/dre') }}" class="{{ request()->is('personal/dre*') ? 'active' : '' }}"><i class="fas fa-chart-column" style="color:#4f46e5;"></i> DRE &amp; Análise</a></li>
                             <li><a href="{{ url('/personal/receipts') }}" class="{{ request()->is('personal/receipts*') && !request()->is('personal/receipts/create') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Recibos &amp; NFS-e</a></li>
                             <li><a href="{{ url('/personal/receipts/create') }}" class="{{ request()->is('personal/receipts/create') ? 'active' : '' }}"><i class="fas fa-file-circle-plus" style="color:#10b981;"></i> Emitir Recibo</a></li>
                             <li><a href="{{ url('/personal/reconciliation') }}" class="{{ request()->is('personal/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
