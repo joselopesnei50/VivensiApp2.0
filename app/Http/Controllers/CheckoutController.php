@@ -10,6 +10,7 @@ use App\Services\BrevoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Exception;
 
 class CheckoutController extends Controller
@@ -52,6 +53,27 @@ class CheckoutController extends Controller
             $plan    = SubscriptionPlan::findOrFail($request->plan_id);
             $gateway = $request->input('gateway', 'abacatepay');
 
+            // Plano precisa estar ativo (nao arquivado/oculto) — evita user POSTar
+            // plan_id de plano descontinuado que ficou orfao em subscription_plans.
+            if (!$plan->is_active) {
+                Log::warning('CheckoutController::process — plan_id inativo POSTed', [
+                    'tenant_id' => $tenant->id,
+                    'plan_id'   => $plan->id,
+                ]);
+                return back()->with('error', 'Este plano não está mais disponível para contratação.');
+            }
+
+            // Plano cortesia nao entra no fluxo de pagamento — bypass do
+            // CheckSubscription trata cortesia direto. Se chegou aqui e o plan_id
+            // aponta pra cortesia, e tentativa de burlar o fluxo.
+            if ($plan->is_courtesy) {
+                Log::warning('CheckoutController::process — tentativa de checkout em plano cortesia', [
+                    'tenant_id' => $tenant->id,
+                    'plan_id'   => $plan->id,
+                ]);
+                return redirect('/dashboard')->with('error', 'Este plano nao requer pagamento.');
+            }
+
             // Salvar/atualizar documento do tenant
             if ($request->filled('document')) {
                 $tenant->document = preg_replace('/\D/', '', $request->document);
@@ -92,7 +114,11 @@ class CheckoutController extends Controller
             );
         }
 
-        $externalId    = 'VIVENSI_' . $tenant->id . '_' . time();
+        // P0.2 (2026-09-28) — external_id colision-resistant: adiciona sufixo
+        // aleatorio 6-char por cima do timestamp. time()-only permitia dois POSTs
+        // no mesmo segundo colidirem (e a tabela nao tinha UNIQUE). Mantem prefix
+        // VIVENSI_{tenant}_ que o webhook handler ja usa em regex de lookup.
+        $externalId    = 'VIVENSI_' . $tenant->id . '_' . time() . '_' . Str::random(6);
         $paymentMethod = $request->input('payment_method', 'PIX');
 
         // Registrar transação pendente

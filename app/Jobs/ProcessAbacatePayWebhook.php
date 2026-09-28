@@ -202,6 +202,24 @@ class ProcessAbacatePayWebhook implements ShouldQueue
 
         $planId = $checkout['metadata']['plan_id'] ?? null;
 
+        // P0.3 (2026-09-28) — Guard anti-reativacao pos-refund. Se a transacao ja
+        // foi refundada (webhook checkout.refunded processado antes OU refund
+        // manual pelo painel Abacate), NAO reativar tenant. O reconcile 5min pode
+        // reenviar checkout.completed sintetico com webhook_id novo, escapando a
+        // idempotencia por webhook_id — a idempotencia real aqui e o status da
+        // Transaction. Se refunded, aborta cedo sem tocar em subscription_status.
+        $existingTx = Transaction::withoutGlobalScopes()
+            ->where('external_id', $externalId)
+            ->first();
+        if ($existingTx && $existingTx->status === 'refunded') {
+            Log::warning('AbacatePay checkout.completed: ignorado (transacao ja refundada)', [
+                'external_id'    => $externalId,
+                'transaction_id' => $existingTx->id,
+                'tenant_id'      => $tenant->id,
+            ]);
+            return;
+        }
+
         DB::transaction(function () use ($externalId, $tenant, $planId, $checkout) {
             // ── Bypass intencional do BelongsToTenant global scope ─────────────
             // Webhook do AbacatePay chega sem auth Laravel; $tenant ja foi resolvido
@@ -212,6 +230,16 @@ class ProcessAbacatePayWebhook implements ShouldQueue
                 ->where('external_id', $externalId)
                 ->lockForUpdate()
                 ->first();
+
+            // P0.3 (2026-09-28) — Re-check dentro da lock em caso de refund que
+            // rodou entre a checagem otimista acima e o lockForUpdate.
+            if ($transaction && $transaction->status === 'refunded') {
+                Log::warning('AbacatePay checkout.completed: ignorado dentro da lock (refund concorrente)', [
+                    'external_id'    => $externalId,
+                    'transaction_id' => $transaction->id,
+                ]);
+                return;
+            }
 
             if ($transaction && $transaction->status !== 'paid') {
                 $oldStatus = $transaction->status;
