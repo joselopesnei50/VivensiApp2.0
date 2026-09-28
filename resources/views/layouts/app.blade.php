@@ -973,6 +973,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $mei_crm_active  = request()->is('personal/clients*');
                     $mei_proj_active = request()->is('projects*','tasks*');
                     $mei_sales_active = request()->is('personal/catalog*','personal/quotes*');
+                    $mei_agenda_active = request()->is('personal/agenda*');
                     $mei_ai_active   = request()->is('smart-analysis*','strategy-room*');
                 @endphp
 
@@ -1006,6 +1007,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/projects/create') }}" class="{{ request()->is('projects/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Novo Projeto</a></li>
                             <li><a href="{{ url('/tasks') }}" class="{{ request()->is('tasks') && !request()->is('tasks/calendar') ? 'active' : '' }}"><i class="fas fa-check-square"></i> Tarefas</a></li>
                             <li><a href="{{ url('/tasks/calendar') }}" class="{{ request()->is('tasks/calendar') ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Calendário</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="menu-divider"></div>
+
+                {{-- Grupo: Agenda / Compromissos --}}
+                <div class="menu-group">
+                    <div class="menu-group-header {{ $mei_agenda_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
+                        <i class="fas fa-calendar-check group-icon"></i> Agenda
+                        <i class="fas fa-chevron-down group-arrow"></i>
+                    </div>
+                    <div class="menu-group-items" style="max-height: {{ $mei_agenda_active ? '200px' : '0' }};">
+                        <ul>
+                            <li><a href="{{ url('/personal/agenda') }}" class="{{ request()->is('personal/agenda') || (request()->is('personal/agenda/*') && !request()->is('personal/agenda/create')) ? 'active' : '' }}"><i class="fas fa-calendar-days"></i> Meus Compromissos</a></li>
+                            <li><a href="{{ url('/personal/agenda/create') }}" class="{{ request()->is('personal/agenda/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Novo Compromisso</a></li>
                         </ul>
                     </div>
                 </div>

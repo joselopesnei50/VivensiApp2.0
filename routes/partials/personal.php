@@ -21,6 +21,12 @@ Route::middleware(['auth', 'subscription', 'can:access-personal'])->prefix('pers
     // DRE + analise por cliente/categoria (Onda 2)
     Route::get('/dre', [\App\Http\Controllers\DreController::class, 'index'])->name('personal.dre.index');
 
+    // Agenda / Compromissos (Onda 2)
+    Route::resource('agenda', \App\Http\Controllers\AgendaEventController::class);
+    Route::post('/agenda/{agenda}/done',   [\App\Http\Controllers\AgendaEventController::class, 'markDone'])->name('agenda.done')->middleware('throttle:web_write');
+    Route::post('/agenda/{agenda}/reopen', [\App\Http\Controllers\AgendaEventController::class, 'reopen'])->name('agenda.reopen')->middleware('throttle:web_write');
+    Route::post('/agenda/{agenda}/cancel', [\App\Http\Controllers\AgendaEventController::class, 'cancel'])->name('agenda.cancel')->middleware('throttle:web_write');
+
     // Orcamentos / Propostas (Onda 2)
     Route::resource('quotes', \App\Http\Controllers\QuoteController::class);
     Route::post('/quotes/{quote}/send',      [\App\Http\Controllers\QuoteController::class, 'markSent'])->name('quotes.send')->middleware('throttle:web_write');
