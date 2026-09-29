@@ -295,7 +295,21 @@ class EmailCampaignController extends Controller
             $contacts = $contacts->merge(collect($manual));
         }
 
-        return $contacts->unique('email')->filter(fn($c) => filter_var($c['email'], FILTER_VALIDATE_EMAIL))->values()->toArray();
+        $deduped = $contacts->unique('email')->filter(fn($c) => filter_var($c['email'], FILTER_VALIDATE_EMAIL))->values();
+
+        // ── Safety net LGPD art. 8/18 (2026-09-29) ────────────────────────────
+        // Painel Admin SaaS envia cross-tenant: passa tenantId=0 pra checar
+        // TODOS os tenants — se alguem descadastrou em qualquer entidade, nao
+        // recebe campanha do admin (mesmo protocolo do NGO/Manager).
+        $blocklist = \App\Models\EmailContact::unsubscribedLookup(
+            0,
+            $deduped->pluck('email')->all()
+        );
+
+        return $deduped
+            ->reject(fn ($c) => isset($blocklist[mb_strtolower(trim((string) $c['email']))]))
+            ->values()
+            ->toArray();
     }
 
     private function parseManualEmailsInput(string $raw): array

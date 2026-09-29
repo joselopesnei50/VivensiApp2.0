@@ -216,9 +216,21 @@ class ManagerEmailCampaignController extends Controller
             $contacts = $contacts->merge(collect($manual));
         }
 
-        return $contacts
+        $deduped = $contacts
             ->unique('email')
             ->filter(fn($c) => filter_var($c['email'], FILTER_VALIDATE_EMAIL))
+            ->values();
+
+        // ── Safety net LGPD art. 8/18 (2026-09-29) ────────────────────────────
+        // Exclui emails 'unsubscribed' do tenant (leads/manual nao passam por
+        // activeContacts). Mesmo helper reusado no NGO e Admin.
+        $blocklist = \App\Models\EmailContact::unsubscribedLookup(
+            $tenantId,
+            $deduped->pluck('email')->all()
+        );
+
+        return $deduped
+            ->reject(fn ($c) => isset($blocklist[mb_strtolower(trim((string) $c['email']))]))
             ->values()
             ->toArray();
     }

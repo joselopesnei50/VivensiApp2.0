@@ -297,9 +297,23 @@ class NgoEmailCampaignController extends Controller
             $contacts = $contacts->merge(collect($manual));
         }
 
-        return $contacts
+        $deduped = $contacts
             ->unique('email')
             ->filter(fn($c) => filter_var($c['email'], FILTER_VALIDATE_EMAIL))
+            ->values();
+
+        // ── Safety net LGPD art. 8/18 (2026-09-29) ────────────────────────────
+        // Ultima linha de defesa: exclui qualquer email que tenha status
+        // 'unsubscribed' em QUALQUER lista do tenant. Cobre casos onde o
+        // audience_type nao passou pelo activeContacts (leads, donors mixed,
+        // manual, CSV reimportado que "ressuscitou" um opt-out anterior).
+        $blocklist = \App\Models\EmailContact::unsubscribedLookup(
+            $tenantId,
+            $deduped->pluck('email')->all()
+        );
+
+        return $deduped
+            ->reject(fn ($c) => isset($blocklist[mb_strtolower(trim((string) $c['email']))]))
             ->values()
             ->toArray();
     }
