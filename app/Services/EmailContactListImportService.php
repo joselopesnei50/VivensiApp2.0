@@ -22,13 +22,13 @@ class EmailContactListImportService
     public const MAX_CONTACTS_PER_UPLOAD = 20000;
 
     /**
-     * @return array{imported:int, duplicates_in_list:int, invalid_emails:int, total_lines:int, errors:array}
+     * @return array{imported:int, duplicates_in_list:int, invalid_emails:int, blocked_optout:int, total_lines:int, errors:array}
      */
     public function importFromCsv(EmailContactList $list, UploadedFile $csv): array
     {
         $handle = fopen($csv->getRealPath(), 'r');
         if (!$handle) {
-            return ['imported' => 0, 'duplicates_in_list' => 0, 'invalid_emails' => 0, 'total_lines' => 0, 'errors' => ['Falha ao abrir arquivo.']];
+            return ['imported' => 0, 'duplicates_in_list' => 0, 'invalid_emails' => 0, 'blocked_optout' => 0, 'total_lines' => 0, 'errors' => ['Falha ao abrir arquivo.']];
         }
 
         // Detecta delimiter na primeira linha bruta
@@ -36,14 +36,28 @@ class EmailContactListImportService
         rewind($handle);
         $delim = $this->detectDelimiter($firstLineRaw ?: '');
 
-        $imported   = 0;
-        $duplicates = 0;
-        $invalids   = 0;
-        $lineNumber = 0;
-        $errors     = [];
+        $imported      = 0;
+        $duplicates    = 0;
+        $invalids      = 0;
+        $blockedOptout = 0;
+        $lineNumber    = 0;
+        $errors        = [];
 
         // Guarda emails ja existentes na lista pra evitar UNIQUE violation
         $existingEmails = EmailContact::where('email_contact_list_id', $list->id)
+            ->pluck('email')
+            ->map(fn ($e) => mb_strtolower(trim((string) $e)))
+            ->flip()
+            ->all();
+
+        // P2 (2026-09-29) — Opt-out historico do tenant. Emails que ja
+        // descadastraram em QUALQUER outra lista sao importados com
+        // status='unsubscribed' pra respeitar LGPD art. 8/18 mesmo apos
+        // reimport. O safety net do resolveRecipients ja bloqueava o envio;
+        // essa camada mantem os dados consistentes (nao mostra 'active' na
+        // UI da lista quando na verdade a pessoa ja saiu).
+        $tenantOptOut = EmailContact::where('tenant_id', $list->tenant_id)
+            ->where('status', EmailContact::STATUS_UNSUBSCRIBED)
             ->pluck('email')
             ->map(fn ($e) => mb_strtolower(trim((string) $e)))
             ->flip()
@@ -89,17 +103,27 @@ class EmailContactListImportService
                 continue;
             }
 
+            $isOptOut = isset($tenantOptOut[$email]);
+
             EmailContact::create([
                 'email_contact_list_id' => $list->id,
                 'tenant_id'             => $list->tenant_id,
                 'email'                 => $email,
                 'name'                  => $name ?: null,
-                'status'                => EmailContact::STATUS_ACTIVE,
+                'status'                => $isOptOut
+                    ? EmailContact::STATUS_UNSUBSCRIBED
+                    : EmailContact::STATUS_ACTIVE,
                 'source'                => 'csv_upload',
                 'added_at'              => now(),
+                'unsubscribed_at'       => $isOptOut ? now() : null,
             ]);
             $existingEmails[$email] = true;
-            $imported++;
+
+            if ($isOptOut) {
+                $blockedOptout++;
+            } else {
+                $imported++;
+            }
         }
         fclose($handle);
 
@@ -107,6 +131,7 @@ class EmailContactListImportService
             'imported'           => $imported,
             'duplicates_in_list' => $duplicates,
             'invalid_emails'     => $invalids,
+            'blocked_optout'     => $blockedOptout,
             'total_lines'        => $lineNumber,
             'errors'             => $errors,
         ];

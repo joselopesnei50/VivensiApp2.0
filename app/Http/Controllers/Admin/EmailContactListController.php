@@ -61,7 +61,7 @@ class EmailContactListController extends Controller
 
         return redirect()->route('admin.email_campaigns.lists.show', $list)
             ->with('success', $importSummary
-                ? "Lista criada. Importados: {$importSummary['imported']} · Duplicados: {$importSummary['duplicates_in_list']} · Inválidos: {$importSummary['invalid_emails']}"
+                ? "Lista criada. Importados: {$importSummary['imported']} · Duplicados: {$importSummary['duplicates_in_list']} · Inválidos: {$importSummary['invalid_emails']} · Descadastros respeitados: " . ($importSummary['blocked_optout'] ?? 0)
                 : 'Lista criada. Adicione contatos manualmente ou faça upload de CSV.');
     }
 
@@ -93,7 +93,7 @@ class EmailContactListController extends Controller
         $summary = $importer->importFromCsv($list, $request->file('csv'));
 
         return redirect()->route('admin.email_campaigns.lists.show', $list)
-            ->with('success', "Importados: {$summary['imported']} · Duplicados: {$summary['duplicates_in_list']} · Inválidos: {$summary['invalid_emails']}");
+            ->with('success', "Importados: {$summary['imported']} · Duplicados: {$summary['duplicates_in_list']} · Inválidos: {$summary['invalid_emails']} · Descadastros respeitados: " . ($summary['blocked_optout'] ?? 0));
     }
 
     public function addContact(Request $request, EmailContactList $list)
@@ -130,8 +130,19 @@ class EmailContactListController extends Controller
         if ($contact->email_contact_list_id !== $list->id) {
             abort(404);
         }
-        $contact->delete();
-        return back()->with('success', 'Contato removido.');
+
+        // P3 (2026-09-29) — LGPD art. 8/18: soft-mark 'unsubscribed' em vez
+        // de delete. Preserva historico da opt-out e o safety net do
+        // resolveRecipients passa a excluir esse email de futuras campanhas
+        // do tenant (mesmo se estiver em outra lista).
+        if ($contact->status !== EmailContact::STATUS_UNSUBSCRIBED) {
+            $contact->update([
+                'status'          => EmailContact::STATUS_UNSUBSCRIBED,
+                'unsubscribed_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', 'Contato marcado como descadastrado (LGPD).');
     }
 
     public function exportCsv(EmailContactList $list)

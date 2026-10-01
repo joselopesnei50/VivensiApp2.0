@@ -28,8 +28,10 @@ class EmailContact extends Model
     ];
 
     protected $casts = [
-        'added_at'        => 'datetime',
-        'unsubscribed_at' => 'datetime',
+        'tenant_id'             => 'integer',
+        'email_contact_list_id' => 'integer',
+        'added_at'              => 'datetime',
+        'unsubscribed_at'       => 'datetime',
     ];
 
     public function list(): BelongsTo
