@@ -45,6 +45,8 @@ class SendDoubleOptInWhatsapp implements ShouldQueue
         $instance = WhatsappInstance::withoutGlobalScope('tenant')
             ->forTenant($token->tenant_id)
             ->active()
+            ->where(fn ($q) => $q->where('provider', WhatsappInstance::PROVIDER_EVOLUTION)
+                ->orWhereNull('provider'))
             ->first();
 
         if ($instance === null) {
