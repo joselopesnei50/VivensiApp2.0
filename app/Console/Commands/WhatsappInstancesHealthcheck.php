@@ -102,15 +102,15 @@ class WhatsappInstancesHealthcheck extends Command
 
         if ($this->option('mark-ghosts') && $ghosts) {
             $this->newLine();
-            if (!$this->confirm('Marcar ' . count($ghosts) . ' instancias fantasmas como status=disconnected?', false)) {
+            if (!$this->confirm('Marcar ' . count($ghosts) . ' instancias fantasmas como status=close?', false)) {
                 $this->line('Abortado.');
                 return self::SUCCESS;
             }
             $ids = array_column($ghosts, 0);
             $affected = DB::table('whatsapp_instances')
                 ->whereIn('id', $ids)
-                ->update(['status' => 'disconnected', 'updated_at' => now()]);
-            $this->info("Atualizadas $affected linhas (status=disconnected).");
+                ->update(['status' => 'close', 'updated_at' => now()]);
+            $this->info("Atualizadas $affected linhas (status=close).");
         } elseif ($ghosts) {
             $this->newLine();
             $this->comment('Pra marcar as fantasmas: --mark-ghosts');
