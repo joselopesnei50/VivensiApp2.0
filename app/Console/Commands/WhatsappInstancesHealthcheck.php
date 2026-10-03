@@ -22,12 +22,11 @@ class WhatsappInstancesHealthcheck extends Command
 
     public function handle(): int
     {
-        $url    = rtrim((string) config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br')), '/');
-        $apikey = (string) config('whatsapp.evolution_api_key', env('EVOLUTION_API_KEY'));
+        $url       = rtrim((string) config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br')), '/');
+        $globalKey = (string) config('whatsapp.evolution_global_key', '');
 
-        if ($apikey === '') {
-            $this->error('EVOLUTION_API_KEY ausente.');
-            return self::FAILURE;
+        if ($globalKey === '') {
+            $this->warn('whatsapp.evolution_global_key vazia — usara so a chave por-instancia (evolution_instance_token).');
         }
 
         $instances = DB::table('whatsapp_instances')
@@ -45,6 +44,8 @@ class WhatsappInstancesHealthcheck extends Command
 
         foreach ($instances as $inst) {
             $name = $inst->instance_name ?? '?';
+            $instKey = (string) ($inst->evolution_instance_token ?? '');
+            $apikey = $instKey !== '' ? $instKey : $globalKey;
             try {
                 $resp = Http::timeout(8)
                     ->withHeaders(['apikey' => $apikey])
