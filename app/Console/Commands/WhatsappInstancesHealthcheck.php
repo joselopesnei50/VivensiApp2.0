@@ -29,13 +29,24 @@ class WhatsappInstancesHealthcheck extends Command
             $this->warn('whatsapp.evolution_global_key vazia — usara so a chave por-instancia (evolution_instance_token).');
         }
 
-        $instances = DB::table('whatsapp_instances')
+        $allOpen = DB::table('whatsapp_instances')
             ->where('status', 'open')
             ->orderBy('tenant_id')
             ->orderBy('id')
             ->get();
 
-        $this->info("Testando {$instances->count()} instancias status=open contra Evolution ($url)");
+        // separa provider=cloud_api — healthcheck via Evolution nao se aplica
+        $cloud     = $allOpen->filter(fn($i) => ($i->provider ?? '') === 'cloud_api')->values();
+        $instances = $allOpen->filter(fn($i) => ($i->provider ?? '') !== 'cloud_api')->values();
+
+        if ($cloud->isNotEmpty()) {
+            $this->line('<comment>Cloud API (' . $cloud->count() . ', nao testadas aqui):</comment>');
+            $rows = $cloud->map(fn($i) => [$i->id, $i->tenant_id, $i->instance_name ?? '?', $i->provider])->all();
+            $this->table(['id', 'tenant', 'instance_name', 'provider'], $rows);
+            $this->newLine();
+        }
+
+        $this->info("Testando {$instances->count()} instancias Evolution status=open contra $url");
         $this->newLine();
 
         $healthy = [];
