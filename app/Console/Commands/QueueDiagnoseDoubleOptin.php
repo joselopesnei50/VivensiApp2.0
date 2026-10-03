@@ -46,10 +46,13 @@ class QueueDiagnoseDoubleOptin extends Command
             $this->line("  [{$ex->c}x] " . trim(preg_replace('/\s+/', ' ', $ex->head)));
         }
 
-        // tokens unicos nos payloads
+        // tokens unicos nos payloads (payload e JSON com data.command base64 OU inline)
         $tokens = [];
         foreach ((clone $base)->pluck('payload') as $p) {
-            if (preg_match('/"tokenId";i:(\d+)/', (string) $p, $m)) {
+            $raw = (string) $p;
+            if (preg_match('/\\\\?"tokenId\\\\?";i:(\d+)/', $raw, $m)) {
+                $tokens[(int) $m[1]] = ($tokens[(int) $m[1]] ?? 0) + 1;
+            } elseif (preg_match('/tokenId[^0-9]+(\d+)/', $raw, $m)) {
                 $tokens[(int) $m[1]] = ($tokens[(int) $m[1]] ?? 0) + 1;
             }
         }
@@ -76,18 +79,30 @@ class QueueDiagnoseDoubleOptin extends Command
         $instCount = DB::table('whatsapp_instances')->where('status', 'open')->count();
         $this->line("  total open=$instCount");
 
-        // conectividade Evolution
+        // conectividade Evolution (usa a config real do EvolutionApiService)
         $this->newLine();
         $this->line('<comment>Evolution API:</comment>');
-        $base = (string) config('services.evolution.base_url', '');
-        if ($base === '') {
-            $this->error('  services.evolution.base_url NAO CONFIGURADA');
-        } else {
+        $evoUrl = rtrim((string) config('whatsapp.evolution_api_url', env('EVOLUTION_API_URL', 'https://evo.vivensi.app.br')), '/');
+        $this->line("  base_url=$evoUrl");
+        try {
+            $resp = \Illuminate\Support\Facades\Http::timeout(5)->get($evoUrl);
+            $this->line("  GET root -> HTTP " . $resp->status());
+        } catch (\Throwable $e) {
+            $this->error('  ERRO root: ' . $e->getMessage());
+        }
+
+        // amostra: pega uma instance aberta e testa connectionState
+        $sampleInst = DB::table('whatsapp_instances')->where('status', 'open')->first();
+        if ($sampleInst) {
+            $instName = $sampleInst->instance_name ?? $sampleInst->name ?? '?';
+            $this->line("  amostra instance_name=$instName tenant_id=" . ($sampleInst->tenant_id ?? '?'));
             try {
-                $resp = \Illuminate\Support\Facades\Http::timeout(5)->get($base);
-                $this->line("  GET $base -> HTTP " . $resp->status());
+                $resp = \Illuminate\Support\Facades\Http::timeout(8)
+                    ->withHeaders(['apikey' => (string) config('whatsapp.evolution_api_key', env('EVOLUTION_API_KEY'))])
+                    ->get("$evoUrl/instance/connectionState/$instName");
+                $this->line("  connectionState -> HTTP " . $resp->status() . ' body=' . substr($resp->body(), 0, 200));
             } catch (\Throwable $e) {
-                $this->error('  ERRO: ' . $e->getMessage());
+                $this->error('  ERRO connectionState: ' . $e->getMessage());
             }
         }
 
