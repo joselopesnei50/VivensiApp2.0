@@ -425,7 +425,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     // Reorg 2026-08-18: 8 grupos (era 7). Faturas/WA billing/cotas -> SaaS.
                     // Bruno -> Marketing. LGPD/Conformidade/Auditoria/Radar -> novo grupo
                     // LGPD & Compliance. Infra limpo (Analytics/Saude/Jobs/Config/Bot).
-                    $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index') || request()->routeIs('admin.invoices.*') || request()->routeIs('admin.whatsapp.billing') || request()->routeIs('admin.whatsapp.quotas.*');
+                    $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index') || request()->routeIs('admin.invoices.*') || request()->routeIs('admin.whatsapp.billing');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*') || request()->is('social/posts*') || request()->routeIs('social.analytics.index');
                     $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.templates.cloud.*') || request()->is('whatsapp/cloud/*') || request()->routeIs('whatsapp.consumo') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
@@ -457,7 +457,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('admin.plans.index') }}" class="{{ request()->routeIs('admin.plans.index') ? 'active' : '' }}"><i class="fas fa-tags"></i> Planos</a></li>
                             <li><a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Faturas</a></li>
                             <li><a href="{{ route('admin.whatsapp.billing') }}" class="{{ request()->routeIs('admin.whatsapp.billing') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> WhatsApp — Consumo Cloud</a></li>
-                            <li><a href="{{ route('admin.whatsapp.quotas.index') }}" class="{{ request()->routeIs('admin.whatsapp.quotas.*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> WhatsApp — Cotas mensais</a></li>
                         </ul>
                     </div>
                 </div>

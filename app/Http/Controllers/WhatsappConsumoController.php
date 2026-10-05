@@ -3,20 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\WhatsappConversation;
-use App\Models\WhatsappQuotaEvent;
-use App\Services\WhatsAppService\WhatsappQuotaService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Dashboard de consumo WhatsApp pro CLIENTE (tenant scope automático).
+ * Dashboard de consumo WhatsApp pro CLIENTE (tenant scope automatico).
  *
- * Modelo comercial C (2026-07-30): cliente paga Meta direto pelo cartão
- * da WABA dele + paga assinatura mensal ao Vivensi (plano inclui X
- * conversas). Se usar mais, compra pack extra do Vivensi via /consumo.
- * Envio bloqueado quando estoura cota + packs.
+ * Analytics puro: mostra conversas billable registradas pelo webhook Meta.
+ * Cliente paga Meta diretamente — Vivensi nao cobra por volume.
  */
 class WhatsappConsumoController extends Controller
 {
@@ -24,9 +19,7 @@ class WhatsappConsumoController extends Controller
     {
         Gate::authorize('access-whatsapp');
 
-        $tenantId = (int) auth()->user()->tenant_id;
-
-        // Período: mês corrente por default; ?days=7|30|90 aceito
+        // Periodo: ?days=7|30|90 (default 30)
         $days = (int) $request->query('days', 30);
         if (!in_array($days, [7, 30, 90], true)) {
             $days = 30;
@@ -35,11 +28,8 @@ class WhatsappConsumoController extends Controller
         $from = now()->subDays($days)->startOfDay();
         $to   = now()->endOfDay();
 
-        // Query base — tenant scope já filtra automático pelo BelongsToTenant.
-        // Só conversas billable (Meta marca is_billable=false pra service window).
         $base = WhatsappConversation::billable()->between($from, $to);
 
-        // Totais gerais
         $summary = [
             'total_conversations' => (clone $base)->count(),
             'total_cost_micros'   => (int) (clone $base)->sum('cost_usd_micros'),
@@ -48,7 +38,6 @@ class WhatsappConsumoController extends Controller
         $summary['total_cost_brl'] = $summary['total_cost_usd']
             * (float) config('whatsapp_pricing.usd_brl_rate', 5.50);
 
-        // Breakdown por categoria (marketing/utility/authentication/service)
         $byCategory = (clone $base)
             ->selectRaw('category, COUNT(*) as conversations, SUM(cost_usd_micros) as cost_micros')
             ->groupBy('category')
@@ -60,7 +49,6 @@ class WhatsappConsumoController extends Controller
                 return $row;
             });
 
-        // Timeline diária (últimos $days dias)
         $timeline = (clone $base)
             ->selectRaw('DATE(started_at) as day, COUNT(*) as conversations, SUM(cost_usd_micros) as cost_micros')
             ->groupBy('day')
@@ -72,32 +60,14 @@ class WhatsappConsumoController extends Controller
                 return $row;
             });
 
-        // Cota mensal (Modelo comercial C). getUsage cria on-demand com
-        // snapshot do plano atual. Se plano tem 0 conversas inclusas, view
-        // mostra card cinza "módulo indisponível no seu plano".
-        $quotaService = app(WhatsappQuotaService::class);
-        $usage        = $quotaService->getUsage($tenantId);
-        $quotaEvents  = WhatsappQuotaEvent::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->latest('id')
-            ->limit(25)
-            ->get();
-
-        // Info do plano pra card de pack extra
-        $tenant = auth()->user()->tenant;
-        $plan   = $tenant?->plan;
-
         return view('whatsapp.consumo', [
-            'summary'     => $summary,
-            'byCategory'  => $byCategory,
-            'timeline'    => $timeline,
-            'days'        => $days,
-            'from'        => $from,
-            'to'          => $to,
-            'usdBrlRate'  => (float) config('whatsapp_pricing.usd_brl_rate', 5.50),
-            'usage'       => $usage,
-            'quotaEvents' => $quotaEvents,
-            'plan'        => $plan,
+            'summary'    => $summary,
+            'byCategory' => $byCategory,
+            'timeline'   => $timeline,
+            'days'       => $days,
+            'from'       => $from,
+            'to'         => $to,
+            'usdBrlRate' => (float) config('whatsapp_pricing.usd_brl_rate', 5.50),
         ]);
     }
 }

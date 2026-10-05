@@ -58,15 +58,6 @@ class Kernel extends ConsoleKernel
                  ->dailyAt('03:00')
                  ->withoutOverlapping();
 
-        // WhatsApp: reset mensal de cotas — dia 1 às 00:05 (Modelo comercial C)
-        // Zera conversations_used_month + extra_pack_conversations e atualiza
-        // period_start + plan_included_snapshot. Log de reset gerado por tenant.
-        $schedule->command('whatsapp:reset-monthly-quotas')
-                 ->monthlyOn(1, '00:05')
-                 ->onFailure(function () {
-                     \Illuminate\Support\Facades\Log::error('whatsapp:reset-monthly-quotas falhou no scheduler.');
-                 });
-
         // Billing: gera invoices mensais recorrentes (dia 1 às 00:10).
         // RELIGADO em 2026-08-04 — a aposta em /subscriptions/create falhou
         // (conta AbacatePay não permite produto com cycle). Recorrência é local:

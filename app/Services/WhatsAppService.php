@@ -81,21 +81,6 @@ class WhatsAppService
                 );
             }
 
-            // Cota mensal (Modelo comercial C): se cliente estourou a cota
-            // inclusa no plano + packs extras, bloqueia envio Cloud API com
-            // mensagem clara. Evolution continua livre (não conta cota).
-            // Se o plano do tenant tem 0 conversas inclusas, considera
-            // "módulo desligado" e bloqueia — admin decide se libera.
-            if ($instance->isCloudApi()) {
-                $quotaService = app(\App\Services\WhatsAppService\WhatsappQuotaService::class);
-                if (!$quotaService->hasQuota($chat->tenant_id)) {
-                    throw new \RuntimeException(
-                        'Cota mensal de WhatsApp esgotada. Acesse Consumo para ver seu uso ou fale com o suporte para adquirir um pack extra.',
-                        402
-                    );
-                }
-            }
-
             $sender   = WhatsAppSenderFactory::forInstance($instance);
             $provider = $sender->providerName();
 

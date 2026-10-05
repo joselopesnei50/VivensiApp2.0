@@ -216,60 +216,6 @@
         <p>Acompanhe quantas conversas WhatsApp seu tenant iniciou e o custo estimado por período.</p>
     </div>
 
-    {{-- ── Card de cota mensal (Modelo comercial C) ── --}}
-    @php
-        $used     = $usage->conversations_used_month;
-        $planQt   = $usage->plan_included_snapshot;
-        $extraQt  = $usage->extra_pack_conversations;
-        $total    = $usage->totalAvailable();
-        $usagePct = $usage->usagePct();
-        $daysLeft = $usage->daysUntilReset();
-
-        $moduleOff = ($planQt === 0 && $extraQt === 0);
-        $state = $moduleOff ? 'inactive'
-               : ($usage->isOverQuota() ? 'danger'
-               : ($usage->isNearQuota() ? 'warn' : 'ok'));
-
-        $hint = match($state) {
-            'inactive' => 'O módulo WhatsApp não está incluído no seu plano atual. Fale com o suporte para conhecer os planos com WhatsApp.',
-            'ok'       => "Você tem {$total} conversas inclusas este mês. Renova em {$daysLeft} dias.",
-            'warn'     => "Você já usou " . $usagePct . "% da sua cota. Considere um pack extra para não interromper os envios.",
-            'danger'   => 'Cota esgotada. Envios via WhatsApp Cloud estão bloqueados até renovação mensal ou compra de pack extra.',
-        };
-
-        $extraPackSize  = $plan?->whatsapp_extra_pack_size ?? 500;
-        $extraPackPrice = $plan?->whatsapp_extra_pack_price_brl ?? 49.90;
-    @endphp
-    <div class="wcs-quota state-{{ $state }}">
-        <div>
-            <div class="lb">
-                <i class="fas fa-chart-pie"></i> Cota mensal WhatsApp
-            </div>
-            @if(!$moduleOff)
-                <p class="val">{{ number_format($used, 0, ',', '.') }} / {{ number_format($total, 0, ',', '.') }} conversas</p>
-                <div class="wcs-bar">
-                    <div class="wcs-bar-fill" style="width: {{ min(100, $usagePct) }}%"></div>
-                </div>
-                <div class="wcs-bar-legend">
-                    <span>{{ $usagePct }}% usado</span>
-                    <span>Renova em {{ $daysLeft }} {{ $daysLeft === 1 ? 'dia' : 'dias' }}</span>
-                </div>
-                <p class="hint" style="margin-top:12px;">{{ $hint }}</p>
-                @if($extraQt > 0)
-                    <p style="margin:8px 0 0; font-size:.75rem; opacity:.85;"><i class="fas fa-plus-circle"></i> Inclui {{ $extraQt }} de pack{{ $extraQt !== 1 ? 's' : '' }} extra{{ $extraQt !== 1 ? 's' : '' }} ativo{{ $extraQt !== 1 ? 's' : '' }} este mês.</p>
-                @endif
-            @else
-                <p class="val">Módulo indisponível</p>
-                <p class="hint">{{ $hint }}</p>
-            @endif
-        </div>
-        @if(!$moduleOff && $extraPackSize > 0)
-            <a href="https://wa.me/5516997618695?text=Ola,%20quero%20comprar%20um%20pack%20extra%20de%20{{ $extraPackSize }}%20conversas%20WhatsApp%20por%20R$%20{{ number_format($extraPackPrice, 2, ',', '.') }}." target="_blank" rel="noopener" class="wcs-quota-cta">
-                <i class="fas fa-plus-circle"></i> Pack extra +{{ $extraPackSize }} por {{ $moneyBrl($extraPackPrice) }}
-            </a>
-        @endif
-    </div>
-
     {{-- Filtro de período --}}
     <div class="wcs-filter" role="tablist">
         <a href="{{ route('whatsapp.consumo', ['days' => 7]) }}"  class="{{ $days === 7  ? 'active' : '' }}">7 dias</a>
@@ -377,41 +323,6 @@
                 <span>{{ \Carbon\Carbon::parse($timeline->last()->day)->format('d/m') }}</span>
             </div>
         </div>
-    @endif
-
-    {{-- ── Log de eventos de cota (últimos 25) ── --}}
-    @if(!$moduleOff)
-    <div class="wcs-tx-wrap">
-        <h3 class="wcs-tx-title">Histórico de consumo — últimos 25 eventos</h3>
-        @if($quotaEvents->isEmpty())
-            <div class="wcs-tx-empty">Nenhum consumo registrado neste ciclo.</div>
-        @else
-            <div class="wcs-tx-list">
-                @foreach($quotaEvents as $ev)
-                @php
-                    $icoClass = $ev->type;
-                    $ico = match($ev->type) {
-                        'consume'    => 'fa-arrow-up',
-                        'extra_pack' => 'fa-plus',
-                        'reset'      => 'fa-rotate',
-                        'adjustment' => 'fa-sliders',
-                        default      => 'fa-circle',
-                    };
-                    $deltaClass = $ev->conversations_delta > 0 ? 'pos' : ($ev->conversations_delta < 0 ? 'neg' : '');
-                @endphp
-                <div class="wcs-tx-row">
-                    <div class="wcs-tx-icon {{ $icoClass }}"><i class="fas {{ $ico }}"></i></div>
-                    <div>
-                        <div class="wcs-tx-desc">{{ $ev->description ?: ucfirst(str_replace('_', ' ', $ev->type)) }}</div>
-                        <div class="wcs-tx-when">{{ $ev->created_at->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</div>
-                    </div>
-                    <div class="wcs-tx-delta {{ $deltaClass }}">{{ $ev->signed_label }}</div>
-                    <div class="wcs-tx-after">Usadas: {{ $ev->used_after }}</div>
-                </div>
-                @endforeach
-            </div>
-        @endif
-    </div>
     @endif
 
     {{-- Rodapé educativo --}}

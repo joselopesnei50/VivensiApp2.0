@@ -328,23 +328,6 @@ class ProcessCloudApiWebhook implements ShouldQueue
                 $updates['meta_pricing_category']    = $conversation->category;
             }
 
-            // Consome 1 unidade da cota mensal do tenant (Modelo comercial C).
-            // Idempotente por whatsapp_conversation_id — reenvio Meta não
-            // conta 2x. Se cota estava esgotada, registra evento mas não
-            // incrementa (log warning pra alerta admin).
-            // Falha vira warning (webhook Meta nunca pode falhar).
-            if ($conversation) {
-                try {
-                    app(\App\Services\WhatsAppService\WhatsappQuotaService::class)
-                        ->consumeConversation($conversation);
-                } catch (\Throwable $e) {
-                    Log::warning('CloudApi Job: consumo de cota falhou (não bloqueante)', [
-                        'tenant_id'    => $conversation->tenant_id,
-                        'conversation' => $conversation->id,
-                        'error'        => $e->getMessage(),
-                    ]);
-                }
-            }
         }
 
         if (!empty($updates)) {

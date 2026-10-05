@@ -32,11 +32,6 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // WhatsApp Cloud API — Consumo / Faturamento (Fase 5.1 tracking)
         Route::get('/whatsapp-billing', [App\Http\Controllers\Admin\WhatsappBillingController::class, 'index'])->name('admin.whatsapp.billing');
 
-        // WhatsApp Cotas — Modelo comercial C (cota mensal inclusa no plano + packs extras)
-        Route::get('/whatsapp-cotas',                       [App\Http\Controllers\Admin\WhatsappQuotasController::class, 'index'])->name('admin.whatsapp.quotas.index');
-        Route::post('/whatsapp-cotas/{tenant}/pack',        [App\Http\Controllers\Admin\WhatsappQuotasController::class, 'addExtraPack'])->name('admin.whatsapp.quotas.pack');
-        Route::post('/whatsapp-cotas/{tenant}/adjustment',  [App\Http\Controllers\Admin\WhatsappQuotasController::class, 'adjustment'])->name('admin.whatsapp.quotas.adjustment');
-
         // Faturas — gestão consolidada
         Route::get( '/faturas',                     [App\Http\Controllers\Admin\InvoicesController::class, 'index'])->name('admin.invoices.index');
         Route::post('/faturas/{invoice}/pay',       [App\Http\Controllers\Admin\InvoicesController::class, 'markPaid'])->name('admin.invoices.mark-paid');
