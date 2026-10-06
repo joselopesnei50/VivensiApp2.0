@@ -76,21 +76,26 @@ it('cria BroadcastCampaign com template_id preenchido quando send_channel=cloud_
     expect($camp->template_variables)->toBe(['1' => 'Maria', '2' => 'Vivensi']);
 });
 
-it('rejeita audience=selected quando send_channel=cloud_api_template', function () {
+it('aceita audience=selected quando send_channel=cloud_api_template (prospecting)', function () {
+    Queue::fake();
     $user = bctManager();
     $tpl  = bctMakeTemplate($user->tenant_id);
 
     $resp = $this->actingAs($user)->from('/whatsapp/broadcast')->post('/whatsapp/broadcast', [
         'audience'           => 'selected',
-        'phones'             => '5511999990001',
+        'phones'             => '5511999990001,5511999990002',
         'send_channel'       => 'cloud_api_template',
         'template_id'        => $tpl->id,
         'template_variables' => [1 => 'Maria', 2 => 'Vivensi'],
     ]);
 
-    $resp->assertRedirect('/whatsapp/broadcast');
-    expect(session('error'))->toContain('template Cloud API');
-    expect(BroadcastCampaign::count())->toBe(0);
+    $resp->assertSessionHasNoErrors();
+
+    $camp = BroadcastCampaign::where('tenant_id', $user->tenant_id)->first();
+    expect($camp)->not->toBeNull();
+    expect($camp->send_channel)->toBe('cloud_api_template');
+    expect($camp->audience_type)->toBe('selected');
+    expect($camp->phones)->toContain('5511999990001');
 });
 
 it('rejeita audience=groups quando send_channel=cloud_api_template', function () {

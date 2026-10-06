@@ -556,8 +556,8 @@
 
                         <div class="mt-3 p-3 rounded-3" style="background:#eff6ff;border:1px solid #bfdbfe;font-size:.8rem;color:#1e40af;">
                             <i class="fas fa-info-circle me-1"></i>
-                            <strong>V1:</strong> disparo de template Cloud API aceita apenas os publicos <strong>Todos os contatos</strong> ou <strong>Etiquetas</strong>.
-                            Imagem e audio nao sao suportados. Cabecalho e botoes ficam pra proxima versao.
+                            <strong>Template Cloud API:</strong> aceita <strong>Todos os contatos</strong>, <strong>Etiquetas</strong> ou <strong>Números específicos</strong> (vindos de prospecção).
+                            Grupos ficam fora (grupos usam Evolution). Imagem, áudio e cadência não se aplicam — a Meta controla o rate limiting.
                         </div>
                     </div>
 
@@ -893,8 +893,8 @@
                         </div>
                     </div>
 
-                    {{-- Cadência --}}
-                    <div class="mb-4">
+                    {{-- Cadência (so Evolution — Cloud API template nao precisa de delay anti-ban) --}}
+                    <div class="mb-4" id="cadenceWrapper">
                         <div class="section-label">Cadência de Envio</div>
                         <div class="row g-2">
                             <div class="col-6 col-md-4">
@@ -1247,13 +1247,19 @@
         if (audioInput) { audioInput.disabled = isTpl; }
         if (audioZone)  { audioZone.style.pointerEvents = isTpl ? 'none' : ''; audioZone.style.opacity = isTpl ? '.4' : ''; }
 
-        // Restringe audience: template so aceita 'all' ou 'labels'.
+        // Cadence e anti-ban exclusivo de Evolution. Cloud API usa rate limiting
+        // da propria Meta — esconde o seletor pra nao confundir o usuario.
+        const cadWrap = document.getElementById('cadenceWrapper');
+        if (cadWrap) cadWrap.classList.toggle('d-none', isTpl);
+
+        // Audience: template aceita all/labels/selected. Grupos ficam fora
+        // (grupos sao fluxo Evolution; Cloud API nao gerencia grupos igual).
         document.querySelectorAll('input[name="audience"]').forEach(function (r) {
-            const restricted = (r.value === 'selected' || r.value === 'groups');
-            r.disabled = isTpl && restricted;
+            const blocked = (r.value === 'groups');
+            r.disabled = isTpl && blocked;
             const wrap = r.closest('.audience-option');
-            if (wrap) wrap.style.opacity = (isTpl && restricted) ? '.4' : '';
-            if (isTpl && restricted && r.checked) {
+            if (wrap) wrap.style.opacity = (isTpl && blocked) ? '.4' : '';
+            if (isTpl && blocked && r.checked) {
                 const allRadio = document.querySelector('input[name="audience"][value="all"]');
                 if (allRadio) { allRadio.checked = true; onAudienceChange('all'); }
             }

@@ -653,16 +653,17 @@ class WhatsappBroadcastController extends Controller
         $isTemplate     = $sendChannel === \App\Models\BroadcastCampaign::CHANNEL_CLOUD_API_TEMPLATE;
 
         // ── Broadcast v1 via Template Cloud API (2026-08-21) ──────────────────
-        // Coexistir com Evolution: template so aceita audience all/labels,
-        // sem imagem/audio, e checa consistencia body <> variaveis.
+        // Template Cloud API aceita all/labels/selected (numeros especificos
+        // vindos de prospecting). Groups fica fora: grupos usam Evolution.
+        // Sem imagem/audio no template. Valida consistencia body <> variaveis.
         $chosenTemplate       = null;
         $normalizedTemplateVars = null;
         if ($isTemplate) {
             $tenantIdCheck = auth()->user()->tenant_id;
 
-            if (in_array($request->input('audience'), ['selected', 'groups'], true)) {
+            if ($request->input('audience') === 'groups') {
                 return redirect()->back()->withInput()->with('error',
-                    'Disparo via template Cloud API aceita apenas os públicos "Todos os contatos" ou "Etiquetas".');
+                    'Disparo via template Cloud API nao suporta envio para grupos (grupos usam Evolution).');
             }
 
             if ($request->hasFile('broadcast_image') || $hasAudioUpload) {
