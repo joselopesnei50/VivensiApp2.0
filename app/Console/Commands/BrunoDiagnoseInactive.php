@@ -47,7 +47,7 @@ class BrunoDiagnoseInactive extends Command
                   ->orWhere('updated_at', '>=', $cutoff);
             })
             ->orderByDesc('last_inbound_at')
-            ->get(['id', 'wa_id', 'name', 'assigned_to', 'last_inbound_at', 'opt_out_at', 'blocked_at', 'updated_at']);
+            ->get(['id', 'wa_id', 'contact_name', 'assigned_to', 'last_inbound_at', 'opt_out_at', 'blocked_at', 'updated_at']);
 
         $this->newLine();
         $this->line("<comment>Chats com Bruno desativado (ultimos {$days} dias): " . $inactive->count() . "</comment>");
