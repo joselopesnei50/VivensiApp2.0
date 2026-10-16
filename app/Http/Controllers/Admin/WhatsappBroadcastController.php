@@ -589,7 +589,15 @@ class WhatsappBroadcastController extends Controller
             'completed_at' => null,
         ]);
 
-        \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id, $campaign->tenant_id);
+        // Calcula o offset do proximo chunk a partir dos contadores ja persistidos
+        // (destinatarios processados = enviados + falhados + pulados). Sem isso, o
+        // job dispatcha com offset=0 e reenvia desde o primeiro contato — ja aconteceu
+        // em prod quando a campanha pausava por fingerprint cap aos 40.
+        $resumeOffset = (int) ($campaign->total_sent ?? 0)
+            + (int) ($campaign->total_failed ?? 0)
+            + (int) ($campaign->total_skipped ?? 0);
+
+        \App\Jobs\ProcessBroadcastCampaignJob::dispatch($campaign->id, $campaign->tenant_id, $resumeOffset);
 
         return redirect()->back()->with('success', 'Campanha retomada! O disparo continuará em segundo plano dentro da janela permitida.');
     }

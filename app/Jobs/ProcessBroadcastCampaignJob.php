@@ -374,7 +374,12 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
 
             // Anti-ban: fingerprint de conteúdo (Fase 1 2026).
             // Cloud template dispensa — Meta valida template previamente na aprovacao.
-            if (!$isCloudTemplate && !empty($campaign->message) && !$antiBan->contentFingerprintAllowed($instance, $campaign->message)) {
+            // Spintax tambem dispensa — cada destinatario recebe variacao diferente
+            // (resolve dentro de EvolutionApiService::sendMessage), entao hash do
+            // template cru bate 40 por volume ignorando a variacao. Spintax ativa
+            // significa que o usuario ja esta variando o conteudo por design.
+            $hasSpintax = !empty($campaign->message) && AntiBanManager::hasSpintax($campaign->message);
+            if (!$isCloudTemplate && !$hasSpintax && !empty($campaign->message) && !$antiBan->contentFingerprintAllowed($instance, $campaign->message)) {
                 Log::warning('AntiBan: fingerprint de conteúdo atingiu limite diário — campanha pausada', [
                     'campaign_id' => $campaign->id,
                     'instance_id' => $instance->id,
@@ -589,7 +594,9 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     $sentCount++;
                     $consecutiveErrors = 0;
                     $antiBan->recordSent($instance);
-                    if (!empty($campaign->message)) {
+                    // Sem spintax: grava hash do texto fixo (ativa o cap diario).
+                    // Com spintax: nao grava — cap no template cru puniria variacao legitima.
+                    if (!empty($campaign->message) && !$hasSpintax) {
                         $antiBan->recordContentSent($instance, $campaign->message);
                     }
                     if ($isAudioBroadcast) {
