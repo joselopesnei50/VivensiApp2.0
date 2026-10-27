@@ -575,37 +575,85 @@
         }
         .calc-hint { font-size: 0.85rem; color: var(--text-gray); margin-top: 1.5rem; }
 
-        /* ─── PARTNERS ───────────────────────────────────────────────────── */
-        .partners { padding: 6rem 0; background: var(--bg-dark); }
-        .partners-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
+        /* ─── INCENTIVE (CTA emocional) ──────────────────────────────────── */
+        .incentive {
+            padding: 7rem 0;
+            background: var(--bg-dark);
+            position: relative;
+            overflow: hidden;
         }
-        .partner-cell {
-            background: var(--bg-navy);
+        .incentive::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 10% 20%, rgba(245, 158, 11, 0.14), transparent 55%),
+                radial-gradient(ellipse at 90% 80%, rgba(37, 99, 235, 0.12), transparent 55%);
+            pointer-events: none;
+        }
+        .incentive__inner {
+            position: relative; z-index: 2;
+            max-width: 820px; margin: 0 auto;
+            text-align: center;
+        }
+        .incentive__eyebrow {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 1.4rem 0.8rem;
-            aspect-ratio: 1;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 0.6rem; text-align: center;
-            transition: border-color .2s, transform .2s;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
         }
-        .partner-cell:hover { border-color: rgba(245, 158, 11, 0.4); transform: translateY(-3px); }
-        .partner-cell img {
-            max-width: 100%; max-height: 60px; object-fit: contain;
-            filter: brightness(0) invert(1);
-            opacity: 0.72;
-            transition: filter .2s, opacity .2s;
+        .incentive__highlight {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: clamp(4.5rem, 14vw, 10rem);
+            line-height: 0.95;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #D97706 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            margin: 0 0 2rem;
+            text-shadow: 0 0 60px rgba(245, 158, 11, 0.2);
+            animation: incentivePulse 4s infinite alternate ease-in-out;
         }
-        .partner-cell:hover img { filter: none; opacity: 1; }
-        .partner-cell__name {
-            font-size: 0.78rem; color: var(--text-gray);
-            line-height: 1.25; font-weight: 500;
+        @keyframes incentivePulse {
+            0%   { filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.3)); }
+            100% { filter: drop-shadow(0 0 40px rgba(245, 158, 11, 0.6)); }
         }
+        .incentive__body {
+            font-size: clamp(1.1rem, 2.4vw, 1.3rem);
+            color: var(--text-white);
+            line-height: 1.6;
+            max-width: 640px;
+            margin: 0 auto 2rem;
+            font-weight: 300;
+        }
+        .incentive__body strong {
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+        .incentive__deadline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 50px;
+            color: #FCA5A5;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2.5rem;
+        }
+        .incentive__deadline svg { stroke: #FCA5A5; }
 
         /* ─── FAQ ────────────────────────────────────────────────────────── */
         .faq { padding: 6rem 0; background: var(--bg-navy); }
@@ -962,27 +1010,33 @@
         </section>
     @endif
 
-    <!-- PARCEIRAS -->
-    @if($settings->show_partners_wall && $partners->count())
-        <section class="partners">
-            <div class="container">
-                <div class="section-head">
-                    <h2>{{ $partners->count() }} entidades de Araraquara participam.</h2>
-                    <p>Você pode indicar o nome de uma delas no e-mail ao conselho pra que a verba apoie o trabalho que ela faz.</p>
-                </div>
-                <div class="partners-grid">
-                    @foreach($partners as $p)
-                        <div class="partner-cell">
-                            @if($p->logo_url)
-                                <img src="{{ $p->logo_url }}" alt="{{ $p->name }}" loading="lazy">
-                            @endif
-                            <div class="partner-cell__name">{{ $p->name }}</div>
-                        </div>
-                    @endforeach
+    <!-- INCENTIVO -->
+    <section class="incentive">
+        <div class="container">
+            <div class="incentive__inner">
+                <span class="incentive__eyebrow">O que decide tudo é o calendário</span>
+                <h2 class="incentive__highlight">DEIXE AQUI.</h2>
+                <p class="incentive__body">
+                    O imposto vai sair da sua conta <strong>de qualquer jeito</strong>.
+                    A escolha é só pra onde ele vai: pra Brasília como sempre,
+                    ou pra 6% ficarem em Araraquara, financiando projetos
+                    pra crianças e adolescentes <strong>daqui</strong>.
+                </p>
+                @if($daysLeft !== null && $daysLeft > 0)
+                    <div class="incentive__deadline">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Faltam {{ $daysLeft }} {{ $daysLeft === 1 ? 'dia' : 'dias' }} pra fazer sua destinação de 2026
+                    </div>
+                @endif
+                <div>
+                    <a href="#destinar-dados" class="btn-cta">
+                        Destinar agora
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                    </a>
                 </div>
             </div>
-        </section>
-    @endif
+        </div>
+    </section>
 
     <!-- FAQ -->
     @if(!empty($settings->faq_items))

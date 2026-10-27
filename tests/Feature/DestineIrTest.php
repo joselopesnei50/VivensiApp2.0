@@ -97,20 +97,12 @@ it('mesma sessao nao conta visita duplicada', function () {
     expect($partner->fresh()->visits_count)->toBe(1);
 });
 
-it('mural das entidades aparece quando show_partners_wall esta on', function () {
-    $s = dirPublish();
-    $s->update(['show_partners_wall' => true]);
-    DestineIrPartner::create(['name' => 'Entidade Visivel', 'slug' => 'ent-visivel', 'is_active' => true]);
-
-    $this->get('/destine-ir')->assertSee('Entidade Visivel', false);
-});
-
-it('mural some quando show_partners_wall esta off', function () {
-    $s = dirPublish();
-    $s->update(['show_partners_wall' => false]);
-    DestineIrPartner::create(['name' => 'Nao Deveria Aparecer', 'slug' => 'nao-aparece', 'is_active' => true]);
-
-    $this->get('/destine-ir')->assertDontSee('Nao Deveria Aparecer');
+it('seção de incentivo com palavra de destaque aparece', function () {
+    dirPublish();
+    $this->get('/destine-ir')
+        ->assertOk()
+        ->assertSee('DEIXE AQUI', false)
+        ->assertSee('Destinar agora', false);
 });
 
 // ── Admin — gate ──────────────────────────────────────────────────────────────
