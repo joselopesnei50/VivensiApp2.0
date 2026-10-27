@@ -235,6 +235,21 @@
                     </div>
                 </div>
 
+                {{-- Vídeo YouTube --}}
+                <div class="dir-card">
+                    <h2><i class="fab fa-youtube" style="color:#ff0033;"></i> Vídeo via YouTube</h2>
+                    <div class="dir-row">
+                        <label>Link do YouTube (opcional — usado no lugar dos MP4 quando preenchido)</label>
+                        <input type="url" name="video_youtube_url" value="{{ old('video_youtube_url', $settings->video_youtube_url) }}" placeholder="https://www.youtube.com/watch?v=...">
+                        @if($settings->youtube_id)
+                            <p style="margin-top:8px; font-size:.82rem; color:#16a34a;"><i class="fas fa-check-circle"></i> ID detectado: <code>{{ $settings->youtube_id }}</code> — preview no site vai usar este vídeo.</p>
+                        @elseif($settings->video_youtube_url)
+                            <p style="margin-top:8px; font-size:.82rem; color:#dc2626;"><i class="fas fa-triangle-exclamation"></i> Link não reconhecido. Use um link <code>youtube.com/watch?v=...</code> ou <code>youtu.be/...</code>.</p>
+                        @endif
+                        <p style="margin-top:6px; font-size:.78rem; color:#6b7280;">Formatos aceitos: youtube.com/watch, youtu.be, youtube.com/shorts, youtube.com/embed. Deixe vazio pra usar os uploads MP4.</p>
+                    </div>
+                </div>
+
                 {{-- Open Graph --}}
                 <div class="dir-card">
                     <h2><i class="fas fa-share-nodes"></i> Compartilhamento (link bonito no WhatsApp)</h2>

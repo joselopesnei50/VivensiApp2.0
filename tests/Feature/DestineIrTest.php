@@ -150,6 +150,54 @@ it('cria entidade com slug auto-gerado', function () {
     expect($p->is_active)->toBeTrue();
 });
 
+// ── Vídeo YouTube ─────────────────────────────────────────────────────────────
+
+it('embute iframe do YouTube quando video_youtube_url preenchido', function () {
+    $s = dirPublish();
+    $s->update(['video_youtube_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ']);
+
+    $this->get('/destine-ir')
+        ->assertOk()
+        ->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false);
+});
+
+it('aceita link curto youtu.be', function () {
+    $s = dirPublish();
+    $s->update(['video_youtube_url' => 'https://youtu.be/dQw4w9WgXcQ']);
+
+    $this->get('/destine-ir')
+        ->assertOk()
+        ->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false);
+});
+
+it('youtube_id null retorna null (link invalido)', function () {
+    $s = DestineIrSetting::current();
+    $s->update(['video_youtube_url' => 'https://vimeo.com/123']);
+    expect($s->fresh()->youtube_id)->toBeNull();
+});
+
+// ── Callout de indicação da entidade ──────────────────────────────────────────
+
+it('callout da entidade aparece quando vem via slug', function () {
+    dirPublish();
+    DestineIrPartner::create(['name' => 'Lar Esperanca', 'slug' => 'lar-esperanca', 'is_active' => true]);
+
+    $resp = $this->get('/destine-ir/lar-esperanca');
+    $resp->assertOk()
+        ->assertSee('Indicação de entidade', false)
+        ->assertSee('Preparar e-mail', false)
+        ->assertSee('mailto:', false)
+        ->assertSee('Lar Esperanca', false);
+});
+
+it('callout nao aparece na rota raiz sem partner', function () {
+    dirPublish();
+    $this->get('/destine-ir')
+        ->assertOk()
+        ->assertDontSee('Indicação de entidade', false)
+        ->assertDontSee('Preparar e-mail', false);
+});
+
 it('publica a pagina via update', function () {
     $this->actingAs(dirSuperAdmin())->withSession(['2fa_verified' => true])
         ->put('/admin/destine-ir', [

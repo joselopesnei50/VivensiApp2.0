@@ -28,6 +28,18 @@ class DestineIrSetting extends Model
         return static::query()->firstOr(fn () => static::seedDefaults());
     }
 
+    public function getYoutubeIdAttribute(): ?string
+    {
+        $url = (string) $this->video_youtube_url;
+        if ($url === '') return null;
+
+        // Suporta youtube.com/watch?v=, youtu.be/, youtube.com/shorts/, youtube.com/embed/, youtube.com/v/
+        if (preg_match('~(?:youtube\.com/(?:watch\?v=|shorts/|embed/|v/)|youtu\.be/)([A-Za-z0-9_-]{11})~', $url, $m)) {
+            return $m[1];
+        }
+        return null;
+    }
+
     public static function seedDefaults(): self
     {
         return static::create([

@@ -17,6 +17,25 @@
     $shareMsg = $partner
         ? "Olá! A entidade \"{$partner->name}\" participa desta ação em Araraquara. Parte do seu Imposto de Renda pode virar apoio pra crianças e adolescentes da nossa cidade, sem você pagar nada a mais. Veja como: {$pageUrl}"
         : "Parte do seu Imposto de Renda pode ficar em Araraquara e apoiar crianças e adolescentes da nossa cidade — sem você pagar nada a mais. Veja o passo a passo: {$pageUrl}";
+
+    // mailto pré-preenchido quando vier via partner — doador só anexa comprovante
+    $mailtoHref = null;
+    if ($partner) {
+        $subject = 'Destinação ao FMDCA — Indicação: ' . $partner->name;
+        $body    = "Olá,\n\n"
+                 . "Segue minha destinação ao Fundo Municipal (FMDCA de Araraquara).\n\n"
+                 . "Nome: \n"
+                 . "CPF ou CNPJ: \n"
+                 . "Valor destinado: R$ \n"
+                 . "Entidade que gostaria de apoiar: {$partner->name}\n\n"
+                 . "Comprovante do PIX em anexo.\n\n"
+                 . "Obrigado.";
+        $mailtoHref = 'mailto:' . $settings->fund_email
+                    . '?subject=' . rawurlencode($subject)
+                    . '&body=' . rawurlencode($body);
+    }
+
+    $youtubeId = $settings->youtube_id;
 @endphp
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -354,6 +373,81 @@
         .btn-copy:hover { background: var(--primary-blue-hover); }
         .btn-copy.success { background: #10B981; }
 
+        /* ─── CALLOUT INDICAÇÃO DA ENTIDADE ──────────────────────────────── */
+        .partner-callout {
+            position: relative;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(245, 158, 11, 0.08));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 20px;
+            padding: 2rem 2.2rem;
+            margin: 0 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1.5rem;
+            align-items: center;
+            overflow: hidden;
+        }
+        .partner-callout::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at top left, rgba(245, 158, 11, 0.15), transparent 60%);
+            pointer-events: none;
+        }
+        .partner-callout__content { position: relative; z-index: 1; }
+        .partner-callout__eyebrow {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: rgba(245, 158, 11, 0.18);
+            color: var(--accent-gold);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.8rem;
+        }
+        .partner-callout__title {
+            font-family: var(--font-heading);
+            font-size: clamp(1.2rem, 2.8vw, 1.6rem);
+            font-weight: 600;
+            color: var(--text-white);
+            line-height: 1.25;
+            margin: 0;
+        }
+        .partner-callout__title strong {
+            color: var(--accent-gold);
+            font-weight: 800;
+        }
+        .partner-callout__hint {
+            margin: 0.5rem 0 0;
+            color: var(--text-gray);
+            font-size: 0.92rem;
+        }
+        .partner-callout__cta {
+            position: relative; z-index: 1;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.9rem 1.6rem;
+            background: linear-gradient(135deg, var(--accent-gold), #D97706);
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 10px 24px rgba(245, 158, 11, 0.25);
+            transition: transform .2s, box-shadow .2s;
+            white-space: nowrap;
+        }
+        .partner-callout__cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(245, 158, 11, 0.35);
+        }
+
         /* ─── PATHS (Caminho 1 e 2) ──────────────────────────────────────── */
         .paths { padding: 6rem 0; background: var(--bg-dark); }
         .paths-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2rem; margin-top: 2rem; }
@@ -606,6 +700,8 @@
             .hero-sub { margin-left: auto; margin-right: auto; }
             .percentage-display { margin-top: 2rem; }
             .impact-grid, .paths-grid, .glass-panel { grid-template-columns: 1fr; }
+            .partner-callout { grid-template-columns: 1fr; text-align: center; padding: 1.8rem; }
+            .partner-callout__cta { justify-content: center; }
             .glass-panel { padding: 2rem; gap: 1.5rem; }
             .calc-container { padding: 2rem; }
             .calc-results-grid { grid-template-columns: 1fr; }
@@ -702,25 +798,39 @@
     </section>
 
     <!-- VIDEO -->
-    @if($settings->video_vertical_url || $settings->video_horizontal_url)
+    @if($youtubeId || $settings->video_vertical_url || $settings->video_horizontal_url)
         <section class="video-section">
             <div class="container">
                 <div class="section-head">
                     <h2>Entenda em 1 minuto</h2>
                 </div>
-                <div class="video-wrap @unless($settings->video_horizontal_url)video-wrap--vertical @endunless">
-                    <video controls playsinline preload="none"
-                        @if($settings->video_poster_url) poster="{{ $settings->video_poster_url }}" @endif>
-                        @if($settings->video_horizontal_url)
-                            <source src="{{ $settings->video_horizontal_url }}" type="video/mp4" media="(min-width: 820px)">
-                        @endif
-                        @if($settings->video_vertical_url)
-                            <source src="{{ $settings->video_vertical_url }}" type="video/mp4">
-                        @elseif($settings->video_horizontal_url)
-                            <source src="{{ $settings->video_horizontal_url }}" type="video/mp4">
-                        @endif
-                    </video>
-                </div>
+                @if($youtubeId)
+                    <div class="video-wrap">
+                        <iframe
+                            src="https://www.youtube-nocookie.com/embed/{{ $youtubeId }}?rel=0&modestbranding=1"
+                            title="Vídeo da campanha"
+                            frameborder="0"
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen
+                            style="width:100%;height:100%;display:block;border:0;"></iframe>
+                    </div>
+                @else
+                    <div class="video-wrap @unless($settings->video_horizontal_url)video-wrap--vertical @endunless">
+                        <video controls playsinline preload="none"
+                            @if($settings->video_poster_url) poster="{{ $settings->video_poster_url }}" @endif>
+                            @if($settings->video_horizontal_url)
+                                <source src="{{ $settings->video_horizontal_url }}" type="video/mp4" media="(min-width: 820px)">
+                            @endif
+                            @if($settings->video_vertical_url)
+                                <source src="{{ $settings->video_vertical_url }}" type="video/mp4">
+                            @elseif($settings->video_horizontal_url)
+                                <source src="{{ $settings->video_horizontal_url }}" type="video/mp4">
+                            @endif
+                        </video>
+                    </div>
+                @endif
             </div>
         </section>
     @endif
@@ -732,6 +842,20 @@
                 <h2>Destinação segura e transparente</h2>
                 <p>O dinheiro vai direto pro {{ $settings->council_name }}. A Vivensi apenas divulga.</p>
             </div>
+
+            @if($partner && $mailtoHref)
+                <div class="partner-callout">
+                    <div class="partner-callout__content">
+                        <span class="partner-callout__eyebrow">Indicação de entidade</span>
+                        <p class="partner-callout__title">Você veio pelo link da <strong>{{ $partner->name }}</strong>. No e-mail ao conselho, indique essa entidade pra receber o apoio.</p>
+                        <p class="partner-callout__hint">Preparamos um rascunho de e-mail — você só anexa o comprovante do PIX.</p>
+                    </div>
+                    <a href="{{ $mailtoHref }}" class="partner-callout__cta">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        Preparar e-mail
+                    </a>
+                </div>
+            @endif
 
             <div class="glass-panel">
                 <div class="data-group">

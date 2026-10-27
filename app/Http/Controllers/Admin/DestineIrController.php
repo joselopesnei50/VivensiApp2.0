@@ -47,6 +47,7 @@ class DestineIrController extends Controller
             'footer_legal_text'      => 'nullable|string',
             'og_title'               => 'nullable|string|max:255',
             'og_description'         => 'nullable|string|max:500',
+            'video_youtube_url'      => 'nullable|url|max:500',
             'show_deadline_banner'   => 'nullable|boolean',
             'show_simulator'         => 'nullable|boolean',
             'show_partners_wall'     => 'nullable|boolean',
