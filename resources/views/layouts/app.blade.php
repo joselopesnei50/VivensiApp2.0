@@ -429,7 +429,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*') || request()->is('social/posts*') || request()->routeIs('social.analytics.index');
                     $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.templates.cloud.*') || request()->is('whatsapp/cloud/*') || request()->routeIs('whatsapp.consumo') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
-                    $sa_mkt_active    = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*') || request()->routeIs('admin.bruno.*');
+                    $sa_mkt_active    = request()->routeIs('admin.email_logs') || request()->is('prospecting*') || request()->routeIs('admin.email_campaigns.*') || request()->is('admin/sales*') || request()->routeIs('admin.bruno.*') || request()->routeIs('admin.destine-ir.*');
                     $sa_lgpd_active   = request()->routeIs('admin.lgpd.*') || request()->routeIs('admin.conformidade.*') || request()->routeIs('admin.audit_logs') || request()->routeIs('admin.radar.*');
                     $sa_infra_active  = request()->routeIs('admin.health') || request()->routeIs('admin.analytics') || request()->is('admin/settings') || request()->routeIs('admin.bot') || request()->routeIs('admin.failed-jobs.*');
                     $sa_api_active    = request()->is('api-docs*') || request()->is('settings/api-tokens*') || request()->is('settings/webhooks*') || request()->is('admin/dev*');
@@ -544,7 +544,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <i class="fas fa-rocket group-icon"></i> Marketing &amp; Vendas
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
-                    <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '420px' : '0' }};">
+                    <div class="menu-group-items" style="max-height: {{ $sa_mkt_active ? '520px' : '0' }};">
                         <ul>
                             <li><a href="{{ route('admin.sales.board') }}" class="{{ request()->is('admin/sales*') ? 'active' : '' }}"><i class="fas fa-funnel-dollar"></i> Funil Comercial</a></li>
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção Global</a></li>
@@ -552,6 +552,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno — Métricas</a></li>
                             <li><a href="{{ route('admin.bruno.lessons.index') }}" class="{{ request()->routeIs('admin.bruno.lessons.*') ? 'active' : '' }}"><i class="fas fa-book"></i> Bruno — Lições</a></li>
                             <li><a href="{{ route('admin.bruno.handoffs.index') }}" class="{{ request()->routeIs('admin.bruno.handoffs.*') ? 'active' : '' }}"><i class="fas fa-user-headset"></i> Bruno — Handoffs</a></li>
+                            <li><a href="{{ route('admin.destine-ir.edit') }}" class="{{ request()->routeIs('admin.destine-ir.edit') || request()->routeIs('admin.destine-ir.update') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> Destine seu IR — Página</a></li>
+                            <li><a href="{{ route('admin.destine-ir.metrics') }}" class="{{ request()->routeIs('admin.destine-ir.metrics') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> Destine seu IR — Métricas</a></li>
                             <li><a href="{{ route('admin.email_campaigns.index') }}" class="{{ request()->routeIs('admin.email_campaigns.index') || request()->routeIs('admin.email_campaigns.create') || request()->routeIs('admin.email_campaigns.show') ? 'active' : '' }}"><i class="fas fa-bullhorn"></i> Campanhas de E-mail</a></li>
                             <li><a href="{{ route('admin.email_campaigns.lists.index') }}" class="{{ request()->routeIs('admin.email_campaigns.lists.*') ? 'active' : '' }}"><i class="fas fa-address-book"></i> Listas de Contatos</a></li>
                             <li><a href="{{ route('admin.email_logs') }}" class="{{ request()->routeIs('admin.email_logs') ? 'active' : '' }}"><i class="fas fa-envelope-open-text"></i> Logs de E-mail</a></li>

@@ -23,6 +23,17 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::put('/bruno/lessons/{lesson}', [App\Http\Controllers\Admin\BrunoLessonController::class, 'update'])->name('admin.bruno.lessons.update')->middleware('throttle:30,1');
         Route::delete('/bruno/lessons/{lesson}', [App\Http\Controllers\Admin\BrunoLessonController::class, 'destroy'])->name('admin.bruno.lessons.destroy')->middleware('throttle:20,1');
 
+        // Destine seu IR — página pública + CRUD das 25 entidades parceiras
+        Route::get(   '/destine-ir',                      [App\Http\Controllers\Admin\DestineIrController::class, 'edit'])->name('admin.destine-ir.edit');
+        Route::put(   '/destine-ir',                      [App\Http\Controllers\Admin\DestineIrController::class, 'update'])->name('admin.destine-ir.update')->middleware('throttle:30,1');
+        Route::post(  '/destine-ir/video',                [App\Http\Controllers\Admin\DestineIrController::class, 'uploadVideo'])->name('admin.destine-ir.video')->middleware('throttle:10,1');
+        Route::post(  '/destine-ir/poster',               [App\Http\Controllers\Admin\DestineIrController::class, 'uploadPoster'])->name('admin.destine-ir.poster')->middleware('throttle:10,1');
+        Route::post(  '/destine-ir/og-image',             [App\Http\Controllers\Admin\DestineIrController::class, 'uploadOgImage'])->name('admin.destine-ir.og-image')->middleware('throttle:10,1');
+        Route::post(  '/destine-ir/partners',             [App\Http\Controllers\Admin\DestineIrController::class, 'storePartner'])->name('admin.destine-ir.partners.store')->middleware('throttle:30,1');
+        Route::put(   '/destine-ir/partners/{partner}',   [App\Http\Controllers\Admin\DestineIrController::class, 'updatePartner'])->name('admin.destine-ir.partners.update')->middleware('throttle:30,1');
+        Route::delete('/destine-ir/partners/{partner}',   [App\Http\Controllers\Admin\DestineIrController::class, 'destroyPartner'])->name('admin.destine-ir.partners.destroy')->middleware('throttle:20,1');
+        Route::get(   '/destine-ir/metrics',              [App\Http\Controllers\Admin\DestineIrController::class, 'metrics'])->name('admin.destine-ir.metrics');
+
         // Bruno Handoffs — inbox pro time humano assumir leads escalados pelo Bruno
         Route::get('/bruno/handoffs',                     [App\Http\Controllers\Admin\BrunoHandoffController::class, 'index'])->name('admin.bruno.handoffs.index');
         Route::get('/bruno/handoffs/{handoff}',           [App\Http\Controllers\Admin\BrunoHandoffController::class, 'show'])->name('admin.bruno.handoffs.show');

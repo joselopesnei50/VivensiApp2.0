@@ -68,6 +68,12 @@ Route::get('/lp-sitemap.xml',  [App\Http\Controllers\LandingPageController::clas
 Route::get('/lp/{slug}',       [App\Http\Controllers\LandingPageController::class, 'renderPage']);
 Route::post('/lp/{slug}/lead', [App\Http\Controllers\LandingPageController::class, 'submitLead'])->middleware('throttle:20,1');
 
+// ── Campanha pública Destine seu IR ──────────────────────────────────────────
+// Rota raiz + rota com slug de entidade parceira (rastreio de qual das 25
+// entidades trouxe o visitante). Zero form, zero lead, zero oferta de produto.
+Route::get('/destine-ir',          [App\Http\Controllers\DestineIrPublicController::class, 'show'])->name('destine-ir.show');
+Route::get('/destine-ir/{slug}',   [App\Http\Controllers\DestineIrPublicController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('destine-ir.partner');
+
 // ── Portal de Transparência público ──────────────────────────────────────────
 Route::get('/transparencia/{slug}/docs/{id}',     [App\Http\Controllers\TransparencyController::class, 'downloadDocument'])->middleware('throttle:120,1')->name('transparency.doc');
 Route::get('/transparencia/{slug}/dados.csv',     [App\Http\Controllers\TransparencyController::class, 'openDataCsv'])->middleware('throttle:60,1')->name('transparency.opendata');
