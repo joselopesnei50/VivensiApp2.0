@@ -249,22 +249,7 @@
             font-size: clamp(9rem, 20vw, 18rem);
             font-weight: 800;
             line-height: 0.8;
-            color: transparent;
-            -webkit-text-stroke: 2px var(--accent-gold);
-            position: relative;
-            animation: pulseGlow 3s infinite alternate;
-        }
-        .percentage-number::after {
-            content: '6%';
-            position: absolute; left: 0; top: 0;
-            color: var(--accent-gold);
-            z-index: -1;
-            filter: blur(20px);
-            opacity: 0.6;
-        }
-        @keyframes pulseGlow {
-            0% { -webkit-text-stroke: 2px rgba(245, 158, 11, 0.5); transform: scale(1); }
-            100% { -webkit-text-stroke: 4px rgba(245, 158, 11, 1); transform: scale(1.02); }
+            color: var(--text-white);
         }
         .percentage-sub {
             font-weight: 500;
@@ -579,19 +564,8 @@
         .incentive {
             padding: 7rem 0;
             background: var(--bg-dark);
-            position: relative;
-            overflow: hidden;
-        }
-        .incentive::before {
-            content: '';
-            position: absolute; inset: 0;
-            background:
-                radial-gradient(ellipse at 10% 20%, rgba(245, 158, 11, 0.14), transparent 55%),
-                radial-gradient(ellipse at 90% 80%, rgba(37, 99, 235, 0.12), transparent 55%);
-            pointer-events: none;
         }
         .incentive__inner {
-            position: relative; z-index: 2;
             max-width: 820px; margin: 0 auto;
             text-align: center;
         }
@@ -615,18 +589,8 @@
             font-size: clamp(4.5rem, 14vw, 10rem);
             line-height: 0.95;
             letter-spacing: -2px;
-            background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #D97706 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
+            color: var(--text-white);
             margin: 0 0 2rem;
-            text-shadow: 0 0 60px rgba(245, 158, 11, 0.2);
-            animation: incentivePulse 4s infinite alternate ease-in-out;
-        }
-        @keyframes incentivePulse {
-            0%   { filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.3)); }
-            100% { filter: drop-shadow(0 0 40px rgba(245, 158, 11, 0.6)); }
         }
         .incentive__body {
             font-size: clamp(1.1rem, 2.4vw, 1.3rem);
