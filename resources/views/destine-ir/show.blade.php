@@ -655,6 +655,149 @@
         }
         .incentive__deadline svg { stroke: #FCA5A5; }
 
+        /* ─── MEETING SIGNUP ─────────────────────────────────────────────── */
+        .meeting { padding: 6rem 0; background: var(--bg-dark); position: relative; overflow:hidden; }
+        .meeting::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(37, 99, 235, 0.14), transparent 60%);
+            pointer-events: none;
+        }
+        .meeting__inner { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; }
+        .meeting__head { text-align: center; margin-bottom: 2.2rem; }
+        .meeting__eyebrow {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: rgba(37, 99, 235, 0.14);
+            border: 1px solid rgba(37, 99, 235, 0.4);
+            border-radius: 50px;
+            font-size: 0.78rem;
+            color: #93C5FD;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        .meeting__title {
+            font-family: var(--font-heading);
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 800;
+            color: var(--text-white);
+            line-height: 1.15;
+            margin: 0 0 0.6rem;
+        }
+        .meeting__sub { color: var(--text-gray); font-size: 1rem; max-width: 54ch; margin: 0 auto; }
+
+        .meeting__form {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.4rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .meeting__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .meeting__field { display: flex; flex-direction: column; gap: 0.4rem; }
+        .meeting__field--full { grid-column: 1 / -1; }
+        .meeting__label {
+            font-size: 0.76rem; color: var(--text-gray);
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+        }
+        .meeting__input {
+            width: 100%;
+            padding: 0.95rem 1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-white);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color .2s, background .2s;
+        }
+        .meeting__input:focus {
+            border-color: var(--accent-gold);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .meeting__input::placeholder { color: #475569; }
+        .meeting__honeypot {
+            position: absolute !important;
+            left: -9999px !important;
+            width: 1px; height: 1px;
+            opacity: 0; pointer-events: none;
+            tab-index: -1;
+        }
+        .meeting__consent {
+            display: grid; grid-template-columns: auto 1fr; gap: 0.75rem;
+            align-items: start; margin: 0.6rem 0 1.4rem;
+            padding: 1rem; background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .meeting__consent input {
+            width: 18px; height: 18px;
+            accent-color: var(--accent-gold);
+            cursor: pointer;
+            margin-top: 2px;
+        }
+        .meeting__consent-text {
+            font-size: 0.82rem; color: var(--text-gray);
+            line-height: 1.5;
+        }
+        .meeting__submit {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--accent-gold), #D97706);
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(245, 158, 11, 0.25);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .meeting__submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(245, 158, 11, 0.4);
+        }
+        .meeting__success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+        }
+        .meeting__success-icon {
+            width: 56px; height: 56px;
+            margin: 0 auto 1rem;
+            background: #10B981;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #000;
+        }
+        .meeting__success-title {
+            font-family: var(--font-heading);
+            font-size: 1.4rem; font-weight: 700;
+            color: #6EE7B7;
+            margin-bottom: 0.5rem;
+        }
+        .meeting__success-sub { color: var(--text-gray); font-size: 0.95rem; }
+        .meeting__errors {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 0.9rem 1rem;
+            margin-bottom: 1rem;
+            color: #FCA5A5;
+            font-size: 0.9rem;
+        }
+        .meeting__errors ul { margin: 0; padding-left: 1.2rem; }
+
         /* ─── FAQ ────────────────────────────────────────────────────────── */
         .faq { padding: 6rem 0; background: var(--bg-navy); }
         .faq-wrap { max-width: 800px; margin: 0 auto; }
@@ -750,6 +893,8 @@
             .impact-grid, .paths-grid, .glass-panel { grid-template-columns: 1fr; }
             .partner-callout { grid-template-columns: 1fr; text-align: center; padding: 1.8rem; }
             .partner-callout__cta { justify-content: center; }
+            .meeting__grid { grid-template-columns: 1fr; }
+            .meeting__form { padding: 1.6rem; }
             .glass-panel { padding: 2rem; gap: 1.5rem; }
             .calc-container { padding: 2rem; }
             .calc-results-grid { grid-template-columns: 1fr; }
@@ -1037,6 +1182,81 @@
             </div>
         </div>
     </section>
+
+    <!-- MEETING SIGNUP -->
+    @if($settings->show_meeting_cta)
+        @php
+            $meetingAction = $partner
+                ? route('destine-ir.meeting.store.partner', ['slug' => $partner->slug])
+                : route('destine-ir.meeting.store');
+        @endphp
+        <section class="meeting" id="reuniao">
+            <div class="container">
+                <div class="meeting__inner">
+                    @if(session('meeting_signup_ok'))
+                        <div class="meeting__success">
+                            <div class="meeting__success-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <div class="meeting__success-title">Inscrição recebida.</div>
+                            <p class="meeting__success-sub">Vamos avisar seu e-mail quando marcarmos o dia da reunião.</p>
+                        </div>
+                    @else
+                        <div class="meeting__head">
+                            <span class="meeting__eyebrow">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                                Reunião online
+                            </span>
+                            <h2 class="meeting__title">{{ $settings->meeting_title }}</h2>
+                            <p class="meeting__sub">{{ $settings->meeting_description }}</p>
+                        </div>
+
+                        <form class="meeting__form" method="POST" action="{{ $meetingAction }}">
+                            @csrf
+
+                            @if($errors->any())
+                                <div class="meeting__errors">
+                                    <ul>
+                                        @foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            {{-- Honeypot (invisível) --}}
+                            <input type="text" name="website" class="meeting__honeypot" tabindex="-1" autocomplete="off" value="">
+
+                            <div class="meeting__grid">
+                                <div class="meeting__field meeting__field--full">
+                                    <label class="meeting__label" for="m-name">Nome</label>
+                                    <input class="meeting__input" type="text" id="m-name" name="name" value="{{ old('name') }}" required maxlength="160" autocomplete="name">
+                                </div>
+                                <div class="meeting__field">
+                                    <label class="meeting__label" for="m-email">E-mail</label>
+                                    <input class="meeting__input" type="email" id="m-email" name="email" value="{{ old('email') }}" required maxlength="160" autocomplete="email">
+                                </div>
+                                <div class="meeting__field">
+                                    <label class="meeting__label" for="m-phone">WhatsApp <span style="opacity:.6;">(opcional)</span></label>
+                                    <input class="meeting__input" type="tel" id="m-phone" name="phone" value="{{ old('phone') }}" maxlength="40" placeholder="(16) 9..." autocomplete="tel">
+                                </div>
+                            </div>
+
+                            <label class="meeting__consent">
+                                <input type="checkbox" name="lgpd_consent" value="1" required @checked(old('lgpd_consent'))>
+                                <span class="meeting__consent-text">
+                                    Autorizo o uso do meu nome, e-mail e WhatsApp pra receber o link e a data da reunião online. Os dados ficam só com a Vivensi e podem ser removidos a qualquer momento. Base legal: consentimento (LGPD art. 7º, I).
+                                </span>
+                            </label>
+
+                            <button type="submit" class="meeting__submit">
+                                Quero participar da reunião
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+        </section>
+    @endif
 
     <!-- FAQ -->
     @if(!empty($settings->faq_items))

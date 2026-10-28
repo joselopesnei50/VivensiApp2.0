@@ -64,6 +64,9 @@
         <a href="{{ route('admin.destine-ir.metrics') }}" class="dir-hero__preview" style="margin-left:8px;">
             <i class="fas fa-chart-pie"></i> Ver métricas das entidades
         </a>
+        <a href="{{ route('admin.destine-ir.signups') }}" class="dir-hero__preview" style="margin-left:8px;">
+            <i class="fas fa-user-plus"></i> Inscrições na reunião
+        </a>
     </div>
 
     @if(session('status'))
@@ -106,6 +109,26 @@
                     <div class="dir-switch">
                         <input type="checkbox" name="show_share_bar" value="1" id="show_share_bar" @checked($settings->show_share_bar)>
                         <label for="show_share_bar">Mostrar barra de compartilhar</label>
+                    </div>
+                    <div class="dir-switch">
+                        <input type="checkbox" name="show_meeting_cta" value="1" id="show_meeting_cta" @checked($settings->show_meeting_cta)>
+                        <label for="show_meeting_cta">Mostrar box de inscrição na reunião online</label>
+                    </div>
+                </div>
+
+                {{-- Reunião online --}}
+                <div class="dir-card">
+                    <h2><i class="fas fa-video"></i> Reunião online (box de inscrição)</h2>
+                    <p style="font-size:.84rem; color:#6b7280; margin:-6px 0 14px;">
+                        Captura nome, e-mail e WhatsApp dos interessados pra depois você enviar o dia/link. Lista disponível em <a href="{{ route('admin.destine-ir.signups') }}" target="_blank">Inscrições na reunião</a>.
+                    </p>
+                    <div class="dir-row">
+                        <label>Título</label>
+                        <input type="text" name="meeting_title" value="{{ old('meeting_title', $settings->meeting_title) }}">
+                    </div>
+                    <div class="dir-row">
+                        <label>Descrição</label>
+                        <textarea name="meeting_description">{{ old('meeting_description', $settings->meeting_description) }}</textarea>
                     </div>
                 </div>
 

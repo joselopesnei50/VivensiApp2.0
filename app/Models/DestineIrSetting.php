@@ -16,6 +16,7 @@ class DestineIrSetting extends Model
         'show_simulator'        => 'boolean',
         'show_partners_wall'    => 'boolean',
         'show_share_bar'        => 'boolean',
+        'show_meeting_cta'      => 'boolean',
         'deadline_date'         => 'date',
         'path1_steps'           => 'array',
         'path2_steps'           => 'array',

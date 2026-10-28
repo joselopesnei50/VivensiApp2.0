@@ -72,6 +72,8 @@ Route::post('/lp/{slug}/lead', [App\Http\Controllers\LandingPageController::clas
 // Rota raiz + rota com slug de entidade parceira (rastreio de qual das 25
 // entidades trouxe o visitante). Zero form, zero lead, zero oferta de produto.
 Route::get('/destine-ir',          [App\Http\Controllers\DestineIrPublicController::class, 'show'])->name('destine-ir.show');
+Route::post('/destine-ir/reuniao', [App\Http\Controllers\DestineIrPublicController::class, 'storeMeetingSignup'])->middleware('throttle:5,1')->name('destine-ir.meeting.store');
+Route::post('/destine-ir/{slug}/reuniao', [App\Http\Controllers\DestineIrPublicController::class, 'storeMeetingSignup'])->where('slug', '[a-z0-9-]+')->middleware('throttle:5,1')->name('destine-ir.meeting.store.partner');
 Route::get('/destine-ir/{slug}',   [App\Http\Controllers\DestineIrPublicController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('destine-ir.partner');
 
 // ── Portal de Transparência público ──────────────────────────────────────────

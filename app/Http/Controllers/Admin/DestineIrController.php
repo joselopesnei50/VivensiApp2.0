@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DestineIrMeetingSignup;
 use App\Models\DestineIrPartner;
 use App\Models\DestineIrSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DestineIrController extends Controller
 {
@@ -52,6 +54,9 @@ class DestineIrController extends Controller
             'show_simulator'         => 'nullable|boolean',
             'show_partners_wall'     => 'nullable|boolean',
             'show_share_bar'         => 'nullable|boolean',
+            'show_meeting_cta'       => 'nullable|boolean',
+            'meeting_title'          => 'nullable|string|max:255',
+            'meeting_description'    => 'nullable|string|max:500',
         ]);
 
         $settings = DestineIrSetting::current();
@@ -63,6 +68,7 @@ class DestineIrController extends Controller
                 'show_simulator'       => (bool) $request->boolean('show_simulator'),
                 'show_partners_wall'   => (bool) $request->boolean('show_partners_wall'),
                 'show_share_bar'       => (bool) $request->boolean('show_share_bar'),
+                'show_meeting_cta'     => (bool) $request->boolean('show_meeting_cta'),
             ]
         ));
 
@@ -214,6 +220,64 @@ class DestineIrController extends Controller
         $settings = DestineIrSetting::current();
         $partners = DestineIrPartner::orderByDesc('visits_count')->orderBy('name')->get();
         return view('admin.destine-ir.metrics', compact('settings', 'partners'));
+    }
+
+    public function signups(Request $request)
+    {
+        $filter = $request->query('status', 'all');
+        $query = DestineIrMeetingSignup::with('partner')->orderByDesc('created_at');
+
+        if ($filter === 'pending') {
+            $query->whereNull('notified_at');
+        } elseif ($filter === 'notified') {
+            $query->whereNotNull('notified_at');
+        }
+
+        $signups = $query->paginate(50)->withQueryString();
+        $totals  = [
+            'all'      => DestineIrMeetingSignup::count(),
+            'pending'  => DestineIrMeetingSignup::whereNull('notified_at')->count(),
+            'notified' => DestineIrMeetingSignup::whereNotNull('notified_at')->count(),
+        ];
+
+        return view('admin.destine-ir.signups', compact('signups', 'filter', 'totals'));
+    }
+
+    public function signupsCsv(): StreamedResponse
+    {
+        $filename = 'destine-ir-signups-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () {
+            $out = fopen('php://output', 'w');
+            // BOM UTF-8 pra Excel abrir sem bagunça
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['Data', 'Nome', 'E-mail', 'WhatsApp', 'Entidade de origem', 'Notificado em', 'Observação']);
+
+            DestineIrMeetingSignup::with('partner')->orderByDesc('created_at')->chunk(500, function ($rows) use ($out) {
+                foreach ($rows as $r) {
+                    fputcsv($out, [
+                        optional($r->created_at)->format('d/m/Y H:i'),
+                        $r->name,
+                        $r->email,
+                        $r->phone,
+                        optional($r->partner)->name,
+                        optional($r->notified_at)->format('d/m/Y H:i'),
+                        $r->notes,
+                    ]);
+                }
+            });
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    public function markSignupNotified(DestineIrMeetingSignup $signup): RedirectResponse
+    {
+        $signup->notified_at = $signup->notified_at ? null : now();
+        $signup->save();
+        return back()->with('status', $signup->notified_at ? 'Marcado como notificado.' : 'Desmarcado.');
     }
 
     private function storePartnerLogo(DestineIrPartner $partner, \Illuminate\Http\UploadedFile $file): void

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\DestineIrMeetingSignup;
 use App\Models\DestineIrPartner;
 use App\Models\DestineIrSetting;
 use App\Models\Tenant;
@@ -166,6 +167,138 @@ it('youtube_id null retorna null (link invalido)', function () {
     $s = DestineIrSetting::current();
     $s->update(['video_youtube_url' => 'https://vimeo.com/123']);
     expect($s->fresh()->youtube_id)->toBeNull();
+});
+
+// ── Reunião online (meeting signup) ──────────────────────────────────────────
+
+it('box de reuniao aparece na pagina publica quando ligado', function () {
+    dirPublish();
+    $this->get('/destine-ir')
+        ->assertOk()
+        ->assertSee('Reunião online', false)
+        ->assertSee('Quero participar da reunião', false);
+});
+
+it('box de reuniao some quando desligado', function () {
+    $s = dirPublish();
+    $s->update(['show_meeting_cta' => false]);
+    $this->get('/destine-ir')
+        ->assertOk()
+        ->assertDontSee('Quero participar da reunião', false);
+});
+
+it('cadastra inscricao sem partner', function () {
+    dirPublish();
+
+    $this->post('/destine-ir/reuniao', [
+        'name'         => 'Fulano Teste',
+        'email'        => 'fulano@teste.com',
+        'phone'        => '(16) 99999-0000',
+        'lgpd_consent' => '1',
+    ])->assertRedirect();
+
+    $s = DestineIrMeetingSignup::first();
+    expect($s->name)->toBe('Fulano Teste');
+    expect($s->email)->toBe('fulano@teste.com');
+    expect($s->partner_id)->toBeNull();
+    expect($s->lgpd_consent)->toBeTrue();
+});
+
+it('cadastra inscricao vinculada ao partner pelo slug', function () {
+    dirPublish();
+    $partner = DestineIrPartner::create(['name' => 'Casa Y', 'slug' => 'casa-y', 'is_active' => true]);
+
+    $this->post('/destine-ir/casa-y/reuniao', [
+        'name'         => 'Beltrano',
+        'email'        => 'beltrano@teste.com',
+        'lgpd_consent' => '1',
+    ])->assertRedirect();
+
+    expect(DestineIrMeetingSignup::first()->partner_id)->toBe($partner->id);
+});
+
+it('honeypot preenchido descarta silenciosamente', function () {
+    dirPublish();
+
+    $this->post('/destine-ir/reuniao', [
+        'name'         => 'Bot',
+        'email'        => 'bot@spam.com',
+        'lgpd_consent' => '1',
+        'website'      => 'http://spam-site.ru',
+    ])->assertRedirect();
+
+    expect(DestineIrMeetingSignup::count())->toBe(0);
+});
+
+it('exige consentimento LGPD', function () {
+    dirPublish();
+
+    $this->post('/destine-ir/reuniao', [
+        'name'  => 'Teste',
+        'email' => 'teste@teste.com',
+    ])->assertSessionHasErrors(['lgpd_consent']);
+
+    expect(DestineIrMeetingSignup::count())->toBe(0);
+});
+
+it('nao aceita cadastro quando show_meeting_cta esta off', function () {
+    $s = dirPublish();
+    $s->update(['show_meeting_cta' => false]);
+
+    $this->post('/destine-ir/reuniao', [
+        'name'         => 'Teste',
+        'email'        => 'teste@teste.com',
+        'lgpd_consent' => '1',
+    ])->assertStatus(404);
+});
+
+it('admin lista inscricoes', function () {
+    DestineIrMeetingSignup::create([
+        'name'         => 'Visivel Admin',
+        'email'        => 'v@a.com',
+        'lgpd_consent' => true,
+    ]);
+
+    $this->actingAs(dirSuperAdmin())->withSession(['2fa_verified' => true])
+        ->get('/admin/destine-ir/signups')
+        ->assertOk()
+        ->assertSee('Visivel Admin');
+});
+
+it('admin baixa CSV de inscricoes', function () {
+    DestineIrMeetingSignup::create([
+        'name'         => 'Alguem',
+        'email'        => 'alguem@teste.com',
+        'phone'        => '(16) 9...',
+        'lgpd_consent' => true,
+    ]);
+
+    $resp = $this->actingAs(dirSuperAdmin())->withSession(['2fa_verified' => true])
+        ->get('/admin/destine-ir/signups.csv');
+
+    $resp->assertOk();
+    $resp->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+    expect($resp->streamedContent())->toContain('alguem@teste.com');
+});
+
+it('admin alterna notificado', function () {
+    $signup = DestineIrMeetingSignup::create([
+        'name'         => 'Toggler',
+        'email'        => 't@t.com',
+        'lgpd_consent' => true,
+    ]);
+
+    $this->actingAs(dirSuperAdmin())->withSession(['2fa_verified' => true])
+        ->post("/admin/destine-ir/signups/{$signup->id}/notified")
+        ->assertRedirect();
+
+    expect($signup->fresh()->notified_at)->not->toBeNull();
+
+    $this->actingAs(dirSuperAdmin())->withSession(['2fa_verified' => true])
+        ->post("/admin/destine-ir/signups/{$signup->id}/notified")
+        ->assertRedirect();
+
+    expect($signup->fresh()->notified_at)->toBeNull();
 });
 
 // ── Callout de indicação da entidade ──────────────────────────────────────────

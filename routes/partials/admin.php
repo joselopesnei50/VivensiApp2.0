@@ -33,6 +33,9 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::put(   '/destine-ir/partners/{partner}',   [App\Http\Controllers\Admin\DestineIrController::class, 'updatePartner'])->name('admin.destine-ir.partners.update')->middleware('throttle:30,1');
         Route::delete('/destine-ir/partners/{partner}',   [App\Http\Controllers\Admin\DestineIrController::class, 'destroyPartner'])->name('admin.destine-ir.partners.destroy')->middleware('throttle:20,1');
         Route::get(   '/destine-ir/metrics',              [App\Http\Controllers\Admin\DestineIrController::class, 'metrics'])->name('admin.destine-ir.metrics');
+        Route::get(   '/destine-ir/signups',               [App\Http\Controllers\Admin\DestineIrController::class, 'signups'])->name('admin.destine-ir.signups');
+        Route::get(   '/destine-ir/signups.csv',           [App\Http\Controllers\Admin\DestineIrController::class, 'signupsCsv'])->name('admin.destine-ir.signups.csv');
+        Route::post(  '/destine-ir/signups/{signup}/notified', [App\Http\Controllers\Admin\DestineIrController::class, 'markSignupNotified'])->name('admin.destine-ir.signups.notified')->middleware('throttle:30,1');
 
         // Bruno Handoffs — inbox pro time humano assumir leads escalados pelo Bruno
         Route::get('/bruno/handoffs',                     [App\Http\Controllers\Admin\BrunoHandoffController::class, 'index'])->name('admin.bruno.handoffs.index');

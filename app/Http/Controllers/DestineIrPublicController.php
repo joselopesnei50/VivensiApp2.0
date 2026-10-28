@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DestineIrMeetingSignup;
 use App\Models\DestineIrPartner;
 use App\Models\DestineIrSetting;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class DestineIrPublicController extends Controller
@@ -34,6 +36,56 @@ class DestineIrPublicController extends Controller
             ->view('destine-ir.show', compact('settings', 'partner', 'partners'))
             ->header('X-Robots-Tag', 'index, follow')
             ->header('Permissions-Policy', 'interest-cohort=()');
+    }
+
+    public function storeMeetingSignup(Request $request, ?string $slug = null): RedirectResponse
+    {
+        $settings = DestineIrSetting::current();
+
+        if (!$settings->is_published || !$settings->show_meeting_cta) {
+            abort(404);
+        }
+
+        // Honeypot: campo invisível. Bot preenche, humano nao. Silenciosamente aceita.
+        if (trim((string) $request->input('website')) !== '') {
+            return $this->signupRedirect($slug, $request);
+        }
+
+        $data = $request->validate([
+            'name'         => 'required|string|max:160',
+            'email'        => 'required|email|max:160',
+            'phone'        => 'nullable|string|max:40',
+            'lgpd_consent' => 'accepted',
+        ], [
+            'name.required'         => 'Diga seu nome.',
+            'email.required'        => 'Preciso do seu e-mail pra avisar o dia.',
+            'email.email'           => 'E-mail inválido.',
+            'lgpd_consent.accepted' => 'Pra te enviar o dia preciso do seu consentimento.',
+        ]);
+
+        $partner = null;
+        if ($slug) {
+            $partner = DestineIrPartner::where('slug', $slug)->where('is_active', true)->first();
+        }
+
+        DestineIrMeetingSignup::create([
+            'name'         => $data['name'],
+            'email'        => strtolower(trim($data['email'])),
+            'phone'        => $data['phone'] ?? null,
+            'partner_id'   => $partner?->id,
+            'lgpd_consent' => true,
+            'ip_hash'      => hash('sha256', ($request->ip() ?? '') . '|' . config('app.key')),
+        ]);
+
+        return $this->signupRedirect($slug, $request)->with('meeting_signup_ok', true);
+    }
+
+    private function signupRedirect(?string $slug, Request $request): RedirectResponse
+    {
+        $route = $slug
+            ? route('destine-ir.partner', ['slug' => $slug])
+            : route('destine-ir.show');
+        return redirect($route . '#reuniao');
     }
 
     private function trackVisit(Request $request, DestineIrSetting $settings, ?DestineIrPartner $partner): void
