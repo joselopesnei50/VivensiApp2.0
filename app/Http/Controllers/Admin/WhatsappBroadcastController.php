@@ -642,8 +642,9 @@ class WhatsappBroadcastController extends Controller
             'broadcast_image' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:5120',
             'broadcast_audio' => 'nullable|file|mimes:mp3,ogg,oga,opus,m4a,mp4,aac,webm|max:' . \App\Models\BroadcastCampaign::AUDIO_MAX_FILE_KB,
             'scheduled_at'    => 'nullable|date|after:now',
-            'group_send_mode' => 'nullable|in:group,members',
-            'group_ids'       => 'required_if:audience,groups|array|min:1',
+            'group_send_mode'        => 'nullable|in:group,members',
+            'members_optin_implicit' => 'nullable|boolean',
+            'group_ids'              => 'required_if:audience,groups|array|min:1',
             'group_ids.*'     => 'string',
             'label_ids'       => 'required_if:audience,labels|array|min:1',
             'label_ids.*'     => 'integer',
@@ -833,6 +834,12 @@ class WhatsappBroadcastController extends Controller
             ? $request->input('group_send_mode', 'group')
             : 'group';
 
+        // Default true: membership = opt-in implicito. Opt-out, blacklist e block
+        // continuam sendo respeitados mesmo com a flag ligada.
+        $membersOptinImplicit = ($audience === 'groups' && $groupSendMode === 'members')
+            ? (bool) $request->boolean('members_optin_implicit', true)
+            : true;
+
         // Filtra os label_ids enviados para garantir que pertencem ao tenant
         // (proteção contra envio cross-tenant via id forjado no form).
         $labelIds = null;
@@ -860,8 +867,9 @@ class WhatsappBroadcastController extends Controller
             'cadence'            => $cadenceSeconds,
             'scheduled_at'       => $scheduledAt,
             'status'             => $scheduledAt ? 'scheduled' : 'queued',
-            'group_ids'          => $audience === 'groups' ? $request->input('group_ids', []) : null,
-            'group_send_mode'    => $groupSendMode,
+            'group_ids'              => $audience === 'groups' ? $request->input('group_ids', []) : null,
+            'group_send_mode'        => $groupSendMode,
+            'members_optin_implicit' => $membersOptinImplicit,
             'phones'             => $audience === 'selected' ? $request->input('phones') : null,
             'label_ids'          => $labelIds,
             'send_channel'       => $sendChannel,

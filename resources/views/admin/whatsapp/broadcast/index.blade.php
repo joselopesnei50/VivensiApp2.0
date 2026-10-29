@@ -796,6 +796,21 @@
                                 <strong>Modo individual:</strong> Será enviada uma mensagem privada para cada membro dos grupos selecionados.
                                 O total de mensagens enviadas pode ser muito maior que o número de grupos.
                             </div>
+
+                            {{-- Toggle opt-in implicito pra membros de grupo (default on) --}}
+                            <div id="membersOptinImplicit" class="d-none mt-2 p-3 rounded-3" style="background:#f0f9ff;border:1px solid #bae6fd;">
+                                <label class="d-flex gap-2 align-items-start" style="cursor:pointer;margin:0;">
+                                    <input type="checkbox" name="members_optin_implicit" id="membersOptinImplicitChk" value="1" checked style="width:18px;height:18px;margin-top:2px;flex-shrink:0;accent-color:#2563eb;">
+                                    <div style="font-size:0.82rem;color:#0c4a6e;line-height:1.45;">
+                                        <strong>Considerar membros do grupo como opt-in implícito.</strong>
+                                        <div style="color:#475569;margin-top:3px;font-size:0.78rem;">
+                                            Membros entraram no grupo voluntariamente — tratamos a participação como consentimento.
+                                            Contatos com <em>opt-out</em>, bloqueio ou blacklist continuam sendo respeitados.
+                                            <strong>Desmarque</strong> apenas se quiser enviar só pra quem deu opt-in explícito no seu CRM.
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -1505,14 +1520,17 @@
 
     function updateGroupModeInfo() {
         const mode = document.querySelector('input[name="group_send_mode"]:checked')?.value || 'group';
-        const infoText = document.getElementById('groupModeInfoText');
-        const warning  = document.getElementById('membersModeWarning');
+        const infoText     = document.getElementById('groupModeInfoText');
+        const warning      = document.getElementById('membersModeWarning');
+        const optinBlock   = document.getElementById('membersOptinImplicit');
         if (mode === 'members') {
             infoText.textContent = 'Cada membro receberá uma mensagem privada (no inbox pessoal dele).';
             warning?.classList.remove('d-none');
+            optinBlock?.classList.remove('d-none');
         } else {
             infoText.textContent = 'A mensagem será enviada uma vez para o chat do grupo.';
             warning?.classList.add('d-none');
+            optinBlock?.classList.add('d-none');
         }
     }
 

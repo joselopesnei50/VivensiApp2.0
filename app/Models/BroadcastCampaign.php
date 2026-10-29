@@ -12,15 +12,16 @@ class BroadcastCampaign extends Model
         'tenant_id', 'created_by', 'name', 'message', 'has_image', 'image_path',
         'has_audio', 'audio_path', 'audio_mime', 'audio_fingerprint',
         'audience_type', 'status', 'scheduled_at', 'cadence',
-        'group_ids', 'group_send_mode', 'phones', 'label_ids',
+        'group_ids', 'group_send_mode', 'members_optin_implicit', 'phones', 'label_ids',
         'send_channel', 'template_id', 'template_variables',
         'total_sent', 'total_failed', 'total_skipped', 'actual_recipients',
         'started_at', 'completed_at',
     ];
 
     protected $casts = [
-        'has_image'          => 'boolean',
-        'has_audio'          => 'boolean',
+        'has_image'              => 'boolean',
+        'has_audio'              => 'boolean',
+        'members_optin_implicit' => 'boolean',
         'group_ids'          => 'array',
         'label_ids'          => 'array',
         'template_variables' => 'array',

@@ -55,6 +55,33 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         return $this->campaignId . '_' . $this->offset;
     }
 
+    /**
+     * Estima o tempo maximo por mensagem (seg): sleep anti-ban + HTTP + typing.
+     * Fonte unica da verdade pro calculo de chunk size.
+     *
+     * Ajustado 2026-10-28: $httpAndTypingPerMsg caiu de 50s -> 5s. O valor pessimista
+     * (worst case p99 de Evolution lenta) fazia chunk cair pra 1-2 msgs/job em
+     * cadencias normais, inflando o tempo total 10x. Em HTTP normal (~2-3s) 5s cobre
+     * folga; se Evolution ficar lenta mesmo, failed() retoma via tries=3.
+     */
+    public static function maxMsgDelay(int $cadenceSeconds, bool $conservative = false): int
+    {
+        $minDelay            = max(5, $cadenceSeconds ?: 5);
+        $multiplier          = $conservative ? 2 : 1;
+        $sleepMaxPerMsg      = ($minDelay + 10) * $multiplier;
+        $httpAndTypingPerMsg = 5;
+        return $sleepMaxPerMsg + $httpAndTypingPerMsg;
+    }
+
+    /**
+     * Chunk size que cabe em 1200s (33% de folga do timeout de 1800s).
+     * Clamp [3, CHUNK_SIZE].
+     */
+    public static function calcEffectiveChunkSize(int $cadenceSeconds, bool $conservative = false): int
+    {
+        return min(self::CHUNK_SIZE, max(3, (int) floor(1200 / max(1, self::maxMsgDelay($cadenceSeconds, $conservative)))));
+    }
+
     public function handle()
     {
         $campaign = BroadcastCampaign::where('id', $this->campaignId)
@@ -291,6 +318,37 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         $isGroupChatMode = ($campaign->audience_type === 'groups')
             && (($campaign->group_send_mode ?? 'group') === 'group');
 
+        // Modo "expandir membros do grupo em contatos individuais". Nesse caso,
+        // cada membro vai pelo fluxo normal de validacao + compliance. Como esses
+        // contatos quase nunca tem opt_in_at registrado (eles entraram no grupo,
+        // nao no CRM), o toggle members_optin_implicit permite tratar a membership
+        // como consentimento — pulando a exigencia de opt-in explicito, mas
+        // AINDA respeitando opt_out_at, blocked_at e blacklist (direitos LGPD).
+        $isGroupMembersMode     = ($campaign->audience_type === 'groups')
+            && (($campaign->group_send_mode ?? 'group') === 'members');
+        $groupMembershipAsOptIn = $isGroupMembersMode
+            && (bool) ($campaign->members_optin_implicit ?? true);
+
+        // Auditoria LGPD: registra 1 vez por campanha (no primeiro chunk) que
+        // a base legal usada e "membership = opt-in implicito". Opt-out e
+        // blacklist continuam sendo respeitados mesmo com a flag ligada.
+        if ($groupMembershipAsOptIn && $this->offset === 0) {
+            try {
+                \App\Models\WhatsappAuditLog::create([
+                    'tenant_id'  => $campaign->tenant_id,
+                    'chat_id'    => null,
+                    'actor_type' => 'system',
+                    'event'      => 'broadcast_optin_source',
+                    'details'    => [
+                        'campaign_id'    => $campaign->id,
+                        'opt_in_source'  => 'group_membership',
+                        'group_ids'      => $campaign->group_ids ?? [],
+                        'send_mode'      => 'members',
+                    ],
+                ]);
+            } catch (\Throwable) {}
+        }
+
         // Anti-ban: avalia diversidade no lote completo ANTES de reduzir o chunk.
         // Cloud API template dispensa (Meta faz rate limiting proprio + template aprovado).
         $waIdsChunk       = $recipientsIterable->pluck('wa_id')->all();
@@ -308,15 +366,21 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
         }
 
         // Chunk size dinâmico: garante que o chunk cabe no $timeout=1800s com folga.
-        // Formula considera: sleep entre msgs + HTTP send Evolution (ate 45s p95) +
-        // typing simulation. Divisor 1200s (nao 1800) = 33% de folga pra retry.
-        // Ajustado 2026-09-23 apos camp 130 timeout (7/57 msgs em 30min).
+        // Formula considera: sleep entre msgs + HTTP send Evolution + typing simulation.
+        // Divisor 1200s (nao 1800) = 33% de folga pra retry.
+        //
+        // Ajustado 2026-10-28: $httpAndTypingPerMsg caiu de 50s -> 5s. O valor de 50s
+        // (worst case p99 de Evolution lenta) era pessimista demais: fazia o chunk
+        // efetivo cair pra 1-2 msgs/job em cadencias normais (3-10s) e multiplicava
+        // o tempo total de uma campanha de 100 msgs de ~5min pra 40-80min. Com 5s
+        // (HTTP normal ~2-3s + buffer) o chunk volta pra 10 msgs. Se Evolution estiver
+        // lenta de verdade, o worker ja retomar automaticamente via failed() (chunk
+        // timeout + ->tries=3).
+        // Variáveis usadas no loop abaixo pra sleep anti-ban entre mensagens.
         $minDelay           = max(5, $campaign->cadence ?: 5);
         $multiplier         = $conservativeMode ? 2 : 1;
-        $sleepMaxPerMsg     = ($minDelay + 10) * $multiplier;
-        $httpAndTypingPerMsg = 50; // estimativa: 40s HTTP + 10s typing (worst case observado)
-        $maxMsgDelay        = $sleepMaxPerMsg + $httpAndTypingPerMsg;
-        $effectiveChunkSize = min(self::CHUNK_SIZE, max(3, (int) floor(1200 / max(1, $maxMsgDelay))));
+        $effectiveChunkSize = self::calcEffectiveChunkSize((int) ($campaign->cadence ?: 5), $conservativeMode);
+        $maxMsgDelay        = self::maxMsgDelay((int) ($campaign->cadence ?: 5), $conservativeMode);
 
         if ($effectiveChunkSize < self::CHUNK_SIZE) {
             $recipientsIterable = $recipientsIterable->take($effectiveChunkSize);
@@ -447,8 +511,11 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     }
                     $waId = $normalized;
 
+                    // Membership = opt-in implicito (ver bloco Evolution abaixo).
+                    $effectiveRequireOptIn = $groupMembershipAsOptIn ? false : $requireOptIn;
+
                     $blockCode = $policy->complianceStatus(
-                        $requireOptIn,
+                        $effectiveRequireOptIn,
                         $recipient->opt_in_at ?? null,
                         $recipient->opt_out_at ?? null,
                         $recipient->blocked_at ?? null,
@@ -483,8 +550,12 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                     }
                     $waId = $jidMap[$normalized];
 
+                    // Membership = opt-in implicito: pula a exigencia de opt_in_at,
+                    // mas mantem opt_out, blacklist e block (direitos LGPD intocados).
+                    $effectiveRequireOptIn = $groupMembershipAsOptIn ? false : $requireOptIn;
+
                     $blockCode = $policy->complianceStatus(
-                        $requireOptIn,
+                        $effectiveRequireOptIn,
                         $recipient->opt_in_at ?? null,
                         $recipient->opt_out_at ?? null,
                         $recipient->blocked_at ?? null,
