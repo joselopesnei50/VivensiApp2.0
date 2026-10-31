@@ -66,6 +66,7 @@ class WhatsappTemplate extends Model
 
     /**
      * Extrai o texto do body do template pra preview rápido.
+     * Retorna o corpo com placeholders literais ({{1}}, {{2}}, ...).
      */
     public function bodyText(): ?string
     {
@@ -75,5 +76,37 @@ class WhatsappTemplate extends Model
             }
         }
         return null;
+    }
+
+    /**
+     * Extrai o texto do footer do template.
+     */
+    public function footerText(): ?string
+    {
+        foreach ($this->components ?? [] as $c) {
+            if (($c['type'] ?? '') === 'FOOTER') {
+                return $c['text'] ?? null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Renderiza o corpo do template substituindo {{1}}, {{2}}... pelos valores
+     * da lista indexada (mesma convencao da Meta: $vars[0] -> {{1}}).
+     *
+     * Fallback: se um placeholder nao tem valor correspondente, mantem a chave
+     * literal pra expor o problema em vez de silenciar com string vazia.
+     */
+    public function renderBody(array $vars = []): ?string
+    {
+        $body = $this->bodyText();
+        if ($body === null || $body === '') {
+            return $body;
+        }
+        return preg_replace_callback('/\{\{\s*(\d+)\s*\}\}/', function ($m) use ($vars) {
+            $idx = (int) $m[1] - 1; // {{1}} -> $vars[0]
+            return array_key_exists($idx, $vars) ? (string) $vars[$idx] : $m[0];
+        }, $body);
     }
 }

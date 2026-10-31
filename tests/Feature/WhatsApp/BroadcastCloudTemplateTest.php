@@ -265,3 +265,58 @@ it('regressao: fluxo evolution (send_channel default) continua funcionando', fun
     expect($camp->send_channel)->toBe('evolution');
     expect($camp->template_id)->toBeNull();
 });
+
+// ── Fix 2026-10-30: renderBody substitui placeholders ────────────────────────
+
+it('renderBody substitui {{1}} e {{2}} pelos valores reais', function () {
+    $t = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tpl = bctMakeTemplate($t->id, 'Olá {{1}}, aqui é a {{2}}! Pedido #{{3}}.');
+
+    $rendered = $tpl->renderBody(['João', 'Vivensi', '1234']);
+
+    expect($rendered)->toBe('Olá João, aqui é a Vivensi! Pedido #1234.');
+});
+
+it('renderBody mantém placeholder quando valor nao foi informado', function () {
+    $t = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tpl = bctMakeTemplate($t->id, 'Oi {{1}}, pedido {{2}}');
+
+    // Só informa 1 variavel — a segunda fica literal pra expor o problema
+    $rendered = $tpl->renderBody(['João']);
+
+    expect($rendered)->toBe('Oi João, pedido {{2}}');
+});
+
+it('renderBody com array vazio retorna o body com placeholders literais', function () {
+    $t = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tpl = bctMakeTemplate($t->id, 'Oi {{1}}');
+
+    expect($tpl->renderBody([]))->toBe('Oi {{1}}');
+});
+
+it('renderBody aceita espacos nos placeholders {{ 1 }}', function () {
+    $t = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tpl = bctMakeTemplate($t->id, 'Oi {{ 1 }}, pedido {{2}}');
+
+    $rendered = $tpl->renderBody(['Ana', '42']);
+
+    expect($rendered)->toBe('Oi Ana, pedido 42');
+});
+
+it('footerText extrai o rodape quando presente', function () {
+    $t = Tenant::factory()->create(['subscription_status' => 'active']);
+    $instance = WhatsappInstance::factory()->cloudApi()->create(['tenant_id' => $t->id]);
+    $tpl = WhatsappTemplate::factory()->create([
+        'tenant_id'            => $t->id,
+        'whatsapp_instance_id' => $instance->id,
+        'waba_id'              => $instance->waba_id,
+        'status'               => WhatsappTemplate::STATUS_APPROVED,
+        'components'           => [
+            ['type' => 'BODY',   'text' => 'Oi {{1}}'],
+            ['type' => 'FOOTER', 'text' => 'Equipe Vivensi'],
+        ],
+    ]);
+
+    expect($tpl->footerText())->toBe('Equipe Vivensi');
+    expect($tpl->renderBody(['Ana']))->toBe('Oi Ana');
+});

@@ -640,8 +640,16 @@ class ProcessBroadcastCampaignJob implements ShouldQueue, ShouldBeUnique
                             ?? ('BROADCAST_' . uniqid());
 
                         if ($isCloudTemplate) {
-                            $content = '[template ' . $template->name . '] '
-                                . mb_substr((string) ($template->bodyText() ?? ''), 0, 200);
+                            // Renderiza {{1}}, {{2}}... pelos valores reais pra persistir o
+                            // texto efetivamente enviado (nao os placeholders) e sem truncar.
+                            // Append do footer quando existe (template pode ter texto final fixo).
+                            $renderedBody   = (string) ($template->renderBody($vars) ?? '');
+                            $footer         = (string) ($template->footerText() ?? '');
+                            $content        = $renderedBody . ($footer !== '' ? "\n\n" . $footer : '');
+                            if ($content === '') {
+                                // Fallback defensivo: template sem body legivel. Mantem rastro.
+                                $content = '[template ' . $template->name . ']';
+                            }
                             $type    = 'template';
                         } elseif ($isAudioBroadcast) {
                             $content = '[áudio enviado via broadcast]';

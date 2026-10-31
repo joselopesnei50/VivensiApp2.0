@@ -1962,11 +1962,21 @@
         // o polling pintaria "[imagem]" texto plano e so o F5 mostrava a foto.
         function renderBubbleBody(msg) {
             if (msg.type === 'audio')                        return renderAudioBubble(msg);
+            if (msg.type === 'template')                     return renderTemplateBubble(msg);
             if (msg.type === 'image'    && msg.media_path)   return renderImageBubble(msg);
             if (msg.type === 'video'    && msg.media_path)   return renderVideoBubble(msg);
             if (msg.type === 'document' && msg.media_path)   return renderDocumentBubble(msg);
             if (msg.type === 'sticker'  && msg.media_path)   return renderStickerBubble(msg);
             return escapeHtml(msg.content);
+        }
+
+        // Template Cloud API — mostra badge + corpo ja renderizado (vindo do job).
+        // Suporta \n -> <br> no corpo. Usa escapeHtml antes de injetar quebras.
+        function renderTemplateBubble(msg) {
+            const raw = String(msg.content ?? '');
+            const body = escapeHtml(raw).replace(/\n/g, '<br>');
+            const badge = '<div style="display:inline-flex; align-items:center; gap:6px; padding:3px 10px; background:rgba(37,99,235,.12); color:#1e40af; border-radius:999px; font-size:.68rem; font-weight:700; letter-spacing:.4px; text-transform:uppercase; margin-bottom:8px;"><i class="fas fa-stamp" style="font-size:.68rem;"></i> Template</div>';
+            return badge + '<div style="line-height:1.45;">' + body + '</div>';
         }
 
         function renderAudioBubble(msg) {
