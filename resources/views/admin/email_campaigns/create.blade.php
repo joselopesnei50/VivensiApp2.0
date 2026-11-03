@@ -86,7 +86,7 @@
 
         {{-- Motor de envio --}}
         @php
-            $driverOld   = old('delivery_driver', 'own');
+            $driverOld   = old('delivery_driver', config('campaign_mail.default_driver', 'brevo'));
             $defaultRate = config('campaign_mail.rate_per_minute');
             $defaultFrom = config('campaign_mail.from.address');
         @endphp

@@ -189,9 +189,17 @@ class SendOwnCampaignBatchJob implements ShouldQueue
         // Não marca a campanha como erro: o watchdog (emails:unstuck-campaigns) retoma a fila.
     }
 
+    /**
+     * O SES troca o Message-ID; o id que chega nos eventos SNS (mail.messageId)
+     * é o que o transporte grava no header X-SES-Message-ID.
+     */
     private function messageId($sent): ?string
     {
         try {
+            $headers = $sent->getOriginalMessage()->getHeaders();
+            if ($headers->has('X-SES-Message-ID')) {
+                return trim($headers->get('X-SES-Message-ID')->getBodyAsString());
+            }
             $id = $sent->getMessageId();
             return $id ? trim($id, '<>') : null;
         } catch (\Throwable) {
@@ -203,7 +211,9 @@ class SendOwnCampaignBatchJob implements ShouldQueue
     {
         $msg = mb_strtolower($e->getMessage());
         foreach (['not verified', 'messagerejected', 'accountsendingpaused', 'sending paused', 'invalidclienttokenid',
-                  'signaturedoesnotmatch', 'accessdenied', 'not authorized', 'authentication', 'daily message quota'] as $needle) {
+                  'signaturedoesnotmatch', 'accessdenied', 'not authorized', 'authentication', 'daily message quota',
+                  'credentials', 'configuration set does not exist', 'configurationsetdoesnotexist',
+                  'mailer [', 'connection could not be established'] as $needle) {
             if (str_contains($msg, $needle)) return true;
         }
         return false;

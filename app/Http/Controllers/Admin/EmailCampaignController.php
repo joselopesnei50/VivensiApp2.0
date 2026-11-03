@@ -76,7 +76,7 @@ class EmailCampaignController extends Controller
             'send_rate_per_minute'  => ['nullable', 'integer', 'min:1', 'max:600'],
         ]);
 
-        $driver = $validated['delivery_driver'] ?? EmailCampaign::DRIVER_OWN;
+        $driver = $validated['delivery_driver'] ?? config('campaign_mail.default_driver', EmailCampaign::DRIVER_BREVO);
 
         // Envio próprio: remetente precisa ser de um domínio verificado no SES
         if ($driver === EmailCampaign::DRIVER_OWN) {

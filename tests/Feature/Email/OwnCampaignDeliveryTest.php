@@ -302,3 +302,36 @@ it('watchdog retoma campanha própria parada em vez de marcar erro', function ()
         ->and(EmailCampaignRecipient::where('email', 'meio@x.org')->value('status'))->toBe('failed');
     \Illuminate\Support\Facades\Queue::assertPushed(SendOwnCampaignBatchJob::class);
 });
+
+it('grava o MessageId do SES (header X-SES-Message-ID), que é o usado nos eventos SNS', function () {
+    $email = (new \Symfony\Component\Mime\Email())->from('a@x.org')->to('b@x.org')->text('x');
+    $email->getHeaders()->addTextHeader('X-SES-Message-ID', '0100018f-ses-id');
+    $sent = new \Illuminate\Mail\SentMessage(new \Symfony\Component\Mailer\SentMessage($email, \Symfony\Component\Mailer\Envelope::create($email)));
+
+    $ref = new ReflectionMethod(SendOwnCampaignBatchJob::class, 'messageId');
+    $ref->setAccessible(true);
+
+    expect($ref->invoke(new SendOwnCampaignBatchJob(1), $sent))->toBe('0100018f-ses-id');
+});
+
+it('erro de credencial da AWS pausa a campanha em vez de marcar todos como falha', function () {
+    config(['campaign_mail.mailer' => 'campaign_ses', 'mail.mailers.campaign_ses.key' => null, 'mail.mailers.campaign_ses.secret' => null]);
+    \Illuminate\Support\Facades\Mail::shouldReceive('mailer->html')->andThrow(new \RuntimeException('Error retrieving credentials from the instance profile metadata service.'));
+
+    $campaign = ownCampaign(['status' => 'sending']);
+    foreach (['a', 'b', 'c'] as $n) {
+        EmailCampaignRecipient::create(['email_campaign_id' => $campaign->id, 'email' => "$n@x.org", 'token' => str_repeat($n, 40), 'status' => 'queued']);
+    }
+
+    SendOwnCampaignBatchJob::dispatchSync($campaign->id);
+
+    expect($campaign->refresh()->status)->toBe('paused')
+        ->and(EmailCampaignRecipient::where('status', 'queued')->count())->toBe(2)
+        ->and(EmailCampaignRecipient::where('status', 'failed')->count())->toBe(1);
+});
+
+it('motor padrão de nova campanha vem da config (brevo até o SES estar pronto)', function () {
+    $campaign = new EmailCampaign();
+    expect(config('campaign_mail.default_driver'))->toBe('brevo')
+        ->and($campaign->usesOwnDelivery())->toBeFalse();
+});

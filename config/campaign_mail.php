@@ -12,6 +12,10 @@
 
 return [
 
+    // Motor pré-selecionado no formulário de nova campanha: brevo | own.
+    // Deixe 'brevo' até o SES sair do sandbox e as chaves estarem no .env.
+    'default_driver' => env('CAMPAIGN_DEFAULT_DRIVER', 'brevo'),
+
     // Mailer de config/mail.php usado nas campanhas: campaign_ses | campaign_smtp | log | array
     'mailer' => env('CAMPAIGN_MAILER', 'campaign_ses'),
 
