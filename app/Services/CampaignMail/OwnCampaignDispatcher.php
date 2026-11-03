@@ -29,7 +29,8 @@ class OwnCampaignDispatcher
         $rows = [];
         foreach ($contacts as $c) {
             $email = mb_strtolower(trim((string) ($c['email'] ?? '')));
-            if ($email === '' || isset($suppressed[$email]) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            // isset($rows[...]): duplicado na lista mantém a 1ª ocorrência (e o nome dela)
+            if ($email === '' || isset($rows[$email]) || isset($suppressed[$email]) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 continue;
             }
             $rows[$email] = [

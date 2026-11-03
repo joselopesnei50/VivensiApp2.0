@@ -31,9 +31,11 @@ beforeEach(function () {
 function ownCampaign(array $attrs = []): EmailCampaign
 {
     $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $admin  = \App\Models\User::factory()->create(['tenant_id' => $tenant->id]);
 
     return EmailCampaign::withoutGlobalScopes()->create(array_merge([
         'tenant_id'       => $tenant->id,
+        'created_by'      => $admin->id,
         'name'            => 'Prospecção OSCs',
         'subject'         => 'Gestão para sua OSC',
         'html_content'    => '<html><body><p>Olá {primeiro_nome}!</p><a href="https://vivensi.app.br/planos">Ver planos</a></body></html>',
