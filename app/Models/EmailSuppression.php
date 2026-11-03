@@ -23,10 +23,21 @@ class EmailSuppression extends Model
         $email = mb_strtolower(trim($email));
         if ($email === '') return;
 
-        static::firstOrCreate(
-            ['email' => $email],
-            ['reason' => $reason, 'detail' => $detail ? mb_substr($detail, 0, 500) : null, 'email_campaign_id' => $campaignId]
-        );
+        $attrs = ['reason' => $reason, 'detail' => $detail ? mb_substr($detail, 0, 500) : null, 'email_campaign_id' => $campaignId];
+        $row   = static::firstOrCreate(['email' => $email], $attrs);
+
+        // Já bloqueado por descadastro/manual e agora veio bounce ou reclamação:
+        // sobe para o motivo permanente. Senão, reativar a inscrição apagaria o
+        // bloqueio e um endereço inválido/reclamante voltaria a receber.
+        if (!$row->wasRecentlyCreated && self::isPermanent($reason) && !self::isPermanent($row->reason)) {
+            $row->update($attrs);
+        }
+    }
+
+    /** Bounce e reclamação nunca são desfeitos pela reativação de inscrição. */
+    public static function isPermanent(?string $reason): bool
+    {
+        return in_array($reason, [self::REASON_HARD_BOUNCE, self::REASON_COMPLAINT], true);
     }
 
     /** @return array<string,true> e-mails (minúsculos) bloqueados */

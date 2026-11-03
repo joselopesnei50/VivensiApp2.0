@@ -345,3 +345,38 @@ it('usa o Responder-para padrão quando a campanha não define um', function () 
     $replyTo = array_map(fn ($m) => $m->getOriginalMessage()->getReplyTo()[0]->getAddress(), sentMessages());
     expect($replyTo)->toBe(['contato@vivensi.app.br', 'outro@vivensi.app.br']);
 });
+
+it('bounce depois de descadastro vira bloqueio permanente e reativar não remove', function () {
+    $campaign = ownCampaign();
+    EmailSuppression::suppress('a@x.org', EmailSuppression::REASON_UNSUBSCRIBE);
+    EmailSuppression::suppress('a@x.org', EmailSuppression::REASON_HARD_BOUNCE, '550 user unknown');
+    EmailSuppression::suppress('a@x.org', EmailSuppression::REASON_UNSUBSCRIBE); // não rebaixa
+
+    expect(EmailSuppression::where('email', 'a@x.org')->value('reason'))->toBe('hard_bounce');
+
+    $token = app(EmailUnsubscribeTokenService::class)->generate('a@x.org', $campaign->tenant_id);
+    $this->post('/email/descadastro/' . $token . '/reativar')->assertOk();
+
+    expect(EmailSuppression::where('email', 'a@x.org')->value('reason'))->toBe('hard_bounce');
+});
+
+it('teto diário conta lotes reservados por outros workers (status sending)', function () {
+    config(['campaign_mail.daily_limit' => 3]);
+    \Illuminate\Support\Facades\Queue::fake();
+
+    // Outra campanha com 2 e-mails já reservados num lote em andamento
+    $other = ownCampaign(['status' => 'sending']);
+    foreach (['x', 'y'] as $n) {
+        EmailCampaignRecipient::create(['email_campaign_id' => $other->id, 'email' => "$n@x.org", 'token' => str_repeat($n, 40), 'status' => 'sending', 'claim_token' => 'outro-worker']);
+    }
+
+    $campaign = ownCampaign(['status' => 'sending']);
+    foreach (['a', 'b', 'c'] as $n) {
+        EmailCampaignRecipient::create(['email_campaign_id' => $campaign->id, 'email' => "$n@x.org", 'token' => str_repeat($n, 40), 'status' => 'queued']);
+    }
+
+    (new SendOwnCampaignBatchJob($campaign->id))->handle(app(CampaignRenderer::class), app(OwnCampaignDispatcher::class));
+
+    expect(sentMessages())->toHaveCount(1)
+        ->and(EmailCampaignRecipient::where('email_campaign_id', $campaign->id)->where('status', 'queued')->count())->toBe(2);
+});

@@ -8,11 +8,13 @@ use App\Models\EmailSuppression;
 use App\Services\CampaignMail\CampaignRenderer;
 use App\Services\CampaignMail\OwnCampaignDispatcher;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Mail\Message;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -47,32 +49,52 @@ class SendOwnCampaignBatchJob implements ShouldQueue
 
         $batchSize = max(1, (int) ($campaign->send_rate_per_minute ?: config('campaign_mail.rate_per_minute', 60)));
 
-        // Teto diário (aquecimento do domínio) somando todas as campanhas próprias
-        $dailyLimit = (int) config('campaign_mail.daily_limit', 0);
-        if ($dailyLimit > 0) {
-            $sentToday = EmailCampaignRecipient::where('sent_at', '>=', now()->subDay())->count();
-            $room      = $dailyLimit - $sentToday;
-            if ($room <= 0) {
-                Log::info('OwnCampaign: teto diário atingido, adiando 30min', ['campaign_id' => $campaign->id]);
-                $campaign->touch(); // mantém o watchdog de travamento quieto
-                self::dispatch($campaign->id)->onQueue('emails')->delay(now()->addMinutes(30));
-                return;
-            }
-            $batchSize = min($batchSize, $room);
+        // Teto diário + reivindicação do lote sob um lock global: com vários
+        // workers (ou várias campanhas) ao mesmo tempo, cada job enxerga o que
+        // os outros já reservaram e o teto não é ultrapassado.
+        $claim    = Str::random(40);
+        $deferred = false;
+        try {
+            Cache::lock('own-campaign:claim', 30)->block(15, function () use ($campaign, &$batchSize, $claim, &$deferred) {
+                $dailyLimit = (int) config('campaign_mail.daily_limit', 0);
+                if ($dailyLimit > 0) {
+                    // Conta o que saiu nas últimas 24h + o que já está reservado em outros lotes
+                    $used = EmailCampaignRecipient::where(function ($q) {
+                        $q->where('sent_at', '>=', now()->subDay())
+                          ->orWhere('status', EmailCampaignRecipient::STATUS_SENDING);
+                    })->count();
+                    $room = $dailyLimit - $used;
+                    if ($room <= 0) {
+                        $deferred = true;
+                        return;
+                    }
+                    $batchSize = min($batchSize, $room);
+                }
+
+                $ids = EmailCampaignRecipient::where('email_campaign_id', $campaign->id)
+                    ->where('status', EmailCampaignRecipient::STATUS_QUEUED)
+                    ->orderBy('id')
+                    ->limit($batchSize)
+                    ->pluck('id');
+
+                if ($ids->isNotEmpty()) {
+                    EmailCampaignRecipient::whereIn('id', $ids)
+                        ->where('status', EmailCampaignRecipient::STATUS_QUEUED)
+                        ->update(['status' => EmailCampaignRecipient::STATUS_SENDING, 'claim_token' => $claim]);
+                }
+            });
+        } catch (LockTimeoutException) {
+            // Outro worker segurou o lock por muito tempo: tenta de novo em 1 min
+            $campaign->touch();
+            self::dispatch($campaign->id)->onQueue('emails')->delay(now()->addMinute());
+            return;
         }
 
-        // Reivindica o lote
-        $claim = Str::random(40);
-        $ids   = EmailCampaignRecipient::where('email_campaign_id', $campaign->id)
-            ->where('status', EmailCampaignRecipient::STATUS_QUEUED)
-            ->orderBy('id')
-            ->limit($batchSize)
-            ->pluck('id');
-
-        if ($ids->isNotEmpty()) {
-            EmailCampaignRecipient::whereIn('id', $ids)
-                ->where('status', EmailCampaignRecipient::STATUS_QUEUED)
-                ->update(['status' => EmailCampaignRecipient::STATUS_SENDING, 'claim_token' => $claim]);
+        if ($deferred) {
+            Log::info('OwnCampaign: teto diário atingido, adiando 30min', ['campaign_id' => $campaign->id]);
+            $campaign->touch(); // mantém o watchdog de travamento quieto
+            self::dispatch($campaign->id)->onQueue('emails')->delay(now()->addMinutes(30));
+            return;
         }
 
         $batch      = EmailCampaignRecipient::where('claim_token', $claim)->where('status', EmailCampaignRecipient::STATUS_SENDING)->get();
