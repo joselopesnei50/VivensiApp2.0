@@ -335,3 +335,13 @@ it('motor padrão de nova campanha vem da config (brevo até o SES estar pronto)
     expect(config('campaign_mail.default_driver'))->toBe('brevo')
         ->and($campaign->usesOwnDelivery())->toBeFalse();
 });
+
+it('usa o Responder-para padrão quando a campanha não define um', function () {
+    config(['campaign_mail.reply_to' => 'contato@vivensi.app.br']);
+
+    app(OwnCampaignDispatcher::class)->start(ownCampaign(), [['email' => 'a@x.org']]);
+    app(OwnCampaignDispatcher::class)->start(ownCampaign(['reply_to_email' => 'outro@vivensi.app.br']), [['email' => 'b@x.org']]);
+
+    $replyTo = array_map(fn ($m) => $m->getOriginalMessage()->getReplyTo()[0]->getAddress(), sentMessages());
+    expect($replyTo)->toBe(['contato@vivensi.app.br', 'outro@vivensi.app.br']);
+});

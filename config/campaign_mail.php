@@ -26,6 +26,11 @@ return [
         'name'    => env('CAMPAIGN_FROM_NAME', env('MAIL_FROM_NAME', 'Vivensi')),
     ],
 
+    // "Responder para" padrão quando a campanha não define um. O remetente fica no
+    // subdomínio de envio (sem caixa de entrada) — as respostas dos prospects
+    // precisam cair num e-mail real (ex.: o Zoho do domínio principal).
+    'reply_to' => env('CAMPAIGN_REPLY_TO'),
+
     // Domínios permitidos como remetente (verificados no SES). Vazio = qualquer um.
     'allowed_sender_domains' => array_values(array_filter(array_map(
         'trim',

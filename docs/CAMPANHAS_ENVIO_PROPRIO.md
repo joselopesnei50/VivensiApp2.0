@@ -55,7 +55,7 @@ atual em https://aws.amazon.com/ses/pricing/.
    { "Version": "2012-10-17", "Statement": [{ "Effect": "Allow",
      "Action": ["ses:SendRawEmail", "ses:SendEmail"], "Resource": "*" }] }
    ```
-7. **.env** do servidor (ver `.env.example`, seção "Campanhas com envio próprio").
+7. **.env** do servidor (ver `.env.example`, seção "Campanhas com envio próprio"). Use `CAMPAIGN_REPLY_TO` com uma caixa real (Zoho): o subdomínio de envio não recebe e-mails.
    Preencha `CAMPAIGN_SES_SNS_TOPIC_ARN` com o ARN do tópico para aceitar só ele.
 8. Rodar a migração `2026_11_02_100001_add_own_delivery_to_email_campaigns` e
    `php artisan config:cache`.

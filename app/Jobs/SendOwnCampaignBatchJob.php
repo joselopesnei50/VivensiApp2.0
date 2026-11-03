@@ -104,8 +104,9 @@ class SendOwnCampaignBatchJob implements ShouldQueue
                     $m->to($recipient->email, $recipient->name ?: null)
                       ->from($fromEmail, $fromName)
                       ->subject($campaign->subject);
-                    if ($campaign->reply_to_email) {
-                        $m->replyTo($campaign->reply_to_email);
+                    $replyTo = $campaign->reply_to_email ?: config('campaign_mail.reply_to');
+                    if ($replyTo) {
+                        $m->replyTo($replyTo);
                     }
                     $headers = $m->getHeaders();
                     $headers->addTextHeader('X-Vivensi-Campaign', (string) $campaign->id);
