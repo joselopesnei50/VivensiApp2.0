@@ -84,6 +84,51 @@
             </div>
         </div>
 
+        {{-- Motor de envio --}}
+        @php
+            $driverOld   = old('delivery_driver', 'own');
+            $defaultRate = config('campaign_mail.rate_per_minute');
+            $defaultFrom = config('campaign_mail.from.address');
+        @endphp
+        <div class="vivensi-card" style="padding:32px; border-radius:20px; margin-bottom:24px;">
+            <h4 style="margin:0 0 8px; font-weight:900; color:#1e293b; font-size:1.05rem;">
+                <i class="fas fa-server me-2" style="color:#6366f1;"></i>Motor de envio
+            </h4>
+            <p style="color:#64748b; font-size:0.82rem; margin:0 0 20px;">O envio próprio sai pelo Amazon SES, com métricas e bloqueios no Vivensi. A Brevo segue disponível como alternativa.</p>
+            <div class="row g-3">
+                @foreach([
+                    'own'   => ['Envio próprio (SES)', 'Custo por e-mail enviado, ritmo controlado, pausa automática por bounce/spam. Recomendado para prospecção.', 'fa-paper-plane'],
+                    'brevo' => ['Brevo Marketing', 'Fluxo antigo: cria lista e campanha dentro da Brevo. Consome o plano de marketing.', 'fa-cloud'],
+                ] as $val => [$label, $desc, $icon])
+                <div class="col-md-6">
+                    <label style="display:flex; gap:12px; padding:14px; border-radius:12px; border:2px solid {{ $driverOld === $val ? '#6366f1' : '#f1f5f9' }}; cursor:pointer; height:100%;">
+                        <input type="radio" name="delivery_driver" value="{{ $val }}" {{ $driverOld === $val ? 'checked' : '' }}
+                               onchange="document.getElementById('ownRateBox').style.display = this.value === 'own' ? 'block' : 'none'"
+                               style="margin-top:4px; accent-color:#6366f1;">
+                        <span>
+                            <span style="display:block; font-weight:800; font-size:0.88rem; color:#1e293b;"><i class="fas {{ $icon }} me-1" style="color:#6366f1;"></i>{{ $label }}</span>
+                            <span style="display:block; font-size:0.76rem; color:#64748b; margin-top:4px; line-height:1.45;">{{ $desc }}</span>
+                        </span>
+                    </label>
+                </div>
+                @endforeach
+            </div>
+            <div id="ownRateBox" style="margin-top:18px; display:{{ $driverOld === 'own' ? 'block' : 'none' }};">
+                <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Ritmo de envio (e-mails por minuto)</label>
+                <input type="number" name="send_rate_per_minute" min="1" max="600" value="{{ old('send_rate_per_minute') }}"
+                       placeholder="Padrão: {{ $defaultRate }}/min"
+                       style="width:220px; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
+                <p style="color:#94a3b8; font-size:0.75rem; margin:6px 0 0;">
+                    Domínio novo? Comece com 10–20/min e aumente aos poucos.
+                    @if($defaultFrom) Remetente padrão: <strong>{{ $defaultFrom }}</strong>. @endif
+                    Use <code>{nome}</code>, <code>{primeiro_nome}</code> e <code>{unsubscribe_url}</code> no HTML.
+                </p>
+                @error('sender_email')
+                    <p style="color:#dc2626; font-size:0.8rem; font-weight:700; margin:8px 0 0;">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
         {{-- Conteúdo --}}
         <div class="vivensi-card" style="padding:32px; border-radius:20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">

@@ -13,17 +13,34 @@
             <p style="color:#64748b; margin:6px 0 0; font-size:0.9rem;">{{ $campaign->subject }}</p>
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
-            @if(in_array($campaign->status, ['draft', 'error']))
+            @php $retryOwnFailed = $campaign->usesOwnDelivery() && $campaign->status === 'sent' && $campaign->stat_failed > 0; @endphp
+            @if(in_array($campaign->status, ['draft', 'error']) || $retryOwnFailed)
                 <form id="formDispararCampanha" action="{{ route('admin.email_campaigns.send', $campaign) }}" method="POST">
                     @csrf
                     <button type="button"
                             onclick="abrirModalDisparar('{{ addslashes($campaign->name) }}', '{{ $campaign->audienceLabel() }}', {{ $campaign->recipient_count ?: 'null' }})"
                             style="padding:14px 24px; border:none; border-radius:14px; background:#6366f1; color:white; font-weight:800; font-size:0.9rem; cursor:pointer;">
-                        <i class="fas fa-paper-plane me-2"></i>{{ $campaign->status === 'error' ? 'Tentar novamente' : 'Disparar Agora' }}
+                        <i class="fas fa-paper-plane me-2"></i>{{ $retryOwnFailed ? 'Reenviar falhas' : ($campaign->status === 'error' ? 'Tentar novamente' : 'Disparar Agora') }}
                     </button>
                 </form>
             @endif
-            @if($campaign->status === 'sent' && $campaign->brevo_campaign_id)
+            @if($campaign->usesOwnDelivery() && $campaign->status === 'sending')
+                <form action="{{ route('admin.email_campaigns.pause', $campaign) }}" method="POST">
+                    @csrf
+                    <button type="submit" style="padding:14px 24px; border:none; border-radius:14px; background:#fffbeb; color:#b45309; font-weight:800; font-size:0.9rem; cursor:pointer;">
+                        <i class="fas fa-pause me-2"></i>Pausar
+                    </button>
+                </form>
+            @endif
+            @if($campaign->usesOwnDelivery() && $campaign->status === 'paused')
+                <form action="{{ route('admin.email_campaigns.resume', $campaign) }}" method="POST">
+                    @csrf
+                    <button type="submit" style="padding:14px 24px; border:none; border-radius:14px; background:#6366f1; color:white; font-weight:800; font-size:0.9rem; cursor:pointer;">
+                        <i class="fas fa-play me-2"></i>Retomar envio
+                    </button>
+                </form>
+            @endif
+            @if(($campaign->status === 'sent' && $campaign->brevo_campaign_id) || ($campaign->usesOwnDelivery() && in_array($campaign->status, ['sending', 'paused', 'sent'])))
                 <form action="{{ route('admin.email_campaigns.stats', $campaign) }}" method="POST">
                     @csrf
                     <button type="submit"
@@ -47,8 +64,39 @@
     </div>
 @endif
 
+{{-- Progresso do envio próprio --}}
+@if($campaign->usesOwnDelivery() && in_array($campaign->status, ['sending', 'paused']) && $campaign->recipient_count)
+@php
+    $progress = $campaign->sendProgress() ?? 0;
+    $queuedLeft = max(0, $campaign->recipient_count - (int) $campaign->stat_sent - (int) $campaign->stat_failed);
+    $rateNow = $campaign->send_rate_per_minute ?: config('campaign_mail.rate_per_minute');
+@endphp
+<div class="vivensi-card" style="padding:22px 26px; border-radius:16px; margin-bottom:24px; border:2px solid {{ $campaign->status === 'paused' ? '#fde68a' : '#e0e7ff' }};">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <strong style="color:#1e293b; font-size:0.95rem;">
+            @if($campaign->status === 'paused')
+                <i class="fas fa-pause-circle me-1" style="color:#d97706;"></i>Envio pausado
+            @else
+                <i class="fas fa-paper-plane me-1" style="color:#6366f1;"></i>Enviando — {{ $rateNow }}/min
+            @endif
+        </strong>
+        <span style="color:#64748b; font-size:0.82rem;">
+            {{ number_format((int) $campaign->stat_sent) }} enviados · {{ number_format($queuedLeft) }} na fila
+            @if($campaign->stat_failed) · <span style="color:#dc2626;">{{ number_format($campaign->stat_failed) }} falhas</span>@endif
+            @if($campaign->status === 'sending' && $queuedLeft) · ~{{ (int) ceil($queuedLeft / max(1, $rateNow)) }} min restantes @endif
+        </span>
+    </div>
+    <div style="height:10px; background:#f1f5f9; border-radius:99px; overflow:hidden;">
+        <div style="height:100%; width:{{ $progress }}%; background:{{ $campaign->status === 'paused' ? '#f59e0b' : '#6366f1' }}; border-radius:99px; transition:width .3s;"></div>
+    </div>
+    @if($campaign->status === 'sending')
+        <p style="color:#94a3b8; font-size:0.75rem; margin:8px 0 0;">Atualize a página para acompanhar. Pausa automática se bounce passar de {{ config('campaign_mail.safety.max_bounce_rate') }}% ou reclamações de {{ config('campaign_mail.safety.max_complaint_rate') }}%.</p>
+    @endif
+</div>
+@endif
+
 {{-- Métricas --}}
-@if($campaign->status === 'sent')
+@if($campaign->status === 'sent' || ($campaign->usesOwnDelivery() && in_array($campaign->status, ['sending', 'paused'])))
 @php
     // Semaforo: benchmarks de email marketing BR
     $openRate   = $campaign->openRate();   // %
@@ -241,8 +289,17 @@
                     ['label'=>'Criada por', 'value'=> $campaign->creator->name ?? '—'],
                     ['label'=>'Criada em', 'value'=> $campaign->created_at->format('d/m/Y H:i')],
                     ['label'=>'Enviada em', 'value'=> $campaign->sent_at ? $campaign->sent_at->format('d/m/Y H:i') : '—'],
-                    ['label'=>'ID Brevo', 'value'=> $campaign->brevo_campaign_id ?? '—'],
                 ];
+                if ($campaign->usesOwnDelivery()) {
+                    $details[] = ['label'=>'Motor', 'value'=> 'Envio próprio (' . config('campaign_mail.mailer') . ')'];
+                    $details[] = ['label'=>'Ritmo', 'value'=> ($campaign->send_rate_per_minute ?: config('campaign_mail.rate_per_minute')) . ' e-mails/min'];
+                    if ($campaign->stat_spam !== null) {
+                        $details[] = ['label'=>'Reclamações (spam)', 'value'=> number_format((int) $campaign->stat_spam) . ($campaign->complaintRate() !== null ? ' (' . $campaign->complaintRate() . '%)' : '')];
+                    }
+                } else {
+                    $details[] = ['label'=>'Motor', 'value'=> 'Brevo Marketing'];
+                    $details[] = ['label'=>'ID Brevo', 'value'=> $campaign->brevo_campaign_id ?? '—'];
+                }
             @endphp
             @foreach($details as $d)
             <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f1f5f9; font-size:0.85rem;">
@@ -252,10 +309,29 @@
             @endforeach
             @if($campaign->error_message)
             <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:14px; margin-top:16px; font-size:0.8rem; color:#991b1b; line-height:1.6;">
-                <strong><i class="fas fa-triangle-exclamation me-1"></i>Erro:</strong> {{ $campaign->error_message }}
+                <strong><i class="fas fa-triangle-exclamation me-1"></i>{{ in_array($campaign->status, ['paused', 'sent']) ? 'Aviso' : 'Erro' }}:</strong> {{ $campaign->error_message }}
             </div>
             @endif
         </div>
+
+        @if(isset($problemRecipients) && $problemRecipients->isNotEmpty())
+        <div class="vivensi-card" style="padding:28px; border-radius:20px; margin-top:24px;">
+            <h4 style="margin:0 0 6px; font-weight:900; color:#1e293b; font-size:1rem;">Problemas de entrega</h4>
+            <p style="color:#94a3b8; font-size:0.75rem; margin:0 0 14px;">Bounces e reclamações ficam bloqueados para sempre nas campanhas próprias.</p>
+            @php
+                $probLabels = ['failed'=>['Falhou','#dc2626'], 'bounced'=>['Bounce','#dc2626'], 'complained'=>['Spam','#9333ea'], 'skipped'=>['Bloqueado','#64748b']];
+            @endphp
+            @foreach($problemRecipients as $r)
+            <div style="padding:10px 0; border-bottom:1px solid #f1f5f9; font-size:0.8rem;">
+                <div style="display:flex; justify-content:space-between; gap:8px;">
+                    <span style="color:#1e293b; font-weight:700; word-break:break-all;">{{ $r->email }}</span>
+                    <span style="color:{{ $probLabels[$r->status][1] ?? '#64748b' }}; font-weight:800; white-space:nowrap;">{{ $probLabels[$r->status][0] ?? $r->status }}</span>
+                </div>
+                @if($r->error)<div style="color:#94a3b8; font-size:0.72rem; margin-top:3px;">{{ \Illuminate\Support\Str::limit($r->error, 140) }}</div>@endif
+            </div>
+            @endforeach
+        </div>
+        @endif
     </div>
 </div>
 {{-- Modal de confirmação de disparo --}}

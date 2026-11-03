@@ -87,6 +87,29 @@ return [
         'brevo' => [
             'transport' => 'brevo',
         ],
+
+        // Campanhas próprias (super admin) — ver config/campaign_mail.php.
+        // Credenciais separadas permitem um usuário IAM só com ses:SendRawEmail.
+        'campaign_ses' => [
+            'transport' => 'ses',
+            'key'       => env('CAMPAIGN_SES_KEY', env('AWS_ACCESS_KEY_ID')),
+            'secret'    => env('CAMPAIGN_SES_SECRET', env('AWS_SECRET_ACCESS_KEY')),
+            'region'    => env('CAMPAIGN_SES_REGION', env('AWS_DEFAULT_REGION', 'us-east-1')),
+            'options'   => array_filter([
+                // Configuration Set publica bounce/reclamação/entrega no SNS → webhook
+                'ConfigurationSetName' => env('CAMPAIGN_SES_CONFIGURATION_SET'),
+            ]),
+        ],
+
+        'campaign_smtp' => [
+            'transport'  => 'smtp',
+            'host'       => env('CAMPAIGN_SMTP_HOST'),
+            'port'       => env('CAMPAIGN_SMTP_PORT', 587),
+            'encryption' => env('CAMPAIGN_SMTP_ENCRYPTION', 'tls'),
+            'username'   => env('CAMPAIGN_SMTP_USERNAME'),
+            'password'   => env('CAMPAIGN_SMTP_PASSWORD'),
+            'timeout'    => 30,
+        ],
     ],
 
     /*

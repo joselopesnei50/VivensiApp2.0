@@ -42,6 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/api/whatsapp/templates', [App\Http\Controllers\WhatsappController::class, 'templatesJson']);
 });
 
+// ── SES (campanhas com envio próprio): bounces, reclamações e entregas via SNS ─
+Route::post('/webhooks/ses-campaigns', [App\Http\Controllers\Api\SesCampaignWebhookController::class, 'handle'])
+    ->withoutMiddleware('throttle:api')->middleware('throttle:600,1')->name('webhooks.ses_campaigns');
+
 // ── Outros Webhooks ────────────────────────────────────────────────────────
 // Webhooks de pagamento: o grupo "api" já aplica throttle:api (60/min por IP).
 // Como os provedores podem enviar rajadas legítimas acima disso, removemos o
