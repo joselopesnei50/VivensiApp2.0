@@ -42,8 +42,13 @@ class UnstuckEmailCampaigns extends Command
         $dryRun = (bool) $this->option('dry-run');
         $cutoff = now()->subMinutes($minAge);
 
+        // Envio próprio (SES): campanha lenta é normal (ritmo por minuto). Se a
+        // corrente de jobs quebrou (deploy, worker reiniciado), retoma a fila.
+        $this->resumeOwnCampaigns($cutoff, $dryRun);
+
         $stuck = EmailCampaign::withoutGlobalScopes()
             ->where('status', 'sending')
+            ->where(fn ($q) => $q->where('delivery_driver', '!=', EmailCampaign::DRIVER_OWN)->orWhereNull('delivery_driver'))
             ->where('updated_at', '<', $cutoff)
             ->get();
 
@@ -100,6 +105,33 @@ class UnstuckEmailCampaigns extends Command
 
         $this->info("Resolvidas: {$marked_sent} marcadas como sent, {$marked_error} como error.");
         return self::SUCCESS;
+    }
+
+    private function resumeOwnCampaigns(\Carbon\Carbon $cutoff, bool $dryRun): void
+    {
+        $own = EmailCampaign::withoutGlobalScopes()
+            ->where('status', 'sending')
+            ->where('delivery_driver', EmailCampaign::DRIVER_OWN)
+            ->where('updated_at', '<', $cutoff)
+            ->get();
+
+        foreach ($own as $campaign) {
+            $this->line(sprintf('  #%d "%s" (envio próprio) -> retomar fila', $campaign->id, mb_strimwidth($campaign->name, 0, 40, '...')));
+            if ($dryRun) continue;
+
+            // Lote que estava no meio quando o worker morreu: não reenvia (evita duplicidade)
+            \App\Models\EmailCampaignRecipient::where('email_campaign_id', $campaign->id)
+                ->where('status', \App\Models\EmailCampaignRecipient::STATUS_SENDING)
+                ->update([
+                    'status' => \App\Models\EmailCampaignRecipient::STATUS_FAILED,
+                    'error'  => 'Envio interrompido (worker reiniciado). Não reenviado para evitar duplicidade.',
+                ]);
+
+            $campaign->touch();
+            \App\Jobs\SendOwnCampaignBatchJob::dispatch($campaign->id)->onQueue('emails');
+
+            Log::warning('UnstuckEmailCampaigns: envio próprio retomado', ['campaign_id' => $campaign->id]);
+        }
     }
 
     /**

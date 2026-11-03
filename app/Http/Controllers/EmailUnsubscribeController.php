@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\EmailContact;
+use App\Models\EmailSuppression;
 use App\Models\NgoDonor;
 use App\Models\Tenant;
 use App\Services\EmailUnsubscribeTokenService;
@@ -33,6 +34,27 @@ class EmailUnsubscribeController extends Controller
         $email    = $parsed['email'];
         $tenantId = $parsed['tenant_id'];
 
+        $affected = $this->applyUnsubscribe($email, $tenantId, $request);
+
+        // Link veio de campanha com envio próprio → conta o descadastro na métrica dela
+        CampaignTrackingController::markRecipientUnsubscribed($request->query('r'), $email);
+
+        return view('public.email.unsubscribe', [
+            'tenant'   => $tenant,
+            'email'    => $email,
+            'token'    => $token,
+            'affected' => $affected,
+        ]);
+    }
+
+    /**
+     * Descadastra o e-mail em todas as listas do tenant + opt-out de doador,
+     * com auditoria. Usado pela landing (GET) e pelo 1-clique (POST, RFC 8058).
+     *
+     * @return array{email_contacts: int, donors: int}
+     */
+    public function applyUnsubscribe(string $email, int $tenantId, Request $request): array
+    {
         $affected = DB::transaction(function () use ($email, $tenantId) {
             $emailContacts = EmailContact::where('tenant_id', $tenantId)
                 ->where('email', $email)
@@ -46,6 +68,11 @@ class EmailUnsubscribeController extends Controller
                 ->where('email', $email)
                 ->where('email_marketing_opt_in', true)
                 ->update(['email_marketing_opt_in' => false]);
+
+            // Bloqueio global das campanhas com envio próprio: cobre quem não
+            // está em nenhuma lista salva (avulsos, prospecção) — sem isso,
+            // descadastrar não teria efeito pra esses contatos.
+            EmailSuppression::suppress($email, EmailSuppression::REASON_UNSUBSCRIBE, 'Descadastro pelo link do e-mail');
 
             return ['email_contacts' => $emailContacts, 'donors' => $donors];
         });
@@ -73,12 +100,7 @@ class EmailUnsubscribeController extends Controller
             'donors_optout'  => $affected['donors'],
         ]);
 
-        return view('public.email.unsubscribe', [
-            'tenant'   => $tenant,
-            'email'    => $email,
-            'token'    => $token,
-            'affected' => $affected,
-        ]);
+        return $affected;
     }
 
     public function reactivate(string $token, Request $request, EmailUnsubscribeTokenService $svc)
@@ -104,6 +126,11 @@ class EmailUnsubscribeController extends Controller
                     'status'          => EmailContact::STATUS_ACTIVE,
                     'unsubscribed_at' => null,
                 ]);
+
+            // Reativação só desfaz o bloqueio por descadastro — nunca bounce/spam
+            EmailSuppression::where('email', $email)
+                ->where('reason', EmailSuppression::REASON_UNSUBSCRIBE)
+                ->delete();
         });
 
         try {

@@ -14,9 +14,10 @@ class EmailCampaign extends Model
         'sender_name', 'sender_email', 'reply_to_email', 'audience_type', 'manual_emails',
         'email_contact_list_id',
         'recipient_count', 'brevo_list_id', 'brevo_campaign_id',
-        'status', 'scheduled_at', 'sent_at', 'error_message',
+        'status', 'delivery_driver', 'send_rate_per_minute', 'scheduled_at', 'sent_at', 'error_message',
         'stat_delivered', 'stat_opens', 'stat_clicks',
         'stat_bounces', 'stat_unsubscribes', 'stat_spam',
+        'stat_sent', 'stat_failed',
         'stats_fetched_at',
     ];
 
@@ -26,9 +27,36 @@ class EmailCampaign extends Model
         'stats_fetched_at' => 'datetime',
     ];
 
+    public const DRIVER_BREVO = 'brevo';
+    public const DRIVER_OWN   = 'own';
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function recipients()
+    {
+        return $this->hasMany(EmailCampaignRecipient::class);
+    }
+
+    public function usesOwnDelivery(): bool
+    {
+        return $this->delivery_driver === self::DRIVER_OWN;
+    }
+
+    /** Progresso do envio próprio (0–100) */
+    public function sendProgress(): ?float
+    {
+        if (!$this->usesOwnDelivery() || !$this->recipient_count) return null;
+        $done = (int) $this->stat_sent + (int) $this->stat_failed;
+        return round(min(100, $done / $this->recipient_count * 100), 1);
+    }
+
+    public function complaintRate(): ?float
+    {
+        if (!$this->stat_sent || $this->stat_spam === null) return null;
+        return round(($this->stat_spam / $this->stat_sent) * 100, 2);
     }
 
     public function openRate(): ?float

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmailCampaign;
 use App\Models\User;
 use App\Services\BrevoService;
+use App\Services\CampaignMail\OwnCampaignDispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -71,7 +72,24 @@ class EmailCampaignController extends Controller
             'audience_type'  => ['required', 'in:tenant_admins,all_users,leads,all,manual,none,contact_list'],
             'manual_emails_raw'     => ['nullable', 'string'],
             'email_contact_list_id' => ['nullable', 'integer', 'required_if:audience_type,contact_list'],
+            'delivery_driver'       => ['nullable', 'in:own,brevo'],
+            'send_rate_per_minute'  => ['nullable', 'integer', 'min:1', 'max:600'],
         ]);
+
+        $driver = $validated['delivery_driver'] ?? config('campaign_mail.default_driver', EmailCampaign::DRIVER_BREVO);
+
+        // Envio próprio: remetente precisa ser de um domínio verificado no SES
+        if ($driver === EmailCampaign::DRIVER_OWN) {
+            $from = $validated['sender_email'] ?? config('campaign_mail.from.address');
+            if (!$from) {
+                return back()->withInput()->withErrors(['sender_email' => 'Informe o e-mail do remetente (ou configure CAMPAIGN_FROM_ADDRESS).']);
+            }
+            $allowed = config('campaign_mail.allowed_sender_domains', []);
+            $domain  = mb_strtolower(substr(strrchr($from, '@') ?: '', 1));
+            if (!empty($allowed) && !in_array($domain, array_map('mb_strtolower', $allowed), true)) {
+                return back()->withInput()->withErrors(['sender_email' => 'Para envio próprio, use um remetente de: ' . implode(', ', $allowed) . '.']);
+            }
+        }
 
         // Guard: lista precisa ser do mesmo tenant + ter contatos ativos
         $contactListId = null;
@@ -104,6 +122,8 @@ class EmailCampaignController extends Controller
             'audience_type'         => $validated['audience_type'],
             'manual_emails'         => !empty($manualEmails) ? json_encode($manualEmails) : null,
             'email_contact_list_id' => $contactListId,
+            'delivery_driver'       => $driver,
+            'send_rate_per_minute'  => $validated['send_rate_per_minute'] ?? null,
             'status'                => 'draft',
         ]);
 
@@ -114,7 +134,13 @@ class EmailCampaignController extends Controller
     public function show(EmailCampaign $emailCampaign)
     {
         // Auto-busca métricas se enviada e dados têm +30min (ou nunca foram buscados)
-        if ($emailCampaign->status === 'sent' && $emailCampaign->brevo_campaign_id) {
+        // Envio próprio: métricas vêm da nossa tabela de destinatários
+        if ($emailCampaign->usesOwnDelivery() && $emailCampaign->status !== 'draft') {
+            app(OwnCampaignDispatcher::class)->refreshStats($emailCampaign);
+            $emailCampaign->refresh();
+        }
+
+        if ($emailCampaign->status === 'sent' && $emailCampaign->brevo_campaign_id && !$emailCampaign->usesOwnDelivery()) {
             $stale = $emailCampaign->stats_fetched_at === null
                 || $emailCampaign->stats_fetched_at->lt(now()->subMinutes(30));
 
@@ -141,7 +167,16 @@ class EmailCampaignController extends Controller
             }
         }
 
-        return view('admin.email_campaigns.show', ['campaign' => $emailCampaign]);
+        $problemRecipients = $emailCampaign->usesOwnDelivery()
+            ? $emailCampaign->recipients()
+                ->whereIn('status', ['failed', 'bounced', 'complained', 'skipped'])
+                ->latest('updated_at')->limit(15)->get(['email', 'status', 'error'])
+            : collect();
+
+        return view('admin.email_campaigns.show', [
+            'campaign'          => $emailCampaign,
+            'problemRecipients' => $problemRecipients,
+        ]);
     }
 
     public function destroy(EmailCampaign $emailCampaign)
@@ -163,8 +198,14 @@ class EmailCampaignController extends Controller
      */
     public function send(EmailCampaign $emailCampaign)
     {
-        if ($emailCampaign->status === 'sent') {
+        // Envio próprio concluído com falhas pode ser reprocessado (só os que falharam)
+        $retryFailed = $emailCampaign->usesOwnDelivery() && $emailCampaign->status === 'sent' && $emailCampaign->stat_failed > 0;
+        if ($emailCampaign->status === 'sent' && !$retryFailed) {
             return back()->with('error', 'Esta campanha já foi enviada.');
+        }
+
+        if ($emailCampaign->status === 'paused') {
+            return back()->with('error', 'Campanha pausada — use "Retomar envio".');
         }
 
         if ($emailCampaign->status === 'sending') {
@@ -178,6 +219,24 @@ class EmailCampaignController extends Controller
         if (empty($contacts)) {
             $emailCampaign->update(['status' => 'error', 'error_message' => 'Nenhum destinatário encontrado para o público selecionado.']);
             return back()->with('error', 'Nenhum destinatário encontrado.');
+        }
+
+        if ($emailCampaign->usesOwnDelivery()) {
+            $queued = app(OwnCampaignDispatcher::class)->start($emailCampaign, $contacts);
+
+            Log::info('EmailCampaign: envio próprio enfileirado (admin)', [
+                'campaign_id' => $emailCampaign->id,
+                'queued'      => $queued,
+            ]);
+
+            if ($queued === 0) {
+                $emailCampaign->update(['status' => 'error', 'error_message' => 'Todos os destinatários já receberam, estão bloqueados (bounce/spam) ou descadastrados.']);
+                return back()->with('error', 'Nenhum destinatário novo para enviar.');
+            }
+
+            $rate = $emailCampaign->send_rate_per_minute ?: config('campaign_mail.rate_per_minute');
+            $mins = (int) ceil($queued / max(1, $rate));
+            return back()->with('success', "Envio iniciado para {$queued} destinatário(s), {$rate}/min — previsão de ~{$mins} min. Acompanhe o progresso nesta página.");
         }
 
         $emailCampaign->update(['status' => 'sending', 'error_message' => null]);
@@ -197,6 +256,11 @@ class EmailCampaignController extends Controller
      */
     public function refreshStats(EmailCampaign $emailCampaign)
     {
+        if ($emailCampaign->usesOwnDelivery()) {
+            app(OwnCampaignDispatcher::class)->refreshStats($emailCampaign);
+            return back()->with('success', 'Métricas atualizadas.');
+        }
+
         if (!$emailCampaign->brevo_campaign_id) {
             return back()->with('error', 'Campanha ainda não enviada pelo Brevo.');
         }
@@ -218,6 +282,27 @@ class EmailCampaignController extends Controller
         ]);
 
         return back()->with('success', 'Métricas atualizadas com sucesso!');
+    }
+
+    /** Pausa uma campanha de envio próprio — o lote em andamento para no próximo destinatário. */
+    public function pause(EmailCampaign $emailCampaign)
+    {
+        if (!$emailCampaign->usesOwnDelivery() || $emailCampaign->status !== 'sending') {
+            return back()->with('error', 'Só é possível pausar campanhas de envio próprio em andamento.');
+        }
+        $emailCampaign->update(['status' => 'paused', 'error_message' => 'Pausada manualmente em ' . now()->format('d/m/Y H:i') . '.']);
+        return back()->with('success', 'Campanha pausada. Quem ainda não recebeu continua na fila.');
+    }
+
+    /** Retoma de onde parou — não reenvia para quem já recebeu. */
+    public function resume(EmailCampaign $emailCampaign)
+    {
+        if (!$emailCampaign->usesOwnDelivery() || $emailCampaign->status !== 'paused') {
+            return back()->with('error', 'Esta campanha não está pausada.');
+        }
+        $emailCampaign->update(['status' => 'sending', 'error_message' => null]);
+        \App\Jobs\SendOwnCampaignBatchJob::dispatch($emailCampaign->id)->onQueue('emails');
+        return back()->with('success', 'Envio retomado.');
     }
 
     /**

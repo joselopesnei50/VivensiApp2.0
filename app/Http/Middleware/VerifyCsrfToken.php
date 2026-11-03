@@ -22,5 +22,6 @@ class VerifyCsrfToken extends Middleware
         '/social/facebook/deauthorize',   // Meta OAuth deauthorize callback
         '/social/facebook/data-deletion', // Meta data deletion callback
         '/api/whatsapp/cloud-webhook',    // Meta WhatsApp Business Cloud API webhook
+        '/email/descadastro/*/1-clique',  // RFC 8058: POST do provedor de e-mail, sem sessão
     ];
 }

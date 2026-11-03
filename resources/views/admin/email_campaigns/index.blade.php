@@ -62,12 +62,18 @@
                         'sent'     => ['bg'=>'#ecfdf5','color'=>'#059669','label'=>'Enviada','icon'=>'fa-check'],
                         'error'    => ['bg'=>'#fef2f2','color'=>'#dc2626','label'=>'Erro','icon'=>'fa-circle-exclamation'],
                         'scheduled'=> ['bg'=>'#eff6ff','color'=>'#3b82f6','label'=>'Agendada','icon'=>'fa-clock'],
+                        'paused'   => ['bg'=>'#fffbeb','color'=>'#b45309','label'=>'Pausada','icon'=>'fa-pause'],
                     ];
                     $sc = $statusConfig[$c->status] ?? $statusConfig['draft'];
                 @endphp
                 <tr style="border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background=''">
                     <td style="padding:16px 20px;">
-                        <div style="font-weight:800; color:#1e293b; font-size:0.9rem; margin-bottom:3px;">{{ $c->name }}</div>
+                        <div style="font-weight:800; color:#1e293b; font-size:0.9rem; margin-bottom:3px;">
+                            {{ $c->name }}
+                            @if($c->usesOwnDelivery())
+                                <span style="display:inline-block; background:#eef2ff; color:#4f46e5; font-size:0.62rem; font-weight:800; padding:2px 7px; border-radius:6px; margin-left:4px; vertical-align:middle;">SES</span>
+                            @endif
+                        </div>
                         <div style="color:#64748b; font-size:0.78rem;">{{ Str::limit($c->subject, 50) }}</div>
                         <div style="color:#94a3b8; font-size:0.72rem; margin-top:2px;">
                             {{ $c->created_at->format('d/m/Y') }}

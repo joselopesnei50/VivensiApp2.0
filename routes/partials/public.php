@@ -56,6 +56,15 @@ Route::get('/c/{slug}', [App\Http\Controllers\CampaignController::class, 'show']
 Route::middleware(['throttle:30,1', 'no.referrer'])->group(function () {
     Route::get('/email/descadastro/{token}',            [App\Http\Controllers\EmailUnsubscribeController::class, 'show'])->name('public.email.unsubscribe');
     Route::post('/email/descadastro/{token}/reativar',  [App\Http\Controllers\EmailUnsubscribeController::class, 'reactivate'])->name('public.email.unsubscribe.reactivate');
+    // Descadastro em 1 clique (RFC 8058) — chamado pelo Gmail/Outlook a partir do header List-Unsubscribe
+    Route::post('/email/descadastro/{token}/1-clique',  [App\Http\Controllers\CampaignTrackingController::class, 'oneClickUnsubscribe'])->name('public.email.unsubscribe.one_click');
+});
+
+// ── Rastreamento das campanhas com envio próprio (pixel de abertura + clique) ─
+// Throttle alto: clientes de e-mail (Gmail proxy, Apple MPP) carregam pixels em rajada.
+Route::middleware(['throttle:600,1', 'no.referrer'])->group(function () {
+    Route::get('/e/o/{token}', [App\Http\Controllers\CampaignTrackingController::class, 'open'])->name('campaign.track.open')->where('token', '[A-Za-z0-9]{40}(\.gif)?');
+    Route::get('/e/c/{token}', [App\Http\Controllers\CampaignTrackingController::class, 'click'])->name('campaign.track.click')->where('token', '[A-Za-z0-9]{40}');
 });
 
 // ── Blog ──────────────────────────────────────────────────────────────────────
