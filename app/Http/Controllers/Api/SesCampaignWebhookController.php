@@ -98,7 +98,7 @@ class SesCampaignWebhookController extends Controller
                 $bounce    = $event['bounce'] ?? [];
                 $permanent = ($bounce['bounceType'] ?? '') === 'Permanent';
                 foreach ($bounce['bouncedRecipients'] ?? [] as $r) {
-                    $email = mb_strtolower((string) ($r['emailAddress'] ?? ''));
+                    $email = EmailSuppression::normalizeEmail($r['emailAddress'] ?? '');
                     if ($permanent) {
                         EmailSuppression::suppress($email, EmailSuppression::REASON_HARD_BOUNCE, $r['diagnosticCode'] ?? ($bounce['bounceSubType'] ?? null), $campaignId);
                     }
@@ -114,7 +114,7 @@ class SesCampaignWebhookController extends Controller
 
             case 'Complaint':
                 foreach ($event['complaint']['complainedRecipients'] ?? [] as $r) {
-                    $email = mb_strtolower((string) ($r['emailAddress'] ?? ''));
+                    $email = EmailSuppression::normalizeEmail($r['emailAddress'] ?? '');
                     EmailSuppression::suppress($email, EmailSuppression::REASON_COMPLAINT, $event['complaint']['complaintFeedbackType'] ?? null, $campaignId);
                     if ($recipient && $recipient->email === $email) {
                         $recipient->update([

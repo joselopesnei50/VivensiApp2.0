@@ -18,10 +18,23 @@ class EmailSuppression extends Model
 
     protected $fillable = ['email', 'reason', 'detail', 'email_campaign_id'];
 
+    /**
+     * Extrai o endereço puro e minúsculo. Os eventos do SES trazem o
+     * destinatário como foi enviado, com nome: "Maria" <maria@x.org>.
+     */
+    public static function normalizeEmail(?string $raw): string
+    {
+        $raw = trim((string) $raw);
+        if (preg_match('/<\s*([^<>\s]+@[^<>\s]+)\s*>/', $raw, $m)) {
+            $raw = $m[1];
+        }
+        return mb_strtolower(trim($raw, " \t\n\r\0\x0B\"'"));
+    }
+
     public static function suppress(string $email, string $reason, ?string $detail = null, ?int $campaignId = null): void
     {
-        $email = mb_strtolower(trim($email));
-        if ($email === '') return;
+        $email = self::normalizeEmail($email);
+        if ($email === '' || !str_contains($email, '@')) return;
 
         $attrs = ['reason' => $reason, 'detail' => $detail ? mb_substr($detail, 0, 500) : null, 'email_campaign_id' => $campaignId];
         $row   = static::firstOrCreate(['email' => $email], $attrs);
@@ -43,7 +56,7 @@ class EmailSuppression extends Model
     /** @return array<string,true> e-mails (minúsculos) bloqueados */
     public static function lookup(array $emails): array
     {
-        $normalized = array_values(array_unique(array_map(fn ($e) => mb_strtolower(trim((string) $e)), $emails)));
+        $normalized = array_values(array_unique(array_map(fn ($e) => self::normalizeEmail((string) $e), $emails)));
         if (empty($normalized)) return [];
 
         $found = [];
