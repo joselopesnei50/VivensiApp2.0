@@ -380,3 +380,42 @@ it('teto diário conta lotes reservados por outros workers (status sending)', fu
     expect(sentMessages())->toHaveCount(1)
         ->and(EmailCampaignRecipient::where('email_campaign_id', $campaign->id)->where('status', 'queued')->count())->toBe(2);
 });
+
+it('webhook SES: destinatário com nome ("Nome" <email>) é normalizado, marcado e bloqueado', function () {
+    $campaign = ownCampaign(['status' => 'sent']);
+    EmailCampaignRecipient::create(['email_campaign_id' => $campaign->id, 'email' => 'bounce@simulator.amazonses.com', 'name' => 'Teste Bounce', 'token' => str_repeat('b', 40), 'status' => 'sent', 'sent_at' => now(), 'provider_message_id' => 'ses-b']);
+    EmailCampaignRecipient::create(['email_campaign_id' => $campaign->id, 'email' => 'complaint@simulator.amazonses.com', 'name' => 'Teste Spam', 'token' => str_repeat('c', 40), 'status' => 'sent', 'sent_at' => now(), 'provider_message_id' => 'ses-c']);
+
+    // Formato real recebido em produção (04/11/2026)
+    $this->postJson('/api/webhooks/ses-campaigns', snsSigned(['Type' => 'Notification', 'Message' => json_encode([
+        'eventType' => 'Bounce',
+        'mail'      => ['messageId' => 'ses-b'],
+        'bounce'    => ['bounceType' => 'Permanent', 'bouncedRecipients' => [['emailAddress' => '"teste bounce" <bounce@simulator.amazonses.com>']]],
+    ])]))->assertOk();
+    $this->postJson('/api/webhooks/ses-campaigns', snsSigned(['Type' => 'Notification', 'Message' => json_encode([
+        'eventType' => 'Complaint',
+        'mail'      => ['messageId' => 'ses-c'],
+        'complaint' => ['complainedRecipients' => [['emailAddress' => 'teste spam <complaint@simulator.amazonses.com>']]],
+    ])]))->assertOk();
+
+    expect(EmailSuppression::pluck('reason', 'email')->all())->toBe([
+            'bounce@simulator.amazonses.com'    => 'hard_bounce',
+            'complaint@simulator.amazonses.com' => 'complaint',
+        ])
+        ->and(EmailCampaignRecipient::where('email', 'bounce@simulator.amazonses.com')->value('status'))->toBe('bounced')
+        ->and(EmailCampaignRecipient::where('email', 'complaint@simulator.amazonses.com')->value('status'))->toBe('complained')
+        ->and($campaign->refresh()->stat_bounces)->toBe(1)
+        ->and($campaign->stat_spam)->toBe(1);
+
+    // E o bloqueio funciona num envio novo
+    app(OwnCampaignDispatcher::class)->start(ownCampaign(), [['email' => 'bounce@simulator.amazonses.com'], ['email' => 'ok@x.org']]);
+    $to = array_map(fn ($m) => $m->getOriginalMessage()->getTo()[0]->getAddress(), sentMessages());
+    expect($to)->toBe(['ok@x.org']);
+});
+
+it('normalizeEmail cobre os formatos do SES', function () {
+    expect(EmailSuppression::normalizeEmail('"Maria Silva" <Maria@OSC.org.br>'))->toBe('maria@osc.org.br')
+        ->and(EmailSuppression::normalizeEmail('teste spam <a@x.org>'))->toBe('a@x.org')
+        ->and(EmailSuppression::normalizeEmail('  B@X.ORG '))->toBe('b@x.org')
+        ->and(EmailSuppression::normalizeEmail(''))->toBe('');
+});
