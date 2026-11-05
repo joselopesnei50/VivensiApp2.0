@@ -95,6 +95,7 @@ class WebChatService
             $conversation->forceFill(['status' => Conversation::STATUS_BOT, 'closed_at' => null])->save();
         }
 
+        $this->captureContact($conversation, $text);
         $message = $conversation->addMessage(Message::SENDER_VISITOR, $text);
 
         if ($conversation->botIsActive()) {
@@ -303,6 +304,54 @@ class WebChatService
         return Cache::increment($key) <= (int) config('web_chat.max_ai_replies_day');
     }
 
+    /** Guarda nome, e-mail e telefone que o visitante escreveu (sem sobrescrever o que já temos). */
+    private function captureContact(Conversation $conversation, string $text): void
+    {
+        $updates = [];
+        if (! $conversation->visitor_email && ($email = VisitorContactExtractor::email($text))) {
+            $updates['visitor_email'] = $email;
+        }
+        if (! $conversation->visitor_phone && ($phone = VisitorContactExtractor::phone($text))) {
+            $updates['visitor_phone'] = $phone;
+        }
+        if (! $conversation->visitor_name) {
+            $lastBot = $conversation->messages()->where('sender', Message::SENDER_BOT)->latest('id')->value('body');
+            if ($name = VisitorContactExtractor::name($text, $lastBot)) {
+                $updates['visitor_name'] = $name;
+            }
+        }
+        if ($updates) {
+            $conversation->forceFill($updates)->save();
+        }
+    }
+
+    /** Orienta o Bruno a pedir nome e contato, uma vez cada, sem insistir. */
+    private function identificationNote(Conversation $conversation): string
+    {
+        // Respostas do próprio Bruno (a saudação automática não conta como "já perguntei")
+        $botTexts = $conversation->messages()->where('sender', Message::SENDER_BOT)->get(['body', 'meta'])
+            ->reject(fn ($m) => in_array($m->meta['kind'] ?? null, ['greeting', 'fallback'], true))
+            ->pluck('body');
+        $askedName    = $botTexts->contains(fn ($t) => VisitorContactExtractor::botAskedName($t));
+        $askedContact = $botTexts->contains(fn ($t) => VisitorContactExtractor::botAskedContact($t));
+        $hasContact   = $conversation->visitor_email || $conversation->visitor_phone;
+
+        if (! $conversation->visitor_name) {
+            return $askedName
+                ? ' IDENTIFICAÇÃO: você já perguntou o nome e ele não disse — não pergunte de novo, siga a conversa.'
+                : ' IDENTIFICAÇÃO: você ainda não sabe o nome do lead. Responda primeiro o que ele perguntou e, no fim da resposta, pergunte de forma leve como pode chamá-lo (ex.: "Aliás, com quem eu falo?"). Só uma vez.';
+        }
+
+        $note = ' O lead se chama ' . $conversation->visitor_name . ' — use o primeiro nome com naturalidade, sem repetir em toda mensagem.';
+        if ($hasContact) {
+            return $note . ' Contato já registrado (' . collect([$conversation->visitor_phone, $conversation->visitor_email])->filter()->implode(' / ') . ') — não peça de novo.';
+        }
+        if ($askedContact) {
+            return $note . ' Você já pediu o contato; se ele não passou, não insista.';
+        }
+        return $note . ' Ainda não temos contato: quando ele demonstrar interesse (planos, preço, proposta, agendar) ou antes de se despedir, peça de forma natural o WhatsApp ou e-mail para a equipe enviar material ou retornar. Só uma vez.';
+    }
+
     private function leadContext(Conversation $conversation): array
     {
         $origin = 'Chat do site vivensi.app.br';
@@ -321,9 +370,7 @@ class WebChatService
             $b = $conversation->booking;
             $note .= ' O lead JÁ AGENDOU reunião para ' . Carbon::parse($b->meeting_date)->format('d/m') . ' às ' . $b->meeting_time . ' — não ofereça agendar de novo.';
         }
-        if ($conversation->visitor_email) {
-            $note .= ' E-mail do lead: ' . $conversation->visitor_email . '.';
-        }
+        $note .= $this->identificationNote($conversation);
 
         // Se a equipe conversou com o visitante, o Bruno precisa saber o que foi dito.
         $agentTalk = $conversation->messages()

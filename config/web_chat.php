@@ -18,5 +18,5 @@ return [
     // Validade do link de retomada enviado por e-mail
     'resume_link_days'             => 14,
 
-    'greeting' => "Oi! Eu sou o Bruno, do Vivensi 👋\nPosso te mostrar como o Vivensi ajuda a sua organização, tirar dúvidas sobre os planos ou já marcar uma conversa de 20 minutos com a nossa equipe. Como posso ajudar?",
+    'greeting' => "Oi! Eu sou o Bruno, do Vivensi 👋\nPosso te mostrar como o Vivensi ajuda a sua organização, tirar dúvidas sobre os planos ou já marcar uma conversa de 20 minutos com a nossa equipe.\nPra começar, como posso te chamar?",
 ];

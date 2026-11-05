@@ -293,3 +293,82 @@ it('na home, o Bruno substitui o cartão de agendamento e o botão do WhatsApp',
         ->assertSee('Falar com a equipe')
         ->assertSee('class="whatsapp-float"', false);
 });
+
+it('extrai nome, e-mail e telefone do que o visitante escreve', function () {
+    $X = \App\Services\WebChat\VisitorContactExtractor::class;
+    $ask = 'Pra começar, como posso te chamar?';
+
+    expect($X::name('me chamo ana paula', null))->toBe('Ana Paula')
+        ->and($X::name('Oi! Meu nome é Carlos Mendes, sou de uma ONG', null))->toBe('Carlos Mendes')
+        ->and($X::name('Maria', $ask))->toBe('Maria')
+        ->and($X::name('é a Joana.', $ask))->toBe('Joana')
+        ->and($X::name('maria da silva', $ask))->toBe('Maria da Silva')
+        ->and($X::name('Quais são os planos?', $ask))->toBeNull()   // pergunta, não nome
+        ->and($X::name('sim', $ask))->toBeNull()
+        ->and($X::name('Maria', 'Quer agendar?'))->toBeNull()        // sem pergunta de nome antes
+        ->and($X::name('sou de uma ONG de Araraquara', null))->toBeNull();
+
+    expect($X::email('meu e-mail é Ana@ONGLuz.org.'))->toBe('ana@ongluz.org')
+        ->and($X::phone('meu zap 16 99999-8888'))->toBe('(16) 99999-8888')
+        ->and($X::phone('+55 (11) 3456-7890'))->toBe('(11) 3456-7890')
+        ->and($X::phone('temos 4 projetos e 2 convênios'))->toBeNull();
+});
+
+it('guarda nome e contato na conversa e orienta o Bruno a pedir só o que falta, uma vez', function () {
+    Queue::fake();
+    $notes = [];
+    wcFakeBruce(function (...$args) use (&$notes) {
+        $notes[] = $args[7]['note'] ?? '';
+        return ['reply' => count($notes) === 1 ? 'Temos planos a partir de R$ 99! Aliás, com quem eu falo?' : 'Prazer! Posso te mandar a proposta? Qual o seu WhatsApp ou e-mail?'];
+    });
+    [$id, $token] = wcStart($this);
+    $c = WebChatConversation::where('public_id', $id)->first();
+    $h = ['X-Chat-Token' => $token];
+    $svc = app(WebChatService::class);
+
+    // 1) Pulou a saudação e perguntou do plano: Bruno responde e pede o nome
+    $this->withHeaders($h)->postJson("/chat/{$id}/mensagens", ['body' => 'Quais são os planos?']);
+    $svc->generateReply($c->id);
+    expect($notes[0])->toContain('ainda não sabe o nome');
+
+    // 2) Responde o nome → fica salvo; Bruno passa a pedir contato
+    $this->withHeaders($h)->postJson("/chat/{$id}/mensagens", ['body' => 'Fernanda']);
+    expect($c->refresh()->visitor_name)->toBe('Fernanda');
+    $svc->generateReply($c->id);
+    expect($notes[1])->toContain('se chama Fernanda')->toContain('Ainda não temos contato');
+
+    // 3) Passa o WhatsApp → salvo; Bruno não pede de novo
+    $this->withHeaders($h)->postJson("/chat/{$id}/mensagens", ['body' => 'pode ser no whats 16 98888-7777']);
+    expect($c->refresh()->visitor_phone)->toBe('(16) 98888-7777');
+    $svc->generateReply($c->id);
+    expect($notes[2])->toContain('Contato já registrado')->toContain('não peça de novo');
+
+    // Painel mostra quem é
+    $admin = wcAdmin();
+    $this->actingAs($admin)->get(route('admin.web_chat.index', ['status' => 'todas']))->assertSee('Fernanda');
+});
+
+it('se a pessoa não quis dizer o nome, o Bruno não insiste', function () {
+    Queue::fake();
+    $notes = [];
+    wcFakeBruce(function (...$args) use (&$notes) { $notes[] = $args[7]['note'] ?? ''; return ['reply' => 'Claro! Aliás, com quem eu falo?']; });
+    [$id, $token] = wcStart($this);
+    $c = WebChatConversation::where('public_id', $id)->first();
+    $h = ['X-Chat-Token' => $token];
+
+    $this->withHeaders($h)->postJson("/chat/{$id}/mensagens", ['body' => 'Vocês têm app?']);
+    app(WebChatService::class)->generateReply($c->id);
+    $this->withHeaders($h)->postJson("/chat/{$id}/mensagens", ['body' => 'Prefiro não dizer, só quero saber do app']);
+    app(WebChatService::class)->generateReply($c->id);
+
+    expect($c->refresh()->visitor_name)->toBeNull()
+        ->and($notes[1])->toContain('já perguntou o nome');
+});
+
+it('corta o nome onde a frase continua', function () {
+    $X = \App\Services\WebChat\VisitorContactExtractor::class;
+    expect($X::name('me chamo ana e sou da ONG Luz', null))->toBe('Ana')
+        ->and($X::name('meu nome é joão pedro da silva, trabalho num instituto', null))->toBe('João Pedro da Silva')
+        ->and($X::name('aqui é a Bia do Instituto Sol', null))->toBe('Bia')
+        ->and($X::name('aqui é muito caro pra gente', null))->toBeNull();
+});
