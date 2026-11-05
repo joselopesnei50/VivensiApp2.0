@@ -8,7 +8,7 @@ class PageVisit extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['tenant_id', 'user_id', 'path', 'created_at'];
+    protected $fillable = ['tenant_id', 'user_id', 'path', 'area', 'module', 'visitor', 'source', 'device', 'created_at'];
 
     protected $casts = ['created_at' => 'datetime'];
 
