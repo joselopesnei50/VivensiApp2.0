@@ -81,5 +81,12 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('web_export', function (Request $request) {
             return Limit::perMinute(15)->by('export|' . ($request->user()?->id ?: $request->ip()));
         });
+
+        // Chat do site (público). Cada ação tem seu balde por IP.
+        RateLimiter::for('web_chat_start', fn (Request $r) => Limit::perMinute(6)->by('wc_start|' . $r->ip()));
+        RateLimiter::for('web_chat_poll',  fn (Request $r) => Limit::perMinute(90)->by('wc_poll|' . $r->ip()));
+        RateLimiter::for('web_chat_send',  fn (Request $r) => Limit::perMinute(15)->by('wc_send|' . $r->ip()));
+        RateLimiter::for('web_chat_action', fn (Request $r) => Limit::perMinute(10)->by('wc_action|' . $r->ip()));
+        RateLimiter::for('web_chat_email', fn (Request $r) => Limit::perHour(5)->by('wc_email|' . $r->ip()));
     }
 }

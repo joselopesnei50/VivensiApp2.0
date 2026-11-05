@@ -13,6 +13,16 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/bruno',          [App\Http\Controllers\Admin\BrunoSandboxController::class, 'index'])->name('admin.bruno.index');
         Route::post('/bruno/chat',    [App\Http\Controllers\Admin\BrunoSandboxController::class, 'chat'])->name('admin.bruno.chat');
         Route::post('/bruno/clear',   [App\Http\Controllers\Admin\BrunoSandboxController::class, 'clear'])->name('admin.bruno.clear');
+        // Chat do site (Bruno no site + atendimento humano)
+        Route::get('/chat-site',                         [App\Http\Controllers\Admin\WebChatController::class, 'index'])->name('admin.web_chat.index');
+        Route::post('/chat-site/config',                 [App\Http\Controllers\Admin\WebChatController::class, 'settings'])->name('admin.web_chat.settings');
+        Route::get('/chat-site/{conversation}',          [App\Http\Controllers\Admin\WebChatController::class, 'show'])->name('admin.web_chat.show')->whereNumber('conversation');
+        Route::get('/chat-site/{conversation}/poll',     [App\Http\Controllers\Admin\WebChatController::class, 'poll'])->name('admin.web_chat.poll')->whereNumber('conversation');
+        Route::post('/chat-site/{conversation}/responder', [App\Http\Controllers\Admin\WebChatController::class, 'reply'])->name('admin.web_chat.reply')->whereNumber('conversation')->middleware('throttle:web_write');
+        Route::post('/chat-site/{conversation}/assumir', [App\Http\Controllers\Admin\WebChatController::class, 'assume'])->name('admin.web_chat.assume')->whereNumber('conversation');
+        Route::post('/chat-site/{conversation}/devolver', [App\Http\Controllers\Admin\WebChatController::class, 'release'])->name('admin.web_chat.release')->whereNumber('conversation');
+        Route::post('/chat-site/{conversation}/encerrar', [App\Http\Controllers\Admin\WebChatController::class, 'close'])->name('admin.web_chat.close')->whereNumber('conversation');
+
         Route::get('/bruno/metrics',  [App\Http\Controllers\Admin\BrunoMetricsController::class, 'index'])->name('admin.bruno.metrics');
 
         // Bruno Lessons — CRUD manual de conversas fechadas pra RAG lite

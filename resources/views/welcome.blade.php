@@ -2327,6 +2327,10 @@ function ptToggle(id) {
 }
 </script>
 @include('partials.whatsapp-button')
+@php $vcEnabled = \App\Services\WebChat\WebChatService::isEnabled(); @endphp
+@if($vcEnabled)
+    @include('partials.web-chat', ['launcher' => false])
+@endif
 
 {{-- ═══ Widget de Agendamento Flutuante ═══ --}}
 <style>
@@ -2434,13 +2438,14 @@ function ptToggle(id) {
     }
 
     .booking-widget.collapsed .bw-card { display: none; }
+    .booking-widget.collapsed .bw-close { display: none; }
 </style>
 
 <div class="booking-widget" id="bookingWidget">
-    <a href="{{ route('booking.index') }}" class="bw-card" id="bwCard">
-        <div class="bw-avatar">V</div>
+    <a href="{{ route('booking.index') }}" class="bw-card" id="bwCard" @if($vcEnabled) data-vivchat="agendar" @endif>
+        <div class="bw-avatar">{{ $vcEnabled ? 'B' : 'V' }}</div>
         <div class="bw-text">
-            <p class="bw-label">Equipe Vivensi</p>
+            <p class="bw-label">{{ $vcEnabled ? 'Bruno · Vivensi' : 'Equipe Vivensi' }}</p>
             <p class="bw-title">Agendar uma conversa</p>
         </div>
         <div class="bw-arrow">
@@ -2451,10 +2456,17 @@ function ptToggle(id) {
         <button class="bw-close" id="bwClose" title="Fechar">
             <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
+        @if($vcEnabled)
+        <button class="bw-pill" type="button" data-vivchat>
+            <span class="bw-dot"></span>
+            Fale com o Bruno
+        </button>
+        @else
         <button class="bw-pill" onclick="window.location='{{ route('booking.index') }}'">
             <span class="bw-dot"></span>
             Falar com a equipe
         </button>
+        @endif
     </div>
 </div>
 
@@ -2465,8 +2477,11 @@ function ptToggle(id) {
     const HIDDEN_KEY = 'bw_hidden_until';
 
     // Hide for 1 hour after close
-    const hiddenUntil = localStorage.getItem(HIDDEN_KEY);
+    const chatOn = !!window.VivChat;
+    let hiddenUntil = null;
+    try { hiddenUntil = localStorage.getItem(HIDDEN_KEY); } catch (e) {}
     if (hiddenUntil && Date.now() < parseInt(hiddenUntil)) {
+        if (chatOn) { widget.classList.add('collapsed'); widget.style.display = 'flex'; return; }
         widget.style.display = 'none';
         return;
     }
@@ -2488,8 +2503,8 @@ function ptToggle(id) {
     closeBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        widget.style.display = 'none';
-        localStorage.setItem(HIDDEN_KEY, Date.now() + 3600000); // 1 hora
+        if (chatOn) { widget.classList.add('collapsed'); } else { widget.style.display = 'none'; }
+        try { localStorage.setItem(HIDDEN_KEY, Date.now() + 3600000); } catch (e) {} // 1 hora
     });
 })();
 </script>

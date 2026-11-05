@@ -226,6 +226,9 @@
     </footer>
 
     @include('partials.whatsapp-button')
+    @if(\App\Services\WebChat\WebChatService::isEnabled())
+        @include('partials.web-chat')
+    @endif
     <!-- Cookie Consent Banner (LGPD) -->
     @include('partials.cookie-banner')
     <!-- Popup público BruceIA (canto inferior direito, aparece após 6s) -->

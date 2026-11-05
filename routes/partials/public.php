@@ -18,6 +18,22 @@ Route::prefix('agendar')->name('booking.')->group(function () {
     Route::get('/cancelar/{token}',    [App\Http\Controllers\MeetingBookingController::class, 'cancel'])->middleware('no.referrer')->name('cancel');
 });
 
+// ── Chat do site com o Bruno ─────────────────────────────────────────────────
+// Sem login: o visitante se identifica pelo segredo da conversa (X-Chat-Token).
+Route::prefix('chat')->name('web_chat.')->group(function () {
+    $c = App\Http\Controllers\WebChatController::class;
+    Route::post('/iniciar', [$c, 'start'])->name('start')->middleware('throttle:web_chat_start');
+    Route::get('/retomar/{conversation}', [$c, 'resume'])->name('resume')->middleware(['signed', 'throttle:web_chat_action', 'no.referrer'])->whereUuid('conversation');
+    Route::whereUuid('id')->group(function () use ($c) {
+        Route::get('/{id}/mensagens',   [$c, 'messages'])->name('messages')->middleware('throttle:web_chat_poll');
+        Route::post('/{id}/mensagens',  [$c, 'send'])->name('send')->middleware('throttle:web_chat_send');
+        Route::post('/{id}/humano',     [$c, 'human'])->name('human')->middleware('throttle:web_chat_action');
+        Route::get('/{id}/horarios',    [$c, 'slots'])->name('slots')->middleware('throttle:web_chat_action');
+        Route::post('/{id}/agendar',    [$c, 'book'])->name('book')->middleware('throttle:web_chat_action');
+        Route::post('/{id}/link-email', [$c, 'emailLink'])->name('email_link')->middleware('throttle:web_chat_email');
+    });
+});
+
 // ── Páginas CMS & LGPD ────────────────────────────────────────────────────────
 Route::get('/pagina/{slug}', [App\Http\Controllers\PageController::class, 'show'])->name('public.page');
 Route::view('/termos',       'legal.terms')->name('legal.terms');
