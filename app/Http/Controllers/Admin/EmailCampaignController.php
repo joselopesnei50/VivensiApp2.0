@@ -61,6 +61,98 @@ class EmailCampaignController extends Controller
 
     public function store(Request $request)
     {
+        $campaign = EmailCampaign::create($this->campaignAttributes($request) + [
+            'created_by' => auth()->id(),
+            'status'     => 'draft',
+        ]);
+
+        return redirect()->route('admin.email_campaigns.index')
+            ->with('success', "Campanha \"{$campaign->name}\" criada como rascunho.");
+    }
+
+    /** Editar: só rascunho, ou campanha com erro que ainda não enviou nada. */
+    public function edit(EmailCampaign $emailCampaign)
+    {
+        if (!$this->isEditable($emailCampaign)) {
+            return redirect()->route('admin.email_campaigns.show', $emailCampaign)
+                ->with('error', 'Só é possível editar campanhas que ainda não foram enviadas. Use "Duplicar" para reaproveitar o conteúdo.');
+        }
+
+        $contactLists = \App\Models\EmailContactList::where('tenant_id', auth()->user()->tenant_id)
+            ->withCount('activeContacts')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.email_campaigns.create', [
+            'contactLists' => $contactLists,
+            'campaign'     => $emailCampaign,
+        ]);
+    }
+
+    public function update(Request $request, EmailCampaign $emailCampaign)
+    {
+        if (!$this->isEditable($emailCampaign)) {
+            return redirect()->route('admin.email_campaigns.show', $emailCampaign)
+                ->with('error', 'Esta campanha já foi enviada e não pode mais ser editada.');
+        }
+
+        $emailCampaign->update($this->campaignAttributes($request) + [
+            'status'        => 'draft',
+            'error_message' => null,
+        ]);
+
+        return redirect()->route('admin.email_campaigns.show', $emailCampaign)
+            ->with('success', 'Campanha atualizada.');
+    }
+
+    /** Duplicar: copia conteúdo e público para um novo rascunho. */
+    public function duplicate(EmailCampaign $emailCampaign)
+    {
+        $driver = $emailCampaign->delivery_driver ?: config('campaign_mail.default_driver', EmailCampaign::DRIVER_BREVO);
+        // Campanha antiga da Brevo vira envio próprio se este for o padrão atual
+        if ($driver === EmailCampaign::DRIVER_BREVO && config('campaign_mail.default_driver') === EmailCampaign::DRIVER_OWN) {
+            $driver = EmailCampaign::DRIVER_OWN;
+        }
+
+        $copy = EmailCampaign::create([
+            'created_by'            => auth()->id(),
+            'name'                  => mb_substr($emailCampaign->name . ' (cópia)', 0, 255),
+            'subject'               => $emailCampaign->subject,
+            'html_content'          => $emailCampaign->html_content,
+            'sender_name'           => $emailCampaign->sender_name,
+            'sender_email'          => $emailCampaign->sender_email,
+            'reply_to_email'        => $emailCampaign->reply_to_email,
+            'audience_type'         => $emailCampaign->audience_type,
+            'manual_emails'         => $emailCampaign->manual_emails,
+            'email_contact_list_id' => $emailCampaign->email_contact_list_id,
+            'delivery_driver'       => $driver,
+            'send_rate_per_minute'  => $emailCampaign->send_rate_per_minute,
+            'status'                => 'draft',
+        ]);
+
+        return redirect()->route('admin.email_campaigns.edit', $copy)
+            ->with('success', 'Campanha duplicada. Revise e salve o rascunho.');
+    }
+
+    private function isEditable(EmailCampaign $campaign): bool
+    {
+        if ($campaign->status === 'draft') {
+            return true;
+        }
+        if ($campaign->status !== 'error' || $campaign->brevo_campaign_id) {
+            return false;
+        }
+        // Erro sem nenhum envio feito (ex.: todos bloqueados, credencial errada)
+        return !$campaign->recipients()->whereIn('status', ['sent', 'bounced', 'complained'])->exists();
+    }
+
+    /**
+     * Valida o formulário (criar/editar) e devolve os atributos da campanha.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    private function campaignAttributes(Request $request): array
+    {
         $validated = $request->validate([
             'name'           => ['required', 'string', 'max:255'],
             // not_regex bloqueia CRLF injection em headers SMTP (Bcc:, From: forjados).
@@ -82,12 +174,12 @@ class EmailCampaignController extends Controller
         if ($driver === EmailCampaign::DRIVER_OWN) {
             $from = $validated['sender_email'] ?? config('campaign_mail.from.address');
             if (!$from) {
-                return back()->withInput()->withErrors(['sender_email' => 'Informe o e-mail do remetente (ou configure CAMPAIGN_FROM_ADDRESS).']);
+                throw \Illuminate\Validation\ValidationException::withMessages(['sender_email' => 'Informe o e-mail do remetente (ou configure CAMPAIGN_FROM_ADDRESS).']);
             }
             $allowed = config('campaign_mail.allowed_sender_domains', []);
             $domain  = mb_strtolower(substr(strrchr($from, '@') ?: '', 1));
             if (!empty($allowed) && !in_array($domain, array_map('mb_strtolower', $allowed), true)) {
-                return back()->withInput()->withErrors(['sender_email' => 'Para envio próprio, use um remetente de: ' . implode(', ', $allowed) . '.']);
+                throw \Illuminate\Validation\ValidationException::withMessages(['sender_email' => 'Para envio próprio, use um remetente de: ' . implode(', ', $allowed) . '.']);
             }
         }
 
@@ -98,11 +190,11 @@ class EmailCampaignController extends Controller
                 ->where('id', $validated['email_contact_list_id'])
                 ->first();
             if (!$list) {
-                return back()->withInput()->withErrors(['email_contact_list_id' => 'Lista não encontrada.']);
+                throw \Illuminate\Validation\ValidationException::withMessages(['email_contact_list_id' => 'Lista não encontrada.']);
             }
             $activeCount = $list->activeContacts()->count();
             if ($activeCount === 0) {
-                return back()->withInput()->withErrors(['email_contact_list_id' => 'Esta lista não tem contatos ativos.']);
+                throw \Illuminate\Validation\ValidationException::withMessages(['email_contact_list_id' => 'Esta lista não tem contatos ativos.']);
             }
             $contactListId = $list->id;
         }
@@ -111,8 +203,7 @@ class EmailCampaignController extends Controller
         // em null, e $request->input(key, default) so usa default se a chave AUSENTE.
         $manualEmails = $this->parseManualEmailsInput((string) $request->input('manual_emails_raw', ''));
 
-        $campaign = EmailCampaign::create([
-            'created_by'            => auth()->id(),
+        return [
             'name'                  => $validated['name'],
             'subject'               => $validated['subject'],
             'html_content'          => $validated['html_content'],
@@ -124,11 +215,7 @@ class EmailCampaignController extends Controller
             'email_contact_list_id' => $contactListId,
             'delivery_driver'       => $driver,
             'send_rate_per_minute'  => $validated['send_rate_per_minute'] ?? null,
-            'status'                => 'draft',
-        ]);
-
-        return redirect()->route('admin.email_campaigns.index')
-            ->with('success', "Campanha \"{$campaign->name}\" criada como rascunho.");
+        ];
     }
 
     public function show(EmailCampaign $emailCampaign)

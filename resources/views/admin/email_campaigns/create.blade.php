@@ -1,5 +1,17 @@
 @extends('layouts.app')
-@section('title', 'Nova Campanha de E-mail')
+@php
+    $campaign  = $campaign ?? null;
+    $isEdit    = (bool) $campaign;
+    $manualRaw = '';
+    if ($isEdit && $campaign->manual_emails) {
+        $manualRaw = collect(json_decode($campaign->manual_emails, true) ?: [])
+            ->map(fn ($r) => is_array($r)
+                ? ((!empty($r['name']) && $r['name'] !== ($r['email'] ?? '')) ? $r['name'] . ' <' . $r['email'] . '>' : ($r['email'] ?? ''))
+                : (string) $r)
+            ->filter()->implode("\n");
+    }
+@endphp
+@section('title', $isEdit ? 'Editar Campanha' : 'Nova Campanha de E-mail')
 
 @section('content')
 <div class="header-page" style="margin-bottom:32px;">
@@ -8,7 +20,7 @@
            style="display:inline-flex; align-items:center; gap:6px; color:#6366f1; font-weight:700; font-size:0.85rem; text-decoration:none; margin-bottom:14px;">
             <i class="fas fa-arrow-left"></i> Voltar às campanhas
         </a>
-        <h2 style="margin:0; color:#1e293b; font-weight:900; font-size:2rem; letter-spacing:-1px;">Nova Campanha</h2>
+        <h2 style="margin:0; color:#1e293b; font-weight:900; font-size:2rem; letter-spacing:-1px;">{{ $isEdit ? 'Editar Campanha' : 'Nova Campanha' }}</h2>
         <p style="color:#64748b; margin:6px 0 0; font-size:0.95rem;">A campanha é salva como rascunho. Você dispara quando estiver pronto.</p>
     </div>
 </div>
@@ -22,7 +34,8 @@
     </div>
 @endif
 
-<form action="{{ route('admin.email_campaigns.store') }}" method="POST">
+<form action="{{ $isEdit ? route('admin.email_campaigns.update', $campaign) : route('admin.email_campaigns.store') }}" method="POST">
+    @if($isEdit) @method('PUT') @endif
 @csrf
 <div class="row g-4">
 
@@ -36,7 +49,7 @@
             </h4>
             <div style="margin-bottom:20px;">
                 <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Nome interno da campanha *</label>
-                <input type="text" name="name" value="{{ old('name') }}" required
+                <input type="text" name="name" value="{{ old('name', $campaign?->name) }}" required
                        placeholder="Ex: Newsletter Maio 2026 — Clientes NGO"
                        style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box; transition:border-color 0.2s;"
                        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'">
@@ -44,7 +57,7 @@
             </div>
             <div>
                 <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Assunto do e-mail *</label>
-                <input type="text" name="subject" value="{{ old('subject') }}" required
+                <input type="text" name="subject" value="{{ old('subject', $campaign?->subject) }}" required
                        placeholder="Ex: 🚀 Novidades Vivensi — Maio 2026"
                        style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box; transition:border-color 0.2s;"
                        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'">
@@ -61,13 +74,13 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Nome do remetente</label>
-                    <input type="text" name="sender_name" value="{{ old('sender_name') }}"
+                    <input type="text" name="sender_name" value="{{ old('sender_name', $campaign?->sender_name) }}"
                            placeholder="Vivensi"
                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
                 </div>
                 <div class="col-md-6">
                     <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">E-mail do remetente</label>
-                    <input type="email" name="sender_email" value="{{ old('sender_email') }}"
+                    <input type="email" name="sender_email" value="{{ old('sender_email', $campaign?->sender_email) }}"
                            placeholder="contato@vivensi.com.br"
                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
                 </div>
@@ -76,7 +89,7 @@
                         E-mail de resposta (Reply-To)
                         <span style="font-weight:400; color:#94a3b8; font-size:0.78rem; margin-left:6px;">— e-mail institucional que aparece quando o destinatário clica em "Responder"</span>
                     </label>
-                    <input type="email" name="reply_to_email" value="{{ old('reply_to_email') }}"
+                    <input type="email" name="reply_to_email" value="{{ old('reply_to_email', $campaign?->reply_to_email) }}"
                            placeholder="contato@suaorganizacao.org.br"
                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
                     <p style="color:#94a3b8; font-size:0.75rem; margin:6px 0 0;">Deixe em branco para que as respostas vão para o e-mail do remetente.</p>
@@ -86,7 +99,7 @@
 
         {{-- Motor de envio --}}
         @php
-            $driverOld   = old('delivery_driver', config('campaign_mail.default_driver', 'brevo'));
+            $driverOld   = old('delivery_driver', $campaign?->delivery_driver ?? config('campaign_mail.default_driver', 'brevo'));
             $defaultRate = config('campaign_mail.rate_per_minute');
             $defaultFrom = config('campaign_mail.from.address');
         @endphp
@@ -115,7 +128,7 @@
             </div>
             <div id="ownRateBox" style="margin-top:18px; display:{{ $driverOld === 'own' ? 'block' : 'none' }};">
                 <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">Ritmo de envio (e-mails por minuto)</label>
-                <input type="number" name="send_rate_per_minute" min="1" max="600" value="{{ old('send_rate_per_minute') }}"
+                <input type="number" name="send_rate_per_minute" min="1" max="600" value="{{ old('send_rate_per_minute', $campaign?->send_rate_per_minute) }}"
                        placeholder="Padrão: {{ $defaultRate }}/min"
                        style="width:220px; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
                 <p style="color:#94a3b8; font-size:0.75rem; margin:6px 0 0;">
@@ -153,7 +166,7 @@
             </div>
             <textarea name="html_content" id="htmlContent" required rows="20"
                       placeholder="Cole aqui o HTML completo do e-mail..."
-                      style="width:100%; padding:16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.82rem; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;">{{ old('html_content') }}</textarea>
+                      style="width:100%; padding:16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.82rem; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;">{{ old('html_content', $campaign?->html_content) }}</textarea>
             <div id="previewPane" style="display:none; margin-top:16px; border:2px solid #e2e8f0; border-radius:12px; overflow:hidden;">
                 <div style="background:#f8fafc; padding:10px 16px; font-size:0.78rem; font-weight:700; color:#64748b; border-bottom:1px solid #e2e8f0;">
                     <i class="fas fa-eye me-1"></i>PREVIEW
@@ -199,9 +212,9 @@
                 ];
             @endphp
             @foreach($audiences as $val => $aud)
-            <label style="display:flex; align-items:flex-start; gap:12px; padding:14px; border-radius:12px; border:2px solid {{ old('audience_type') == $val ? '#6366f1' : '#f1f5f9' }}; margin-bottom:10px; cursor:pointer; transition:border-color 0.2s;"
+            <label style="display:flex; align-items:flex-start; gap:12px; padding:14px; border-radius:12px; border:2px solid {{ old('audience_type', $campaign?->audience_type) == $val ? '#6366f1' : '#f1f5f9' }}; margin-bottom:10px; cursor:pointer; transition:border-color 0.2s;"
                    onclick="selectAudience(this, '{{ $val }}')">
-                <input type="radio" name="audience_type" value="{{ $val }}" {{ old('audience_type') == $val ? 'checked' : ($val == 'tenant_admins' && !old('audience_type') ? 'checked' : '') }}
+                <input type="radio" name="audience_type" value="{{ $val }}" {{ old('audience_type', $campaign?->audience_type) == $val ? 'checked' : ($val == 'tenant_admins' && !old('audience_type', $campaign?->audience_type) ? 'checked' : '') }}
                        style="margin-top:3px; accent-color:#6366f1;">
                 <div>
                     <div style="font-weight:800; color:#1e293b; font-size:0.88rem; margin-bottom:3px;">
@@ -219,7 +232,7 @@
                         style="width:100%; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px; background:#fff;">
                     <option value="">— Escolha uma lista —</option>
                     @foreach($contactLists ?? [] as $cl)
-                        <option value="{{ $cl->id }}" {{ old('email_contact_list_id') == $cl->id ? 'selected' : '' }}>
+                        <option value="{{ $cl->id }}" {{ old('email_contact_list_id', $campaign?->email_contact_list_id) == $cl->id ? 'selected' : '' }}>
                             {{ $cl->name }} ({{ number_format($cl->active_contacts_count) }} ativos)
                         </option>
                     @endforeach
@@ -265,7 +278,7 @@
                       placeholder="joao@empresa.com&#10;Maria Silva <maria@empresa.com>&#10;ana@gmail.com"
                       style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.82rem; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;"
                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#f1f5f9'"
-                      oninput="countEmails(this)">{{ old('manual_emails_raw') }}</textarea>
+                      oninput="countEmails(this)">{{ old('manual_emails_raw', $manualRaw) }}</textarea>
             <div id="emailCount" style="color:#94a3b8; font-size:0.72rem; margin-top:6px; text-align:right;"></div>
         </div>
 
@@ -273,7 +286,7 @@
         <div class="vivensi-card" style="padding:24px; border-radius:20px;">
             <button type="submit"
                     style="width:100%; padding:16px; border:none; border-radius:12px; background:#6366f1; color:white; font-weight:800; font-size:0.95rem; cursor:pointer; margin-bottom:12px;">
-                <i class="fas fa-save me-2"></i>Salvar Rascunho
+                <i class="fas fa-save me-2"></i>{{ $isEdit ? 'Salvar alterações' : 'Salvar Rascunho' }}
             </button>
             <a href="{{ route('admin.email_campaigns.index') }}"
                style="display:block; text-align:center; padding:12px; border:2px solid #e2e8f0; border-radius:12px; color:#64748b; font-weight:700; font-size:0.88rem; text-decoration:none;">

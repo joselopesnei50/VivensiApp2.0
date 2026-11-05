@@ -83,6 +83,45 @@ class EmailContactListController extends Controller
         return view('admin.email_campaigns.lists.show', compact('list', 'contacts', 'stats', 'q'));
     }
 
+    /**
+     * "Verificar lista": roda em segundo plano. Básica sempre (gratuita);
+     * aprofundada pela AWS só quando marcada (US$ 0,01 por e-mail).
+     */
+    public function verify(Request $request, EmailContactList $list)
+    {
+        $this->authorizeSameTenant($list);
+        $deep = $request->boolean('deep');
+
+        if ($list->verification_status === 'running'
+            && $list->verification_started_at
+            && $list->verification_started_at->gt(now()->subMinutes(30))) {
+            return back()->with('error', 'Esta lista já está sendo verificada. Atualize a página em alguns instantes.');
+        }
+
+        $toCheck = EmailContact::where('email_contact_list_id', $list->id)
+            ->whereIn('status', [EmailContact::STATUS_ACTIVE, EmailContact::STATUS_INVALID])
+            ->count();
+
+        if ($toCheck === 0) {
+            return back()->with('error', 'Não há contatos ativos para verificar.');
+        }
+
+        $list->forceFill([
+            'verification_status'      => 'running',
+            'verification_deep'        => $deep,
+            'verification_summary'     => null,
+            'verification_started_at'  => now(),
+            'verification_finished_at' => null,
+        ])->save();
+
+        \App\Jobs\VerifyEmailContactListJob::dispatch($list->id, $deep);
+
+        Log::info('EmailContactList: verificação iniciada', ['list_id' => $list->id, 'deep' => $deep, 'contacts' => $toCheck]);
+
+        $cost = $deep ? ' Custo estimado na AWS: US$ ' . number_format($toCheck * 0.01, 2, ',', '.') . '.' : '';
+        return back()->with('success', "Verificando {$toCheck} contato(s) em segundo plano.{$cost} Atualize a página para ver o resultado.");
+    }
+
     public function importCsv(Request $request, EmailContactList $list, EmailContactListImportService $importer)
     {
         $this->authorizeSameTenant($list);

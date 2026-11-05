@@ -25,6 +25,9 @@ class EmailContact extends Model
         'source',
         'added_at',
         'unsubscribed_at',
+        'verification_result',
+        'verification_detail',
+        'verified_at',
     ];
 
     protected $casts = [
@@ -32,6 +35,7 @@ class EmailContact extends Model
         'email_contact_list_id' => 'integer',
         'added_at'              => 'datetime',
         'unsubscribed_at'       => 'datetime',
+        'verified_at'           => 'datetime',
     ];
 
     public function list(): BelongsTo

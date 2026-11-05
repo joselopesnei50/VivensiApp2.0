@@ -192,12 +192,16 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/email-campaigns/lists',                                [App\Http\Controllers\Admin\EmailContactListController::class, 'store'])->name('admin.email_campaigns.lists.store')->middleware('throttle:20,1');
         Route::get('/email-campaigns/lists/{list}',                          [App\Http\Controllers\Admin\EmailContactListController::class, 'show'])->name('admin.email_campaigns.lists.show');
         Route::post('/email-campaigns/lists/{list}/import-csv',              [App\Http\Controllers\Admin\EmailContactListController::class, 'importCsv'])->name('admin.email_campaigns.lists.import_csv')->middleware('throttle:10,1');
+        Route::post('/email-campaigns/lists/{list}/verify',                  [App\Http\Controllers\Admin\EmailContactListController::class, 'verify'])->name('admin.email_campaigns.lists.verify')->middleware('throttle:5,1');
         Route::post('/email-campaigns/lists/{list}/contacts',                [App\Http\Controllers\Admin\EmailContactListController::class, 'addContact'])->name('admin.email_campaigns.lists.contacts.add')->middleware('throttle:60,1');
         Route::delete('/email-campaigns/lists/{list}/contacts/{contact}',    [App\Http\Controllers\Admin\EmailContactListController::class, 'removeContact'])->name('admin.email_campaigns.lists.contacts.remove')->middleware('throttle:60,1');
         Route::get('/email-campaigns/lists/{list}/export',                   [App\Http\Controllers\Admin\EmailContactListController::class, 'exportCsv'])->name('admin.email_campaigns.lists.export');
         Route::delete('/email-campaigns/lists/{list}',                       [App\Http\Controllers\Admin\EmailContactListController::class, 'destroy'])->name('admin.email_campaigns.lists.destroy')->middleware('throttle:10,1');
         Route::post('/email-campaigns',              [App\Http\Controllers\Admin\EmailCampaignController::class, 'store'])->name('admin.email_campaigns.store');
         Route::get('/email-campaigns/{emailCampaign}',        [App\Http\Controllers\Admin\EmailCampaignController::class, 'show'])->name('admin.email_campaigns.show');
+        Route::get('/email-campaigns/{emailCampaign}/edit',       [App\Http\Controllers\Admin\EmailCampaignController::class, 'edit'])->name('admin.email_campaigns.edit');
+        Route::put('/email-campaigns/{emailCampaign}',            [App\Http\Controllers\Admin\EmailCampaignController::class, 'update'])->name('admin.email_campaigns.update')->middleware('throttle:30,1');
+        Route::post('/email-campaigns/{emailCampaign}/duplicate', [App\Http\Controllers\Admin\EmailCampaignController::class, 'duplicate'])->name('admin.email_campaigns.duplicate')->middleware('throttle:20,1');
         Route::post('/email-campaigns/{emailCampaign}/send',  [App\Http\Controllers\Admin\EmailCampaignController::class, 'send'])->name('admin.email_campaigns.send');
         Route::post('/email-campaigns/{emailCampaign}/pause',  [App\Http\Controllers\Admin\EmailCampaignController::class, 'pause'])->name('admin.email_campaigns.pause')->middleware('throttle:20,1');
         Route::post('/email-campaigns/{emailCampaign}/resume', [App\Http\Controllers\Admin\EmailCampaignController::class, 'resume'])->name('admin.email_campaigns.resume')->middleware('throttle:20,1');

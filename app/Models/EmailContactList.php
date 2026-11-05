@@ -19,12 +19,21 @@ class EmailContactList extends Model
         'opt_in_confirmed',
         'opt_in_confirmed_at',
         'created_by',
+        'verification_status',
+        'verification_deep',
+        'verification_summary',
+        'verification_started_at',
+        'verification_finished_at',
     ];
 
     protected $casts = [
         'tags'                => 'array',
         'opt_in_confirmed'    => 'boolean',
         'opt_in_confirmed_at' => 'datetime',
+        'verification_deep'        => 'boolean',
+        'verification_summary'     => 'array',
+        'verification_started_at'  => 'datetime',
+        'verification_finished_at' => 'datetime',
     ];
 
     public function contacts(): HasMany
