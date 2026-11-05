@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('visitor', 16)->nullable()->after('module');
             $table->string('source', 12)->nullable()->after('visitor');
             $table->string('device', 8)->nullable()->after('source');
+            $table->string('referrer_host', 100)->nullable()->after('device');
             $table->index(['area', 'created_at'], 'idx_page_visits_area_date');
             $table->index(['tenant_id', 'created_at'], 'idx_page_visits_tenant_date');
         });
@@ -33,8 +34,17 @@ return new class extends Migration
         $superAdmins = DB::table('users')->where('role', 'super_admin')->pluck('id');
         DB::table('page_visits')->where(fn ($q) => $q->where('path', 'like', 'admin%')->orWhereIn('user_id', $superAdmins))
             ->update(['area' => 'admin']);
+        DB::table('page_visits')->whereNull('area')->where(function ($q) {
+            foreach (VisitClassifier::CLIENT_PREFIXES as $prefix) {
+                $q->orWhere('path', $prefix)->orWhere('path', 'like', $prefix . '/%');
+            }
+        })->update(['area' => 'clients']);
         DB::table('page_visits')->whereNull('area')->whereNotNull('user_id')->update(['area' => 'app']);
         DB::table('page_visits')->whereNull('area')->update(['area' => 'public']);
+
+        // Visitante único no histórico: quem estava logado vira "u{id}" (anônimos antigos ficam sem)
+        $concat = DB::getDriverName() === 'sqlite' ? "'u' || user_id" : "CONCAT('u', user_id)";
+        DB::table('page_visits')->whereNotNull('user_id')->update(['visitor' => DB::raw($concat)]);
 
         // Módulo + caminho normalizado: blocos por id (chave primária), agrupando pelo
         // resultado (projects/1, projects/2… → projects/{id}) para poucas atualizações por bloco
@@ -62,7 +72,7 @@ return new class extends Migration
             $table->dropIndex('idx_page_visits_tenant_date');
         });
         Schema::table('page_visits', function (Blueprint $table) {
-            $table->dropColumn(['area', 'module', 'visitor', 'source', 'device']);
+            $table->dropColumn(['area', 'module', 'visitor', 'source', 'device', 'referrer_host']);
         });
     }
 };

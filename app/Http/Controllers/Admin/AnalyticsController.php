@@ -3,16 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\ProductAnalyticsService;
+use App\Services\SiteAnalyticsService;
 use Illuminate\Http\Request;
 
+/** Métricas de acesso ao sistema (site público + área logada). */
 class AnalyticsController extends Controller
 {
-    public function index(Request $request, ProductAnalyticsService $analytics)
+    public function index(Request $request, SiteAnalyticsService $analytics)
     {
         return view('admin.analytics.index', [
-            'a'       => $analytics->build((int) $request->query('dias', 30)),
-            'periods' => ProductAnalyticsService::PERIODS,
+            'm'       => $analytics->summary((int) $request->query('dias', 30), (string) $request->query('area', 'tudo')),
+            'periods' => SiteAnalyticsService::PERIODS,
+            'areas'   => SiteAnalyticsService::AREAS,
         ]);
     }
 }

@@ -28,6 +28,8 @@ class LogPageVisit
                 $path = $request->path();
                 $ua   = (string) $request->userAgent();
                 $sessionId = $request->hasSession() ? $request->session()->getId() : null;
+                $referer = $request->headers->get('referer');
+                $source  = TrafficClassifier::source($referer);
 
                 PageVisit::create([
                     'tenant_id'  => $user?->tenant_id,
@@ -35,9 +37,14 @@ class LogPageVisit
                     'path'       => VisitClassifier::normalize($path),
                     'area'       => VisitClassifier::area($path, $user?->id, $user?->role === 'super_admin'),
                     'module'     => VisitClassifier::module($path),
-                    'visitor'    => $sessionId ? substr(hash('sha256', $sessionId . config('app.key')), 0, 16) : null,
-                    'source'     => TrafficClassifier::source($request->headers->get('referer')),
+                    // Visitante único: o usuário quando logado (o login troca a sessão); senão a sessão anônima
+                    'visitor'    => $user ? 'u' . $user->id : ($sessionId ? substr(hash('sha256', $sessionId . config('app.key')), 0, 16) : null),
+                    'source'     => $source,
                     'device'     => TrafficClassifier::device($ua),
+                    // Site de origem guardado só quando não é buscador/rede/o próprio site
+                    'referrer_host' => $source === 'other'
+                        ? mb_substr(preg_replace('~^www\.~', '', (string) parse_url((string) $referer, PHP_URL_HOST)), 0, 100) ?: null
+                        : null,
                     'created_at' => now(),
                 ]);
             } catch (\Throwable $e) {

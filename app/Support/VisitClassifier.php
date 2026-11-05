@@ -9,7 +9,14 @@ namespace App\Support;
  */
 class VisitClassifier
 {
-    public const AREAS = ['public' => 'Site público', 'app' => 'App dos clientes', 'admin' => 'Admin'];
+    public const AREAS = ['public' => 'Site Vivensi', 'app' => 'Área logada', 'clients' => 'Páginas dos clientes', 'admin' => 'Admin'];
+
+    /**
+     * Páginas públicas que pertencem aos clientes (landing pages, campanhas,
+     * transparência, rifas, portal do doador, recibos, contratos, chamada).
+     * Domínios próprios de cliente nem chegam aqui (ResolveCustomDomainLanding).
+     */
+    public const CLIENT_PREFIXES = ['lp', 'c', 't', 'transparencia', 'rifa', 'portal-doador', 'r', 'sign', 'chamada', 'validar-recibo', 'validar-certificado', 'eu'];
 
     public const MODULES = [
         'dashboard'      => 'Painel',
@@ -76,6 +83,9 @@ class VisitClassifier
         $path = ltrim($path, '/');
         if ($isSuperAdmin || str_starts_with($path, 'admin')) {
             return 'admin';
+        }
+        if (in_array(explode('/', $path)[0], self::CLIENT_PREFIXES, true)) {
+            return 'clients';
         }
         return $userId ? 'app' : 'public';
     }

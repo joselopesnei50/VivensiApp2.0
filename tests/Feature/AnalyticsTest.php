@@ -3,7 +3,7 @@
 use App\Models\PageVisit;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\ProductAnalyticsService;
+use App\Services\SiteAnalyticsService;
 use App\Support\VisitClassifier;
 use Illuminate\Support\Facades\DB;
 
@@ -40,6 +40,9 @@ it('classifica área, módulo e normaliza caminhos', function () {
         ->and(VisitClassifier::area('admin/analytics', 1, true))->toBe('admin')
         ->and(VisitClassifier::area('projects', 5))->toBe('app')
         ->and(VisitClassifier::area('blog/x', null))->toBe('public')
+        ->and(VisitClassifier::area('lp/teste-Os9vFT', null))->toBe('clients')
+        ->and(VisitClassifier::area('transparencia/ong-luz', 7))->toBe('clients')
+        ->and(VisitClassifier::area('lpx', null))->toBe('public')
         ->and(VisitClassifier::isNoise('admin/chat-site/3/poll'))->toBeTrue()
         ->and(VisitClassifier::isNoise('chat/abc/mensagens'))->toBeTrue()
         ->and(VisitClassifier::isNoise('blog'))->toBeFalse();
@@ -70,64 +73,71 @@ it('migração reaproveita o histórico: área, módulo e caminho normalizado', 
         ['tenant_id' => $admin->tenant_id, 'user_id' => $admin->id, 'path' => 'ngo/donors', 'created_at' => now()],
         ['tenant_id' => null, 'user_id' => null, 'path' => 'blog/como-captar', 'created_at' => now()],
         ['tenant_id' => null, 'user_id' => $admin->id, 'path' => 'admin/chat-site/3/poll', 'created_at' => now()],
+        ['tenant_id' => null, 'user_id' => null, 'path' => 'lp/teste-Os9vFT', 'created_at' => now()],
     ]);
 
     $migration->up();
 
     $rows = DB::table('page_visits')->orderBy('id')->get();
-    expect($rows)->toHaveCount(3) // polling apagado
+    expect($rows)->toHaveCount(4) // polling apagado
         ->and($rows[0]->path)->toBe('projects/{id}/edit')->and($rows[0]->area)->toBe('app')->and($rows[0]->module)->toBe('projects')
+        ->and($rows[0]->visitor)->toBe('u' . $client->id)
         ->and($rows[1]->area)->toBe('admin')
-        ->and($rows[2]->area)->toBe('public')->and($rows[2]->module)->toBe('other');
+        ->and($rows[2]->area)->toBe('public')->and($rows[2]->module)->toBe('other')->and($rows[2]->visitor)->toBeNull()
+        ->and($rows[3]->area)->toBe('clients');
 });
 
-it('calcula uso, saúde das organizações e adoção por módulo', function () {
-    $this->travelTo(now()->setTime(12, 0));
-    $ativa   = Tenant::factory()->create(['name' => 'ONG Ativa', 'subscription_status' => 'active', 'created_at' => now()->subMonths(3)]);
-    $parada  = Tenant::factory()->create(['name' => 'ONG Parada', 'subscription_status' => 'active', 'created_at' => now()->subMonths(3)]);
-    $nova    = Tenant::factory()->create(['name' => 'ONG Nova', 'subscription_status' => 'trialing', 'created_at' => now()->subDays(5)]);
-    $u1 = User::factory()->create(['tenant_id' => $ativa->id, 'role' => 'ngo']);
-    $u2 = User::factory()->create(['tenant_id' => $ativa->id, 'role' => 'ngo']);
-    $u3 = User::factory()->create(['tenant_id' => $parada->id, 'role' => 'ngo']);
+it('calcula visitas, visitantes, origem, dispositivo, páginas e áreas como no blog', function () {
+    $this->travelTo(now()->setTime(15, 0));
+    $org  = Tenant::factory()->create(['name' => 'Instituto Luz']);
+    $user = User::factory()->create(['tenant_id' => $org->id, 'role' => 'ngo']);
 
-    anVisit(['tenant_id' => $ativa->id, 'user_id' => $u1->id, 'module' => 'projects', 'path' => 'projects']);
-    anVisit(['tenant_id' => $ativa->id, 'user_id' => $u2->id, 'module' => 'finance', 'path' => 'transactions', 'created_at' => now()->subDays(2)]);
-    anVisit(['tenant_id' => $ativa->id, 'user_id' => $u1->id, 'module' => 'projects', 'path' => 'projects', 'created_at' => now()->subDays(40)]);
-    anVisit(['tenant_id' => $parada->id, 'user_id' => $u3->id, 'created_at' => now()->subDays(20)]);
-    anVisit(['tenant_id' => null, 'user_id' => null, 'area' => 'admin', 'path' => 'admin']); // não conta
-    anVisit(['area' => 'public', 'module' => 'other', 'path' => 'blog', 'visitor' => 'aaaa', 'source' => 'google', 'device' => 'mobile']);
-    anVisit(['area' => 'public', 'module' => 'other', 'path' => 'blog', 'visitor' => 'bbbb', 'source' => 'direct', 'device' => 'desktop']);
+    // período atual (7 dias)
+    anVisit(['area' => 'public', 'module' => 'other', 'path' => '/', 'visitor' => 'v1', 'source' => 'google', 'device' => 'mobile']);
+    anVisit(['area' => 'public', 'module' => 'other', 'path' => 'blog', 'visitor' => 'v1', 'source' => 'internal', 'device' => 'mobile']);
+    anVisit(['area' => 'public', 'module' => 'other', 'path' => 'precos', 'visitor' => 'v2', 'source' => 'other', 'referrer_host' => 'portalong.org', 'device' => 'desktop', 'created_at' => now()->subDays(2)]);
+    anVisit(['tenant_id' => $org->id, 'user_id' => $user->id, 'visitor' => 'u' . $user->id, 'path' => 'projects', 'module' => 'projects', 'device' => 'desktop']);
+    anVisit(['area' => 'clients', 'module' => 'other', 'path' => 'lp/teste-Os9vFT', 'visitor' => 'v3', 'source' => 'instagram', 'device' => 'mobile']);
+    anVisit(['area' => 'admin', 'path' => 'admin', 'user_id' => $user->id]); // não conta
+    // período anterior
+    anVisit(['area' => 'public', 'module' => 'other', 'path' => '/', 'visitor' => 'v9', 'created_at' => now()->subDays(10)]);
 
-    $a = app(ProductAnalyticsService::class)->build(30);
+    $s = app(SiteAnalyticsService::class);
+    $m = $s->summary(7);
 
-    expect($a['app']['orgs'])->toBe(2)
-        ->and($a['app']['users'])->toBe(3)
-        ->and($a['app']['dau'])->toBe(1)
-        ->and($a['app']['wau'])->toBe(2)
-        ->and($a['app']['paying'])->toBe(2)
-        ->and($a['app']['trialing'])->toBe(1);
+    expect($m['views'])->toBe(5)
+        ->and($m['prev_views'])->toBe(1)
+        ->and($m['views_change'])->toBe(400.0)
+        ->and($m['visitors'])->toBe(4)              // v1, v2, v3 e o usuário logado
+        ->and($m['logged'])->toBe(1)
+        ->and($m['per_visitor'])->toBe(1.3)
+        ->and(array_sum($m['daily']['views']))->toBe(5)
+        ->and($m['hours'][15])->toBe(5)
+        ->and($m['referrers'])->toBe(['portalong.org' => 1])
+        ->and($m['orgs'][0]['name'])->toBe('Instituto Luz');
 
-    expect(collect($a['health']['at_risk'])->pluck('name')->all())->toBe(['ONG Parada'])
-        ->and(collect($a['health']['not_activated'])->pluck('name')->all())->toBe(['ONG Nova'])
-        ->and($a['health']['top'][0]['name'])->toBe('ONG Ativa')
-        ->and($a['health']['top'][0]['users'])->toBe(2);
+    expect(collect($m['areas'])->pluck('count', 'key')->all())->toBe(['public' => 3, 'app' => 1, 'clients' => 1]);
+    expect(collect($m['sources'])->pluck('count', 'key')->all())->toEqualCanonicalizing(['google' => 1, 'internal' => 1, 'other' => 1, 'instagram' => 1]);
+    expect(collect($m['devices'])->pluck('count', 'key')->all())->toEqualCanonicalizing(['mobile' => 3, 'desktop' => 2]);
+    expect($m['pages'][0]['path'])->toBeIn(['/', '/blog', '/precos', '/projects', '/lp/teste-Os9vFT']);
 
-    $modules = collect($a['modules'])->keyBy('key');
-    expect($modules['projects']['orgs'])->toBe(1)->and($modules['projects']['adoption'])->toBe(50.0);
-
-    expect($a['public']['visitors'])->toBe(2)
-        ->and($a['public']['signups'])->toBe(1)
-        ->and($a['public']['conversion'])->toBe(50.0)
-        ->and(collect($a['public']['sources'])->pluck('key')->sort()->values()->all())->toBe(['direct', 'google']);
+    // filtro por área
+    expect($s->summary(7, 'public')['views'])->toBe(3)
+        ->and($s->summary(7, 'app')['views'])->toBe(1)
+        ->and($s->summary(7, 'clients')['views'])->toBe(1)
+        ->and($s->summary(7, 'xyz')['area'])->toBe('tudo')
+        ->and($s->summary(13)['days'])->toBe(30);
 });
 
 it('página de analytics abre para o super admin com qualquer período', function () {
     $admin = anAdmin();
     anVisit(['tenant_id' => $admin->tenant_id, 'user_id' => $admin->id, 'module' => 'projects']);
 
-    foreach ([7, 30, 90, 999] as $d) {
-        $this->actingAs($admin)->get(route('admin.analytics', ['dias' => $d]))
-            ->assertOk()->assertSee('Uso do produto pelos clientes')->assertSee('Saúde das organizações')->assertSee('Site público');
+    foreach ([7, 30, 90, 365, 999] as $d) {
+        foreach (['tudo', 'public', 'app', 'clients'] as $area) {
+            $this->actingAs($admin)->get(route('admin.analytics', ['dias' => $d, 'area' => $area]))
+                ->assertOk()->assertSee('Acessos ao sistema')->assertSee('Visitantes únicos')->assertSee('Páginas mais acessadas');
+        }
     }
 
     $user = User::factory()->create(['role' => 'manager']);
