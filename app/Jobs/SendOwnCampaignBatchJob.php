@@ -17,6 +17,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 /**
@@ -122,7 +123,10 @@ class SendOwnCampaignBatchJob implements ShouldQueue
             try {
                 $parts = $renderer->render($campaign, $recipient);
 
-                $sent = Mail::mailer($mailer)->html($parts['html'], function (Message $m) use ($campaign, $recipient, $parts, $fromEmail, $fromName) {
+                $sent = Mail::mailer($mailer)->send([
+                    'html' => new HtmlString($parts['html']),
+                    'text' => new HtmlString($parts['text']),
+                ], [], function (Message $m) use ($campaign, $recipient, $parts, $fromEmail, $fromName) {
                     $m->to($recipient->email, $recipient->name ?: null)
                       ->from($fromEmail, $fromName)
                       ->subject($campaign->subject);
