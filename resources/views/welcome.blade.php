@@ -2439,9 +2439,11 @@ function ptToggle(id) {
 
     .booking-widget.collapsed .bw-card { display: none; }
     .booking-widget.collapsed .bw-close { display: none; }
+    .booking-widget.vc-on { bottom: 24px; } /* sem o botão do WhatsApp embaixo */
+    @media (max-width: 768px) { .booking-widget.vc-on { bottom: 16px; right: 16px; } }
 </style>
 
-<div class="booking-widget" id="bookingWidget">
+<div class="booking-widget {{ $vcEnabled ? 'vc-on' : '' }}" id="bookingWidget">
     <a href="{{ route('booking.index') }}" class="bw-card" id="bwCard" @if($vcEnabled) data-vivchat="agendar" @endif>
         <div class="bw-avatar">{{ $vcEnabled ? 'B' : 'V' }}</div>
         <div class="bw-text">
@@ -2491,10 +2493,17 @@ function ptToggle(id) {
     function showWidget() {
         if (shown) return;
         shown = true;
+        widget.classList.remove('collapsed');
         widget.style.display = 'flex';
     }
 
-    widget.style.display = 'none';
+    if (chatOn) {
+        // Chat ligado: o botão "Fale com o Bruno" aparece já na entrada; o cartão vem depois
+        widget.classList.add('collapsed');
+        widget.style.display = 'flex';
+    } else {
+        widget.style.display = 'none';
+    }
     setTimeout(showWidget, 8000);
     window.addEventListener('scroll', function onScroll() {
         if (window.scrollY > 400) { showWidget(); window.removeEventListener('scroll', onScroll); }
@@ -2503,6 +2512,7 @@ function ptToggle(id) {
     closeBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
+        shown = true; // não reabrir o cartão pelo timer depois de fechado
         if (chatOn) { widget.classList.add('collapsed'); } else { widget.style.display = 'none'; }
         try { localStorage.setItem(HIDDEN_KEY, Date.now() + 3600000); } catch (e) {} // 1 hora
     });

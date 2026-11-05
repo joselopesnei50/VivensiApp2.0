@@ -1,3 +1,5 @@
+{{-- Com o chat do site ligado, o atendimento começa pelo Bruno; o WhatsApp fica no menu do chat. --}}
+@unless(\App\Services\WebChat\WebChatService::isEnabled())
 <!-- Floating WhatsApp Button -->
 <style>
     .whatsapp-float {
@@ -69,3 +71,4 @@
     <i class="fab fa-whatsapp"></i>
     <span class="whatsapp-text">Fale Conosco</span>
 </a>
+@endunless
