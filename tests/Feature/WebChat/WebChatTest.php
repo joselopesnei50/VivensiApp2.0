@@ -267,18 +267,29 @@ it('liga e desliga o chat pelo painel; usuário comum não acessa', function () 
 });
 
 it('widget aparece nas páginas públicas só quando o chat está ligado', function () {
-    $this->get('/termos')->assertOk()->assertSee('vc-root', false)->assertSee('Fale com o Bruno');
+    // Chat ligado: o atendimento começa pelo Bruno e o botão do WhatsApp sai (fica no menu do chat)
+    $this->get('/termos')->assertOk()->assertSee('vc-root', false)->assertSee('Fale com o Bruno')
+        ->assertDontSee('class="whatsapp-float"', false)->assertSee('Prefere WhatsApp?');
 
+    // Desligado: volta o botão do WhatsApp, o site nunca fica sem contato
     SystemSetting::setValue('web_chat_enabled', '0');
-    $this->get('/termos')->assertOk()->assertDontSee('vc-root', false);
+    $this->get('/termos')->assertOk()->assertDontSee('vc-root', false)->assertSee('class="whatsapp-float"', false);
 });
 
-it('na home, o cartão de agendamento abre o chat do Bruno', function () {
+it('na home, o Bruno substitui o cartão de agendamento e o botão do WhatsApp', function () {
     $this->get('/')->assertOk()
+        ->assertSee('id="vc-launcher"', false)
+        ->assertSee('id="vc-teaser"', false)
         ->assertSee('data-vivchat="agendar"', false)
         ->assertSee('Fale com o Bruno')
-        ->assertDontSee('id="vc-launcher"', false); // na home o widget de agendamento é a porta de entrada
+        ->assertDontSee('id="bookingWidget"', false)
+        ->assertDontSee('class="whatsapp-float"', false);
 
+    // Chat desligado: volta tudo como era (cartão de agendamento + WhatsApp)
     SystemSetting::setValue('web_chat_enabled', '0');
-    $this->get('/')->assertOk()->assertDontSee('data-vivchat', false)->assertSee('Falar com a equipe');
+    $this->get('/')->assertOk()
+        ->assertDontSee('data-vivchat', false)
+        ->assertSee('id="bookingWidget"', false)
+        ->assertSee('Falar com a equipe')
+        ->assertSee('class="whatsapp-float"', false);
 });
