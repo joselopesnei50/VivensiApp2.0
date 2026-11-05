@@ -18,6 +18,10 @@
         <p class="text-muted mb-0 mt-1" style="font-size:.85rem;">Gerencie os artigos publicados na página inicial.</p>
     </div>
     <div class="d-flex align-items-center gap-2 flex-shrink-0" style="margin-top:4px;">
+        <a href="{{ route('admin.blog.metrics') }}"
+           class="btn btn-outline-secondary fw-bold rounded-3 d-flex align-items-center gap-2">
+            <i class="fas fa-chart-line"></i> Métricas
+        </a>
         <button type="button"
                 class="btn btn-outline-primary fw-bold rounded-3 d-flex align-items-center gap-2"
                 data-bs-toggle="modal" data-bs-target="#aiDraftModal"
@@ -130,7 +134,7 @@ document.getElementById('aiDraftForm')?.addEventListener('submit', function() {
             </div>
             <div class="fw-800" style="font-size:1.5rem;color:#dc2626;line-height:1.1;">{{ number_format($totalViews, 0, ',', '.') }}</div>
             <div style="font-size:.68rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">
-                views totais
+                visitas reais
                 <span style="display:block;color:#10b981;font-weight:700;">+{{ number_format($viewsMonth, 0, ',', '.') }} este mês</span>
             </div>
         </div>
@@ -166,7 +170,7 @@ document.getElementById('aiDraftForm')?.addEventListener('submit', function() {
                             <th class="px-4 py-3 th-lbl">Artigo</th>
                             <th class="py-3 th-lbl">Status</th>
                             <th class="py-3 th-lbl">Publicação</th>
-                            <th class="py-3 th-lbl text-center">Views</th>
+                            <th class="py-3 th-lbl text-center">Visitas</th>
                             <th class="pe-4 py-3 th-lbl text-end">Ações</th>
                         </tr>
                     </thead>
@@ -204,9 +208,10 @@ document.getElementById('aiDraftForm')?.addEventListener('submit', function() {
                                 @endif
                             </td>
                             <td class="py-3 text-center">
-                                <span style="font-size:.82rem;font-weight:800;color:{{ $post->view_count > 0 ? '#6366f1' : '#cbd5e1' }};">
+                                <a href="{{ route('admin.blog.post_metrics', $post->id) }}" title="Ver métricas do post"
+                                   style="font-size:.82rem;font-weight:800;text-decoration:none;color:{{ $post->view_count > 0 ? '#6366f1' : '#cbd5e1' }};">
                                     <i class="fas fa-eye me-1" style="font-size:.7rem;"></i>{{ number_format($post->view_count, 0, ',', '.') }}
-                                </span>
+                                </a>
                             </td>
                             <td class="pe-4 py-3">
                                 <div class="d-flex justify-content-end gap-2">

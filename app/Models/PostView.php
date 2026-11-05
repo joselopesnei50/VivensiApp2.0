@@ -10,7 +10,9 @@ class PostView extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['post_id', 'ip_address', 'user_agent', 'referer'];
+    protected $fillable = ['post_id', 'ip_address', 'user_agent', 'referer', 'is_bot', 'source', 'device'];
+
+    protected $casts = ['is_bot' => 'boolean'];
 
     public static function record(Post $post, Request $request): void
     {
@@ -23,11 +25,18 @@ class PostView extends Model
                 ->exists();
 
             if (!$alreadyCounted) {
+                $ua      = $request->userAgent() ?? '';
+                $referer = $request->headers->get('referer') ?? '';
                 static::create([
                     'post_id'    => $post->id,
                     'ip_address' => $ip,
-                    'user_agent' => mb_substr($request->userAgent() ?? '', 0, 255),
-                    'referer'    => mb_substr($request->headers->get('referer') ?? '', 0, 500),
+                    'user_agent' => mb_substr($ua, 0, 255),
+                    'referer'    => mb_substr($referer, 0, 500),
+                    // Robô continua registrado (útil para saber que o Google passou),
+                    // mas fica fora das métricas de leitores
+                    'is_bot'     => \App\Support\TrafficClassifier::isBot($ua),
+                    'source'     => \App\Support\TrafficClassifier::source($referer),
+                    'device'     => \App\Support\TrafficClassifier::device($ua),
                 ]);
             }
         } catch (\Throwable $e) {

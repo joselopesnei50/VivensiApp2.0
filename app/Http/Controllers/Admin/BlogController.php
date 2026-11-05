@@ -18,14 +18,12 @@ class BlogController extends Controller
         $publishedCount = Post::where('is_published', true)->count();
         $draftCount     = $totalCount - $publishedCount;
 
-        // Analytics: views por post (1 query com GROUP BY)
-        $viewsByPost = DB::table('post_views')
-            ->select('post_id', DB::raw('COUNT(*) as total'))
-            ->groupBy('post_id')
-            ->pluck('total', 'post_id');
+        // Analytics: visitas de pessoas por post (robôs ficam de fora)
+        $viewsByPost = collect(app(\App\Services\BlogMetricsService::class)->humanViewsByPost());
 
         $totalViews  = $viewsByPost->sum();
         $viewsMonth  = DB::table('post_views')
+            ->where('is_bot', false)
             ->where('created_at', '>=', now()->startOfMonth())
             ->count();
 
@@ -38,6 +36,22 @@ class BlogController extends Controller
             'posts', 'totalCount', 'publishedCount', 'draftCount',
             'totalViews', 'viewsMonth'
         ));
+    }
+
+    /** Painel de métricas do blog (todos os posts). */
+    public function metrics(Request $request, \App\Services\BlogMetricsService $metrics)
+    {
+        $m = $metrics->summary((int) $request->query('dias', 30));
+
+        return view('admin.blog.metrics', ['m' => $m, 'post' => null, 'periods' => \App\Services\BlogMetricsService::PERIODS]);
+    }
+
+    /** Métricas de um post. */
+    public function postMetrics(Request $request, Post $post, \App\Services\BlogMetricsService $metrics)
+    {
+        $m = $metrics->summary((int) $request->query('dias', 30), $post->id);
+
+        return view('admin.blog.metrics', ['m' => $m, 'post' => $post, 'periods' => \App\Services\BlogMetricsService::PERIODS]);
     }
 
     public function create()
