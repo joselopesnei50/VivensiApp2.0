@@ -118,6 +118,8 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         ]);
 
         // CMS Blog
+        Route::get('/blog-metrics',        [App\Http\Controllers\Admin\BlogController::class, 'metrics'])->name('admin.blog.metrics');
+        Route::get('/blog-metrics/{post}', [App\Http\Controllers\Admin\BlogController::class, 'postMetrics'])->name('admin.blog.post_metrics');
         Route::resource('/blog', App\Http\Controllers\Admin\BlogController::class)->names([
             'index'   => 'admin.blog.index',
             'create'  => 'admin.blog.create',
