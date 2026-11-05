@@ -27,9 +27,11 @@ it('upload valido devolve url publica absoluta', function () {
     ]);
     session(['2fa_verified' => true]);
 
-    // NAO usar ->image() aqui — depende de ext GD do PHP.
-    // ->create() com mime + extensao correta valida a regra 'mimes:png'.
-    $file = UploadedFile::fake()->create('logo.png', 100, 'image/png');
+    // NAO usar ->image() aqui — depende de ext GD do PHP. Usa bytes reais de um
+    // PNG 1x1: o upload agora confere o CONTEUDO (auditoria 05/11/2026).
+    $file = UploadedFile::fake()->createWithContent('logo.png', base64_decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+    ));
 
     $r = $this->actingAs($user)->post('/admin/email-campaigns/upload-image', [
         'image' => $file,

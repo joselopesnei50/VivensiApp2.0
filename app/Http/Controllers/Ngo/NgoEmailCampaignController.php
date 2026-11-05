@@ -47,7 +47,12 @@ class NgoEmailCampaignController extends Controller
         ]);
 
         $file = $request->file('image');
-        $ext  = $file->getClientOriginalExtension();
+        // Extensão pelo CONTEÚDO real do arquivo, nunca pelo nome enviado
+        // (um PNG com HTML dentro, chamado x.html, viraria página no nosso domínio)
+        $ext = \App\Support\SafeImageUpload::extension($file);
+        if (! $ext) {
+            return response()->json(['error' => 'Envie uma imagem JPG, PNG, WEBP ou GIF.'], 422);
+        }
         $name = $user->tenant_id . '_' . uniqid() . '.' . $ext;
         $path = $file->storeAs('email_campaigns_uploads', $name, 'public');
 

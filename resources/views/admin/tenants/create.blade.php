@@ -68,7 +68,7 @@
 
                     <div class="col-md-6 mb-4">
                         <label class="form-label small fw-bold text-muted text-uppercase">Senha Inicial</label>
-                        <input type="password" name="password" class="form-control border-0 bg-light py-3 rounded-4 @error('password') is-invalid @enderror" placeholder="Mínimo 8 caracteres" required>
+                        <input type="password" name="password" class="form-control border-0 bg-light py-3 rounded-4 @error('password') is-invalid @enderror" placeholder="Mínimo 12 caracteres, com maiúscula, minúscula e número" required minlength="12">
                         @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 

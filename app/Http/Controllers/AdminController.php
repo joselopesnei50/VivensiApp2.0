@@ -572,7 +572,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'password' => ['required', 'string', \Illuminate\Validation\Rules\Password::min(12)->mixedCase()->numbers()],
             'tenant_name' => 'required|string|max:255',
             'plan_id' => 'required|exists:subscription_plans,id',
             'account_type' => 'required|in:ngo_admin,project_manager,client',

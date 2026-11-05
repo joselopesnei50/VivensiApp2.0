@@ -24,7 +24,12 @@ class WebhookSettingsController extends Controller
     {
         $request->validate([
             'name'     => 'required|string|max:100',
-            'url'      => 'required|url|max:500',
+            'url'      => ['required', 'url', 'max:500', function ($attr, $value, $fail) {
+                $check = \App\Support\SafeOutboundUrl::check($value);
+                if (! $check['ok']) {
+                    $fail($check['reason']);
+                }
+            }],
             'events'   => 'required|array|min:1',
             'events.*' => 'in:' . implode(',', WebhookService::EVENTS) . ',*',
         ]);

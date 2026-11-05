@@ -45,7 +45,7 @@ class AdminTeamController extends Controller
             'role' => 'required|string',
             'department' => 'required|string',
             'supervisor_id' => 'nullable|exists:users,id',
-            'password' => 'required|string|min:8',
+            'password' => ['required', 'string', \Illuminate\Validation\Rules\Password::min(12)->mixedCase()->numbers()],
         ]);
 
         $newUser = User::create([

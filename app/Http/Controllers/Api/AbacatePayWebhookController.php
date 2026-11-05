@@ -46,6 +46,14 @@ class AbacatePayWebhookController extends Controller
             Log::warning('AbacatePay Webhook: assinatura HMAC inválida', ['ip' => $request->ip()]);
             return response()->json(['message' => 'Invalid signature'], 401);
         }
+        if (!$signature) {
+            // Fase de observação: ainda aceita (o secret já foi validado), mas registra.
+            // Se este aviso nunca aparecer nos logs, a assinatura pode passar a ser obrigatória.
+            Log::warning('AbacatePay Webhook: chegou SEM assinatura X-Webhook-Signature', [
+                'ip'       => $request->ip(),
+                'via_query' => $request->query('webhookSecret') !== null,
+            ]);
+        }
 
         // ── 3. Despachar para fila (responde 200 imediatamente) ───────────────
         $payload = $request->json()->all();
