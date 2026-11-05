@@ -13,7 +13,23 @@
             <p style="color:#64748b; margin:6px 0 0; font-size:0.9rem;">{{ $campaign->subject }}</p>
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
-            @php $retryOwnFailed = $campaign->usesOwnDelivery() && $campaign->status === 'sent' && $campaign->stat_failed > 0; @endphp
+            @php
+                $retryOwnFailed = $campaign->usesOwnDelivery() && $campaign->status === 'sent' && $campaign->stat_failed > 0;
+                $canEdit = $campaign->status === 'draft'
+                    || ($campaign->status === 'error' && !$campaign->brevo_campaign_id && !(int) $campaign->stat_sent);
+            @endphp
+            @if($canEdit)
+                <a href="{{ route('admin.email_campaigns.edit', $campaign) }}"
+                   style="padding:14px 22px; border-radius:14px; background:#f1f5f9; color:#334155; font-weight:800; font-size:0.9rem; text-decoration:none; display:inline-flex; align-items:center;">
+                    <i class="fas fa-pen me-2"></i>Editar
+                </a>
+            @endif
+            <form action="{{ route('admin.email_campaigns.duplicate', $campaign) }}" method="POST" style="margin:0;">
+                @csrf
+                <button type="submit" style="padding:14px 22px; border:none; border-radius:14px; background:#f1f5f9; color:#334155; font-weight:800; font-size:0.9rem; cursor:pointer;">
+                    <i class="fas fa-copy me-2"></i>Duplicar
+                </button>
+            </form>
             @if(in_array($campaign->status, ['draft', 'error']) || $retryOwnFailed)
                 <form id="formDispararCampanha" action="{{ route('admin.email_campaigns.send', $campaign) }}" method="POST">
                     @csrf

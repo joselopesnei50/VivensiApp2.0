@@ -102,6 +102,23 @@
     .brc-status--unsubscribed { background: #F4F4F5;             color: #6b6b6f; }
     .brc-status--invalid      { background: rgba(245,158,11,.12);color: #b45309; }
 
+    .brc-verify {
+        background: #fff; padding: 20px 22px; border-radius: 14px; margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(10,10,11,.05); border-left: 4px solid #2563eb;
+    }
+    .brc-verify__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+    .brc-verify__title { font-weight: 900; color: #0A0A0B; font-size: 1rem; margin: 0 0 4px; }
+    .brc-verify__sub { color: #6b6b6f; font-size: .82rem; margin: 0; line-height: 1.5; }
+    .brc-verify__form { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .brc-verify__deep { display: flex; align-items: center; gap: 6px; font-size: .8rem; color: #3A3A3C; cursor: pointer; }
+    .brc-verify__result { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: .85rem; }
+    .brc-verify__result b { font-size: 1.05rem; }
+    .brc-verify__warn { margin-top: 12px; padding: 10px 12px; background: #fffbeb; color: #92400e; border-radius: 8px; font-size: .8rem; }
+    .brc-vres { font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+    .brc-vres--valid   { background: rgba(5,150,105,.1);  color: #059669; }
+    .brc-vres--risky   { background: rgba(245,158,11,.14); color: #b45309; }
+    .brc-vres--invalid { background: rgba(220,38,38,.1);  color: #dc2626; }
+
     .brc-empty {
         padding: 60px 20px; text-align: center; color: #6b6b6f;
     }
@@ -156,6 +173,58 @@
             <div class="brc-stat__label">Descadastros</div>
             <div class="brc-stat__value">{{ number_format($stats['unsubscribed']) }}</div>
         </div>
+        <div class="brc-stat" style="--brc-stat-color:#b45309;">
+            <div class="brc-stat__label">Inválidos</div>
+            <div class="brc-stat__value">{{ number_format($stats['invalid']) }}</div>
+        </div>
+    </div>
+
+    {{-- Verificar lista --}}
+    @php
+        $vSummary = $list->verification_summary ?? [];
+        $toCheck  = $stats['active'] + $stats['invalid'];
+        $running  = $list->verification_status === 'running';
+    @endphp
+    <div class="brc-verify">
+        <div class="brc-verify__head">
+            <div>
+                <p class="brc-verify__title"><i class="fas fa-shield-alt" style="color:#2563eb;"></i> Verificar lista</p>
+                <p class="brc-verify__sub">
+                    Confere cada e-mail antes do envio e tira os inválidos de qualquer campanha. Evita bounces, que prejudicam a entrega e podem pausar a conta na AWS.<br>
+                    A <strong>básica</strong> (gratuita) checa formato, bloqueios anteriores e se o domínio ainda recebe e-mails.
+                    A <strong>aprofundada</strong> usa a AWS para checar se a caixa existe.
+                </p>
+            </div>
+            @if($running)
+                <span class="brc-btn brc-btn-neutral" style="cursor:default;"><i class="fas fa-spinner fa-spin"></i> Verificando… atualize a página</span>
+            @else
+                <form method="POST" action="{{ route('admin.email_campaigns.lists.verify', $list) }}" class="brc-verify__form"
+                      onsubmit="return !this.deep.checked || confirm('A verificação aprofundada custa US$ 0,01 por e-mail na AWS. Estimativa para esta lista: US$ {{ number_format($toCheck * 0.01, 2, ',', '.') }}. Continuar?')">
+                    @csrf
+                    <label class="brc-verify__deep">
+                        <input type="checkbox" name="deep" value="1">
+                        Aprofundada pela AWS (US$ 0,01/e-mail · ≈ US$ {{ number_format($toCheck * 0.01, 2, ',', '.') }})
+                    </label>
+                    <button type="submit" class="brc-btn brc-btn-primary" @if($toCheck === 0) disabled @endif>
+                        <i class="fas fa-check-double"></i> Verificar {{ number_format($toCheck) }} contato(s)
+                    </button>
+                </form>
+            @endif
+        </div>
+
+        @if($list->verification_status === 'done' && !empty($vSummary))
+            <div class="brc-verify__result">
+                <span>Última verificação ({{ $list->verification_deep ? 'aprofundada' : 'básica' }}) em {{ $list->verification_finished_at?->format('d/m/Y H:i') }}:</span>
+                <span style="color:#059669;"><b>{{ $vSummary['valid'] ?? 0 }}</b> válidos</span>
+                @if(($vSummary['risky'] ?? 0) > 0)
+                    <span style="color:#b45309;"><b>{{ $vSummary['risky'] }}</b> arriscados (continuam na lista)</span>
+                @endif
+                <span style="color:#dc2626;"><b>{{ $vSummary['invalid'] ?? 0 }}</b> inválidos (fora dos envios)</span>
+            </div>
+        @endif
+        @if(!empty($vSummary['warning']))
+            <div class="brc-verify__warn"><i class="fas fa-exclamation-triangle"></i> {{ $vSummary['warning'] }}</div>
+        @endif
     </div>
 
     {{-- Barra de ações --}}
@@ -224,6 +293,12 @@
                             <td style="color:#6b6b6f;">{{ $c->name ?? '—' }}</td>
                             <td>
                                 <span class="brc-status brc-status--{{ $c->status }}">{{ $c->status }}</span>
+                                @if($c->verification_result && $c->verification_result !== 'valid')
+                                    <span class="brc-vres brc-vres--{{ $c->verification_result }}" title="{{ $c->verification_detail }}">{{ $c->verification_result === 'invalid' ? 'inválido' : 'arriscado' }}</span>
+                                @endif
+                                @if($c->verification_detail)
+                                    <div style="color:#9a9a9e; font-size:.72rem; margin-top:3px;">{{ $c->verification_detail }}</div>
+                                @endif
                             </td>
                             <td style="color:#9a9a9e;">{{ $c->added_at?->format('d/m/Y') }}</td>
                             <td>
