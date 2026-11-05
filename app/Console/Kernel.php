@@ -151,6 +151,10 @@ class Kernel extends ConsoleKernel
                      \Illuminate\Support\Facades\Log::error('❌ Falha no backup diário do banco!');
                  });
 
+        // Analytics: guarda ~13 meses de páginas vistas (a tabela crescia para sempre)
+        $schedule->call(fn () => \App\Models\PageVisit::prune(400))
+                 ->dailyAt('04:10')->name('analytics:prune-page-visits')->withoutOverlapping();
+
         // Health-check: confirma que o scheduler está rodando a cada hora
         $schedule->call(function () {
             \Illuminate\Support\Facades\Log::info('🟢 Scheduler alive — ' . now()->toDateTimeString());
