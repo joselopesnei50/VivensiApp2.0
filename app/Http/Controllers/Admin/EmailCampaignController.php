@@ -229,14 +229,20 @@ class EmailCampaignController extends Controller
                 'queued'      => $queued,
             ]);
 
+            $blocked = count(\App\Models\EmailSuppression::lookup(array_column($contacts, 'email')));
+            $already = $emailCampaign->recipients()
+                ->whereIn('status', ['sent', 'bounced', 'complained', 'skipped'])->count();
+
             if ($queued === 0) {
-                $emailCampaign->update(['status' => 'error', 'error_message' => 'Todos os destinatários já receberam, estão bloqueados (bounce/spam) ou descadastrados.']);
-                return back()->with('error', 'Nenhum destinatário novo para enviar.');
+                $why = $this->describeSkipped($blocked, $already);
+                $emailCampaign->update(['status' => 'error', 'error_message' => "Nada a enviar: {$why}."]);
+                return back()->with('error', "Nenhum destinatário novo para enviar: {$why}.");
             }
 
             $rate = $emailCampaign->send_rate_per_minute ?: config('campaign_mail.rate_per_minute');
             $mins = (int) ceil($queued / max(1, $rate));
-            return back()->with('success', "Envio iniciado para {$queued} destinatário(s), {$rate}/min — previsão de ~{$mins} min. Acompanhe o progresso nesta página.");
+            $skip = ($blocked || $already) ? ' Ignorados: ' . $this->describeSkipped($blocked, $already) . '.' : '';
+            return back()->with('success', "Envio iniciado para {$queued} destinatário(s), {$rate}/min — previsão de ~{$mins} min.{$skip} Acompanhe o progresso nesta página.");
         }
 
         $emailCampaign->update(['status' => 'sending', 'error_message' => null]);
@@ -395,6 +401,18 @@ class EmailCampaignController extends Controller
             ->reject(fn ($c) => isset($blocklist[mb_strtolower(trim((string) $c['email']))]))
             ->values()
             ->toArray();
+    }
+
+    private function describeSkipped(int $blocked, int $already): string
+    {
+        $parts = [];
+        if ($blocked) {
+            $parts[] = $blocked . ($blocked === 1 ? ' endereço bloqueado' : ' endereços bloqueados') . ' (bounce, spam ou descadastro)';
+        }
+        if ($already) {
+            $parts[] = $already . ($already === 1 ? ' já recebeu' : ' já receberam') . ' esta campanha';
+        }
+        return $parts ? implode(' e ', $parts) : 'nenhum endereço válido na lista';
     }
 
     private function parseManualEmailsInput(string $raw): array

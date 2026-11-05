@@ -283,8 +283,10 @@
             @php
                 $details = [
                     ['label'=>'Status', 'value'=> ucfirst($campaign->status)],
-                    ['label'=>'Remetente', 'value'=> $campaign->sender_email ?: 'Padrão do sistema'],
-                    ['label'=>'Reply-To', 'value'=> $campaign->reply_to_email ?: '—'],
+                    ['label'=>'Remetente', 'value'=> $campaign->sender_email
+                        ?: ($campaign->usesOwnDelivery() && config('campaign_mail.from.address') ? config('campaign_mail.from.address') . ' (padrão)' : 'Padrão do sistema')],
+                    ['label'=>'Reply-To', 'value'=> $campaign->reply_to_email
+                        ?: ($campaign->usesOwnDelivery() && config('campaign_mail.reply_to') ? config('campaign_mail.reply_to') . ' (padrão)' : '—')],
                     ['label'=>'Público', 'value'=> $campaign->audienceLabel()],
                     ['label'=>'Criada por', 'value'=> $campaign->creator->name ?? '—'],
                     ['label'=>'Criada em', 'value'=> $campaign->created_at->format('d/m/Y H:i')],

@@ -20,21 +20,11 @@ class CampaignRenderer
     }
 
     /**
-     * @return array{html: string, unsubscribe_url: ?string, one_click_url: ?string}
+     * @return array{html: string, text: string, unsubscribe_url: ?string, one_click_url: ?string}
      */
     public function render(EmailCampaign $campaign, EmailCampaignRecipient $recipient): array
     {
-        $html = (string) $campaign->html_content;
-
-        $name      = trim((string) $recipient->name);
-        $firstName = $name !== '' ? explode(' ', $name)[0] : '';
-        $vars = [
-            '{nome}'          => e($name !== '' ? $name : 'Olá'),
-            '{name}'          => e($name !== '' ? $name : 'Olá'),
-            '{primeiro_nome}' => e($firstName),
-            '{email}'         => e($recipient->email),
-        ];
-        $html = strtr($html, $vars);
+        $html = $this->personalize((string) $campaign->html_content, (string) $recipient->name, $recipient->email);
 
         $unsubUrl = null;
         $oneClick = null;
@@ -44,6 +34,8 @@ class CampaignRenderer
             $oneClick = route('public.email.unsubscribe.one_click', ['token' => $token, 'r' => $recipient->token]);
             $html     = $this->injectUnsubscribe($html, $unsubUrl);
         }
+
+        $htmlForText = $html; // links reais (sem rastreio) e com rodapé de descadastro
 
         if (config('campaign_mail.tracking.clicks')) {
             $html = $this->rewriteLinks($html, $recipient->token, $unsubUrl);
@@ -56,7 +48,76 @@ class CampaignRenderer
                 : $html . $pixel;
         }
 
-        return ['html' => $html, 'unsubscribe_url' => $unsubUrl, 'one_click_url' => $oneClick];
+        // Versão em texto simples (multipart/alternative): melhora a entrega e
+        // atende leitores de e-mail sem HTML. Gerada antes do pixel/rastreio.
+        $text = self::htmlToText($htmlForText ?? $html);
+
+        return ['html' => $html, 'text' => $text, 'unsubscribe_url' => $unsubUrl, 'one_click_url' => $oneClick];
+    }
+
+    /**
+     * Personaliza {nome}, {primeiro_nome}, {email} (e {name}, legado).
+     *
+     * Contato sem nome (ou com o próprio e-mail como nome): a variável some
+     * junto com a vírgula vizinha — "Olá, {primeiro_nome}!" vira "Olá!".
+     * Também aceita um texto padrão: {primeiro_nome|amigo} → "amigo".
+     */
+    public function personalize(string $html, ?string $rawName, string $email): string
+    {
+        $name = trim((string) $rawName);
+        if ($name === '' || str_contains($name, '@')) {
+            $name = '';
+        }
+        $firstName = $name !== '' ? preg_split('/\s+/', $name)[0] : '';
+
+        $values = ['nome' => $name, 'name' => $name, 'primeiro_nome' => $firstName];
+
+        // {var|padrão}
+        $html = preg_replace_callback('/\{(nome|name|primeiro_nome)\|([^{}]*)\}/u', function ($m) use ($values) {
+            return e($values[$m[1]] !== '' ? $values[$m[1]] : $m[2]);
+        }, $html);
+
+        foreach ($values as $key => $value) {
+            if ($value === '') {
+                // "Olá, {primeiro_nome}!" → "Olá!" ; "{primeiro_nome}, veja" → "Veja" não é tentado: só remove
+                $html = preg_replace('/[ \t]*,[ \t]*\{' . $key . '\}/u', '', $html);
+                // "Olá {primeiro_nome}!" → "Olá!" (espaço antes de pontuação)
+                $html = preg_replace('/[ \t]+\{' . $key . '\}(?=[ \t]*[!?.;:])/u', '', $html);
+                $html = preg_replace('/\{' . $key . '\}[ \t]*,[ \t]*/u', '', $html);
+                $html = str_replace('{' . $key . '}', '', $html);
+            } else {
+                $html = str_replace('{' . $key . '}', e($value), $html);
+            }
+        }
+
+        return str_replace('{email}', e($email), $html);
+    }
+
+    /** Converte o HTML do e-mail em texto simples legível. */
+    public static function htmlToText(string $html): string
+    {
+        $t = preg_replace('~<(head|style|script|title)\b[^>]*>.*?</\1>~is', '', $html);
+        // Elementos ocultos (pré-cabeçalho, pixels)
+        $t = preg_replace('~<(div|span|p)\b[^>]*display\s*:\s*none[^>]*>.*?</\1>~is', '', $t);
+        $t = preg_replace('~<img\b[^>]*>~i', '', $t);
+        // Links: "texto (url)"
+        $t = preg_replace_callback('~<a\b[^>]*href\s*=\s*(["\'])(.*?)\1[^>]*>(.*?)</a>~is', function ($m) {
+            $label = trim(html_entity_decode(strip_tags($m[3]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            $url   = html_entity_decode($m[2], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if (!preg_match('~^https?://~i', $url) || $label === '' || $label === $url) {
+                return $label !== '' ? $label : $url;
+            }
+            return $label . ' (' . $url . ')';
+        }, $t);
+        $t = preg_replace('~<br\s*/?>~i', "\n", $t);
+        $t = preg_replace('~</(p|div|tr|h[1-6]|li|table)>~i', "\n\n", $t);
+        $t = preg_replace('~<li\b[^>]*>~i', '- ', $t);
+        $t = html_entity_decode(strip_tags($t), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $t = str_replace("\u{00A0}", ' ', $t);
+        $t = preg_replace('/[ \t]+/u', ' ', $t);
+        $t = preg_replace('/ *\n */', "\n", $t);
+        $t = preg_replace('/\n{3,}/', "\n\n", $t);
+        return trim($t);
     }
 
     /** Assinatura curta (HMAC) do par token+URL — impede usar o rastreador como open redirect. */

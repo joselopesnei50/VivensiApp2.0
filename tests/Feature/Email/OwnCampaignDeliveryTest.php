@@ -316,7 +316,7 @@ it('grava o MessageId do SES (header X-SES-Message-ID), que é o usado nos event
 
 it('erro de credencial da AWS pausa a campanha em vez de marcar todos como falha', function () {
     config(['campaign_mail.mailer' => 'campaign_ses', 'mail.mailers.campaign_ses.key' => null, 'mail.mailers.campaign_ses.secret' => null]);
-    \Illuminate\Support\Facades\Mail::shouldReceive('mailer->html')->andThrow(new \RuntimeException('Error retrieving credentials from the instance profile metadata service.'));
+    \Illuminate\Support\Facades\Mail::shouldReceive('mailer->send')->andThrow(new \RuntimeException('Error retrieving credentials from the instance profile metadata service.'));
 
     $campaign = ownCampaign(['status' => 'sending']);
     foreach (['a', 'b', 'c'] as $n) {
@@ -418,4 +418,57 @@ it('normalizeEmail cobre os formatos do SES', function () {
         ->and(EmailSuppression::normalizeEmail('teste spam <a@x.org>'))->toBe('a@x.org')
         ->and(EmailSuppression::normalizeEmail('  B@X.ORG '))->toBe('b@x.org')
         ->and(EmailSuppression::normalizeEmail(''))->toBe('');
+});
+
+// ── Melhorias: saudação sem nome, versão em texto, mensagens e detalhes ──────
+
+it('saudação: contato sem nome (ou com o e-mail como nome) não mostra o endereço', function () {
+    $r = app(CampaignRenderer::class);
+
+    expect($r->personalize('<p>Olá, {primeiro_nome}!</p>', '', 'a@x.org'))->toBe('<p>Olá!</p>')
+        ->and($r->personalize('<p>Olá, {primeiro_nome}!</p>', 'a@x.org', 'a@x.org'))->toBe('<p>Olá!</p>')
+        ->and($r->personalize('<p>{primeiro_nome}, veja isto</p>', '', 'a@x.org'))->toBe('<p>veja isto</p>')
+        ->and($r->personalize('<p>Olá {primeiro_nome}!</p>', '', 'a@x.org'))->toBe('<p>Olá!</p>')
+        ->and($r->personalize('<p>Olá, {primeiro_nome}!</p>', 'Maria Silva', 'a@x.org'))->toBe('<p>Olá, Maria!</p>')
+        ->and($r->personalize('<p>Oi {primeiro_nome|amigo(a)}!</p>', '', 'a@x.org'))->toBe('<p>Oi amigo(a)!</p>')
+        ->and($r->personalize('<p>Oi {primeiro_nome|amigo(a)}!</p>', 'João', 'a@x.org'))->toBe('<p>Oi João!</p>')
+        ->and($r->personalize('<p>{nome} — {email}</p>', 'Ana <b>', 'a@x.org'))->toBe('<p>Ana &lt;b&gt; — a@x.org</p>');
+});
+
+it('e-mail sai com versão em texto simples, com links reais e sem pixel', function () {
+    $campaign = ownCampaign();
+    app(OwnCampaignDispatcher::class)->start($campaign, [['email' => 'a@x.org']]);
+
+    $email = sentMessages()[0]->getOriginalMessage();
+    $text  = $email->getTextBody();
+
+    expect($email->getHtmlBody())->toContain('/e/c/')                       // HTML segue rastreado
+        ->and($text)->toContain('Olá!')                                     // sem nome → saudação neutra
+        ->and($text)->toContain('Ver planos (https://vivensi.app.br/planos)')
+        ->and($text)->toContain('/email/descadastro/')                      // descadastro presente no texto
+        ->and($text)->not->toContain('/e/o/')
+        ->and($text)->not->toContain('<');
+});
+
+it('htmlToText ignora pré-cabeçalho oculto e estilos', function () {
+    $html = '<html><head><style>p{color:red}</style></head><body><div style="display:none">pre</div><p>Linha 1</p><p>Linha&nbsp;2</p></body></html>';
+    expect(CampaignRenderer::htmlToText($html))->toBe("Linha 1\n\nLinha 2");
+});
+
+it('disparo explica quando todos os endereços estão bloqueados', function () {
+    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $admin  = \App\Models\User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'super_admin']);
+    EmailSuppression::suppress('bounce@x.org', EmailSuppression::REASON_HARD_BOUNCE);
+    EmailSuppression::suppress('spam@x.org', EmailSuppression::REASON_COMPLAINT);
+
+    $campaign = ownCampaign([
+        'tenant_id'     => $tenant->id,
+        'created_by'    => $admin->id,
+        'manual_emails' => json_encode([['email' => 'bounce@x.org', 'name' => ''], ['email' => 'spam@x.org', 'name' => '']]),
+    ]);
+
+    $this->withoutMiddleware(\App\Http\Middleware\RequireTwoFactor::class)
+        ->actingAs($admin)
+        ->post(route('admin.email_campaigns.send', $campaign))
+        ->assertSessionHas('error', 'Nenhum destinatário novo para enviar: 2 endereços bloqueados (bounce, spam ou descadastro).');
 });

@@ -16,6 +16,24 @@ fi
 
 cd "$APP_DIR"
 
+# ── Proteção: se qualquer passo falhar depois do "artisan down", o site
+#    sai da manutenção sozinho (antes ficava preso em 503).
+IN_MAINTENANCE=0
+on_error() {
+    local code=$?
+    echo ""
+    echo "❌ Deploy falhou na linha $1 (código $code)."
+    if [ "$IN_MAINTENANCE" = "1" ]; then
+        echo "↩️  Tirando o site do modo de manutenção..."
+        $PHP_BIN $PHP_FLAGS artisan up --no-interaction || true
+        echo "   O site voltou ao ar. Envie a mensagem de erro acima para análise."
+        echo "   Se algo ficou estranho, a versão anterior é: $PREV_HEAD"
+    fi
+    exit $code
+}
+trap 'on_error $LINENO' ERR
+PREV_HEAD=$(git rev-parse --short HEAD 2>/dev/null || echo "?")
+
 # ── 1. Verificação de pré-requisitos ──────────────────────────────────────
 
 echo "🔍 Verificando pré-requisitos..."
@@ -81,13 +99,35 @@ echo "🔐 Ajustando permissões..."
 sudo chown -R ubuntu:www-data . 2>/dev/null || sudo chown -R www-data:www-data . 2>/dev/null || true
 sudo chmod -R 775 storage bootstrap/cache
 
+# ── 2.1 Checar o Git ANTES de entrar em manutenção ───────────────────────
+echo "📥 Buscando atualizações do GitHub..."
+# Mudança só de permissão (chmod acima) não é alteração de conteúdo
+git config core.fileMode false
+git fetch origin main
+
+DIRTY=$(git status --porcelain --untracked-files=no)
+if [ -n "$DIRTY" ]; then
+    echo "❌ Há arquivos alterados diretamente no servidor:"
+    echo "$DIRTY"
+    echo "   Veja o que mudou com: git diff <arquivo>"
+    echo "   O deploy foi cancelado ANTES da manutenção — o site continua no ar."
+    exit 1
+fi
+
+if ! git merge-base --is-ancestor HEAD origin/main; then
+    echo "❌ O servidor tem commits que não estão no GitHub (git log origin/main..HEAD)."
+    echo "   O deploy foi cancelado ANTES da manutenção — o site continua no ar."
+    exit 1
+fi
+
 # ── 3. Modo de manutenção ─────────────────────────────────────────────────
 echo "🔧 Entrando em modo de manutenção..."
 $PHP_BIN $PHP_FLAGS artisan down --no-interaction || true
+IN_MAINTENANCE=1
 
-# ── 4. Git pull ───────────────────────────────────────────────────────────
-echo "📥 Puxando atualizações do GitHub..."
-git pull origin main
+# ── 4. Atualizar o código ─────────────────────────────────────────────────
+echo "📥 Aplicando atualizações ($PREV_HEAD → $(git rev-parse --short origin/main))..."
+git merge --ff-only origin/main
 
 # ── 5. Composer install ───────────────────────────────────────────────────
 echo "📦 Instalando dependências (Composer)..."
@@ -149,6 +189,7 @@ fi
 # ── 10. Sair do modo de manutenção ───────────────────────────────────────
 echo "✅ Saindo do modo de manutenção..."
 $PHP_BIN $PHP_FLAGS artisan up --no-interaction
+IN_MAINTENANCE=0
 
 echo ""
 echo "✅ Deploy concluído com sucesso! — $(date)"
