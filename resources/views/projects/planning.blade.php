@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
     $canManageProject = in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true);
@@ -53,7 +54,7 @@
     }
     .planning-textarea, .planning-input {
         width: 100%;
-        background: #fff;
+        background: var(--ds-surface);
         border: 1px solid var(--ds-border);
         border-radius: 12px;
         padding: 12px 14px;
@@ -84,7 +85,7 @@
         letter-spacing: -0.5px;
     }
     .item-card {
-        background: #fff;
+        background: var(--ds-surface);
         border: 1px solid var(--ds-border-light);
         border-radius: 14px;
         padding: 18px 20px;
@@ -139,8 +140,8 @@
                 <span style="background:var(--ds-brand); width:12px; height:3px; border-radius:2px;"></span>
                 <h6 style="color:var(--ds-brand); font-weight:800; text-transform:uppercase; margin:0; letter-spacing:2px; font-size:0.7rem;">Planejamento Estrategico</h6>
             </div>
-            <h2 style="margin:0; color:#1e293b; font-weight:900; font-size:2.2rem; letter-spacing:-1px;">{{ $project->name }}</h2>
-            <p style="color:#64748b; margin:6px 0 0; font-size:0.95rem; font-weight:500;">Apresentacao institucional, objetivos, metas e marcos planejados.</p>
+            <h2 style="margin:0; color: var(--ds-text); font-weight:900; font-size:2.2rem; letter-spacing:-1px;">{{ $project->name }}</h2>
+            <p style="color: var(--ds-text-muted); margin:6px 0 0; font-size:0.95rem; font-weight:500;">Apresentacao institucional, objetivos, metas e marcos planejados.</p>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <a href="{{ $basePath . '/projects/details/' . $project->id }}" class="planning-tab">
@@ -253,7 +254,7 @@
                 <div style="flex:1; min-width:240px;">
                     <div class="item-title">{{ $goal->title }}</div>
                     @if($goal->description)
-                        <p style="margin:0 0 8px; color:#475569; font-size:0.88rem; line-height:1.55;">{{ $goal->description }}</p>
+                        <p style="margin:0 0 8px; color: var(--ds-text-muted); font-size:0.88rem; line-height:1.55;">{{ $goal->description }}</p>
                     @endif
                     @if($goal->indicator)
                         <div class="item-meta" style="margin-bottom:6px;"><i class="fas fa-tachometer-alt me-1"></i><strong>Indicador:</strong> {{ $goal->indicator }}</div>
@@ -317,7 +318,7 @@
                 <div style="flex:1; min-width:240px;">
                     <div class="item-title">{{ $milestone->title }}</div>
                     @if($milestone->description)
-                        <p style="margin:0 0 8px; color:#475569; font-size:0.88rem; line-height:1.55;">{{ $milestone->description }}</p>
+                        <p style="margin:0 0 8px; color: var(--ds-text-muted); font-size:0.88rem; line-height:1.55;">{{ $milestone->description }}</p>
                     @endif
                     <div class="item-meta">
                         <i class="far fa-calendar-alt me-1"></i>Previsto: {{ $milestone->target_date->format('d/m/Y') }}
@@ -365,7 +366,7 @@
                 <form action="{{ route('projects.planning.goals.store', $project->id) }}" method="POST">
                     @csrf
                     <div class="modal-header" style="border:none; padding:24px 28px 0;">
-                        <h4 class="modal-title fw-900" id="newGoalModalLabel" style="color:#1e293b;">Nova Meta</h4>
+                        <h4 class="modal-title fw-900" id="newGoalModalLabel" style="color: var(--ds-text);">Nova Meta</h4>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body" style="padding:18px 28px;">
@@ -411,7 +412,7 @@
                 <form action="{{ route('projects.planning.milestones.store', $project->id) }}" method="POST">
                     @csrf
                     <div class="modal-header" style="border:none; padding:24px 28px 0;">
-                        <h4 class="modal-title fw-900" id="newMilestoneModalLabel" style="color:#1e293b;">Novo Marco</h4>
+                        <h4 class="modal-title fw-900" id="newMilestoneModalLabel" style="color: var(--ds-text);">Novo Marco</h4>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body" style="padding:18px 28px;">
@@ -464,4 +465,5 @@
 </script>
 @endif
 
+</div>
 @endsection

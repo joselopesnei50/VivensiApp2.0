@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
     // Pode operar este projeto (criar/editar/arquivar, gerir equipe, registrar impacto etc.).
@@ -17,7 +18,7 @@
                 Enviamos por e-mail para <span style="font-weight:900;">{{ session('invite_email') }}</span>. Se não chegar (ex.: ambiente local), copie e envie este link:
             </div>
             <div style="display:flex; gap:10px; flex-wrap: wrap;">
-                <input id="inviteLinkInput" type="text" readonly value="{{ session('invite_link') }}" class="form-control" style="flex: 1; min-width: min(520px, 90vw); border-radius: 14px; border: 1px solid #fde68a; background: #fff;">
+                <input id="inviteLinkInput" type="text" readonly value="{{ session('invite_link') }}" class="form-control" style="flex: 1; min-width: min(520px, 90vw); border-radius: 14px; border: 1px solid #fde68a; background: var(--ds-surface);">
                 <button type="button" class="btn btn-dark" style="border-radius: 14px; font-weight: 900;" onclick="(async () => { const v = document.getElementById('inviteLinkInput')?.value; if (!v) return; try { await navigator.clipboard.writeText(v); } catch (e) { document.getElementById('inviteLinkInput')?.select(); } })();">
                     Copiar link
                 </button>
@@ -94,25 +95,25 @@
         .project-hero-actions { justify-content: flex-start; }
     }
     .project-table-card {
-        background: white;
+        background: var(--ds-surface);
         border-radius: 28px;
         padding: 40px;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ds-border);
         box-shadow: 0 10px 40px rgba(0,0,0,0.02);
     }
     .stakeholder-card {
-        background: #f8fafc;
+        background: var(--vv-surface-soft);
         border-radius: 20px;
         padding: 15px;
         display: flex;
         align-items: center;
         gap: 15px;
         margin-bottom: 12px;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ds-border);
         transition: all 0.2s;
     }
     .stakeholder-card:hover {
-        background: white;
+        background: var(--ds-surface);
         border-color: var(--ds-brand);
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
     }
@@ -153,15 +154,15 @@
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        background: white;
+        background: var(--ds-surface);
         border: 4px solid var(--ds-brand);
         z-index: 1;
     }
     .timeline-content-card {
-        background: white;
+        background: var(--ds-surface);
         border-radius: 20px;
         padding: 24px;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ds-border);
         box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         transition: all 0.3s ease;
     }
@@ -173,7 +174,7 @@
         border-radius: 16px;
         overflow: hidden;
         margin-top: 15px;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--ds-border);
     }
     .timeline-type-badge {
         font-size: 0.65rem;
@@ -191,12 +192,12 @@
         flex-direction: column;
         align-items: center;
         padding: 20px 12px;
-        border: 2px solid #e2e8f0;
+        border: 2px solid var(--ds-border);
         border-radius: 16px;
         text-align: center;
         cursor: pointer;
         transition: all .18s;
-        background: #fff;
+        background: var(--ds-surface);
         user-select: none;
         margin: 0;
     }
@@ -209,7 +210,7 @@
         background: #eef2ff;
         box-shadow: 0 0 0 3px rgba(99,102,241,.15);
     }
-    .role-card.role-card-active .fw-900 { color: #4f46e5; }
+    .role-card.role-card-active .fw-900 { color: var(--vv-link); }
     .role-card.role-card-active i { color: var(--ds-brand) !important; }
 </style>
 
@@ -245,23 +246,23 @@
                     </button>
                 @endif
                 @if(config('planning.enabled'))
-                    <a href="{{ route('projects.planning.show', $project->id) }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                    <a href="{{ route('projects.planning.show', $project->id) }}" class="btn-action-pro" style="background: var(--ds-surface); color: var(--ds-text);">
                         <i class="fas fa-bullseye" style="color: var(--ds-brand);"></i> Planejamento
                     </a>
                 @endif
-                <a href="{{ $basePath . '/projects/'.$project->id.'/stages' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                <a href="{{ $basePath . '/projects/'.$project->id.'/stages' }}" class="btn-action-pro" style="background: var(--ds-surface); color: var(--ds-text);">
                     <i class="fas fa-layer-group" style="color: var(--ds-brand);"></i> Etapas
                 </a>
-                <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" class="btn-action-pro" style="background: var(--ds-surface); color: var(--ds-text);">
                     <i class="fas fa-tasks" style="color: var(--ds-brand);"></i> Quadros Kanban
                 </a>
-                <a href="{{ $basePath . '/projects/'.$project->id.'/classes' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                <a href="{{ $basePath . '/projects/'.$project->id.'/classes' }}" class="btn-action-pro" style="background: var(--ds-surface); color: var(--ds-text);">
                     <i class="fas fa-chalkboard-teacher" style="color: var(--ds-brand);"></i> Turmas
                 </a>
-                <a href="{{ $basePath . '/projects/'.$project->id.'/class-sessions' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                <a href="{{ $basePath . '/projects/'.$project->id.'/class-sessions' }}" class="btn-action-pro" style="background: var(--ds-surface); color: var(--ds-text);">
                     <i class="fas fa-clipboard-list" style="color: var(--ds-brand);"></i> Chamadas avulsas
                 </a>
-                <a href="{{ $basePath . '/projects/'.$project->id.'/attendance/report' }}" class="btn-action-pro" style="background: white; color: #0f172a;">
+                <a href="{{ $basePath . '/projects/'.$project->id.'/attendance/report' }}" class="btn-action-pro" style="background: var(--ds-surface); color: var(--ds-text);">
                     <i class="fas fa-chart-line" style="color: var(--ds-brand);"></i> Frequência
                 </a>
             </div>
@@ -329,7 +330,7 @@
         <div class="project-table-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">Dossiê Financeiro</h4>
+                    <h4 style="margin: 0; font-weight: 900; color: var(--ds-text); letter-spacing: -0.5px;">Dossiê Financeiro</h4>
                     <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Últimas movimentações vinculadas a este registro.</p>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -347,7 +348,7 @@
             <div class="table-responsive">
                 <table class="table table-hover" style="vertical-align: middle;">
                     <thead>
-                        <tr style="border-bottom: 2px solid #f1f5f9;">
+                        <tr style="border-bottom: 2px solid var(--ds-border);">
                             <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Registro</th>
                             <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Descrição</th>
                             <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Data</th>
@@ -359,10 +360,10 @@
                         <tr style="border-bottom: 1px solid #f8fafc;">
                             <td style="padding: 20px 15px; font-weight: 800; color: var(--ds-brand);">#{{ str_pad($t->id, 4, '0', STR_PAD_LEFT) }}</td>
                             <td style="padding: 20px 15px;">
-                                <div style="font-weight: 800; color: #1e293b; font-size: 0.95rem;">{{ $t->description }}</div>
+                                <div style="font-weight: 800; color: var(--ds-text); font-size: 0.95rem;">{{ $t->description }}</div>
                                 <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">{{ $t->category->name ?? 'Geral' }}</div>
                             </td>
-                            <td style="padding: 20px 15px; font-weight: 600; color: #64748b; font-size: 0.85rem;">{{ \Carbon\Carbon::parse($t->date)->format('d/m/Y') }}</td>
+                            <td style="padding: 20px 15px; font-weight: 600; color: var(--ds-text-muted); font-size: 0.85rem;">{{ \Carbon\Carbon::parse($t->date)->format('d/m/Y') }}</td>
                             <td style="padding: 20px 15px; text-align: right;">
                                 <div style="font-weight: 900; font-size: 1.1rem; color: {{ $t->type == 'expense' ? '#f43f5e' : '#10b981' }}">
                                     {{ $t->type == 'expense' ? '-' : '+' }} R$ {{ number_format($t->amount, 2, ',', '.') }}
@@ -390,7 +391,7 @@
             <!-- Stakeholders -->
             <div class="project-table-card" style="padding: 30px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                    <h5 style="margin: 0; font-weight: 900; color: #1e293b;">Stakeholders</h5>
+                    <h5 style="margin: 0; font-weight: 900; color: var(--ds-text);">Stakeholders</h5>
                     @if($canManageProject)
                         <button class="btn btn-light rounded-circle" style="width: 36px; height: 36px; padding: 0;" data-bs-toggle="modal" data-bs-target="#addMemberModal">
                             <i class="fas fa-user-plus text-primary"></i>
@@ -401,16 +402,16 @@
                 <div class="stakeholder-card" style="border-left: 4px solid #1e293b;">
                     <div class="avatar-placeholder">{{ substr(auth()->user()->name, 0, 1) }}</div>
                     <div>
-                        <div style="font-weight: 800; color: #1e293b; font-size: 0.9rem;">{{ auth()->user()->name }}</div>
+                        <div style="font-weight: 800; color: var(--ds-text); font-size: 0.9rem;">{{ auth()->user()->name }}</div>
                         <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Responsável Geral</div>
                     </div>
                 </div>
 
                 @foreach($members as $member)
                 <div class="stakeholder-card">
-                    <div class="avatar-placeholder" style="background: #f1f5f9; color: #1e293b;">{{ substr($member->user->name, 0, 1) }}</div>
+                    <div class="avatar-placeholder" style="background: var(--vv-surface-soft); color: var(--ds-text);">{{ substr($member->user->name, 0, 1) }}</div>
                     <div style="flex-grow: 1;">
-                        <div style="font-weight: 800; color: #1e293b; font-size: 0.9rem;">{{ $member->user->name }}</div>
+                        <div style="font-weight: 800; color: var(--ds-text); font-size: 0.9rem;">{{ $member->user->name }}</div>
                         <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">{{ strtoupper($member->access_level) }}</div>
                     </div>
                     @if($canManageProject)
@@ -425,7 +426,7 @@
 
             <!-- Actions -->
             <div class="project-table-card" style="padding: 30px;">
-                <h5 style="margin: 0 0 25px 0; font-weight: 900; color: #1e293b;">Toolkit Estratégico</h5>
+                <h5 style="margin: 0 0 25px 0; font-weight: 900; color: var(--ds-text);">Toolkit Estratégico</h5>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     <a href="{{ $basePath . '/manager/schedule' }}" class="btn-ds btn-ds-outline" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
                         <span><i class="fas fa-calendar-alt me-2 text-primary"></i> Agenda da Missão</span>
@@ -482,8 +483,8 @@
 <div class="project-table-card mt-4" id="public-registration">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
         <div>
-            <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">
-                <i class="fas fa-link me-2" style="color:#4f46e5;"></i> Página de Inscrição Pública
+            <h4 style="margin: 0; font-weight: 900; color: var(--ds-text); letter-spacing: -0.5px;">
+                <i class="fas fa-link me-2" style="color: var(--vv-link);"></i> Página de Inscrição Pública
             </h4>
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">
                 Formulário público onde qualquer pessoa se cadastra, matricula ou se inscreve neste projeto. As respostas viram <strong>Pessoas</strong> aqui em cima automaticamente.
@@ -492,7 +493,7 @@
         <div style="display:flex; gap:10px;">
             @if(($registrationLandings ?? collect())->isNotEmpty())
                 <a href="{{ url('/ngo/landing-pages') }}" class="btn-ds btn-ds-outline" style="padding: 12px 18px; font-weight: 800; font-size: 0.82rem;">
-                    <i class="fas fa-list me-2" style="color:#64748b;"></i> Todas as páginas
+                    <i class="fas fa-list me-2" style="color: var(--ds-text-muted);"></i> Todas as páginas
                 </a>
             @endif
             <form action="{{ url('/ngo/landing-pages') }}" method="POST" style="margin:0;">
@@ -509,11 +510,11 @@
     </div>
 
     @if(($registrationLandings ?? collect())->isEmpty())
-        <div style="border:1px dashed #cbd5e1; border-radius: 14px; padding: 28px; text-align:center; color:#64748b;">
-            <div style="font-size: 1.6rem; color:#4f46e5; margin-bottom: 8px;">
+        <div style="border:1px dashed #cbd5e1; border-radius: 14px; padding: 28px; text-align:center; color: var(--ds-text-muted);">
+            <div style="font-size: 1.6rem; color: var(--vv-link); margin-bottom: 8px;">
                 <i class="fas fa-wand-magic-sparkles"></i>
             </div>
-            <div style="font-weight: 800; color:#0f172a; margin-bottom: 4px;">Ainda não há página de inscrição vinculada.</div>
+            <div style="font-weight: 800; color: var(--ds-text); margin-bottom: 4px;">Ainda não há página de inscrição vinculada.</div>
             <div style="font-size: .88rem;">Clique em <strong>Criar página de inscrição</strong> pra montar uma landing com formulário e link público. Toda submissão será cadastrada aqui no projeto.</div>
         </div>
     @else
@@ -524,9 +525,9 @@
                     $subs      = (int) ($registrationLandingsSubmissions[$lp->id] ?? 0);
                     $isPub     = ($lp->status ?? 'draft') === 'published';
                 @endphp
-                <div style="border:1px solid #e2e8f0; border-radius: 14px; padding: 16px; background:#fff;">
+                <div style="border: 1px solid var(--ds-border); border-radius: 14px; padding: 16px; background: var(--ds-surface);">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: 8px; margin-bottom: 10px;">
-                        <div style="font-weight: 900; color:#0f172a; line-height: 1.35; word-break: break-word;">{{ $lp->title }}</div>
+                        <div style="font-weight: 900; color: var(--ds-text); line-height: 1.35; word-break: break-word;">{{ $lp->title }}</div>
                         @if($isPub)
                             <span style="font-size: .68rem; background: rgba(16,185,129,.14); color:#059669; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px;">Publicada</span>
                         @else
@@ -534,20 +535,20 @@
                         @endif
                     </div>
 
-                    <div style="display:flex; gap: 14px; margin-bottom: 12px; font-size: .82rem; color:#64748b;">
-                        <div><i class="fas fa-users me-1" style="color:#4f46e5;"></i> <strong style="color:#0f172a;">{{ $subs }}</strong> {{ $subs === 1 ? 'inscrição' : 'inscrições' }}</div>
+                    <div style="display:flex; gap: 14px; margin-bottom: 12px; font-size: .82rem; color: var(--ds-text-muted);">
+                        <div><i class="fas fa-users me-1" style="color: var(--vv-link);"></i> <strong style="color: var(--ds-text);">{{ $subs }}</strong> {{ $subs === 1 ? 'inscrição' : 'inscrições' }}</div>
                         @if($lp->target_link_beneficiary)
                             <div><i class="fas fa-hand-holding-heart me-1" style="color:#10b981;"></i> Beneficiários</div>
                         @endif
                     </div>
 
-                    <div style="display:flex; gap: 6px; align-items:center; background:#f8fafc; border:1px dashed #e2e8f0; border-radius: 10px; padding: 8px 10px; margin-bottom: 12px;">
+                    <div style="display:flex; gap: 6px; align-items:center; background: var(--vv-surface-soft); border: 1px dashed var(--ds-border); border-radius: 10px; padding: 8px 10px; margin-bottom: 12px;">
                         <input type="text" readonly value="{{ $publicUrl }}"
                                id="lp-url-{{ $lp->id }}"
-                               style="flex:1; border:none; background:transparent; font-size:.78rem; color:#334155; padding:0;">
+                               style="flex:1; border:none; background:transparent; font-size:.78rem; color: var(--ds-text); padding:0;">
                         <button type="button" onclick="__lpCopyUrl('lp-url-{{ $lp->id }}', this)"
                                 title="Copiar link"
-                                style="border:none; background:transparent; color:#4f46e5; cursor:pointer; padding:2px 6px;">
+                                style="border:none; background:transparent; color: var(--vv-link); cursor:pointer; padding:2px 6px;">
                             <i class="fas fa-copy"></i>
                         </button>
                     </div>
@@ -593,7 +594,7 @@
 <div class="project-table-card mt-4">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 15px;">
         <div>
-            <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">Pessoas & Contatos</h4>
+            <h4 style="margin: 0; font-weight: 900; color: var(--ds-text); letter-spacing: -0.5px;">Pessoas & Contatos</h4>
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Gerencie o cadastro de pessoas relacionadas a este projeto.</p>
             @if(($linkedBeneficiariesCount ?? 0) > 0)
                 <p style="margin: 8px 0 0 0; font-weight: 700; font-size: 0.8rem; color: #10b981;">
@@ -623,7 +624,7 @@
     <div class="table-responsive">
         <table class="table table-hover" style="vertical-align: middle;">
             <thead>
-                <tr style="border-bottom: 2px solid #f1f5f9;">
+                <tr style="border-bottom: 2px solid var(--ds-border);">
                     <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Nome</th>
                     <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Telefone</th>
                     <th style="padding: 15px; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Endereço/Cidade</th>
@@ -634,7 +635,7 @@
                 @forelse($project->people as $person)
                 <tr style="border-bottom: 1px solid #f8fafc;">
                     <td style="padding: 15px;">
-                        <div style="font-weight: 800; color: #1e293b;">{{ $person->name }}</div>
+                        <div style="font-weight: 800; color: var(--ds-text);">{{ $person->name }}</div>
                         @if($person->beneficiary)
                             <a href="{{ url('/ngo/beneficiaries/' . $person->beneficiary->id) }}"
                                style="display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 3px 8px; border-radius: 999px; background: #ecfdf5; color: #047857; font-size: 0.7rem; font-weight: 700; text-decoration: none;"
@@ -644,18 +645,18 @@
                         @endif
                     </td>
                     <td style="padding: 15px;">
-                        <div style="font-weight: 600; color: #64748b;">
+                        <div style="font-weight: 600; color: var(--ds-text-muted);">
                             <i class="fab fa-whatsapp" style="color: #10b981;"></i> {{ $person->phone ?: '-' }}
                         </div>
                     </td>
                     <td style="padding: 15px;">
-                        <div style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                        <div style="font-size: 0.85rem; color: var(--ds-text-muted); font-weight: 600;">
                             {{ $person->address ?: '-' }} <br>
                             <span style="color: #94a3b8;">{{ $person->city ?: '-' }}</span>
                         </div>
                     </td>
                     <td style="padding: 15px; text-align: right;">
-                        <button type="button" class="btn btn-sm btn-light" style="border-radius: 8px; color:#4f46e5;"
+                        <button type="button" class="btn btn-sm btn-light" style="border-radius: 8px; color: var(--vv-link);"
                                 onclick="showPersonDetails({{ $project->id }}, {{ $person->id }})"
                                 title="Ver detalhes do inscrito">
                             <i class="fas fa-eye"></i>
@@ -688,9 +689,9 @@
 <div class="modal fade" id="personDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="border-radius:16px; border:none;">
-            <div class="modal-header" style="border-bottom:1px solid #f1f5f9;">
-                <h5 class="modal-title" style="font-weight:800; color:#0f172a;">
-                    <i class="fas fa-user-circle" style="color:#4f46e5;"></i>
+            <div class="modal-header" style="border-bottom: 1px solid var(--ds-border);">
+                <h5 class="modal-title" style="font-weight:800; color: var(--ds-text);">
+                    <i class="fas fa-user-circle" style="color: var(--vv-link);"></i>
                     <span id="pdmName">Detalhes do inscrito</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
@@ -708,9 +709,9 @@
 <script>
     function pdmRow(label, value) {
         if (value === null || value === undefined || value === '') return '';
-        return `<div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
-                    <div style="flex:0 0 40%; font-size:.78rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.03em;">${label}</div>
-                    <div style="flex:1; font-size:.9rem; color:#0f172a; word-break:break-word;">${value}</div>
+        return `<div style="display:flex; gap:12px; padding:10px 0; border-bottom: 1px solid var(--ds-border);">
+                    <div style="flex:0 0 40%; font-size:.78rem; font-weight:700; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:.03em;">${label}</div>
+                    <div style="flex:1; font-size:.9rem; color: var(--ds-text); word-break:break-word;">${value}</div>
                 </div>`;
     }
     function pdmEsc(v) {
@@ -743,12 +744,12 @@
             html += pdmRow('Status',          pdmEsc(d.enrollment_status));
             if (d.beneficiary && d.beneficiary.id) {
                 html += pdmRow('Beneficiário',
-                    `<a href="/ngo/beneficiaries/${d.beneficiary.id}" style="color:#4f46e5; font-weight:600;">${pdmEsc(d.beneficiary.name)} <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i></a>`);
+                    `<a href="/ngo/beneficiaries/${d.beneficiary.id}" style="color: var(--vv-link); font-weight:600;">${pdmEsc(d.beneficiary.name)} <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i></a>`);
             }
 
             const cfKeys = d.custom_fields ? Object.keys(d.custom_fields) : [];
             if (cfKeys.length > 0) {
-                html += `<div style="margin-top:22px; margin-bottom:8px; font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#4f46e5;">
+                html += `<div style="margin-top:22px; margin-bottom:8px; font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color: var(--vv-link);">
                             <i class="fas fa-sliders"></i> Campos personalizados (via landing page)
                          </div>`;
                 cfKeys.forEach(k => {
@@ -761,7 +762,7 @@
                 const note = d.origin === 'manual'
                     ? '<i class="fas fa-user-pen"></i> Cadastro manual — não veio de landing page.'
                     : '<i class="fas fa-info-circle"></i> Este inscrito veio de landing page, mas o formulário não tinha campos personalizados configurados.';
-                html += `<div style="margin-top:22px; padding:12px 14px; background:#f8fafc; border:1px dashed #e2e8f0; border-radius:10px; color:#64748b; font-size:.82rem;">${note}</div>`;
+                html += `<div style="margin-top:22px; padding:12px 14px; background: var(--vv-surface-soft); border: 1px dashed var(--ds-border); border-radius:10px; color: var(--ds-text-muted); font-size:.82rem;">${note}</div>`;
 
                 // Diagnostico visual (2026-08-06) — mostra o que esta gravado
                 // pro user diferenciar retro/bug/config.
@@ -797,7 +798,7 @@
 <div class="project-table-card mt-4">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;">
         <div>
-            <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">Linha do Tempo de Impacto</h4>
+            <h4 style="margin: 0; font-weight: 900; color: var(--ds-text); letter-spacing: -0.5px;">Linha do Tempo de Impacto</h4>
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Evidências e marcos históricos da execução do projeto.</p>
         </div>
         @if($canManageProject)
@@ -817,7 +818,7 @@
                             <span class="timeline-type-badge" style="background: {{ $record->type == 'milestone' ? '#ecfdf5' : ($record->type == 'photo' ? '#eef2ff' : '#fff7ed') }}; color: {{ $record->type == 'milestone' ? '#059669' : ($record->type == 'photo' ? '#4f46e5' : '#d97706') }}">
                                 {{ strtoupper($record->type) }}
                             </span>
-                            <h5 style="font-weight: 950; color: #1e293b; margin-bottom: 5px;">{{ $record->title }}</h5>
+                            <h5 style="font-weight: 950; color: var(--ds-text); margin-bottom: 5px;">{{ $record->title }}</h5>
                             <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; margin-bottom: 15px;">
                                 <i class="far fa-calendar-alt me-1"></i> {{ $record->date->format('d/m/Y') }}
                             </div>
@@ -832,7 +833,7 @@
                         @endif
                     </div>
                     
-                    <p style="color: #64748b; font-weight: 500; font-size: 0.95rem; margin-bottom: 0;">{{ $record->content }}</p>
+                    <p style="color: var(--ds-text-muted); font-weight: 500; font-size: 0.95rem; margin-bottom: 0;">{{ $record->content }}</p>
 
                     @if($record->media_path)
                         <div class="timeline-media">
@@ -864,7 +865,7 @@
     {{-- Header --}}
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:28px; flex-wrap:wrap; gap:12px;">
         <div>
-            <h4 style="margin:0; font-weight:900; color:#1e293b; letter-spacing:-0.5px;">
+            <h4 style="margin:0; font-weight:900; color: var(--ds-text); letter-spacing:-0.5px;">
                 <i class="fas fa-book-open me-2" style="color:var(--ds-brand);"></i> Diário de Evolução
             </h4>
             <p style="margin:5px 0 0; color:#94a3b8; font-weight:600; font-size:.85rem;">
@@ -893,7 +894,7 @@
                 {{ $project->ai_summary_at?->format('d/m/Y H:i') }}
             </span>
         </div>
-        <div id="ai-summary-content" style="font-size:.88rem;color:#1e293b;line-height:1.75;white-space:pre-wrap;">{{ $project->ai_summary }}</div>
+        <div id="ai-summary-content" style="font-size:.88rem;color: var(--ds-text);line-height:1.75;white-space:pre-wrap;">{{ $project->ai_summary }}</div>
     </div>
     @else
     <div id="ai-summary-box" style="display:none;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:16px;padding:24px;margin-bottom:28px;">
@@ -903,7 +904,7 @@
             </span>
             <span id="ai-summary-date" style="font-size:.75rem;color:#a78bfa;font-weight:600;"></span>
         </div>
-        <div id="ai-summary-content" style="font-size:.88rem;color:#1e293b;line-height:1.75;white-space:pre-wrap;"></div>
+        <div id="ai-summary-content" style="font-size:.88rem;color: var(--ds-text);line-height:1.75;white-space:pre-wrap;"></div>
     </div>
     @endif
 
@@ -915,13 +916,13 @@
                 {{ session('log_success') }}
             </div>
         @endif
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:18px;">
-            <label style="font-weight:700;font-size:.8rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:10px;">
+        <div style="background: var(--vv-surface-soft);border: 1px solid var(--ds-border);border-radius:16px;padding:18px;">
+            <label style="font-weight:700;font-size:.8rem;color: var(--ds-text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:10px;">
                 Nova Entrada
             </label>
             <textarea name="body" rows="3" required maxlength="3000"
                 placeholder="Descreva o que foi feito hoje, dificuldades encontradas, próximas ações..."
-                style="width:100%;background:#fff;border:1px solid #94a3b8;border-radius:12px;padding:12px 14px;font-size:.88rem;resize:vertical;outline:none;line-height:1.6;"
+                style="width:100%;background: var(--ds-surface);border:1px solid #94a3b8;border-radius:12px;padding:12px 14px;font-size:.88rem;resize:vertical;outline:none;line-height:1.6;"
                 onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#94a3b8'"></textarea>
             <div style="display:flex;justify-content:flex-end;margin-top:10px;">
                 <button type="submit"
@@ -941,14 +942,14 @@
     @else
         <div style="display:flex;flex-direction:column;gap:12px;">
             @foreach($logs as $log)
-            <div style="background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:18px 20px;position:relative;">
+            <div style="background: var(--ds-surface);border: 1px solid var(--ds-border);border-radius:14px;padding:18px 20px;position:relative;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--ds-brand),#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.8rem;flex-shrink:0;">
                             {{ strtoupper(substr($log->user?->name ?? 'U', 0, 1)) }}
                         </div>
                         <div>
-                            <div style="font-weight:700;color:#1e293b;font-size:.88rem;">{{ $log->user?->name ?? 'Usuário' }}</div>
+                            <div style="font-weight:700;color: var(--ds-text);font-size:.88rem;">{{ $log->user?->name ?? 'Usuário' }}</div>
                             <div style="font-size:.75rem;color:#94a3b8;">
                                 <i class="far fa-clock me-1"></i>{{ $log->created_at->format('d/m/Y H:i') }}
                             </div>
@@ -965,7 +966,7 @@
                     </form>
                     @endif
                 </div>
-                <p style="margin:0;color:#475569;font-size:.88rem;line-height:1.65;white-space:pre-wrap;">{{ $log->body }}</p>
+                <p style="margin:0;color: var(--ds-text-muted);font-size:.88rem;line-height:1.65;white-space:pre-wrap;">{{ $log->body }}</p>
             </div>
             @endforeach
         </div>
@@ -1122,12 +1123,12 @@ async function generateProjectPdf(btn) {
                 <div class="modal-body p-5">
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Título do Marco</label>
-                        <input name="title" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="Ex: Entrega de cestas básicas" required>
+                        <input name="title" type="text" class="form-control form-control-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700" placeholder="Ex: Entrega de cestas básicas" required>
                     </div>
 
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Tipo de Registro</label>
-                        <select name="type" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 fw-700">
+                        <select name="type" class="form-select form-select-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700">
                             <option value="status">Atualização de Status</option>
                             <option value="milestone">Marco Histórico (Milestone)</option>
                             <option value="photo">Galeria de Fotos</option>
@@ -1137,22 +1138,22 @@ async function generateProjectPdf(btn) {
 
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Data da Ocorrência</label>
-                        <input name="date" type="date" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" value="{{ date('Y-m-d') }}">
+                        <input name="date" type="date" class="form-control form-control-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700" value="{{ date('Y-m-d') }}">
                     </div>
 
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Descrição</label>
-                        <textarea name="content" class="form-control border-0 bg-light rounded-4 py-3 fw-700" rows="4" placeholder="Descreva os detalhes deste marco de impacto..."></textarea>
+                        <textarea name="content" class="form-control border-0 bg-body-tertiary rounded-4 py-3 fw-700" rows="4" placeholder="Descreva os detalhes deste marco de impacto..."></textarea>
                     </div>
 
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Mídia (Foto)</label>
-                        <input name="media" type="file" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
+                        <input name="media" type="file" class="form-control border-0 bg-body-tertiary rounded-4 py-3 fw-700">
                     </div>
 
                     <div class="mb-0">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Link Externo (Vídeo/Drive)</label>
-                        <input name="external_url" type="url" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="https://youtube.com/...">
+                        <input name="external_url" type="url" class="form-control form-control-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700" placeholder="https://youtube.com/...">
                     </div>
                 </div>
                 <div class="p-5 pt-0">
@@ -1184,22 +1185,22 @@ async function generateProjectPdf(btn) {
                        class="text-decoration-none d-flex align-items-center gap-3 p-3 rounded-4"
                        style="background:linear-gradient(135deg,#eef2ff,#f5f3ff); border:1px solid #ddd6fe;">
                         <img src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="Bruce"
-                             style="width:38px; height:38px; border-radius:50%; background:white; padding:3px; box-shadow:0 2px 6px rgba(79,70,229,0.15); flex-shrink:0;">
+                             style="width:38px; height:38px; border-radius:50%; background: var(--ds-surface); padding:3px; box-shadow:0 2px 6px rgba(79,70,229,0.15); flex-shrink:0;">
                         <div style="flex:1; min-width:0;">
-                            <div class="fw-800" style="color:#4338ca; font-size:0.85rem;">
-                                Precisa de ajuda? <span style="color:#0f172a;">Bruce explica como funciona.</span>
+                            <div class="fw-800" style="color: var(--vv-link); font-size:0.85rem;">
+                                Precisa de ajuda? <span style="color: var(--ds-text);">Bruce explica como funciona.</span>
                             </div>
                             <div class="small" style="color:#6366f1; margin-top:2px;">
                                 Quando usar Colaborador vs Credenciado, o que cada um enxerga e boas praticas de LGPD.
                             </div>
                         </div>
-                        <span style="color:#4338ca; font-weight:800; font-size:0.82rem; flex-shrink:0;">
+                        <span style="color: var(--vv-link); font-weight:800; font-size:0.82rem; flex-shrink:0;">
                             Ver guia <i class="fas fa-external-link-alt ms-1" style="font-size:0.7rem;"></i>
                         </span>
                     </a>
                 </div>
                 <div class="px-5 pt-4">
-                    <ul class="nav nav-pills nav-fill bg-light rounded-4 p-1" id="teamModalTabs" role="tablist">
+                    <ul class="nav nav-pills nav-fill bg-body-tertiary rounded-4 p-1" id="teamModalTabs" role="tablist">
                         <li class="nav-item"><button class="nav-link active rounded-4 fw-800 py-3" id="select-tab" data-bs-toggle="pill" data-bs-target="#selectMember" type="button">Vincular Ativo</button></li>
                         <li class="nav-item"><button class="nav-link rounded-4 fw-800 py-3" id="new-tab" data-bs-toggle="pill" data-bs-target="#newMember" type="button">Novo Credenciamento</button></li>
                     </ul>
@@ -1209,7 +1210,7 @@ async function generateProjectPdf(btn) {
                         <form action="{{ $basePath . '/projects/'.$project->id.'/members' }}" method="POST">
                             @csrf
                             <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Selecionar Colaborador</label>
-                            <select name="user_id" class="form-select form-select-lg border-0 bg-light rounded-4 py-3 mb-4 fw-700" style="font-size: 1rem; color: #1e293b;" required>
+                            <select name="user_id" class="form-select form-select-lg border-0 bg-body-tertiary rounded-4 py-3 mb-4 fw-700" style="font-size: 1rem; color: var(--ds-text);" required>
                                 <option value="">Busque por nome ou email...</option>
                                 @foreach($availableUsers as $u)
                                     <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
@@ -1221,7 +1222,7 @@ async function generateProjectPdf(btn) {
                                 <div class="col-md-4">
                                     <label for="rV" class="role-card w-100" id="card-rV">
                                         <input type="radio" name="access_level" id="rV" value="viewer" class="d-none" onchange="highlightRoleCard('r',this.id)">
-                                        <i class="fas fa-eye mb-2" style="font-size:1.3rem;color:#64748b;"></i>
+                                        <i class="fas fa-eye mb-2" style="font-size:1.3rem;color: var(--ds-text-muted);"></i>
                                         <div class="fw-900 mb-1">Viewer</div>
                                         <div class="small fw-bold" style="color:#94a3b8;">Auditagem</div>
                                     </label>
@@ -1237,7 +1238,7 @@ async function generateProjectPdf(btn) {
                                 <div class="col-md-4">
                                     <label for="rA" class="role-card w-100" id="card-rA">
                                         <input type="radio" name="access_level" id="rA" value="admin" class="d-none" onchange="highlightRoleCard('r',this.id)">
-                                        <i class="fas fa-shield-halved mb-2" style="font-size:1.3rem;color:#64748b;"></i>
+                                        <i class="fas fa-shield-halved mb-2" style="font-size:1.3rem;color: var(--ds-text-muted);"></i>
                                         <div class="fw-900 mb-1">Admin</div>
                                         <div class="small fw-bold" style="color:#94a3b8;">Total</div>
                                     </label>
@@ -1257,19 +1258,19 @@ async function generateProjectPdf(btn) {
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Nome</label>
-                                    <input name="name" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="Ex: Maria Silva" required>
+                                    <input name="name" type="text" class="form-control form-control-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700" placeholder="Ex: Maria Silva" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Email (login)</label>
-                                    <input name="email" type="email" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="ex: maria@empresa.com" required>
+                                    <input name="email" type="email" class="form-control form-control-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700" placeholder="ex: maria@empresa.com" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Telefone (opcional)</label>
-                                    <input name="phone" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="(11) 99999-9999">
+                                    <input name="phone" type="text" class="form-control form-control-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700" placeholder="(11) 99999-9999">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Senha</label>
-                                    <div class="p-4 bg-light rounded-4 border-0 fw-800" style="color:#1e293b;">
+                                    <div class="p-4 bg-body-tertiary rounded-4 border-0 fw-800" style="color: var(--ds-text);">
                                         <i class="fas fa-envelope me-2" style="color:#6366f1;"></i>Link de definição de senha
                                         <div class="small opacity-50 fw-bold mt-1">Um e-mail sera enviado para o novo membro definir a propria senha.</div>
                                     </div>
@@ -1299,7 +1300,7 @@ async function generateProjectPdf(btn) {
                                 <div class="col-md-4">
                                     <label for="nrV" class="role-card w-100" id="card-nrV">
                                         <input type="radio" name="access_level" id="nrV" value="viewer" class="d-none" onchange="highlightRoleCard('nr',this.id)">
-                                        <i class="fas fa-eye mb-2" style="font-size:1.3rem;color:#64748b;"></i>
+                                        <i class="fas fa-eye mb-2" style="font-size:1.3rem;color: var(--ds-text-muted);"></i>
                                         <div class="fw-900 mb-1">Viewer</div>
                                         <div class="small fw-bold" style="color:#94a3b8;">Auditagem</div>
                                     </label>
@@ -1315,7 +1316,7 @@ async function generateProjectPdf(btn) {
                                 <div class="col-md-4">
                                     <label for="nrA" class="role-card w-100" id="card-nrA">
                                         <input type="radio" name="access_level" id="nrA" value="admin" class="d-none" onchange="highlightRoleCard('nr',this.id)">
-                                        <i class="fas fa-shield-halved mb-2" style="font-size:1.3rem;color:#64748b;"></i>
+                                        <i class="fas fa-shield-halved mb-2" style="font-size:1.3rem;color: var(--ds-text-muted);"></i>
                                         <div class="fw-900 mb-1">Admin</div>
                                         <div class="small fw-bold" style="color:#94a3b8;">Total</div>
                                     </label>
@@ -1400,8 +1401,8 @@ async function generateProjectPdf(btn) {
                             <label class="fw-800 text-uppercase small text-muted d-block mb-2">
                                 <i class="fas fa-link" style="color:#059669;"></i> Vincular a um beneficiário cadastrado
                             </label>
-                            <input type="text" id="benefSearchInput" placeholder="Buscar por nome..." oninput="filterBeneficiaries()" class="form-control border-0 rounded-4 py-2 fw-700 mb-2" style="background:white;">
-                            <div id="benefListWrap" style="max-height:180px; overflow-y:auto; display:none; background:white; border-radius:10px; border:1px solid #d1fae5;">
+                            <input type="text" id="benefSearchInput" placeholder="Buscar por nome..." oninput="filterBeneficiaries()" class="form-control border-0 rounded-4 py-2 fw-700 mb-2" style="background: var(--ds-surface);">
+                            <div id="benefListWrap" style="max-height:180px; overflow-y:auto; display:none; background: var(--ds-surface); border-radius:10px; border:1px solid #d1fae5;">
                                 <div id="benefList"></div>
                             </div>
                             <small class="text-muted d-block mt-1">Opcional — deixa em branco pra cadastrar uma pessoa nova sem vincular a beneficiário.</small>
@@ -1411,8 +1412,8 @@ async function generateProjectPdf(btn) {
                             function renderBenefList(items) {
                                 const el = document.getElementById('benefList');
                                 el.innerHTML = items.length === 0
-                                    ? '<div style="padding:10px 14px; color:#64748b; font-size:.85rem;">Nenhum beneficiário encontrado</div>'
-                                    : items.map(b => `<button type="button" onclick="pickBeneficiary(${b.id},'${(b.name||'').replace(/'/g,"\\'")}')" style="display:block; width:100%; text-align:left; padding:8px 14px; background:none; border:none; border-bottom:1px solid #ecfdf5; cursor:pointer; font-weight:700; color:#0f172a;">${b.name}</button>`).join('');
+                                    ? '<div style="padding:10px 14px; color: var(--ds-text-muted); font-size:.85rem;">Nenhum beneficiário encontrado</div>'
+                                    : items.map(b => `<button type="button" onclick="pickBeneficiary(${b.id},'${(b.name||'').replace(/'/g,"\\'")}')" style="display:block; width:100%; text-align:left; padding:8px 14px; background:none; border:none; border-bottom:1px solid #ecfdf5; cursor:pointer; font-weight:700; color: var(--ds-text);">${b.name}</button>`).join('');
                             }
                             function filterBeneficiaries() {
                                 const q = (document.getElementById('benefSearchInput').value || '').toLowerCase().trim();
@@ -1438,19 +1439,19 @@ async function generateProjectPdf(btn) {
                     @endif
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Nome Completo</label>
-                        <input name="name" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" required>
+                        <input name="name" type="text" class="form-control form-control-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700" required>
                     </div>
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">WhatsApp (com DDD)</label>
-                        <input name="phone" type="text" class="form-control form-control-lg border-0 bg-light rounded-4 py-3 fw-700" placeholder="Ex: 11999999999">
+                        <input name="phone" type="text" class="form-control form-control-lg border-0 bg-body-tertiary rounded-4 py-3 fw-700" placeholder="Ex: 11999999999">
                     </div>
                     <div class="mb-4">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Endereço</label>
-                        <input name="address" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
+                        <input name="address" type="text" class="form-control border-0 bg-body-tertiary rounded-4 py-3 fw-700">
                     </div>
                     <div class="mb-0">
                         <label class="fw-800 text-uppercase mb-2 small text-muted">Cidade</label>
-                        <input name="city" type="text" class="form-control border-0 bg-light rounded-4 py-3 fw-700">
+                        <input name="city" type="text" class="form-control border-0 bg-body-tertiary rounded-4 py-3 fw-700">
                     </div>
                 </div>
                 <div class="p-5 pt-0">
@@ -1515,23 +1516,23 @@ async function generateProjectPdf(btn) {
             </div>
             <div class="modal-body" style="padding: 0; position: relative;">
                 <div style="position: absolute; top: 0; left: 0; right: 0; height: 10px; background: linear-gradient(180deg, rgba(99,102,241,0.05), transparent); z-index: 2;"></div>
-                <div id="bpc_messages" style="padding: 24px 30px; height: 420px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 16px;">
+                <div id="bpc_messages" style="padding: 24px 30px; height: 420px; overflow-y: auto; background: var(--vv-surface-soft); display: flex; flex-direction: column; gap: 16px;">
                     <div id="bpc_empty" style="text-align: center; color: #94a3b8; padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
-                        <div style="width: 80px; height: 80px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(168,85,247,0.1);">
+                        <div style="width: 80px; height: 80px; background: var(--ds-surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(168,85,247,0.1);">
                             <i class="fas fa-wand-magic-sparkles" style="font-size: 2.2rem; color: #a855f7;"></i>
                         </div>
-                        <h4 style="margin: 0; font-weight: 900; color: #1e293b; letter-spacing: -0.5px;">O que você precisa saber?</h4>
-                        <p style="margin: 12px 0 0 0; font-size: 0.95rem; line-height: 1.6; color: #64748b;">A IA tem acesso total aos dados financeiros,<br>membros e histórico deste projeto.</p>
+                        <h4 style="margin: 0; font-weight: 900; color: var(--ds-text); letter-spacing: -0.5px;">O que você precisa saber?</h4>
+                        <p style="margin: 12px 0 0 0; font-size: 0.95rem; line-height: 1.6; color: var(--ds-text-muted);">A IA tem acesso total aos dados financeiros,<br>membros e histórico deste projeto.</p>
                         <div style="display: flex; gap: 10px; margin-top: 25px; flex-wrap: wrap; justify-content: center;">
                             <span style="background: #eef2ff; color: #6366f1; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">"Resumo financeiro"</span>
                             <span style="background: #f5f3ff; color: #a855f7; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">"Últimas entregas"</span>
                         </div>
                     </div>
                 </div>
-                <div style="padding: 20px 30px; background: #fff; border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 20px rgba(0,0,0,0.02);">
+                <div style="padding: 20px 30px; background: var(--ds-surface); border-top: 1px solid var(--ds-border); box-shadow: 0 -4px 20px rgba(0,0,0,0.02);">
                     <form id="bpc_form" onsubmit="return bruceProjectSend(event);" style="display: flex; gap: 12px; position: relative;">
                         <input type="text" id="bpc_input" class="form-control" placeholder="Escreva sua pergunta para a IA..." autocomplete="off"
-                               style="flex:1; padding: 16px 20px; border-radius: 18px; border: 2px solid #e2e8f0; font-weight: 600; color: #0f172a; font-size: 0.95rem; background: #f8fafc; transition: all 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);"
+                               style="flex:1; padding: 16px 20px; border-radius: 18px; border: 2px solid var(--ds-border); font-weight: 600; color: var(--ds-text); font-size: 0.95rem; background: var(--vv-surface-soft); transition: all 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);"
                                onfocus="this.style.borderColor='#a855f7'; this.style.background='#fff'" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
                         <button type="submit" id="bpc_send" class="btn-premium" style="padding: 0 24px !important; border-radius: 18px !important; font-size: 1.1rem !important; background: var(--ds-brand) !important; color: #fff !important; border: none !important; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;">
                             <i class="fas fa-paper-plane"></i>
@@ -1539,7 +1540,7 @@ async function generateProjectPdf(btn) {
                     </form>
                 </div>
             </div>
-            <div class="modal-footer" style="background: #fff; border-top: none; padding: 0 30px 24px 30px; justify-content: space-between; display: flex; align-items: center;">
+            <div class="modal-footer" style="background: var(--ds-surface); border-top: none; padding: 0 30px 24px 30px; justify-content: space-between; display: flex; align-items: center;">
                 <button type="button" id="bpc_clear" onclick="bruceProjectClear()" class="btn btn-sm" style="font-weight: 700; font-size: 0.8rem; color: #94a3b8; background: transparent; border: none; padding: 0;"><i class="fas fa-eraser me-1"></i> Limpar contexto</button>
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <i class="fas fa-bolt" style="color: #fbbf24;"></i>
@@ -1652,7 +1653,7 @@ async function generateProjectPdf(btn) {
         document.getElementById('bpc_messages').innerHTML = `
             <div id="bpc_empty" style="text-align: center; color: #94a3b8; padding: 60px 20px;">
                 <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.5;"></i>
-                <p style="margin: 0; font-weight: 700; color: #475569;">Pergunte algo sobre <strong>${bpcProjectName}</strong></p>
+                <p style="margin: 0; font-weight: 700; color: var(--ds-text-muted);">Pergunte algo sobre <strong>${bpcProjectName}</strong></p>
                 <p style="margin: 8px 0 0 0; font-size: 0.85rem;">Ex: <em>"como está o orçamento?"</em>, <em>"o que devo priorizar essa semana?"</em></p>
             </div>`;
         const modal = new bootstrap.Modal(document.getElementById('bruceProjectChatModal'));
@@ -1670,7 +1671,7 @@ async function generateProjectPdf(btn) {
                 <div style="width: 36px; height: 36px; border-radius: 50%; background: ${isUser ? '#0369a1' : '#10b981'}; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">
                     <i class="fas fa-${isUser ? 'user' : 'robot'}"></i>
                 </div>
-                <div style="background: ${isUser ? '#0369a1' : '#fff'}; color: ${isUser ? '#fff' : '#0f172a'}; padding: 12px 16px; border-radius: 16px; max-width: 78%; font-size: 0.9rem; line-height: 1.5; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid ${isUser ? 'transparent' : '#e2e8f0'};">
+                <div style="background: ${isUser ? '#0369a1' : '#fff'}; color: ${isUser ? '#fff' : '#0f172a'}; padding: 12px 16px; border-radius: 16px; max-width: 78%; font-size: 0.9rem; line-height: 1.5; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid ${isUser ? 'transparent' : 'var(--ds-border)'};">
                     ${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
                 </div>
             </div>`;
@@ -1685,7 +1686,7 @@ async function generateProjectPdf(btn) {
             box.insertAdjacentHTML('beforeend', `
                 <div id="bpc_typing" style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center;">
                     <div style="width: 36px; height: 36px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;"><i class="fas fa-robot"></i></div>
-                    <div style="background: #fff; color: #475569; padding: 12px 16px; border-radius: 16px; font-size: 0.85rem; border: 1px solid #e2e8f0;"><i class="fas fa-circle-notch fa-spin me-2"></i> Pensando...</div>
+                    <div style="background: var(--ds-surface); color: var(--ds-text-muted); padding: 12px 16px; border-radius: 16px; font-size: 0.85rem; border: 1px solid var(--ds-border);"><i class="fas fa-circle-notch fa-spin me-2"></i> Pensando...</div>
                 </div>`);
             box.scrollTop = box.scrollHeight;
         } else if (!on && el) {
@@ -1762,5 +1763,6 @@ async function generateProjectPdf(btn) {
 </script>
 @endif
 
+</div>
 @endsection
 

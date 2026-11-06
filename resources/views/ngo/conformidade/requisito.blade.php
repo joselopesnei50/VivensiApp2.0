@@ -2,6 +2,7 @@
 
 @section('content')
 
+<div data-theme-scope>
 @php
 $resultado  = $avaliacaoAtual['resultado'] ?? 'nao_aplicavel';
 $leftColor  = match($resultado) { 'verde' => '#10b981', 'amarelo' => '#f59e0b', 'vermelho' => '#ef4444', default => '#cbd5e1' };
@@ -14,9 +15,9 @@ $badgeLabel = match($resultado) { 'verde' => 'Verde ✓', 'amarelo' => 'Atençã
 .res-verde   { background:#d1fae5; color:#065f46; }
 .res-amarelo { background:#fef9c3; color:#713f12; }
 .res-vermelho{ background:#fee2e2; color:#7f1d1d; }
-.res-neutro  { background:#f1f5f9; color:#64748b; }
+.res-neutro  { background: var(--vv-surface-soft); color: var(--ds-text-muted); }
 .tipo-badge  { font-size:.65rem; font-weight:700; padding:2px 7px; border-radius:6px; background:#e0e7ff; color:#3730a3; }
-.ev-card     { border-radius:12px; border:1px solid #e2e8f0; padding:14px 16px; margin-bottom:8px; background:#fff; }
+.ev-card     { border-radius:12px; border: 1px solid var(--ds-border); padding:14px 16px; margin-bottom:8px; background: var(--ds-surface); }
 </style>
 
 <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
@@ -152,7 +153,7 @@ $badgeLabel = match($resultado) { 'verde' => 'Verde ✓', 'amarelo' => 'Atençã
 
                     {{-- Evidências desta declaração --}}
                     @if($dec->evidencias->count() > 0)
-                    <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9">
+                    <div class="mt-2 pt-2" style="border-top: 1px solid var(--ds-border)">
                         <p class="text-muted mb-1" style="font-size:.72rem">Evidências:</p>
                         @foreach($dec->evidencias as $ev)
                         <div class="d-flex align-items-center gap-2 mb-1" style="font-size:.78rem">
@@ -171,7 +172,7 @@ $badgeLabel = match($resultado) { 'verde' => 'Verde ✓', 'amarelo' => 'Atençã
 
                     {{-- Botão para adicionar evidência à declaração mais recente --}}
                     @if($loop->first)
-                    <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9">
+                    <div class="mt-2 pt-2" style="border-top: 1px solid var(--ds-border)">
                         <button class="btn btn-sm btn-outline-secondary" style="font-size:.72rem"
                                 data-bs-toggle="collapse" data-bs-target="#collapseEvidencia{{ $dec->id }}">
                             <i class="bi bi-paperclip me-1"></i>Anexar evidência
@@ -239,7 +240,7 @@ $badgeLabel = match($resultado) { 'verde' => 'Verde ✓', 'amarelo' => 'Atençã
                 <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-secondary"></i>Histórico de Avaliações</h6>
                 <div style="font-size:.82rem">
                     @foreach($historico->take(10) as $h)
-                    <div class="d-flex align-items-center gap-3 mb-2 pb-2" style="border-bottom:1px solid #f1f5f9">
+                    <div class="d-flex align-items-center gap-3 mb-2 pb-2" style="border-bottom: 1px solid var(--ds-border)">
                         <span class="res-badge {{ $h->resultado === 'verde' ? 'res-verde' : ($h->resultado === 'amarelo' ? 'res-amarelo' : 'res-vermelho') }}" style="font-size:.65rem;white-space:nowrap">
                             {{ ucfirst($h->resultado) }}
                         </span>
@@ -298,4 +299,5 @@ $badgeLabel = match($resultado) { 'verde' => 'Verde ✓', 'amarelo' => 'Atençã
 
 </div>
 
+</div>
 @endsection

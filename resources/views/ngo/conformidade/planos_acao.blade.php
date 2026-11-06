@@ -2,11 +2,12 @@
 
 @section('content')
 
+<div data-theme-scope>
 <style>
-.plano-card { border-radius:14px; border:1px solid #e2e8f0; padding:16px 18px; margin-bottom:10px; background:#fff; transition:box-shadow .15s; }
+.plano-card { border-radius:14px; border: 1px solid var(--ds-border); padding:16px 18px; margin-bottom:10px; background: var(--ds-surface); transition:box-shadow .15s; }
 .plano-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.08); }
 .status-badge { font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; }
-.st-pendente     { background:#f1f5f9; color:#475569; }
+.st-pendente     { background: var(--vv-surface-soft); color: var(--ds-text-muted); }
 .st-em_andamento { background:#e0e7ff; color:#3730a3; }
 .st-concluido    { background:#d1fae5; color:#065f46; }
 .st-cancelado    { background:#fee2e2; color:#7f1d1d; }
@@ -117,7 +118,7 @@ $totalAtivos = ($planos['em_andamento'] ?? collect())->count() + ($planos['pende
         </div>
 
         @if($p->observacoes_resolucao)
-        <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9;font-size:.78rem;color:#475569">
+        <div class="mt-2 pt-2" style="border-top: 1px solid var(--ds-border);font-size:.78rem;color: var(--ds-text-muted)">
             <i class="bi bi-chat-text me-1 text-muted"></i>{{ $p->observacoes_resolucao }}
         </div>
         @endif
@@ -238,4 +239,5 @@ $totalAtivos = ($planos['em_andamento'] ?? collect())->count() + ($planos['pende
     </div>
 </div>
 
+</div>
 @endsection

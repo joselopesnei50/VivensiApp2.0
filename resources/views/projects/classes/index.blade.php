@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <div class="container py-4" style="max-width: 1200px;">
 
     <div class="mb-4">
@@ -84,5 +85,6 @@
             @endif
         </div>
     </div>
+</div>
 </div>
 @endsection

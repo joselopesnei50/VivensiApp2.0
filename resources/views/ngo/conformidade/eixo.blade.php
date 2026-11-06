@@ -2,6 +2,7 @@
 
 @section('content')
 
+<div data-theme-scope>
 @php
 $eixoLabels = [
     'cebas_geral'    => 'CEBAS Geral',
@@ -15,13 +16,13 @@ $label = $eixoLabels[$eixo] ?? $eixo;
 @endphp
 
 <style>
-.req-card { border-radius: 14px; border: 1px solid #e2e8f0; padding: 18px 20px; margin-bottom: 12px; background:#fff; }
+.req-card { border-radius: 14px; border: 1px solid var(--ds-border); padding: 18px 20px; margin-bottom: 12px; background: var(--ds-surface); }
 .req-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
 .res-badge { font-size:.72rem; font-weight:700; padding: 3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:.5px; }
 .res-verde    { background:#d1fae5; color:#065f46; }
 .res-amarelo  { background:#fef9c3; color:#713f12; }
 .res-vermelho { background:#fee2e2; color:#7f1d1d; }
-.res-neutro   { background:#f1f5f9; color:#64748b; }
+.res-neutro   { background: var(--vv-surface-soft); color: var(--ds-text-muted); }
 .tipo-badge   { font-size:.65rem; font-weight:700; padding:2px 7px; border-radius:6px; background:#e0e7ff; color:#3730a3; }
 </style>
 
@@ -93,7 +94,7 @@ $label = $eixoLabels[$eixo] ?? $eixo;
                 @endif
 
                 @if($aval && isset($aval['detalhe']))
-                    <div class="mt-2 p-2 rounded-2" style="background:{{ $leftColor }}15;font-size:.78rem;color:#374151">
+                    <div class="mt-2 p-2 rounded-2" style="background:{{ $leftColor }}15;font-size:.78rem;color:var(--ds-text)">
                         <i class="bi bi-info-circle me-1"></i>{{ $aval['detalhe'] }}
                     </div>
                 @endif
@@ -177,4 +178,5 @@ $label = $eixoLabels[$eixo] ?? $eixo;
 
 @endforeach
 
+</div>
 @endsection

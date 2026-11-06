@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <div class="container py-4" style="max-width: 900px;">
 
     <div class="mb-4">
@@ -20,5 +21,6 @@
         'submitText'=> 'Criar turma',
     ])
 
+</div>
 </div>
 @endsection

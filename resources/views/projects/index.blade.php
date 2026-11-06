@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
 @endphp
@@ -12,8 +13,8 @@
                 <span style="background: var(--primary-color); width: 12px; height: 3px; border-radius: 2px;"></span>
                 <h6 style="color: var(--primary-color); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Ecossistema Vivensi</h6>
             </div>
-            <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Portfólio de Projetos</h2>
-            <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Gerencie suas iniciativas com inteligência e controle total.</p>
+            <h2 style="margin: 0; color: var(--ds-text); font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Portfólio de Projetos</h2>
+            <p style="color: var(--ds-text-muted); margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Gerencie suas iniciativas com inteligência e controle total.</p>
         </div>
         @if(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true))
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -39,15 +40,15 @@
         <div style="display:flex; gap: 12px; align-items:end; justify-content: space-between; flex-wrap: wrap;">
             <div style="display:flex; gap: 10px; align-items:end; flex: 1; min-width: 280px; flex-wrap: wrap;">
                 <div style="position: relative; flex: 1; min-width: 260px;">
-                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Busca</label>
+                    <label style="display:block; font-size:.7rem; font-weight:900; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Busca</label>
                     <i class="fas fa-search" style="position:absolute; left: 14px; top: 38px; color:#94a3b8;"></i>
                     <input name="q" value="{{ $q ?? '' }}" type="text" placeholder="Buscar por nome ou descrição..."
-                           style="width: 100%; padding: 10px 12px 10px 38px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 700; color:#0f172a;">
+                           style="width: 100%; padding: 10px 12px 10px 38px; border-radius: 12px; border: 1px solid var(--ds-border); background: var(--ds-surface); font-weight: 700; color: var(--ds-text);">
                 </div>
 
                 <div style="min-width: 180px;">
-                    <label for="status" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Status</label>
-                    <select name="status" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="status">
+                    <label for="status" style="display:block; font-size:.7rem; font-weight:900; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Status</label>
+                    <select name="status" style="width:100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--ds-border); background: var(--ds-surface); font-weight: 900; color: var(--ds-text);" id="status">
                         <option value="all" {{ ($status ?? 'all') === 'all' ? 'selected' : '' }}>Todos</option>
                         <option value="active" {{ ($status ?? 'all') === 'active' ? 'selected' : '' }}>Em Execução</option>
                         <option value="paused" {{ ($status ?? 'all') === 'paused' ? 'selected' : '' }}>Pausados</option>
@@ -58,8 +59,8 @@
 
                 @if(!empty($teamUsers))
                     <div style="min-width: 220px;">
-                        <label for="member" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Membro</label>
-                        <select name="member" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="member">
+                        <label for="member" style="display:block; font-size:.7rem; font-weight:900; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Membro</label>
+                        <select name="member" style="width:100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--ds-border); background: var(--ds-surface); font-weight: 900; color: var(--ds-text);" id="member">
                             <option value="">Todos</option>
                             @foreach($teamUsers as $u)
                                 <option value="{{ $u->id }}" {{ (string)($memberId ?? '') === (string)$u->id ? 'selected' : '' }}>{{ $u->name }}</option>
@@ -71,20 +72,20 @@
 
             <div style="display:flex; gap: 10px; flex-wrap: wrap; align-items:end;">
                 <div style="min-width: 220px;">
-                    <label for="sort" style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Ordem</label>
-                    <select name="sort" style="width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;" id="sort">
+                    <label for="sort" style="display:block; font-size:.7rem; font-weight:900; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Ordem</label>
+                    <select name="sort" style="width:100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--ds-border); background: var(--ds-surface); font-weight: 900; color: var(--ds-text);" id="sort">
                         <option value="recent" {{ ($sort ?? 'recent') === 'recent' ? 'selected' : '' }}>Mais recentes</option>
-                        <option value="deadline" {{ ($sort ?? 'recent') === 'deadline' ? 'selected' : '' }}>Deadline</option>
+                        <option value="deadline" {{ ($sort ?? 'recent') === 'deadline' ? 'selected' : '' }}>Prazo final</option>
                         <option value="budget" {{ ($sort ?? 'recent') === 'budget' ? 'selected' : '' }}>Uso do budget</option>
                         <option value="risk" {{ ($sort ?? 'recent') === 'risk' ? 'selected' : '' }}>Risco</option>
                     </select>
                 </div>
 
                 <div style="min-width: 170px;">
-                    <label style="display:block; font-size:.7rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Flags</label>
-                    <label style="display:flex; gap:10px; align-items:center; padding: 10px 12px; border-radius: 12px; border:1px solid #e2e8f0; background:#fff; font-weight: 900; color:#0f172a;">
+                    <label style="display:block; font-size:.7rem; font-weight:900; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Flags</label>
+                    <label style="display:flex; gap:10px; align-items:center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--ds-border); background: var(--ds-surface); font-weight: 900; color: var(--ds-text);">
                         <input type="checkbox" name="flag" value="over_budget" {{ ($flag ?? '') === 'over_budget' ? 'checked' : '' }}>
-                        Budget estourado
+                        Orçamento estourado
                     </label>
                 </div>
 
@@ -141,7 +142,7 @@
             $riskColor = $riskScore >= 70 ? '#be123c' : ($riskScore >= 40 ? '#c2410c' : '#10b981');
         @endphp
         <div class="project-card"
-             style="background: white; border-radius: 28px; box-shadow: 0 15px 45px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; padding: 35px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;"
+             style="background: var(--ds-surface); border-radius: 28px; box-shadow: 0 15px 45px rgba(0,0,0,0.02); border: 1px solid var(--ds-border); padding: 35px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;"
              onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 30px 60px rgba(0,0,0,0.05)'; this.style.borderColor='var(--primary-color)';"
              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 15px 45px rgba(0,0,0,0.02)'; this.style.borderColor='#f1f5f9';">
             
@@ -169,7 +170,7 @@
 
                     @if($isOverBudget)
                         <span style="background: #fee2e2; color: #b91c1c; padding: 6px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; border: 1px solid #fecaca;">
-                            Budget estourado
+                            Orçamento estourado
                         </span>
                     @endif
 
@@ -185,22 +186,22 @@
                 </div>
             </div>
             
-            <h4 style="margin: 0 0 12px 0; font-size: 1.4rem; color: #1e293b; font-weight: 900; letter-spacing: -0.5px;">{{ $project->name }}</h4>
-            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.6; font-weight: 500;">
+            <h4 style="margin: 0 0 12px 0; font-size: 1.4rem; color: var(--ds-text); font-weight: 900; letter-spacing: -0.5px;">{{ $project->name }}</h4>
+            <p style="color: var(--ds-text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.6; font-weight: 500;">
                 {{ Str::limit($project->description, 100) }}
             </p>
             
             <div style="margin-bottom: 25px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Uso do Budget</span>
-                    <span style="font-size: 0.75rem; color: #1e293b; font-weight: 900;">
+                    <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Uso do orçamento</span>
+                    <span style="font-size: 0.75rem; color: var(--ds-text); font-weight: 900;">
                         {{ number_format($isOverBudget ? min($budgetPctRaw, 999) : $budgetPct, 0) }}%
                     </span>
                 </div>
-                <div style="height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                <div style="height: 8px; background: var(--vv-surface-soft); border-radius: 4px; overflow: hidden;">
                     <div style="height: 100%; background: {{ $isOverBudget ? 'linear-gradient(90deg, #ef4444 0%, #f97316 100%)' : 'linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%)' }}; width: {{ $budgetPct }}%;"></div>
                 </div>
-                <div style="display:flex; justify-content: space-between; margin-top: 10px; font-weight:700; font-size:.8rem; color:#64748b;">
+                <div style="display:flex; justify-content: space-between; margin-top: 10px; font-weight:700; font-size:.8rem; color: var(--ds-text-muted);">
                     <span>Gasto: R$ {{ number_format($spent, 2, ',', '.') }}</span>
                     <span>Membros: {{ (int) ($project->members_count ?? 0) }}</span>
                 </div>
@@ -209,12 +210,12 @@
             <div style="margin-bottom: 25px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Execução (Tarefas)</span>
-                    <span style="font-size: 0.75rem; color: #1e293b; font-weight: 900;">{{ $progressPct }}%</span>
+                    <span style="font-size: 0.75rem; color: var(--ds-text); font-weight: 900;">{{ $progressPct }}%</span>
                 </div>
-                <div style="height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                <div style="height: 8px; background: var(--vv-surface-soft); border-radius: 4px; overflow: hidden;">
                     <div style="height: 100%; background: linear-gradient(90deg, #10b981 0%, #22c55e 100%); width: {{ $progressPct }}%;"></div>
                 </div>
-                <div style="display:flex; justify-content: space-between; margin-top: 10px; font-weight:700; font-size:.8rem; color:#64748b;">
+                <div style="display:flex; justify-content: space-between; margin-top: 10px; font-weight:700; font-size:.8rem; color: var(--ds-text-muted);">
                     <span>Concluídas: {{ $doneTasks }}/{{ $totalTasks }}</span>
                     <span style="color: {{ $overdueTasks > 0 ? '#be123c' : '#64748b' }};">Atrasadas: {{ $overdueTasks }}</span>
                 </div>
@@ -223,11 +224,11 @@
             <div class="project-meta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 25px 0; border-top: 1px solid #f8fafc; border-bottom: 1px solid #f8fafc; margin-bottom: 25px;">
                 <div>
                     <span style="display: block; font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Investimento</span>
-                    <span style="font-weight: 800; color: #1e293b; font-size: 1.1rem;">R$ {{ number_format($project->budget, 0, ',', '.') }}</span>
+                    <span style="font-weight: 800; color: var(--ds-text); font-size: 1.1rem;">R$ {{ number_format($project->budget, 0, ',', '.') }}</span>
                 </div>
                 <div style="text-align: right;">
-                    <span style="display: block; font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Deadline</span>
-                    <span style="font-weight: 800; color: #475569; font-size: 1.1rem;">{{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('d M, Y') : 'Fluxo Contínuo' }}</span>
+                    <span style="display: block; font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Prazo final</span>
+                    <span style="font-weight: 800; color: var(--ds-text-muted); font-size: 1.1rem;">{{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->locale('pt_BR')->translatedFormat('d M Y') : 'Fluxo Contínuo' }}</span>
                     @if($daysLeft !== null)
                         <div style="margin-top: 4px; font-size: .8rem; font-weight: 800; color: {{ $isDeadlineOverdue ? '#be123c' : ($isDeadlineSoon ? '#c2410c' : '#94a3b8') }};">
                             {{ $isDeadlineOverdue ? ('Atrasado ' . abs((int) $daysLeft) . ' dia(s)') : ((int) $daysLeft . ' dia(s)') }}
@@ -237,7 +238,7 @@
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <a href="{{ $basePath . '/projects/details/'.$project->id }}" style="text-align: center; background: white; padding: 15px; border-radius: 14px; color: #1e293b; font-weight: 800; text-decoration: none; border: 2px solid #f1f5f9; transition: all 0.2s; font-size: 0.85rem;">
+                <a href="{{ $basePath . '/projects/details/'.$project->id }}" style="text-align: center; background: var(--ds-surface); padding: 15px; border-radius: 14px; color: var(--ds-text); font-weight: 800; text-decoration: none; border: 2px solid var(--ds-border); transition: all 0.2s; font-size: 0.85rem;">
                     <i class="fas fa-eye me-2 text-primary"></i> Visão Geral
                 </a>
                 <a href="{{ $basePath . '/projects/'.$project->id.'/kanban' }}" style="text-align: center; background: #1e293b; padding: 15px; border-radius: 14px; color: white; font-weight: 800; text-decoration: none; border: none; transition: all 0.2s; font-size: 0.85rem;">
@@ -246,11 +247,11 @@
             </div>
         </div>
     @empty
-        <div style="grid-column: 1 / -1; text-align: center; padding: 100px 20px; background: white; border-radius: 28px; border: 2px dashed #f1f5f9;">
-            <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 100px 20px; background: var(--ds-surface); border-radius: 28px; border: 2px dashed var(--ds-border);">
+            <div style="width: 100px; height: 100px; background: var(--vv-surface-soft); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
                 <i class="fas fa-folder-open" style="font-size: 3rem; color: #e2e8f0;"></i>
             </div>
-            <h3 style="color: #1e293b; font-weight: 900; font-size: 1.8rem; margin-bottom: 10px;">Silêncio no Radar</h3>
+            <h3 style="color: var(--ds-text); font-weight: 900; font-size: 1.8rem; margin-bottom: 10px;">Silêncio no Radar</h3>
             <p style="color: #94a3b8; font-size: 1.1rem; max-width: 500px; margin: 0 auto 30px; font-weight: 500;">Parece que você ainda não iniciou nenhuma missão estratégica. Vamos começar agora?</p>
             <a href="{{ $basePath . '/projects/create' }}" class="btn-premium" style="display: inline-block; text-decoration: none; font-weight: 800; padding: 15px 40px;">CRIA PRIMEIRO PROJETO</a>
         </div>
@@ -262,4 +263,5 @@
         {{ $projects->links() }}
     </div>
 @endif
+</div>
 @endsection

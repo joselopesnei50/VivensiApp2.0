@@ -111,7 +111,7 @@
         /* Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
             gap: 25px;
             margin-bottom: 40px;
         }
@@ -142,7 +142,7 @@
 
         .footer-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
             gap: 50px;
         }
 
@@ -158,7 +158,11 @@
         }
 
         /* Responsive */
+        /* Celular: cartões um embaixo do outro e tabelas com rolagem própria
+           (antes a página ficava com o dobro da largura da tela) */
+        .section-card { min-width: 0; overflow-x: auto; }
         @media (max-width: 768px) {
+            .portal-split { grid-template-columns: 1fr !important; }
             .portal-nav { border-radius: 20px; flex-direction: column; }
             header { padding: 40px 0 80px; }
         }
@@ -339,7 +343,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; flex-wrap: wrap;">
+            <div class="portal-split" style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
                 <div class="section-card">
                     <h3 style="margin-top: 0">Distribuição de Gastos</h3>
                     <canvas id="expenseChart"></canvas>
@@ -442,7 +446,7 @@
 
             <div class="section-card">
                 <h3>Diretoria Executiva</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 30px;">
                     @forelse($board as $member)
                     <div style="display: flex; gap: 20px; align-items: center;">
                         <div style="width: 80px; height: 80px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
@@ -501,7 +505,7 @@
                                 {{ $p->end_date ? date('d/m/Y', strtotime($p->end_date)) : '—' }}
                             </td>
                             <td style="font-weight: 600;">R$ {{ number_format($p->value, 2, ',', '.') }}</td>
-                            <td><span style="padding: 5px 12px; border-radius: 50px; font-size: 0.75rem; background: #dcfce7; color: #166534;">{{ strtoupper($p->status) }}</span></td>
+                            <td><span style="padding: 5px 12px; border-radius: 50px; font-size: 0.75rem; background: #dcfce7; color: #166534;">{{ ['active' => 'Ativo', 'concluded' => 'Concluído', 'analysis' => 'Em análise', 'pending' => 'Pendente'][$p->status] ?? $p->status }}</span></td>
                         </tr>
                         @empty
                         <tr><td colspan="4" style="text-align: center; padding: 50px; color: var(--gray);">Nenhum projeto ativo listado publicamente.</td></tr>
@@ -631,7 +635,7 @@
                 @endif
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr)); gap: 30px;">
                 <div class="section-card">
                     <h3 style="margin-top: 0">Evolução dos Atendimentos</h3>
                     <canvas id="impactChart"></canvas>
@@ -658,7 +662,7 @@
                                         <td style="font-size: 0.9rem; color: var(--gray);">
                                             {{ $a->acquisition_date ? \Carbon\Carbon::parse($a->acquisition_date)->format('d/m/Y') : '—' }}
                                         </td>
-                                        <td style="font-size: 0.9rem; color: var(--gray);">{{ strtoupper($a->status ?? '—') }}</td>
+                                        <td style="font-size: 0.9rem; color: var(--gray);">{{ ['active' => 'Em uso', 'maintenance' => 'Em manutenção', 'disposed' => 'Baixado', 'lost' => 'Extraviado'][$a->status ?? ''] ?? ($a->status ?: '—') }}</td>
                                         <td style="text-align:right; font-weight: 700;">R$ {{ number_format((float) ($a->value ?? 0), 2, ',', '.') }}</td>
                                     </tr>
                                 @endforeach

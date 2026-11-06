@@ -19,7 +19,7 @@
             </div>
             <div>
                 <div style="font-size:.7rem; color:#1e3a8a; letter-spacing:1.2px; text-transform:uppercase;">Etapa em andamento</div>
-                <div style="font-size:1.05rem; color:#0f172a; font-weight:900;">{{ $__stage->title }}</div>
+                <div style="font-size:1.05rem; color: var(--ds-text); font-weight:900;">{{ $__stage->title }}</div>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:.85rem; color:#1e3a8a;">
@@ -29,7 +29,7 @@
             @if($__prog !== null)
                 <span><i class="fas fa-tasks me-1"></i> {{ $__prog }}%</span>
             @endif
-            <span style="color:#0f172a; font-weight:900;">R$ {{ number_format((float) $__stage->planned_value, 2, ',', '.') }}</span>
+            <span style="color: var(--ds-text); font-weight:900;">R$ {{ number_format((float) $__stage->planned_value, 2, ',', '.') }}</span>
             <span style="color:#2563eb;"><i class="fas fa-arrow-right"></i></span>
         </div>
     </a>

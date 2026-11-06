@@ -34,7 +34,7 @@
      ondragstart="{{ $canMove ? 'drag(event)' : '' }}"
      onclick="openKanbanTaskModal(this)"
      title="{{ $canMove ? 'Arraste para mover' : 'Sem permissão para mover' }}"
-     style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid #f1f5f9; cursor: {{ $canMove ? 'grab' : 'default' }}; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.02); opacity: {{ $canMove ? '1' : '0.85' }};">
+     style="background: var(--ds-surface); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--ds-border); cursor: {{ $canMove ? 'grab' : 'default' }}; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.02); opacity: {{ $canMove ? '1' : '0.85' }};">
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         @php
@@ -58,16 +58,16 @@
         <i class="fas fa-ellipsis-v" style="color: #cbd5e1; font-size: 0.8rem; cursor: pointer;"></i>
     </div>
 
-    <h6 class="task-title" style="color: #1e293b; font-weight: 800; font-size: 0.95rem; margin-bottom: 15px; line-height: 1.5;">{{ $task->title }}</h6>
+    <h6 class="task-title" style="color: var(--ds-text); font-weight: 800; font-size: 0.95rem; margin-bottom: 15px; line-height: 1.5;">{{ $task->title }}</h6>
     
     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #f8fafc;">
         <div style="display: flex; -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);">
             @if($task->assignee)
-                <div class="task-assignee" title="{{ $task->assignee->name }}" style="width: 28px; height: 28px; background: #f1f5f9; color: #64748b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900; border: 2px solid white;">
+                <div class="task-assignee" title="{{ $task->assignee->name }}" style="width: 28px; height: 28px; background: var(--vv-surface-soft); color: var(--ds-text-muted); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900; border: 2px solid white;">
                     <span class="task-assignee-initial">{{ substr($task->assignee->name, 0, 1) }}</span>
                 </div>
             @else
-                <div class="task-assignee" title="Sem responsável" style="width: 28px; height: 28px; border: 1.5px dashed #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.7rem;">
+                <div class="task-assignee" title="Sem responsável" style="width: 28px; height: 28px; border: 1.5px dashed var(--ds-border); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.7rem;">
                     <i class="fas fa-user-plus"></i>
                 </div>
             @endif

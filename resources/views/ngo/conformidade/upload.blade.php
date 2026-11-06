@@ -2,6 +2,7 @@
 
 @section('content')
 
+<div data-theme-scope>
 @php
 $eixoLabels = [
     'cebas_geral'    => 'CEBAS Geral',
@@ -131,4 +132,5 @@ $eixoLabels = [
     </div>
 </div>
 
+</div>
 @endsection

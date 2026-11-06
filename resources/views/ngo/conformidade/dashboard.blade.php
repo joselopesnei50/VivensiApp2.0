@@ -2,6 +2,7 @@
 
 @section('content')
 
+<div data-theme-scope>
 <style>
 .conf-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 24px; padding: 32px 36px; margin-bottom: 28px; color: #fff; }
 .conf-semaforo-card { border-radius: 20px; padding: 24px; border: 1px solid; transition: box-shadow .2s; }
@@ -9,12 +10,12 @@
 .conf-badge-verde    { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
 .conf-badge-amarelo  { background: #fef9c3; color: #713f12; border-color: #fde047; }
 .conf-badge-vermelho { background: #fee2e2; color: #7f1d1d; border-color: #fca5a5; }
-.conf-badge-neutro   { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+.conf-badge-neutro   { background: var(--vv-surface-soft); color: var(--ds-text-muted); border-color: #cbd5e1; }
 .conf-indice-circle { width: 110px; height: 110px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; border: 6px solid; }
 .conf-circle-verde    { border-color: #10b981; color: #065f46; background: #ecfdf5; }
 .conf-circle-amarelo  { border-color: #f59e0b; color: #713f12; background: #fffbeb; }
 .conf-circle-vermelho { border-color: #ef4444; color: #7f1d1d; background: #fef2f2; }
-.conf-pendencia-item { border-left: 4px solid; padding: 12px 16px; border-radius: 0 12px 12px 0; margin-bottom: 10px; background: #fff; }
+.conf-pendencia-item { border-left: 4px solid; padding: 12px 16px; border-radius: 0 12px 12px 0; margin-bottom: 10px; background: var(--ds-surface); }
 .conf-pendencia-vermelho { border-color: #ef4444; }
 .conf-pendencia-amarelo  { border-color: #f59e0b; }
 .conf-risco-badge { font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; }
@@ -255,7 +256,7 @@
                             <div class="flex-grow-1">
                                 <div class="d-flex align-items-center gap-2 mb-1">
                                     <span class="conf-risco-badge {{ $riscoClass }}">{{ strtoupper($p['risco']) }}</span>
-                                    <span style="font-size:.7rem;color:#64748b">{{ $p['codigo'] }}</span>
+                                    <span style="font-size:.7rem;color: var(--ds-text-muted)">{{ $p['codigo'] }}</span>
                                 </div>
                                 <div class="fw-semibold" style="font-size:.85rem">{{ $p['titulo'] }}</div>
                                 @if(!empty($p['detalhe']))
@@ -361,10 +362,10 @@
                         @endphp
                         <a href="{{ route('ngo.conformidade.eixo', $eixo) }}"
                            class="d-flex align-items-center justify-content-between text-decoration-none p-2 rounded-3"
-                           style="background:#f8fafc;border:1px solid #e2e8f0;">
+                           style="background: var(--vv-surface-soft);border: 1px solid var(--ds-border);">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="bi {{ $meta['icon'] }}" style="color:{{ $cor }}"></i>
-                                <span style="font-size:.82rem;font-weight:600;color:#1e293b">{{ $meta['label'] }}</span>
+                                <span style="font-size:.82rem;font-weight:600;color: var(--ds-text)">{{ $meta['label'] }}</span>
                             </div>
                             <span class="fw-bold" style="font-size:.85rem;color:{{ $cor }}">{{ $pct }}%</span>
                         </a>
@@ -376,4 +377,5 @@
     </div>
 </div>
 
+</div>
 @endsection

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 @php
     use Illuminate\Support\Carbon;
 
@@ -31,9 +32,9 @@
         margin-bottom: 24px;
     }
     .stage-card {
-        background: white;
+        background: var(--ds-surface);
         border-radius: 18px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--ds-border);
         padding: 20px;
         transition: box-shadow .2s, transform .2s;
         cursor: grab;
@@ -48,21 +49,21 @@
     }
     .stage-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .stage-btn {
-        border: 1px solid #e2e8f0; background: white; color: #334155;
+        border: 1px solid var(--ds-border); background: var(--ds-surface); color: var(--ds-text);
         padding: 6px 10px; border-radius: 10px; font-size: .78rem; font-weight: 700;
         cursor: pointer; transition: all .15s;
     }
-    .stage-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .stage-btn:hover { background: var(--vv-surface-soft); border-color: #cbd5e1; }
     .stage-btn-danger { color: #dc2626; border-color: #fecaca; }
     .stage-btn-danger:hover { background: #fef2f2; }
     .stage-btn-primary { background: #0f172a; color: white; border-color: #0f172a; }
     .stage-btn-primary:hover { background: #1e293b; }
 
     /* Timeline Gantt-lite */
-    .gantt-wrap { background: #f8fafc; border-radius: 16px; padding: 20px; margin-bottom: 24px; overflow-x: auto; }
-    .gantt-row { display: grid; grid-template-columns: 220px 1fr; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
+    .gantt-wrap { background: var(--vv-surface-soft); border-radius: 16px; padding: 20px; margin-bottom: 24px; overflow-x: auto; }
+    .gantt-row { display: grid; grid-template-columns: 220px 1fr; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--ds-border); }
     .gantt-row:last-child { border-bottom: none; }
-    .gantt-label { font-weight: 700; color: #1e293b; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gantt-label { font-weight: 700; color: var(--ds-text); font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .gantt-track { position: relative; height: 24px; background: #e2e8f0; border-radius: 999px; min-width: 400px; }
     .gantt-bar { position: absolute; top: 0; bottom: 0; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
 </style>
@@ -78,7 +79,7 @@
                 <i class="fas fa-arrow-left me-1"></i> Voltar ao projeto
             </a>
             @if($canManage)
-                <button type="button" class="btn-premium" data-bs-toggle="modal" data-bs-target="#stageModal" onclick="stageModalOpen()" style="border: none; background: white; color: #0f172a; padding: 10px 18px; border-radius: 12px; font-weight: 900;">
+                <button type="button" class="btn-premium" data-bs-toggle="modal" data-bs-target="#stageModal" onclick="stageModalOpen()" style="border: none; background: var(--ds-surface); color: var(--ds-text); padding: 10px 18px; border-radius: 12px; font-weight: 900;">
                     <i class="fas fa-plus me-1"></i> Nova etapa
                 </button>
             @endif
@@ -119,9 +120,9 @@
 {{-- Timeline Gantt-lite --}}
 @if($rangeStart && $rangeEnd)
     <div class="gantt-wrap">
-        <div style="font-weight: 900; color: #0f172a; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 900; color: var(--ds-text); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
             <span><i class="fas fa-stream me-2" style="color: #2563eb;"></i> Timeline</span>
-            <span style="font-size: .8rem; color: #64748b; font-weight: 700;">{{ $rangeStart->format('d/m/Y') }} → {{ $rangeEnd->format('d/m/Y') }}</span>
+            <span style="font-size: .8rem; color: var(--ds-text-muted); font-weight: 700;">{{ $rangeStart->format('d/m/Y') }} → {{ $rangeEnd->format('d/m/Y') }}</span>
         </div>
         @foreach($stages as $s)
             @php
@@ -174,33 +175,33 @@
                             @endif
                         </div>
                         <a href="{{ $basePath . '/projects/' . $project->id . '/stages/' . $s->id }}"
-                           style="font-weight: 900; color: #0f172a; font-size: 1.05rem; line-height: 1.3; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                           style="font-weight: 900; color: var(--ds-text); font-size: 1.05rem; line-height: 1.3; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                             {{ $s->title }}
                             <i class="fas fa-arrow-right" style="font-size: .75rem; color: #2563eb;"></i>
                         </a>
-                        <div style="font-size: .7rem; color: #64748b; font-weight: 700; margin-top: 3px;">Clique para gerenciar tarefas e financeiro da etapa</div>
+                        <div style="font-size: .7rem; color: var(--ds-text-muted); font-weight: 700; margin-top: 3px;">Clique para gerenciar tarefas e financeiro da etapa</div>
                     </div>
                 </div>
 
                 @if($s->description)
-                    <div style="color: #475569; font-size: .85rem; line-height: 1.5; margin-bottom: 12px;">{{ \Illuminate\Support\Str::limit($s->description, 140) }}</div>
+                    <div style="color: var(--ds-text-muted); font-size: .85rem; line-height: 1.5; margin-bottom: 12px;">{{ \Illuminate\Support\Str::limit($s->description, 140) }}</div>
                 @endif
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
                     <div>
                         <div style="font-size: .65rem; font-weight: 800; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase;">Periodo</div>
-                        <div style="font-size: .85rem; color: #1e293b; font-weight: 700;">
+                        <div style="font-size: .85rem; color: var(--ds-text); font-weight: 700;">
                             {{ $s->start_date?->format('d/m') ?? '—' }} → {{ $s->end_date?->format('d/m/Y') ?? '—' }}
                         </div>
                     </div>
                     <div>
                         <div style="font-size: .65rem; font-weight: 800; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase;">Valor previsto</div>
-                        <div style="font-size: .95rem; color: #0f172a; font-weight: 900;">R$ {{ number_format((float) $s->planned_value, 2, ',', '.') }}</div>
+                        <div style="font-size: .95rem; color: var(--ds-text); font-weight: 900;">R$ {{ number_format((float) $s->planned_value, 2, ',', '.') }}</div>
                     </div>
                 </div>
 
                 @if($s->progress_percent !== null || $fin['income'] > 0 || $fin['expense'] > 0)
-                    <div style="border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-bottom: 12px; font-size: .78rem; color: #475569;">
+                    <div style="border-top: 1px dashed var(--ds-border); padding-top: 10px; margin-bottom: 12px; font-size: .78rem; color: var(--ds-text-muted);">
                         @if($s->progress_percent !== null)
                             <div>Tarefas: <strong>{{ $s->progress_percent }}%</strong></div>
                         @endif
@@ -229,10 +230,10 @@
         </div>
     @empty
         <div class="col-12">
-            <div style="padding: 60px 20px; text-align: center; background: #f8fafc; border-radius: 20px; border: 2px dashed #cbd5e1;">
+            <div style="padding: 60px 20px; text-align: center; background: var(--vv-surface-soft); border-radius: 20px; border: 2px dashed #cbd5e1;">
                 <i class="fas fa-layer-group" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 12px;"></i>
-                <div style="font-weight: 900; color: #1e293b; font-size: 1.1rem;">Nenhuma etapa cadastrada</div>
-                <div style="color: #64748b; font-size: .9rem; margin-top: 6px;">Divida seu projeto em etapas com prazo e valor proprios.</div>
+                <div style="font-weight: 900; color: var(--ds-text); font-size: 1.1rem;">Nenhuma etapa cadastrada</div>
+                <div style="color: var(--ds-text-muted); font-size: .9rem; margin-top: 6px;">Divida seu projeto em etapas com prazo e valor proprios.</div>
                 @if($canManage)
                     <button type="button" class="btn-premium" data-bs-toggle="modal" data-bs-target="#stageModal" onclick="stageModalOpen()" style="border: none; background: #0f172a; color: white; padding: 10px 18px; border-radius: 12px; font-weight: 900; margin-top: 16px;">
                         <i class="fas fa-plus me-1"></i> Criar primeira etapa
@@ -248,8 +249,8 @@
 <div class="modal fade" id="stageModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius: 22px; border: none;">
-            <div class="modal-header" style="border-bottom: 1px solid #f1f5f9; padding: 20px 24px;">
-                <h5 class="modal-title" style="font-weight: 900; color: #0f172a;" id="stageModalTitle">Nova etapa</h5>
+            <div class="modal-header" style="border-bottom: 1px solid var(--ds-border); padding: 20px 24px;">
+                <h5 class="modal-title" style="font-weight: 900; color: var(--ds-text);" id="stageModalTitle">Nova etapa</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="stageForm" onsubmit="return submitStageForm(event)">
@@ -290,7 +291,7 @@
                     </div>
                     <div id="_stage_form_errors" style="color: #dc2626; font-weight: 700; margin-top: 12px; font-size: .85rem;"></div>
                 </div>
-                <div class="modal-footer" style="border-top: 1px solid #f1f5f9; padding: 16px 24px;">
+                <div class="modal-footer" style="border-top: 1px solid var(--ds-border); padding: 16px 24px;">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-dark" style="border-radius: 10px; font-weight: 900;">Salvar etapa</button>
                 </div>
@@ -400,4 +401,5 @@
     }
 })();
 </script>
+</div>
 @endsection

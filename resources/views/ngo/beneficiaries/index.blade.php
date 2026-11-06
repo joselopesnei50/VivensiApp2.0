@@ -1,10 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <div class="header-page" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <h2 style="margin: 0; color: #2c3e50;">Beneficiários</h2>
-        <p style="color: #64748b; margin: 5px 0 0 0;">Gestão de famílias atendidas e histórico de evolução.</p>
+        <h2 style="margin: 0; color: var(--ds-text);">Beneficiários</h2>
+        <p style="color: var(--ds-text-muted); margin: 5px 0 0 0;">Gestão de famílias atendidas e histórico de evolução.</p>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
         <a href="{{ url('/ngo/beneficiaries/insights') }}" class="btn-premium" style="background:#111827;">
@@ -19,7 +20,7 @@
         <a href="{{ url('/ngo/beneficiaries/export') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#4f46e5;">
             <i class="fas fa-file-csv"></i> Exportar CSV
         </a>
-        <a href="{{ url('/ngo/beneficiaries/print') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#f1f5f9 !important; color:#0f172a !important;">
+        <a href="{{ url('/ngo/beneficiaries/print') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background: var(--vv-surface-soft) !important; color: var(--ds-text) !important;">
             <i class="fas fa-print"></i> Imprimir
         </a>
         <a href="{{ url('/ngo/beneficiaries/create') }}#importar" class="btn-premium" style="background:#0f766e;">
@@ -41,16 +42,16 @@
 
 <div class="grid-2" style="margin-bottom: 18px; grid-template-columns: 1fr 1fr; gap: 16px;">
     <div class="vivensi-card" style="border-left: 5px solid #4f46e5;">
-        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Famílias / Beneficiários</p>
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: var(--ds-text-muted); font-weight: 800;">Famílias / Beneficiários</p>
         <h3 style="margin: 10px 0; font-size: 1.9rem;">{{ number_format($total) }}</h3>
-        <p style="font-size: 0.9rem; color: #475569; margin:0;">
+        <p style="font-size: 0.9rem; color: var(--ds-text-muted); margin:0;">
             Ativos: <strong>{{ number_format($active) }}</strong> · Inativos: <strong>{{ number_format($inactive) }}</strong> · Graduados: <strong>{{ number_format($graduated) }}</strong>
         </p>
     </div>
     <div class="vivensi-card" style="border-left: 5px solid #16a34a;">
-        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Atendimentos (mês atual)</p>
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: var(--ds-text-muted); font-weight: 800;">Atendimentos (mês atual)</p>
         <h3 style="margin: 10px 0; font-size: 1.9rem;">{{ number_format($monthAttendances) }}</h3>
-        <p style="font-size: 0.9rem; color: #64748b; margin:0;">Indicador operacional para acompanhamento.</p>
+        <p style="font-size: 0.9rem; color: var(--ds-text-muted); margin:0;">Indicador operacional para acompanhamento.</p>
     </div>
 </div>
 
@@ -121,7 +122,7 @@
         </div>
         <div style="display:flex; gap: 10px;">
             <button class="btn-premium" type="submit"><i class="fas fa-filter"></i> Filtrar</button>
-            <a class="btn-premium" style="background:#f1f5f9 !important; color:#0f172a !important;" href="{{ url('/ngo/beneficiaries') }}">Limpar</a>
+            <a class="btn-premium" style="background: var(--vv-surface-soft) !important; color: var(--ds-text) !important;" href="{{ url('/ngo/beneficiaries') }}">Limpar</a>
         </div>
     </form>
 </div>
@@ -150,34 +151,34 @@
 
 <div class="vivensi-card" style="padding: 0; overflow: hidden;">
     <table style="width: 100%; border-collapse: collapse;">
-        <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+        <thead style="background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border);">
             <tr>
                 <th style="padding: 15px; text-align: center; width: 40px;">
                     <input type="checkbox" id="bulk-check-all" title="Selecionar todos desta página">
                 </th>
-                <th style="padding: 15px; text-align: left; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Nome</th>
-                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">NIS / CPF</th>
-                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Idade</th>
-                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Atendimentos</th>
-                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Status</th>
-                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Ações</th>
+                <th style="padding: 15px; text-align: left; font-size: 0.8rem; color: var(--ds-text-muted); text-transform: uppercase;">Nome</th>
+                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: var(--ds-text-muted); text-transform: uppercase;">NIS / CPF</th>
+                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: var(--ds-text-muted); text-transform: uppercase;">Idade</th>
+                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: var(--ds-text-muted); text-transform: uppercase;">Atendimentos</th>
+                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: var(--ds-text-muted); text-transform: uppercase;">Status</th>
+                <th style="padding: 15px; text-align: center; font-size: 0.8rem; color: var(--ds-text-muted); text-transform: uppercase;">Ações</th>
             </tr>
         </thead>
         <tbody>
             @foreach($beneficiaries as $beneficiary)
-            <tr style="border-bottom: 1px solid #f1f5f9;">
+            <tr style="border-bottom: 1px solid var(--ds-border);">
                 <td style="padding: 15px; text-align: center;">
                     <input type="checkbox" class="bulk-check" value="{{ $beneficiary->id }}" aria-label="Selecionar {{ $beneficiary->name }}">
                 </td>
                 <td style="padding: 15px;">
-                    <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" style="color: #4f46e5; font-weight: 600; text-decoration: none;">
+                    <a href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}" style="color: var(--vv-link); font-weight: 600; text-decoration: none;">
                         {{ $beneficiary->name }}
                     </a>
                 </td>
-                <td style="padding: 15px; text-align: center; color: #64748b; font-size: 0.9rem;">
+                <td style="padding: 15px; text-align: center; color: var(--ds-text-muted); font-size: 0.9rem;">
                     {{ $beneficiary->nis ?? $beneficiary->cpf ?? '-' }}
                 </td>
-                <td style="padding: 15px; text-align: center; color: #64748b;">
+                <td style="padding: 15px; text-align: center; color: var(--ds-text-muted);">
                     {{ $beneficiary->birth_date ? \Carbon\Carbon::parse($beneficiary->birth_date)->age . ' anos' : '-' }}
                 </td>
                 <td style="padding: 15px; text-align: center;">
@@ -191,7 +192,7 @@
                     @elseif($beneficiary->status == 'graduated')
                         <span style="color: #2563eb; background: #dbeafe; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem;">GRADUADO</span>
                     @else
-                        <span style="color: #94a3b8; background: #f1f5f9; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem;">INATIVO</span>
+                        <span style="color: #94a3b8; background: var(--vv-surface-soft); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem;">INATIVO</span>
                     @endif
                 </td>
                 <td style="padding: 15px; text-align: center;">
@@ -280,4 +281,5 @@
     });
 })();
 </script>
+</div>
 @endsection

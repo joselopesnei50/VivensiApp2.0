@@ -1,11 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <div class="header-page" style="margin-bottom: 20px; display: flex; justify-content: space-between;">
     <div>
-        <h2 style="margin: 0; color: #2c3e50;">{{ $beneficiary->name }}</h2>
-        <span style="color: #64748b; font-size: 0.9rem;">
-            NIS: {{ $beneficiary->nis ?? 'N/A' }} | Status: {{ ucfirst($beneficiary->status) }}
+        <h2 style="margin: 0; color: var(--ds-text);">{{ $beneficiary->name }}</h2>
+        <span style="color: var(--ds-text-muted); font-size: 0.9rem;">
+            @php $statusLabel = ['active' => 'Ativo', 'inactive' => 'Inativo', 'graduated' => 'Graduado'][$beneficiary->status] ?? ($beneficiary->status ?: '—'); @endphp
+            NIS: {{ $beneficiary->nis ?: 'não informado' }} | Status: {{ $statusLabel }}
         </span>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
@@ -57,7 +59,7 @@
     <div style="display: flex; flex-direction: column; gap: 20px;">
         <!-- Dados Básicos -->
         <div class="vivensi-card">
-            <h4 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Dados Pessoais</h4>
+            <h4 style="margin-top: 0; color: var(--ds-text); border-bottom: 1px solid var(--ds-border); padding-bottom: 10px;">Dados Pessoais</h4>
             <div id="beneficiaryView">
                 @php
                     $genderLabels = ['masculino'=>'Masculino','feminino'=>'Feminino','nao_binario'=>'Não-binário','outro'=>'Outro','prefiro_nao_informar'=>'Não informado'];
@@ -65,14 +67,14 @@
                     $eduLabels    = ['sem_escolaridade'=>'Sem escolaridade','fundamental_incompleto'=>'Fund. incompleto','fundamental_completo'=>'Fund. completo','medio_incompleto'=>'Médio incompleto','medio_completo'=>'Médio completo','superior_incompleto'=>'Superior incompleto','superior_completo'=>'Superior completo','pos_graduacao'=>'Pós-graduação'];
                     $idade = $beneficiary->birth_date ? \Carbon\Carbon::parse($beneficiary->birth_date)->age . ' anos' : '-';
                 @endphp
-                <ul style="list-style: none; padding: 0; font-size: 0.9rem; color: #475569;">
+                <ul style="list-style: none; padding: 0; font-size: 0.9rem; color: var(--ds-text-muted);">
                     <li style="margin-bottom: 8px;"><strong>CPF:</strong> {{ $beneficiary->cpf ?? '-' }}</li>
                     <li style="margin-bottom: 8px;"><strong>Nascimento:</strong> {{ $beneficiary->birth_date ? \Carbon\Carbon::parse($beneficiary->birth_date)->format('d/m/Y') : '-' }} @if($beneficiary->birth_date)<span style="color:#94a3b8; font-size:0.8rem;">({{ $idade }})</span>@endif</li>
                     <li style="margin-bottom: 8px;"><strong>Sexo:</strong> {{ $genderLabels[$beneficiary->gender ?? ''] ?? '-' }}</li>
                     <li style="margin-bottom: 8px;"><strong>Cor/Raça:</strong> {{ $raceLabels[$beneficiary->race_color ?? ''] ?? '-' }}</li>
                     <li style="margin-bottom: 8px;"><strong>Escolaridade:</strong> {{ $eduLabels[$beneficiary->education ?? ''] ?? '-' }}</li>
                     <li style="margin-bottom: 8px;"><strong>Telefone:</strong> {{ $beneficiary->phone ?? '-' }}</li>
-                    <li style="margin-bottom: 8px;"><strong>Status:</strong> {{ strtoupper($beneficiary->status ?? '—') }}</li>
+                    <li style="margin-bottom: 8px;"><strong>Status:</strong> {{ $statusLabel }}</li>
                     <li><strong>Endereço:</strong> {{ $beneficiary->address ?? '-' }}</li>
                 </ul>
             </div>
@@ -161,14 +163,14 @@
 
         <!-- Composição Familiar -->
         <div class="vivensi-card">
-            <h4 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Composição Familiar</h4>
+            <h4 style="margin-top: 0; color: var(--ds-text); border-bottom: 1px solid var(--ds-border); padding-bottom: 10px;">Composição Familiar</h4>
             @if($beneficiary->familyMembers->count() > 0)
                 <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
                     @foreach($beneficiary->familyMembers as $member)
-                        <li style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: 10px; align-items: center;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--ds-border); display: flex; justify-content: space-between; gap: 10px; align-items: center;">
                             <div>
-                                <div style="font-weight:800; color:#0f172a;">{{ $member->name }}</div>
-                                <div style="color: #64748b; font-size: 0.82rem;">
+                                <div style="font-weight:800; color: var(--ds-text);">{{ $member->name }}</div>
+                                <div style="color: var(--ds-text-muted); font-size: 0.82rem;">
                                     {{ $member->kinship }}
                                     @if(!empty($member->birth_date))
                                         · Nasc.: {{ optional($member->birth_date)->format('d/m/Y') }}
@@ -192,7 +194,7 @@
                 <i class="fas fa-user-plus"></i> Adicionar Familiar
             </button>
 
-            <div id="familyForm" style="display:none; margin-top: 12px; background:#f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <div id="familyForm" style="display:none; margin-top: 12px; background: var(--vv-surface-soft); padding: 14px; border-radius: 10px; border: 1px solid var(--ds-border);">
                 <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/family-members') }}">
                     @csrf
                     <div class="form-group">
@@ -210,7 +212,7 @@
                         </div>
                     </div>
                     <div style="text-align:right; margin-top: 10px;">
-                        <button type="button" onclick="document.getElementById('familyForm').style.display='none'" style="border: none; background: none; color: #64748b; margin-right: 12px; cursor: pointer;">Cancelar</button>
+                        <button type="button" onclick="document.getElementById('familyForm').style.display='none'" style="border: none; background: none; color: var(--ds-text-muted); margin-right: 12px; cursor: pointer;">Cancelar</button>
                         <button type="submit" class="btn-premium" style="display:inline-flex; width:auto; font-size:.9rem;">
                             <i class="fas fa-save"></i> Salvar
                         </button>
@@ -221,8 +223,8 @@
 
         <!-- Projetos vinculados -->
         <div class="vivensi-card">
-            <h4 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
-                <i class="fas fa-project-diagram" style="color:#4f46e5; margin-right:6px;"></i> Projetos vinculados
+            <h4 style="margin-top: 0; color: var(--ds-text); border-bottom: 1px solid var(--ds-border); padding-bottom: 10px;">
+                <i class="fas fa-project-diagram" style="color: var(--vv-link); margin-right:6px;"></i> Projetos vinculados
                 <span style="color:#94a3b8; font-weight:700; font-size:.85rem;">({{ $beneficiary->projectMemberships->count() }})</span>
             </h4>
             @forelse($beneficiary->projectMemberships as $link)
@@ -235,18 +237,18 @@
                         default         => ['#64748b', '#f1f5f9'],
                     };
                 @endphp
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom: 1px solid var(--ds-border);">
                     <div style="flex:1;">
                         @if($link->project)
                             <a href="{{ url('/projects/details/' . $link->project->id) }}"
-                               style="font-weight:800; color:#0f172a; text-decoration:none;">
+                               style="font-weight:800; color: var(--ds-text); text-decoration:none;">
                                 {{ $link->project->name }}
                                 <i class="fas fa-external-link-alt" style="font-size:.7rem; color:#94a3b8; margin-left:4px;"></i>
                             </a>
                         @else
                             <span style="font-weight:800; color:#94a3b8;">— projeto excluído —</span>
                         @endif
-                        <div style="font-size:.8rem; color:#64748b; margin-top:2px;">
+                        <div style="font-size:.8rem; color: var(--ds-text-muted); margin-top:2px;">
                             Nome no projeto: {{ $link->name }}
                         </div>
                         @php
@@ -256,7 +258,7 @@
                                 ->unique('id');
                         @endphp
                         @if($activeTurmas->isNotEmpty())
-                            <div style="font-size:.75rem; color:#4f46e5; margin-top:4px; font-weight:700;">
+                            <div style="font-size:.75rem; color: var(--vv-link); margin-top:4px; font-weight:700;">
                                 <i class="fas fa-chalkboard-teacher" style="margin-right:4px;"></i>
                                 Turmas ativas:
                                 @foreach($activeTurmas as $turma)
@@ -273,13 +275,13 @@
                 </div>
             @empty
                 <p style="color:#94a3b8; font-size:.9rem; margin:0;">Este beneficiário ainda não foi vinculado a nenhum projeto.</p>
-                <div style="font-size:.8rem; color:#64748b; margin-top:6px;">Vá em <strong>Projetos</strong> → escolha um projeto → <em>"Adicionar pessoa"</em> → botão "Escolher beneficiário".</div>
+                <div style="font-size:.8rem; color: var(--ds-text-muted); margin-top:6px;">Vá em <strong>Projetos</strong> → escolha um projeto → <em>"Adicionar pessoa"</em> → botão "Escolher beneficiário".</div>
             @endforelse
         </div>
 
         @if(($historicoMatriculas ?? collect())->isNotEmpty())
         <div class="vivensi-card" style="margin-top: 16px;">
-            <h4 style="margin-top: 0; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+            <h4 style="margin-top: 0; color: var(--ds-text); border-bottom: 1px solid var(--ds-border); padding-bottom: 10px;">
                 <i class="fas fa-history" style="color:#94a3b8; margin-right:6px;"></i> Histórico de matrículas
                 <span style="color:#94a3b8; font-weight:700; font-size:.85rem;">({{ $historicoMatriculas->count() }})</span>
             </h4>
@@ -291,12 +293,12 @@
                         default => ['#64748b', '#f1f5f9', ucfirst($enr->status)],
                     };
                 @endphp
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom: 1px solid var(--ds-border);">
                     <div style="flex:1;">
-                        <div style="font-weight:800; color:#0f172a;">
+                        <div style="font-weight:800; color: var(--ds-text);">
                             {{ $enr->projectClass->name ?? '— turma excluída —' }}
                         </div>
-                        <div style="font-size:.8rem; color:#64748b; margin-top:2px;">
+                        <div style="font-size:.8rem; color: var(--ds-text-muted); margin-top:2px;">
                             Projeto: {{ $enr->projectClass->project->name ?? '— excluído —' }}
                         </div>
                         <div style="font-size:.72rem; color:#94a3b8; margin-top:3px;">
@@ -316,8 +318,8 @@
 
     <!-- Coluna Direita: Evolução e Atendimentos -->
     <div class="vivensi-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
-            <h3 style="margin: 0; font-size: 1.1rem; color: #1e293b;">Histórico de Atendimentos</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--ds-border); padding-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: var(--ds-text);">Histórico de Atendimentos</h3>
             <button type="button" onclick="openAttendanceForm()" class="btn-premium" style="font-size: 0.9rem;">
                 <i class="fas fa-notes-medical"></i> Registrar Evolução
             </button>
@@ -327,18 +329,18 @@
             $totalAttendances = (int) ($stats['attendances_total'] ?? 0);
             $lastAttendanceAt = $stats['last_attendance_at'] ?? null;
         @endphp
-        <div class="vivensi-card" style="margin-bottom: 14px; background:#f8fafc; border:1px solid #e2e8f0;">
+        <div class="vivensi-card" style="margin-bottom: 14px; background: var(--vv-surface-soft); border: 1px solid var(--ds-border);">
             <div style="display:flex; gap: 14px; flex-wrap: wrap; justify-content: space-between; align-items:center;">
-                <div style="color:#334155; font-weight:800;">
-                    Total de registros: <span style="color:#4f46e5;">{{ number_format($totalAttendances) }}</span>
+                <div style="color: var(--ds-text); font-weight:800;">
+                    Total de registros: <span style="color: var(--vv-link);">{{ number_format($totalAttendances) }}</span>
                 </div>
-                <div style="color:#64748b;">
+                <div style="color: var(--ds-text-muted);">
                     Último atendimento: <strong>{{ $lastAttendanceAt ? \Carbon\Carbon::parse($lastAttendanceAt)->format('d/m/Y') : '—' }}</strong>
                 </div>
             </div>
         </div>
 
-        <div class="vivensi-card" style="margin-bottom: 14px; border:1px solid #e2e8f0;">
+        <div class="vivensi-card" style="margin-bottom: 14px; border: 1px solid var(--ds-border);">
             <form method="GET" action="" style="display:flex; gap: 10px; flex-wrap: wrap; align-items: end;">
                 <div class="form-group" style="margin:0;">
                     <label style="display:block; font-size:.8rem; margin-bottom:5px;">De</label>
@@ -363,13 +365,13 @@
                 </div>
                 <div style="display:flex; gap: 10px;">
                     <button class="btn-premium" type="submit"><i class="fas fa-filter"></i> Filtrar</button>
-                    <a class="btn-premium" style="background:#f1f5f9 !important; color:#0f172a !important;" href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}">Limpar</a>
+                    <a class="btn-premium" style="background: var(--vv-surface-soft) !important; color: var(--ds-text) !important;" href="{{ url('/ngo/beneficiaries/' . $beneficiary->id) }}">Limpar</a>
                 </div>
             </form>
         </div>
 
         <!-- Form de Novo Atendimento (Hidden by default) -->
-        <div id="attendanceForm" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+        <div id="attendanceForm" style="display: none; background: var(--vv-surface-soft); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--ds-border);">
             <form action="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance') }}" method="POST">
                 @csrf
                 <div class="grid-2" style="gap: 15px; margin-bottom: 15px;">
@@ -392,7 +394,7 @@
                     <textarea id="attendanceDescription" name="description" rows="3" class="form-control-vivensi" placeholder="Descreva o atendimento..." required></textarea>
                 </div>
                 <div style="text-align: right;">
-                    <button type="button" onclick="closeAttendanceForm()" style="border: none; background: none; color: #64748b; margin-right: 15px; cursor: pointer;">Cancelar</button>
+                    <button type="button" onclick="closeAttendanceForm()" style="border: none; background: none; color: var(--ds-text-muted); margin-right: 15px; cursor: pointer;">Cancelar</button>
                     <button type="submit" class="btn-premium" style="display: inline-flex; width: auto; font-size: 0.9rem;">Salvar Registro</button>
                 </div>
             </form>
@@ -408,16 +410,16 @@
                 </div>
                 <div style="flex: 1; padding-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <strong style="color: #1e293b; font-size: 0.95rem;">{{ $attendance->type }}</strong>
-                        <span style="color: #64748b; font-size: 0.8rem;">{{ \Carbon\Carbon::parse($attendance->date)->format('d/m/Y') }}</span>
+                        <strong style="color: var(--ds-text); font-size: 0.95rem;">{{ $attendance->type }}</strong>
+                        <span style="color: var(--ds-text-muted); font-size: 0.8rem;">{{ \Carbon\Carbon::parse($attendance->date)->format('d/m/Y') }}</span>
                     </div>
-                    <p style="margin: 0; font-size: 0.9rem; color: #475569; line-height: 1.5;">
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--ds-text-muted); line-height: 1.5;">
                         {{ $attendance->description }}
                     </p>
                     <div style="display:flex; justify-content: space-between; gap: 10px; align-items:center; margin-top: 6px; flex-wrap: wrap;">
                         <span style="font-size: 0.75rem; color: #94a3b8;">Registrado por: {{ $attendance->user->name ?? 'Sistema' }}</span>
                         <div style="display:flex; gap: 8px; align-items:center;">
-                            <button type="button" class="btn-premium" style="font-size:.78rem; padding: 4px 10px; background:#f1f5f9 !important; color:#0f172a !important;" onclick="toggleAttendanceEdit({{ (int) $attendance->id }})">
+                            <button type="button" class="btn-premium" style="font-size:.78rem; padding: 4px 10px; background: var(--vv-surface-soft) !important; color: var(--ds-text) !important;" onclick="toggleAttendanceEdit({{ (int) $attendance->id }})">
                                 <i class="fas fa-pen"></i> Editar
                             </button>
                             <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance/' . $attendance->id) }}" onsubmit="return confirm('Remover este atendimento?');">
@@ -430,7 +432,7 @@
                         </div>
                     </div>
 
-                    <div id="attEdit{{ (int) $attendance->id }}" style="display:none; margin-top: 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius: 10px; padding: 12px;">
+                    <div id="attEdit{{ (int) $attendance->id }}" style="display:none; margin-top: 10px; background: var(--vv-surface-soft); border: 1px solid var(--ds-border); border-radius: 10px; padding: 12px;">
                         <form method="POST" action="{{ url('/ngo/beneficiaries/' . $beneficiary->id . '/attendance/' . $attendance->id) }}">
                             @csrf
                             @method('PUT')
@@ -449,7 +451,7 @@
                                 <textarea name="description" rows="3" class="form-control-vivensi" required>{{ $attendance->description }}</textarea>
                             </div>
                             <div style="text-align:right; margin-top: 10px;">
-                                <button type="button" onclick="toggleAttendanceEdit({{ (int) $attendance->id }}, false)" style="border:none; background:none; color:#64748b; margin-right: 12px; cursor:pointer;">Cancelar</button>
+                                <button type="button" onclick="toggleAttendanceEdit({{ (int) $attendance->id }}, false)" style="border:none; background:none; color: var(--ds-text-muted); margin-right: 12px; cursor:pointer;">Cancelar</button>
                                 <button type="submit" class="btn-premium" style="display:inline-flex; width:auto; font-size:.85rem; background:#111827;"><i class="fas fa-save"></i> Salvar</button>
                             </div>
                         </form>
@@ -559,4 +561,5 @@ async function generateTermPdf(btn) {
 }
 </script>
 @endpush
+</div>
 @endsection

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 @php $basePath = rtrim(request()->getBaseUrl(), '/'); @endphp
 
 <div style="margin-bottom: 30px;">
@@ -10,8 +11,8 @@
                 <span style="background: var(--primary-color); width: 12px; height: 3px; border-radius: 2px;"></span>
                 <h6 style="color: var(--primary-color); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">{{ $project->name }}</h6>
             </div>
-            <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2rem; letter-spacing: -1px;">Lista de Presença</h2>
-            <p style="color: #64748b; margin: 6px 0 0 0; font-size: 1rem;">Sessões e chamadas deste projeto.</p>
+            <h2 style="margin: 0; color: var(--ds-text); font-weight: 900; font-size: 2rem; letter-spacing: -1px;">Lista de Presença</h2>
+            <p style="color: var(--ds-text-muted); margin: 6px 0 0 0; font-size: 1rem;">Sessões e chamadas deste projeto.</p>
         </div>
         <div style="display: flex; gap: 10px;">
             <a href="{{ $basePath . '/projects/' . $project->id }}" class="btn-ds btn-ds-ghost" style="text-decoration: none; font-weight: 700;">
@@ -32,29 +33,29 @@
     </div>
 @endif
 
-<div class="vivensi-card" style="background:white; padding:0; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.03); overflow:hidden;">
+<div class="vivensi-card" style="background: var(--ds-surface); padding:0; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.03); overflow:hidden;">
     @if($sessions->isEmpty())
-        <div style="padding:60px 30px; text-align:center; color:#64748b;">
+        <div style="padding:60px 30px; text-align:center; color: var(--ds-text-muted);">
             <i class="fas fa-clipboard-list" style="font-size:3rem; color:#cbd5e1; margin-bottom:15px;"></i>
             <p style="margin:0; font-weight:600;">Nenhuma sessão cadastrada ainda.</p>
         </div>
     @else
         <table style="width:100%; border-collapse:collapse;">
-            <thead style="background:#f8fafc;">
+            <thead style="background: var(--vv-surface-soft);">
                 <tr>
-                    <th style="text-align:left; padding:16px 20px; font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Data</th>
-                    <th style="text-align:left; padding:16px 20px; font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Título</th>
-                    <th style="text-align:left; padding:16px 20px; font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Horário</th>
-                    <th style="text-align:left; padding:16px 20px; font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Modo</th>
-                    <th style="text-align:right; padding:16px 20px; font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Ações</th>
+                    <th style="text-align:left; padding:16px 20px; font-size:0.75rem; font-weight:800; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px;">Data</th>
+                    <th style="text-align:left; padding:16px 20px; font-size:0.75rem; font-weight:800; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px;">Título</th>
+                    <th style="text-align:left; padding:16px 20px; font-size:0.75rem; font-weight:800; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px;">Horário</th>
+                    <th style="text-align:left; padding:16px 20px; font-size:0.75rem; font-weight:800; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px;">Modo</th>
+                    <th style="text-align:right; padding:16px 20px; font-size:0.75rem; font-weight:800; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px;">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($sessions as $s)
-                    <tr style="border-top:1px solid #f1f5f9;">
-                        <td style="padding:14px 20px; font-weight:700; color:#1e293b;">{{ $s->date->format('d/m/Y') }}</td>
-                        <td style="padding:14px 20px; color:#334155;">{{ $s->title }}</td>
-                        <td style="padding:14px 20px; color:#64748b; font-size:0.9rem;">
+                    <tr style="border-top: 1px solid var(--ds-border);">
+                        <td style="padding:14px 20px; font-weight:700; color: var(--ds-text);">{{ $s->date->format('d/m/Y') }}</td>
+                        <td style="padding:14px 20px; color: var(--ds-text);">{{ $s->title }}</td>
+                        <td style="padding:14px 20px; color: var(--ds-text-muted); font-size:0.9rem;">
                             {{ $s->start_time ? substr($s->start_time,0,5) : '—' }}
                             @if($s->end_time) – {{ substr($s->end_time,0,5) }}@endif
                         </td>
@@ -64,9 +65,9 @@
                             </span>
                         </td>
                         <td style="padding:14px 20px; text-align:right; white-space:nowrap;">
-                            <a href="{{ $basePath . '/projects/' . $project->id . '/class-sessions/' . $s->id }}" style="color:#4f46e5; font-weight:700; text-decoration:none; margin-right:12px;">Chamada</a>
+                            <a href="{{ $basePath . '/projects/' . $project->id . '/class-sessions/' . $s->id }}" style="color: var(--vv-link); font-weight:700; text-decoration:none; margin-right:12px;">Chamada</a>
                             @if(in_array(auth()->user()->role, ['manager','super_admin','ngo']))
-                                <a href="{{ $basePath . '/projects/' . $project->id . '/class-sessions/' . $s->id . '/edit' }}" style="color:#64748b; text-decoration:none; margin-right:12px;">Editar</a>
+                                <a href="{{ $basePath . '/projects/' . $project->id . '/class-sessions/' . $s->id . '/edit' }}" style="color: var(--ds-text-muted); text-decoration:none; margin-right:12px;">Editar</a>
                                 <form action="{{ $basePath . '/projects/' . $project->id . '/class-sessions/' . $s->id }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Remover esta sessão? As presenças registradas serão apagadas.');">
                                     @csrf
                                     @method('DELETE')
@@ -82,5 +83,6 @@
             {{ $sessions->links() }}
         </div>
     @endif
+</div>
 </div>
 @endsection
