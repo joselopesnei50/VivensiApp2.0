@@ -46,6 +46,11 @@ class BruceAiService
     ): array {
         $history = $this->getHistory($tenantId, $userId, $contextType, $contextId);
 
+        // Memória do Bruno (segmento, tipo de negócio, qualificação) é por
+        // pessoa: no WhatsApp não há usuário logado (userId 0), então a chave
+        // usa a conversa — senão todos os leads dividiriam a mesma memória.
+        $scope = $this->leadScope($userId, $contextType, $contextId);
+
         // Bruno — se ainda nao identificou o segmento, tenta pela ultima msg
         // do usuario. Uma vez identificado, cachea e injeta no prompt pra
         // (a) evitar re-perguntar (b) filtrar o painel relevante.
@@ -54,22 +59,22 @@ class BruceAiService
         $segment      = null;
         $businessType = null;
         if ($role === 'sales_bot') {
-            $segment = Cache::get($this->segmentKey($tenantId, $userId));
+            $segment = Cache::get($this->segmentKey($tenantId, $scope));
             if (!$segment) {
                 $detected = $this->detectSegment($userMessage);
                 if ($detected) {
-                    Cache::put($this->segmentKey($tenantId, $userId), $detected, self::HISTORY_TTL);
+                    Cache::put($this->segmentKey($tenantId, $scope), $detected, self::HISTORY_TTL);
                     $segment = $detected;
                 }
             }
 
             // business_type so faz sentido dentro do segment mei
             if ($segment === 'mei') {
-                $businessType = Cache::get($this->businessTypeKey($tenantId, $userId));
+                $businessType = Cache::get($this->businessTypeKey($tenantId, $scope));
                 if (!$businessType) {
                     $detected = $this->detectBusinessType($userMessage);
                     if ($detected) {
-                        Cache::put($this->businessTypeKey($tenantId, $userId), $detected, self::HISTORY_TTL);
+                        Cache::put($this->businessTypeKey($tenantId, $scope), $detected, self::HISTORY_TTL);
                         $businessType = $detected;
                     }
                 }
@@ -86,7 +91,7 @@ class BruceAiService
         }
 
         $systemPrompt = $role === 'sales_bot'
-            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $userId)), $segment, $businessType, $campaignContext, $leadContext, $lessons)
+            ? $this->buildSalesBotPrompt($tenantId, Cache::get($this->qualificationKey($tenantId, $scope)), $segment, $businessType, $campaignContext, $leadContext, $lessons)
             : $this->buildSystemPrompt($tenantId, $role, $contextType, $contextId);
 
         $messages = array_merge(
@@ -175,18 +180,18 @@ class BruceAiService
                     $qual = app(\App\Services\Messaging\LeadQualificationService::class)
                         ->qualifyMessages($newHistory, 'Lead Sandbox');
                     if (empty($qual['error'])) {
-                        Cache::put($this->qualificationKey($tenantId, $userId), $qual, self::HISTORY_TTL);
+                        Cache::put($this->qualificationKey($tenantId, $scope), $qual, self::HISTORY_TTL);
                         $qualification = $qual;
                     } else {
                         Log::warning('Bruno: qualifyMessages devolveu erro', ['err' => $qual['error']]);
-                        $qualification = Cache::get($this->qualificationKey($tenantId, $userId));
+                        $qualification = Cache::get($this->qualificationKey($tenantId, $scope));
                     }
                 } catch (\Throwable $e) {
                     Log::warning('Bruno: qualifyMessages exception', ['err' => $e->getMessage()]);
-                    $qualification = Cache::get($this->qualificationKey($tenantId, $userId));
+                    $qualification = Cache::get($this->qualificationKey($tenantId, $scope));
                 }
             } else {
-                $qualification = Cache::get($this->qualificationKey($tenantId, $userId));
+                $qualification = Cache::get($this->qualificationKey($tenantId, $scope));
             }
         }
 
@@ -199,19 +204,31 @@ class BruceAiService
         ];
     }
 
-    private function qualificationKey(int $tenantId, int $userId): string
+    /**
+     * Identifica de quem é a memória do Bruno. Usuário logado (sandbox, chat
+     * interno) continua pelo id; sem usuário (WhatsApp) usa a conversa.
+     */
+    private function leadScope(int $userId, ?string $contextType, ?int $contextId): string
     {
-        return "bruno.qualification.{$tenantId}.{$userId}";
+        if ($userId === 0 && $contextId) {
+            return ($contextType ?: 'ctx') . '-' . $contextId;
+        }
+        return (string) $userId;
     }
 
-    private function segmentKey(int $tenantId, int $userId): string
+    private function qualificationKey(int $tenantId, string $scope): string
     {
-        return "bruno.segment.{$tenantId}.{$userId}";
+        return "bruno.qualification.{$tenantId}.{$scope}";
     }
 
-    private function businessTypeKey(int $tenantId, int $userId): string
+    private function segmentKey(int $tenantId, string $scope): string
     {
-        return "bruno.business_type.{$tenantId}.{$userId}";
+        return "bruno.segment.{$tenantId}.{$scope}";
+    }
+
+    private function businessTypeKey(int $tenantId, string $scope): string
+    {
+        return "bruno.business_type.{$tenantId}.{$scope}";
     }
 
     // Heuristica leve pra identificar o segmento do lead pela mensagem.
