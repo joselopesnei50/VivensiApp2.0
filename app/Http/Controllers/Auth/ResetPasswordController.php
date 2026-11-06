@@ -40,6 +40,9 @@ class ResetPasswordController extends Controller
         );
 
         if ($status === Password::PASSWORD_RESET) {
+            // Quem redefiniu pelo link do e-mail é o dono: destrava a conta.
+            \App\Support\LoginLockout::reset((string) $request->input('email'), $request->ip());
+
             return redirect()->route('login')->with('success', 'Senha redefinida com sucesso. Você já pode entrar.');
         }
 
