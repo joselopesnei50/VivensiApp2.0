@@ -284,3 +284,27 @@ it('endereço do portal novo usa o nome da organização', function () {
     expect(TransparencyPortal::withoutGlobalScopes()->where('tenant_id', $u->tenant_id)->value('slug'))
         ->toBe('instituto-girassol-' . $u->tenant_id);
 });
+
+// ── Professor (perfil comum) faz a chamada ────────────────────────────────
+
+it('usuário com perfil comum abre e salva a chamada da turma', function () {
+    $u = p1Org();
+    $prof = User::factory()->create(['tenant_id' => $u->tenant_id, 'role' => 'common']);
+    ['p' => $p, 's' => $s, 'aluno' => $aluno] = p1Turma($u);
+
+    $this->actingAs($prof)->get("/projects/{$p->id}/class-sessions/{$s->id}")->assertOk()->assertSee('Aluno Matriculado');
+    $this->actingAs($prof)->post("/projects/{$p->id}/class-sessions/{$s->id}/attendance", ['attendance' => [
+        $aluno->id => ['status' => 'presente'],
+    ]])->assertRedirect();
+
+    expect(ClassAttendance::where('project_person_id', $aluno->id)->value('status'))->toBe('presente');
+});
+
+it('perfil comum de outra organização continua sem acesso à chamada', function () {
+    $u = p1Org();
+    $intruso = p1Org('common');
+    ['p' => $p, 's' => $s] = p1Turma($u);
+
+    $res = $this->actingAs($intruso)->get("/projects/{$p->id}/class-sessions/{$s->id}");
+    expect($res->status())->toBeIn([403, 404]);
+});
