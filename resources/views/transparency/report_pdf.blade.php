@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório de Transparência - {{ $portal->title }} ({{ $year }})</title>
+    <title>Relatório de Transparência - {{ $orgName ?? $portal->title }} ({{ $year }})</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; color: #0f172a; font-size: 12px; }
         .muted { color: #475569; }
@@ -26,7 +26,7 @@
     <div class="box">
         <div class="h1">Relatório público de transparência (agregado)</div>
         <div class="muted">
-            {{ $portal->title }} • CNPJ: {{ $portal->cnpj ?? '—' }} • Ano: {{ $year }}
+            {{ $orgName ?? $portal->title }} • CNPJ: {{ $portal->cnpj ?? '—' }} • Ano: {{ $year }}
             @if(!empty($publicDataUpdatedAt))
                 • Atualizado em: {{ \Carbon\Carbon::parse($publicDataUpdatedAt)->format('d/m/Y H:i') }}
             @endif
@@ -209,7 +209,7 @@
     <div class="h2">8) SIC (LAI)</div>
     <div class="box">
         <div class="muted" style="line-height: 1.8;">
-            Canal oficial: <strong>{{ $portal->sic_email ?? 'transparencia@vivensi.org' }}</strong>
+            Canal oficial: <strong>{{ $portal->sic_email ?: 'formulário SIC no portal da transparência' }}</strong>
             @if(!empty($portal->sic_phone))
                 • Telefone: <strong>{{ $portal->sic_phone }}</strong>
             @endif

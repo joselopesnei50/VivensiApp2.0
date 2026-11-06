@@ -27,10 +27,7 @@ class PublicAttendanceController extends Controller
         $students = [];
         if ($session->mode === 'fechada') {
             // Somente nomes — sem PII adicional exposta.
-            $students = ProjectPerson::withoutGlobalScopes()
-                ->where('project_id', $session->project_id)
-                ->where('tenant_id', $session->tenant_id)
-                ->where('enrollment_status', 'ativo')
+            $students = $session->rosterQuery()
                 ->orderBy('name')
                 ->pluck('name')
                 ->values()
@@ -68,10 +65,7 @@ class PublicAttendanceController extends Controller
             DB::transaction(function () use ($session, $validated, $ipHash) {
             if ($session->mode === 'fechada') {
                 // Match case-insensitive contra matriculados ativos do projeto.
-                $person = ProjectPerson::withoutGlobalScopes()
-                    ->where('project_id', $session->project_id)
-                    ->where('tenant_id', $session->tenant_id)
-                    ->where('enrollment_status', 'ativo')
+                $person = $session->rosterQuery()
                     ->whereRaw('LOWER(name) = ?', [Str::lower(trim($validated['name']))])
                     ->first();
 

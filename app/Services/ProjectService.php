@@ -118,8 +118,7 @@ class ProjectService
     private function sanitizeBudget(array $data): array
     {
         if (isset($data['budget'])) {
-            $data['budget'] = str_replace('.', '', (string) $data['budget']);
-            $data['budget'] = str_replace(',', '.', $data['budget']);
+            $data['budget'] = \App\Support\BrMoney::parse($data['budget']);
         }
         return $data;
     }

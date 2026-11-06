@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $portal->title }} | {{ $portal->cnpj }}</title>
+    <title>{{ $portal->title }}@if(!empty($orgName)) — {{ $orgName }}@endif</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -281,8 +281,8 @@
 
     <header>
         <div class="portal-icon"><i class="fas fa-university"></i></div>
-        <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0;">Portal da Transparência</h1>
-        <p style="opacity: 0.7; font-size: 1.1rem; margin-top: 10px;">{{ $portal->title }} | CNPJ: {{ $portal->cnpj }}</p>
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0;">{{ $orgName ?? $portal->title }}</h1>
+        <p style="opacity: 0.7; font-size: 1.1rem; margin-top: 10px;">{{ $portal->title }}@if($portal->cnpj) · CNPJ: {{ $portal->cnpj }}@endif</p>
         <div class="audit-badge"><i class="fas fa-check-circle me-2"></i> Dados agregados e auditáveis</div>
         <div style="opacity: 0.85; font-size: 0.95rem; margin-top: 10px;">
             Período: <strong>{{ $year ?? now()->year }}</strong>
@@ -838,7 +838,8 @@
             <div>
                 <h4 class="footer-title">Fale Conosco (SIC)</h4>
                 <p style="opacity: 0.7; margin-bottom: 16px;">Canal oficial de Serviço de Informação ao Cidadão.</p>
-                <p><strong>Email:</strong> {{ $portal->sic_email ?? 'transparencia@vivensi.org' }}</p>
+                {{-- Sem e-mail próprio, não mostrar endereço de terceiros: o canal é o formulário abaixo. --}}
+                @if($portal->sic_email) <p><strong>Email:</strong> {{ $portal->sic_email }}</p> @endif
                 @if($portal->sic_phone) <p><strong>Telefone:</strong> {{ $portal->sic_phone }}</p> @endif
                 <p style="opacity: 0.7; line-height: 1.8; margin-top: 16px;">
                     Solicite informações sobre as atividades desta organização. Respondemos em até 20 dias úteis (LAI).

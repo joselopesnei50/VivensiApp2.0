@@ -280,11 +280,22 @@ class ConformidadeController extends Controller
 
     public function downloadDocumento(int $attachment)
     {
+        $this->autorizarAdmin();
+
         $tenantId = auth()->user()->tenant_id;
 
+        // Só documentos da conformidade (da organização ou evidências de
+        // avaliação). Antes servia QUALQUER anexo do tenant — inclusive
+        // documentos de beneficiários — para qualquer usuário logado.
         $doc = Attachment::withoutGlobalScopes()
             ->where('id', $attachment)
             ->where('tenant_id', $tenantId)
+            ->where(function ($q) {
+                $q->whereIn('attachable_type', [Tenant::class, AvaliacaoRequisito::class])
+                  ->orWhereIn('tipo_documento', \App\Models\RegraAvaliacao::query()
+                      ->whereNotNull('tipo_documento_obrigatorio')
+                      ->pluck('tipo_documento_obrigatorio'));
+            })
             ->whereNull('deleted_at')
             ->firstOrFail();
 

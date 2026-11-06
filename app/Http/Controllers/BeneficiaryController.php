@@ -431,7 +431,28 @@ class BeneficiaryController extends Controller
                     : ($get('address') ?: null);
 
                 if ($existing) {
-                    $existing->update($beneficiaryData);
+                    // Reimportação: só atualiza o que veio PREENCHIDO na planilha.
+                    // Antes, coluna vazia apagava o dado já cadastrado e status
+                    // vazio reativava quem estava inativo/graduado.
+                    $updates = array_filter(
+                        $beneficiaryData,
+                        fn ($v, $k) => $k !== 'address' && $v !== null && $v !== '',
+                        ARRAY_FILTER_USE_BOTH
+                    );
+                    if ($get('status') === '') {
+                        unset($updates['status']);
+                    }
+
+                    $structured = ['address_zip', 'address_street', 'address_number', 'address_complement',
+                        'address_neighborhood', 'address_city', 'address_state'];
+                    if (array_intersect_key($updates, array_flip($structured))) {
+                        $merged = array_merge($existing->only($structured), $updates);
+                        $updates['address'] = $this->composeAddress($merged);
+                    } elseif ($get('address') !== '') {
+                        $updates['address'] = $get('address');
+                    }
+
+                    $existing->update($updates);
                     $duplicatesUpdated++;
                 } else {
                     Beneficiary::create($beneficiaryData);
