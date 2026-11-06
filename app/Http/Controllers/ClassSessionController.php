@@ -13,8 +13,10 @@ use Illuminate\Validation\Rule;
 
 class ClassSessionController extends Controller
 {
-    private const ROLES_READ  = ['manager', 'employee', 'super_admin', 'ngo'];
-    private const ROLES_WRITE = ['manager', 'super_admin', 'ngo'];
+    // 'common' (perfil usado por professores) pode fazer chamada — igual às
+    // Turmas (ProjectClassController), onde esse perfil já cria e edita.
+    private const ROLES_READ  = ['manager', 'employee', 'super_admin', 'ngo', 'common'];
+    private const ROLES_WRITE = ['manager', 'super_admin', 'ngo', 'common'];
 
     private function tenantId(): int
     {
