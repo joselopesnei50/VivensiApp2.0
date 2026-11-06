@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <style>
     :root {
         --premium-bg: #f3f4f6;
@@ -11,6 +12,15 @@
         --card-radius: 24px;
         --input-radius: 14px;
     }
+    [data-theme="dark"] {
+        --premium-bg: transparent;
+        --text-main: #f1f5f9;
+        --text-muted: #cbd5e1;
+    }
+    [data-theme="dark"] .text-dark { color: var(--ds-text) !important; }
+    /* Botões escuros somem sobre cartões escuros: no tema escuro usam a cor da marca */
+
+    [data-theme="dark"] .btn-action-premium { background: var(--ds-brand); color: #fff; }
 
     /* Overall Spacing & Grid */
     .dashboard-wrapper {
@@ -58,7 +68,7 @@
 
     /* Card Styling */
     .glass-card {
-        background: white;
+        background: var(--ds-surface);
         border-radius: var(--card-radius);
         border: 1px solid rgba(0,0,0,0.05);
         box-shadow: 0 4px 20px rgba(0,0,0,0.03);
@@ -93,8 +103,8 @@
 
     .input-premium {
         width: 100%;
-        background: #f8fafc;
-        border: 2px solid #e2e8f0;
+        background: var(--vv-surface-soft);
+        border: 2px solid var(--ds-border);
         border-radius: var(--input-radius);
         padding: 14px 20px;
         font-size: 1rem;
@@ -103,7 +113,7 @@
     }
 
     .input-premium:focus {
-        background: white;
+        background: var(--ds-surface);
         border-color: var(--accent);
         box-shadow: 0 0 0 5px var(--accent-glow);
         outline: none;
@@ -116,7 +126,7 @@
 
     /* Custom Checkbox/Switch */
     .switch-container {
-        background: #f1f5f9;
+        background: var(--vv-surface-soft);
         padding: 24px;
         border-radius: 18px;
         margin: 32px 0; /* Breathing room for the switch */
@@ -160,7 +170,7 @@
         font-weight: 700;
         font-size: 0.75rem;
         text-transform: uppercase;
-        border-bottom: 2px solid #f1f5f9;
+        border-bottom: 2px solid var(--ds-border);
     }
 
     .premium-table td {
@@ -178,8 +188,8 @@
     }
 
     .doc-item {
-        background: white;
-        border: 2px solid #f1f5f9;
+        background: var(--ds-surface);
+        border: 2px solid var(--ds-border);
         border-radius: 20px;
         padding: 20px;
         display: flex;
@@ -271,7 +281,7 @@
 
                     <div class="form-section" style="margin-top: 18px;">
                         <div style="display:flex; align-items:center; gap: 10px; margin-bottom: 10px;">
-                            <i class="fas fa-user-shield" style="color:#0f172a;"></i>
+                            <i class="fas fa-user-shield" style="color: var(--ds-text);"></i>
                             <div style="font-weight: 900; color: var(--text-main);">LGPD (Encarregado / DPO)</div>
                         </div>
                         <label class="form-label-premium">Nome do Encarregado</label>
@@ -409,7 +419,7 @@
                                     <div class="text-muted small">{{ $p->agency_name }}</div>
                                 </td>
                                 <td><span class="fw-800 text-dark">R$ {{ number_format($p->value, 2, ',', '.') }}</span></td>
-                                <td><span class="badge bg-success rounded-pill px-3">{{ strtoupper($p->status) }}</span></td>
+                                <td><span class="badge bg-success rounded-pill px-3">{{ ['active' => 'Ativo', 'concluded' => 'Concluído', 'analysis' => 'Em análise', 'pending' => 'Pendente'][$p->status] ?? $p->status }}</span></td>
                                 <td class="text-end">
                                     <button type="button" class="btn btn-outline-primary btn-sm border-0 rounded-circle me-1"
                                         style="width: 35px; height: 35px;"
@@ -501,7 +511,7 @@
                     <input type="file" name="file" class="form-control border-2 p-3 rounded-4" required>
                 </div>
             </div>
-            <div class="p-4 bg-light border-top">
+            <div class="p-4 bg-body-tertiary border-top">
                 <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">ENVIAR AGORA</button>
             </div>
         </form>
@@ -525,7 +535,7 @@
                     <div class="col-6"><label class="form-label-premium">Fim Mandato</label><input type="date" name="tenure_end" class="input-premium"></div>
                 </div>
             </div>
-            <div class="p-4 bg-light border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">SALVAR DIRETOR</button></div>
+            <div class="p-4 bg-body-tertiary border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">SALVAR DIRETOR</button></div>
         </form>
     </div>
 </div>
@@ -544,7 +554,7 @@
                 <div class="mb-4"><label class="form-label-premium">Valor do Repasse (R$)</label><input type="number" step="0.01" name="value" class="input-premium" required></div>
                 <div class="mb-0"><label class="form-label-premium">Link Diário Oficial (LAI)</label><input type="url" name="gazette_link" class="input-premium"></div>
             </div>
-            <div class="p-4 bg-light border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">REGISTRAR TERMO</button></div>
+            <div class="p-4 bg-body-tertiary border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">REGISTRAR TERMO</button></div>
         </form>
     </div>
 </div>
@@ -567,7 +577,7 @@
                     <div class="col-6"><label class="form-label-premium">Fim Mandato</label><input type="date" name="tenure_end" id="edit_board_end" class="input-premium"></div>
                 </div>
             </div>
-            <div class="p-4 bg-light border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">SALVAR ALTERAÇÕES</button></div>
+            <div class="p-4 bg-body-tertiary border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">SALVAR ALTERAÇÕES</button></div>
         </form>
     </div>
 </div>
@@ -600,11 +610,12 @@
                     <div class="col-6"><label class="form-label-premium">Fim</label><input type="date" name="end_date" id="edit_p_end" class="input-premium"></div>
                 </div>
             </div>
-            <div class="p-4 bg-light border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">SALVAR ALTERAÇÕES</button></div>
+            <div class="p-4 bg-body-tertiary border-top"><button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">SALVAR ALTERAÇÕES</button></div>
         </form>
     </div>
 </div>
 
+</div>
 @endsection
 
 @push('scripts')

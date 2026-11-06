@@ -2,10 +2,13 @@
 
 @section('content')
 
+<div data-theme-scope>
 <style>
-.guia-step { border-radius:16px; border:1px solid #e2e8f0; background:#fff; padding:24px 28px; margin-bottom:16px; }
+.guia-step { border-radius:16px; border: 1px solid var(--ds-border); background: var(--ds-surface); padding:24px 28px; margin-bottom:16px; }
 .guia-step-num { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.95rem; flex-shrink:0; }
 .guia-tip { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:12px 16px; font-size:.82rem; color:#166534; }
+.guia-tile { }
+[data-theme="dark"] .guia-tile { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.12) !important; }
 .guia-warn { background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:12px 16px; font-size:.82rem; color:#92400e; }
 .tipo-pill { display:inline-flex; align-items:center; gap:6px; font-size:.75rem; font-weight:700; padding:4px 12px; border-radius:20px; }
 .tipo-a { background:#e0e7ff; color:#3730a3; }
@@ -53,13 +56,13 @@
             </p>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0">
+                    <div class="p-3 rounded-3" style="background: var(--vv-surface-soft);border: 1px solid var(--ds-border)">
                         <div class="fw-semibold small mb-2"><i class="bi bi-search me-1 text-primary"></i>Busca automática por CNPJ</div>
                         <div class="text-muted" style="font-size:.8rem">Digite o CNPJ e clique em <strong>Buscar</strong>. O sistema preenche automaticamente o CNAE principal e a data de fundação.</div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0">
+                    <div class="p-3 rounded-3" style="background: var(--vv-surface-soft);border: 1px solid var(--ds-border)">
                         <div class="fw-semibold small mb-2"><i class="bi bi-card-list me-1 text-success"></i>Campos obrigatórios</div>
                         <ul class="text-muted mb-0" style="font-size:.8rem;padding-left:16px">
                             <li><strong>CNAS</strong> — número e validade da certidão</li>
@@ -92,21 +95,21 @@
             </p>
             <div class="row g-3">
                 <div class="col-md-4 col-6">
-                    <div class="p-3 rounded-3 text-center" style="background:#fdf4ff;border:1px solid #e9d5ff">
+                    <div class="p-3 rounded-3 text-center guia-tile" style="background:#fdf4ff;border:1px solid #e9d5ff">
                         <div style="font-size:1.4rem">🛡️</div>
                         <div class="fw-semibold small mt-1">CEBAS</div>
                         <div class="text-muted" style="font-size:.75rem">Ciclo de 3 ou 5 anos conforme enquadramento</div>
                     </div>
                 </div>
                 <div class="col-md-4 col-6">
-                    <div class="p-3 rounded-3 text-center" style="background:#f0fdf4;border:1px solid #bbf7d0">
+                    <div class="p-3 rounded-3 text-center guia-tile" style="background:#f0fdf4;border:1px solid #bbf7d0">
                         <div style="font-size:1.4rem">📄</div>
                         <div class="fw-semibold small mt-1">MROSC</div>
                         <div class="text-muted" style="font-size:.75rem">Por parceria (vigência do instrumento)</div>
                     </div>
                 </div>
                 <div class="col-md-4 col-6">
-                    <div class="p-3 rounded-3 text-center" style="background:#eff6ff;border:1px solid #bfdbfe">
+                    <div class="p-3 rounded-3 text-center guia-tile" style="background:#eff6ff;border:1px solid #bfdbfe">
                         <div style="font-size:1.4rem">🏠</div>
                         <div class="fw-semibold small mt-1">SUAS</div>
                         <div class="text-muted" style="font-size:.75rem">Ciclo anual (jan–dez)</div>
@@ -132,31 +135,31 @@
             </p>
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
-                    <div class="p-3 h-100 rounded-3" style="background:#f5f3ff;border:1px solid #ddd6fe">
+                    <div class="p-3 h-100 rounded-3 guia-tile" style="background:#f5f3ff;border:1px solid #ddd6fe">
                         <div class="mb-2"><span class="tipo-pill tipo-a">Tipo A — Automático</span></div>
                         <div class="text-muted" style="font-size:.8rem">Calculado automaticamente pelo sistema com base nos dados existentes: atendimentos, transações financeiras, projetos e frequência. <strong>Nenhuma ação é necessária</strong> — mantenha os dados do sistema atualizados.</div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-3 h-100 rounded-3" style="background:#fdf2f8;border:1px solid #fbcfe8">
+                    <div class="p-3 h-100 rounded-3 guia-tile" style="background:#fdf2f8;border:1px solid #fbcfe8">
                         <div class="mb-2"><span class="tipo-pill tipo-b">Tipo B — Documento</span></div>
                         <div class="text-muted" style="font-size:.8rem">Exige o <strong>upload de um documento</strong> válido (ex: CNAS, ata de reunião, balanço patrimonial). Use o botão <strong>"Enviar Documento"</strong> no requisito. Informe a validade para que o sistema monitore o vencimento.</div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-3 h-100 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0">
+                    <div class="p-3 h-100 rounded-3 guia-tile" style="background:#f0fdf4;border:1px solid #bbf7d0">
                         <div class="mb-2"><span class="tipo-pill tipo-c">Tipo C — Declaração</span></div>
                         <div class="text-muted" style="font-size:.8rem">Requer uma <strong>declaração formal</strong> de que o requisito está sendo cumprido. Use o botão <strong>"Declarar"</strong>. Descreva como a organização atende ao requisito (mínimo 20 caracteres).</div>
                     </div>
                 </div>
             </div>
-            <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0">
+            <div class="p-3 rounded-3" style="background: var(--vv-surface-soft);border: 1px solid var(--ds-border)">
                 <div class="fw-semibold small mb-2">Resultados possíveis por requisito:</div>
                 <div class="d-flex gap-3 flex-wrap" style="font-size:.8rem">
                     <div><span class="res-badge-sm" style="background:#d1fae5;color:#065f46">Verde</span> — requisito atendido, dentro do limite</div>
                     <div><span class="res-badge-sm" style="background:#fef9c3;color:#713f12">Atenção</span> — abaixo do ideal mas ainda aceitável</div>
                     <div><span class="res-badge-sm" style="background:#fee2e2;color:#7f1d1d">Crítico</span> — não conformidade, ação necessária</div>
-                    <div><span class="res-badge-sm" style="background:#f1f5f9;color:#64748b">N/A</span> — não avaliado (sem ciclo ativo)</div>
+                    <div><span class="res-badge-sm" style="background: var(--vv-surface-soft);color: var(--ds-text-muted)">N/A</span> — não avaliado (sem ciclo ativo)</div>
                 </div>
             </div>
         </div>
@@ -223,7 +226,7 @@
             </p>
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                    <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0">
+                    <div class="p-3 rounded-3" style="background: var(--vv-surface-soft);border: 1px solid var(--ds-border)">
                         <div class="fw-semibold small mb-2">Como criar um plano</div>
                         <ol class="text-muted mb-0" style="font-size:.8rem;padding-left:16px">
                             <li>Clique em <strong>Novo Plano</strong></li>
@@ -234,10 +237,10 @@
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0">
+                    <div class="p-3 rounded-3" style="background: var(--vv-surface-soft);border: 1px solid var(--ds-border)">
                         <div class="fw-semibold small mb-2">Status do plano</div>
-                        <div style="font-size:.8rem;color:#475569">
-                            <div class="mb-1"><span class="res-badge-sm" style="background:#f1f5f9;color:#475569">Pendente</span> — aguardando início</div>
+                        <div style="font-size:.8rem;color: var(--ds-text-muted)">
+                            <div class="mb-1"><span class="res-badge-sm" style="background: var(--vv-surface-soft);color: var(--ds-text-muted)">Pendente</span> — aguardando início</div>
                             <div class="mb-1"><span class="res-badge-sm" style="background:#e0e7ff;color:#3730a3">Em Andamento</span> — ações em execução</div>
                             <div class="mb-1"><span class="res-badge-sm" style="background:#d1fae5;color:#065f46">Concluído</span> — não-conformidade resolvida</div>
                             <div><span class="res-badge-sm" style="background:#fee2e2;color:#7f1d1d">Cancelado</span> — plano não será executado</div>
@@ -264,28 +267,28 @@
             </p>
             <div class="row g-3">
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3 rounded-3 h-100 text-center" style="background:#f0fdf4;border:1px solid #bbf7d0">
+                    <div class="p-3 rounded-3 h-100 text-center guia-tile" style="background:#f0fdf4;border:1px solid #bbf7d0">
                         <div style="font-size:1.5rem">📄</div>
                         <div class="fw-semibold small mt-1">RMA</div>
                         <div class="text-muted" style="font-size:.75rem">Relatório Mensal de Atendimentos (PDF) para prestação ao SUAS</div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3 rounded-3 h-100 text-center" style="background:#eff6ff;border:1px solid #bfdbfe">
+                    <div class="p-3 rounded-3 h-100 text-center guia-tile" style="background:#eff6ff;border:1px solid #bfdbfe">
                         <div style="font-size:1.5rem">🛡️</div>
                         <div class="fw-semibold small mt-1">Dossiê CEBAS</div>
                         <div class="text-muted" style="font-size:.75rem">Consolidado para renovação do CEBAS com todos os índices</div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3 rounded-3 h-100 text-center" style="background:#fdf4ff;border:1px solid #e9d5ff">
+                    <div class="p-3 rounded-3 h-100 text-center guia-tile" style="background:#fdf4ff;border:1px solid #e9d5ff">
                         <div style="font-size:1.5rem">📊</div>
                         <div class="fw-semibold small mt-1">Relatório MROSC</div>
                         <div class="text-muted" style="font-size:.75rem">Para prestação de contas de parcerias e convênios</div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3 rounded-3 h-100 text-center" style="background:#fffbeb;border:1px solid #fde68a">
+                    <div class="p-3 rounded-3 h-100 text-center guia-tile" style="background:#fffbeb;border:1px solid #fde68a">
                         <div style="font-size:1.5rem">📸</div>
                         <div class="fw-semibold small mt-1">Snapshot</div>
                         <div class="text-muted" style="font-size:.75rem">Registra o índice atual no histórico para acompanhar evolução no gráfico</div>
@@ -315,4 +318,5 @@
     </div>
 </div>
 
+</div>
 @endsection

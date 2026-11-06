@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 @php
     $basePath  = rtrim(request()->getBaseUrl(), '/');
     $canManage = in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo'], true);
@@ -37,21 +38,21 @@
     .st-crumbs a { color: rgba(255,255,255,.75); text-decoration: none; }
     .st-crumbs a:hover { color: white; }
     .st-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:.72rem; font-weight:800; letter-spacing:.3px; }
-    .st-kpi { background:white; border:1px solid #e2e8f0; border-radius:16px; padding:16px 18px; }
+    .st-kpi { background: var(--ds-surface); border: 1px solid var(--ds-border); border-radius:16px; padding:16px 18px; }
     .st-kpi-label { font-size:.66rem; font-weight:800; color:#94a3b8; letter-spacing:1.2px; text-transform:uppercase; }
-    .st-kpi-val { font-weight:900; color:#0f172a; font-size:1.35rem; margin-top:4px; }
+    .st-kpi-val { font-weight:900; color: var(--ds-text); font-size:1.35rem; margin-top:4px; }
     .st-progress { height:6px; background:#e2e8f0; border-radius:99px; overflow:hidden; margin-top:10px; }
     .st-progress-bar { height:100%; background:linear-gradient(90deg,#2563eb,#059669); transition:width .3s; }
-    .st-panel { background:white; border:1px solid #e2e8f0; border-radius:20px; padding:20px 22px; margin-bottom:20px; }
+    .st-panel { background: var(--ds-surface); border: 1px solid var(--ds-border); border-radius:20px; padding:20px 22px; margin-bottom:20px; }
     .st-panel-h { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
-    .st-panel-h h4 { margin:0; font-weight:900; color:#0f172a; letter-spacing:-.5px; font-size:1.1rem; }
-    .st-list-row { display:grid; grid-template-columns: 1fr auto; gap:14px; align-items:center; padding:12px 0; border-bottom:1px dashed #e2e8f0; }
+    .st-panel-h h4 { margin:0; font-weight:900; color: var(--ds-text); letter-spacing:-.5px; font-size:1.1rem; }
+    .st-list-row { display:grid; grid-template-columns: 1fr auto; gap:14px; align-items:center; padding:12px 0; border-bottom: 1px dashed var(--ds-border); }
     .st-list-row:last-child { border-bottom:none; }
-    .st-empty { padding:32px 20px; text-align:center; color:#64748b; background:#f8fafc; border-radius:14px; border:2px dashed #cbd5e1; }
+    .st-empty { padding:32px 20px; text-align:center; color: var(--ds-text-muted); background: var(--vv-surface-soft); border-radius:14px; border:2px dashed #cbd5e1; }
     .st-btn-primary { background:#0f172a; color:white; border:none; padding:8px 14px; border-radius:10px; font-weight:800; font-size:.82rem; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
     .st-btn-primary:hover { background:#1e293b; color:white; }
-    .st-btn-outline { background:white; color:#0f172a; border:1px solid #cbd5e1; padding:8px 14px; border-radius:10px; font-weight:800; font-size:.82rem; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
-    .st-btn-outline:hover { background:#f8fafc; }
+    .st-btn-outline { background: var(--ds-surface); color: var(--ds-text); border:1px solid #cbd5e1; padding:8px 14px; border-radius:10px; font-weight:800; font-size:.82rem; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+    .st-btn-outline:hover { background: var(--vv-surface-soft); }
 </style>
 
 <div class="st-hero">
@@ -109,7 +110,7 @@
             <div class="st-kpi-val" style="color:#dc2626;">R$ {{ number_format($expense, 2, ',', '.') }}</div>
             @if($planned > 0)
                 <div class="st-progress"><div class="st-progress-bar" style="width: {{ $spentPct }}%; background: {{ $spentPct >= 100 ? '#dc2626' : ($spentPct >= 80 ? '#f59e0b' : '#059669') }};"></div></div>
-                <div style="font-size:.72rem; color:#64748b; margin-top:4px;">{{ $spentPct }}% do previsto</div>
+                <div style="font-size:.72rem; color: var(--ds-text-muted); margin-top:4px;">{{ $spentPct }}% do previsto</div>
             @endif
         </div>
     </div>
@@ -117,7 +118,7 @@
         <div class="st-kpi">
             <div class="st-kpi-label">Saldo da etapa</div>
             <div class="st-kpi-val" style="color: {{ $financial['balance'] >= 0 ? '#059669' : '#dc2626' }};">R$ {{ number_format($financial['balance'], 2, ',', '.') }}</div>
-            <div style="font-size:.72rem; color:#64748b; margin-top:4px;">receitas − despesas</div>
+            <div style="font-size:.72rem; color: var(--ds-text-muted); margin-top:4px;">receitas − despesas</div>
         </div>
     </div>
 </div>
@@ -150,7 +151,7 @@
 {{-- Descricao --}}
 @if($stage->description)
 <div class="st-panel">
-    <div style="color:#475569; line-height:1.6;">{{ $stage->description }}</div>
+    <div style="color: var(--ds-text-muted); line-height:1.6;">{{ $stage->description }}</div>
 </div>
 @endif
 
@@ -159,7 +160,7 @@
     <div class="st-panel-h">
         <div>
             <h4><i class="fas fa-tasks me-2" style="color:#2563eb;"></i> Tarefas da etapa <span style="color:#94a3b8; font-weight:800;">({{ $tasks->count() }})</span></h4>
-            <div style="color:#64748b; font-size:.85rem;">Tarefas com <code>stage_id</code> vinculado a esta etapa.</div>
+            <div style="color: var(--ds-text-muted); font-size:.85rem;">Tarefas com <code>stage_id</code> vinculado a esta etapa.</div>
         </div>
         @if($canManage)
             <button type="button" class="st-btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
@@ -174,8 +175,8 @@
         @endphp
         <div class="st-list-row">
             <div>
-                <div style="font-weight:800; color:#0f172a;">{{ $t->title }}</div>
-                <div style="font-size:.78rem; color:#64748b; margin-top:2px;">
+                <div style="font-weight:800; color: var(--ds-text);">{{ $t->title }}</div>
+                <div style="font-size:.78rem; color: var(--ds-text-muted); margin-top:2px;">
                     <span class="st-badge" style="color:{{ $tTuple[1] }}; background:{{ $tTuple[2] }};">{{ $tTuple[0] }}</span>
                     @if($t->assignee) · <i class="far fa-user"></i> {{ $t->assignee->name }} @endif
                     @if($t->due_date) · <i class="far fa-calendar"></i> {{ \Illuminate\Support\Carbon::parse($t->due_date)->format('d/m/Y') }} @endif
@@ -186,7 +187,7 @@
     @empty
         <div class="st-empty">
             <i class="fas fa-tasks" style="font-size:1.8rem; color:#cbd5e1; margin-bottom:8px;"></i>
-            <div style="font-weight:800; color:#334155;">Nenhuma tarefa nesta etapa ainda</div>
+            <div style="font-weight:800; color: var(--ds-text);">Nenhuma tarefa nesta etapa ainda</div>
             <div style="font-size:.85rem;">Crie a primeira tarefa para acompanhar a execucao da etapa.</div>
         </div>
     @endforelse
@@ -197,7 +198,7 @@
     <div class="st-panel-h">
         <div>
             <h4><i class="fas fa-coins me-2" style="color:#059669;"></i> Financeiro da etapa <span style="color:#94a3b8; font-weight:800;">({{ $transactions->count() }})</span></h4>
-            <div style="color:#64748b; font-size:.85rem;">Lancamentos com <code>stage_id</code> vinculado; feed com receitas e despesas.</div>
+            <div style="color: var(--ds-text-muted); font-size:.85rem;">Lancamentos com <code>stage_id</code> vinculado; feed com receitas e despesas.</div>
         </div>
         @if($canManage)
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -214,7 +215,7 @@
     @forelse($transactions as $tx)
         <div class="st-list-row">
             <div>
-                <div style="font-weight:800; color:#0f172a;">
+                <div style="font-weight:800; color: var(--ds-text);">
                     @if($tx->type === 'income')
                         <i class="fas fa-arrow-down" style="color:#059669;"></i>
                     @else
@@ -222,7 +223,7 @@
                     @endif
                     {{ $tx->description }}
                 </div>
-                <div style="font-size:.78rem; color:#64748b; margin-top:2px;">
+                <div style="font-size:.78rem; color: var(--ds-text-muted); margin-top:2px;">
                     @if($tx->category) {{ $tx->category->name }} · @endif
                     {{ \Illuminate\Support\Carbon::parse($tx->date)->format('d/m/Y') }}
                     @if($tx->approval_status === 'pending')
@@ -239,7 +240,7 @@
     @empty
         <div class="st-empty">
             <i class="fas fa-receipt" style="font-size:1.8rem; color:#cbd5e1; margin-bottom:8px;"></i>
-            <div style="font-weight:800; color:#334155;">Nenhum lancamento nesta etapa ainda</div>
+            <div style="font-weight:800; color: var(--ds-text);">Nenhum lancamento nesta etapa ainda</div>
             <div style="font-size:.85rem;">Registre receitas ou despesas para acompanhar o orcamento executado.</div>
         </div>
     @endforelse
@@ -255,7 +256,7 @@
                 @csrf
                 <input type="hidden" name="project_id" value="{{ $project->id }}">
                 <input type="hidden" name="stage_id"   value="{{ $stage->id }}">
-                <div class="modal-header" style="border-bottom:1px solid #f1f5f9; padding:18px 22px;">
+                <div class="modal-header" style="border-bottom: 1px solid var(--ds-border); padding:18px 22px;">
                     <h5 class="modal-title" style="font-weight:900;">Nova tarefa da etapa</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -302,7 +303,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="border-top:1px solid #f1f5f9; padding:14px 22px;">
+                <div class="modal-footer" style="border-top: 1px solid var(--ds-border); padding:14px 22px;">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-dark" style="border-radius:10px; font-weight:900;">Criar tarefa</button>
                 </div>
@@ -320,7 +321,7 @@
                 <input type="hidden" name="project_id" value="{{ $project->id }}">
                 <input type="hidden" name="stage_id"   value="{{ $stage->id }}">
                 <input type="hidden" name="type"       id="tx_type" value="expense">
-                <div class="modal-header" style="border-bottom:1px solid #f1f5f9; padding:18px 22px;">
+                <div class="modal-header" style="border-bottom: 1px solid var(--ds-border); padding:18px 22px;">
                     <h5 class="modal-title" style="font-weight:900;" id="txModalTitle">Novo lancamento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -353,7 +354,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="border-top:1px solid #f1f5f9; padding:14px 22px;">
+                <div class="modal-footer" style="border-top: 1px solid var(--ds-border); padding:14px 22px;">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-dark" style="border-radius:10px; font-weight:900;">Registrar</button>
                 </div>
@@ -384,4 +385,5 @@
           .catch(() => alert('Erro ao concluir etapa'));
     }
 </script>
+</div>
 @endsection

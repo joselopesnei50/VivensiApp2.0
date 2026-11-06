@@ -101,6 +101,15 @@
     /* Topbar (light default) */
     --topbar-bg:     #ffffff;
     --topbar-border: #e2e8f0;
+
+    /* Fundo neutro suave (blocos dentro de cartões, cabeçalho de tabela) */
+    --vv-surface-soft: #f8fafc;
+    /* Texto de link/destaque em roxo — mais claro no escuro p/ ter contraste */
+    --vv-link: #4f46e5;
+    /* Fundos de aviso (verde/amarelo/vermelho) que funcionam nos dois temas */
+    --vv-tint-success: #f0fdf4;  --vv-tint-success-border: #bbf7d0;
+    --vv-tint-warning: #fffbeb;  --vv-tint-warning-border: #fde68a;
+    --vv-tint-danger:  #fef2f2;  --vv-tint-danger-border:  #fecaca;
 }
 
 /* Dark mode tokens */
@@ -114,6 +123,11 @@
     --ds-text-faint:   #94a3b8;
     --topbar-bg:       #0f172a;
     --topbar-border:   rgba(255,255,255,0.06);
+    --vv-surface-soft: rgba(255,255,255,0.04);
+    --vv-link: #a5b4fc;
+    --vv-tint-success: rgba(16,185,129,0.10);  --vv-tint-success-border: rgba(16,185,129,0.35);
+    --vv-tint-warning: rgba(245,158,11,0.10);  --vv-tint-warning-border: rgba(245,158,11,0.35);
+    --vv-tint-danger:  rgba(239,68,68,0.10);   --vv-tint-danger-border:  rgba(239,68,68,0.35);
 }
 
 /* Light mode — topbar & sidebar adaptations */
@@ -1361,3 +1375,33 @@ select.form-control option {
     border-radius: 99px;
     transition: width 0.6s ease;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEMA ESCURO — campos de formulário (2026-11-06)
+   .form-control-vivensi tinha fundo fixo #F9FAFB e texto claro no escuro:
+   valor, placeholder e opção selecionada ficavam invisíveis.
+   ══════════════════════════════════════════════════════════════════════════ */
+[data-theme="dark"] .form-control-vivensi,
+[data-theme="dark"] .form-control-vivensi:focus,
+[data-theme="dark"] [data-theme-scope] .form-control,
+[data-theme="dark"] [data-theme-scope] .form-control:focus,
+[data-theme="dark"] [data-theme-scope] .form-select {
+    background: rgba(255,255,255,0.04);
+    color: var(--ds-text);
+    border-color: rgba(255,255,255,0.14);
+}
+[data-theme="dark"] .form-control-vivensi::placeholder,
+[data-theme="dark"] [data-theme-scope] .form-control::placeholder { color: var(--ds-text-faint); }
+[data-theme="dark"] select.form-control-vivensi option { background: #0f172a; color: var(--ds-text); }
+[data-theme="dark"] input[type="date"].form-control-vivensi,
+[data-theme="dark"] input[type="time"].form-control-vivensi { color-scheme: dark; }
+
+/* Cabeçalho de tabela e paginação: fundo claro fixo (#F9FAFB) no style.css */
+[data-theme="dark"] th { background: var(--vv-surface-soft); }
+[data-theme="dark"] .page-link { background-color: var(--ds-surface); color: var(--ds-text-muted); border-color: rgba(255,255,255,0.1); }
+[data-theme="dark"] .page-item.disabled .page-link { background-color: transparent; color: var(--ds-text-faint); border-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .page-item:not(.active) .page-link:hover { background-color: rgba(255,255,255,0.08); color: var(--ds-text); }
+[data-theme="dark"] .pagination + p, [data-theme="dark"] nav[role="navigation"] p { color: var(--ds-text-muted); }
+/* Botão .btn-dark (Bootstrap) some sobre cartões escuros: usa a cor da marca */
+[data-theme="dark"] [data-theme-scope] .btn-dark { background: var(--ds-brand); border-color: var(--ds-brand); color: #fff; }

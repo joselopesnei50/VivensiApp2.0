@@ -48,7 +48,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
 
     {{-- F7: Cor de marca dinâmica por tenant --}}
     @auth
@@ -2184,6 +2184,13 @@ document.getElementById('bruceInput')?.addEventListener('input',function(){
 
             function setTheme(theme) {
                 htmlModel.setAttribute('data-theme', theme);
+                // Telas montadas com componentes Bootstrap (cards, tabelas, selects)
+                // marcam o container com data-theme-scope: no escuro, o Bootstrap
+                // também troca para o modo escuro só ali dentro.
+                document.querySelectorAll('[data-theme-scope]').forEach(function (el) {
+                    if (theme === 'dark') el.setAttribute('data-bs-theme', 'dark');
+                    else el.removeAttribute('data-bs-theme');
+                });
                 localStorage.setItem(storageKey, theme);
                 if (theme === 'dark') {
                     themeIcon.className = 'fas fa-sun';

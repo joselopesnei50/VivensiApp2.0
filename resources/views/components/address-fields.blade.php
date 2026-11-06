@@ -10,15 +10,15 @@
     $state        = old('address_state',        $model->address_state        ?? '');
 @endphp
 
-<div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; background: #f8fafc;">
-    <p style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase; color: #64748b; letter-spacing: .08em; margin: 0 0 16px 0;">
+<div style="border: 1px solid var(--ds-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; background: var(--vv-surface-soft);">
+    <p style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase; color: var(--ds-text-muted); letter-spacing: .08em; margin: 0 0 16px 0;">
         <i class="fas fa-map-marker-alt me-1" style="color: var(--ds-brand);"></i> Endereço
     </p>
 
     {{-- CEP --}}
     <div style="display: grid; grid-template-columns: 180px 1fr; gap: 12px; margin-bottom: 12px;">
         <div>
-            <label style="display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:5px;">CEP</label>
+            <label style="display:block; font-size:.8rem; font-weight:700; color: var(--ds-text-muted); margin-bottom:5px;">CEP</label>
             <input type="text" name="address_zip" id="address_zip"
                    class="{{ $inputClass }}"
                    value="{{ $zip }}"
@@ -27,18 +27,18 @@
                    oninput="this.value=this.value.replace(/\D/g,'').replace(/^(\d{5})(\d)/,'$1-$2')"
                    onblur="fetchCEP(this.value)">
         </div>
-        <div id="cep-status" style="display:flex; align-items:flex-end; padding-bottom:2px; font-size:0.8rem; color:#64748b;"></div>
+        <div id="cep-status" style="display:flex; align-items:flex-end; padding-bottom:2px; font-size:0.8rem; color: var(--ds-text-muted);"></div>
     </div>
 
     {{-- Rua + Número --}}
     <div style="display: grid; grid-template-columns: 1fr 120px; gap: 12px; margin-bottom: 12px;">
         <div>
-            <label style="display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:5px;">Logradouro</label>
+            <label style="display:block; font-size:.8rem; font-weight:700; color: var(--ds-text-muted); margin-bottom:5px;">Logradouro</label>
             <input type="text" name="address_street" id="address_street"
                    class="{{ $inputClass }}" value="{{ $street }}" placeholder="Ex: Rua das Flores">
         </div>
         <div>
-            <label style="display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:5px;">Número</label>
+            <label style="display:block; font-size:.8rem; font-weight:700; color: var(--ds-text-muted); margin-bottom:5px;">Número</label>
             <input type="text" name="address_number" id="address_number"
                    class="{{ $inputClass }}" value="{{ $number }}" placeholder="123">
         </div>
@@ -47,12 +47,12 @@
     {{-- Complemento + Bairro --}}
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
         <div>
-            <label style="display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:5px;">Complemento</label>
+            <label style="display:block; font-size:.8rem; font-weight:700; color: var(--ds-text-muted); margin-bottom:5px;">Complemento</label>
             <input type="text" name="address_complement" id="address_complement"
                    class="{{ $inputClass }}" value="{{ $complement }}" placeholder="Apto, Sala, Bloco...">
         </div>
         <div>
-            <label style="display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:5px;">Bairro</label>
+            <label style="display:block; font-size:.8rem; font-weight:700; color: var(--ds-text-muted); margin-bottom:5px;">Bairro</label>
             <input type="text" name="address_neighborhood" id="address_neighborhood"
                    class="{{ $inputClass }}" value="{{ $neighborhood }}" placeholder="Ex: Centro">
         </div>
@@ -61,12 +61,12 @@
     {{-- Cidade + Estado --}}
     <div style="display: grid; grid-template-columns: 1fr 80px; gap: 12px;">
         <div>
-            <label style="display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:5px;">Cidade</label>
+            <label style="display:block; font-size:.8rem; font-weight:700; color: var(--ds-text-muted); margin-bottom:5px;">Cidade</label>
             <input type="text" name="address_city" id="address_city"
                    class="{{ $inputClass }}" value="{{ $city }}" placeholder="Ex: São Paulo">
         </div>
         <div>
-            <label style="display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:5px;">UF</label>
+            <label style="display:block; font-size:.8rem; font-weight:700; color: var(--ds-text-muted); margin-bottom:5px;">UF</label>
             <input type="text" name="address_state" id="address_state"
                    class="{{ $inputClass }}" value="{{ $state }}" placeholder="SP" maxlength="2"
                    style="text-transform:uppercase">

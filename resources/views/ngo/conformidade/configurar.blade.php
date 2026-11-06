@@ -2,6 +2,7 @@
 
 @section('content')
 
+<div data-theme-scope>
 <div class="d-flex align-items-center gap-3 mb-4">
     <a href="{{ route('ngo.conformidade.dashboard') }}" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left"></i> Voltar
@@ -156,7 +157,7 @@
         <div class="card border-0 shadow-sm" style="border-radius:20px;background:#f0fdf4;border:1px solid #bbf7d0!important;">
             <div class="card-body p-4">
                 <h6 class="fw-bold mb-3" style="color:#065f46"><i class="bi bi-info-circle me-2"></i>Por que esses dados?</h6>
-                <ul class="small text-muted mb-0" style="padding-left:1.2rem;line-height:1.7">
+                <ul class="small mb-0" style="padding-left:1.2rem;line-height:1.7;color:#14532d">
                     <li><strong>CNAS</strong>: prova de vínculo CEBAS ativo; usado no Dossiê CEBAS.</li>
                     <li><strong>CMAS</strong>: habilitação municipal SUAS; usado no RMA.</li>
                     <li><strong>Área de atuação</strong>: define quais requisitos CEBAS se aplicam.</li>
@@ -216,4 +217,5 @@ document.getElementById('btn-cnpj-lookup').addEventListener('click', function ()
 </script>
 @endpush
 
+</div>
 @endsection

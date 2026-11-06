@@ -2,6 +2,7 @@
 
 @section('content')
 
+<div data-theme-scope>
 <div class="ds-page-header">
     <div>
         <h2 class="ds-page-title">Novo Beneficiário</h2>
@@ -171,4 +172,5 @@
     </div>
 </div>
 
+</div>
 @endsection

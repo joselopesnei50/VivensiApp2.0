@@ -1,10 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <div class="header-page" style="margin-bottom: 22px; display:flex; justify-content: space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
     <div>
-        <h2 style="margin: 0; color: #2c3e50;">Indicadores Sociais</h2>
-        <p style="color: #64748b; margin: 5px 0 0 0;">Visão rápida de atendimentos, equipe e famílias (últimos 90 dias por padrão).</p>
+        <h2 style="margin: 0; color: var(--ds-text);">Indicadores Sociais</h2>
+        <p style="color: var(--ds-text-muted); margin: 5px 0 0 0;">Visão rápida de atendimentos, equipe e famílias (últimos 90 dias por padrão).</p>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
         <a class="btn-ds btn-ds-ghost" href="{{ url('/ngo/beneficiaries') }}"><i class="fas fa-arrow-left"></i> Voltar</a>
@@ -28,7 +29,7 @@
             <button type="submit" class="btn-premium"><i class="fas fa-filter"></i> Aplicar</button>
             <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/insights') }}">Reset</a>
         </div>
-        <div style="color:#64748b; font-weight:800; margin-left:auto;">
+        <div style="color: var(--ds-text-muted); font-weight:800; margin-left:auto;">
             Período: {{ $fromDt->format('d/m/Y') }} → {{ $toDt->format('d/m/Y') }}
         </div>
     </form>
@@ -43,29 +44,29 @@
 
 <div class="grid-2" style="margin-bottom: 16px; grid-template-columns: 1fr 1fr; gap: 16px;">
     <div class="vivensi-card" style="border-left: 5px solid #4f46e5;">
-        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Famílias / Beneficiários</p>
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: var(--ds-text-muted); font-weight: 800;">Famílias / Beneficiários</p>
         <h3 style="margin: 10px 0; font-size: 1.9rem;">{{ number_format((int) ($k['totalBenef'] ?? 0)) }}</h3>
-        <p style="font-size: 0.9rem; color: #475569; margin:0;">
+        <p style="font-size: 0.9rem; color: var(--ds-text-muted); margin:0;">
             Ativos: <strong>{{ number_format((int) ($k['activeBenef'] ?? 0)) }}</strong> · Inativos: <strong>{{ number_format((int) ($k['inactiveBenef'] ?? 0)) }}</strong> · Graduados: <strong>{{ number_format((int) ($k['graduatedBenef'] ?? 0)) }}</strong>
         </p>
     </div>
     <div class="vivensi-card" style="border-left: 5px solid #16a34a;">
-        <p style="text-transform: uppercase; font-size: 0.75rem; color: #64748b; font-weight: 800;">Atendimentos (período)</p>
+        <p style="text-transform: uppercase; font-size: 0.75rem; color: var(--ds-text-muted); font-weight: 800;">Atendimentos (período)</p>
         <h3 style="margin: 10px 0; font-size: 1.9rem;">{{ number_format((int) ($k['totalAttendances'] ?? 0)) }}</h3>
-        <p style="font-size: 0.9rem; color: #475569; margin:0;">
+        <p style="font-size: 0.9rem; color: var(--ds-text-muted); margin:0;">
             Famílias atendidas (únicas): <strong>{{ number_format((int) ($k['uniqueBeneficiariesAttended'] ?? 0)) }}</strong>
         </p>
     </div>
 </div>
 
 <div class="vivensi-card" style="margin-bottom: 16px;">
-    <h3 style="margin: 0 0 10px 0; color:#0f172a;">Atendimentos por mês (últimos 12 meses)</h3>
+    <h3 style="margin: 0 0 10px 0; color: var(--ds-text);">Atendimentos por mês (últimos 12 meses)</h3>
     <div style="display:flex; gap: 10px; align-items:flex-end; height: 140px;">
         @foreach(($monthly ?? []) as $label => $val)
             @php $h = ((int) $val / $maxMonth) * 120; @endphp
             <div style="flex:1; min-width: 22px; text-align:center;">
                 <div title="{{ $label }}: {{ (int) $val }}" style="height: {{ max(2, (int) $h) }}px; background:#4f46e5; border-radius:8px 8px 0 0;"></div>
-                <div style="font-size: 10px; color:#64748b; margin-top:6px;">{{ substr($label, 5, 2) }}/{{ substr($label, 2, 2) }}</div>
+                <div style="font-size: 10px; color: var(--ds-text-muted); margin-top:6px;">{{ substr($label, 5, 2) }}/{{ substr($label, 2, 2) }}</div>
             </div>
         @endforeach
     </div>
@@ -73,17 +74,17 @@
 
 <div class="grid-2" style="gap: 16px;">
     <div class="vivensi-card">
-        <h3 style="margin: 0 0 10px 0; color:#0f172a;">Top tipos de atendimento</h3>
+        <h3 style="margin: 0 0 10px 0; color: var(--ds-text);">Top tipos de atendimento</h3>
         <table style="width:100%; border-collapse: collapse;">
             <thead>
                 <tr>
-                    <th style="text-align:left; padding:10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; text-transform:uppercase; font-size:11px;">Tipo</th>
-                    <th style="text-align:right; padding:10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; text-transform:uppercase; font-size:11px;">Qtde</th>
+                    <th style="text-align:left; padding:10px; background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border); color: var(--ds-text-muted); text-transform:uppercase; font-size:11px;">Tipo</th>
+                    <th style="text-align:right; padding:10px; background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border); color: var(--ds-text-muted); text-transform:uppercase; font-size:11px;">Qtde</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($topTypes as $r)
-                    <tr style="border-bottom:1px solid #f1f5f9;">
+                    <tr style="border-bottom: 1px solid var(--ds-border);">
                         <td style="padding:10px;"><strong>{{ $r->type }}</strong></td>
                         <td style="padding:10px; text-align:right;">{{ number_format((int) $r->c) }}</td>
                     </tr>
@@ -96,17 +97,17 @@
     </div>
 
     <div class="vivensi-card">
-        <h3 style="margin: 0 0 10px 0; color:#0f172a;">Top equipe (por registros)</h3>
+        <h3 style="margin: 0 0 10px 0; color: var(--ds-text);">Top equipe (por registros)</h3>
         <table style="width:100%; border-collapse: collapse;">
             <thead>
                 <tr>
-                    <th style="text-align:left; padding:10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; text-transform:uppercase; font-size:11px;">Usuário</th>
-                    <th style="text-align:right; padding:10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; text-transform:uppercase; font-size:11px;">Qtde</th>
+                    <th style="text-align:left; padding:10px; background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border); color: var(--ds-text-muted); text-transform:uppercase; font-size:11px;">Usuário</th>
+                    <th style="text-align:right; padding:10px; background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border); color: var(--ds-text-muted); text-transform:uppercase; font-size:11px;">Qtde</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($topUsers as $r)
-                    <tr style="border-bottom:1px solid #f1f5f9;">
+                    <tr style="border-bottom: 1px solid var(--ds-border);">
                         <td style="padding:10px;"><strong>{{ $r->name }}</strong></td>
                         <td style="padding:10px; text-align:right;">{{ number_format((int) $r->c) }}</td>
                     </tr>
@@ -120,22 +121,22 @@
 </div>
 
 <div class="vivensi-card" style="margin-top: 16px;">
-    <h3 style="margin: 0 0 10px 0; color:#0f172a;">Top famílias (por atendimentos)</h3>
+    <h3 style="margin: 0 0 10px 0; color: var(--ds-text);">Top famílias (por atendimentos)</h3>
     <table style="width:100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="text-align:left; padding:10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; text-transform:uppercase; font-size:11px;">Beneficiário</th>
-                <th style="text-align:center; padding:10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; text-transform:uppercase; font-size:11px;">Status</th>
-                <th style="text-align:right; padding:10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; text-transform:uppercase; font-size:11px;">Qtde</th>
-                <th style="text-align:right; padding:10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#64748b; text-transform:uppercase; font-size:11px;">Abrir</th>
+                <th style="text-align:left; padding:10px; background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border); color: var(--ds-text-muted); text-transform:uppercase; font-size:11px;">Beneficiário</th>
+                <th style="text-align:center; padding:10px; background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border); color: var(--ds-text-muted); text-transform:uppercase; font-size:11px;">Status</th>
+                <th style="text-align:right; padding:10px; background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border); color: var(--ds-text-muted); text-transform:uppercase; font-size:11px;">Qtde</th>
+                <th style="text-align:right; padding:10px; background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border); color: var(--ds-text-muted); text-transform:uppercase; font-size:11px;">Abrir</th>
             </tr>
         </thead>
         <tbody>
             @foreach($topFamilies as $r)
-                <tr style="border-bottom:1px solid #f1f5f9;">
+                <tr style="border-bottom: 1px solid var(--ds-border);">
                     <td style="padding:10px;"><strong>{{ $r->name }}</strong></td>
                     <td style="padding:10px; text-align:center;">
-                        <span style="background:#f1f5f9; padding:2px 8px; border-radius: 999px; font-weight: 800; font-size: 11px;">
+                        <span style="background: var(--vv-surface-soft); padding:2px 8px; border-radius: 999px; font-weight: 800; font-size: 11px;">
                             {{ strtoupper($r->status ?? '—') }}
                         </span>
                     </td>
@@ -152,6 +153,7 @@
             @endif
         </tbody>
     </table>
+</div>
 </div>
 @endsection
 

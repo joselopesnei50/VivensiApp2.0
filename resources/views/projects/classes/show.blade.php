@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <div class="container py-4" style="max-width: 1200px;">
 
     <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
@@ -99,7 +100,7 @@
                     {{-- Gerar sessões automático --}}
                     @if(!empty($class->weekdays))
                         <form method="POST" action="{{ route('projects.classes.generate-sessions', [$project->id, $class->id]) }}"
-                              class="mb-3 p-3 bg-light rounded-3">
+                              class="mb-3 p-3 bg-body-tertiary rounded-3">
                             @csrf
                             <div class="small fw-600 mb-2">🪄 Gerar chamadas do período</div>
                             <div class="row g-2 align-items-end">
@@ -186,5 +187,6 @@
         </form>
     </div>
 
+</div>
 </div>
 @endsection

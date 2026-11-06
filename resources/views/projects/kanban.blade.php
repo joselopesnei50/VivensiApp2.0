@@ -5,6 +5,7 @@
 @endpush
 
 @section('content')
+<div data-theme-scope>
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
 @endphp
@@ -17,8 +18,8 @@
                 <span style="background: var(--primary-color); width: 12px; height: 3px; border-radius: 2px;"></span>
                 <h6 style="color: var(--primary-color); font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 2px; font-size: 0.7rem;">Operações Táticas</h6>
             </div>
-            <h2 style="margin: 0; color: #1e293b; font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Quadro de Missões: {{ $project->name }}</h2>
-            <p style="color: #64748b; margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Orquestração de tarefas e fluxo operacional em tempo real.</p>
+            <h2 style="margin: 0; color: var(--ds-text); font-weight: 900; font-size: 2.5rem; letter-spacing: -1.5px;">Quadro de Missões: {{ $project->name }}</h2>
+            <p style="color: var(--ds-text-muted); margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 500;">Orquestração de tarefas e fluxo operacional em tempo real.</p>
             @isset($stageFilter)
                 @if($stageFilter)
                     <div style="margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; background: #dbeafe; border: 1px solid #93c5fd; border-radius: 999px; padding: 6px 14px; font-weight: 800; color: #1e3a8a; font-size: .85rem;">
@@ -45,7 +46,7 @@
         <!-- To Do Column -->
         <div class="kanban-column-prem" id="todo-col">
             <div class="column-header-prem">
-                <div class="column-title-prem" style="color: #64748b;">
+                <div class="column-title-prem" style="color: var(--ds-text-muted);">
                     <i class="fas fa-compass" style="color: #94a3b8;"></i> Pipeline
                     <span class="column-count-badge ms-2" data-colcount="todo">{{ $kanban['todo']->count() }}</span>
                 </div>
@@ -96,32 +97,32 @@
 <!-- Task Details Modal -->
 <div id="kbTaskOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background: rgba(15,23,42,.7); z-index: 70000; overflow-y: auto; padding: 20px 0; backdrop-filter: blur(4px);">
     <div id="kbTaskInnerOverlay" style="min-height: 100%; display:flex; align-items:center; justify-content:center; padding: 20px; pointer-events: none;">
-        <div style="width: min(760px, 96vw); background:#fff; border-radius: 24px; box-shadow: 0 40px 100px rgba(0,0,0,.4); overflow:hidden; border:1px solid rgba(255,255,255,0.2); position: relative; max-height: 90vh; display: flex; flex-direction: column; pointer-events: all;">
+        <div style="width: min(760px, 96vw); background: var(--ds-surface); border-radius: 24px; box-shadow: 0 40px 100px rgba(0,0,0,.4); overflow:hidden; border:1px solid rgba(255,255,255,0.2); position: relative; max-height: 90vh; display: flex; flex-direction: column; pointer-events: all;">
             <div style="padding: 18px 20px; background: #0f172a; color:#fff; display:flex; justify-content: space-between; align-items:center; gap: 12px;">
                 <div style="font-weight: 900; letter-spacing: -.3px;" id="kbTitle">Atividade</div>
                 <button type="button" onclick="closeKanbanTaskModal()" style="border:none; background: rgba(255,255,255,.12); color:#fff; width: 36px; height: 36px; border-radius: 10px; font-weight: 900; cursor:pointer;">×</button>
             </div>
             <div style="padding: 18px 20px; flex: 1; overflow-y: auto;">
                 <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-                    <span id="kbStatus" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0;">Status</span>
+                    <span id="kbStatus" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background: var(--vv-surface-soft); color: var(--ds-text); border: 1px solid var(--ds-border);">Status</span>
                     <span id="kbPriorityTag" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background:#eef2ff; color:#4f46e5; border:1px solid #e0e7ff;">Prioridade</span>
                     <span id="kbDueTag" style="font-size:.75rem; font-weight:900; padding: 6px 10px; border-radius: 999px; background:#ecfeff; color:#0891b2; border:1px solid #cffafe;">Prazo</span>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-                    <div style="padding: 12px 14px; background:#f8fafc; border:1px solid #f1f5f9; border-radius: 14px;">
+                    <div style="padding: 12px 14px; background: var(--vv-surface-soft); border: 1px solid var(--ds-border); border-radius: 14px;">
                         <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:900;">Responsável</div>
-                        <div id="kbAssigneeName" style="font-weight:900; color:#0f172a;">-</div>
+                        <div id="kbAssigneeName" style="font-weight:900; color: var(--ds-text);">-</div>
                     </div>
-                    <div style="padding: 12px 14px; background:#f8fafc; border:1px solid #f1f5f9; border-radius: 14px;">
+                    <div style="padding: 12px 14px; background: var(--vv-surface-soft); border: 1px solid var(--ds-border); border-radius: 14px;">
                         <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:900;">Projeto</div>
-                        <div style="font-weight:900; color:#0f172a;">{{ $project->name }}</div>
+                        <div style="font-weight:900; color: var(--ds-text);">{{ $project->name }}</div>
                     </div>
                 </div>
 
-                <div id="kbReadOnlyBox" style="padding: 14px; background:#fff; border:1px solid #e2e8f0; border-radius: 14px;">
+                <div id="kbReadOnlyBox" style="padding: 14px; background: var(--ds-surface); border: 1px solid var(--ds-border); border-radius: 14px;">
                     <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:900; margin-bottom: 6px;">Descrição</div>
-                    <div id="kbDesc" style="color:#334155; font-weight: 600; line-height: 1.5;">-</div>
+                    <div id="kbDesc" style="color: var(--ds-text); font-weight: 600; line-height: 1.5;">-</div>
                 </div>
 
                 @if(($canManageAll ?? false))
@@ -129,15 +130,15 @@
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label for="kbTitleInput" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Título</label>
-                                <input id="kbTitleInput" type="text" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 800;">
+                                <input id="kbTitleInput" type="text" style="width:100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--ds-border); font-weight: 800;">
                             </div>
                             <div class="col-md-12">
                                 <label for="kbDescInput" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Descrição</label>
-                                <textarea id="kbDescInput" rows="4" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 700;"></textarea>
+                                <textarea id="kbDescInput" rows="4" style="width:100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--ds-border); font-weight: 700;"></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label for="kbPriority" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Prioridade</label>
-                                <select id="kbPriority" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 900;">
+                                <select id="kbPriority" style="width:100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--ds-border); font-weight: 900;">
                                     <option value="low">🟢 Normal</option>
                                     <option value="medium">🟠 Importante</option>
                                     <option value="high">🔴 Crítica</option>
@@ -146,12 +147,12 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="kbDue" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Prazo</label>
-                                <input id="kbDue" type="date" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 900;">
+                                <input id="kbDue" type="date" style="width:100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--ds-border); font-weight: 900;">
                             </div>
                             @if(($canManageAll ?? false) && isset($users))
                                 <div class="col-md-12">
                                     <label for="kbAssignee" style="display:block; font-weight:900; color:#94a3b8; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom: 8px;">Responsável</label>
-                                    <select id="kbAssignee" style="width:100%; padding: 12px 14px; border-radius: 12px; border:1px solid #e2e8f0; font-weight: 900;">
+                                    <select id="kbAssignee" style="width:100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--ds-border); font-weight: 900;">
                                         <option value="">Sem responsável</option>
                                         @foreach($users as $u)
                                             <option value="{{ (int) $u->id }}">{{ $u->name }}</option>
@@ -163,7 +164,7 @@
                     </div>
                 @endif
             </div>
-            <div style="padding: 14px 20px; background:#f8fafc; border-top:1px solid #f1f5f9; display:flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            <div style="padding: 14px 20px; background: var(--vv-surface-soft); border-top: 1px solid var(--ds-border); display:flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
                 <div style="display:flex; gap: 8px; flex-wrap: wrap;">
                     <button type="button" id="kbMoveTodo" onclick="kbMove('todo')" class="btn-ds btn-ds-outline" style="padding: 10px 12px; font-weight: 800;">Pipeline</button>
                     <button type="button" id="kbMoveDoing" onclick="kbMove('doing')" class="btn-ds btn-ds-outline" style="padding: 10px 12px; font-weight: 800;">Execução</button>
@@ -182,16 +183,16 @@
 
 <!-- Premium Task Modal -->
 <div id="newTaskModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="newTaskModalTitle" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); justify-content: center; align-items: flex-start; z-index: 50000; overflow-y: auto; padding: 22px 16px;">
-    <div class="vivensi-card" style="position: relative; background: white; padding: 46px 40px; border-radius: 32px; width: min(550px, 94vw); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 50px 100px rgba(0,0,0,0.3); margin: 0 auto; max-height: calc(100vh - 44px); overflow: auto;">
-        <div style="position: sticky; top: 0; display: flex; justify-content: flex-end; background: white; padding-top: 6px; margin-top: -6px; z-index: 5;">
+    <div class="vivensi-card" style="position: relative; background: var(--ds-surface); padding: 46px 40px; border-radius: 32px; width: min(550px, 94vw); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 50px 100px rgba(0,0,0,0.3); margin: 0 auto; max-height: calc(100vh - 44px); overflow: auto;">
+        <div style="position: sticky; top: 0; display: flex; justify-content: flex-end; background: var(--ds-surface); padding-top: 6px; margin-top: -6px; z-index: 5;">
             <button type="button" onclick="closeNewTaskModal()" aria-label="Fechar" title="Fechar" style="border:none; background: #0f172a; color:#fff; width: 38px; height: 38px; border-radius: 14px; font-weight: 900; cursor:pointer; box-shadow: 0 10px 25px rgba(15,23,42,.25);">×</button>
         </div>
         <div style="text-align: center; margin-bottom: 35px;">
             <div style="width: 70px; height: 70px; background: #eef2ff; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 1.8rem; margin: 0 auto 20px;">
                 <i class="fas fa-tasks"></i>
             </div>
-            <h3 id="newTaskModalTitle" style="margin: 0; color: #1e293b; font-weight: 900; letter-spacing: -1px;">Nova Atividade</h3>
-            <p style="color: #64748b; font-weight: 500; margin-top: 5px;">Adicione uma nova meta ao projeto.</p>
+            <h3 id="newTaskModalTitle" style="margin: 0; color: var(--ds-text); font-weight: 900; letter-spacing: -1px;">Nova Atividade</h3>
+            <p style="color: var(--ds-text-muted); font-weight: 500; margin-top: 5px;">Adicione uma nova meta ao projeto.</p>
         </div>
         
         <form id="kbNewTaskForm" action="{{ $basePath . '/tasks' }}" method="POST">
@@ -202,21 +203,21 @@
             <div style="margin-bottom: 25px;">
                 <label style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Título da Atividade</label>
                 <input type="text" name="title" class="form-control-vivensi" required 
-                       style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 700; color: #1e293b;" 
+                       style="width: 100%; padding: 16px 20px; border: 2px solid var(--ds-border); border-radius: 16px; background: var(--vv-surface-soft); font-weight: 700; color: var(--ds-text);" 
                        placeholder="Ex: Definir plano de marketing">
             </div>
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Descrição (opcional)</label>
                 <textarea name="description" rows="3" class="form-control-vivensi"
-                          style="width: 100%; padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 600; color: #1e293b; resize: vertical;"
+                          style="width: 100%; padding: 16px 20px; border: 2px solid var(--ds-border); border-radius: 16px; background: var(--vv-surface-soft); font-weight: 600; color: var(--ds-text); resize: vertical;"
                           placeholder="Contexto, checklist, links..."></textarea>
             </div>
 
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="priority" style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Prioridade</label>
-                    <select name="priority" class="form-control-vivensi" style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;" id="priority">
+                    <select name="priority" class="form-control-vivensi" style="width: 100%; padding: 14px 16px; border: 2px solid var(--ds-border); border-radius: 16px; background: var(--vv-surface-soft); font-weight: 800; color: var(--ds-text);" id="priority">
                         <option value="low">🟢 Normal</option>
                         <option value="medium" selected>🟠 Importante</option>
                         <option value="high">🔴 Crítica</option>
@@ -226,14 +227,14 @@
                 <div class="col-md-6">
                     <label style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Prazo</label>
                     <input type="date" name="due_date" class="form-control-vivensi"
-                           style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;">
+                           style="width: 100%; padding: 14px 16px; border: 2px solid var(--ds-border); border-radius: 16px; background: var(--vv-surface-soft); font-weight: 800; color: var(--ds-text);">
                 </div>
             </div>
 
             @if(($canManageAll ?? false) && isset($users))
                 <div style="margin-top: 18px;">
                     <label for="assigned_to" style="display: block; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Responsável</label>
-                    <select name="assigned_to" class="form-control-vivensi" style="width: 100%; padding: 14px 16px; border: 2px solid #f1f5f9; border-radius: 16px; background: #f8fafc; font-weight: 800; color: #1e293b;" id="assigned_to">
+                    <select name="assigned_to" class="form-control-vivensi" style="width: 100%; padding: 14px 16px; border: 2px solid var(--ds-border); border-radius: 16px; background: var(--vv-surface-soft); font-weight: 800; color: var(--ds-text);" id="assigned_to">
                         <option value="">Mantenha comigo</option>
                         @foreach($users as $u)
                             <option value="{{ $u->id }}">{{ $u->name }}</option>
@@ -244,7 +245,7 @@
             
             <div style="display: flex; gap: 15px; margin-top: 40px;">
                 <button type="button" onclick="closeNewTaskModal()" 
-                        style="flex: 1; background: #f1f5f9; color: #475569; border: none; padding: 18px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+                        style="flex: 1; background: var(--vv-surface-soft); color: var(--ds-text-muted); border: none; padding: 18px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
                     Cancelar
                 </button>
                 <button type="submit" id="kbNewTaskSubmit" class="btn-premium btn-premium-shine" style="flex: 2; border: none; padding: 18px; font-weight: 800; border-radius: 16px;">
@@ -786,4 +787,5 @@
         if (ev.target === nt) closeNewTaskModal();
     });
 </script>
+</div>
 @endsection

@@ -2,6 +2,7 @@
 
 @section('content')
 
+<div data-theme-scope>
 <div class="d-flex align-items-center gap-3 mb-4">
     <a href="{{ route('ngo.conformidade.dashboard') }}" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left"></i> Voltar
@@ -61,7 +62,7 @@ $enquadramentoLabel = [
 
                 {{-- Ciclo ativo --}}
                 @if($cicloAtivo)
-                <div class="p-3 mb-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0">
+                <div class="p-3 mb-3 rounded-3" style="background:var(--vv-tint-success);border:1px solid var(--vv-tint-success-border)">
                     <div class="row g-2 small">
                         <div class="col-6">
                             <span class="text-muted">Início</span><br>
@@ -134,7 +135,7 @@ $enquadramentoLabel = [
 
                 {{-- Histórico --}}
                 @if($historico->where('status', 'encerrado')->count() > 0)
-                <div class="mt-3 pt-3" style="border-top:1px solid #f1f5f9">
+                <div class="mt-3 pt-3" style="border-top: 1px solid var(--ds-border)">
                     <p class="small fw-semibold text-muted mb-2">Histórico</p>
                     @foreach($historico->where('status', 'encerrado')->take(3) as $c)
                     <div class="d-flex justify-content-between small text-muted mb-1">
@@ -151,4 +152,5 @@ $enquadramentoLabel = [
     @endforeach
 </div>
 
+</div>
 @endsection
