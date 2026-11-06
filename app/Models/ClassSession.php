@@ -71,6 +71,32 @@ class ClassSession extends Model
             ->first();
     }
 
+    /**
+     * Quem pode estar nesta chamada.
+     *  - Chamada de turma em modo "fechada": só os alunos com matrícula ATIVA
+     *    na turma (antes listava todo mundo do projeto e marcava "Presente").
+     *  - Chamada avulsa (sem turma) ou modo "aberta": participantes ativos do projeto.
+     */
+    public function rosterQuery()
+    {
+        $q = ProjectPerson::withoutGlobalScopes()
+            ->where('project_id', $this->project_id)
+            ->where('tenant_id', $this->tenant_id)
+            ->where('enrollment_status', 'ativo');
+
+        if ($this->project_class_id && $this->mode !== 'aberta') {
+            $q->whereIn('id', function ($sub) {
+                $sub->select('project_person_id')
+                    ->from('project_class_enrollments')
+                    ->where('tenant_id', $this->tenant_id)
+                    ->where('project_class_id', $this->project_class_id)
+                    ->where('status', ProjectClassEnrollment::STATUS_ATIVO);
+            });
+        }
+
+        return $q;
+    }
+
     public function project()
     {
         return $this->belongsTo(Project::class);

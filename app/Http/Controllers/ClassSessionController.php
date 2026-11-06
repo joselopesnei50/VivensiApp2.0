@@ -140,9 +140,8 @@ class ClassSessionController extends Controller
         $session = $this->findSession($sessionId);
         abort_if($session->project_id !== $project->id, 404);
 
-        $students = ProjectPerson::where('project_id', $project->id)
-            ->where('tenant_id', $this->tenantId())
-            ->where('enrollment_status', 'ativo')
+        // Chamada de turma: só os matriculados ativos (ver ClassSession::rosterQuery).
+        $students = $session->rosterQuery()
             ->orderBy('name')
             ->get();
 
@@ -184,11 +183,12 @@ class ClassSessionController extends Controller
             foreach ($validated['attendance'] as $personId => $row) {
                 $personId = (int) $personId;
 
-                // Confirma que o aluno pertence ao projeto (belt-and-suspenders anti-tamper).
-                $belongs = ProjectPerson::where('id', $personId)
-                    ->where('project_id', $project->id)
-                    ->where('tenant_id', $this->tenantId())
-                    ->exists();
+                // Só quem está na lista desta chamada (matriculados ativos, na
+                // chamada de turma) — ou quem já tinha registro nela (histórico).
+                $belongs = $session->rosterQuery()->where('id', $personId)->exists()
+                    || ClassAttendance::where('class_session_id', $session->id)
+                        ->where('project_person_id', $personId)
+                        ->exists();
 
                 if (!$belongs) {
                     continue;

@@ -12,6 +12,7 @@ use App\Models\Beneficiary;
 use App\Models\Employee;
 use App\Models\Asset;
 use App\Models\AuditLog;
+use App\Models\Tenant;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -30,6 +31,14 @@ class TransparencyController extends Controller
             'renderPortal', 'downloadDocument', 'openDataCsv',
             'publicReportPdf', 'publicView',
         ]);
+    }
+
+    /** Nome público da organização (marca, se houver) para o portal. */
+    private function orgName(int $tenantId): ?string
+    {
+        $t = Tenant::withoutGlobalScopes()->find($tenantId, ['id', 'name', 'brand_name']);
+        $name = trim((string) ($t?->brand_name ?: $t?->name));
+        return $name !== '' ? $name : null;
     }
 
     private function clearPortalCache(int $tenantId): void
@@ -131,7 +140,9 @@ class TransparencyController extends Controller
         $tenant_id = auth()->user()->tenant_id;
 
         // Slug must be unique across ALL tenants (DB constraint).
-        $base = Str::slug(auth()->user()->name ?? '') ?: 'ong';
+        // Endereço público a partir do nome da ORGANIZAÇÃO (antes usava o nome
+        // de quem abriu a página primeiro).
+        $base = Str::slug((string) $this->orgName((int) $tenant_id)) ?: 'ong';
         $defaultSlug = $base . '-' . $tenant_id;
 
         $portal = TransparencyPortal::firstOrCreate(['tenant_id' => $tenant_id], [
@@ -294,15 +305,19 @@ class TransparencyController extends Controller
     {
         $data = $request->all();
         if (isset($data['value'])) {
-            $data['value'] = str_replace('.', '', (string) $data['value']);
-            $data['value'] = str_replace(',', '.', (string) $data['value']);
+            $data['value'] = \App\Support\BrMoney::parse($data['value']);
         }
 
         $validated = \Illuminate\Support\Facades\Validator::make($data, [
             'agency_name' => 'required|string|max:255',
             'project_name' => 'required|string|max:255',
             'value' => 'required|numeric|min:0',
-            'gazette_link' => 'nullable|string|max:2048',
+            'gazette_link' => ['nullable', 'string', 'max:2048', function ($attribute, $value, $fail) {
+                // Vira link clicável no portal público: só http/https (bloqueia javascript: etc.)
+                if ($value !== null && $value !== '' && ! preg_match('#^https?://#i', (string) $value)) {
+                    $fail('O link do Diário Oficial deve começar com http:// ou https://.');
+                }
+            }],
             'status' => 'nullable|string|max:60',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
@@ -362,15 +377,19 @@ class TransparencyController extends Controller
 
         $data = $request->all();
         if (isset($data['value'])) {
-            $data['value'] = str_replace('.', '', (string) $data['value']);
-            $data['value'] = str_replace(',', '.', (string) $data['value']);
+            $data['value'] = \App\Support\BrMoney::parse($data['value']);
         }
 
         $validated = \Illuminate\Support\Facades\Validator::make($data, [
             'agency_name'  => 'required|string|max:255',
             'project_name' => 'required|string|max:255',
             'value'        => 'required|numeric|min:0',
-            'gazette_link' => 'nullable|string|max:2048',
+            'gazette_link' => ['nullable', 'string', 'max:2048', function ($attribute, $value, $fail) {
+                // Vira link clicável no portal público: só http/https (bloqueia javascript: etc.)
+                if ($value !== null && $value !== '' && ! preg_match('#^https?://#i', (string) $value)) {
+                    $fail('O link do Diário Oficial deve começar com http:// ou https://.');
+                }
+            }],
             'status'       => 'nullable|string|max:60',
             'start_date'   => 'nullable|date',
             'end_date'     => 'nullable|date',
@@ -592,7 +611,10 @@ class TransparencyController extends Controller
             ->sortDesc()
             ->first();
 
+        $orgName = $this->orgName((int) $tenant_id);
+
         return compact(
+            'orgName',
             'portal',
             'year',
             'yearStart',
@@ -943,7 +965,10 @@ class TransparencyController extends Controller
         $territoriesByState = $territoriesByState ?? collect();
         $territoriesStats   = $territoriesStats   ?? ['cities' => 0, 'states' => 0, 'beneficiaries' => 0];
 
+        $orgName = $this->orgName((int) $tenant_id);
+
         return view('transparency.portal', compact(
+            'orgName',
             'portal', 'board', 'docs', 'partnerships',
             'totalIn', 'totalOut', 'investmentSocial', 'balance', 'lastExpenses',
             'familiesCount', 'peopleCount', 'attendancesCount', 'assets',
