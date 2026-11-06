@@ -120,6 +120,24 @@ if ! git merge-base --is-ancestor HEAD origin/main; then
     exit 1
 fi
 
+# ── 2.2 Bibliotecas novas rodam NESTE servidor? (antes da manutenção) ───
+# Se o composer.lock mudou, confere PHP e extensões exigidas pela versão nova
+# contra o que está instalado aqui. Incompatível = cancela com o site no ar.
+if ! git diff --quiet HEAD origin/main -- composer.lock; then
+    echo "📦 As bibliotecas mudaram — conferindo compatibilidade com este servidor..."
+    CHECK_DIR=$(mktemp -d)
+    git show origin/main:composer.json > "$CHECK_DIR/composer.json"
+    git show origin/main:composer.lock > "$CHECK_DIR/composer.lock"
+    if ! (cd "$CHECK_DIR" && composer check-platform-reqs --lock --no-dev --no-interaction); then
+        rm -rf "$CHECK_DIR"
+        echo "❌ A versão nova exige algo que este servidor não tem (veja a lista acima)."
+        echo "   O deploy foi cancelado ANTES da manutenção — o site continua no ar."
+        exit 1
+    fi
+    rm -rf "$CHECK_DIR"
+    echo "   ✅ Compatível com o PHP $PHP_VERSION e as extensões deste servidor."
+fi
+
 # ── 3. Modo de manutenção ─────────────────────────────────────────────────
 echo "🔧 Entrando em modo de manutenção..."
 $PHP_BIN $PHP_FLAGS artisan down --no-interaction || true
