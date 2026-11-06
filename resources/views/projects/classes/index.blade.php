@@ -6,7 +6,7 @@
 
     <div class="mb-4">
         <p class="text-muted text-uppercase small mb-1" style="letter-spacing: .15em;">Projeto {{ $project->name }}</p>
-        <h1 class="h3 mb-1">🎓 Turmas</h1>
+        <h1 class="h3 mb-1">Turmas</h1>
         <p class="text-muted mb-0">Aulas recorrentes com alunos matriculados fixos. Cada turma gera N chamadas.</p>
     </div>
 
@@ -64,7 +64,7 @@
                                             —
                                         @endif
                                     </td>
-                                    <td class="text-center">{{ $c->students_count }}</td>
+                                    <td class="text-center">{{ $c->students_count }}@if($c->max_students)<span class="text-muted small"> / {{ $c->max_students }}</span>@endif</td>
                                     <td class="text-center">{{ $c->sessions_count }}</td>
                                     <td class="text-center">
                                         @if($c->status === 'ativo')

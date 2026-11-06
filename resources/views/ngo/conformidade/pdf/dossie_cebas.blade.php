@@ -102,13 +102,13 @@ $res  = $aval['resultado'] ?? 'nao_aplicavel';
     </td>
     <td class="num">
         @if($aval && $aval['valor_calculado'] !== null)
-            {{ number_format((float)$aval['valor_calculado'], 1, ',', '.') }}{{ $aval['unidade'] ?? '' }}
+            {{ \App\Models\RegraAvaliacao::formatar($aval['valor_calculado'], $aval['unidade'] ?? null) }}
         @else —
         @endif
     </td>
     <td class="num">
         @if($aval && $aval['threshold'])
-            {{ number_format((float)$aval['threshold'], 1, ',', '.') }}{{ $aval['unidade'] ?? '' }}
+            {{ \App\Models\RegraAvaliacao::formatar($aval['threshold'], $aval['unidade'] ?? null) }}
         @else —
         @endif
     </td>

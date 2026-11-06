@@ -59,17 +59,16 @@ $badgeLabel = match($resultado) { 'verde' => 'Verde ✓', 'amarelo' => 'Atençã
                         <div class="fw-semibold">{{ $req->regra->modelo ?? '—' }}</div>
                     </div>
                     <div class="col-sm-6">
-                        <span class="small text-muted">Threshold mínimo</span>
+                        <span class="small text-muted">Meta mínima</span>
                         <div class="fw-semibold">
-                            {{ $req->regra->threshold !== null ? (float)$req->regra->threshold : '—' }}
-                            {{ $req->regra->unidade ?? '' }}
+                            {{ \App\Models\RegraAvaliacao::formatar($req->regra->threshold, $req->regra->unidade ?? null) }}
                         </div>
                     </div>
                     @if($avaliacaoAtual && $avaliacaoAtual['valor_calculado'] !== null)
                     <div class="col-sm-6">
                         <span class="small text-muted">Último valor calculado</span>
                         <div class="fw-bold" style="color:{{ $leftColor }}">
-                            {{ $avaliacaoAtual['valor_calculado'] }}{{ $req->regra->unidade ?? '' }}
+                            {{ \App\Models\RegraAvaliacao::formatar($avaliacaoAtual['valor_calculado'], $req->regra->unidade ?? null) }}
                         </div>
                     </div>
                     @endif
@@ -246,7 +245,7 @@ $badgeLabel = match($resultado) { 'verde' => 'Verde ✓', 'amarelo' => 'Atençã
                         </span>
                         <span class="text-muted">{{ $h->avaliado_em?->format('d/m/Y H:i') }}</span>
                         @if($h->valor_calculado !== null)
-                            <span class="fw-semibold">{{ (float)$h->valor_calculado }}{{ $req->regra?->unidade }}</span>
+                            <span class="fw-semibold">{{ \App\Models\RegraAvaliacao::formatar($h->valor_calculado, $req->regra?->unidade) }}</span>
                         @endif
                         @if($h->observacoes)
                             <span class="text-muted flex-grow-1 text-truncate" style="max-width:200px" title="{{ $h->observacoes }}">{{ $h->observacoes }}</span>

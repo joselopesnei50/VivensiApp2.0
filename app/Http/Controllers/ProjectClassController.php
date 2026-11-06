@@ -76,23 +76,39 @@ class ProjectClassController extends Controller
 
         $class->load(['teacher:id,name', 'enrollments.person:id,name']);
 
-        $enrolledIds = $class->enrollments->pluck('project_person_id')->all();
+        // Disponível = participante ativo do projeto sem matrícula ATIVA nesta
+        // turma. Quem saiu ou concluiu volta a aparecer (antes ficava de fora
+        // pra sempre e não dava pra matricular de novo).
+        $activeIds = $class->enrollments->where('status', ProjectClassEnrollment::STATUS_ATIVO)
+            ->pluck('project_person_id')->all();
         $availablePeople = ProjectPerson::withoutGlobalScope('tenant')
             ->where('tenant_id', $project->tenant_id)
             ->where('project_id', $project->id)
             ->where('enrollment_status', 'ativo')
-            ->whereNotIn('id', $enrolledIds)
+            ->whereNotIn('id', $activeIds)
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        $sessions = ClassSession::withoutGlobalScope('tenant')
+        $vagas = $class->max_students !== null
+            ? max(0, $class->max_students - count($activeIds))
+            : null;
+
+        $sessionsBase = fn () => ClassSession::withoutGlobalScope('tenant')
             ->where('tenant_id', $project->tenant_id)
             ->where('project_class_id', $class->id)
-            ->orderByDesc('date')
-            ->limit(30)
-            ->get();
+            ->withCount([
+                'attendances as registros_count',
+                'attendances as presentes_count' => fn ($q) => $q->where('status', 'presente'),
+            ]);
 
-        return view('projects.classes.show', compact('project', 'class', 'availablePeople', 'sessions'));
+        // Próximas (a partir de hoje, da mais perto pra mais longe) e anteriores
+        // (da mais recente pra trás). Antes vinha tudo junto, com as datas
+        // futuras primeiro e sem dizer se a chamada já tinha sido feita.
+        $today = now()->toDateString();
+        $proximas = $sessionsBase()->whereDate('date', '>=', $today)->orderBy('date')->limit(8)->get();
+        $anteriores = $sessionsBase()->whereDate('date', '<', $today)->orderByDesc('date')->limit(20)->get();
+
+        return view('projects.classes.show', compact('project', 'class', 'availablePeople', 'proximas', 'anteriores', 'vagas'));
     }
 
     public function edit(Project $project, int $classId): View
@@ -139,7 +155,16 @@ class ProjectClassController extends Controller
         ]);
 
         $enrolled = 0;
-        DB::transaction(function () use ($class, $project, $validated, &$enrolled) {
+        $semVaga  = 0;
+        DB::transaction(function () use ($class, $project, $validated, &$enrolled, &$semVaga) {
+            // Limite de vagas da turma (antes era ignorado). Trava a turma pra
+            // duas matrículas simultâneas não passarem do limite.
+            ProjectClass::withoutGlobalScope('tenant')->whereKey($class->id)->lockForUpdate()->first();
+            $ativos = ProjectClassEnrollment::withoutGlobalScope('tenant')
+                ->where('project_class_id', $class->id)
+                ->where('status', ProjectClassEnrollment::STATUS_ATIVO)
+                ->count();
+
             foreach ($validated['person_ids'] as $personId) {
                 $person = ProjectPerson::withoutGlobalScope('tenant')
                     ->where('id', $personId)
@@ -151,27 +176,48 @@ class ProjectClassController extends Controller
                     continue; // Ignora IDs de outro projeto/tenant (proof IDOR)
                 }
 
-                $exists = ProjectClassEnrollment::withoutGlobalScope('tenant')
+                $existing = ProjectClassEnrollment::withoutGlobalScope('tenant')
                     ->where('project_class_id', $class->id)
                     ->where('project_person_id', $personId)
-                    ->exists();
+                    ->first();
 
-                if ($exists) {
+                if ($existing && $existing->status === ProjectClassEnrollment::STATUS_ATIVO) {
+                    continue; // já matriculado
+                }
+
+                if ($class->max_students !== null && $ativos >= $class->max_students) {
+                    $semVaga++;
                     continue;
                 }
 
-                ProjectClassEnrollment::create([
-                    'tenant_id'         => $project->tenant_id,
-                    'project_class_id'  => $class->id,
-                    'project_person_id' => $personId,
-                    'enrolled_at'       => now(),
-                    'status'            => ProjectClassEnrollment::STATUS_ATIVO,
-                ]);
+                if ($existing) {
+                    // Voltou pra turma: reativa a matrícula (a tabela só permite
+                    // uma linha por aluno+turma).
+                    $existing->update([
+                        'status'        => ProjectClassEnrollment::STATUS_ATIVO,
+                        'enrolled_at'   => now(),
+                        'unenrolled_at' => null,
+                    ]);
+                } else {
+                    ProjectClassEnrollment::create([
+                        'tenant_id'         => $project->tenant_id,
+                        'project_class_id'  => $class->id,
+                        'project_person_id' => $personId,
+                        'enrolled_at'       => now(),
+                        'status'            => ProjectClassEnrollment::STATUS_ATIVO,
+                    ]);
+                }
+                $ativos++;
                 $enrolled++;
             }
         });
 
-        return back()->with('success', "{$enrolled} aluno(s) matriculado(s).");
+        $msg = "{$enrolled} aluno(s) matriculado(s).";
+        if ($semVaga > 0) {
+            return back()->with('warning', $msg . " {$semVaga} ficaram de fora: a turma chegou ao limite de {$class->max_students} vagas.");
+        }
+
+        return back()->with('success', $msg);
     }
 
     public function unenroll(Project $project, int $classId, int $enrollmentId): RedirectResponse
@@ -207,8 +253,24 @@ class ProjectClassController extends Controller
             'to'   => 'required|date|after_or_equal:from',
         ]);
 
-        $from = Carbon::parse($validated['from']);
-        $to   = Carbon::parse($validated['to']);
+        $from = Carbon::parse($validated['from'])->startOfDay();
+        $to   = Carbon::parse($validated['to'])->startOfDay();
+
+        // Respeita o período da turma (antes gerava chamadas fora dele).
+        if ($class->start_date && $from->lt($class->start_date)) {
+            $from = $class->start_date->copy()->startOfDay();
+        }
+        if ($class->end_date && $to->gt($class->end_date)) {
+            $to = $class->end_date->copy()->startOfDay();
+        }
+        if ($from->gt($to)) {
+            return back()->with('warning', 'O período escolhido fica fora das datas da turma ('
+                . optional($class->start_date)->format('d/m/Y') . ' a ' . optional($class->end_date)->format('d/m/Y') . ').');
+        }
+        // Até 1 ano por vez (antes não tinha limite: 2020→2099 criava milhares).
+        if ($from->diffInDays($to) > 366) {
+            return back()->with('warning', 'Gere no máximo 1 ano de chamadas por vez.');
+        }
 
         $dates = $class->computeSessionDates($from, $to);
 
