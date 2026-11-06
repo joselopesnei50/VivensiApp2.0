@@ -153,7 +153,10 @@ it('NGO uploadImage aceita PNG e devolve URL publica', function () {
     $tenant = Tenant::factory()->create();
     $user   = ngoUserOfTenant($tenant);
 
-    $file = UploadedFile::fake()->create('logo.png', 100, 'image/png');
+    // Bytes reais de um PNG 1x1: o upload confere o CONTEUDO (auditoria 05/11/2026)
+    $file = UploadedFile::fake()->createWithContent('logo.png', base64_decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+    ));
     $r = test()->actingAs($user)->postJson('/ngo/email-campaigns/upload-image', [
         'image' => $file,
     ]);

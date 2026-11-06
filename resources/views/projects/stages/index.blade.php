@@ -160,7 +160,7 @@
                 'end_date'      => $s->end_date?->toDateString(),
                 'planned_value' => (float) $s->planned_value,
                 'status'        => $s->status,
-            ], JSON_HEX_APOS | JSON_HEX_QUOT);
+            ], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG); // AMP: &quot; viraria aspa dentro do onclick
         @endphp
         <div class="col-md-6 col-lg-4">
             <div class="stage-card {{ $isCurrent ? 'is-current' : '' }}" data-stage-id="{{ $s->id }}">

@@ -142,7 +142,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label small font-weight-bold">Senha de Acesso</label>
-                        <input type="password" name="password" class="form-control rounded-3" required id="password">
+                        <input type="password" name="password" class="form-control rounded-3" required minlength="12" id="password" placeholder="Mínimo 12 caracteres, com maiúscula, minúscula e número">
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">

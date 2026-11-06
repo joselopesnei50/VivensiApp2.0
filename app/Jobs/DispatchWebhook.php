@@ -35,8 +35,30 @@ class DispatchWebhook implements ShouldQueue
         $body      = json_encode($this->payload);
         $signature = 'sha256=' . hash_hmac('sha256', $body, $webhook->secret);
 
+        // Anti-SSRF: confere o destino de novo na hora do envio (o DNS pode ter mudado)
+        $target = \App\Support\SafeOutboundUrl::check($webhook->url);
+        if (! $target['ok']) {
+            Log::warning("Webhook {$this->webhookId} bloqueado: destino interno ou inválido", ['url' => $webhook->url]);
+            WebhookLog::create([
+                'webhook_id'    => $webhook->id,
+                'event'         => $this->event,
+                'payload'       => $this->payload,
+                'http_status'   => null,
+                'response_body' => 'Bloqueado: ' . $target['reason'],
+                'attempts'      => $this->attempts(),
+                'success'       => false,
+                'fired_at'      => now(),
+            ]);
+            return;
+        }
+
         try {
             $response = Http::timeout($this->timeout)
+                ->withOptions([
+                    'allow_redirects' => false, // redirecionamento poderia levar para endereço interno
+                    // fixa a conexão no IP validado (evita DNS rebinding)
+                    'curl' => [CURLOPT_RESOLVE => ["{$target['host']}:{$target['port']}:" . (str_contains($target['ip'], ':') ? "[{$target['ip']}]" : $target['ip'])]],
+                ])
                 ->withHeaders([
                     'Content-Type'         => 'application/json',
                     'X-Vivensi-Event'      => $this->event,
