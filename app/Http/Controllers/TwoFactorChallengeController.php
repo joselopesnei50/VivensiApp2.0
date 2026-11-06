@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\TotpService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class TwoFactorChallengeController extends Controller
 {
@@ -25,8 +26,18 @@ class TwoFactorChallengeController extends Controller
         $user = auth()->user();
         $code = preg_replace('/\s/', '', $request->code);
 
+        // Por usuário (além do throttle:10,1 por IP da rota): 5 códigos
+        // errados → 15 min. Quem chega aqui já acertou a senha, então
+        // trocar de IP não pode dar tentativas novas.
+        $key = '2fa:' . $user->id;
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $minutes = (int) ceil(RateLimiter::availableIn($key) / 60);
+            return back()->with('error', "Muitos códigos incorretos. Tente novamente em {$minutes} minuto(s).");
+        }
+
         // Try TOTP code
         if ($user->two_factor_secret && $this->totp->verify($user->two_factor_secret, $code)) {
+            RateLimiter::clear($key);
             $request->session()->put('2fa_verified', true);
             return redirect()->to($request->session()->pull('2fa_redirect', '/dashboard'));
         }
@@ -39,10 +50,13 @@ class TwoFactorChallengeController extends Controller
             // Consume the recovery code
             unset($codes[$match]);
             $user->update(['two_factor_recovery_codes' => array_values($codes)]);
+            RateLimiter::clear($key);
             $request->session()->put('2fa_verified', true);
             return redirect()->to($request->session()->pull('2fa_redirect', '/dashboard'))
                 ->with('warning', 'Código de recuperação usado. Restam ' . count($codes) . ' códigos.');
         }
+
+        RateLimiter::hit($key, 900);
 
         return back()->with('error', 'Código inválido. Tente novamente.')->withInput();
     }
