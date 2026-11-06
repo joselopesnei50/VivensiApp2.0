@@ -45,9 +45,29 @@ class ComplianceCalculationService
         });
     }
 
+    public const EIXOS = ['cebas_geral', 'cebas_as', 'cebas_saude', 'cebas_educacao', 'mrosc', 'suas'];
+
+    /**
+     * Eixos que valem para a organização, pela "área de atuação CEBAS" do
+     * Configurar. Antes todos os 6 entravam no índice: uma ONG de assistência
+     * social ficava com Saúde e Educação no vermelho e o índice despencava.
+     * Sem área configurada, mantém todos (e a tela pede para configurar).
+     */
+    public function eixosAplicaveis(int $tenantId): array
+    {
+        $area = Tenant::withoutGlobalScopes()->whereKey($tenantId)->value('area_atuacao_cebas');
+
+        return match ($area) {
+            'assistencia_social' => ['cebas_geral', 'cebas_as', 'mrosc', 'suas'],
+            'saude'              => ['cebas_geral', 'cebas_saude', 'mrosc'],
+            'educacao'           => ['cebas_geral', 'cebas_educacao', 'mrosc'],
+            default              => self::EIXOS,
+        };
+    }
+
     public function calcularDashboard(int $tenantId): array
     {
-        $eixos     = ['cebas_geral', 'cebas_as', 'cebas_saude', 'cebas_educacao', 'mrosc', 'suas'];
+        $eixos     = $this->eixosAplicaveis($tenantId);
         $requisitos = RequisitoLegal::with('regra')->where('ativo', true)->get();
 
         // Garante ciclos abertos para cada eixo-família
@@ -106,6 +126,8 @@ class ComplianceCalculationService
             'ciclos'           => $ciclos,
             'pendencias'       => $pendencias,
             'avaliacoes'       => $avaliacoes,
+            'eixos_aplicaveis' => $eixos,
+            'area_configurada' => count($eixos) < count(self::EIXOS),
             'calculado_em'     => now()->toDateTimeString(),
         ];
     }

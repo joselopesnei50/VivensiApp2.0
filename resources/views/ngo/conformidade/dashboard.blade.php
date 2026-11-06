@@ -165,6 +165,21 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" style="flex-shrink:0"></button>
 </div>
 
+@if(empty($dashboard['area_configurada']))
+{{-- Sem área de atuação: todos os eixos entram no índice --}}
+<div class="d-flex align-items-center gap-3 mb-4 p-3"
+     style="background:var(--vv-tint-warning);border:1px solid var(--vv-tint-warning-border);border-left:4px solid #f59e0b;border-radius:16px">
+    <div style="font-size:1.6rem;line-height:1;flex-shrink:0">⚙️</div>
+    <div class="flex-grow-1" style="font-size:.85rem">
+        <div class="fw-bold">Informe a área de atuação da organização</div>
+        <div>Sem ela, o índice cobra os requisitos de Assistência Social, Saúde e Educação ao mesmo tempo. Com a área definida, só entram os eixos que valem para vocês.</div>
+    </div>
+    <a href="{{ route('ngo.conformidade.configurar') }}" class="btn btn-sm btn-warning fw-semibold px-3 flex-shrink-0" style="border-radius:10px">
+        Configurar
+    </a>
+</div>
+@endif
+
 {{-- Índice Geral + Semáforos por eixo-família --}}
 <div class="row g-4 mb-4">
 
@@ -193,6 +208,8 @@
             'mrosc'           => ['label'=>'MROSC',           'icon'=>'bi-file-earmark-text'],
             'suas'            => ['label'=>'SUAS',            'icon'=>'bi-house-heart'],
         ];
+        // Só os eixos da área de atuação configurada
+        $eixoLabels = array_intersect_key($eixoLabels, array_flip($dashboard['eixos_aplicaveis'] ?? array_keys($eixoLabels)));
     @endphp
 
     <div class="col-md-9">
@@ -263,8 +280,8 @@
                                     <div class="text-muted" style="font-size:.76rem">{{ $p['detalhe'] }}</div>
                                 @elseif(isset($p['valor_calculado']) && $p['valor_calculado'] !== null)
                                     <div class="text-muted" style="font-size:.76rem">
-                                        {{ $p['valor_calculado'] }}{{ $p['unidade'] ?? '' }}
-                                        @if($p['threshold']) · mínimo {{ $p['threshold'] }}{{ $p['unidade'] ?? '' }} @endif
+                                        {{ \App\Models\RegraAvaliacao::formatar($p['valor_calculado'], $p['unidade'] ?? null) }}
+                                        @if($p['threshold']) · mínimo {{ \App\Models\RegraAvaliacao::formatar($p['threshold'], $p['unidade'] ?? null) }} @endif
                                     </div>
                                 @endif
                             </div>

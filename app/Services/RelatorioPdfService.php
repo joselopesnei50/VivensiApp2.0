@@ -75,7 +75,11 @@ class RelatorioPdfService
 
         $avaliacoes = collect($dashboard['avaliacoes'])->keyBy('codigo');
 
-        $eixosCebas = ['cebas_geral', 'cebas_as', 'cebas_saude', 'cebas_educacao'];
+        // Só os eixos CEBAS da área de atuação da organização
+        $eixosCebas = array_values(array_intersect(
+            ['cebas_geral', 'cebas_as', 'cebas_saude', 'cebas_educacao'],
+            $dashboard['eixos_aplicaveis'] ?? \App\Services\ComplianceCalculationService::EIXOS
+        ));
         $requisitos = RequisitoLegal::with('regra')
             ->whereIn('eixo', $eixosCebas)
             ->where('ativo', true)

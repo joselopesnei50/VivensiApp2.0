@@ -101,9 +101,9 @@ $label = $eixoLabels[$eixo] ?? $eixo;
 
                 @if($aval && isset($aval['valor_calculado']) && $aval['valor_calculado'] !== null)
                     <div class="mt-2" style="font-size:.78rem">
-                        <strong>Calculado:</strong> {{ $aval['valor_calculado'] }}{{ $aval['unidade'] ?? '' }}
+                        <strong>Calculado:</strong> {{ \App\Models\RegraAvaliacao::formatar($aval['valor_calculado'], $aval['unidade'] ?? null) }}
                         @if($aval['threshold'])
-                            · <strong>Mínimo:</strong> {{ $aval['threshold'] }}{{ $aval['unidade'] ?? '' }}
+                            · <strong>Mínimo:</strong> {{ \App\Models\RegraAvaliacao::formatar($aval['threshold'], $aval['unidade'] ?? null) }}
                         @endif
                     </div>
                 @endif
