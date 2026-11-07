@@ -8,21 +8,46 @@ use Illuminate\Support\Facades\Session;
 
 trait Auditable
 {
+    /**
+     * Campos que nunca vão em claro para o log de auditoria (LGPD/segredos).
+     * Se mudaram, o log registra só que mudaram ("[oculto]").
+     * Um model pode acrescentar os seus em `protected array $auditExclude`.
+     */
+    protected static array $auditSensitive = [
+        'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes',
+        'cpf', 'cpf_bidx', 'nis', 'nis_bidx', 'rg', 'birth_date',
+        'public_token', 'public_token_bidx', 'secret', 'api_key', 'api_token', 'access_token', 'token',
+    ];
+
     public static function bootAuditable()
     {
         static::created(function ($model) {
-            $model->recordAudit('created', null, $model->getAttributes());
+            $model->recordAudit('created', null, $model->auditSafe($model->getAttributes()));
         });
 
         static::updated(function ($model) {
             $old = array_intersect_key($model->getOriginal(), $model->getDirty());
             $new = $model->getDirty();
-            $model->recordAudit('updated', $old, $new);
+            $model->recordAudit('updated', $model->auditSafe($old), $model->auditSafe($new));
         });
 
         static::deleted(function ($model) {
-            $model->recordAudit('deleted', $model->getAttributes(), null);
+            $model->recordAudit('deleted', $model->auditSafe($model->getAttributes()), null);
         });
+    }
+
+    public function auditSafe(?array $values): ?array
+    {
+        if ($values === null) {
+            return null;
+        }
+        $hidden = array_merge(static::$auditSensitive, property_exists($this, 'auditExclude') ? (array) $this->auditExclude : []);
+        foreach ($hidden as $key) {
+            if (array_key_exists($key, $values)) {
+                $values[$key] = ($values[$key] === null || $values[$key] === '') ? $values[$key] : '[oculto]';
+            }
+        }
+        return $values;
     }
 
     public function recordAudit(string $event, $old = null, $new = null): void

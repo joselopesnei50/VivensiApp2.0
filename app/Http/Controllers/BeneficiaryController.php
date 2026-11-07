@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\GeocodeAddressJob;
 use App\Jobs\GeneratePdfJob;
 use App\Models\Beneficiary;
 use App\Models\Attendance;
@@ -685,11 +684,9 @@ class BeneficiaryController extends Controller
 
         $beneficiary = new Beneficiary($validated);
         $beneficiary->tenant_id = $tenantId;
+        // A geocodificação é disparada pelo BeneficiaryObserver (uma vez só;
+        // antes o controller disparava de novo).
         $beneficiary->save();
-
-        if (!empty($beneficiary->address)) {
-            GeocodeAddressJob::dispatch($beneficiary)->delay(now()->addSeconds(3));
-        }
 
         return redirect('/ngo/beneficiaries')->with('success', 'Beneficiário cadastrado com sucesso!');
     }
@@ -738,19 +735,18 @@ class BeneficiaryController extends Controller
             'status'               => 'required|in:active,inactive,graduated',
         ])->validate();
 
-        $oldAddress = $beneficiary->address;
         $validated['address'] = $this->composeAddress($validated);
         $beneficiary->fill($validated);
-        $beneficiary->save();
 
-        try {
-            if (!empty($beneficiary->address) && $beneficiary->address !== $oldAddress) {
-                $beneficiary->update(['latitude' => null, 'longitude' => null]);
-                GeocodeAddressJob::dispatch($beneficiary->fresh())->delay(now()->addSeconds(3));
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Geocode dispatch failed on beneficiary update: ' . $e->getMessage(), ['id' => $beneficiary->id]);
+        // Endereço mudou: limpa as coordenadas antigas no MESMO save; o
+        // BeneficiaryObserver dispara a geocodificação uma vez só. (Antes o
+        // controller disparava outra e zerava as coordenadas depois do save,
+        // podendo apagar o resultado do primeiro job.)
+        if ($beneficiary->isDirty('address')) {
+            $beneficiary->latitude = null;
+            $beneficiary->longitude = null;
         }
+        $beneficiary->save();
 
         return redirect()->back()->with('success', 'Cadastro atualizado.');
     }

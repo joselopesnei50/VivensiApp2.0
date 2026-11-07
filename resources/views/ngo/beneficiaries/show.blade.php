@@ -173,7 +173,7 @@
                                 <div style="color: var(--ds-text-muted); font-size: 0.82rem;">
                                     {{ $member->kinship }}
                                     @if(!empty($member->birth_date))
-                                        · Nasc.: {{ optional($member->birth_date)->format('d/m/Y') }}
+                                        · Nasc.: {{ $member->birthDateBr() }}
                                     @endif
                                 </div>
                             </div>

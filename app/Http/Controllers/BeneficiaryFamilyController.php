@@ -45,7 +45,7 @@ class BeneficiaryFamilyController extends Controller
                     'beneficiary_id' => $beneficiary->id,
                     'name' => $member->name,
                     'kinship' => $member->kinship,
-                    'birth_date' => optional($member->birth_date)->format('Y-m-d'),
+                    'birth_date' => $member->birth_date ? '[oculto]' : null, // LGPD: não grava a data no log
                 ],
                 'ip_address' => RequestFacade::ip(),
                 'user_agent' => RequestFacade::userAgent(),

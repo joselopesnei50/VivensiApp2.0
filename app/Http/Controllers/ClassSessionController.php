@@ -261,7 +261,12 @@ class ClassSessionController extends Controller
             'date'                 => 'required|date',
             'start_time'           => 'nullable|date_format:H:i',
             'end_time'             => 'nullable|date_format:H:i|after_or_equal:start_time',
-            'teacher_user_id'      => 'nullable|integer',
+            // Só usuário da própria organização (antes aceitava qualquer id e
+            // o nome de um usuário de outra organização aparecia na chamada).
+            'teacher_user_id'      => [
+                'nullable', 'integer',
+                Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', auth()->user()->tenant_id)),
+            ],
             'mode'                 => ['required', Rule::in(['fechada', 'aberta'])],
             'notes'                => 'nullable|string|max:2000',
         ]);

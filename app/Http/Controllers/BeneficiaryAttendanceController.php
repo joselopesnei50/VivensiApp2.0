@@ -109,8 +109,9 @@ class BeneficiaryAttendanceController extends Controller
 
         $validated = $request->validate([
             'date' => 'required|date',
-            'type' => 'required|string',
-            'description' => 'required|string'
+            // Mesmos limites da edição (antes texto longo no tipo dava erro 500)
+            'type' => 'required|string|max:150',
+            'description' => 'required|string|max:5000'
         ]);
 
         $attendance = new Attendance($validated);

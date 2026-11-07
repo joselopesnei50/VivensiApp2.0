@@ -529,9 +529,10 @@
                     <small style="color: #ec4899;">Estimativa direta</small>
                 </div>
                 <div class="stat-card" style="border-left-color: #06b6d4;">
-                    <span class="stat-label">Atendimentos (Mês)</span>
+                    @php $anoAtual = (int) $year === (int) now()->year; @endphp
+                    <span class="stat-label">{{ $anoAtual ? 'Atendimentos (Mês)' : 'Atendimentos (' . $year . ')' }}</span>
                     <div class="stat-value" style="color: #06b6d4;">{{ $attendancesCount }}</div>
-                    <small style="color: #06b6d4;">Ações realizadas este mês</small>
+                    <small style="color: #06b6d4;">{{ $anoAtual ? 'Ações realizadas este mês' : 'Ações realizadas em ' . $year }}</small>
                 </div>
             </div>
 
@@ -599,7 +600,7 @@
                                     <li>
                                         <span class="t-dot"></span>
                                         <span>
-                                            <span class="t-mun">{{ $row->city }}</span><span class="t-uf">· {{ $row->state }}</span>
+                                            <span class="t-mun">{{ $row->city }}</span>@if($row->state)<span class="t-uf">· {{ $row->state }}</span>@endif
                                         </span>
                                         <span class="t-num">{{ number_format((int) $row->total, 0, ',', '.') }}</span>
                                     </li>
