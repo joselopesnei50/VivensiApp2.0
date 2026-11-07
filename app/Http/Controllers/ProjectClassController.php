@@ -38,7 +38,11 @@ class ProjectClassController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('projects.classes.index', compact('project', 'classes'));
+        // Presença média de cada turma (presenças / (presenças + faltas)).
+        $frequencia = app(\App\Services\AttendanceFrequencyService::class)
+            ->averageByClass((int) $project->tenant_id, $classes->pluck('id')->all());
+
+        return view('projects.classes.index', compact('project', 'classes', 'frequencia'));
     }
 
     public function create(Project $project): View
@@ -108,7 +112,10 @@ class ProjectClassController extends Controller
         $proximas = $sessionsBase()->whereDate('date', '>=', $today)->orderBy('date')->limit(8)->get();
         $anteriores = $sessionsBase()->whereDate('date', '<', $today)->orderByDesc('date')->limit(20)->get();
 
-        return view('projects.classes.show', compact('project', 'class', 'availablePeople', 'proximas', 'anteriores', 'vagas'));
+        // Frequência de cada aluno nesta turma + risco de evasão.
+        $frequencia = app(\App\Services\AttendanceFrequencyService::class)->forClass($class);
+
+        return view('projects.classes.show', compact('project', 'class', 'availablePeople', 'proximas', 'anteriores', 'vagas', 'frequencia'));
     }
 
     public function edit(Project $project, int $classId): View

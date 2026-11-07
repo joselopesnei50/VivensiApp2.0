@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    /* Impressão: só o relatório (sem menu, filtros e botões) */
+    @media print {
+        .sidebar, .topbar, header, nav, .no-print, form, #vcLauncher { display: none !important; }
+        .main-content, main { margin: 0 !important; padding: 0 !important; }
+        body { background: #fff !important; }
+        [data-theme-scope] * { color: #111 !important; box-shadow: none !important; }
+    }
+</style>
 <div data-theme-scope>
 @php
     $basePath = rtrim(request()->getBaseUrl(), '/');
@@ -15,13 +24,19 @@
                 <h6 style="color: var(--primary-color); font-weight:800; text-transform:uppercase; margin:0; letter-spacing:2px; font-size:0.7rem;">{{ $project->name }}</h6>
             </div>
             <h2 style="margin:0; color: var(--ds-text); font-weight:900; font-size:2rem; letter-spacing:-1px;">Relatório de Frequência</h2>
-            <p style="color: var(--ds-text-muted); margin:6px 0 0 0;">Período: {{ $from->format('d/m/Y') }} até {{ $to->format('d/m/Y') }}</p>
+            <p style="color: var(--ds-text-muted); margin:6px 0 0 0;">
+                @if($class ?? null)<strong style="color: var(--ds-text);">Turma {{ $class->name }}</strong> · @endif
+                Período: {{ $from->format('d/m/Y') }} até {{ $to->format('d/m/Y') }}
+            </p>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <a href="{{ $basePath . '/projects/' . $project->id }}" class="btn-ds btn-ds-ghost" style="text-decoration:none; font-weight:700;">
                 <i class="fas fa-arrow-left me-2"></i> Projeto
             </a>
-            <a href="{{ $basePath . '/projects/' . $project->id . '/attendance/report.csv?from=' . $from->toDateString() . '&to=' . $to->toDateString() }}" class="btn-ds btn-ds-primary" style="text-decoration:none; font-weight:800;">
+            <button type="button" onclick="window.print()" class="btn-ds btn-ds-ghost no-print" style="font-weight:700;">
+                <i class="fas fa-print me-2"></i> Imprimir
+            </button>
+            <a href="{{ $basePath . '/projects/' . $project->id . '/attendance/report.csv?' . http_build_query(array_filter(['from' => $from->toDateString(), 'to' => $to->toDateString(), 'turma' => ($class ?? null)?->id])) }}" class="btn-ds btn-ds-primary" style="text-decoration:none; font-weight:800;">
                 <i class="fas fa-file-csv me-2"></i> Exportar CSV
             </a>
         </div>
@@ -39,6 +54,17 @@
             <label style="display:block; font-weight:700; color: var(--ds-text); font-size:0.8rem; margin-bottom:6px;">Até</label>
             <input type="date" name="to" value="{{ $to->toDateString() }}" style="padding:10px 14px; border: 2px solid var(--ds-border); border-radius:10px; background: var(--vv-surface-soft); font-weight:600;">
         </div>
+        @if(isset($classes) && $classes->isNotEmpty())
+        <div>
+            <label for="repTurma" style="display:block; font-weight:700; color: var(--ds-text); font-size:0.8rem; margin-bottom:6px;">Turma</label>
+            <select name="turma" id="repTurma" style="padding:10px 14px; border: 2px solid var(--ds-border); border-radius:10px; background: var(--vv-surface-soft); color: var(--ds-text); font-weight:600; min-width: 220px;">
+                <option value="">Todas as chamadas do projeto</option>
+                @foreach($classes as $c)
+                    <option value="{{ $c->id }}" {{ ($class ?? null)?->id === $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        @endif
         <button type="submit" class="btn-ds btn-ds-primary" style="font-weight:700;">
             <i class="fas fa-filter"></i>&nbsp; Aplicar
         </button>
@@ -74,14 +100,14 @@
 </div>
 
 {{-- Tabela por aluno --}}
-<div class="vivensi-card" style="background: var(--ds-surface); padding:0; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.03); overflow:hidden;">
+<div class="vivensi-card" style="background: var(--ds-surface); padding:0; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.03); overflow-x:auto;">
     @if(empty($rows))
         <div style="padding:60px 30px; text-align:center; color: var(--ds-text-muted);">
             <i class="fas fa-chart-bar" style="font-size:3rem; color:#cbd5e1; margin-bottom:15px;"></i>
             <p style="margin:0; font-weight:600;">Nenhuma presença registrada no período selecionado.</p>
         </div>
     @else
-        <table style="width:100%; border-collapse:collapse;">
+        <table style="width:100%; min-width: 680px; border-collapse:collapse;">
             <thead style="background: var(--vv-surface-soft);">
                 <tr>
                     <th style="text-align:left; padding:14px 20px; font-size:0.72rem; font-weight:800; color: var(--ds-text-muted); text-transform:uppercase; letter-spacing:1px;">Aluno</th>
@@ -95,7 +121,7 @@
             </thead>
             <tbody>
                 @foreach($rows as $r)
-                    <tr style="border-top: 1px solid var(--ds-border); {{ $r['at_risk'] ? 'background:#fef2f2;' : '' }}">
+                    <tr style="border-top: 1px solid var(--ds-border); {{ $r['at_risk'] ? 'background: var(--vv-tint-danger);' : '' }}">
                         <td style="padding:12px 20px; font-weight:700; color: var(--ds-text);">
                             {{ $r['name'] }}
                             @if($r['inactive'])

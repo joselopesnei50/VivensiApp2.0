@@ -54,13 +54,38 @@
                         @endif
                     </div>
 
+                    @php
+                        $emRisco = $ativos->filter(fn ($e) => ($frequencia[$e->project_person_id]['at_risk'] ?? false))->count();
+                    @endphp
+                    @if($emRisco > 0)
+                        <div class="alert alert-danger py-2 small mb-3">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <strong>{{ $emRisco }} {{ $emRisco === 1 ? 'aluno em risco' : 'alunos em risco' }} de evasão</strong>
+                            ({{ \App\Services\AttendanceFrequencyService::RISK_CONSECUTIVE }} faltas seguidas ou {{ (int) \App\Services\AttendanceFrequencyService::RISK_PERCENTUAL_MIN }}% de faltas). Vale um contato com a família.
+                        </div>
+                    @endif
+
                     @if($ativos->isEmpty())
                         <p class="text-muted small mb-3">Nenhum aluno matriculado ainda.</p>
                     @else
                         <ul class="list-group list-group-flush mb-3">
-                            @foreach($ativos as $e)
-                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                    <span>{{ optional($e->person)->name ?? '—' }}</span>
+                            @foreach($ativos->sortByDesc(fn ($e) => ($frequencia[$e->project_person_id]['at_risk'] ?? false) ? 1 : 0) as $e)
+                                @php $fr = $frequencia[$e->project_person_id] ?? null; @endphp
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                                    <span class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span>{{ optional($e->person)->name ?? '—' }}</span>
+                                        @if($fr && $fr['pct'] !== null)
+                                            <span class="badge {{ $fr['at_risk'] ? 'bg-danger' : ($fr['pct'] >= 75 ? 'bg-success-subtle text-success-emphasis' : 'bg-warning-subtle text-warning-emphasis') }}"
+                                                  title="{{ $fr['presences'] }} presenças, {{ $fr['absences'] }} faltas{{ $fr['justified'] ? ', ' . $fr['justified'] . ' justificadas' : '' }}">
+                                                {{ number_format($fr['pct'], 0, ',', '.') }}% presença
+                                            </span>
+                                            @if($fr['risk_consec'])
+                                                <span class="badge bg-danger-subtle text-danger-emphasis">{{ $fr['consecutive'] }} faltas seguidas</span>
+                                            @endif
+                                        @elseif($fr === null)
+                                            <span class="text-muted small">sem chamada ainda</span>
+                                        @endif
+                                    </span>
                                     <form method="POST" action="{{ route('projects.classes.unenroll', [$project->id, $class->id, $e->id]) }}"
                                           onsubmit="return confirm('Tirar {{ addslashes(optional($e->person)->name ?? 'este aluno') }} da turma? As presenças já registradas continuam no histórico.');">
                                         @csrf @method('DELETE')
@@ -132,7 +157,13 @@
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold mb-3"><i class="fas fa-calendar-check me-2 text-primary"></i>Chamadas</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-calendar-check me-2 text-primary"></i>Chamadas</h5>
+                        <a href="{{ url('/projects/' . $project->id . '/attendance/report') . '?' . http_build_query(['turma' => $class->id, 'from' => optional($class->start_date)->toDateString() ?? now()->subDays(90)->toDateString(), 'to' => now()->toDateString()]) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-chart-bar me-1"></i> Relatório de frequência
+                        </a>
+                    </div>
 
                     @if(!empty($class->weekdays))
                         <form method="POST" action="{{ route('projects.classes.generate-sessions', [$project->id, $class->id]) }}"

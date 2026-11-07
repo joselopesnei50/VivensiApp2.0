@@ -47,6 +47,7 @@
                                 <th>Horário</th>
                                 <th class="text-center">Alunos</th>
                                 <th class="text-center">Chamadas</th>
+                                <th class="text-center">Presença média</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-end pe-4">Ações</th>
                             </tr>
@@ -66,6 +67,16 @@
                                     </td>
                                     <td class="text-center">{{ $c->students_count }}@if($c->max_students)<span class="text-muted small"> / {{ $c->max_students }}</span>@endif</td>
                                     <td class="text-center">{{ $c->sessions_count }}</td>
+                                    <td class="text-center">
+                                        @php $fq = $frequencia[$c->id] ?? null; @endphp
+                                        @if($fq === null)
+                                            <span class="text-muted">—</span>
+                                        @else
+                                            <span class="badge {{ $fq >= 75 ? 'bg-success-subtle text-success-emphasis' : ($fq >= 60 ? 'bg-warning-subtle text-warning-emphasis' : 'bg-danger-subtle text-danger-emphasis') }}">
+                                                {{ number_format($fq, 0, ',', '.') }}%
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         @if($c->status === 'ativo')
                                             <span class="badge bg-success">Ativo</span>
