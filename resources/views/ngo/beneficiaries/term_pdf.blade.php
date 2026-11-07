@@ -95,7 +95,7 @@
                     <tr>
                         <td><strong>{{ $m->name }}</strong></td>
                         <td>{{ $m->kinship }}</td>
-                        <td class="center">{{ optional($m->birth_date)->format('d/m/Y') ?: '—' }}</td>
+                        <td class="center">{{ $m->birthDateBr() ?: '—' }}</td>
                     </tr>
                 @endforeach
                 @if($beneficiary->familyMembers->count() === 0)

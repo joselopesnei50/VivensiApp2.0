@@ -81,6 +81,26 @@ class Beneficiary extends Model
 
     // ─────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Documento mascarado para listagens (LGPD): mostra só parte do número.
+     * CPF 123.456.789-09 → ***.456.789-**; NIS → •••••••4567.
+     */
+    public function maskedDocument(): ?string
+    {
+        $nis = preg_replace('/\D/', '', (string) $this->nis);
+        if ($nis !== '') {
+            return 'NIS ' . str_repeat('•', max(0, strlen($nis) - 4)) . substr($nis, -4);
+        }
+        $cpf = preg_replace('/\D/', '', (string) $this->cpf);
+        if (strlen($cpf) === 11) {
+            return '***.' . substr($cpf, 3, 3) . '.' . substr($cpf, 6, 3) . '-**';
+        }
+        if ($cpf !== '') {
+            return str_repeat('•', max(0, strlen($cpf) - 3)) . substr($cpf, -3);
+        }
+        return null;
+    }
+
     public function familyMembers()
     {
         return $this->hasMany(FamilyMember::class);

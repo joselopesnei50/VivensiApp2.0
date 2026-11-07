@@ -176,7 +176,8 @@
                     </a>
                 </td>
                 <td style="padding: 15px; text-align: center; color: var(--ds-text-muted); font-size: 0.9rem;">
-                    {{ $beneficiary->nis ?? $beneficiary->cpf ?? '-' }}
+                    {{-- Mascarado (LGPD): o número completo fica só na ficha --}}
+                    {{ $beneficiary->maskedDocument() ?? '-' }}
                 </td>
                 <td style="padding: 15px; text-align: center; color: var(--ds-text-muted);">
                     {{ $beneficiary->birth_date ? \Carbon\Carbon::parse($beneficiary->birth_date)->age . ' anos' : '-' }}

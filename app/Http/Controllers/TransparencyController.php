@@ -822,11 +822,15 @@ class TransparencyController extends Controller
                 ->where('b.tenant_id', $tenant_id)
                 ->count();
             $peopleCount = $familiesCount + $familyMembersCount;
-            $attendancesCount = (int) DB::table('attendances')
+            // Ano atual: atendimentos do mês. Ano anterior: do ano inteiro
+            // (antes mostrava o mês atual mesmo vendo outro ano).
+            $attendancesQ = DB::table('attendances')
                 ->where('tenant_id', $tenant_id)
-                ->whereYear('date', now()->year)
-                ->whereMonth('date', now()->month)
-                ->count();
+                ->whereYear('date', (int) $year);
+            if ((int) $year === (int) now()->year) {
+                $attendancesQ->whereMonth('date', now()->month);
+            }
+            $attendancesCount = (int) $attendancesQ->count();
 
             // Territorial reach (aggregated by city/state — no PII, LGPD-safe)
             $territoryRows = DB::table('beneficiaries')
@@ -842,7 +846,15 @@ class TransparencyController extends Controller
                 ->orderByDesc('total')
                 ->get();
 
-            $territoriesByCity = $territoryRows->take(12)->values();
+            // LGPD: cidade com menos de 5 beneficiários pode identificar a
+            // família — entra junto em "Outras cidades".
+            $minPorCidade = 5;
+            [$cidades, $pequenas] = $territoryRows->partition(fn ($r) => (int) $r->total >= $minPorCidade);
+            $territoriesByCity = $cidades->take(12)->values();
+            $outras = (int) $pequenas->sum('total') + (int) $cidades->slice(12)->sum('total');
+            if ($outras > 0) {
+                $territoriesByCity->push((object) ['city' => 'Outras cidades', 'state' => '', 'total' => $outras]);
+            }
 
             $territoriesByState = $territoryRows
                 ->groupBy('state')
