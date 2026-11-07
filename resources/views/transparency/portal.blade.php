@@ -338,8 +338,10 @@
                     <small style="color: #f59e0b;"><i class="fas fa-check"></i> {{ $investmentNote ?? 'Aplicado na causa' }}</small>
                 </div>
                 <div class="stat-card" style="border-color: #10b981;">
-                    <span class="stat-label">Saldo em Caixa</span>
+                    {{-- É receitas − despesas do ano, não o dinheiro em conta --}}
+                    <span class="stat-label">Resultado do ano</span>
                     <div class="stat-value">R$ {{ number_format($balance, 2, ',', '.') }}</div>
+                    <small style="color: #64748b;">Receitas menos despesas em {{ $year }}</small>
                 </div>
             </div>
 

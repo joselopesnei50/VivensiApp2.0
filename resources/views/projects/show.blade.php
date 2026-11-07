@@ -298,7 +298,7 @@
             <div class="col-md-3">
                 <div class="stat-pill-premium">
                     <div>
-                        <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">Saldo em Caixa</span>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">Saldo do orçamento</span>
                         <div style="font-size: 1.8rem; font-weight: 950; color: var(--ds-brand); letter-spacing: -1px;">R$ {{ number_format($project->budget - $totalSpent, 0, ',', '.') }}</div>
                     </div>
                     <div style="margin-top: 20px; font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4);">
@@ -591,10 +591,10 @@
 @endif
 
 <!-- Pessoas & Contatos Section -->
-<div class="project-table-card mt-4">
+<div class="project-table-card mt-4" id="pessoas">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 15px;">
         <div>
-            <h4 style="margin: 0; font-weight: 900; color: var(--ds-text); letter-spacing: -0.5px;">Pessoas & Contatos</h4>
+            <h4 style="margin: 0; font-weight: 900; color: var(--ds-text); letter-spacing: -0.5px;">Pessoas & Contatos <span style="font-size: .9rem; color: var(--ds-text-muted); font-weight: 700;">({{ number_format($peopleTotal ?? 0, 0, ',', '.') }})</span></h4>
             <p style="margin: 5px 0 0 0; color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Gerencie o cadastro de pessoas relacionadas a este projeto.</p>
             @if(($linkedBeneficiariesCount ?? 0) > 0)
                 <p style="margin: 8px 0 0 0; font-weight: 700; font-size: 0.8rem; color: #10b981;">
@@ -610,7 +610,7 @@
             <button type="button" id="btn-open-import-person" onclick="openProjectModal('importPersonProjectModal')" class="btn-ds btn-ds-outline" style="padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
                 <i class="fas fa-file-csv me-2" style="color: #f59e0b;"></i> Importar CSV
             </button>
-            @if($canManageProject && $project->people->count() > 0)
+            @if($canManageProject && ($peopleTotal ?? 0) > 0)
                 <form action="{{ route('projects.broadcast.create', $project->id) }}" method="POST" style="margin: 0;">
                     @csrf
                     <button type="submit" class="btn-premium btn-premium-shine" style="background: #10b981; color: white; border: none; padding: 12px 20px; font-weight: 800; font-size: 0.85rem;">
@@ -620,6 +620,16 @@
             @endif
         </div>
     </div>
+
+    @if(($peopleTotal ?? 0) > 25 || ($peopleSearch ?? '') !== '')
+        <form method="GET" action="{{ url()->current() }}#pessoas" style="display:flex; gap:8px; margin-bottom: 16px; max-width: 420px;">
+            <input type="search" name="pessoa" value="{{ $peopleSearch }}" class="form-control" placeholder="Buscar pessoa pelo nome…" aria-label="Buscar pessoa">
+            <button type="submit" class="btn btn-outline-primary">Buscar</button>
+            @if(($peopleSearch ?? '') !== '')
+                <a href="{{ url()->current() }}#pessoas" class="btn btn-outline-secondary">Limpar</a>
+            @endif
+        </form>
+    @endif
 
     <div class="table-responsive">
         <table class="table table-hover" style="vertical-align: middle;">
@@ -632,7 +642,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($project->people as $person)
+                @forelse($peoplePage as $person)
                 <tr style="border-bottom: 1px solid #f8fafc;">
                     <td style="padding: 15px;">
                         <div style="font-weight: 800; color: var(--ds-text);">{{ $person->name }}</div>
@@ -676,13 +686,16 @@
                 <tr>
                     <td colspan="4" style="padding: 40px; text-align: center;">
                         <i class="fas fa-users-slash" style="font-size: 3rem; color: #f1f5f9; margin-bottom: 20px; display: block;"></i>
-                        <span style="font-weight: 700; color: #cbd5e1;">Nenhuma pessoa cadastrada neste projeto.</span>
+                        <span style="font-weight: 700; color: #cbd5e1;">{{ ($peopleSearch ?? '') !== '' ? 'Ninguém encontrado com esse nome.' : 'Nenhuma pessoa cadastrada neste projeto.' }}</span>
                     </td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+    @if($peoplePage->hasPages())
+        <div class="mt-3">{{ $peoplePage->links() }}</div>
+    @endif
 </div>
 
 {{-- Modal detalhes do inscrito (2026-08-06) — usa /projects/{id}/people/{personId} --}}
