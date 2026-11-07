@@ -5,15 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\ClassAttendance;
 use App\Models\ClassSession;
 use App\Models\Project;
+use App\Models\ProjectClass;
 use App\Models\ProjectPerson;
+use App\Services\AttendanceFrequencyService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AttendanceReportController extends Controller
 {
-    private const ROLES_READ           = ['manager', 'employee', 'super_admin', 'ngo'];
-    private const RISK_CONSECUTIVE     = 3;    // Faltas puras consecutivas (decisao 1c parte 1)
-    private const RISK_PERCENTUAL_MIN  = 30.0; // % de faltas no periodo (decisao 1c parte 2)
+    // 'common' (professores) também — igual às Turmas e à Chamada.
+    private const ROLES_READ = ['manager', 'employee', 'super_admin', 'ngo', 'common'];
 
     private function tenantId(): int
     {
@@ -51,12 +52,20 @@ class AttendanceReportController extends Controller
 
         $project = $this->findProject($projectId);
         [$from, $to] = $this->parsePeriod($request);
-        $data = $this->buildReport($project, $from, $to);
+        $class = $this->findClass($project, $request);
+        $data = app(AttendanceFrequencyService::class)->build($this->tenantId(), $project->id, $from, $to, $class?->id);
+
+        $classes = ProjectClass::where('project_id', $project->id)
+            ->where('tenant_id', $this->tenantId())
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return view('class-sessions.report', array_merge($data, [
             'project' => $project,
             'from'    => $from,
-            'to'     => $to,
+            'to'      => $to,
+            'class'   => $class,
+            'classes' => $classes,
         ]));
     }
 
@@ -67,11 +76,12 @@ class AttendanceReportController extends Controller
 
         $project = $this->findProject($projectId);
         [$from, $to] = $this->parsePeriod($request);
-        $data = $this->buildReport($project, $from, $to);
+        $class = $this->findClass($project, $request);
+        $data = app(AttendanceFrequencyService::class)->build($this->tenantId(), $project->id, $from, $to, $class?->id);
 
-        $filename = 'frequencia-' . $project->id . '-' . $from->toDateString() . '-a-' . $to->toDateString() . '.csv';
+        $filename = 'frequencia-' . $project->id . ($class ? '-turma-' . $class->id : '') . '-' . $from->toDateString() . '-a-' . $to->toDateString() . '.csv';
 
-        return response()->streamDownload(function () use ($data, $project, $from, $to) {
+        return response()->streamDownload(function () use ($data, $project, $from, $to, $class) {
             $out = fopen('php://output', 'w');
             if ($out === false) return;
 
@@ -80,6 +90,9 @@ class AttendanceReportController extends Controller
             // Cabecalho de auditoria — uso interno, alinhado com politica LGPD do projeto.
             fputcsv($out, ['# Relatorio de frequencia — uso interno']);
             fputcsv($out, ['# Projeto', $this->csvSafe($project->name)]);
+            if ($class) {
+                fputcsv($out, ['# Turma', $this->csvSafe($class->name)]);
+            }
             fputcsv($out, ['# Periodo', $from->format('d/m/Y') . ' a ' . $to->format('d/m/Y')]);
             fputcsv($out, ['# Gerado em', now()->format('d/m/Y H:i')]);
             fputcsv($out, []);
@@ -181,116 +194,17 @@ class AttendanceReportController extends Controller
         return [$from, $to];
     }
 
-    // Agrega presencas do projeto no periodo e monta linhas por aluno + KPIs.
-    private function buildReport(Project $project, Carbon $from, Carbon $to): array
+    /** Turma do filtro (?turma=), só deste projeto e organização. */
+    private function findClass(Project $project, Request $request): ?ProjectClass
     {
-        $sessions = ClassSession::where('project_id', $project->id)
-            ->where('tenant_id', $this->tenantId())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
-            ->orderBy('date', 'desc')
-            ->get(['id', 'title', 'date']);
-
-        $sessionIds = $sessions->pluck('id');
-        $totalSessions = $sessions->count();
-
-        $attendances = ClassAttendance::whereIn('class_session_id', $sessionIds)
-            ->where('tenant_id', $this->tenantId())
-            ->get(['project_person_id', 'class_session_id', 'status', 'checked_in_via']);
-
-        // Alunos com registro no periodo (dashboard mostra quem participou).
-        $personIds = $attendances->pluck('project_person_id')->unique()->values();
-        $people = ProjectPerson::whereIn('id', $personIds)
-            ->where('tenant_id', $this->tenantId())
-            ->orderBy('name')
-            ->get(['id', 'name', 'enrollment_status']);
-
-        // Indexa attendances por aluno pra agregar em PHP.
-        $byPerson = $attendances->groupBy('project_person_id');
-        $sessionDateById = $sessions->keyBy('id');
-
-        $rows = [];
-        $totalPresences = 0;
-        $totalAbsences  = 0;
-        $totalPublic    = 0;
-        $totalRegistered = $attendances->count();
-        $atRiskCount = 0;
-
-        foreach ($people as $p) {
-            $items = $byPerson->get($p->id, collect());
-            $presences = $items->where('status', 'presente')->count();
-            $absences  = $items->where('status', 'falta')->count();
-            $justified = $items->where('status', 'falta_justificada')->count();
-            $eligible  = $presences + $absences + $justified;
-
-            // Decisao 2b: justificada NAO conta como falta pro %.
-            $pctDenom = $presences + $absences;
-            $pct = $pctDenom > 0 ? ($presences / $pctDenom) * 100 : null;
-
-            $consecutive = $this->consecutiveAbsences($items, $sessionDateById);
-            $isRiskConsec  = $consecutive >= self::RISK_CONSECUTIVE;
-            $isRiskPercent = $pct !== null && (100 - $pct) >= self::RISK_PERCENTUAL_MIN;
-            $atRisk = $isRiskConsec || $isRiskPercent;
-
-            if ($atRisk) $atRiskCount++;
-            $totalPresences += $presences;
-            $totalAbsences  += $absences;
-            $totalPublic    += $items->whereIn('checked_in_via', ['link_publico', 'auto_cadastro'])->count();
-
-            $rows[] = [
-                'id'              => $p->id,
-                'name'            => $p->name,
-                'inactive'        => $p->enrollment_status === 'inativo',
-                'eligible'        => $eligible,
-                'presences'       => $presences,
-                'absences'        => $absences,
-                'justified'       => $justified,
-                'pct'             => $pct,
-                'consecutive'     => $consecutive,
-                'at_risk'         => $atRisk,
-                'risk_consec'     => $isRiskConsec,
-                'risk_percent'    => $isRiskPercent,
-            ];
+        $id = (int) $request->query('turma', 0);
+        if ($id <= 0) {
+            return null;
         }
-
-        // Ordena: em risco primeiro, depois pior % presenca.
-        usort($rows, function ($a, $b) {
-            if ($a['at_risk'] !== $b['at_risk']) return $a['at_risk'] ? -1 : 1;
-            return ($a['pct'] ?? 101) <=> ($b['pct'] ?? 101);
-        });
-
-        $avgPct = ($totalPresences + $totalAbsences) > 0
-            ? ($totalPresences / ($totalPresences + $totalAbsences)) * 100
-            : null;
-
-        $publicPct = $totalRegistered > 0
-            ? ($totalPublic / $totalRegistered) * 100
-            : null;
-
-        return [
-            'rows'          => $rows,
-            'sessions'      => $sessions,
-            'totalSessions' => $totalSessions,
-            'avgPct'        => $avgPct,
-            'atRiskCount'   => $atRiskCount,
-            'publicPct'     => $publicPct,
-        ];
-    }
-
-    private function consecutiveAbsences($items, $sessionDateById): int
-    {
-        // Ordena items do mais recente pro mais antigo pela data da sessao.
-        $sorted = $items->sortByDesc(fn ($a) => optional($sessionDateById->get($a->class_session_id))->date?->toDateString() ?? '')
-            ->values();
-
-        $count = 0;
-        foreach ($sorted as $it) {
-            if ($it->status === 'falta') {
-                $count++;
-                continue;
-            }
-            break; // presente ou justificada quebra a sequencia.
-        }
-        return $count;
+        return ProjectClass::where('id', $id)
+            ->where('project_id', $project->id)
+            ->where('tenant_id', $this->tenantId())
+            ->first();
     }
 
     private function statusLabel(string $status): string
