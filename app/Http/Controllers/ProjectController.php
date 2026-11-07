@@ -209,21 +209,27 @@ class ProjectController extends Controller
             ->limit(500)
             ->get(['id', 'name']);
 
-        // Eager load do beneficiario ligado a cada ProjectPerson (opt-in via
-        // form). Evita N+1 quando a tabela "Pessoas & Contatos" renderiza o
-        // badge/link pro perfil. Beneficiario deletado -> beneficiary_id fica
-        // null (booted hook do Beneficiary + FK nullOnDelete).
-        $data['project']->load(['people.beneficiary:id,name,status']);
+        // Pessoas & Contatos: paginado (25 por página) com busca por nome.
+        // Antes carregava todos os participantes de uma vez na página.
+        $peopleBase = \App\Models\ProjectPerson::where('tenant_id', $tenantId)
+            ->where('project_id', (int) $id);
+        $busca = trim((string) request('pessoa', ''));
+        $data['peopleSearch'] = $busca;
+        $data['peopleTotal'] = (clone $peopleBase)->count();
+        $data['peoplePage'] = (clone $peopleBase)
+            ->when($busca !== '', fn ($q) => $q->where('name', 'like', '%' . str_replace(['%', '_'], ['\\%', '\\_'], $busca) . '%'))
+            ->with('beneficiary:id,name,status')
+            ->orderBy('name')
+            ->paginate(25, ['*'], 'pessoas')
+            ->withQueryString()
+            ->fragment('pessoas');
 
-        // Contador de beneficiarios DISTINTOS vinculados ao projeto (uma mesma
-        // familia pode aparecer varias vezes em people com o mesmo beneficiary_id
-        // se cadastrada em multiplos contextos). So faz sentido mostrar quando
-        // houver pelo menos um vinculo.
-        $data['linkedBeneficiariesCount'] = $data['project']->people
+        // Beneficiários DISTINTOS vinculados ao projeto (a mesma família pode
+        // aparecer várias vezes em people).
+        $data['linkedBeneficiariesCount'] = (clone $peopleBase)
             ->whereNotNull('beneficiary_id')
-            ->pluck('beneficiary_id')
-            ->unique()
-            ->count();
+            ->distinct()
+            ->count('beneficiary_id');
 
         // Opção C — landing pages públicas vinculadas a este projeto e o total
         // de submissões (leads) capturadas em cada uma.

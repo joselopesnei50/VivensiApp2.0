@@ -263,12 +263,19 @@
                     @endif
                 </h6>
 
+                @php $mostrarPrimeiras = 8; @endphp
                 @forelse($dashboard['pendencias'] as $p)
                     @php
                         $pClass = $p['resultado'] === 'vermelho' ? 'conf-pendencia-vermelho' : 'conf-pendencia-amarelo';
+                        // Ação direta para resolver (antes só "Ver", que levava ao eixo inteiro)
+                        $acao = match($p['tipo'] ?? null) { 'B' => 'Enviar documento', 'C' => 'Declarar', default => 'Ver detalhe' };
+                        $acaoUrl = !empty($p['requisito_id'])
+                            ? route('ngo.conformidade.requisito', $p['requisito_id'])
+                            : route('ngo.conformidade.eixo', $p['eixo']);
+                        $extra = $loop->index >= $mostrarPrimeiras;
                         $riscoClass = match($p['risco']) { 'alto' => 'conf-risco-alto', 'medio' => 'conf-risco-medio', default => 'conf-risco-baixo' };
                     @endphp
-                    <div class="conf-pendencia-item {{ $pClass }}">
+                    <div class="conf-pendencia-item {{ $pClass }} {{ $extra ? 'conf-pend-extra d-none' : '' }}">
                         <div class="d-flex align-items-start justify-content-between gap-2">
                             <div class="flex-grow-1">
                                 <div class="d-flex align-items-center gap-2 mb-1">
@@ -285,12 +292,18 @@
                                     </div>
                                 @endif
                             </div>
-                            <a href="{{ route('ngo.conformidade.eixo', $p['eixo']) }}"
-                               class="btn btn-sm btn-outline-secondary flex-shrink-0" style="font-size:.72rem">
-                                Ver
+                            <a href="{{ $acaoUrl }}"
+                               class="btn btn-sm {{ ($p['tipo'] ?? '') === 'A' ? 'btn-outline-secondary' : 'btn-primary' }} flex-shrink-0" style="font-size:.72rem">
+                                {{ $acao }}
                             </a>
                         </div>
                     </div>
+                    @if($loop->last && $loop->count > $mostrarPrimeiras)
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-2" id="confVerTodas"
+                                onclick="document.querySelectorAll('.conf-pend-extra').forEach(function (e) { e.classList.remove('d-none'); }); this.remove();">
+                            Ver todas as {{ $loop->count }} pendências
+                        </button>
+                    @endif
                 @empty
                     <div class="text-center py-5 text-muted">
                         <i class="bi bi-check-circle-fill text-success" style="font-size:2rem"></i>

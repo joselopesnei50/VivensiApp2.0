@@ -92,9 +92,10 @@ class ComplianceCalculationService
 
                     if (in_array($aval['resultado'], ['vermelho', 'amarelo'])) {
                         $pendencias[] = array_merge($aval, [
-                            'eixo'  => $eixo,
-                            'risco' => $req->risco,
-                            'tipo'  => $req->tipo,
+                            'eixo'         => $eixo,
+                            'risco'        => $req->risco,
+                            'tipo'         => $req->tipo,
+                            'requisito_id' => $req->id,
                         ]);
                     }
                 } catch (\Throwable $e) {

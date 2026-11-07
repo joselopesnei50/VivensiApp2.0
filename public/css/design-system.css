@@ -1405,3 +1405,7 @@ select.form-control option {
 [data-theme="dark"] .pagination + p, [data-theme="dark"] nav[role="navigation"] p { color: var(--ds-text-muted); }
 /* Botão .btn-dark (Bootstrap) some sobre cartões escuros: usa a cor da marca */
 [data-theme="dark"] [data-theme-scope] .btn-dark { background: var(--ds-brand); border-color: var(--ds-brand); color: #fff; }
+
+/* Barra lateral no tema escuro: links do submenu tinham cor fixa #1e293b
+   (style.css) e ficavam quase invisíveis sobre o fundo escuro. */
+[data-theme="dark"] .sidebar:not(.sidebar-sa) .sidebar-menu a:not(.active):not(:hover) { color: #cbd5e1; }

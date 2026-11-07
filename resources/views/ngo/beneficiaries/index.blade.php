@@ -2,35 +2,67 @@
 
 @section('content')
 <div data-theme-scope>
-<div class="header-page" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+<style>
+    .ben-head { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .ben-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .ben-btn-outline { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: .9rem;
+        border: 1px solid var(--ds-border); color: var(--ds-text); background: var(--ds-surface); text-decoration: none; cursor: pointer; }
+    .ben-btn-outline:hover { background: var(--vv-surface-soft); color: var(--ds-text); }
+    .ben-more { position: relative; }
+    .ben-more > summary { list-style: none; }
+    .ben-more > summary::-webkit-details-marker { display: none; }
+    .ben-more-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 240px; padding: 6px;
+        background: var(--ds-surface); border: 1px solid var(--ds-border); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.18); }
+    .ben-more-menu a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--ds-text); text-decoration: none; font-size: .9rem; }
+    .ben-more-menu a:hover { background: var(--vv-surface-soft); }
+    .ben-more-menu a i { width: 16px; color: var(--ds-text-muted); }
+    .ben-more-menu hr { margin: 4px 6px; border-color: var(--ds-border); }
+    .ben-filters-adv > summary { cursor: pointer; color: var(--vv-link); font-weight: 600; font-size: .88rem; list-style: none; padding: 4px 0; }
+    .ben-filters-adv > summary::-webkit-details-marker { display: none; }
+    .ben-table-wrap { padding: 0; overflow-x: auto; }
+    .ben-table-wrap table { min-width: 760px; }
+    @media (max-width: 640px) {
+        .ben-actions { width: 100%; }
+        .ben-actions > * { flex: 1; justify-content: center; }
+        .ben-more-menu { left: 0; right: auto; }
+    }
+</style>
+
+<div class="ben-head">
     <div>
         <h2 style="margin: 0; color: var(--ds-text);">Beneficiários</h2>
         <p style="color: var(--ds-text-muted); margin: 5px 0 0 0;">Gestão de famílias atendidas e histórico de evolução.</p>
     </div>
-    <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a href="{{ url('/ngo/beneficiaries/insights') }}" class="btn-premium" style="background:#111827;">
-            <i class="fas fa-chart-line"></i> Indicadores
-        </a>
-        <a href="{{ url('/ngo/beneficiaries/reports/annual') }}" class="btn-premium" style="background:#16a34a;">
-            <i class="fas fa-file-alt"></i> Relatório anual
-        </a>
-        <a href="{{ url('/ngo/beneficiaries/attendances/export') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#0ea5e9;">
-            <i class="fas fa-file-csv"></i> CSV Atendimentos (lote)
-        </a>
-        <a href="{{ url('/ngo/beneficiaries/export') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background:#4f46e5;">
-            <i class="fas fa-file-csv"></i> Exportar CSV
-        </a>
-        <a href="{{ url('/ngo/beneficiaries/print') . '?' . http_build_query(request()->query()) }}" class="btn-premium" style="background: var(--vv-surface-soft) !important; color: var(--ds-text) !important;">
-            <i class="fas fa-print"></i> Imprimir
-        </a>
-        <a href="{{ url('/ngo/beneficiaries/create') }}#importar" class="btn-premium" style="background:#0f766e;">
-            <i class="fas fa-file-import"></i> Importar Planilha
+    {{-- Uma ação principal; o resto em "Mais" (antes eram 7 botões coloridos) --}}
+    <div class="ben-actions">
+        <details class="ben-more">
+            <summary class="ben-btn-outline"><i class="fas fa-ellipsis-h"></i> Mais <i class="fas fa-chevron-down" style="font-size:.7rem"></i></summary>
+            <div class="ben-more-menu">
+                <a href="{{ url('/ngo/beneficiaries/insights') }}"><i class="fas fa-chart-line"></i> Indicadores</a>
+                <a href="{{ url('/ngo/beneficiaries/reports/annual') }}"><i class="fas fa-file-alt"></i> Relatório anual</a>
+                <hr>
+                <a href="{{ url('/ngo/beneficiaries/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> Exportar lista (CSV)</a>
+                <a href="{{ url('/ngo/beneficiaries/attendances/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> Exportar atendimentos (CSV)</a>
+                <a href="{{ url('/ngo/beneficiaries/print') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-print"></i> Imprimir lista</a>
+            </div>
+        </details>
+        <a href="{{ url('/ngo/beneficiaries/create') }}#importar" class="ben-btn-outline">
+            <i class="fas fa-file-import"></i> Importar planilha
         </a>
         <a href="{{ url('/ngo/beneficiaries/create') }}" class="btn-premium">
-            <i class="fas fa-plus"></i> Novo Beneficiário
+            <i class="fas fa-plus"></i> Novo beneficiário
         </a>
     </div>
 </div>
+<script>
+    // Fecha o menu "Mais" ao clicar fora ou apertar Esc
+    document.addEventListener('click', function (e) {
+        document.querySelectorAll('details.ben-more[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); });
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') document.querySelectorAll('details.ben-more[open]').forEach(function (d) { d.removeAttribute('open'); });
+    });
+</script>
 
 @php
     $total = (int) ($stats['total'] ?? 0);
@@ -75,6 +107,12 @@
                 <option value="graduated" @if($f['status']==='graduated') selected @endif>Graduado</option>
             </select>
         </div>
+        @php
+            $advAtivos = collect(['age_bracket','gender','education','project_id','novo_dias'])->filter(fn ($k) => ($f[$k] ?? '') !== '' && $f[$k] !== null)->count();
+        @endphp
+        <details class="ben-filters-adv" style="flex-basis: 100%; order: 3;" @if($advAtivos) open @endif>
+            <summary><i class="fas fa-sliders-h me-1"></i> Mais filtros @if($advAtivos)({{ $advAtivos }} ativo{{ $advAtivos > 1 ? 's' : '' }})@endif</summary>
+            <div style="display:flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
         <div class="form-group" style="min-width: 200px; margin:0;">
             <label>Faixa etária</label>
             <select class="form-control-vivensi" name="age_bracket">
@@ -120,6 +158,8 @@
                 @endforeach
             </select>
         </div>
+            </div>
+        </details>
         <div style="display:flex; gap: 10px;">
             <button class="btn-premium" type="submit"><i class="fas fa-filter"></i> Filtrar</button>
             <a class="btn-premium" style="background: var(--vv-surface-soft) !important; color: var(--ds-text) !important;" href="{{ url('/ngo/beneficiaries') }}">Limpar</a>
@@ -149,7 +189,7 @@
     </div>
 </div>
 
-<div class="vivensi-card" style="padding: 0; overflow: hidden;">
+<div class="vivensi-card ben-table-wrap">
     <table style="width: 100%; border-collapse: collapse;">
         <thead style="background: var(--vv-surface-soft); border-bottom: 1px solid var(--ds-border);">
             <tr>
@@ -175,7 +215,7 @@
                         {{ $beneficiary->name }}
                     </a>
                 </td>
-                <td style="padding: 15px; text-align: center; color: var(--ds-text-muted); font-size: 0.9rem;">
+                <td style="padding: 15px; text-align: center; color: var(--ds-text-muted); font-size: 0.9rem; white-space: nowrap;">
                     {{-- Mascarado (LGPD): o número completo fica só na ficha --}}
                     {{ $beneficiary->maskedDocument() ?? '-' }}
                 </td>
