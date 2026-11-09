@@ -88,7 +88,7 @@
 </div>
 
 @php
-    $f = $filters ?? ['q'=>$q ?? '', 'status'=>$status ?? '', 'gender'=>'', 'education'=>'', 'age_bracket'=>'', 'project_id'=>'', 'novo_dias'=>''];
+    $f = $filters ?? ['q'=>$q ?? '', 'status'=>$status ?? '', 'gender'=>'', 'education'=>'', 'age_bracket'=>'', 'project_id'=>'', 'novo_dias'=>'', 'consent'=>''];
     $fo = $filterOptions ?? ['genders'=>[], 'educations'=>[], 'ageBrackets'=>[], 'novoDias'=>[], 'projects'=>collect()];
 @endphp
 
@@ -108,7 +108,7 @@
             </select>
         </div>
         @php
-            $advAtivos = collect(['age_bracket','gender','education','project_id','novo_dias'])->filter(fn ($k) => ($f[$k] ?? '') !== '' && $f[$k] !== null)->count();
+            $advAtivos = collect(['age_bracket','gender','education','project_id','novo_dias','consent'])->filter(fn ($k) => ($f[$k] ?? '') !== '' && $f[$k] !== null)->count();
         @endphp
         <details class="ben-filters-adv" style="flex-basis: 100%; order: 3;" @if($advAtivos) open @endif>
             <summary><i class="fas fa-sliders-h me-1"></i> Mais filtros @if($advAtivos)({{ $advAtivos }} ativo{{ $advAtivos > 1 ? 's' : '' }})@endif</summary>
@@ -156,6 +156,15 @@
                 @foreach($fo['novoDias'] as $key => $label)
                     <option value="{{ $key }}" @if((string) $f['novo_dias'] === (string) $key) selected @endif>{{ $label }}</option>
                 @endforeach
+            </select>
+        </div>
+        <div class="form-group" style="min-width: 210px; margin:0;">
+            <label>Termo LGPD</label>
+            <select class="form-control-vivensi" name="consent">
+                <option value="">Todos</option>
+                <option value="pendente" @selected(($f['consent'] ?? '') === 'pendente')>Termo pendente</option>
+                <option value="assinado" @selected(($f['consent'] ?? '') === 'assinado')>Termo assinado</option>
+                <option value="sem_imagem" @selected(($f['consent'] ?? '') === 'sem_imagem')>Sem autorização de imagem</option>
             </select>
         </div>
             </div>

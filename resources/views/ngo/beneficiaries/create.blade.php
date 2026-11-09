@@ -118,6 +118,42 @@
 
             <div class="ds-divider"></div>
 
+            {{-- Termo de consentimento LGPD --}}
+            <div style="margin-bottom: 8px;">
+                <h4 style="margin: 0 0 4px 0; font-size: 1rem; color: var(--ds-text);"><i class="fas fa-user-shield me-1"></i> Termo de consentimento (LGPD)</h4>
+                <p style="margin: 0 0 10px 0; font-size: .85rem; color: var(--ds-text-muted);">
+                    Se o termo já foi assinado no papel, marque abaixo. Senão, depois de salvar, imprima o termo na ficha do beneficiário.
+                </p>
+                <label style="display:flex; gap:8px; align-items:flex-start; font-size:.9rem; color: var(--ds-text); margin-bottom: 8px;">
+                    <input type="checkbox" name="consent_signed" value="1" @checked(old('consent_signed')) style="margin-top:3px;"
+                           onchange="document.getElementById('consentFields').style.display = this.checked ? 'grid' : 'none'">
+                    O termo de consentimento foi assinado hoje
+                </label>
+                <div id="consentFields" class="grid-2" style="gap: 12px; display: {{ old('consent_signed') ? 'grid' : 'none' }};">
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label" for="signer_role">Quem assinou</label>
+                        <select id="signer_role" name="signer_role" class="form-control-vivensi">
+                            @foreach(\App\Models\BeneficiaryConsent::ROLES as $k => $label)
+                                <option value="{{ $k }}" @selected(old('signer_role', 'titular') === $k)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <small style="color:var(--ds-text-muted); font-size:0.78rem;">Menor de 18 anos: responsável legal.</small>
+                        @error('signer_role')<small style="color:#dc2626; display:block;">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label" for="signer_name">Nome do responsável legal</label>
+                        <input id="signer_name" type="text" name="signer_name" value="{{ old('signer_name') }}" maxlength="255" class="form-control-vivensi" placeholder="Só se for o responsável">
+                        @error('signer_name')<small style="color:#dc2626;">{{ $message }}</small>@enderror
+                    </div>
+                    <label style="display:flex; gap:8px; align-items:flex-start; font-size:.88rem; color: var(--ds-text);">
+                        <input type="checkbox" name="image_use" value="1" @checked(old('image_use')) style="margin-top:3px;">
+                        Autorizou o uso de imagem e voz
+                    </label>
+                </div>
+            </div>
+
+            <div class="ds-divider"></div>
+
             <div style="display: flex; justify-content: flex-end; gap: 12px;">
                 <a href="{{ url('/ngo/beneficiaries') }}" class="btn-ds btn-ds-outline">Cancelar</a>
                 <button type="submit" class="btn-premium">
