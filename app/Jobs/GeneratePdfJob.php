@@ -123,13 +123,15 @@ class GeneratePdfJob implements ShouldQueue
             $this->buildAnnualReportData($tenantId, $year, $benefStatus, $type);
 
         $generatedAt = now()->format('d/m/Y H:i');
+        $profile = app(\App\Services\AudienceProfileService::class)
+            ->build($tenantId, $from, $to, $benefStatus, $type);
 
         $pdf = app('dompdf.wrapper');
         $pdf->setPaper('a4', 'portrait');
         $pdf->loadView('ngo.beneficiaries.annual_report_pdf', compact(
             'year', 'from', 'to', 'benefStatus', 'type',
             'totalAttendances', 'uniqueFamilies', 'monthly', 'byType',
-            'byUser', 'topFamilies', 'orgName', 'generatedAt', 'emitter'
+            'byUser', 'topFamilies', 'orgName', 'generatedAt', 'emitter', 'profile'
         ));
 
         $filename = 'relatorio-social-' . $year . '-' . now()->format('Y-m-d_His') . '.pdf';
@@ -168,13 +170,15 @@ class GeneratePdfJob implements ShouldQueue
             ->get();
 
         $generatedAt = now()->format('d/m/Y H:i');
+        $profile = app(\App\Services\AudienceProfileService::class)
+            ->build($tenantId, $from, $to, $benefStatus, $type);
 
         $pdf = app('dompdf.wrapper');
         $pdf->setPaper('a4', 'portrait');
         $pdf->loadView('ngo.beneficiaries.annual_report_pdf_appendix', compact(
             'year', 'from', 'to', 'benefStatus', 'type',
             'totalAttendances', 'uniqueFamilies', 'monthly', 'byType',
-            'byUser', 'topFamilies', 'details', 'orgName', 'generatedAt', 'emitter'
+            'byUser', 'topFamilies', 'details', 'orgName', 'generatedAt', 'emitter', 'profile'
         ));
 
         $filename = 'relatorio-social-' . $year . '-com-anexos-' . now()->format('Y-m-d_His') . '.pdf';

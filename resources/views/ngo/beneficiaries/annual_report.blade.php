@@ -5,7 +5,7 @@
 <div class="header-page" style="margin-bottom: 22px; display:flex; justify-content: space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
     <div>
         <h2 style="margin: 0; color: var(--ds-text);">Relatório Anual (Prestação de Contas)</h2>
-        <p style="color: var(--ds-text-muted); margin: 5px 0 0 0;">Resumo anual do Social: atendimentos, tipos, equipe e famílias.</p>
+        <p style="color: var(--ds-text-muted); margin: 5px 0 0 0;">Resumo anual do Social: atendimentos, perfil do público, tipos, equipe e famílias.</p>
     </div>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
         <a class="btn-ds btn-ds-ghost" href="{{ url('/ngo/beneficiaries') }}"><i class="fas fa-arrow-left"></i> Voltar</a>
@@ -15,6 +15,7 @@
         <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-grouped') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV agrupado (técnico)</a>
         <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-grouped-simple') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV agrupado</a>
         <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-pivot-type') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV Pivot (tipo)</a>
+        <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export.csv') . '?' . http_build_query(array_merge(request()->query(), ['format' => 'profile'])) }}"><i class="fas fa-file-csv"></i> CSV perfil do público</a>
         <a class="btn-ds btn-ds-outline" href="{{ url('/ngo/beneficiaries/reports/annual/export-pivot-user') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> CSV Pivot (equipe)</a>
         <button class="btn-ds btn-ds-outline" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
     </div>
@@ -71,6 +72,46 @@
         <h3 style="margin: 10px 0; font-size: 1.1rem;">{{ $orgName }}</h3>
         <p style="font-size: 0.9rem; color: var(--ds-text-muted); margin:0;">Gerado em {{ $generatedAt }}</p>
     </div>
+</div>
+
+<div class="vivensi-card" style="margin-bottom: 16px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:6px; margin-bottom: 12px;">
+        <h3 style="margin: 0; color: var(--ds-text);">Perfil do público atendido</h3>
+        <span style="color: var(--ds-text-muted); font-size: .85rem;">
+            {{ number_format((int) $profile['total']) }} pessoa(s) · titulares dos cadastros com atendimento no período · idade em {{ $profile['referenceDate'] }}
+        </span>
+    </div>
+    @if($profile['total'] === 0)
+        <p style="color: var(--ds-text-muted); margin:0;">Sem atendimentos no período.</p>
+    @else
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 18px;">
+            @foreach(['gender' => 'Gênero', 'age' => 'Faixa etária', 'race' => 'Cor/raça'] as $key => $title)
+                <div>
+                    <p style="text-transform: uppercase; font-size: 0.75rem; color: var(--ds-text-muted); font-weight: 800; margin: 0 0 8px 0;">{{ $title }}</p>
+                    @foreach($profile[$key] as $row)
+                        @php $pct = $row['pct'] ?? 0; $ni = in_array($row['label'], [\App\Services\AudienceProfileService::NOT_INFORMED, 'Prefere não informar'], true); @endphp
+                        <div style="margin-bottom: 8px;">
+                            <div style="display:flex; justify-content:space-between; gap:8px; font-size: .88rem;">
+                                <span style="color: {{ $ni ? 'var(--ds-text-muted)' : 'var(--ds-text)' }};">{{ $row['label'] }}</span>
+                                <span style="white-space:nowrap;"><strong>{{ number_format($row['count']) }}</strong> <span style="color: var(--ds-text-muted);">· {{ number_format($pct, 1, ',', '.') }}%</span></span>
+                            </div>
+                            <div style="height: 6px; background: var(--vv-surface-soft); border-radius: 999px; overflow:hidden; margin-top: 3px;">
+                                <div style="height: 6px; width: {{ max(0, min(100, $pct)) }}%; background: {{ $ni ? '#94a3b8' : '#4f46e5' }}; border-radius: 999px;"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+        @php
+            $semInfo = collect(['gender','age','race'])->map(fn ($k) => collect($profile[$k])->firstWhere('label', \App\Services\AudienceProfileService::NOT_INFORMED)['count'] ?? 0)->max();
+        @endphp
+        @if($semInfo > 0 && $semInfo / max(1, $profile['total']) >= 0.2)
+            <p style="color: var(--ds-text-muted); font-size: .85rem; margin: 12px 0 0 0;">
+                <i class="fas fa-info-circle"></i> Parte dos cadastros está sem gênero, data de nascimento ou cor/raça. Completar esses campos no cadastro do beneficiário deixa o perfil mais fiel na prestação de contas.
+            </p>
+        @endif
+    @endif
 </div>
 
 <div class="vivensi-card" style="margin-bottom: 16px;">
