@@ -214,6 +214,7 @@ class BeneficiaryController extends Controller
             'age_bracket' => trim((string) $request->get('age_bracket', '')),
             'project_id'  => trim((string) $request->get('project_id', '')),
             'novo_dias'   => trim((string) $request->get('novo_dias', '')),
+            'consent'     => trim((string) $request->get('consent', '')),
         ];
     }
 
@@ -254,6 +255,13 @@ class BeneficiaryController extends Controller
                     ->where('project_id', $pid)
                     ->whereNotNull('beneficiary_id');
             });
+        }
+        if (($inputs['consent'] ?? '') === 'assinado') {
+            $query->whereNotNull('consent_at');
+        } elseif (($inputs['consent'] ?? '') === 'pendente') {
+            $query->whereNull('consent_at');
+        } elseif (($inputs['consent'] ?? '') === 'sem_imagem') {
+            $query->whereNotNull('consent_at')->where('image_consent', false);
         }
         if (!empty($inputs['novo_dias'])) {
             $dias = (int) $inputs['novo_dias'];
@@ -635,7 +643,11 @@ class BeneficiaryController extends Controller
                 ->orderByDesc('enrolled_at')
                 ->get();
 
-        return view('ngo.beneficiaries.show', compact('beneficiary', 'attendances', 'stats', 'from', 'to', 'type', 'q', 'types', 'historicoMatriculas'));
+        // Termo de consentimento LGPD (cartão na ficha)
+        $consentHistory = $beneficiary->consents()->with('recorder:id,name')->limit(10)->get();
+        $consentMinor = app(\App\Services\ConsentService::class)->isMinor($beneficiary);
+
+        return view('ngo.beneficiaries.show', compact('beneficiary', 'attendances', 'stats', 'from', 'to', 'type', 'q', 'types', 'historicoMatriculas', 'consentHistory', 'consentMinor'));
     }
 
     public function store(Request $request)
@@ -682,11 +694,27 @@ class BeneficiaryController extends Controller
 
         $validated['address'] = $this->composeAddress($validated);
 
+        // Termo LGPD já assinado no papel (opcional no cadastro).
+        $consentService = app(\App\Services\ConsentService::class);
+        $consent = null;
+        if ($request->boolean('consent_signed')) {
+            $probe = new Beneficiary(['birth_date' => $validated['birth_date'] ?? null]);
+            $rules = $consentService->rules(null, $consentService->isMinor($probe));
+            unset($rules['signed_at']);
+            $consent = \Illuminate\Support\Facades\Validator::make($data, $rules, [], [
+                'signer_name' => 'nome do responsável legal', 'signer_role' => 'quem assinou',
+            ])->validate();
+        }
+
         $beneficiary = new Beneficiary($validated);
         $beneficiary->tenant_id = $tenantId;
         // A geocodificação é disparada pelo BeneficiaryObserver (uma vez só;
         // antes o controller disparava de novo).
         $beneficiary->save();
+
+        if ($consent !== null) {
+            $consentService->grant($beneficiary, $consent + ['signed_at' => now()->toDateString()], auth()->id());
+        }
 
         return redirect('/ngo/beneficiaries')->with('success', 'Beneficiário cadastrado com sucesso!');
     }

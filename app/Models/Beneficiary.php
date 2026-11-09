@@ -40,8 +40,16 @@ class Beneficiary extends Model
     protected $hidden = ['cpf', 'nis', 'birth_date', 'cpf_bidx', 'nis_bidx'];
 
     protected $casts = [
-        'birth_date' => 'date',
+        'birth_date'    => 'date',
+        'consent_at'    => 'date',   // termo LGPD assinado (null = pendente ou revogado)
+        'image_consent' => 'boolean',
     ];
+
+    /** Histórico do termo de consentimento LGPD (mais recente primeiro). */
+    public function consents()
+    {
+        return $this->hasMany(BeneficiaryConsent::class)->latest('id');
+    }
 
     // ── Encryption accessors/mutators ────────────────────────────────────────
 

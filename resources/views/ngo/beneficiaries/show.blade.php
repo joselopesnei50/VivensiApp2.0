@@ -57,6 +57,8 @@
 <div class="grid-2" style="grid-template-columns: 1fr 2fr; gap: 20px;">
     <!-- Coluna Esquerda: Dados e Família -->
     <div style="display: flex; flex-direction: column; gap: 20px;">
+        @include('ngo.beneficiaries.partials.consent_card')
+
         <!-- Dados Básicos -->
         <div class="vivensi-card">
             <h4 style="margin-top: 0; color: var(--ds-text); border-bottom: 1px solid var(--ds-border); padding-bottom: 10px;">Dados Pessoais</h4>

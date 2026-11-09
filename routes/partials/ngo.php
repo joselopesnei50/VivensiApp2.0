@@ -133,6 +133,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/beneficiaries/{id}/attendance/print',            [App\Http\Controllers\BeneficiaryAttendanceController::class, 'printAttendance']);
         Route::get('/beneficiaries/{id}/pdf',                         [App\Http\Controllers\BeneficiaryController::class, 'pdf'])->middleware('throttle:web_export');
         // Family members — movido pra BeneficiaryFamilyController em 2026-07-18
+        // Termo de consentimento LGPD
+        Route::get('/beneficiaries/{id}/consent/term',    [App\Http\Controllers\BeneficiaryConsentController::class, 'term'])->middleware('throttle:web_export');
+        Route::post('/beneficiaries/{id}/consent',        [App\Http\Controllers\BeneficiaryConsentController::class, 'store'])->middleware('throttle:web_write');
+        Route::post('/beneficiaries/{id}/consent/revoke', [App\Http\Controllers\BeneficiaryConsentController::class, 'revoke'])->middleware('throttle:web_write');
+
         Route::post('/beneficiaries/{id}/family-members',             [App\Http\Controllers\BeneficiaryFamilyController::class, 'storeFamilyMember']);
         Route::delete('/beneficiaries/{id}/family-members/{memberId}', [App\Http\Controllers\BeneficiaryFamilyController::class, 'destroyFamilyMember']);
 
