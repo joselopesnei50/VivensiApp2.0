@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\GeneratePdfJob;
 use App\Models\GeneratedReport;
 use App\Models\Tenant;
+use App\Services\AudienceProfileService;
 use App\Support\AuditDownload;
 use Carbon\Carbon;
 use Closure;
@@ -33,7 +34,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class BeneficiaryReportController extends Controller
 {
-    private const EXPORT_FORMATS = ['detailed', 'grouped', 'grouped-simple', 'pivot-type', 'pivot-user'];
+    private const EXPORT_FORMATS = ['detailed', 'grouped', 'grouped-simple', 'pivot-type', 'pivot-user', 'profile'];
 
     public function annualReport(Request $request)
     {
@@ -88,7 +89,11 @@ class BeneficiaryReportController extends Controller
         $orgName = $this->orgName($ctx['tenantId']);
         $generatedAt = now()->format('d/m/Y H:i');
 
+        $profile = app(AudienceProfileService::class)
+            ->build($ctx['tenantId'], $ctx['from'], $ctx['to'], $ctx['benefStatus'], $ctx['type']);
+
         return view('ngo.beneficiaries.annual_report', [
+            'profile'          => $profile,
             'year'             => $ctx['year'],
             'from'             => $ctx['from'],
             'to'               => $ctx['to'],
@@ -233,6 +238,7 @@ class BeneficiaryReportController extends Controller
         return match ($format) {
             'grouped', 'grouped-simple' => 'Beneficiaries:AnnualReport:Grouped',
             'pivot-type', 'pivot-user'  => 'Beneficiaries:AnnualReport:Pivot',
+            'profile'                   => 'Beneficiaries:AnnualReport:Profile',
             default                     => 'Beneficiaries:AnnualReport',
         };
     }
@@ -245,6 +251,7 @@ class BeneficiaryReportController extends Controller
             'grouped-simple' => 'relatorio-social-agrupado-mes-tipo',
             'pivot-type'     => 'relatorio-social-pivot-tipo',
             'pivot-user'     => 'relatorio-social-pivot-equipe',
+            'profile'        => 'relatorio-social-perfil-publico',
             default          => 'relatorio-social-detalhado',
         };
         return "{$prefix}-{$year}-{$suffix}.csv";
@@ -257,6 +264,7 @@ class BeneficiaryReportController extends Controller
             'grouped-simple' => $this->streamGroupedSimple($ctx),
             'pivot-type'     => $this->streamPivotType($ctx),
             'pivot-user'     => $this->streamPivotUser($ctx),
+            'profile'        => $this->streamProfile($ctx),
             default          => $this->streamDetailed($ctx),
         };
     }
@@ -307,6 +315,37 @@ class BeneficiaryReportController extends Controller
                     ]);
                 }
             });
+
+            fclose($out);
+        };
+    }
+
+    /** Perfil do público (gênero, faixa etária, cor/raça) em uma planilha. */
+    private function streamProfile(array $ctx): Closure
+    {
+        $profile = app(AudienceProfileService::class)
+            ->build($ctx['tenantId'], $ctx['from'], $ctx['to'], $ctx['benefStatus'], $ctx['type']);
+
+        return function () use ($profile, $ctx) {
+            $out = fopen('php://output', 'w');
+            if ($out === false) return;
+
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['# Perfil do público atendido', (int) $ctx['year']]);
+            fputcsv($out, ['# Pessoas atendidas (titulares)', (int) $profile['total']]);
+            fputcsv($out, ['# Idade calculada em', $profile['referenceDate']]);
+            fputcsv($out, ['Dimensão', 'Categoria', 'Pessoas', '%']);
+
+            foreach (['gender' => 'Gênero', 'age' => 'Faixa etária', 'race' => 'Cor/raça'] as $key => $dim) {
+                foreach ($profile[$key] as $row) {
+                    fputcsv($out, [
+                        $dim,
+                        $row['label'],
+                        $row['count'],
+                        $row['pct'] === null ? '' : number_format($row['pct'], 1, ',', ''),
+                    ]);
+                }
+            }
 
             fclose($out);
         };

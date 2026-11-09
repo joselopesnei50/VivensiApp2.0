@@ -47,6 +47,8 @@
         </table>
     </div>
 
+    @includeWhen(isset($profile), 'ngo.beneficiaries.partials.audience_profile_pdf')
+
     @php $maxMonth = max(1, max($monthly)); @endphp
     <div class="box">
         <h2>Atendimentos por mês</h2>
