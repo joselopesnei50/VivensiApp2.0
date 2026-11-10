@@ -2,14 +2,14 @@
      A tela só troca quando a pessoa escolhe um momento — sem rotação automática. --}}
 @php
     $momentos = [
-        ['id' => 'faltas', 'titulo' => 'Ver quem está faltando',
-         'texto' => 'Cada aluno com o seu percentual de presença. Quem falta três vezes seguidas sobe para o topo, para a equipe falar com a família a tempo.',
-         'img' => 'turma-frequencia', 'alt' => 'Tela da turma de violão com a presença de cada aluno e o alerta de risco de evasão',
-         'nota' => '63% de presença: risco de evasão', 'x' => 37.6, 'y' => 47.3],
         ['id' => 'familias', 'titulo' => 'Acompanhar cada família',
          'texto' => 'Cadastro, atendimentos e histórico de cada família. A busca encontra por nome, NIS ou telefone, e o CPF aparece protegido na lista.',
          'img' => 'beneficiarios', 'alt' => 'Lista de beneficiários com busca, filtros e CPF mascarado',
          'nota' => 'CPF protegido na lista', 'x' => 52, 'y' => 87],
+        ['id' => 'faltas', 'titulo' => 'Ver quem está faltando',
+         'texto' => 'Cada aluno com o seu percentual de presença. Quem falta três vezes seguidas sobe para o topo, para a equipe falar com a família a tempo.',
+         'img' => 'turma-frequencia', 'alt' => 'Tela da turma de violão com a presença de cada aluno e o alerta de risco de evasão',
+         'nota' => '63% de presença: risco de evasão', 'x' => 37.6, 'y' => 47.3],
         ['id' => 'relatorio', 'titulo' => 'Fechar o relatório do ano',
          'texto' => 'Atendimentos do ano, perfil do público por gênero, idade e cor/raça e o gráfico mês a mês. Sai em PDF, pronto para o financiador.',
          'img' => 'relatorio-anual', 'alt' => 'Relatório anual com o perfil do público atendido e atendimentos por mês',
