@@ -49,6 +49,10 @@
                         <div class="alert alert-danger border-0 rounded-4 mb-4">
                             {{ session('error') }}
                         </div>
+                    @elseif($errors->any())
+                        <div class="alert alert-danger border-0 rounded-4 mb-4">
+                            {{ $errors->first() }}
+                        </div>
                     @endif
                     @if(session('success'))
                         <div class="alert alert-success border-0 rounded-4 mb-4">
@@ -70,7 +74,7 @@
                         <div class="mb-4">
                             <label class="form-label small fw-bold text-muted text-uppercase">CPF ou CNPJ para Faturamento</label>
                             <input type="text" name="document" class="form-control border-0 bg-light py-3 rounded-4"
-                                   value="{{ $tenant->document }}" placeholder="000.000.000-00" required>
+                                   value="{{ old('document', $tenant->document) }}" placeholder="000.000.000-00" required>
                         </div>
 
                         <div class="mb-4">
