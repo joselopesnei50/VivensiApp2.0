@@ -72,7 +72,7 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 
 /* ══ NAV ══════════════════════════════════════════════════════════ */
 .nav{
-    position:fixed;top:37px;left:0;right:0;z-index:999;
+    position:fixed;top:0;left:0;right:0;z-index:999;
     display:flex;justify-content:space-between;align-items:center;
     padding:0 5%;height:64px;
     background:rgba(9,9,9,.82);
@@ -257,7 +257,7 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
     animation:fadeUp .7s ease .1s both;
 }
 .ht-white{color:#ffffff}
-.ht-dim{color:rgba(255,255,255,.25)}
+.ht-dim{color:rgba(255,255,255,.58)}
 .ht-grad{color:#6B8BFF}
 
 .hero-sub{
@@ -563,7 +563,7 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .fi-2{bottom:50px; right:40px; animation:floatAnim 5s ease-in-out infinite 1s;}
 @keyframes floatAnim{0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);}}
 
-/* ── BC-AI-RADAR: Bruce AI (2w) ──────────────────────────────── */
+/* ── BC-AI-RADAR: Bruce IA (2w) ──────────────────────────────── */
 .bc-ai-radar{background:linear-gradient(145deg, #0f0b20, #080512); border-color:rgba(139,92,246,0.2);}
 .radar-inner{display:flex; padding:18px 24px; gap:20px; align-items:center; height:100%;}
 .radar-text{flex:1;}
@@ -752,7 +752,7 @@ input:checked+.slider:before{transform:translateX(22px)}
 .cta-section::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:72px 72px;pointer-events:none}
 .cta-inner{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1}
 .cta-big{font-size:clamp(4.5rem,9vw,8rem);font-weight:900;letter-spacing:-.055em;line-height:.9;color:#fff;margin-bottom:28px}
-.cta-big em{font-style:normal;color:rgba(255,255,255,.15)}
+.cta-big em{font-style:normal;color:rgba(255,255,255,.5)}
 .cta-tagline{font-size:.95rem;color:rgba(255,255,255,.4);line-height:1.75;max-width:420px;margin-bottom:36px}
 .cta-divider{width:100%;height:1px;background:rgba(255,255,255,.07);margin:32px 0}
 .cta-benefits{display:grid;grid-template-columns:1fr 1fr;gap:24px}
@@ -915,13 +915,6 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 </head>
 <body>
 
-<!-- ANNOUNCE BAR -->
-<div class="announce-bar" id="announceBar">
-    <span class="announce-pill">Novo</span>
-    <span>Prospecção Inteligente com Bruce AI chegou &mdash;</span>
-    <a href="#features">Conheça o recurso <i class="fas fa-arrow-right" style="font-size:.65rem"></i></a>
-</div>
-
 <!-- NAV -->
 <nav class="nav" id="mainNav">
     <a href="{{ url('/') }}" class="nav-logo">
@@ -962,7 +955,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <div class="nav-ctas">
         <a href="{{ route('login') }}" class="btn-ghost">Entrar</a>
         <a href="{{ route('register') }}" class="btn-nav">
-            Começar agora <i class="fas fa-arrow-right" style="font-size:.7rem"></i>
+            Criar minha conta
         </a>
     </div>
 
@@ -980,7 +973,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <a href="#academy">Academy</a>
     <a href="#pricing">Preços</a>
     <a href="{{ route('login') }}">Entrar</a>
-    <a href="{{ route('register') }}" class="m-cta">Começar agora →</a>
+    <a href="{{ route('register') }}" class="m-cta">Criar minha conta</a>
 </div>
 
 <!-- HERO -->
@@ -992,7 +985,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         <a href="#features" class="hero-announce">
             <span class="ha-tag">Novo</span>
             <span class="ha-dot"></span>
-            Bruce AI agora prospecta parceiros automaticamente
+            Bruce IA agora prospecta parceiros sozinho
             <i class="fas fa-arrow-right" style="font-size:.65rem;opacity:.5;margin-left:2px"></i>
         </a>
 
@@ -1007,14 +1000,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </p>
 
         <div class="hero-ctas">
-            <a href="{{ route('register') }}" class="btn-hero">
-                Começar agora
-                <i class="fas fa-arrow-right" style="font-size:.75rem"></i>
-            </a>
-            <a href="#segments" class="btn-hero-outline">
-                <i class="fas fa-play" style="font-size:.7rem"></i>
-                Ver como funciona
-            </a>
+            <a href="{{ route('register') }}" class="btn-hero">Criar minha conta</a>
+            <a href="#por-dentro" class="btn-hero-outline">Ver o sistema por dentro</a>
         </div>
 
         {{-- Ancoragem de preco: remove friccao "quanto custa" sem prometer teste gratis. --}}
@@ -1037,16 +1024,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 <div class="hp-av av4">C</div>
             </div>
             <div class="hp-text">
-                <strong>{{ $siteStats['hero_badge'] }}</strong><br>{{ $siteStats['orgs_label'] }}
-            </div>
-            <div class="hp-sep"></div>
-            <div class="hp-rating">
-                <div class="hp-stars">
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                </div>
-                <span class="hp-rlabel">{{ $siteStats['rating_score'] }} / 5 &nbsp;·&nbsp; {{ $siteStats['rating_label'] }}</span>
+                <strong>{{ $siteStats['orgs_count'] }}+ {{ $siteStats['orgs_label'] }}</strong><br>{{ $siteStats['hero_badge'] }}
             </div>
         </div>
     </div>
@@ -1063,12 +1041,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
             <!-- Badge: cobertura ao vivo -->
             <div class="map-badge mb-2">
-                <div class="mb-live">
-                    <span class="mb-ldot"></span>
-                    <span style="font-size:.58rem;color:#4ade80;font-weight:800;letter-spacing:.07em">AO VIVO</span>
-                </div>
                 <div class="mb-val" style="font-size:.88rem">26 estados + DF</div>
-                <div class="mb-lbl">cobertos pelo sistema</div>
+                <div class="mb-lbl">disponível em todo o país</div>
             </div>
 
             <!-- Badge: captações -->
@@ -1304,7 +1278,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </div>
             <div class="fcard fc-e">
                 <div class="fcard-label">Relatórios gerados por IA</div>
-                <div class="fcard-value">Bruce AI</div>
+                <div class="fcard-value">Bruce IA</div>
                 <div class="fcard-sub" style="color:rgba(255,255,255,.4)">Automáticos e precisos</div>
             </div>
         </div>
@@ -1315,13 +1289,14 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 <div class="trust">
     <div class="trust-row">
         <span class="trust-lbl">Infraestrutura</span>
-        <div class="trust-item"><i class="fas fa-shield-halved"></i> LGPD Compliant</div>
+        <div class="trust-item"><i class="fas fa-shield-halved"></i> Adequado à LGPD</div>
         <div class="trust-item"><i class="fas fa-server"></i> AWS Brasil (SA-East)</div>
         <div class="trust-item"><i class="fas fa-lock"></i> SSL 256-bit + 2FA</div>
-        <div class="trust-item"><i class="fas fa-star"></i> 4.9/5 ★★★★★</div>
-        <div class="trust-item"><i class="fas fa-clock"></i> 99.9% Uptime SLA</div>
+        <div class="trust-item"><i class="fas fa-user-shield"></i> Termo de consentimento e CPF protegido</div>
     </div>
 </div>
+
+@include('partials.home.telas')
 
 <!-- SEGMENTS -->
 <section class="segments" id="segments">
@@ -1631,7 +1606,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                         <div class="ptd-chat-bubble">
                             <div class="ptd-ch-hdr">
                                 <div class="ptd-ch-av"><i class="fas fa-heart"></i></div>
-                                <div><div class="ptd-ch-name">Projeto Esperança</div><div class="ptd-ch-status">Bruce AI · respondendo agora</div></div>
+                                <div><div class="ptd-ch-name">Projeto Esperança</div><div class="ptd-ch-status">Bruce IA · respondendo agora</div></div>
                             </div>
                             <div class="ptd-msgs">
                                 <div class="ptd-msg ptd-msg-in">Quero fazer uma doação mensal. Como funciona?</div>
@@ -1918,7 +1893,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
     <div class="bruce-cta-row">
         <a href="{{ route('register') }}" class="bruce-cta-primary">
-            <i class="fas fa-rocket"></i> Ativar o Bruce na minha ONG
+            <i class="fas fa-rocket"></i> Criar minha conta
         </a>
         <a href="{{ route('solutions.ngo') }}" class="bruce-cta-secondary">
             <i class="fas fa-book-open"></i> Como o Bruce trabalha
@@ -1969,14 +1944,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
             <div class="au-ctas">
                 <a href="{{ route('register') }}" class="au-btn-primary">
-                    <i class="fas fa-rocket"></i> Quero Ter Acesso
+                    <i class="fas fa-rocket"></i> Criar minha conta
                 </a>
-                <div class="au-vagas">
-                    <div class="au-vagas-dots">
-                        <span class="au-dot active"></span><span class="au-dot active"></span><span class="au-dot active"></span><span class="au-dot"></span><span class="au-dot"></span>
-                    </div>
-                    <span>Apenas 3 vagas restantes neste ciclo</span>
-                </div>
             </div>
         </div>
 
@@ -1991,10 +1960,10 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 </div>
                 <div class="au-num-item">
                     <div class="au-num-val">5</div>
-                    <div class="au-num-lbl">Módulos</div>
+                    <div class="au-num-lbl">Trilhas</div>
                 </div>
                 <div class="au-num-item">
-                    <div class="au-num-val">Bruce AI</div>
+                    <div class="au-num-val">Bruce IA</div>
                     <div class="au-num-lbl">IA integrada</div>
                 </div>
             </div>
@@ -2018,57 +1987,12 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 </div>
             </div>
 
-            <!-- Testimonial — open quote -->
-            <div class="au-test-open">
-                <div class="au-test-mark">"</div>
-                <p class="au-test-quote">A Vivensi Academy transformou completamente como gerencio minha ONG. Conteúdo prático, aplicado ao dia a dia do terceiro setor.</p>
-                <div class="au-test-author">
-                    <div class="au-test-av">MR</div>
-                    <div>
-                        <div class="au-test-name">Maria Rodrigues</div>
-                        <div class="au-test-role">Diretora Executiva · ONG Vida Nova</div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 </section>
 
 <!-- IMPACT COUNTERS -->
-<section class="impact" id="impacto">
-    <div class="impact-inner">
-        <div class="impact-head aos">
-            <div>
-                <div class="impact-eyebrow">Crescimento Real</div>
-                <h2 class="impact-title">Plataforma em<br><em>expansão acelerada</em></h2>
-            </div>
-            <p class="impact-right-txt">O Vivensi não é só software — é o motor que permite organizações do terceiro setor e gestores de projetos operarem com excelência real, todos os dias.</p>
-        </div>
-        <div class="stats-row aos">
-            <div class="stat-block sb-1">
-                <div class="stat-num">{{ $siteStats['orgs_count'] }}+</div>
-                <div class="stat-lbl">{{ $siteStats['orgs_label'] }}</div>
-                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> Em crescimento</div>
-            </div>
-            <div class="stat-block sb-2">
-                <div class="stat-num">{{ $siteStats['projects_count'] }}+</div>
-                <div class="stat-lbl">{{ $siteStats['projects_label'] }}</div>
-                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> Ativos na plataforma</div>
-            </div>
-            <div class="stat-block sb-3">
-                <div class="stat-num">{{ $siteStats['users_count'] }}+</div>
-                <div class="stat-lbl">{{ $siteStats['users_label'] }}</div>
-                <div class="stat-delta"><i class="fas fa-arrow-up" style="font-size:.56rem"></i> {{ $siteStats['impact_label'] }}</div>
-            </div>
-            <div class="stat-block sb-4">
-                <div class="stat-num">{{ $siteStats['rating_score'] }}/5</div>
-                <div class="stat-lbl">{{ $siteStats['rating_label'] }}</div>
-                <div class="stat-delta"><i class="fas fa-star" style="font-size:.56rem"></i> Pelos primeiros usuários</div>
-            </div>
-        </div>
-    </div>
-</section>
+{{-- Seção "Plataforma em expansão acelerada" removida em 10/11/2026: números baixos/inconsistentes; as telas reais (#por-dentro) mostram o produto. --}}
 
 <!-- PRICING -->
 <section class="pricing" id="pricing">
@@ -2077,11 +2001,13 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             <div class="section-tag st-blue"><i class="fas fa-tag"></i> Planos</div>
             <h2 class="section-title">Investimento no impacto</h2>
             <p class="section-sub center">Sem fidelização. Cancele quando quiser. Suporte incluso em todos os planos.</p>
+            @if($plans->isNotEmpty())
             <div class="billing-toggle">
                 <span class="tgl-label on" id="lbl-m">Mensal</span>
                 <label class="switch"><input type="checkbox" id="billing-toggle" onchange="toggleBilling()"><span class="slider"></span></label>
                 <span class="tgl-label" id="lbl-y">Anual <span class="disc-badge">-10% OFF</span></span>
             </div>
+            @endif
         </div>
         <div class="price-grid">
             @forelse($plans as $plan)
@@ -2117,14 +2043,14 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                     Cada organização tem realidades diferentes. Fale com a gente pra montar o plano do tamanho da sua operação.
                 </p>
                 <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
-                    <a href="https://wa.me/551697618695?text=Ol%C3%A1%21%20Quero%20conhecer%20os%20planos%20do%20Vivensi."
+                    <a href="https://wa.me/5516997618695?text=Ol%C3%A1%21%20Quero%20conhecer%20os%20planos%20do%20Vivensi."
                        target="_blank" rel="noopener"
                        style="display:inline-flex;align-items:center;gap:8px;background:#22c55e;color:#fff;padding:12px 22px;border-radius:10px;font-weight:700;font-size:.9rem;text-decoration:none">
                         <i class="fab fa-whatsapp"></i> Falar no WhatsApp
                     </a>
                     <a href="{{ route('register') }}"
                        style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.22);padding:12px 22px;border-radius:10px;font-weight:600;font-size:.9rem;text-decoration:none">
-                        Criar conta grátis
+                        Criar minha conta
                     </a>
                 </div>
             </div>
@@ -2132,6 +2058,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </div>
     </div>
 </section>
+
+@include('partials.home.faq')
 
 <!-- FINAL CTA -->
 <section class="cta-section" id="contato">
@@ -2232,7 +2160,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </div>
     </div>
     <div class="footer-bottom">
-        <span>© 2026 VIVENSIAPP. Todos os direitos reservados.</span>
+        <span>© {{ date('Y') }} Vivensi. Todos os direitos reservados.</span>
         <span class="fb-tagline">Feito com <span class="fb-heart">♥</span> para o terceiro setor brasileiro</span>
     </div>
     <div class="footer-owner" style="text-align:center; padding:16px 0 0; margin-top:16px; border-top:1px solid rgba(255,255,255,0.08); font-size:.82rem; color:rgba(255,255,255,0.6);">
@@ -2499,6 +2427,5 @@ function ptToggle(id) {
 })();
 </script>
 @endif
-@include('partials.bruce_public_popup')
 </body>
 </html>

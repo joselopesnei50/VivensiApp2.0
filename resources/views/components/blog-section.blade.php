@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <div class="blog-content" style="padding: 25px; flex: 1; display: flex; flex-direction: column;">
-                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 12px; height: 3.1rem; overflow: hidden;">
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                         {{ $post->title }}
                     </h3>
                     <p style="font-size: 0.85rem; color: rgba(255,255,255,0.45); line-height: 1.6; margin-bottom: 20px; flex: 1;">
