@@ -130,11 +130,14 @@
                                         <button type="button" class="inv-cta primary" onclick="openPixModal({{ $inv->id }})">
                                             <i class="fas fa-qrcode"></i> Pagar com PIX
                                         </button>
-                                    @elseif($inv->abacatepay_billing_url)
-                                        {{-- Fallback pra link hospedado --}}
-                                        <a href="{{ $inv->abacatepay_billing_url }}" target="_blank" rel="noopener" class="inv-cta primary">
-                                            <i class="fas fa-external-link-alt"></i> Pagar
-                                        </a>
+                                    @else
+                                        {{-- Gera um link novo na hora (o anterior pode ter expirado) --}}
+                                        <form method="POST" action="{{ route('client.invoices.pay', $inv->id) }}" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="inv-cta primary">
+                                                <i class="fas fa-external-link-alt"></i> Pagar com PIX
+                                            </button>
+                                        </form>
                                     @endif
                                     @if($pixKey)
                                         <a href="#pix-info" class="inv-cta ghost" onclick="document.getElementById('pix-info').scrollIntoView({behavior:'smooth'}); return false;">

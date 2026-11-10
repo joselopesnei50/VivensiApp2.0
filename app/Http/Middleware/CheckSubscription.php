@@ -35,7 +35,7 @@ class CheckSubscription
         }
 
         // 4. Exception routes (to avoid infinite redirect loops)
-        if ($request->routeIs('adesao.*') || $request->routeIs('checkout.*') || $request->routeIs('logout') || $request->is('support*')) {
+        if ($request->routeIs('adesao.*') || $request->routeIs('checkout.*') || $request->routeIs('client.invoices.*') || $request->routeIs('logout') || $request->is('support*')) {
             return $next($request);
         }
 
@@ -65,6 +65,14 @@ class CheckSubscription
 
         // 6. Active or Trialing logic
         if ($tenant->subscription_status === 'active') {
+            // Fatura vencida há 5+ dias: painel restrito à tela de faturas.
+            if (app(\App\Services\Billing\InvoiceService::class)->isBlocked($tenant)) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Fatura em atraso. Regularize em Minha conta → Faturas.'], 402);
+                }
+                return redirect()->route('client.invoices.index')
+                    ->with('error', 'Há uma fatura em atraso há mais de ' . \App\Services\Billing\InvoiceService::BLOCK_DAYS_AFTER_DUE . ' dias. Pague para liberar o acesso ao painel.');
+            }
             return $next($request);
         }
 

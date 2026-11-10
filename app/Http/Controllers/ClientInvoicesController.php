@@ -22,6 +22,18 @@ class ClientInvoicesController extends Controller
         $paid   = collect();
 
         if (!$isCourtesy) {
+            // Confere na AbacatePay as faturas em aberto com cobrança gerada
+            // (no máx. 1x a cada 15s por organização): pagou → libera na hora.
+            if ($tenant && \Illuminate\Support\Facades\Cache::add("invoices.sync.{$tenant->id}", 1, 15)) {
+                foreach (Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)->unpaid()->whereNotNull('abacatepay_charge_id')->limit(3)->get() as $inv) {
+                    try {
+                        app(\App\Services\Billing\InvoiceService::class)->syncFromGateway($inv);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::error('Faturas: falha ao conferir na AbacatePay', ['invoice_id' => $inv->id, 'error' => $e->getMessage()]);
+                    }
+                }
+            }
+
             // Tenant scope aplicado pelo trait BelongsToTenant em Invoice.
             $unpaid = Invoice::unpaid()
                 ->orderBy('due_date')
@@ -47,5 +59,26 @@ class ClientInvoicesController extends Controller
             'pixKeyType'    => $pixKeyType,
             'pixHolderName' => $pixHolderName,
         ]);
+    }
+
+    /**
+     * POST /minha-conta/faturas/{invoice}/pagar — gera um link de pagamento
+     * novo na hora (o anterior pode ter expirado) e leva para a AbacatePay.
+     */
+    public function pay(int $invoice): \Illuminate\Http\RedirectResponse
+    {
+        // Filtro explícito pela organização do usuário (não depende do escopo global).
+        $inv = Invoice::withoutGlobalScopes()
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->findOrFail($invoice);
+        if (!$inv->isPayable()) {
+            return redirect()->route('client.invoices.index')->with('success', 'Esta fatura já está paga.');
+        }
+        $url = app(\App\Services\Billing\InvoiceService::class)->freshPaymentUrl($inv);
+        if (!$url) {
+            return redirect()->route('client.invoices.index')
+                ->with('error', 'Não foi possível gerar o link de pagamento agora. Tente de novo em instantes ou use o PIX manual.');
+        }
+        return redirect()->away($url);
     }
 }

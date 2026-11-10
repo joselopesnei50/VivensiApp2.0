@@ -10,4 +10,5 @@ Route::middleware(['auth'])->group(function () {
 
     // Faturas do cliente (auto-serviço) — vê pagas + em aberto + banner cortesia
     Route::get('/minha-conta/faturas',  [App\Http\Controllers\ClientInvoicesController::class, 'index'])->name('client.invoices.index');
+    Route::post('/minha-conta/faturas/{invoice}/pagar', [App\Http\Controllers\ClientInvoicesController::class, 'pay'])->whereNumber('invoice')->name('client.invoices.pay')->middleware('throttle:10,1');
 });

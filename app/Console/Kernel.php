@@ -65,7 +65,7 @@ class Kernel extends ConsoleKernel
         // externalId invoice_<id>_<ts>) e o webhook checkout.completed marca paga.
         // Ver docs/ABACATEPAY_INTEGRATION_STUCK.md.
         $schedule->command('invoices:generate-recurring')
-                 ->monthlyOn(1, '00:10')
+                 ->dailyAt('00:10') // ciclo pela data da assinatura: confere todo dia quem fatura
                  ->onFailure(function () {
                      \Illuminate\Support\Facades\Log::error('invoices:generate-recurring falhou no scheduler.');
                  });
@@ -73,6 +73,10 @@ class Kernel extends ConsoleKernel
         // Billing: marca invoices open vencidas há >3d como overdue — diário 06:00.
         $schedule->command('invoices:mark-overdue')
                  ->dailyAt('06:00');
+
+        // Billing: e-mails de cobrança (nova, véspera, vencida, bloqueio) — 09:00.
+        $schedule->command('invoices:notify')
+                 ->dailyAt('09:00');
 
         // Redes Sociais: sincroniza métricas dos posts publicados.
         // DESLIGADO em 2026-07-30 até Meta App Review aprovar as permissões:

@@ -282,6 +282,20 @@ class ProcessAbacatePayWebhook implements ShouldQueue
             ]);
         });
 
+        // 1º pagamento da assinatura = fatura paga do 1º ciclo (o ciclo segue
+        // a data da assinatura; a próxima fatura sai 5 dias antes do aniversário).
+        try {
+            $fresh = $tenant->fresh();
+            app(\App\Services\Billing\InvoiceService::class)->recordInitialPayment(
+                $fresh,
+                $fresh->plan_id ? SubscriptionPlan::find($fresh->plan_id) : null,
+                $paidAmount,
+                $checkout['id'] ?? null
+            );
+        } catch (\Throwable $e) {
+            Log::error('AbacatePay: falha ao registrar fatura do 1º pagamento', ['tenant' => $tenant->id, 'error' => $e->getMessage()]);
+        }
+
         if ($activatedNow) {
             $this->notifyActivated($tenant->fresh(), $paidAmount);
         }
