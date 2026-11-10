@@ -54,6 +54,32 @@
                             {{ $errors->first() }}
                         </div>
                     @endif
+                    @if($pendingPayment ?? false)
+                        <div class="alert alert-info border-0 rounded-4 mb-4" id="pixPending">
+                            <strong>Já pagou o PIX?</strong> Estamos conferindo automaticamente.
+                            <span id="pixPendingMsg">Assim que a AbacatePay confirmar, você será levado ao painel.</span>
+                            <button type="button" class="btn btn-sm btn-primary ms-2 mt-2 mt-md-0" id="pixCheckBtn">Verificar agora</button>
+                        </div>
+                        <script>
+                        (function () {
+                            var busy = false, tries = 0;
+                            function check(manual) {
+                                if (busy) return; busy = true; tries++;
+                                fetch(@json(route('checkout.status')), {headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}, credentials: 'same-origin'})
+                                    .then(function (r) { return r.ok ? r.json() : null; })
+                                    .then(function (d) {
+                                        busy = false;
+                                        if (d && d.active) { window.location.href = d.redirect || '/dashboard'; return; }
+                                        if (manual) document.getElementById('pixPendingMsg').textContent = 'Ainda não confirmado. Se pagou agora, aguarde alguns segundos.';
+                                        if (tries < 36) setTimeout(function () { check(false); }, 5000);
+                                    })
+                                    .catch(function () { busy = false; });
+                            }
+                            document.getElementById('pixCheckBtn').addEventListener('click', function () { check(true); });
+                            setTimeout(function () { check(false); }, 1500);
+                        })();
+                        </script>
+                    @endif
                     @if(session('success'))
                         <div class="alert alert-success border-0 rounded-4 mb-4">
                             {{ session('success') }}
