@@ -71,7 +71,7 @@ class Kernel extends HttpKernel
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'throttle' => \App\Http\Middleware\ThrottleRequestsPerRoute::class, // contador por rota (ver classe)
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'lp.limit' => \App\Http\Middleware\CheckLandingPageLimit::class,
         'subscription' => \App\Http\Middleware\CheckSubscription::class,
