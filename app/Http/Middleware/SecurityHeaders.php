@@ -59,7 +59,7 @@ class SecurityHeaders
             "object-src 'none'",
             "frame-ancestors 'self'",
             "base-uri 'self'",
-            "form-action 'self'",
+            "form-action 'self' https://abacatepay.com https://*.abacatepay.com", // checkout redireciona para a AbacatePay
         ];
 
         return implode('; ', $directives) . ';';
