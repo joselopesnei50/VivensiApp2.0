@@ -34,7 +34,13 @@ class CheckoutController extends Controller
 
         $tenant = Tenant::find($user->tenant_id);
 
-        return view('checkout.index', compact('plan', 'tenant'));
+        // Cobrança PIX recente em aberto: a tela confere sozinha se já foi paga.
+        $pendingPayment = $tenant && Transaction::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)->where('status', 'pending')
+            ->where('external_id', 'like', 'VIVENSI_%')->whereNotNull('gateway_id')
+            ->where('created_at', '>', now()->subDay())->exists();
+
+        return view('checkout.index', compact('plan', 'tenant', 'pendingPayment'));
     }
 
     /**
@@ -194,6 +200,52 @@ class CheckoutController extends Controller
 
         // Redirecionar para checkout hospedado pela AbacatePay
         return redirect($checkout['url']);
+    }
+
+    /**
+     * GET /checkout/status — a tela de pagamento/sucesso consulta aqui a cada
+     * poucos segundos. Se ainda não está ativa e há cobrança pendente recente,
+     * confere direto na AbacatePay (no máx. 1x a cada 15s por organização) e,
+     * se estiver paga, processa na hora — não depende só do webhook.
+     */
+    public function status()
+    {
+        $user = auth()->user();
+        $tenant = $user?->tenant_id ? Tenant::find($user->tenant_id) : null;
+        if (!$tenant) {
+            return response()->json(['active' => false]);
+        }
+        if ($tenant->subscription_status === 'active') {
+            return response()->json(['active' => true, 'redirect' => url('/dashboard')]);
+        }
+
+        $tx = Transaction::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->where('status', 'pending')
+            ->where('external_id', 'like', 'VIVENSI_%')
+            ->whereNotNull('gateway_id')
+            ->where('created_at', '>', now()->subDay())
+            ->latest('id')
+            ->first();
+
+        if ($tx && Cache::add("checkout.status.{$tenant->id}", 1, 15)) {
+            try {
+                $checkout = $this->abacate->getCheckout((string) $tx->gateway_id);
+                $st = strtoupper((string) ($checkout['status'] ?? ''));
+                if (in_array($st, ['PAID', 'COMPLETED', 'APPROVED'], true)) {
+                    \App\Jobs\ProcessAbacatePayWebhook::dispatchSync('checkout.completed', [
+                        'id'   => 'status_' . $tx->external_id,
+                        'data' => ['checkout' => $checkout + ['externalId' => $tx->external_id]],
+                    ]);
+                    $tenant->refresh();
+                }
+            } catch (\Throwable $e) {
+                Log::error('Checkout status: falha ao conferir na AbacatePay', ['tenant_id' => $tenant->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        $active = $tenant->subscription_status === 'active';
+        return response()->json(['active' => $active, 'pending_payment' => (bool) $tx, 'redirect' => $active ? url('/dashboard') : null]);
     }
 
     /**

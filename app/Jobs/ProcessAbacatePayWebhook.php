@@ -220,7 +220,9 @@ class ProcessAbacatePayWebhook implements ShouldQueue
             return;
         }
 
-        DB::transaction(function () use ($externalId, $tenant, $planId, $checkout) {
+        $activatedNow = false;
+        $paidAmount = null;
+        DB::transaction(function () use ($externalId, $tenant, $planId, $checkout, &$activatedNow, &$paidAmount) {
             // ── Bypass intencional do BelongsToTenant global scope ─────────────
             // Webhook do AbacatePay chega sem auth Laravel; $tenant ja foi resolvido
             // acima via findTenantByExternalId(). external_id eh unico globalmente
@@ -260,6 +262,8 @@ class ProcessAbacatePayWebhook implements ShouldQueue
             }
 
             $oldSubStatus = $tenant->subscription_status;
+            $activatedNow = $oldSubStatus !== 'active';
+            $paidAmount = $transaction ? (float) $transaction->amount : null;
             $tenant->subscription_status = 'active';
             if ($planId && SubscriptionPlan::find($planId)) {
                 $tenant->plan_id = $planId;
@@ -277,6 +281,10 @@ class ProcessAbacatePayWebhook implements ShouldQueue
                 'new_values'     => ['subscription_status' => 'active', 'gateway' => 'abacatepay', 'plan_id' => $planId],
             ]);
         });
+
+        if ($activatedNow) {
+            $this->notifyActivated($tenant->fresh(), $paidAmount);
+        }
 
         Log::info('AbacatePay: checkout.completed processado', [
             'tenant'     => $tenant->id,
@@ -525,6 +533,34 @@ class ProcessAbacatePayWebhook implements ShouldQueue
             return false;
         }
         return true;
+    }
+
+    /** E-mail + sino para a organização quando a assinatura passa a ativa. Nunca derruba o job. */
+    private function notifyActivated(Tenant $tenant, ?float $amount): void
+    {
+        $plan = $tenant->plan_id ? SubscriptionPlan::find($tenant->plan_id) : null;
+        $users = \App\Models\User::query()->where('tenant_id', $tenant->id)->where('status', 'active')
+            ->where('role', '!=', 'super_admin')->limit(5)->get(['id', 'name', 'email']);
+
+        foreach ($users as $u) {
+            try {
+                \App\Models\Notification::create([
+                    'user_id' => $u->id,
+                    'title'   => 'Pagamento confirmado',
+                    'message' => 'Sua assinatura Vivensi está ativa. Bom trabalho!',
+                    'type'    => 'success',
+                    'link'    => url('/dashboard'),
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('AbacatePay: falha ao criar notificação de ativação', ['error' => $e->getMessage()]);
+            }
+            if (!$u->email) continue;
+            try {
+                \Illuminate\Support\Facades\Mail::to($u->email)->send(new \App\Mail\SubscriptionActivatedMail($tenant, $plan, (string) $u->name, $amount));
+            } catch (\Throwable $e) {
+                Log::error('AbacatePay: falha ao enviar e-mail de assinatura ativa', ['tenant_id' => $tenant->id, 'error' => $e->getMessage()]);
+            }
+        }
     }
 
     private function findTenantByExternalId(string $externalId): ?Tenant

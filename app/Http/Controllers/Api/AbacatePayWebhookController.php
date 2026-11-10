@@ -42,7 +42,11 @@ class AbacatePayWebhookController extends Controller
         $rawBody   = $request->getContent();
         $signature = $request->header('X-Webhook-Signature', '');
 
-        if ($signature && !$abacate->verifyWebhookSignature($rawBody, $signature)) {
+        if ($signature && !$abacate->hasHmacKey()) {
+            // Antes: RuntimeException → 500 → pagamento não liberava. O secret já
+            // foi validado acima; registra para configurar a chave HMAC.
+            Log::error('AbacatePay Webhook: assinatura recebida mas ABACATEPAY_HMAC_KEY não configurada — aceito pelo secret');
+        } elseif ($signature && !$abacate->verifyWebhookSignature($rawBody, $signature)) {
             Log::warning('AbacatePay Webhook: assinatura HMAC inválida', ['ip' => $request->ip()]);
             return response()->json(['message' => 'Invalid signature'], 401);
         }
@@ -65,8 +69,22 @@ class AbacatePayWebhookController extends Controller
             'id'      => $payload['id'] ?? null,
         ]);
 
-        ProcessAbacatePayWebhook::dispatch($event, $payload);
+        // Fila fora do ar não pode perder o pagamento: processa na hora.
+        try {
+            // Dispatcher direto (não ::dispatch()): o PendingDispatch só envia no
+            // __destruct, fora deste try — a falha da fila escaparia do catch.
+            app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch(new ProcessAbacatePayWebhook($event, $payload));
+            return response()->json(['status' => 'queued'], 200);
+        } catch (\Throwable $e) {
+            Log::error('AbacatePay Webhook: falha ao enfileirar, processando na hora', ['event' => $event, 'error' => $e->getMessage()]);
+        }
 
-        return response()->json(['status' => 'queued'], 200);
+        try {
+            (new ProcessAbacatePayWebhook($event, $payload))->handle(); // direto, sem fila
+            return response()->json(['status' => 'processed'], 200);
+        } catch (\Throwable $e) {
+            Log::error('AbacatePay Webhook: falha ao processar', ['event' => $event, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Erro ao processar'], 500); // AbacatePay tenta de novo
+        }
     }
 }

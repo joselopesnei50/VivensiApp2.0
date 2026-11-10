@@ -150,7 +150,31 @@ class AdesaoController extends Controller
             Log::warning('AdesaoController::sign notification failed: ' . $e->getMessage());
         }
 
+        // E-mail de confirmação: quem assinou + usuários ativos da organização.
+        $this->sendSignedMail($tenant, $contract, $plan);
+
         return $this->redirectAfterSign($tenant, $plan);
+    }
+
+    private function sendSignedMail(Tenant $tenant, Contract $contract, ?SubscriptionPlan $plan): void
+    {
+        $to = [];
+        if ($contract->signer_email) {
+            $to[strtolower($contract->signer_email)] = $contract->signer_name ?: $tenant->name;
+        }
+        User::query()->where('tenant_id', $tenant->id)->where('status', 'active')
+            ->where('role', '!=', 'super_admin')->limit(5)->get(['name', 'email'])
+            ->each(function ($u) use (&$to) {
+                if ($u->email) $to[strtolower($u->email)] ??= $u->name;
+            });
+
+        foreach ($to as $email => $name) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\AdesaoSignedMail($tenant, $contract, $plan, (string) $name));
+            } catch (\Throwable $e) {
+                Log::error('Adesao: falha ao enviar e-mail de contrato assinado', ['tenant_id' => $tenant->id, 'error' => $e->getMessage()]);
+            }
+        }
     }
 
     public function download($contractId)

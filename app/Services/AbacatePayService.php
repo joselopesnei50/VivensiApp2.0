@@ -271,18 +271,26 @@ class AbacatePayService
      */
     public function verifyWebhookSignature(string $rawBody, string $signature): bool
     {
+        if (!$this->hasHmacKey()) {
+            return false;
+        }
         $expected = base64_encode(
             hash_hmac('sha256', $rawBody, $this->getHmacKey(), true)
         );
         return hash_equals($expected, $signature);
     }
 
+    /** Chave HMAC: .env → SystemSetting (painel admin). Vazia = não configurada. */
     private function getHmacKey(): string
     {
-        // Prioridade: .env → SystemSetting (painel admin) → erro
-        return config('services.abacatepay.hmac_key')
-            ?? \App\Models\SystemSetting::getValue('abacatepay_hmac_key')
-            ?? throw new \RuntimeException('ABACATEPAY_HMAC_KEY not configured');
+        return (string) (config('services.abacatepay.hmac_key')
+            ?: \App\Models\SystemSetting::getValue('abacatepay_hmac_key')
+            ?: '');
+    }
+
+    public function hasHmacKey(): bool
+    {
+        return $this->getHmacKey() !== '';
     }
 
     /**
@@ -301,7 +309,8 @@ class AbacatePayService
     private function post(string $endpoint, array $payload): ?array
     {
         try {
-            $response = Http::timeout(30)
+            $response = Http::connectTimeout(10)
+                ->timeout(30)
                 ->withToken($this->apiKey)
                 ->post($this->baseUrl . $endpoint, $payload);
 
@@ -315,7 +324,11 @@ class AbacatePayService
     private function get(string $endpoint, array $query = []): ?array
     {
         try {
-            $response = Http::timeout(30)
+            // Consulta é segura de repetir: 3 tentativas curtas em vez de 1 longa
+            // (o servidor vinha esgotando 30s em handshakes TLS travados).
+            $response = Http::connectTimeout(8)
+                ->timeout(15)
+                ->retry(3, 700, null, false)
                 ->withToken($this->apiKey)
                 ->get($this->baseUrl . $endpoint, $query);
 
