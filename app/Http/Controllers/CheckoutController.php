@@ -42,10 +42,22 @@ class CheckoutController extends Controller
      */
     public function process(Request $request)
     {
-        $request->validate([
+        Log::warning('Checkout: clique em assinar', [
+            'user_id' => auth()->id(),
+            'plan_id' => $request->input('plan_id'),
+            'tem_documento' => $request->filled('document'),
+        ]);
+
+        $v = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'plan_id'        => 'required|integer|exists:subscription_plans,id',
             'payment_method' => 'nullable|in:PIX,CARD',
+            'document'       => 'nullable|string|max:20',
         ]);
+        if ($v->fails()) {
+            Log::warning('Checkout: validação falhou', ['user_id' => auth()->id(), 'erros' => $v->errors()->keys()]);
+            return back()->withErrors($v)->withInput()
+                ->with('error', 'Não foi possível continuar: ' . $v->errors()->first());
+        }
 
         try {
             $user    = auth()->user();
@@ -81,8 +93,10 @@ class CheckoutController extends Controller
                 Cache::forget("tenant.{$tenant->id}");
             }
 
-            if (!$tenant->document) {
-                return back()->with('error', 'CPF ou CNPJ é obrigatório para o faturamento.');
+            $docLen = strlen((string) $tenant->document);
+            if (!$tenant->document || !in_array($docLen, [11, 14], true)) {
+                Log::warning('Checkout: documento ausente ou inválido', ['tenant_id' => $tenant->id, 'digitos' => $docLen]);
+                return back()->withInput()->with('error', 'Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido para o faturamento.');
             }
 
             // AbacatePay é o único gateway ativo.
