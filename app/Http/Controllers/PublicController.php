@@ -31,7 +31,7 @@ class PublicController extends Controller
 
         // Estatísticas reais do banco como fallback
         $realTenants  = \App\Models\Tenant::count();
-        $realProjects = \App\Models\Project::count();
+        $realProjects = \App\Models\Project::withoutGlobalScopes()->count(); // sem login o escopo por organização zerava ("0+")
         $realUsers    = \App\Models\User::where('role', '!=', 'super_admin')->count();
 
         $siteStats = [

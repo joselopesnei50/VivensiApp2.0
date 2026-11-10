@@ -214,6 +214,9 @@
   .vc-launcher-title{font-size:.94rem;}
   .vc-launcher-sub{font-size:.7rem;}
   .vc-teaser{right:16px;bottom:calc(88px + var(--vc-lift,0px));width:min(300px,calc(100vw - 32px));}
+  /* celular: só o ícone redondo, para não cobrir botões e textos */
+  .vc-launcher{width:58px;padding:0 6px;justify-content:center;border-radius:50%;}
+  .vc-launcher-text{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 }
 @media (max-width:480px){
   .vc-panel{right:0;bottom:0;width:100%;height:100%;max-height:100dvh;border-radius:0;}
@@ -505,7 +508,8 @@
         var until = 0;
         try { until = parseInt(localStorage.getItem(TEASER_KEY) || '0', 10); } catch (e) {}
         if (Date.now() > until) {
-            teaserTimer = setTimeout(function () { if (!isOpen) teaser.hidden = false; }, 5000);
+            // 25s: a pessoa lê a página antes do convite (antes: 5s, cobria o topo)
+            teaserTimer = setTimeout(function () { if (!isOpen) teaser.hidden = false; }, 25000);
         }
         $('vc-teaser-x').onclick = function () { hideTeaser(true); };
     }
