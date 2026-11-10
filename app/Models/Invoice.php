@@ -43,6 +43,7 @@ class Invoice extends Model
         'abacatepay_pix_qr_base64',
         'abacatepay_billing_url',
         'actor_user_id',
+        'notifications_sent',
     ];
 
     protected $casts = [
@@ -51,6 +52,7 @@ class Invoice extends Model
         'period_end'   => 'date',
         'due_date'     => 'date',
         'paid_at'      => 'datetime',
+        'notifications_sent' => 'array',
     ];
 
     public function plan(): BelongsTo

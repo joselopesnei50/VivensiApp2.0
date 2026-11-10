@@ -22,8 +22,18 @@ use Illuminate\Support\Facades\Log;
  */
 class InvoiceService
 {
-    private const DUE_DAYS_AFTER_CREATION   = 5;
-    private const OVERDUE_DAYS_AFTER_DUE    = 3;
+    /** A fatura do próximo ciclo é gerada N dias antes do aniversário. */
+    public const ISSUE_DAYS_BEFORE      = 5;
+    /** Dias de atraso até o painel ficar restrito à tela de faturas. */
+    public const BLOCK_DAYS_AFTER_DUE   = 5;
+    /**
+     * Bloqueio e e-mails de cobrança valem só para faturas com vencimento a
+     * partir desta data — faturas antigas em aberto são revisadas à mão
+     * (evita bloquear organizações no dia do deploy).
+     */
+    public const ENFORCE_FROM = '2026-11-10';
+    /** Prazo mínimo para pagar uma fatura que nasce com o ciclo já iniciado. */
+    private const MIN_DAYS_TO_PAY       = 5;
 
     /**
      * Gera a fatura do mês corrente pra um tenant (se ainda não existe).
@@ -46,12 +56,28 @@ class InvoiceService
             return null;
         }
 
-        $periodStart = now()->startOfMonth()->toDateString();
-        $periodEnd   = now()->endOfMonth()->toDateString();
-        $dueDate     = now()->addDays(self::DUE_DAYS_AFTER_CREATION)->toDateString();
+        // Fatura em aberto sem link (API fora do ar quando nasceu): tenta de novo.
+        $semLink = Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)
+            ->whereIn('status', [Invoice::STATUS_OPEN, Invoice::STATUS_OVERDUE])
+            ->whereNull('abacatepay_billing_url')->orderBy('due_date')->first();
+        if ($semLink) {
+            $this->tryGenerateAbacateCheckout($semLink, $tenant, $plan);
+        }
+
+        // Ciclo pela data da assinatura: o próximo período começa no dia
+        // seguinte ao fim do último; gera só a partir de N dias antes.
+        $start = $this->nextPeriodStart($tenant);
+        if ($start->gt(now()->startOfDay()->addDays(self::ISSUE_DAYS_BEFORE))) {
+            return $semLink;
+        }
+
+        $periodStart = $start->toDateString();
+        $periodEnd   = $start->copy()->addMonthNoOverflow()->subDay()->toDateString();
+        $minDue      = now()->startOfDay()->addDays(self::MIN_DAYS_TO_PAY);
+        $dueDate     = ($start->gt($minDue) ? $start : $minDue)->toDateString();
         $amountCents = (int) round(((float) $plan->price) * 100);
 
-        return DB::transaction(function () use ($tenant, $plan, $periodStart, $periodEnd, $dueDate, $amountCents) {
+        return DB::transaction(function () use ($tenant, $plan, $periodStart, $periodEnd, $dueDate, $amountCents, $start) {
             $existing = Invoice::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->whereDate('period_start', $periodStart)
@@ -71,7 +97,7 @@ class InvoiceService
                 'tenant_id'    => $tenant->id,
                 'plan_id'      => $plan->id,
                 'amount_cents' => $amountCents,
-                'description' => "Assinatura {$plan->name} — " . Carbon::parse($periodStart)->translatedFormat('F/Y'),
+                'description' => "Assinatura {$plan->name} — " . $start->format('d/m/Y') . ' a ' . Carbon::parse($periodEnd)->format('d/m/Y'),
                 'status'       => Invoice::STATUS_OPEN,
                 'period_start' => $periodStart,
                 'period_end'   => $periodEnd,
@@ -124,15 +150,25 @@ class InvoiceService
         if ($invoice->status === Invoice::STATUS_PAID) {
             return $invoice;
         }
-        return DB::transaction(function () use ($invoice, $paidVia, $actorUserId, $abacatepayChargeId) {
+        $result = DB::transaction(function () use ($invoice, $paidVia, $actorUserId, $abacatepayChargeId) {
             $invoice->status         = Invoice::STATUS_PAID;
             $invoice->paid_at        = now();
             $invoice->paid_via       = $paidVia;
             if ($actorUserId)         $invoice->actor_user_id = $actorUserId;
             if ($abacatepayChargeId)  $invoice->abacatepay_charge_id = $abacatepayChargeId;
             $invoice->save();
+            \Illuminate\Support\Facades\Cache::forget(self::blockCacheKey($invoice->tenant_id));
             return $invoice;
         });
+
+        if ($paidVia !== Invoice::PAID_VIA_FREE_COURTESY) {
+            try {
+                app(InvoiceNotifier::class)->send($result, 'paga');
+            } catch (\Throwable $e) {
+                Log::error('Fatura: falha ao avisar pagamento', ['invoice_id' => $result->id, 'error' => $e->getMessage()]);
+            }
+        }
+        return $result;
     }
 
     /**
@@ -142,14 +178,117 @@ class InvoiceService
      */
     public function markOverdue(): int
     {
-        $cutoff = now()->subDays(self::OVERDUE_DAYS_AFTER_DUE)->toDateString();
+        // Vencida a partir do dia seguinte ao vencimento.
         return Invoice::withoutGlobalScopes()
             ->where('status', Invoice::STATUS_OPEN)
-            ->whereDate('due_date', '<', $cutoff)
+            ->whereDate('due_date', '<', now()->toDateString())
             ->update([
                 'status'     => Invoice::STATUS_OVERDUE,
                 'updated_at' => now(),
             ]);
+    }
+
+    /**
+     * Início do próximo período a faturar:
+     *  1. dia seguinte ao fim da última fatura (não cancelada);
+     *  2. sem fatura: 1 mês após o 1º pagamento pelo checkout (que cobriu o 1º mês);
+     *  3. conta antiga sem nenhum dos dois: início do mês atual (regra anterior).
+     */
+    public function nextPeriodStart(Tenant $tenant): Carbon
+    {
+        $last = Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)
+            ->where('status', '!=', Invoice::STATUS_CANCELED)
+            ->orderByDesc('period_end')->first();
+        if ($last && $last->period_end) {
+            return Carbon::parse($last->period_end)->startOfDay()->addDay();
+        }
+
+        $paidAt = \App\Models\Transaction::withoutGlobalScopes()->where('tenant_id', $tenant->id)
+            ->where('status', 'paid')->where('external_id', 'like', 'VIVENSI_%')
+            ->orderByDesc('paid_at')->value('paid_at');
+        if ($paidAt) {
+            return Carbon::parse($paidAt)->startOfDay()->addMonthNoOverflow();
+        }
+
+        return now()->startOfMonth();
+    }
+
+    /**
+     * 1º pagamento (checkout de assinatura) vira a fatura paga do 1º ciclo:
+     * de hoje até o dia anterior do mesmo dia no mês seguinte. Idempotente.
+     */
+    public function recordInitialPayment(Tenant $tenant, ?\App\Models\SubscriptionPlan $plan, ?float $amount, ?string $chargeId): ?Invoice
+    {
+        $today = now()->startOfDay();
+        $covering = Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)
+            ->where('status', '!=', Invoice::STATUS_CANCELED)
+            ->whereDate('period_start', '<=', $today->toDateString())
+            ->whereDate('period_end', '>=', $today->toDateString())
+            ->first();
+        if ($covering) {
+            return $covering;
+        }
+
+        $end = $today->copy()->addMonthNoOverflow()->subDay();
+        return Invoice::withoutGlobalScopes()->firstOrCreate(
+            ['tenant_id' => $tenant->id, 'period_start' => $today->toDateString()],
+            [
+                'plan_id'              => $plan?->id ?? $tenant->plan_id,
+                'amount_cents'         => (int) round(((float) ($amount ?? $plan?->price ?? 0)) * 100),
+                'description'          => 'Assinatura ' . ($plan?->name ?? '') . ' — ' . $today->format('d/m/Y') . ' a ' . $end->format('d/m/Y'),
+                'status'               => Invoice::STATUS_PAID,
+                'period_end'           => $end->toDateString(),
+                'due_date'             => $today->toDateString(),
+                'paid_at'              => now(),
+                'paid_via'             => Invoice::PAID_VIA_ABACATEPAY,
+                'abacatepay_charge_id' => $chargeId,
+            ]
+        );
+    }
+
+    public static function blockCacheKey(int $tenantId): string
+    {
+        return "tenant.{$tenantId}.billing_block";
+    }
+
+    /** Fatura vencida há BLOCK_DAYS_AFTER_DUE dias ou mais → painel restrito às faturas. */
+    public function isBlocked(Tenant $tenant): bool
+    {
+        return \Illuminate\Support\Facades\Cache::remember(self::blockCacheKey($tenant->id), 300, function () use ($tenant) {
+            return Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)
+                ->whereIn('status', [Invoice::STATUS_OPEN, Invoice::STATUS_OVERDUE])
+                ->whereDate('due_date', '<=', now()->subDays(self::BLOCK_DAYS_AFTER_DUE)->toDateString())
+                ->whereDate('due_date', '>=', self::ENFORCE_FROM)
+                ->exists();
+        });
+    }
+
+    /** Link de pagamento novo para a fatura (o anterior pode ter expirado). */
+    public function freshPaymentUrl(Invoice $invoice): ?string
+    {
+        $tenant = Tenant::find($invoice->tenant_id);
+        $plan = \App\Models\SubscriptionPlan::find($invoice->plan_id) ?? $tenant?->plan;
+        if (!$tenant || !$plan || !$invoice->isPayable()) {
+            return null;
+        }
+        $invoice->abacatepay_billing_url = null;
+        $this->tryGenerateAbacateCheckout($invoice, $tenant, $plan);
+        return $invoice->abacatepay_billing_url;
+    }
+
+    /** Confere na AbacatePay se a fatura já foi paga (tela de faturas). */
+    public function syncFromGateway(Invoice $invoice): bool
+    {
+        if (!$invoice->isPayable() || !$invoice->abacatepay_charge_id) {
+            return false;
+        }
+        $checkout = app(AbacatePayService::class)->getCheckout((string) $invoice->abacatepay_charge_id);
+        $st = strtoupper((string) ($checkout['status'] ?? ''));
+        if (in_array($st, ['PAID', 'COMPLETED', 'APPROVED'], true)) {
+            $this->markAsPaid($invoice, Invoice::PAID_VIA_ABACATEPAY, null, $invoice->abacatepay_charge_id);
+            return true;
+        }
+        return false;
     }
 
     /**
