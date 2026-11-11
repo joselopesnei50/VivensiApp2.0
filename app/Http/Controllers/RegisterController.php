@@ -14,15 +14,36 @@ use App\Mail\WelcomeMail;
 
 class RegisterController extends Controller
 {
+    /**
+     * Cadastro público: só Terceiro Setor (ONG, associação, instituto, fundação).
+     * Plano vindo do link (?plan_id=) vale se for de ONG e ativo — inclusive
+     * cortesia enviada pela equipe. Sem plano no link, a pessoa escolhe entre
+     * os planos pagos de ONG ativos.
+     */
     public function showRegistrationForm(Request $request)
     {
-        $plan_id = $request->query('plan_id');
+        $plans = $this->publicPlans();
+
         $plan = null;
-        if ($plan_id) {
-            $plan = SubscriptionPlan::find($plan_id);
+        if ($request->query('plan_id')) {
+            $plan = SubscriptionPlan::where('id', $request->query('plan_id'))
+                ->where('is_active', true)->where('target_audience', 'ngo')->first();
+        }
+        if (!$plan && $plans->count() === 1) {
+            $plan = $plans->first();
         }
 
-        return view('auth.register', compact('plan'));
+        return view('auth.register', compact('plan', 'plans'));
+    }
+
+    /** Planos de ONG pagos e ativos, do mais barato ao mais caro. */
+    private function publicPlans()
+    {
+        return SubscriptionPlan::where('is_active', true)
+            ->where('target_audience', 'ngo')
+            ->where(fn ($q) => $q->where('is_courtesy', false)->orWhereNull('is_courtesy'))
+            ->orderBy('price')
+            ->get();
     }
 
     public function register(Request $request)
@@ -32,9 +53,19 @@ class RegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'string', 'confirmed', \Illuminate\Validation\Rules\Password::min(12)->mixedCase()->numbers()],
-            'plan_id' => 'required|exists:subscription_plans,id', // OBRIGATÓRIO — sem plano ninguém entra
-            'account_type' => 'required|in:project_manager,ngo_admin,client',
+            // OBRIGATÓRIO — sem plano ninguém entra. Só planos de ONG ativos
+            // (cadastro público é exclusivo do Terceiro Setor).
+            'plan_id' => ['required', \Illuminate\Validation\Rule::exists('subscription_plans', 'id')
+                ->where('is_active', true)->where('target_audience', 'ngo')],
             'terms' => 'required|accepted',
+        ], [
+            'plan_id.required' => 'Escolha um plano para continuar.',
+            'plan_id.exists'   => 'Escolha um dos planos disponíveis para organizações do Terceiro Setor.',
+            'terms.required'   => 'É preciso aceitar os Termos de Uso e a Política de Privacidade.',
+            'terms.accepted'   => 'É preciso aceitar os Termos de Uso e a Política de Privacidade.',
+        ], [
+            'organization_name' => 'nome da organização',
+            'name'              => 'seu nome',
         ]);
 
         // Verifica se o plano está ativo antes de criar conta
@@ -46,15 +77,8 @@ class RegisterController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Create Tenant
-            // Determinar tenant type baseado no account_type escolhido
-            $tenantType = match($request->account_type) {
-                'ngo_admin' => 'ngo',
-                'project_manager' => 'business',
-                'client' => 'common',
-                default => 'common'
-            };
-
+            // 1. Organização — cadastro público é sempre Terceiro Setor.
+            $tenantType = 'ngo';
             $billingCycle = $request->query('billing_cycle', 'monthly');
 
             $tenant = Tenant::create([
@@ -75,11 +99,7 @@ class RegisterController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role' => match($request->account_type) {
-                    'ngo_admin' => 'ngo',
-                    'project_manager' => 'manager',
-                    default => $request->account_type
-                },
+                'role' => 'ngo',
                 'status' => 'active',
                 'terms_accepted_at' => now(),
                 'terms_ip' => $request->ip(),

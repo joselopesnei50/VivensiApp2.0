@@ -1,631 +1,412 @@
+{{--
+    Cadastro público — exclusivo do Terceiro Setor (ONG, associação, instituto, fundação).
+    Mesmo layout da tela de login: painel escuro à esquerda, formulário branco à direita.
+    $plan  = plano escolhido (link ?plan_id= ou o único plano disponível)
+    $plans = planos pagos de ONG ativos (para escolher quando não veio no link)
+--}}
+@php
+    $plans = $plans ?? collect();
+    $whatsapp = 'https://wa.me/5516997618695?text=' . rawurlencode('Olá! Quero cadastrar a minha organização na Vivensi.');
+    $oldPlan = old('plan_id', $plan->id ?? null);
+    $semPlano = !$plan && $plans->isEmpty();
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar conta — Vivensi</title>
-    <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <x-meta-pixel />
+    <title>Vivensi — Criar conta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ asset('img/novalogo.png') }}">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --ink: #0f172a;
-            --ink-soft: #334155;
-            --muted: #64748b;
-            --faint: #94a3b8;
-            --border: #e2e8f0;
-            --border-soft: #f1f5f9;
-            --bg: #ffffff;
-            --bg-soft: #f8fafc;
-            --dark: #0a0e1a;
-            --dark-2: #131830;
-            --brand: #10b981;
-            --brand-dark: #059669;
-            --brand-bg: #ecfdf5;
-            --danger: #dc2626;
-            --danger-bg: #fef2f2;
-            --danger-border: #fecaca;
+            --black:    #080808;
+            --border-d: rgba(255,255,255,.07);
+            --white:    #ffffff;
+            --muted:    #6b7280;
+            --accent:   #4F6EF7;
         }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.5; -webkit-font-smoothing: antialiased; }
-        a { color: inherit; text-decoration: none; }
-
-        /* ═══════════ Layout split ═══════════ */
-        .split { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; }
-        @media (max-width: 980px) { .split { grid-template-columns: 1fr; } }
-
-        /* ═══════════ Painel esquerdo (dark hero) ═══════════ */
-        .brand-panel {
-            background: var(--dark);
-            color: #e2e8f0;
-            padding: 44px 56px 40px;
+        html, body { height: 100%; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--black);
+            color: var(--white);
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
             min-height: 100vh;
+            overflow: hidden;
         }
-        @media (max-width: 980px) { .brand-panel { padding: 32px 28px 40px; min-height: auto; } }
 
-        /* Grade sutil de fundo — sem glow, so pattern silencioso */
-        .brand-panel::before {
-            content: '';
+        /* ── PAINEL ESQUERDO (igual ao login) ─────────────────────────── */
+        .panel-left {
+            flex: 1; position: relative;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 48px 56px; overflow: hidden; background: var(--black);
+        }
+        .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; }
+        .orb-1 { width:500px;height:500px;background:radial-gradient(circle,rgba(79,110,247,.18) 0%,transparent 70%);top:-100px;left:-100px; }
+        .orb-2 { width:400px;height:400px;background:radial-gradient(circle,rgba(123,92,240,.14) 0%,transparent 70%);bottom:-80px;right:-80px; }
+        .grid-overlay {
             position: absolute; inset: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 48px 48px;
-            pointer-events: none;
+                linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+            background-size: 60px 60px; pointer-events: none;
         }
-        .brand-panel > * { position: relative; z-index: 1; }
-
-        .brand-top { display: flex; justify-content: space-between; align-items: center; }
-        .brand-top .logo-wrap { display: flex; align-items: center; gap: 12px; }
-        .brand-top .logo-wrap img { height: 34px; width: auto; filter: brightness(0) invert(1); opacity: 0.95; }
-        .brand-back { font-size: 0.82rem; color: #94a3b8; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.10); transition: all 0.15s; }
-        .brand-back:hover { color: #fff; border-color: rgba(255,255,255,0.25); }
-
-        .brand-hero { margin: 56px 0 40px; max-width: 480px; }
-        @media (max-width: 980px) { .brand-hero { margin: 36px 0 28px; } }
-
-        .brand-eyebrow {
+        .left-top, .left-center, .left-bottom { position: relative; z-index: 2; }
+        .left-top { display: flex; align-items: center; justify-content: space-between; }
+        .left-logo img { height: 32px; display: block; }
+        .left-back {
+            font-size: .8rem; font-weight: 600; color: rgba(255,255,255,.55); text-decoration: none;
+            padding: 8px 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 100px; transition: color .2s, border-color .2s;
+        }
+        .left-back:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+        .left-eyebrow {
             display: inline-flex; align-items: center; gap: 8px;
-            font-size: 0.72rem; font-weight: 800; color: var(--brand);
-            letter-spacing: 1.4px; text-transform: uppercase;
-            background: rgba(16,185,129,0.10);
-            border: 1px solid rgba(16,185,129,0.22);
-            padding: 6px 14px; border-radius: 100px;
-            margin-bottom: 24px;
+            color: var(--accent); font-size: .75rem; font-weight: 700;
+            letter-spacing: .1em; text-transform: uppercase; margin-bottom: 28px;
         }
-        .brand-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); display: inline-block; }
-
-        .brand-title {
-            font-size: 2.4rem; font-weight: 800;
-            color: #fff; letter-spacing: -0.7px;
-            margin: 0 0 18px; line-height: 1.1;
+        .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+        .left-headline {
+            font-size: clamp(2.6rem, 3.8vw, 4rem);
+            font-weight: 900; line-height: 1.06; letter-spacing: -.04em; margin-bottom: 24px;
         }
-        @media (max-width: 980px) { .brand-title { font-size: 1.85rem; } }
-        .brand-title em { font-style: normal; color: var(--brand); }
-
-        .brand-sub {
-            font-size: 1.02rem; color: #cbd5e1;
-            margin: 0; line-height: 1.65; font-weight: 400;
+        .word-light  { color: var(--white); }
+        .word-dim    { color: rgba(255,255,255,.42); }
+        .word-accent {
+            background: linear-gradient(135deg, #4F6EF7, #A78BFA);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
+        .left-sub { font-size: 1rem; color: rgba(255,255,255,.55); line-height: 1.7; max-width: 440px; margin-bottom: 36px; }
 
-        .brand-benefits {
-            margin-top: 44px;
-            display: flex; flex-direction: column; gap: 22px;
+        /* passos do cadastro (sequência real) */
+        .steps { list-style: none; counter-reset: st; max-width: 440px; }
+        .steps li {
+            counter-increment: st; position: relative;
+            padding: 0 0 22px 46px; font-size: .9rem; line-height: 1.55; color: rgba(255,255,255,.55);
         }
-        @media (max-width: 980px) { .brand-benefits { margin-top: 28px; gap: 16px; } }
-
-        .benefit { display: flex; gap: 16px; align-items: flex-start; }
-        .benefit-icon {
-            flex-shrink: 0;
-            width: 44px; height: 44px; border-radius: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.10);
+        .steps li::before {
+            content: counter(st); position: absolute; left: 0; top: -3px;
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.04);
             display: flex; align-items: center; justify-content: center;
-            color: var(--brand); font-size: 1.05rem;
+            font-size: .8rem; font-weight: 700; color: #fff;
         }
-        .benefit-body strong {
-            display: block;
-            color: #fff; font-weight: 700; font-size: 0.98rem;
-            margin-bottom: 4px; letter-spacing: -0.2px;
-        }
-        .benefit-body span {
-            display: block;
-            color: #94a3b8; font-size: 0.87rem; line-height: 1.55;
-        }
+        .steps li:first-child::before { background: var(--accent); border-color: var(--accent); }
+        .steps li strong { display: block; color: #fff; font-weight: 700; font-size: .95rem; }
 
-        .brand-trust {
-            display: flex; gap: 24px; flex-wrap: wrap;
-            padding-top: 28px;
-            border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .trust-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #94a3b8; font-weight: 600; }
-        .trust-item i { color: var(--brand); font-size: 0.82rem; }
+        .left-bottom { display: flex; align-items: center; justify-content: space-between; }
+        .left-footer-links { display: flex; gap: 20px; }
+        .left-footer-links a { font-size: .72rem; color: rgba(255,255,255,.3); text-decoration: none; font-weight: 500; transition: color .2s; }
+        .left-footer-links a:hover { color: rgba(255,255,255,.6); }
+        .left-footer-copy { font-size: .72rem; color: rgba(255,255,255,.2); font-weight: 500; }
 
-        /* ═══════════ Painel direito (form) ═══════════ */
-        .form-panel {
-            background: var(--bg);
-            padding: 48px 56px;
-            display: flex; align-items: center; justify-content: center;
+        /* ── PAINEL DIREITO (formulário, igual ao login) ──────────────── */
+        .panel-right {
+            width: 520px; flex-shrink: 0; background: var(--white); color: #111827;
+            height: 100vh; overflow-y: auto; display: flex;
         }
-        @media (max-width: 980px) { .form-panel { padding: 36px 24px 48px; } }
+        .form-wrap { width: 100%; margin: auto 0; padding: 40px 52px; }
+        .right-logo { margin-bottom: 22px; }
+        .right-logo img { height: 28px; display: block; }
+        .form-eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+        .form-title { font-size: 1.55rem; font-weight: 800; color: #0f0f0f; letter-spacing: -.03em; line-height: 1.2; margin-bottom: 4px; }
+        .form-subtitle { font-size: .86rem; color: var(--muted); margin-bottom: 22px; line-height: 1.5; }
 
-        .form-wrap { width: 100%; max-width: 460px; }
+        .alert { display: flex; gap: 10px; padding: 11px 14px; border-radius: 10px; font-size: .83rem; font-weight: 500; margin-bottom: 16px; line-height: 1.45; }
+        .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .alert ul { margin: 0; padding-left: 16px; }
 
-        .form-mobile-logo { display: none; text-align: center; margin-bottom: 24px; }
-        .form-mobile-logo img { height: 32px; width: auto; }
-        @media (max-width: 980px) { .form-mobile-logo { display: block; } }
+        .field { margin-bottom: 14px; }
+        .field label, .field-label { display: block; font-size: .8rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+        .field-wrap { position: relative; }
+        .field-wrap input {
+            width: 100%; padding: 11px 16px;
+            border: 1.5px solid #e5e7eb; border-radius: 12px;
+            font-size: .95rem; font-family: inherit; color: #111827; background: #fafafa;
+            transition: border-color .2s, box-shadow .2s, background .2s; outline: none; -webkit-appearance: none;
+        }
+        .field-wrap input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(79,110,247,.1); }
+        .field-wrap input::placeholder { color: #9ca3af; }
+        .field-wrap input[type="password"], .field-wrap input.pw { padding-right: 44px; }
+        .toggle-pw {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; color: #9ca3af; padding: 4px; display: flex;
+        }
+        .toggle-pw:hover { color: #374151; }
+        .toggle-pw:focus-visible, .btn-login:focus-visible, .plan-opt input:focus-visible + .plan-box { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .field-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        .form-head { margin-bottom: 32px; }
-        .form-title {
-            font-size: 1.65rem; font-weight: 800;
-            color: var(--ink); margin: 0 0 8px;
-            letter-spacing: -0.5px; line-height: 1.15;
+        /* plano */
+        .plan-current {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; background: #fafafa;
         }
-        .form-sub { font-size: 0.93rem; color: var(--muted); margin: 0; line-height: 1.55; }
+        .plan-current-name { font-weight: 700; font-size: .95rem; color: #0f0f0f; }
+        .plan-current-sub { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+        .plan-current-price { font-weight: 800; font-size: 1.05rem; color: #0f0f0f; white-space: nowrap; text-align: right; }
+        .plan-current-price small { display: block; font-size: .72rem; font-weight: 500; color: var(--muted); }
+        .plan-change { font-size: .78rem; color: var(--accent); font-weight: 600; text-decoration: none; }
+        .plan-list { display: grid; gap: 8px; margin-bottom: 18px; }
+        .plan-opt { display: block; cursor: pointer; }
+        .plan-opt input { position: absolute; opacity: 0; pointer-events: none; }
+        .plan-box {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 12px 16px; background: #fafafa;
+            transition: border-color .15s, background .15s;
+        }
+        .plan-opt:hover .plan-box { border-color: #c7d2fe; }
+        .plan-opt input:checked + .plan-box { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(79,110,247,.08); }
+        .plan-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #d1d5db; flex: none; margin-right: 10px; position: relative; }
+        .plan-opt input:checked + .plan-box .plan-radio { border-color: var(--accent); }
+        .plan-opt input:checked + .plan-box .plan-radio::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent); }
+        .plan-left { display: flex; align-items: center; min-width: 0; }
+        .plan-name { font-weight: 700; font-size: .92rem; color: #0f0f0f; }
+        .plan-price { font-weight: 800; font-size: .95rem; color: #0f0f0f; white-space: nowrap; }
+        .plan-price small { font-weight: 500; font-size: .72rem; color: var(--muted); }
+        .no-plan { border: 1.5px dashed #d1d5db; border-radius: 12px; padding: 14px 16px; font-size: .86rem; color: #374151; line-height: 1.55; margin-bottom: 18px; }
+        .no-plan a { color: var(--accent); font-weight: 700; }
 
-        /* Plan summary enriquecido */
-        .plan-summary {
-            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px 22px;
-            margin-bottom: 28px;
-        }
-        .plan-summary-top {
-            display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-        }
-        .plan-summary-label {
-            font-size: 0.66rem; font-weight: 800;
-            color: var(--brand-dark); text-transform: uppercase;
-            letter-spacing: 1.3px; margin-bottom: 6px;
-            display: inline-flex; align-items: center; gap: 6px;
-        }
-        .plan-summary-label i { font-size: 0.65rem; }
-        .plan-summary-name { font-size: 1.1rem; font-weight: 800; color: var(--ink); letter-spacing: -0.3px; }
-        .plan-summary-price { text-align: right; }
-        .plan-summary-price strong {
-            font-size: 1.3rem; font-weight: 900; color: var(--ink);
-            letter-spacing: -0.6px; display: block;
-        }
-        .plan-summary-price small { font-size: 0.72rem; font-weight: 600; color: var(--muted); }
-        .plan-summary-features {
-            list-style: none; padding: 0; margin: 16px 0 0;
-            display: flex; flex-direction: column; gap: 9px;
-            border-top: 1px dashed var(--border); padding-top: 16px;
-        }
-        .plan-summary-features li {
-            font-size: 0.87rem; color: var(--ink-soft);
-            display: flex; gap: 10px; align-items: flex-start;
-        }
-        .plan-summary-features i {
-            color: var(--brand); font-size: 0.78rem;
-            margin-top: 4px; flex-shrink: 0;
-        }
+        /* regras da senha */
+        .pw-rules { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: -4px 0 16px; }
+        .rule { font-size: .74rem; color: #9ca3af; display: inline-flex; align-items: center; gap: 5px; }
+        .rule i { font-size: .65rem; }
+        .rule.ok { color: #15803d; }
 
-        /* Alertas */
-        .alert {
-            padding: 12px 14px; border-radius: 10px;
-            font-size: 0.88rem; margin-bottom: 20px;
-            display: flex; gap: 10px; align-items: flex-start;
-        }
-        .alert-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
-        .alert ul { margin: 0; padding-left: 18px; }
+        .terms { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 18px; cursor: pointer; }
+        .terms input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--accent); flex: none; cursor: pointer; }
+        .terms span { font-size: .82rem; color: #4b5563; line-height: 1.55; }
+        .terms a { color: #0f0f0f; font-weight: 700; text-underline-offset: 2px; }
 
-        /* Role selector */
-        .field-label {
-            display: block; font-size: 0.82rem; font-weight: 700;
-            color: var(--ink); margin-bottom: 10px;
+        .btn-login {
+            width: 100%; padding: 13px 24px; background: #0f0f0f; color: #fff;
+            border: none; border-radius: 12px; font-size: .95rem; font-weight: 700; font-family: inherit;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: background .2s, transform .15s, box-shadow .2s; letter-spacing: -.01em;
         }
-        .field-required { color: var(--danger); }
-        .role-selector {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-            margin-bottom: 24px;
-        }
-        @media (max-width: 480px) { .role-selector { grid-template-columns: 1fr; } }
-        .role-option {
-            padding: 14px 14px; border: 1.5px solid var(--border);
-            border-radius: 12px; cursor: pointer;
-            transition: border-color 0.15s, background 0.15s;
-            background: var(--bg);
-        }
-        .role-option:hover { border-color: var(--ink-soft); }
-        .role-option.selected { border-color: var(--ink); background: var(--bg-soft); }
-        .role-option-top { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-        .role-option-icon {
-            width: 32px; height: 32px; border-radius: 8px;
-            background: var(--border-soft); color: var(--ink-soft);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.85rem; transition: background 0.15s, color 0.15s;
-        }
-        .role-option.selected .role-option-icon { background: var(--ink); color: #fff; }
-        .role-option-title { font-weight: 700; font-size: 0.92rem; color: var(--ink); }
-        .role-option-desc { font-size: 0.76rem; color: var(--muted); line-height: 1.4; }
+        .btn-login:hover { background: #1f1f1f; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+        .btn-login:disabled { background: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-login .arrow { width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: .7rem; }
+        .after-note { font-size: .78rem; color: var(--muted); text-align: center; margin-top: 12px; line-height: 1.5; }
 
-        .role-locked {
-            background: var(--brand-bg); border: 1px solid rgba(16,185,129,0.28);
-            border-radius: 12px; padding: 12px 14px;
-            display: flex; align-items: center; gap: 10px;
-            font-size: 0.9rem; font-weight: 700; color: var(--brand-dark);
-            margin-bottom: 24px;
-        }
-        .role-locked i { color: var(--brand); }
+        .divider { display: flex; align-items: center; gap: 12px; margin: 18px 0 12px; color: #d1d5db; font-size: .78rem; font-weight: 600; }
+        .divider::before, .divider::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+        .login-row { text-align: center; font-size: .85rem; color: #9ca3af; }
+        .login-row a { color: #0f0f0f; font-weight: 700; text-decoration: none; }
+        .login-row a:hover { opacity: .6; }
 
-        /* Inputs */
-        .field { margin-bottom: 18px; }
-        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
-        .input {
-            width: 100%; padding: 12px 14px;
-            border: 1.5px solid var(--border); border-radius: 10px;
-            font-size: 0.94rem; font-family: inherit;
-            color: var(--ink); background: var(--bg);
-            transition: border-color 0.15s, background 0.15s;
+        /* ── RESPONSIVO ───────────────────────────────────────────────── */
+        @media (max-width: 1100px) { .panel-left { padding: 40px 40px; } .panel-right { width: 480px; } .form-wrap { padding: 36px 40px; } }
+        @media (max-width: 900px) {
+            html, body { height: auto; }
+            body { overflow: visible; display: block; }
+            .panel-left { display: none; }
+            .panel-right { width: 100%; height: auto; min-height: 100vh; }
+            .form-wrap { padding: 32px 22px 40px; max-width: 520px; margin: 0 auto; }
         }
-        .input:focus { outline: none; border-color: var(--ink); background: var(--bg-soft); }
-        .input::placeholder { color: var(--faint); }
-
-        .password-wrap { position: relative; }
-        .password-toggle {
-            position: absolute; right: 12px; top: 50%;
-            transform: translateY(-50%); background: none; border: none;
-            padding: 4px; cursor: pointer;
-            color: var(--faint); font-size: 0.95rem;
-        }
-        .password-toggle:hover { color: var(--ink-soft); }
-
-        /* Password rules feedback */
-        .password-rules {
-            margin-top: 10px;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px;
-        }
-        .rule {
-            display: flex; align-items: center; gap: 6px;
-            font-size: 0.75rem; color: var(--faint);
-            transition: color 0.15s;
-        }
-        .rule.ok { color: var(--brand-dark); }
-        .rule i { font-size: 0.72rem; }
-
-        /* Terms */
-        .terms {
-            margin: 24px 0 24px;
-            display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
-        }
-        .terms input {
-            width: 16px; height: 16px; margin-top: 3px;
-            accent-color: var(--ink); cursor: pointer; flex-shrink: 0;
-        }
-        .terms-text { font-size: 0.85rem; color: var(--muted); line-height: 1.55; }
-        .terms-text a { color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-
-        /* Submit */
-        .submit {
-            width: 100%; padding: 15px;
-            background: var(--ink); color: #fff; border: none;
-            border-radius: 12px; font-size: 0.95rem; font-weight: 700;
-            cursor: pointer; transition: background 0.15s;
-            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-            font-family: inherit; letter-spacing: -0.1px;
-        }
-        .submit:hover:not(:disabled) { background: #1f2937; }
-        .submit:disabled { background: var(--muted); cursor: not-allowed; opacity: 0.85; }
-        .submit .spinner {
-            width: 16px; height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff; border-radius: 50%;
-            animation: spin 0.7s linear infinite; display: none;
-        }
-        .submit.loading .spinner { display: inline-block; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .form-footer-note {
-            text-align: center; margin-top: 16px;
-            font-size: 0.78rem; color: var(--muted); line-height: 1.5;
-        }
-        .form-footer-note i { color: var(--brand); margin-right: 4px; }
-
-        .login-link {
-            text-align: center; margin-top: 28px; padding-top: 24px;
-            border-top: 1px solid var(--border-soft);
-            font-size: 0.9rem; color: var(--muted);
-        }
-        .login-link a { color: var(--ink); font-weight: 700; }
-        .login-link a:hover { text-decoration: underline; }
-
-        .field-error {
-            color: var(--danger); font-size: 0.8rem;
-            margin-top: 6px; display: none;
-        }
-        .field-error.show { display: block; }
+        @media (max-width: 420px) { .field-pair { grid-template-columns: 1fr; gap: 0; } }
+        @media (prefers-reduced-motion: reduce) { .btn-login, .btn-login:hover { transition: none; transform: none; } }
     </style>
 </head>
 <body>
 
-<div class="split">
+<!-- PAINEL ESQUERDO -->
+<div class="panel-left">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="grid-overlay"></div>
 
-    {{-- ═════════════════ PAINEL ESQUERDO (brand + benefits) ═════════════════ --}}
-    <aside class="brand-panel">
-        <div class="brand-top">
-            <a href="{{ url('/') }}" class="logo-wrap" aria-label="Voltar para Vivensi">
-                <x-application-logo />
-            </a>
-            <a href="{{ url('/') }}" class="brand-back">
-                <i class="fas fa-arrow-left"></i> Voltar ao site
-            </a>
+    <div class="left-top">
+        <a href="{{ url('/') }}" class="left-logo"><img src="{{ asset('img/novalogo.png') }}" alt="Vivensi"></a>
+        <a href="{{ url('/') }}" class="left-back"><i class="fas fa-arrow-left" style="font-size:.7rem"></i> Voltar ao site</a>
+    </div>
+
+    <div class="left-center">
+        <div class="left-eyebrow"><span class="eyebrow-dot"></span> Cadastro para o Terceiro Setor</div>
+        <h1 class="left-headline">
+            <span class="word-light">Sua ONG</span><br>
+            <span class="word-accent">organizada</span><br>
+            <span class="word-dim">a partir de hoje.</span>
+        </h1>
+        <p class="left-sub">
+            Beneficiários, turmas, prestação de contas e transparência no mesmo lugar — feito para ONGs, associações, institutos e fundações.
+        </p>
+
+        <ol class="steps">
+            <li><strong>Crie a conta da organização</strong>Leva poucos minutos.</li>
+            <li><strong>Assine o contrato de adesão</strong>Tudo online, com os dados da entidade.</li>
+            <li><strong>Pague por PIX e comece a usar</strong>O acesso é liberado assim que o pagamento é confirmado.</li>
+        </ol>
+    </div>
+
+    <div class="left-bottom">
+        <div class="left-footer-links">
+            @if(\Illuminate\Support\Facades\Route::has('legal.privacy'))<a href="{{ route('legal.privacy') }}">Privacidade</a>@endif
+            @if(\Illuminate\Support\Facades\Route::has('legal.terms'))<a href="{{ route('legal.terms') }}">Termos</a>@endif
+            <a href="{{ $whatsapp }}" target="_blank" rel="noopener">Suporte</a>
         </div>
-
-        <div class="brand-hero">
-            <span class="brand-eyebrow">Ecossistema pra Terceiro Setor</span>
-            <h1 class="brand-title">A gestão feita <em>por dentro</em> do trabalho social.</h1>
-            <p class="brand-sub">Doadores, projetos, WhatsApp Oficial, conformidade e IA — em um só painel, com preço em reais e suporte que responde em português.</p>
-
-            <div class="brand-benefits">
-                <div class="benefit">
-                    <div class="benefit-icon"><i class="fab fa-whatsapp"></i></div>
-                    <div class="benefit-body">
-                        <strong>WhatsApp Oficial da Meta</strong>
-                        <span>Chatbot com IA treinado pela sua organização, respondendo em segundos e sem risco de bloqueio.</span>
-                    </div>
-                </div>
-                <div class="benefit">
-                    <div class="benefit-icon"><i class="fas fa-brain"></i></div>
-                    <div class="benefit-body">
-                        <strong>Sala de Estratégia com 5 agentes de IA</strong>
-                        <span>Um conselho executivo virtual analisa seus números reais e entrega a próxima ação com plano pronto no Kanban.</span>
-                    </div>
-                </div>
-                <div class="benefit">
-                    <div class="benefit-icon"><i class="fas fa-shield-halved"></i></div>
-                    <div class="benefit-body">
-                        <strong>Conformidade Contínua — CEBAS · SUAS · MROSC</strong>
-                        <span>Checklist regulatório com alertas antes da fiscalização chegar e PDF pronto para o auditor.</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="brand-trust">
-            <div class="trust-item"><i class="fas fa-lock"></i> LGPD-first</div>
-            <div class="trust-item"><i class="fas fa-shield-halved"></i> Dados cifrados</div>
-            <div class="trust-item"><i class="fas fa-flag"></i> Preço em BRL</div>
-            <div class="trust-item"><i class="fas fa-headset"></i> Suporte em português</div>
-        </div>
-    </aside>
-
-    {{-- ═════════════════ PAINEL DIREITO (form) ═════════════════ --}}
-    <main class="form-panel">
-        <div class="form-wrap">
-            <div class="form-mobile-logo">
-                <a href="{{ url('/') }}"><x-application-logo /></a>
-            </div>
-
-            <div class="form-head">
-                <h2 class="form-title">Criar sua conta</h2>
-                <p class="form-sub">Preencha os dados abaixo. Você vai direto para o pagamento seguro em seguida.</p>
-            </div>
-
-            @if($plan)
-            <div class="plan-summary">
-                <div class="plan-summary-top">
-                    <div>
-                        <div class="plan-summary-label"><i class="fas fa-check-circle"></i> Plano selecionado</div>
-                        <div class="plan-summary-name">{{ $plan->name }}</div>
-                    </div>
-                    <div class="plan-summary-price">
-                        <strong>R$ {{ number_format($plan->price, 2, ',', '.') }}</strong>
-                        <small>por mês · sem fidelidade</small>
-                    </div>
-                </div>
-                @php
-                    $planFeatures = [];
-                    if (!empty($plan->features)) {
-                        $raw = is_array($plan->features) ? $plan->features : (json_decode($plan->features, true) ?: []);
-                        $planFeatures = array_slice(array_filter($raw), 0, 4);
-                    }
-                    if (empty($planFeatures)) {
-                        $planFeatures = match($plan->target_audience ?? '') {
-                            'ngo'     => ['WhatsApp Oficial da Meta + Chatbot IA', 'Conformidade CEBAS · SUAS · MROSC', 'Sala de Estratégia com 5 agentes de IA', 'Portal do Doador + Radar de Editais'],
-                            'manager' => ['WhatsApp Oficial + Kanban integrado', 'Central de Aprovações e Contratos Digitais', 'IA nativa em todo o sistema', 'Prospecção IA e Landing Pages'],
-                            default   => ['WhatsApp Oficial da Meta + Chatbot IA', 'Termômetro do Teto MEI + DAS mensal', 'Recibos digitais e NFS-e', 'Sala de Estratégia com 5 agentes de IA'],
-                        };
-                    }
-                @endphp
-                <ul class="plan-summary-features">
-                    @foreach($planFeatures as $feat)
-                        <li><i class="fas fa-check"></i> <span>{{ is_array($feat) ? ($feat['name'] ?? '') : $feat }}</span></li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form action="{{ url('/register') }}" method="POST" id="registerForm">
-                @csrf
-                <input type="hidden" name="plan_id" value="{{ $plan ? $plan->id : '' }}">
-
-                @if($plan)
-                    @php
-                        $lockedRole = match($plan->target_audience ?? '') {
-                            'ngo'     => ['ngo_admin',      'Terceiro Setor · ONG / Instituto / Fundação', 'hands-helping'],
-                            'manager' => ['project_manager','Gestor de Projetos / PME',                    'briefcase'],
-                            default   => ['client',         'MEI / Autônomo / Pessoa Comum',               'user'],
-                        };
-                    @endphp
-                    <label class="field-label">Tipo de conta</label>
-                    <div class="role-locked">
-                        <i class="fas fa-{{ $lockedRole[2] }}"></i>
-                        <span>{{ $lockedRole[1] }}</span>
-                    </div>
-                    <input type="hidden" name="account_type" id="account_type" value="{{ $lockedRole[0] }}">
-                @else
-                    <label class="field-label">O que você faz? <span class="field-required">*</span></label>
-                    <div class="role-selector">
-                        <div class="role-option" data-role="ngo_admin">
-                            <div class="role-option-top">
-                                <div class="role-option-icon"><i class="fas fa-hands-helping"></i></div>
-                                <div class="role-option-title">Terceiro Setor</div>
-                            </div>
-                            <div class="role-option-desc">ONG, associação, instituto, fundação</div>
-                        </div>
-                        <div class="role-option" data-role="project_manager">
-                            <div class="role-option-top">
-                                <div class="role-option-icon"><i class="fas fa-briefcase"></i></div>
-                                <div class="role-option-title">Gestor / PME</div>
-                            </div>
-                            <div class="role-option-desc">Empresa, projeto, equipe</div>
-                        </div>
-                        <div class="role-option" data-role="client" style="grid-column: 1 / -1;">
-                            <div class="role-option-top">
-                                <div class="role-option-icon"><i class="fas fa-user"></i></div>
-                                <div class="role-option-title">MEI / Autônomo / Pessoa Comum</div>
-                            </div>
-                            <div class="role-option-desc">Uso individual, freelancer, pequeno negócio</div>
-                        </div>
-                    </div>
-                    <input type="hidden" name="account_type" id="account_type" value="" required>
-                    <div class="field-error" id="role-error">Selecione um tipo de conta.</div>
-                @endif
-
-                <div class="field">
-                    <label class="field-label" for="organization_name">Nome da organização</label>
-                    <input type="text" id="organization_name" name="organization_name" class="input" placeholder="Ex: Instituto Semente" required value="{{ old('organization_name') }}" autocomplete="organization">
-                </div>
-
-                <div class="field">
-                    <label class="field-label" for="name">Seu nome completo</label>
-                    <input type="text" id="name" name="name" class="input" placeholder="Como você quer ser chamado" required value="{{ old('name') }}" autocomplete="name">
-                </div>
-
-                <div class="field">
-                    <label class="field-label" for="email">E-mail de acesso</label>
-                    <input type="email" id="email" name="email" class="input" placeholder="voce@email.com" required value="{{ old('email') }}" autocomplete="email">
-                </div>
-
-                <div class="field-row">
-                    <div class="field">
-                        <label class="field-label" for="password">Senha</label>
-                        <div class="password-wrap">
-                            <input type="password" id="password" name="password" class="input" placeholder="Min. 12 caracteres" required autocomplete="new-password">
-                            <button type="button" class="password-toggle" data-target="password" aria-label="Mostrar senha">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label class="field-label" for="password_confirmation">Confirmar senha</label>
-                        <div class="password-wrap">
-                            <input type="password" id="password_confirmation" name="password_confirmation" class="input" placeholder="Repita a senha" required autocomplete="new-password">
-                            <button type="button" class="password-toggle" data-target="password_confirmation" aria-label="Mostrar senha">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="password-rules" aria-live="polite">
-                    <div class="rule" data-rule="length"><i class="fas fa-circle"></i> Mínimo 12 caracteres</div>
-                    <div class="rule" data-rule="upper"><i class="fas fa-circle"></i> 1 letra maiúscula</div>
-                    <div class="rule" data-rule="lower"><i class="fas fa-circle"></i> 1 letra minúscula</div>
-                    <div class="rule" data-rule="number"><i class="fas fa-circle"></i> 1 número</div>
-                </div>
-
-                <label class="terms">
-                    <input type="checkbox" name="terms" required>
-                    <span class="terms-text">
-                        Declaro que li e concordo com os
-                        <a href="{{ route('legal.terms') }}" target="_blank" rel="noopener">Termos de Uso</a>
-                        e a
-                        <a href="{{ route('legal.privacy') }}" target="_blank" rel="noopener">Política de Privacidade</a>
-                        do Vivensi.
-                    </span>
-                </label>
-
-                <button type="submit" class="submit" id="submitBtn">
-                    <span class="spinner"></span>
-                    <span class="submit-label">Criar conta e ir para o pagamento</span>
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-
-                <div class="form-footer-note">
-                    <i class="fas fa-lock"></i> Pagamento seguro via Pix. Sem fidelidade. Cancele quando quiser.
-                </div>
-            </form>
-
-            <div class="login-link">
-                Já tem conta? <a href="{{ route('login') }}">Fazer login</a>
-            </div>
-        </div>
-    </main>
-
+        <span class="left-footer-copy">© {{ date('Y') }} Vivensi</span>
+    </div>
 </div>
 
+<!-- PAINEL DIREITO -->
+<main class="panel-right">
+    <div class="form-wrap">
+        <div class="right-logo"><img src="{{ asset('img/novalogo.png') }}" alt="Vivensi"></div>
+
+        <div class="form-eyebrow">Criar conta</div>
+        <h2 class="form-title">Cadastre sua organização</h2>
+        <p class="form-subtitle">Para ONGs, associações, institutos e fundações.</p>
+
+        @if(session('error'))
+            <div class="alert alert-error"><i class="fas fa-circle-exclamation" style="margin-top:2px"></i><div>{{ session('error') }}</div></div>
+        @endif
+        @if($errors->any())
+            <div class="alert alert-error">
+                <i class="fas fa-circle-exclamation" style="margin-top:2px"></i>
+                <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+            </div>
+        @endif
+
+        <form action="{{ url('/register') }}" method="POST" id="registerForm" novalidate>
+            @csrf
+
+            {{-- Plano --}}
+            @if($plan)
+                <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                <span class="field-label">Plano</span>
+                <div class="plan-current">
+                    <div>
+                        <div class="plan-current-name">{{ $plan->name }}</div>
+                        @if($plans->count() > 1 && !$plan->is_courtesy)
+                            <a href="{{ route('register') }}" class="plan-change">Trocar plano</a>
+                        @else
+                            <div class="plan-current-sub">Terceiro Setor</div>
+                        @endif
+                    </div>
+                    <div class="plan-current-price">
+                        @if($plan->is_courtesy)
+                            Cortesia
+                        @else
+                            R$ {{ number_format((float) $plan->price, 2, ',', '.') }}<small>por mês</small>
+                        @endif
+                    </div>
+                </div>
+            @elseif($plans->isNotEmpty())
+                <span class="field-label" id="plan-label">Escolha o plano</span>
+                <div class="plan-list" role="radiogroup" aria-labelledby="plan-label">
+                    @foreach($plans as $p)
+                        <label class="plan-opt">
+                            <input type="radio" name="plan_id" value="{{ $p->id }}" {{ (string) $oldPlan === (string) $p->id ? 'checked' : '' }} required>
+                            <span class="plan-box">
+                                <span class="plan-left"><span class="plan-radio" aria-hidden="true"></span><span class="plan-name">{{ $p->name }}</span></span>
+                                <span class="plan-price">R$ {{ number_format((float) $p->price, 2, ',', '.') }} <small>/mês</small></span>
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+            @else
+                <div class="no-plan">
+                    No momento o cadastro de novas organizações é feito com a nossa equipe.
+                    <a href="{{ $whatsapp }}" target="_blank" rel="noopener">Fale com a gente pelo WhatsApp</a>.
+                </div>
+            @endif
+
+            <div class="field">
+                <label for="organization_name">Nome da organização</label>
+                <div class="field-wrap"><input type="text" id="organization_name" name="organization_name" placeholder="Ex.: Instituto Semente" required value="{{ old('organization_name') }}" autocomplete="organization"></div>
+            </div>
+
+            <div class="field">
+                <label for="name">Seu nome</label>
+                <div class="field-wrap"><input type="text" id="name" name="name" placeholder="Nome e sobrenome" required value="{{ old('name') }}" autocomplete="name"></div>
+            </div>
+
+            <div class="field">
+                <label for="email">E-mail de acesso</label>
+                <div class="field-wrap"><input type="email" id="email" name="email" placeholder="voce@suaong.org.br" required value="{{ old('email') }}" autocomplete="email"></div>
+            </div>
+
+            <div class="field-pair">
+                <div class="field">
+                    <label for="password">Senha</label>
+                    <div class="field-wrap">
+                        <input type="password" class="pw" id="password" name="password" placeholder="Crie uma senha" required autocomplete="new-password">
+                        <button type="button" class="toggle-pw" data-target="password" aria-label="Mostrar senha"><i class="far fa-eye"></i></button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="password_confirmation">Confirmar senha</label>
+                    <div class="field-wrap">
+                        <input type="password" class="pw" id="password_confirmation" name="password_confirmation" placeholder="Repita a senha" required autocomplete="new-password">
+                        <button type="button" class="toggle-pw" data-target="password_confirmation" aria-label="Mostrar senha"><i class="far fa-eye"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="pw-rules" aria-live="polite">
+                <span class="rule" data-rule="length"><i class="fas fa-circle"></i> 12 caracteres</span>
+                <span class="rule" data-rule="upper"><i class="fas fa-circle"></i> letra maiúscula</span>
+                <span class="rule" data-rule="lower"><i class="fas fa-circle"></i> letra minúscula</span>
+                <span class="rule" data-rule="number"><i class="fas fa-circle"></i> número</span>
+            </div>
+
+            <label class="terms">
+                <input type="checkbox" name="terms" required {{ old('terms') ? 'checked' : '' }}>
+                <span>
+                    Li e concordo com os <a href="{{ route('legal.terms') }}" target="_blank" rel="noopener">Termos de Uso</a>
+                    e a <a href="{{ route('legal.privacy') }}" target="_blank" rel="noopener">Política de Privacidade</a>.
+                </span>
+            </label>
+
+            <button type="submit" class="btn-login" id="submitBtn" {{ $semPlano ? 'disabled' : '' }}>
+                <span class="submit-label">Criar conta</span>
+                <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+            </button>
+            <p class="after-note">Em seguida você assina o contrato de adesão e paga por PIX. Sem fidelidade.</p>
+        </form>
+
+        <div class="divider">ou</div>
+        <div class="login-row">Já tem conta? <a href="{{ route('login') }}">Entrar</a></div>
+    </div>
+</main>
+
 <script>
-// ─── Role selection ──────────────────────────────────────────
-document.querySelectorAll('.role-option').forEach(opt => {
-    opt.addEventListener('click', function () {
-        document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
-        this.classList.add('selected');
-        document.getElementById('account_type').value = this.dataset.role;
-        const err = document.getElementById('role-error');
-        if (err) err.classList.remove('show');
-    });
-});
-
-// ─── Password visibility toggle ──────────────────────────────
-document.querySelectorAll('.password-toggle').forEach(btn => {
+document.querySelectorAll('.toggle-pw').forEach(function (btn) {
     btn.addEventListener('click', function () {
-        const target = document.getElementById(this.dataset.target);
-        const icon = this.querySelector('i');
-        if (target.type === 'password') {
-            target.type = 'text';
-            icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash');
-        } else {
-            target.type = 'password';
-            icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye');
-        }
+        var input = document.getElementById(this.dataset.target);
+        var icon = this.querySelector('i');
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        icon.className = show ? 'far fa-eye-slash' : 'far fa-eye';
+        this.setAttribute('aria-label', show ? 'Esconder senha' : 'Mostrar senha');
     });
 });
 
-// ─── Password rules live feedback ────────────────────────────
-const pwInput = document.getElementById('password');
-const rules = document.querySelectorAll('.rule');
-pwInput.addEventListener('input', function () {
-    const v = this.value;
-    const checks = {
-        length: v.length >= 12,
-        upper:  /[A-Z]/.test(v),
-        lower:  /[a-z]/.test(v),
-        number: /[0-9]/.test(v),
-    };
-    rules.forEach(r => {
-        const key = r.dataset.rule;
-        const icon = r.querySelector('i');
-        if (checks[key]) {
-            r.classList.add('ok');
-            icon.classList.remove('fa-circle'); icon.classList.add('fa-check-circle');
-        } else {
-            r.classList.remove('ok');
-            icon.classList.remove('fa-check-circle'); icon.classList.add('fa-circle');
-        }
+var pw = document.getElementById('password');
+pw.addEventListener('input', function () {
+    var v = this.value, ok = { length: v.length >= 12, upper: /[A-Z]/.test(v), lower: /[a-z]/.test(v), number: /[0-9]/.test(v) };
+    document.querySelectorAll('.rule').forEach(function (r) {
+        var good = ok[r.dataset.rule];
+        r.classList.toggle('ok', good);
+        r.querySelector('i').className = good ? 'fas fa-check-circle' : 'fas fa-circle';
     });
 });
 
-// ─── Submit: validação + loading state ───────────────────────
 document.getElementById('registerForm').addEventListener('submit', function (e) {
-    const accountType = document.getElementById('account_type').value;
-    if (!accountType) {
+    var radios = this.querySelectorAll('input[name="plan_id"][type="radio"]');
+    if (radios.length && !this.querySelector('input[name="plan_id"]:checked')) {
         e.preventDefault();
-        const err = document.getElementById('role-error');
-        if (err) { err.classList.add('show'); err.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-        return false;
+        var lbl = document.getElementById('plan-label');
+        lbl.textContent = 'Escolha o plano para continuar';
+        lbl.style.color = '#b91c1c';
+        lbl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
     }
-    const btn = document.getElementById('submitBtn');
-    btn.classList.add('loading');
+    if (!this.checkValidity()) { e.preventDefault(); this.reportValidity(); return; }
+    var btn = document.getElementById('submitBtn');
     btn.disabled = true;
-    btn.querySelector('.submit-label').textContent = 'Criando sua conta...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando a conta...';
 });
 </script>
 
