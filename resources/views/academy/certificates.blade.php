@@ -92,7 +92,7 @@
                                 <h3 style="color:#fff; font-weight:700; font-size:1.05rem; margin:0; line-height:1.35;
                                            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
                                            overflow:hidden;">
-                                    {{ $c->title ?? 'Curso removido' }}
+                                    {{ $cert->courseTitle() }}
                                 </h3>
                             </div>
                         </div>
@@ -114,7 +114,7 @@
                                         Instrutor
                                     </div>
                                     <div style="color:#e2e8f0; font-weight:600;">
-                                        {{ $c->teacher_name ?? '—' }}
+                                        {{ $cert->teacherName() }}
                                     </div>
                                 </div>
                             </div>
@@ -137,6 +137,13 @@
                                           font-weight:700; font-size:.85rem; text-align:center;
                                           display:inline-flex; align-items:center; justify-content:center; gap:8px;">
                                     <i class="fas fa-file-arrow-down"></i> Baixar PDF
+                                </a>
+                                <a href="{{ route('academy.verify', $cert->code) }}" target="_blank" rel="noopener"
+                                   title="Página pública de verificação (para enviar a quem pedir o certificado)"
+                                   style="width:42px; background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.25);
+                                          color:#4ade80; border-radius:10px; text-decoration:none;
+                                          display:inline-flex; align-items:center; justify-content:center;">
+                                    <i class="fas fa-circle-check"></i>
                                 </a>
                                 @if($c)
                                     <a href="{{ route('academy.show', $c->slug) }}"

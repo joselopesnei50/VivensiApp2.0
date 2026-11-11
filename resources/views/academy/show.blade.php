@@ -44,8 +44,15 @@
                 @if($currentLesson)
                     <div class="vivensi-card" style="padding: 0; background: #000; overflow: hidden; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155;">
                         <div class="ratio ratio-16x9">
-                            @if($currentLesson->type == 'video' && $currentLesson->video_url)
-                                <iframe src="{{ str_replace('watch?v=', 'embed/', $currentLesson->video_url) }}" allowfullscreen></iframe>
+                            @if($currentLesson->type == 'video' && $currentLesson->video_url && $currentLesson->embedUrl())
+                                <iframe src="{{ $currentLesson->embedUrl() }}" title="{{ $currentLesson->title }}"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                            @elseif($currentLesson->type == 'video' && $currentLesson->video_url)
+                                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;flex-direction:column;gap:12px;">
+                                    <i class="fas fa-play-circle fa-3x" style="color:#6366f1"></i>
+                                    <a href="{{ $currentLesson->video_url }}" target="_blank" rel="noopener" class="btn btn-light">Abrir o vídeo em outra aba</a>
+                                </div>
                             @elseif($currentLesson->type == 'ebook')
                                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; flex-direction: column;">
                                     <i class="fas fa-file-pdf fa-4x mb-3" style="color: #f59e0b;"></i>

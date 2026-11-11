@@ -56,6 +56,9 @@ class SecurityHeaders
             "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
             "img-src 'self' data: blob: https:",
             "connect-src 'self' {$wsOrigin} https://viacep.com.br https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
+            // Vídeos e mapas embutidos (aulas da Academy, vídeo da home, landing pages, Destine IR).
+            // Sem esta linha o navegador caía em default-src 'self' e bloqueava todo player externo.
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.google.com https://maps.google.com https://www.googletagmanager.com",
             "object-src 'none'",
             "frame-ancestors 'self'",
             "base-uri 'self'",

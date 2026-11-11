@@ -92,10 +92,55 @@
                                                     @endif
                                                 </div>
                                             </div>
-                                            <form action="{{ route('admin.academy.lessons.destroy', $lesson->id) }}" method="POST" onsubmit="return confirm('Remover aula?');">
+                                            <div class="d-flex gap-1">
+                                                <button type="button" class="btn btn-sm btn-light" title="Editar aula"
+                                                        onclick="document.getElementById('editLesson{{ $lesson->id }}').classList.toggle('d-none')">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                                <form action="{{ route('admin.academy.lessons.destroy', $lesson->id) }}" method="POST" onsubmit="return confirm('Remover aula?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-light text-danger" title="Remover aula"><i class="fas fa-trash"></i></button>
+                                                </form>
+                                            </div>
+                                        </li>
+                                        {{-- Edição da aula (abre no lápis) --}}
+                                        <li class="list-group-item d-none" id="editLesson{{ $lesson->id }}" style="background:#f8fafc;">
+                                            <form action="{{ route('admin.academy.lessons.update', $lesson->id) }}" method="POST" enctype="multipart/form-data" class="lesson-edit-form">
                                                 @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+                                                @method('PUT')
+                                                <div class="row g-2 align-items-end">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label small fw-bold mb-1">Título</label>
+                                                        <input type="text" name="title" class="form-control form-control-sm" value="{{ $lesson->title }}" required>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label small fw-bold mb-1">Ordem</label>
+                                                        <input type="number" name="order" min="0" class="form-control form-control-sm" value="{{ $lesson->order }}">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label small fw-bold mb-1">Duração (min)</label>
+                                                        <input type="number" name="duration_minutes" min="0" class="form-control form-control-sm" value="{{ $lesson->duration_minutes }}">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label small fw-bold mb-1">Tipo</label>
+                                                        <select name="type" class="form-select form-select-sm js-edit-type">
+                                                            <option value="video" @selected($lesson->type === 'video')>Vídeo</option>
+                                                            <option value="ebook" @selected($lesson->type === 'ebook')>E-book</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-10 js-edit-video" @if($lesson->type === 'ebook') style="display:none" @endif>
+                                                        <label class="form-label small fw-bold mb-1">Link do vídeo (YouTube ou Vimeo)</label>
+                                                        <input type="url" name="video_url" class="form-control form-control-sm" value="{{ $lesson->video_url }}" placeholder="https://www.youtube.com/watch?v=...">
+                                                    </div>
+                                                    <div class="col-md-10 js-edit-ebook" @if($lesson->type !== 'ebook') style="display:none" @endif>
+                                                        <label class="form-label small fw-bold mb-1">{{ $lesson->document_url ? 'Trocar o PDF (opcional)' : 'PDF do material' }}</label>
+                                                        <input type="file" name="document" class="form-control form-control-sm" accept=".pdf">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <button type="submit" class="btn btn-sm btn-primary w-100">Salvar</button>
+                                                    </div>
+                                                </div>
                                             </form>
                                         </li>
                                     @endforeach
@@ -125,7 +170,7 @@
                                         
                                         <!-- Video Fields -->
                                         <div class="col-md-8 mb-2 video-fields-{{ $module->id }}">
-                                            <input type="url" name="video_url" class="form-control form-control-sm" placeholder="URL do Vídeo (YouTube/Vimeo)" id="video_url">
+                                            <input type="url" name="video_url" class="form-control form-control-sm" placeholder="Link do vídeo (YouTube ou Vimeo)" id="video_url{{ $module->id }}">
                                         </div>
                                         
                                         <!-- Ebook Fields -->
@@ -146,6 +191,14 @@
 
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
+                                    // Edição: mostra o campo certo conforme o tipo da aula.
+                                    document.querySelectorAll('#collapse{{ $module->id }} .lesson-edit-form').forEach(function (f) {
+                                        const sel = f.querySelector('.js-edit-type');
+                                        sel.addEventListener('change', function () {
+                                            f.querySelector('.js-edit-video').style.display = this.value === 'video' ? '' : 'none';
+                                            f.querySelector('.js-edit-ebook').style.display = this.value === 'ebook' ? '' : 'none';
+                                        });
+                                    });
                                     const selector = document.querySelector('.lesson-type-selector[data-module="{{ $module->id }}"]');
                                     if (selector) {
                                         selector.addEventListener('change', function() {

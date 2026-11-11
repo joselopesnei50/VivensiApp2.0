@@ -119,6 +119,9 @@ Route::get('/t/{slug}',                           [App\Http\Controllers\Transpar
 Route::get('/r/{token}',               [App\Http\Controllers\ReceiptController::class, 'show'])->middleware(['throttle:30,1', 'no.referrer'])->name('public.receipt');
 Route::get('/validar-recibo',          [App\Http\Controllers\ReceiptController::class, 'validateForm'])->name('public.receipt.validate');
 Route::post('/validar-recibo',         [App\Http\Controllers\ReceiptController::class, 'validateSubmit'])->middleware('throttle:5,1');
+// Vivensi Academy — verificação pública do certificado (sem login), pelo código impresso no PDF.
+Route::get('/verificar-certificado/{code?}', [App\Http\Controllers\AcademyController::class, 'verify'])
+    ->where('code', '[A-Za-z0-9-]{1,40}')->middleware('throttle:30,1')->name('academy.verify');
 Route::get('/validar-certificado/{uuid}', [App\Http\Controllers\HumanResourcesController::class, 'publicValidateVolunteerCertificate'])->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')->middleware('throttle:5,1')->name('public.volunteer_certificate.validate');
 
 // ── Assinatura de contratos pública ──────────────────────────────────────────

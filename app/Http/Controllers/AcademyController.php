@@ -161,11 +161,19 @@ class AcademyController extends Controller
             return false;
         }
 
+        $course  = Course::find($courseId);
+        $minutes = (int) Lesson::whereHas('module', fn ($q) => $q->where('course_id', $courseId))->sum('duration_minutes');
+
         return (bool) Certificate::firstOrCreate(
             ['user_id' => $userId, 'course_id' => $courseId],
             [
-                'code'      => strtoupper(\Illuminate\Support\Str::random(16)),
-                'issued_at' => now(),
+                'code'             => strtoupper(\Illuminate\Support\Str::random(16)),
+                'issued_at'        => now(),
+                // Fotografia do que foi certificado (vale mesmo se o curso mudar depois).
+                'student_name'     => \App\Models\User::whereKey($userId)->value('name'),
+                'course_title'     => $course?->title,
+                'teacher_name'     => $course?->teacher_name,
+                'workload_minutes' => $minutes ?: null,
             ]
         )->wasRecentlyCreated;
     }
@@ -201,6 +209,28 @@ class AcademyController extends Controller
         $pdf->setPaper('a4', 'landscape');
 
         return $pdf->download('Certificado-Vivensi-' . $certificate->code . '.pdf');
+    }
+
+    /**
+     * Verificação pública (sem login): qualquer pessoa confere se o certificado é autêntico.
+     * Mostra só o necessário — nome, curso, carga horária e data. Sem e-mail nem outros dados.
+     */
+    public function verify(Request $request, ?string $code = null)
+    {
+        $code = Certificate::normalizeCode($code ?? $request->query('codigo'));
+        $certificate = null;
+        $searched = $code !== '';
+
+        if ($searched) {
+            if ($request->query('codigo') && $request->route('code') === null) {
+                return redirect()->route('academy.verify', ['code' => $code]);
+            }
+            $certificate = Certificate::with(['user:id,name', 'course:id,title,teacher_name'])->where('code', $code)->first();
+        }
+
+        return response()
+            ->view('academy.verify', compact('certificate', 'code', 'searched'))
+            ->setStatusCode($searched && !$certificate ? 404 : 200);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
