@@ -40,10 +40,11 @@
                 {{ $pixPayload }}
             </div>
 
-            <p><strong>Importante:</strong> Esta reserva expira em 30 minutos. Após realizar o pagamento, nosso sistema identificará automaticamente seu pedido.</p>
-            
+            <p><strong>Importante:</strong> depois de pagar, envie o comprovante para a organização. Ela confere o PIX e confirma os seus números — você recebe outro e-mail quando isso acontecer.
+            Se o pagamento não for confirmado em até {{ \App\Models\RaffleTicket::RESERVATION_HOURS }} horas, a reserva é cancelada.</p>
+
             <div style="text-align: center;">
-                <a href="{{ route('public.raffle.show', $raffle->slug) }}" class="button">Ver Campanha</a>
+                <a href="{{ $orderUrl ?? route('public.raffle.show', $raffle->slug) }}" class="button">Ver meu pedido e o PIX</a>
             </div>
         </div>
         <div class="footer">

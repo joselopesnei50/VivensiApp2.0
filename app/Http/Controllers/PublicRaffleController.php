@@ -17,11 +17,12 @@ class PublicRaffleController extends Controller
     public function show(Request $request, $slug)
     {
         // withoutGlobalScopes: rota pública — slug único + status active isolam o registro
+        // Rifa sorteada continua no ar, mostrando o resultado (sem vender).
         $raffle = Raffle::withoutGlobalScope('tenant')
             ->where('slug', $slug)
-            ->where('status', 'active')
-            ->with(['tenant', 'tickets' => function($q) {
-                $q->orderBy('number', 'asc');
+            ->whereIn('status', ['active', 'finished'])
+            ->with(['tenant', 'winner', 'tickets' => function($q) {
+                $q->select('id', 'raffle_id', 'number', 'status')->orderBy('number', 'asc');
             }])
             ->firstOrFail();
 
@@ -34,9 +35,6 @@ class PublicRaffleController extends Controller
 
     public function reserve(Request $request, $slug)
     {
-        try {
-            \Illuminate\Support\Facades\Log::info("Iniciando reserva para rifa: $slug");
-        } catch (\Exception $e) {}
         $raffle = Raffle::withoutGlobalScope('tenant')
             ->where('slug', $slug)
             ->where('status', 'active')
@@ -48,14 +46,29 @@ class PublicRaffleController extends Controller
             return back()->with('error', 'Esta organização ainda não configurou a chave PIX. Por favor, entre em contato com o suporte da ONG.');
         }
         
+        $max = RaffleTicket::MAX_PER_RESERVATION;
         $request->validate([
             'buyer_name' => 'required|string|max:255',
             'buyer_email' => 'required|email|max:255',
             'buyer_phone' => 'required|string|max:20',
-            'selected_numbers' => 'required|array|min:1',
+            'selected_numbers' => "required|array|min:1|max:{$max}",
+            'selected_numbers.*' => 'integer|min:1|distinct',
+        ], [
+            'selected_numbers.max' => "Você pode reservar até {$max} números por vez.",
+            'selected_numbers.required' => 'Escolha pelo menos um número.',
         ]);
 
-        $selectedNumbers = $request->selected_numbers;
+        $selectedNumbers = array_map('intval', $request->selected_numbers);
+
+        // Limite por comprador: o mesmo e-mail não segura mais que $max números pendentes nesta rifa.
+        $alreadyPending = RaffleTicket::where('raffle_id', $raffle->id)
+            ->where('status', 'pending')
+            ->where('buyer_email', $request->buyer_email)
+            ->count();
+        if ($alreadyPending + count($selectedNumbers) > $max) {
+            return back()->withInput()->with('error', "Você já tem {$alreadyPending} números reservados aguardando pagamento. O limite é {$max} por pessoa — pague os anteriores ou escolha menos números.");
+        }
+        $token = Str::random(40);
 
         try {
             DB::beginTransaction();
@@ -79,6 +92,8 @@ class PublicRaffleController extends Controller
                     'buyer_phone' => $request->buyer_phone,
                     'status' => 'pending',
                     'reserved_at' => now(),
+                    'reservation_token' => $token,
+                    'reminder_sent_at' => null,
                 ]);
             }
 
@@ -92,10 +107,11 @@ class PublicRaffleController extends Controller
             $totalAmount = count($selectedNumbers) * $raffle->ticket_price;
 
             $pixPayload = $this->generatePixPayload($raffle, $totalAmount);
+            $orderUrl   = route('public.raffle.order', [$raffle->slug, $token]);
 
             // Send Email to buyer (Fails Silently to not break Checkout)
             try {
-                Mail::to($request->buyer_email)->send(new RaffleTicketReserved($raffle, $availableTickets, $pixPayload, $totalAmount));
+                Mail::to($request->buyer_email)->send(new RaffleTicketReserved($raffle, $availableTickets, $pixPayload, $totalAmount, $orderUrl));
             } catch (\Exception $e) {
                 \Log::error("Email Error on Reservation: " . $e->getMessage());
             }
@@ -114,20 +130,53 @@ class PublicRaffleController extends Controller
                 \Log::error("Tenant Notification Error on Reservation: " . $e->getMessage());
             }
 
-            return view('public.raffles.checkout', [
-                'raffle'          => $raffle,
-                'tenant'          => $tenant,
-                'tickets'         => $availableTickets,
-                'pixPayload'      => $pixPayload,
-                'totalAmount'     => $totalAmount,
-                'whatsappSupport' => $tenant->whatsapp_support ?? $tenant->support_phone ?? '',
-            ]);
+            // Página do pedido em GET: pode ser atualizada, reaberta pelo e-mail ou compartilhada pelo comprador.
+            return redirect()->to($orderUrl);
 
         } catch (\Exception $e) {
             if (DB::transactionLevel() > 0) DB::rollBack();
             \Illuminate\Support\Facades\Log::error("Erro crítico na reserva da rifa ($slug): " . $e->getMessage());
             return back()->with('error', 'Desculpe, ocorreu um erro ao processar sua reserva. Tente novamente ou entre em contato com a organização.');
         }
+    }
+
+    /**
+     * Página do pedido (PIX e situação dos números). O token de 40 caracteres é o acesso:
+     * quem tem o link (o comprador, pelo e-mail) vê o pedido.
+     */
+    public function order(string $slug, string $token)
+    {
+        $raffle = Raffle::withoutGlobalScope('tenant')
+            ->where('slug', $slug)
+            ->whereIn('status', ['active', 'finished'])
+            ->with('tenant')
+            ->firstOrFail();
+
+        $tickets = RaffleTicket::where('raffle_id', $raffle->id)
+            ->where('reservation_token', $token)
+            ->whereIn('status', ['pending', 'paid'])
+            ->orderBy('number')
+            ->get();
+
+        if ($tickets->isEmpty()) {
+            return redirect()->route('public.raffle.show', $raffle->slug)
+                ->with('error', 'Esta reserva não está mais ativa: o prazo de pagamento terminou ou ela foi cancelada. Você pode escolher novos números.');
+        }
+
+        $tenant  = $raffle->tenant;
+        $pending = $tickets->where('status', 'pending');
+        $amount  = $pending->count() * (float) $raffle->ticket_price;
+
+        return view('public.raffles.checkout', [
+            'raffle'          => $raffle,
+            'tenant'          => $tenant,
+            'tickets'         => $tickets,
+            'pendingTickets'  => $pending,
+            'pixPayload'      => $pending->isNotEmpty() ? $this->generatePixPayload($raffle, $amount) : '',
+            'totalAmount'     => $pending->isNotEmpty() ? $amount : $tickets->count() * (float) $raffle->ticket_price,
+            'expiresAt'       => optional($pending->min('reserved_at'))->copy()?->addHours(RaffleTicket::RESERVATION_HOURS),
+            'whatsappSupport' => $tenant->whatsapp_support ?? $tenant->support_phone ?? '',
+        ]);
     }
 
     // uploadReceipt removido em 2026-08-31 — dead code (nenhuma view/email
@@ -157,11 +206,13 @@ class PublicRaffleController extends Controller
         $pixKey = trim($pixKey);
         
         // Normalize Merchant Name: MUST BE ASCII ONLY
-        $merchantName = Str::ascii($tenant->name ?? 'EMPRESA');
+        $merchantName = Str::ascii($tenant->razao_social ?: ($tenant->name ?? 'EMPRESA'));
         $merchantName = strtoupper(preg_replace('/[^A-Za-z0-9 ]/', '', $merchantName));
         $merchantName = substr(trim($merchantName), 0, 25) ?: 'EMPRESA';
         
-        $merchantCity = 'SAO PAULO';
+        // Cidade da organização (EMV: até 15 caracteres, só ASCII). Sem cidade cadastrada, mantém o padrão anterior.
+        $merchantCity = strtoupper(preg_replace('/[^A-Za-z ]/', '', Str::ascii((string) ($tenant->cidade ?? ''))));
+        $merchantCity = substr(trim($merchantCity), 0, 15) ?: 'SAO PAULO';
         $amountStr    = number_format($amount, 2, '.', '');
 
         // ── Field builders ────────────────────────────────────────────────────

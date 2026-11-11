@@ -133,6 +133,7 @@ Route::get('/chamada/{token}/ok',       [App\Http\Controllers\PublicAttendanceCo
 // ── Rifas públicas ────────────────────────────────────────────────────────────
 Route::get('/rifa/{slug}',                       [App\Http\Controllers\PublicRaffleController::class, 'show'])->name('public.raffle.show');
 Route::post('/rifa/{slug}/reserve',              [App\Http\Controllers\PublicRaffleController::class, 'reserve'])->middleware('throttle:20,1')->name('public.raffle.reserve');
+Route::get('/rifa/{slug}/pedido/{token}',        [App\Http\Controllers\PublicRaffleController::class, 'order'])->where('token', '[A-Za-z0-9]{40}')->middleware('throttle:60,1')->name('public.raffle.order');
 // Rota /rifa/ticket/{ticket}/comprovante removida em 2026-08-31 — dead code
 // (nenhuma view/email chamava). Fluxo real de comprovante e via WhatsApp
 // direto pro NGO. Auditoria 2026-08-29 P3.b.2.

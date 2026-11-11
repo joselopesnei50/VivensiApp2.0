@@ -32,7 +32,7 @@
                     </div>
                     <div class="p-3 bg-light rounded-3">
                         <span class="text-muted small text-uppercase fw-bold ls-1 d-block mb-1">Data do Sorteio</span>
-                        <span class="fw-bold">{{ $raffle->draw_date->format('d/m/Y H:i') }}</span>
+                        <span class="fw-bold">{{ $raffle->draw_date ? $raffle->draw_date->format('d/m/Y H:i') : 'A definir' }}</span>
                     </div>
                     <div class="p-3 bg-light rounded-3">
                         <span class="text-muted small text-uppercase fw-bold ls-1 d-block mb-1">Status Atual</span>
@@ -193,7 +193,14 @@
                                 </span>
                             </td>
                             <td>
-                                <span class="small text-muted">{{ $ticket->updated_at ? $ticket->updated_at->diffForHumans() : 'S/D' }}</span>
+                                @if($ticket->status === 'pending' && $ticket->expiresAt())
+                                    <span class="small fw-bold {{ $ticket->expiresAt()->diffInHours(now()) < \App\Models\RaffleTicket::REMINDER_HOURS_BEFORE ? 'text-danger' : 'text-muted' }}"
+                                          title="A reserva é cancelada se o pagamento não for confirmado até {{ $ticket->expiresAt()->format('d/m H:i') }}">
+                                        vence {{ $ticket->expiresAt()->format('d/m H:i') }}
+                                    </span>
+                                @else
+                                    <span class="small text-muted">{{ $ticket->updated_at ? $ticket->updated_at->diffForHumans() : 'S/D' }}</span>
+                                @endif
                             </td>
                             <td class="text-end pe-4">
                                 @if($ticket->payment_receipt_path)
@@ -203,11 +210,21 @@
                                 @endif
                                 
                                 @if($ticket->status == 'pending')
-                                <div class="d-flex gap-2">
+                                @php $orderSize = $ticket->reservation_token ? ($pendingPerOrder[$ticket->reservation_token] ?? 1) : 1; @endphp
+                                <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                    @if($orderSize > 1)
                                     <form action="{{ route('raffles.confirm-payment', $ticket->id) }}" method="POST" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm border-0" onclick="return confirm('Confirmar recebimento deste pagamento?')">
-                                            <i class="bi bi-check-lg me-1"></i> CONFIRMAR
+                                        <input type="hidden" name="scope" value="order">
+                                        <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm border-0" onclick="return confirm('Confirmar o pagamento dos {{ $orderSize }} números desta compra?')">
+                                            <i class="bi bi-check2-all me-1"></i> CONFIRMAR COMPRA ({{ $orderSize }})
+                                        </button>
+                                    </form>
+                                    @endif
+                                    <form action="{{ route('raffles.confirm-payment', $ticket->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn {{ $orderSize > 1 ? 'btn-outline-success' : 'btn-success' }} btn-sm rounded-pill px-3 shadow-sm" onclick="return confirm('Confirmar recebimento deste pagamento?')">
+                                            <i class="bi bi-check-lg me-1"></i> {{ $orderSize > 1 ? 'SÓ ESTE' : 'CONFIRMAR' }}
                                         </button>
                                     </form>
 

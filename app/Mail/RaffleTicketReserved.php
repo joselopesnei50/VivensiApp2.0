@@ -16,9 +16,11 @@ class RaffleTicketReserved extends Mailable
     public $tickets;
     public $pixPayload;
     public $totalAmount;
+    public $orderUrl;
 
-    public function __construct(Raffle $raffle, $tickets, string $pixPayload, float $totalAmount)
+    public function __construct(Raffle $raffle, $tickets, string $pixPayload, float $totalAmount, ?string $orderUrl = null)
     {
+        $this->orderUrl = $orderUrl;
         $this->raffle = $raffle;
         $this->tickets = $tickets;
         $this->pixPayload = $pixPayload;

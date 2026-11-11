@@ -172,6 +172,7 @@
             .raffle-header { padding: 30px 20px; }
             .ticket-grid { grid-template-columns: repeat(5, 1fr); }
         }
+            .ticket.winner { text-decoration: none !important; background: #f59e0b !important; color: #fff !important; border-color: #d97706 !important; box-shadow: 0 0 0 4px rgba(245,158,11,.25); opacity: 1 !important; }
     </style>
 </head>
 <body>
@@ -228,21 +229,43 @@
                     </div>
                 @endif
 
+                @php
+                    $finished = $raffle->status === 'finished';
+                    // Nome do ganhador sem expor o sobrenome completo: "Maria S."
+                    $winnerName = null;
+                    if ($finished && $raffle->winner && $raffle->winner->buyer_name) {
+                        $parts = preg_split('/\s+/', trim($raffle->winner->buyer_name));
+                        $winnerName = $parts[0] . (count($parts) > 1 ? ' ' . mb_substr(end($parts), 0, 1) . '.' : '');
+                    }
+                @endphp
+
+                @if($finished)
+                    <div class="text-center p-4 p-md-5 mb-5 rounded-4" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px solid #f59e0b;">
+                        <div class="small fw-800 text-uppercase mb-2" style="letter-spacing:.08em;color:#b45309">Sorteio realizado</div>
+                        @if($raffle->winner)
+                            <div class="fw-900" style="font-size: clamp(2.6rem, 8vw, 4rem); line-height:1; color:#92400e">#{{ str_pad($raffle->winner->number, 2, '0', STR_PAD_LEFT) }}</div>
+                            <div class="fs-5 fw-bold mt-2" style="color:#78350f">Número vencedor{{ $winnerName ? ' — ' . $winnerName : '' }}</div>
+                        @endif
+                        <p class="small mb-0 mt-3" style="color:#92400e">As vendas foram encerradas. Obrigado a todos que participaram e apoiaram {{ $raffle->tenant->name }}!</p>
+                    </div>
+                @endif
+
                 <div class="row g-5">
-                    <div class="col-lg-7">
-                        <h5 class="fw-800 mb-4">Selecione seus números</h5>
+                    <div class="{{ $finished ? 'col-12' : 'col-lg-7' }}">
+                        <h5 class="fw-800 mb-4">{{ $finished ? 'Números' : 'Selecione seus números' }}</h5>
                         <div class="ticket-grid" id="ticketGrid">
                             @foreach($raffle->tickets->sortBy('number') as $ticket)
-                                <div class="ticket {{ $ticket->status }}" 
+                                <div class="ticket {{ $ticket->status }}{{ ($finished && $raffle->winner_ticket_id === $ticket->id) ? ' winner' : '' }}"
                                      data-number="{{ $ticket->number }}"
                                      data-id="{{ $ticket->id }}"
-                                     onclick="toggleTicket(this)">
+                                     @unless($finished) onclick="toggleTicket(this)" @endunless>
                                     {{ str_pad($ticket->number, 2, '0', STR_PAD_LEFT) }}
                                 </div>
                             @endforeach
                         </div>
                     </div>
 
+                    @unless($finished)
                     <div class="col-lg-5">
                         <div class="p-4 rounded-4" style="background: var(--bg-body); border: 1px solid var(--border-color);">
                             <h5 class="fw-800 mb-4">Resumo da Reserva</h5>
@@ -253,17 +276,17 @@
                                 
                                 <div class="mb-3">
                                     <label for="buyer_name" class="form-label small fw-800 text-muted text-uppercase">Seu Nome</label>
-                                    <input type="text" name="buyer_name" class="form-control form-vivensi" placeholder="Nome completo" required id="buyer_name">
+                                    <input type="text" name="buyer_name" class="form-control form-vivensi" placeholder="Nome completo" required id="buyer_name" value="{{ old('buyer_name') }}">
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="phone" class="form-label small fw-800 text-muted text-uppercase">WhatsApp</label>
-                                    <input type="tel" name="buyer_phone" class="form-control form-vivensi" placeholder="(00) 00000-0000" id="phone" required>
+                                    <input type="tel" name="buyer_phone" class="form-control form-vivensi" placeholder="(00) 00000-0000" id="phone" required value="{{ old('buyer_phone') }}">
                                 </div>
 
                                 <div class="mb-4">
                                     <label for="buyer_email" class="form-label small fw-800 text-muted text-uppercase">E-mail</label>
-                                    <input type="email" name="buyer_email" class="form-control form-vivensi" placeholder="seu@email.com" required id="buyer_email">
+                                    <input type="email" name="buyer_email" class="form-control form-vivensi" placeholder="seu@email.com" required id="buyer_email" value="{{ old('buyer_email') }}">
                                 </div>
 
                                 <div id="selectionSummary" class="mb-4 d-none">
@@ -293,6 +316,7 @@
                             </form>
                         </div>
                     </div>
+                    @endunless
                 </div>
             </div>
         </div>
@@ -312,6 +336,7 @@
 
         let selectedNumbers = [];
         const ticketPrice = {{ $raffle->ticket_price }};
+        const maxPerOrder = {{ \App\Models\RaffleTicket::MAX_PER_RESERVATION }};
 
         function toggleTicket(element) {
             if (element.classList.contains('pending') || element.classList.contains('paid')) {
@@ -323,6 +348,9 @@
             if (selectedNumbers.includes(number)) {
                 selectedNumbers = selectedNumbers.filter(n => n !== number);
                 element.classList.remove('selected');
+            } else if (selectedNumbers.length >= maxPerOrder) {
+                alert('Você pode reservar até ' + maxPerOrder + ' números por vez.');
+                return;
             } else {
                 selectedNumbers.push(number);
                 element.classList.add('selected');
