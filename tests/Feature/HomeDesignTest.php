@@ -33,3 +33,16 @@ it('não tem pop-up na entrada nem números e selos sem confirmação', function
         ->not->toContain('VIVENSIAPP')
         ->not->toContain('wa.me/551697618695');             // número sem o 9
 });
+
+it('seção de preço: plano pago com recursos, sem seletor anual e sem plano de cortesia', function () {
+    \App\Models\SubscriptionPlan::forceCreate(['name' => 'Terceiro Setor - Avante', 'price' => 349.90, 'is_active' => true, 'is_courtesy' => false,
+        'target_audience' => 'ngo', 'features' => ['Rifas online com PIX']]);
+    \App\Models\SubscriptionPlan::forceCreate(['name' => 'Cortesia Parceiros', 'price' => 0, 'is_active' => true, 'is_courtesy' => true, 'target_audience' => 'ngo']);
+
+    $this->get('/')->assertOk()
+        ->assertSee('Um plano. Tudo incluso.')
+        ->assertSee('349,90')
+        ->assertSee('Rifas online com PIX')
+        ->assertDontSee('Cortesia Parceiros')
+        ->assertDontSee('id="billing-toggle"', false);
+});

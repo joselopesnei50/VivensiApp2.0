@@ -10,8 +10,11 @@ class PublicController extends Controller
     public function welcome()
     {
         // A Vivensi atende só o Terceiro Setor.
+        // Só planos pagos à venda (cortesia é dada pela equipe, não aparece na home).
         $plans = \App\Models\SubscriptionPlan::where('is_active', true)
                     ->where('target_audience', 'ngo')
+                    ->where(fn ($q) => $q->where('is_courtesy', false)->orWhereNull('is_courtesy'))
+                    ->orderBy('price')
                     ->get();
 
         // Ancoragem de preco no hero — remove friccao "quanto custa" sem exigir
