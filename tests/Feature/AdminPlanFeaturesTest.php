@@ -29,3 +29,19 @@ it('a migração substitui a lista do plano Avante', function () {
     (require database_path('migrations/2026_11_11_030000_replace_features_plano_avante.php'))->up();
     expect($this->plan->fresh()->features)->toHaveCount(13)->not->toContain('Antigo 1');
 });
+
+it('acrescenta marketing, API da Meta e Academy ao Avante sem duplicar', function () {
+    $this->plan->update(['features' => ['Beneficiários', 'Campanhas de e-mail e atendimento por WhatsApp', 'Assistente de IA (Bruce)']]);
+    $m = require database_path('migrations/2026_11_11_040000_add_marketing_academy_meta_features_avante.php');
+    $m->up();
+    $m->up();
+
+    expect($this->plan->fresh()->features)->toBe([
+        'Beneficiários',
+        'Campanhas de e-mail e atendimento por WhatsApp',
+        'Hub de marketing: gestão do Instagram, gerador de posts com IA e calendário editorial',
+        'WhatsApp pela API oficial da Meta',
+        'Vivensi Academy: trilhas de capacitação para a equipe',
+        'Assistente de IA (Bruce)',
+    ]);
+});
