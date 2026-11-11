@@ -132,7 +132,7 @@
                                         </button>
                                     @else
                                         {{-- Gera um link novo na hora (o anterior pode ter expirado) --}}
-                                        <form method="POST" action="{{ route('client.invoices.pay', $inv->id) }}" style="display:inline;">
+                                        <form method="POST" action="{{ route('client.invoices.pay', $inv->id) }}" style="display:inline;" target="vivensi_pix" class="js-pay-newtab">
                                             @csrf
                                             <button type="submit" class="inv-cta primary">
                                                 <i class="fas fa-external-link-alt"></i> Pagar com PIX
@@ -248,4 +248,17 @@
     @endif
 
 </div>
+<script>
+// O PIX abre em outra aba (a AbacatePay não devolve o cliente depois do pagamento).
+// Quando a pessoa volta para esta aba, recarrega: a tela confere na AbacatePay e dá baixa.
+(function () {
+    var opened = false;
+    document.querySelectorAll('.js-pay-newtab').forEach(function (f) {
+        f.addEventListener('submit', function () { opened = true; });
+    });
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && opened) { opened = false; setTimeout(function () { window.location.reload(); }, 800); }
+    });
+})();
+</script>
 @endsection
