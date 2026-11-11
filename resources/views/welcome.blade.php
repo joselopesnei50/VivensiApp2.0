@@ -714,38 +714,41 @@ body{font-family:'Inter',sans-serif;background:var(--ink);color:var(--white);ove
 .pricing{padding:100px 6%;background:#090909;position:relative;border-top:1px solid rgba(255,255,255,.05)}
 .pricing::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:72px 72px;pointer-events:none}
 .pricing-inner{max-width:1240px;margin:0 auto;position:relative;z-index:1}
-.billing-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin:32px 0 52px}
-.tgl-label{font-size:.86rem;font-weight:600;color:rgba(255,255,255,.72);transition:color .3s}
-.tgl-label.on{color:white}
-.switch{position:relative;display:inline-block;width:46px;height:24px}
-.switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.12);border-radius:24px;transition:.3s}
-.slider:before{content:'';position:absolute;height:16px;width:16px;left:4px;bottom:4px;background:white;border-radius:50%;transition:.3s}
-input:checked+.slider{background:#4F6EF7}
-input:checked+.slider:before{transform:translateX(22px)}
-.disc-badge{background:rgba(74,222,128,.12);color:#4ade80;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:100px}
-.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px;max-width:1000px;margin:0 auto;border:1px solid rgba(255,255,255,.07);border-radius:20px;overflow:hidden}
-.price-card{background:#111;padding:36px;position:relative;transition:background .25s;border-right:1px solid rgba(255,255,255,.07)}
-.price-card:last-child{border-right:none}
-.price-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent}
-.price-card.hot{background:#131820}
-.price-card.hot::before{background:#4F6EF7}
-.price-card:hover{background:#141414}
-.hot-label{position:absolute;top:18px;right:18px;background:#4F6EF7;color:white;font-size:.62rem;font-weight:800;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
-.price-name{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.65);margin-bottom:16px}
-.price-val{font-size:2.6rem;font-weight:900;line-height:1;letter-spacing:-.04em;color:#fff}
-.price-val .cur{font-size:1rem;font-weight:700;vertical-align:top;margin-top:6px;display:inline-block;color:rgba(255,255,255,.4)}
-.price-val .per{font-size:.86rem;font-weight:400;color:rgba(255,255,255,.65)}
-.price-note{font-size:.7rem;color:rgba(255,255,255,.22);margin-top:4px;margin-bottom:24px}
-.price-divider{height:1px;background:rgba(255,255,255,.07);margin:18px 0}
-.price-feats{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:28px}
-.price-feats li{display:flex;align-items:center;gap:9px;font-size:.8rem;color:rgba(255,255,255,.58)}
-.price-feats li i{color:#4ade80;font-size:.76rem;flex-shrink:0}
-.btn-price{display:block;text-align:center;padding:13px;border-radius:10px;font-weight:700;font-size:.86rem;text-decoration:none;transition:all .2s;border:none;cursor:pointer;width:100%}
-.btp-main{background:#ffffff;color:#0a0a0a}
-.btp-main:hover{background:#e8e8e8;transform:translateY(-1px)}
-.btp-out{border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);background:none}
-.btp-out:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.22);color:white}
+/* Preço — mesmo padrão da tela de login/cadastro */
+.pl-list{display:flex;flex-direction:column;gap:20px;max-width:1080px;margin:52px auto 0}
+.pl-card{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);border:1px solid rgba(255,255,255,.09);border-radius:22px;overflow:hidden;background:#0d0d0d}
+.pl-main{position:relative;padding:44px 40px;background:linear-gradient(180deg,#121521 0%,#0e0f15 100%);border-right:1px solid rgba(255,255,255,.07)}
+.pl-main::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#4F6EF7,#A78BFA)}
+.pl-eyebrow{display:inline-flex;align-items:center;gap:8px;color:#7d93ff;font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.pl-dot{width:6px;height:6px;border-radius:50%;background:#22c55e}
+.pl-name{font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:-.02em;margin:0 0 22px}
+.pl-price{display:flex;align-items:flex-start;gap:6px;line-height:1}
+.pl-cur{font-size:1.05rem;font-weight:700;color:rgba(255,255,255,.5);margin-top:8px}
+.pl-amount{font-size:3.6rem;font-weight:900;letter-spacing:-.05em;color:#fff}
+.pl-per{align-self:flex-end;font-size:.95rem;color:rgba(255,255,255,.6);margin-bottom:8px}
+.pl-note{font-size:.82rem;color:rgba(255,255,255,.5);margin:10px 0 28px}
+.pl-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px 22px;border-radius:12px;background:#fff;color:#0a0a0a;font-weight:800;font-size:.92rem;text-decoration:none;letter-spacing:-.01em;transition:transform .15s,box-shadow .2s,background .2s}
+.pl-cta:hover{background:#f1f1f1;transform:translateY(-1px);box-shadow:0 10px 30px rgba(79,110,247,.25);color:#0a0a0a}
+.pl-arrow{width:22px;height:22px;border-radius:50%;background:#0a0a0a;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.66rem}
+.pl-talk{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.78);font-weight:600;font-size:.86rem;text-decoration:none;transition:background .2s,border-color .2s,color .2s}
+.pl-talk:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.24);color:#fff}
+.pl-talk i{color:#22c55e}
+.pl-trust{list-style:none;margin:28px 0 0;padding:22px 0 0;border-top:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:11px}
+.pl-trust li{display:flex;align-items:center;gap:10px;font-size:.8rem;color:rgba(255,255,255,.6)}
+.pl-trust i{width:16px;text-align:center;color:rgba(255,255,255,.4);font-size:.8rem}
+.pl-feats-wrap{padding:44px 40px}
+.pl-feats-title{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:22px}
+.pl-feats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:14px 26px}
+.pl-feats li{display:flex;align-items:flex-start;gap:11px;font-size:.86rem;line-height:1.45;color:rgba(255,255,255,.78)}
+.pl-check{flex:none;width:20px;height:20px;margin-top:1px;border-radius:6px;background:rgba(79,110,247,.14);border:1px solid rgba(79,110,247,.35);color:#9aabff;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem}
+.pl-empty{font-size:.9rem;color:rgba(255,255,255,.6);line-height:1.6}
+@media (max-width: 900px){
+    .pl-card{grid-template-columns:1fr}
+    .pl-main{border-right:none;border-bottom:1px solid rgba(255,255,255,.07);padding:34px 24px}
+    .pl-feats-wrap{padding:30px 24px}
+    .pl-amount{font-size:3rem}
+}
+@media (max-width: 560px){ .pl-feats{grid-template-columns:1fr} }
 
 /* ─── CTA ─── */
 .cta-section{padding:120px 6%;background:#090909;position:relative;border-top:1px solid rgba(255,255,255,.06)}
@@ -898,8 +901,6 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     .counter-grid{grid-template-columns:1fr 1fr}
     .footer-row{grid-template-columns:1fr 1fr}
     .fc-c,.fc-d,.fc-e{display:none}
-    .price-card.hot{transform:none}
-    .price-card.hot:hover{transform:translateY(-4px)}
     .au-fb-1,.au-fb-2{display:none}
     .au-orbit-1,.au-orbit-2{display:none}
     .au-card-wrap{max-width:420px;margin:0 auto}
@@ -1975,41 +1976,57 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <div class="pricing-inner">
         <div class="center aos">
             <div class="section-tag st-blue"><i class="fas fa-tag"></i> Planos</div>
-            <h2 class="section-title">Investimento no impacto</h2>
-            <p class="section-sub center">Sem fidelização. Cancele quando quiser. Suporte incluso em todos os planos.</p>
-            @if($plans->isNotEmpty())
-            <div class="billing-toggle">
-                <span class="tgl-label on" id="lbl-m">Mensal</span>
-                <label class="switch"><input type="checkbox" id="billing-toggle" onchange="toggleBilling()"><span class="slider"></span></label>
-                <span class="tgl-label" id="lbl-y">Anual <span class="disc-badge">-10% OFF</span></span>
-            </div>
-            @endif
+            <h2 class="section-title">{{ $plans->count() === 1 ? 'Um plano. Tudo incluso.' : 'Investimento no impacto' }}</h2>
+            <p class="section-sub center">Sem fidelidade, sem taxa de implantação. Cancele quando quiser.</p>
         </div>
-        <div class="price-grid">
+
+        <div class="pl-list">
             @forelse($plans as $plan)
-            <div class="price-card {{ $loop->index === 1 ? 'hot' : '' }}">
-                @if($loop->index === 1)<div class="hot-label">Mais Popular</div>@endif
-                <div class="price-name">{{ $plan->name }}</div>
-                <div class="price-val">
-                    <span class="cur">R$</span>
-                    <span class="amount" data-m="{{ $plan->price }}" data-y="{{ $plan->price_yearly ?? ($plan->price * 12 * 0.9) }}">{{ number_format($plan->price, 2, ',', '.') }}</span>
-                    <span class="per">/mês</span>
+            @php $isCourtesy = (bool) $plan->is_courtesy || (float) $plan->price <= 0; @endphp
+            <article class="pl-card aos">
+                <div class="pl-main">
+                    <div class="pl-eyebrow"><span class="pl-dot"></span> {{ $plans->count() === 1 ? 'Plano para o Terceiro Setor' : 'Plano' }}</div>
+                    <h3 class="pl-name">{{ $plan->name }}</h3>
+
+                    <div class="pl-price">
+                        @if($isCourtesy)
+                            <span class="pl-amount">Cortesia</span>
+                        @else
+                            <span class="pl-cur">R$</span>
+                            <span class="pl-amount">{{ number_format((float) $plan->price, 2, ',', '.') }}</span>
+                            <span class="pl-per">/mês</span>
+                        @endif
+                    </div>
+                    <p class="pl-note">Cobrança mensal por PIX. Sem fidelidade.</p>
+
+                    <a href="{{ route('register', ['plan_id' => $plan->id]) }}" class="pl-cta" data-plan-id="{{ $plan->id }}">
+                        Criar a conta da organização
+                        <span class="pl-arrow"><i class="fas fa-arrow-right"></i></span>
+                    </a>
+                    <a href="https://wa.me/5516997618695?text={{ rawurlencode('Olá! Tenho dúvidas sobre o plano ' . $plan->name . ' da Vivensi.') }}" target="_blank" rel="noopener" class="pl-talk">
+                        <i class="fab fa-whatsapp"></i> Tirar dúvidas com a equipe
+                    </a>
+
+                    <ul class="pl-trust">
+                        <li><i class="fas fa-file-signature"></i> Contrato de adesão assinado online</li>
+                        <li><i class="fas fa-file-invoice"></i> Nota fiscal para o CNPJ da organização</li>
+                        <li><i class="fas fa-headset"></i> Suporte e atualizações inclusos</li>
+                    </ul>
                 </div>
-                <div class="price-note" id="pnote-{{ $loop->index }}">cobrado mensalmente</div>
-                <div class="price-divider"></div>
-                <ul class="price-feats">
-                    @if($plan->features)
-                        @foreach($plan->features as $f)
-                        <li><i class="fas fa-circle-check"></i> {{ $f }}</li>
-                        @endforeach
+
+                <div class="pl-feats-wrap">
+                    <div class="pl-feats-title">Tudo incluso</div>
+                    @if(!empty($plan->features))
+                        <ul class="pl-feats">
+                            @foreach($plan->features as $f)
+                                <li><span class="pl-check"><i class="fas fa-check"></i></span><span>{{ $f }}</span></li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="pl-empty">Todos os módulos da plataforma: beneficiários, turmas, prestação de contas, transparência e mais.</p>
                     @endif
-                </ul>
-                <a href="{{ route('register', ['plan_id' => $plan->id, 'billing_cycle' => 'monthly']) }}"
-                   class="btn-price {{ $loop->index === 1 ? 'btp-main' : 'btp-out' }} btn-subscribe"
-                   data-plan-id="{{ $plan->id }}">
-                   {{ $loop->index === 1 ? '🚀 Assinar Agora' : 'Escolher Plano' }}
-                </a>
-            </div>
+                </div>
+            </article>
             @empty
             {{-- Fallback quando SubscriptionPlan esta vazio — evita a home ficar "orfa" de preco. --}}
             <div style="grid-column:1/-1;text-align:center;padding:48px 24px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:16px;color:rgba(255,255,255,.82)">
@@ -2167,22 +2184,6 @@ function closeVideoModal(e) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideoModal(); });
 
 // Billing toggle
-function toggleBilling(){
-    const yearly=document.getElementById('billing-toggle').checked;
-    document.getElementById('lbl-m').classList.toggle('on',!yearly);
-    document.getElementById('lbl-y').classList.toggle('on',yearly);
-    document.querySelectorAll('.amount').forEach(el=>{
-        const m=parseFloat(el.dataset.m),y=parseFloat(el.dataset.y);
-        el.textContent=new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2}).format(yearly?y/12:m);
-    });
-    document.querySelectorAll('[id^="pnote-"]').forEach(el=>{
-        el.textContent=yearly?'cobrado anualmente (economize 10%)':'cobrado mensalmente';
-    });
-    document.querySelectorAll('.btn-subscribe').forEach(btn=>{
-        btn.href=`/register?plan_id=${btn.dataset.planId}&billing_cycle=${yearly?'yearly':'monthly'}`;
-    });
-}
-
 // Scroll animations
 const observer=new IntersectionObserver(entries=>{
     entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')});
