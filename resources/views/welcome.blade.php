@@ -922,29 +922,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     </a>
 
     <ul class="nav-links">
-        <li class="nav-dropdown">
-            <a href="#" tabindex="0">Soluções</a>
-            <ul class="nav-dropdown-menu">
-                <li>
-                    <a href="{{ route('solutions.ngo') }}">
-                        <span class="ndm-title">Terceiro Setor <span class="ndm-badge">Principal</span></span>
-                        <span class="ndm-desc">ONGs, associações e fundações</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('solutions.manager') }}">
-                        <span class="ndm-title">Gestor de Projetos</span>
-                        <span class="ndm-desc">Consultores e coordenadores sociais</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('solutions.common') }}">
-                        <span class="ndm-title">MEI &amp; Empresas</span>
-                        <span class="ndm-desc">Autônomos, MEIs e pequenas empresas</span>
-                    </a>
-                </li>
-            </ul>
-        </li>
+        <li><a href="{{ route('solutions.ngo') }}">Para ONGs</a></li>
         <li><a href="#bruce-ia">Bruce IA</a></li>
         <li><a href="#features">Recursos</a></li>
         <li><a href="#academy">Academy</a></li>
@@ -966,8 +944,6 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
 <div class="mobile-menu" id="mobileMenu">
     <a href="{{ route('solutions.ngo') }}">Para ONGs <span style="font-size:.6rem;background:#FF7A1A;color:#0a0a0a;padding:2px 6px;border-radius:5px;margin-left:6px;font-weight:800;letter-spacing:.05em">PRINCIPAL</span></a>
-    <a href="{{ route('solutions.manager') }}">Para Gestores</a>
-    <a href="{{ route('solutions.common') }}">MEI &amp; Empresas</a>
     <a href="#bruce-ia">Bruce IA</a>
     <a href="#features">Recursos</a>
     <a href="#academy">Academy</a>
@@ -1926,7 +1902,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             <div class="au-badge">
                 <span class="au-badge-dot"></span>
                 <i class="fas fa-graduation-cap"></i>
-                Exclusivo para Gestores &amp; ONGs
+                Exclusivo para ONGs e suas equipes
             </div>
             <h2 class="au-title">
                 <span class="au-title-white">Vivensi</span><br>
@@ -2140,8 +2116,6 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         <div class="footer-col">
             <h5>Soluções</h5>
             <a href="{{ route('solutions.ngo') }}">Terceiro Setor · ONGs</a>
-            <a href="{{ route('solutions.manager') }}">Gestores de Projetos</a>
-            <a href="{{ route('solutions.common') }}">MEI &amp; Empresas</a>
             <a href="#bruce-ia">Bruce IA</a>
             <a href="#features">Recursos</a>
         </div>

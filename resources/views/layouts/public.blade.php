@@ -165,8 +165,6 @@
         </a>
         <div class="nav-links">
             <a href="{{ route('solutions.ngo') }}">ONGs</a>
-            <a href="{{ route('solutions.manager') }}">Gestores</a>
-            <a href="{{ route('solutions.common') }}">Pessoal</a>
             <a href="{{ url('/#pricing') }}">Preços</a>
             <a href="{{ route('public.blog.index') }}">Blog</a>
         </div>

@@ -34,22 +34,9 @@ it('/solucoes/terceiro-setor renderiza cards com planos NGO', function () {
     $resp->assertSee('Bruce IA');
 });
 
-it('/solucoes/gestor-projetos renderiza cards com planos Manager', function () {
-    spsPlan('manager', 'Gestor Pro', 149.00, ['Kanban', 'Time tracking']);
-
-    $resp = $this->get('/solucoes/gestor-projetos')->assertStatus(200);
-    $resp->assertSee('Gestor Pro');
-    $resp->assertSee('149,00');
-    $resp->assertSee('Kanban');
-});
-
-it('/solucoes/pessoa-comum renderiza cards com planos Common', function () {
-    spsPlan('common', 'TopE Basico', 89.00, ['CRM Clientes', 'WhatsApp comercial']);
-
-    $resp = $this->get('/solucoes/pessoa-comum')->assertStatus(200);
-    $resp->assertSee('TopE Basico');
-    $resp->assertSee('89,00');
-    $resp->assertSee('CRM Clientes');
+it('as antigas landings de gestor e pessoa comum redirecionam para o Terceiro Setor', function () {
+    $this->get('/solucoes/gestor-projetos')->assertStatus(301)->assertRedirect('/solucoes/terceiro-setor');
+    $this->get('/solucoes/pessoa-comum')->assertStatus(301)->assertRedirect('/solucoes/terceiro-setor');
 });
 
 it('cada landing SO mostra os planos do audience correspondente', function () {
@@ -61,16 +48,6 @@ it('cada landing SO mostra os planos do audience correspondente', function () {
     $ngo->assertSee('ONG X');
     $ngo->assertDontSee('GestorY');
     $ngo->assertDontSee('TopEZ');
-
-    $mgr    = $this->get('/solucoes/gestor-projetos')->assertStatus(200);
-    $mgr->assertSee('GestorY');
-    $mgr->assertDontSee('ONG X');
-    $mgr->assertDontSee('TopEZ');
-
-    $com    = $this->get('/solucoes/pessoa-comum')->assertStatus(200);
-    $com->assertSee('TopEZ');
-    $com->assertDontSee('ONG X');
-    $com->assertDontSee('GestorY');
 });
 
 it('landing sem plano cadastrado no audience mostra fallback WhatsApp', function () {

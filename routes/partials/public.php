@@ -7,8 +7,9 @@ Route::get('/health', [App\Http\Controllers\HealthController::class, 'check'])->
 // ── Homepage & soluções ───────────────────────────────────────────────────────
 Route::get('/', [App\Http\Controllers\PublicController::class, 'welcome']);
 Route::get('/solucoes/terceiro-setor',  [App\Http\Controllers\PublicController::class, 'solutionsNgo'])->name('solutions.ngo');
-Route::get('/solucoes/gestor-projetos', [App\Http\Controllers\PublicController::class, 'solutionsManager'])->name('solutions.manager');
-Route::get('/solucoes/pessoa-comum',    [App\Http\Controllers\PublicController::class, 'solutionsCommon'])->name('solutions.common');
+// Vivensi atende só o Terceiro Setor: as antigas landings redirecionam.
+Route::permanentRedirect('/solucoes/gestor-projetos', '/solucoes/terceiro-setor')->name('solutions.manager');
+Route::permanentRedirect('/solucoes/pessoa-comum', '/solucoes/terceiro-setor')->name('solutions.common');
 
 // ── Agendamento público ───────────────────────────────────────────────────────
 Route::prefix('agendar')->name('booking.')->group(function () {

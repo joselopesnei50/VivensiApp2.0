@@ -9,9 +9,7 @@ class PublicController extends Controller
 {
     public function welcome()
     {
-        // Landing principal e focada em Terceiro Setor (produto principal).
-        // Planos de Gestor de Projetos e TopEmpresas vivem nas landings
-        // dedicadas (/solucoes/gestor-projetos e /solucoes/pessoa-comum).
+        // A Vivensi atende só o Terceiro Setor.
         $plans = \App\Models\SubscriptionPlan::where('is_active', true)
                     ->where('target_audience', 'ngo')
                     ->get();
@@ -80,21 +78,5 @@ class PublicController extends Controller
                     ->where('target_audience', 'ngo')
                     ->get();
         return view('public.solutions_ngo', compact('plans'));
-    }
-
-    public function solutionsManager()
-    {
-        $plans = \App\Models\SubscriptionPlan::where('is_active', true)
-                    ->where('target_audience', 'manager')
-                    ->get();
-        return view('public.solutions_manager', compact('plans'));
-    }
-
-    public function solutionsCommon()
-    {
-        $plans = \App\Models\SubscriptionPlan::where('is_active', true)
-                    ->where('target_audience', 'common')
-                    ->get();
-        return view('public.solutions_common', compact('plans'));
     }
 }
