@@ -2161,15 +2161,12 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
 
 <script>
 // Video Modal
-const _videoUrl = @json($videoUrl ?? null);
+// Mesmo conversor das aulas da Academy (YouTube com &t=, youtu.be, shorts, Vimeo).
+const _videoUrl = @json(\App\Models\Lesson::toEmbedUrl($videoUrl ?? null));
 function openVideoModal() {
     if (!_videoUrl) return;
     const modal = document.getElementById('videoModal');
-    let src = _videoUrl;
-    // Convert watch?v= to embed format
-    src = src.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/');
-    // Add autoplay
-    src += (src.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
+    let src = _videoUrl + (_videoUrl.includes('?') ? '&' : '?') + 'autoplay=1';
     document.getElementById('videoIframe').src = src;
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';

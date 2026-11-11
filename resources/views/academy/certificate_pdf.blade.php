@@ -11,9 +11,11 @@
     // Formata código em blocos de 4 para leitura humana: XXXX-XXXX-XXXX-XXXX.
     $codeFormatted = trim(chunk_split($certificate->code, 4, '-'), '-');
 
-    $studentName = trim($certificate->user->name ?? 'Aluno');
-    $courseTitle = trim($certificate->course->title ?? 'Curso');
-    $teacherName = trim($certificate->course->teacher_name ?? 'Direção Pedagógica');
+    // Dados gravados na emissão (valem mesmo se o curso for editado/excluído depois).
+    $studentName = $certificate->studentName();
+    $courseTitle = $certificate->courseTitle();
+    $teacherName = $certificate->teacherName();
+    $workload    = $certificate->workloadLabel();
 @endphp
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -404,6 +406,10 @@
 
         <div class="meta-line">
             oferecido pela <strong>Vivensi Academy</strong>
+            @if($workload)
+                &nbsp;&middot;&nbsp;
+                Carga horária: <strong>{{ $workload }}</strong>
+            @endif
             &nbsp;&middot;&nbsp;
             Emitido em <strong>{{ $dataExtenso }}</strong>
         </div>
@@ -437,7 +443,7 @@
                 </td>
                 <td class="f-right">
                     Verifique a autenticidade em
-                    <span class="url">vivensi.app.br/academy</span>
+                    <span class="url">vivensi.app.br/verificar-certificado/{{ $certificate->code }}</span>
                 </td>
             </tr>
         </table>

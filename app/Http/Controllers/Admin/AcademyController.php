@@ -41,8 +41,9 @@ class AcademyController extends Controller
             'teacher_name' => 'nullable|max:255',
         ]);
 
-        $data = $request->except('thumbnail');
-        $data['slug'] = Str::slug($request->title);
+        $data = $request->only(['title', 'description', 'teacher_name']);
+        // Endereço único: dois cursos com o mesmo título davam erro 500 (slug repetido).
+        $data['slug'] = $this->uniqueSlug($request->title);
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('thumbnail')) {
@@ -78,8 +79,8 @@ class AcademyController extends Controller
             'teacher_name' => 'nullable|max:255',
         ]);
 
-        $data = $request->except('thumbnail');
-        $data['slug'] = Str::slug($request->title);
+        // O endereço do curso (slug) não muda ao editar o título: links já divulgados continuam valendo.
+        $data = $request->only(['title', 'description', 'teacher_name']);
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('thumbnail')) {
@@ -102,7 +103,27 @@ class AcademyController extends Controller
     public function destroy($id)
     {
         $course = Course::findOrFail($id);
-        $course->delete();
+
+        // Sem chave estrangeira no banco: apaga módulos, aulas e progresso junto.
+        // Os certificados emitidos ficam (guardam o nome do curso e continuam verificáveis).
+        \Illuminate\Support\Facades\DB::transaction(function () use ($course) {
+            $moduleIds = Module::where('course_id', $course->id)->pluck('id');
+            $lessonIds = Lesson::whereIn('module_id', $moduleIds)->pluck('id');
+            \Illuminate\Support\Facades\DB::table('lesson_user')->whereIn('lesson_id', $lessonIds)->delete();
+            Lesson::whereIn('id', $lessonIds)->delete();
+            Module::whereIn('id', $moduleIds)->delete();
+            $course->delete();
+        });
         return redirect()->route('admin.academy.index')->with('success', 'Curso excluído!');
+    }
+
+    private function uniqueSlug(string $title): string
+    {
+        $base = Str::slug($title) ?: 'curso';
+        $slug = $base;
+        for ($n = 2; Course::where('slug', $slug)->exists(); $n++) {
+            $slug = $base . '-' . $n;
+        }
+        return $slug;
     }
 }

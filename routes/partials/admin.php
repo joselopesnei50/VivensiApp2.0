@@ -90,6 +90,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::put('academy/modules/{id}',          [App\Http\Controllers\Admin\AcademyModuleController::class, 'updateModule'])->name('admin.academy.modules.update');
         Route::delete('academy/modules/{id}',       [App\Http\Controllers\Admin\AcademyModuleController::class, 'destroyModule'])->name('admin.academy.modules.destroy');
         Route::post('academy/modules/{module}/lessons', [App\Http\Controllers\Admin\AcademyModuleController::class, 'storeLesson'])->name('admin.academy.lessons.store');
+        Route::put('academy/lessons/{id}',          [App\Http\Controllers\Admin\AcademyModuleController::class, 'updateLesson'])->name('admin.academy.lessons.update');
         Route::delete('academy/lessons/{id}',       [App\Http\Controllers\Admin\AcademyModuleController::class, 'destroyLesson'])->name('admin.academy.lessons.destroy');
 
         // Equipe interna

@@ -10,18 +10,18 @@ beforeEach(function () {
         'price' => 349.90, 'interval' => 'monthly', 'is_active' => 1], $extra);
 });
 
-function superAdmin(): User
+function planTestSuperAdmin(): User
 {
     return User::factory()->create(['role' => 'super_admin', 'email' => 'sa_' . uniqid() . '@example.com']);
 }
 
 it('removendo todos os itens e salvando, a lista fica vazia', function () {
-    $this->withoutMiddleware(\App\Http\Middleware\RequireTwoFactor::class)->actingAs(superAdmin())->put(route('admin.plans.update', $this->plan), ($this->payload)())->assertRedirect(route('admin.plans.index'));
+    $this->withoutMiddleware(\App\Http\Middleware\RequireTwoFactor::class)->actingAs(planTestSuperAdmin())->put(route('admin.plans.update', $this->plan), ($this->payload)())->assertRedirect(route('admin.plans.index'));
     expect($this->plan->fresh()->features)->toBe([]);
 });
 
 it('ignora linhas em branco', function () {
-    $this->withoutMiddleware(\App\Http\Middleware\RequireTwoFactor::class)->actingAs(superAdmin())->put(route('admin.plans.update', $this->plan), ($this->payload)(['features' => [' Novo ', '', null, 'Outro']]));
+    $this->withoutMiddleware(\App\Http\Middleware\RequireTwoFactor::class)->actingAs(planTestSuperAdmin())->put(route('admin.plans.update', $this->plan), ($this->payload)(['features' => [' Novo ', '', null, 'Outro']]));
     expect($this->plan->fresh()->features)->toBe(['Novo', 'Outro']);
 });
 
