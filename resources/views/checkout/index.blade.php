@@ -43,7 +43,7 @@
                 {{-- Formulário de Pagamento --}}
                 <div class="col-md-7 p-5 bg-white">
                     <h3 class="fw-bold mb-1" style="color: #1e293b;">Finalizar Assinatura</h3>
-                    <p class="text-muted small mb-4">Você será redirecionado para o checkout seguro da AbacatePay.</p>
+                    <p class="text-muted small mb-4">O PIX abre em uma nova aba, no checkout seguro da AbacatePay.</p>
 
                     @if(session('error'))
                         <div class="alert alert-danger border-0 rounded-4 mb-4">
@@ -86,7 +86,18 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('checkout.process') }}" method="POST">
+                    {{-- Mostrado quando o PIX abre em outra aba: esta aba confere o pagamento e entra no painel sozinha. --}}
+                    <div id="payWaiting" class="text-center py-4" style="display:none" aria-live="polite">
+                        <div class="spinner-border text-success mb-3" role="status" aria-hidden="true"></div>
+                        <h5 class="fw-bold mb-2" id="payWaitingTitle">Pague o PIX na aba que abriu</h5>
+                        <p class="text-muted mb-4" id="payWaitingText">Pode deixar esta página aberta. Assim que o pagamento for confirmado, ela entra no painel sozinha.</p>
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                            <button type="button" class="btn btn-dark rounded-pill px-4" id="payCheckNow">Já paguei, verificar</button>
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" id="payReopen">Abrir o PIX de novo</button>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('checkout.process') }}" method="POST" id="checkoutForm">
                         @csrf
                         <input type="hidden" name="plan_id" value="{{ $plan->id }}">
                         <input type="hidden" name="gateway" value="abacatepay">
@@ -98,9 +109,10 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-muted text-uppercase">CPF ou CNPJ para Faturamento</label>
+                            <label class="form-label small fw-bold text-muted text-uppercase">CNPJ da organização (nota fiscal)</label>
                             <input type="text" name="document" class="form-control border-0 bg-light py-3 rounded-4"
-                                   value="{{ old('document', $tenant->document) }}" placeholder="000.000.000-00" required>
+                                   value="{{ old('document', $tenant->document) }}" placeholder="00.000.000/0000-00" required>
+                            <div class="text-muted small mt-2"><i class="fas fa-file-invoice me-1"></i> A nota fiscal sai para este CNPJ. Confira antes de pagar.</div>
                         </div>
 
                         <div class="mb-4">
@@ -153,4 +165,66 @@
         background: #f8faff;
     }
 </style>
+<script>
+(function () {
+    var form = document.getElementById('checkoutForm');
+    if (!form) return;
+    var waiting = document.getElementById('payWaiting');
+    var statusUrl = @json(route('checkout.status'));
+    var payTab = null, timer = null, busy = false, started = 0;
+
+    function check(manual) {
+        if (busy) return; busy = true;
+        fetch(statusUrl, {headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}, credentials: 'same-origin'})
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (d) {
+                busy = false;
+                if (d && d.active) {
+                    document.getElementById('payWaitingTitle').textContent = 'Pagamento confirmado!';
+                    document.getElementById('payWaitingText').textContent = 'Acesso liberado. Abrindo o painel…';
+                    try { if (payTab && !payTab.closed) payTab.close(); } catch (e) {}
+                    window.location.href = d.redirect || '/dashboard';
+                    return;
+                }
+                if (manual) document.getElementById('payWaitingText').textContent = 'Ainda não confirmado. Se você acabou de pagar, aguarde alguns segundos — a conferência continua sozinha.';
+            })
+            .catch(function () { busy = false; });
+    }
+
+    function startWaiting() {
+        form.style.display = 'none';
+        var pend = document.getElementById('pixPending'); if (pend) pend.style.display = 'none';
+        waiting.style.display = 'block';
+        started = Date.now();
+        clearInterval(timer);
+        timer = setInterval(function () {
+            if (Date.now() - started > 30 * 60 * 1000) { clearInterval(timer); return; } // 30 min
+            check(false);
+        }, 4000);
+    }
+
+    form.addEventListener('submit', function (e) {
+        if (!form.checkValidity()) return; // deixa o navegador mostrar o erro
+        var doc = (form.querySelector('[name=document]').value || '').replace(/\D/g, '');
+        if (doc.length !== 11 && doc.length !== 14) return; // o servidor devolve a mensagem certa na mesma aba
+        payTab = window.open('', 'vivensi_pix');
+        if (!payTab) return; // pop-up bloqueado: segue na mesma aba, como antes
+        e.preventDefault();
+        form.target = 'vivensi_pix';
+        form.submit();
+        form.removeAttribute('target');
+        startWaiting();
+    });
+
+    document.getElementById('payCheckNow').addEventListener('click', function () { check(true); });
+    document.getElementById('payReopen').addEventListener('click', function () {
+        if (payTab && !payTab.closed) { payTab.focus(); return; }
+        waiting.style.display = 'none'; form.style.display = 'block'; clearInterval(timer);
+    });
+    // Voltou para esta aba depois de pagar: confere na hora.
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && waiting.style.display === 'block') check(false);
+    });
+})();
+</script>
 @endsection

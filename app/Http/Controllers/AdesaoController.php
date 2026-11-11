@@ -30,7 +30,12 @@ class AdesaoController extends Controller
 
         $validated = $request->validate([
             'razao_social'      => 'required|string|max:255',
-            'document'          => 'required|string|max:32',
+            // A nota fiscal sai em nome da organização: precisa ser CNPJ (14 dígitos).
+            'document'          => ['required', 'string', 'max:32', function ($attr, $value, $fail) {
+                if (strlen(preg_replace('/\D/', '', (string) $value)) !== 14) {
+                    $fail('Informe o CNPJ da organização (14 dígitos). A nota fiscal é emitida para este CNPJ — não use CPF.');
+                }
+            }],
             'endereco'          => 'required|string|max:255',
             'numero_endereco'   => 'required|string|max:20',
             'complemento'       => 'nullable|string|max:255',

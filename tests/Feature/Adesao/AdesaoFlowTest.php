@@ -217,3 +217,18 @@ test('tenant legado com subscription_status active NAO e forcado pra adesao', fu
     $response = $this->actingAs($user)->get('/dashboard');
     $response->assertOk();
 });
+
+it('dados do contrato: exige CNPJ (a nota fiscal sai para a organização)', function () {
+    $user = \App\Models\User::factory()->create(['email' => 'nf_' . uniqid() . '@example.com']);
+    $tenant = \App\Models\Tenant::find($user->tenant_id) ?? \App\Models\Tenant::factory()->create(['type' => 'ngo']);
+    $user->update(['tenant_id' => $tenant->id, 'role' => 'ngo']);
+
+    $dados = [
+        'razao_social' => 'Associação Semente', 'document' => '123.456.789-09',
+        'endereco' => 'Rua A', 'numero_endereco' => '10', 'bairro' => 'Centro', 'cidade' => 'Araraquara',
+        'estado' => 'SP', 'cep' => '14800-000', 'signer_name' => 'Ana', 'signer_email' => 'ana@example.com', 'signer_cpf' => '123.456.789-09',
+    ];
+    $this->actingAs($user)->post(route('adesao.store-data'), $dados)->assertSessionHasErrors('document');
+
+    $this->actingAs($user)->get(route('adesao.show'))->assertSee('a nota fiscal da assinatura sai com estes dados', false);
+});
