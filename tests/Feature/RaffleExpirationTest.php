@@ -23,7 +23,7 @@ class RaffleExpirationTest extends TestCase
         $tenant = Tenant::factory()->create();
         $raffle = Raffle::factory()->create(['tenant_id' => $tenant->id, 'status' => 'active']);
 
-        // Bilhete expirado (reservado há 31 minutos)
+        // Bilhete expirado (reservado há 25 horas)
         $expiredTicket = RaffleTicket::factory()->create([
             'raffle_id'   => $raffle->id,
             'number'      => 1,
@@ -31,7 +31,7 @@ class RaffleExpirationTest extends TestCase
             'buyer_name'  => 'Comprador Expirado',
             'buyer_email' => 'exp@test.com',
             'buyer_phone' => '11999999999',
-            'reserved_at' => Carbon::now()->subMinutes(31),
+            'reserved_at' => Carbon::now()->subHours(25),
         ]);
 
         // Bilhete válido (reservado há 10 minutos — dentro do prazo)
@@ -89,7 +89,7 @@ class RaffleExpirationTest extends TestCase
             'buyer_name'  => 'Comprador',
             'buyer_email' => 'x@test.com',
             'buyer_phone' => '11999999999',
-            'reserved_at' => Carbon::now()->subMinutes(31),
+            'reserved_at' => Carbon::now()->subHours(25),
         ]);
 
         // Executar 3 vezes — o resultado deve ser o mesmo
@@ -119,7 +119,7 @@ class RaffleExpirationTest extends TestCase
             'buyer_name'  => 'Expirado',
             'buyer_email' => 'exp@test.com',
             'buyer_phone' => '11999999999',
-            'reserved_at' => Carbon::now()->subMinutes(31),
+            'reserved_at' => Carbon::now()->subHours(25),
         ]);
 
         // Roda a limpeza
@@ -133,7 +133,7 @@ class RaffleExpirationTest extends TestCase
             'selected_numbers' => [1],
         ]);
 
-        $response->assertSuccessful();
+        $response->assertRedirect();
         $this->assertDatabaseHas('raffle_tickets', [
             'raffle_id'  => $raffle->id,
             'number'     => 1,

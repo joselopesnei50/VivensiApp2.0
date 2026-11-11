@@ -21,14 +21,14 @@
         </div>
         <div class="content">
             <p>Olá, {{ $ticket->buyer_name }}.</p>
-            <p>Gostaríamos de informar que sua reserva do bilhete para a rifa <span class="raffle-title">{{ $raffle->title }}</span> foi expirada ou cancelada manualmente pela organização.</p>
+            <p>Gostaríamos de informar que sua reserva do bilhete para a rifa <span class="raffle-title">{{ $raffle->title }}</span> foi cancelada.</p>
             
             <div class="ticket-info">
-                <span>O SEGUINTE NÚMERO FOI LIBERADO:</span>
-                <span class="ticket-number">#{{ str_pad($ticket->number, 3, '0', STR_PAD_LEFT) }}</span>
+                <span>{{ $tickets->count() > 1 ? 'OS SEGUINTES NÚMEROS FORAM LIBERADOS:' : 'O SEGUINTE NÚMERO FOI LIBERADO:' }}</span>
+                <span class="ticket-number">{{ $tickets->sortBy('number')->map(fn ($t) => '#' . str_pad($t->number, 3, '0', STR_PAD_LEFT))->implode(', ') }}</span>
             </div>
 
-            <p>Isso acontece quando não identificamos a confirmação do pagamento no prazo estipulado. O número agora está disponível novamente para outros interessados na página pública da rifa.</p>
+            <p>Isso acontece quando a organização não confirma o pagamento em até {{ \App\Models\RaffleTicket::RESERVATION_HOURS }} horas ou cancela a reserva. O número voltou a ficar disponível na página da rifa.</p>
             
             <p>Se você já realizou o pagamento e acredita que houve um erro, por favor entre em contato com a <strong>{{ $raffle->tenant->name }}</strong> através do WhatsApp de suporte disponível na página da campanha.</p>
             

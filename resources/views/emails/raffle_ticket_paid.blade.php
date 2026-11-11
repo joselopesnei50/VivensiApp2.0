@@ -25,11 +25,15 @@
             <p>Sua participação é fundamental para apoiar as causas da <strong>{{ $raffle->tenant->name }}</strong>. Muito obrigado pela sua generosidade!</p>
             
             <div class="ticket-info">
-                <span>ESTE É O SEU NÚMERO DA SORTE:</span>
-                <span class="ticket-number">#{{ str_pad($ticket->number, 3, '0', STR_PAD_LEFT) }}</span>
+                <span>{{ $tickets->count() > 1 ? 'ESTES SÃO OS SEUS NÚMEROS DA SORTE:' : 'ESTE É O SEU NÚMERO DA SORTE:' }}</span>
+                <span class="ticket-number">{{ $tickets->sortBy('number')->map(fn ($t) => '#' . str_pad($t->number, 3, '0', STR_PAD_LEFT))->implode(', ') }}</span>
             </div>
 
-            <p>Fique de olho na data do sorteio: <strong>{{ \Carbon\Carbon::parse($raffle->draw_date)->format('d/m/Y \à\s H:i') }}</strong>.</p>
+            @if($raffle->draw_date)
+                <p>Fique de olho na data do sorteio: <strong>{{ $raffle->draw_date->format('d/m/Y \à\s H:i') }}</strong>.</p>
+            @else
+                <p>A organização vai divulgar a data do sorteio na página da campanha.</p>
+            @endif
             
             <div style="text-align: center;">
                 <a href="{{ route('public.raffle.show', $raffle->slug) }}" class="button">Ver Campanha</a>

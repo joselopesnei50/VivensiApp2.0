@@ -36,7 +36,7 @@ class RaffleCleanupCommandTest extends TestCase
         // Reservado há 29min55s — ainda dentro do prazo (5s de buffer contra flakiness)
         $ticket = RaffleTicket::factory()->create([
             'status'      => 'pending',
-            'reserved_at' => Carbon::now()->subMinutes(30)->addSeconds(5),
+            'reserved_at' => Carbon::now()->subHours(24)->addSeconds(5),
         ]);
 
         $this->artisan('raffles:cleanup-reservations')->assertExitCode(0);
@@ -54,7 +54,7 @@ class RaffleCleanupCommandTest extends TestCase
             'buyer_name'  => 'Expirado',
             'buyer_email' => 'exp@test.com',
             'buyer_phone' => '11999999999',
-            'reserved_at' => Carbon::now()->subMinutes(30)->subSecond(),
+            'reserved_at' => Carbon::now()->subHours(24)->subSecond(),
         ]);
 
         $this->artisan('raffles:cleanup-reservations')->assertExitCode(0);

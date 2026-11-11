@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     {{-- QR Code nativo: geração 100% client-side sem dependência de API externa --}}
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -137,17 +137,37 @@
 </head>
 <body>
 
+@php
+    $pendingTickets = $pendingTickets ?? $tickets->where('status', 'pending');
+    $allPaid = $pendingTickets->isEmpty();
+@endphp
 <div class="checkout-container">
     <div class="text-center mb-4">
-        <h2 class="fw-800 mb-2">Quase lá! 🚀</h2>
-        <p class="text-muted">Sua reserva para {{ $tickets->count() }} {{ $tickets->count() > 1 ? 'números' : 'número' }} foi realizada.</p>
+        @if($allPaid)
+            <h2 class="fw-800 mb-2">Pagamento confirmado! 🎉</h2>
+            <p class="text-muted">A organização confirmou o seu pagamento. {{ $tickets->count() > 1 ? 'Seus números estão garantidos' : 'Seu número está garantido' }} — boa sorte!</p>
+        @else
+            <h2 class="fw-800 mb-2">Quase lá! 🚀</h2>
+            <p class="text-muted mb-1">Sua reserva para {{ $tickets->count() }} {{ $tickets->count() > 1 ? 'números' : 'número' }} foi realizada.</p>
+            @if(!empty($expiresAt))
+                <p class="small fw-bold mb-2" style="color:#b45309">Pague e envie o comprovante até {{ $expiresAt->format('d/m') }} às {{ $expiresAt->format('H:i') }}. Depois disso a reserva é cancelada.</p>
+            @endif
+        @endif
         <div class="d-flex justify-content-center gap-2 flex-wrap">
             @foreach($tickets as $ticket)
-                <span class="badge bg-primary rounded-pill px-3 py-2">#{{ str_pad($ticket->number, 2, '0', STR_PAD_LEFT) }}</span>
+                <span class="badge {{ $ticket->status === 'paid' ? 'bg-success' : 'bg-primary' }} rounded-pill px-3 py-2">{{ $ticket->status === 'paid' ? '✓ ' : '' }}#{{ str_pad($ticket->number, 2, '0', STR_PAD_LEFT) }}</span>
             @endforeach
         </div>
+        @if(!$allPaid)
+            <p class="small text-muted mt-3 mb-0">Este link fica salvo no seu e-mail — você pode voltar a ele quando quiser.</p>
+        @endif
     </div>
 
+    @if($allPaid)
+    <div class="checkout-card">
+        <a href="{{ route('public.raffle.show', $raffle->slug) }}" class="btn btn-primary-gradient w-100 shadow-lg">VER A RIFA</a>
+    </div>
+    @else
     <div class="checkout-card">
         <h4 class="fw-800 mb-4">Pagamento PIX</h4>
 
@@ -188,7 +208,7 @@
                 </div>
 
                 @php
-                    $numbersStr = $tickets->map(fn($t) => '#'.str_pad($t->number, 2, '0', STR_PAD_LEFT))->implode(', ');
+                    $numbersStr = $pendingTickets->map(fn($t) => '#'.str_pad($t->number, 2, '0', STR_PAD_LEFT))->implode(', ');
                     $waMessage  = urlencode("Olá! Acabei de pagar a rifa: {$raffle->title}\nBilhetes: {$numbersStr}\nTotal: R$ " . number_format($totalAmount, 2, ',', '.') . "\nSegue o comprovante em anexo.");
                     $waLink     = "https://wa.me/" . preg_replace('/\D/', '', $whatsappSupport) . "?text=" . $waMessage;
                 @endphp
@@ -206,11 +226,14 @@
             VOLTAR PARA A RIFA
         </a>
 
-        <p class="mt-4 text-muted small">
+@if(!empty($whatsappSupport))
+                <p class="mt-4 text-muted small">
             Problemas com o pagamento?<br>
             <a href="https://wa.me/{{ preg_replace('/\D/', '', $whatsappSupport) }}" class="text-primary text-decoration-none fw-bold">Suporte {{ $tenant->name }}</a>
         </p>
+        @endif
     </div>
+    @endif
 </div>
 
 <script>

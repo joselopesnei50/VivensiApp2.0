@@ -59,7 +59,7 @@
         (function(){
             var uri = @json($otpauthUri);
             var s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+            s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js';
             s.onload = function(){
                 QRCode.toCanvas(document.getElementById('qrCanvas'), uri, {width:180,margin:1}, function(err){
                     if(err) console.error(err);

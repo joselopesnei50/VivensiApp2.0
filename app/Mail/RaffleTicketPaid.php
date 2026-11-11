@@ -13,17 +13,20 @@ class RaffleTicketPaid extends Mailable
     use Queueable, SerializesModels;
 
     public $raffle;
-    public $ticket;
+    public $ticket;   // primeiro número (compatibilidade com o template)
+    public $tickets;  // todos os números da mesma compra
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(Raffle $raffle, RaffleTicket $ticket)
+    /** @param RaffleTicket|\Illuminate\Support\Collection $tickets */
+    public function __construct(Raffle $raffle, $tickets)
     {
-        $this->raffle = $raffle;
-        $this->ticket = $ticket;
+        $this->raffle  = $raffle;
+        $this->tickets = $tickets instanceof RaffleTicket ? collect([$tickets]) : collect($tickets)->values();
+        $this->ticket  = $this->tickets->first();
     }
 
     /**
@@ -33,7 +36,7 @@ class RaffleTicketPaid extends Mailable
      */
     public function build()
     {
-        return $this->subject('Seu Bilhete da Sorte: ' . $this->raffle->title)
+        return $this->subject(($this->tickets->count() > 1 ? 'Seus números da sorte: ' : 'Seu número da sorte: ') . $this->raffle->title)
                     ->view('emails.raffle_ticket_paid');
     }
 }

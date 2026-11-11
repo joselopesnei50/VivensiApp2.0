@@ -86,7 +86,8 @@
 
             <!-- Notice -->
             <div class="notice">
-                <strong>⏱ Atenção:</strong> Esta reserva expira em <strong>30 minutos</strong> se o pagamento não for confirmado.
+                <strong>⏱ Atenção:</strong> confira o PIX na sua conta e confirme o pagamento em <strong>Rifas</strong>.
+                Se não for confirmada em até {{ \App\Models\RaffleTicket::RESERVATION_HOURS }} horas, a reserva é cancelada e os números voltam a ficar disponíveis.
                 O comprador recebeu o código PIX por e-mail.
             </div>
 

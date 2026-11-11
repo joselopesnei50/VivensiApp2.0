@@ -58,13 +58,16 @@ class RaffleController extends Controller
                 'status' => 'active',
             ]);
 
-            // Pre-generate tickets
-            for ($i = 1; $i <= $request->total_tickets; $i++) {
-                RaffleTicket::create([
-                    'raffle_id' => $raffle->id,
-                    'number' => $i,
-                    'status' => 'available',
-                ]);
+            // Gera os números em lotes (10.000 inserts um a um estouravam o tempo da página).
+            $now = now();
+            foreach (array_chunk(range(1, (int) $request->total_tickets), 1000) as $chunk) {
+                RaffleTicket::insert(array_map(fn ($n) => [
+                    'raffle_id'  => $raffle->id,
+                    'number'     => $n,
+                    'status'     => 'available',
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ], $chunk));
             }
         });
 
@@ -83,86 +86,104 @@ class RaffleController extends Controller
                             ->orderByDesc('updated_at')
                             ->get();
 
-        return view('raffles.show', compact('raffle', 'tickets', 'paidCount', 'pendingCount'));
+        // Quantos números pendentes cada compra tem (botão "confirmar a compra toda").
+        $pendingPerOrder = $tickets->where('status', 'pending')->whereNotNull('reservation_token')
+            ->countBy('reservation_token');
+
+        return view('raffles.show', compact('raffle', 'tickets', 'paidCount', 'pendingCount', 'pendingPerOrder'));
     }
 
-    public function confirmPayment(RaffleTicket $ticket)
+    /**
+     * Confirma o pagamento de um número — ou de todos os números pendentes da mesma compra
+     * (scope=order). Gera UM lançamento no financeiro e UM e-mail para o comprador.
+     */
+    public function confirmPayment(Request $request, RaffleTicket $ticket)
     {
-        $this->authorizeTenant($ticket->raffle);
+        $raffle = $ticket->raffle;
+        $this->authorizeTenant($raffle);
+        $wholeOrder = $request->input('scope') === 'order';
 
-        if ($ticket->status === 'paid') {
-            return back()->with('error', 'Este bilhete já está pago.');
-        }
+        $confirmed = DB::transaction(function () use ($ticket, $raffle, $wholeOrder) {
+            // Trava as linhas: dois cliques (ou duas abas) não geram dois lançamentos.
+            $query = $wholeOrder ? $ticket->siblingsQuery() : RaffleTicket::whereKey($ticket->id);
+            $tickets = $query->where('status', 'pending')->orderBy('number')->lockForUpdate()->get();
 
-        DB::transaction(function () use ($ticket) {
-            // Create transaction in financial module
+            if ($tickets->isEmpty()) {
+                return $tickets;
+            }
+
             $category = FinancialCategory::firstOrCreate(
-                ['tenant_id' => $ticket->raffle->tenant_id, 'name' => 'Rifas'],
+                ['tenant_id' => $raffle->tenant_id, 'name' => 'Rifas'],
                 ['type' => 'income']
             );
 
+            $numbers = $tickets->map(fn ($t) => '#' . $t->number)->implode(', ');
             $transaction = Transaction::create([
-                'tenant_id' => $ticket->raffle->tenant_id,
-                'type' => 'income',
+                'tenant_id'   => $raffle->tenant_id,
+                'type'        => 'income',
                 'category_id' => $category->id,
-                'amount' => $ticket->raffle->ticket_price,
-                'description' => "Venda de bilhete #{$ticket->number} para {$ticket->buyer_name}",
-                'date' => now(),
-                'status' => 'paid',
+                'amount'      => (float) $raffle->ticket_price * $tickets->count(),
+                'description' => ($tickets->count() > 1 ? "Venda dos bilhetes {$numbers}" : "Venda do bilhete {$numbers}")
+                                 . " ({$raffle->title}) para {$tickets->first()->buyer_name}",
+                'date'        => now(),
+                'status'      => 'paid',
             ]);
 
-            $ticket->update([
-                'status' => 'paid',
+            RaffleTicket::whereIn('id', $tickets->pluck('id'))->update([
+                'status'         => 'paid',
                 'transaction_id' => $transaction->id,
             ]);
 
-            // Send confirmation email
-            try {
-                Mail::to($ticket->buyer_email)->send(new RaffleTicketPaid($ticket->raffle, $ticket));
-            } catch (\Exception $e) {
-                // Log error but don't stop the process
-                \Log::error("Failed to send raffle email: " . $e->getMessage());
-            }
+            return $tickets;
         });
 
-        return back()->with('success', "Pagamento do bilhete #{$ticket->number} confirmado!");
+        if ($confirmed->isEmpty()) {
+            return back()->with('error', 'Este pagamento já foi confirmado.');
+        }
+
+        if ($email = $confirmed->first()->buyer_email) {
+            try {
+                Mail::to($email)->send(new RaffleTicketPaid($raffle, $confirmed->each(fn ($t) => $t->status = 'paid')));
+            } catch (\Throwable $e) {
+                \Log::error('Failed to send raffle email: ' . $e->getMessage());
+            }
+        }
+
+        $label = $confirmed->count() > 1
+            ? 'Pagamento dos bilhetes ' . $confirmed->map(fn ($t) => '#' . $t->number)->implode(', ') . ' confirmado!'
+            : "Pagamento do bilhete #{$confirmed->first()->number} confirmado!";
+
+        return back()->with('success', $label);
     }
 
     public function releaseTicket(RaffleTicket $ticket)
     {
-        $this->authorizeTenant($ticket->raffle);
+        $raffle = $ticket->raffle;
+        $this->authorizeTenant($raffle);
 
-        if ($ticket->status !== 'pending') {
+        $released = DB::transaction(function () use ($ticket) {
+            $fresh = RaffleTicket::whereKey($ticket->id)->lockForUpdate()->first();
+            if (!$fresh || $fresh->status !== 'pending') {
+                return null;
+            }
+            $copy = clone $fresh; // guarda nome/e-mail para o aviso
+            $fresh->update(RaffleTicket::RELEASED_ATTRIBUTES);
+            return $copy;
+        });
+
+        if (!$released) {
             return back()->with('error', 'Apenas bilhetes pendentes podem ser liberados.');
         }
 
-        // Store info for email before clearing
-        $buyerEmail = $ticket->buyer_email;
-        $raffle = $ticket->raffle;
-
-        DB::transaction(function () use ($ticket, $buyerEmail, $raffle) {
-            
-            // Send email notification BEFORE clearing ticket data
-            if ($buyerEmail) {
-                try {
-                    Mail::to($buyerEmail)->send(new RaffleTicketReleased($raffle, $ticket));
-                } catch (\Exception $e) {
-                    \Log::error("Failed to send raffle release email: " . $e->getMessage());
-                }
+        if ($released->buyer_email) {
+            try {
+                Mail::to($released->buyer_email)->send(new RaffleTicketReleased($raffle, $released));
+            } catch (\Throwable $e) {
+                \Log::error('Failed to send raffle release email: ' . $e->getMessage());
             }
+        }
 
-            // Clear ticket data
-            $ticket->update([
-                'status' => 'available',
-                'buyer_name' => null,
-                'buyer_email' => null,
-                'buyer_phone' => null,
-                'reserved_at' => null,
-                'payment_receipt_path' => null,
-            ]);
-        });
-
-        return back()->with('success', "O bilhete #{$ticket->number} foi liberado e está disponível novamente.");
+        return back()->with('success', "O bilhete #{$released->number} foi liberado e está disponível novamente.");
     }
 
     public function draw(Raffle $raffle)
