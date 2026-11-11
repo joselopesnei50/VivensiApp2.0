@@ -545,9 +545,35 @@ class AdminController extends Controller
             'status_at_deletion' => $tenant->subscription_status,
         ]);
 
-        // Remove usuários e o tenant
-        User::where('tenant_id', $tenant->id)->delete();
-        $tenant->delete();
+        // Quase tudo da organização sai em cascata pelo banco. Estas tabelas têm chave
+        // estrangeira SEM cascata para tenants/users e travavam a exclusão (erro 500):
+        // internal_messages, personal_budgets e whatsapp_chats.assigned_to.
+        try {
+            DB::transaction(function () use ($tenant) {
+                $userIds = User::withoutGlobalScopes()->where('tenant_id', $tenant->id)->pluck('id');
+
+                if ($userIds->isNotEmpty()) {
+                    DB::table('internal_messages')
+                        ->whereIn('sender_id', $userIds)
+                        ->orWhereIn('receiver_id', $userIds)
+                        ->delete();
+                    DB::table('whatsapp_chats')->whereIn('assigned_to', $userIds)->update(['assigned_to' => null]);
+                }
+                DB::table('personal_budgets')
+                    ->where('tenant_id', $tenant->id)
+                    ->when($userIds->isNotEmpty(), fn ($q) => $q->orWhereIn('user_id', $userIds))
+                    ->delete();
+
+                User::withoutGlobalScopes()->where('tenant_id', $tenant->id)->delete();
+                $tenant->delete();
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Outra ligação inesperada: não derruba a página, mostra qual tabela segurou.
+            \Log::error('Exclusão de organização falhou', ['tenant_id' => $tenant->id, 'error' => $e->getMessage()]);
+            preg_match('/fails \(`[^`]+`\.`([^`]+)`/', $e->getMessage(), $m);
+            return back()->with('error', 'Não foi possível excluir a organização'
+                . (!empty($m[1]) ? " — há registros ligados a ela na tabela \"{$m[1]}\"." : '. Veja o log do servidor.'));
+        }
 
         return redirect()->route('admin.tenants.index')
             ->with('success', "Conta \"{$tenantName}\" e todos os seus usuários foram removidos.");
