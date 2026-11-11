@@ -109,9 +109,10 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-muted text-uppercase">CPF ou CNPJ para Faturamento</label>
+                            <label class="form-label small fw-bold text-muted text-uppercase">CNPJ da organização (nota fiscal)</label>
                             <input type="text" name="document" class="form-control border-0 bg-light py-3 rounded-4"
-                                   value="{{ old('document', $tenant->document) }}" placeholder="000.000.000-00" required>
+                                   value="{{ old('document', $tenant->document) }}" placeholder="00.000.000/0000-00" required>
+                            <div class="text-muted small mt-2"><i class="fas fa-file-invoice me-1"></i> A nota fiscal sai para este CNPJ. Confira antes de pagar.</div>
                         </div>
 
                         <div class="mb-4">
