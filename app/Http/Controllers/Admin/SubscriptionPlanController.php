@@ -48,6 +48,8 @@ class SubscriptionPlanController extends Controller
             );
         }
 
+        $validated['features'] = $this->cleanFeatures($request);
+
         SubscriptionPlan::create($validated);
 
         return redirect()->route('admin.plans.index')->with('success', 'Plano criado com sucesso!');
@@ -87,6 +89,10 @@ class SubscriptionPlanController extends Controller
             );
         }
 
+        // Sem nenhum item no formulário o navegador não envia "features": antes isso
+        // mantinha a lista antiga (não dava para apagar). Agora lista vazia = sem recursos.
+        $validated['features'] = $this->cleanFeatures($request);
+
         $plan->update($validated);
 
         return redirect()->route('admin.plans.index')->with('success', 'Plano atualizado com sucesso!');
@@ -96,5 +102,14 @@ class SubscriptionPlanController extends Controller
     {
         $plan->delete();
         return redirect()->route('admin.plans.index')->with('success', 'Plano excluído com sucesso!');
+    }
+
+    /** Itens do formulário sem linhas em branco e sem espaços sobrando. */
+    private function cleanFeatures(Request $request): array
+    {
+        return array_values(array_filter(
+            array_map(fn ($f) => trim((string) $f), (array) $request->input('features', [])),
+            fn ($f) => $f !== ''
+        ));
     }
 }
