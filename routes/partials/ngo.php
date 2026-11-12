@@ -30,6 +30,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/team',                   [App\Http\Controllers\TeamController::class, 'store'])->middleware('can:manage-team');
         Route::put('/team/{id}',               [App\Http\Controllers\TeamController::class, 'update'])->middleware('can:manage-team');
         Route::delete('/team/{id}',            [App\Http\Controllers\TeamController::class, 'destroy'])->middleware('can:manage-team');
+        Route::post('/team/{id}/invite',       [App\Http\Controllers\TeamController::class, 'resendInvite'])->middleware(['can:manage-team', 'throttle:10,1'])->name('ngo.team.invite');
 
         // Smart Analysis
         Route::get('/smart-analysis',          [App\Http\Controllers\SmartAnalysisController::class, 'index']);

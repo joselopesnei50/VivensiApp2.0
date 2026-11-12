@@ -45,10 +45,12 @@ it('Donors: role employee BLOQUEADO no index', function () {
     $this->actingAs(medUser($t, 'employee'))->get('/ngo/donors')->assertForbidden();
 });
 
-it('Donors: role manager BLOQUEADO no POST store', function () {
+// Decisão do dono (2026-11-12): Coordenação (role manager) de ONG opera captação,
+// contratos, patrimônio e orçamento. Colaborador (employee) segue bloqueado.
+it('Donors: Coordenação (manager) LIBERADA no POST store; colaborador bloqueado', function () {
     $t = medTenant();
-    $this->actingAs(medUser($t, 'manager'))
-        ->post('/ngo/donors', ['name' => 'X'])->assertForbidden();
+    expect($this->actingAs(medUser($t, 'manager'))->post('/ngo/donors', ['name' => 'X'])->status())->not->toBe(403);
+    $this->actingAs(medUser($t, 'employee'))->post('/ngo/donors', ['name' => 'X'])->assertForbidden();
 });
 
 // ── Contracts ────────────────────────────────────────────────────────────────
@@ -63,10 +65,10 @@ it('Contracts: role employee BLOQUEADO no index', function () {
     $this->actingAs(medUser($t, 'employee'))->get('/ngo/contracts')->assertForbidden();
 });
 
-it('Contracts: role manager BLOQUEADO em regenerate-link', function () {
+it('Contracts: Coordenação (manager) passa do gate em regenerate-link (contrato inexistente = 404)', function () {
     $t = medTenant();
     $this->actingAs(medUser($t, 'manager'))
-        ->post('/ngo/contracts/999/regenerate-link')->assertForbidden();
+        ->post('/ngo/contracts/999/regenerate-link')->assertNotFound();
 });
 
 // ── Assets (patrimonio) ───────────────────────────────────────────────────────
@@ -94,10 +96,10 @@ it('Inventory: role ngo acessa index', function () {
     $this->actingAs(medUser($t, 'ngo'))->get('/ngo/inventory')->assertOk();
 });
 
-it('Inventory: role manager BLOQUEADO no POST movement', function () {
+it('Inventory: Coordenação (manager) passa do gate no POST movement; colaborador bloqueado', function () {
     $t = medTenant();
-    $this->actingAs(medUser($t, 'manager'))
-        ->post('/ngo/inventory/999/movement', ['qty' => 1])->assertForbidden();
+    expect($this->actingAs(medUser($t, 'manager'))->post('/ngo/inventory/999/movement', ['qty' => 1])->status())->not->toBe(403);
+    $this->actingAs(medUser($t, 'employee'))->post('/ngo/inventory/999/movement', ['qty' => 1])->assertForbidden();
 });
 
 // ── Campaigns ────────────────────────────────────────────────────────────────
@@ -120,10 +122,10 @@ it('Budget: role ngo acessa index', function () {
     $this->actingAs(medUser($t, 'ngo'))->get('/ngo/budget')->assertOk();
 });
 
-it('Budget: role manager BLOQUEADO no POST store', function () {
+it('Budget: Coordenação (manager) LIBERADA no POST store; colaborador bloqueado', function () {
     $t = medTenant();
-    $this->actingAs(medUser($t, 'manager'))
-        ->post('/ngo/budget', ['year' => 2026])->assertForbidden();
+    expect($this->actingAs(medUser($t, 'manager'))->post('/ngo/budget', ['year' => 2026])->status())->not->toBe(403);
+    $this->actingAs(medUser($t, 'employee'))->post('/ngo/budget', ['year' => 2026])->assertForbidden();
 });
 
 // ── Receipts ─────────────────────────────────────────────────────────────────

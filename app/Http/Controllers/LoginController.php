@@ -32,6 +32,13 @@ class LoginController extends Controller
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             LoginLockout::succeeded($email, $request->ip());
 
+            // Membro suspenso pelo administrador não entra (antes entrava normalmente).
+            if (Auth::user()->status === 'suspended') {
+                Auth::logout();
+                return back()->with('error', 'Seu acesso foi suspenso pelo administrador da organização.')
+                             ->withInput($request->only('email'));
+            }
+
             $request->session()->regenerate();
 
             $user = Auth::user();

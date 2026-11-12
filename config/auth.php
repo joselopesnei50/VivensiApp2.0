@@ -93,6 +93,14 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        // Convite de membro da equipe: mesmo fluxo da redefinição, link válido por 72 horas.
+        'invites' => [
+            'provider' => 'users',
+            'table' => 'password_resets',
+            'expire' => 4320,
+            'throttle' => 0,
+        ],
     ],
 
     /*

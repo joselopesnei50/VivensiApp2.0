@@ -19,7 +19,8 @@
     <div class="container">
         <div class="code">403</div>
         <h1>Acesso negado</h1>
-        <p>Você não tem permissão para acessar este recurso.</p>
+        {{-- Mostra o motivo quando ele foi escrito para o usuário (ex.: papel da equipe da ONG). --}}
+        <p>{{ (isset($exception) && str_starts_with((string) $exception->getMessage(), 'Seu perfil')) ? $exception->getMessage() : 'Você não tem permissão para acessar este recurso.' }}</p>
         <a href="{{ url('/') }}">Voltar ao início</a>
     </div>
 </body>

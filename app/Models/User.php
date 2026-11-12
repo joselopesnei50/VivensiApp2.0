@@ -126,6 +126,7 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
+        'must_change_password'       => 'boolean',
         'email_verified_at'          => 'datetime',
         'last_login_at'              => 'datetime',
         'last_seen_at'               => 'datetime',

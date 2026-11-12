@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Queue;
 
 function webhookTenant(): array
 {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    // conta do tipo gestor (em ONG, só o administrador mexe em webhooks)
+    $tenant = Tenant::factory()->create(['subscription_status' => 'active', 'type' => 'manager']);
     $user   = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
     return [$tenant, $user];
 }

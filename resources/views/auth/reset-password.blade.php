@@ -36,9 +36,9 @@
             <x-application-logo style="max-height: 60px; width: auto;" />
         </div>
 
-        <div class="title">Redefinir senha</div>
+        <div class="title">{{ !empty($invite) ? 'Bem-vindo(a) à equipe!' : 'Redefinir senha' }}</div>
         <div class="subtitle">
-            Crie uma nova senha para sua conta.
+            {{ !empty($invite) ? 'Crie a sua senha para acessar a Vivensi.' : 'Crie uma nova senha para sua conta.' }}
         </div>
 
         @if($errors->any())
@@ -48,6 +48,7 @@
         <form action="{{ route('password.update') }}" method="POST">
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
+            @if(!empty($invite))<input type="hidden" name="invite" value="1">@endif
 
             <div class="form-group">
                 <label for="email">E-mail</label>

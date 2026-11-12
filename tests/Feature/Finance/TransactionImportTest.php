@@ -107,7 +107,8 @@ it('confirma import cria transacoes no banco (admin ngo → aprovado)', function
 // ── Aprovacao por role ────────────────────────────────────────────────────────
 
 it('subordinado (employee) importando despesa: fica em pending', function () {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    // conta do tipo gestor; em ONG o colaborador não acessa o financeiro (TeamHierarchyTest)
+    $tenant = Tenant::factory()->create(['subscription_status' => 'active', 'type' => 'manager']);
     $employee = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'employee']);
 
     $csv = "descricao,valor,data,tipo\nMaterial escritorio,120,01/07/2026,despesa\n";
@@ -122,7 +123,7 @@ it('subordinado (employee) importando despesa: fica em pending', function () {
 });
 
 it('subordinado importando receita: nao precisa aprovacao', function () {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['subscription_status' => 'active', 'type' => 'manager']);
     $employee = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'employee']);
 
     $csv = "descricao,valor,data,tipo\nDoacao pessoa fisica,50,01/07/2026,receita\n";

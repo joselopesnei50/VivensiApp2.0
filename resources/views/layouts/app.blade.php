@@ -401,7 +401,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </a>
                 </li>
                 @auth
-                @if(!auth()->user()->isSuperAdmin())
+                @if(!auth()->user()->isSuperAdmin() && \App\Support\TeamAccess::canSee(route('client.invoices.index')))
                 <li>
                     <a href="{{ route('client.invoices.index') }}" class="{{ request()->routeIs('client.invoices.*') ? 'active' : '' }}">
                         <i class="fas fa-file-invoice-dollar"></i> Minhas Faturas
@@ -623,7 +623,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                 </div>
 
-            @elseif (auth()->user()->role == 'manager')
+            @elseif (auth()->user()->role == 'manager' && optional(auth()->user()->tenant)->type !== 'ngo')
                 {{-- ═══ MENU GESTOR — Agrupado ═══ --}}
                 @php
                     $mgr_ops_active  = request()->is('projects*','manager/team*','manager/schedule*','manager/approvals*','manager/perfil-operacional*','manager/kanban*','class-sessions*','ngo/inventory*','manager/radar*');
@@ -774,13 +774,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_capt_active ? '350px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/projects')))
                             <li><a href="{{ url('/projects') }}" class="{{ request()->is('projects*') ? 'active' : '' }}"><i class="fas fa-project-diagram"></i> Projetos Ativos</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/class-sessions')))
                             <li><a href="{{ url('/class-sessions') }}" class="{{ request()->is('class-sessions*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Chamada</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/donors')))
                             <li><a href="{{ url('/ngo/donors') }}" class="{{ request()->is('ngo/donors*') ? 'active' : '' }}"><i class="fas fa-heart"></i> Doadores</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/receipts')))
                             <li><a href="{{ url('/ngo/receipts') }}" class="{{ request()->is('ngo/receipts*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Recibos</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/grants')))
                             <li><a href="{{ url('/ngo/grants') }}" class="{{ request()->is('ngo/grants*') ? 'active' : '' }}"><i class="fas fa-file-signature"></i> Editais &amp; Convênios</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/sponsorships')))
                             <li><a href="{{ url('/ngo/sponsorships') }}" class="{{ request()->is('ngo/sponsorships*') ? 'active' : '' }}"><i class="fas fa-handshake"></i> CRM Patrocínios</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.radar.index')))
                             <li><a href="{{ route('ngo.radar.index') }}" class="{{ request()->is('ngo/radar*') ? 'active' : '' }}"><i class="fas fa-satellite-dish" style="color:#3b82f6;"></i> Radar de Editais</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -794,20 +808,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_wa_active ? '320px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/whatsapp/chat')))
                             <li><a href="{{ url('/whatsapp/chat') }}" class="{{ request()->is('whatsapp/chat*') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> Chat & Atendimento</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('whatsapp.labels.index')))
                             <li><a href="{{ route('whatsapp.labels.index') }}" class="{{ request()->routeIs('whatsapp.labels.*') ? 'active' : '' }}"><i class="fas fa-tags"></i> Etiquetas</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('whatsapp.broadcast.index')))
                             <li><a href="{{ route('whatsapp.broadcast.index') }}" class="{{ request()->is('whatsapp/broadcast*') ? 'active' : '' }}"><i class="fas fa-paper-plane"></i> Disparo em Massa</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('whatsapp.optin.index')))
                             <li><a href="{{ route('whatsapp.optin.index') }}" class="{{ request()->routeIs('whatsapp.optin.*') ? 'active' : '' }}"><i class="fas fa-check-circle"></i> Opt-in & Campanhas</a></li>
+                            @endif
                             @can('has-whatsapp-cloud')
+                                @if(\App\Support\TeamAccess::canSee(route('whatsapp.cloud.connect')))
                                 <li><a href="{{ route('whatsapp.cloud.connect') }}" class="{{ request()->is('whatsapp/cloud/connect') || request()->is('whatsapp/cloud/manual-connect') ? 'active' : '' }}"><i class="fab fa-facebook"></i> Conectar WhatsApp Cloud</a></li>
+                                @endif
                             @endcan
+                            @if(\App\Support\TeamAccess::canSee(url('/whatsapp/settings')))
                             <li><a href="{{ url('/whatsapp/settings') }}" class="{{ request()->is('whatsapp/settings*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Chatbot & Config</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/whatsapp/cloud/templates')))
                             <li><a href="{{ url('/whatsapp/cloud/templates') }}" class="{{ request()->is('whatsapp/cloud/templates*') ? 'active' : '' }}"><i class="fas fa-layer-group"></i> Templates</a></li>
+                            @endif
                             @can('has-whatsapp-cloud')
+                                @if(\App\Support\TeamAccess::canSee(route('whatsapp.consumo')))
                                 <li><a href="{{ route('whatsapp.consumo') }}" class="{{ request()->routeIs('whatsapp.consumo') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Meu Consumo</a></li>
+                                @endif
                             @endcan
+                            @if(\App\Support\TeamAccess::canSee(route('whatsapp.forms.index')))
                             <li><a href="{{ route('whatsapp.forms.index') }}" class="{{ request()->is('whatsapp/forms*') ? 'active' : '' }}"><i class="fas fa-clipboard-list"></i> Formulários</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('whatsapp.automations.index')))
                             <li><a href="{{ route('whatsapp.automations.index') }}" class="{{ request()->is('whatsapp/automations*') ? 'active' : '' }}"><i class="fas fa-bolt"></i> Automações</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -821,17 +855,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_mkt_active ? '440px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.email_campaigns.index')))
                             <li><a href="{{ route('ngo.email_campaigns.index') }}" class="{{ request()->routeIs('ngo.email_campaigns.index') || request()->routeIs('ngo.email_campaigns.create') || request()->routeIs('ngo.email_campaigns.show') ? 'active' : '' }}"><i class="fas fa-envelope" style="color:#6366f1;"></i> E-mail Marketing</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.email_campaigns.lists.index')))
                             <li><a href="{{ route('ngo.email_campaigns.lists.index') }}" class="{{ request()->routeIs('ngo.email_campaigns.lists.*') ? 'active' : '' }}"><i class="fas fa-address-book" style="color:#059669;"></i> Listas de Contatos</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/landing-pages')))
                             <li><a href="{{ url('/ngo/landing-pages') }}" class="{{ request()->is('ngo/landing-pages*') ? 'active' : '' }}"><i class="fas fa-magic"></i> Construtor de LPs</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('intelligence.territorial')))
                             <li><a href="{{ route('intelligence.territorial') }}" class="{{ request()->routeIs('intelligence.territorial') ? 'active' : '' }}"><i class="fas fa-map-location-dot" style="color: #10b981;"></i> Inteligência Territorial</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('social-ai.index')))
                             <li><a href="{{ route('social-ai.index') }}" class="{{ request()->is('social-ai*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles" style="color: #6366f1;"></i> Social AI Hub</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/social/posts')))
                             <li><a href="{{ url('/social/posts') }}" class="{{ request()->is('social/posts*') ? 'active' : '' }}"><i class="fas fa-calendar-plus" style="color:#e11d48;"></i> Calendário Editorial</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('marketing.index')))
                             <li><a href="{{ route('marketing.index') }}" class="{{ request()->is('marketing*') ? 'active' : '' }}"><i class="fas fa-brain" style="color:#4f46e5;"></i> Hub de Marketing IA</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('prospecting.index')))
                             <li><a href="{{ route('prospecting.index') }}" class="{{ request()->is('prospecting*') ? 'active' : '' }}"><i class="fas fa-wand-magic-sparkles"></i> Prospecção IA</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('raffles.index')))
                             <li><a href="{{ route('raffles.index') }}" class="{{ request()->is('raffles*') ? 'active' : '' }}"><i class="fas fa-ticket-alt" style="color: #6366f1;"></i> Rifas Online</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('social.accounts')))
                             <li><a href="{{ route('social.accounts') }}" class="{{ request()->is('social/accounts*') ? 'active' : '' }}"><i class="fas fa-share-nodes" style="color:#3b82f6;"></i> Redes Sociais</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('social.analytics.index')))
                             <li><a href="{{ route('social.analytics.index') }}" class="{{ request()->routeIs('social.analytics.*') ? 'active' : '' }}"><i class="fas fa-chart-line" style="color:#10b981;"></i> Analytics Sociais</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -845,11 +901,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_fin_active ? '300px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/transactions')))
                             <li><a href="{{ url('/transactions') }}" class="{{ request()->is('transactions') ? 'active' : '' }}"><i class="fas fa-exchange-alt"></i> Fluxo de Caixa</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/transactions/create')))
                             <li><a href="{{ url('/transactions/create') }}" class="{{ request()->is('transactions/create') ? 'active' : '' }}"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Nova Transação</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/budget')))
                             <li><a href="{{ url('/ngo/budget') }}" class="{{ request()->is('ngo/budget*') ? 'active' : '' }}"><i class="fas fa-chart-pie"></i> Orçamento Anual</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/reconciliation')))
                             <li><a href="{{ url('/ngo/reconciliation') }}" class="{{ request()->is('ngo/reconciliation*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Conciliação Bancária</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/finance/import')))
                             <li><a href="{{ url('/finance/import') }}" class="{{ request()->is('finance/import*') ? 'active' : '' }}"><i class="fas fa-file-import" style="color:#10b981;"></i> Importar Planilha</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -863,11 +929,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_people_active ? '400px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/team')))
                             <li><a href="{{ url('/ngo/team') }}" class="{{ request()->is('ngo/team*') ? 'active' : '' }}"><i class="fas fa-id-card"></i> Equipe da ONG</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/hr')))
                             <li><a href="{{ url('/ngo/hr') }}" class="{{ request()->is('ngo/hr*') ? 'active' : '' }}"><i class="fas fa-id-badge"></i> RH &amp; Voluntários</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/beneficiaries')))
                             <li><a href="{{ url('/ngo/beneficiaries') }}" class="{{ request()->is('ngo/beneficiaries') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> Beneficiários</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/beneficiaries/insights')))
                             <li class="menu-sub-item"><a href="{{ url('/ngo/beneficiaries/insights') }}" class="{{ request()->is('ngo/beneficiaries/insights*') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Indicadores Sociais</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/beneficiaries/reports/annual')))
                             <li class="menu-sub-item"><a href="{{ url('/ngo/beneficiaries/reports/annual') }}" class="{{ request()->is('ngo/beneficiaries/reports/annual*') ? 'active' : '' }}"><i class="fas fa-file-alt"></i> Relatório Anual</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -881,8 +957,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_pat_active ? '200px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/inventory')))
                             <li><a href="{{ url('/ngo/inventory') }}" class="{{ request()->is('ngo/inventory*') ? 'active' : '' }}"><i class="fas fa-box-open"></i> Almoxarifado e Estoque</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/assets')))
                             <li><a href="{{ url('/ngo/assets') }}" class="{{ request()->is('ngo/assets*') ? 'active' : '' }}"><i class="fas fa-building"></i> Patrimônio</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -896,7 +976,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_jur_active ? '150px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/contracts')))
                             <li><a href="{{ url('/ngo/contracts') }}" class="{{ request()->is('ngo/contracts*') ? 'active' : '' }}"><i class="fas fa-file-contract"></i> Contratos Digitais</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -910,9 +992,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_rep_active ? '250px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/reports/dre')))
                             <li><a href="{{ url('/ngo/reports/dre') }}" class="{{ request()->is('ngo/reports*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Relatórios (DRE)</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/audit')))
                             <li><a href="{{ url('/ngo/audit') }}" class="{{ request()->is('ngo/audit*') ? 'active' : '' }}"><i class="fas fa-eye"></i> Central de Auditoria</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(url('/ngo/transparencia')))
                             <li><a href="{{ url('/ngo/transparencia') }}" class="{{ request()->is('ngo/transparencia*') ? 'active' : '' }}"><i class="fas fa-landmark"></i> Portal Transparência</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -926,13 +1014,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_conf_active ? '420px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.conformidade.dashboard')))
                             <li><a href="{{ route('ngo.conformidade.dashboard') }}" class="{{ request()->is('ngo/conformidade') ? 'active' : '' }}"><i class="fas fa-gauge-high" style="color:#10b981;"></i> Dashboard</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.conformidade.eixo', 'cebas_as')))
                             <li><a href="{{ route('ngo.conformidade.eixo', 'cebas_as') }}" class="{{ request()->is('ngo/conformidade/eixo/cebas*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> CEBAS</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.conformidade.eixo', 'suas')))
                             <li><a href="{{ route('ngo.conformidade.eixo', 'suas') }}" class="{{ request()->is('ngo/conformidade/eixo/suas*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> SUAS</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.conformidade.eixo', 'mrosc')))
                             <li><a href="{{ route('ngo.conformidade.eixo', 'mrosc') }}" class="{{ request()->is('ngo/conformidade/eixo/mrosc*') ? 'active' : '' }}"><i class="fas fa-list-check"></i> MROSC</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.conformidade.planos.index')))
                             <li><a href="{{ route('ngo.conformidade.planos.index') }}" class="{{ request()->is('ngo/conformidade/planos-acao*') ? 'active' : '' }}"><i class="fas fa-tasks"></i> Planos de Ação</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.conformidade.ciclos')))
                             <li><a href="{{ route('ngo.conformidade.ciclos') }}" class="{{ request()->is('ngo/conformidade/ciclos') ? 'active' : '' }}"><i class="fas fa-rotate"></i> Ciclos</a></li>
+                            @endif
+                            @if(\App\Support\TeamAccess::canSee(route('ngo.conformidade.configurar')))
                             <li><a href="{{ route('ngo.conformidade.configurar') }}" class="{{ request()->is('ngo/conformidade/configurar') ? 'active' : '' }}"><i class="fas fa-sliders"></i> Configurar</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -946,9 +1048,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_ai_active ? '200px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/smart-analysis')))
                             <li><a href="{{ url('/smart-analysis') }}" class="{{ request()->is('smart-analysis*') ? 'active' : '' }}"><img loading="lazy" src="{{ asset('img/bruce/bruceia-icone-fundo-claro.svg') }}" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:5px;"> Smart Analysis AI</a></li>
+                            @endif
                             @if(config('strategy_room.enabled'))
+                            @if(\App\Support\TeamAccess::canSee(route('strategy-room.index')))
                             <li><a href="{{ route('strategy-room.index') }}" class="{{ request()->is('strategy-room*') ? 'active' : '' }}"><i class="fas fa-chess-king" style="color: #4f46e5;"></i> Sala de Estratégia</a></li>
+                            @endif
                             @endif
                         </ul>
                     </div>
@@ -964,7 +1070,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_acad_active ? '150px' : '0' }};">
                         <ul>
+                            @if(\App\Support\TeamAccess::canSee(url('/academy')))
                             <li><a href="{{ url('/academy') }}" class="{{ request()->is('academy*') ? 'active' : '' }}"><i class="fas fa-play-circle"></i> Acessar Academy</a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -1151,7 +1259,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <li><a href="{{ url('/support') }}" class="{{ request()->is('support') ? 'active' : '' }}"><i class="fas fa-life-ring"></i> Suporte</a></li>
             <li><a href="{{ url('/profile') }}" class="{{ request()->is('profile') ? 'active' : '' }}"><i class="fas fa-cog"></i> Configurações</a></li>
-            @if(in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin']))
+            @if(in_array(auth()->user()->role, ['manager', 'ngo', 'super_admin']) && !\App\Support\TeamAccess::appliesTo(auth()->user()))
             <li><a href="{{ route('settings.branding') }}" class="{{ request()->routeIs('settings.branding') ? 'active' : '' }}"><i class="fas fa-palette"></i> Identidade Visual</a></li>
             <li><a href="{{ route('api.docs') }}" class="{{ request()->routeIs('api.docs') ? 'active' : '' }}"><i class="fas fa-book-open"></i> Documentação API</a></li>
             <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->routeIs('settings.api-tokens*') ? 'active' : '' }}"><i class="fas fa-plug"></i> API &amp; Integrações</a></li>
@@ -1164,7 +1272,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     @php
         $ucName    = auth()->user()->name ?? 'Usuário';
         $ucInitials = strtoupper(implode('', array_map(fn($w) => substr($w,0,1), array_slice(explode(' ', $ucName), 0, 2))));
-        $ucRoleLabel = match(auth()->user()->role) {
+        $ucRoleLabel = \App\Support\TeamAccess::appliesTo(auth()->user()) || auth()->user()->role === 'ngo'
+            ? \App\Support\TeamAccess::label(auth()->user()->role)
+            : match(auth()->user()->role) {
             'super_admin' => 'Admin',
             'manager'     => 'Gestor',
             'ngo'         => 'ONG',
@@ -1208,7 +1318,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @endif
             <a href="{{ url('/profile') }}"><i class="fas fa-user-circle"></i> {{ __('ui.profile') }}</a>
             <a href="{{ url('/profile') }}#settings"><i class="fas fa-cog"></i> {{ __('ui.settings') }}</a>
+            @if(\App\Support\TeamAccess::canSee(route('client.invoices.index')))
             <a href="{{ route('client.invoices.index') }}"><i class="fas fa-file-invoice-dollar"></i> Minhas Faturas</a>
+            @endif
             <a href="{{ route('lgpd.self.index') }}"><i class="fas fa-shield-halved"></i> Meus dados (LGPD)</a>
             <div class="suc-divider"></div>
             <a href="#" class="danger" onclick="event.preventDefault(); document.getElementById('global-logout-form').submit();">
@@ -1300,7 +1412,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div id="topbar-title" style="display: flex; align-items: center; gap: 16px;">
                 <div style="width: 3px; height: 32px; background: var(--primary-color, #4f46e5); border-radius: 2px;"></div>
                 <div>
-                    @php $role = auth()->user()?->role; @endphp
+                    @php
+                        $role = auth()->user()?->role;
+                        // Equipe de ONG (Coordenação/Colaborador) vê o cabeçalho da ONG.
+                        if (\App\Support\TeamAccess::appliesTo(auth()->user())) { $role = 'ngo'; }
+                    @endphp
                     <div style="font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px;">
                         @if($role == 'manager') Gestão de Projetos
                         @elseif($role == 'ngo') Terceiro Setor
@@ -2281,28 +2397,62 @@ document.addEventListener('click', function(e) {
 // ── Command Palette ────────────────────────────────────────────────────
 const CMD_ITEMS = [
     @auth
+    @if(\App\Support\TeamAccess::canSee(url("/dashboard")))
     { label: 'Dashboard',        url: '{{ url("/dashboard") }}',               icon: 'fa-home' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/transactions")))
     { label: 'Transações',       url: '{{ url("/transactions") }}',             icon: 'fa-wallet' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/transactions/create")))
     { label: 'Nova Transação',   url: '{{ url("/transactions/create") }}',      icon: 'fa-plus-circle' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/projects")))
     { label: 'Projetos',         url: '{{ url("/projects") }}',                 icon: 'fa-folder-open' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/tasks")))
     { label: 'Tarefas',          url: '{{ url("/tasks") }}',                    icon: 'fa-check-square' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/whatsapp/chat")))
     { label: 'WhatsApp CRM',     url: '{{ url("/whatsapp/chat") }}',            icon: 'fa-comment-dots' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(route("whatsapp.labels.index")))
     { label: 'Etiquetas WhatsApp', url: '{{ route("whatsapp.labels.index") }}', icon: 'fa-tags' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/clients")))
     { label: 'Clientes',         url: '{{ url("/clients") }}',                  icon: 'fa-users' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/profile")))
     { label: 'Meu Perfil',       url: '{{ url("/profile") }}',                  icon: 'fa-user-circle' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(route("client.invoices.index")))
     { label: 'Minhas Faturas',   url: '{{ route("client.invoices.index") }}',   icon: 'fa-file-invoice-dollar' },
+    @endif
     @if(auth()->user()->role === 'ngo')
+    @if(\App\Support\TeamAccess::canSee(url("/ngo/beneficiaries")))
     { label: 'Beneficiários',    url: '{{ url("/ngo/beneficiaries") }}',        icon: 'fa-heart' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/ngo/donors")))
     { label: 'Doadores',         url: '{{ url("/ngo/donors") }}',               icon: 'fa-hand-holding-heart' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/ngo/grants")))
     { label: 'Editais',          url: '{{ url("/ngo/grants") }}',               icon: 'fa-file-contract' },
     @endif
+    @endif
     @if(in_array(auth()->user()->role, ['manager','ngo','common']))
+    @if(\App\Support\TeamAccess::canSee(route("marketing.index")))
     { label: 'Marketing IA',     url: '{{ route("marketing.index") }}',         icon: 'fa-brain' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(route("whatsapp.broadcast.index")))
     { label: 'Disparo em Massa', url: '{{ route("whatsapp.broadcast.index") }}',icon: 'fa-paper-plane' },
     @endif
+    @endif
     @if(auth()->user()->role === 'super_admin')
+    @if(\App\Support\TeamAccess::canSee(url("/admin")))
     { label: 'Painel Admin',     url: '{{ url("/admin") }}',                    icon: 'fa-shield-halved' },
+    @endif
+    @if(\App\Support\TeamAccess::canSee(url("/admin/tenants")))
     { label: 'Organizações',     url: '{{ url("/admin/tenants") }}',            icon: 'fa-building' },
+    @endif
     @endif
     @endauth
 ];
@@ -2440,6 +2590,17 @@ document.addEventListener('submit', function(e) {
 </script>
 
 @include('partials.welcome_modal')
+<script>
+// Hierarquia da equipe: esconde grupos do menu sem nenhum link para este papel.
+document.querySelectorAll('.menu-group').forEach(function (g) {
+    var items = g.querySelector('.menu-group-items');
+    if (items && !items.querySelector('li')) {
+        g.style.display = 'none';
+        var d = g.nextElementSibling;
+        if (d && d.classList.contains('menu-divider')) d.style.display = 'none';
+    }
+});
+</script>
 </body>
 </html>
 
