@@ -27,7 +27,10 @@ class GlobalSearchController extends Controller
         $results  = [];
 
         // ── Projetos (manager / super_admin) ──────────────────────────────
-        if (in_array($role, ['manager', 'super_admin'])) {
+        $teamAccess = \App\Support\TeamAccess::class;
+        $isNgo = optional($user->tenant)->type === 'ngo';
+
+        if (in_array($role, ['manager', 'super_admin', 'ngo'])) {
             $projects = Project::where('tenant_id', $tid)
                 ->where(fn($q) => $q->where('name', 'like', $like)->orWhere('description', 'like', $like))
                 ->limit(5)
@@ -40,7 +43,7 @@ class GlobalSearchController extends Controller
                     'color'    => '#818cf8',
                     'label'    => $p->name,
                     'sub'      => ucfirst($p->status ?? 'em andamento'),
-                    'url'      => url("/manager/projects/{$p->id}"),
+                    'url'      => url("/projects/{$p->id}"),
                 ];
             }
 
@@ -57,13 +60,14 @@ class GlobalSearchController extends Controller
                     'color'    => '#34d399',
                     'label'    => $t->title,
                     'sub'      => ucfirst($t->status ?? 'pendente'),
-                    'url'      => url("/manager/tasks"),
+                    'url'      => url("/tasks"),
                 ];
             }
         }
 
         // ── Editais (ngo / super_admin) ───────────────────────────────────
-        if (in_array($role, ['ngo', 'super_admin'])) {
+        // Na ONG a Coordenação também cuida da captação.
+        if (in_array($role, ['ngo', 'super_admin']) || ($isNgo && $role === 'manager')) {
             $grants = NgoGrant::where('tenant_id', $tid)
                 ->where(fn($q) => $q->where('title', 'like', $like)->orWhere('description', 'like', $like))
                 ->limit(5)
@@ -98,7 +102,10 @@ class GlobalSearchController extends Controller
             }
         }
 
-        // ── Transações (todos os papéis) ──────────────────────────────────
+        // ── Transações (quem abre o financeiro; o Colaborador da ONG não) ──
+        if (!$teamAccess::allowsPath($user, 'transactions')) {
+            return response()->json($results);
+        }
         $transactions = Transaction::where('tenant_id', $tid)
             ->where(fn($q) => $q->where('description', 'like', $like)->orWhere('category', 'like', $like))
             ->limit(4)
@@ -111,7 +118,7 @@ class GlobalSearchController extends Controller
                 'color'    => $t->type === 'income' ? '#34d399' : '#ef4444',
                 'label'    => $t->description,
                 'sub'      => 'R$ ' . number_format((float) $t->amount, 2, ',', '.'),
-                'url'      => url("/finances/transactions"),
+                'url'      => url("/transactions"),
             ];
         }
 

@@ -42,7 +42,8 @@ class CheckSubscription
         // 4-equipe. Coordenação/Colaborador de ONG não assinam contrato nem pagam:
         // se a conta precisar disso, mostram um aviso em vez das telas de pagamento
         // (que são só do administrador — e mandar para lá virava redirecionamento em círculo).
-        if (\App\Support\TeamAccess::appliesTo($user) && $tenant->subscription_status !== 'suspended') {
+        // Credenciado (acesso só a um projeto) também: ele só pode abrir /credenciado.
+        if ((\App\Support\TeamAccess::appliesTo($user) || $user->role === 'credenciado') && $tenant->subscription_status !== 'suspended') {
             $courtesy = $tenant->plan && $tenant->plan->is_courtesy;
             $ok = $tenant->subscription_status !== 'awaiting_contract' && (
                 $courtesy

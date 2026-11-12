@@ -35,6 +35,8 @@ class TeamAccess
     private const BLOCKED_COORDINATOR = [
         'ngo/team', 'ngo/hr', 'manager/team',
         'settings', 'minha-conta', 'ngo/conformidade/configurar',
+        // contrato de adesão e pagamento do plano são do administrador
+        'register/contrato', 'checkout',
         // portal público e SIC respondem pela organização: ficam com o administrador
         'ngo/transparencia', 'ngo/transparency', 'ngo/sic',
     ];
@@ -52,6 +54,8 @@ class TeamAccess
         'ngo/assets', 'ngo/inventory', 'ngo/contracts', 'manager/contracts', 'ngo/audit', 'ngo/transparencia',
         'ngo/transparency', 'ngo/sic', 'ngo/conformidade', 'smart-analysis', 'ngo/smart-analysis', 'strategy-room',
         'ngo/beneficiaries/insights',
+        // exportar a base inteira (CPF, contatos) fica com quem responde pela LGPD
+        'ngo/beneficiaries/export', 'ngo/beneficiaries/attendances/export',
     ];
 
     public static function label(?string $role): string

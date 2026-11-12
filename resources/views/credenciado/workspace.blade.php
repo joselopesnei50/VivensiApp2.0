@@ -3,6 +3,7 @@
 
 @section('content')
 @php
+    $canWrite = in_array(optional($membership)->access_level, ['editor', 'admin'], true);
     $statusColors = [
         'todo'        => ['bg' => '#eff6ff', 'color' => '#1d4ed8', 'label' => 'A fazer'],
         'in_progress' => ['bg' => '#fef3c7', 'color' => '#92400e', 'label' => 'Em progresso'],
@@ -228,6 +229,7 @@
                 <span style="color:#94a3b8; font-size:0.75rem;">{{ $logs->count() }} recente(s)</span>
             </div>
 
+            @if($canWrite)
             <form action="{{ route('credenciado.log.store', $project->id) }}" method="POST" style="margin-bottom:16px;">
                 @csrf
                 <textarea name="body" rows="3" required maxlength="3000"
@@ -242,6 +244,9 @@
                     </button>
                 </div>
             </form>
+            @else
+            <p style="margin:0 0 16px; padding:10px 12px; border-radius:10px; background:rgba(148,163,184,.12); color:#64748b; font-size:.82rem;"><i class="fas fa-eye me-1"></i> Seu acesso a este projeto é de visualização. Para registrar, peça à coordenação o nível Editor.</p>
+            @endif
 
             @forelse($logs as $log)
                 <div style="padding:12px 14px; background:#f8fafc; border-left:3px solid #6366f1; border-radius:8px; margin-bottom:8px;">
@@ -275,6 +280,7 @@
                 <span style="color:#94a3b8; font-size:0.75rem;">{{ $timeline->count() }} recente(s)</span>
             </div>
 
+            @if($canWrite)
             <form action="{{ route('credenciado.timeline.store', $project->id) }}" method="POST" enctype="multipart/form-data" style="margin-bottom:16px;">
                 @csrf
                 <input type="text" name="title" required maxlength="255"
@@ -309,6 +315,9 @@
                     </button>
                 </div>
             </form>
+            @else
+            <p style="margin:0 0 16px; padding:10px 12px; border-radius:10px; background:rgba(148,163,184,.12); color:#64748b; font-size:.82rem;"><i class="fas fa-eye me-1"></i> Seu acesso a este projeto é de visualização. Para registrar, peça à coordenação o nível Editor.</p>
+            @endif
 
             @php
                 $typeLabels = [

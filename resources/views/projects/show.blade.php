@@ -1236,8 +1236,8 @@ async function generateProjectPdf(btn) {
                                     <label for="rV" class="role-card w-100" id="card-rV">
                                         <input type="radio" name="access_level" id="rV" value="viewer" class="d-none" onchange="highlightRoleCard('r',this.id)">
                                         <i class="fas fa-eye mb-2" style="font-size:1.3rem;color: var(--ds-text-muted);"></i>
-                                        <div class="fw-900 mb-1">Viewer</div>
-                                        <div class="small fw-bold" style="color:#94a3b8;">Auditagem</div>
+                                        <div class="fw-900 mb-1">Visualizador</div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Só consulta</div>
                                     </label>
                                 </div>
                                 <div class="col-md-4">
@@ -1263,7 +1263,8 @@ async function generateProjectPdf(btn) {
                     </div>
 
                     <div class="tab-pane fade p-5" id="newMember">
-                        <form id="newMemberForm" action="{{ $basePath . '/projects/'.$project->id.'/members/credential' }}" method="POST"
+                        @php $onlyProject = \App\Support\TeamAccess::appliesTo(auth()->user()); @endphp
+                        <form id="newMemberForm" action="{{ $basePath . '/projects/'.$project->id.'/members/' . ($onlyProject ? 'credenciado' : 'credential') }}" method="POST"
                               data-url-employee="{{ $basePath . '/projects/'.$project->id.'/members/credential' }}"
                               data-url-credenciado="{{ $basePath . '/projects/'.$project->id.'/members/credenciado' }}">
                             @csrf
@@ -1285,7 +1286,7 @@ async function generateProjectPdf(btn) {
                                     <label class="fw-800 text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px; color: #94a3b8;">Senha</label>
                                     <div class="p-4 bg-body-tertiary rounded-4 border-0 fw-800" style="color: var(--ds-text);">
                                         <i class="fas fa-envelope me-2" style="color:#6366f1;"></i>Link de definição de senha
-                                        <div class="small opacity-50 fw-bold mt-1">Um e-mail sera enviado para o novo membro definir a propria senha.</div>
+                                        <div class="small opacity-50 fw-bold mt-1">A pessoa recebe um convite por e-mail para criar a própria senha (o link vale 72 horas).</div>
                                     </div>
                                 </div>
                             </div>
@@ -1295,7 +1296,7 @@ async function generateProjectPdf(btn) {
                                  a este projeto (nao ve financeiro/doadores/etc). --}}
                             <div class="mt-4 p-3 rounded-4" style="background:#fef3c7; border:1px solid #fcd34d;">
                                 <label class="d-flex align-items-start gap-3 m-0" style="cursor:pointer;">
-                                    <input type="checkbox" id="chkCredenciado" onchange="selectAccountType(this.checked ? 'credenciado' : 'employee')"
+                                    <input type="checkbox" id="chkCredenciado" @if($onlyProject) checked disabled @endif onchange="selectAccountType(this.checked ? 'credenciado' : 'employee')"
                                            style="margin-top:4px; width:18px; height:18px; accent-color:#d97706;">
                                     <div>
                                         <div class="fw-800" style="color:#78350f; font-size:0.9rem;">
@@ -1304,6 +1305,9 @@ async function generateProjectPdf(btn) {
                                         <div class="small mt-1" style="color:#92400e; line-height:1.5;">
                                             Marque quando for cadastrar oficineiro/professor/agente que <strong>so pode atuar neste projeto</strong>. A pessoa nao vera financeiro, doadores nem nenhuma outra area da entidade.
                                         </div>
+                                        @if($onlyProject)
+                                        <div class="small mt-2 fw-bold" style="color:#78350f;">Colaboradores da organização inteira são cadastrados pelo administrador, em Equipe.</div>
+                                        @endif
                                     </div>
                                 </label>
                             </div>
@@ -1314,8 +1318,8 @@ async function generateProjectPdf(btn) {
                                     <label for="nrV" class="role-card w-100" id="card-nrV">
                                         <input type="radio" name="access_level" id="nrV" value="viewer" class="d-none" onchange="highlightRoleCard('nr',this.id)">
                                         <i class="fas fa-eye mb-2" style="font-size:1.3rem;color: var(--ds-text-muted);"></i>
-                                        <div class="fw-900 mb-1">Viewer</div>
-                                        <div class="small fw-bold" style="color:#94a3b8;">Auditagem</div>
+                                        <div class="fw-900 mb-1">Visualizador</div>
+                                        <div class="small fw-bold" style="color:#94a3b8;">Só consulta</div>
                                     </label>
                                 </div>
                                 <div class="col-md-4">

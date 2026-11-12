@@ -288,12 +288,11 @@ class ProjectController extends Controller
             'access_level' => 'required|in:viewer,editor,admin'
         ]);
 
-        \App\Models\ProjectMember::create([
-            'tenant_id' => auth()->user()->tenant_id,
-            'project_id' => $id,
-            'user_id' => $validated['user_id'],
-            'access_level' => $validated['access_level']
-        ]);
+        // Mesma pessoa duas vezes no projeto só atualiza o nível de acesso.
+        \App\Models\ProjectMember::updateOrCreate(
+            ['tenant_id' => auth()->user()->tenant_id, 'project_id' => $project->id, 'user_id' => $validated['user_id']],
+            ['access_level' => $validated['access_level']]
+        );
 
         $this->projectService->flushCache((int) auth()->user()->tenant_id, (int) $id);
 
@@ -324,6 +323,12 @@ class ProjectController extends Controller
     {
         abort_unless(in_array(auth()->user()->role, ['manager', 'super_admin', 'ngo', 'common'], true), 403);
         abort_unless(in_array($role, ['employee', 'credenciado'], true), 400);
+
+        // Na ONG, só o Administrador cria Colaboradores (acesso à organização inteira).
+        // A Coordenação não mexe na equipe: daqui ela só cadastra quem acessa este projeto.
+        if ($role === 'employee' && \App\Support\TeamAccess::appliesTo(auth()->user())) {
+            abort(403, 'Só o administrador cadastra colaboradores da organização. Marque "Acesso exclusivo a este projeto" ou peça ao administrador.');
+        }
 
         $tenantId = auth()->user()->tenant_id;
 
@@ -364,24 +369,25 @@ class ProjectController extends Controller
             'access_level' => $validated['access_level'],
         ]);
 
-        // Send password definition link (best-effort) and also return a one-time invite link to the manager.
-        // This avoids getting stuck when email delivery is not available in local/dev environments.
+        // Convite de 72 h (mesmo fluxo da equipe): a pessoa cria a própria senha.
+        // O link também aparece para quem cadastrou, caso o e-mail não chegue.
         $inviteUrl = null;
+        $mailed = false;
         try {
-            $token = Password::broker()->createToken($newUser);
-            $basePath = rtrim($request->getBaseUrl(), '/');
-            $inviteUrl = $request->getSchemeAndHttpHost()
-                . $basePath
-                . '/reset-password/' . $token
-                . '?email=' . urlencode((string) $newUser->email);
-            $newUser->sendPasswordResetNotification($token);
+            $token = Password::broker('invites')->createToken($newUser);
+            $inviteUrl = route('password.reset', ['token' => $token, 'email' => $newUser->email, 'convite' => 1]);
+            \Illuminate\Support\Facades\Mail::to($newUser->email)
+                ->send(new \App\Mail\TeamInviteMail($newUser, auth()->user(), $inviteUrl, $project->name));
+            $mailed = true;
         } catch (\Throwable $e) {
-            // ignore; fail-safe
+            \Log::error('Convite de membro do projeto falhou: ' . $e->getMessage(), ['user_id' => $newUser->id]);
         }
 
         $this->projectService->flushCache((int) $tenantId, (int) $project->id);
 
-        $resp = back()->with('success', 'Credencial criada e membro vinculado ao projeto. Um link para definir a senha foi enviado ao e-mail informado.');
+        $resp = back()->with('success', $mailed
+            ? "Membro vinculado ao projeto. O convite para criar a senha foi enviado para {$newUser->email} (vale 72 horas)."
+            : 'Membro vinculado ao projeto, mas o e-mail não saiu agora. Envie o link abaixo para a pessoa.');
         if ($inviteUrl) {
             $resp->with('invite_link', $inviteUrl)->with('invite_email', $newUser->email);
         }
