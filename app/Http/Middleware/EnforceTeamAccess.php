@@ -39,11 +39,9 @@ class EnforceTeamAccess
             return redirect('/profile')->with('error', 'Bem-vindo(a)! Por segurança, crie uma senha só sua antes de continuar.');
         }
 
+        // Área fora do papel: acesso negado (o menu já não mostra esses links).
         if (!TeamAccess::allowsPath($user, $request->path())) {
-            if ($request->expectsJson() || !$request->isMethod('GET')) {
-                abort(403, 'Seu perfil não tem acesso a esta área.');
-            }
-            return redirect('/dashboard')->with('error', 'Seu perfil (' . TeamAccess::label($user->role) . ') não tem acesso a esta área. Se precisar, fale com o administrador da organização.');
+            abort(403, 'Seu perfil (' . TeamAccess::label($user->role) . ') não tem acesso a esta área. Se precisar, fale com o administrador da organização.');
         }
 
         return $next($request);

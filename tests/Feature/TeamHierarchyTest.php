@@ -61,7 +61,7 @@ it('colaborador: atendimento sim; financeiro, captação, configurações e API 
         ($this->as)($this->employee)->get($url)->assertOk();
     }
     foreach (['/transactions', '/ngo/reconciliation', '/raffles', '/settings/api-tokens', '/settings/branding', '/ngo/landing-pages', '/ngo/email-campaigns', '/ngo/team', '/ngo/donors'] as $url) {
-        ($this->as)($this->employee)->get($url)->assertRedirect('/dashboard');
+        ($this->as)($this->employee)->get($url)->assertForbidden();
     }
     ($this->as)($this->employee)->post('/settings/api-tokens', ['name' => 'x'])->assertForbidden();
 });
@@ -82,8 +82,7 @@ it('coordenação: operação inteira e painel da ONG; sem equipe, RH, configura
         ($this->as)($this->coord)->get($url)->assertOk();
     }
     foreach (['/ngo/team', '/ngo/hr', '/settings/api-tokens'] as $url) {
-        $r = ($this->as)($this->coord)->get($url);
-        expect($r->status())->toBeIn([302, 403]);
+        ($this->as)($this->coord)->get($url)->assertForbidden();
     }
     ($this->as)($this->coord)->get('/dashboard')->assertOk()->assertSee('Central de Comando — ONG')->assertDontSee('Central de Comando — Projetos');
 });
@@ -156,4 +155,8 @@ it('com a conta pendente, a equipe vê um aviso (sem cair em loop nem na tela de
     ($this->as)($this->employee)->get('/dashboard')->assertStatus(402)->assertSee('precisa de uma ação do administrador');
     ($this->as)($this->coord)->get('/ngo/donors')->assertStatus(402);
     ($this->as)($this->admin)->get('/dashboard')->assertRedirect(route('adesao.show'));
+});
+
+it('colaborador de ONG não importa planilha financeira', function () {
+    ($this->as)($this->employee)->post('/finance/import/preview', [])->assertForbidden();
 });

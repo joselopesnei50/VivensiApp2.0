@@ -9,7 +9,8 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 function mgrTeamTenant(): Tenant
 {
-    return Tenant::factory()->create(['subscription_status' => 'active']);
+    // painel do produto Gestor de Projetos (em ONG, a tela de equipe é do administrador)
+    return Tenant::factory()->create(['subscription_status' => 'active', 'type' => 'manager']);
 }
 
 function mgrTeamUser(Tenant $t, string $role, string $avail = 'available'): User
