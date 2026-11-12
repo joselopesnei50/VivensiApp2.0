@@ -39,6 +39,24 @@ class CheckSubscription
             return $next($request);
         }
 
+        // 4-equipe. Coordenação/Colaborador de ONG não assinam contrato nem pagam:
+        // se a conta precisar disso, mostram um aviso em vez das telas de pagamento
+        // (que são só do administrador — e mandar para lá virava redirecionamento em círculo).
+        if (\App\Support\TeamAccess::appliesTo($user) && $tenant->subscription_status !== 'suspended') {
+            $courtesy = $tenant->plan && $tenant->plan->is_courtesy;
+            $ok = $tenant->subscription_status !== 'awaiting_contract' && (
+                $courtesy
+                || ($tenant->subscription_status === 'active' && !app(\App\Services\Billing\InvoiceService::class)->isBlocked($tenant))
+                || ($tenant->subscription_status === 'trialing' && optional($tenant->trial_ends_at)->isFuture())
+            );
+            if (!$ok) {
+                return $request->expectsJson()
+                    ? response()->json(['message' => 'A conta da organização está com pendência. Fale com o administrador.'], 402)
+                    : response()->view('errors.team-account-pending', ['tenant' => $tenant], 402);
+            }
+            return $next($request);
+        }
+
         // 4a. Contrato de adesao pendente — precede qualquer decisao de plano.
         // So novos cadastros ficam com awaiting_contract; contas legadas (active/pending
         // criadas antes desse fluxo) NAO sao afetadas.

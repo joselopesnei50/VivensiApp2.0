@@ -18,6 +18,19 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
+        // Token de API: não vale para membro suspenso nem para Colaborador de ONG
+        // (o colaborador não tem acesso ao financeiro, que é o que a API expõe).
+        \Laravel\Sanctum\Sanctum::authenticateAccessTokensUsing(function ($token, bool $isValid) {
+            $u = $token->tokenable;
+            if (!$isValid || !$u) {
+                return false;
+            }
+            if (($u->status ?? null) === 'suspended') {
+                return false;
+            }
+            return !($u->role === 'employee' && optional($u->tenant)->type === 'ngo');
+        });
+
         // super_admin sempre passa — verificado antes de qualquer Gate/Policy
         Gate::before(function (User $user, string $ability) {
             if ($user->role === 'super_admin') return true;
@@ -28,6 +41,9 @@ class AuthServiceProvider extends ServiceProvider
         // Verifica spatie permissions (quando seeder rodou) com fallback para
         // coluna role. O try/catch absorve PermissionDoesNotExist em ambientes
         // de teste onde o seeder ainda não rodou.
+
+        // Coordenação (role manager) dentro de uma ONG opera captação, financeiro e gestão.
+        $ngoCoordinator = fn (User $user): bool => $user->role === 'manager' && optional($user->tenant)->type === 'ngo';
 
         $perm = function (User $user, string $permission): bool {
             try {
@@ -67,12 +83,12 @@ class AuthServiceProvider extends ServiceProvider
             return $perm($user, 'manage-settings') || $user->role === 'super_admin';
         });
 
-        Gate::define('manage-donors', function (User $user) use ($perm) {
-            return $perm($user, 'manage-donors') || in_array($user->role, ['ngo', 'super_admin']);
+        Gate::define('manage-donors', function (User $user) use ($perm, $ngoCoordinator) {
+            return $perm($user, 'manage-donors') || in_array($user->role, ['ngo', 'super_admin']) || $ngoCoordinator($user);
         });
 
-        Gate::define('manage-grants', function (User $user) use ($perm) {
-            return $perm($user, 'manage-grants') || in_array($user->role, ['ngo', 'super_admin']);
+        Gate::define('manage-grants', function (User $user) use ($perm, $ngoCoordinator) {
+            return $perm($user, 'manage-grants') || in_array($user->role, ['ngo', 'super_admin']) || $ngoCoordinator($user);
         });
 
         Gate::define('manage-projects', function (User $user) use ($perm) {
@@ -119,26 +135,26 @@ class AuthServiceProvider extends ServiceProvider
         // Padrao: apenas 'ngo' (admin do tenant NGO); super_admin passa via
         // Gate::before. Widen pra 'manager' se area operacional exigir.
 
-        Gate::define('manage-contracts', function (User $user) use ($perm) {
-            return $perm($user, 'manage-contracts') || in_array($user->role, ['ngo', 'common'], true);
+        Gate::define('manage-contracts', function (User $user) use ($perm, $ngoCoordinator) {
+            return $perm($user, 'manage-contracts') || in_array($user->role, ['ngo', 'common'], true) || $ngoCoordinator($user);
         });
 
         // Compartilhado por AssetController + InventoryController (patrimonio
         // e almoxarifado sao gestao patrimonial da OSC).
-        Gate::define('manage-assets', function (User $user) use ($perm) {
-            return $perm($user, 'manage-assets') || $user->role === 'ngo';
+        Gate::define('manage-assets', function (User $user) use ($perm, $ngoCoordinator) {
+            return $perm($user, 'manage-assets') || $user->role === 'ngo' || $ngoCoordinator($user);
         });
 
-        Gate::define('manage-campaigns', function (User $user) use ($perm) {
-            return $perm($user, 'manage-campaigns') || $user->role === 'ngo';
+        Gate::define('manage-campaigns', function (User $user) use ($perm, $ngoCoordinator) {
+            return $perm($user, 'manage-campaigns') || $user->role === 'ngo' || $ngoCoordinator($user);
         });
 
-        Gate::define('manage-budget', function (User $user) use ($perm) {
-            return $perm($user, 'manage-budget') || $user->role === 'ngo';
+        Gate::define('manage-budget', function (User $user) use ($perm, $ngoCoordinator) {
+            return $perm($user, 'manage-budget') || $user->role === 'ngo' || $ngoCoordinator($user);
         });
 
-        Gate::define('manage-receipts', function (User $user) use ($perm) {
-            return $perm($user, 'manage-receipts') || $user->role === 'ngo';
+        Gate::define('manage-receipts', function (User $user) use ($perm, $ngoCoordinator) {
+            return $perm($user, 'manage-receipts') || $user->role === 'ngo' || $ngoCoordinator($user);
         });
 
         // Prefix /personal/* — painel MEI/autonomo/PJ. So role=common (dono

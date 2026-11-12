@@ -75,7 +75,18 @@ class DashboardController extends Controller
                 return redirect('/admin');
 
             case 'manager':
+                // Coordenação de ONG usa o painel da ONG (antes caía no painel do antigo produto Gestor de Projetos).
+                if (optional($user->tenant)->type === 'ngo') {
+                    return $this->ngoDashboard($tenantId);
+                }
                 return $this->managerDashboard($tenantId);
+
+            case 'employee':
+                // Colaborador de ONG: painel do atendimento, sem valores financeiros.
+                if (optional($user->tenant)->type === 'ngo') {
+                    return $this->ngoTeamDashboard($tenantId);
+                }
+                return $this->commonDashboard($tenantId);
 
             case 'ngo':
                 return $this->ngoDashboard($tenantId);
@@ -460,6 +471,21 @@ class DashboardController extends Controller
             'monthly_revenue' => null,
             default => null,
         };
+    }
+
+    /** Painel do Colaborador da ONG: atendimento do dia a dia, sem financeiro. */
+    private function ngoTeamDashboard($tenantId)
+    {
+        $today = now()->toDateString();
+        $stats = [
+            'beneficiaries'   => \App\Models\Beneficiary::where('tenant_id', $tenantId)->where('status', 'active')->count(),
+            'sessions_today'  => \App\Models\ClassSession::where('tenant_id', $tenantId)->whereDate('date', $today)->count(),
+            'attendances_mon' => \App\Models\Attendance::where('tenant_id', $tenantId)
+                                    ->whereBetween('date', [now()->startOfMonth()->toDateString(), now()->endOfMonth()->toDateString()])->count(),
+            'consent_pending' => \App\Models\Beneficiary::where('tenant_id', $tenantId)->where('status', 'active')->whereNull('consent_at')->count(),
+        ];
+
+        return view('dashboards.ngo_team', compact('stats'));
     }
 
     private function ngoDashboard($tenantId)

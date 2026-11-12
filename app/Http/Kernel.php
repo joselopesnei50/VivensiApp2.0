@@ -42,6 +42,8 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            // Membro suspenso perde a sessão; hierarquia da equipe da ONG.
+            \App\Http\Middleware\EnforceTeamAccess::class,
             \App\Http\Middleware\TrackUserActivity::class,
             \App\Http\Middleware\LogPageVisit::class,
             \App\Http\Middleware\RequireTwoFactor::class,

@@ -2,7 +2,7 @@
      Só renderiza quando welcome_dismissed_at é null. Auto-abre no page load.
      Baseado na identidade visual BruceIA v1.0 (preto #0A0A0B + laranja #FF7A1A). --}}
 @auth
-@if (auth()->user()->welcome_dismissed_at === null)
+@if (auth()->user()->welcome_dismissed_at === null && \App\Support\TeamAccess::allowsPath(auth()->user(), 'strategy-room'))
 <div id="welcome-modal-backdrop" class="welcome-modal-backdrop">
     <div class="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="welcome-modal-title">
 

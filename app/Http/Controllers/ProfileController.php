@@ -83,11 +83,12 @@ class ProfileController extends Controller
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(12)->mixedCase()->numbers()],
         ]);
 
-        auth()->user()->update([
-            'password' => Hash::make($request->password),
-        ]);
+        $user = auth()->user();
+        $user->password = Hash::make($request->password);
+        $user->must_change_password = false; // primeiro acesso concluído
+        $user->save();
 
-        return back()->with('success', 'Senha alterada com sucesso!');
+        return redirect('/dashboard')->with('success', 'Senha alterada com sucesso!');
     }
 
     // ── LGPD: Portabilidade de dados (Art. 18, VI LGPD) ─────────────────────
