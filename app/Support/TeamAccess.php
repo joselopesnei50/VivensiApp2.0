@@ -54,8 +54,6 @@ class TeamAccess
         'ngo/assets', 'ngo/inventory', 'ngo/contracts', 'manager/contracts', 'ngo/audit', 'ngo/transparencia',
         'ngo/transparency', 'ngo/sic', 'ngo/conformidade', 'smart-analysis', 'ngo/smart-analysis', 'strategy-room',
         'ngo/beneficiaries/insights',
-        // exportar a base inteira (CPF, contatos) fica com quem responde pela LGPD
-        'ngo/beneficiaries/export', 'ngo/beneficiaries/attendances/export',
     ];
 
     public static function label(?string $role): string

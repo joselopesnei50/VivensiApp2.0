@@ -43,10 +43,8 @@
                 @endif
                 <a href="{{ url('/ngo/beneficiaries/reports/annual') }}"><i class="fas fa-file-alt"></i> Relatório anual</a>
                 <hr>
-                @if(\App\Support\TeamAccess::canSee(url('/ngo/beneficiaries/export')))
                 <a href="{{ url('/ngo/beneficiaries/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> Exportar lista (CSV)</a>
                 <a href="{{ url('/ngo/beneficiaries/attendances/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> Exportar atendimentos (CSV)</a>
-                @endif
                 <a href="{{ url('/ngo/beneficiaries/print') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-print"></i> Imprimir lista</a>
             </div>
         </details>

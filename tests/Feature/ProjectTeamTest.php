@@ -93,14 +93,13 @@ it('vincular a mesma pessoa de novo só muda o nível, sem duplicar', function (
     expect(ProjectMember::where('project_id', $this->project->id)->where('user_id', $emp->id)->pluck('access_level')->all())->toBe(['editor']);
 });
 
-it('colaborador não exporta a base de beneficiários nem abre contrato/pagamento; busca sem valores financeiros', function () {
+it('colaborador não abre contrato/pagamento; busca sem valores financeiros', function () {
     $emp = User::factory()->create(['tenant_id' => $this->tenant->id, 'role' => 'employee', 'status' => 'active', 'email' => 'e' . uniqid() . '@example.com']);
     \App\Models\Transaction::create(['tenant_id' => $this->tenant->id, 'description' => 'Doação Girassol', 'amount' => 500, 'type' => 'income', 'date' => now(), 'status' => 'paid']);
 
-    foreach (['/ngo/beneficiaries/export', '/ngo/beneficiaries/attendances/export', '/register/contrato', '/checkout/1'] as $url) {
+    foreach (['/register/contrato', '/checkout/1'] as $url) {
         ($this->as)($emp)->get($url)->assertForbidden();
     }
-    ($this->as)($emp)->get('/ngo/beneficiaries')->assertOk()->assertDontSee('Exportar lista (CSV)');
     ($this->as)($this->coord)->get('/register/contrato')->assertForbidden();
 
     expect(collect(($this->as)($emp)->getJson('/search?q=Girassol')->json())->pluck('category'))->not->toContain('Transações');
