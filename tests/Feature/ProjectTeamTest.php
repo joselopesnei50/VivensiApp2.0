@@ -105,3 +105,19 @@ it('colaborador não abre contrato/pagamento; busca sem valores financeiros', fu
     expect(collect(($this->as)($emp)->getJson('/search?q=Girassol')->json())->pluck('category'))->not->toContain('Transações');
     expect(collect(($this->as)($this->admin)->getJson('/search?q=Girassol')->json())->pluck('category'))->toContain('Transações');
 });
+
+it('exportar planilhas é só do administrador; a equipe não vê nem abre', function () {
+    $emp = User::factory()->create(['tenant_id' => $this->tenant->id, 'role' => 'employee', 'status' => 'active', 'email' => 'e' . uniqid() . '@example.com']);
+
+    foreach ([$emp, $this->coord] as $u) {
+        foreach (['/ngo/beneficiaries/export', '/ngo/beneficiaries/attendances/export', '/ngo/beneficiaries/reports/annual/export.csv'] as $url) {
+            ($this->as)($u)->get($url)->assertForbidden();
+        }
+    }
+    ($this->as)($this->coord)->get('/transactions/export')->assertForbidden();
+    ($this->as)($emp)->get('/ngo/beneficiaries')->assertOk()->assertSee('Exportar lista (CSV)'); // o link existe, mas o script de equipe o esconde
+    ($this->as)($emp)->get('/ngo/beneficiaries')->assertSee('Exportar planilhas é só do administrador');
+
+    ($this->as)($this->admin)->get('/ngo/beneficiaries/export')->assertOk();
+    ($this->as)($this->admin)->get('/ngo/beneficiaries')->assertDontSee('Exportar planilhas é só do administrador');
+});

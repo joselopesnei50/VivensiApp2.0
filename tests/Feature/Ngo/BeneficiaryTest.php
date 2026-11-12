@@ -363,7 +363,7 @@ class BeneficiaryTest extends TestCase
     }
 
     /** @test */
-    public function employee_pode_bulk_status_e_exportar_csv(): void
+    public function employee_pode_bulk_status_mas_nao_exporta_planilha(): void
     {
         $b = $this->makeBeneficiary(['name' => 'Operavel', 'status' => 'active']);
         $this->actingAsEmployee();
@@ -375,7 +375,8 @@ class BeneficiaryTest extends TestCase
         ])->assertRedirect();
         expect($b->fresh()->status)->toBe('inactive');
 
-        $this->get('/ngo/beneficiaries/export')->assertOk();
+        // Exportar planilhas é só do administrador da conta.
+        $this->get('/ngo/beneficiaries/export')->assertForbidden();
     }
 
     // ── Store (PII criptografada) ────────────────────────────────────────────
