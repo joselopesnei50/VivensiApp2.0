@@ -38,7 +38,9 @@
         <details class="ben-more">
             <summary class="ben-btn-outline"><i class="fas fa-ellipsis-h"></i> Mais <i class="fas fa-chevron-down" style="font-size:.7rem"></i></summary>
             <div class="ben-more-menu">
+                @if(\App\Support\TeamAccess::canSee(url('/ngo/beneficiaries/insights')))
                 <a href="{{ url('/ngo/beneficiaries/insights') }}"><i class="fas fa-chart-line"></i> Indicadores</a>
+                @endif
                 <a href="{{ url('/ngo/beneficiaries/reports/annual') }}"><i class="fas fa-file-alt"></i> Relatório anual</a>
                 <hr>
                 <a href="{{ url('/ngo/beneficiaries/export') . '?' . http_build_query(request()->query()) }}"><i class="fas fa-file-csv"></i> Exportar lista (CSV)</a>

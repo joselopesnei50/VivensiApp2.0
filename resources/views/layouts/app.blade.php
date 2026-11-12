@@ -2590,6 +2590,16 @@ document.addEventListener('submit', function(e) {
 </script>
 
 @include('partials.welcome_modal')
+@if(\App\Support\TeamAccess::appliesTo(auth()->user()))
+<script>
+// Exportar planilhas é só do administrador: esconde os botões de exportação para a equipe.
+document.querySelectorAll('a[href]').forEach(function (a) {
+    var p = (a.pathname || '').toLowerCase().replace(/\/+$/, '');
+    if (p.endsWith('/profile/export') || p.endsWith('pdf') || p.indexOf('modelo.csv') > -1 || p.indexOf('import/template') > -1) return;
+    if (/(^|\/)export([.\-\/][a-z.\-]*)?$|\.(csv|xlsx?)$/.test(p)) a.style.display = 'none';
+});
+</script>
+@endif
 <script>
 // Hierarquia da equipe: esconde grupos do menu sem nenhum link para este papel.
 document.querySelectorAll('.menu-group').forEach(function (g) {

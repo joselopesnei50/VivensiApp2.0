@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 
 function makeTenantForCred(): Tenant
 {
-    return Tenant::factory()->create(['subscription_status' => 'active']);
+    return Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
 }
 
 function makeUserForCred(Tenant $tenant, string $role = 'credenciado', ?int $defaultProjectId = null): User

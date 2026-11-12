@@ -159,6 +159,7 @@ class CredenciadoController extends Controller
     {
         $user    = auth()->user();
         $project = $this->authorizeProject($user, $projectId);
+        $this->requireWriteAccess($user, $project->id);
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:3000'],
@@ -183,6 +184,7 @@ class CredenciadoController extends Controller
     {
         $user    = auth()->user();
         $project = $this->authorizeProject($user, $projectId);
+        $this->requireWriteAccess($user, $project->id);
 
         $validated = $request->validate([
             'title'   => ['required', 'string', 'max:255'],
@@ -240,6 +242,17 @@ class CredenciadoController extends Controller
      * Garante que o user e credenciado, e que tem ProjectMember do tenant
      * correto para o projeto informado. Retorna o Project (ativo).
      */
+    /** Nível "Visualizador" só lê o projeto: não escreve no diário nem nos marcos. */
+    private function requireWriteAccess($user, int $projectId): void
+    {
+        $level = ProjectMember::where('user_id', $user->id)
+            ->where('project_id', $projectId)
+            ->where('tenant_id', $user->tenant_id)
+            ->value('access_level');
+
+        abort_unless(in_array($level, ['editor', 'admin'], true), 403, 'Seu acesso a este projeto é só de visualização.');
+    }
+
     private function authorizeProject($user, int $projectId): Project
     {
         abort_unless($user && $user->isCredenciado(), 403);

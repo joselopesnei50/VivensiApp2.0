@@ -14,11 +14,12 @@
     <tr><td style="height:3px;line-height:3px;font-size:0;background:#4F6EF7;">&nbsp;</td></tr>
     <tr><td style="padding:30px 36px 6px;font-size:16px;line-height:26px;">
       <p style="margin:0 0 14px;">Olá, {{ explode(' ', trim($member->name))[0] }}!</p>
-      <p style="margin:0 0 14px;"><strong>{{ $invitedBy->name }}</strong> cadastrou você na equipe da <strong>{{ $orgName }}</strong> na Vivensi, a plataforma de gestão da organização.</p>
+      <p style="margin:0 0 14px;"><strong>{{ $invitedBy->name }}</strong> cadastrou você {{ $projectName ? 'no projeto ' . $projectName . ' da' : 'na equipe da' }} <strong>{{ $orgName }}</strong> na Vivensi, a plataforma de gestão da organização.</p>
     </td></tr>
     <tr><td style="padding:4px 36px 8px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
         <tr><td style="padding:16px 20px;font-size:15px;line-height:22px;">
+          @if($projectName)<span style="color:#64748b;">Projeto:</span> <strong style="color:#0f172a;">{{ $projectName }}</strong><br>@endif
           <span style="color:#64748b;">Sua função:</span> <strong style="color:#0f172a;">{{ $roleLabel }}</strong><br>
           <span style="color:#64748b;font-size:14px;">{{ $roleDescription }}</span>
         </td></tr>

@@ -35,6 +35,8 @@ class TeamAccess
     private const BLOCKED_COORDINATOR = [
         'ngo/team', 'ngo/hr', 'manager/team',
         'settings', 'minha-conta', 'ngo/conformidade/configurar',
+        // contrato de adesão e pagamento do plano são do administrador
+        'register/contrato', 'checkout',
         // portal público e SIC respondem pela organização: ficam com o administrador
         'ngo/transparencia', 'ngo/transparency', 'ngo/sic',
     ];
@@ -78,12 +80,30 @@ class TeamAccess
             ? array_merge(self::BLOCKED_COORDINATOR, self::BLOCKED_EMPLOYEE)
             : self::BLOCKED_COORDINATOR;
 
+        if (self::isSpreadsheetExport($path)) {
+            return false;
+        }
+
         foreach ($blocked as $prefix) {
             if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Exportar planilhas (CSV/Excel) é só do administrador da conta: dados pessoais
+     * de beneficiários, doadores, equipe e financeiro não saem pelas mãos da equipe.
+     * Ficam de fora os dados da própria pessoa (LGPD), modelos em branco e PDFs.
+     */
+    public static function isSpreadsheetExport(string $path): bool
+    {
+        $path = trim(strtolower(parse_url($path, PHP_URL_PATH) ?? $path), '/');
+        if ($path === 'profile/export' || str_ends_with($path, 'pdf') || str_contains($path, 'modelo.csv') || str_contains($path, 'import/template')) {
+            return false;
+        }
+        return (bool) preg_match('#(^|/)export([.\-/][a-z.\-]*)?$|\.(csv|xlsx?)$#', $path);
     }
 
     /** Para o menu: recebe a URL completa do link. */

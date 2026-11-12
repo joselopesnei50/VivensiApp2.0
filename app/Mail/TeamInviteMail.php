@@ -17,11 +17,15 @@ class TeamInviteMail extends Mailable
     public string $roleLabel;
     public string $roleDescription;
 
-    public function __construct(public User $member, public User $invitedBy, public string $url)
+    public function __construct(public User $member, public User $invitedBy, public string $url, public ?string $projectName = null)
     {
         $this->orgName = (string) optional($member->tenant)->name;
         $this->roleLabel = TeamAccess::label($member->role);
         $this->roleDescription = TeamAccess::ROLE_DESCRIPTIONS[$member->role] ?? '';
+        if ($member->role === 'credenciado') {
+            $this->roleLabel = 'Acesso exclusivo ao projeto';
+            $this->roleDescription = "Você verá só o projeto {$projectName}: suas tarefas, o diário e os marcos.";
+        }
     }
 
     public function build()
