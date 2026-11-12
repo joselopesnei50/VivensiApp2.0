@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 function wirEnv(array $settings = []): array
 {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $user   = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
 
     $instance = WhatsappInstance::create([

@@ -929,9 +929,11 @@
                     <button class="btn-header-icon btn-icon-green" title="Nova Conversa" onclick="startNewChat()">
                         <i class="fas fa-user-plus"></i>
                     </button>
+                    @if(\App\Support\TeamAccess::canSee(url('/whatsapp/settings')))
                     <button class="btn-header-icon btn-icon-neutral" title="Configurações" onclick="location.href='{{ url('/whatsapp/settings') }}'">
                         <i class="fas fa-cog"></i>
                     </button>
+                    @endif
                 </div>
             </div>
 

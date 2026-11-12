@@ -22,8 +22,8 @@ use Illuminate\Support\Str;
 
 function idorEnv(): array
 {
-    $tA = Tenant::factory()->create(['subscription_status' => 'active']);
-    $tB = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tA = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
+    $tB = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
 
     $uA = User::factory()->create(['tenant_id' => $tA->id, 'role' => 'manager']);
     $uB = User::factory()->create(['tenant_id' => $tB->id, 'role' => 'manager']);

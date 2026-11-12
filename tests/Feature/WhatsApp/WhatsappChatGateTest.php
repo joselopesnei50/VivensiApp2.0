@@ -15,7 +15,7 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 function wgTenant(): Tenant
 {
-    return Tenant::factory()->create(['subscription_status' => 'active']);
+    return Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
 }
 
 function wgEmployee(Tenant $tenant): User

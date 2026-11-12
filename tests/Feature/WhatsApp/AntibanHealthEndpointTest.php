@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 function hEnv(array $instanceAttrs = [], array $settings = []): array
 {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $user   = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
 
     $instance = WhatsappInstance::create(array_merge([
@@ -33,7 +33,7 @@ function hEnv(array $instanceAttrs = [], array $settings = []): array
 }
 
 it('endpoint exige autenticação', function () {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $instance = WhatsappInstance::create([
         'tenant_id'      => $tenant->id,
         'instance_name'  => 'x',
@@ -129,7 +129,7 @@ it('não permite acessar instância de outro tenant', function () {
     [, , $instanceA] = hEnv();
 
     // User no tenant B
-    $tenantB = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenantB = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $userB   = User::factory()->create(['tenant_id' => $tenantB->id, 'role' => 'manager']);
 
     $this->actingAs($userB)

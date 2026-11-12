@@ -121,3 +121,13 @@ it('exportar planilhas é só do administrador; a equipe não vê nem abre', fun
     ($this->as)($this->admin)->get('/ngo/beneficiaries/export')->assertOk();
     ($this->as)($this->admin)->get('/ngo/beneficiaries')->assertDontSee('Exportar planilhas é só do administrador');
 });
+
+it('coordenação usa o WhatsApp, mas não abre a conexão nem a API oficial da Meta', function () {
+    foreach (['/whatsapp/settings', '/whatsapp/instances', '/whatsapp/cloud/connect', '/whatsapp/cloud/manual-connect', '/whatsapp/consumo'] as $url) {
+        ($this->as)($this->coord)->get($url)->assertForbidden();
+    }
+    ($this->as)($this->coord)->post('/whatsapp/cloud/manual-connect', [])->assertForbidden();
+    ($this->as)($this->coord)->post('/whatsapp/settings', [])->assertForbidden();
+    ($this->as)($this->coord)->get('/whatsapp/chat')->assertOk()->assertDontSee('title="Configurações"', false);
+    ($this->as)($this->admin)->get('/whatsapp/settings')->assertOk();
+});

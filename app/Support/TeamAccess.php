@@ -37,6 +37,9 @@ class TeamAccess
         'settings', 'minha-conta', 'ngo/conformidade/configurar',
         // contrato de adesão e pagamento do plano são do administrador
         'register/contrato', 'checkout',
+        // conexão do WhatsApp e da API oficial da Meta (tokens, números, robô): só o administrador
+        'whatsapp/settings', 'whatsapp/instances', 'whatsapp/qr-code', 'whatsapp/cloud/connect',
+        'whatsapp/cloud/manual-connect', 'whatsapp/cloud/callback', 'whatsapp/consumo', 'whatsapp/pusher-test', 'bot/instance',
         // portal público e SIC respondem pela organização: ficam com o administrador
         'ngo/transparencia', 'ngo/transparency', 'ngo/sic',
     ];
