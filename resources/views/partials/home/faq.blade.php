@@ -28,7 +28,7 @@
             </details>
             <details>
                 <summary>Como ficam os dados das famílias e a LGPD?</summary>
-                <p>Os dados ficam em servidores no Brasil (AWS São Paulo), com acesso por senha e verificação em duas etapas. O sistema tem termo de consentimento LGPD para imprimir e registrar, e o CPF aparece protegido nas listas.</p>
+                <p>Os dados ficam em servidores na AWS, com acesso por senha e verificação em duas etapas. O sistema tem termo de consentimento LGPD para imprimir e registrar, e o CPF aparece protegido nas listas.</p>
             </details>
             <details>
                 <summary>Serve para uma ONG pequena?</summary>
