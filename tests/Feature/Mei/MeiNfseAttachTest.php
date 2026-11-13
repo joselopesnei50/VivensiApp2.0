@@ -16,7 +16,7 @@ uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 function nfseTenantUser(): array
 {
     $tenant = Tenant::factory()->create(['type' => 'common']);
-    $user = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'client']);
+    $user = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'common']);
     return [$tenant, $user];
 }
 

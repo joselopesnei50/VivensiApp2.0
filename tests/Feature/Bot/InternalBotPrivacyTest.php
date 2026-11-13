@@ -22,6 +22,11 @@ use Illuminate\Support\Facades\Log;
  */
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    // O envio pela Evolution exige uma chave (sem ela o serviço nem chama a API).
+    config(['whatsapp.evolution_global_key' => 'chave-teste', 'whatsapp.evolution_api_url' => 'https://evo.teste']);
+});
+
 function ibmMkUser(): User
 {
     $tenant = Tenant::factory()->create();

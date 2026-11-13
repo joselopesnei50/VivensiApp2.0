@@ -65,7 +65,12 @@ it('fluxo completo: campanha fica sent com brevo_campaign_id e recipient_count',
 
     $brevo = Mockery::mock(BrevoService::class);
     $brevo->shouldReceive('createContactList')->once()->andReturn(99);
-    $brevo->shouldReceive('importContacts')->once()->with(99, $twoContacts)->andReturn(2);
+    // Cada contato segue com o token de descadastro (merge tag {{contact.UNSUB_TOKEN}}).
+    $brevo->shouldReceive('importContacts')->once()->withArgs(function ($listId, $contacts) use ($twoContacts) {
+        return $listId === 99 && count($contacts) === count($twoContacts)
+            && collect($contacts)->pluck('email')->all() === collect($twoContacts)->pluck('email')->all()
+            && collect($contacts)->every(fn ($c) => !empty($c['unsub_token']));
+    })->andReturn(2);
     $brevo->shouldReceive('createBrevoEmailCampaign')->once()->andReturn(555);
     $brevo->shouldReceive('sendBrevoEmailCampaign')->once()->with(555)->andReturn(true);
     $this->app->instance(BrevoService::class, $brevo);
@@ -74,7 +79,7 @@ it('fluxo completo: campanha fica sent com brevo_campaign_id e recipient_count',
     $quota->tryConsume($tenant, 2); // simula consume feito no controller
 
     $job = new SendEmailCampaignJob($campaign->id, $twoContacts, $tenant->id);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     $campaign->refresh();
     expect($campaign->status)->toBe('sent');
@@ -99,7 +104,7 @@ it('campanha inexistente: job aborta e refunda quota', function () use ($twoCont
     $quota->tryConsume($tenant, 2);
 
     $job = new SendEmailCampaignJob(99999, $twoContacts, $tenant->id);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     expect($quota->getSentToday($tenant))->toBe(0); // refundado
 });
@@ -118,7 +123,7 @@ it('campanha que nao esta mais em sending: aborta sem chamar Brevo', function ()
     $quota->tryConsume($tenant, 2);
 
     $job = new SendEmailCampaignJob($campaign->id, $twoContacts, $tenant->id);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     expect($quota->getSentToday($tenant))->toBe(0); // refundado
     $campaign->refresh();
@@ -139,7 +144,7 @@ it('createContactList retorna null: status=error, quota refundada', function () 
     $quota->tryConsume($tenant, 2);
 
     $job = new SendEmailCampaignJob($campaign->id, $twoContacts, $tenant->id);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     $campaign->refresh();
     expect($campaign->status)->toBe('error');
@@ -162,7 +167,7 @@ it('importContacts retorna 0: status=error, quota refundada', function () use ($
     $quota->tryConsume($tenant, 2);
 
     $job = new SendEmailCampaignJob($campaign->id, $twoContacts, $tenant->id);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     $campaign->refresh();
     expect($campaign->status)->toBe('error');
@@ -187,7 +192,7 @@ it('createBrevoEmailCampaign retorna null: status=error, quota refundada', funct
     $quota->tryConsume($tenant, 2);
 
     $job = new SendEmailCampaignJob($campaign->id, $twoContacts, $tenant->id);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     $campaign->refresh();
     expect($campaign->status)->toBe('error');
@@ -212,7 +217,7 @@ it('sendBrevoEmailCampaign retorna false: status=error, quota refundada, brevo_c
     $quota->tryConsume($tenant, 2);
 
     $job = new SendEmailCampaignJob($campaign->id, $twoContacts, $tenant->id);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     $campaign->refresh();
     expect($campaign->status)->toBe('error');
@@ -234,7 +239,7 @@ it('excecao inesperada: status=error com mensagem, quota refundada', function ()
     $quota->tryConsume($tenant, 2);
 
     $job = new SendEmailCampaignJob($campaign->id, $twoContacts, $tenant->id);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     $campaign->refresh();
     expect($campaign->status)->toBe('error');
@@ -256,7 +261,7 @@ it('admin dispatch (quotaTenantId=null): erro nao causa refund', function () use
 
     // job admin: quotaTenantId ausente/null
     $job = new SendEmailCampaignJob($campaign->id, $twoContacts, null);
-    $job->handle($brevo, $quota);
+    $job->handle($brevo, $quota, app(\App\Services\EmailUnsubscribeTokenService::class));
 
     $campaign->refresh();
     expect($campaign->status)->toBe('error');

@@ -41,6 +41,7 @@ it('sendMessage retorna erro estruturado quando message e null (nao explode)', f
         'instance_name' => 'stub-instance',
         'token'         => 'token',
         'api_key'       => 'key',
+        'instance_token' => 'token', // o EvolutionApiService lê instance_name + instance_token
     ]);
 
     $evo = new EvolutionApiService($inst);

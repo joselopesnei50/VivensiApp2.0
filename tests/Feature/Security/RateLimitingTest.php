@@ -11,7 +11,7 @@ it('bruce ai chat endpoint requires authentication', function () {
 });
 
 it('bruce ai chat validates message field', function () {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $user   = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
 
     $this->actingAs($user)
@@ -21,7 +21,7 @@ it('bruce ai chat validates message field', function () {
 });
 
 it('bruce ai chat rejects messages over 2000 chars', function () {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $user   = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
 
     $this->actingAs($user)
@@ -30,7 +30,7 @@ it('bruce ai chat rejects messages over 2000 chars', function () {
 });
 
 it('locale switcher only accepts supported locales', function () {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $user   = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
 
     // Valid locale redirects
@@ -45,7 +45,7 @@ it('locale switcher only accepts supported locales', function () {
 });
 
 it('locale switcher sets session locale', function () {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $user   = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'manager']);
 
     $this->actingAs($user)
@@ -62,10 +62,11 @@ it('guest cannot access ngo donors', function () {
 });
 
 it('employee cannot access smart analysis with subscription check', function () {
-    $tenant   = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant   = Tenant::factory()->create(['type' => 'manager', 'subscription_status' => 'active']);
     $employee = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'employee']);
 
-    // Smart analysis accessible to any authenticated user (not restricted by role gate)
+    // Conta de gestor (não ONG): análise liberada para a equipe. Na ONG o Colaborador
+    // não vê financeiro (TeamAccess) — por isso o tipo de conta fica fixo aqui.
     $response = $this->actingAs($employee)->get('/smart-analysis');
     // Should not be 403 (role check) — subscription check only
     expect($response->status())->not->toBe(403);

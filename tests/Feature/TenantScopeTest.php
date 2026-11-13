@@ -116,8 +116,21 @@ class TenantScopeTest extends TestCase
     /** @test */
     public function canal_broadcast_so_autoriza_tenant_correto(): void
     {
-        // Garante que o canal tenant.{tenantId}.whatsapp só autoriza o próprio tenant
+        // Garante que o canal tenant.{tenantId}.whatsapp só autoriza o próprio tenant.
+        // O phpunit usa o broadcaster "null" (autoriza tudo); aqui usamos o pusher,
+        // como em produção, e registramos os canais de novo nele.
+        config(['broadcasting.default' => 'pusher', 'broadcasting.connections.pusher.key' => 'k',
+            'broadcasting.connections.pusher.secret' => 's', 'broadcasting.connections.pusher.app_id' => '1']);
+        app(\Illuminate\Broadcasting\BroadcastManager::class)->forgetDrivers();
+        require base_path('routes/channels.php');
+
         $this->actingAs($this->userA);
+
+        // O próprio canal é autorizado
+        $this->post('/broadcasting/auth', [
+            'channel_name' => 'private-tenant.' . $this->userA->tenant_id . '.whatsapp',
+            'socket_id'    => '123.456',
+        ])->assertOk();
 
         // Tenta se inscrever no canal do tenantB — deve ser negado
         $response = $this->post('/broadcasting/auth', [

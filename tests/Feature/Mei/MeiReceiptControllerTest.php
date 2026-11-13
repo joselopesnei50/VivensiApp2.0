@@ -13,7 +13,7 @@ use App\Models\User;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-function meiRcTenantUser(string $role = 'client'): array
+function meiRcTenantUser(string $role = 'common'): array
 {
     $tenant = Tenant::factory()->create(['type' => 'common']);
     $user = User::factory()->create([
