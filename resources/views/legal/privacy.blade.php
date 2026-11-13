@@ -126,139 +126,145 @@
     .back-link:hover { text-decoration: underline; }
 </style>
 
+@php
+    $empresa = config('legal.company_name'); $cnpj = config('legal.cnpj'); $produto = config('legal.product_name', 'Vivensi');
+    $suporte = config('legal.email_support'); $dpo = config('legal.email_dpo'); $dpoNome = config('legal.dpo_name');
+    $ret = config('legal.retention_days_after_cancel', 90);
+    $provedores = [
+        ['Amazon Web Services (AWS)', 'Hospedagem da plataforma, banco de dados, arquivos e cópias de segurança; envio de e-mails (Amazon SES)', 'Brasil (São Paulo); e-mails pelos EUA'],
+        ['AbacatePay', 'Cobrança da assinatura por PIX e emissão de cobranças', 'Brasil'],
+        ['Brevo', 'Envio de e-mails do sistema (confirmações, faturas, convites)', 'França (União Europeia)'],
+        ['Meta Platforms (WhatsApp Business API)', 'Mensagens de WhatsApp enviadas e recebidas pela organização', 'EUA / Irlanda'],
+        ['Evolution API', 'Conexão alternativa de WhatsApp, quando a organização usa esse modo', 'Servidor contratado pela NC5'],
+        ['Google (Gemini)', 'Recursos de inteligência artificial (textos, análises e assistente)', 'EUA'],
+        ['DeepSeek', 'Recursos de inteligência artificial (textos e análises)', 'China'],
+        ['Together AI', 'Geração de imagens por inteligência artificial', 'EUA'],
+        ['Google (reCAPTCHA, Analytics e Tag Manager)', 'Proteção contra robôs nos formulários e estatísticas de uso do site', 'EUA'],
+        ['Meta Platforms (Pixel)', 'Medição de campanhas de divulgação do site', 'EUA / Irlanda'],
+        ['Pusher', 'Notificações em tempo real dentro do painel', 'EUA / União Europeia'],
+    ];
+@endphp
+<style>
+    .legal-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:.88rem; }
+    .legal-table th, .legal-table td { text-align:left; padding:10px 12px; border-bottom:1px solid #e2e8f0; vertical-align:top; color:#475569; }
+    .legal-table th { background:#f8fafc; color:#1e293b; font-weight:800; }
+    .legal-table-wrap { overflow-x:auto; }
+</style>
+
 <div class="legal-hero">
     <div class="legal-badge"><i class="fas fa-shield-halved"></i> Privacidade & LGPD</div>
     <h1>Política de Privacidade</h1>
-    <p>Última atualização: {{ config('legal.last_update', '15 de maio de 2026') }}</p>
+    <p>Última atualização: {{ config('legal.last_update') }}</p>
 </div>
 
 <div class="legal-body">
 
     <a href="{{ url('/') }}" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para o início</a>
 
-    <div class="legal-highlight">
-        <strong><i class="fas fa-info-circle me-1"></i> Resumo simples:</strong>
-        Nós coletamos apenas os dados necessários para prestar o serviço. Não vendemos suas informações. Você tem direito de ver, corrigir e excluir seus dados a qualquer momento. Leia os detalhes abaixo.
+    <div class="legal-section">
+        <h2><span class="num">1</span> Quem é o responsável</h2>
+        <p>O {{ $produto }} é um produto da <strong>{{ $empresa }}</strong>, CNPJ {{ $cnpj }}, com sede em {{ config('legal.city') }} ("NC5", "nós"). Esta Política explica quais dados pessoais tratamos, por quê, com quem compartilhamos, por quanto tempo guardamos e como você exerce os seus direitos, conforme a Lei nº 13.709/2018 (LGPD).</p>
     </div>
 
     <div class="legal-section">
-        <h2><span class="num">1</span> Quem somos</h2>
-        <p><strong>Vivensi Tecnologia</strong> é a controladora dos dados pessoais tratados nesta plataforma. Nosso Encarregado de Proteção de Dados (DPO) pode ser contatado em <strong>{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}</strong>.</p>
-    </div>
-
-    <div class="legal-divider"></div>
-
-    <div class="legal-section">
-        <h2><span class="num">2</span> Quais dados coletamos</h2>
-        <p>Coletamos os seguintes dados pessoais:</p>
+        <h2><span class="num">2</span> Dois papéis diferentes</h2>
         <ul>
-            <li><strong>Dados de cadastro:</strong> nome, e-mail, telefone/WhatsApp e dados da organização.</li>
-            <li><strong>Dados de uso:</strong> IP de acesso, páginas visitadas, horário e dispositivo (logs de sistema).</li>
-            <li><strong>Dados financeiros:</strong> registros de transações inseridos pelo titular na plataforma.</li>
-            <li><strong>Dados de comunicação:</strong> conteúdo de mensagens enviadas via integração WhatsApp.</li>
-            <li><strong>Dados de beneficiários/voluntários:</strong> inseridos pela organização (ONG) usuária do sistema.</li>
+            <li><strong>Dados cadastrados pelas organizações</strong> (beneficiários e famílias, atendimentos, doadores, voluntários, equipe, contatos de WhatsApp e e-mail): a <strong>organização é a controladora</strong> e define finalidades e bases legais; a <strong>NC5 é a operadora</strong> e trata esses dados apenas para prestar o serviço, seguindo as instruções da organização e o Contrato de Adesão. Se você é beneficiário, doador ou voluntário de uma organização, fale primeiro com ela para exercer seus direitos — nós ajudamos a organização a atender o pedido.</li>
+            <li><strong>Dados de visitantes do site e de quem usa a conta</strong> (cadastro, login, cobrança, suporte, chat do site e agendamento de demonstração): a <strong>NC5 é a controladora</strong>.</li>
         </ul>
     </div>
 
-    <div class="legal-divider"></div>
-
     <div class="legal-section">
-        <h2><span class="num">3</span> Para que usamos os dados</h2>
+        <h2><span class="num">3</span> Dados que tratamos como controladora</h2>
         <ul>
-            <li>Prestar, manter e melhorar os serviços contratados.</li>
-            <li>Processar pagamentos e emitir recibos.</li>
-            <li>Enviar notificações operacionais e alertas de segurança.</li>
-            <li>Gerar análises e relatórios por meio de inteligência artificial.</li>
-            <li>Cumprir obrigações legais e regulatórias.</li>
-        </ul>
-        <p>A base legal principal é a <strong>execução de contrato</strong> (art. 7º, V, LGPD). Para envios de marketing, a base é o <strong>consentimento</strong> (art. 7º, I, LGPD), que pode ser revogado a qualquer momento.</p>
-    </div>
-
-    <div class="legal-divider"></div>
-
-    <div class="legal-section">
-        <h2><span class="num">4</span> Compartilhamento e transferências internacionais</h2>
-        <p>Compartilhamos dados com os seguintes processadores, sob contratos de confidencialidade:</p>
-        <ul>
-            <li><strong>AWS (Amazon Web Services) — EUA:</strong> hospedagem dos servidores e banco de dados.</li>
-            <li><strong>Brevo (ex-Sendinblue) — França:</strong> envio de e-mails transacionais.</li>
-            <li><strong>DeepSeek — China:</strong> geração de textos por inteligência artificial (dados enviados são anonimizados ou pseudonimizados sempre que possível).</li>
-            <li><strong>Meta (WhatsApp Business API) — EUA:</strong> envio e recebimento de mensagens WhatsApp.</li>
-            <li><strong>Evolution API — Brasil:</strong> gateway de mensagens WhatsApp para instâncias próprias.</li>
-        </ul>
-        <p>As transferências internacionais ocorrem com base nas salvaguardas previstas no art. 33 da LGPD. Não vendemos dados a terceiros.</p>
-    </div>
-
-    <div class="legal-divider"></div>
-
-    <div class="legal-section">
-        <h2><span class="num">5</span> Retenção de dados</h2>
-        <ul>
-            <li>Dados de conta de usuário ativo: pelo período do contrato + 5 anos (obrigação fiscal).</li>
-            <li>Mensagens WhatsApp: 365 dias a partir do envio.</li>
-            <li>Logs de acesso: 6 meses (Marco Civil da Internet).</li>
-            <li>Dados financeiros: 5 anos (legislação tributária).</li>
-        </ul>
-        <p>Após o término dos prazos, os dados são apagados ou anonimizados de forma irreversível.</p>
-    </div>
-
-    <div class="legal-divider"></div>
-
-    <div class="legal-section">
-        <h2><span class="num">6</span> Seus direitos (LGPD — Art. 18)</h2>
-        <p>Como titular, você tem direito a:</p>
-        <ul>
-            <li>Confirmação de existência de tratamento e acesso aos dados;</li>
-            <li>Correção de dados incompletos, inexatos ou desatualizados;</li>
-            <li>Portabilidade — exportar seus dados em formato estruturado;</li>
-            <li>Eliminação dos dados tratados com base no consentimento;</li>
-            <li>Revogação do consentimento a qualquer tempo;</li>
-            <li>Oposição ao tratamento em caso de descumprimento da lei.</li>
-        </ul>
-        <p>Para exportar ou solicitar a exclusão dos seus dados, acesse <strong>Configurações → Perfil → Privacidade & Direitos LGPD</strong> dentro da plataforma.</p>
-    </div>
-
-    <div class="legal-divider"></div>
-
-    <div class="legal-section">
-        <h2><span class="num">7</span> Cookies</h2>
-        <p>Utilizamos cookies essenciais (necessários para o funcionamento do sistema) e cookies de análise (com seu consentimento). Você pode gerenciar suas preferências no banner de cookies exibido no primeiro acesso.</p>
-    </div>
-
-    <div class="legal-divider"></div>
-
-    <div class="legal-section">
-        <h2><span class="num">8</span> Segurança</h2>
-        <p>Adotamos medidas técnicas e organizacionais para proteger seus dados, incluindo:</p>
-        <ul>
-            <li>Criptografia em trânsito (TLS 1.2+);</li>
-            <li>Controle de acesso baseado em papéis (RBAC) com isolamento por organização (tenant);</li>
-            <li>Tokens de API sensíveis armazenados com criptografia AES-256;</li>
-            <li>Monitoramento de logs de acesso e alertas de incidentes.</li>
+            <li><strong>Cadastro e contrato:</strong> nome, e-mail, telefone, cargo; razão social, CNPJ e endereço da organização; nome, CPF e e-mail de quem assina o Contrato de Adesão, com data, hora, IP e assinatura.</li>
+            <li><strong>Cobrança:</strong> faturas, valores e situação do pagamento. Os dados do PIX ficam com a AbacatePay; não guardamos dados bancários.</li>
+            <li><strong>Uso e segurança:</strong> registros de acesso (IP, data e hora, navegador), ações realizadas e tentativas de login.</li>
+            <li><strong>Atendimento:</strong> mensagens do chat do site, do WhatsApp e de e-mail, e dados de agendamento.</li>
+            <li><strong>Navegação:</strong> cookies e dados de estatística do site (ver item 9).</li>
         </ul>
     </div>
 
-    <div class="legal-divider"></div>
-
     <div class="legal-section">
-        <h2><span class="num">9</span> Incidentes de segurança</h2>
-        <p>Em caso de vazamento ou incidente que possa afetar seus direitos, comunicaremos a ANPD e os titulares afetados nos prazos legais estabelecidos pelo art. 48 da LGPD (72 horas para a ANPD).</p>
+        <h2><span class="num">4</span> Para que usamos e com que base legal</h2>
+        <div class="legal-table-wrap"><table class="legal-table">
+            <tr><th>Finalidade</th><th>Base legal (LGPD)</th></tr>
+            <tr><td>Criar e manter a conta, prestar o serviço e o suporte</td><td>Execução de contrato (art. 7º, V)</td></tr>
+            <tr><td>Cobrança, nota fiscal e obrigações contábeis</td><td>Obrigação legal (art. 7º, II) e execução de contrato</td></tr>
+            <tr><td>Segurança, prevenção a fraudes e guarda de registros de acesso</td><td>Obrigação legal (Marco Civil da Internet, art. 15) e legítimo interesse (art. 7º, IX)</td></tr>
+            <tr><td>Avisos sobre o serviço (faturas, mudanças, incidentes)</td><td>Execução de contrato</td></tr>
+            <tr><td>Novidades e conteúdos da Vivensi por e-mail ou WhatsApp</td><td>Consentimento (art. 7º, I), que pode ser retirado a qualquer momento</td></tr>
+            <tr><td>Estatísticas do site e medição de campanhas</td><td>Consentimento (cookies não essenciais)</td></tr>
+            <tr><td>Defesa em processos e pedidos de autoridades</td><td>Exercício regular de direitos (art. 7º, VI)</td></tr>
+        </table></div>
     </div>
 
-    <div class="legal-divider"></div>
+    <div class="legal-section">
+        <h2><span class="num">5</span> Empresas que tratam dados para nós</h2>
+        <p>Para a plataforma funcionar, usamos os provedores abaixo. Cada um recebe apenas os dados necessários para a sua função e está sujeito a obrigações de confidencialidade e segurança. Mudanças nesta lista são avisadas às organizações clientes com 30 dias de antecedência.</p>
+        <div class="legal-table-wrap"><table class="legal-table">
+            <tr><th>Empresa</th><th>Para quê</th><th>Onde</th></tr>
+            @foreach($provedores as [$nome, $para, $onde])
+                <tr><td><strong>{{ $nome }}</strong></td><td>{{ $para }}</td><td>{{ $onde }}</td></tr>
+            @endforeach
+        </table></div>
+        <p>Também podemos compartilhar dados quando exigido por lei, ordem judicial ou autoridade competente. <strong>Não vendemos dados pessoais.</strong></p>
+    </div>
 
     <div class="legal-section">
-        <h2><span class="num">10</span> Alterações desta política</h2>
-        <p>Podemos atualizar esta política periodicamente. Notificaremos alterações relevantes por e-mail ou aviso na plataforma. O uso continuado após a notificação implica aceitação das alterações.</p>
+        <h2><span class="num">6</span> Transferência para outros países</h2>
+        <p>Alguns provedores processam dados fora do Brasil (EUA, União Europeia e China, conforme a tabela acima). Essas transferências se apoiam no art. 33 da LGPD, com cláusulas contratuais e garantias de proteção compatíveis com a lei brasileira, nos termos da regulamentação da ANPD.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="num">7</span> Inteligência artificial</h2>
+        <p>Quando você usa um recurso de IA, enviamos ao provedor o pedido e só os dados necessários para respondê-lo. Os dados das organizações não são usados para treinar modelos de IA. Recomendamos não incluir dados sensíveis de beneficiários (saúde, por exemplo) nos pedidos ao assistente.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="num">8</span> Por quanto tempo guardamos</h2>
+        <ul>
+            <li><strong>Conta e dados da organização:</strong> enquanto a assinatura estiver ativa e por <strong>{{ $ret }} dias</strong> após o cancelamento (para reativação ou exportação). Depois, são apagados de forma definitiva.</li>
+            <li><strong>Cópias de segurança:</strong> diárias, guardadas por até 7 dias; dados apagados deixam de existir nelas no ciclo seguinte.</li>
+            <li><strong>Registros de acesso:</strong> 6 meses (Marco Civil da Internet).</li>
+            <li><strong>Cobrança, notas fiscais e contrato de adesão:</strong> pelo prazo legal (em regra, 5 anos após o fim do contrato).</li>
+            <li><strong>Mensagens de WhatsApp:</strong> até 365 dias, salvo configuração diferente da organização.</li>
+        </ul>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="num">9</span> Cookies</h2>
+        <ul>
+            <li><strong>Necessários:</strong> mantêm o login, a segurança e as preferências (idioma, tema). Não podem ser desligados.</li>
+            <li><strong>Estatística e divulgação:</strong> Google Analytics, Google Tag Manager e Meta Pixel, usados para entender o uso do site e medir campanhas. Você pode recusá-los no aviso de cookies ou bloqueá-los no navegador.</li>
+        </ul>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="num">10</span> Segurança</h2>
+        <p>Usamos conexão criptografada (HTTPS), criptografia de campos sensíveis no banco de dados (como CPF e telefone), separação dos dados de cada organização, controle de acesso por perfil, verificação em duas etapas, registros de auditoria e cópias de segurança diárias. Em caso de incidente com risco relevante, avisamos as organizações afetadas e, quando for o caso, a ANPD e os titulares, conforme a regulamentação da ANPD.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="num">11</span> Crianças e adolescentes</h2>
+        <p>A plataforma é usada por organizações, não por crianças. Quando uma organização cadastra dados de crianças e adolescentes atendidos, cabe a ela obter o consentimento de pai, mãe ou responsável, ou usar outra base legal adequada, sempre no melhor interesse da criança (art. 14 da LGPD e ECA). A plataforma oferece o termo de consentimento com campos do responsável legal.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="num">12</span> Seus direitos</h2>
+        <p>Você pode pedir: confirmação de que tratamos seus dados, acesso, correção, anonimização, bloqueio ou eliminação de dados desnecessários, portabilidade, informação sobre compartilhamento, revogação do consentimento e revisão de decisões automatizadas (art. 18 da LGPD).</p>
+        <p>Quem tem conta pode baixar ou pedir a exclusão dos próprios dados em <a href="{{ url('/eu/dados') }}">{{ url('/eu/dados') }}</a>. Os demais pedidos podem ser feitos pelo e-mail do Encarregado abaixo. Respondemos em até 15 dias. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD), em <a href="https://www.gov.br/anpd" target="_blank" rel="noopener">gov.br/anpd</a>.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="num">13</span> Alterações</h2>
+        <p>Podemos atualizar esta Política. A data no topo mostra a última versão; mudanças relevantes são avisadas por e-mail e no painel.</p>
     </div>
 
     <div class="dpo-card">
-        <i class="fas fa-user-shield" style="font-size: 2rem; margin-bottom: 14px; display: block; opacity: 0.9;"></i>
-        <h3>Fale com nosso DPO</h3>
-        <p>Encarregado de Proteção de Dados — disponível para dúvidas, solicitações e reclamações sobre privacidade.</p>
-        <a href="mailto:{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}">
-            <i class="fas fa-envelope me-2"></i>{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}
-        </a>
+        <h3><i class="fas fa-user-shield me-2"></i>Encarregado de Proteção de Dados</h3>
+        <p>@if($dpoNome){{ $dpoNome }} · @endif{{ $empresa }} · CNPJ {{ $cnpj }}</p>
+        <a href="mailto:{{ $dpo }}"><i class="fas fa-envelope me-2"></i>{{ $dpo }}</a>
     </div>
 
 </div>

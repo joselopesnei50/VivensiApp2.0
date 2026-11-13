@@ -8,6 +8,13 @@ class PageController extends Controller
 {
     public function show($slug, \Illuminate\Http\Request $request)
     {
+        // Termos e Privacidade têm uma versão só (resources/views/legal), alinhada ao
+        // Contrato de Adesão. Cópias antigas cadastradas no admin não valem mais.
+        $legal = ['termos' => 'legal.terms', 'privacidade' => 'legal.privacy'];
+        if (isset($legal[$slug])) {
+            return redirect()->route($legal[$slug], [], 301);
+        }
+
         // 1. Try to find in Database (CMS content)
         $page = \App\Models\Page::where('slug', $slug)->first();
 

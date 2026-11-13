@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
     @php
-        $__gtmId  = \App\Models\SystemSetting::getValue('gtm_container_id');
-        $__ga4Id  = \App\Models\SystemSetting::getValue('ga4_measurement_id');
+        $__gtmId  = (\App\Support\CookieConsent::allowsTracking() ? \App\Models\SystemSetting::getValue('gtm_container_id') : null);
+        $__ga4Id  = (\App\Support\CookieConsent::allowsTracking() ? \App\Models\SystemSetting::getValue('ga4_measurement_id') : null);
     @endphp
     @if($__gtmId)
     <!-- Google Tag Manager -->
@@ -635,10 +635,10 @@
             <div class="footer-col">
                 <h6>Acesso</h6>
                 <ul>
-                    <li><a href="{{ route('register') }}">Cadastro gratuito</a></li>
+                    <li><a href="{{ route('register') }}">Criar conta</a></li>
                     <li><a href="{{ route('login') }}">Entrar no sistema</a></li>
-                    <li><a href="{{ url('/legal/privacidade') }}">Política de Privacidade</a></li>
-                    <li><a href="{{ url('/legal/termos') }}">Termos de Uso</a></li>
+                    <li><a href="{{ route('legal.privacy') }}">Política de Privacidade</a></li>
+                    <li><a href="{{ route('legal.terms') }}">Termos de Uso</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -665,5 +665,6 @@
     </div>
 </footer>
 
+@include('partials.cookie-banner')
 </body>
 </html>

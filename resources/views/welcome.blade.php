@@ -2,8 +2,8 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @php
-        $__gtmId  = \App\Models\SystemSetting::getValue('gtm_container_id');
-        $__ga4Id  = \App\Models\SystemSetting::getValue('ga4_measurement_id');
+        $__gtmId  = (\App\Support\CookieConsent::allowsTracking() ? \App\Models\SystemSetting::getValue('gtm_container_id') : null);
+        $__ga4Id  = (\App\Support\CookieConsent::allowsTracking() ? \App\Models\SystemSetting::getValue('ga4_measurement_id') : null);
     @endphp
     @if($__gtmId)
     <!-- Google Tag Manager -->
@@ -1248,11 +1248,6 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 <div class="fcard-value">{{ $siteStats['users_count'] }}+</div>
                 <div class="fcard-sub"><i class="fas fa-heart"></i> {{ $siteStats['impact_label'] }}</div>
             </div>
-            <div class="fcard fc-d">
-                <div class="fcard-label">Avaliação média</div>
-                <div class="fcard-value">{{ $siteStats['rating_score'] }}/5</div>
-                <div class="fcard-sub" style="color:#B27CFF"><i class="fas fa-star"></i> {{ $siteStats['rating_label'] }}</div>
-            </div>
             <div class="fcard fc-e">
                 <div class="fcard-label">Relatórios gerados por IA</div>
                 <div class="fcard-value">Bruce IA</div>
@@ -2080,8 +2075,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 </div>
                 <div>
                     <div class="cb-icon"><i class="fas fa-rotate-left"></i></div>
-                    <div class="cb-title">Garantia total.</div>
-                    <div class="cb-desc">Devolvemos 100% se não gostar em 30 dias.</div>
+                    <div class="cb-title">7 dias para decidir.</div>
+                    <div class="cb-desc">Não gostou? Reembolso em até 7 dias, descontados só os dias de uso.</div>
                 </div>
             </div>
         </div>
@@ -2113,8 +2108,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
             </a>
             <p class="cta-form-note">
                 Ao criar sua conta, você concorda com nossos
-                <a href="{{ route('public.page', 'termos') }}">Termos de Uso</a> e
-                <a href="{{ route('public.page', 'privacidade') }}">Política de Privacidade</a>.
+                <a href="{{ route('legal.terms') }}">Termos de Uso</a> e
+                <a href="{{ route('legal.privacy') }}">Política de Privacidade</a>.
             </p>
         </div>
 
@@ -2145,8 +2140,8 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </div>
         <div class="footer-col">
             <h5>Legal</h5>
-            <a href="{{ route('public.page', 'privacidade') }}">Privacidade</a>
-            <a href="{{ route('public.page', 'termos') }}">Termos de Uso</a>
+            <a href="{{ route('legal.privacy') }}">Privacidade</a>
+            <a href="{{ route('legal.terms') }}">Termos de Uso</a>
             <a href="{{ route('public.page', 'sobre') }}">Sobre o Vivensi</a>
         </div>
     </div>
@@ -2399,5 +2394,6 @@ function ptToggle(id) {
 })();
 </script>
 @endif
+@include('partials.cookie-banner')
 </body>
 </html>

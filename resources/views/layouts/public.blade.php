@@ -2,8 +2,8 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @php
-        $__gtmId  = \App\Models\SystemSetting::getValue('gtm_container_id');
-        $__ga4Id  = \App\Models\SystemSetting::getValue('ga4_measurement_id');
+        $__gtmId  = (\App\Support\CookieConsent::allowsTracking() ? \App\Models\SystemSetting::getValue('gtm_container_id') : null);
+        $__ga4Id  = (\App\Support\CookieConsent::allowsTracking() ? \App\Models\SystemSetting::getValue('ga4_measurement_id') : null);
     @endphp
     @if($__gtmId)
     <!-- Google Tag Manager -->
@@ -212,8 +212,8 @@
              <div>
                 <h4 style="color: white; margin-bottom: 20px;">Legal</h4>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{{ route('public.page', 'privacidade') }}" style="color: #94a3b8; text-decoration: none;">Privacidade</a>
-                    <a href="{{ route('public.page', 'termos') }}" style="color: #94a3b8; text-decoration: none;">Termos de Uso</a>
+                    <a href="{{ route('legal.privacy') }}" style="color: #94a3b8; text-decoration: none;">Privacidade</a>
+                    <a href="{{ route('legal.terms') }}" style="color: #94a3b8; text-decoration: none;">Termos de Uso</a>
                 </div>
             </div>
         </div>

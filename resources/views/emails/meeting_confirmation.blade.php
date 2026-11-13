@@ -77,7 +77,7 @@
     <tr>
         <td style="padding:20px 40px;border-top:1px solid #f1f5f9;">
             <p style="margin:0;font-size:.72rem;color:#94a3b8;line-height:1.6;">
-                Este e-mail foi enviado porque você agendou uma reunião em vivensi.com.br.<br>
+                Este e-mail foi enviado porque você agendou uma reunião em vivensi.app.br.<br>
                 &copy; {{ date('Y') }} Vivensi — Todos os direitos reservados.
             </p>
         </td>

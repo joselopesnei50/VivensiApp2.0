@@ -1,4 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.checkout')
+
+{{-- Fora do painel: sem menu, janelas de novidades ou tour antes de a conta estar ativa. --}}
+@section('title', 'Contrato de adesão — Vivensi')
 
 @section('content')
 <style>
@@ -23,6 +26,12 @@
 </style>
 
 <div class="adesao-card">
+    @if(session('success'))
+        <div style="background:#dcfce7;border:1px solid #bbf7d0;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:14px;">{{ session('success') }}</div>
+    @endif
+    @if($errors->any() && !$errors->has('signature'))
+        <div style="background:#fee2e2;border:1px solid #fecaca;color:#991b1b;padding:10px 14px;border-radius:8px;margin-bottom:14px;">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>
+    @endif
     <div class="step-bar">
         <span class="active">1. Dados da entidade</span>
         <span>2. Revisar e assinar</span>

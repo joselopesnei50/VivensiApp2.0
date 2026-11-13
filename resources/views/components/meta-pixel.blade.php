@@ -5,7 +5,7 @@
     Config: services.meta.pixel_id (default env META_PIXEL_ID, fallback 493025661075925).
     Se pixel_id vazio, nao renderiza nada — util pra dev/teste sem tracking.
 --}}
-@php($_metaPixelId = config('services.meta.pixel_id'))
+@php($_metaPixelId = \App\Support\CookieConsent::allowsTracking() ? config('services.meta.pixel_id') : null)
 @if($_metaPixelId)
 <!-- Meta Pixel Code -->
 <script>

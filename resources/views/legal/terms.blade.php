@@ -123,10 +123,15 @@
     .back-link:hover { text-decoration: underline; }
 </style>
 
+@php
+    $empresa = config('legal.company_name'); $cnpj = config('legal.cnpj'); $produto = config('legal.product_name', 'Vivensi');
+    $suporte = config('legal.email_support'); $dpo = config('legal.email_dpo');
+    $reemb = config('legal.refund_days', 7); $ret = config('legal.retention_days_after_cancel', 90);
+@endphp
 <div class="legal-hero">
     <div class="legal-badge"><i class="fas fa-file-contract"></i> Termos & Condições</div>
     <h1>Termos de Uso</h1>
-    <p>Última atualização: {{ config('legal.last_update', '15 de maio de 2026') }}</p>
+    <p>Última atualização: {{ config('legal.last_update') }}</p>
 </div>
 
 <div class="legal-body">
@@ -134,120 +139,131 @@
     <a href="{{ url('/') }}" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para o início</a>
 
     <div class="legal-section">
-        <h2><span class="num">1</span> Aceitação dos termos</h2>
-        <p>Ao acessar e usar a plataforma <strong>{{ config('legal.company_name', 'Vivensi') }}</strong>, você declara ter lido, compreendido e concordado com estes Termos de Uso. Caso não concorde com qualquer disposição, não utilize o serviço.</p>
+        <h2><span class="num">1</span> Quem somos e o que estes Termos cobrem</h2>
+        <p>A plataforma <strong>{{ $produto }}</strong> ({{ config('app.url') }}) é um produto da <strong>{{ $empresa }}</strong>, inscrita no CNPJ sob o nº {{ $cnpj }}, com sede em {{ config('legal.city') }} ("NC5", "nós").</p>
+        <p>Estes Termos valem para o site e para a plataforma. Para as organizações que assinam um plano, vale também o <strong>Contrato de Adesão</strong> aceito eletronicamente no cadastro. Se houver diferença entre os dois, prevalece o Contrato de Adesão.</p>
+        <p>Ao criar uma conta ou usar a plataforma, você declara que leu e concorda com estes Termos e com a <a href="{{ route('legal.privacy') }}">Política de Privacidade</a>. Quem cadastra uma organização declara ter poderes para representá-la.</p>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">2</span> Descrição do serviço</h2>
-        <p>A Vivensi oferece uma plataforma SaaS de gestão para ONGs, gestores de projetos e pessoas físicas, incluindo módulos de:</p>
-        <ul>
-            <li>Gestão financeira e de projetos;</li>
-            <li>Comunicação via WhatsApp Business API;</li>
-            <li>Marketing digital e automações com inteligência artificial;</li>
-            <li>Transparência e portais públicos para doadores.</li>
-        </ul>
-        <p>Reservamo-nos o direito de modificar, suspender ou descontinuar funcionalidades mediante aviso prévio de 30 dias, exceto em casos de urgência técnica ou legal.</p>
+        <h2><span class="num">2</span> O serviço</h2>
+        <p>O {{ $produto }} é um software de gestão para organizações do terceiro setor, oferecido pela internet (SaaS), acessado pelo navegador do computador ou do celular. Os módulos disponíveis são os do plano contratado, descritos na página de preços e no Anexo I do Contrato de Adesão.</p>
+        <p>Podemos melhorar, mudar ou substituir funcionalidades. Se uma mudança retirar algo essencial do seu plano, avisaremos com 30 dias de antecedência, e você poderá cancelar sem custo.</p>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">3</span> Cadastro e responsabilidade da conta</h2>
-        <p>Para utilizar recursos autenticados, é necessário criar uma conta. Você se compromete a:</p>
+        <h2><span class="num">3</span> Conta, acesso e equipe</h2>
         <ul>
-            <li>Fornecer informações verídicas e atualizadas;</li>
-            <li>Manter a confidencialidade de sua senha;</li>
-            <li>Notificar imediatamente sobre qualquer uso não autorizado da conta;</li>
-            <li>Ser o único responsável pelas ações realizadas em sua conta.</li>
+            <li>Os dados do cadastro (razão social, CNPJ, endereço e responsável) devem ser verdadeiros e mantidos atualizados.</li>
+            <li>Login e senha são pessoais. Recomendamos ativar a verificação em duas etapas (2FA).</li>
+            <li>O administrador da conta decide quem entra na equipe e com qual perfil (Administrador, Coordenação, Colaborador ou acesso a um projeto) e responde pelo uso que a equipe faz da plataforma.</li>
+            <li>Se percebermos uso indevido ou risco à segurança, podemos suspender um acesso, avisando o administrador.</li>
         </ul>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">4</span> Planos e pagamentos</h2>
-        <p>O acesso a recursos premium exige assinatura ativa. Os pagamentos são processados por provedores certificados PCI-DSS. A assinatura é renovada automaticamente no ciclo contratado (mensal ou anual) até o cancelamento.</p>
-        <div class="legal-note">
-            <strong><i class="fas fa-info-circle me-1"></i> Reembolso:</strong> Solicitações de reembolso dentro de 7 dias corridos da contratação inicial serão avaliadas caso a caso. Após esse período, não há reembolso por período não utilizado.
-        </div>
-    </div>
-
-    <div class="legal-divider"></div>
-
-    <div class="legal-section">
-        <h2><span class="num">5</span> Cancelamento</h2>
-        <p>Você pode cancelar a assinatura a qualquer momento pelo painel de controle. O acesso permanece ativo até o fim do ciclo de faturamento vigente. Após o cancelamento, os dados são mantidos por 90 dias para eventual reativação e, em seguida, excluídos conforme a Política de Privacidade.</p>
-    </div>
-
-    <div class="legal-divider"></div>
-
-    <div class="legal-section">
-        <h2><span class="num">6</span> Política anti-spam e uso do WhatsApp</h2>
-        <div class="legal-warning">
-            <strong><i class="fas fa-triangle-exclamation me-1"></i> Importante:</strong> O envio de mensagens não solicitadas (spam) é estritamente proibido e pode resultar no bloqueio imediato da conta sem direito a reembolso.
-        </div>
-        <p>Ao utilizar os módulos de mensageria WhatsApp, o usuário declara e garante que:</p>
+        <h2><span class="num">4</span> Planos, pagamento e renovação</h2>
         <ul>
-            <li>Possui <strong>opt-in explícito e documentado</strong> de todos os contatos que receberão mensagens;</li>
-            <li>As mensagens enviadas respeitam as políticas de uso da Meta (WhatsApp Business API);</li>
-            <li>Não utilizará a plataforma para envio de conteúdo fraudulento, enganoso ou ilícito;</li>
-            <li>Monitorará ativamente as taxas de bloqueio e denúncia de seus envios.</li>
+            <li><strong>Períodos:</strong> a assinatura pode ser <strong>mensal (30 dias)</strong> ou <strong>anual</strong>, conforme escolhido na contratação, e se renova automaticamente por períodos iguais até ser cancelada.</li>
+            <li><strong>Pagamento:</strong> por PIX, pela AbacatePay. A fatura do período seguinte é emitida 5 dias antes do vencimento e enviada por e-mail.</li>
+            <li><strong>Nota fiscal:</strong> emitida para o CNPJ informado no cadastro.</li>
+            <li><strong>Reajuste:</strong> uma vez por ano, pelo IPCA, na data de aniversário da contratação, com aviso de 30 dias.</li>
+            <li><strong>Atraso:</strong> com 5 dias de atraso, o acesso fica restrito à tela de faturas até o pagamento. Os dados são preservados, e o acesso volta assim que o pagamento é confirmado. As regras completas de inadimplência estão no Contrato de Adesão.</li>
         </ul>
-        <p>A Vivensi aplica monitoramento de qualidade de envios. Em caso de excesso de denúncias, envios fora de conformidade ou bloqueios pela Meta, reservamo-nos o direito de suspender o módulo de mensageria ou cancelar a conta imediatamente.</p>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">7</span> Uso da inteligência artificial</h2>
-        <p>Recursos de IA (geração de textos, análises) processam dados inseridos pelo usuário utilizando serviços de terceiros (DeepSeek, conforme Política de Privacidade). O usuário é responsável por revisar e validar todo conteúdo gerado por IA antes de publicar ou utilizar. A Vivensi não garante a precisão ou adequação do conteúdo gerado automaticamente.</p>
+        <h2><span class="num">5</span> Cancelamento e reembolso</h2>
+        <p><strong>Cancelamento:</strong> você pode cancelar a qualquer momento, sem multa, pelo e-mail <a href="mailto:{{ $suporte }}">{{ $suporte }}</a>. O acesso continua até o fim do período já pago, e não são emitidas novas faturas.</p>
+        <p><strong>Reembolso:</strong> pedidos feitos em até <strong>{{ $reemb }} dias</strong> da primeira contratação são reembolsados, descontado o valor proporcional aos dias em que a plataforma foi usada. Depois desse prazo, não há reembolso do período em curso (mensal ou anual), que segue disponível até o fim.</p>
+        <div class="legal-note"><i class="fas fa-info-circle me-1"></i> Exemplo: plano mensal de R$ 300,00 cancelado no 4º dia de uso → desconto de 4/30 do valor (R$ 40,00) e reembolso de R$ 260,00.</div>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">8</span> Propriedade intelectual</h2>
-        <p>A plataforma, seu código-fonte, design, marcas e conteúdos produzidos pela Vivensi são protegidos por leis de propriedade intelectual. É vedado copiar, distribuir, modificar ou criar obras derivadas sem autorização expressa por escrito. Os dados inseridos pelo usuário permanecem de sua propriedade.</p>
+        <h2><span class="num">6</span> Seus dados depois do cancelamento</h2>
+        <p>Depois do fim da assinatura, os dados da organização ficam guardados por <strong>{{ $ret }} dias</strong>. Nesse prazo é possível reativar a conta ou exportar os dados (planilhas e arquivos em formato aberto). Passados os {{ $ret }} dias, os dados são apagados de forma definitiva, inclusive das cópias de segurança no ciclo seguinte, exceto o que a lei nos obriga a manter (por exemplo, dados fiscais e de cobrança).</p>
+        <p>Documentos que a própria organização é obrigada a guardar (como a prestação de contas de parcerias com o poder público) devem ser exportados por ela antes do fim desse prazo.</p>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">9</span> Limitação de responsabilidade</h2>
-        <p>A Vivensi não se responsabiliza por danos indiretos, incidentais, consequenciais ou punitivos decorrentes do uso ou da incapacidade de uso do serviço. A responsabilidade total da Vivensi, em qualquer caso, não excederá o valor pago pelo usuário nos últimos 3 meses.</p>
+        <h2><span class="num">7</span> Uso permitido</h2>
+        <p>Não é permitido usar a plataforma para:</p>
+        <ul>
+            <li>enviar mensagens ou e-mails não solicitados (spam), ou descumprir as políticas do WhatsApp/Meta e dos provedores de e-mail;</li>
+            <li>tratar dados pessoais sem base legal, ou publicar dados de beneficiários sem autorização;</li>
+            <li>publicar conteúdo ilegal, discriminatório, enganoso ou que viole direitos de terceiros;</li>
+            <li>tentar acessar dados de outras organizações, contornar limites técnicos ou atacar a plataforma.</li>
+        </ul>
+        <div class="legal-warning">O descumprimento pode levar à suspensão do recurso envolvido ou da conta, sem prejuízo das medidas legais cabíveis.</div>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">10</span> Disponibilidade e SLA</h2>
-        <p>Buscamos disponibilidade de 99,5% ao mês. Manutenções programadas serão comunicadas com antecedência mínima de 24 horas. Incidentes não planejados serão comunicados em nosso canal de status.</p>
+        <h2><span class="num">8</span> Dados pessoais</h2>
+        <p>Nos dados que a organização cadastra (beneficiários, famílias, doadores, voluntários, equipe), <strong>a organização é a controladora</strong> e decide como e por que eles são usados; <strong>a NC5 é a operadora</strong> e trata esses dados apenas para prestar o serviço, conforme as instruções da organização e a Lei nº 13.709/2018 (LGPD).</p>
+        <p>Nos dados de quem visita o site e de quem usa a conta (login, cobrança, suporte), a NC5 é a controladora. Os detalhes estão na <a href="{{ route('legal.privacy') }}">Política de Privacidade</a>.</p>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">11</span> Alterações dos termos</h2>
-        <p>Podemos atualizar estes Termos a qualquer momento. Notificaremos alterações relevantes por e-mail com antecedência de 15 dias. O uso continuado após a vigência das alterações implica aceitação.</p>
+        <h2><span class="num">9</span> Recursos de inteligência artificial</h2>
+        <p>Alguns recursos (Bruce IA, Sala de Estratégia, gerador de posts e de imagens, apoio a editais) usam provedores de IA. As respostas podem conter erros e devem ser revisadas antes de usadas em documentos, prestação de contas ou comunicação. Enviamos aos provedores só o necessário para a tarefa pedida e não usamos os dados das organizações para treinar modelos de IA.</p>
     </div>
 
     <div class="legal-divider"></div>
 
     <div class="legal-section">
-        <h2><span class="num">12</span> Foro e legislação aplicável</h2>
-        <p>Estes Termos são regidos pelas leis da República Federativa do Brasil. Fica eleito o foro da comarca de São Paulo/SP para dirimir quaisquer controvérsias, com renúncia expressa a qualquer outro.</p>
+        <h2><span class="num">10</span> Propriedade intelectual</h2>
+        <p>O software, a marca {{ $produto }}, o layout e os materiais da plataforma pertencem à NC5. Os dados e conteúdos da organização continuam sendo dela; para prestar o serviço, ela nos concede uma licença limitada, que termina com a exclusão dos dados.</p>
+    </div>
+
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+        <h2><span class="num">11</span> Disponibilidade e suporte</h2>
+        <p>A meta de disponibilidade é de 99% ao mês, com créditos previstos no Contrato de Adesão quando não for atingida. Manutenções programadas são avisadas com 48 horas de antecedência. O suporte atende em dias úteis, das 9h às 18h (horário de Brasília), pelo e-mail <a href="mailto:{{ $suporte }}">{{ $suporte }}</a> e pelo WhatsApp informado no site.</p>
+    </div>
+
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+        <h2><span class="num">12</span> Limitação de responsabilidade</h2>
+        <p>Salvo dolo ou culpa grave, a responsabilidade total da NC5 fica limitada ao valor efetivamente pago pela organização nos 12 meses anteriores ao fato. A NC5 não responde por danos indiretos ou lucros cessantes, por falhas causadas por uso indevido da conta, nem pelo conteúdo que a organização publica (páginas, campanhas e mensagens). Essa limitação não se aplica a violações da LGPD causadas exclusivamente pela NC5.</p>
+    </div>
+
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+        <h2><span class="num">13</span> Alterações destes Termos</h2>
+        <p>Podemos atualizar estes Termos. Mudanças relevantes serão avisadas por e-mail e no painel com 30 dias de antecedência. Se você não concordar, pode cancelar sem custo antes de a mudança valer.</p>
+    </div>
+
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+        <h2><span class="num">14</span> Lei aplicável e foro</h2>
+        <p>Estes Termos seguem as leis brasileiras. Fica eleito o foro da comarca de <strong>{{ config('legal.forum') }}</strong> para resolver qualquer questão sobre eles.</p>
     </div>
 
     <div class="contact-card">
         <i class="fas fa-headset" style="font-size: 2rem; margin-bottom: 14px; display: block; opacity: 0.9;"></i>
         <h3>Ficou com dúvidas?</h3>
-        <p>Nossa equipe de suporte está disponível para esclarecer qualquer ponto destes termos.</p>
-        <a href="mailto:{{ config('legal.email_support', 'suporte@vivensi.com.br') }}">
-            <i class="fas fa-envelope me-2"></i>{{ config('legal.email_support', 'suporte@vivensi.com.br') }}
-        </a>
+        <p>{{ $empresa }} · CNPJ {{ $cnpj }} · {{ config('legal.city') }}</p>
+        <a href="mailto:{{ $suporte }}"><i class="fas fa-envelope me-2"></i>{{ $suporte }}</a>
     </div>
 
 </div>

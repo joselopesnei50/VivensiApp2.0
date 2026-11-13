@@ -14,11 +14,12 @@
             <img src="{{ asset('img/bruce/bruceia-logo-fundo-escuro.svg') }}" alt="BruceIA" class="welcome-modal-logo">
             <div class="welcome-modal-badge">
                 <span class="welcome-modal-badge-dot"></span>
-                <span>Novidades no Vivensi</span>
+                @php $__isNewAccount = optional(auth()->user()->created_at)->gt(now()->subDays(30)); @endphp
+                <span>{{ $__isNewAccount ? 'Boas-vindas ao Vivensi' : 'Novidades no Vivensi' }}</span>
             </div>
             <h2 id="welcome-modal-title" class="welcome-modal-title">Olá, {{ explode(' ', auth()->user()->name)[0] }}!</h2>
             <p class="welcome-modal-desc">
-                Sua Central de Comando agora conta com dois recursos que aceleram decisões: o Bruce IA e a Sala de Estratégia.
+                {{ $__isNewAccount ? 'Sua conta está ativa. Dois recursos para começar com o pé direito: o Bruce IA e a Sala de Estratégia.' : 'Sua Central de Comando agora conta com dois recursos que aceleram decisões: o Bruce IA e a Sala de Estratégia.' }}
             </p>
         </div>
 

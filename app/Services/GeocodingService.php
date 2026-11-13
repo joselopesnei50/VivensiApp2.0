@@ -110,7 +110,7 @@ class GeocodingService
             ]);
 
             $response = Http::timeout(10)->withHeaders([
-                'User-Agent' => 'VivensiApp/1.0 (contato@vivensi.com.br)',
+                'User-Agent' => 'VivensiApp/1.0 (contato@vivensi.app.br)',
             ])->get('https://nominatim.openstreetmap.org/search', $params);
 
             if ($response->successful() && isset($response->json()[0])) {
@@ -133,7 +133,7 @@ class GeocodingService
             sleep(2);
 
             $response = Http::timeout(10)->withHeaders([
-                'User-Agent' => 'VivensiApp/1.0 (contato@vivensi.com.br)',
+                'User-Agent' => 'VivensiApp/1.0 (contato@vivensi.app.br)',
             ])->get('https://nominatim.openstreetmap.org/search', [
                 'q'      => $address,
                 'format' => 'json',

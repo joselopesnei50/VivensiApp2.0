@@ -1,4 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.checkout')
+
+{{-- Fora do painel: sem menu, janelas de novidades ou tour antes de a conta estar ativa. --}}
+@section('title', 'Revisar e assinar — Vivensi')
 
 @section('content')
 <style>
@@ -14,6 +17,9 @@
 </style>
 
 <div class="contract-paper">
+    @if(session('success'))
+        <div style="background:#dcfce7;border:1px solid #bbf7d0;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:14px;">{{ session('success') }}</div>
+    @endif
     <div class="step-bar">
         <span>1. Dados da entidade</span>
         <span class="active">2. Revisar e assinar</span>
