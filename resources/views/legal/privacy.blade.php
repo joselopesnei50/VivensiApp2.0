@@ -142,6 +142,7 @@
         ['Google (reCAPTCHA, Analytics e Tag Manager)', 'Proteção contra robôs nos formulários e estatísticas de uso do site', 'EUA'],
         ['Meta Platforms (Pixel)', 'Medição de campanhas de divulgação do site', 'EUA / Irlanda'],
         ['Pusher', 'Notificações em tempo real dentro do painel', 'EUA / União Europeia'],
+        ['Sentry', 'Registro de erros técnicos do sistema, para corrigir falhas (sem dados de beneficiários)', 'EUA'],
     ];
 @endphp
 <style>
