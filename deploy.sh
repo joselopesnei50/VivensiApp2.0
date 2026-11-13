@@ -140,7 +140,7 @@ fi
 
 # ── 3. Modo de manutenção ─────────────────────────────────────────────────
 echo "🔧 Entrando em modo de manutenção..."
-$PHP_BIN $PHP_FLAGS artisan down --no-interaction || true
+$PHP_BIN $PHP_FLAGS artisan down --render="errors::503" --retry=60 --no-interaction || true
 IN_MAINTENANCE=1
 
 # ── 4. Atualizar o código ─────────────────────────────────────────────────
