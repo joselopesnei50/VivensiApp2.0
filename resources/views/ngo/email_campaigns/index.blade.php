@@ -22,6 +22,12 @@
     <div>
         <h2 class="fw-bold text-dark m-0" style="font-size:1.6rem; letter-spacing:-0.5px;">E-mail Marketing</h2>
         <p class="text-muted mt-1" style="font-size:0.9rem;">Comunique-se com doadores e leads da sua organização.</p>
+        @php $__q = app(\App\Services\EmailQuotaService::class); $__t = auth()->user()->tenant; @endphp
+        @if($__t)
+        <p class="mt-1 mb-0" style="font-size:0.82rem; color:var(--text-secondary, #64748b);">
+            <i class="fas fa-envelope-open-text me-1"></i> Cota diária: até <strong>{{ $__q->getQuota($__t) }}</strong> e-mails por dia · restam <strong>{{ $__q->getRemainingToday($__t) }}</strong> hoje. Cada campanha precisa caber na cota do dia.
+        </p>
+        @endif
     </div>
     <a href="{{ route('ngo.email_campaigns.create') }}"
        style="display:inline-flex; align-items:center; gap:8px; padding:12px 22px; background:var(--ds-brand); color:white; border-radius:14px; font-weight:800; font-size:0.88rem; text-decoration:none;">

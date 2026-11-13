@@ -185,8 +185,8 @@ class NgoEmailCampaignController extends Controller
         if (!$quota->tryConsume($tenant, $count)) {
             $remaining = $quota->getRemainingToday($tenant);
             $cap       = $quota->getQuota($tenant);
-            $msg = "Cota diária de e-mails excedida ({$count} destinatários, restam {$remaining}/{$cap} hoje). "
-                 . "Solicite ao Super Admin para aumentar a capacidade ou aguarde o reset diário.";
+            $msg = "Esta campanha tem {$count} destinatários, mas a cota diária da organização é de {$cap} e-mails (restam {$remaining} hoje). "
+                 . "Divida o público em listas menores ou fale com o suporte da Vivensi para ampliar a cota.";
             $emailCampaign->update(['status' => 'error', 'error_message' => $msg]);
             Log::info('NGO EmailCampaign: cota diária excedida — disparo bloqueado.', [
                 'campaign_id' => $emailCampaign->id,

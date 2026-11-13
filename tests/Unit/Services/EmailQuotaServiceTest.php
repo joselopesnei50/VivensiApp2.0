@@ -59,9 +59,9 @@ class EmailQuotaServiceTest extends TestCase
         return $t;
     }
 
-    public function test_quota_default_50_quando_tenant_nao_tem_campo(): void
+    public function test_quota_default_25_quando_tenant_nao_tem_campo(): void
     {
-        $this->assertSame(50, $this->svc->getQuota($this->tenant(1, null)));
+        $this->assertSame(25, $this->svc->getQuota($this->tenant(1, null)));
     }
 
     public function test_quota_lida_do_tenant_quando_setada(): void
