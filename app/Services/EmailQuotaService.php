@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class EmailQuotaService
 {
-    public const DEFAULT_QUOTA = 50;
+    public const DEFAULT_QUOTA = 25;
 
     public function getQuota(Tenant $tenant): int
     {
