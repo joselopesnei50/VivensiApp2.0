@@ -53,3 +53,9 @@ it('contrato do cliente novo abre fora do painel, sem menu nem janela de novidad
         ->assertDontSee('vivensi-tour.js', false)
         ->assertSee('NC5 HUB DIGITAL LTDA');
 });
+
+it('IP do servidor para domínio próprio vem do .env e aceita o antigo durante a migração', function () {
+    config(['app.server_public_ip' => '18.230.1.2', 'app.server_accepted_ips' => '34.193.132.112']);
+    expect(\App\Services\LandingDomainProvisioner::serverIp())->toBe('18.230.1.2')
+        ->and(\App\Services\LandingDomainProvisioner::acceptedIps())->toBe(['18.230.1.2', '34.193.132.112']);
+});
