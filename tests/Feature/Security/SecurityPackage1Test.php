@@ -166,16 +166,16 @@ it('bot sem WHATSAPP_BOT_SECRET recusa tudo; com a chave exige o token', functio
 
 // ── AbacatePay ────────────────────────────────────────────────────────────
 
-it('AbacatePay sem assinatura continua aceito, mas fica registrado no log', function () {
+it('AbacatePay sem assinatura é recusado e fica registrado no log', function () {
     \Illuminate\Support\Facades\Queue::fake();
     \App\Models\SystemSetting::setValue('abacatepay_webhook_secret', 'wh-secret');
     Log::spy();
 
     $this->withHeaders(['X-Webhook-Secret' => 'wh-secret'])
         ->postJson('/api/abacatepay/webhook', ['event' => 'billing.paid', 'data' => []])
-        ->assertOk();
+        ->assertStatus(401);
 
-    Log::shouldHaveReceived('warning')->withArgs(fn ($msg) => str_contains($msg, 'SEM assinatura'))->once();
+    Log::shouldHaveReceived('error')->withArgs(fn ($msg) => str_contains($msg, 'SEM assinatura'))->once();
 });
 
 // ── XSS nas etapas ────────────────────────────────────────────────────────

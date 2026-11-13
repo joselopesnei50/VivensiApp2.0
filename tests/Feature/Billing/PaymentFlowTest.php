@@ -21,7 +21,15 @@ beforeEach(function () {
     Mail::fake();
     $this->secret = 'abacate-secret-test';
     SystemSetting::setValue('abacatepay_webhook_secret', $this->secret);
-    config(['services.abacatepay.hmac_key' => null]);
+    config(['services.abacatepay.hmac_key' => 'hmac-test']);
+    // Webhook assinado como a AbacatePay faz (HMAC-SHA256 base64 do corpo bruto).
+    $this->hook = function (array $payload) {
+        $body = json_encode($payload);
+        return $this->call('POST', '/api/abacatepay/webhook', [], [], [], [
+            'CONTENT_TYPE' => 'application/json', 'HTTP_X-WEBHOOK-SECRET' => $this->secret,
+            'HTTP_X-WEBHOOK-SIGNATURE' => base64_encode(hash_hmac('sha256', $body, 'hmac-test', true)),
+        ], $body);
+    };
 
     $this->plan = SubscriptionPlan::forceCreate([
         'name' => 'Plano Pro', 'price' => 149.90, 'is_active' => true, 'is_courtesy' => false,
@@ -45,11 +53,12 @@ beforeEach(function () {
     ];
 });
 
-it('webhook com assinatura e sem chave HMAC configurada não dá mais 500 e libera a conta', function () {
+it('webhook assinado libera a conta; sem assinatura é recusado', function () {
     config(['queue.default' => 'sync']);
-    $this->postJson('/api/abacatepay/webhook', ($this->payload)(), [
-        'X-Webhook-Secret' => $this->secret, 'X-Webhook-Signature' => 'qualquer',
-    ])->assertOk();
+    $this->postJson('/api/abacatepay/webhook', ($this->payload)('evt_sem'), ['X-Webhook-Secret' => $this->secret])->assertStatus(401);
+    expect($this->tenant->fresh()->subscription_status)->toBe('pending');
+
+    ($this->hook)(($this->payload)())->assertOk();
 
     expect($this->tenant->fresh()->subscription_status)->toBe('active')
         ->and($this->tx->fresh()->status)->toBe('paid');
@@ -58,8 +67,8 @@ it('webhook com assinatura e sem chave HMAC configurada não dá mais 500 e libe
 
 it('webhook repetido não manda o e-mail de novo', function () {
     config(['queue.default' => 'sync']);
-    $this->postJson('/api/abacatepay/webhook', ($this->payload)('evt_1'), ['X-Webhook-Secret' => $this->secret])->assertOk();
-    $this->postJson('/api/abacatepay/webhook', ($this->payload)('evt_2'), ['X-Webhook-Secret' => $this->secret])->assertOk();
+    ($this->hook)(($this->payload)('evt_1'))->assertOk();
+    ($this->hook)(($this->payload)('evt_2'))->assertOk();
 
     Mail::assertSent(SubscriptionActivatedMail::class, 1);
 });

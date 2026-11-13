@@ -12,9 +12,10 @@ use Illuminate\Support\Facades\Log;
  * AbacatePayWebhookController
  *
  * Recebe eventos da AbacatePay via POST e despacha para fila com retry automático.
- * Segurança dupla:
+ * Segurança dupla (as duas obrigatórias):
  *   1. webhookSecret no header X-Webhook-Secret (preferido) ou query string (legado)
- *   2. Assinatura HMAC no header X-Webhook-Signature
+ *   2. Assinatura HMAC-SHA256 (base64) do corpo bruto no header X-Webhook-Signature,
+ *      com a chave pública da AbacatePay (config services.abacatepay.hmac_key)
  *
  * Webhook URL: POST /api/abacatepay/webhook
  * Header:      X-Webhook-Secret: SEU_SECRET
@@ -38,25 +39,25 @@ class AbacatePayWebhookController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        // ── 2. Verificar assinatura HMAC ──────────────────────────────────────
+        // ── 2. Assinatura HMAC obrigatória ────────────────────────────────────
+        // O secret mostra que veio da AbacatePay; a assinatura mostra que o corpo
+        // não foi alterado. Sem as duas, recusa com 401 (a AbacatePay não reenvia
+        // 401). Pagamento perdido aqui ainda é confirmado pelo abacatepay:reconcile
+        // (a cada 5 min) e pela consulta da tela de checkout/faturas.
         $rawBody   = $request->getContent();
-        $signature = $request->header('X-Webhook-Signature', '');
+        $signature = (string) $request->header('X-Webhook-Signature', '');
 
-        if ($signature && !$abacate->hasHmacKey()) {
-            // Antes: RuntimeException → 500 → pagamento não liberava. O secret já
-            // foi validado acima; registra para configurar a chave HMAC.
-            Log::error('AbacatePay Webhook: assinatura recebida mas ABACATEPAY_HMAC_KEY não configurada — aceito pelo secret');
-        } elseif ($signature && !$abacate->verifyWebhookSignature($rawBody, $signature)) {
-            Log::warning('AbacatePay Webhook: assinatura HMAC inválida', ['ip' => $request->ip()]);
-            return response()->json(['message' => 'Invalid signature'], 401);
+        // O secret já bateu: se a assinatura falhar, é sinal de configuração errada
+        // (ou corpo adulterado) — vai para o log e para o Sentry, que avisa por e-mail.
+        if ($signature === '') {
+            Log::error('AbacatePay Webhook: recusado SEM assinatura X-Webhook-Signature', ['ip' => $request->ip()]);
+            report(new \RuntimeException('AbacatePay Webhook recusado: sem assinatura X-Webhook-Signature'));
+            return response()->json(['message' => 'Missing signature'], 401);
         }
-        if (!$signature) {
-            // Fase de observação: ainda aceita (o secret já foi validado), mas registra.
-            // Se este aviso nunca aparecer nos logs, a assinatura pode passar a ser obrigatória.
-            Log::warning('AbacatePay Webhook: chegou SEM assinatura X-Webhook-Signature', [
-                'ip'       => $request->ip(),
-                'via_query' => $request->query('webhookSecret') !== null,
-            ]);
+        if (!$abacate->verifyWebhookSignature($rawBody, $signature)) {
+            Log::error('AbacatePay Webhook: recusado com assinatura HMAC inválida', ['ip' => $request->ip()]);
+            report(new \RuntimeException('AbacatePay Webhook recusado: assinatura HMAC inválida'));
+            return response()->json(['message' => 'Invalid signature'], 401);
         }
 
         // ── 3. Despachar para fila (responde 200 imediatamente) ───────────────
