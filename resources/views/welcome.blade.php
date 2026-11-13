@@ -1262,7 +1262,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
     <div class="trust-row">
         <span class="trust-lbl">Infraestrutura</span>
         <div class="trust-item"><i class="fas fa-shield-halved"></i> Adequado à LGPD</div>
-        <div class="trust-item"><i class="fas fa-server"></i> AWS Brasil (SA-East)</div>
+        <div class="trust-item"><i class="fas fa-server"></i> Servidores na AWS</div>
         <div class="trust-item"><i class="fas fa-lock"></i> SSL 256-bit + 2FA</div>
         <div class="trust-item"><i class="fas fa-user-shield"></i> Termo de consentimento e CPF protegido</div>
     </div>
