@@ -60,7 +60,7 @@
         .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 
         .nav { position: sticky; top: 0; background: rgba(255,255,255,0.94); backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid var(--border-soft); z-index: 100; }
-        .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+        .nav-inner { display: flex; align-items: center; justify-content: space-between; padding-top: 18px; padding-bottom: 18px; }
         .nav-logo { display: flex; align-items: center; gap: 12px; }
         .nav-logo-mark { width: 38px; height: 38px; border-radius: 10px; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; }
         .nav-logo-text { display: flex; flex-direction: column; line-height: 1; }
@@ -71,6 +71,7 @@
         .nav-links a:hover { color: var(--brand-dark); }
         .nav-cta { background: var(--ink); color: #fff; border: none; padding: 11px 20px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; transition: background 0.15s; }
         .nav-cta:hover { background: #1f2937; }
+        .nav-links a.nav-cta, .nav-links a.nav-cta:hover { color: #fff; }
         @media (max-width: 768px) { .nav-links a:not(.nav-cta) { display: none; } }
 
         .hero { padding: 80px 0 60px; }
@@ -192,6 +193,7 @@
         .access-form-card .btn-fill:hover { background: var(--brand-dark); }
 
         .mark { position: relative; white-space: nowrap; }
+        @media (max-width: 640px) { .mark { white-space: normal; } }
         .mark::after { content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 10px; background: var(--brand); opacity: 0.45; z-index: -1; }
 
         .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
@@ -250,8 +252,8 @@
         </a>
         <div class="nav-links">
             <a href="#fluxo">Como funciona</a>
-            <a href="#gratuito">Gratuito</a>
-            <a href="#bruce">Bruce IA</a>
+            <a href="#planos">Preço</a>
+            <a href="#ia">Bruce IA</a>
             <a href="#conformidade">Conformidade</a>
             <a href="#footer">Base legal</a>
             <a href="{{ route('register') }}" class="nav-cta">Criar conta</a>
@@ -627,7 +629,7 @@
                 <h6>Sistema</h6>
                 <ul>
                     <li><a href="#fluxo">Fluxo de gestão</a></li>
-                    <li><a href="#bruce">Bruce IA</a></li>
+                    <li><a href="#ia">Bruce IA</a></li>
                     <li><a href="#escola">Escola Vivensi</a></li>
                     <li><a href="#conformidade">Base legal</a></li>
                 </ul>
@@ -644,10 +646,10 @@
             <div class="footer-col">
                 <h6>Compromissos</h6>
                 <ul>
-                    <li><a href="#">Proteção de dados</a></li>
-                    <li><a href="#">LGPD e auditoria</a></li>
-                    <li><a href="#">Isolamento por ONG</a></li>
-                    <li><a href="#">Uso responsável de IA</a></li>
+                    <li><a href="{{ route('legal.privacy') }}#seguranca">Proteção de dados</a></li>
+                    <li><a href="{{ route('legal.privacy') }}#direitos">LGPD e auditoria</a></li>
+                    <li><a href="{{ route('legal.privacy') }}#seguranca">Isolamento por ONG</a></li>
+                    <li><a href="{{ route('legal.privacy') }}#ia">Uso responsável de IA</a></li>
                 </ul>
             </div>
         </div>

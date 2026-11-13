@@ -217,7 +217,7 @@
         <p>Alguns provedores processam dados fora do Brasil (EUA, União Europeia e China, conforme a tabela acima). Essas transferências se apoiam no art. 33 da LGPD, com cláusulas contratuais e garantias de proteção compatíveis com a lei brasileira, nos termos da regulamentação da ANPD.</p>
     </div>
 
-    <div class="legal-section">
+    <div class="legal-section" id="ia">
         <h2><span class="num">7</span> Inteligência artificial</h2>
         <p>Quando você usa um recurso de IA, enviamos ao provedor o pedido e só os dados necessários para respondê-lo. Os dados das organizações não são usados para treinar modelos de IA. Recomendamos não incluir dados sensíveis de beneficiários (saúde, por exemplo) nos pedidos ao assistente.</p>
     </div>
@@ -241,7 +241,7 @@
         </ul>
     </div>
 
-    <div class="legal-section">
+    <div class="legal-section" id="seguranca">
         <h2><span class="num">10</span> Segurança</h2>
         <p>Usamos conexão criptografada (HTTPS), criptografia de campos sensíveis no banco de dados (como CPF e telefone), separação dos dados de cada organização, controle de acesso por perfil, verificação em duas etapas, registros de auditoria e cópias de segurança diárias. Em caso de incidente com risco relevante, avisamos as organizações afetadas e, quando for o caso, a ANPD e os titulares, conforme a regulamentação da ANPD.</p>
     </div>
@@ -251,7 +251,7 @@
         <p>A plataforma é usada por organizações, não por crianças. Quando uma organização cadastra dados de crianças e adolescentes atendidos, cabe a ela obter o consentimento de pai, mãe ou responsável, ou usar outra base legal adequada, sempre no melhor interesse da criança (art. 14 da LGPD e ECA). A plataforma oferece o termo de consentimento com campos do responsável legal.</p>
     </div>
 
-    <div class="legal-section">
+    <div class="legal-section" id="direitos">
         <h2><span class="num">12</span> Seus direitos</h2>
         <p>Você pode pedir: confirmação de que tratamos seus dados, acesso, correção, anonimização, bloqueio ou eliminação de dados desnecessários, portabilidade, informação sobre compartilhamento, revogação do consentimento e revisão de decisões automatizadas (art. 18 da LGPD).</p>
         <p>Quem tem conta pode baixar ou pedir a exclusão dos próprios dados em <a href="{{ url('/eu/dados') }}">{{ url('/eu/dados') }}</a>. Os demais pedidos podem ser feitos pelo e-mail do Encarregado abaixo. Respondemos em até 15 dias. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD), em <a href="https://www.gov.br/anpd" target="_blank" rel="noopener">gov.br/anpd</a>.</p>
