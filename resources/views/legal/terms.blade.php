@@ -182,7 +182,7 @@
 
     <div class="legal-section">
         <h2><span class="num">5</span> Cancelamento e reembolso</h2>
-        <p><strong>Cancelamento:</strong> você pode cancelar a qualquer momento, sem multa, pelo e-mail <a href="mailto:{{ $suporte }}">{{ $suporte }}</a>. O acesso continua até o fim do período já pago, e não são emitidas novas faturas.</p>
+        <p><strong>Cancelamento:</strong> você pode cancelar a qualquer momento, sem multa, em <strong>Minha conta → Faturas</strong> (administrador da conta) ou pelo e-mail <a href="mailto:{{ $suporte }}">{{ $suporte }}</a>. O acesso continua até o fim do período já pago, e não são emitidas novas faturas.</p>
         <p><strong>Reembolso (direito de arrependimento):</strong> pedidos feitos em até <strong>{{ $reemb }} dias</strong> da primeira contratação recebem a <strong>devolução integral</strong> do valor pago, sem precisar justificar (art. 49 do Código de Defesa do Consumidor). Depois desse prazo, não há reembolso do período em curso (mensal ou anual), que segue disponível até o fim.</p>
     </div>
 

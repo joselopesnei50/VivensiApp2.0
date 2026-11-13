@@ -64,6 +64,12 @@ class Kernel extends ConsoleKernel
         // InvoiceService gera invoice + checkout hospedado PIX (/checkouts/create,
         // externalId invoice_<id>_<ts>) e o webhook checkout.completed marca paga.
         // Ver docs/ABACATEPAY_INTEGRATION_STUCK.md.
+        // Cancelamentos: fim do acesso no fim do período pago; aviso de exclusão após 90 dias.
+        $schedule->command('subscriptions:finish-canceled')
+                 ->dailyAt('00:05')
+                 ->timezone('America/Sao_Paulo')
+                 ->withoutOverlapping();
+
         $schedule->command('invoices:generate-recurring')
                  ->dailyAt('00:10') // ciclo pela data da assinatura: confere todo dia quem fatura
                  ->onFailure(function () {

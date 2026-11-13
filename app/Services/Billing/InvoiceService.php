@@ -44,6 +44,10 @@ class InvoiceService
         if ($tenant->subscription_status !== 'active') {
             return null;
         }
+        // Cancelamento pedido: acesso até o fim do período pago, sem novas faturas.
+        if ($tenant->cancel_requested_at) {
+            return null;
+        }
 
         $plan = $tenant->plan;
         if (!$plan) {

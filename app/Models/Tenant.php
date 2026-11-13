@@ -29,6 +29,10 @@ class Tenant extends Model
         'daily_email_quota',
         'trial_ends_at',
         'billing_cycle', // monthly, yearly
+        'cancel_requested_at',
+        'cancel_reason',
+        'access_until',
+        'canceled_at',
         // F7 — White-Label
         'brand_logo',
         'brand_color',
@@ -65,8 +69,31 @@ class Tenant extends Model
         'openpix_app_id',
     ];
 
+    protected static function booted(): void
+    {
+        // Pagou de novo depois de cancelar (ou de pedir o cancelamento): a conta volta
+        // ao normal e as faturas recorrentes voltam a ser geradas.
+        static::saving(function (Tenant $t) {
+            if ($t->isDirty('subscription_status') && $t->subscription_status === 'active'
+                && $t->getOriginal('subscription_status') !== 'active') {
+                $t->cancel_requested_at = null;
+                $t->cancel_reason = null;
+                $t->access_until = null;
+                $t->canceled_at = null;
+            }
+        });
+    }
+
+    public function hasScheduledCancellation(): bool
+    {
+        return $this->cancel_requested_at !== null && $this->subscription_status === 'active';
+    }
+
     protected $casts = [
         'trial_ends_at'           => 'date',
+        'cancel_requested_at'     => 'datetime',
+        'access_until'            => 'date',
+        'canceled_at'             => 'datetime',
         'contract_signed_at'      => 'datetime',
         'weekly_report_enabled'   => 'boolean',
         'pix_key'                 => 'encrypted',
