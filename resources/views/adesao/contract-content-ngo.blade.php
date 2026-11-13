@@ -71,7 +71,7 @@
 <p>6.5. Exclusao definitiva dos dados 90 (noventa) dias apos o cancelamento sem reativacao, ressalvados os dados que a CONTRATADA deve manter por obrigacao legal (fiscais e de cobranca). Cabe a CONTRATANTE exportar, nesse prazo, os documentos que a lei a obriga a guardar, como a prestacao de contas de parcerias MROSC (art. 68 da Lei 13.019/2014).</p>
 
 <h3>7. RESCISAO VOLUNTARIA</h3>
-<p>7.1. A CONTRATANTE pode cancelar a qualquer tempo, sem multa, pelo e-mail {{ config('legal.email_support') }}. O acesso permanece ate o fim do periodo ja pago, e nao sao emitidas novas faturas.</p>
+<p>7.1. A CONTRATANTE pode cancelar a qualquer tempo, sem multa, no painel (Minha conta → Faturas) ou pelo e-mail {{ config('legal.email_support') }}. O acesso permanece ate o fim do periodo ja pago, e nao sao emitidas novas faturas.</p>
 <p>7.2. <strong>Reembolso:</strong> pedidos feitos em ate 7 (sete) dias da primeira contratacao recebem a devolucao integral do valor pago (art. 49 do CDC). Apos esse prazo, nao ha reembolso do periodo em curso (mensal ou anual).</p>
 <p>7.3. A CONTRATADA pode rescindir com aviso de 30 dias, exceto em descumprimento grave (rescisao imediata).</p>
 <p>7.4. Apos o cancelamento, os dados ficam guardados por 90 (noventa) dias, prazo em que a CONTRATANTE pode reativar a conta ou exportar os dados em formato aberto (planilhas CSV e JSON, inclusive via {{ config('app.url') }}/eu/dados). Depois, aplica-se a Clausula 6.5.</p>

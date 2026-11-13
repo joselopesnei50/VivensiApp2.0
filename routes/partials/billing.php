@@ -11,4 +11,7 @@ Route::middleware(['auth'])->group(function () {
     // Faturas do cliente (auto-serviço) — vê pagas + em aberto + banner cortesia
     Route::get('/minha-conta/faturas',  [App\Http\Controllers\ClientInvoicesController::class, 'index'])->name('client.invoices.index');
     Route::post('/minha-conta/faturas/{invoice}/pagar', [App\Http\Controllers\ClientInvoicesController::class, 'pay'])->whereNumber('invoice')->name('client.invoices.pay')->middleware('throttle:10,1');
+    // Cancelamento da assinatura pelo próprio cliente (só o administrador da conta)
+    Route::post('/minha-conta/assinatura/cancelar', [App\Http\Controllers\ClientInvoicesController::class, 'cancel'])->name('client.subscription.cancel')->middleware('throttle:5,1');
+    Route::post('/minha-conta/assinatura/manter',   [App\Http\Controllers\ClientInvoicesController::class, 'keep'])->name('client.subscription.keep')->middleware('throttle:5,1');
 });
