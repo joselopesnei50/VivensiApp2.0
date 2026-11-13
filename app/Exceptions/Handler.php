@@ -42,6 +42,19 @@ class Handler extends ExceptionHandler
             }
         });
 
+        // Sessão expirada (419) num formulário: volta para ele com aviso, em vez da
+        // página "Page Expired". Senhas nunca voltam preenchidas.
+        // (o Laravel transforma TokenMismatchException em HttpException 419 antes daqui)
+        $this->renderable(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419 || $request->expectsJson() || $request->isMethod('GET')) {
+                return null;
+            }
+            $back = url()->previous() !== $request->fullUrl() ? url()->previous() : url('/login');
+            return redirect()->to($back)
+                ->withInput($request->except(['password', 'password_confirmation', 'current_password', '_token', 'signature']))
+                ->with('error', 'Sua sessão expirou por segurança. Confira os dados e envie de novo.');
+        });
+
         $this->renderable(function (ThrottleRequestsException $e, Request $request) {
             // Keep API behavior intact.
             if ($request->expectsJson()) {
