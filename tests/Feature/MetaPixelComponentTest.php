@@ -5,7 +5,19 @@
  * - <x-meta-pixel /> substitui snippet inline em 15 arquivos
  * - <x-meta-pixel-event event="..." /> pra eventos de conversao (Lead, Purchase)
  * - Pixel ID via config('services.meta.pixel_id') com fallback env META_PIXEL_ID
+ * - 13/11/2026: só renderiza depois do aceite de cookies (LGPD).
  */
+
+beforeEach(function () {
+    request()->cookies->set(\App\Support\CookieConsent::COOKIE, 'accepted');
+});
+
+it('sem aceite de cookies, pixel e eventos não renderizam', function () {
+    request()->cookies->remove(\App\Support\CookieConsent::COOKIE);
+    config(['services.meta.pixel_id' => '999888777']);
+    expect(view('components.meta-pixel')->render())->not->toContain('999888777');
+    expect(trim(\Illuminate\Support\Facades\Blade::render('<x-meta-pixel-event event="Lead" />')))->toBe('');
+});
 
 it('meta-pixel renderiza init + PageView com o ID configurado', function () {
     config(['services.meta.pixel_id' => '999888777']);

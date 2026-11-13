@@ -197,9 +197,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }]
     });
 
-    // Start the tour
+    // Start the tour — uma coisa por vez: se a janela de boas-vindas estiver
+    // aberta, o tour espera ela fechar (antes os dois abriam juntos, um por cima do outro).
     setTimeout(() => {
-        tour.start();
+        const welcome = document.getElementById('welcome-modal-backdrop');
+        const welcomeOpen = () => welcome && document.body.contains(welcome) && getComputedStyle(welcome).display !== 'none';
+        if (!welcomeOpen()) { tour.start(); return; }
+        const timer = setInterval(() => {
+            if (!welcomeOpen()) { clearInterval(timer); setTimeout(() => tour.start(), 400); }
+        }, 500);
     }, 1500);
 });
 

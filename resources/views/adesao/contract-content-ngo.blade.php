@@ -30,7 +30,7 @@
 
 <h2 style="text-align:center; margin:0 0 6px 0;">CONTRATO DE ADESAO — VIVENSI (OSC)</h2>
 <p style="text-align:center; margin:0 0 6px 0; color:#64748b;">Termo especifico para Organizacoes da Sociedade Civil — Lei 13.019/2014 (MROSC) e LGPD</p>
-<p style="text-align:center; margin:0 0 20px 0; color:#94a3b8; font-size: 9pt;">Versao {{ $versao }} — Vigencia a partir de 06/09/2026</p>
+<p style="text-align:center; margin:0 0 20px 0; color:#94a3b8; font-size: 9pt;">Versao {{ $versao }} — Vigencia a partir de 13/11/2026</p>
 
 <p style="font-size: 10pt; color:#475569;">Este e um Contrato de Adesao, nos termos do art. 54 da Lei n 8.078/1990 (CDC) e do art. 425 do Codigo Civil. O aceite eletronico no ato do cadastro equivale, para todos os efeitos legais, a assinatura deste instrumento.</p>
 
@@ -60,28 +60,32 @@
 <p>Reajuste anual pelo IPCA (IBGE) na data-base de aniversario do aceite, com notificacao de 30 dias. Discordancia permite rescisao sem onus.</p>
 
 <h3>5. VIGENCIA E RENOVACAO AUTOMATICA</h3>
-<p>Prazo indeterminado a partir do aceite eletronico, renovando-se automaticamente por confirmacao do pagamento.</p>
+<p>5.1. A assinatura e contratada por periodo <strong>mensal (30 dias)</strong> ou <strong>anual</strong>, conforme o Anexo I, contado do aceite eletronico.</p>
+<p>5.2. Ao fim de cada periodo, renova-se automaticamente por periodo igual, mediante a confirmacao do pagamento, ate o cancelamento por qualquer das partes.</p>
 
 <h3>6. SUSPENSAO E CANCELAMENTO POR INADIMPLENCIA</h3>
 <p>6.1. Notificacao em ate 24 horas do vencimento nao pago.</p>
-<p>6.2. Suspensao do acesso apos 3 dias sem regularizacao (dados preservados).</p>
-<p>6.3. Cancelamento apos 10 dias da suspensao (13 dias do vencimento), com aviso previo de 48 horas.</p>
+<p>6.2. Restricao do acesso a tela de faturas apos 5 dias de atraso (dados preservados; acesso restabelecido na confirmacao do pagamento).</p>
+<p>6.3. Cancelamento apos 10 dias da restricao (15 dias do vencimento), com aviso previo de 48 horas.</p>
 <p>6.4. Reativacao ate 30 dias com quitacao + multa 2% + juros 1% a.m., sem perda de dados.</p>
-<p>6.5. Purge definitivo apos 30 dias sem reativacao, ressalvadas retencoes legais de prestacao de contas MROSC (minimo 10 anos, art. 68 da Lei 13.019/2014).</p>
+<p>6.5. Exclusao definitiva dos dados 90 (noventa) dias apos o cancelamento sem reativacao, ressalvados os dados que a CONTRATADA deve manter por obrigacao legal (fiscais e de cobranca). Cabe a CONTRATANTE exportar, nesse prazo, os documentos que a lei a obriga a guardar, como a prestacao de contas de parcerias MROSC (art. 68 da Lei 13.019/2014).</p>
 
 <h3>7. RESCISAO VOLUNTARIA</h3>
-<p>A CONTRATANTE pode rescindir a qualquer tempo (cancelamento no gateway ou painel/e-mail contato@vivensi.app.br). A CONTRATADA pode rescindir com aviso de 30 dias, exceto em descumprimento grave (rescisao imediata). Apos rescisao, a CONTRATANTE tem 30 dias para exportar dados via {{ config('app.url') }}/eu/dados em formato aberto (JSON/CSV).</p>
+<p>7.1. A CONTRATANTE pode cancelar a qualquer tempo, sem multa, pelo e-mail {{ config('legal.email_support') }}. O acesso permanece ate o fim do periodo ja pago, e nao sao emitidas novas faturas.</p>
+<p>7.2. <strong>Reembolso:</strong> pedidos feitos em ate 7 (sete) dias da primeira contratacao recebem a devolucao integral do valor pago (art. 49 do CDC). Apos esse prazo, nao ha reembolso do periodo em curso (mensal ou anual).</p>
+<p>7.3. A CONTRATADA pode rescindir com aviso de 30 dias, exceto em descumprimento grave (rescisao imediata).</p>
+<p>7.4. Apos o cancelamento, os dados ficam guardados por 90 (noventa) dias, prazo em que a CONTRATANTE pode reativar a conta ou exportar os dados em formato aberto (planilhas CSV e JSON, inclusive via {{ config('app.url') }}/eu/dados). Depois, aplica-se a Clausula 6.5.</p>
 
 <h3>8. NOTIFICACOES E COMUNICACOES</h3>
 <p><strong>Da CONTRATADA:</strong> e-mail cadastrado, painel, WhatsApp (quando aplicavel).</p>
-<p><strong>Da CONTRATANTE:</strong> contato@vivensi.app.br | dpo@vivensi.app.br (LGPD/Encarregado).</p>
+<p><strong>Da CONTRATANTE:</strong> {{ config('legal.email_support') }} (inclusive assuntos de LGPD/Encarregado).</p>
 
 <h3>9. LGPD — TRATAMENTO DE DADOS PESSOAIS (REFORCADA)</h3>
 <p>9.1. <strong>Papeis:</strong> A CONTRATANTE atua como <strong>CONTROLADORA</strong> dos dados de beneficiarios, doadores, voluntarios, colaboradores. A CONTRATADA atua como <strong>OPERADORA</strong>, tratando dados exclusivamente conforme instrucoes documentadas da CONTRATANTE.</p>
 <p>9.2. Cabe a CONTRATANTE indicar Encarregado (DPO), definir bases legais (arts. 7 e 11), gerir consentimentos, atender titulares (art. 18) e comunicar autoridades (ANPD) em incidentes.</p>
-<p>9.3. <strong>Sub-operadores autorizados:</strong> AWS (sa-east-1), AbacatePay (pagamento), Meta Platforms Ireland Ltd. (WhatsApp Cloud API), DeepSeek AI (PLN), Together AI (imagens), Brevo (e-mail), Pusher Channels (websockets), Google (Gemini/reCAPTCHA). Lista atualizada em {{ config('app.url') }}/subprocessadores, com notificacao de mudancas em 30 dias.</p>
+<p>9.3. <strong>Sub-operadores autorizados:</strong> Amazon Web Services — AWS (hospedagem em sa-east-1/Sao Paulo e envio de e-mails), AbacatePay (pagamentos), Brevo (e-mails do sistema), Meta Platforms (WhatsApp Cloud API), Evolution API (conexao alternativa de WhatsApp), Google (Gemini — inteligencia artificial; reCAPTCHA), DeepSeek (inteligencia artificial), Together AI (geracao de imagens) Pusher (notificacoes em tempo real) e Sentry (registro de erros tecnicos). A lista vigente consta da Politica de Privacidade ({{ config('app.url') }}/privacidade), e inclusoes ou trocas serao comunicadas a CONTRATANTE por e-mail com 30 dias de antecedencia.</p>
 <p>9.4. <strong>Transferencia internacional:</strong> alguns sub-operadores processam dados fora do Brasil, mediante clausulas contratuais padrao (arts. 33 a 36 da LGPD).</p>
-<p>9.5. <strong>Encarregado (DPO) da CONTRATADA:</strong> dpo@vivensi.app.br. <strong>Prazo de resposta a titulares:</strong> 15 dias.</p>
+<p>9.5. <strong>Encarregado (DPO) da CONTRATADA:</strong> {{ config('legal.dpo_name') }} — {{ config('legal.email_dpo') }}. <strong>Prazo de resposta a titulares:</strong> 15 dias.</p>
 <p>9.6. Politica completa em {{ config('app.url') }}/privacidade, que integra este contrato.</p>
 
 <h3>10. DADOS SENSIVEIS DE BENEFICIARIOS VULNERAVEIS</h3>

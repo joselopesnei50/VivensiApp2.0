@@ -81,7 +81,7 @@
                 <div class="col-md-6">
                     <label style="display:block; font-weight:700; font-size:0.85rem; color:#1e293b; margin-bottom:8px;">E-mail do remetente</label>
                     <input type="email" name="sender_email" value="{{ old('sender_email', $campaign?->sender_email) }}"
-                           placeholder="contato@vivensi.com.br"
+                           placeholder="contato@vivensi.app.br"
                            style="width:100%; padding:13px 16px; border:2px solid #f1f5f9; border-radius:12px; font-size:0.9rem; box-sizing:border-box;">
                 </div>
                 <div class="col-md-12">

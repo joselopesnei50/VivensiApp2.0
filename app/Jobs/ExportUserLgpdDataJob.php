@@ -126,7 +126,7 @@ class ExportUserLgpdDataJob implements ShouldQueue
                 'export_generated_at' => now()->toIso8601String(),
                 'export_law'          => 'LGPD Lei 13.709/2018 art. 18 IV',
                 'controller'          => 'NC5 HUB DIGITAL LTDA (Vivensi)',
-                'contact_dpo'         => config('legal.email_dpo', 'dpo@vivensi.app.br'),
+                'contact_dpo'         => config('legal.email_dpo'),
             ],
             'profile' => [
                 'id'                       => $user->id,
@@ -204,7 +204,7 @@ class ExportUserLgpdDataJob implements ShouldQueue
     private function buildReadme(User $user): string
     {
         $now      = now()->format('d/m/Y H:i');
-        $dpoEmail = config('legal.email_dpo', 'dpo@vivensi.app.br');
+        $dpoEmail = config('legal.email_dpo');
         return <<<TXT
         EXPORTACAO DE DADOS PESSOAIS — LGPD
         ====================================

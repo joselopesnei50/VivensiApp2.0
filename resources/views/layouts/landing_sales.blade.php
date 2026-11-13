@@ -2,8 +2,8 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @php
-        $__gtmId  = \App\Models\SystemSetting::getValue('gtm_container_id');
-        $__ga4Id  = \App\Models\SystemSetting::getValue('ga4_measurement_id');
+        $__gtmId  = (\App\Support\CookieConsent::allowsTracking() ? \App\Models\SystemSetting::getValue('gtm_container_id') : null);
+        $__ga4Id  = (\App\Support\CookieConsent::allowsTracking() ? \App\Models\SystemSetting::getValue('ga4_measurement_id') : null);
     @endphp
     @if($__gtmId)
     <!-- Google Tag Manager -->
@@ -218,5 +218,6 @@
 
     @yield('scripts')
     @include('partials.bruce_public_popup')
+@include('partials.cookie-banner')
 </body>
 </html>

@@ -1,15 +1,18 @@
 @unless(request()->cookie('vivensi_cookie_consent'))
+<style>
+    /* No celular, o botão flutuante do WhatsApp cobria "Aceitar todos". */
+    @media (max-width: 640px) { #cookieBanner { padding-bottom: 6.5rem !important; } }
+</style>
 <div id="cookieBanner" style="position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid #e5e7eb; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 9999; padding: 1.5rem; animation: slideUp 0.4s ease-out;">
     
     <div style="max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
         
         <div style="flex: 1; min-width: 300px; font-size: 0.875rem; color: #4b5563;">
             <p style="margin: 0;">
-                <span style="font-weight: 700; color: #111827;">🍪 Controle de Privacidade do Vivensi.</span> 
-                Utilizamos cookies para personalizar sua experiência e garantir a segurança do sistema. 
-                Ao continuar navegando, você concorda com nossos 
-                <a href="{{ route('public.page', 'termos') }}" style="color: #2563eb; text-decoration: none; font-weight: 500;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Termos de Uso</a> e 
-                <a href="{{ route('public.page', 'privacidade') }}" style="color: #2563eb; text-decoration: none; font-weight: 500;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Política de Privacidade</a>.
+                <span style="font-weight: 700; color: #111827;">🍪 Cookies no Vivensi.</span>
+                Usamos cookies necessários para o site funcionar e, só com a sua permissão, cookies de estatística e divulgação (Google Analytics e Meta Pixel).
+                Saiba mais na <a href="{{ route('legal.privacy') }}" style="color: #2563eb; text-decoration: none; font-weight: 500;">Política de Privacidade</a>
+                e nos <a href="{{ route('legal.terms') }}" style="color: #2563eb; text-decoration: none; font-weight: 500;">Termos de Uso</a>.
             </p>
         </div>
 
@@ -20,7 +23,7 @@
                         style="font-size: 0.75rem; font-weight: 500; color: #6b7280; background: transparent; border: none; padding: 0.5rem 0.75rem; cursor: pointer; border-radius: 0.5rem; transition: all 0.2s;"
                         onmouseover="this.style.color='#374151'; this.style.background='#f3f4f6'"
                         onmouseout="this.style.color='#6b7280'; this.style.background='transparent'">
-                    Dispensar
+                    Só os necessários
                 </button>
             </form>
 
@@ -30,7 +33,7 @@
                         style="background: #2563eb; color: white; font-size: 0.875rem; font-weight: 600; padding: 0.625rem 1.5rem; border: none; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s;"
                         onmouseover="this.style.background='#1d4ed8'; this.style.transform='scale(1.05)'"
                         onmouseout="this.style.background='#2563eb'; this.style.transform='scale(1)'">
-                    Aceitar Cookies
+                    Aceitar todos
                 </button>
             </form>
         </div>

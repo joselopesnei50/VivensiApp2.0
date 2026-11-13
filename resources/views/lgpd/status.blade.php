@@ -31,13 +31,13 @@
             <h2>O que acontece a seguir</h2>
             <p>Sua solicitação foi registrada e será processada em até <strong>15 (quinze) dias corridos</strong>, conforme o art. 19 da Lei Geral de Proteção de Dados (LGPD).</p>
             <p>Você receberá confirmação por e-mail assim que a exclusão for concluída.</p>
-            <p>Para acompanhar ou tirar dúvidas, entre em contato com nosso Encarregado de Proteção de Dados (DPO): <a href="mailto:{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}">{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}</a></p>
+            <p>Para acompanhar ou tirar dúvidas, entre em contato com nosso Encarregado de Proteção de Dados (DPO): <a href="mailto:{{ config('legal.email_dpo') }}">{{ config('legal.email_dpo') }}</a></p>
         </div>
     @else
         <div class="legal-section">
             <h2>Código não encontrado</h2>
             <p>O código de confirmação informado não corresponde a nenhuma solicitação registrada.</p>
-            <p>Se você acredita que isso é um erro, entre em contato com <a href="mailto:{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}">{{ config('legal.email_dpo', 'privacidade@vivensi.com.br') }}</a> informando o código acima.</p>
+            <p>Se você acredita que isso é um erro, entre em contato com <a href="mailto:{{ config('legal.email_dpo') }}">{{ config('legal.email_dpo') }}</a> informando o código acima.</p>
         </div>
     @endif
 </div>

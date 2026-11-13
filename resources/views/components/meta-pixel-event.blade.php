@@ -23,7 +23,7 @@
     'params'   => [],
 ])
 @php
-    $_metaPixelId = config('services.meta.pixel_id');
+    $_metaPixelId = \App\Support\CookieConsent::allowsTracking() ? config('services.meta.pixel_id') : null;
     if (!$_metaPixelId || !$event) return;
 
     $_payload = $params;

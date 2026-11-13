@@ -219,7 +219,7 @@ class AdesaoController extends Controller
             $contract->status    = 'draft';
         }
 
-        $contract->version       = '2.0';
+        $contract->version       = '2.1';
         $contract->title         = 'Contrato de Adesao Vivensi SaaS';
         $contract->signer_name   = $signer['signer_name'];
         $contract->signer_email  = $signer['signer_email'];

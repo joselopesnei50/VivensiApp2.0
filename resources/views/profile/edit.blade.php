@@ -252,7 +252,7 @@
             </div>
 
             <p style="color: #94a3b8; font-size: 0.75rem; margin: 20px 0 0 0; text-align: center;">
-                Dúvidas sobre privacidade? Entre em contato com nosso DPO: <strong>privacidade@vivensi.com.br</strong>
+                Dúvidas sobre privacidade? Entre em contato com nosso DPO: <strong>{{ config('legal.email_dpo') }}</strong>
             </p>
         </div>
     </div>

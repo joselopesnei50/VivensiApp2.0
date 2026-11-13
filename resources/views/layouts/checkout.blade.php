@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="{{ asset('img/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - Vivensi</title>
+    <title>@yield('title', 'Checkout — Vivensi')</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -40,7 +40,10 @@
 </main>
 
 <footer class="text-center py-5 text-muted small">
-    &copy; 2026 Vivensi App. Todos os direitos reservados.
+    &copy; {{ date('Y') }} Vivensi — produto da {{ config('legal.company_name') }} · CNPJ {{ config('legal.cnpj') }}<br>
+    <a href="{{ route('legal.terms') }}" class="text-muted">Termos de Uso</a> ·
+    <a href="{{ route('legal.privacy') }}" class="text-muted">Política de Privacidade</a> ·
+    <a href="mailto:{{ config('legal.email_support') }}" class="text-muted">{{ config('legal.email_support') }}</a>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
