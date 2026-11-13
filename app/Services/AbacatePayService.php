@@ -269,28 +269,35 @@ class AbacatePayService
      * Header: X-Webhook-Signature
      * Algoritmo: HMAC-SHA256 com a chave pública da AbacatePay, digest em base64.
      */
+    /** Chave pública da AbacatePay (igual para todas as contas, publicada na documentação). */
+    public const PUBLIC_HMAC_KEY = 't9dXRhHHo3yDEj5pVDYz0frf7q6bMKyMRmxxCPIPp3RCplBfXRxqlC6ZpiWmOqj4L63qEaeUOtrCI8P0VMUgo6iIga2ri9ogaHFs0WIIywSMg0q7RmBfybe1E5XJcfC4IW3alNqym0tXoAKkzvfEjZxV6bE0oG2zJrNNYmUCKZyV0KZ3JS8Votf9EAWWYdiDkMkpbMdPggfh1EqHlVkMiTady6jOR3hyzGEHrIz2Ret0xHKMbiqkr9HS1JhNHDX9';
+
     public function verifyWebhookSignature(string $rawBody, string $signature): bool
     {
-        if (!$this->hasHmacKey()) {
-            return false;
+        // Aceita a chave configurada (.env/admin) ou a pública oficial — um valor de
+        // exemplo esquecido no .env (ex.: "gere_uma_...") não pode recusar todo webhook.
+        foreach ($this->hmacKeys() as $key) {
+            $expected = base64_encode(hash_hmac('sha256', $rawBody, $key, true));
+            if (hash_equals($expected, $signature)) {
+                return true;
+            }
         }
-        $expected = base64_encode(
-            hash_hmac('sha256', $rawBody, $this->getHmacKey(), true)
-        );
-        return hash_equals($expected, $signature);
+        return false;
     }
 
-    /** Chave HMAC: .env → SystemSetting (painel admin). Vazia = não configurada. */
-    private function getHmacKey(): string
+    /** @return string[] */
+    private function hmacKeys(): array
     {
-        return (string) (config('services.abacatepay.hmac_key')
-            ?: \App\Models\SystemSetting::getValue('abacatepay_hmac_key')
-            ?: '');
+        return array_values(array_unique(array_filter([
+            (string) config('services.abacatepay.hmac_key'),
+            (string) \App\Models\SystemSetting::getValue('abacatepay_hmac_key'),
+            self::PUBLIC_HMAC_KEY,
+        ])));
     }
 
     public function hasHmacKey(): bool
     {
-        return $this->getHmacKey() !== '';
+        return true; // a chave pública oficial está sempre disponível
     }
 
     /**

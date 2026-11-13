@@ -46,7 +46,9 @@ return [
     'abacatepay' => [
         'api_key'        => env('ABACATEPAY_API_KEY'),
         'webhook_secret' => env('ABACATEPAY_WEBHOOK_SECRET'),
-        'hmac_key'       => env('ABACATEPAY_HMAC_KEY'),
+        // X-Webhook-Signature (HMAC-SHA256, base64): a AbacatePay assina com uma chave
+        // pública igual para todas as contas — https://docs.abacatepay.com/pages/webhooks/security
+        'hmac_key'       => env('ABACATEPAY_HMAC_KEY'), // opcional: a chave pública oficial já está em AbacatePayService::PUBLIC_HMAC_KEY
         'environment'    => env('ABACATEPAY_ENV', 'sandbox'), // sandbox ou production
     ],
 

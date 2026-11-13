@@ -9,6 +9,14 @@ beforeEach(function () {
     $this->abHmac   = 'abacate-hmac-key-test';
     SystemSetting::setValue('abacatepay_webhook_secret', $this->abSecret);
     config(['services.abacatepay.hmac_key' => $this->abHmac]);
+    // Webhook assinado como a AbacatePay faz (HMAC-SHA256 base64 do corpo bruto).
+    $this->signed = function (array $payload) {
+        $body = json_encode($payload);
+        return $this->call('POST', '/api/abacatepay/webhook', [], [], [], [
+            'CONTENT_TYPE' => 'application/json', 'HTTP_X-WEBHOOK-SECRET' => $this->abSecret,
+            'HTTP_X-WEBHOOK-SIGNATURE' => base64_encode(hash_hmac('sha256', $body, $this->abHmac, true)),
+        ], $body);
+    };
 });
 
 // ── Secret validation ─────────────────────────────────────────────────────────
@@ -24,23 +32,25 @@ it('returns 401 when secret is invalid', function () {
     ])->assertStatus(401);
 });
 
-it('accepts secret via X-Webhook-Secret header', function () {
+it('accepts secret via X-Webhook-Secret header (com assinatura)', function () {
     Queue::fake();
-
-    $this->postJson('/api/abacatepay/webhook', ['event' => 'BILLING_PAID'], [
-        'X-Webhook-Secret' => $this->abSecret,
-    ])->assertStatus(200);
+    $body = json_encode(['event' => 'BILLING_PAID']);
+    $this->call('POST', '/api/abacatepay/webhook', [], [], [], [
+        'CONTENT_TYPE' => 'application/json', 'HTTP_X-WEBHOOK-SECRET' => $this->abSecret,
+        'HTTP_X-WEBHOOK-SIGNATURE' => base64_encode(hash_hmac('sha256', $body, $this->abHmac, true)),
+    ], $body)->assertStatus(200);
 });
 
-it('accepts secret via webhookSecret query string', function () {
+it('accepts secret via webhookSecret query string (com assinatura)', function () {
     Queue::fake();
-
-    $this->postJson('/api/abacatepay/webhook?webhookSecret=' . $this->abSecret, [
-        'event' => 'BILLING_PAID',
-    ])->assertStatus(200);
+    $body = json_encode(['event' => 'BILLING_PAID']);
+    $this->call('POST', '/api/abacatepay/webhook?webhookSecret=' . $this->abSecret, [], [], [], [
+        'CONTENT_TYPE' => 'application/json',
+        'HTTP_X-WEBHOOK-SIGNATURE' => base64_encode(hash_hmac('sha256', $body, $this->abHmac, true)),
+    ], $body)->assertStatus(200);
 });
 
-// ── HMAC validation (optional) ────────────────────────────────────────────────
+// ── HMAC validation (obrigatória) ─────────────────────────────────────────────
 
 it('returns 401 when HMAC signature is present but invalid', function () {
     $this->postJson('/api/abacatepay/webhook', ['event' => 'BILLING_PAID'], [
@@ -49,13 +59,27 @@ it('returns 401 when HMAC signature is present but invalid', function () {
     ])->assertStatus(401);
 });
 
-it('dispatches job when no HMAC signature provided', function () {
+it('recusa (401) quando chega sem assinatura, mesmo com o secret certo', function () {
     Queue::fake();
 
     $this->postJson('/api/abacatepay/webhook', ['event' => 'BILLING_PAID', 'id' => 'bill_1'], [
         'X-Webhook-Secret' => $this->abSecret,
-    ])->assertStatus(200)->assertJson(['status' => 'queued']);
+    ])->assertStatus(401);
 
+    Queue::assertNothingPushed();
+});
+
+it('aceita a assinatura feita com a chave pública oficial, mesmo com valor de exemplo no .env', function () {
+    Queue::fake();
+    config(['services.abacatepay.hmac_key' => 'gere_uma_chave_aqui_exemplo']);
+    $k = \App\Services\AbacatePayService::PUBLIC_HMAC_KEY;
+    expect(strlen($k))->toBe(256);
+
+    $body = json_encode(['event' => 'checkout.completed', 'id' => 'bill_pub']);
+    $this->call('POST', '/api/abacatepay/webhook', [], [], [], [
+        'CONTENT_TYPE' => 'application/json', 'HTTP_X-WEBHOOK-SECRET' => $this->abSecret,
+        'HTTP_X-WEBHOOK-SIGNATURE' => base64_encode(hash_hmac('sha256', $body, $k, true)),
+    ], $body)->assertOk();
     Queue::assertPushed(ProcessAbacatePayWebhook::class);
 });
 
@@ -81,12 +105,7 @@ it('dispatches job when HMAC signature is valid', function () {
 it('dispatches job with BILLING_PAID event', function () {
     Queue::fake();
 
-    $this->postJson('/api/abacatepay/webhook', [
-        'event'  => 'BILLING_PAID',
-        'id'     => 'bill_999',
-        'amount' => 15000,
-    ], ['X-Webhook-Secret' => $this->abSecret])
-        ->assertStatus(200);
+    ($this->signed)(['event' => 'BILLING_PAID', 'id' => 'bill_999', 'amount' => 15000])->assertStatus(200);
 
     Queue::assertPushed(ProcessAbacatePayWebhook::class);
 });
@@ -94,11 +113,7 @@ it('dispatches job with BILLING_PAID event', function () {
 it('dispatches job with devMode flag', function () {
     Queue::fake();
 
-    $this->postJson('/api/abacatepay/webhook', [
-        'event'   => 'BILLING_PAID',
-        'devMode' => true,
-        'id'      => 'dev_bill_1',
-    ], ['X-Webhook-Secret' => $this->abSecret]);
+    ($this->signed)(['event' => 'BILLING_PAID', 'devMode' => true, 'id' => 'dev_bill_1']);
 
     Queue::assertPushed(ProcessAbacatePayWebhook::class);
 });
@@ -106,10 +121,7 @@ it('dispatches job with devMode flag', function () {
 it('handles missing event field without error', function () {
     Queue::fake();
 
-    $this->postJson('/api/abacatepay/webhook', [
-        'id' => 'bill_unknown',
-    ], ['X-Webhook-Secret' => $this->abSecret])
-        ->assertStatus(200);
+    ($this->signed)(['id' => 'bill_unknown'])->assertStatus(200);
 
     Queue::assertPushed(ProcessAbacatePayWebhook::class);
 });
