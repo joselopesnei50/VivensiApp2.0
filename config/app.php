@@ -56,6 +56,11 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // IP público do servidor (registro A dos domínios próprios das landing pages).
+    // Na migração de servidor: SERVER_PUBLIC_IP = novo; SERVER_ACCEPTED_IPS = antigo.
+    'server_public_ip' => env('SERVER_PUBLIC_IP', '34.193.132.112'),
+    'server_accepted_ips' => env('SERVER_ACCEPTED_IPS', ''),
+
     'asset_url' => env('ASSET_URL', null),
 
     /*
