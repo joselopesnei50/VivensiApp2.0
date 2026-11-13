@@ -22,7 +22,9 @@ class TenantFactory extends Factory
         return [
             'name' => fake()->company(),
             'document' => fake()->unique()->numerify('##############'), // CPF/CNPJ
-            'type' => fake()->randomElement(['ngo', 'manager', 'common']),
+            // Fixo (antes era sorteado e testes passavam ou falhavam conforme o sorteio).
+            // Testes de regra da ONG usam ->ngo() ou ['type' => 'ngo'].
+            'type' => 'manager',
             'subscription_status' => 'active',
             'trial_ends_at' => now()->addDays(7),
         ];
