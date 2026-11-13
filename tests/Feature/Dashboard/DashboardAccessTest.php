@@ -5,7 +5,7 @@ use App\Models\User;
 
 function dashUser(string $role): User
 {
-    $tenant = Tenant::factory()->create(['subscription_status' => 'active']);
+    $tenant = Tenant::factory()->create(['type' => in_array($role, ['ngo', 'manager', 'common'], true) ? $role : 'manager', 'subscription_status' => 'active']);
     return User::factory()->create(['tenant_id' => $tenant->id, 'role' => $role]);
 }
 
