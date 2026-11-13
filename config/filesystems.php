@@ -53,6 +53,19 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
         ],
 
+        // Cópia dos backups fora do servidor (db:backup). Use um bucket só para
+        // backups — de preferência em outra região — e uma chave IAM que só
+        // grava/lista/apaga nesse bucket.
+        'backups' => [
+            'driver' => 's3',
+            'key' => env('BACKUP_S3_KEY', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('BACKUP_S3_SECRET', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('BACKUP_S3_REGION', env('AWS_DEFAULT_REGION')),
+            'bucket' => env('BACKUP_S3_BUCKET'),
+            'root' => env('BACKUP_S3_PREFIX', 'vivensi'),
+            'throw' => true,
+        ],
+
     ],
 
     /*
