@@ -2076,7 +2076,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
                 <div>
                     <div class="cb-icon"><i class="fas fa-rotate-left"></i></div>
                     <div class="cb-title">7 dias para decidir.</div>
-                    <div class="cb-desc">Não gostou? Reembolso em até 7 dias, descontados só os dias de uso.</div>
+                    <div class="cb-desc">Não gostou? Devolvemos 100% do valor em até 7 dias.</div>
                 </div>
             </div>
         </div>

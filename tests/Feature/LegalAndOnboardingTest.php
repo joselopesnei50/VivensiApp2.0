@@ -13,7 +13,7 @@ use App\Models\User;
 it('termos trazem empresa, reembolso, períodos, guarda e foro', function () {
     $this->get('/termos')->assertOk()
         ->assertSee('NC5 HUB DIGITAL LTDA')->assertSee('67.848.807/0001-50')
-        ->assertSee('7 dias')->assertSee('descontado o valor proporcional aos dias')
+        ->assertSee('7 dias')->assertSee('devolução integral', false)->assertDontSee('proporcional aos dias')
         ->assertSee('mensal (30 dias)', false)->assertSee('anual')
         ->assertSee('90 dias')->assertSee('Araraquara/SP')
         ->assertDontSee('Vivensi Tecnologia')->assertDontSee('São Paulo/SP para')->assertDontSee('claude.ai');
@@ -21,7 +21,7 @@ it('termos trazem empresa, reembolso, períodos, guarda e foro', function () {
 
 it('privacidade lista quem trata os dados e não tem dados falsos', function () {
     $html = $this->get('/privacidade')->assertOk()->getContent();
-    foreach (['NC5 HUB DIGITAL LTDA', '67.848.807/0001-50', 'AbacatePay', 'Together AI', 'Google (Gemini)', 'DeepSeek', 'Amazon Web Services', 'operadora', 'controladora', '90 dias'] as $t) {
+    foreach (['NC5 HUB DIGITAL LTDA', '67.848.807/0001-50', 'AbacatePay', 'Together AI', 'Google (Gemini)', 'DeepSeek', 'Amazon Web Services', 'operadora', 'controladora', '90 dias', 'José da Silva', 'contato@vivensi.app.br'] as $t) {
         expect($html)->toContain($t);
     }
     expect($html)->not->toContain('12.345.678/0001-90')->not->toContain('Av. Paulista')->not->toContain('vivensi.com.br');
@@ -33,7 +33,7 @@ it('as cópias antigas de termos e privacidade redirecionam para a versão únic
 });
 
 it('home sem nota 5.0 e com a regra de reembolso de 7 dias', function () {
-    $this->get('/')->assertOk()->assertDontSee('Avaliação média')->assertDontSee('Devolvemos 100%')->assertSee('7 dias para decidir');
+    $this->get('/')->assertOk()->assertDontSee('Avaliação média')->assertDontSee('em 30 dias')->assertSee('7 dias para decidir')->assertSee('Devolvemos 100% do valor em até 7 dias');
 });
 
 it('estatística e pixel só carregam depois de aceitar os cookies', function () {

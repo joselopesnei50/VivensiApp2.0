@@ -183,8 +183,7 @@
     <div class="legal-section">
         <h2><span class="num">5</span> Cancelamento e reembolso</h2>
         <p><strong>Cancelamento:</strong> você pode cancelar a qualquer momento, sem multa, pelo e-mail <a href="mailto:{{ $suporte }}">{{ $suporte }}</a>. O acesso continua até o fim do período já pago, e não são emitidas novas faturas.</p>
-        <p><strong>Reembolso:</strong> pedidos feitos em até <strong>{{ $reemb }} dias</strong> da primeira contratação são reembolsados, descontado o valor proporcional aos dias em que a plataforma foi usada. Depois desse prazo, não há reembolso do período em curso (mensal ou anual), que segue disponível até o fim.</p>
-        <div class="legal-note"><i class="fas fa-info-circle me-1"></i> Exemplo: plano mensal de R$ 300,00 cancelado no 4º dia de uso → desconto de 4/30 do valor (R$ 40,00) e reembolso de R$ 260,00.</div>
+        <p><strong>Reembolso (direito de arrependimento):</strong> pedidos feitos em até <strong>{{ $reemb }} dias</strong> da primeira contratação recebem a <strong>devolução integral</strong> do valor pago, sem precisar justificar (art. 49 do Código de Defesa do Consumidor). Depois desse prazo, não há reembolso do período em curso (mensal ou anual), que segue disponível até o fim.</p>
     </div>
 
     <div class="legal-divider"></div>

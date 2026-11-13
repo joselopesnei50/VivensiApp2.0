@@ -72,20 +72,20 @@
 
 <h3>7. RESCISAO VOLUNTARIA</h3>
 <p>7.1. A CONTRATANTE pode cancelar a qualquer tempo, sem multa, pelo e-mail {{ config('legal.email_support') }}. O acesso permanece ate o fim do periodo ja pago, e nao sao emitidas novas faturas.</p>
-<p>7.2. <strong>Reembolso:</strong> pedidos feitos em ate 7 (sete) dias da primeira contratacao sao reembolsados, descontado o valor proporcional aos dias de uso da plataforma. Apos esse prazo, nao ha reembolso do periodo em curso (mensal ou anual).</p>
+<p>7.2. <strong>Reembolso:</strong> pedidos feitos em ate 7 (sete) dias da primeira contratacao recebem a devolucao integral do valor pago (art. 49 do CDC). Apos esse prazo, nao ha reembolso do periodo em curso (mensal ou anual).</p>
 <p>7.3. A CONTRATADA pode rescindir com aviso de 30 dias, exceto em descumprimento grave (rescisao imediata).</p>
 <p>7.4. Apos o cancelamento, os dados ficam guardados por 90 (noventa) dias, prazo em que a CONTRATANTE pode reativar a conta ou exportar os dados em formato aberto (planilhas CSV e JSON, inclusive via {{ config('app.url') }}/eu/dados). Depois, aplica-se a Clausula 6.5.</p>
 
 <h3>8. NOTIFICACOES E COMUNICACOES</h3>
 <p><strong>Da CONTRATADA:</strong> e-mail cadastrado, painel, WhatsApp (quando aplicavel).</p>
-<p><strong>Da CONTRATANTE:</strong> {{ config('legal.email_support') }} | {{ config('legal.email_dpo') }} (LGPD/Encarregado).</p>
+<p><strong>Da CONTRATANTE:</strong> {{ config('legal.email_support') }} (inclusive assuntos de LGPD/Encarregado).</p>
 
 <h3>9. LGPD — TRATAMENTO DE DADOS PESSOAIS (REFORCADA)</h3>
 <p>9.1. <strong>Papeis:</strong> A CONTRATANTE atua como <strong>CONTROLADORA</strong> dos dados de beneficiarios, doadores, voluntarios, colaboradores. A CONTRATADA atua como <strong>OPERADORA</strong>, tratando dados exclusivamente conforme instrucoes documentadas da CONTRATANTE.</p>
 <p>9.2. Cabe a CONTRATANTE indicar Encarregado (DPO), definir bases legais (arts. 7 e 11), gerir consentimentos, atender titulares (art. 18) e comunicar autoridades (ANPD) em incidentes.</p>
 <p>9.3. <strong>Sub-operadores autorizados:</strong> Amazon Web Services — AWS (hospedagem em sa-east-1/Sao Paulo e envio de e-mails), AbacatePay (pagamentos), Brevo (e-mails do sistema), Meta Platforms (WhatsApp Cloud API), Evolution API (conexao alternativa de WhatsApp), Google (Gemini — inteligencia artificial; reCAPTCHA), DeepSeek (inteligencia artificial), Together AI (geracao de imagens) e Pusher (notificacoes em tempo real). A lista vigente consta da Politica de Privacidade ({{ config('app.url') }}/privacidade), e inclusoes ou trocas serao comunicadas a CONTRATANTE por e-mail com 30 dias de antecedencia.</p>
 <p>9.4. <strong>Transferencia internacional:</strong> alguns sub-operadores processam dados fora do Brasil, mediante clausulas contratuais padrao (arts. 33 a 36 da LGPD).</p>
-<p>9.5. <strong>Encarregado (DPO) da CONTRATADA:</strong> {{ config('legal.email_dpo') }}. <strong>Prazo de resposta a titulares:</strong> 15 dias.</p>
+<p>9.5. <strong>Encarregado (DPO) da CONTRATADA:</strong> {{ config('legal.dpo_name') }} — {{ config('legal.email_dpo') }}. <strong>Prazo de resposta a titulares:</strong> 15 dias.</p>
 <p>9.6. Politica completa em {{ config('app.url') }}/privacidade, que integra este contrato.</p>
 
 <h3>10. DADOS SENSIVEIS DE BENEFICIARIOS VULNERAVEIS</h3>
