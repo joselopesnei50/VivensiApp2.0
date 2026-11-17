@@ -472,8 +472,8 @@
                                                 <button type="button" onclick="cdCopy(document.getElementById('cd-dns-name').textContent)" title="Copiar" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; padding: 4px 10px; border-radius: 6px; font-size:.75rem; cursor:pointer; font-weight:700;">📋 Copiar</button>
 
                                                 <div style="color:#64748b; font-weight:700;">Valor / IP</div>
-                                                <div style="font-family:'Courier New', monospace; font-weight:900; color:#0f172a;">{{ \App\Services\LandingDomainProvisioner::VPS_IP }}</div>
-                                                <button type="button" onclick="cdCopy('{{ \App\Services\LandingDomainProvisioner::VPS_IP }}')" title="Copiar" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; padding: 4px 10px; border-radius: 6px; font-size:.75rem; cursor:pointer; font-weight:700;">📋 Copiar</button>
+                                                <div style="font-family:'Courier New', monospace; font-weight:900; color:#0f172a;">{{ \App\Services\LandingDomainProvisioner::serverIp() }}</div>
+                                                <button type="button" onclick="cdCopy('{{ \App\Services\LandingDomainProvisioner::serverIp() }}')" title="Copiar" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; padding: 4px 10px; border-radius: 6px; font-size:.75rem; cursor:pointer; font-weight:700;">📋 Copiar</button>
 
                                                 <div style="color:#64748b; font-weight:700;">TTL</div>
                                                 <div style="font-family:'Courier New', monospace; font-weight:900; color:#0f172a;">3600 <span style="color:#94a3b8; font-weight:600;">(ou o padrão do seu provedor)</span></div>
@@ -504,7 +504,7 @@
                                         </div>
 
                                         <div id="cd-verify-instr" style="display:none; margin-top:12px; padding: 10px 12px; background:#dbeafe; border:1px solid #93c5fd; border-radius: 10px; color:#1e3a8a; font-size:.85rem;">
-                                            <strong>💡 Como testar se o DNS já propagou:</strong> abra <a href="https://dnschecker.org/" target="_blank" rel="noopener" style="color:#1e40af;">dnschecker.org</a> e coloque seu domínio + tipo A. Se aparecer <strong>{{ \App\Services\LandingDomainProvisioner::VPS_IP }}</strong> na maioria dos servidores, pode clicar "Verificar e ativar".
+                                            <strong>💡 Como testar se o DNS já propagou:</strong> abra <a href="https://dnschecker.org/" target="_blank" rel="noopener" style="color:#1e40af;">dnschecker.org</a> e coloque seu domínio + tipo A. Se aparecer <strong>{{ \App\Services\LandingDomainProvisioner::serverIp() }}</strong> na maioria dos servidores, pode clicar "Verificar e ativar".
                                         </div>
                                         <button type="button" onclick="document.getElementById('cd-verify-instr').style.display = document.getElementById('cd-verify-instr').style.display === 'none' ? 'block' : 'none'"
                                                 style="background:transparent; border:none; color:#4f46e5; font-size:.82rem; font-weight:700; cursor:pointer; margin-top: 8px; padding: 0; text-decoration:underline;">

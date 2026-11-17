@@ -20,8 +20,26 @@ use Illuminate\Support\Facades\Log;
  */
 class LandingDomainProvisioner
 {
-    /** IP publico estatico do VPS Vivensi. */
+    /** IP público estático do servidor (padrão: servidor atual). Use serverIp(). */
     public const VPS_IP = '34.193.132.112';
+
+    /** IP que o cliente deve usar no registro A — SERVER_PUBLIC_IP no .env. */
+    public static function serverIp(): string
+    {
+        return (string) (config('app.server_public_ip') ?: self::VPS_IP);
+    }
+
+    /**
+     * IPs aceitos na verificação de DNS: o atual e, durante uma migração, os
+     * antigos (SERVER_ACCEPTED_IPS, separados por vírgula).
+     */
+    public static function acceptedIps(): array
+    {
+        return array_values(array_unique(array_filter(array_merge(
+            [self::serverIp()],
+            array_map('trim', explode(',', (string) config('app.server_accepted_ips', '')))
+        ))));
+    }
 
     /** Email pra Let's Encrypt (avisos de expiracao/renovacao). */
     public const LE_EMAIL = 'contato@vivensi.app.br';
@@ -52,12 +70,12 @@ class LandingDomainProvisioner
         // dig pode retornar multiplas linhas (multiple A records). Aceita se qualquer bater.
         $lines = array_filter(array_map('trim', explode("\n", $out)));
         foreach ($lines as $ip) {
-            if ($ip === self::VPS_IP) {
+            if (in_array($ip, self::acceptedIps(), true)) {
                 return ['ok' => true, 'resolved' => $ip, 'message' => 'DNS ok.'];
             }
         }
 
-        return ['ok' => false, 'resolved' => implode(', ', $lines), 'message' => "DNS aponta pra {$out}, esperado " . self::VPS_IP . '.'];
+        return ['ok' => false, 'resolved' => implode(', ', $lines), 'message' => "DNS aponta pra {$out}, esperado " . self::serverIp() . '.'];
     }
 
     /**

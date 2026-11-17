@@ -732,8 +732,8 @@ class LandingPageController extends Controller
             'page'    => $page->only(['id', 'custom_domain', 'custom_domain_status', 'custom_domain_error']),
             'dns_hint' => [
                 'type'  => 'A',
-                'value' => LandingDomainProvisioner::VPS_IP,
-                'note'  => "Crie um registro A pra {$domain} apontando pra " . LandingDomainProvisioner::VPS_IP . ". Espere a propagacao (5-30min) antes de clicar em 'Verificar e ativar'.",
+                'value' => LandingDomainProvisioner::serverIp(),
+                'note'  => "Crie um registro A pra {$domain} apontando pra " . LandingDomainProvisioner::serverIp() . ". Espere a propagacao (5-30min) antes de clicar em 'Verificar e ativar'.",
             ],
         ]);
     }
