@@ -34,6 +34,7 @@ class RaffleController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'rules' => 'nullable|string',
+            'authorization_number' => 'nullable|string|max:60',
             'ticket_price' => 'required|numeric|min:1',
             'total_tickets' => 'required|integer|min:1|max:10000',
             'draw_date' => 'nullable|date',
@@ -51,6 +52,7 @@ class RaffleController extends Controller
                 'slug' => \Illuminate\Support\Str::slug($request->title) . '-' . uniqid(),
                 'description' => $request->description,
                 'rules' => $request->rules,
+                'authorization_number' => $this->cleanAuthorization($request->authorization_number),
                 'image_path' => $imagePath,
                 'ticket_price' => $request->ticket_price,
                 'total_tickets' => $request->total_tickets,
@@ -235,6 +237,29 @@ class RaffleController extends Controller
         });
 
         return redirect()->route('raffles.index')->with('success', 'Rifa excluída permanentemente com sucesso!');
+    }
+
+    /**
+     * Número do Certificado de Autorização da SPA/MF (pode ser informado depois de criar a rifa).
+     */
+    public function updateAuthorization(Request $request, Raffle $raffle)
+    {
+        $this->authorizeTenant($raffle);
+
+        $request->validate(['authorization_number' => 'nullable|string|max:60']);
+
+        $raffle->update(['authorization_number' => $this->cleanAuthorization($request->authorization_number)]);
+
+        return back()->with('success', $raffle->authorization_number
+            ? 'Número da autorização salvo. Ele já aparece na página pública da rifa.'
+            : 'Número da autorização removido.');
+    }
+
+    private function cleanAuthorization(?string $value): ?string
+    {
+        $value = trim(preg_replace('/\s+/', ' ', strip_tags((string) $value)));
+
+        return $value === '' ? null : $value;
     }
 
     private function authorizeTenant(Raffle $raffle)

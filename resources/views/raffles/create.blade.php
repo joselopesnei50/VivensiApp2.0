@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <div class="header-page mb-4">
     <div class="d-flex align-items-center gap-3">
         <a href="{{ route('raffles.index') }}" class="btn btn-outline-secondary rounded-circle p-2 border-1 shadow-sm">
@@ -18,6 +19,12 @@
     <div class="col-xl-9">
         <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
             <div class="card-body p-4 p-md-5">
+                @if($errors->any())
+                    <div class="alert alert-danger rounded-4 border-0 mb-4">
+                        <div class="fw-bold mb-1">Confira os campos:</div>
+                        <ul class="mb-0 small">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
+                    </div>
+                @endif
                 <form action="{{ route('raffles.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     
@@ -41,7 +48,16 @@
 
                             <div class="mb-4">
                                 <label for="rules" class="form-label small fw-700 text-muted text-uppercase">Regras e Termos</label>
-                                <textarea name="rules" rows="3" class="form-control form-control-vivensi" placeholder="Quais as regras do sorteio? Data da entrega, frete por conta de quem, etc..." id="rules"></textarea>
+                                <textarea name="rules" rows="3" class="form-control form-control-vivensi" placeholder="Quais as regras do sorteio? Data da entrega, frete por conta de quem, etc..." id="rules">{{ old('rules') }}</textarea>
+                            </div>
+
+                            <div class="mb-2">
+                                @include('raffles.partials.authorization-info')
+                            </div>
+                            <div class="mb-4">
+                                <label for="authorization_number" class="form-label small fw-700 text-muted text-uppercase">Nº do Certificado de Autorização SPA/MF <span class="text-lowercase fw-normal">(se já tiver)</span></label>
+                                <input type="text" name="authorization_number" id="authorization_number" maxlength="60" value="{{ old('authorization_number') }}" class="form-control form-control-vivensi" placeholder="Como está no certificado">
+                                <small class="text-muted d-block mt-1">Pode informar depois, na tela da rifa.</small>
                             </div>
                         </div>
 
@@ -134,6 +150,8 @@
         height: 100%;
         object-fit: cover;
     }
+    [data-theme="dark"] .image-upload-box, [data-theme="dark"] .image-upload-box:hover { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.15); }
+    [data-theme="dark"] .form-control-vivensi { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.12); color: #f1f5f9; }
     .ls-1 { letter-spacing: 1px; }
     .bg-primary-soft { background: rgba(67, 97, 238, 0.1); }
     .bg-success-soft { background: rgba(16, 185, 129, 0.1); }
@@ -151,4 +169,5 @@
         }
     }
 </script>
+</div>
 @endsection

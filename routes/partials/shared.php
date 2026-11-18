@@ -203,6 +203,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/{raffle}',                 [App\Http\Controllers\RaffleController::class, 'show'])->name('show');
         Route::post('/ticket/{ticket}/confirm', [App\Http\Controllers\RaffleController::class, 'confirmPayment'])->name('confirm-payment');
         Route::post('/ticket/{ticket}/release', [App\Http\Controllers\RaffleController::class, 'releaseTicket'])->name('release-ticket');
+        Route::post('/{raffle}/authorization',  [App\Http\Controllers\RaffleController::class, 'updateAuthorization'])->name('authorization');
         Route::post('/{raffle}/draw',           [App\Http\Controllers\RaffleController::class, 'draw'])->name('draw');
         Route::delete('/{raffle}/delete',       [App\Http\Controllers\RaffleController::class, 'destroy'])->name('destroy');
     });
@@ -211,6 +212,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
     Route::get('/settings/branding',        [App\Http\Controllers\TenantBrandingController::class, 'index'])->name('settings.branding');
     Route::post('/settings/branding',       [App\Http\Controllers\TenantBrandingController::class, 'update'])->name('settings.branding.update');
     Route::delete('/settings/branding/logo', [App\Http\Controllers\TenantBrandingController::class, 'removeLogo'])->name('settings.branding.remove-logo');
+    Route::post('/settings/branding/pix-preview', [App\Http\Controllers\TenantBrandingController::class, 'pixPreview'])->middleware('throttle:30,1')->name('settings.branding.pix-preview');
 
     // ── API Docs ──────────────────────────────────────────────────────────────
     Route::get('/api-docs', [App\Http\Controllers\ApiDocsController::class, 'index'])->name('api.docs');
