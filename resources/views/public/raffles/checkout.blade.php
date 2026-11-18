@@ -179,11 +179,12 @@
         <h3 class="fw-800 text-primary mb-4">Total: R$ {{ number_format($totalAmount, 2, ',', '.') }}</h3>
 
         @if(!empty($tenant->pix_key))
+        @php $pixKeyClean = \App\Support\PixKey::forPayload($tenant->pix_key, $tenant->pix_key_type); @endphp
         <div class="mb-3 p-3 rounded-3 text-start" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
             <div class="small text-muted fw-bold mb-1" style="text-transform: uppercase; letter-spacing: .5px; font-size: 0.7rem;">Chave PIX do Beneficiário</div>
             <div class="d-flex align-items-center gap-2">
-                <span class="fw-800 text-dark" style="word-break: break-all;">{{ $tenant->pix_key }}</span>
-                <button type="button" onclick="copyPixKey(this)" class="btn btn-sm btn-success rounded-pill px-3 flex-shrink-0" style="font-size: 0.75rem; font-weight: 700;">Copiar</button>
+                <span class="fw-800 text-dark" style="word-break: break-all;">{{ \App\Support\PixKey::display($pixKeyClean, $tenant->pix_key_type) }}</span>
+                <button type="button" data-key="{{ $pixKeyClean }}" onclick="copyPixKey(this)" class="btn btn-sm btn-success rounded-pill px-3 flex-shrink-0" style="font-size: 0.75rem; font-weight: 700;">Copiar</button>
             </div>
         </div>
         @endif
@@ -258,7 +259,7 @@
 
     // ── Copiar chave PIX raw ──────────────────────────────────────────────────
     function copyPixKey(btn) {
-        const key = btn.previousElementSibling.textContent.trim();
+        const key = btn.dataset.key || btn.previousElementSibling.textContent.trim();
         navigator.clipboard.writeText(key).then(() => {
             const orig = btn.textContent;
             btn.textContent = '✅ Copiado!';

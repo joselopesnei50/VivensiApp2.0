@@ -829,19 +829,10 @@ class WhatsappController extends Controller
             'meta_access_token' => 'nullable|string',
             'evolution_instance_name' => 'nullable|string|max:255',
             'evolution_instance_token' => 'nullable|string|max:255',
-            'pix_key' => 'nullable|string|max:255',
-            'pix_key_type' => 'nullable|string|in:cpf_cnpj,email,phone,random',
         ]);
 
-        // Update PIX info on Tenant if applicable
-        if (auth()->user()->tenant) {
-            $waTenant = auth()->user()->tenant;
-            $waTenant->update([
-                'pix_key' => $validated['pix_key'] ?? null,
-                'pix_key_type' => $validated['pix_key_type'] ?? null,
-            ]);
-            Cache::forget("tenant.{$waTenant->id}");
-        }
+        // A chave Pix é configurada só em Configurações › Identidade Visual (com validação).
+        // Antes este formulário, que não tem o campo, gravava a chave em branco a cada salvamento.
 
         // Se campos estruturados foram enviados, monta o prompt automaticamente
         $structuredFields = ['bot_name','bot_tone','org_name','org_mission','services','training_manual','working_hours','contact_info','faq'];

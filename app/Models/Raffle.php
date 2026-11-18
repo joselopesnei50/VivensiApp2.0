@@ -16,6 +16,7 @@ class Raffle extends Model
         'slug',
         'description',
         'rules',
+        'authorization_number',
         'image_path',
         'ticket_price',
         'total_tickets',

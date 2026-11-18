@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div data-theme-scope>
 <div class="header-page mb-4">
     <div class="d-flex align-items-center gap-3">
         <a href="{{ route('raffles.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 border-1 shadow-sm d-flex align-items-center gap-2">
@@ -51,6 +52,30 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Autorização SPA/MF -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="badge rounded-pill p-2" style="background: rgba(245,158,11,.15); color: #d97706;"><i class="bi bi-patch-check"></i></span>
+                    Autorização
+                </h5>
+                @if($raffle->authorization_number)
+                    <div class="p-3 rounded-3 mb-3" style="background: var(--vv-tint-success, #f0fdf4); border: 1px solid var(--vv-tint-success-border, #bbf7d0);">
+                        <span class="small text-uppercase fw-bold d-block mb-1" style="color: #059669;">Certificado SPA/MF</span>
+                        <span class="fw-800">nº {{ $raffle->authorization_number }}</span>
+                    </div>
+                @else
+                    <div class="mb-3">@include('raffles.partials.authorization-info')</div>
+                @endif
+                <form method="POST" action="{{ route('raffles.authorization', $raffle) }}" class="d-flex gap-2">
+                    @csrf
+                    <input type="text" name="authorization_number" maxlength="60" value="{{ old('authorization_number', $raffle->authorization_number) }}" class="form-control" placeholder="Nº do certificado SPA/MF" aria-label="Número do certificado de autorização">
+                    <button class="btn btn-outline-primary fw-bold flex-shrink-0">Salvar</button>
+                </form>
+                @error('authorization_number')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
             </div>
         </div>
 
@@ -288,4 +313,5 @@
     .fw-700 { font-weight: 700; }
     .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
 </style>
+</div>
 @endsection

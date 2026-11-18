@@ -190,6 +190,13 @@
                 <h1 class="raffle-title">{{ $raffle->title }}</h1>
                 <p class="raffle-description mb-4">{{ $raffle->description }}</p>
 
+                @if($raffle->authorization_number)
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill small fw-bold mb-2" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;">
+                    <i class="bi bi-patch-check-fill"></i>
+                    Sorteio autorizado pelo Ministério da Fazenda (SPA/MF) · Certificado nº {{ $raffle->authorization_number }}
+                </div>
+                @endif
+
                 @if($raffle->rules)
                 <div class="mt-4 p-3 rounded-4 text-start mx-auto" style="max-width: 700px; background: rgba(0,0,0,0.03); border: 1px dashed var(--border-color);">
                     <h6 class="fw-800 small text-uppercase ls-1 mb-2"><i class="bi bi-info-circle me-1"></i>Regras e Termos</h6>

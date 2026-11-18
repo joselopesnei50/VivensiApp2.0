@@ -8,6 +8,7 @@ use App\Models\RaffleVisit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Support\PixPayload;
 use App\Mail\RaffleTicketReserved;
 use App\Mail\RaffleReservationAlert;
 use Illuminate\Support\Facades\Mail;
@@ -188,68 +189,12 @@ class PublicRaffleController extends Controller
     // implementar com token opaco HMAC bidx desde o inicio.
 
     /**
-     * BRCode (PIX Static) Generator — EMV QRCPS Merchant Presented Mode.
-     * Implements the full CRC16-CCITT as required by the Brazilian Central Bank specification.
+     * BR Code do Pix estático da rifa (regras em App\Support\PixPayload e PixKey:
+     * a chave vai no formato do Banco Central, mesmo se foi gravada com pontuação).
      */
     private function generatePixPayload(Raffle $raffle, float $amount): string
     {
-        $tenant   = $raffle->tenant;
-        $pixKey   = $tenant->pix_key ?? null;
-
-        if (!$pixKey) {
-            return 'Chave PIX não configurada pela organização.';
-        }
-
-        // ── Sanitization per BACEN/EMV Spec ──────────────────────────────────
-        
-        // Clean key: remove spaces. Emails must remain intact, others numeric-only or specific formats.
-        $pixKey = trim($pixKey);
-        
-        // Normalize Merchant Name: MUST BE ASCII ONLY
-        $merchantName = Str::ascii($tenant->razao_social ?: ($tenant->name ?? 'EMPRESA'));
-        $merchantName = strtoupper(preg_replace('/[^A-Za-z0-9 ]/', '', $merchantName));
-        $merchantName = substr(trim($merchantName), 0, 25) ?: 'EMPRESA';
-        
-        // Cidade da organização (EMV: até 15 caracteres, só ASCII). Sem cidade cadastrada, mantém o padrão anterior.
-        $merchantCity = strtoupper(preg_replace('/[^A-Za-z ]/', '', Str::ascii((string) ($tenant->cidade ?? ''))));
-        $merchantCity = substr(trim($merchantCity), 0, 15) ?: 'SAO PAULO';
-        $amountStr    = number_format($amount, 2, '.', '');
-
-        // ── Field builders ────────────────────────────────────────────────────
-        $tlv = fn(string $id, string $value): string =>
-            $id . str_pad(strlen($value), 2, '0', STR_PAD_LEFT) . $value;
-
-        // ID 26 — Merchant Account Information (GUI + key)
-        $gui        = 'br.gov.bcb.pix';
-        $pixKeyField = $tlv('01', $pixKey);
-        $mai         = $tlv('26', $tlv('00', $gui) . $pixKeyField);
-
-        // Additional Data Field (ID 62) — txid = '***' for static PIX (required by some banks)
-        $additionalData = $tlv('62', $tlv('05', '***'));
-
-        // Assemble payload — field 62 (txid='***') required by BACEN spec
-        $payload = '000201'             // Payload Format Indicator
-            . $mai                       // Merchant Account Info
-            . '52040000'                // Merchant Category Code
-            . '5303986'                 // Transaction Currency (BRL)
-            . $tlv('54', $amountStr)    // Transaction Amount
-            . '5802BR'                  // Country Code
-            . $tlv('59', $merchantName) // Merchant Name
-            . $tlv('60', $merchantCity) // Merchant City
-            . $additionalData           // Additional Data (ID 62 — txid required)
-            . '6304';                   // CRC placeholder (value appended below)
-
-        // ── CRC16-CCITT (polynomial 0x1021, init 0xFFFF) ─────────────────────
-        $crc  = 0xFFFF;
-        $data = $payload;
-        for ($i = 0; $i < strlen($data); $i++) {
-            $crc ^= ord($data[$i]) << 8;
-            for ($j = 0; $j < 8; $j++) {
-                $crc = ($crc & 0x8000) ? (($crc << 1) ^ 0x1021) : ($crc << 1);
-                $crc &= 0xFFFF;
-            }
-        }
-
-        return $payload . strtoupper(sprintf('%04X', $crc));
+        return PixPayload::forTenant($raffle->tenant, $amount)
+            ?? 'Chave PIX não configurada pela organização.';
     }
 }
