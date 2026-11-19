@@ -43,7 +43,7 @@ class WhatsappOutboundPolicy
      * - Throttle per-tenant and per-recipient
      * - Enforce minimum delay between outbound messages per chat
      */
-    public function canSend(WhatsappConfig $config, WhatsappChat $chat, bool $isTemplate = false, ?string &$reason = null, ?string &$code = null, bool $isAi = false): bool
+    public function canSend(WhatsappConfig $config, WhatsappChat $chat, bool $isTemplate = false, ?string &$reason = null, ?string &$code = null, bool $isAi = false, bool $officialLine = true): bool
     {
         if (!$config->outbound_enabled && !$isAi) {
             $reason = 'Envio de mensagens está desativado nas configurações.';
@@ -77,7 +77,9 @@ class WhatsappOutboundPolicy
         }
 
         // 24h window: allow only replies within 24h of last inbound, unless template is allowed.
-        if (($config->enforce_24h_window ?? true) && !$isAi) {
+        // É regra da Meta para a linha oficial; na Evolution não existe template e
+        // a janela só impedia a equipe de responder conversas mais antigas.
+        if (($config->enforce_24h_window ?? true) && !$isAi && $officialLine) {
             $lastInbound = $chat->last_inbound_at;
             $windowOpen  = $lastInbound ? $lastInbound->gt(now()->subHours(24)) : false;
 

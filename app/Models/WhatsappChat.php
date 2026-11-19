@@ -27,6 +27,7 @@ class WhatsappChat extends Model
 
     protected $fillable = [
         'tenant_id',
+        'whatsapp_instance_id',
         'wa_id',
         'contact_name',
         'contact_phone',

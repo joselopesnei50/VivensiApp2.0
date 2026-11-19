@@ -101,7 +101,17 @@ class ProcessEvolutionWebhook implements ShouldQueue
         if ($isGroup) {
             $phone = $remoteJid; // ex: 120363xxxxxxx@g.us
         } elseif (str_ends_with($remoteJid, '@lid')) {
-            $phone = $chatLid ?? $remoteJid;
+            // Contato com privacidade (@lid): a Evolution v2.3+ manda o número
+            // real em remoteJidAlt/senderPn. Sem ele, a resposta ia para o
+            // identificador @lid e não chegava. Conversa antiga gravada com o
+            // @lid passa a usar o número (histórico preservado).
+            $lidId = $chatLid ?? $remoteJid;
+            $alt   = collect([$key['remoteJidAlt'] ?? null, $key['senderPn'] ?? null, $messageData['senderPn'] ?? null])
+                ->first(fn ($j) => is_string($j) && $j !== '' && !str_contains($j, '@lid'));
+            $phone = $alt ? preg_replace('/@.*/', '', $alt) : $lidId;
+            if ($alt && $phone) {
+                $this->adoptLidChat($tenantId, (string) $lidId, (string) $phone);
+            }
         } else {
             $phone = preg_replace('/@.*/', '', $remoteJid);
         }
@@ -137,8 +147,11 @@ class ProcessEvolutionWebhook implements ShouldQueue
 
         $senderName = $messageData['pushName'] ?? 'WhatsApp';
 
-        // 1. Verificar blacklist
-        if (WhatsappBlacklist::where('tenant_id', $tenantId)->where('phone', $phone)->exists()) {
+        // 1. Verificar blacklist. Quem está na lista só por ter mandado "sair"
+        // e agora escreve outra coisa retomou a conversa: não descartamos.
+        $isOptOut = !$isGroup && \App\Services\Messaging\InboundOptOut::isOptOut($userText);
+        if (WhatsappBlacklist::where('tenant_id', $tenantId)->where('phone', $phone)->exists()
+            && ($isOptOut || !\App\Services\Messaging\InboundOptOut::blacklistedByKeyword($tenantId, $phone))) {
             Log::info("ProcessEvolutionWebhook: Mensagem de {$phone} ignorada (blacklist).");
             return;
         }
@@ -161,6 +174,7 @@ class ProcessEvolutionWebhook implements ShouldQueue
             );
             // Atualiza so os timestamps — nao sobrescreve nome do grupo.
             $chat->forceFill([
+                'whatsapp_instance_id' => $instance->id,
                 'last_message_at' => now(),
                 'last_inbound_at' => now(),
                 'is_group'        => true,
@@ -169,6 +183,7 @@ class ProcessEvolutionWebhook implements ShouldQueue
             $chat = WhatsappChat::updateOrCreate(
                 ['tenant_id' => $tenantId, 'wa_id' => $phone],
                 [
+                    'whatsapp_instance_id' => $instance->id,
                     'contact_name'    => $senderName,
                     'contact_phone'   => $phone,
                     'status'          => 'open',
@@ -188,33 +203,15 @@ class ProcessEvolutionWebhook implements ShouldQueue
             }
         }
 
-        // 3. Verificar palavras de opt-out (STOP compliance) — só vale para texto real
-        $normalized   = $userText !== null ? mb_strtolower(trim($userText)) : '';
-        $stopKeywords = ['stop', 'parar', 'pare', 'sair', 'cancelar', 'cancele', 'descadastrar', 'remover', 'não quero', 'nao quero'];
-
-        foreach ($stopKeywords as $kw) {
-            if ($normalized !== '' && $kw !== '' && str_contains($normalized, $kw)) {
-                $chat->update([
-                    'opt_out_at'     => now(),
-                    'blocked_at'     => now(),
-                    'blocked_reason' => "STOP keyword via Evolution: {$kw}",
-                    'status'         => 'closed',
-                ]);
-
-                WhatsappBlacklist::updateOrCreate(
-                    ['tenant_id' => $tenantId, 'phone' => $phone],
-                    ['reason' => "Opt-out via keyword: {$kw}"]
-                );
-
-                WhatsappAuditLog::create([
-                    'tenant_id'  => $tenantId,
-                    'chat_id'    => $chat->id,
-                    'actor_type' => 'webhook_evolution',
-                    'event'      => 'compliance_action',
-                    'details'    => ['action' => 'opt_out', 'reason' => 'STOP keyword', 'keyword' => $kw],
-                ]);
+        // 3. Pedido de "sair" (STOP). A regra é a mesma de todos os webhooks:
+        // mensagem igual à palavra ("parar", "sair") ou frase inequívoca —
+        // antes "pare" dentro de "parece" bloqueava o contato.
+        if (!$isGroup) {
+            if ($isOptOut) {
+                \App\Services\Messaging\InboundOptOut::apply($chat, 'evolution', (string) $userText);
                 return;
             }
+            \App\Services\Messaging\InboundOptOut::liftIfReengaged($chat, 'evolution');
         }
 
         // 4. Salvar mensagem inbound. tenant_id explícito porque o trait
@@ -686,6 +683,20 @@ class ProcessEvolutionWebhook implements ShouldQueue
             'event'       => $this->event,
             'error'       => $exception->getMessage(),
         ]);
+    }
+
+    /** Conversa gravada com o identificador @lid passa a usar o número real. */
+    private function adoptLidChat(int $tenantId, string $lidId, string $phone): void
+    {
+        if ($lidId === '' || $lidId === $phone) {
+            return;
+        }
+        $byPhone = WhatsappChat::where('tenant_id', $tenantId)->where('wa_id', $phone)->exists();
+        if ($byPhone) {
+            return;
+        }
+        WhatsappChat::where('tenant_id', $tenantId)->where('wa_id', $lidId)
+            ->update(['wa_id' => $phone, 'contact_phone' => $phone]);
     }
 
     private function handleConnectionUpdate(WhatsappInstance $instance): void
