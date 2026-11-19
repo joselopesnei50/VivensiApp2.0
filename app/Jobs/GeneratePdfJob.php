@@ -57,33 +57,9 @@ class GeneratePdfJob implements ShouldQueue
         $to       = $p['to']   ?? "$year-12-31";
         $categoryId = $p['category_id'] ?? null;
 
-        $q = \App\Models\Transaction::where('tenant_id', $tenantId)
-            ->whereBetween('date', [$from, $to])
-            ->where('status', 'paid')
-            ->select('category_id', DB::raw('SUM(amount) as total'))
-            ->groupBy('category_id');
-
-        if ($categoryId) {
-            $q->where('category_id', $categoryId);
-        }
-
-        $sumsByCat = $q->pluck('total', 'category_id');
-
-        $incomeCategories  = \App\Models\FinancialCategory::where('tenant_id', $tenantId)->where('type', 'income')->get();
-        $expenseCategories = \App\Models\FinancialCategory::where('tenant_id', $tenantId)->where('type', 'expense')->get();
-
-        $totalIncome = 0;
-        $incomesArr  = [];
-        foreach ($incomeCategories as $cat) {
-            $val = (float) ($sumsByCat[$cat->id] ?? 0);
-            if ($val > 0) { $incomesArr[] = ['name' => $cat->name, 'value' => $val]; $totalIncome += $val; }
-        }
-        $expensesArr  = [];
-        $totalExpense = 0;
-        foreach ($expenseCategories as $cat) {
-            $val = (float) ($sumsByCat[$cat->id] ?? 0);
-            if ($val > 0) { $expensesArr[] = ['name' => $cat->name, 'value' => $val]; $totalExpense += $val; }
-        }
+        // Mesmo cálculo da tela (inclui lançamentos sem categoria).
+        [$incomesArr, $totalIncome, $expensesArr, $totalExpense] = app(\App\Services\Reports\DreCalculator::class)
+            ->build((int) $tenantId, $from, $to, $categoryId ? (int) $categoryId : null);
 
         $result      = $totalIncome - $totalExpense;
         $periodLabel = Carbon::parse($from)->format('d/m/Y') . ' a ' . Carbon::parse($to)->format('d/m/Y');
