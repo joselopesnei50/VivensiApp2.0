@@ -89,7 +89,7 @@ class AssetController extends Controller
             'assets' => $assets,
             'totals' => $totals,
             'generatedAt' => now()->format('d/m/Y H:i'),
-            'orgName' => auth()->user()->tenant->brand_name ?? 'ORGANIZAÇÃO SOCIAL',
+            'orgName' => mb_strtoupper(auth()->user()->tenant?->documentName() ?? 'ORGANIZAÇÃO SOCIAL'),
             'emitter' => auth()->user()->name,
         ]);
 

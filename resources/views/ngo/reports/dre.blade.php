@@ -97,7 +97,7 @@
 
 <div class="vivensi-card" style="max-width: 900px; margin: 0 auto; padding: 40px; font-family: 'Courier New', Courier, monospace;">
     <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 20px;">
-        <h3 style="margin: 0; text-transform: uppercase;">{{ auth()->user()->tenant->brand_name ?? 'ORGANIZAÇÃO SOCIAL' }}</h3>
+        <h3 style="margin: 0; text-transform: uppercase;">{{ auth()->user()->tenant?->documentName() ?? 'ORGANIZAÇÃO SOCIAL' }}</h3>
         <p style="margin: 5px 0 0; font-size: 0.9rem;">D.R.E. - Período: {{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} a {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }}</p>
     </div>
 

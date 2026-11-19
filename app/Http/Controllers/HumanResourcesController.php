@@ -414,7 +414,7 @@ class HumanResourcesController extends Controller
             ];
         })->sortByDesc('total');
 
-        $orgName = (auth()->user()->tenant_id == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $orgName = mb_strtoupper(auth()->user()->tenant?->documentName() ?? 'ORGANIZAÇÃO SOCIAL');
         $generatedAt = now()->format('d/m/Y H:i');
         $referenceLabel = str_pad((string) $month, 2, '0', STR_PAD_LEFT) . '/' . $year;
 
@@ -463,7 +463,7 @@ class HumanResourcesController extends Controller
             'file_path' => null,
         ]);
 
-        $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $orgName = mb_strtoupper(\App\Models\Tenant::find($tenantId)?->documentName() ?? 'ORGANIZAÇÃO SOCIAL');
         $generatedAt = now()->format('d/m/Y H:i');
         $certificateNo = 'VOL-' . $cert->id . '-' . $issuedAt->format('Y');
         $authCode = strtoupper(substr(hash('sha256', $tenantId . '|' . $volunteer->id . '|' . $cert->id . '|' . $issuedAt->timestamp), 0, 16));
@@ -529,7 +529,7 @@ class HumanResourcesController extends Controller
 
         // Fallback: regenerate if missing.
         $issuedAt = $cert->issued_at ? \Carbon\Carbon::parse($cert->issued_at) : now();
-        $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $orgName = mb_strtoupper(\App\Models\Tenant::find($tenantId)?->documentName() ?? 'ORGANIZAÇÃO SOCIAL');
         $generatedAt = now()->format('d/m/Y H:i');
         $certificateNo = 'VOL-' . $cert->id . '-' . $issuedAt->format('Y');
         $authCode = strtoupper(substr(hash('sha256', $tenantId . '|' . $volunteer->id . '|' . $cert->id . '|' . $issuedAt->timestamp), 0, 16));
@@ -748,7 +748,7 @@ class HumanResourcesController extends Controller
 
         $issuedAtLocal = $certRow->issued_at instanceof Carbon ? $certRow->issued_at : Carbon::parse((string) $certRow->issued_at, config('app.timezone'));
         $certificateNo = 'VOL-' . (int) $certRow->id . '-' . $issuedAtLocal->format('Y');
-        $orgName = ($tenantId == 1) ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL';
+        $orgName = mb_strtoupper(\App\Models\Tenant::find($tenantId)?->documentName() ?? 'ORGANIZAÇÃO SOCIAL');
 
         // Optional audit entry (public)
         try {
