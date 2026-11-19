@@ -36,7 +36,7 @@
     <div class="vivensi-card">
         <div style="font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#64748b;">Identificação</div>
         <div style="margin-top: 8px; color:#0f172a; font-weight:900;">
-            Organização: {{ auth()->user()->tenant_id == 1 ? 'INSTITUTO VIVENSI' : 'ORGANIZAÇÃO SOCIAL' }}
+            Organização: {{ mb_strtoupper(auth()->user()->tenant?->documentName() ?? 'ORGANIZAÇÃO SOCIAL') }}
         </div>
         <div style="margin-top: 10px; color:#64748b;">
             Gerado em: <strong>{{ $generatedAt }}</strong>

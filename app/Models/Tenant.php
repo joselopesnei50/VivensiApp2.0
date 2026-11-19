@@ -109,6 +109,16 @@ class Tenant extends Model
         'custom_domain_addon_active' => 'boolean',
     ];
 
+    /**
+     * Nome que vai nos documentos emitidos (DRE, termo de inventário,
+     * certificados, folha): nome de marca, senão o nome da organização.
+     */
+    public function documentName(): string
+    {
+        $name = trim((string) ($this->brand_name ?: $this->name));
+        return $name !== '' ? $name : 'ORGANIZAÇÃO SOCIAL';
+    }
+
     public function plan()
     {
         return $this->belongsTo(SubscriptionPlan::class);

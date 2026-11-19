@@ -63,7 +63,7 @@ class ReportController extends Controller
                 'from'        => $from,
                 'to'          => $to,
                 'category_id' => $categoryId,
-                'org_name'    => auth()->user()->tenant->brand_name ?? 'ORGANIZAÇÃO SOCIAL',
+                'org_name'    => auth()->user()->tenant?->documentName() ?? 'ORGANIZAÇÃO SOCIAL',
             ],
         ]);
 
@@ -137,14 +137,26 @@ class ReportController extends Controller
         $q = Transaction::where('tenant_id', $tenant_id)
             ->whereBetween('date', [$from, $to])
             ->where('status', 'paid')
-            ->select('category_id', DB::raw('SUM(amount) as total'))
-            ->groupBy('category_id');
+            ->select('category_id', 'type', DB::raw('SUM(amount) as total'))
+            ->groupBy('category_id', 'type');
 
         if ($categoryId) {
             $q->where('category_id', $categoryId);
         }
 
-        $sumsByCat = $q->pluck('total', 'category_id');
+        $rows = $q->get();
+        $sumsByCat = [];
+        foreach ($rows->whereNotNull('category_id') as $r) {
+            $sumsByCat[$r->category_id] = ($sumsByCat[$r->category_id] ?? 0) + (float) $r->total;
+        }
+        // Lançamentos sem categoria também entram no resultado (antes ficavam de fora
+        // e a DRE mostrava R$ 0,00 com o gráfico mensal cheio).
+        $semCategoria = ['income' => 0.0, 'expense' => 0.0];
+        foreach ($rows->whereNull('category_id') as $r) {
+            if (isset($semCategoria[$r->type])) {
+                $semCategoria[$r->type] += (float) $r->total;
+            }
+        }
 
         $incomeCategories = FinancialCategory::where('tenant_id', $tenant_id)->where('type', 'income')->get();
         $incomes      = [];
@@ -155,6 +167,11 @@ class ReportController extends Controller
                 $incomes[] = ['name' => $cat->name, 'value' => $val];
                 $totalIncome += $val;
             }
+        }
+
+        if ($semCategoria['income'] > 0) {
+            $incomes[] = ['name' => 'Sem categoria', 'value' => $semCategoria['income']];
+            $totalIncome += $semCategoria['income'];
         }
 
         $expenseCategories = FinancialCategory::where('tenant_id', $tenant_id)->where('type', 'expense')->get();
@@ -168,6 +185,11 @@ class ReportController extends Controller
             }
         }
 
+        if ($semCategoria['expense'] > 0) {
+            $expenses[] = ['name' => 'Sem categoria', 'value' => $semCategoria['expense']];
+            $totalExpense += $semCategoria['expense'];
+        }
+
         return [$incomes, $totalIncome, $expenses, $totalExpense];
     }
 
@@ -176,13 +198,15 @@ class ReportController extends Controller
         $rows = Transaction::where('tenant_id', $tenant_id)
             ->whereBetween('date', [$from, $to])
             ->where('status', 'paid')
-            ->selectRaw('MONTH(date) as month, type, SUM(amount) as total')
-            ->groupBy(DB::raw('MONTH(date)'), 'type')
+            ->selectRaw('date, type, SUM(amount) as total')
+            ->groupBy('date', 'type')
             ->get();
 
+        // Mês calculado em PHP (MONTH() não existe no SQLite dos testes).
         $byMonthType = [];
         foreach ($rows as $row) {
-            $byMonthType[(int) $row->month][$row->type] = (float) $row->total;
+            $m = (int) Carbon::parse($row->date)->month;
+            $byMonthType[$m][$row->type] = ($byMonthType[$m][$row->type] ?? 0) + (float) $row->total;
         }
 
         $data = [];
