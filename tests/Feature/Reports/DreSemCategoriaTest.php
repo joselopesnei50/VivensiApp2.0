@@ -27,3 +27,16 @@ it('nome nos documentos: marca, senão o nome da organização', function () {
     expect((new Tenant(['name' => 'Coletivo A', 'brand_name' => null]))->documentName())->toBe('Coletivo A');
     expect((new Tenant(['name' => '', 'brand_name' => null]))->documentName())->toBe('ORGANIZAÇÃO SOCIAL');
 });
+
+it('PDF da DRE usa o mesmo cálculo da tela (com sem categoria)', function () {
+    $tenant = Tenant::factory()->create(['type' => 'ngo', 'subscription_status' => 'active']);
+    $base = ['tenant_id' => $tenant->id, 'status' => 'paid', 'date' => '2026-05-10', 'description' => 'x', 'category_id' => null];
+    Transaction::withoutGlobalScopes()->forceCreate($base + ['type' => 'income', 'amount' => 115]);
+
+    [$inc, $totInc, $exp, $totExp] = app(\App\Services\Reports\DreCalculator::class)->build($tenant->id, '2026-01-01', '2026-12-31');
+    expect($totInc)->toEqual(115.0);
+    expect($inc[0]['name'])->toBe('Sem categoria');
+
+    $job = file_get_contents(app_path('Jobs/GeneratePdfJob.php'));
+    expect($job)->toContain('DreCalculator::class');
+});
