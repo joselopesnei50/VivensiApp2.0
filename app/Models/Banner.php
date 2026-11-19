@@ -44,7 +44,7 @@ class Banner extends Model
             'instagram_square' => ['label' => 'Instagram Quadrado',  'icon' => 'fab fa-instagram', 'w' => 1080, 'h' => 1080],
             'instagram_story'  => ['label' => 'Story / Reels',       'icon' => 'fab fa-instagram', 'w' => 1080, 'h' => 1920],
             'linkedin_post'    => ['label' => 'LinkedIn Post',       'icon' => 'fab fa-linkedin',  'w' => 1200, 'h' => 627],
-            'twitter_post'     => ['label' => 'Twitter / X',         'icon' => 'fab fa-x-twitter', 'w' => 1200, 'h' => 675],
+            'twitter_post'     => ['label' => 'Twitter / X',         'icon' => 'fab fa-twitter', 'w' => 1200, 'h' => 675],
             'youtube_cover'    => ['label' => 'Capa YouTube/Evento', 'icon' => 'fab fa-youtube',   'w' => 1920, 'h' => 1080],
             'email_header'     => ['label' => 'E-mail Header',       'icon' => 'fas fa-envelope',  'w' => 600,  'h' => 200],
             'custom'           => ['label' => 'Personalizado',       'icon' => 'fas fa-crop-alt',  'w' => 1200, 'h' => 628],

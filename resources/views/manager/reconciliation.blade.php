@@ -68,7 +68,7 @@
                             </span>
                         </div>
                         <div id="fileNameDisplay" class="drop-zone-filename d-none">
-                            <i class="fas fa-file-check me-2" style="color:#10b981;"></i>
+                            <i class="fas fa-file-circle-check me-2" style="color:#10b981;"></i>
                             <span id="fileNameText"></span>
                         </div>
                         <input type="file" id="ofx_file" name="ofx_file"

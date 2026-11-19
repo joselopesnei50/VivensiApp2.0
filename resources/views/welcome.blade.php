@@ -1826,7 +1826,7 @@ footer{background:#060606;border-top:1px solid rgba(255,255,255,.06);padding:64p
         </div>
         <div class="bruce-title-block">
             <div class="bt-eyebrow">
-                <i class="fas fa-sparkles"></i> A inteligência da sua ONG
+                <i class="fas fa-wand-magic-sparkles"></i> A inteligência da sua ONG
             </div>
             <h2>Bruce IA — o<br><em>assistente estratégico</em><br>da sua organização social.</h2>
             <p>

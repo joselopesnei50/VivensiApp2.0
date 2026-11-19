@@ -77,7 +77,15 @@
             @if($user->must_change_password) <span style="color:#b45309;"> · ainda não trocou a senha</span> @endif
         </div>
 
-        @if(!$isSelf && !in_array($user->role, ['super_admin', 'credenciado'], true))
+        @if($user->role === 'credenciado')
+            @php $projs = $credProjects[$user->id] ?? []; @endphp
+            <div style="margin-top:8px;font-size:.8rem;color:#64748b;">
+                <i class="fas fa-lock" style="font-size:.7rem;"></i>
+                @if($projs) Só acessa: <strong>{{ implode(', ', $projs) }}</strong> @else Sem projeto vinculado @endif
+            </div>
+        @endif
+
+        @if(!$isSelf && $user->role !== 'super_admin')
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
             <form action="{{ route('ngo.team.invite', $user->id) }}" method="POST">
                 @csrf
@@ -87,7 +95,7 @@
                 </button>
             </form>
             <form action="{{ url('/ngo/team/'.$user->id) }}" method="POST"
-                  onsubmit="return confirm('Remover {{ addslashes($user->name) }} ({{ $user->email }})?\n\nEsta ação será registrada na auditoria.');">
+                  onsubmit="return confirm('Remover {{ addslashes($user->name) }} ({{ $user->email }})?{{ $user->role === 'credenciado' ? '\n\nA pessoa perde o acesso a todos os projetos em que está.' : '' }}\n\nEsta ação será registrada na auditoria.');">
                 @csrf
                 @method('DELETE')
                 <button type="submit"

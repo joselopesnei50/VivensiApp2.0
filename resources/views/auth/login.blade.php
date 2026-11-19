@@ -326,7 +326,7 @@
 
         <div class="feature-pills">
             <span class="feature-pill pill-blue"><i class="fas fa-chart-line"></i> Gestão financeira</span>
-            <span class="feature-pill pill-green"><i class="fas fa-hands-holding-heart"></i> Captação de doações</span>
+            <span class="feature-pill pill-green"><i class="fas fa-hand-holding-heart"></i> Captação de doações</span>
             <span class="feature-pill pill-purple"><i class="fas fa-robot"></i> IA integrada</span>
             <span class="feature-pill pill-amber"><i class="fas fa-file-contract"></i> Contratos digitais</span>
             <span class="feature-pill pill-blue"><i class="fab fa-whatsapp"></i> WhatsApp CRM</span>

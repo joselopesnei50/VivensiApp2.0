@@ -125,7 +125,11 @@ class Project extends Model
     // (campo preservado no rename).
     public function milestones()
     {
-        return $this->hasMany(ProjectStage::class)->orderBy('target_date');
+        // Marcos e etapas dividem a tabela project_stages (migração de 17/07/2026).
+        // Etapas sem target_date usam fim/início; sem data vão para o fim da lista.
+        return $this->hasMany(ProjectStage::class)
+            ->orderByRaw(ProjectStage::PLANNED_DATE_SQL . ' IS NULL')
+            ->orderByRaw(ProjectStage::PLANNED_DATE_SQL);
     }
 
     public function classSessions()

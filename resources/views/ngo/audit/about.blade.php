@@ -89,7 +89,7 @@
                 ['fa-clipboard-list','Atendimentos'],
                 ['fa-folder-open','Documentos'],
                 ['fa-handshake','Contratos'],
-                ['fa-shield-check','Conformidade'],
+                ['fa-shield-halved','Conformidade'],
             ] as [$ico, $label])
             <div style="display:flex; align-items:center; gap:9px; padding:9px 12px; border:1px solid #f1f5f9; border-radius:10px; background:#fafafa;">
                 <i class="fas {{ $ico }}" style="color:#FF7A1A; font-size:.78rem; flex-shrink:0;"></i>
@@ -119,7 +119,7 @@
                 ['Busca por texto','fa-magnifying-glass','Digite parte do nome do módulo, tipo de evento, endereço IP ou URL da ação. Ex: "Transaction", "Beneficiary", "192.168".'],
                 ['Filtrar por evento','fa-tag','Selecione "created", "updated", "deleted", "login", "download" para focar em um tipo específico de ação.'],
                 ['Filtrar por usuário','fa-user','Selecione um colaborador para ver apenas as ações realizadas por ele — útil em investigações internas.'],
-                ['Período (De / Até)','fa-calendar-range','Defina uma janela de datas para análises de período: auditorias mensais, prestação de contas trimestral, etc.'],
+                ['Período (De / Até)','fa-calendar-week','Defina uma janela de datas para análises de período: auditorias mensais, prestação de contas trimestral, etc.'],
                 ['Exportar CSV','fa-file-csv','O botão "Exportar CSV" aplica os filtros ativos e gera o arquivo — ideal para anexar em processos CEBAS e MROSC.'],
             ] as [$title, $ico, $desc])
             <div style="display:flex; gap:14px; align-items:flex-start;">

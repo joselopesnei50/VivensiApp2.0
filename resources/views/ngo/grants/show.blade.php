@@ -20,7 +20,7 @@
         </div>
         <div style="display:flex; gap: 10px; align-items:center; flex-wrap: wrap;">
             <button type="button" id="btnGenerateAiProposal" class="btn btn-premium" style="background: linear-gradient(135deg, var(--ds-brand) 0%, #8b5cf6 100%); color: white; border: none; border-radius: 12px; font-weight: 800; padding: 10px 20px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
-                <i class="fas fa-sparkles me-2"></i> Copilot Pro IA
+                <i class="fas fa-wand-magic-sparkles me-2"></i> Copilot Pro IA
             </button>
             <button type="button" id="btnAiAnalysis" class="btn" style="background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%); color: white; border: none; border-radius: 12px; font-weight: 800; padding: 10px 20px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
                 <i class="fas fa-chart-line me-2"></i> Análise IA

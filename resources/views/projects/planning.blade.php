@@ -14,6 +14,10 @@
         'pending' => ['Pendente',   '#f59e0b', '#fffbeb'],
         'reached' => ['Alcancado',  '#10b981', '#ecfdf5'],
         'missed'  => ['Perdido',    '#ef4444', '#fef2f2'],
+        // Etapas (mesma tabela dos marcos desde 17/07/2026)
+        'in_progress' => ['Em andamento', '#0ea5e9', '#e0f2fe'],
+        'completed'   => ['Concluída',    '#10b981', '#ecfdf5'],
+        'cancelled'   => ['Cancelada',    '#94a3b8', '#f1f5f9'],
     ];
 @endphp
 
@@ -311,7 +315,8 @@
     @forelse($milestones as $milestone)
         @php
             [$mLabel, $mColor, $mBg] = $milestoneLabels[$milestone->status] ?? $milestoneLabels['pending'];
-            $isOverdue = $milestone->status === 'pending' && $milestone->target_date && $milestone->target_date->isPast();
+            $plannedDate = $milestone->planned_date;
+            $isOverdue = in_array($milestone->status, ['pending', 'in_progress'], true) && $plannedDate && $plannedDate->copy()->endOfDay()->isPast();
         @endphp
         <div class="item-card" style="@if($isOverdue) border-left:4px solid #ef4444; @endif">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
@@ -321,7 +326,7 @@
                         <p style="margin:0 0 8px; color: var(--ds-text-muted); font-size:0.88rem; line-height:1.55;">{{ $milestone->description }}</p>
                     @endif
                     <div class="item-meta">
-                        <i class="far fa-calendar-alt me-1"></i>Previsto: {{ $milestone->target_date->format('d/m/Y') }}
+                        <i class="far fa-calendar-alt me-1"></i>Previsto: {{ $plannedDate ? $plannedDate->format('d/m/Y') : 'sem data' }}
                         @if($milestone->completed_at)
                             · <i class="fas fa-check-circle me-1" style="color:#10b981;"></i>Concluido em {{ $milestone->completed_at->format('d/m/Y') }}
                         @elseif($isOverdue)

@@ -551,7 +551,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ route('admin.bruno.index') }}" class="{{ request()->routeIs('admin.bruno.index') ? 'active' : '' }}"><i class="fas fa-handshake"></i> Bruno — Sandbox Vendedor</a></li>
                             <li><a href="{{ route('admin.bruno.metrics') }}" class="{{ request()->routeIs('admin.bruno.metrics') ? 'active' : '' }}"><i class="fas fa-chart-line"></i> Bruno — Métricas</a></li>
                             <li><a href="{{ route('admin.bruno.lessons.index') }}" class="{{ request()->routeIs('admin.bruno.lessons.*') ? 'active' : '' }}"><i class="fas fa-book"></i> Bruno — Lições</a></li>
-                            <li><a href="{{ route('admin.bruno.handoffs.index') }}" class="{{ request()->routeIs('admin.bruno.handoffs.*') ? 'active' : '' }}"><i class="fas fa-user-headset"></i> Bruno — Handoffs</a></li>
+                            <li><a href="{{ route('admin.bruno.handoffs.index') }}" class="{{ request()->routeIs('admin.bruno.handoffs.*') ? 'active' : '' }}"><i class="fas fa-headset"></i> Bruno — Handoffs</a></li>
                             @php $wcWaiting = \App\Models\WebChatConversation::where('status', 'waiting_human')->count(); @endphp
                             <li><a href="{{ route('admin.web_chat.index') }}" class="{{ request()->routeIs('admin.web_chat.*') ? 'active' : '' }}"><i class="fas fa-comments"></i> Chat do site @if($wcWaiting)<span style="background:#ef4444;color:#fff;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:800;margin-left:4px;">{{ $wcWaiting }}</span>@endif</a></li>
                             <li><a href="{{ route('admin.destine-ir.edit') }}" class="{{ request()->routeIs('admin.destine-ir.edit') || request()->routeIs('admin.destine-ir.update') ? 'active' : '' }}"><i class="fas fa-hand-holding-heart"></i> Destine seu IR — Página</a></li>
@@ -1009,7 +1009,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 {{-- Grupo: Conformidade Contínua --}}
                 <div class="menu-group">
                     <div class="menu-group-header {{ $ngo_conf_active ? 'group-active' : 'collapsed' }}" onclick="toggleGroup(this)">
-                        <i class="fas fa-shield-check group-icon" style="color:#10b981;"></i> Conformidade Contínua
+                        <i class="fas fa-shield-halved group-icon" style="color:#10b981;"></i> Conformidade Contínua
                         <i class="fas fa-chevron-down group-arrow"></i>
                     </div>
                     <div class="menu-group-items" style="max-height: {{ $ngo_conf_active ? '420px' : '0' }};">
@@ -1263,7 +1263,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <li><a href="{{ route('settings.branding') }}" class="{{ request()->routeIs('settings.branding') ? 'active' : '' }}"><i class="fas fa-palette"></i> Identidade Visual</a></li>
             <li><a href="{{ route('api.docs') }}" class="{{ request()->routeIs('api.docs') ? 'active' : '' }}"><i class="fas fa-book-open"></i> Documentação API</a></li>
             <li><a href="{{ route('settings.api-tokens') }}" class="{{ request()->routeIs('settings.api-tokens*') ? 'active' : '' }}"><i class="fas fa-plug"></i> API &amp; Integrações</a></li>
-            <li><a href="{{ route('settings.webhooks') }}" class="{{ request()->routeIs('settings.webhooks*') ? 'active' : '' }}"><i class="fas fa-webhook"></i> Webhooks</a></li>
+            <li><a href="{{ route('settings.webhooks') }}" class="{{ request()->routeIs('settings.webhooks*') ? 'active' : '' }}"><i class="fas fa-link"></i> Webhooks</a></li>
             @endif
             @endif {{-- fim do @else do bloco credenciado --}}
         </ul>

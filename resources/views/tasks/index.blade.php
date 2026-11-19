@@ -67,7 +67,7 @@
                     </td>
                     <td style="padding: 20px 25px;">
                         <div style="color: #475569; font-size: 0.9rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-                            <i class="far fa-calendar-clock" style="color: #cbd5e1;"></i>
+                            <i class="far fa-clock" style="color: #cbd5e1;"></i>
                             {{ $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('d M, Y') : '--' }}
                         </div>
                     </td>

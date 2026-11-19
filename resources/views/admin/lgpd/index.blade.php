@@ -100,7 +100,7 @@
         <div class="vivensi-card" style="padding: 32px; border-radius: 24px; background: white; border: 1px solid #f1f5f9; margin-bottom: 24px;">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
                 <div style="width: 42px; height: 42px; background: #fef2f2; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 1rem;">
-                    <i class="fas fa-shield-exclamation"></i>
+                    <i class="fas fa-shield-halved"></i>
                 </div>
                 <div>
                     <h4 style="margin: 0; font-weight: 900; color: #1e293b; font-size: 1.1rem;">Registrar Incidente de Segurança</h4>
@@ -153,7 +153,7 @@
                     </div>
                 </div>
                 <button type="submit" style="width:100%; padding:14px; border:none; border-radius:12px; background:#ef4444; color:white; font-weight:800; font-size:0.9rem; cursor:pointer;">
-                    <i class="fas fa-shield-exclamation me-2"></i>Registrar Incidente
+                    <i class="fas fa-shield-halved me-2"></i>Registrar Incidente
                 </button>
             </form>
         </div>

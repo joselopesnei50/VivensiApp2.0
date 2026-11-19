@@ -225,7 +225,7 @@
         </span>
         @if($pendingBookings > 0)
         <button class="btn-sl-outline" onclick="importBookings()">
-            <i class="fas fa-calendar-import"></i>
+            <i class="fas fa-file-import"></i>
             Importar Demos
             <span class="import-badge">{{ $pendingBookings }}</span>
         </button>

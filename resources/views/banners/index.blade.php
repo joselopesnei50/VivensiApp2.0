@@ -289,7 +289,7 @@
         {{-- ── FORMATO RÁPIDO ─────────────────────────── --}}
         <div class="ds-section">
             <div class="ds-sec-header">
-                <span class="ds-sec-title"><i class="fas fa-grid-2 me-2"></i>Escolha um formato</span>
+                <span class="ds-sec-title"><i class="fas fa-table-cells-large me-2"></i>Escolha um formato</span>
             </div>
             <div class="ds-formats">
                 @php

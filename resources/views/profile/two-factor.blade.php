@@ -16,7 +16,7 @@
     <div style="background:white; border-radius:20px; padding:28px; border:1px solid #e2e8f0; box-shadow:0 2px 15px rgba(0,0,0,0.05); margin-bottom:20px;">
         <div style="display:flex; align-items:center; gap:14px;">
             <div style="width:44px; height:44px; border-radius:14px; background:{{ $confirmed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.08)' }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <i class="fas {{ $confirmed ? 'fa-shield-check' : 'fa-shield-xmark' }}" style="color:{{ $confirmed ? '#10b981' : '#ef4444' }}; font-size:1.2rem;"></i>
+                <i class="fas {{ $confirmed ? 'fa-shield-halved' : 'fa-shield-halved' }}" style="color:{{ $confirmed ? '#10b981' : '#ef4444' }}; font-size:1.2rem;"></i>
             </div>
             <div>
                 <div style="font-weight:900; font-size:1rem; color:#1e293b;">
@@ -42,7 +42,7 @@
         <form method="POST" action="{{ route('2fa.enable') }}">
             @csrf
             <button type="submit" style="width:100%; background:linear-gradient(135deg,var(--ds-brand),#4f46e5); color:white; border:none; border-radius:14px; padding:14px; font-weight:900; font-size:0.95rem; cursor:pointer; box-shadow:0 8px 24px rgba(99,102,241,0.2);">
-                <i class="fas fa-shield-plus me-2"></i> Ativar 2FA
+                <i class="fas fa-shield-halved me-2"></i> Ativar 2FA
             </button>
         </form>
     </div>
@@ -110,7 +110,7 @@
                 style="width:100%; padding:12px 16px; border:2px solid #e2e8f0; border-radius:12px; font-size:0.9rem; margin-bottom:12px; color:#1e293b;"
                 onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#e2e8f0'">
             <button type="submit" style="width:100%; background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:12px; font-weight:900; cursor:pointer;">
-                <i class="fas fa-shield-xmark me-2"></i> Desativar 2FA
+                <i class="fas fa-shield-halved me-2"></i> Desativar 2FA
             </button>
         </form>
     </div>

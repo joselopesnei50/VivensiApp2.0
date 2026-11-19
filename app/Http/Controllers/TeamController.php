@@ -38,7 +38,16 @@ class TeamController extends Controller
             'active'      => $users->where('status', 'active')->count(),
         ];
 
-        return view('ngo.team.index', compact('users', 'stats'));
+        // Credenciado (acesso exclusivo a projeto): em quais projetos ele está.
+        $credProjects = \App\Models\ProjectMember::query()
+            ->where('project_members.tenant_id', $tenant_id)
+            ->whereIn('project_members.user_id', $users->where('role', 'credenciado')->pluck('id'))
+            ->join('projects', 'projects.id', '=', 'project_members.project_id')
+            ->get(['project_members.user_id', 'projects.name'])
+            ->groupBy('user_id')
+            ->map(fn ($rows) => $rows->pluck('name')->all());
+
+        return view('ngo.team.index', compact('users', 'stats', 'credProjects'));
     }
 
     public function store(Request $request)
