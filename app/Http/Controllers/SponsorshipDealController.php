@@ -25,11 +25,18 @@ class SponsorshipDealController extends Controller
         return view('ngo.sponsorships.index', compact('groupedDeals', 'deals'));
     }
 
+    /** Valor em reais do formulário ("50.000,00", "50000", "50000.00"). */
+    public static function parseMoney($input): float
+    {
+        $v = \App\Support\BrMoney::parse($input === null ? null : (string) $input);
+        return is_numeric($v) ? round((float) $v, 2) : 0.0;
+    }
+
     public function store(Request $request)
     {
         $request->validate([
             'company_name' => 'required|string|max:255',
-            'expected_value' => 'nullable|numeric',
+            'expected_value' => 'nullable|string|max:30',
         ]);
 
         SponsorshipDeal::create([
@@ -38,7 +45,7 @@ class SponsorshipDealController extends Controller
             'contact_person' => $request->contact_person,
             'email' => $request->email,
             'phone' => $request->phone,
-            'expected_value' => str_replace(',', '.', str_replace('.', '', $request->expected_value)) ?? 0,
+            'expected_value' => self::parseMoney($request->expected_value),
             'stage' => 'prospecting',
             'contact_date' => $request->contact_date,
             'notes' => $request->notes,
@@ -62,8 +69,7 @@ class SponsorshipDealController extends Controller
 
         $deal = SponsorshipDeal::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
 
-        $raw   = preg_replace('/[^\d,]/', '', $request->expected_value ?? '');
-        $value = $raw !== '' ? (float) str_replace(',', '.', str_replace('.', '', $raw)) : 0;
+        $value = self::parseMoney($request->expected_value);
 
         $deal->update([
             'company_name'   => $request->company_name,

@@ -89,7 +89,7 @@
                                 <i class="fas fa-download"></i> Baixar PDF
                             </a>
                             @php
-                                $phone = preg_replace('/\\D+/', '', (string) ($c->volunteer_phone ?? ''));
+                                $phone = \App\Support\WhatsappLink::number($c->volunteer_phone ?? '');
                                 $link = $validateLinks[(int) $c->id] ?? '';
                                 $msg = $link ? ("Olá! Segue o link para validar seu Certificado de Voluntariado: " . $link) : '';
                             @endphp

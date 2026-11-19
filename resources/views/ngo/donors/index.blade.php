@@ -172,7 +172,7 @@
                     @php
                         $portalLink = url('/portal-doador/' . $d->portal_token);
                         $waMsg = urlencode("Olá " . explode(' ', $d->name)[0] . "! 💙\n\nCriamos um Portal VIP exclusivo para você acompanhar o impacto das suas doações e baixar seus informes de rendimentos.\n\nAcesse aqui: " . $portalLink);
-                        $waUrl = "https://wa.me/" . preg_replace('/\D/', '', $d->phone ?? '') . "?text=" . $waMsg;
+                        $waUrl = "https://wa.me/" . \App\Support\WhatsappLink::number($d->phone) . "?text=" . $waMsg;
                     @endphp
                     <div class="d-flex justify-content-end gap-2 flex-wrap">
 
@@ -205,7 +205,7 @@
                                title="Enviar Portal VIP via WhatsApp">
                                 <i class="fas fa-paper-plane"></i>
                             </a>
-                            <a href="https://wa.me/{{ preg_replace('/\D/', '', $d->phone) }}" target="_blank"
+                            <a href="https://wa.me/{{ \App\Support\WhatsappLink::number($d->phone) }}" target="_blank"
                                class="action-circle text-success"
                                title="WhatsApp direto">
                                 <i class="fab fa-whatsapp"></i>
