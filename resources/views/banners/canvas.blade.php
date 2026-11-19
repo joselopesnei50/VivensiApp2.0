@@ -2253,9 +2253,9 @@ function updateProps() {
         </div>
         <div class="prop-row">
             <button class="prop-btn" onclick="alignObj('hcenter')" title="Centralizar Horiz."><i class="fas fa-arrows-left-right-to-line"></i></button>
-            <button class="prop-btn" onclick="alignObj('vcenter')" title="Centralizar Vert."><i class="fas fa-arrows-up-down-to-line"></i></button>
-            <button class="prop-btn" onclick="sendLayer('front')" title="Para Frente"><i class="fas fa-chevron-double-up"></i></button>
-            <button class="prop-btn" onclick="sendLayer('back')" title="Para Trás"><i class="fas fa-chevron-double-down"></i></button>
+            <button class="prop-btn" onclick="alignObj('vcenter')" title="Centralizar Vert."><i class="fas fa-arrows-up-down"></i></button>
+            <button class="prop-btn" onclick="sendLayer('front')" title="Para Frente"><i class="fas fa-angles-up"></i></button>
+            <button class="prop-btn" onclick="sendLayer('back')" title="Para Trás"><i class="fas fa-angles-down"></i></button>
         </div>
         <div class="prop-row">
             <span class="prop-label">Opacidade</span>

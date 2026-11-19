@@ -276,7 +276,7 @@
             </div>
             @empty
             <div style="text-align:center; padding:30px; background:#f0fdf4; border-radius:16px; border:1px solid #dcfce7;">
-                <i class="fas fa-party-horn d-block mb-2" style="color:#10b981; font-size:1.6rem;"></i>
+                <i class="fas fa-champagne-glasses d-block mb-2" style="color:#10b981; font-size:1.6rem;"></i>
                 <p style="color:#16a34a; font-weight:700; margin:0; font-size:.875rem;">Nenhuma tarefa urgente!</p>
             </div>
             @endforelse

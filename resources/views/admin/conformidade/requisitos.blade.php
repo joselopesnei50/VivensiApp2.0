@@ -8,7 +8,7 @@
             <i class="fas fa-arrow-left me-1"></i> Voltar ao Painel
         </a>
         <h2 style="margin:10px 0 4px;font-weight:950;font-size:1.6rem;letter-spacing:-1px;">
-            <i class="fas fa-shield-check me-2" style="color:#10b981;"></i>Conformidade — Thresholds Globais
+            <i class="fas fa-shield-halved me-2" style="color:#10b981;"></i>Conformidade — Thresholds Globais
         </h2>
         <p style="color:#64748b;font-size:0.85rem;">Edite os limites mínimos dos requisitos marcados como editáveis. A alteração invalida o cache de todos os tenants ativos.</p>
     </div>

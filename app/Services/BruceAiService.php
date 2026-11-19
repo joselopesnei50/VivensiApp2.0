@@ -991,14 +991,14 @@ PROMPT;
 
                 $nextPlannedMilestone = ProjectMilestone::where('tenant_id', $tenantId)
                     ->where('project_id', $projectId)
-                    ->where('status', 'pending')
-                    ->whereDate('target_date', '>=', now())
-                    ->orderBy('target_date', 'asc')
-                    ->first(['title', 'target_date']);
+                    ->whereIn('status', ['pending', 'in_progress'])
+                    ->whereRaw(ProjectMilestone::PLANNED_DATE_SQL . ' >= ?', [now()->toDateString()])
+                    ->orderByRaw(ProjectMilestone::PLANNED_DATE_SQL)
+                    ->first(['title', 'target_date', 'start_date', 'end_date']);
                 $overdueMilestones = ProjectMilestone::where('tenant_id', $tenantId)
                     ->where('project_id', $projectId)
-                    ->where('status', 'pending')
-                    ->whereDate('target_date', '<', now())
+                    ->whereIn('status', ['pending', 'in_progress'])
+                    ->whereRaw(ProjectMilestone::PLANNED_DATE_SQL . ' < ?', [now()->toDateString()])
                     ->count();
 
                 if ($goalsTotal > 0 || $nextPlannedMilestone || $overdueMilestones > 0) {
@@ -1010,7 +1010,7 @@ PROMPT;
                         : 'Metas: nenhuma cadastrada';
 
                     $plannedMilestoneLine = $nextPlannedMilestone
-                        ? "Proximo marco planejado: \"{$nextPlannedMilestone->title}\" em " . $nextPlannedMilestone->target_date->format('d/m/Y')
+                        ? "Proximo marco planejado: \"{$nextPlannedMilestone->title}\" em " . $nextPlannedMilestone->planned_date->format('d/m/Y')
                         : 'Nenhum marco pendente futuro';
 
                     $overdueLine = $overdueMilestones > 0

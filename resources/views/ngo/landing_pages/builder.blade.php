@@ -249,7 +249,7 @@
                 <div class="gallery-card" onclick="addBlock('image_gallery')"><i class="fas fa-images"></i><span>Galeria</span><p>Grid de imagens com legenda.</p></div>
                 <div class="gallery-card" onclick="addBlock('partners_logos')"><i class="fas fa-handshake"></i><span>Parceiros</span><p>Logos de apoiadores.</p></div>
                 <div class="gallery-card" onclick="addBlock('steps_timeline')"><i class="fas fa-route"></i><span>Timeline/Etapas</span><p>Passo a passo em sequência.</p></div>
-                <div class="gallery-card" onclick="addBlock('impact_cards')"><i class="fas fa-sparkles"></i><span>Cards de Impacto</span><p>Cards bonitos com ícones.</p></div>
+                <div class="gallery-card" onclick="addBlock('impact_cards')"><i class="fas fa-wand-magic-sparkles"></i><span>Cards de Impacto</span><p>Cards bonitos com ícones.</p></div>
                 <div class="gallery-card" onclick="addBlock('before_after')"><i class="fas fa-clone"></i><span>Antes/Depois</span><p>Comparativo visual com texto.</p></div>
                 <div class="gallery-card" onclick="addBlock('quick_donation')"><i class="fas fa-donate"></i><span>Doação Rápida</span><p>Opções de valor + CTA.</p></div>
                 <div class="gallery-card" onclick="addBlock('pix_donation')"><i class="fas fa-qrcode"></i><span>Doação PIX</span><p>Copia e cola + QR Code.</p></div>
@@ -267,7 +267,7 @@
                 <div class="gallery-card" onclick="addBlock('testimonials')"><i class="fas fa-quote-right"></i><span>Depoimentos</span><p>Mostre o que dizem de você.</p></div>
                 <div class="gallery-card" onclick="addBlock('social_links')"><i class="fas fa-share-alt"></i><span>Redes Sociais</span><p>Links para seus perfis.</p></div>
                 <div class="gallery-card" onclick="addBlock('footer_links')"><i class="fas fa-shoe-prints"></i><span>Rodapé</span><p>Finalização da página.</p></div>
-                <div class="gallery-card" onclick="addBlock('event_card')"><i class="fas fa-calendar-star"></i><span>Evento</span><p>Data, local, horário e inscrição.</p></div>
+                <div class="gallery-card" onclick="addBlock('event_card')"><i class="fas fa-calendar-check"></i><span>Evento</span><p>Data, local, horário e inscrição.</p></div>
                 <div class="gallery-card" onclick="addBlock('countdown')"><i class="fas fa-hourglass-half"></i><span>Contagem Regressiva</span><p>Urgência para campanhas com prazo.</p></div>
                 <div class="gallery-card" onclick="addBlock('two_columns')"><i class="fas fa-table-columns"></i><span>Duas Colunas</span><p>Imagem + texto lado a lado.</p></div>
                 <div class="gallery-card" onclick="addBlock('membership')"><i class="fas fa-id-badge"></i><span>Planos de Apoio</span><p>Tiers de associação e doação.</p></div>

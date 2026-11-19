@@ -102,7 +102,7 @@
                     {{-- Mensagem de boas-vindas --}}
                     <div class="field mb-3">
                         <label class="field-label">
-                            <i class="fas fa-hand-wave me-1 text-primary"></i> Mensagem de Boas-vindas
+                            <i class="fas fa-hand me-1 text-primary"></i> Mensagem de Boas-vindas
                         </label>
                         <textarea name="atend_welcome_msg" class="field-input" rows="3"
                             placeholder="Olá! Como posso ajudar?">{{ $atendSettings['atend_welcome_msg'] ?? '' }}</textarea>

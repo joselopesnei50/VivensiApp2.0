@@ -164,7 +164,7 @@
                         'bg'    => '#ecfdf5',
                     ],
                     'donors_optins' => [
-                        'icon'  => 'fa-shield-check',
+                        'icon'  => 'fa-shield-halved',
                         'label' => 'Doadores com Opt-in',
                         'desc'  => 'Somente quem autorizou receber e-mails (LGPD)',
                         'color' => 'var(--ds-brand)',

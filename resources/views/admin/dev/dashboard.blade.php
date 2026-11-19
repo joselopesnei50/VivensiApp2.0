@@ -772,7 +772,7 @@
             {{-- ── Webhook ── --}}
             <div class="card" style="margin-bottom:1.2rem">
                 <div class="card-header" onclick="toggleCard(this)">
-                    <h3><i class="fas fa-webhook" style="color:var(--green);font-size:.85rem"></i> Webhooks Evolution API</h3>
+                    <h3><i class="fas fa-link" style="color:var(--green);font-size:.85rem"></i> Webhooks Evolution API</h3>
                     <i class="fas fa-chevron-down chevron"></i>
                 </div>
                 <div class="card-body collapsed" style="padding:1.2rem">

@@ -389,7 +389,7 @@ class BannerController extends Controller
             'gradient_text' => ['label' => 'Fundo Degradê',     'icon' => 'fas fa-paint-roller', 'desc' => 'Gradiente personalizado com texto e botão'],
             'split_banner'  => ['label' => 'Imagem + Texto',    'icon' => 'fas fa-table-columns', 'desc' => 'Layout dividido: imagem de um lado, texto do outro'],
             'announcement'  => ['label' => 'Anúncio / Alerta',  'icon' => 'fas fa-bullhorn',     'desc' => 'Ícone + tag + título + mensagem + botão'],
-            'event_banner'  => ['label' => 'Card de Evento',    'icon' => 'fas fa-calendar-star','desc' => 'Data, horário, local e botão de inscrição'],
+            'event_banner'  => ['label' => 'Card de Evento',    'icon' => 'fas fa-calendar-check','desc' => 'Data, horário, local e botão de inscrição'],
             'simple_text'   => ['label' => 'Texto Impactante',  'icon' => 'fas fa-font',         'desc' => 'Texto grande e impactante sobre fundo sólido'],
         ];
     }

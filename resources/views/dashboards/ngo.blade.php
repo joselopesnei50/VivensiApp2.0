@@ -101,7 +101,7 @@
         @php
             $ic = $stats['income_change'] ?? null;
             $icColor = ($ic === null) ? '#94a3b8' : ($ic >= 0 ? '#10b981' : '#ef4444');
-            $icIcon  = ($ic === null) ? 'fa-minus' : ($ic >= 0 ? 'fa-trending-up' : 'fa-trending-down');
+            $icIcon  = ($ic === null) ? 'fa-minus' : ($ic >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down');
             $icText  = ($ic === null) ? 'Sem dados do mês ant.' : (($ic >= 0 ? '+' : '') . number_format($ic, 1) . '% vs mês ant.');
         @endphp
         <div style="color: {{ $icColor }}; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">

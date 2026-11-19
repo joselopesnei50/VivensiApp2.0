@@ -201,7 +201,7 @@
             <p class="qa-title">{{ $card['label'] }}</p>
             <p class="qa-desc">{{ $card['desc'] }}</p>
         </div>
-        <i class="fas fa-arrow-up-right qa-arrow"></i>
+        <i class="fas fa-arrow-up-right-from-square qa-arrow"></i>
     </a>
     @endforeach
 </div>

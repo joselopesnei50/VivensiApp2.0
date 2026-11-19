@@ -1377,7 +1377,7 @@
                         <div style="width: 8px; background: {{ $evAccent }}; flex-shrink: 0; min-height: 100%;"></div>
                         <div style="flex: 1; padding: 48px 40px;">
                             <div style="display: inline-flex; align-items: center; gap: 8px; background: {{ $evAccent }}18; color: {{ $evAccent }}; border-radius: 99px; padding: 5px 14px; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">
-                                <i class="fas fa-calendar-star"></i> Evento
+                                <i class="fas fa-calendar-check"></i> Evento
                             </div>
                             <h2 style="font-size: 2rem; font-weight: 900; color: #0f172a; margin: 0 0 14px; letter-spacing: -1px;">{{ $section->content['title'] ?? 'Evento Especial' }}</h2>
                             <p style="color: #475569; font-size: 1.05rem; line-height: 1.7; margin: 0 0 28px;">{{ $section->content['description'] ?? '' }}</p>

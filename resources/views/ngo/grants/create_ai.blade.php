@@ -108,7 +108,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm" style="background: #4f46e5; border: none; font-size: 1.1rem;">
-                    <i class="fas fa-sparkles me-2"></i> Iniciar Análise Inteligente
+                    <i class="fas fa-wand-magic-sparkles me-2"></i> Iniciar Análise Inteligente
                 </button>
             </form>
         </div>

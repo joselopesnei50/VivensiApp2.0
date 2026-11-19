@@ -60,6 +60,20 @@ class ProjectStage extends Model
 
     // ── Accessors ──────────────────────────────────────────────────────────
 
+    /**
+     * Data que o Planejamento mostra como "Previsto". Marcos antigos (antes de
+     * project_milestones virar project_stages) têm target_date; etapas criadas
+     * em /stages só têm início/fim. Sem este fallback, `target_date->format()`
+     * em null derrubava o Planejamento (erro 500) de qualquer projeto com etapa.
+     */
+    public function getPlannedDateAttribute(): ?\Illuminate\Support\Carbon
+    {
+        return $this->target_date ?? $this->end_date ?? $this->start_date;
+    }
+
+    /** SQL equivalente a planned_date, para ordenar e filtrar. */
+    public const PLANNED_DATE_SQL = 'COALESCE(target_date, end_date, start_date)';
+
     public function getIsCurrentAttribute(): bool
     {
         if ($this->status !== 'in_progress') {

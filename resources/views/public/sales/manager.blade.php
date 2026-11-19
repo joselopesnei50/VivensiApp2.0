@@ -65,7 +65,7 @@
         <div class="animate" style="animation-delay: 0.2s;">
             <div class="gantt-preview">
                 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
-                    <i class="fas fa-chart-project" style="color: #16a34a; font-size: 1.5rem;"></i>
+                    <i class="fas fa-chart-line" style="color: #16a34a; font-size: 1.5rem;"></i>
                     <h4 style="margin: 0; font-weight: 800;">Visualização de Cronograma</h4>
                 </div>
                 <div style="display: grid; grid-template-columns: 80px 1fr; gap: 15px; align-items: center; margin-bottom: 20px;">
