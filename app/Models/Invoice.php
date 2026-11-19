@@ -82,6 +82,16 @@ class Invoice extends Model
         return 'R$ ' . number_format($this->amount_cents / 100, 2, ',', '.');
     }
 
+    /** Descrição para a tela: faturas antigas gravaram o mês em inglês ("November/2026"). */
+    public function getDisplayDescriptionAttribute(): string
+    {
+        return strtr((string) $this->description, [
+            'January' => 'Janeiro', 'February' => 'Fevereiro', 'March' => 'Março', 'April' => 'Abril',
+            'May' => 'Maio', 'June' => 'Junho', 'July' => 'Julho', 'August' => 'Agosto',
+            'September' => 'Setembro', 'October' => 'Outubro', 'November' => 'Novembro', 'December' => 'Dezembro',
+        ]);
+    }
+
     public function isPayable(): bool
     {
         return in_array($this->status, [self::STATUS_OPEN, self::STATUS_OVERDUE], true);

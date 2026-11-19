@@ -280,13 +280,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     .sidebar-sa .sidebar-menu ul li a:hover .fas { color: #4f46e5 !important; }
     .sidebar-sa .sidebar-menu ul li a.active {
         background: rgba(99,102,241,0.16) !important;
-        color: #e0e7ff !important;
+        color: #3730a3 !important;       /* indigo-800: legível no fundo claro */
         border-left-color: #6366f1 !important;
         font-weight: 600 !important;
     }
     .sidebar-sa .sidebar-menu ul li a.active i,
     .sidebar-sa .sidebar-menu ul li a.active .fab,
-    .sidebar-sa .sidebar-menu ul li a.active .fas { color: #818cf8 !important; }
+    .sidebar-sa .sidebar-menu ul li a.active .fas { color: #4f46e5 !important; }
 
     /* ── Divisores ────────────────────────────────────────────────────── */
     .sidebar-sa .menu-divider {

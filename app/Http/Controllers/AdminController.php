@@ -405,6 +405,11 @@ class AdminController extends Controller
         $tenant->update($updates);
         Cache::forget("tenant.{$tenant->id}");
 
+        // Plano sem cobrança: faturas em aberto deixam de valer.
+        if ($newPlan->is_courtesy || (float) $newPlan->price <= 0) {
+            app(\App\Services\Billing\InvoiceService::class)->cancelForFreePlan($tenant->fresh('plan'));
+        }
+
         AdminAuditLog::record('tenant.plan_changed', [
             'target_id'        => $tenant->id,
             'target_name'      => $tenant->name,
