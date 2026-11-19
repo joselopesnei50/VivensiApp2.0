@@ -36,7 +36,8 @@ class InventoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        // Request comum não tem validated(): o retorno de validate() é que traz os campos.
+        $data = $request->validate([
             'name'           => 'required|string|max:255',
             'description'    => 'nullable|string|max:2000',
             'sku'            => 'nullable|string|max:100',
@@ -46,7 +47,7 @@ class InventoryController extends Controller
             'expires_at'     => 'nullable|date|after:today',
         ]);
 
-        $item = new InventoryItem($request->validated());
+        $item = new InventoryItem($data);
         $item->tenant_id = auth()->user()->tenant_id;
         $item->quantity = 0;
         $item->save();
@@ -58,7 +59,7 @@ class InventoryController extends Controller
     {
         $item = InventoryItem::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
         
-        $request->validate([
+        $data = $request->validate([
             'name'           => 'required|string|max:255',
             'description'    => 'nullable|string|max:2000',
             'sku'            => 'nullable|string|max:100',
@@ -68,7 +69,7 @@ class InventoryController extends Controller
             'expires_at'     => 'nullable|date',
         ]);
 
-        $item->update($request->validated());
+        $item->update($data);
 
         return redirect()->back()->with('success', 'Item atualizado com sucesso!');
     }
