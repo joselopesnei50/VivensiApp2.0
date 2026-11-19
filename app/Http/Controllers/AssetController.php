@@ -119,8 +119,11 @@ class AssetController extends Controller
 
         $assets = $assetsQ->paginate(15)->appends($request->query());
 
+        // Query crua não aplica o SoftDeletes: sem o whereNull, bens excluídos
+        // continuavam somando no valor total e na contagem.
         $statsRows = DB::table('assets')
             ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
             ->select('status', DB::raw('COUNT(*) as c'), DB::raw('SUM(value) as total_value'))
             ->groupBy('status')
             ->get();
