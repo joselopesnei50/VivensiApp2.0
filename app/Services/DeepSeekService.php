@@ -48,7 +48,7 @@ class DeepSeekService
      * Retornos de erro sao SEMPRE genericos ao caller — o corpo cru da API/exception
      * fica apenas no Log (proteção contra vazamento de detalhes internos ao frontend).
      */
-    public function chat($messages, ?string $model = null, ?array $tools = null, ?int $tenantId = null)
+    public function chat($messages, ?string $model = null, ?array $tools = null, ?int $tenantId = null, ?int $timeout = null)
     {
         $apiKey = $this->resolveApiKey();
         if (!$apiKey) {
@@ -84,7 +84,11 @@ class DeepSeekService
             // retry sem throw: preserva a Response final pra diferenciar 401/5xx
             // do erro de conexao (sem isso, retry lanca RequestException e a
             // distincao UX de "chave invalida" vs "upstream down" some).
-            $response = Http::timeout(60)->retry(2, 100, null, false)->withHeaders([
+            // Respostas longas (ex.: plano de marketing no modelo pro) passam de 60s;
+            // nesses casos o caller informa um timeout maior e não repetimos a chamada.
+            $timeout = $timeout ?: 60;
+            $tries   = $timeout > 60 ? 1 : 3;
+            $response = Http::timeout($timeout)->retry($tries, 100, null, false)->withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
             ])->post($this->baseUrl, $payload);

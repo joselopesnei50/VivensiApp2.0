@@ -9,11 +9,14 @@ use Illuminate\Support\Facades\Log;
 
 class MarketingAIService
 {
+    /** O plano (80+ nós) no modelo pro leva mais de 1 minuto para ser escrito. */
+    public const PLAN_TIMEOUT = 150;
+
     public function generate(MarketingPlan $plan): bool
     {
         $prompt = $this->buildPrompt($plan);
 
-        $result = $this->tryDeepSeek($prompt);
+        $result = $this->tryDeepSeek($prompt, $plan);
 
         if (!$result) {
             $plan->update(['status' => 'failed']);
@@ -243,7 +246,7 @@ Gere agora o mapa mental completo:
 PROMPT;
     }
 
-    private function tryDeepSeek(string $prompt): ?array
+    private function tryDeepSeek(string $prompt, MarketingPlan $plan): ?array
     {
         try {
             // Marketing AI usa PRO — gera plano estrategico de marketing com
@@ -253,8 +256,11 @@ PROMPT;
             $res = $ds->chat([
                 ['role' => 'system', 'content' => 'Você é um estrategista de marketing. Retorne APENAS Markdown estruturado para Markmap.js, sem blocos de código, sem explicações.'],
                 ['role' => 'user',   'content' => $prompt],
-            ], 'deepseek-v4-pro');
+            ], 'deepseek-v4-pro', null, $plan->tenant_id, self::PLAN_TIMEOUT);
             $text = $res['choices'][0]['message']['content'] ?? null;
+            if (!$text) {
+                Log::error('MarketingAI DeepSeek: resposta vazia', ['plan_id' => $plan->id, 'error' => $res['error'] ?? null]);
+            }
             if ($text) return ['markdown' => $this->cleanMarkdown(trim($text)), 'provider' => 'deepseek'];
         } catch (\Exception $e) {
             Log::error("MarketingAI DeepSeek: " . $e->getMessage());
