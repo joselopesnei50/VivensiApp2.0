@@ -60,7 +60,7 @@ class IntelligenceAgentService
             ? 'Analise o mercado do negocio: pipeline de clientes, recibos emitidos e prospeccao. Consulte os dados via ferramenta. Devolva SOMENTE o JSON no formato instruido.'
             : 'Analise as oportunidades de captacao disponiveis. Consulte editais cadastrados via ferramenta. Devolva SOMENTE o JSON no formato instruido.';
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt($mode)],
+            ['role' => 'system', 'content' => PromptRules::withLanguage($this->buildSystemPrompt($mode))],
             ['role' => 'user',   'content' => $userPrompt],
         ];
         $tools = IntelligenceAgentTools::definitions($mode);

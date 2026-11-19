@@ -51,7 +51,7 @@ class ProgramsAgentService
             ? 'Analise a operacao do negocio — teto MEI, notas fiscais e execucao de tarefas. Chame as ferramentas relevantes. Devolva SOMENTE o JSON no formato instruido.'
             : 'Analise a execucao dos programas do tenant — frequencia/evasao e tarefas dos projetos. Chame as ferramentas relevantes. Devolva SOMENTE o JSON no formato instruido.';
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt($mode)],
+            ['role' => 'system', 'content' => PromptRules::withLanguage($this->buildSystemPrompt($mode))],
             ['role' => 'user',   'content' => $userPrompt],
         ];
         $tools = ProgramsAgentTools::definitions($mode);

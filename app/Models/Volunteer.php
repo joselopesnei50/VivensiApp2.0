@@ -33,4 +33,18 @@ class Volunteer extends Model
     {
         return $this->hasMany(VolunteerHourLog::class);
     }
+
+    public const AVAILABILITY_LABELS = [
+        'morning'   => 'Manhã',
+        'afternoon' => 'Tarde',
+        'night'     => 'Noite',
+        'weekends'  => 'Finais de semana',
+    ];
+
+    /** Disponibilidade em português para exibição. */
+    public function getAvailabilityLabelAttribute(): string
+    {
+        $v = (string) $this->availability;
+        return self::AVAILABILITY_LABELS[$v] ?? ($v !== '' ? ucfirst($v) : 'Variável');
+    }
 }
