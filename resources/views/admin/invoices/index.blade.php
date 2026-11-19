@@ -114,7 +114,11 @@
                             <tr>
                                 <td class="text-muted small">#{{ $inv->id }}</td>
                                 <td>
-                                    <div class="fw-bold">{{ $inv->tenant?->name ?? '—' }}</div>
+                                    <div class="fw-bold">
+                                        @if($inv->tenant)
+                                            <a href="{{ route('admin.tenants.show', $inv->tenant->id) }}#dados-nota-fiscal" class="text-decoration-none" title="Ver dados para a nota fiscal">{{ $inv->tenant->name }}</a>
+                                        @else — @endif
+                                    </div>
                                     <div class="text-muted small">{{ $inv->plan?->name ?? 'Sem plano' }}</div>
                                 </td>
                                 <td class="small">{{ $inv->description }}</td>

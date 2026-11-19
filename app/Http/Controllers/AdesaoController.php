@@ -155,6 +155,25 @@ class AdesaoController extends Controller
             Log::warning('AdesaoController::sign notification failed: ' . $e->getMessage());
         }
 
+        // Aviso para a equipe Vivensi: contrato novo = nota fiscal a emitir.
+        try {
+            $admins = User::withoutGlobalScopes()
+                ->where('role', 'super_admin')
+                ->where('status', 'active')
+                ->pluck('id');
+            foreach ($admins as $adminId) {
+                Notification::create([
+                    'user_id' => $adminId,
+                    'title'   => 'Novo contrato assinado: emitir nota fiscal',
+                    'message' => "{$tenant->name} assinou o contrato de adesao. Os dados para a nota fiscal estao na ficha da organizacao.",
+                    'type'    => 'info',
+                    'link'    => route('admin.tenants.show', $tenant->id),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('AdesaoController::sign admin notification failed: ' . $e->getMessage());
+        }
+
         // E-mail de confirmação: quem assinou + usuários ativos da organização.
         $this->sendSignedMail($tenant, $contract, $plan);
 

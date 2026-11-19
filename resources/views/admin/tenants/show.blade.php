@@ -54,6 +54,110 @@
             </div>
         </div>
 
+        @php
+            $nfDoc = preg_replace('/\D/', '', (string) $tenant->document);
+            $nfDocFmt = strlen($nfDoc) === 14
+                ? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $nfDoc)
+                : ($tenant->document ?: null);
+            $nfCep = preg_replace('/\D/', '', (string) $tenant->cep);
+            $nfCepFmt = strlen($nfCep) === 8 ? substr($nfCep, 0, 5) . '-' . substr($nfCep, 5) : ($tenant->cep ?: null);
+            $nfEndereco = $tenant->endereco
+                ? trim($tenant->endereco . ', ' . $tenant->numero_endereco . ($tenant->complemento ? ' - ' . $tenant->complemento : ''))
+                : null;
+            $nfValor = $plan && isset($plan->price) ? 'R$ ' . number_format((float) $plan->price, 2, ',', '.') : null;
+            $nfCampos = [
+                'Razão social'      => $tenant->razao_social ?: $tenant->name,
+                'CNPJ'              => $nfDocFmt,
+                'Endereço'          => $nfEndereco,
+                'Bairro'            => $tenant->bairro,
+                'Cidade / UF'       => $tenant->cidade ? $tenant->cidade . ' / ' . $tenant->estado : null,
+                'CEP'               => $nfCepFmt,
+                'E-mail para a nota' => $adesao?->signer_email ?? $user?->email,
+                'Responsável'       => $adesao?->signer_name,
+                'Plano'             => $plan?->name,
+                'Valor do plano'    => $nfValor,
+            ];
+            $nfTexto = collect($nfCampos)->filter()->map(fn ($v, $k) => "$k: $v")->implode("\n");
+            $nfFaltando = collect(['CNPJ', 'Endereço', 'Cidade / UF', 'CEP'])->filter(fn ($k) => empty($nfCampos[$k]));
+        @endphp
+        <div class="vivensi-card" id="dados-nota-fiscal" style="margin-top: 30px; border: 2px solid #c7d2fe;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px;">
+                <h3 style="margin: 0;">
+                    <i class="fas fa-file-invoice-dollar me-2" style="color: #6366f1;"></i> Dados para Nota Fiscal
+                </h3>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="btn-outline" id="nf-copiar-tudo" data-texto="{{ $nfTexto }}" style="cursor: pointer;">
+                        <i class="fas fa-copy me-1"></i> <span>Copiar tudo</span>
+                    </button>
+                    @if($adesao)
+                        <a href="{{ route('admin.tenants.adesao-pdf', $tenant->id) }}" class="btn-outline">
+                            <i class="fas fa-file-pdf me-1"></i> Contrato assinado
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            @if($adesao)
+                <div style="background: #f0fdf4; color: #166534; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; font-size: 0.9rem;">
+                    <i class="fas fa-check-circle me-1"></i>
+                    Contrato de adesão assinado em <strong>{{ optional($adesao->signed_at)->format('d/m/Y H:i') }}</strong>
+                    por <strong>{{ $adesao->signer_name }}</strong>.
+                </div>
+            @else
+                <div style="background: #fefce8; color: #854d0e; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; font-size: 0.9rem;">
+                    <i class="fas fa-hourglass-half me-1"></i>
+                    Esta organização ainda não assinou o contrato de adesão. Os dados abaixo podem estar incompletos.
+                </div>
+            @endif
+
+            @if($nfFaltando->isNotEmpty())
+                <div style="background: #fef2f2; color: #991b1b; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; font-size: 0.9rem;">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Faltando para a nota: {{ $nfFaltando->implode(', ') }}.
+                </div>
+            @endif
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 20px;">
+                @foreach($nfCampos as $rotulo => $valor)
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase;">{{ $rotulo }}</label>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 1rem; color: #1e293b;">
+                            <span @if($valor) class="nf-valor" @endif style="{{ $valor ? '' : 'color:#94a3b8;' }}">{{ $valor ?: 'Não informado' }}</span>
+                            @if($valor)
+                                <button type="button" class="nf-copiar" data-texto="{{ $valor }}" title="Copiar"
+                                        style="border: 0; background: transparent; color: #6366f1; cursor: pointer; padding: 2px 4px;">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                function copiar(btn) {
+                    var texto = btn.getAttribute('data-texto') || '';
+                    var ok = function () {
+                        var icone = btn.querySelector('i');
+                        if (icone) { icone.className = 'fas fa-check'; setTimeout(function () { icone.className = 'fas fa-copy'; }, 1500); }
+                        var rotulo = btn.querySelector('span');
+                        if (rotulo) { var antes = rotulo.textContent; rotulo.textContent = 'Copiado!'; setTimeout(function () { rotulo.textContent = antes; }, 1500); }
+                    };
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(texto).then(ok);
+                    } else {
+                        var ta = document.createElement('textarea'); ta.value = texto; document.body.appendChild(ta);
+                        ta.select(); try { document.execCommand('copy'); ok(); } catch (e) {} document.body.removeChild(ta);
+                    }
+                }
+                document.querySelectorAll('.nf-copiar, #nf-copiar-tudo').forEach(function (b) {
+                    b.addEventListener('click', function () { copiar(b); });
+                });
+            })();
+        </script>
+
         <div class="vivensi-card" style="margin-top: 30px;">
             <h3 style="margin-top: 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px;">
                 <i class="fas fa-user-shield me-2" style="color: #6366f1;"></i> Administrador Principal

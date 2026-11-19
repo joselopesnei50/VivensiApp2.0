@@ -11,6 +11,7 @@ use App\Models\LandingPage;
 use App\Models\LandingPageSection;
 use App\Models\Transaction;
 use App\Models\SubscriptionPlan;
+use App\Models\Contract;
 use App\Services\BrevoService;
 use Illuminate\Support\Facades\Cache;
 use App\Models\AdminAuditLog;
@@ -316,11 +317,44 @@ class AdminController extends Controller
             ->orderBy('price', 'asc')
             ->get();
 
+        // Contrato de adesão assinado: base dos dados para a nota fiscal.
+        $adesao = Contract::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->where('kind', 'adesao')
+            ->where('status', 'signed')
+            ->latest('signed_at')
+            ->first();
+
         return view('admin.tenants.show', compact(
-            'tenant', 'user', 'plan', 'plans',
+            'tenant', 'user', 'plan', 'plans', 'adesao',
             'antiBanCurrentVersion', 'antiBanCurrentAccepted', 'antiBanAcceptances',
             'emailDailyQuota', 'emailSentToday', 'emailRemainingToday'
         ));
+    }
+
+    /**
+     * PDF do contrato de adesão assinado, para o super admin (a rota do
+     * cliente só serve o próprio tenant).
+     */
+    public function downloadAdesaoContract($id)
+    {
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403);
+        }
+
+        $tenant   = Tenant::findOrFail($id);
+        $contract = Contract::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->where('kind', 'adesao')
+            ->where('status', 'signed')
+            ->latest('signed_at')
+            ->firstOrFail();
+        $plan = $tenant->plan;
+
+        $html = view('adesao.pdf', compact('tenant', 'contract', 'plan'))->render();
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4')
+            ->download("contrato-adesao-vivensi-{$tenant->id}.pdf");
     }
 
     /**
