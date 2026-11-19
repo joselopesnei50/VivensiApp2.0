@@ -26,10 +26,13 @@ class InvoicesController extends Controller
         $from     = $request->query('from');
         $to       = $request->query('to');
 
-        $q = Invoice::withoutGlobalScopes()->with(['tenant:id,name', 'plan:id,name']);
+        $q = Invoice::withoutGlobalScopes()->with(['tenant:id,name,plan_id', 'tenant.plan:id,name,price,is_courtesy', 'plan:id,name']);
 
         if ($status && in_array($status, [Invoice::STATUS_OPEN, Invoice::STATUS_PAID, Invoice::STATUS_CANCELED, Invoice::STATUS_OVERDUE], true)) {
             $q->where('status', $status);
+        } elseif ($status !== 'all') {
+            // Padrão: sem as canceladas (só aparecem filtrando por elas).
+            $q->where('status', '!=', Invoice::STATUS_CANCELED);
         }
         if ($tenantId > 0) {
             $q->where('tenant_id', $tenantId);
@@ -43,15 +46,18 @@ class InvoicesController extends Controller
 
         $invoices = $q->latest('id')->paginate(30)->appends($request->query());
 
-        // Stats agregados
+        // Totais: só organizações com plano pago (cortesia/teste não devem nada).
+        $paying = Tenant::query()->whereHas('plan', fn ($p) => $p->where('is_courtesy', false)->where('price', '>', 0))->pluck('id');
+        $base   = fn () => Invoice::withoutGlobalScopes()->whereIn('tenant_id', $paying);
         $stats = [
-            'total_open'    => Invoice::withoutGlobalScopes()->where('status', Invoice::STATUS_OPEN)->count(),
-            'total_overdue' => Invoice::withoutGlobalScopes()->where('status', Invoice::STATUS_OVERDUE)->count(),
-            'sum_open_brl'  => Invoice::withoutGlobalScopes()->whereIn('status', [Invoice::STATUS_OPEN, Invoice::STATUS_OVERDUE])->sum('amount_cents') / 100,
-            'sum_paid_month_brl' => Invoice::withoutGlobalScopes()->where('status', Invoice::STATUS_PAID)
+            'total_open'    => $base()->where('status', Invoice::STATUS_OPEN)->count(),
+            'total_overdue' => $base()->where('status', Invoice::STATUS_OVERDUE)->count(),
+            'sum_open_brl'  => $base()->whereIn('status', [Invoice::STATUS_OPEN, Invoice::STATUS_OVERDUE])->sum('amount_cents') / 100,
+            'sum_paid_month_brl' => $base()->where('status', Invoice::STATUS_PAID)
                 ->whereMonth('paid_at', now()->month)
                 ->whereYear('paid_at', now()->year)
                 ->sum('amount_cents') / 100,
+            'paying_tenants' => $paying->count(),
         ];
 
         $tenants = Tenant::orderBy('name')->pluck('name', 'id');

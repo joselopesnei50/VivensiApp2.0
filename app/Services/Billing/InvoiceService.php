@@ -219,35 +219,107 @@ class InvoiceService
 
     /**
      * 1º pagamento (checkout de assinatura) vira a fatura paga do 1º ciclo:
-     * de hoje até o dia anterior do mesmo dia no mês seguinte. Idempotente.
+     * do dia do pagamento até a véspera do mesmo dia no mês seguinte. Idempotente.
+     *
+     * Antes, cancela as faturas em aberto geradas antes da assinatura do
+     * contrato (não valem: a organização ainda não era cliente). Sem isso,
+     * uma fatura antiga do mesmo mês "cobria" a data e o pagamento não era
+     * registrado em fatura nenhuma.
      */
-    public function recordInitialPayment(Tenant $tenant, ?\App\Models\SubscriptionPlan $plan, ?float $amount, ?string $chargeId): ?Invoice
+    public function recordInitialPayment(Tenant $tenant, ?\App\Models\SubscriptionPlan $plan, ?float $amount, ?string $chargeId, ?Carbon $paidAt = null): ?Invoice
     {
-        $today = now()->startOfDay();
+        $this->cancelPreContract($tenant);
+
+        $paidAt = $paidAt ? $paidAt->copy() : now();
+        $day    = $paidAt->copy()->startOfDay();
         $covering = Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)
             ->where('status', '!=', Invoice::STATUS_CANCELED)
-            ->whereDate('period_start', '<=', $today->toDateString())
-            ->whereDate('period_end', '>=', $today->toDateString())
+            ->whereDate('period_start', '<=', $day->toDateString())
+            ->whereDate('period_end', '>=', $day->toDateString())
+            ->orderByDesc('id')
             ->first();
-        if ($covering) {
+        if ($covering && $covering->status === Invoice::STATUS_PAID) {
             return $covering;
         }
+        if ($covering && $covering->isPayable()) {
+            // Fatura do ciclo atual em aberto: este pagamento é dela.
+            return $this->markAsPaid($covering, Invoice::PAID_VIA_ABACATEPAY, null, $chargeId);
+        }
 
-        $end = $today->copy()->addMonthNoOverflow()->subDay();
+        $end = $day->copy()->addMonthNoOverflow()->subDay();
         return Invoice::withoutGlobalScopes()->firstOrCreate(
-            ['tenant_id' => $tenant->id, 'period_start' => $today->toDateString()],
+            ['tenant_id' => $tenant->id, 'period_start' => $day->toDateString()],
             [
                 'plan_id'              => $plan?->id ?? $tenant->plan_id,
                 'amount_cents'         => (int) round(((float) ($amount ?? $plan?->price ?? 0)) * 100),
-                'description'          => 'Assinatura ' . ($plan?->name ?? '') . ' — ' . $today->format('d/m/Y') . ' a ' . $end->format('d/m/Y'),
+                'description'          => 'Assinatura ' . ($plan?->name ?? '') . ' — ' . $day->format('d/m/Y') . ' a ' . $end->format('d/m/Y'),
                 'status'               => Invoice::STATUS_PAID,
                 'period_end'           => $end->toDateString(),
-                'due_date'             => $today->toDateString(),
-                'paid_at'              => now(),
+                'due_date'             => $day->toDateString(),
+                'paid_at'              => $paidAt,
                 'paid_via'             => Invoice::PAID_VIA_ABACATEPAY,
                 'abacatepay_charge_id' => $chargeId,
             ]
         );
+    }
+
+    /**
+     * Faturas em aberto com vencimento antes da assinatura do contrato.
+     *
+     * @return \Illuminate\Support\Collection<int, Invoice>
+     */
+    public function preContractInvoices(Tenant $tenant)
+    {
+        if (!$tenant->contract_signed_at) {
+            return collect();
+        }
+        return Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)
+            ->whereIn('status', [Invoice::STATUS_OPEN, Invoice::STATUS_OVERDUE])
+            ->whereDate('due_date', '<', Carbon::parse($tenant->contract_signed_at)->toDateString())
+            ->orderBy('id')->get();
+    }
+
+    public function cancelPreContract(Tenant $tenant): int
+    {
+        return $this->cancelAll($this->preContractInvoices($tenant), 'antes do contrato');
+    }
+
+    /** Organização sem plano pago (cortesia, grátis ou sem plano) não deve nada. */
+    public function hasPaidPlan(Tenant $tenant): bool
+    {
+        $plan = $tenant->plan;
+        return $plan && !$plan->is_courtesy && (float) $plan->price > 0;
+    }
+
+    /** @return \Illuminate\Support\Collection<int, Invoice> */
+    public function freePlanInvoices(Tenant $tenant)
+    {
+        if ($this->hasPaidPlan($tenant)) {
+            return collect();
+        }
+        return Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)
+            ->whereIn('status', [Invoice::STATUS_OPEN, Invoice::STATUS_OVERDUE])
+            ->orderBy('id')->get();
+    }
+
+    public function cancelForFreePlan(Tenant $tenant): int
+    {
+        return $this->cancelAll($this->freePlanInvoices($tenant), 'plano sem cobranca');
+    }
+
+    private function cancelAll($invoices, string $reason): int
+    {
+        $n = 0;
+        foreach ($invoices as $inv) {
+            $inv->status = Invoice::STATUS_CANCELED;
+            $inv->save();
+            Log::info('Fatura cancelada automaticamente', ['invoice_id' => $inv->id, 'tenant_id' => $inv->tenant_id, 'motivo' => $reason]);
+            $n++;
+        }
+        if ($n && isset($inv)) {
+            \Illuminate\Support\Facades\Cache::forget(self::blockCacheKey($inv->tenant_id));
+        }
+        return $n;
     }
 
     public static function blockCacheKey(int $tenantId): string

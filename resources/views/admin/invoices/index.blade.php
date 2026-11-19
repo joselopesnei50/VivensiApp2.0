@@ -9,6 +9,7 @@
             <p class="text-muted text-uppercase small mb-1" style="letter-spacing: .15em;">Super Admin · Billing</p>
             <h1 class="h3 mb-1"><i class="fas fa-file-invoice-dollar text-primary"></i> Faturas</h1>
             <p class="text-muted mb-0">Gestão consolidada de todas as cobranças de assinatura Vivensi.</p>
+            <p class="text-muted small mb-0 mt-1"><i class="fas fa-info-circle"></i> Os totais contam só organizações com plano pago ({{ $stats['paying_tenants'] }}). Cortesia e teste ficam de fora.</p>
         </div>
     </div>
 
@@ -62,8 +63,8 @@
                 <div class="col-md-3">
                     <label class="form-label small text-muted mb-1">Status</label>
                     <select name="status" class="form-select">
-                        <option value="">Todos</option>
-                        @foreach(['open' => 'Em aberto', 'overdue' => 'Vencidas', 'paid' => 'Pagas', 'canceled' => 'Canceladas'] as $key => $label)
+                        <option value="">Todas (sem canceladas)</option>
+                        @foreach(['open' => 'Em aberto', 'overdue' => 'Vencidas', 'paid' => 'Pagas', 'canceled' => 'Canceladas', 'all' => 'Todas (com canceladas)'] as $key => $label)
                             <option value="{{ $key }}" {{ $status === $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -119,9 +120,12 @@
                                             <a href="{{ route('admin.tenants.show', $inv->tenant->id) }}#dados-nota-fiscal" class="text-decoration-none" title="Ver dados para a nota fiscal">{{ $inv->tenant->name }}</a>
                                         @else — @endif
                                     </div>
-                                    <div class="text-muted small">{{ $inv->plan?->name ?? 'Sem plano' }}</div>
+                                    <div class="text-muted small">{{ $inv->plan?->name ?? $inv->tenant?->plan?->name ?? 'Sem plano' }}</div>
+                                    @if($inv->tenant && !($inv->tenant->plan && !$inv->tenant->plan->is_courtesy && (float) $inv->tenant->plan->price > 0))
+                                        <span class="badge bg-secondary-subtle text-secondary border">Cortesia / teste</span>
+                                    @endif
                                 </td>
-                                <td class="small">{{ $inv->description }}</td>
+                                <td class="small">{{ $inv->display_description }}</td>
                                 <td class="text-end fw-bold">{{ $inv->formatted_amount }}</td>
                                 <td class="small">{{ $inv->due_date->format('d/m/Y') }}</td>
                                 <td>
