@@ -186,8 +186,9 @@
                     <span class="info-value">{{ $transaction->created_at->format('H:i:s') }}</span>
                 </div>
                 <div class="info-row" style="margin-top: 15px; border-top: 1px dotted #e2e8f0; padding-top: 15px;">
-                    <span class="info-label">DOC/CNPJ</span>
-                    <span class="info-value">{{ $tenant->document ?? 'RESTRITO' }}</span>
+                    @php [$docLabel, $docValue] = \App\Models\Tenant::publicDocumentFor($tenant->document ?? null); @endphp
+                    <span class="info-label">{{ $docLabel }}</span>
+                    <span class="info-value">{{ $docValue }}</span>
                 </div>
             </div>
 

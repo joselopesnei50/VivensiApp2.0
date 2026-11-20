@@ -220,7 +220,7 @@
                                             $code = $certCodes[(int) $c->id] ?? '';
                                             $validateUrl = url('/validar-certificado/' . $c->uuid) . '?code=' . $code;
                                             $msg = "Olá ".$volunteer->name."! Segue o link para validar seu Certificado de Voluntariado: ".$validateUrl;
-                                            $phone = preg_replace('/\\D+/', '', (string) $volunteer->phone);
+                                            $phone = \App\Support\WhatsappLink::number($volunteer->phone);
                                         @endphp
                                         <a class="btn-premium" target="_blank" rel="noopener" style="font-size: .78rem; padding: 4px 10px; background:#dcfce7; color:#166534;" href="https://wa.me/{{ $phone }}?text={{ urlencode($msg) }}">
                                             <i class="fab fa-whatsapp"></i>
@@ -243,7 +243,7 @@
 
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top:4px;">
                 @if(!empty($volunteer->phone))
-                @php $vphone = preg_replace('/\D+/', '', (string) $volunteer->phone); @endphp
+                @php $vphone = \App\Support\WhatsappLink::number($volunteer->phone); @endphp
                 <a class="btn-premium" href="https://wa.me/{{ $vphone }}" target="_blank" rel="noopener" style="font-size: 0.8rem; background: #dcfce7; color: #166534; padding: 5px 10px;">
                     <i class="fab fa-whatsapp"></i> Contatar
                 </a>

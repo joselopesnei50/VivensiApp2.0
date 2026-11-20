@@ -119,6 +119,27 @@ class Tenant extends Model
         return $name !== '' ? $name : 'ORGANIZAÇÃO SOCIAL';
     }
 
+    /**
+     * Documento para páginas públicas (recibo): CNPJ formatado; CPF de pessoa
+     * física aparece mascarado, como na LGPD. Devolve [rótulo, valor].
+     */
+    public function publicDocument(): array
+    {
+        return self::publicDocumentFor($this->document);
+    }
+
+    public static function publicDocumentFor(?string $document): array
+    {
+        $d = preg_replace('/\D+/', '', (string) $document);
+        if (strlen($d) === 14) {
+            return ['CNPJ', preg_replace('/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/', '$1.$2.$3/$4-$5', $d)];
+        }
+        if (strlen($d) === 11) {
+            return ['CPF', '***.' . substr($d, 3, 3) . '.' . substr($d, 6, 3) . '-**'];
+        }
+        return ['DOCUMENTO', $d !== '' ? (string) $document : 'RESTRITO'];
+    }
+
     public function plan()
     {
         return $this->belongsTo(SubscriptionPlan::class);

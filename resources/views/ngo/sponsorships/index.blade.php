@@ -696,11 +696,13 @@ document.getElementById('btnSaveDeal')?.addEventListener('click', function () {
 ['new_value', 'edit_expected_value'].forEach(function (id) {
     const inp = document.getElementById(id);
     if (!inp) return;
+    // Reais com separador de milhar; a vírgula abre os centavos (50000 → 50.000).
     inp.addEventListener('input', function () {
-        let v = this.value.replace(/\D/g, '');
+        let v = this.value.replace(/[^\d,]/g, '');
         if (!v) { this.value = ''; return; }
-        v = (parseInt(v, 10) / 100).toFixed(2);
-        this.value = parseFloat(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        let [int, dec] = v.split(',');
+        int = (int || '0').replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        this.value = dec !== undefined ? int + ',' + dec.slice(0, 2) : int;
     });
 });
 
