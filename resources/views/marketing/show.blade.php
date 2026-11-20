@@ -5,40 +5,9 @@
     // Parse do markdown gerado pelo DeepSeek em blocos executivos.
     // Cada H2 vira um card na aba "Plano Executivo". H3s viram sub-tópicos.
     $md = $marketing->mindmap_data['markdown'] ?? '';
-    $rootTitle = null;
-    $sections  = []; // [{h2, h3s: [{title, bullets: []}]}]
-    $currentH2 = null;
-    $currentH3 = null;
-
-    foreach (preg_split("/\r?\n/", $md) as $line) {
-        $trimmed = rtrim($line);
-        if ($trimmed === '') continue;
-
-        if (preg_match('/^#\s+(.+)$/', $trimmed, $m) && !$rootTitle) {
-            $rootTitle = trim($m[1]);
-        } elseif (preg_match('/^##\s+(.+)$/', $trimmed, $m)) {
-            if ($currentH2) $sections[] = $currentH2;
-            $currentH2 = ['title' => trim($m[1]), 'h3s' => []];
-            $currentH3 = null;
-        } elseif (preg_match('/^###\s+(.+)$/', $trimmed, $m) && $currentH2) {
-            $currentH3 = ['title' => trim($m[1]), 'bullets' => []];
-            $currentH2['h3s'][] = &$currentH3;
-        } elseif (preg_match('/^\s*[-*]\s+(.+)$/', $line, $m) && $currentH2) {
-            if ($currentH3 !== null) {
-                $currentH3['bullets'][] = trim($m[1]);
-            } elseif (!empty($currentH2['h3s'])) {
-                // bullet direto no H2 sem H3 — vai pro último H3
-                $lastKey = count($currentH2['h3s']) - 1;
-                $currentH2['h3s'][$lastKey]['bullets'][] = trim($m[1]);
-            } else {
-                // bullet no H2 sem nenhum H3 ainda — cria pseudo-h3 "Pontos-chave"
-                $currentH2['h3s'][] = ['title' => 'Pontos-chave', 'bullets' => [trim($m[1])]];
-                $currentH3 = &$currentH2['h3s'][count($currentH2['h3s']) - 1];
-            }
-        }
-    }
-    if ($currentH2) $sections[] = $currentH2;
-    unset($currentH3);
+    $outline   = \App\Support\MarketingPlanOutline::parse($md);
+    $rootTitle = $outline['root'];
+    $sections  = $outline['sections']; // [{title, h3s: [{title, bullets: []}]}]
 
     $sectionIcons = [
         'posicion'  => 'fa-bullseye',
