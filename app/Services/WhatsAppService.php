@@ -39,7 +39,11 @@ class WhatsAppService
         $reason = null;
         $code   = null;
 
-        if (!$policy->canSend($config, $chat, $isTemplate, $reason, $code)) {
+        $instance     = $this->instanceForChat($chat);
+        $officialLine = $instance ? $instance->isCloudApi()
+            : (!empty($config->meta_phone_number_id) && !empty($config->meta_access_token));
+
+        if (!$policy->canSend($config, $chat, $isTemplate, $reason, $code, false, $officialLine)) {
             $this->auditLog($chat, $actorUserId, 'outbound_blocked', [
                 'code'         => $code,
                 'reason'       => $reason,
@@ -63,12 +67,6 @@ class WhatsAppService
         // (por exemplo, remanescente de teste antes da migração) roube o
         // envio e mande com token errado. Sem esse orderBy, era pega a mais
         // antiga na tabela — comportamento imprevisível pós-migração.
-        $instance = WhatsappInstance::where('tenant_id', $chat->tenant_id)
-            ->where('status', 'open')
-            ->orderByRaw("CASE WHEN provider = ? THEN 0 ELSE 1 END", [WhatsappInstance::PROVIDER_CLOUD_API])
-            ->orderByDesc('id')
-            ->first();
-
         if ($instance) {
             // Defesa em profundidade: se a instance é Cloud API mas o plano
             // do tenant NÃO libera essa capability (admin desmarcou depois),
@@ -152,6 +150,30 @@ class WhatsAppService
         $chat->update(['last_message_at' => now()]);
 
         return ['message_id' => $messageId, 'provider' => $provider, 'message' => $msg];
+    }
+
+    /**
+     * Número que responde a conversa: o mesmo por onde o contato escreveu
+     * (whatsapp_instance_id), se ainda estiver conectado. Sem essa informação
+     * (conversas antigas), vale a regra anterior: Cloud API primeiro.
+     */
+    public function instanceForChat(WhatsappChat $chat): ?WhatsappInstance
+    {
+        if (!empty($chat->whatsapp_instance_id)) {
+            $own = WhatsappInstance::where('tenant_id', $chat->tenant_id)
+                ->where('id', $chat->whatsapp_instance_id)
+                ->where('status', 'open')
+                ->first();
+            if ($own) {
+                return $own;
+            }
+        }
+
+        return WhatsappInstance::where('tenant_id', $chat->tenant_id)
+            ->where('status', 'open')
+            ->orderByRaw("CASE WHEN provider = ? THEN 0 ELSE 1 END", [WhatsappInstance::PROVIDER_CLOUD_API])
+            ->orderByDesc('id')
+            ->first();
     }
 
     // ── Media ─────────────────────────────────────────────────────────────────

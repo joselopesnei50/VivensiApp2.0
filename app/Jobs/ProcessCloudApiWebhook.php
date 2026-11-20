@@ -158,6 +158,7 @@ class ProcessCloudApiWebhook implements ShouldQueue
         $chat = WhatsappChat::withoutGlobalScope('tenant')->updateOrCreate(
             ['tenant_id' => $instance->tenant_id, 'wa_id' => $waId],
             [
+                'whatsapp_instance_id' => $instance->id,
                 'contact_name'     => $senderName ?: 'Contato WhatsApp',
                 'contact_phone'    => $waId,
                 'status'           => 'open',
@@ -170,6 +171,14 @@ class ProcessCloudApiWebhook implements ShouldQueue
         // updateOrCreate nao popula defaults da DB (is_bot_active=true) em memoria;
         // sem refresh, o dispatch da IA veria null e nao dispararia.
         $chat->refresh();
+
+        // Pedido de "sair" (mesma regra dos outros webhooks) ou contato que
+        // voltou a escrever depois de um "sair" antigo.
+        if ($type === 'text' && \App\Services\Messaging\InboundOptOut::isOptOut($content)) {
+            \App\Services\Messaging\InboundOptOut::apply($chat, 'cloud', (string) $content);
+        } else {
+            \App\Services\Messaging\InboundOptOut::liftIfReengaged($chat, 'cloud');
+        }
 
         $newMessage = WhatsappMessage::create([
             'tenant_id'     => $instance->tenant_id,

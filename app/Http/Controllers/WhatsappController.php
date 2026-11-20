@@ -624,35 +624,13 @@ class WhatsappController extends Controller
             ],
         ]);
 
-        // STOP / opt-out keywords (compliance). If the customer says stop, we must stop.
-        $normalized = mb_strtolower(trim($content));
-        $stopKeywords = [
-            'stop', 'parar', 'pare', 'sair', 'cancelar', 'cancele', 'descadastrar', 'remover', 'não quero', 'nao quero'
-        ];
-        foreach ($stopKeywords as $kw) {
-            if ($kw !== '' && str_contains($normalized, $kw)) {
-                $chat->opt_out_at = now();
-                $chat->blocked_at = now();
-                $chat->blocked_reason = 'STOP keyword';
-                $chat->status = 'closed';
-                $chat->save();
-
-                // Add to Global SaaS Blacklist
-                \App\Models\WhatsappBlacklist::firstOrCreate(
-                    ['tenant_id' => $tenantId, 'phone' => $waId],
-                    ['reason' => "Opt-out via keyword: $kw"]
-                );
-
-                WhatsappAuditLog::create([
-                    'tenant_id' => $tenantId,
-                    'chat_id' => $chat->id,
-                    'actor_type' => 'webhook',
-                    'event' => 'compliance_action',
-                    'details' => ['action' => 'opt_out', 'reason' => 'STOP keyword', 'keyword' => $kw],
-                ]);
-                return;
-            }
+        // Pedido de "sair" (STOP): mesma regra dos outros webhooks — mensagem igual
+        // à palavra ou frase inequívoca (antes "pare" em "parece" bloqueava).
+        if (\App\Services\Messaging\InboundOptOut::isOptOut($content)) {
+            \App\Services\Messaging\InboundOptOut::apply($chat, 'legacy', (string) $content);
+            return;
         }
+        \App\Services\Messaging\InboundOptOut::liftIfReengaged($chat, 'legacy');
 
         // Ensure opt-in is set for inbound contacts (if older chats existed before this field)
         if (!$chat->opt_in_at) {
