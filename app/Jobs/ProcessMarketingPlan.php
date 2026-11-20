@@ -16,7 +16,7 @@ class ProcessMarketingPlan implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries   = 2;
-    public int $timeout = 240; // 4min: 120 do plano + 90 do guia + margem
+    public int $timeout = 300; // 150 do plano + 90 do guia + margem
 
     public function __construct(protected int $planId)
     {

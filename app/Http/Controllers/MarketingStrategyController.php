@@ -48,7 +48,7 @@ class MarketingStrategyController extends Controller
             'tenant_id'           => Auth::user()->tenant_id,
             'user_id'             => Auth::id(),
             'project_id'          => $validated['project_id'] ?? null,
-            'title'               => mb_substr($validated['objective'], 0, 80),
+            'title'               => $this->shortTitle($validated['objective']),
             'objective'           => $validated['objective'],
             'target_audience'     => $validated['target_audience'],
             'scope'               => $validated['scope'],
@@ -64,6 +64,18 @@ class MarketingStrategyController extends Controller
 
         return redirect()->route('marketing.show', $plan->id)
             ->with('success', 'Plano criado! A IA está gerando seu mapa estratégico...');
+    }
+
+    /** Título com até 80 caracteres, cortado no fim de uma palavra. */
+    private function shortTitle(string $text): string
+    {
+        $text = trim(preg_replace('/\s+/u', ' ', $text));
+        if (mb_strlen($text) <= 80) {
+            return $text;
+        }
+        $cut = mb_substr($text, 0, 79);
+        $space = mb_strrpos($cut, ' ');
+        return rtrim($space > 40 ? mb_substr($cut, 0, $space) : $cut, ' ,.;:') . '…';
     }
 
     public function show(MarketingPlan $marketing)

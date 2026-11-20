@@ -140,17 +140,23 @@ class SocialIndicatorController extends Controller
             // Analise territorial curta (4-6 linhas, 400 tokens) — flash da
             // conta com qualidade boa e custo baixo. Substitui o alias
             // 'deepseek-chat' (deprecado em 2026/07/24 pela DeepSeek).
-            $response = Http::timeout(30)
+            // O flash "pensa" antes de responder e esse raciocínio conta em
+            // max_tokens: com 400 a resposta vinha vazia ("—" na tela).
+            $response = Http::timeout(45)
                 ->withHeaders(['Authorization' => "Bearer {$apiKey}", 'Content-Type' => 'application/json'])
                 ->post('https://api.deepseek.com/v1/chat/completions', [
                     'model'       => 'deepseek-v4-flash',
                     'messages'    => [['role' => 'user', 'content' => $prompt]],
                     'temperature' => 0.7,
-                    'max_tokens'  => 400,
+                    'max_tokens'  => 2000,
                 ]);
 
             if ($response->successful()) {
-                return $response->json()['choices'][0]['message']['content'] ?? 'Análise não disponível.';
+                $text = trim((string) ($response->json('choices.0.message.content') ?? ''));
+                if ($text !== '') {
+                    return $text;
+                }
+                Log::warning('DeepSeek territorial: resposta sem texto', ['finish' => $response->json('choices.0.finish_reason')]);
             }
         } catch (\Exception $e) {
             Log::error('DeepSeek AI Error (territorial): ' . $e->getMessage());
