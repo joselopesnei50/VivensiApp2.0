@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $raffle->title }} | Vivensi Solidário</title>
+    <title>{{ $raffle->title }} | {{ optional($raffle->tenant)->documentName() ?? 'Rifa solidária' }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -329,7 +329,7 @@
         </div>
         
         <div class="text-center mt-5 opacity-50 small">
-            &copy; {{ date('Y') }} Vivensi Solidário - Plataforma de Arrecadação Digital
+            &copy; {{ date('Y') }} {{ optional($raffle->tenant)->documentName() ?? 'Organização Social' }} · Arrecadação digital pela plataforma Vivensi
         </div>
     </div>
 

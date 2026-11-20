@@ -1307,6 +1307,31 @@
                 dest = textBox;
             }
 
+            // Nomes dos campos em português (a chave técnica fica só no name do input).
+            const FIELD_LABELS = {
+                title: 'Título', subtitle: 'Subtítulo', text: 'Texto', desc: 'Descrição', description: 'Descrição', content: 'Conteúdo',
+                button_text: 'Texto do botão', button_url: 'Link do botão', button_color: 'Cor do botão',
+                bg_color: 'Cor de fundo', text_color: 'Cor do texto', accent_color: 'Cor de destaque', color: 'Cor',
+                overlay_color: 'Cor da sobreposição', overlay_opacity: 'Opacidade da sobreposição',
+                image: 'Imagem (link)', image_url: 'Imagem (link)', background_url: 'Imagem de fundo (link)', photo_url: 'Foto (link)',
+                logo_url: 'Logo (link)', qr_image_url: 'QR Code (link)', video_url: 'Link do vídeo', embed_url: 'Link para incorporar',
+                map_embed: 'Mapa (código de incorporação)', image_position: 'Posição da imagem', text_align: 'Alinhamento do texto',
+                align: 'Alinhamento', height: 'Altura',
+                goal_amount: 'Meta (R$)', current_amount: 'Já arrecadado (R$)', suggested_amounts: 'Valores sugeridos', deadline: 'Prazo',
+                pix_key_or_payload: 'Chave Pix ou código copia e cola', recipient_name: 'Nome de quem recebe',
+                items: 'Itens', name: 'Nome', role: 'Função', bio: 'Apresentação', company_name: 'Nome da empresa',
+                label: 'Rótulo', value: 'Valor', number: 'Número', unit: 'Unidade', count: 'Quantidade', icon: 'Ícone',
+                link: 'Link', url: 'Link', q: 'Pergunta', a: 'Resposta', message: 'Mensagem', caption: 'Legenda',
+                phone: 'Telefone', whatsapp: 'WhatsApp', email: 'E-mail', address: 'Endereço',
+                date: 'Data', time: 'Horário', location: 'Local', period: 'Período', price: 'Preço',
+                badge: 'Selo', highlight: 'Destaque', note: 'Observação', form_note: 'Observação do formulário',
+                help_text: 'Texto de ajuda', success: 'Mensagem de sucesso', tooltip: 'Dica', show_tooltip: 'Mostrar dica', enabled: 'Ativo',
+                left_title: 'Título (esquerda)', left_text: 'Texto (esquerda)', left_image_url: 'Imagem da esquerda (link)',
+                right_title: 'Título (direita)', right_text: 'Texto (direita)', right_image_url: 'Imagem da direita (link)',
+                instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', youtube: 'YouTube',
+            };
+            const fieldLabel = (key) => FIELD_LABELS[key] || (key.charAt(0).toUpperCase() + key.slice(1)).replace(/_/g, ' ');
+
             // Loop recursivo básico para lidar com objetos simples e arrays (Depoimentos/Itens)
             function createFields(data, prefix = '') {
                 for(const [key, value] of Object.entries(data)) {
@@ -1316,7 +1341,7 @@
                         const subTitle = document.createElement('h5');
                         subTitle.style.color = 'var(--primary)';
                         subTitle.style.margin = '20px 0 10px';
-                        subTitle.innerText = key.toUpperCase();
+                        subTitle.innerText = fieldLabel(key).toUpperCase();
                         dest.appendChild(subTitle);
 
                         value.forEach((item, index) => {
@@ -1332,7 +1357,7 @@
                         group.className = 'form-group';
                         const label = document.createElement('label');
                         label.className = 'form-label';
-                        label.innerText = key.replace('_', ' ');
+                        label.innerText = fieldLabel(key);
 
                         const el = (typeof value === 'string' && value.length > 50) ? document.createElement('textarea') : document.createElement('input');
                         el.className = 'form-input';

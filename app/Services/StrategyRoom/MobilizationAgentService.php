@@ -47,7 +47,7 @@ class MobilizationAgentService
         $mode = Tenant::find($tenantId)?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
 
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt($mode)],
+            ['role' => 'system', 'content' => PromptRules::withLanguage($this->buildSystemPrompt($mode))],
             ['role' => 'user',   'content' => 'Analise a mobilizacao do tenant — canais de campanha e saude da base. Chame as ferramentas relevantes. Devolva SOMENTE o JSON no formato instruido.'],
         ];
         $tools = MobilizationAgentTools::definitions();

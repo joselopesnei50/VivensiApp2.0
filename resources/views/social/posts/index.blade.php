@@ -462,7 +462,6 @@
 </div>
 
 {{-- FullCalendar --}}
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/pt-br.global.min.js"></script>
 <script>
@@ -481,7 +480,9 @@
         const cal = new FullCalendar.Calendar(document.getElementById('socialCalendar'), {
             initialView: 'dayGridMonth', locale: 'pt-br',
             headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
-            buttonText: { today:'Hoje', month:'Mês', week:'Semana', day:'Dia', list:'Lista' },
+            // Ícones do FullCalendar vêm de uma fonte data: bloqueada pela CSP — usa texto.
+            buttonIcons: false,
+            buttonText: { prev:'‹', next:'›', today:'Hoje', month:'Mês', week:'Semana', day:'Dia', list:'Lista' },
             allDayText: 'Dia inteiro', noEventsText: 'Nenhum post agendado neste período.',
             moreLinkText: n => '+ mais ' + n,
             events: '{{ route('social.posts.calendar') }}',

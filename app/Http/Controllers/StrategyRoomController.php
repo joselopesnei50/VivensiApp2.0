@@ -51,7 +51,7 @@ class StrategyRoomController extends Controller
                 'name'      => 'Bruce',
                 'role'      => 'Estrategista-Chefe',
                 'sub_role'  => 'CEO · Moderador',
-                'bio'       => 'Sintetiza as vozes dos outros três e prioriza uma ação. Nunca recebe dado bruto — só as falas dos colegas.',
+                'bio'       => 'Sintetiza as vozes dos outros quatro e prioriza uma ação. Nunca recebe dado bruto — só as falas dos colegas.',
                 'icon'      => 'fa-chess-king',
                 'color'     => '#4f46e5',
                 'from'      => '#6366f1',

@@ -48,7 +48,7 @@
             </div>
         </div>
         <div class="footer">
-            <p>Este é um e-mail automático enviado por Vivensi Solidário.<br>
+            <p>Este é um e-mail automático enviado pela plataforma Vivensi em nome de {{ optional($raffle->tenant)->documentName() ?? 'organização responsável pela rifa' }}.<br>
             © {{ date('Y') }} {{ $raffle->tenant->name }}. Todos os direitos reservados.</p>
         </div>
     </div>

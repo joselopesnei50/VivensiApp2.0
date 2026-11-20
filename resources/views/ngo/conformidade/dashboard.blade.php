@@ -28,7 +28,7 @@
 {{-- Header --}}
 <div class="conf-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
     <div>
-        <h2 class="fw-bold mb-1" style="font-size:1.9rem;letter-spacing:-1px">Conformidade Contínua</h2>
+        <h2 class="fw-bold mb-1" style="font-size:1.9rem;letter-spacing:-1px;color:#fff">Conformidade Contínua</h2>
         <p class="mb-0 opacity-75" style="font-size:.9rem">CEBAS · MROSC · SUAS — índice calculado automaticamente</p>
     </div>
     <div class="d-flex gap-2 flex-wrap">

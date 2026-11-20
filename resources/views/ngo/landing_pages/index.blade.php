@@ -167,7 +167,7 @@
 <!-- Modal -->
 <div id="newPageModal" class="custom-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
     <div class="vivensi-card" style="width: 90%; max-width: 400px;">
-        <h3>{{ ($context ?? 'ngo') === 'manager' ? 'Nova Landing Page' : 'Nova Campanha' }}</h3>
+        <h3>{{ ($context ?? 'ngo') === 'manager' ? 'Nova Landing Page' : 'Nova Página' }}</h3>
         <form action="{{ $basePath . '/ngo/landing-pages' }}" method="POST">
             @csrf
             <div class="form-group">

@@ -1668,7 +1668,8 @@
     </script>
 
     <footer style="padding: 40px 0; text-align: center; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: #64748b; background: white;">
-        &copy; {{ date('Y') }} Vivensi - Mantido por {{ $page->tenant_id == 1 ? 'Instituto Vivensi' : 'Organização Social' }}
+        @php $lpOrgName = optional(\App\Models\Tenant::find($page->tenant_id))->documentName() ?? 'Organização Social'; @endphp
+        &copy; {{ date('Y') }} {{ $lpOrgName }}
         <div style="margin-top: 15px; font-weight: 600; color: var(--primary);">
             Desenvolvido pelo sistema Vivensi App com carinho! <i class="fas fa-heart" style="color: #ef4444;"></i>
         </div>

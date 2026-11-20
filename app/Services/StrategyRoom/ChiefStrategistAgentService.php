@@ -65,7 +65,7 @@ class ChiefStrategistAgentService
         $mode = Tenant::find((int) $session->tenant_id)?->strategyRoomMode() ?? StrategyRoomMode::Institucional;
 
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt($falasBlock, $mode)],
+            ['role' => 'system', 'content' => PromptRules::withLanguage($this->buildSystemPrompt($falasBlock, $mode))],
             ['role' => 'user',   'content' => 'Sintetize as falas acima e proponha UMA acao prioritaria. Devolva SOMENTE o JSON no formato instruido.'],
         ];
 

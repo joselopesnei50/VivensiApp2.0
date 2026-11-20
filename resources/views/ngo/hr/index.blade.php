@@ -189,7 +189,7 @@
             </div>
             <div style="font-size: 0.85rem; color: #475569; margin-bottom: 15px;">
                 <strong>Habilidades:</strong> {{ $volunteer->skills ?? 'Não informado' }}<br>
-                <strong>Disponibilidade:</strong> {{ ucfirst($volunteer->availability) ?? 'Variável' }}<br>
+                <strong>Disponibilidade:</strong> {{ $volunteer->availability_label }}<br>
                 <div style="margin-top: 8px; display: flex; gap: 15px; background: #f8fafc; padding: 10px; border-radius: 8px;">
                     <div><i class="fas fa-clock" style="color: #64748b;"></i> <strong>{{ number_format($volunteer->hours_logged ?? 0, 0, '', '.') }}h</strong> doadas</div>
                     <div><i class="fas fa-star" style="color: #f59e0b;"></i> <strong>{{ number_format($volunteer->points ?? 0, 0, '', '.') }}</strong> pontos</div>

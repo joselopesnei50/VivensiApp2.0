@@ -69,7 +69,7 @@ class FinancialAgentService
 
         $systemPrompt = $this->buildSystemPrompt($factCatalog, $mode);
         $messages     = [
-            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'system', 'content' => PromptRules::withLanguage($systemPrompt)],
             ['role' => 'user',   'content' => 'Analise a situacao financeira. Use as ferramentas quando quiser detalhar por projeto ou ver tendencia. Devolva SOMENTE o JSON no formato instruido.'],
         ];
         $tools = FinancialAgentTools::definitions();
