@@ -1148,7 +1148,8 @@
 
         function openEditor(id, type, content) {
             currentId = id;
-            document.getElementById('editor-type-title').innerText = 'Editando: ' + type.toUpperCase();
+            const blockName = document.querySelector('[data-editor-id="' + id + '"] .info span');
+            document.getElementById('editor-type-title').innerText = 'Editando: ' + (blockName ? blockName.textContent.trim() : type.replace(/_/g, ' '));
             document.getElementById('editor-overlay').style.display = 'flex';
 
             const container = document.getElementById('editor-fields');

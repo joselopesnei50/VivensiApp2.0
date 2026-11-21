@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Contrato de Adesao Vivensi</title>
+    <title>Contrato de Adesão Vivensi</title>
     <style>
         @page { margin: 24mm 20mm; }
         body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 11pt; color:#222; line-height: 1.6; }

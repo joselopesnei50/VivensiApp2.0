@@ -46,7 +46,11 @@
                     {{ $lead->phone ?? 'N/A' }}
                 </td>
                 <td style="padding: 15px; font-size: 0.8rem; color: #64748b;">
-                    {{ $lead->extra_data }}
+                    @forelse($lead->extra_items as $label => $value)
+                        <div>@if($label !== '')<strong style="color:#475569;">{{ $label }}:</strong> @endif{{ $value }}</div>
+                    @empty
+                        —
+                    @endforelse
                 </td>
             </tr>
             @endforeach

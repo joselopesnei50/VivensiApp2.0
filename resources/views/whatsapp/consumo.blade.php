@@ -77,7 +77,8 @@
         color: #1E3A8A; margin-bottom: 28px;
         font-size: .92rem; line-height: 1.55;
     }
-    .wcs-notice strong { display: block; margin-bottom: 4px; font-weight: 700; }
+    .wcs-notice > strong:first-child { display: block; margin-bottom: 4px; font-weight: 700; }
+    .wcs-notice strong { font-weight: 700; }
 
     /* Card genérico */
     .wcs-card {
