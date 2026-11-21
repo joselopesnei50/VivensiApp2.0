@@ -63,7 +63,7 @@ class LgpdSelfServiceController extends Controller
             ->exists();
 
         if ($recent) {
-            return back()->with('warning', 'Voce ja solicitou uma exportacao nas ultimas 6 horas. Aguarde para tentar novamente.');
+            return back()->with('warning', 'Você já pediu uma exportação nas últimas 6 horas. Aguarde para pedir de novo.');
         }
 
         $lgpdRequest = LgpdDataRequest::create([
@@ -82,7 +82,7 @@ class LgpdSelfServiceController extends Controller
 
         ExportUserLgpdDataJob::dispatch($lgpdRequest->id);
 
-        return back()->with('success', 'Exportacao solicitada. Voce recebera um email com o link de download em alguns minutos.');
+        return back()->with('success', 'Exportação solicitada. Você vai receber um e-mail com o link para baixar em alguns minutos.');
     }
 
     /**
@@ -98,11 +98,11 @@ class LgpdSelfServiceController extends Controller
             ->first();
 
         if (!$lgpdRequest) {
-            abort(404, 'Link invalido ou ja utilizado.');
+            abort(404, 'Link inválido ou já utilizado.');
         }
 
         if (!$lgpdRequest->isTokenValid()) {
-            abort(410, 'Este link expirou. Solicite uma nova exportacao em /eu/dados.');
+            abort(410, 'Este link expirou. Peça uma nova exportação em Meus dados (LGPD).');
         }
 
         if (!Storage::disk('local')->exists($lgpdRequest->export_file_path)) {
@@ -110,7 +110,7 @@ class LgpdSelfServiceController extends Controller
                 'request_id' => $lgpdRequest->id,
                 'path'       => $lgpdRequest->export_file_path,
             ]);
-            abort(404, 'Arquivo indisponivel. Solicite nova exportacao.');
+            abort(404, 'Arquivo indisponível. Peça uma nova exportação.');
         }
 
         $lgpdRequest->increment('export_download_count');
@@ -135,7 +135,7 @@ class LgpdSelfServiceController extends Controller
         $request->validate([
             'confirm' => 'required|accepted',
         ], [
-            'confirm.accepted' => 'Voce precisa confirmar que entende as consequencias antes de solicitar a exclusao.',
+            'confirm.accepted' => 'Marque a caixa de confirmação para pedir a exclusão.',
         ]);
 
         $user = auth()->user();
@@ -149,7 +149,7 @@ class LgpdSelfServiceController extends Controller
             ->exists();
 
         if ($existing) {
-            return back()->with('warning', 'Voce ja tem uma solicitacao de exclusao em andamento.');
+            return back()->with('warning', 'Você já tem um pedido de exclusão em andamento.');
         }
 
         $lgpdRequest = LgpdDataRequest::create([
@@ -168,7 +168,7 @@ class LgpdSelfServiceController extends Controller
             'ip'            => $request->ip(),
         ]);
 
-        return back()->with('success', 'Exclusao agendada para ' . $lgpdRequest->scheduled_for->format('d/m/Y') . '. Voce pode cancelar a qualquer momento antes dessa data em /eu/dados.');
+        return back()->with('success', 'Exclusão agendada para ' . $lgpdRequest->scheduled_for->format('d/m/Y') . '. Você pode cancelar a qualquer momento antes dessa data.');
     }
 
     public function cancelDelete(int $id): RedirectResponse
@@ -182,11 +182,11 @@ class LgpdSelfServiceController extends Controller
             ->first();
 
         if (!$lgpdRequest) {
-            abort(404, 'Solicitacao nao encontrada.');
+            abort(404, 'Pedido não encontrado.');
         }
 
         if (!$lgpdRequest->isCancellable()) {
-            return back()->with('warning', 'Esta exclusao ja foi processada ou nao pode mais ser cancelada.');
+            return back()->with('warning', 'Esta exclusão já foi processada ou não pode mais ser cancelada.');
         }
 
         $lgpdRequest->update(['cancelled_at' => now()]);
@@ -196,6 +196,6 @@ class LgpdSelfServiceController extends Controller
             'user_id'    => $user->id,
         ]);
 
-        return back()->with('success', 'Exclusao cancelada. Sua conta permanece ativa normalmente.');
+        return back()->with('success', 'Exclusão cancelada. Sua conta continua ativa normalmente.');
     }
 }

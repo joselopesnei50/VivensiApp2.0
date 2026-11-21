@@ -19,15 +19,15 @@
         <div class="alert alert-danger rounded-3">{{ session('error') }}</div>
     @endif
 
-    {{-- ── Exportacao art. 18 IV ─────────────────────────────────────────── --}}
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    {{-- ── Exportacao art. 18 V ─────────────────────────────────────────── --}}
+    <div class="card border-0 shadow-sm rounded-4 mb-4" id="exportar">
         <div class="card-body p-4">
             <div class="d-flex align-items-start mb-3">
                 <div class="me-3" style="font-size:2rem;">📦</div>
                 <div>
                     <h5 class="fw-bold mb-1">Exportar meus dados</h5>
                     <p class="text-muted small mb-0">
-                        <strong>Art. 18, IV — Portabilidade.</strong>
+                        <strong>Art. 18, V — Portabilidade.</strong>
                         Receba por e-mail um arquivo ZIP contendo todos os seus dados pessoais
                         em formato JSON estruturado. O link expira em 48 horas.
                     </p>
@@ -93,15 +93,15 @@
         </div>
     </div>
 
-    {{-- ── Delecao art. 15 ────────────────────────────────────────────────── --}}
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    {{-- ── Delecao art. 18 VI────────────────────────────────────────────────── --}}
+    <div class="card border-0 shadow-sm rounded-4 mb-4" id="excluir">
         <div class="card-body p-4">
             <div class="d-flex align-items-start mb-3">
                 <div class="me-3" style="font-size:2rem;">⚠️</div>
                 <div>
                     <h5 class="fw-bold mb-1 text-danger">Excluir minha conta</h5>
                     <p class="text-muted small mb-0">
-                        <strong>Art. 15 — Eliminação.</strong>
+                        <strong>Art. 18, VI — Eliminação.</strong>
                         Ao solicitar, sua conta será agendada para exclusão em <strong>30 dias</strong>.
                         Dentro deste prazo você pode cancelar a qualquer momento. Após executada,
                         seus dados pessoais serão anonimizados (nome, e-mail, telefone removidos).
@@ -116,9 +116,13 @@
                             <strong>Exclusão agendada</strong><br>
                             <small>
                                 Solicitada em {{ $activeDeletion->created_at->format('d/m/Y H:i') }}.<br>
-                                Sua conta será anonimizada em
-                                <strong>{{ $activeDeletion->scheduled_for->format('d/m/Y') }}</strong>
-                                ({{ $activeDeletion->daysUntilPurge() }} dias).
+                                @if($activeDeletion->scheduled_for)
+                                    Sua conta será anonimizada em
+                                    <strong>{{ $activeDeletion->scheduled_for->format('d/m/Y') }}</strong>
+                                    ({{ $activeDeletion->daysUntilPurge() }} dias).
+                                @else
+                                    Pedido em análise pela equipe (protocolo #{{ $activeDeletion->id }}).
+                                @endif
                             </small>
                         </div>
                         <form method="POST" action="{{ route('lgpd.self.cancel_delete', $activeDeletion->id) }}">

@@ -125,8 +125,9 @@ class LgpdDataRequest extends Model
         return $this->isDeletion()
             && $this->status === self::STATUS_PENDING
             && $this->cancelled_at === null
-            && $this->scheduled_for
-            && $this->scheduled_for->isFuture();
+            // Pedidos antigos (feitos pelo Perfil) não têm data agendada:
+            // ficam com a equipe e podem ser cancelados enquanto pendentes.
+            && ($this->scheduled_for === null || $this->scheduled_for->isFuture());
     }
 
     public function isTokenValid(): bool
