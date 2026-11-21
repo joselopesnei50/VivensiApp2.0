@@ -818,11 +818,14 @@ class WhatsappController extends Controller
 
         if ($hasStructured) {
             $s = $request;
-            $botName  = $s->input('bot_name', 'Bruce');
-            $tone     = $s->input('bot_tone', 'amigável');
+            // Campos vazios chegam como null: o padrão do input() não vale nesse caso.
+            $botName  = trim((string) $s->input('bot_name')) ?: 'Bruce';
+            $tone     = trim((string) $s->input('bot_tone')) ?: 'amigável';
+            $orgName  = trim((string) $s->input('org_name'))
+                ?: (\App\Models\Tenant::find(auth()->user()->tenant_id)?->documentName() ?? 'organização');
             $faqs     = collect($s->input('faq', []))->filter(fn($f) => !empty($f['question']) && !empty($f['answer']));
 
-            $prompt  = "Você é *{$botName}*, assistente virtual da **{$s->input('org_name', 'organização')}**.\n";
+            $prompt  = "Você é *{$botName}*, assistente virtual da **{$orgName}**.\n";
             $prompt .= "Seu tom é {$tone}, empático e prestativo.\n\n";
 
             if ($s->filled('org_mission')) {

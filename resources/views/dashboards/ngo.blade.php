@@ -231,7 +231,7 @@
                             </div>
                         </div>
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <span style="font-size: .65rem; background: {{ $pc }}20; color: {{ $pc }}; padding: 4px 10px; border-radius: 99px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;">{{ $task->priority ?? 'medium' }}</span>
+                            <span style="font-size: .65rem; background: {{ $pc }}20; color: {{ $pc }}; padding: 4px 10px; border-radius: 99px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;">{{ ['low' => 'Baixa', 'medium' => 'Média', 'high' => 'Alta', 'urgent' => 'Urgente'][$task->priority ?? 'medium'] ?? $task->priority }}</span>
                         </div>
                     </div>
                 @empty

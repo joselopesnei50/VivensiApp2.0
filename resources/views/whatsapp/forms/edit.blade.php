@@ -15,7 +15,6 @@
     </div>
 </div>
 
-@if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 
 <div class="row g-4">
     {{-- Dados do formulário --}}

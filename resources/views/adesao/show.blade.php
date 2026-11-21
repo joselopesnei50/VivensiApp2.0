@@ -42,7 +42,7 @@
         <div class="plan-badge">Plano: {{ $plan->name }} @if($plan->is_courtesy) — CORTESIA @else — R$ {{ number_format((float)$plan->price, 2, ',', '.') }}/mes @endif</div>
     @endif
 
-    <h1>Contrato de Adesao Vivensi</h1>
+    <h1>Contrato de Adesão Vivensi</h1>
     <p class="lead">Antes de acessar a plataforma, precisamos dos dados da entidade e da sua assinatura. Sem esses dados nao emitimos o contrato.</p>
 
     @if(session('error'))

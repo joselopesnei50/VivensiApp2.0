@@ -20,7 +20,7 @@
     }
     .labels-header-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px; }
     .labels-eyebrow { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #a5b4fc; margin-bottom: 8px; }
-    .labels-title { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 2.2rem; letter-spacing: -1px; line-height: 1; margin: 0; }
+    .labels-title { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 2.2rem; letter-spacing: -1px; line-height: 1; margin: 0; color: #fff; }
     .labels-sub { color: rgba(255,255,255,0.55); font-size: .95rem; margin-top: 10px; max-width: 600px; }
     .btn-new-label {
         background: white; color: #0f172a; border: 0; padding: 12px 22px; border-radius: 12px;
