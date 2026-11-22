@@ -26,9 +26,9 @@ class BotController extends Controller
 
     /** Mensagens padrão caso ainda não estejam configuradas */
     private const DEFAULTS = [
-        'bot_msg_welcome_ngo'      => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Registrar atendimento\n4️⃣ Consultar beneficiário\n5️⃣ Ajuda\n6️⃣ Atendimentos recentes\n7️⃣ Registrar evolução",
-        'bot_msg_welcome_manager'  => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Concluir tarefa\n4️⃣ Lançar despesa\n5️⃣ Ajuda",
-        'bot_msg_welcome_employee' => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Concluir tarefa\n4️⃣ Lançar despesa (aguarda aprovação)\n5️⃣ Ajuda",
+        'bot_msg_welcome_ngo'  => \App\Jobs\ProcessWhatsAppBotMessage::MENU_NGO,
+        'bot_msg_welcome_manager'  => \App\Jobs\ProcessWhatsAppBotMessage::MENU_MANAGER,
+        'bot_msg_welcome_employee'  => \App\Jobs\ProcessWhatsAppBotMessage::MENU_EMPLOYEE,
         'bot_msg_welcome_common'   => "1️⃣ Ver meu saldo pessoal\n2️⃣ Minhas tarefas\n3️⃣ Lançar receita\n4️⃣ Lançar despesa\n5️⃣ Ajuda",
         'bot_msg_help'             => "• *menu* — Voltar ao menu principal\n• *cancelar* — Cancelar operação\n• ATEND: Nome | Tipo | Desc\n• DESP: 100,00 | Descrição\n• RECV: 100,00 | Descrição\n• BENEF: Nome ou CPF",
     ];

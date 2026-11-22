@@ -76,7 +76,12 @@ class WhatsAppBotController extends Controller
         }
 
         // 4. Identificação do Usuário
-        $user = $this->findUserByPhone($cleanPhone);
+        [$user, $ambiguous] = $this->findUserByPhone($cleanPhone);
+
+        if ($ambiguous) {
+            $this->sendDirect($waId, "⚠️ *Este número está em mais de uma conta do Vivensi.*\n\nPor segurança, o bot não sabe em qual painel gravar. Peça ao administrador para deixar este WhatsApp em uma conta só.");
+            return response()->json(['status' => 'ambiguous'], 200);
+        }
 
         if (!$user) {
             // Nao loga user_name — pode nao existir; ip ja sai por http log.
@@ -117,56 +122,82 @@ class WhatsAppBotController extends Controller
 
     // ─── Auxiliares ───────────────────────────────────────────────────────────
 
-    private function findUserByPhone(string $phone): ?User
+    /**
+     * Acha o usuário pelo telefone. Devolve [user|null, ambiguo].
+     *
+     * Um número em mais de uma conta (ex.: a mesma pessoa em duas ONGs) é
+     * ambíguo: antes o bot pegava a primeira em silêncio. A busca lenta
+     * compara DDD + 8 últimos dígitos (antes só os 8 últimos, o que
+     * confundia números iguais de DDDs diferentes). 2026-11-22.
+     */
+    private function findUserByPhone(string $phone): array
     {
         // NOTA 2026-08-17: users.phone eh AES-256 encrypted e phone_bidx eh
         // HMAC do valor exato cadastrado (com formatacao). REGEXP_REPLACE no
         // ciphertext nao funciona — busca correta eh via bidx.
 
         // 1. Tenta bidx pra formatos comuns do numero (fastpath, indice).
-        $variants = $this->phoneVariants($phone);
-        $key      = (string) config('app.key');
-
-        foreach ($variants as $variant) {
-            $bidx = hash_hmac('sha256', $variant, $key);
-            $u    = User::where('status', 'active')
-                ->where('phone_bidx', $bidx)
-                ->first();
-            if ($u) {
-                return $u;
-            }
+        $key   = (string) config('app.key');
+        $bidxs = array_map(fn ($v) => hash_hmac('sha256', $v, $key), $this->phoneVariants($phone));
+        $fast  = User::where('status', 'active')->whereIn('phone_bidx', $bidxs)->limit(2)->get();
+        if ($fast->count() > 1) {
+            $this->logAmbiguous($phone, $fast->count());
+            return [null, true];
         }
 
         // 2. Fallback lento: itera users ativos, descriptografa via accessor,
-        // compara digitos limpos. O(n) mas ok pra bot interno (poucos users).
-        $matches = collect();
-        User::where('status', 'active')
-            ->whereNotNull('phone')
-            ->select(['id', 'name', 'phone', 'phone_bidx', 'role', 'tenant_id', 'status'])
-            ->chunk(500, function ($chunk) use ($phone, &$matches) {
-                foreach ($chunk as $u) {
-                    $plain = $u->phone; // accessor descriptografa
-                    if (!$plain) continue;
-                    $clean = preg_replace('/\D/', '', (string) $plain);
-                    // Match exato OU sufixo (ultimos 8 digitos — cobre casos
-                    // sem DDI 55 ou com 9 digito celular ausente)
-                    if ($clean === $phone || substr($clean, -8) === substr($phone, -8)) {
-                        $matches->push($u);
+        // compara DDD + numero. O(n) mas ok pra bot interno (poucos users).
+        $target  = $this->phoneKey($phone);
+        $matches = collect($fast->all());
+        if ($target) {
+            User::where('status', 'active')
+                ->whereNotNull('phone')
+                ->select(['id', 'name', 'phone', 'phone_bidx', 'role', 'tenant_id', 'status'])
+                ->chunk(500, function ($chunk) use ($target, &$matches) {
+                    foreach ($chunk as $u) {
+                        if ($matches->contains('id', $u->id)) continue;
+                        $plain = $u->phone; // accessor descriptografa
+                        if ($plain && $this->phoneKey((string) $plain) === $target) {
+                            $matches->push($u);
+                        }
                     }
-                }
-            });
+                });
+        }
 
         if ($matches->count() === 1) {
-            return $matches->first();
+            // Recarrega com todas as colunas (o select acima e parcial).
+            return [User::find($matches->first()->id), false];
         }
         if ($matches->count() > 1) {
-            Log::warning('WhatsApp Bot: telefone ambiguo entre multiplos users', [
-                'phone_suffix' => substr($phone, -4),
-                'match_count'  => $matches->count(),
-            ]);
+            $this->logAmbiguous($phone, $matches->count());
+            return [null, true];
         }
 
-        return null;
+        return [null, false];
+    }
+
+    /**
+     * Chave de comparação: DDD + 8 últimos dígitos (cobre com/sem DDI 55 e
+     * com/sem o 9 do celular, sem confundir DDDs diferentes).
+     */
+    private function phoneKey(string $phone): ?string
+    {
+        $d = preg_replace('/\D/', '', $phone);
+        if (str_starts_with($d, '55') && strlen($d) >= 12) {
+            $d = substr($d, 2);
+        }
+        if (strlen($d) < 10 || strlen($d) > 11) {
+            return null;
+        }
+        return substr($d, 0, 2) . substr($d, -8);
+    }
+
+    private function logAmbiguous(string $phone, int $count): void
+    {
+        Log::warning('WhatsApp Bot: telefone ambiguo entre multiplos users', [
+            'phone_suffix' => substr($phone, -4),
+            'match_count'  => $count,
+        ]);
     }
 
     /**
