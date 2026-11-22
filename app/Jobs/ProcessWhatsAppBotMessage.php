@@ -9,6 +9,8 @@ use App\Models\Task;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\BeneficiaryLookupService;
+use App\Services\Billing\InvoiceService;
+use App\Services\FinanceService;
 use App\Services\EvolutionApiService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -28,12 +30,22 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
     private const SESSION_TTL = 30; // minutos
 
+    /** Minutos até apagar a troca de mensagens (tempo para o cliente ler). */
+    public const PURGE_DELAY_MINUTES = 5;
+
+    /** Máximo de beneficiários listados para o cliente escolher. */
+    private const MAX_CHOICES = 5;
+
+    /** Menus padrão (o super admin pode editar o texto em /admin/bot). */
+    public const MENU_NGO      = "1️⃣ Resumo financeiro do mês\n2️⃣ Minhas tarefas\n3️⃣ Registrar atendimento\n4️⃣ Consultar beneficiário\n5️⃣ Ajuda\n6️⃣ Atendimentos recentes\n7️⃣ Registrar evolução";
+    public const MENU_MANAGER  = "1️⃣ Resumo financeiro do mês\n2️⃣ Minhas tarefas\n3️⃣ Concluir tarefa\n4️⃣ Lançar despesa\n5️⃣ Ajuda";
+    public const MENU_EMPLOYEE = "2️⃣ Minhas tarefas\n3️⃣ Concluir tarefa\n4️⃣ Solicitar despesa (vai para aprovação)\n5️⃣ Ajuda";
+
     /**
      * Aviso curto anexado a mensagens terminais. Reforca ao cliente que o
-     * canal e seguro/privado do Vivensi, sem prometer descarte automatico
-     * (Evolution v2.3.6 nao expoe endpoint confiavel de purga local).
+     * canal e seguro/privado do Vivensi.
      */
-    private const SECURITY_TAG = "🔒 _Canal seguro e privado do Vivensi._";
+    private const SECURITY_TAG = "🔒 _Canal seguro e privado do Vivensi. As mensagens desta conversa são apagadas em cerca de 5 minutos._";
 
     public function __construct(
         protected User   $user,
@@ -78,25 +90,15 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         // Privacidade: apaga a mensagem inbound (o que o cliente digitou) e a
         // resposta outbound (que pode revelar dados consultados) do lado da
-        // Evolution + WhatsApp do cliente. Falha nao interrompe fluxo — o
-        // aviso na welcome message ja preveniu o usuario da janela residual.
-        $this->purgeMessagesFromEvolution($evo, $sendResult);
-    }
-
-    /**
-     * Deleta inbound + outbound da Evolution API pra que nenhum operador
-     * com acesso a instancia (Evolution UI, WhatsApp Web conectado, etc.)
-     * consiga ler os dados que o cliente enviou ou consultou.
-     */
-    private function purgeMessagesFromEvolution(EvolutionApiService $evo, ?array $sendResult): void
-    {
-        if (!empty($this->inboundKey['id']) && !empty($this->inboundKey['remoteJid'])) {
-            $evo->deleteMessageForEveryone($this->inboundKey);
-        }
-
-        $outboundKey = $this->extractOutboundKey($sendResult);
-        if (!empty($outboundKey['id']) && !empty($outboundKey['remoteJid'])) {
-            $evo->deleteMessageForEveryone($outboundKey);
+        // Evolution + WhatsApp do cliente — com atraso, para o cliente ler a
+        // resposta antes (apagar na hora virava "Mensagem apagada" no celular).
+        $keys = array_values(array_filter(
+            [$this->inboundKey, $this->extractOutboundKey($sendResult)],
+            fn ($k) => !empty($k['id']) && !empty($k['remoteJid'])
+        ));
+        if ($keys) {
+            PurgeBotMessages::dispatch($instanceName, $keys)
+                ->delay(now()->addMinutes(self::PURGE_DELAY_MINUTES));
         }
     }
 
@@ -137,6 +139,13 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
                  . "\n\n_Digite *menu* quando precisar voltar._";
         }
 
+        // Mesma regra do painel: conta bloqueada (fatura atrasada), suspensa,
+        // sem contrato ou com teste vencido não usa o bot.
+        if ($blocked = $this->accountBlockedMessage()) {
+            Cache::forget($sessionKey);
+            return $blocked;
+        }
+
         if (in_array($lower, ['5', 'ajuda', 'help', '?'])) {
             return SystemSetting::getValue('bot_msg_help',
                 "• *menu* — Menu principal\n• *cancelar* — Cancelar operação\n• DESP: 150,00 | Descrição\n• RECV: 500,00 | Descrição\n• BENEF: Nome ou CPF"
@@ -151,7 +160,9 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         $role = $this->user->role;
 
         // Numeric menu commands
-        if ($lower === '1') return $this->cmdSaldo();
+        if ($lower === '1') {
+            return $this->canSeeFinance() ? $this->cmdSaldo() : $this->noFinanceAccess();
+        }
         if ($lower === '2') return $this->cmdTarefas();
 
         if ($lower === '3') {
@@ -159,7 +170,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
                 Cache::put($sessionKey, ['state' => 'atend_nome'], now()->addMinutes(self::SESSION_TTL));
                 return "📋 *Registrar Atendimento*\n\nDigite o *nome completo* do beneficiário:";
             }
-            if ($role === 'common') {
+            if ($role === 'common' && $this->canSeeFinance()) {
                 Cache::put($sessionKey, ['state' => 'recv_valor'], now()->addMinutes(self::SESSION_TTL));
                 return "💰 *Lançar Receita*\n\nDigite o *valor* (ex: 500,00):";
             }
@@ -173,7 +184,9 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
                 return "🔍 *Consultar Beneficiário*\n\nDigite o nome ou CPF:";
             }
             Cache::put($sessionKey, ['state' => 'desp_valor'], now()->addMinutes(self::SESSION_TTL));
-            return "💸 *Lançar Despesa*\n\nDigite o *valor* (ex: 150,00):";
+            return $this->expenseNeedsApproval()
+                ? "💸 *Solicitar Despesa* (vai para aprovação)\n\nDigite o *valor* (ex: 150,00):"
+                : "💸 *Lançar Despesa*\n\nDigite o *valor* (ex: 150,00):";
         }
 
         if ($lower === '6') {
@@ -191,11 +204,11 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         // Structured prefix commands — power-user mode, sem confirmação
         if (str_starts_with(strtoupper($raw), 'DESP:'))  return $this->cmdDespesa($raw);
-        if (str_starts_with(strtoupper($raw), 'RECV:'))  return $this->cmdReceita($raw);
-        if (str_starts_with(strtoupper($raw), 'ATEND:')) return $this->cmdAtendimento($raw);
+        if (str_starts_with(strtoupper($raw), 'RECV:'))  return $this->canSeeFinance() ? $this->cmdReceita($raw) : $this->noFinanceAccess();
+        if (str_starts_with(strtoupper($raw), 'ATEND:')) return $this->cmdAtendimento($raw, $sessionKey);
         if (str_starts_with(strtoupper($raw), 'BENEF:')) return $this->cmdBeneficiario(trim(substr($raw, 6)));
-        if (str_starts_with(strtoupper($raw), 'HIST:'))  return $this->cmdHistoricoAtendimentos(trim(substr($raw, 5)));
-        if (str_starts_with(strtoupper($raw), 'EVOL:'))  return $this->cmdEvolucaoRapida($raw);
+        if (str_starts_with(strtoupper($raw), 'HIST:'))  return $this->cmdHistoricoAtendimentos(trim(substr($raw, 5)), $sessionKey);
+        if (str_starts_with(strtoupper($raw), 'EVOL:'))  return $this->cmdEvolucaoRapida($raw, $sessionKey);
 
         return "❓ Não entendi o comando. Digite *menu* para ver as opções disponíveis.";
     }
@@ -223,18 +236,16 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             return "📋 *Confirmar despesa?*\n\n"
                 . "Valor: *R\$ " . number_format($val, 2, ',', '.') . "*\n"
                 . "Descrição: _{$desc}_\n"
-                . "Status: Aguardando aprovação\n\n"
+                . ($this->expenseNeedsApproval() ? "Status: Aguardando aprovação\n" : "")
+                . "\n"
                 . "Responda *SIM* para confirmar ou *NÃO* para cancelar.";
         }
 
         if ($state === 'desp_confirm') {
             Cache::forget($sessionKey);
             if (in_array($lower, ['sim', 's', 'yes', '1'])) {
-                $this->createTransaction('expense', $session['valor'], $session['desc']);
-                return $this->finalize(
-                    "✅ Despesa de *R\$ " . number_format($session['valor'], 2, ',', '.') . "* registrada!\n"
-                    . "_{$session['desc']}_\n_Status: Aguardando aprovação._"
-                );
+                $t = $this->createTransaction('expense', $session['valor'], $session['desc']);
+                return $this->finalize($this->expenseSavedMessage($t));
             }
             return "❌ Despesa cancelada.\n\nDigite *menu* para continuar.";
         }
@@ -273,46 +284,38 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         // ── ATENDIMENTO ──────────────────────────────────────────────────────
 
         if ($state === 'atend_nome') {
-            Cache::put($sessionKey, ['state' => 'atend_tipo', 'nome' => strip_tags($raw)], $ttl);
-            return "👤 Nome: *{$raw}*\n\nQual o *tipo* de atendimento?\n(ex: saúde, educação, assistência social)";
+            [$b, $reply] = $this->resolveBeneficiary(strip_tags($raw), 'atend', [], $sessionKey);
+            if ($reply) return $reply;
+            if (!$b) {
+                $this->logNotFound('Bot ATEND: beneficiario nao encontrado', $raw);
+                return "❌ Beneficiário *\"{$raw}\"* não encontrado.\n\nDigite outro nome ou CPF, ou *cancelar* para sair.";
+            }
+            return $this->askAttendanceType($b, $sessionKey);
         }
 
         if ($state === 'atend_tipo') {
             Cache::put($sessionKey, [
-                'state' => 'atend_desc',
-                'nome'  => $session['nome'],
-                'tipo'  => strip_tags($raw),
+                'state'            => 'atend_desc',
+                'beneficiary_id'   => $session['beneficiary_id'],
+                'beneficiary_name' => $session['beneficiary_name'],
+                'tipo'             => strip_tags($raw),
             ], $ttl);
             return "🏷️ Tipo: *{$raw}*\n\nDescreva brevemente o atendimento:";
         }
 
         if ($state === 'atend_desc') {
-            $nome = $session['nome'];
-            $tipo = $session['tipo'];
             $desc = strip_tags($raw);
-
-            // Usa lookup unificado (nome LIKE + cpf_bidx/nis_bidx). Se digitar
-            // um CPF exato aqui, tambem casa.
-            $beneficiary = (new BeneficiaryLookupService())
-                ->search($this->user->tenant_id, $nome, 1)
-                ->first();
-
             Cache::put($sessionKey, [
                 'state'            => 'atend_confirm',
-                'nome'             => $nome,
-                'tipo'             => $tipo,
+                'beneficiary_id'   => $session['beneficiary_id'],
+                'beneficiary_name' => $session['beneficiary_name'],
+                'tipo'             => $session['tipo'],
                 'desc'             => $desc,
-                'beneficiary_id'   => $beneficiary?->id,
-                'beneficiary_name' => $beneficiary?->name,
             ], $ttl);
 
-            $benefInfo = $beneficiary
-                ? "Beneficiário: *{$beneficiary->name}* ✓"
-                : "Beneficiário: _{$nome}_ ⚠️ *não localizado* — o registro não será salvo se confirmar";
-
             return "📋 *Confirmar atendimento?*\n\n"
-                . "{$benefInfo}\n"
-                . "Tipo: _{$tipo}_\n"
+                . "Beneficiário: *{$session['beneficiary_name']}* ✓\n"
+                . "Tipo: _{$session['tipo']}_\n"
                 . "Descrição: _{$desc}_\n\n"
                 . "Responda *SIM* para confirmar ou *NÃO* para cancelar.";
         }
@@ -322,28 +325,27 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             if (!in_array($lower, ['sim', 's', 'yes', '1'])) {
                 return "❌ Atendimento cancelado.\n\nDigite *menu* para continuar.";
             }
-            if ($session['beneficiary_id'] && \Illuminate\Support\Facades\Schema::hasTable('attendances')) {
-                \Illuminate\Support\Facades\DB::table('attendances')->insert([
-                    'tenant_id'      => $this->user->tenant_id,
-                    'beneficiary_id' => $session['beneficiary_id'],
-                    'user_id'        => $this->user->id,
-                    'date'           => now()->toDateString(),
-                    'type'           => $session['tipo'],
-                    'description'    => $session['desc'] ?: "Registrado via WhatsApp Bot",
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
-                ]);
-                return $this->finalize(
-                    "✅ Atendimento registrado!\n👤 *{$session['beneficiary_name']}* — {$session['tipo']}"
-                );
+            $this->createAttendance($session['beneficiary_id'], $session['tipo'], $session['desc'] ?: 'Registrado via WhatsApp Bot');
+            return $this->finalize(
+                "✅ Atendimento registrado!\n👤 *{$session['beneficiary_name']}* — {$session['tipo']}"
+            );
+        }
+
+        // ── ESCOLHA DE BENEFICIÁRIO (nome com mais de um resultado) ─────────
+
+        if ($state === 'benef_escolha') {
+            $idx = (int) $lower - 1;
+            $ids = $session['ids'] ?? [];
+            if (!ctype_digit($lower) || !isset($ids[$idx])) {
+                return "❌ Opção inválida. Digite o *número* da lista ou *cancelar* para sair.";
             }
-            // Nao loga nome do beneficiario — PII do cliente. tenant_id + hash
-            // cobrem debug sem vazar identidade no storage/logs/laravel.log.
-            Log::info('Bot ATEND: beneficiario nao encontrado', [
-                'tenant_id'  => $this->user->tenant_id,
-                'query_hash' => substr(hash('sha256', mb_strtolower(trim($session['nome']))), 0, 12),
-            ]);
-            return "⚠️ Beneficiário *\"{$session['nome']}\"* não encontrado no cadastro.\n\nUse *BENEF: {$session['nome']}* para confirmar o nome exato ou cadastre-o primeiro no sistema.\n\nDigite *menu* para continuar.";
+            $b = Beneficiary::where('tenant_id', $this->user->tenant_id)->find($ids[$idx]);
+            if (!$b) {
+                Cache::forget($sessionKey);
+                return "❌ Beneficiário não encontrado. Digite *menu* para continuar.";
+            }
+            Cache::forget($sessionKey);
+            return $this->continueWithBeneficiary($session['action'], $session['payload'] ?? [], $b, $sessionKey);
         }
 
         // ── TAREFA ────────────────────────────────────────────────────────────
@@ -384,21 +386,12 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         // ── EVOLUÇÃO ──────────────────────────────────────────────────────────────
 
         if ($state === 'evol_nome') {
-            $beneficiary = Beneficiary::where('tenant_id', $this->user->tenant_id)
-                ->where('name', 'like', '%' . strip_tags($raw) . '%')
-                ->first();
-
-            if (!$beneficiary) {
+            [$b, $reply] = $this->resolveBeneficiary(strip_tags($raw), 'evol', [], $sessionKey);
+            if ($reply) return $reply;
+            if (!$b) {
                 return "❌ Beneficiário *\"{$raw}\"* não encontrado.\n\nTente com outro nome ou *cancelar*.";
             }
-
-            Cache::put($sessionKey, [
-                'state'            => 'evol_texto',
-                'beneficiary_id'   => $beneficiary->id,
-                'beneficiary_name' => $beneficiary->name,
-            ], $ttl);
-
-            return "👤 *{$beneficiary->name}* encontrado.\n\nDigite o texto da *evolução de caso*:";
+            return $this->askEvolutionText($b, $sessionKey);
         }
 
         if ($state === 'evol_texto') {
@@ -421,17 +414,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             if (!in_array($lower, ['sim', 's', 'yes', '1'])) {
                 return "❌ Evolução cancelada.\n\nDigite *menu* para continuar.";
             }
-            \Illuminate\Support\Facades\DB::table('attendances')->insert([
-                'tenant_id'      => $this->user->tenant_id,
-                'beneficiary_id' => $session['beneficiary_id'],
-                'user_id'        => $this->user->id,
-                'date'           => now()->toDateString(),
-                'type'           => 'Evolução',
-                'description'    => $session['texto'],
-                'gratuito'       => true,
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ]);
+            $this->createAttendance($session['beneficiary_id'], 'Evolução', $session['texto'], true);
             return $this->finalize("✅ Evolução registrada!\n👤 *{$session['beneficiary_name']}*");
         }
 
@@ -465,9 +448,9 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         // Antes: fallback tinha so 3 itens ("1 saldo, 2 tarefas, 5 ajuda") e
         // NGO com SystemSetting vazio via um menu truncado no WhatsApp.
         $defaults = [
-            'bot_msg_welcome_ngo'      => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Registrar atendimento\n4️⃣ Consultar beneficiário\n5️⃣ Ajuda\n6️⃣ Atendimentos recentes\n7️⃣ Registrar evolução",
-            'bot_msg_welcome_manager'  => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Concluir tarefa\n4️⃣ Lançar despesa\n5️⃣ Ajuda",
-            'bot_msg_welcome_employee' => "1️⃣ Ver saldo financeiro\n2️⃣ Minhas tarefas\n3️⃣ Concluir tarefa\n4️⃣ Lançar despesa (aguarda aprovação)\n5️⃣ Ajuda",
+            'bot_msg_welcome_ngo'      => self::MENU_NGO,
+            'bot_msg_welcome_manager'  => self::MENU_MANAGER,
+            'bot_msg_welcome_employee' => self::MENU_EMPLOYEE,
             'bot_msg_welcome_common'   => "1️⃣ Ver meu saldo pessoal\n2️⃣ Minhas tarefas\n3️⃣ Lançar receita\n4️⃣ Lançar despesa\n5️⃣ Ajuda",
         ];
 
@@ -478,7 +461,8 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         // automatico (limite tecnico da Evolution v2.3.6).
         $privacy = "🔒 *Canal seguro*\n"
                  . "Este atendimento é feito por um canal privado do Vivensi. "
-                 . "Suas informações são tratadas com sigilo e usadas apenas para as operações da sua conta.\n";
+                 . "Suas informações são tratadas com sigilo e usadas apenas para as operações da sua conta. "
+                 . "As mensagens desta conversa são apagadas em cerca de " . self::PURGE_DELAY_MINUTES . " minutos.\n";
 
         return "👋 Olá, *{$name}*!\n\n{$privacy}\n{$menu}";
     }
@@ -512,10 +496,10 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         $icon    = $balance >= 0 ? '📈' : '📉';
 
         return $this->finalize(
-            "💰 *Resumo — " . now()->translatedFormat('F/Y') . "*\n\n"
+            "💰 *Resumo financeiro — " . now()->translatedFormat('F/Y') . "*\n_Lançamentos pagos neste mês._\n\n"
             . "✅ Entradas: R\$ " . number_format($income, 2, ',', '.') . "\n"
             . "❌ Saídas:   R\$ " . number_format($expense, 2, ',', '.') . "\n"
-            . "{$icon} Saldo:    R\$ " . number_format($balance, 2, ',', '.')
+            . "{$icon} Resultado do mês: R\$ " . number_format($balance, 2, ',', '.')
         );
     }
 
@@ -581,12 +565,9 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
 
         if (!$val) return "❌ Formato inválido. Use:\n*DESP: 150,00 | Descrição*";
 
-        $this->createTransaction('expense', $val, $desc);
+        $t = $this->createTransaction('expense', $val, $desc);
 
-        return $this->finalize(
-            "✅ Despesa de *R\$ " . number_format($val, 2, ',', '.') . "* registrada!\n"
-            . "_{$desc}_\n_Status: Aguardando aprovação._"
-        );
+        return $this->finalize($this->expenseSavedMessage($t));
     }
 
     private function cmdReceita(string $raw): string
@@ -606,41 +587,22 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         );
     }
 
-    private function cmdAtendimento(string $raw): string
+    private function cmdAtendimento(string $raw, string $sessionKey): string
     {
         // ATEND: Nome | Tipo | Descrição
         $body  = trim(substr($raw, 6));
         $parts = explode('|', $body, 3);
         $nome  = strip_tags(trim($parts[0] ?? ''));
-        $tipo  = strip_tags(trim($parts[1] ?? 'Geral'));
+        $tipo  = strip_tags(trim($parts[1] ?? 'Geral')) ?: 'Geral';
         $desc  = strip_tags(trim($parts[2] ?? ''));
 
         if (!$nome) return "❌ Formato inválido. Use:\n*ATEND: Nome | Tipo | Descrição*";
 
-        $beneficiary = Beneficiary::where('tenant_id', $this->user->tenant_id)
-            ->where('name', 'like', "%{$nome}%")
-            ->first();
+        [$b, $reply] = $this->resolveBeneficiary($nome, 'atend_rapido', ['tipo' => $tipo, 'desc' => $desc], $sessionKey);
+        if ($reply) return $reply;
+        if ($b) return $this->continueWithBeneficiary('atend_rapido', ['tipo' => $tipo, 'desc' => $desc], $b, $sessionKey);
 
-        if ($beneficiary && \Illuminate\Support\Facades\Schema::hasTable('attendances')) {
-            \Illuminate\Support\Facades\DB::table('attendances')->insert([
-                'tenant_id'      => $this->user->tenant_id,
-                'beneficiary_id' => $beneficiary->id,
-                'user_id'        => $this->user->id,
-                'date'           => now()->toDateString(),
-                'type'           => $tipo,
-                'description'    => $desc ?: "Registrado via WhatsApp Bot",
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ]);
-            return $this->finalize(
-                "✅ Atendimento registrado!\n👤 *{$beneficiary->name}* — {$tipo}"
-            );
-        }
-
-        Log::info('Bot ATEND: beneficiario nao encontrado (comando rapido)', [
-            'tenant_id'  => $this->user->tenant_id,
-            'query_hash' => substr(hash('sha256', mb_strtolower(trim($nome))), 0, 12),
-        ]);
+        $this->logNotFound('Bot ATEND: beneficiario nao encontrado (comando rapido)', $nome);
         return "⚠️ Beneficiário *\"{$nome}\"* não encontrado no cadastro.\n\nUse *BENEF: {$nome}* para confirmar o nome exato, ou cadastre-o primeiro no sistema.\n\n_Digite *menu* para continuar._";
     }
 
@@ -707,18 +669,23 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         return $this->finalize(implode("\n", $lines));
     }
 
-    private function cmdHistoricoAtendimentos(string $query): string
+    private function cmdHistoricoAtendimentos(string $query, string $sessionKey): string
     {
         if (!$query) return "❌ Informe o nome. Ex: *HIST: João Silva*";
 
-        $tenantId    = $this->user->tenant_id;
-        $beneficiary = Beneficiary::where('tenant_id', $tenantId)
-            ->where('name', 'like', "%{$query}%")
-            ->first();
+        [$beneficiary, $reply] = $this->resolveBeneficiary(strip_tags($query), 'hist', [], $sessionKey);
+        if ($reply) return $reply;
 
         if (!$beneficiary) {
             return "❌ Beneficiário *\"{$query}\"* não encontrado no cadastro.\n\n_Digite *menu* para voltar._";
         }
+
+        return $this->historyOf($beneficiary);
+    }
+
+    private function historyOf(Beneficiary $beneficiary): string
+    {
+        $tenantId = $this->user->tenant_id;
 
         $rows = \Illuminate\Support\Facades\DB::table('attendances')
             ->where('tenant_id', $tenantId)
@@ -752,7 +719,7 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         return $this->finalize(implode("\n", $lines));
     }
 
-    private function cmdEvolucaoRapida(string $raw): string
+    private function cmdEvolucaoRapida(string $raw, string $sessionKey): string
     {
         // EVOL: Nome do Beneficiário | Texto da evolução
         $body  = trim(substr($raw, 5));
@@ -764,29 +731,172 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
             return "❌ Formato inválido. Use:\n*EVOL: Nome Beneficiário | Texto da evolução*";
         }
 
-        $beneficiary = Beneficiary::where('tenant_id', $this->user->tenant_id)
-            ->where('name', 'like', "%{$nome}%")
-            ->first();
+        [$b, $reply] = $this->resolveBeneficiary($nome, 'evol_rapido', ['texto' => $texto], $sessionKey);
+        if ($reply) return $reply;
 
-        if (!$beneficiary) {
+        if (!$b) {
             return "❌ Beneficiário *\"{$nome}\"* não encontrado no cadastro.\n\n_Use BENEF: {$nome} para verificar o nome exato._";
         }
 
-        \Illuminate\Support\Facades\DB::table('attendances')->insert([
+        return $this->continueWithBeneficiary('evol_rapido', ['texto' => $texto], $b, $sessionKey);
+    }
+
+    // ─── Beneficiário: busca sem ambiguidade ──────────────────────────────────
+
+    /**
+     * Acha o beneficiário pelo nome ou CPF/NIS. Com um resultado (ou um nome
+     * exatamente igual), devolve [beneficiário, null]. Com vários, guarda a
+     * ação pendente na sessão e devolve [null, lista para o cliente escolher].
+     * Sem resultado: [null, null].
+     *
+     * Antes: LIKE '%nome%' + first() — "Ana" gravava na "Mariana" (2026-11-22).
+     */
+    private function resolveBeneficiary(string $query, string $action, array $payload, string $sessionKey): array
+    {
+        $query = trim($query);
+        if ($query === '') return [null, null];
+
+        $lookup  = new BeneficiaryLookupService();
+        $results = $lookup->search($this->user->tenant_id, $query, self::MAX_CHOICES + 1);
+
+        if ($results->isEmpty()) return [null, null];
+        if ($results->count() === 1) return [$results->first(), null];
+
+        $exact = $results->filter(fn ($b) => mb_strtolower(trim($b->name)) === mb_strtolower($query));
+        if ($exact->count() === 1) return [$exact->first(), null];
+
+        $shown = $results->take(self::MAX_CHOICES)->values();
+        Cache::put($sessionKey, [
+            'state'   => 'benef_escolha',
+            'ids'     => $shown->pluck('id')->all(),
+            'action'  => $action,
+            'payload' => $payload,
+        ], now()->addMinutes(self::SESSION_TTL));
+
+        $lines = ["🔎 Encontrei mais de um beneficiário para *\"{$query}\"*:\n"];
+        foreach ($shown as $i => $b) {
+            $cpf = $b->cpf ? ' — CPF ' . $lookup->obfuscateCpf($b->cpf) : '';
+            $lines[] = ($i + 1) . ". {$b->name}{$cpf}";
+        }
+        if ($results->count() > self::MAX_CHOICES) {
+            $lines[] = "\n_Há mais resultados. Se não estiver na lista, digite *cancelar* e use o nome completo ou o CPF._";
+        }
+        $lines[] = "\nDigite o *número* do beneficiário ou *cancelar*.";
+
+        return [null, implode("\n", $lines)];
+    }
+
+    /** Segue a ação que estava esperando a escolha do beneficiário. */
+    private function continueWithBeneficiary(string $action, array $payload, Beneficiary $b, string $sessionKey): string
+    {
+        switch ($action) {
+            case 'atend':
+                return $this->askAttendanceType($b, $sessionKey);
+            case 'evol':
+                return $this->askEvolutionText($b, $sessionKey);
+            case 'hist':
+                return $this->historyOf($b);
+            case 'atend_rapido':
+                $this->createAttendance($b->id, $payload['tipo'] ?? 'Geral', ($payload['desc'] ?? '') ?: 'Registrado via WhatsApp Bot');
+                return $this->finalize("✅ Atendimento registrado!\n👤 *{$b->name}* — " . ($payload['tipo'] ?? 'Geral'));
+            case 'evol_rapido':
+                $this->createAttendance($b->id, 'Evolução', $payload['texto'] ?? '', true);
+                return $this->finalize("✅ Evolução registrada!\n👤 *{$b->name}*\n_" . ($payload['texto'] ?? '') . "_");
+        }
+        return $this->welcomeMessage();
+    }
+
+    private function askAttendanceType(Beneficiary $b, string $sessionKey): string
+    {
+        Cache::put($sessionKey, [
+            'state'            => 'atend_tipo',
+            'beneficiary_id'   => $b->id,
+            'beneficiary_name' => $b->name,
+        ], now()->addMinutes(self::SESSION_TTL));
+        return "👤 *{$b->name}* ✓\n\nQual o *tipo* de atendimento?\n(ex: saúde, educação, assistência social)";
+    }
+
+    private function askEvolutionText(Beneficiary $b, string $sessionKey): string
+    {
+        Cache::put($sessionKey, [
+            'state'            => 'evol_texto',
+            'beneficiary_id'   => $b->id,
+            'beneficiary_name' => $b->name,
+        ], now()->addMinutes(self::SESSION_TTL));
+        return "👤 *{$b->name}* encontrado.\n\nDigite o texto da *evolução de caso*:";
+    }
+
+    private function createAttendance(int $beneficiaryId, string $type, string $description, bool $gratuito = false): void
+    {
+        Attendance::create([
             'tenant_id'      => $this->user->tenant_id,
-            'beneficiary_id' => $beneficiary->id,
+            'beneficiary_id' => $beneficiaryId,
             'user_id'        => $this->user->id,
             'date'           => now()->toDateString(),
-            'type'           => 'Evolução',
-            'description'    => $texto,
-            'gratuito'       => true,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'type'           => mb_substr($type, 0, 100),
+            'description'    => $description,
+            'gratuito'       => $gratuito,
         ]);
+    }
 
-        return $this->finalize(
-            "✅ Evolução registrada!\n👤 *{$beneficiary->name}*\n_{$texto}_"
+    /** Nao loga o nome consultado — PII. tenant_id + hash bastam para debug. */
+    private function logNotFound(string $msg, string $query): void
+    {
+        Log::info($msg, [
+            'tenant_id'  => $this->user->tenant_id,
+            'query_hash' => substr(hash('sha256', mb_strtolower(trim($query))), 0, 12),
+        ]);
+    }
+
+    // ─── Permissões e conta ───────────────────────────────────────────────────
+
+    /** Financeiro: mesma regra do painel (colaborador de ONG não vê). */
+    private function canSeeFinance(): bool
+    {
+        return $this->user->can('access-manager');
+    }
+
+    private function noFinanceAccess(): string
+    {
+        return "🔒 O financeiro é só para administração e coordenação da organização.\n\n_Digite *menu* para ver as suas opções._";
+    }
+
+    /** Mesma regra do FinanceService: despesa de colaborador vai para aprovação. */
+    private function expenseNeedsApproval(): bool
+    {
+        return !in_array($this->user->role, ['manager', 'ngo', 'super_admin'], true);
+    }
+
+    private function expenseSavedMessage(Transaction $t): string
+    {
+        $msg = "✅ Despesa de *R\$ " . number_format((float) $t->amount, 2, ',', '.') . "* registrada!\n_{$t->description}_";
+        return $t->approval_status === 'pending' ? $msg . "\n_Status: Aguardando aprovação._" : $msg;
+    }
+
+    /**
+     * Mesma regra do middleware CheckSubscription: o bot só funciona com a
+     * conta liberada no painel. Devolve a mensagem de bloqueio, ou null.
+     */
+    private function accountBlockedMessage(): ?string
+    {
+        if ($this->user->role === 'super_admin') return null;
+
+        $tenant = $this->user->tenant;
+        if (!$tenant) return null;
+
+        $status   = $tenant->subscription_status;
+        $courtesy = $tenant->plan && $tenant->plan->is_courtesy;
+
+        $ok = $status !== 'suspended' && $status !== 'awaiting_contract' && (
+            $courtesy
+            || ($status === 'active' && !app(InvoiceService::class)->isBlocked($tenant))
+            || ($status === 'trialing' && optional($tenant->trial_ends_at)->isFuture())
         );
+        if ($ok) return null;
+
+        return $this->user->role === 'ngo'
+            ? "⚠️ *Conta com pendência*\n\nO bot volta a funcionar quando o painel for liberado. Entre no painel e veja *Minha conta → Faturas*."
+            : "⚠️ *Conta com pendência*\n\nO bot volta a funcionar quando a conta da organização for regularizada. Fale com o administrador.";
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -817,15 +927,20 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         return $f > 0 ? $f : null;
     }
 
-    private function createTransaction(string $type, float $amount, string $description): void
+    /**
+     * Lança pelo mesmo serviço do painel: aprovação de despesa por perfil,
+     * cache do financeiro limpo e aviso aos gestores (antes gravava direto,
+     * sem approval_status — a despesa não aparecia na lista de aprovação).
+     */
+    private function createTransaction(string $type, float $amount, string $description): Transaction
     {
-        Transaction::create([
-            'tenant_id'   => $this->user->tenant_id,
+        return app(FinanceService::class)->createTransaction([
             'type'        => $type,
-            'amount'      => $amount,
-            'description' => $description,
+            // O serviço espera o formato brasileiro ("1500,50"): ele tira os
+            // pontos e troca a vírgula. Um float 150.5 viraria 1505.
+            'amount'      => number_format($amount, 2, ',', ''),
+            'description' => mb_substr($description, 0, 255) ?: ($type === 'expense' ? 'Despesa via Bot' : 'Receita via Bot'),
             'date'        => now()->toDateString(),
-            'status'      => $type === 'expense' ? 'pending' : 'paid',
-        ]);
+        ], $this->user);
     }
 }

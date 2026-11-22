@@ -38,8 +38,10 @@ class BeneficiaryLookupService
         $q = Beneficiary::query()
             ->where('tenant_id', $tenantId)
             ->where(function ($q) use ($query, $digits, $key) {
-                // Nome (LIKE — nome nao e encrypted no Beneficiary)
-                $q->where('name', 'like', "%{$query}%");
+                // Nome (LIKE — nome nao e encrypted no Beneficiary). Escapa % e _
+                // digitados pelo usuario para nao virarem curinga.
+                $like = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
+                $q->where('name', 'like', "%{$like}%");
 
                 // CPF/NIS via bidx (so tenta se query parece documento)
                 if (strlen($digits) === 11) {

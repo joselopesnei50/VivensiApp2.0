@@ -79,8 +79,9 @@ it('deleteMessageForEveryone retorna erro sem estourar quando falta id ou remote
     expect($evo->deleteMessageForEveryone(['remoteJid' => 'x'])['error'])->toBe('Missing id or remoteJid');
 });
 
-it('bot apaga inbound e outbound da Evolution depois de responder', function () {
+it('bot agenda apagar inbound e outbound alguns minutos depois de responder', function () {
     SystemSetting::setValue('bot_instance_name', 'bot-instance', 'bot');
+    \Illuminate\Support\Facades\Bus::fake([\App\Jobs\PurgeBotMessages::class]);
 
     Http::fake([
         '*/message/sendText/*' => Http::response([
@@ -103,15 +104,28 @@ it('bot apaga inbound e outbound da Evolution depois de responder', function () 
     (new ProcessWhatsAppBotMessage($user, '5511999990001@s.whatsapp.net', 'menu', $inboundKey))
         ->handle();
 
-    // Duas chamadas de delete: inbound (IN_MSG_111) + outbound (OUT_MSG_999)
-    Http::assertSent(function ($req) {
-        return str_contains($req->url(), '/chat/deleteMessageForEveryone/')
-            && $req['id'] === 'IN_MSG_111';
+    // Nada apagado na hora: o cliente precisa conseguir ler a resposta.
+    Http::assertNotSent(fn ($req) => str_contains($req->url(), '/chat/deleteMessageForEveryone/'));
+
+    \Illuminate\Support\Facades\Bus::assertDispatched(\App\Jobs\PurgeBotMessages::class, function ($job) {
+        $ids = array_column($job->keys, 'id');
+        return $job->instanceName === 'bot-instance'
+            && in_array('IN_MSG_111', $ids, true)
+            && in_array('OUT_MSG_999', $ids, true)
+            && $job->delay !== null;
     });
-    Http::assertSent(function ($req) {
-        return str_contains($req->url(), '/chat/deleteMessageForEveryone/')
-            && $req['id'] === 'OUT_MSG_999';
-    });
+});
+
+it('PurgeBotMessages apaga as mensagens na Evolution', function () {
+    Http::fake(['*/chat/deleteMessageForEveryone/*' => Http::response(['deleted' => true], 200)]);
+
+    (new \App\Jobs\PurgeBotMessages('bot-instance', [
+        ['id' => 'IN_1', 'remoteJid' => '5511@s.whatsapp.net', 'fromMe' => false, 'participant' => null],
+        ['id' => 'OUT_1', 'remoteJid' => '5511@s.whatsapp.net', 'fromMe' => true, 'participant' => null],
+    ]))->handle();
+
+    Http::assertSent(fn ($req) => str_contains($req->url(), '/chat/deleteMessageForEveryone/') && $req['id'] === 'IN_1');
+    Http::assertSent(fn ($req) => str_contains($req->url(), '/chat/deleteMessageForEveryone/') && $req['id'] === 'OUT_1');
 });
 
 it('welcome message inclui aviso de privacidade dos dados', function () {
