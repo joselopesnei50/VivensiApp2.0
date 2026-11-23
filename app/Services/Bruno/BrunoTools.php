@@ -138,7 +138,7 @@ class BrunoTools
             return ['error' => "Painel inválido: {$painel}. Use: terceiro_setor, mei ou gestor."];
         }
 
-        $query = SubscriptionPlan::query()->where('is_active', true)->orderBy('price');
+        $query = SubscriptionPlan::query()->where('is_active', true)->where('show_on_home', true)->orderBy('price');
         if ($painel) {
             $query->where('target_audience', self::PAINEL_TO_AUDIENCE[$painel]);
         }

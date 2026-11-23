@@ -36,6 +36,7 @@ class SubscriptionPlan extends Model
         'features',
         'capabilities',
         'is_active',
+        'show_on_home',
         'is_courtesy',
         'asaas_id',
         'abacatepay_product_id', // ID do produto na AbacatePay
@@ -50,6 +51,7 @@ class SubscriptionPlan extends Model
         'price'        => 'decimal:2',
         'price_yearly' => 'decimal:2',
         'is_active'    => 'boolean',
+        'show_on_home' => 'boolean',
         'is_courtesy'  => 'boolean',
         'whatsapp_conversations_included' => 'integer',
         'whatsapp_extra_pack_size'        => 'integer',

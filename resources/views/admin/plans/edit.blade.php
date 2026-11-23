@@ -70,6 +70,12 @@
                                 <label class="form-check-label fw-bold ms-2" for="isActive">Plano Ativo para Vendas</label>
                             </div>
                             <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="show_on_home" value="0">
+                                <input class="form-check-input" type="checkbox" name="show_on_home" value="1" {{ old('show_on_home', $plan->show_on_home ?? true) ? 'checked' : '' }} id="showOnHome">
+                                <label class="form-check-label fw-bold ms-2" for="showOnHome">Mostrar na home do site</label>
+                                <div class="small text-muted ms-2">Desmarcado: o plano continua à venda pelo link direto, mas não aparece no site nem no cadastro.</div>
+                            </div>
+                            <div class="form-check form-switch mt-2">
                                 <input type="hidden" name="is_courtesy" value="0">
                                 <input class="form-check-input" type="checkbox" name="is_courtesy" value="1" {{ old('is_courtesy', $plan->is_courtesy) ? 'checked' : '' }} id="isCourtesy">
                                 <label class="form-check-label fw-bold ms-2" for="isCourtesy">Plano de Cortesia</label>
