@@ -32,7 +32,9 @@ class CheckFailedJobs extends Command
 
         $lines = $newJobs->map(function ($job) {
             $class = data_get(json_decode($job->payload, true), 'displayName', 'unknown');
-            return "  [{$job->failed_at}] queue={$job->queue} job={$class} uuid={$job->uuid}";
+            // Primeira linha do erro: sem ela o alerta não diz o motivo da falha.
+            $error = \Illuminate\Support\Str::limit(trim(strtok((string) $job->exception, "\n")), 200);
+            return "  [{$job->failed_at}] queue={$job->queue} job={$class} uuid={$job->uuid}\n    erro: {$error}";
         })->implode("\n");
 
         Log::critical("Queue: {$newCount} job(s) novo(s) falhado(s).", [
