@@ -85,7 +85,7 @@ class ProspectingController extends Controller
     public function analyze(int $id)
     {
         $prospect = $this->findForTenant($id);
-        ProcessProspect::dispatch($prospect)->onQueue('default');
+        ProcessProspect::dispatchSpread($prospect);
 
         return back()->with('success', 'Análise da Bruce AI reiniciada para este lead.');
     }
@@ -100,7 +100,7 @@ class ProspectingController extends Controller
             ->get();
 
         foreach ($rawLeads as $prospect) {
-            ProcessProspect::dispatch($prospect)->onQueue('default');
+            ProcessProspect::dispatchSpread($prospect);
         }
 
         return back()->with('success', "Bruce AI iniciou a análise de {$rawLeads->count()} lead(s) em fila.");

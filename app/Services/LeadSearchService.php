@@ -133,12 +133,12 @@ class LeadSearchService
             );
 
             if ($prospect->wasRecentlyCreated) {
-                ProcessProspect::dispatch($prospect)->onQueue('default');
+                ProcessProspect::dispatchSpread($prospect);
                 $this->dispatchEmailScrapeIfNeeded($prospect);
                 $created++;
             } else {
                 if ($prospect->status === 'raw') {
-                    ProcessProspect::dispatch($prospect)->onQueue('default');
+                    ProcessProspect::dispatchSpread($prospect);
                 }
                 $this->dispatchEmailScrapeIfNeeded($prospect);
                 $updated++;
@@ -213,12 +213,12 @@ class LeadSearchService
             );
 
             if ($prospect->wasRecentlyCreated) {
-                ProcessProspect::dispatch($prospect)->onQueue('default');
+                ProcessProspect::dispatchSpread($prospect);
                 $this->dispatchEmailScrapeIfNeeded($prospect);
                 $created++;
             } else {
                 if ($prospect->status === 'raw') {
-                    ProcessProspect::dispatch($prospect)->onQueue('default');
+                    ProcessProspect::dispatchSpread($prospect);
                 }
                 $this->dispatchEmailScrapeIfNeeded($prospect);
                 $updated++;
