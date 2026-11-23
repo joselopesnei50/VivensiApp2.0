@@ -36,10 +36,14 @@ class RegisterController extends Controller
         return view('auth.register', compact('plan', 'plans'));
     }
 
-    /** Planos de ONG pagos e ativos, do mais barato ao mais caro. */
+    /**
+     * Planos de ONG pagos, ativos e visíveis no site, do mais barato ao mais
+     * caro. Plano fora da home continua contratável pelo link ?plan_id=.
+     */
     private function publicPlans()
     {
         return SubscriptionPlan::where('is_active', true)
+            ->where('show_on_home', true)
             ->where('target_audience', 'ngo')
             ->where(fn ($q) => $q->where('is_courtesy', false)->orWhereNull('is_courtesy'))
             ->orderBy('price')

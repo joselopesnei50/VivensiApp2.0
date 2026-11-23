@@ -82,6 +82,9 @@
                     <label class="form-check-label small fw-bold {{ $plan->is_active ? 'text-success' : 'text-danger' }}">
                         {{ $plan->is_active ? 'Plano Ativo' : 'Plano Inativo' }}
                     </label>
+                    @if($plan->is_active && !($plan->show_on_home ?? true))
+                        <span class="badge bg-secondary ms-1" title="À venda só pelo link direto">Fora da home</span>
+                    @endif
                 </div>
             </div>
         </div>

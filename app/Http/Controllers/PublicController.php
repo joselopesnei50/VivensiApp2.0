@@ -12,6 +12,7 @@ class PublicController extends Controller
         // A Vivensi atende só o Terceiro Setor.
         // Só planos pagos à venda (cortesia é dada pela equipe, não aparece na home).
         $plans = \App\Models\SubscriptionPlan::where('is_active', true)
+                    ->where('show_on_home', true)
                     ->where('target_audience', 'ngo')
                     ->where(fn ($q) => $q->where('is_courtesy', false)->orWhereNull('is_courtesy'))
                     ->orderBy('price')
@@ -78,6 +79,7 @@ class PublicController extends Controller
     public function solutionsNgo()
     {
         $plans = \App\Models\SubscriptionPlan::where('is_active', true)
+                    ->where('show_on_home', true)
                     ->where('target_audience', 'ngo')
                     ->get();
         return view('public.solutions_ngo', compact('plans'));
