@@ -308,6 +308,8 @@ class AdminController extends Controller
         // Cota diária de e-mails (Fase 2 — item 3.3).
         $emailQuota          = app(EmailQuotaService::class);
         $emailDailyQuota     = $emailQuota->getQuota($tenant);
+        $emailBaseQuota      = $emailQuota->getBaseQuota($tenant);
+        $emailExtraQuota     = $emailQuota->getExtraQuota($tenant);
         $emailSentToday      = $emailQuota->getSentToday($tenant);
         $emailRemainingToday = $emailQuota->getRemainingToday($tenant);
 
@@ -328,7 +330,7 @@ class AdminController extends Controller
         return view('admin.tenants.show', compact(
             'tenant', 'user', 'plan', 'plans', 'adesao',
             'antiBanCurrentVersion', 'antiBanCurrentAccepted', 'antiBanAcceptances',
-            'emailDailyQuota', 'emailSentToday', 'emailRemainingToday'
+            'emailDailyQuota', 'emailSentToday', 'emailRemainingToday', 'emailBaseQuota', 'emailExtraQuota'
         ));
     }
 

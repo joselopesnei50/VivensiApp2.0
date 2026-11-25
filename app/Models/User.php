@@ -126,6 +126,7 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
+        'bot_access'                 => 'boolean',
         'must_change_password'       => 'boolean',
         'email_verified_at'          => 'datetime',
         'last_login_at'              => 'datetime',
@@ -155,6 +156,31 @@ class User extends Authenticatable
     public function projectMembers()
     {
         return $this->hasMany(ProjectMember::class, 'user_id');
+    }
+
+    /**
+     * O número do bot incluso no plano vai para o primeiro administrador da
+     * organização (cadastro novo). `bot_access` fica fora do $fillable: só
+     * muda pela tela de adicionais (AddonService).
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if ($user->bot_access !== null || !$user->tenant_id) {
+                return;
+            }
+            try {
+                $tenantType = \Illuminate\Support\Facades\DB::table('tenants')->where('id', $user->tenant_id)->value('type');
+                $isAdmin = in_array($user->role, ['ngo', 'common'], true)
+                    || ($user->role === 'manager' && $tenantType !== 'ngo');
+                if ($isAdmin && !static::where('tenant_id', $user->tenant_id)->where('bot_access', true)->exists()) {
+                    $user->bot_access = true;
+                }
+            } catch (\Throwable $e) {
+                // Coluna ainda não migrada: o cadastro segue sem o acesso ao bot.
+                unset($user->bot_access);
+            }
+        });
     }
 
     // ── Helpers de role (compatíveis com coluna role + spatie) ────────────────

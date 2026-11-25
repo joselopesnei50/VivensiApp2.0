@@ -94,7 +94,11 @@
 
     <div class="inv-hero">
         <h1><i class="fas fa-file-invoice-dollar" style="color:#4f46e5;"></i> Minhas Faturas</h1>
-        <p>Acompanhe suas cobranças de assinatura Vivensi — pagas, em aberto e vencidas.</p>
+        <p>Acompanhe suas cobranças de assinatura Vivensi — pagas, em aberto e vencidas.
+            @if(in_array(auth()->user()->role, ['ngo', 'manager', 'common'], true) && !\App\Support\TeamAccess::appliesTo(auth()->user()))
+                · <a href="{{ route('client.addons.index') }}">Contratar adicionais</a>
+            @endif
+        </p>
     </div>
 
     {{-- ── Assinatura: cancelamento agendado / cancelar ── --}}
@@ -146,7 +150,7 @@
                     <tbody>
                         @foreach($unpaid as $inv)
                             <tr>
-                                <td>{{ $inv->description }}</td>
+                                <td>{{ $inv->description }}@include('client.invoices._items', ['inv' => $inv])</td>
                                 <td>{{ $inv->due_date->format('d/m/Y') }}</td>
                                 <td class="inv-amount">{{ $inv->formatted_amount }}</td>
                                 <td>
@@ -216,7 +220,7 @@
                     <tbody>
                         @foreach($paid as $inv)
                             <tr>
-                                <td>{{ $inv->description }}</td>
+                                <td>{{ $inv->description }}@include('client.invoices._items', ['inv' => $inv])</td>
                                 <td>{{ $inv->paid_at?->timezone('America/Sao_Paulo')->format('d/m/Y') ?? '—' }}</td>
                                 <td class="inv-amount">{{ $inv->formatted_amount }}</td>
                                 <td style="color:#64748b; font-size:.82rem;">{{ $inv->paidViaLabel() ?? '—' }}</td>

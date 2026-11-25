@@ -76,11 +76,19 @@ class WhatsAppBotController extends Controller
         }
 
         // 4. Identificação do Usuário
-        [$user, $ambiguous] = $this->findUserByPhone($cleanPhone);
+        [$user, $ambiguous, $noAccess] = $this->findUserByPhone($cleanPhone);
 
         if ($ambiguous) {
             $this->sendDirect($waId, "⚠️ *Este número está em mais de uma conta do Vivensi.*\n\nPor segurança, o bot não sabe em qual painel gravar. Peça ao administrador para deixar este WhatsApp em uma conta só.");
             return response()->json(['status' => 'ambiguous'], 200);
+        }
+
+        if ($noAccess) {
+            // Número cadastrado, mas a pessoa não tem um dos números do bot da
+            // organização (1 incluso no plano + extras contratados).
+            Log::info('WhatsApp Bot: usuario sem acesso ao bot', ['phone_suffix' => substr($cleanPhone, -4)]);
+            $this->sendDirect($waId, "🔒 *Seu número está no Vivensi, mas ainda não tem acesso ao bot.*\n\nPeça ao administrador da organização para liberar em *Minha conta → Adicionais*.");
+            return response()->json(['status' => 'no_bot_access'], 200);
         }
 
         if (!$user) {
@@ -123,7 +131,7 @@ class WhatsAppBotController extends Controller
     // ─── Auxiliares ───────────────────────────────────────────────────────────
 
     /**
-     * Acha o usuário pelo telefone. Devolve [user|null, ambiguo].
+     * Acha o usuário pelo telefone. Devolve [user|null, ambiguo, sem_acesso_ao_bot].
      *
      * Um número em mais de uma conta (ex.: a mesma pessoa em duas ONGs) é
      * ambíguo: antes o bot pegava a primeira em silêncio. A busca lenta
@@ -139,20 +147,16 @@ class WhatsAppBotController extends Controller
         // 1. Tenta bidx pra formatos comuns do numero (fastpath, indice).
         $key   = (string) config('app.key');
         $bidxs = array_map(fn ($v) => hash_hmac('sha256', $v, $key), $this->phoneVariants($phone));
-        $fast  = User::where('status', 'active')->whereIn('phone_bidx', $bidxs)->limit(2)->get();
-        if ($fast->count() > 1) {
-            $this->logAmbiguous($phone, $fast->count());
-            return [null, true];
-        }
+        $cols  = ['id', 'name', 'phone', 'phone_bidx', 'role', 'tenant_id', 'status', 'bot_access'];
+        $matches = User::where('status', 'active')->whereIn('phone_bidx', $bidxs)->limit(20)->get($cols);
 
         // 2. Fallback lento: itera users ativos, descriptografa via accessor,
         // compara DDD + numero. O(n) mas ok pra bot interno (poucos users).
-        $target  = $this->phoneKey($phone);
-        $matches = collect($fast->all());
+        $target = $this->phoneKey($phone);
         if ($target) {
             User::where('status', 'active')
                 ->whereNotNull('phone')
-                ->select(['id', 'name', 'phone', 'phone_bidx', 'role', 'tenant_id', 'status'])
+                ->select($cols)
                 ->chunk(500, function ($chunk) use ($target, &$matches) {
                     foreach ($chunk as $u) {
                         if ($matches->contains('id', $u->id)) continue;
@@ -164,16 +168,24 @@ class WhatsAppBotController extends Controller
                 });
         }
 
-        if ($matches->count() === 1) {
+        // 3. Só vale quem tem um dos números do bot da organização (adicionais,
+        // 2026-11-25). Admin da plataforma sempre pode. Isso também desfaz a
+        // ambiguidade quando o número está em duas contas e só uma liberou.
+        $allowed = $matches->filter(fn ($u) => $u->role === 'super_admin' || (bool) $u->bot_access)->values();
+
+        if ($allowed->count() === 1) {
             // Recarrega com todas as colunas (o select acima e parcial).
-            return [User::find($matches->first()->id), false];
+            return [User::find($allowed->first()->id), false, false];
         }
-        if ($matches->count() > 1) {
-            $this->logAmbiguous($phone, $matches->count());
-            return [null, true];
+        if ($allowed->count() > 1) {
+            $this->logAmbiguous($phone, $allowed->count());
+            return [null, true, false];
+        }
+        if ($matches->isNotEmpty()) {
+            return [null, false, true];
         }
 
-        return [null, false];
+        return [null, false, false];
     }
 
     /**

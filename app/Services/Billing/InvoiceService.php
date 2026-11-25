@@ -76,12 +76,15 @@ class InvoiceService
         }
 
         $periodStart = $start->toDateString();
-        $periodEnd   = $start->copy()->addMonthNoOverflow()->subDay()->toDateString();
+        $periodEnd   = self::periodEndFor($plan, $start)->toDateString();
         $minDue      = now()->startOfDay()->addDays(self::MIN_DAYS_TO_PAY);
         $dueDate     = ($start->gt($minDue) ? $start : $minDue)->toDateString();
-        $amountCents = (int) round(((float) $plan->price) * 100);
+        // Plano + adicionais contratados no momento da geração (uma cobrança só).
+        $lines       = app(AddonService::class)->invoiceLines($tenant, $plan);
+        $amountCents = array_sum(array_column($lines, 'total_cents'));
+        $hasAddons   = count($lines) > 1;
 
-        return DB::transaction(function () use ($tenant, $plan, $periodStart, $periodEnd, $dueDate, $amountCents, $start) {
+        return DB::transaction(function () use ($tenant, $plan, $periodStart, $periodEnd, $dueDate, $amountCents, $start, $lines, $hasAddons) {
             $existing = Invoice::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->whereDate('period_start', $periodStart)
@@ -101,7 +104,8 @@ class InvoiceService
                 'tenant_id'    => $tenant->id,
                 'plan_id'      => $plan->id,
                 'amount_cents' => $amountCents,
-                'description' => "Assinatura {$plan->name} — " . $start->format('d/m/Y') . ' a ' . Carbon::parse($periodEnd)->format('d/m/Y'),
+                'description' => "Assinatura {$plan->name}" . ($hasAddons ? ' + adicionais' : '') . ' — ' . $start->format('d/m/Y') . ' a ' . Carbon::parse($periodEnd)->format('d/m/Y'),
+                'items'        => $lines,
                 'status'       => Invoice::STATUS_OPEN,
                 'period_start' => $periodStart,
                 'period_end'   => $periodEnd,
@@ -193,6 +197,19 @@ class InvoiceService
     }
 
     /**
+     * Fim do ciclo que começa em $start: plano anual cobre 1 ano, os demais
+     * 1 mês. Antes (até 2026-11-25) todo plano virava fatura mensal — um
+     * plano anual seria cobrado o valor do ano todo mês.
+     */
+    public static function periodEndFor(\App\Models\SubscriptionPlan $plan, \Carbon\Carbon $start): \Carbon\Carbon
+    {
+        $next = ($plan->interval ?? 'monthly') === 'yearly'
+            ? $start->copy()->addYearNoOverflow()
+            : $start->copy()->addMonthNoOverflow();
+        return $next->subDay();
+    }
+
+    /**
      * Início do próximo período a faturar:
      *  1. dia seguinte ao fim da última fatura (não cancelada);
      *  2. sem fatura: 1 mês após o 1º pagamento pelo checkout (que cobriu o 1º mês);
@@ -211,7 +228,8 @@ class InvoiceService
             ->where('status', 'paid')->where('external_id', 'like', 'VIVENSI_%')
             ->orderByDesc('paid_at')->value('paid_at');
         if ($paidAt) {
-            return Carbon::parse($paidAt)->startOfDay()->addMonthNoOverflow();
+            $first = Carbon::parse($paidAt)->startOfDay();
+            return $tenant->plan ? self::periodEndFor($tenant->plan, $first)->addDay() : $first->addMonthNoOverflow();
         }
 
         return now()->startOfMonth();
@@ -246,7 +264,7 @@ class InvoiceService
             return $this->markAsPaid($covering, Invoice::PAID_VIA_ABACATEPAY, null, $chargeId);
         }
 
-        $end = $day->copy()->addMonthNoOverflow()->subDay();
+        $end = $plan ? self::periodEndFor($plan, $day) : $day->copy()->addMonthNoOverflow()->subDay();
         return Invoice::withoutGlobalScopes()->firstOrCreate(
             ['tenant_id' => $tenant->id, 'period_start' => $day->toDateString()],
             [
@@ -388,11 +406,28 @@ class InvoiceService
             return;
         }
 
+        // Itens do checkout = linhas da fatura (plano + adicionais), para o
+        // total cobrado na AbacatePay bater com o valor da fatura.
+        $items = [['id' => $plan->abacatepay_product_id, 'quantity' => 1]];
+        if (is_array($invoice->items) && count($invoice->items) > 0) {
+            $items = [];
+            foreach ($invoice->items as $line) {
+                if (empty($line['product_id'])) {
+                    Log::warning('InvoiceService: item da fatura sem produto na AbacatePay — invoice sem link de pagamento', [
+                        'invoice_id' => $invoice->id,
+                        'item'       => $line['name'] ?? null,
+                    ]);
+                    return;
+                }
+                $items[] = ['id' => $line['product_id'], 'quantity' => max(1, (int) ($line['quantity'] ?? 1))];
+            }
+        }
+
         try {
             $service = app(AbacatePayService::class);
 
             $checkout = $service->createCheckout(
-                items: [['id' => $plan->abacatepay_product_id, 'quantity' => 1]],
+                items: $items,
                 externalId: 'invoice_' . $invoice->id . '_' . time(),
                 returnUrl: config('app.url') . '/minha-conta/faturas',
                 completionUrl: config('app.url') . '/minha-conta/faturas',
