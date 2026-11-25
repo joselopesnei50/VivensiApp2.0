@@ -55,7 +55,9 @@ class SubscriptionCancellation
         if ($lastPaidEnd) {
             $until = Carbon::parse($lastPaidEnd);
         } elseif ($first = $this->firstPaymentAt($tenant)) {
-            $until = $first->copy()->startOfDay()->addMonthNoOverflow()->subDay();
+            $until = $tenant->plan
+                ? InvoiceService::periodEndFor($tenant->plan, $first->copy()->startOfDay())
+                : $first->copy()->startOfDay()->addMonthNoOverflow()->subDay();
         } else {
             $until = now();
         }

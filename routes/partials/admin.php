@@ -120,6 +120,11 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::get('/bot/instance/status',   [App\Http\Controllers\Admin\BotController::class, 'getInstanceStatus'])->name('admin.bot.instance.status');
 
         // Planos de Assinatura
+        // Adicionais (número extra no bot, pacote de e-mails)
+        Route::get('/adicionais', [App\Http\Controllers\Admin\AddonController::class, 'index'])->name('admin.addons.index');
+        Route::post('/adicionais/catalogo/{addon}', [App\Http\Controllers\Admin\AddonController::class, 'updateCatalog'])->whereNumber('addon')->name('admin.addons.catalog');
+        Route::post('/adicionais/organizacao/{tenant}/{addon}', [App\Http\Controllers\Admin\AddonController::class, 'setTenantQuantity'])->whereNumber('tenant')->whereNumber('addon')->name('admin.addons.tenant');
+
         Route::resource('/plans', App\Http\Controllers\Admin\SubscriptionPlanController::class)->names([
             'index'   => 'admin.plans.index',
             'create'  => 'admin.plans.create',

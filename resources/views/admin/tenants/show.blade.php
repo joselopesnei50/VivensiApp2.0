@@ -302,7 +302,7 @@
                         type="number"
                         id="daily_email_quota"
                         name="daily_email_quota"
-                        value="{{ old('daily_email_quota', $emailDailyQuota) }}"
+                        value="{{ old('daily_email_quota', $emailBaseQuota ?? $emailDailyQuota) }}"
                         min="0"
                         max="100000"
                         required
@@ -313,6 +313,11 @@
                     <i class="fas fa-save me-1"></i>Atualizar
                 </button>
             </form>
+            @if(($emailExtraQuota ?? 0) > 0)
+                <p style="font-size:.8rem; color:#475569; margin-top:8px;">
+                    <i class="fas fa-plus-circle me-1" style="color:#6366f1;"></i>Mais <strong>{{ $emailExtraQuota }}</strong> por dia dos pacotes contratados pela organização (total {{ $emailDailyQuota }}). O campo acima é só a base.
+                </p>
+            @endif
             @error('daily_email_quota')
                 <p style="color:#ef4444; font-size:.8rem; margin-top:8px;">{{ $message }}</p>
             @enderror

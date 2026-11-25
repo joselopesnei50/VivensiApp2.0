@@ -22,10 +22,28 @@ class EmailQuotaService
 {
     public const DEFAULT_QUOTA = 25;
 
+    /** Cota total do dia: a base da conta + os pacotes de e-mail contratados. */
     public function getQuota(Tenant $tenant): int
+    {
+        return $this->getBaseQuota($tenant) + $this->getExtraQuota($tenant);
+    }
+
+    /** Cota da conta (definida pelo admin), sem os pacotes contratados. */
+    public function getBaseQuota(Tenant $tenant): int
     {
         $quota = $tenant->daily_email_quota ?? self::DEFAULT_QUOTA;
         return max(0, (int) $quota);
+    }
+
+    /** E-mails/dia a mais dos pacotes contratados (adicional "email_pack"). */
+    public function getExtraQuota(Tenant $tenant): int
+    {
+        try {
+            return app(\App\Services\Billing\AddonService::class)->extraEmailsPerDay($tenant);
+        } catch (\Throwable $e) {
+            // Tabela de adicionais ausente (deploy sem migrate): segue só com a base.
+            return 0;
+        }
     }
 
     public function getSentToday(Tenant $tenant): int

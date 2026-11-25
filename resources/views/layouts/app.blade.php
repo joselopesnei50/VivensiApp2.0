@@ -409,6 +409,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </a>
                 </li>
                 @endif
+                @if(in_array(auth()->user()->role, ['ngo', 'manager', 'common'], true) && \App\Support\TeamAccess::canSee(route('client.addons.index')))
+                <li>
+                    <a href="{{ route('client.addons.index') }}" class="{{ request()->routeIs('client.addons.*') ? 'active' : '' }}">
+                        <i class="fas fa-puzzle-piece"></i> Adicionais
+                    </a>
+                </li>
+                @endif
                 @endauth
                 <li>
                     <a href="{{ url('/support') }}" class="{{ request()->is('support*') ? 'active' : '' }}">
@@ -426,7 +433,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     // Reorg 2026-08-18: 8 grupos (era 7). Faturas/WA billing/cotas -> SaaS.
                     // Bruno -> Marketing. LGPD/Conformidade/Auditoria/Radar -> novo grupo
                     // LGPD & Compliance. Infra limpo (Analytics/Saude/Jobs/Config/Bot).
-                    $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index') || request()->routeIs('admin.invoices.*') || request()->routeIs('admin.whatsapp.billing');
+                    $sa_saas_active  = request()->is('admin') || request()->is('admin/tenants') || request()->routeIs('admin.plans.index') || request()->routeIs('admin.invoices.*') || request()->routeIs('admin.addons.*') || request()->routeIs('admin.whatsapp.billing');
                     $sa_team_active  = request()->routeIs('admin.team.index') || request()->routeIs('admin.chat') || request()->is('admin/support') || request()->routeIs('admin.bookings.*') || request()->routeIs('admin.executive.*');
                     $sa_cms_active   = request()->routeIs('admin.blog.index') || request()->routeIs('admin.testimonials.index') || request()->routeIs('admin.pages.index') || request()->routeIs('admin.academy.index') || request()->is('academy*') || request()->is('social-ai*') || request()->is('social/posts*') || request()->routeIs('social.analytics.index');
                     $sa_wa_active     = request()->is('whatsapp/chat*') || request()->routeIs('whatsapp.broadcast.*') || request()->routeIs('whatsapp.optin.*') || request()->routeIs('whatsapp.instances') || request()->routeIs('whatsapp.templates') || request()->routeIs('whatsapp.templates.cloud.*') || request()->is('whatsapp/cloud/*') || request()->routeIs('whatsapp.consumo') || request()->routeIs('whatsapp.automations.*') || request()->routeIs('whatsapp.settings') || request()->routeIs('whatsapp.labels.*');
@@ -457,6 +464,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <li><a href="{{ url('/admin/tenants') }}" class="{{ request()->is('admin/tenants*') ? 'active' : '' }}"><i class="fas fa-building"></i> Organizações</a></li>
                             <li><a href="{{ route('admin.plans.index') }}" class="{{ request()->routeIs('admin.plans.index') ? 'active' : '' }}"><i class="fas fa-tags"></i> Planos</a></li>
                             <li><a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Faturas</a></li>
+                            <li><a href="{{ route('admin.addons.index') }}" class="{{ request()->routeIs('admin.addons.*') ? 'active' : '' }}"><i class="fas fa-puzzle-piece"></i> Adicionais</a></li>
                             <li><a href="{{ route('admin.whatsapp.billing') }}" class="{{ request()->routeIs('admin.whatsapp.billing') ? 'active' : '' }}"><i class="fab fa-whatsapp"></i> WhatsApp — Consumo Cloud</a></li>
                         </ul>
                     </div>
@@ -1321,6 +1329,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <a href="{{ url('/profile') }}#settings"><i class="fas fa-cog"></i> {{ __('ui.settings') }}</a>
             @if(\App\Support\TeamAccess::canSee(route('client.invoices.index')))
             <a href="{{ route('client.invoices.index') }}"><i class="fas fa-file-invoice-dollar"></i> Minhas Faturas</a>
+            @endif
+            @if(in_array(auth()->user()->role, ['ngo', 'manager', 'common'], true) && \App\Support\TeamAccess::canSee(route('client.addons.index')))
+            <a href="{{ route('client.addons.index') }}"><i class="fas fa-puzzle-piece"></i> Adicionais</a>
             @endif
             <a href="{{ route('lgpd.self.index') }}"><i class="fas fa-shield-halved"></i> Meus dados (LGPD)</a>
             <div class="suc-divider"></div>

@@ -14,4 +14,9 @@ Route::middleware(['auth'])->group(function () {
     // Cancelamento da assinatura pelo próprio cliente (só o administrador da conta)
     Route::post('/minha-conta/assinatura/cancelar', [App\Http\Controllers\ClientInvoicesController::class, 'cancel'])->name('client.subscription.cancel')->middleware('throttle:5,1');
     Route::post('/minha-conta/assinatura/manter',   [App\Http\Controllers\ClientInvoicesController::class, 'keep'])->name('client.subscription.keep')->middleware('throttle:5,1');
+
+    // Adicionais (número extra no bot, pacote de e-mails) — só o administrador da conta
+    Route::get('/minha-conta/adicionais', [App\Http\Controllers\ClientAddonsController::class, 'index'])->name('client.addons.index');
+    Route::post('/minha-conta/adicionais/bot/{user}', [App\Http\Controllers\ClientAddonsController::class, 'botAccess'])->whereNumber('user')->name('client.addons.bot')->middleware('throttle:30,1');
+    Route::post('/minha-conta/adicionais/{code}', [App\Http\Controllers\ClientAddonsController::class, 'update'])->where('code', '[a-z_]+')->name('client.addons.update')->middleware('throttle:10,1');
 });
