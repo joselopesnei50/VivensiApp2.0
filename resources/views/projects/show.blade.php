@@ -767,7 +767,7 @@
                          </div>`;
                 cfKeys.forEach(k => {
                     const pretty = k.replace(/_/g, ' ');
-                    html += pdmRow(pretty, pdmEsc(d.custom_fields[k]));
+                    html += pdmRow(pdmEsc(pretty), pdmEsc(d.custom_fields[k]));
                 });
             } else {
                 // Mensagem explicativa quando nao ha custom_fields — evita duvida
@@ -783,16 +783,16 @@
                     const dbg = d.debug;
                     let dbgHtml = '<div style="margin-top:10px; padding:10px 12px; background:#0f172a; color:#94a3b8; border-radius:8px; font-family:ui-monospace,monospace; font-size:.72rem; line-height:1.5;">';
                     dbgHtml += '<div style="color:#f59e0b; font-weight:800; margin-bottom:4px;">🔍 Diagnóstico técnico</div>';
-                    dbgHtml += 'ProjectPerson.landing_lead_id: <span style="color:#fff;">' + (dbg.person_landing_lead_id ?? 'null (não vinculado ao lead)') + '</span><br>';
-                    dbgHtml += 'lead_match: <span style="color:#fff;">' + (dbg.lead_match ?? 'nenhum lead encontrado') + '</span><br>';
+                    dbgHtml += 'ProjectPerson.landing_lead_id: <span style="color:#fff;">' + pdmEsc(dbg.person_landing_lead_id ?? 'null (não vinculado ao lead)') + '</span><br>';
+                    dbgHtml += 'lead_match: <span style="color:#fff;">' + pdmEsc(dbg.lead_match ?? 'nenhum lead encontrado') + '</span><br>';
                     if (dbg.lead_extra_top_keys) {
-                        dbgHtml += 'extra_data keys: <span style="color:#fff;">[' + dbg.lead_extra_top_keys.join(', ') + ']</span><br>';
+                        dbgHtml += 'extra_data keys: <span style="color:#fff;">[' + dbg.lead_extra_top_keys.map(pdmEsc).join(', ') + ']</span><br>';
                     }
                     if (dbg.lead_custom_keys) {
-                        dbgHtml += 'extra_data.custom keys: <span style="color:#fff;">[' + (dbg.lead_custom_keys.length ? dbg.lead_custom_keys.join(', ') : 'VAZIO') + ']</span><br>';
+                        dbgHtml += 'extra_data.custom keys: <span style="color:#fff;">[' + (dbg.lead_custom_keys.length ? dbg.lead_custom_keys.map(pdmEsc).join(', ') : 'VAZIO') + ']</span><br>';
                     }
                     if (dbg.lead_created_at) {
-                        dbgHtml += 'lead criado em: <span style="color:#fff;">' + dbg.lead_created_at + '</span>';
+                        dbgHtml += 'lead criado em: <span style="color:#fff;">' + pdmEsc(dbg.lead_created_at) + '</span>';
                     }
                     dbgHtml += '</div>';
                     html += dbgHtml;

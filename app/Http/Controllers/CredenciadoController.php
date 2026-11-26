@@ -191,7 +191,7 @@ class CredenciadoController extends Controller
             'content' => ['nullable', 'string', 'max:3000'],
             'type'    => ['required', 'in:milestone,photo,status'],
             'date'    => ['nullable', 'date'],
-            'media'   => ['nullable', 'image', 'max:10240'], // 10MB
+            'media'   => ['nullable', 'image', \App\Support\SafeImageUpload::RULE, 'max:10240'], // 10MB
         ]);
 
         $data = [
@@ -204,8 +204,7 @@ class CredenciadoController extends Controller
         ];
 
         if ($request->hasFile('media')) {
-            $data['media_path'] = $request->file('media')
-                ->store("tenants/{$user->tenant_id}/projects/timeline", 'public');
+            $data['media_path'] = \App\Support\SafeImageUpload::store($request->file('media'), "tenants/{$user->tenant_id}/projects/timeline");
         }
 
         ProjectTimelineRecord::create($data);

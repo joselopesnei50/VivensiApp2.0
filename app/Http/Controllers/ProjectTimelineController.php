@@ -27,7 +27,7 @@ class ProjectTimelineController extends Controller
             'content' => 'nullable|string',
             'type' => 'required|in:milestone,photo,video,status',
             'date' => 'nullable|date',
-            'media' => 'nullable|image|max:10240', // 10MB limit for photos
+            'media' => 'nullable|image|' . \App\Support\SafeImageUpload::RULE . '|max:10240', // 10MB limit for photos
             'external_url' => 'nullable|url|max:2048',
         ]);
 
@@ -37,7 +37,7 @@ class ProjectTimelineController extends Controller
         $data['date'] = $validated['date'] ?? now();
 
         if ($request->hasFile('media')) {
-            $path = $request->file('media')->store("tenants/{$tenantId}/projects/timeline", 'public');
+            $path = \App\Support\SafeImageUpload::store($request->file('media'), "tenants/{$tenantId}/projects/timeline");
             $data['media_path'] = $path;
         }
 

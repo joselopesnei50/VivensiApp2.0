@@ -286,9 +286,12 @@ class BannerController extends Controller
         $this->checkAccess();
         Gate::authorize('update', $banner);
 
-        $request->validate(['image' => 'required|image|max:10240']);
+        $request->validate(['image' => 'required|image|' . \App\Support\SafeImageUpload::RULE . '|max:10240']);
         $tenantId = auth()->user()->tenant_id;
-        $path = $request->file('image')->store("tenants/{$tenantId}/banners/uploads", 'public');
+        $path = \App\Support\SafeImageUpload::store($request->file('image'), "tenants/{$tenantId}/banners/uploads");
+        if (! $path) {
+            return response()->json(['error' => 'Envie uma imagem JPG, PNG, WEBP ou GIF.'], 422);
+        }
         return response()->json(['ok' => true, 'url' => Storage::disk('public')->url($path)]);
     }
 

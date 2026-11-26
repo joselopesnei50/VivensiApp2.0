@@ -37,7 +37,7 @@ it('background upload grava em content.background_url + storage_path', function 
 
     $this->actingAs($u)
         ->post("/ngo/landing-pages/{$lp->id}/sections/{$s->id}/asset/background", [
-            'file' => UploadedFile::fake()->create('bg.jpg', 100, 'image/jpeg'),
+            'file' => UploadedFile::fake()->image('bg.jpg'),
         ])
         ->assertOk()
         ->assertJson(['success' => true, 'kind' => 'background']);
@@ -54,7 +54,7 @@ it('image upload grava em content.image_url', function () {
 
     $this->actingAs($u)
         ->post("/ngo/landing-pages/{$lp->id}/sections/{$s->id}/asset/image", [
-            'file' => UploadedFile::fake()->create('x.png', 100, 'image/png'),
+            'file' => UploadedFile::fake()->image('x.png'),
         ])->assertOk();
 
     $s->refresh();
@@ -67,7 +67,7 @@ it('rota antiga /logo continua funcionando (backward compat)', function () {
 
     $this->actingAs($u)
         ->post("/ngo/landing-pages/{$lp->id}/sections/{$s->id}/logo", [
-            'file' => UploadedFile::fake()->create('l.png', 50, 'image/png'),
+            'file' => UploadedFile::fake()->image('l.png'),
         ])->assertOk();
 
     $s->refresh();
@@ -81,7 +81,7 @@ it('kind fora do whitelist retorna 404 (route constraint)', function () {
     $this->actingAs($u)
         ->withHeaders(['Accept' => 'application/json'])
         ->post("/ngo/landing-pages/{$lp->id}/sections/{$s->id}/asset/senha", [
-            'file' => UploadedFile::fake()->create('x.png', 50, 'image/png'),
+            'file' => UploadedFile::fake()->image('x.png'),
         ])
         ->assertStatus(404); // Route regex where('kind', 'logo|background|image') nao casa
 });
