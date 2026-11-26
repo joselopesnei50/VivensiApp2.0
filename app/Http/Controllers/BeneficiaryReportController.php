@@ -276,7 +276,7 @@ class BeneficiaryReportController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Beneficiário', 'Status', 'NIS', 'CPF', 'Data', 'Tipo', 'Descrição', 'Registrado por']);
+            \App\Support\Csv::put($out, ['Beneficiário', 'Status', 'NIS', 'CPF', 'Data', 'Tipo', 'Descrição', 'Registrado por']);
 
             $baseQ = $this->baseAttendanceQuery($ctx)
                 ->select([
@@ -303,7 +303,7 @@ class BeneficiaryReportController extends Controller
 
             $baseQ->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $r) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         $r->beneficiary_name,
                         $r->beneficiary_status,
                         $this->decryptPii($r->beneficiary_nis),
@@ -331,14 +331,14 @@ class BeneficiaryReportController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['# Perfil do público atendido', (int) $ctx['year']]);
-            fputcsv($out, ['# Pessoas atendidas (titulares)', (int) $profile['total']]);
-            fputcsv($out, ['# Idade calculada em', $profile['referenceDate']]);
-            fputcsv($out, ['Dimensão', 'Categoria', 'Pessoas', '%']);
+            \App\Support\Csv::put($out, ['# Perfil do público atendido', (int) $ctx['year']]);
+            \App\Support\Csv::put($out, ['# Pessoas atendidas (titulares)', (int) $profile['total']]);
+            \App\Support\Csv::put($out, ['# Idade calculada em', $profile['referenceDate']]);
+            \App\Support\Csv::put($out, ['Dimensão', 'Categoria', 'Pessoas', '%']);
 
             foreach (['gender' => 'Gênero', 'age' => 'Faixa etária', 'race' => 'Cor/raça'] as $key => $dim) {
                 foreach ($profile[$key] as $row) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         $dim,
                         $row['label'],
                         $row['count'],
@@ -358,7 +358,7 @@ class BeneficiaryReportController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Ano', 'Mês', 'Tipo', 'Técnico/Usuário', 'Atendimentos', 'Famílias únicas']);
+            \App\Support\Csv::put($out, ['Ano', 'Mês', 'Tipo', 'Técnico/Usuário', 'Atendimentos', 'Famílias únicas']);
 
             $q = $this->baseAttendanceQuery($ctx)
                 ->select([
@@ -377,7 +377,7 @@ class BeneficiaryReportController extends Controller
             $year = $ctx['year'];
             $q->chunk(500, function ($rows) use ($out, $year) {
                 foreach ($rows as $r) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         (int) $year,
                         str_pad((string) ((int) $r->month), 2, '0', STR_PAD_LEFT),
                         $r->type,
@@ -399,7 +399,7 @@ class BeneficiaryReportController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Ano', 'Mês', 'Tipo', 'Atendimentos', 'Famílias únicas']);
+            \App\Support\Csv::put($out, ['Ano', 'Mês', 'Tipo', 'Atendimentos', 'Famílias únicas']);
 
             // Nao inclui usuarios — remove o left join no user (evita GROUP BY em coluna nula)
             $q = DB::table('attendances as a')
@@ -424,7 +424,7 @@ class BeneficiaryReportController extends Controller
             $year = $ctx['year'];
             $q->chunk(500, function ($rows) use ($out, $year) {
                 foreach ($rows as $r) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         (int) $year,
                         str_pad((string) ((int) $r->month), 2, '0', STR_PAD_LEFT),
                         $r->type,
@@ -449,7 +449,7 @@ class BeneficiaryReportController extends Controller
             for ($m = 1; $m <= 12; $m++) $header[] = str_pad((string) $m, 2, '0', STR_PAD_LEFT);
             $header[] = 'Total';
             $header[] = 'Famílias únicas (ano)';
-            fputcsv($out, $header);
+            \App\Support\Csv::put($out, $header);
 
             // Base sem left join no user (nao precisamos aqui)
             $baseNoUser = fn () => DB::table('attendances as a')
@@ -488,7 +488,7 @@ class BeneficiaryReportController extends Controller
                 for ($m = 1; $m <= 12; $m++) $line[] = (int) ($months[$m] ?? 0);
                 $line[] = (int) $total;
                 $line[] = $uf;
-                fputcsv($out, $line);
+                \App\Support\Csv::put($out, $line);
             }
 
             fclose($out);
@@ -506,7 +506,7 @@ class BeneficiaryReportController extends Controller
             for ($m = 1; $m <= 12; $m++) $header[] = str_pad((string) $m, 2, '0', STR_PAD_LEFT);
             $header[] = 'Total';
             $header[] = 'Famílias únicas (ano)';
-            fputcsv($out, $header);
+            \App\Support\Csv::put($out, $header);
 
             $q = $this->baseAttendanceQuery($ctx)
                 ->select(DB::raw("COALESCE(u.name, 'Sistema') as user_name"), DB::raw($this->monthExpr() . ' as m'), DB::raw('COUNT(*) as c'))
@@ -536,7 +536,7 @@ class BeneficiaryReportController extends Controller
                 for ($m = 1; $m <= 12; $m++) $line[] = (int) ($months[$m] ?? 0);
                 $line[] = (int) $total;
                 $line[] = $uf;
-                fputcsv($out, $line);
+                \App\Support\Csv::put($out, $line);
             }
 
             fclose($out);

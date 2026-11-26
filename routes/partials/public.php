@@ -111,7 +111,8 @@ Route::get('/transparencia/{slug}',               [App\Http\Controllers\Transpar
 // ── SIC — Serviço de Informação ao Cidadão ───────────────────────────────────
 Route::get('/transparencia/{slug}/sic',                          [App\Http\Controllers\SicController::class, 'publicForm'])->name('sic.public.form');
 Route::post('/transparencia/{slug}/sic',                         [App\Http\Controllers\SicController::class, 'publicStore'])->middleware('throttle:5,1')->name('sic.public.store');
-Route::get('/transparencia/{slug}/sic/{protocol}',               [App\Http\Controllers\SicController::class, 'publicStatus'])->name('sic.public.status');
+// Protocolo de 6 caracteres: limite de tentativas contra adivinhação (auditoria 26/11/2026).
+Route::get('/transparencia/{slug}/sic/{protocol}',               [App\Http\Controllers\SicController::class, 'publicStatus'])->middleware('throttle:20,1')->name('sic.public.status');
 Route::get('/t/{slug}',                           [App\Http\Controllers\TransparencyController::class, 'publicView'])->where('slug', '[a-z0-9\-]+')->middleware('throttle:10,1');
 
 // ── Recibos & Certificados públicos ──────────────────────────────────────────

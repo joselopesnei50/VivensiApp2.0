@@ -251,7 +251,7 @@ class TransactionController extends Controller
 
         $callback = function() use($transactions, $columns) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
+            \App\Support\Csv::put($file, $columns);
 
             foreach ($transactions as $t) {
                 $row['Data']  = $t->date;
@@ -260,7 +260,7 @@ class TransactionController extends Controller
                 $row['Valor']  = number_format($t->amount, 2, ',', '.');
                 $row['Status']  = $t->status;
 
-                fputcsv($file, array($row['Data'], $row['Descricao'], $row['Tipo'], $row['Valor'], $row['Status']));
+                \App\Support\Csv::put($file, array($row['Data'], $row['Descricao'], $row['Tipo'], $row['Valor'], $row['Status']));
             }
 
             fclose($file);

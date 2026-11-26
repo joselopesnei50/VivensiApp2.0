@@ -93,13 +93,13 @@ class InventoryController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['SKU', 'Nome', 'Unidade', 'Quantidade', 'Estoque Mínimo', 'Valor Unit.', 'Validade', 'Descrição']);
+            \App\Support\Csv::put($out, ['SKU', 'Nome', 'Unidade', 'Quantidade', 'Estoque Mínimo', 'Valor Unit.', 'Validade', 'Descrição']);
 
             InventoryItem::where('tenant_id', $tenantId)
                 ->orderBy('name')
                 ->chunk(500, function ($rows) use ($out) {
                     foreach ($rows as $item) {
-                        fputcsv($out, [
+                        \App\Support\Csv::put($out, [
                             $item->sku,
                             $item->name,
                             $item->unit,
@@ -131,7 +131,7 @@ class InventoryController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Data', 'Item', 'Tipo', 'Quantidade', 'Beneficiário', 'Projeto', 'Descrição', 'Registrado por']);
+            \App\Support\Csv::put($out, ['Data', 'Item', 'Tipo', 'Quantidade', 'Beneficiário', 'Projeto', 'Descrição', 'Registrado por']);
 
             $q = InventoryMovement::with(['item', 'beneficiary', 'project', 'creator'])
                 ->where('tenant_id', $tenantId)
@@ -142,7 +142,7 @@ class InventoryController extends Controller
 
             $q->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $mov) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         $mov->date,
                         optional($mov->item)->name,
                         $mov->type === 'in' ? 'Entrada' : 'Saída',

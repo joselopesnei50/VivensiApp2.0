@@ -91,7 +91,7 @@ class LandingPageLeadController extends Controller
             // UTF-8 BOM for Excel compatibility.
             fwrite($out, "\xEF\xBB\xBF");
 
-            fputcsv($out, ['Data', 'Nome', 'E-mail', 'WhatsApp', 'Dados extras']);
+            \App\Support\Csv::put($out, ['Data', 'Nome', 'E-mail', 'WhatsApp', 'Dados extras']);
 
             try {
                 DB::table('landing_page_leads')
@@ -105,7 +105,7 @@ class LandingPageLeadController extends Controller
                             $phone = $lead->phone ?? '';
                             $extra = $this->extraText($this->extraItems($lead->extra_data ?? null, $labels));
 
-                            fputcsv($out, [$created, $name, $email, $phone, $extra]);
+                            \App\Support\Csv::put($out, [$created, $name, $email, $phone, $extra]);
                         }
                     });
             } catch (\Throwable $e) {

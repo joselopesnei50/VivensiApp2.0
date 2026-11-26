@@ -88,16 +88,16 @@ class AttendanceReportController extends Controller
             fwrite($out, "\xEF\xBB\xBF"); // BOM pra Excel-BR
 
             // Cabecalho de auditoria — uso interno, alinhado com politica LGPD do projeto.
-            fputcsv($out, ['# Relatorio de frequencia — uso interno']);
-            fputcsv($out, ['# Projeto', $this->csvSafe($project->name)]);
+            \App\Support\Csv::put($out, ['# Relatorio de frequencia — uso interno']);
+            \App\Support\Csv::put($out, ['# Projeto', $this->csvSafe($project->name)]);
             if ($class) {
-                fputcsv($out, ['# Turma', $this->csvSafe($class->name)]);
+                \App\Support\Csv::put($out, ['# Turma', $this->csvSafe($class->name)]);
             }
-            fputcsv($out, ['# Periodo', $from->format('d/m/Y') . ' a ' . $to->format('d/m/Y')]);
-            fputcsv($out, ['# Gerado em', now()->format('d/m/Y H:i')]);
-            fputcsv($out, []);
+            \App\Support\Csv::put($out, ['# Periodo', $from->format('d/m/Y') . ' a ' . $to->format('d/m/Y')]);
+            \App\Support\Csv::put($out, ['# Gerado em', now()->format('d/m/Y H:i')]);
+            \App\Support\Csv::put($out, []);
 
-            fputcsv($out, [
+            \App\Support\Csv::put($out, [
                 'Aluno',
                 'Sessoes elegiveis',
                 'Presencas',
@@ -108,7 +108,7 @@ class AttendanceReportController extends Controller
             ]);
 
             foreach ($data['rows'] as $r) {
-                fputcsv($out, [
+                \App\Support\Csv::put($out, [
                     $this->csvSafe($r['name']),
                     $r['eligible'],
                     $r['presences'],
@@ -148,17 +148,17 @@ class AttendanceReportController extends Controller
 
             fwrite($out, "\xEF\xBB\xBF");
 
-            fputcsv($out, ['# Chamada — uso interno']);
-            fputcsv($out, ['# Projeto', $this->csvSafe($project->name)]);
-            fputcsv($out, ['# Sessao', $this->csvSafe($session->title)]);
-            fputcsv($out, ['# Data', $session->date->format('d/m/Y')]);
-            fputcsv($out, ['# Gerado em', now()->format('d/m/Y H:i')]);
-            fputcsv($out, []);
+            \App\Support\Csv::put($out, ['# Chamada — uso interno']);
+            \App\Support\Csv::put($out, ['# Projeto', $this->csvSafe($project->name)]);
+            \App\Support\Csv::put($out, ['# Sessao', $this->csvSafe($session->title)]);
+            \App\Support\Csv::put($out, ['# Data', $session->date->format('d/m/Y')]);
+            \App\Support\Csv::put($out, ['# Gerado em', now()->format('d/m/Y H:i')]);
+            \App\Support\Csv::put($out, []);
 
-            fputcsv($out, ['Aluno', 'Telefone', 'Status', 'Canal', 'Registrado em', 'Justificativa']);
+            \App\Support\Csv::put($out, ['Aluno', 'Telefone', 'Status', 'Canal', 'Registrado em', 'Justificativa']);
 
             foreach ($attendances as $a) {
-                fputcsv($out, [
+                \App\Support\Csv::put($out, [
                     $this->csvSafe($a->student->name ?? '(removido)'),
                     $this->csvSafe($a->student->phone ?? ''),
                     $this->statusLabel($a->status),

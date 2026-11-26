@@ -100,10 +100,10 @@ class TransparencyController extends Controller
         // Hint delimiter to Excel
         fwrite($out, "sep=;\n");
         // Use semicolon as delimiter (common in PT-BR spreadsheets)
-        fputcsv($out, ['portal_slug', 'dataset', 'year', 'month', 'type', 'category', 'total'], ';');
+        \App\Support\Csv::put($out, ['portal_slug', 'dataset', 'year', 'month', 'type', 'category', 'total'], ';');
 
         foreach ($monthly as $r) {
-            fputcsv($out, [
+            \App\Support\Csv::put($out, [
                 (string) $portalSlug,
                 'monthly_totals',
                 $year,
@@ -115,7 +115,7 @@ class TransparencyController extends Controller
         }
 
         foreach ($expenseByCategory as $r) {
-            fputcsv($out, [
+            \App\Support\Csv::put($out, [
                 (string) $portalSlug,
                 'expense_by_category',
                 $year,

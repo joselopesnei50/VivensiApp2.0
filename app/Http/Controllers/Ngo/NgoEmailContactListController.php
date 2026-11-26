@@ -162,12 +162,12 @@ class NgoEmailContactListController extends Controller
 
         $callback = function () use ($list) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['email', 'name', 'status', 'added_at']);
+            \App\Support\Csv::put($out, ['email', 'name', 'status', 'added_at']);
             EmailContact::where('email_contact_list_id', $list->id)
                 ->orderBy('email')
                 ->chunk(500, function ($chunk) use ($out) {
                     foreach ($chunk as $c) {
-                        fputcsv($out, [$c->email, $c->name, $c->status, $c->added_at?->toIso8601String()]);
+                        \App\Support\Csv::put($out, [$c->email, $c->name, $c->status, $c->added_at?->toIso8601String()]);
                     }
                 });
             fclose($out);
