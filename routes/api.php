@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}',      [App\Http\Controllers\Api\WhatsappInstanceController::class, 'destroy']);
     });
 
-    Route::get('/api/whatsapp/templates', [App\Http\Controllers\WhatsappController::class, 'templatesJson']);
+    // (removida a rota duplicada /api/api/whatsapp/templates — o chat usa a rota web)
 });
 
 // ── SES (campanhas com envio próprio): bounces, reclamações e entregas via SNS ─

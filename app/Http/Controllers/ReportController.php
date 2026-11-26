@@ -96,34 +96,34 @@ class ReportController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['DRE', 'Período', $periodLabel]);
-            fputcsv($out, []);
+            \App\Support\Csv::put($out, ['DRE', 'Período', $periodLabel]);
+            \App\Support\Csv::put($out, []);
 
-            fputcsv($out, ['RECEITAS OPERACIONAIS BRUTAS', '', '']);
-            fputcsv($out, ['Categoria', 'Valor', '']);
+            \App\Support\Csv::put($out, ['RECEITAS OPERACIONAIS BRUTAS', '', '']);
+            \App\Support\Csv::put($out, ['Categoria', 'Valor', '']);
             foreach ($incomes as $inc) {
-                fputcsv($out, [$inc['name'], number_format((float) $inc['value'], 2, ',', '.'), '']);
+                \App\Support\Csv::put($out, [$inc['name'], number_format((float) $inc['value'], 2, ',', '.'), '']);
             }
-            fputcsv($out, ['TOTAL RECEITAS', number_format((float) $totalIncome, 2, ',', '.'), '']);
-            fputcsv($out, []);
+            \App\Support\Csv::put($out, ['TOTAL RECEITAS', number_format((float) $totalIncome, 2, ',', '.'), '']);
+            \App\Support\Csv::put($out, []);
 
-            fputcsv($out, ['CUSTOS E DESPESAS OPERACIONAIS', '', '']);
-            fputcsv($out, ['Categoria', 'Valor', '']);
+            \App\Support\Csv::put($out, ['CUSTOS E DESPESAS OPERACIONAIS', '', '']);
+            \App\Support\Csv::put($out, ['Categoria', 'Valor', '']);
             foreach ($expenses as $exp) {
-                fputcsv($out, [$exp['name'], number_format((float) $exp['value'], 2, ',', '.'), '']);
+                \App\Support\Csv::put($out, [$exp['name'], number_format((float) $exp['value'], 2, ',', '.'), '']);
             }
-            fputcsv($out, ['TOTAL DESPESAS', number_format((float) $totalExpense, 2, ',', '.'), '']);
-            fputcsv($out, []);
+            \App\Support\Csv::put($out, ['TOTAL DESPESAS', number_format((float) $totalExpense, 2, ',', '.'), '']);
+            \App\Support\Csv::put($out, []);
 
-            fputcsv($out, ['RESULTADO DO EXERCÍCIO', number_format((float) $result, 2, ',', '.'), '']);
-            fputcsv($out, []);
+            \App\Support\Csv::put($out, ['RESULTADO DO EXERCÍCIO', number_format((float) $result, 2, ',', '.'), '']);
+            \App\Support\Csv::put($out, []);
 
             $labels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            fputcsv($out, ['RESULTADO MENSAL (jan-dez)', '', '']);
-            fputcsv($out, ['Mês', 'Resultado', '']);
+            \App\Support\Csv::put($out, ['RESULTADO MENSAL (jan-dez)', '', '']);
+            \App\Support\Csv::put($out, ['Mês', 'Resultado', '']);
             for ($m = 1; $m <= 12; $m++) {
                 $v = (float) (($chartData[$m] ?? 0) ?: 0);
-                fputcsv($out, [$labels[$m-1] ?? (string)$m, number_format($v, 2, ',', '.'), '']);
+                \App\Support\Csv::put($out, [$labels[$m-1] ?? (string)$m, number_format($v, 2, ',', '.'), '']);
             }
 
             fclose($out);

@@ -285,7 +285,7 @@ class HumanResourcesController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Nome', 'Cargo', 'Contrato', 'Salário', 'Carga Horária', 'Admissão', 'Projeto', 'Status']);
+            \App\Support\Csv::put($out, ['Nome', 'Cargo', 'Contrato', 'Salário', 'Carga Horária', 'Admissão', 'Projeto', 'Status']);
 
             $query = Employee::where('tenant_id', $tenantId)->orderBy('name');
             if ($q !== '') {
@@ -301,7 +301,7 @@ class HumanResourcesController extends Controller
             $query->chunk(500, function ($rows) use ($out, $projects) {
                 foreach ($rows as $e) {
                     $proj = $e->project_id ? ($projects[$e->project_id]->name ?? ('Projeto #' . $e->project_id)) : '';
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         $e->name,
                         $e->position,
                         $e->contract_type,
@@ -337,7 +337,7 @@ class HumanResourcesController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Nome', 'E-mail', 'Telefone', 'Habilidades', 'Disponibilidade', 'Criado em']);
+            \App\Support\Csv::put($out, ['Nome', 'E-mail', 'Telefone', 'Habilidades', 'Disponibilidade', 'Criado em']);
 
             $query = Volunteer::where('tenant_id', $tenantId)->orderBy('name');
             if ($q !== '') {
@@ -350,7 +350,7 @@ class HumanResourcesController extends Controller
 
             $query->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $v) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         $v->name,
                         $v->email,
                         $v->phone,
@@ -657,7 +657,7 @@ class HumanResourcesController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['ID', 'Data Emissão', 'Voluntário', 'E-mail', 'Atividade', 'Horas', 'Arquivo (storage)']);
+            \App\Support\Csv::put($out, ['ID', 'Data Emissão', 'Voluntário', 'E-mail', 'Atividade', 'Horas', 'Arquivo (storage)']);
 
             $baseQ = VolunteerCertificate::query()
                 ->join('volunteers as v', 'v.id', '=', 'volunteer_certificates.volunteer_id')
@@ -692,7 +692,7 @@ class HumanResourcesController extends Controller
 
             $baseQ->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $c) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         (int) $c->id,
                         $c->issued_at ? (string) $c->issued_at : '',
                         $c->volunteer_name ?? '',

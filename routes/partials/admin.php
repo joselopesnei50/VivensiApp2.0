@@ -85,7 +85,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/tenants/{id}/custom-domain-addon', [App\Http\Controllers\AdminController::class, 'toggleCustomDomainAddon'])->name('admin.tenants.custom_domain_addon');
 
         // Academy
-        Route::resource('academy', App\Http\Controllers\Admin\AcademyController::class, ['as' => 'admin']);
+        Route::resource('academy', App\Http\Controllers\Admin\AcademyController::class, ['as' => 'admin'])->except(['show']);
         Route::get('academy/{course}/modules',      [App\Http\Controllers\Admin\AcademyModuleController::class, 'index'])->name('admin.academy.modules.index');
         Route::post('academy/{course}/modules',     [App\Http\Controllers\Admin\AcademyModuleController::class, 'storeModule'])->name('admin.academy.modules.store');
         Route::put('academy/modules/{id}',          [App\Http\Controllers\Admin\AcademyModuleController::class, 'updateModule'])->name('admin.academy.modules.update');
@@ -125,7 +125,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         Route::post('/adicionais/catalogo/{addon}', [App\Http\Controllers\Admin\AddonController::class, 'updateCatalog'])->whereNumber('addon')->name('admin.addons.catalog');
         Route::post('/adicionais/organizacao/{tenant}/{addon}', [App\Http\Controllers\Admin\AddonController::class, 'setTenantQuantity'])->whereNumber('tenant')->whereNumber('addon')->name('admin.addons.tenant');
 
-        Route::resource('/plans', App\Http\Controllers\Admin\SubscriptionPlanController::class)->names([
+        Route::resource('/plans', App\Http\Controllers\Admin\SubscriptionPlanController::class)->except(['show'])->names([
             'index'   => 'admin.plans.index',
             'create'  => 'admin.plans.create',
             'store'   => 'admin.plans.store',
@@ -137,7 +137,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         // CMS Blog
         Route::get('/blog-metrics',        [App\Http\Controllers\Admin\BlogController::class, 'metrics'])->name('admin.blog.metrics');
         Route::get('/blog-metrics/{post}', [App\Http\Controllers\Admin\BlogController::class, 'postMetrics'])->name('admin.blog.post_metrics');
-        Route::resource('/blog', App\Http\Controllers\Admin\BlogController::class)->names([
+        Route::resource('/blog', App\Http\Controllers\Admin\BlogController::class)->except(['show'])->names([
             'index'   => 'admin.blog.index',
             'create'  => 'admin.blog.create',
             'store'   => 'admin.blog.store',
@@ -157,7 +157,7 @@ Route::middleware(['auth', 'subscription'])->group(function () {
         ]);
 
         // CMS Depoimentos
-        Route::resource('/testimonials', App\Http\Controllers\Admin\TestimonialController::class)->names([
+        Route::resource('/testimonials', App\Http\Controllers\Admin\TestimonialController::class)->except(['show'])->names([
             'index'   => 'admin.testimonials.index',
             'create'  => 'admin.testimonials.create',
             'store'   => 'admin.testimonials.store',

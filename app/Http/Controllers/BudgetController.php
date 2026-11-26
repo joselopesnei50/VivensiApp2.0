@@ -114,7 +114,7 @@ class BudgetController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Ano', 'Tipo', 'Categoria', 'Planejado', 'Realizado', 'Variação', '% Execução']);
+            \App\Support\Csv::put($out, ['Ano', 'Tipo', 'Categoria', 'Planejado', 'Realizado', 'Variação', '% Execução']);
 
             // Build rows from union of planned + realized
             $pairs = collect();
@@ -139,7 +139,7 @@ class BudgetController extends Controller
                 // Only export meaningful rows
                 if ($planned == 0.0 && $done == 0.0) continue;
 
-                fputcsv($out, [
+                \App\Support\Csv::put($out, [
                     $year,
                     $type,
                     $name,

@@ -339,14 +339,14 @@ class BeneficiaryController extends Controller
         return response()->streamDownload(function () use ($headers) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, $headers);
+            \App\Support\Csv::put($out, $headers);
             // Example rows
-            fputcsv($out, [
+            \App\Support\Csv::put($out, [
                 'Maria da Silva', '12345678910', '123.456.789-10', '1985-05-20',
                 'feminino', 'parda', 'medio_completo', '(11) 99999-9999',
                 '01001-000', 'Rua Exemplo', '123', 'Casa B', 'Centro', 'São Paulo', 'SP', 'ativo',
             ]);
-            fputcsv($out, [
+            \App\Support\Csv::put($out, [
                 'João Pereira', '', '987.654.321-00', '20/03/1990',
                 'masculino', 'prefiro_nao_informar', 'fundamental_completo', '(11) 98888-7777',
                 '', '', '', '', '', 'Guarulhos', 'SP', 'ativo',
@@ -908,14 +908,14 @@ class BeneficiaryController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Nome', 'NIS', 'CPF', 'Nascimento', 'Telefone', 'Endereço', 'Status', 'Atendimentos']);
+            \App\Support\Csv::put($out, ['Nome', 'NIS', 'CPF', 'Nascimento', 'Telefone', 'Endereço', 'Status', 'Atendimentos']);
 
             $baseQ = Beneficiary::where('tenant_id', $tenantId)->withCount('attendances')->orderBy('name');
             $this->applyBeneficiaryListFilters($baseQ, $filters, $tenantId);
 
             $baseQ->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $b) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         $b->name,
                         $b->nis,
                         $b->cpf,

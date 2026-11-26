@@ -212,6 +212,9 @@ class AttachmentController extends Controller
         $att = Attachment::where('id', $id)
             ->where('tenant_id', $tenantId)
             ->firstOrFail();
+        if ($key = $this->morphKeyFor((string) $att->attachable_type)) {
+            $this->guardModule($key);
+        }
 
         // AuditLog: download de PII de terceiros (LGPD art. 37, registro de
         // operacoes). So loga quando o dono do anexo e Beneficiary — os demais
@@ -246,6 +249,9 @@ class AttachmentController extends Controller
         $att = Attachment::where('id', $id)
             ->where('tenant_id', $tenantId)
             ->firstOrFail();
+        if ($key = $this->morphKeyFor((string) $att->attachable_type)) {
+            $this->guardModule($key);
+        }
 
         // Anexo de Beneficiary so pode ser removido por quem tem gate
         // delete-beneficiaries (mesma regra da remocao do proprio cadastro).
@@ -306,6 +312,7 @@ class AttachmentController extends Controller
     private function resolveOwner(string $morphType, int $morphId): Model
     {
         abort_unless(isset(self::MORPH_MAP[$morphType]), 404);
+        $this->guardModule($morphType);
 
         $class = self::MORPH_MAP[$morphType];
         $tenantId = (int) auth()->user()->tenant_id;
@@ -315,5 +322,22 @@ class AttachmentController extends Controller
         return $class::where('id', $morphId)
             ->where('tenant_id', $tenantId)
             ->firstOrFail();
+    }
+
+    /**
+     * O anexo segue a permissão do módulo dono (patrimônio, estoque,
+     * beneficiários): quem não vê o módulo no painel não abre os anexos dele
+     * (auditoria 26/11/2026, item 10).
+     */
+    private function guardModule(string $morphType): void
+    {
+        $path = ltrim(self::BACK_URLS[$morphType] ?? '', '/');
+        abort_unless($path === '' || \App\Support\TeamAccess::allowsPath(auth()->user(), $path), 403);
+    }
+
+    private function morphKeyFor(string $class): ?string
+    {
+        $key = array_search($class, self::MORPH_MAP, true);
+        return $key === false ? null : $key;
     }
 }

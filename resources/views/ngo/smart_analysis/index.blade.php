@@ -358,7 +358,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             loading.classList.add('d-none');
             content.classList.remove('d-none');
-            textBody.innerHTML = marked.parse(data.analysis);
+            // O texto da IA pode repetir dados digitados por outras pessoas: escapa
+            // o HTML antes do markdown (negrito, listas e títulos continuam).
+            const saEsc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            textBody.innerHTML = marked.parse(saEsc(data.analysis));
             btn.innerHTML = '<i class="fas fa-brain me-2"></i> Recalcular Análise';
             btn.disabled = false;
         })

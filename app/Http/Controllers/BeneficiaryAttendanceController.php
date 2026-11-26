@@ -47,7 +47,7 @@ class BeneficiaryAttendanceController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Beneficiário', 'Status', 'NIS', 'CPF', 'Data', 'Tipo', 'Descrição', 'Registrado por']);
+            \App\Support\Csv::put($out, ['Beneficiário', 'Status', 'NIS', 'CPF', 'Data', 'Tipo', 'Descrição', 'Registrado por']);
 
             $baseQ = DB::table('attendances as a')
                 ->join('beneficiaries as b', 'b.id', '=', 'a.beneficiary_id')
@@ -81,7 +81,7 @@ class BeneficiaryAttendanceController extends Controller
 
             $baseQ->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $r) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         $r->beneficiary_name,
                         $r->beneficiary_status,
                         $this->decryptPii($r->beneficiary_nis),
@@ -185,7 +185,7 @@ class BeneficiaryAttendanceController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Data', 'Tipo', 'Descrição', 'Registrado por']);
+            \App\Support\Csv::put($out, ['Data', 'Tipo', 'Descrição', 'Registrado por']);
 
             $baseQ = Attendance::where('tenant_id', $tenantId)
                 ->where('beneficiary_id', $beneficiary->id)
@@ -203,7 +203,7 @@ class BeneficiaryAttendanceController extends Controller
 
             $baseQ->orderBy('date', 'desc')->orderBy('id', 'desc')->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $a) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         optional($a->date)->format('Y-m-d'),
                         $a->type,
                         $a->description,

@@ -172,6 +172,9 @@
 
 @push('scripts')
 <script>
+    // Retorno da consulta de CNPJ (API externa) sempre como texto.
+    function cfEsc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 document.getElementById('btn-cnpj-lookup').addEventListener('click', function () {
     const cnpj = document.getElementById('cnpj-input').value.replace(/\D/g, '');
     const resultEl = document.getElementById('cnpj-result');
@@ -192,15 +195,15 @@ document.getElementById('btn-cnpj-lookup').addEventListener('click', function ()
     .then(r => r.json())
     .then(data => {
         if (data.error) {
-            resultEl.innerHTML = '<div class="alert alert-danger py-2 mb-0">' + data.error + '</div>';
+            resultEl.innerHTML = '<div class="alert alert-danger py-2 mb-0">' + cfEsc(data.error) + '</div>';
         } else {
             // Preenche os campos
             if (data.cnae_principal) document.getElementById('cnae_principal').value = data.cnae_principal;
             if (data.data_fundacao) document.getElementById('data_fundacao').value = data.data_fundacao;
 
             resultEl.innerHTML = '<div class="alert alert-success py-2 mb-0">' +
-                '<strong>' + (data.razao_social || '') + '</strong><br>' +
-                '<small>CNAE: ' + (data.cnae_principal || '—') + ' · Situação: ' + (data.situacao_cadastral || '—') + '</small>' +
+                '<strong>' + cfEsc(data.razao_social || '') + '</strong><br>' +
+                '<small>CNAE: ' + cfEsc(data.cnae_principal || '—') + ' · Situação: ' + cfEsc(data.situacao_cadastral || '—') + '</small>' +
             '</div>';
         }
         resultEl.style.display = 'block';

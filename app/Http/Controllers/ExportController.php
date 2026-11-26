@@ -36,10 +36,10 @@ class ExportController extends Controller
 
             if ($user->isNgo()) {
                 // Export Transactions for NGO
-                fputcsv($file, ['ID', 'Título', 'Tipo', 'Valor', 'Data', 'Status', 'Projeto']);
+                \App\Support\Csv::put($file, ['ID', 'Título', 'Tipo', 'Valor', 'Data', 'Status', 'Projeto']);
                 $transactions = Transaction::where('tenant_id', $user->tenant_id)->get();
                 foreach ($transactions as $t) {
-                    fputcsv($file, [
+                    \App\Support\Csv::put($file, [
                         $t->id,
                         $t->title,
                         $t->type === 'income' ? 'Receita' : 'Despesa',
@@ -51,10 +51,10 @@ class ExportController extends Controller
                 }
             } elseif ($user->isManager()) {
                 // Export Projects for Manager
-                fputcsv($file, ['ID', 'Nome', 'Status', 'Início', 'Fim', 'Orçamento']);
+                \App\Support\Csv::put($file, ['ID', 'Nome', 'Status', 'Início', 'Fim', 'Orçamento']);
                 $projects = Project::where('tenant_id', $user->tenant_id)->get();
                 foreach ($projects as $p) {
-                    fputcsv($file, [
+                    \App\Support\Csv::put($file, [
                         $p->id,
                         $p->name,
                         $p->status,
@@ -65,10 +65,10 @@ class ExportController extends Controller
                 }
             } else {
                 // Generic Export for others (Landing Pages)
-                fputcsv($file, ['ID', 'Título', 'Visualizações', 'Leads', 'Status']);
+                \App\Support\Csv::put($file, ['ID', 'Título', 'Visualizações', 'Leads', 'Status']);
                 $pages = LandingPage::where('tenant_id', $user->tenant_id)->get();
                 foreach ($pages as $page) {
-                    fputcsv($file, [
+                    \App\Support\Csv::put($file, [
                         $page->id,
                         $page->title,
                         $page->views_count ?? 0,

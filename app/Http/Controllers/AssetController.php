@@ -233,7 +233,7 @@ class AssetController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Código', 'Nome', 'Localização', 'Responsável', 'Status', 'Data Aquisição', 'Valor']);
+            \App\Support\Csv::put($out, ['Código', 'Nome', 'Localização', 'Responsável', 'Status', 'Data Aquisição', 'Valor']);
 
             $baseQ = Asset::where('tenant_id', $tenantId)->orderBy('acquisition_date', 'desc');
             if ($q !== '') {
@@ -248,7 +248,7 @@ class AssetController extends Controller
 
             $baseQ->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $a) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         $a->code,
                         $a->name,
                         $a->location,

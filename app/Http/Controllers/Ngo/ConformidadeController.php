@@ -425,14 +425,14 @@ class ConformidadeController extends Controller
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF"); // BOM UTF-8 para Excel
 
-            fputcsv($out, [
+            \App\Support\Csv::put($out, [
                 'Código', 'Título', 'Eixo', 'Tipo', 'Risco',
                 'Resultado', 'Valor Calculado', 'Threshold', 'Unidade',
                 'Avaliado Em', 'Avaliado Por', 'Observações',
             ], ';');
 
             foreach ($avaliacoes as $a) {
-                fputcsv($out, [
+                \App\Support\Csv::put($out, [
                     $a->requisito?->codigo,
                     $a->requisito?->titulo,
                     $a->requisito?->eixo,

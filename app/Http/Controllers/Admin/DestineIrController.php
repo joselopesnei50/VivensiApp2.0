@@ -251,11 +251,11 @@ class DestineIrController extends Controller
             $out = fopen('php://output', 'w');
             // BOM UTF-8 pra Excel abrir sem bagunça
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Data', 'Nome', 'E-mail', 'WhatsApp', 'Entidade de origem', 'Notificado em', 'Observação']);
+            \App\Support\Csv::put($out, ['Data', 'Nome', 'E-mail', 'WhatsApp', 'Entidade de origem', 'Notificado em', 'Observação']);
 
             DestineIrMeetingSignup::with('partner')->orderByDesc('created_at')->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $r) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         optional($r->created_at)->format('d/m/Y H:i'),
                         $r->name,
                         $r->email,

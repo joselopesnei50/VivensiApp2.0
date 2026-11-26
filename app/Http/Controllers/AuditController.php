@@ -109,7 +109,7 @@ class AuditController extends Controller
             if ($out === false) return;
 
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['Data', 'Usuário', 'Evento', 'Tipo', 'ID', 'IP', 'URL']);
+            \App\Support\Csv::put($out, ['Data', 'Usuário', 'Evento', 'Tipo', 'ID', 'IP', 'URL']);
 
             $baseQ = AuditLog::where('tenant_id', $tenantId)->with('user')->orderBy('created_at', 'desc');
             if ($q !== '') {
@@ -127,7 +127,7 @@ class AuditController extends Controller
 
             $baseQ->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $log) {
-                    fputcsv($out, [
+                    \App\Support\Csv::put($out, [
                         optional($log->created_at)->format('Y-m-d H:i:s'),
                         $log->user?->name ?? 'Sistema',
                         $log->event,
