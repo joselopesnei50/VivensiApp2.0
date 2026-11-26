@@ -45,6 +45,7 @@ class ClientAddonsController extends Controller
             'emailExtra'  => $quota->getExtraQuota($tenant),
             'isYearly'    => ($tenant->plan?->interval ?? 'monthly') === 'yearly',
             'included'    => AddonService::BOT_INCLUDED,
+            'botPhone'    => $this->botPhone(),
             'isFree'      => $this->addons->isFreeAccount($tenant),
             'billingText' => $this->addons->canContract($tenant) ? $this->nextBillingText($tenant) : null,
         ]);
@@ -112,6 +113,24 @@ class ClientAddonsController extends Controller
         return back()->with('success', $on
             ? "{$member->name} já pode usar o bot pelo WhatsApp."
             : "{$member->name} não usa mais o bot.");
+    }
+
+    /**
+     * Número do bot de gestão (Admin → Bot), para a equipe salvar no celular.
+     * Antes o cliente não via esse número em lugar nenhum do painel.
+     * @return array{digits:string,label:string}|null
+     */
+    private function botPhone(): ?array
+    {
+        $digits = preg_replace('/\D/', '', (string) \App\Models\SystemSetting::getValue('bot_phone', ''));
+        if (strlen($digits) < 12) {
+            return null;
+        }
+        $local = substr($digits, 2); // sem o 55
+        $label = strlen($local) === 11
+            ? sprintf('(%s) %s-%s', substr($local, 0, 2), substr($local, 2, 5), substr($local, 7))
+            : sprintf('(%s) %s-%s', substr($local, 0, 2), substr($local, 2, 4), substr($local, 6));
+        return ['digits' => $digits, 'label' => $label];
     }
 
     private function isAccountAdmin(): bool

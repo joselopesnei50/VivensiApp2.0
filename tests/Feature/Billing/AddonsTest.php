@@ -294,3 +294,14 @@ it('contratar com a fatura do mês já gerada avisa que entra na seguinte', func
             && str_contains($m, $inv->period_end->copy()->addDay()->format('d/m/Y')));
     expect($inv->fresh()->amount_cents)->toBe(34990);
 });
+
+it('tela de adicionais mostra o número do bot para salvar no celular', function () {
+    $t = adTenant();
+    $admin = adUser($t);
+    $this->actingAs($admin)->get('/minha-conta/adicionais')->assertDontSee('Número do bot');
+
+    SystemSetting::setValue('bot_phone', '5516988887777', 'bot');
+    $this->actingAs($admin)->get('/minha-conta/adicionais')
+        ->assertSee('Número do bot')->assertSee('(16) 98888-7777')
+        ->assertSee('https://wa.me/5516988887777?text=oi', false);
+});
