@@ -38,13 +38,14 @@ class RaffleController extends Controller
             'ticket_price' => 'required|numeric|min:1',
             'total_tickets' => 'required|integer|min:1|max:10000',
             'draw_date' => 'nullable|date',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|' . \App\Support\SafeImageUpload::RULE . '|max:2048',
         ]);
 
         $tenant = auth()->user()->tenant;
 
         DB::transaction(function () use ($request, $tenant) {
-            $imagePath = $request->file('image') ? $request->file('image')->store('raffles', 'public') : null;
+            // Extensão pelo conteúdo real; SVG (pode ter script) fica de fora.
+            $imagePath = $request->file('image') ? \App\Support\SafeImageUpload::store($request->file('image'), 'raffles') : null;
 
             $raffle = Raffle::create([
                 'tenant_id' => $tenant->id,

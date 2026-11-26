@@ -295,7 +295,7 @@ class LandingPageController extends Controller
         $page = LandingPage::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
 
         $validated = $request->validate([
-            'file' => 'required|file|image|max:4096', // 4MB
+            'file' => 'required|file|image|' . \App\Support\SafeImageUpload::RULE . '|max:4096', // 4MB
         ]);
 
         $file = $validated['file'];
@@ -319,7 +319,7 @@ class LandingPageController extends Controller
         $page = LandingPage::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
 
         $validated = $request->validate([
-            'file' => 'required|file|image|max:512', // 512KB
+            'file' => 'required|file|image|' . \App\Support\SafeImageUpload::RULE . '|max:512', // 512KB
         ]);
 
         $file = $validated['file'];
@@ -366,12 +366,15 @@ class LandingPageController extends Controller
 
         $maxKb = $kind === 'logo' ? 2048 : 4096; // logo 2MB, outros 4MB
         $validated = $request->validate([
-            'file' => "required|file|image|max:{$maxKb}",
+            'file' => "required|file|image|" . \App\Support\SafeImageUpload::RULE . "|max:{$maxKb}",
         ]);
 
         $file = $validated['file'];
         $disk = Storage::disk('public');
-        $ext = strtolower((string) $file->extension()) ?: 'png';
+        $ext = \App\Support\SafeImageUpload::extension($file);
+        if (! $ext) {
+            abort(422, 'Envie uma imagem JPG, PNG, WEBP ou GIF.');
+        }
         $dir = 'landing-pages/' . $page->tenant_id . '/' . $page->id;
         $name = 'section-' . $section->id . '-' . $kind . '-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $ext;
         $path = $file->storeAs($dir, $name, 'public');
@@ -416,9 +419,10 @@ class LandingPageController extends Controller
             }
         }
 
-        $ext = strtolower((string) $file->extension());
-        if ($ext === '') {
-            $ext = 'png';
+        // Extensão pelo conteúdo real; SVG (pode ter script) fica de fora.
+        $ext = \App\Support\SafeImageUpload::extension($file);
+        if (! $ext) {
+            abort(422, 'Envie uma imagem JPG, PNG, WEBP ou GIF.');
         }
 
         $dir = 'landing-pages/' . $page->tenant_id . '/' . $page->id;
@@ -874,6 +878,9 @@ class LandingPageController extends Controller
                 'cpf', 'birth_date', 'address', 'city', 'guardian_name', 'guardian_phone',
                 'custom',
             ]))
+            // Nome de campo vem do formulário público: só letras, números e
+            // separadores simples (um nome com HTML virava código na tela).
+            ->filter(fn ($v, $k) => is_string($k) && preg_match('/^[\p{L}\p{N}_\-. ]{1,60}$/u', $k))
             ->take(20)
             ->map(function ($v) {
                 $s = is_scalar($v) ? (string) $v : json_encode($v);

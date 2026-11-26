@@ -680,11 +680,12 @@
             logs.forEach(function(l) {
                 const tr = document.createElement('tr');
                 tr.style.borderBottom = '1px solid #f1f5f9';
+                const hrEsc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
                 tr.innerHTML = `
-                    <td style="padding:9px 12px; color:#64748b; white-space:nowrap;">${l.created_at}</td>
-                    <td style="padding:9px 12px; text-align:center; font-weight:800; color:#b45309;">${l.hours}h</td>
-                    <td style="padding:9px 12px; color:#334155;">${l.description}</td>
-                    <td style="padding:9px 12px; color:#64748b; font-size:.82rem;">${l.logged_by}</td>
+                    <td style="padding:9px 12px; color:#64748b; white-space:nowrap;">${hrEsc(l.created_at)}</td>
+                    <td style="padding:9px 12px; text-align:center; font-weight:800; color:#b45309;">${hrEsc(l.hours)}h</td>
+                    <td style="padding:9px 12px; color:#334155;">${hrEsc(l.description)}</td>
+                    <td style="padding:9px 12px; color:#64748b; font-size:.82rem;">${hrEsc(l.logged_by)}</td>
                 `;
                 tbody.appendChild(tr);
             });

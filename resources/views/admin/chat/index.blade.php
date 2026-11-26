@@ -368,10 +368,14 @@
                 
                 const div = document.createElement('div');
                 div.className = `message-row ${isMe ? 'me' : 'them'}`;
-                div.innerHTML = `
-                    <div class="bubble">${m.message}</div>
-                    <div class="time-stamp">${time}</div>
-                `;
+                // Mensagem digitada por outra pessoa: sempre como texto.
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.textContent = String(m.message ?? '');
+                const stamp = document.createElement('div');
+                stamp.className = 'time-stamp';
+                stamp.textContent = time;
+                div.append(bubble, stamp);
                 list.appendChild(div);
             });
             

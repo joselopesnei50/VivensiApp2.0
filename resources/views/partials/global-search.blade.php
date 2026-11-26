@@ -64,6 +64,18 @@
 </style>
 
 <script>
+    // Resultados trazem nomes digitados por outras pessoas (doador no portal,
+    // descrição de lançamento): sempre como texto.
+    function gsEsc(v) {
+        return String(v ?? '').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
+    }
+    function gsSafeUrl(u) {
+        try {
+            const x = new URL(String(u ?? ''), window.location.origin);
+            return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : '#';
+        } catch (e) { return '#'; }
+    }
+
 let _gsDebounce = null;
 let _gsSelected = -1;
 let _gsItems = [];
@@ -120,7 +132,7 @@ function renderResults(data, q) {
         container.innerHTML = `
             <div style="padding:40px 20px; text-align:center;">
                 <i class="fas fa-face-frown-open" style="font-size:2rem; color:rgba(255,255,255,0.06); display:block; margin-bottom:12px;"></i>
-                <p style="color:rgba(255,255,255,0.25); font-size:0.85rem; font-weight:600; margin:0;">Nenhum resultado para "<em>${q}</em>"</p>
+                <p style="color:rgba(255,255,255,0.25); font-size:0.85rem; font-weight:600; margin:0;">Nenhum resultado para "<em>${gsEsc(q)}</em>"</p>
             </div>`;
         return;
     }
@@ -135,18 +147,18 @@ function renderResults(data, q) {
     let html = '';
     let idx = 0;
     for (const [cat, items] of Object.entries(grouped)) {
-        html += `<div class="gs-category-label">${cat}</div>`;
+        html += `<div class="gs-category-label">${gsEsc(cat)}</div>`;
         items.forEach(item => {
             html += `
-            <a href="${item.url}" class="gs-item" data-idx="${idx}"
+            <a href="${gsEsc(gsSafeUrl(item.url))}" class="gs-item" data-idx="${idx}"
                onmouseenter="setActive(${idx})"
                onclick="closeGlobalSearch()">
                 <div style="width:34px; height:34px; background:rgba(255,255,255,0.05); border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    <i class="fas ${item.icon}" style="color:${item.color}; font-size:0.85rem;"></i>
+                    <i class="fas ${gsEsc(item.icon)}" style="color:${gsEsc(item.color)}; font-size:0.85rem;"></i>
                 </div>
                 <div style="flex:1; min-width:0;">
-                    <div style="font-size:0.88rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.label}</div>
-                    <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); font-weight:600;">${item.sub}</div>
+                    <div style="font-size:0.88rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${gsEsc(item.label)}</div>
+                    <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); font-weight:600;">${gsEsc(item.sub)}</div>
                 </div>
                 <i class="fas fa-arrow-right" style="color:rgba(255,255,255,0.15); font-size:0.7rem;"></i>
             </a>`;

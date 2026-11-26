@@ -45,7 +45,7 @@ it('upload logo grava arquivo e atualiza section content.logo_url', function () 
     [$t, $u] = ulEnv();
     [$lp, $section] = ulLpSection($t);
 
-    $file = UploadedFile::fake()->create('logo.png', 50, 'image/png');
+    $file = UploadedFile::fake()->image('logo.png');
 
     $this->actingAs($u)
         ->post("/ngo/landing-pages/{$lp->id}/sections/{$section->id}/logo", ['file' => $file])
@@ -66,7 +66,7 @@ it('upload novo logo remove o antigo do storage', function () {
 
     // Primeiro upload
     $this->actingAs($u)->post("/ngo/landing-pages/{$lp->id}/sections/{$section->id}/logo", [
-        'file' => UploadedFile::fake()->create('logo-old.png', 50, 'image/png'),
+        'file' => UploadedFile::fake()->image('logo-old.png'),
     ])->assertOk();
     $section->refresh();
     $oldPath = $section->content['logo_storage_path'];
@@ -74,7 +74,7 @@ it('upload novo logo remove o antigo do storage', function () {
 
     // Segundo upload — deve remover o velho
     $this->actingAs($u)->post("/ngo/landing-pages/{$lp->id}/sections/{$section->id}/logo", [
-        'file' => UploadedFile::fake()->create('logo-new.png', 50, 'image/png'),
+        'file' => UploadedFile::fake()->image('logo-new.png'),
     ])->assertOk();
     $section->refresh();
     $newPath = $section->content['logo_storage_path'];
@@ -93,7 +93,7 @@ it('rejeita section de outra LP (cross-lp check)', function () {
     // URL usa lpA mas section eh de lpB — deve 404
     $this->actingAs($u)
         ->post("/ngo/landing-pages/{$lpA->id}/sections/{$sectionB->id}/logo", [
-            'file' => UploadedFile::fake()->create('x.png', 50, 'image/png'),
+            'file' => UploadedFile::fake()->image('x.png'),
         ])
         ->assertStatus(404);
 });
@@ -106,7 +106,7 @@ it('rejeita LP de outro tenant (404)', function () {
 
     $this->actingAs($uA)
         ->post("/ngo/landing-pages/{$lpB->id}/sections/{$sectionB->id}/logo", [
-            'file' => UploadedFile::fake()->create('x.png', 50, 'image/png'),
+            'file' => UploadedFile::fake()->image('x.png'),
         ])
         ->assertStatus(404);
 });
@@ -119,7 +119,7 @@ it('rejeita arquivo maior que 2MB', function () {
     $this->actingAs($u)
         ->withHeaders(['Accept' => 'application/json'])
         ->post("/ngo/landing-pages/{$lp->id}/sections/{$section->id}/logo", [
-            'file' => UploadedFile::fake()->create('big.png', 3000, 'image/png'), // 3MB
+            'file' => UploadedFile::fake()->image('big.png')->size(3072), // 3MB
         ])
         ->assertStatus(422);
 });

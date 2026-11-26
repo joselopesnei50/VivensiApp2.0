@@ -1853,11 +1853,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 item.style.borderBottom = '1px solid #f1f5f9';
                 item.style.cursor = 'pointer';
                 item.style.background = n.read_at ? 'transparent' : '#f0f4ff';
-                item.innerHTML = `
-                    <div style="font-weight: 600; color: #1e293b; font-size: 0.85rem; margin-bottom: 3px;">${n.title}</div>
-                    <div style="color: #64748b; font-size: 0.8rem; line-height: 1.4;">${n.message}</div>
-                    <div style="color: #94a3b8; font-size: 0.7rem; margin-top: 5px;">${new Date(n.created_at).toLocaleString('pt-BR')}</div>
-                `;
+                // Título e mensagem podem trazer texto de fora (nome de contato do
+                // WhatsApp, de quem assinou ou agendou): sempre como texto, nunca HTML.
+                const t = document.createElement('div');
+                t.style.cssText = 'font-weight: 600; color: #1e293b; font-size: 0.85rem; margin-bottom: 3px;';
+                t.textContent = String(n.title ?? '');
+                const m = document.createElement('div');
+                m.style.cssText = 'color: #64748b; font-size: 0.8rem; line-height: 1.4;';
+                m.textContent = String(n.message ?? '');
+                const d = document.createElement('div');
+                d.style.cssText = 'color: #94a3b8; font-size: 0.7rem; margin-top: 5px;';
+                d.textContent = new Date(n.created_at).toLocaleString('pt-BR');
+                item.append(t, m, d);
                 item.onclick = (e) => {
                     e.stopPropagation();
                     markAsRead(n.id, n.link);
@@ -1869,6 +1876,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
     }
 
+    // Só segue links do próprio sistema ou http(s) — nunca javascript:/data:.
+    function __vivensiSafeLink(link) {
+        try {
+            const u = new URL(String(link), window.location.origin);
+            return u.protocol === 'https:' || u.protocol === 'http:';
+        } catch (e) { return false; }
+    }
+
     async function markAsRead(id, link) {
         if (!__vivensiIsAuth) return;
         await fetch(`{{ url("/api/notifications") }}/${id}/read`, {
@@ -1876,7 +1891,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         });
         await updateBadge();
-        if (link) {
+        if (link && __vivensiSafeLink(link)) {
             window.location.href = link;
         } else {
             fetchNotifications();
@@ -1957,7 +1972,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="vivensi-toast__title"></div>
                     <p class="vivensi-toast__msg"></p>
                     <div class="vivensi-toast__actions">
-                        ${link ? `<a class="vivensi-toast__btn primary" href="${link}">Abrir</a>` : ``}
+                        ${link && __vivensiSafeLink(link) ? `<a class="vivensi-toast__btn primary" data-open="1">Abrir</a>` : ``}
                         <a class="vivensi-toast__btn" href="{{ route('notifications.index') }}">Ver todas</a>
                         <button type="button" class="vivensi-toast__btn" data-close="1">Fechar</button>
                     </div>
@@ -1966,6 +1981,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         `;
         toast.querySelector('.vivensi-toast__title').textContent = String(title || '');
         toast.querySelector('.vivensi-toast__msg').textContent = String(message || '');
+        const openBtn = toast.querySelector('[data-open]');
+        if (openBtn) openBtn.setAttribute('href', String(link));
 
         toast.addEventListener('click', (e) => {
             const btn = e.target.closest('[data-close]');
@@ -2491,7 +2508,7 @@ function renderCmdResults(q) {
         : CMD_ITEMS;
 
     if (!filtered.length) {
-        results.innerHTML = '<div class="cmd-empty">Nenhum resultado para "' + q + '"</div>';
+        results.innerHTML = '<div class="cmd-empty">Nenhum resultado para "' + String(q).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '"</div>';
         return;
     }
     results.innerHTML = filtered.map((item, idx) =>
