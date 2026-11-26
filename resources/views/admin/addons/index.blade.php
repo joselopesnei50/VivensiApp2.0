@@ -48,10 +48,10 @@
         <tbody>
         @forelse($contracts as $c)
             <tr>
-                <td><a href="{{ url('/admin/tenants/' . $c->tenant_id) }}">{{ $tenants[$c->tenant_id]->name ?? ('#' . $c->tenant_id) }}</a></td>
+                <td><a href="{{ url('/admin/tenants/' . $c->tenant_id) }}#adicionais">{{ $tenants[$c->tenant_id]->name ?? ('#' . $c->tenant_id) }}</a></td>
                 <td>{{ $c->addon?->name }}</td>
                 <td>{{ $c->quantity }}</td>
-                <td>{{ $brl($c->quantity * ($c->addon?->unitCents() ?? 0)) }}</td>
+                <td>@if($free[$c->tenant_id] ?? false)<span style="color:#64748b;">cortesia</span>@else{{ $brl($c->quantity * ($c->addon?->unitCents() ?? 0)) }}@endif</td>
                 <td style="text-align:right;">
                     @if($c->addon)
                     <form method="POST" action="{{ route('admin.addons.tenant', [$c->tenant_id, $c->addon->id]) }}" style="display:inline-flex;gap:6px;">

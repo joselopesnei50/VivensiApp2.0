@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\BillingAddon;
+use App\Models\Invoice;
 use App\Models\User;
 use App\Services\Billing\AddonService;
+use App\Services\Billing\InvoiceService;
 use App\Services\EmailQuotaService;
 use App\Support\TeamAccess;
 use Illuminate\Http\RedirectResponse;
@@ -43,6 +45,8 @@ class ClientAddonsController extends Controller
             'emailExtra'  => $quota->getExtraQuota($tenant),
             'isYearly'    => ($tenant->plan?->interval ?? 'monthly') === 'yearly',
             'included'    => AddonService::BOT_INCLUDED,
+            'isFree'      => $this->addons->isFreeAccount($tenant),
+            'billingText' => $this->addons->canContract($tenant) ? $this->nextBillingText($tenant) : null,
         ]);
     }
 
@@ -62,13 +66,36 @@ class ClientAddonsController extends Controller
         }
 
         $after = (int) $data['quantity'];
+        $quando = $this->nextBillingText($tenant);
         $msg = match (true) {
-            $after > $before => 'Pronto! O adicional já está liberado. A cobrança entra na sua próxima fatura.',
+            $after > $before => 'Pronto! O adicional já está liberado. ' . $quando,
             $after === 0     => 'Adicional cancelado. Ele não entra mais nas próximas faturas.',
             $after < $before => 'Quantidade reduzida. A próxima fatura já vem com o novo valor.',
             default          => 'Nada mudou.',
         };
         return back()->with('success', $msg);
+    }
+
+    /**
+     * Em qual fatura o adicional entra. A fatura sai 5 dias antes do
+     * vencimento: se a do período atual já foi gerada, o adicional vai para
+     * a seguinte (não mexemos numa cobrança já emitida).
+     */
+    private function nextBillingText($tenant): string
+    {
+        try {
+            $start = app(InvoiceService::class)->nextPeriodStart($tenant);
+            $open  = Invoice::withoutGlobalScopes()->where('tenant_id', $tenant->id)
+                ->whereIn('status', [Invoice::STATUS_OPEN, Invoice::STATUS_OVERDUE])
+                ->orderByDesc('period_start')->first();
+            $txt = 'A cobrança entra na fatura do período que começa em ' . $start->format('d/m/Y') . '.';
+            if ($open) {
+                $txt = 'Sua fatura com vencimento em ' . $open->due_date->format('d/m/Y') . ' já foi gerada e não muda. ' . $txt;
+            }
+            return $txt;
+        } catch (\Throwable $e) {
+            return 'A cobrança entra na sua próxima fatura.';
+        }
     }
 
     /** POST /minha-conta/adicionais/bot/{user} — liga/desliga o bot para alguém. */

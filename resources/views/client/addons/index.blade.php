@@ -18,6 +18,8 @@
     .ad-btn { padding: 9px 16px; border-radius: 9px; border: none; background: #4f46e5; color: #fff; font-weight: 700; cursor: pointer; font-size: .85rem; }
     .ad-btn.light { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
     .ad-btn.danger { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+    .ad-btn:disabled, .ad-form input:disabled { background: #e2e8f0; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
+    .ad-locked { font-size: .82rem; font-weight: 700; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 9px; padding: 8px 10px; }
     .ad-note { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; color: #475569; font-size: .88rem; line-height: 1.6; margin-bottom: 24px; }
     .ad-warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
     .ad-team { background: var(--card-bg, #fff); border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; }
@@ -53,7 +55,8 @@
     @else
         <div class="ad-note">
             <i class="fas fa-bolt me-1" style="color:#4f46e5;"></i>
-            O adicional é <strong>liberado na hora</strong> e a cobrança entra na <strong>próxima fatura</strong>, com o valor do mês cheio.
+            O adicional é <strong>liberado na hora</strong> e cobrado com o valor do mês cheio.
+            {{ $billingText }}
             @if($isYearly) No plano anual, o adicional entra na fatura anual (valor mensal × 12). @endif
             Para cancelar, é só colocar 0.
         </div>
@@ -79,12 +82,19 @@
                         ({{ $emailBase }} do plano{{ $emailExtra > 0 ? ' + ' . $emailExtra . ' dos pacotes' : '' }}).
                     @endif
                     @if($qty > 0)
-                        <br>Contratado: <strong>{{ $qty }}</strong> · {{ $brl($qty * (float) $addon->unit_price) }} por mês
+                        @if($isFree)
+                            <br>Liberado: <strong>{{ $qty }}</strong> · cortesia, sem cobrança
+                        @else
+                            <br>Contratado: <strong>{{ $qty }}</strong> · {{ $brl($qty * (float) $addon->unit_price) }} por mês
+                        @endif
                     @endif
                 </div>
 
+                @if(!$canContract && $qty === 0)
+                    <div class="ad-locked"><i class="fas fa-lock me-1"></i> Disponível para planos pagos. Fale com o nosso suporte.</div>
+                @endif
                 <form class="ad-form" method="POST" action="{{ route('client.addons.update', $addon->code) }}"
-                      onsubmit="return confirm('Confirmar? A cobrança entra na próxima fatura.');">
+                      onsubmit="return confirm('Confirmar a contratação?');">
                     @csrf
                     <label for="qty-{{ $addon->code }}" style="font-size:.85rem;font-weight:700;color:#475569;">Quantidade</label>
                     <input type="number" id="qty-{{ $addon->code }}" name="quantity" min="0" max="{{ $addon->max_quantity }}" value="{{ $qty > 0 ? $qty : 1 }}" @disabled(!$canContract && $qty === 0)>
