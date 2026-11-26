@@ -623,7 +623,9 @@ class ProcessWhatsAppBotMessage implements ShouldQueue
         $lines = ["🔍 *Resultado para \"{$query}\":*\n"];
         foreach ($results as $b) {
             $cpf    = $b->cpf ? ' | CPF: ' . $lookup->obfuscateCpf($b->cpf) : '';
-            $status = $b->status ? " [{$b->status}]" : '';
+            // Status em português (antes saía "[active]" no WhatsApp).
+            $label  = ['active' => 'ativo', 'inactive' => 'inativo', 'graduated' => 'graduado'][$b->status] ?? $b->status;
+            $status = $b->status ? " [{$label}]" : '';
             $lines[] = "• *{$b->name}*{$cpf}{$status}";
         }
 
