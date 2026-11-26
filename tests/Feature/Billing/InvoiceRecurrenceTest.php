@@ -93,6 +93,9 @@ it('não chama createCheckout quando plano não tem abacatepay_product_id', func
 });
 
 it('recupera link em invoice pre-existente sem billing_url', function () {
+    // Data fixa no meio do mês: do dia 26 em diante a fatura do mês seguinte
+    // já entra na janela de emissão e o teste deixava de testar a recuperação.
+    $this->travelTo(now()->startOfMonth()->addDays(9)->setTime(10, 0));
     $plan   = irtPaidPlan();
     $tenant = irtActiveTenant($plan);
 

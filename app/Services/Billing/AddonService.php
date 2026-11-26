@@ -101,7 +101,7 @@ class AddonService
      * Define quanto a organização tem de um adicional (contratar, aumentar,
      * diminuir ou cancelar com 0). Devolve a mensagem de erro ou null.
      */
-    public function setQuantity(Tenant $tenant, BillingAddon $addon, int $quantity, ?User $actor = null): ?string
+    public function setQuantity(Tenant $tenant, BillingAddon $addon, int $quantity, ?User $actor = null, bool $byPlatformAdmin = false): ?string
     {
         if (!$addon->is_active && $quantity > 0) {
             return 'Este adicional não está disponível no momento.';
@@ -110,7 +110,9 @@ class AddonService
             return "Escolha de 0 a {$addon->max_quantity}.";
         }
         $current = $this->quantity($tenant, $addon->code);
-        if ($quantity > $current && !$this->canContract($tenant)) {
+        // O admin da plataforma pode liberar para qualquer conta (ex.: cortesia,
+        // que não gera fatura — o adicional sai sem cobrança).
+        if ($quantity > $current && !$byPlatformAdmin && !$this->canContract($tenant)) {
             return 'Adicionais só podem ser contratados com um plano pago ativo. Fale com o nosso suporte.';
         }
 
@@ -176,6 +178,13 @@ class AddonService
             $member->forceFill(['bot_access' => true])->save();
             return null;
         });
+    }
+
+    /** Conta que não gera fatura (cortesia/grátis): adicional liberado sai sem cobrança. */
+    public function isFreeAccount(Tenant $tenant): bool
+    {
+        $plan = $tenant->plan;
+        return !$plan || $plan->is_courtesy || (float) $plan->price <= 0;
     }
 
     /**

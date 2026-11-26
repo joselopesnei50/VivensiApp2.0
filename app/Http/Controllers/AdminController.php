@@ -310,6 +310,10 @@ class AdminController extends Controller
         $emailDailyQuota     = $emailQuota->getQuota($tenant);
         $emailBaseQuota      = $emailQuota->getBaseQuota($tenant);
         $emailExtraQuota     = $emailQuota->getExtraQuota($tenant);
+        $addonService        = app(\App\Services\Billing\AddonService::class);
+        $addonCatalog        = \App\Models\BillingAddon::orderBy('id')->get();
+        $addonQty            = $addonService->quantities($tenant);
+        $addonIsFree         = $addonService->isFreeAccount($tenant);
         $emailSentToday      = $emailQuota->getSentToday($tenant);
         $emailRemainingToday = $emailQuota->getRemainingToday($tenant);
 
@@ -330,7 +334,7 @@ class AdminController extends Controller
         return view('admin.tenants.show', compact(
             'tenant', 'user', 'plan', 'plans', 'adesao',
             'antiBanCurrentVersion', 'antiBanCurrentAccepted', 'antiBanAcceptances',
-            'emailDailyQuota', 'emailSentToday', 'emailRemainingToday', 'emailBaseQuota', 'emailExtraQuota'
+            'emailDailyQuota', 'emailSentToday', 'emailRemainingToday', 'emailBaseQuota', 'emailExtraQuota', 'addonCatalog', 'addonQty', 'addonIsFree'
         ));
     }
 

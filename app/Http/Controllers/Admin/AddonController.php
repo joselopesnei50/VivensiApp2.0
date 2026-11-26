@@ -26,11 +26,14 @@ class AddonController extends Controller
             ->with('addon')
             ->orderBy('tenant_id')
             ->get();
-        $tenants = Tenant::whereIn('id', $contracts->pluck('tenant_id')->unique())->get(['id', 'name'])->keyBy('id');
+        $tenants = Tenant::with('plan')->whereIn('id', $contracts->pluck('tenant_id')->unique())->get()->keyBy('id');
+        $service = app(AddonService::class);
+        $free = $tenants->map(fn ($t) => $service->isFreeAccount($t));
 
-        $monthlyCents = $contracts->sum(fn ($c) => $c->quantity * ($c->addon?->unitCents() ?? 0));
+        // Receita: só contas que geram fatura (cortesia sai sem cobrança).
+        $monthlyCents = $contracts->sum(fn ($c) => ($free[$c->tenant_id] ?? false) ? 0 : $c->quantity * ($c->addon?->unitCents() ?? 0));
 
-        return view('admin.addons.index', compact('catalog', 'contracts', 'tenants', 'monthlyCents'));
+        return view('admin.addons.index', compact('catalog', 'contracts', 'tenants', 'monthlyCents', 'free'));
     }
 
     public function updateCatalog(Request $request, BillingAddon $addon): RedirectResponse
@@ -53,7 +56,11 @@ class AddonController extends Controller
     public function setTenantQuantity(Request $request, Tenant $tenant, BillingAddon $addon, AddonService $service): RedirectResponse
     {
         $data = $request->validate(['quantity' => ['required', 'integer', 'min:0', 'max:' . $addon->max_quantity]]);
-        $error = $service->setQuantity($tenant, $addon, (int) $data['quantity'], auth()->user());
-        return $error ? back()->with('error', $error) : back()->with('success', "{$tenant->name}: {$addon->name} agora com {$data['quantity']}.");
+        $error = $service->setQuantity($tenant, $addon, (int) $data['quantity'], auth()->user(), byPlatformAdmin: true);
+        if ($error) {
+            return back()->with('error', $error);
+        }
+        $free = $service->isFreeAccount($tenant) ? ' Conta sem fatura (cortesia): sem cobrança.' : ' Entra na próxima fatura.';
+        return back()->with('success', "{$tenant->name}: {$addon->name} agora com {$data['quantity']}." . ($data['quantity'] > 0 ? $free : ''));
     }
 }

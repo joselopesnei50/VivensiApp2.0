@@ -255,3 +255,42 @@ it('admin da plataforma ajusta preço e vê quem contratou', function () {
     ])->assertSessionHas('success');
     expect((float) adAddon('email_pack')->unit_price)->toBe(12.90);
 });
+
+it('conta cortesia vê o cadeado e o botão desligado', function () {
+    $t = adTenant(adPlan(['is_courtesy' => true, 'price' => 0]));
+    $admin = adUser($t);
+    $html = $this->actingAs($admin)->get('/minha-conta/adicionais')->assertOk()->getContent();
+    expect($html)->toContain('Disponível para planos pagos');
+    expect(substr_count($html, 'class="ad-btn" disabled'))->toBe(2);
+    $this->actingAs($admin)->post('/minha-conta/adicionais/bot_number', ['quantity' => 1])->assertSessionHas('error');
+});
+
+it('admin da plataforma libera adicional para conta cortesia, sem cobrança', function () {
+    $own = Tenant::factory()->create(['subscription_status' => 'active']);
+    $sa = User::factory()->create(['tenant_id' => $own->id, 'role' => 'super_admin', 'status' => 'active']);
+    $this->withoutMiddleware(\App\Http\Middleware\RequireTwoFactor::class);
+    $t = adTenant(adPlan(['is_courtesy' => true, 'price' => 0]));
+    $admin = adUser($t);
+
+    $this->actingAs($sa)->get('/admin/tenants/' . $t->id)->assertOk()->assertSee('sem cobrança');
+    $this->actingAs($sa)->post('/admin/adicionais/organizacao/' . $t->id . '/' . adAddon('bot_number')->id, ['quantity' => 1])
+        ->assertSessionHas('success', fn ($m) => str_contains($m, 'sem cobrança'));
+    expect(app(AddonService::class)->botSeatLimit($t))->toBe(2);
+
+    $this->actingAs($sa)->get('/admin/adicionais')->assertSee('cortesia');
+    $this->actingAs($admin)->get('/minha-conta/adicionais')->assertSee('cortesia, sem cobrança')->assertSee('1 de 2 em uso');
+});
+
+it('contratar com a fatura do mês já gerada avisa que entra na seguinte', function () {
+    $t = adTenant();
+    $admin = adUser($t);
+    $abacate = Mockery::mock(AbacatePayService::class);
+    $abacate->shouldReceive('createCheckout')->andReturn(['id' => 'c', 'url' => 'https://pay/c']);
+    app()->instance(AbacatePayService::class, $abacate);
+    $inv = app(InvoiceService::class)->generateForTenant($t->fresh('plan'));
+
+    $this->actingAs($admin)->post('/minha-conta/adicionais/email_pack', ['quantity' => 1])
+        ->assertSessionHas('success', fn ($m) => str_contains($m, 'já foi gerada e não muda')
+            && str_contains($m, $inv->period_end->copy()->addDay()->format('d/m/Y')));
+    expect($inv->fresh()->amount_cents)->toBe(34990);
+});

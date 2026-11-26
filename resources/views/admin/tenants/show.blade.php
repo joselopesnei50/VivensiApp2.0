@@ -323,6 +323,37 @@
             @enderror
         </div>
 
+        {{-- Adicionais: número extra no bot, pacote de e-mails (2026-11-25) --}}
+        @if(isset($addonCatalog) && $addonCatalog->isNotEmpty())
+        <div class="vivensi-card" id="adicionais" style="margin-top: 30px; border: 1px solid #e2e8f0;">
+            <h4 style="color:#1e293b; margin-top:0;">
+                <i class="fas fa-puzzle-piece me-2" style="color:#4f46e5;"></i>Adicionais
+            </h4>
+            <p style="font-size:.85rem; color:#64748b; margin:8px 0 16px;">
+                @if($addonIsFree)
+                    Conta <strong>sem fatura</strong> (cortesia ou plano grátis): o que você liberar aqui sai <strong>sem cobrança</strong>.
+                @else
+                    O que você liberar aqui entra na próxima fatura do cliente.
+                @endif
+                Quantidade 0 cancela.
+            </p>
+            @foreach($addonCatalog as $addon)
+                <form action="{{ route('admin.addons.tenant', [$tenant->id, $addon->id]) }}" method="POST" style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                    @csrf
+                    <div style="flex:1; font-size:.9rem; color:#0f172a;">
+                        <strong>{{ $addon->name }}</strong>
+                        <span style="color:#64748b; font-size:.8rem;">· R$ {{ number_format((float) $addon->unit_price, 2, ',', '.') }}/mês cada</span>
+                    </div>
+                    <input type="number" name="quantity" min="0" max="{{ $addon->max_quantity }}" value="{{ (int) ($addonQty[$addon->code] ?? 0) }}"
+                           style="width:80px; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-weight:700;">
+                    <button type="submit" style="background:#4f46e5; color:white; border:none; padding:9px 16px; border-radius:8px; font-weight:700; font-size:.85rem; cursor:pointer;">
+                        <i class="fas fa-save me-1"></i>Salvar
+                    </button>
+                </form>
+            @endforeach
+        </div>
+        @endif
+
         {{-- Add-on: Domínio Próprio (Fase 3 do custom domain) --}}
         <div class="vivensi-card" style="margin-top: 30px; border: 1px solid #e2e8f0;">
             <h4 style="color:#1e293b; margin-top:0;">
