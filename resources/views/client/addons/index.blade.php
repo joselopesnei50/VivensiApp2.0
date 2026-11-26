@@ -26,6 +26,9 @@
     .ad-team-head { padding: 18px 22px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
     .ad-team-head h2 { margin: 0; font-size: 1.1rem; font-weight: 800; }
     .ad-seats { font-weight: 800; color: #4338ca; }
+    .ad-botnum { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 22px; background: #f0fdf4; border-bottom: 1px solid #bbf7d0; }
+    .ad-botnum > div { display: flex; flex-direction: column; gap: 2px; }
+    .ad-botnum strong { font-size: 1.15rem; color: #14532d; }
     .ad-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 22px; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; }
     .ad-row:last-child { border-bottom: none; }
     .ad-row .who strong { display: block; color: var(--text-primary, #0f172a); }
@@ -120,6 +123,17 @@
             </div>
             <span class="ad-seats">{{ $botUsed }} de {{ $botLimit }} em uso</span>
         </div>
+        @if($botPhone)
+            <div class="ad-botnum" id="bot-numero">
+                <div>
+                    <span style="font-size:.8rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Número do bot</span>
+                    <strong>{{ $botPhone['label'] }}</strong>
+                    <span style="font-size:.85rem;color:#475569;">Salve no celular e mande <b>oi</b> para começar.</span>
+                </div>
+                <a class="ad-btn" style="background:#16a34a;text-decoration:none;" target="_blank" rel="noopener"
+                   href="https://wa.me/{{ $botPhone['digits'] }}?text=oi"><i class="fab fa-whatsapp me-1"></i> Abrir no WhatsApp</a>
+            </div>
+        @endif
         @forelse($members as $m)
             @php $hasPhone = !empty($m->phone); $suspended = ($m->status ?? 'active') === 'suspended'; @endphp
             <div class="ad-row">
