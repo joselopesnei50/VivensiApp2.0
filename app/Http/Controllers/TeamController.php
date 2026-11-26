@@ -148,6 +148,11 @@ class TeamController extends Controller
             'status' => $request->status,
         ]);
 
+        // Suspenso perde também os tokens da API (o painel já o desloga).
+        if ($request->status === 'suspended') {
+            $user->tokens()->delete();
+        }
+
         return redirect()->back()->with('success', 'Dados do membro atualizados!');
     }
 
@@ -191,6 +196,7 @@ class TeamController extends Controller
             'status' => $user->status,
         ];
 
+        $user->tokens()->delete();
         $user->delete();
 
         try {

@@ -21,7 +21,9 @@ class HumanResourcesController extends Controller
     public function __construct()
     {
         // Auditoria 2026-08-29 #2 (alta): fecha bypass de role em RH.
-        $this->middleware('can:manage-hr');
+        // A validação pública do certificado (QR) é aberta a qualquer pessoa:
+        // sem o except, o visitante sempre recebia 403 (auditoria 26/11/2026).
+        $this->middleware('can:manage-hr')->except('publicValidateVolunteerCertificate');
     }
 
     private function certAuthCode(int $tenantId, int $volunteerId, int $certId, int $timestamp): string
@@ -619,7 +621,10 @@ class HumanResourcesController extends Controller
             try {
                 $issued = $c->issued_at instanceof Carbon ? $c->issued_at : Carbon::parse((string) $c->issued_at, config('app.timezone'));
                 $code = $this->certAuthCode((int) $tenantId, (int) $c->volunteer_id, (int) $c->id, (int) $issued->timestamp);
-                $validateLinks[(int) $c->id] = url('/validar-certificado/' . (int) $c->id) . '?code=' . $code;
+                // A rota pública é pelo uuid (o id numérico dava 404).
+                if (!empty($c->uuid)) {
+                    $validateLinks[(int) $c->id] = url('/validar-certificado/' . $c->uuid) . '?code=' . $code;
+                }
             } catch (\Throwable $e) {
                 // ignore
             }
@@ -721,7 +726,9 @@ class HumanResourcesController extends Controller
             ]);
         }
 
-        $certRow = VolunteerCertificate::query()
+        // Rota pública (sem login): o escopo por organização bloqueia tudo para
+        // visitante, então a busca é explícita pelo uuid + código.
+        $certRow = VolunteerCertificate::withoutGlobalScopes()
             ->join('volunteers as v', 'v.id', '=', 'volunteer_certificates.volunteer_id')
             ->where('volunteer_certificates.uuid', $uuid)
             ->select([

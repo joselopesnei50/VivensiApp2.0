@@ -63,7 +63,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // ── Public API v1 ──────────────────────────────────────────────────────────
-Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+Route::prefix('v1')->middleware(['auth:sanctum', \App\Http\Middleware\EnsureApiAccountActive::class, 'throttle:60,1'])->group(function () {
 
     Route::get('/me', [App\Http\Controllers\Api\V1\MeController::class, 'show']);
 
